@@ -1,0 +1,19 @@
+{
+  "name": "Gregtorio",
+  "version": "0.1.9",
+  "title": "Gregtorio",
+  "author": "Damien Reave",
+    "factorio_version": "2.0",
+    "dependencies": [ 
+		"base >= 2.0",
+		"space-age >= 2.0.0",
+		"quality >= 2.0.0",
+		"configurable-valves >= 0.2.1",
+		"autocraft-logistics >= 1.0.0",
+		"? BottleneckLite >= 1.3.4",
+		"? companion-drones-mjlfix >= 2.0.10",
+		"? AfraidOfTheDark >= 1.0.31",
+		"? far-reach >= 2.0.0"
+	],
+  "description": "A hyper-complex total overhaul mod for Factorio that takes you from digging for clay with a shovel up to collapsing entire universes for space ship components. If you've ever wished you could play GregTech without any lag, instability or chunkloading issues, you're in the right place."
+}

@@ -1,0 +1,98 @@
+001 - Finish the trigger techs
+002 - Build a bunch of Iron Furnaces
+003 - Automate smelting of Iron Ingots
+004 - Automate Manual Inserters and Transport Belts
+005 - Automate Copper Ingots
+006 - Begin The Bus. Automate Automation Science.
+007 - Begin producing Steam with Small Coal Boilers
+010 - Add Redstone and Tin to the bus
+008 - Automate Bronze Ingots and Red Alloy Ingots with Alloy Smelters
+009 - Feed Iron Pickaxe / Iron Shovel Usages and Manual Labor into starting Mines and Digsites
+011 - Add Gravel, Sand, Flint, Bricks and Clay to the Bus.
+012 - Generate some Diamonds off to the side
+013 - Automate Coke Oven production
+014 - Generate Gypsum and Calcite off to the side
+015 - Automate Primitive Blast Furnace production
+016 - Add Steel to the bus
+017 - Automate Sulfur mining and smelting
+018 - Add Wood to the bus fed by chests. Craft or harvest wood to keep up with demands.
+019 - Process Wood for Resin and Rubber
+020 - Generate electricity with Steam Turbines
+021 - Set up some Wiremills and Bending Machines
+022 - Automate LV Motors
+023 - Automate Logistic Science Packs
+024 - Rough circuit automation: resistor parts, vacuum tube parts, boards, redalloy cables
+025 - Switch to Large Bronze Boilers for steam generation
+026 - Switch to centrifuging Resin so you get Glue
+027 - Switch to Improved Electronic Parts recipes for Resistors, Vacuum Tubes
+028 - Rough automation of Pyrolyse
+029 - Make some Phenolic Boards
+030 - Soldering Alloy comes from Antimony from Stibnite
+031 - Primitive Diodes: Centrifuging Realgar gets you Arsenic, Centrifuging Crushed Sphalerite and Electrolyzing Sphalerite Dust gets you Gallium
+032 - Automate LV and MV Circuits in Circuit Assembler
+033 - Add Nickel to mining and Cupronickel to the bus. Make Invar locally.
+034 - Rough automation for EBFs
+035 - Cobalt Brass for Cutting Machines
+036 - Switch to Chem Reactors for Liquid Rubber for Cables
+037 - Automate Polyethylene from either Wood Pulp or Benzene
+038 - Locally make Quartzite, Zinc and Brass.
+039 - Properly automate EBF production
+040 - Greatly expand steel production
+041 - Automate LV Pistons, LV Sensor, LV Emitter, LV Pump, LV Conveyor, LV Robot Arm: Component Science
+042 - Black Steel production
+043 - Create some Extended Crafting Tables
+044 - Automate Tier One Microminers
+045 - Make some aluminium to start MV Era
+046 - Set up Silicon Dioxide production, Raw Silicon loop and Poly SI loop
+047 - Monosilicon Crystaline Boules
+048 - ILC and RAM chips
+049 - Change over to Integrated Circuit Recipes
+050 - MV Energy Hatches
+051 - Wood Production via Greenhouses
+052 - Properly automate Pyrolyse production
+053 - Greatly expand power generation via benzene
+054 - Proper Ore Processing
+055 - Fully transition to feeding ores via Microminers where possible
+056 - Automate all MV Components
+057 - Oil Pumpjacks
+058 - Switch over to Diesel
+059 - Full scale aluminium production
+060 - Ruby Juice for Chrome
+061 - Kanthal for HV Coils
+062 - Upgrade EBFs to HV
+063 - Process Manganese from Microminers
+064 - Stainless Steel Production
+065 - Switch to Microprocessors
+066 - PVC production
+067 - Automate t2 Microminers
+068 - Blast Furnace Science Packs
+069 - Automate HV components
+070 - Niobium and Tantalum extraction
+071 - SMD Components
+072 - Upgrade coils to Nichrome for EV blasting
+073 - Eye of Ender production
+074 - Chromium blasting
+075 - Advanced HV Machines
+076 - Oil Distillation
+077 - PTFE Production / LCRs
+078 - Cetane Boosted Diesel
+079 - Upgrade to Phosphorous Doped Wafer
+080 - Titanium Processing
+081 - Radon
+082 - Helium from Monezite
+083 - Neodymium Production
+084 - Automate EV Components
+085 - Cryogenic Air Distillation for Argon
+086 - Elite Extended Crafting
+087 - Rocket Fuel
+088 - Automate T3 Microminers
+089 - Mainframe (IV Circ)
+090 - Advanced EV Machines
+091 - Compressed Endstone for Helium
+092 - Epoxy Processing
+093 - Nano CPU Wafers
+094 - Switch to Nanoprocessors
+095 - EnderIO Rabbit Hole
+096 - Extreme Entity Crushers
+097 - Uranium Enrichment
+098 - Nuclear Power

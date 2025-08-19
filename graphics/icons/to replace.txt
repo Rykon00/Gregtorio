@@ -1,0 +1,13 @@
+icons:
+iron-chest
+steel-chest
+stainless-steel-bolt
+gold-chest
+
+
+
+
+entities:
+iron-chest
+steel-chest
+gold-chest
