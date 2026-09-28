@@ -243,6 +243,12 @@ local SPECIAL_SHIFT = {
 		["rtm-alloy-coil-block"] = "hssg-coil-block",
 		["luv-circuit"]         = "luv-circuit",   -- ZPM circuits do not exist yet at LuV
 	},
+	--- ZPM machines (126-fork-zpm.lua): naquadah is the ZPM cable and coil material in GT
+	zpm = {
+		["yttrium-barium-cuprate-cable"] = "naquadah-cable",
+		["rtm-alloy-coil-block"] = "hssg-coil-block",
+		["hssg-coil-block"]     = "naquadah-coil-block",
+	},
 }
 local function item_exists(n)
 	for t, _ in pairs(defines.prototypes.item) do
@@ -333,7 +339,7 @@ function fork_make_tier_machine(base, from_tier, to_tier, sprite_frames, unlock_
 	if unlock_tech then fork_add_unlock(unlock_tech, new_name) end
 end
 
-for _, t in pairs({ "iv", "luv" }) do
+for _, t in pairs({ "iv", "luv", "zpm" }) do
 	if not data.raw["item-subgroup"][t .. "-age-production-machine"] then
 		data:extend({ { type = "item-subgroup", name = t .. "-age-production-machine", group = "production", order = "i-z-" .. t } })
 	end
