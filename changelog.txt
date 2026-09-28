@@ -1,0 +1,5 @@
+---------------------------------------------------------------------------------------------------
+Version: 0.1.9
+Date: 2025-08-19
+  Info:
+    - Upstream release by Damien Reave, imported unchanged from the Factorio mod portal as the base of this fork.
