@@ -8,6 +8,7 @@ Date: 2026-09-28
     - New sprites and icons built from GregTech 5 Unofficial textures (LGPL-3.0).
     - English names for 520 items, buildings, fluids and technologies that showed "Unknown key".
   Changes:
+    - Vanilla resource patches (iron, copper, stone, coal, uranium, oil, Space Age resources) no longer spawn and can no longer be mined in existing saves; Gregtorio gets all raw materials from its own mines. The admin command /gregtorio-remove-vanilla-ores removes the leftover patches.
     - Machines accept all recipe categories of their own and lower tiers (e.g. the EV Fluid Solidifier can now make MV/HV/EV recipes).
     - Chemical baths have one fluid input and one fluid output (the platinum line needs an output).
     - Iridium dust and HPIC wafers are made in the EV chemical reactor (every IV machine needs them).

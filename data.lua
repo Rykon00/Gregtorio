@@ -85,5 +85,6 @@ end
 --- Fork: progression fixes (must be loaded after 98-technology)
 require("prototypes.100-fork-fixes")
 require("prototypes.101-fork-machines")
+require("prototypes.102-fork-resources")
 require("prototypes.110-fork-luv")
 require("prototypes.199-fork-finalize")
