@@ -36,7 +36,7 @@ BASIC_GT = {
 }
 
 # tier color GT uses to tint the (gray) machine casings (IV = tungstensteel)
-TIER_TINT = {"IV": (100, 100, 160), "LuV": (255, 205, 225)}
+TIER_TINT = {"IV": (100, 100, 160), "LuV": (255, 205, 225), "ZPM": (140, 225, 245)}
 
 # casing item -> flat GT texture ("mod:path" under textures/blocks). Without an entry the item icon is used.
 CASING_TEXTURE = {
@@ -256,7 +256,7 @@ def main():
     OUT_ENTITY.mkdir(parents=True, exist_ok=True)
     OUT_ICON.mkdir(parents=True, exist_ok=True)
 
-    for tier in ("IV", "LuV"):
+    for tier in ("IV", "LuV", "ZPM"):
         for base in BASIC_GT:
             basic_machine(a.gt, base, tier)
     for name, spec in MULTIBLOCKS.items():
