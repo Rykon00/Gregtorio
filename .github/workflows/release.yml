@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Lua syntax check (nur geladene Dateien)
+      - name: Lua syntax check (loaded files only)
         run: |
           sudo apt-get install -y -qq lua5.4 >/dev/null
           python3 tools/check_syntax.py --loaded
