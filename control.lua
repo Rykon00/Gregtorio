@@ -1,7 +1,7 @@
 
 --- Fork: ME terminal GUI and ME interface defaults (AE2, see prototypes/120-fork-ae2.lua)
 local fork_me = require("scripts.fork-me-terminal")
---- Fork: molds stay in the machine's mold slot (see prototypes/130-fork-molds.lua)
+--- Fork: molds stay in the machine's mold slot (see prototypes/150-fork-molds.lua)
 local fork_molds = require("scripts.fork-molds")
 
 script.on_event(defines.events.on_built_entity, function(event)
