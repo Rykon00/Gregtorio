@@ -20,7 +20,7 @@ UEV = cryogenic, UIV = promethium, then UMV / UXV / max (the stargate).
 | 5a | UEV and UIV: bio and optical lines, cosmic neutronium / draconium / infinity / transcendent metal, UEV and UIV components, fusion MK4, science packs, energy hatches and machines | **done** (`prototypes/131-fork-uev.lua`, `132-fork-uiv.lua`) |
 | 5b | UMV, UXV, MAX and the endgame (stargate, victory), fusion MK5 | **done** (`prototypes/133-fork-umv.lua`, `134-fork-uxv.lua`, `135-fork-endgame.lua`, `scripts/fork-victory.lua`) |
 | side | Water purification line: grades 1-6 done in `129-fork-water-purification.lua`; grades 7 (degasifier) and 8 (quark extraction) open | partly done |
-| side | AE2 autocrafting (patterns, molecular assembler on top of the ME network from `120-fork-ae2.lua`) | open |
+| side | AE2 autocrafting (patterns, molecular assembler on top of the ME network from `120-fork-ae2.lua`) | **done** (`prototypes/121-fork-ae2-autocrafting.lua`, `scripts/fork-me-autocraft.lua`, `docs/AE2.md`) |
 | side | Plasma generator (plasmas are only ingredients so far) | open |
 | side | Graphics and balance of the tiers from UHV up in the real game | open |
 
@@ -640,7 +640,35 @@ Side quests, in the order that helps the endgame most:
 2. Plasma generator (GT plasma turbine): the plasmas (iron, sulfur, nitrogen, zinc, niobium, tin, titanium, oxygen, neon, boron, calcium ...) are only ingredients, several are
    unused.
 3. Water purification grades 7 (degasifier) and 8 (quark extraction), FPIC/APIC chips and complex SMDs, which would let the QPIC stand-ins of the UEV to UXV hatches go.
-4. AE2 autocrafting (patterns, molecular assembler) on top of the ME network from `120-fork-ae2.lua`.
+4. ~~AE2 autocrafting~~ (done, see "Side quest: AE2 autocrafting").
 5. The technologies of the final pass list: decide for each "open" one whether it gets a Gregtorio gate or is hidden.
 6. A MAX tier (MAX circuit, hatch, machines, and the GT items the stargate could take) if the endgame should go on after `victory`.
 
+## Side quest: AE2 autocrafting (done)
+
+Player guide and the full design: `docs/AE2.md`. Summary:
+
+* **Content** (`prototypes/121-fork-ae2-autocrafting.lua`, tech `me-autocrafting`, EV, after `me-storage-64k`): ME Pattern Provider,
+  ME Molecular Assembler (item-only recipes, speed 6), ME Crafting CPU (2x2, needs power). Sprites and icons from
+  `tools/gen_ae2_sprites.py`.
+* **Patterns:** a provider next to any assembling machine or furnace inside the network makes that machine's recipe a pattern.
+  Recipes with fluids are ignored (no fluid storage in the ME network), also shown in the terminal.
+* **Planning:** recursive, storage first, loops and shortfalls reported before the start; the job only starts when the plan is
+  complete.
+* **Jobs:** the planned items are taken into the job's own pool at the start; the CPU feeds idle pattern machines by script in bounded steps
+  (20 ticks, 6 machine interactions per job and step) and collects their products; the pool is stored at the end. Cancel and failure give
+  everything back. One CPU = one job at a time.
+* **GUI:** the ME Terminal got a Crafting tab: craft list (also at 0 in stock), amount, plan preview, job list with progress, status
+  and cancel.
+* **Tests:** the runtime test of `tools/devcheck` builds a network and runs a two-level job, a job that lacks raw material, a queued job that is
+  cancelled, CPU and machine removal during jobs and a GT machine as pattern machine. Existing saves: nothing changes for existing
+  ME networks; the state is created lazily and rebuilt in `on_configuration_changed`.
+
+### Open points
+
+* Fluid recipes cannot be autocrafted (needs a fluid storage for the network).
+* Only normal quality; no items with own data; no spoilage in the job pool.
+* Furnaces are only patterns after they smelted the recipe once (`previous_recipe`); untested in the real game.
+* One job per CPU, no co-processor or CPU storage tiers, no "keep N in stock", no circuit network interface.
+* The terminal GUI cannot be run headless: its layout (tabs, craft list, job list) and the sprites need a look in the real game;
+  balance of costs, speeds and tier is untested.
