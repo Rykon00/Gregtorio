@@ -14,8 +14,8 @@ UEV = cryogenic, then promethium / UMV / UXV / max.
 | Phase | Content | Status |
 |---|---|---|
 | 1 | Finish LuV: naquadah ore line, bacterial vat, mutagen, crystal processors, circuit assembly line, fusion reactor MK1 and the first plasmas | **done** (`prototypes/125-fork-luv-endgame.lua`) |
-| 2 | ZPM: ZPM science pack, ZPM components and machines (europium, naquadah alloy, osmiridium), ZPM energy hatch | open, next |
-| 3 | UV: fusion reactor MK2 (and its plasmas), wetware processors, crystal processor mainframe (UV circuit), UV components | open |
+| 2 | ZPM: ZPM science pack, ZPM components and machines (europium, naquadah alloy, osmiridium), ZPM energy hatch | **done** (`prototypes/126-fork-zpm.lua`) |
+| 3 | UV: fusion reactor MK2 (and its plasmas), wetware processors, crystal processor mainframe (UV circuit), UV components | open, next |
 | 4 | UHV: fusion reactor MK3, UHV components and circuits | open |
 | 5 | UEV .. UXV and the endgame (stargate, victory) | open |
 | side | Water purification line (grades 1-8; the draft in `21-luv-age-item.lua` is commented out) | open |
@@ -61,8 +61,69 @@ Outside the phases: some vanilla technologies (armor equipment, inserter capacit
 `bulk-inserter`, `explosives`, ...) are not researchable in `devcheck`; that was already the case
 before phase 1 and has not been looked into yet.
 
-### Suggested next step
+### Suggested next step (done in phase 2)
 
 Phase 2 (ZPM): ZPM science pack recipe (europium, naquadah alloy, ZPM circuit), ZPM components
 from the drafts in `23-zpm-age-item.lua`, ZPM machines with `fork_make_tier_machine(base, "luv",
 "zpm", ...)` and the ZPM energy hatch. The MK2 plasma drafts stay hidden until phase 3 (fusion MK2).
+
+## Phase 2: ZPM (done)
+
+Numbers: researchable technologies 246 -> 252 of 298 -> 303 (the 5 new ones and
+`agricultural-science-pack`, the UV science tech, which is now reachable but whose pack has no recipe
+yet), draft recipes hidden by the draft guard 65 -> 65, auto-unlocked recipes 67 -> 53 (14 are now
+unlocked explicitly, see below), machines placed by `devcheck runtime` 251 -> 287. Progression now
+stops at the UV science pack (`agricultural-science-pack`).
+
+`23-zpm-age-item.lua` is still not loaded by `data.lua`: it is not valid Lua (missing commas, bare
+table literals) and most of it belongs to later tiers. Its ZPM parts are rebuilt in
+`126-fork-zpm.lua` after the GT5-Unofficial recipes.
+
+New technologies:
+
+| Technology | Science | Unlocks |
+|---|---|---|
+| `zpm-materials` | LuV | naquadah alloy rod, long rod, ring, nugget, round, bolt, screw, gear, large gear, rotor, frame; europium plate and fine wire; trinium foil; osmiridium rod; naquadah wire and cable |
+| `zpm-components` | LuV | ZPM motor, pump, conveyor module, piston, robot arm, emitter, sensor, field generator (LuV assembly line), ZPM machine casing (iridium) and hull |
+| `zpm-machines` | ZPM | the 23 basic machines one tier up (`zpm-macerator`, `zpm-assembling-machine`, ...) |
+| `zpm-energy-hatches` | ZPM | osmium ingot and foil, naquadah coil, ZPM voltage coil, ZPM energy hatch |
+| `zpm-multiblocks` | ZPM | the 13 multiblock upgrades (EBF with naquadah coils, vacuum freezer, large chemical reactor, distillation towers, ...) |
+
+The ZPM science pack (`zpm-science-pack`: ZPM motor, 2 ZPM circuits, europium plates, dense naquadah
+alloy plates, HSS-G coils, a LuV field generator and molten naquadah alloy -> 10 packs) is unlocked
+by `metallurgic-science-pack`, which now also requires `zpm-components`. `agricultural-science-pack`
+(UV science) requires `zpm-multiblocks`.
+
+Auto-unlock: two chains would have changed their tech, so they are unlocked explicitly now.
+The HSS-G coil (with HSS-G wire and tungsten carbide foil) stays on `luv-machines`: the ZPM
+multiblock upgrades give the replaced HSS-G coils back, which the auto-unlock counts as a producer.
+The PBI chain stays on `advanced-smds`: the ZPM hull uses PBI sheets, and the auto-unlock visits
+techs alphabetically in prerequisite order, so `agricultural-science-pack` pulled the ZPM techs in
+first.
+
+### Open points from phase 2
+
+- Deviations from GT that later tiers can undo: the ZPM field generator uses 8 ZPM circuits
+  instead of 4 UV circuits (none before phase 3); the ZPM pump uses osmiridium plates instead of
+  the enderium pipe (no enderium line); the ZPM energy hatch uses UHPICs instead of NPICs, naquadah
+  cable instead of the ZPM superconductor (`palladium-naqindium-superconductive-wire`, a draft) and
+  cryogenic helium instead of coolant cells.
+- No ZPM assembly line yet: the ZPM components and the energy hatch are LuV assembly line
+  recipes (the assembly line runs at IV speed, so one component takes 60 s). The drafts that use
+  `zpm-assembly-line-recipes` (energy module, hot isostatic pressurization unit, draconic fusion
+  crafter) need one.
+- Still unused from `23-zpm-age-item.lua`: ZPM dynamo hatch, trinium coil (UV), crystal matrix,
+  energy module, black plutonium / bedrockium / neutronium microminers, hot isostatic
+  pressurization unit, wetware processors, fusion MK2, draconic fusion crafter.
+- Graphics: the ZPM basic machine sprites are generated from GT textures (tinted aqua); the
+  multiblock upgrades keep the graphics of the LuV version; item icons are recolored placeholders
+  (`tools/gen_icons.py`).
+- Upgrade multiblocks return the replaced parts. In phase 3 the UV upgrades will return naquadah
+  coils, so check the auto-unlock of the naquadah coil again.
+
+### Suggested next step
+
+Phase 3 (UV): fusion reactor MK2 (the `mk2-fusion-reactor-recipes` plasmas stay hidden until
+then), the UV circuit (crystal processor mainframe or wetware), the UV components (naquadah alloy
+cable, UV energy hatch), UV machines with `fork_make_tier_machine(base, "zpm", "uv", ...)` and the
+UV science pack (`agricultural-science-pack`). Switch the ZPM field generator to UV circuits then.
