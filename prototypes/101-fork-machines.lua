@@ -227,12 +227,22 @@ end
 --------------------------------------------------------------------------------
 
 --- Zutat eine Tier-Stufe hochschieben (ev-motor -> iv-motor, hv-energy-hatch -> ev-energy-hatch, ...)
+--- Sonderfälle pro Ziel-Tier (Kabel und Heizspulen tragen kein Tier im Namen)
 local SPECIAL_SHIFT = {
-	["aluminium-cable"]     = "tungsten-cable",
-	["platinum-cable"]      = "tungsten-cable",
-	["cupronickel-coil-block"] = "kanthal-coil-block",
-	["kanthal-coil-block"]  = "nichrome-coil-block",
-	["nichrome-coil-block"] = "rtm-alloy-coil-block",
+	iv = {
+		["aluminium-cable"]     = "tungsten-cable",
+		["platinum-cable"]      = "tungsten-cable",
+		["cupronickel-coil-block"] = "kanthal-coil-block",
+		["kanthal-coil-block"]  = "nichrome-coil-block",
+		["nichrome-coil-block"] = "rtm-alloy-coil-block",
+	},
+	luv = {
+		["tungsten-cable"]      = "yttrium-barium-cuprate-cable",
+		["kanthal-coil-block"]  = "nichrome-coil-block",
+		["nichrome-coil-block"] = "rtm-alloy-coil-block",
+		["rtm-alloy-coil-block"] = "hssg-coil-block",
+		["luv-circuit"]         = "luv-circuit",   -- ZPM-Schaltkreise gibt es auf LuV noch nicht
+	},
 }
 local function item_exists(n)
 	for t, _ in pairs(defines.prototypes.item) do
@@ -240,8 +250,9 @@ local function item_exists(n)
 	end
 	return false
 end
-local function shift_name(n)
-	if SPECIAL_SHIFT[n] and item_exists(SPECIAL_SHIFT[n]) then return SPECIAL_SHIFT[n] end
+local function shift_name(n, to_tier)
+	local special = SPECIAL_SHIFT[to_tier] or {}
+	if special[n] and item_exists(special[n]) then return special[n] end
 	local t, rest = n:match("^(%a+)%-(.+)$")
 	if t and TIER_INDEX[t] and TIERS[TIER_INDEX[t] + 1] then
 		local shifted = TIERS[TIER_INDEX[t] + 1] .. "-" .. rest
@@ -249,11 +260,11 @@ local function shift_name(n)
 	end
 	return n
 end
-local function shift_list(list)
+local function shift_list(list, to_tier)
 	local out = {}
 	for _, i in pairs(list or {}) do
 		local c = table.deepcopy(i)
-		if c.type ~= "fluid" then c.name = shift_name(c.name) end
+		if c.type ~= "fluid" then c.name = shift_name(c.name, to_tier) end
 		table.insert(out, c)
 	end
 	return out
@@ -273,62 +284,63 @@ IV_UPGRADE_MACHINES = {
 	"multismelter", "pyrolyse-oven", "greenhouse", "drilling-rig", "alloy-blast-smelter",
 }
 
-local iv_machine_recipes = {}
-
-local function make_iv_machine(base, sprite)
-	local ev_name, iv_name = "ev-" .. base, "iv-" .. base
-	local ev = data.raw["assembling-machine"][ev_name]
-	if not ev then log("FORK-MACHINE: keine EV-Maschine " .. ev_name) return end
-	local categories = table.deepcopy(ev.crafting_categories)
+--- Maschine eine Tier-Stufe höher anlegen (Entity, Item, Rezept). Global, damit 110-fork-luv.lua sie nutzt.
+function fork_make_tier_machine(base, from_tier, to_tier, sprite_frames, unlock_tech)
+	local src_name, new_name = from_tier .. "-" .. base, to_tier .. "-" .. base
+	local src = data.raw["assembling-machine"][src_name]
+	if not src then log("FORK-MACHINE: keine Quell-Maschine " .. src_name) return end
+	local categories = table.deepcopy(src.crafting_categories)
 	local extra = {}
 	for _, c in pairs(categories) do
 		local ct, rest = c:match("^(%a+)%-(.+)$")
-		if ct and TIER_INDEX[ct] then add_unique(extra, tier_categories(rest, "iv")) end
+		if ct and TIER_INDEX[ct] then add_unique(extra, tier_categories(rest, to_tier)) end
 	end
 	categories = add_unique(categories, extra)
 
+	local icon = sprite_frames and ("__Gregtorio__/graphics/icons/fork/" .. new_name .. ".png") or nil
 	clone_machine{
-		name = iv_name, source = ev_name, categories = categories,
-		crafting_speed = ev.crafting_speed * 2,
-		energy_usage = scale_energy(ev.energy_usage, 2),
-		sprite = sprite and { iv_name, sprite } or nil,
-		icon = sprite and ("__Gregtorio__/graphics/icons/fork/" .. iv_name .. ".png") or nil,
+		name = new_name, source = src_name, categories = categories,
+		crafting_speed = src.crafting_speed * 2,
+		energy_usage = scale_energy(src.energy_usage, 2),
+		sprite = sprite_frames and { new_name, sprite_frames } or nil,
+		icon = icon,
 	}
 
 	--- Item
-	local ev_item = data.raw.item[ev_name]
-	local item = table.deepcopy(ev_item)
-	item.name = iv_name
-	item.place_result = iv_name
-	item.order = (ev_item.order or "") .. "-iv"
-	if item.subgroup == "ev-age-production-machine" then item.subgroup = "iv-age-production-machine" end
-	if item.subgroup == "subgroup-ev-age-multiblocks" then item.subgroup = "subgroup-iv-age-multiblocks" end
-	if sprite then item.icon = "__Gregtorio__/graphics/icons/fork/" .. iv_name .. ".png"; item.icon_size = 32 end
+	local src_item = data.raw.item[src_name]
+	local item = table.deepcopy(src_item)
+	item.name = new_name
+	item.place_result = new_name
+	item.order = (src_item.order or "") .. "-" .. to_tier
+	local sg = item.subgroup or ""
+	if sg:match("age%-production%-machine$") then item.subgroup = to_tier .. "-age-production-machine" end
+	if sg:match("age%-multiblocks$") then item.subgroup = "subgroup-" .. to_tier .. "-age-multiblocks" end
+	if icon then item.icon = icon; item.icon_size = 32 end
 	data:extend({ item })
 
 	--- Rezept
-	local ev_recipe = data.raw.recipe[ev_name]
-	local r = table.deepcopy(ev_recipe)
-	r.name = iv_name
+	local src_recipe = data.raw.recipe[src_name]
+	local r = table.deepcopy(src_recipe)
+	r.name = new_name
 	r.enabled = false
-	r.ingredients = shift_list(ev_recipe.ingredients)
-	r.results = shift_list(ev_recipe.results)
-	for _, res in pairs(r.results) do if res.name == ev_name then res.name = iv_name end end
-	if r.main_product then r.main_product = iv_name end
-	--- Upgrade-Multiblocks: die EV-Version geht rein, nicht eine IV-Version von sich selbst
-	for _, ing in pairs(r.ingredients) do if ing.name == iv_name then ing.name = ev_name end end
+	r.ingredients = shift_list(src_recipe.ingredients, to_tier)
+	r.results = shift_list(src_recipe.results, to_tier)
+	for _, res in pairs(r.results) do if res.name == src_name then res.name = new_name end end
+	if r.main_product then r.main_product = new_name end
+	--- Upgrade-Multiblocks: die Vorgänger-Version geht rein, nicht die neue Version von sich selbst
+	for _, ing in pairs(r.ingredients) do if ing.name == new_name then ing.name = src_name end end
 	data:extend({ r })
-	table.insert(iv_machine_recipes, iv_name)
+	if unlock_tech then fork_add_unlock(unlock_tech, new_name) end
 end
 
-data:extend({
-	{ type = "item-subgroup", name = "iv-age-production-machine", group = "production", order = "i-z" },
-})
+for _, t in pairs({ "iv", "luv" }) do
+	if not data.raw["item-subgroup"][t .. "-age-production-machine"] then
+		data:extend({ { type = "item-subgroup", name = t .. "-age-production-machine", group = "production", order = "i-z-" .. t } })
+	end
+end
 
-for _, base in pairs(IV_BASIC_MACHINES) do make_iv_machine(base, 6) end
-for _, base in pairs(IV_UPGRADE_MACHINES) do make_iv_machine(base, nil) end
-
-for _, r in pairs(iv_machine_recipes) do fork_add_unlock("iv-machines", r) end
+for _, base in pairs(IV_BASIC_MACHINES) do fork_make_tier_machine(base, "ev", "iv", 6, "iv-machines") end
+for _, base in pairs(IV_UPGRADE_MACHINES) do fork_make_tier_machine(base, "ev", "iv", nil, "iv-machines") end
 
 
 

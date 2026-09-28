@@ -20,6 +20,98 @@ local function results_of(r)
 	return out
 end
 
+--------------------------------------------------------------------------------
+--- DRAFT-GUARD
+--- Die höheren Tiers (LuV+) enthalten viele Entwurfs-Rezepte, die Items/Fluids/Kategorien
+--- referenzieren, die es (noch) nicht gibt. Solche Rezepte würden das Laden abbrechen.
+--- Sie werden hier entfernt und ins Log geschrieben ("FORK-DRAFT"). Sobald die fehlenden
+--- Teile existieren, sind die Rezepte automatisch wieder aktiv.
+--------------------------------------------------------------------------------
+
+local function item_exists(n)
+	for t, _ in pairs(defines.prototypes.item) do
+		if data.raw[t] and data.raw[t][n] then return true end
+	end
+	return false
+end
+
+local function recipe_problem(r)
+	if not data.raw["recipe-category"][r.category or "crafting"] then return "Kategorie " .. tostring(r.category) end
+	for _, key in pairs({ "ingredients", "results" }) do
+		for _, i in pairs(r[key] or {}) do
+			if i.type == "fluid" then
+				if not data.raw.fluid[i.name] then return "Fluid " .. tostring(i.name) end
+			elseif not item_exists(i.name) then
+				return "Item " .. tostring(i.name)
+			end
+		end
+	end
+	if r.main_product and r.main_product ~= "" then
+		local ok = false
+		for _, i in pairs(r.results or {}) do if i.name == r.main_product then ok = true end end
+		if not ok then return "main_product " .. r.main_product end
+	end
+	return nil
+end
+
+local removed = {}
+local changed = true
+while changed do
+	changed = false
+	for name, r in pairs(data.raw.recipe) do
+		local problem = recipe_problem(r)
+		if problem then
+			log("FORK-DRAFT: Rezept " .. name .. " deaktiviert (fehlt: " .. problem .. ")")
+			data.raw.recipe[name] = nil
+			removed[name] = true
+			changed = true
+		end
+	end
+end
+for _, tech in pairs(data.raw.technology) do
+	if tech.effects then
+		local keep = {}
+		for _, e in pairs(tech.effects) do
+			if not (e.type == "unlock-recipe" and (removed[e.recipe] or not data.raw.recipe[e.recipe])) then
+				keep[#keep + 1] = e
+			end
+		end
+		tech.effects = keep
+	end
+	if tech.prerequisites then
+		local keep = {}
+		for _, p in pairs(tech.prerequisites) do
+			if data.raw.technology[p] then keep[#keep + 1] = p else log("FORK-DRAFT: Tech " .. tech.name .. " Voraussetzung fehlt: " .. p) end
+		end
+		tech.prerequisites = keep
+	end
+end
+--- fehlende Subgroups anlegen statt abzustürzen
+local function ensure_subgroup(sg)
+	if sg and not data.raw["item-subgroup"][sg] then
+		data:extend({ { type = "item-subgroup", name = sg, group = "processing-machine-recipes", order = "zz" } })
+		log("FORK-DRAFT: Subgroup angelegt: " .. sg)
+	end
+end
+for _, r in pairs(data.raw.recipe) do ensure_subgroup(r.subgroup) end
+for t, _ in pairs(defines.prototypes.item) do
+	for _, it in pairs(data.raw[t] or {}) do
+		ensure_subgroup(it.subgroup)
+		if it.place_result then
+			local found = false
+			for et, _ in pairs(defines.prototypes.entity) do
+				if data.raw[et] and data.raw[et][it.place_result] then found = true end
+			end
+			if not found then
+				log("FORK-DRAFT: Item " .. it.name .. " place_result fehlt: " .. it.place_result)
+				it.place_result = nil
+			end
+		end
+	end
+end
+
+
+
 --- Kategorien, für die es überhaupt eine Maschine gibt
 local craftable_category = {}
 for _, t in pairs({ "assembling-machine", "furnace", "character" }) do
@@ -80,7 +172,16 @@ local function pull(tech, recipe_name, depth)
 				end
 				if ok then usable[#usable + 1] = p end
 			end
-			candidates = usable
+			--- bevorzugt Rezepte, deren Zutaten schon herstellbar sind
+			local ready = {}
+			for _, p in pairs(usable) do
+				local ok = true
+				for _, i2 in pairs(data.raw.recipe[p].ingredients or {}) do
+					if not has_available_producer(i2.name) and i2.name ~= "water" and i2.name ~= "steam" then ok = false end
+				end
+				if ok then ready[#ready + 1] = p end
+			end
+			candidates = (#ready > 0) and ready or usable
 			for _, p in pairs(candidates) do
 				if not unlocked_anywhere[p] then
 					table.insert(tech.effects, { type = "unlock-recipe", recipe = p })

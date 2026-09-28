@@ -36,7 +36,7 @@ BASIC_GT = {
 }
 
 # Tier-Farbe, mit der GT die (grauen) Maschinengehäuse einfärbt (IV = Tungstensteel)
-TIER_TINT = {"IV": (100, 100, 160), "LuV": (255, 255, 255)}
+TIER_TINT = {"IV": (100, 100, 160), "LuV": (255, 205, 225)}
 
 # Casing-Item -> flache GT-Textur ("mod:pfad" unter textures/blocks). Ohne Eintrag wird das Item-Icon benutzt.
 CASING_TEXTURE = {
@@ -56,6 +56,8 @@ CASING_TEXTURE = {
     "laser-containment-casing": "gregtech:iconsets/MACHINE_CASING_LASER",
     "inconel-reinforced-casing": "miscutils:TileEntities/MACHINE_CASING_STABLE_HASTELLOY_X",
     "multi-use-casing": "miscutils:TileEntities/MACHINE_CASING_STABLE_STELLITE",
+    "assembler-machine-casing": "gregtech:iconsets/MACHINE_CASING_ASSEMBLER",
+    "grate-machine-casing": "gregtech:iconsets/MACHINE_CASING_GRATE",
 }
 # pro Multiblock abweichendes Casing (z. B. Zentrifuge)
 CASING_OVERRIDE = {
@@ -66,6 +68,8 @@ CASING_OVERRIDE = {
 MULTIBLOCKS = {
     "ev-alloy-blast-smelter": ((3, 4), "high-temperature-smelting-casing", None,
                                "miscutils:iconsets/controllerFaces/alloyBlastSmelter", "nichrome-coil-block"),
+    "luv-assembly-line": ((9, 3), "assembler-machine-casing", None,
+                          "gregtech:iconsets/OVERLAY_FRONT_ASSEMBLY_LINE", "grate-machine-casing"),
     "ev-extreme-entity-crusher": ((3, 3), "solid-steel-machine-casing", "extreme-entity-crusher",
                                   "gregtech:iconsets/OVERLAY_FRONT_DISASSEMBLER", None),
 }
@@ -227,8 +231,9 @@ def main():
     OUT_ENTITY.mkdir(parents=True, exist_ok=True)
     OUT_ICON.mkdir(parents=True, exist_ok=True)
 
-    for base in BASIC_GT:
-        basic_machine(a.gt, base)
+    for tier in ("IV", "LuV"):
+        for base in BASIC_GT:
+            basic_machine(a.gt, base, tier)
     for name, spec in MULTIBLOCKS.items():
         multiblock(a.gt, name, *spec)
     for name, casing in iv_multiblock_casings().items():
