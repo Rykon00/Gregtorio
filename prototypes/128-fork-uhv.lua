@@ -18,6 +18,7 @@
 --------------------------------------------------------------------------------
 
 local SPRITE_PATH = "__Gregtorio__/graphics/entity/fork/"
+local FLUID_ICON_PATH = "__Gregtorio__/graphics/fluids/"
 
 local function recipe_exists(name)
 	if data.raw.recipe[name] then return true end
@@ -64,6 +65,27 @@ local function move_unlock(from_tech, recipe)
 		if not (e.type == "unlock-recipe" and e.recipe == recipe) then keep[#keep + 1] = e end
 	end
 	t.effects = keep
+end
+
+--- Fluid like the ones in 06-fluids-module.lua (whose helper is local), colors given directly
+local function fork_fluid(name, icon, color)
+	if data.raw.fluid[name] then return end
+	local c = { r = color[1], g = color[2], b = color[3] }
+	data:extend({ {
+		type = "fluid",
+		name = name,
+		default_temperature = 1000,
+		max_temperature = 1000,
+		heat_capacity = "0.1kJ",
+		base_color = c,
+		flow_color = c,
+		icon = FLUID_ICON_PATH .. icon .. ".png",
+		icon_size = 32,
+		order = "a[fluid]-z[" .. name .. "]",
+		pressure_to_speed_ratio = 0.4,
+		flow_to_energy_ratio = 0.59,
+		auto_barrel = false,
+	} })
 end
 
 --- Copy of an existing machine as a multiblock with its own name, categories and sprites
@@ -139,10 +161,10 @@ create_item{
 }
 
 --- The draft made 16 mB of tritanium per craft in 16 s (1 mB/s): a single UHV motor would have
---- taken 9 minutes of a MK2 reactor. Like americium: 1 ingot of melt per 4 s, 3 titanium + 2 duranium
---- (the ratio of the draft).
+--- taken 9 minutes of a MK2 reactor. Now 1 ingot of melt per 3 s, 3 titanium + 2 duranium (the ratio
+--- of the draft; americium takes 5 s).
 redo("molten-tritanium", {
-	energy_required = 4 * ZPM_SPEED,
+	energy_required = 3 * ZPM_SPEED,
 	ingredients = {
 		{ type = "fluid", name = "molten-titanium", amount = 43.2 },
 		{ type = "fluid", name = "molten-duranium", amount = 28.8 },
@@ -211,7 +233,7 @@ create_item{
 	category = "iv-chemical-reactor-recipes",
 	energy_required = 30 * IV_SPEED,
 	ingredients = {
-		{ type = "item", name = "raw-crystal-chip-part", amount = 4 },
+		{ type = "item", name = "raw-crystal-chip-part", amount = 2 },
 		{ type = "item", name = "osmiridium-dust", amount = 2 },
 		{ type = "fluid", name = "growth-medium", amount = 1000 },
 	},
@@ -472,7 +494,8 @@ create_item{
 ---   * superdense americium plate (skipped when americium was made): 64 plates in the UV compressor
 ---   * the advanced fusion coil (the draft is the MK4 one with UU matter and UEV circuits): UHV
 ---     emitter and sensor, tritanium and neutronium melt instead of cinobite, octiron, astral
----     titanium and UU matter. The reactor takes 16 of them (GT: 32), see the PR.
+---     titanium and UU matter. The reactor takes 8 of them (GT: 32): each needs a UHV emitter and sensor (about 110 tritanium
+---     ingots), see the PR.
 --- GT's neutronium (americium + naquadria) is a MK3 recipe; here MK3 is the efficient one and the
 --- MK2 keeps a slow one (see below), otherwise the UV pump needs neutronium and the MK3 needs UV
 --- pumps.
@@ -526,7 +549,7 @@ do
 		energy_required = 300 * UV_SPEED,
 		ingredients = {
 			{ type = "item", name = "fusion-reactor-mk3-controller", amount = 1 },
-			{ type = "item", name = "advanced-fusion-coil", amount = 16 },
+			{ type = "item", name = "advanced-fusion-coil", amount = 8 },
 			{ type = "item", name = "fusion-machine-casing-mk2", amount = 79 },
 			{ type = "item", name = "uv-energy-hatch", amount = 16 },
 			{ type = "item", name = "uv-machine-hull", amount = 32 },
@@ -566,7 +589,8 @@ create_recipe{
 	main_product = "molten-neutronium",
 }
 
---- Iron plasma (draft in 21-luv-age-item.lua; the fluid exists, the category was missing)
+--- Iron plasma (draft in 21-luv-age-item.lua; neither the fluid nor the category existed)
+fork_fluid("iron-plasma", "spackled-orange-fluid", { 0.85, 0.50, 0.40 })
 redo("iron-plasma", { category = "mk3-fusion-reactor-recipes" })
 
 
@@ -602,7 +626,7 @@ create_item{
 create_item{
 	name = "uhv-energy-hatch",
 	category = UHV_AL,
-	energy_required = 50 * ZPM_SPEED,
+	energy_required = 40 * ZPM_SPEED,
 	subgroup = "subgroup-zpm-assembly-line-recipes",
 	ingredients = {
 		{ type = "item", name = "uhv-machine-hull", amount = 1 },
