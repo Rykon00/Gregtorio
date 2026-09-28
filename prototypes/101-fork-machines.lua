@@ -249,6 +249,12 @@ local SPECIAL_SHIFT = {
 		["rtm-alloy-coil-block"] = "hssg-coil-block",
 		["hssg-coil-block"]     = "naquadah-coil-block",
 	},
+	--- UV machines (127-fork-uv.lua): naquadah alloy cable, trinium coils
+	uv = {
+		["naquadah-cable"]      = "naquadah-alloy-cable",
+		["hssg-coil-block"]     = "naquadah-coil-block",
+		["naquadah-coil-block"] = "trinium-coil-block",
+	},
 }
 local function item_exists(n)
 	for t, _ in pairs(defines.prototypes.item) do
