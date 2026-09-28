@@ -12,8 +12,25 @@ Das Repo-Root ist der Mod-Inhalt (`info.json`, `data.lua`, `prototypes/`, `graph
 |---|---|
 | `prototypes/NN-*.lua` | Items, Rezepte und Maschinen pro Tier (09 Steam … 31 UIV), `98-technology.lua` für den Tech-Tree |
 | `graphics/` | Icons und Entity-Sprites (meist Texturen aus GregTech 5) |
+| `prototypes/100-fork-fixes.lua` | fehlende Freischaltungen und Rezepte, Henne-Ei-Fixes |
+| `prototypes/101-fork-machines.lua` | Tier-Kategorien, EV-/IV-Maschinen und -Multiblocks, `fork_make_tier_machine` |
+| `prototypes/110-fork-luv.lua` | LuV: Materialien, Assembly Line, LuV-Maschinen, Science Pack, Techs |
+| `prototypes/199-fork-finalize.lua` | Draft-Guard (blendet kaputte Entwurfsrezepte aus) und Auto-Unlock von Vorprodukten |
+| `locale/en/fork.cfg` | automatisch erzeugte Namen für Einträge ohne Übersetzung |
 | `tools/build.py` | baut `dist/Gregtorio_<version>.zip` und installiert es optional |
 | `tools/check_syntax.py` | Lua-Syntax-Check (`--loaded` = nur Dateien, die `data.lua` wirklich lädt) |
+| `tools/gen_sprites.py` | Maschinen-Sprites/Icons aus GT5-Unofficial-Texturen (`--gt <Pfad zum Checkout>`) |
+| `tools/gen_icons.py` | Platzhalter-Icons (umgefärbte Nachbar-Icons) für Items ohne Icon |
+| `tools/gen_locale.py` | ergänzt fehlende englische Namen in `locale/en/fork.cfg` |
+
+## Stand
+
+| Tier | Zustand |
+|---|---|
+| Steam – EV | spielbar (Upstream), Lücken geschlossen |
+| IV | spielbar (Fork 0.2.0) |
+| LuV | spielbar (Fork 0.2.0); Crystal-Prozessoren, Bacterial Vat, Fusion noch Entwurf |
+| ZPM+ | Entwurf; kaputte Rezepte werden beim Laden ausgeblendet (`FORK-DRAFT` im Log) |
 
 ## Workflow
 
