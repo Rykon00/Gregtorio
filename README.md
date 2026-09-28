@@ -16,6 +16,7 @@ The repository root is the mod itself (`info.json`, `data.lua`, `prototypes/`, `
 | `prototypes/102-fork-resources.lua` | disables the vanilla resource patches (no spawning, not minable) |
 | `prototypes/110-fork-luv.lua` | LuV: materials, assembly line, LuV machines, science pack, techs |
 | `prototypes/120-fork-ae2.lua` | AE2 / ME network on top of the logistic network: ME Drives with storage cells, ME Interface, ME Terminal, ME Controller, techs |
+| `prototypes/190-fork-manual-labor.lua` | "manual labor" burner usage: fist instead of the gas pump in the fuel slot, "No manual labor" status |
 | `scripts/fork-me-terminal.lua` | runtime part of the ME network: terminal GUI (event driven), ME Interface default |
 | `prototypes/199-fork-finalize.lua` | draft guard (hides broken draft recipes) and auto-unlock of intermediates |
 | `locale/en/fork.cfg` | generated names for entries without a translation |
@@ -27,6 +28,7 @@ The repository root is the mod itself (`info.json`, `data.lua`, `prototypes/`, `
 | `tools/gen_icons.py` | placeholder icons (recolored neighbor icons) for items without an icon |
 | `tools/gen_ae2_sprites.py` | ME network sprites, icons and tech icons (GT5-Unofficial casings + Pillow) |
 | `tools/gen_tech_icons.py` | technology icons instead of the "NYI" placeholder (from the main unlocked item) |
+| `tools/gen_ui_icons.py` | GUI icons derived from item icons (empty manual-labor slot, red "no manual labor" alert) |
 | `tools/gen_locale.py` | adds missing English names to `locale/en/fork.cfg` |
 
 ## Status
