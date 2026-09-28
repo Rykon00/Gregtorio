@@ -3,6 +3,8 @@
 local fork_me = require("scripts.fork-me-terminal")
 --- Fork: molds stay in the machine's mold slot (see prototypes/150-fork-molds.lua)
 local fork_molds = require("scripts.fork-molds")
+--- Fork: researching the first level of `victory` wins the game (see prototypes/135-fork-endgame.lua)
+local fork_victory = require("scripts.fork-victory")
 
 script.on_event(defines.events.on_built_entity, function(event)
   if event.entity.name == "trash-can" then
@@ -69,6 +71,7 @@ local tech_name = {
 }
 
 script.on_event(defines.events.on_research_finished, function(event)
+  fork_victory.on_research_finished(event)
   local name = tech_name[event.research.name]
   if not name then return end
 

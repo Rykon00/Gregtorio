@@ -13,8 +13,7 @@
 --- 31-uiv-age-item.lua is not loaded by data.lua (it is not valid Lua and mostly holds the raw
 --- tesseract chain, the dimensionally transcendent plasma forge and the godforge), so the UIV parts
 --- of it are rebuilt here after the GT5-Unofficial recipes.
---- Fusion reactor MK5 is not part of it: it needs the advanced fusion coil II, which needs the energy
---- module, the compact fusion coil and rhugnor (see the roadmap).
+--- Fusion reactor MK5 (advanced fusion coil II, energy module, rhugnor) is built in 133-fork-umv.lua.
 --------------------------------------------------------------------------------
 
 local FLUID_ICON_PATH = "__Gregtorio__/graphics/fluids/"
@@ -643,9 +642,8 @@ tech{
 --- 8) UMV AND UXV SCIENCE PACK PLACEHOLDERS
 --- Upstream has recipes that make the UMV and UXV science packs from a stone (11-lv-age-item.lua and
 --- the UXV assembler category). They were unreachable while the UIV pack had no recipe; with it the
---- whole endgame would be researchable for free. They are removed until phase 5b builds the tiers:
---- the UMV science tech stays researchable (like every pack tech before its tier existed) and
---- the tree stops there. The draft guard cleans the tech effects.
+--- whole endgame would be researchable for free, so they are removed. 133-fork-umv.lua and
+--- 134-fork-uxv.lua (phase 5b) define the real recipes.
 --------------------------------------------------------------------------------
 
 data.raw.recipe["umv-science-pack"] = nil
