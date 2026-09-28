@@ -17,6 +17,8 @@ The repository root is the mod itself (`info.json`, `data.lua`, `prototypes/`, `
 | `prototypes/110-fork-luv.lua` | LuV: materials, assembly line, LuV machines, science pack, techs |
 | `prototypes/120-fork-ae2.lua` | AE2 / ME network on top of the logistic network: ME Drives with storage cells, ME Interface, ME Terminal, ME Controller, techs |
 | `prototypes/125-fork-luv-endgame.lua` | LuV endgame: naquadah ore line and neutron activator, bacterial vat and mutagen, circuit assembly line and crystal processors, fusion reactor MK1 and the first plasmas |
+| `prototypes/130-fork-molds.lua` | molds stay in the machine: the mold is a module in a mold-only slot instead of an ingredient that is pushed to the output |
+| `scripts/fork-molds.lua` | stops machines with a mold recipe and no mold ("Missing mold"); returns the mold once in saves from before the change |
 | `prototypes/190-fork-manual-labor.lua` | "manual labor" burner usage: fist instead of the gas pump in the fuel slot, "No manual labor" status |
 | `scripts/fork-me-terminal.lua` | runtime part of the ME network: terminal GUI (event driven), ME Interface default |
 | `prototypes/199-fork-finalize.lua` | draft guard (hides broken draft recipes) and auto-unlock of intermediates |

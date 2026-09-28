@@ -1,0 +1,108 @@
+--------------------------------------------------------------------------------
+--- MOLDS STAY IN THE MACHINE
+--- Upstream recipes list the mold as ingredient AND result, so every craft pushes the
+--- mold into the output slot. Here the mold becomes a module (category "mold") that sits
+--- permanently in the machine's module slot, like a real mold:
+---   * recipes that return their mold lose it from ingredients and results; their names
+---     are passed to the runtime script through the mod-data "fork-mold-recipes"
+---   * every machine that can craft such a recipe gets one module slot for molds only
+---   * scripts/fork-molds.lua stops those machines with the status "Missing mold" while
+---     a mold recipe is set and no mold is inserted
+--- Blueprints keep the mold as a module request, so construction robots deliver it.
+--------------------------------------------------------------------------------
+
+local MOLDS = { "mold" }
+
+data:extend({ { type = "module-category", name = "mold" } })
+
+local is_mold = {}
+for _, name in pairs(MOLDS) do
+	local item = data.raw.item[name]
+	if item then
+		data.raw.item[name] = nil
+		item.type = "module"
+		item.category = "mold"
+		item.tier = 1
+		item.effect = {}
+		item.localised_description = { "item-description.fork-mold" }
+		data:extend({ item })
+		is_mold[name] = true
+	elseif data.raw.module[name] then
+		is_mold[name] = true
+	end
+end
+
+--- Recipes: remove a mold that is both consumed and returned
+local mold_recipes, mold_categories = {}, {}
+local function count(list, name)
+	local n = 0
+	for _, i in pairs(list or {}) do
+		if i.name == name and i.type ~= "fluid" then n = n + (i.amount or 0) end
+	end
+	return n
+end
+local function without(list, name)
+	local out = {}
+	for _, i in pairs(list or {}) do
+		if not (i.name == name and i.type ~= "fluid") then out[#out + 1] = i end
+	end
+	return out
+end
+for rname, r in pairs(data.raw.recipe) do
+	for mold, _ in pairs(is_mold) do
+		local used = count(r.ingredients, mold)
+		if used > 0 and used == count(r.results, mold) then
+			r.ingredients = without(r.ingredients, mold)
+			r.results = without(r.results, mold)
+			if r.main_product == mold then r.main_product = nil end
+			r.localised_description = { "recipe-description.fork-needs-mold", { "item-name." .. mold } }
+			mold_recipes[rname] = mold
+			mold_categories[r.category or "crafting"] = true
+		end
+	end
+end
+
+data:extend({ { type = "mod-data", name = "fork-mold-recipes", data = mold_recipes } })
+
+--- Machines: one mold slot for everything that can craft a mold recipe
+local MODULE_TYPES = { "assembling-machine", "furnace", "rocket-silo", "lab", "mining-drill", "beacon" }
+for _, t in pairs({ "assembling-machine", "furnace" }) do
+	for _, e in pairs(data.raw[t] or {}) do
+		local needs = false
+		for _, c in pairs(e.crafting_categories or {}) do
+			if mold_categories[c] then needs = true end
+		end
+		if needs then
+			if (e.module_slots or 0) == 0 then
+				e.module_slots = 1
+				e.allowed_module_categories = { "mold" }
+				--- the engine rejects module slots without any allowed effect; molds have no
+				--- effect, and beacons must not start boosting these machines
+				if not e.allowed_effects or #e.allowed_effects == 0 then
+					e.allowed_effects = { "consumption" }
+					e.effect_receiver = e.effect_receiver or {}
+					e.effect_receiver.uses_beacon_effects = false
+				end
+			elseif e.allowed_module_categories then
+				table.insert(e.allowed_module_categories, "mold")
+			else
+				local all = {}
+				for name, _ in pairs(data.raw["module-category"]) do all[#all + 1] = name end
+				e.allowed_module_categories = all
+			end
+		end
+	end
+end
+
+--- Everything else that takes modules must not accept molds (nil means "all categories")
+local other_categories = {}
+for name, _ in pairs(data.raw["module-category"]) do
+	if name ~= "mold" then other_categories[#other_categories + 1] = name end
+end
+for _, t in pairs(MODULE_TYPES) do
+	for _, e in pairs(data.raw[t] or {}) do
+		if not e.allowed_module_categories and ((e.module_slots or 0) > 0 or t == "beacon") then
+			e.allowed_module_categories = table.deepcopy(other_categories)
+		end
+	end
+end
