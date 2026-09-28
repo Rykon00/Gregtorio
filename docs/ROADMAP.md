@@ -16,8 +16,8 @@ UEV = cryogenic, then promethium / UMV / UXV / max.
 | 1 | Finish LuV: naquadah ore line, bacterial vat, mutagen, crystal processors, circuit assembly line, fusion reactor MK1 and the first plasmas | **done** (`prototypes/125-fork-luv-endgame.lua`) |
 | 2 | ZPM: ZPM science pack, ZPM components and machines (europium, naquadah alloy, osmiridium), ZPM energy hatch | **done** (`prototypes/126-fork-zpm.lua`) |
 | 3 | UV: UV circuit (crystal processor mainframe), ZPM assembly line, UV components, fusion reactor MK2 and its plasmas, UV science pack, UV energy hatch and machines | **done** (`prototypes/127-fork-uv.lua`) |
-| 4 | UHV: fusion reactor MK3, wetware processors (UHV circuit), UHV components | open, next |
-| 5 | UEV .. UXV and the endgame (stargate, victory) | open |
+| 4 | UHV: wetware processors (UHV circuit), UHV components, fusion reactor MK3, UHV science pack, energy hatch and machines | **done** (`prototypes/128-fork-uhv.lua`) |
+| 5 | UEV .. UXV and the endgame (stargate, victory) | open, next |
 | side | Water purification line (grades 1-8; the draft in `21-luv-age-item.lua` is commented out) | open |
 | side | AE2 autocrafting (patterns, molecular assembler on top of the ME network from `120-fork-ae2.lua`) | open |
 
@@ -221,10 +221,142 @@ Existing saves that already researched `zpm-components` lose the ZPM field gener
 - Graphics: the UV basic machine sprites are generated from GT textures (tinted green), the MK2 reactor uses the
   GT fusion casing MK2 texture, item and technology icons are recolored placeholders (`tools/gen_icons.py`).
 
-### Suggested next step
+### Suggested next step (done in phase 4)
 
 Phase 4 (UHV): fusion reactor MK3 (`fusion-machine-casing-mk2` is ready; move the neutronium recipe there), the
 wetware line for the UHV circuit (bacterial vat and mutagen from phase 1: wetware circuit board, neuro processing
 unit, wetware processor mainframe), UHV components, UHV energy hatch and machines with
 `fork_make_tier_machine(base, "uv", "uhv", ...)`, and the UHV science pack (`electromagnetic-science-pack`). Then
 switch the UV field generator to UHV circuits.
+
+## Phase 4: UHV (done)
+
+Numbers: researchable technologies 264 -> 274 of 313 -> 322 (the 9 new ones, plus `cryogenic-science-pack`, the
+UEV science tech, which is now reachable but whose pack has no recipe yet), draft recipes hidden by the draft
+guard 46 -> 41 (5 became real recipes), auto-unlocked recipes 53 -> 53 (nothing moved, see below), machines placed
+by `devcheck runtime` 325 -> 362. Progression now stops at the UEV science pack (`cryogenic-science-pack`).
+
+`27-uhv-age-item.lua` is still not loaded by `data.lua` (not valid Lua, mostly later tiers); the UHV parts are
+rebuilt in `128-fork-uhv.lua` after the GT5-Unofficial recipes.
+
+New technologies:
+
+| Technology | Science | Unlocks |
+|---|---|---|
+| `uhv-materials` | UV | tritanium (ingot, plate, rod, long rod, frame, gear, large gear, ring, round, screw, rotor, wire, fine wire, foil) and the tritanium cable |
+| `wetware-processors` | UV | stem cells, wetware printed circuit board, neuro processing unit, wetware processor, assembly and supercomputer |
+| `wetware-processor-mainframes` | UV | wetware processor mainframe (the UHV circuit) |
+| `uhv-components` | UV | UHV motor, pump, conveyor module, piston, robot arm, emitter, sensor, field generator (all from the ZPM assembly line), UHV casing and hull, superdense americium plate |
+| `uhv-machines` | UHV | the 23 basic machines one tier up (`uhv-macerator`, `uhv-assembling-machine`, ...) |
+| `uhv-energy-hatches` | UHV | triamerotronium (dust, blast furnace, wire, superconductive wire), the alternative UHV superconducting coil block, tritanium coil, UHV voltage coil, UHV energy hatch |
+| `uhv-multiblocks` | UHV | the 13 multiblock upgrades (EBF with tritanium coils, vacuum freezer, large chemical reactor, ...) |
+| `fusion-reactor-mk3` | UHV | fusion machine casing MK2, advanced fusion coil, fusion reactor MK3 controller and reactor |
+| `fusion-plasmas-mk3` | UHV | molten neutronium (the fast MK3 recipe), iron plasma |
+
+Changed technologies: `electromagnetic-science-pack` (the UHV science tech) unlocks `uhv-science-pack` and requires
+`uhv-components`; `cryogenic-science-pack` (UEV science) requires `uhv-multiblocks` and `fusion-plasmas-mk3`;
+`uv-materials` unlocks the slow neutronium recipe instead of the fast one.
+
+The UHV science pack (`uhv-science-pack`: UHV motor, 2 UHV circuits, 4 tritanium plates, 4 trinium coils, a UV
+field generator and molten tritanium -> 10 packs) is made in the UV assembling machine.
+
+Auto-unlock: `FORK-AUTOUNLOCK` is identical to phase 3 (no unlock lost its old tech). The UHV multiblock upgrades
+give the replaced ZPM energy hatches and trinium coils back, but both are unlocked explicitly by their own techs
+since phases 2 and 3.
+
+Choices and deviations from GT:
+
+- **Wetware line** (GT: LuV .. UHV, the mainframe is the UHV circuit). Follows the shape of the crystal line (circuit
+  assembly line, 16 circuits per craft, 2 of the previous stage per circuit): stem cells -> wetware board + neuro
+  processing unit -> wetware processor (also takes the crystal CPU) -> assembly -> supercomputer -> mainframe. GT breeds
+  stem cells from an unknown crystal (GalaxySpace): 2 raw crystal chip parts stand in for it, and the vat's growth
+  medium and bacterial sludge (the recipe returns the sludge) are used. Bio cells (UV, cosmic neutronium dust) are left
+  out. No complex SMDs (water purification line), no ytterbium wire (niobium-titanium), the mainframe uses the UV
+  superconductor wire. The wetware stages are separate items; the UV circuit is still the crystal mainframe. One UHV
+  circuit costs about one craft of stem cells (64 per craft: 2 chip parts, 2 osmiridium dust, 1000 growth medium).
+- **Tritanium instead of cosmic neutronium and bedrockium.** Neither can be made (no cosmic neutronium line, no
+  bedrockium microminer). The UHV motor, piston, robot arm, emitter, sensor and field generator use tritanium (the fusion
+  MK2 already makes its melt), and the cable is tritanium cable (GT: bedrockium). The tritanium recipe of the MK2 was
+  the draft's 16 mB in 16 s (one motor = 9 minutes of a reactor); it is 3 titanium + 2 duranium -> 1 ingot of melt in
+  3 s now, and the large tritanium gear is 4 ingots (the generic large gear would be 40). The cable is 1 wire per cable
+  like GT (the UV cable needed 4).
+- **UHV superconductor: triamerotronium.** GT: draconium 6, cosmic neutronium 7, tritanium 5, americium 6. Draconium and
+  cosmic neutronium do not exist: equal parts of tritanium, americium and neutronium. Cooled like the UV one (UHV pump,
+  neutronium melt, cryogenic helium). It is used by the UHV energy hatch; the UHV hull uses the UV superconductor wire
+  like the draft. This also activates the alternative `superconducting-coil-block-uhv`.
+- **Neutronium: MK3, with a bootstrap.** GT's neutronium (americium + naquadria) is a MK3 recipe; the MK3 recipe is
+  the one of GT here (1:1, 3 s per ingot in the reactor MK3). The MK3 is built from UV energy hatches and the UV pump
+  needs neutronium, so a MK3-only recipe would be a dead end. The MK2 keeps `molten-neutronium-bootstrap`: 2 melt of
+  americium and naquadria for 1 of neutronium, 12 s (before: 1:1, 12 s). Saves that researched `uv-materials` get the
+  bootstrap recipe from it, and `molten-neutronium` (now the MK3 recipe) moves to `fusion-plasmas-mk3`.
+- **Fusion reactor MK3.** UV tier as in GT (16 UV energy hatches, 32 UV hulls, 79 fusion casings MK2), UHV circuits in
+  the controller, UHPIC wafers instead of QPIC wafers (like MK1 and MK2). The advanced fusion coil (draft: the MK4 coil with
+  UU matter and UEV circuits) has a UHV emitter and sensor, tritanium and neutronium melt instead of cinobite, octiron,
+  astral titanium and UU matter. The reactor takes 8 of them (GT: 32). Superdense americium plate: 64 plates in the UV
+  compressor. Iron plasma (the only MK3 plasma draft) is active; its fluid did not exist and was added.
+- **UHV components** follow GT with these changes: fine wire and foil counts cut (GT: 512 fine neutronium wires, 256
+  fluxed electrum foils; here motor 48 fine wires, emitter and sensor 32 foils, field generator 64 fine wires), gravistar
+  counts as in the UV parts, the field generator needs 8 UHV circuits instead of 4 UEV circuits (none before phase 5).
+  The recipes are in the ZPM assembly line (no new line needed) and take 30 GT seconds: 1 minute per component.
+- **UHV voltage coil** uses fine tritanium wire (draft). GT's UHV blast furnace coil is fluxed electrum (not in
+  Gregtorio); the UHV multiblocks use a tritanium coil (16 wires, 8 foils, a melt) instead. The UHV energy hatch uses
+  UHPICs instead of quantum power ICs and cryogenic helium instead of super coolant cells, like the UV hatch.
+
+Existing saves (unlocks that changed):
+
+- `uv-field-generator`: 4 UHV circuits instead of 8 UV circuits (as requested). The recipe stays unlocked by
+  `uv-components`, so saves that had it keep it; it is craftable once the UHV circuit is.
+- `molten-neutronium`: moved from `uv-materials` to `fusion-plasmas-mk3`; `uv-materials` unlocks the bootstrap recipe
+  instead, so no save loses a way to make neutronium. Factorio re-applies the effects of researched techs on load.
+- `electromagnetic-science-pack` (researched in saves that reached the UHV science pack) has a new prerequisite; a
+  researched tech stays researched. Its pack recipe is new.
+- Everything else only adds recipes. `migrate --from-ref 0e935ba` and `--from-ref 5dd7c92` (before this phase) load.
+
+Bottlenecks of the UHV parts (tritanium is 14.4 melt per ingot, 3 s per ingot in one MK2 reactor; 1 ingot needs 3
+titanium and 2 duranium melt):
+
+| Part | Tritanium ingots | Other main inputs |
+|---|---|---|
+| UHV motor | 24 (1.2 min of a reactor) | 4 long magnetic samarium rods |
+| UHV pump | 51 | motor, 12 neutronium plates |
+| UHV conveyor module | 64 | 2 motors, 80 silicone rubber sheets |
+| UHV piston | 64 | motor |
+| UHV robot arm | 146 | 2 motors, piston, 2 UHV circuits |
+| UHV emitter / sensor | 56 each | motor, 4 UHV circuits, 8 gravistars |
+| UHV field generator | 256 (13 minutes) | 4 emitters, 8 UHV circuits |
+
+The UV motor needs 48 americium ingots (4 minutes at 5 s per ingot), so a UHV motor is cheaper than the UV one; the
+field generator is about as expensive as the UV one. One MK3 needs about 900 tritanium ingots for the 8 advanced
+fusion coils, 64 UHV circuits for their emitters and sensors, and 380 americium plates (casings and the superdense
+plate). The UHV circuit chain costs one stem cell craft per circuit: 16 circuits need 32 supercomputers, 64
+assemblies, 128 processors, 128 neuro processing units, 128 crystal CPUs and 224 wetware boards. Nothing was tuned
+in game.
+
+### Open points from phase 4
+
+- Still drafts: force plasma (arcanite), astral titanium and runite plasma, the liquid fuels and the naquadah fuel,
+  the MK4 and MK5 reactors (`fusion-reactor-mk4-controller` needs UEV circuits, `fusion-machine-casing-mk3` a category
+  typo `uvh-...`, `advanced-fusion-coil-ii` the energy module), the UEV, UIV and UMV superconductor coil blocks,
+  bio cells.
+- PPIC, NPIC and QPIC chips (water purification line) and complex SMDs: the MK3 controller, the ZPM to UHV hatches and
+  the wetware mainframe use UHPICs and advanced SMDs.
+- Plasmas (also iron plasma) are still only ingredients; there is no plasma generator.
+- No fluxed electrum, draconium, cosmic neutronium or bedrockium: tritanium and triamerotronium stand in for them.
+- The UV energy hatch cooling and the UHV one use cryogenic helium; there are no super coolant cells (draft
+  `super-coolant` needs callisto ice).
+- Still unused from `27-uhv-age-item.lua`: UHV dynamo hatch, awakened draconium coil block (UEV), attuned tengam
+  microminer, integrated ore factory, neutronium compressor, singularities.
+- Graphics: the UHV basic machine sprites are generated from GT textures (tinted red), the MK3 reactor uses the GT
+  fusion casing MK2 texture and the MK3 overlay, item and technology icons are recolored placeholders
+  (`tools/gen_icons.py`); the wetware items and stem cells reuse unrelated neighbor icons and need real ones.
+- Balance is untested in game (see the table above).
+
+### Suggested next step
+
+Phase 5 (UEV and up): the UEV science pack (`cryogenic-science-pack`) with UEV circuits (bioware / bio processors: bio
+cells and the bio mainframe on top of the wetware line, plus the water purification line for the wafers), UEV
+components, UEV machines with `fork_make_tier_machine(base, "uhv", "uev", ...)` (the shift rules need a `uev` table),
+fusion MK4 (`advanced-fusion-coil` is ready, the MK4 needs UEV hatches and casing MK3 with its category typo fixed),
+and the materials the drafts expect (cosmic neutronium, bedrockium, fluxed electrum, draconium, UU matter). The plasma
+generator and the water purification line are the side quests that unlock most of the remaining drafts. Then UIV, UMV
+and UXV follow the same recipe, ending with the stargate.

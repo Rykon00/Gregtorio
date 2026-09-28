@@ -255,6 +255,12 @@ local SPECIAL_SHIFT = {
 		["hssg-coil-block"]     = "naquadah-coil-block",
 		["naquadah-coil-block"] = "trinium-coil-block",
 	},
+	--- UHV machines (128-fork-uhv.lua): tritanium cable, tritanium coils
+	uhv = {
+		["naquadah-alloy-cable"] = "tritanium-cable",
+		["naquadah-coil-block"] = "trinium-coil-block",
+		["trinium-coil-block"]  = "tritanium-coil-block",
+	},
 }
 local function item_exists(n)
 	for t, _ in pairs(defines.prototypes.item) do
