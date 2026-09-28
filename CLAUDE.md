@@ -10,6 +10,9 @@
   (UV circuit, ZPM assembly line, UV components, fusion MK2), 128 UHV (wetware line, tritanium,
   UHV components, fusion MK3), 129 water purification (grades 1-6, NPIC/PPIC/QPIC chips),
   131 UEV (bio line, UEV components, fusion MK4), 132 UIV (optical line, UIV components),
+  133 UMV (fusion MK5, spacetime, exotic line, UMV components; also the shared helpers, global
+  table `FORK5B`), 134 UXV (universium, temporal line, UXV components), 135 endgame (stargate,
+  MAX science pack; researching `victory` wins the game via `scripts/fork-victory.lua`),
   150 molds (mold slot instead of mold ingredient; must load after every file that creates
   machines), 190 manual-labor
   burner usage (fist icon in the fuel slot), 199 finalize.

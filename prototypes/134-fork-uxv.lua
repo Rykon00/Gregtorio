@@ -221,20 +221,20 @@ F.replace_ingredient("umv-field-generator", "umv-circuit", "uxv-circuit", 4)
 --- UMV science
 do
 	F.tech{
-		name = "uxv-materials", prerequisites = { "umv-multiblocks" }, packs = 13, count = 5000,
+		name = "uxv-materials", prerequisites = { "umv-multiblocks" }, packs = 13, count = 2500,
 		recipes = F.join({ "universium-cable" }, F.metal_parts("universium", F.ALL_PARTS)),
 	}
 	F.tech{
-		name = "temporal-processors", prerequisites = { "uxv-materials", "exotic-processor-mainframes" }, packs = 13, count = 5500,
+		name = "temporal-processors", prerequisites = { "uxv-materials", "exotic-processor-mainframes" }, packs = 13, count = 3000,
 		recipes = { "temporal-printed-circuit-board", "temporal-processing-unit", "temporal-processor",
 			"temporal-processor-assembly", "temporal-processor-supercomputer" },
 	}
 	F.tech{
-		name = "temporal-processor-mainframes", prerequisites = { "temporal-processors" }, packs = 13, count = 6000,
+		name = "temporal-processor-mainframes", prerequisites = { "temporal-processors" }, packs = 13, count = 3000,
 		recipes = { "temporal-processor-mainframe" },
 	}
 	F.tech{
-		name = "uxv-components", prerequisites = { "temporal-processor-mainframes" }, packs = 13, count = 6500,
+		name = "uxv-components", prerequisites = { "temporal-processor-mainframes" }, packs = 13, count = 3500,
 		recipes = {
 			"uxv-motor", "uxv-pump", "uxv-conveyor-module", "uxv-piston", "uxv-robot-arm", "uxv-emitter", "uxv-sensor",
 			"uxv-field-generator", "uxv-machine-casing", "uxv-machine-hull",
@@ -248,11 +248,11 @@ table.insert(data.raw.technology["uxv-science-pack"].prerequisites, "uxv-compone
 
 --- UXV science. Machines first: the UXV voltage coil needs the UXV assembler.
 F.tech{
-	name = "uxv-machines", prerequisites = { "uxv-science-pack" }, packs = 14, count = 4000,
+	name = "uxv-machines", prerequisites = { "uxv-science-pack" }, packs = 14, count = 3000,
 	recipes = uxv_machine_recipes,
 }
 F.tech{
-	name = "uxv-energy-hatches", prerequisites = { "uxv-machines" }, packs = 14, count = 4500,
+	name = "uxv-energy-hatches", prerequisites = { "uxv-machines" }, packs = 14, count = 3000,
 	recipes = {
 		"hot-eternity-ingot", "eternity-ingot", "eternity-dust", "eternity-wire",
 		"eternity-superconductive-wire", "superconducting-coil-block-uxv", "eternal-coil-block",
@@ -260,6 +260,6 @@ F.tech{
 	},
 }
 F.tech{
-	name = "uxv-multiblocks", prerequisites = { "uxv-energy-hatches" }, packs = 14, count = 4500,
+	name = "uxv-multiblocks", prerequisites = { "uxv-energy-hatches" }, packs = 14, count = 3000,
 	recipes = uxv_multiblock_recipes,
 }

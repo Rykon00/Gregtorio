@@ -156,13 +156,14 @@ function F.metal_parts(name, parts)
 	return out
 end
 
---- Every part of a metal that the components use, except the wire (some metals only make fine wire)
+--- The parts of a metal that its technology unlocks (the superconductors have their own list)
 F.ALL_PARTS = { "%-ingot", "%-plate", "%-rod", "long-%-rod", "%-frame", "%-gear", "large-%-gear",
 	"%-ring", "%-round", "%-screw", "%-rotor", "%-wire", "fine-%-wire", "%-foil" }
 
---- Metal of a tier: melt in the fusion reactor, parts in the solidifiers of the tier below the
---- tier's own (the tier's machines need the metal). The large gear is 4 ingots like the other
---- endgame metals; blocks, bolts and dense plates are not needed.
+--- Metal of a tier: the melt comes from the fusion reactor, the parts are made in the machines of
+--- `tier`, the tier below the metal's own (the metal is needed for the machines of its own tier).
+--- The large gear is 4 ingots like the other endgame metals; blocks, bolts and dense plates are
+--- not needed.
 function F.metal(name, tier, speed)
 	create_endgame_parts{
 		name = name,
@@ -787,33 +788,33 @@ F.replace_ingredient("uiv-field-generator", "uiv-circuit", "umv-circuit", 4)
 --- UIV science
 do
 	F.tech{
-		name = "fusion-coil-ii", prerequisites = { "uiv-energy-hatches", "fusion-plasmas-mk4" }, packs = 12, count = 3500,
+		name = "fusion-coil-ii", prerequisites = { "uiv-energy-hatches", "fusion-plasmas-mk4" }, packs = 12, count = 2500,
 		recipes = { "energy-module", "molten-rhugnor", "molten-flerovium", "rhugnor-ingot", "rhugnor-plate",
 			"advanced-fusion-coil-ii" },
 	}
 	F.tech{
-		name = "fusion-reactor-mk5", prerequisites = { "fusion-coil-ii", "uiv-multiblocks" }, packs = 12, count = 4500,
+		name = "fusion-reactor-mk5", prerequisites = { "fusion-coil-ii", "uiv-multiblocks" }, packs = 12, count = 3000,
 		recipes = { "fusion-machine-casing-mk4", "fusion-reactor-mk5-controller", "fusion-reactor-mk5" },
 	}
 	F.tech{
-		name = "fusion-plasmas-mk5", prerequisites = { "fusion-reactor-mk5" }, packs = 12, count = 4500,
+		name = "fusion-plasmas-mk5", prerequisites = { "fusion-reactor-mk5" }, packs = 12, count = 3000,
 		recipes = { "molten-spacetime", "molten-universium" },
 	}
 	F.tech{
-		name = "umv-materials", prerequisites = { "fusion-plasmas-mk5" }, packs = 12, count = 5000,
+		name = "umv-materials", prerequisites = { "fusion-plasmas-mk5" }, packs = 12, count = 2500,
 		recipes = F.join({ "spacetime-cable" }, F.metal_parts("spacetime", F.ALL_PARTS)),
 	}
 	F.tech{
-		name = "exotic-processors", prerequisites = { "umv-materials", "optical-processor-mainframes" }, packs = 12, count = 5500,
+		name = "exotic-processors", prerequisites = { "umv-materials", "optical-processor-mainframes" }, packs = 12, count = 2500,
 		recipes = { "exotic-printed-circuit-board", "exotic-processing-unit", "exotic-processor",
 			"exotic-processor-assembly", "exotic-processor-supercomputer" },
 	}
 	F.tech{
-		name = "exotic-processor-mainframes", prerequisites = { "exotic-processors" }, packs = 12, count = 6000,
+		name = "exotic-processor-mainframes", prerequisites = { "exotic-processors" }, packs = 12, count = 3000,
 		recipes = { "exotic-processor-mainframe" },
 	}
 	F.tech{
-		name = "umv-components", prerequisites = { "exotic-processor-mainframes" }, packs = 12, count = 6500,
+		name = "umv-components", prerequisites = { "exotic-processor-mainframes" }, packs = 12, count = 3000,
 		recipes = {
 			"umv-motor", "umv-pump", "umv-conveyor-module", "umv-piston", "umv-robot-arm", "umv-emitter", "umv-sensor",
 			"umv-field-generator", "umv-machine-casing", "umv-machine-hull",
@@ -827,11 +828,11 @@ table.insert(data.raw.technology["umv-science-pack"].prerequisites, "umv-compone
 
 --- UMV science. Machines first: the UMV voltage coil needs the UMV assembler.
 F.tech{
-	name = "umv-machines", prerequisites = { "umv-science-pack" }, packs = 13, count = 4000,
+	name = "umv-machines", prerequisites = { "umv-science-pack" }, packs = 13, count = 2500,
 	recipes = umv_machine_recipes,
 }
 F.tech{
-	name = "umv-energy-hatches", prerequisites = { "umv-machines" }, packs = 13, count = 4500,
+	name = "umv-energy-hatches", prerequisites = { "umv-machines" }, packs = 13, count = 3000,
 	recipes = {
 		"hot-hypocosmium-ingot", "hypocosmium-ingot", "hypocosmium-dust", "hypocosmium-wire",
 		"hypocosmium-superconductive-wire", "superconducting-coil-block-umv", "spacetime-coil-block",
@@ -839,6 +840,6 @@ F.tech{
 	},
 }
 F.tech{
-	name = "umv-multiblocks", prerequisites = { "umv-energy-hatches" }, packs = 13, count = 4500,
+	name = "umv-multiblocks", prerequisites = { "umv-energy-hatches" }, packs = 13, count = 3000,
 	recipes = umv_multiblock_recipes,
 }

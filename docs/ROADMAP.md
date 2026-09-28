@@ -9,7 +9,7 @@ researchable, every unlocked recipe can be made, and everything unfinished stays
 draft (`FORK-DRAFT` in the log). Checked with `tools/devcheck` (see its README).
 
 Science packs: LuV = space, ZPM = metallurgic, UV = agricultural, UHV = electromagnetic,
-UEV = cryogenic, then promethium / UMV / UXV / max.
+UEV = cryogenic, UIV = promethium, then UMV / UXV / max (the stargate).
 
 | Phase | Content | Status |
 |---|---|---|
@@ -17,10 +17,12 @@ UEV = cryogenic, then promethium / UMV / UXV / max.
 | 2 | ZPM: ZPM science pack, ZPM components and machines (europium, naquadah alloy, osmiridium), ZPM energy hatch | **done** (`prototypes/126-fork-zpm.lua`) |
 | 3 | UV: UV circuit (crystal processor mainframe), ZPM assembly line, UV components, fusion reactor MK2 and its plasmas, UV science pack, UV energy hatch and machines | **done** (`prototypes/127-fork-uv.lua`) |
 | 4 | UHV: wetware processors (UHV circuit), UHV components, fusion reactor MK3, UHV science pack, energy hatch and machines | **done** (`prototypes/128-fork-uhv.lua`) |
-| 5a | UEV and UIV: bio and optical lines, cosmic neutronium / draconium / infinity / transcendent metal, UEV and UIV components, fusion MK4, science packs, energy hatches and machines | **done** (`prototypes/131-fork-uev.lua`, `132-fork-uiv.lua`; fusion MK5 open) |
-| 5b | UMV, UXV, MAX and the endgame (stargate, victory), fusion MK5 | open, next |
+| 5a | UEV and UIV: bio and optical lines, cosmic neutronium / draconium / infinity / transcendent metal, UEV and UIV components, fusion MK4, science packs, energy hatches and machines | **done** (`prototypes/131-fork-uev.lua`, `132-fork-uiv.lua`) |
+| 5b | UMV, UXV, MAX and the endgame (stargate, victory), fusion MK5 | **done** (`prototypes/133-fork-umv.lua`, `134-fork-uxv.lua`, `135-fork-endgame.lua`, `scripts/fork-victory.lua`) |
 | side | Water purification line: grades 1-6 done in `129-fork-water-purification.lua`; grades 7 (degasifier) and 8 (quark extraction) open | partly done |
 | side | AE2 autocrafting (patterns, molecular assembler on top of the ME network from `120-fork-ae2.lua`) | open |
+| side | Plasma generator (plasmas are only ingredients so far) | open |
+| side | Graphics and balance of the tiers from UHV up in the real game | open |
 
 ## Phase 1: LuV (done)
 
@@ -60,7 +62,7 @@ New technologies (all LuV science):
 
 Outside the phases: some vanilla technologies (armor equipment, inserter capacity bonus,
 `bulk-inserter`, `explosives`, ...) are not researchable in `devcheck`; that was already the case
-before phase 1 and has not been looked into yet.
+before phase 1 and has not been looked into yet (listed and sorted in the final pass of phase 5b).
 
 ### Suggested next step (done in phase 2)
 
@@ -480,8 +482,165 @@ The cosmic neutronium of a UEV part includes the 18 ingots of melt in its fluids
   and technologies have recolored placeholder icons (`tools/gen_icons.py`, `tools/gen_tech_icons.py`).
 - Balance is untested in game (see the table above).
 
+### Suggested next step (done in phase 5b)
+
+Phase 5b (UMV, UXV, MAX and the endgame): see below.
+
+## Phase 5b: UMV, UXV, MAX and the endgame (done)
+
+Numbers: researchable technologies 296 -> 316 of 341 -> 358 (the 17 new ones, and `uxv-science-pack`, `stargate` and `victory`,
+which are now reachable), draft recipes hidden by the draft guard 36 -> 29 (`fusion-reactor-mk5`, its controller, `advanced-fusion-coil-ii`,
+`fusion-machine-casing-mk4`, `molten-rhugnor`, `molten-flerovium` and `superconducting-coil-block-umv` are real recipes now), auto-unlocked
+recipes 54 -> 54 (the `FORK-AUTOUNLOCK` lines are identical), machines placed by `devcheck runtime` 436 -> 509, unlocked but uncraftable
+recipes 0. Progression no longer stops anywhere: every tier technology from LV to `victory` is researchable, and the runtime test wins the
+game by researching `victory`.
+
+`80-umv-age-item.lua` and `90-uxv-age-item.lua` are still not loaded (not valid Lua; they hold the GTNH chains for spacetime, magmatter,
+dark matter, shirabon, mellion, the eye of harmony and coal recipes). What phase 5b needs is rebuilt in `133-fork-umv.lua`,
+`134-fork-uxv.lua` and `135-fork-endgame.lua`. `133-fork-umv.lua` also defines the helpers of the three files (the global table
+`FORK5B`: `metal`, `cable`, `circuit_line`, `components`, `tech`, ...), because a UXV part is a UMV part with the next metal.
+
+New technologies (the counts are 2500-3500 units, one unit takes 60 s; upstream has 2300 for the UMV, 2600 for the UXV and 3000 for the
+stargate tech):
+
+| Technology | Science | Unlocks |
+|---|---|---|
+| `fusion-coil-ii` | UIV | energy module, molten rhugnor and flerovium (MK4), rhugnor ingot and plate, advanced fusion coil II |
+| `fusion-reactor-mk5` | UIV | fusion machine casing MK4, MK5 controller and reactor |
+| `fusion-plasmas-mk5` | UIV | molten spacetime and molten universium |
+| `umv-materials` | UIV | spacetime parts (ingot, plate, rods, frame, gears, ring, round, screw, rotor, wires, foil) and spacetime cable |
+| `exotic-processors` | UIV | exotic board, exotic processing unit, exotic processor, assembly, supercomputer |
+| `exotic-processor-mainframes` | UIV | exotic processor mainframe (the UMV circuit) |
+| `umv-components` | UIV | UMV motor, pump, conveyor module, piston, robot arm, emitter, sensor, field generator, UMV casing and hull |
+| `umv-machines` | UMV | the 23 basic machines one tier up |
+| `umv-energy-hatches` | UMV | hypocosmium (dust, blast furnace, wire, superconductive wire), UMV superconducting coil block, spacetime coil, UMV voltage coil, UMV energy hatch |
+| `umv-multiblocks` | UMV | the 13 multiblock upgrades |
+| `uxv-materials` | UMV | universium parts and universium cable |
+| `temporal-processors` | UMV | temporal board, processing unit, processor, assembly, supercomputer |
+| `temporal-processor-mainframes` | UMV | temporal processor mainframe (the UXV circuit) |
+| `uxv-components` | UMV | UXV motor, pump, conveyor module, piston, robot arm, emitter, sensor, field generator, UXV casing and hull |
+| `uxv-machines` | UXV | the 23 basic machines one tier up |
+| `uxv-energy-hatches` | UXV | eternity (dust, blast furnace, wire, superconductive wire), UXV superconducting coil block, eternal coil, UXV voltage coil, UXV energy hatch |
+| `uxv-multiblocks` | UXV | the 13 multiblock upgrades |
+
+Changed technologies (all from the fork files): `umv-science-pack` requires `umv-components`, `uxv-science-pack` requires `uxv-components`, `stargate`
+requires `uxv-multiblocks` and also unlocks the four parts of the parts (frame part, radiation containment plate, chevron, iris blade). The
+upstream effects (`umv-science-pack` unlocks its pack, `stargate` the stargate parts and the MAX science pack) are kept.
+
+Science packs: `umv-science-pack` (UMV motor, 2 UMV circuits, 4 spacetime plates, 4 infinity coils, a UIV field generator and molten spacetime ->
+10 packs, UIV assembler), `uxv-science-pack` (UXV motor, 2 UXV circuits, 4 universium plates, 4 spacetime coils, a UMV field generator and molten
+universium -> 10 packs, UMV assembler). Both replace the upstream stone recipes (`stone -> umv-science-pack` and `stone -> uxv-science-pack`),
+which phase 5a had removed. `max-science-pack` is the upstream recipe: 1 stargate -> 1000 packs in the UXV assembler.
+
+Auto-unlock: `FORK-AUTOUNLOCK` is identical to phase 5a. The tech-by-tech diff against `origin/main` shows no lost unlock; the only additions are the
+UMV and UXV pack recipes (their techs had the effect, the recipes were removed) and the four stargate parts of parts.
+
+Choices and deviations from GT:
+
+- **Fusion MK5.** It is the UIV tier (16 UIV energy hatches, 32 UIV hulls); the draft asked for UEV hatches, which the MK4 uses since 5a. 16 advanced fusion
+  coils II (draft: 32), 79 casings MK4. The drafts fixed: molten rhugnor is infinity + molten transcendent metal (draft: molten quantum, which no line
+  makes), molten flerovium is americium + calcium plasma (draft: plutonium-241); both are MK4 recipes, so nothing that the MK5 makes is needed to
+  build it and there is no bootstrap recipe. The energy module (GT: ZPM assembly line, not loaded before) uses UHPIC wafers instead of ASOC wafers.
+  Coil II uses a UEV emitter and sensor: a UIV emitter or field generator would need UMV circuits, which need spacetime, which the MK5 makes. The
+  controller uses UEV field generators (as the draft), UIV circuits, QPIC wafers (PICO wafers are not built) and chromnorox wire. The MK5 reuses the MK3 art.
+- **Spacetime and universium are MK5 products** (GT: tesseracts in the dimensionally transcendent plasma forge). Spacetime = transcendent metal +
+  rhugnor, universium = spacetime + flerovium, 1.5 s per ingot in one MK5. The parts are made like the transcendent metal ones (large gear 4 ingots).
+- **Cables.** GT's UMV cable is quantium (not built): spacetime cable (wire + rubber + sheet like the draconium cable); UXV: universium cable.
+- **Superconductors.** `hypocosmium` (UMV: spacetime, infinity, rhugnor) is the name of the draft; `eternity` (UXV: universium, spacetime, hypocosmium)
+  takes the name of the example in `03-helper-functions-module.lua`. Recipes invented on the pattern of chromnorox, cooled with cryogenic helium in the pump.
+  The mainframes use the superconductor of the tier below (UMV: chromnorox, UXV: hypocosmium), like the earlier ones.
+- **Exotic and temporal lines** have the shape of the optical line (circuit assembly line, 16 circuits per craft, 2 of the previous stage per circuit):
+  board (previous board + foil), processing unit (previous unit + a gravi star, 4 per craft), processor (takes the processors of the previous line),
+  assembly, supercomputer, mainframe. No exotic chips or optical SMDs (advanced SMDs again). One circuit needs 2 gravi stars, 15 boards, 8 processors of
+  the previous line; a craft of 16 circuits takes about 32 minutes in one circuit assembly line (240 s, 480 s, ... like the earlier lines).
+- **UMV and UXV components** are the UIV recipes with the new metal and cable (the pump takes 12 plates of the metal of the tier below: transcendent
+  metal for the UMV pump, spacetime for the UXV pump); wire and foil counts as in 5a (motor 64 fine wires, emitter and sensor 32 foils, field generator
+  64 fine wires). Each takes one minute in the ZPM assembly line. The UMV field generator uses UXV circuits (4) like GT once the UXV circuit exists, the
+  UXV one 8 UXV circuits (GT: MAX circuits, not built).
+- **Coils.** The UMV blast furnace coil is `spacetime-coil-block` (built like the infinity coil), the UXV one `eternal-coil-block` (the name of the draft). Voltage
+  coils: `mega-ultimate-voltage-coil` and `extended-mega-ultimate-voltage-coil` (magnetic samarium rod + 16 fine wires). The energy hatches take 16 (UMV) and 32
+  (UXV) QPICs, twice the previous hatch, because the QPIC stands in for the missing FPIC/APIC line.
+- **Stargate.** Top level as in GT: 8 ring blocks, 7 chevron blocks, base, power unit, controller, chevron upgrade, iris upgrade. The upstream recipes of the parts
+  used each other as ingredients (dead ends) and GT's chains (magmatter, dark matter, catalysts) do not exist here. Every part is now made of the metals of the last
+  tiers (infinity, transcendent metal, spacetime, universium), UXV components, coils II and the eternity wire in the ZPM assembly line (the final stargate in the
+  UXV assembler), with four new intermediates: frame part, radiation containment plate, chevron and iris blade. The ring block needs no chevron block and vice versa
+  (the draft had a ring block in the chevron block and in the power unit).
+- **Victory.** `victory` stays the upstream infinite tech (1000 * 2^(L-1) units of all 15 packs, prerequisite `stargate`). `scripts/fork-victory.lua` calls
+  `game.set_game_state{ game_finished = true, player_won = true, can_continue = true, victorious_force = force }` the first time it is researched; the
+  further levels are normal research. `devcheck runtime` researches it by script at tick 550 and expects `game.finished`. One level needs exactly 1000 MAX packs =
+  one stargate, the next level two.
+- **Placeholder recipes.** A search for recipes that turn cheap items into endgame items (stone, dirt, single plates -> UV or higher items) found only the two
+  stone science pack recipes, which are replaced; the stargate parts of the draft (ingredients = themselves) are replaced too.
+
+Existing saves (unlocks that changed):
+
+- `uiv-field-generator`: 4 UMV circuits instead of 8 UIV circuits (as requested). The recipe stays unlocked by `uiv-components`, so saves that had it keep it;
+  it is craftable once the UMV circuit is (needs `exotic-processor-mainframes`). Only the UMV science pack uses it. The same happens with the UMV
+  field generator once the UXV circuit exists.
+- `umv-science-pack` and `uxv-science-pack` (techs, researched in saves that got there by console) have a new prerequisite; a researched tech stays researched.
+- Everything else only adds recipes and techs. `migrate --from-ref 0e935ba` and `--from-ref 5f00391` (before this phase) load.
+
+Bottlenecks of the new parts (ingots of the metal, melt and ingots together; 1 ingot = 14.4 mB; the melt comes from one MK5 at 1.5 s per ingot). Every
+component takes one minute in the ZPM assembly line:
+
+| Part | Ingots (spacetime for UMV, universium for UXV) | Other main inputs |
+|---|---|---|
+| motor | 44 | 4 long magnetic samarium rods |
+| pump | 89 | motor, 12 plates of the metal below |
+| conveyor module | 122 | 2 motors, 80 silicone rubber sheets |
+| piston | 102 | motor |
+| robot arm | 242 | 2 motors, piston, 14 circuits (2 of the tier, 4 and 8 of the two below) |
+| emitter / sensor | 94 each | motor, 8 gravi stars, 4 circuits of the tier |
+| field generator | 426 | 4 emitters, 36 gravi stars, 24 circuits of the tier (UMV: 4 UXV circuits + 16 UMV) |
+
+Fusion MK5: 4900 transcendent metal, 1700 rhugnor and 630 flerovium ingots, 1600 infinity ingots, 240 UEV, 270 UHV and 45 UIV circuits, 620 gravi stars (510 nether
+stars) and 79 UIV motors' worth of casings; the 16 coils II need 16 UEV emitters and sensors. Stargate (all parts, in ingots of universium equivalents): frame
+part 48 (+44 spacetime), radiation containment plate 28 (+64 neutronium), chevron 24, ring block 730, chevron block 1040, chevron upgrade 530, base 3560, power
+unit 1820 (4 coils II), controller 1210, iris upgrade 290 (+640 neutronium): the stargate is about 20 500 ingots of universium (8.5 hours of one MK5), 3400 of
+spacetime, 4000 of neutronium, 1000 gravi stars, 620 UXV circuits.
+
+The research of the tiers is far bigger than the stargate: the phase 5b techs alone (incl. the upstream `umv-science-pack`, `uxv-science-pack` and `stargate` techs) take
+104 000 promethium, 47 100 UMV and 12 000 UXV packs (10 packs per craft, one UIV / UMV field generator per craft), and level 1 of `victory` another 5000 promethium,
+3000 UMV, 2000 UXV and 1000 MAX packs (plus 256 000 automation packs ...). Every unit of the last techs needs packs of all tiers below. These counts come from the
+upstream `SP` tables and are the first thing to tune in the real game.
+
+### Final pass: technologies that cannot be researched
+
+`devcheck check` now lists them with the disabled or missing prerequisites that block them (42 of 358; every tier technology from LV to `victory` is
+researchable). All of them are blocked by vanilla technologies that Gregtorio disables (their science packs, items or recipes do not exist in the mod):
+
+Intentional (vanilla equipment, armor and military techs the mod does not use; blocked by `solar-panel-equipment`, `heavy-armor`, `military-4`, `electric-engine`,
+`processing-unit`, `advanced-circuit`, `rocket-turret`, `speed-module`, `efficiency-module`, `quantum-processor`): `battery-equipment`, `battery-mk2-equipment`,
+`battery-mk3-equipment`, `belt-immunity-equipment`, `energy-shield-equipment`, `energy-shield-mk2-equipment`, `exoskeleton-equipment`, `fission-reactor-equipment`,
+`fusion-reactor` (the vanilla one; Gregtorio has its own fusion techs), `fusion-reactor-equipment`, `mech-armor`, `modular-armor`, `night-vision-equipment`,
+`personal-roboport-equipment`, `personal-roboport-mk2-equipment`, `power-armor`, `power-armor-mk2`, `spidertron`, `explosives` (`sulfur-processing`).
+
+Open (quality-of-life techs whose vanilla gate is disabled; either re-gate them onto a Gregtorio tech or hide them): `bulk-inserter`, `stack-inserter`,
+`inserter-capacity-bonus-1` to `-7` (`advanced-circuit`, `carbon-fiber`), `transport-belt-capacity-1` and `-2`, `logistics-3` and `turbo-transport-belt` (`lubricant`),
+`worker-robots-speed-1` to `-7` and `worker-robots-storage-1` to `-3` (`robotics`).
+
+### Open points from phase 5b
+
+- The MK5 reuses the MK3 art, the UMV/UXV basic machine sprites are tinted GT textures (violet and white), the new item icons are recolored placeholders
+  (`tools/gen_icons.py`; the stargate parts of parts and the exotic/temporal items reuse unrelated neighbor icons), the new technologies have icons of their main item.
+- Balance is untested in game: the pack counts of the last techs (see above), the stargate (20 500 universium ingots), the QPIC counts of the hatches.
+- Not built: the GT quantum force transformer, dimensional plasma forge, godforge, magmatter, dark matter, mellion, shirabon, six-phased copper, the eye of harmony and the
+  UXV/MAX-only items of `90-uxv-age-item.lua` (mega ultimate battery, ridiculously large capacitor, artificial universe cell, ...). There is no MAX tier: no MAX circuit,
+  hatch or machines.
+- Still drafts (29): force plasma (arcanite), astral titanium and runite plasma, the liquid fuels and naquadah fuel, plutonium/high-density plutonium, super coolant, UU
+  matter (magic essence, void/shadow metal, ichorium), 1080k space cell, the naquadah cracking chains, orundum, the lapotronic energy orb cluster draft, bio cells for
+  microminers.
+
 ### Suggested next step
 
-Phase 5b (UMV, UXV, MAX and the endgame): UMV science pack (recreate the `umv-science-pack` recipe), the UMV circuit (exotic mainframe), UMV
-components and machines with `fork_make_tier_machine(base, "uiv", "umv", ...)` (add `umv` and `uxv` tables to the shift rules in
-`101-fork-machines.lua`), switch the UIV field generator to UMV circuits, then UXV, MAX, the stargate and fusion MK5.
+Side quests, in the order that helps the endgame most:
+
+1. Balance and graphics in the real game: the tier from UHV up (see the bottleneck tables of 4, 5a and 5b), the pack counts of the last techs, the QPIC counts, real
+   sprites for the MK4/MK5 reactors and the last machine tiers, real icons for the exotic/temporal lines and the stargate parts.
+2. Plasma generator (GT plasma turbine): the plasmas (iron, sulfur, nitrogen, zinc, niobium, tin, titanium, oxygen, neon, boron, calcium ...) are only ingredients, several are
+   unused.
+3. Water purification grades 7 (degasifier) and 8 (quark extraction), FPIC/APIC chips and complex SMDs, which would let the QPIC stand-ins of the UEV to UXV hatches go.
+4. AE2 autocrafting (patterns, molecular assembler) on top of the ME network from `120-fork-ae2.lua`.
+5. The technologies of the final pass list: decide for each "open" one whether it gets a Gregtorio gate or is hidden.
+6. A MAX tier (MAX circuit, hatch, machines, and the GT items the stargate could take) if the endgame should go on after `victory`.
+

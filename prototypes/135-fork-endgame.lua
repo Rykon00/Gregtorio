@@ -170,7 +170,7 @@ F.redo("stargate-power-unit", {
 	energy_required = minutes(10),
 	subgroup = "subgroup-stargate",
 	ingredients = {
-		item("advanced-fusion-coil-ii", 8),
+		item("advanced-fusion-coil-ii", 4),
 		item("uxv-field-generator", 2),
 		item("uxv-energy-hatch", 4),
 		item("stargate-radiation-containment-plate", 4),
