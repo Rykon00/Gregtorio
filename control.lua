@@ -1,18 +1,29 @@
 
 --- Fork: ME terminal GUI and ME interface defaults (AE2, see prototypes/120-fork-ae2.lua)
 local fork_me = require("scripts.fork-me-terminal")
+--- Fork: molds stay in the machine's mold slot (see prototypes/130-fork-molds.lua)
+local fork_molds = require("scripts.fork-molds")
 
 script.on_event(defines.events.on_built_entity, function(event)
   if event.entity.name == "trash-can" then
     event.entity.remove_unfiltered_items = true
   end
   fork_me.on_built(event.entity)
+  fork_molds.on_built(event.entity)
 end)
 
 script.on_event(defines.events.on_robot_built_entity, function(event)
   if event.entity.name == "trash-can" then
     event.entity.remove_unfiltered_items = true
   end
+  fork_molds.on_built(event.entity)
+end)
+
+--- Fork: entities built by other scripts or on space platforms
+script.on_event({ defines.events.script_raised_built, defines.events.script_raised_revive,
+  defines.events.on_space_platform_built_entity }, function(event)
+  fork_me.on_built(event.entity)
+  fork_molds.on_built(event.entity)
 end)
 
 -- Raise a custom event when the cutscene ends
@@ -81,6 +92,7 @@ script.on_configuration_changed(function(data)
 		end
 	end
 	fork_me.on_configuration_changed()
+	fork_molds.on_configuration_changed()
 end)
 
 
