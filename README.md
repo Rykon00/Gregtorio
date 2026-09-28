@@ -10,7 +10,7 @@ The repository root is the mod itself (`info.json`, `data.lua`, `prototypes/`, `
 
 | Path | Contents |
 |---|---|
-| `prototypes/NN-*.lua` | upstream items, recipes and machines per tier (09 Steam … 31 UIV), `98-technology.lua` for the tech tree |
+| `prototypes/NN-*.lua` | upstream items, recipes and machines per tier (09 Steam … 31 UIV; `80-umv-age-item.lua` and `90-uxv-age-item.lua` are not loaded), `98-technology.lua` for the tech tree |
 | `prototypes/100-fork-fixes.lua` | missing unlocks and recipes, chicken-and-egg fixes |
 | `prototypes/101-fork-machines.lua` | tier categories, EV/IV machines and multiblocks, `fork_make_tier_machine` |
 | `prototypes/102-fork-resources.lua` | disables the vanilla resource patches (no spawning, not minable) |
@@ -23,6 +23,10 @@ The repository root is the mod itself (`info.json`, `data.lua`, `prototypes/`, `
 | `prototypes/129-fork-water-purification.lua` | water purification plant (grades 1-6), europium/americium doped wafers, NPIC/PPIC/QPIC chips used by the ZPM/UV/UHV energy hatches and the MK2/MK3 controllers |
 | `prototypes/131-fork-uev.lua` | UEV: cosmic neutronium, draconium and infinity (fusion), dracofinium superconductor, bio line (UEV circuit), UEV components, casing and hull, fusion reactor MK4, UEV science pack, energy hatch, machines and multiblock upgrades, techs |
 | `prototypes/132-fork-uiv.lua` | UIV: transcendent metal (MK4), nether star cable, chromnorox superconductor, optical line (UIV circuit), UIV components, casing and hull, UIV science pack, energy hatch, machines and multiblock upgrades, techs |
+| `prototypes/133-fork-umv.lua` | fusion reactor MK5 (advanced fusion coil II, casing MK4, rhugnor, flerovium, energy module), spacetime (UMV metal) and universium (UXV metal) from the MK5, spacetime cable, hypocosmium superconductor, exotic line (UMV circuit), UMV components, casing and hull, UMV science pack, energy hatch, machines and multiblock upgrades, techs; also the helpers shared with 134 and 135 (global table `FORK5B`) |
+| `prototypes/134-fork-uxv.lua` | UXV: universium parts and cable, eternity superconductor, temporal line (UXV circuit), UXV components, casing and hull, UXV science pack, energy hatch, machines and multiblock upgrades, techs |
+| `prototypes/135-fork-endgame.lua` | endgame: the stargate and its parts from UXV parts, the MAX science pack, the tech `stargate` |
+| `scripts/fork-victory.lua` | researching the first level of the tech `victory` wins the game (the game can be continued) |
 | `prototypes/150-fork-molds.lua` | molds stay in the machine: the mold is a module in a mold-only slot of alloy smelters, fluid solidifiers and extruders instead of an ingredient or machine component |
 | `scripts/fork-molds.lua` | stops machines with a mold recipe and no mold ("Missing mold"); gives machines their mold once in saves from before they had a mold slot |
 | `prototypes/190-fork-manual-labor.lua` | "manual labor" burner usage: fist instead of the gas pump in the fuel slot, "No manual labor" status |
@@ -51,8 +55,12 @@ The repository root is the mod itself (`info.json`, `data.lua`, `prototypes/`, `
 | UV | playable (fork); UV circuit, ZPM assembly line, UV components, fusion MK2, science pack, energy hatch and machines (see `docs/ROADMAP.md`) |
 | UHV | playable (fork); wetware line and UHV circuit, UHV components, fusion MK3, science pack, energy hatch and machines (see `docs/ROADMAP.md`) |
 | UEV | playable (fork); water purification, bio line and UEV circuit, UEV components, fusion MK4, science pack, energy hatch and machines (see `docs/ROADMAP.md`) |
-| UIV | playable (fork); optical line and UIV circuit, UIV components, science pack, energy hatch and machines; fusion MK5 is open (see `docs/ROADMAP.md`) |
-| UMV+ | draft; broken recipes are hidden on load (`FORK-DRAFT` in the log) |
+| UIV | playable (fork); optical line and UIV circuit, UIV components, science pack, energy hatch and machines (see `docs/ROADMAP.md`) |
+| Fusion MK5 | playable (fork); makes spacetime and universium, the metals of UMV and UXV |
+| UMV | playable (fork); exotic line and UMV circuit, UMV components, science pack, energy hatch and machines (see `docs/ROADMAP.md`) |
+| UXV | playable (fork); temporal line and UXV circuit, UXV components, science pack, energy hatch and machines (see `docs/ROADMAP.md`) |
+| MAX, stargate, victory | playable (fork); the stargate makes 1000 MAX science packs, the first level of `victory` wins the game. Balance of the last tiers is untested in the real game |
+| Drafts | the rest of the GTNH endgame chains (plasma generator, UU matter, water purification grades 7-8, ...) is draft; broken recipes are hidden on load (`FORK-DRAFT` in the log) |
 
 ## Workflow
 

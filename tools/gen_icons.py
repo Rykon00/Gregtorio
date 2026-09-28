@@ -33,6 +33,9 @@ DONORS = {
     "cosmic-neutronium-ingot": ("neutronium-ingot", 275), "draconium-ingot": ("tritanium-ingot", 355),
     "infinity-ingot": ("tritanium-ingot", 45), "transcendent-metal-ingot": ("neutronium-ingot", 185),
     "dracofinium-ingot": ("tritanium-ingot", 330), "chromnorox-ingot": ("tritanium-ingot", 200),
+    # phase 5b metals (spacetime and universium are the UMV and UXV metals, rhugnor a fusion melt)
+    "spacetime-ingot": ("neutronium-ingot", 265), "universium-ingot": ("tritanium-ingot", 205),
+    "rhugnor-ingot": ("tritanium-ingot", 320), "hypocosmium-ingot": ("tritanium-ingot", 290),
 }
 
 
