@@ -13,6 +13,7 @@ The repository root is the mod itself (`info.json`, `data.lua`, `prototypes/`, `
 | `prototypes/NN-*.lua` | upstream items, recipes and machines per tier (09 Steam … 31 UIV), `98-technology.lua` for the tech tree |
 | `prototypes/100-fork-fixes.lua` | missing unlocks and recipes, chicken-and-egg fixes |
 | `prototypes/101-fork-machines.lua` | tier categories, EV/IV machines and multiblocks, `fork_make_tier_machine` |
+| `prototypes/102-fork-resources.lua` | disables the vanilla resource patches (no spawning, not minable) |
 | `prototypes/110-fork-luv.lua` | LuV: materials, assembly line, LuV machines, science pack, techs |
 | `prototypes/199-fork-finalize.lua` | draft guard (hides broken draft recipes) and auto-unlock of intermediates |
 | `locale/en/fork.cfg` | generated names for entries without a translation |

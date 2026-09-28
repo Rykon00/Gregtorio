@@ -77,3 +77,33 @@ script.on_configuration_changed(function(data)
 		end
 	end
 end)
+
+
+
+--- Fork: /gregtorio-remove-vanilla-ores removes the vanilla resource patches, which
+--- Gregtorio does not use and which cannot be mined anymore (see 102-fork-resources.lua).
+local VANILLA_RESOURCES = {
+	"iron-ore", "copper-ore", "stone", "coal", "uranium-ore", "crude-oil",
+	"tungsten-ore", "calcite", "scrap", "sulfuric-acid-geyser", "lithium-brine", "fluorine-vent",
+}
+commands.add_command("gregtorio-remove-vanilla-ores",
+	"Removes all vanilla resource patches (iron, copper, stone, coal, uranium, oil ...) on every surface. Gregtorio does not use them.",
+	function(cmd)
+		local player = cmd.player_index and game.get_player(cmd.player_index)
+		if player and not player.admin then
+			player.print("Only admins can use this command.")
+			return
+		end
+		local names = {}
+		for _, n in pairs(VANILLA_RESOURCES) do
+			if prototypes.entity[n] then names[#names + 1] = n end
+		end
+		local removed = 0
+		for _, surface in pairs(game.surfaces) do
+			for _, e in pairs(surface.find_entities_filtered{ type = "resource", name = names }) do
+				e.destroy()
+				removed = removed + 1
+			end
+		end
+		game.print("Gregtorio: removed " .. removed .. " vanilla resource tiles.")
+	end)
