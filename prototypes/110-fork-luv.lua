@@ -138,7 +138,8 @@ do
 	m.icon_size = 32
 	m.minable = { mining_time = 1, result = "luv-assembly-line" }
 	m.crafting_categories = { "iv-assembly-line-recipes", "luv-assembly-line-recipes" }
-	m.crafting_speed = 1
+	--- An IV multiblock (IV energy hatches): recipes are timed as GT seconds * tier speed like everywhere else
+	m.crafting_speed = IV_SPEED
 	m.energy_usage = EU16_IV
 	m.fast_replaceable_group = "fr-assembly-line"
 	local w, h = 9, 3
