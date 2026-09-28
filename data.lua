@@ -21,7 +21,7 @@ require("prototypes.17-ev-age-item")
 require("prototypes.18-ev-age-entity")
 require("prototypes.19-iv-age-item")
 require("prototypes.20-iv-age-entity")
---require("prototypes.21-luv-age-item")
+require("prototypes.21-luv-age-item")
 require("prototypes.50-ae2-module")
 require("prototypes.52-microverse-module")
 require("prototypes.98-technology")
@@ -81,3 +81,9 @@ for _, fluid in pairs(data.raw["fluid"]) do
 		}
 	end
 end
+
+--- Fork: progression fixes (must be loaded after 98-technology)
+require("prototypes.100-fork-fixes")
+require("prototypes.101-fork-machines")
+require("prototypes.110-fork-luv")
+require("prototypes.199-fork-finalize")

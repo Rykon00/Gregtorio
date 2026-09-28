@@ -1,37 +1,53 @@
-# Gregtorio (Fork)
+# Gregtorio (fork)
 
-Fork von [Gregtorio](https://mods.factorio.com/mod/Gregtorio) von **Damien Reave**: eine GregTech-artige Total-Overhaul-Mod für Factorio 2.0.
+Fork of [Gregtorio](https://mods.factorio.com/mod/Gregtorio) by **Damien Reave**, a GregTech-style total overhaul mod for Factorio 2.0.
 
-Das Upstream-Repository ([Damien-Reave/Gregtorio](https://github.com/Damien-Reave/Gregtorio)) enthält nur die LICENSE, der Code wurde nur als Zip veröffentlicht. Dieser Fork startet deshalb mit dem unveränderten Stand **0.1.9** aus dem Mod-Portal (Tag `v0.1.9-upstream`). Alle Änderungen danach laufen über normale Git-Commits.
+The upstream repository ([Damien-Reave/Gregtorio](https://github.com/Damien-Reave/Gregtorio)) only contains the LICENSE; the code was only published as zip files. This fork therefore starts from the unmodified **0.1.9** release from the mod portal (tag `v0.1.9-upstream`). Every change after that is a regular git commit.
 
-## Aufbau
+## Layout
 
-Das Repo-Root ist der Mod-Inhalt (`info.json`, `data.lua`, `prototypes/`, `graphics/`, `locale/`).
+The repository root is the mod itself (`info.json`, `data.lua`, `prototypes/`, `graphics/`, `locale/`).
 
-| Pfad | Inhalt |
+| Path | Contents |
 |---|---|
-| `prototypes/NN-*.lua` | Items, Rezepte und Maschinen pro Tier (09 Steam … 31 UIV), `98-technology.lua` für den Tech-Tree |
-| `graphics/` | Icons und Entity-Sprites (meist Texturen aus GregTech 5) |
-| `tools/build.py` | baut `dist/Gregtorio_<version>.zip` und installiert es optional |
-| `tools/check_syntax.py` | Lua-Syntax-Check (`--loaded` = nur Dateien, die `data.lua` wirklich lädt) |
+| `prototypes/NN-*.lua` | upstream items, recipes and machines per tier (09 Steam … 31 UIV), `98-technology.lua` for the tech tree |
+| `prototypes/100-fork-fixes.lua` | missing unlocks and recipes, chicken-and-egg fixes |
+| `prototypes/101-fork-machines.lua` | tier categories, EV/IV machines and multiblocks, `fork_make_tier_machine` |
+| `prototypes/110-fork-luv.lua` | LuV: materials, assembly line, LuV machines, science pack, techs |
+| `prototypes/199-fork-finalize.lua` | draft guard (hides broken draft recipes) and auto-unlock of intermediates |
+| `locale/en/fork.cfg` | generated names for entries without a translation |
+| `tools/build.py` | builds `dist/Gregtorio_<version>.zip`, optionally installs it |
+| `tools/check_syntax.py` | Lua syntax check (`--loaded` = only files `data.lua` actually loads) |
+| `tools/gen_sprites.py` | machine sprites/icons from GT5-Unofficial textures (`--gt <path to checkout>`) |
+| `tools/gen_icons.py` | placeholder icons (recolored neighbor icons) for items without an icon |
+| `tools/gen_locale.py` | adds missing English names to `locale/en/fork.cfg` |
+
+## Status
+
+| Tier | State |
+|---|---|
+| Steam – EV | playable (upstream), gaps closed |
+| IV | playable (fork 0.2.0) |
+| LuV | playable (fork 0.2.0); crystal processors, bacterial vat and fusion are still drafts |
+| ZPM+ | draft; broken recipes are hidden on load (`FORK-DRAFT` in the log) |
 
 ## Workflow
 
 ```bash
-# nach Änderungen: bauen und direkt in den Factorio-Mods-Ordner legen
+# after changes: build and drop it straight into the Factorio mods folder
 python tools/build.py --install
 
-# Release
-#   1. info.json -> "version" erhöhen
-#   2. changelog.txt -> neuen Abschnitt oben einfügen
-#   3. committen, taggen, pushen
+# release
+#   1. bump "version" in info.json
+#   2. add a new section at the top of changelog.txt
+#   3. commit, tag, push
 git tag v0.2.0 && git push --follow-tags
 ```
 
-Beim Push eines Tags `v*` baut die GitHub Action das Zip und hängt es an ein GitHub-Release. Bei jedem Push und Pull Request laufen der Syntax-Check und der Build.
+Pushing a `v*` tag makes the GitHub Action build the zip and attach it to a GitHub release. The syntax check and the build run on every push and pull request.
 
-Wichtig: Der Mod-Name in `info.json` bleibt `Gregtorio`, damit bestehende Spielstände weiterlaufen.
+Note: the mod name in `info.json` stays `Gregtorio` so existing saves keep working.
 
-## Lizenz
+## License
 
-GPLv3 wie das Original (siehe `LICENSE`). Übernommene Texturen aus [GT5-Unofficial](https://github.com/GTNewHorizons/GT5-Unofficial) stehen unter LGPL-3.0.
+GPLv3 like the original (see `LICENSE`). Textures taken from [GT5-Unofficial](https://github.com/GTNewHorizons/GT5-Unofficial) are LGPL-3.0.

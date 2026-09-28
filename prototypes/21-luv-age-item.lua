@@ -236,7 +236,7 @@ create_item{
 	category = "luv-assembling-machine-recipes",
 	energy_required = 10 * LUV_SPEED,
 	ingredients = {
-		{ type = "item", name = "magnetic-samarium-rod", amount = 1 }
+		{ type = "item", name = "magnetic-samarium-rod", amount = 1 },
 		{ type = "item", name = "fine-ruridit-wire", amount = 16 }
 	}
 }
@@ -1181,6 +1181,8 @@ create_item{
    
    
    
+--[==[ FORK: the water line (purified water grades) is an unfinished draft (recipes without a wrapper,
+--- items used as fluids etc.) and only relevant from UV on in GT -> disabled until it is finished.
 ------------------
 --- WATER LINE ---
 ------------------
@@ -1864,6 +1866,7 @@ create_recipe{
 
 
 
+]==]
 ----------------------
 --- FUSION RECIPES ---
 ----------------------  
@@ -2006,7 +2009,7 @@ create_recipe{
     recipe_name = "calcium-plasma",
     category = "mk1-fusion-reactor-recipes",	
     energy_required = IV_SPEED * 64,
-    subgroup = "subgroup-plasma-t1"
+    subgroup = "subgroup-plasma-t1",
 	ingredients = {
       {type = "fluid", name = "molten-magnesium", amount = 128 },
       {type = "fluid", name = "oxygen", amount = 128 },
@@ -2374,7 +2377,7 @@ create_item{
     name = "high-density-plutonium-nugget",
     category = "lv-implosion-compressor-recipes",	
 	ingredients = {
-		{type = "item", name = "wrapped-plutonium-ingot", amount = 2 }
+		{type = "item", name = "wrapped-plutonium-ingot", amount = 2 },
 		{type = "item", name = "explosives", amount = 1 }
     },
     results = {
@@ -2434,7 +2437,7 @@ create_recipe{
     recipe_name = "microminer-infused-gold",
     category = "lv-assembling-machine-recipes",	
     energy_required = LUV_SPEED * 2,
-    subgroup = "subgroup-microminer-t5"
+    subgroup = "subgroup-microminer-t5",
 	ingredients = {
 		{type = "item", name = "tier-five-microminer-output", amount = 1 }
     },
@@ -2451,7 +2454,7 @@ create_item{
     category = "mv-centrifuge-recipes",	
     energy_required = MV_SPEED * 20,
 	ingredients = {
-		{type = "item", name = "infused-gold-dust", amount = 1 }
+		{type = "item", name = "infused-gold-dust", amount = 1 },
 		{type = "fluid", name = "mercury", amount = 20 }
     },
     results = {
@@ -2465,7 +2468,7 @@ create_item{
     category = "mv-autoclave-recipes",	
     energy_required = MV_SPEED * 120,
 	ingredients = {
-		{type = "item", name = "salis-mundis", amount = 4 }
+		{type = "item", name = "salis-mundis", amount = 4 },
 		{type = "fluid", name = "uu-matter", amount = 10 }
     }
 }
@@ -2520,8 +2523,8 @@ create_item{
     category = "luv-chemical-reactor-recipes",	
     energy_required = LUV_SPEED * 90,
 	ingredients = {
-		{type = "item", name = "shadow-metal-dust", amount = 1 }
-		{type = "item", name = "magic-essence", amount = 4 }
+		{type = "item", name = "shadow-metal-dust", amount = 1 },
+		{type = "item", name = "magic-essence", amount = 4 },
 		{type = "fluid", name = "uu-matter", amount = 40 }
     }
 }
