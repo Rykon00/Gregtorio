@@ -12,7 +12,8 @@ locale entries, commit messages, pull requests, issues, README and other docs.
    as possible. Fork changes go into the `prototypes/1xx-fork-*.lua` files.
 3. For local testing link the repo into Factorio once: `python tools/dev_link.py`.
    After that, Factorio loads the working copy directly; restart Factorio after changes.
-4. Before committing: `python tools/check_syntax.py --loaded`.
+4. Before committing: `python tools/check_syntax.py --loaded`, and on Linux the headless
+   harness `python tools/devcheck/devcheck.py all` (see `tools/devcheck/README.md`).
 5. Releases: bump `version` in `info.json`, add a section at the top of `changelog.txt`
    (Factorio changelog format), merge, then push a tag `vX.Y.Z`.
 

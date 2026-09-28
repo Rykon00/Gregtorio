@@ -18,6 +18,7 @@ The repository root is the mod itself (`info.json`, `data.lua`, `prototypes/`, `
 | `prototypes/199-fork-finalize.lua` | draft guard (hides broken draft recipes) and auto-unlock of intermediates |
 | `locale/en/fork.cfg` | generated names for entries without a translation |
 | `tools/dev_link.py` | links the repo into the Factorio mods folder (working copy is loaded directly) |
+| `tools/devcheck/` | headless test harness: load check, progression/craftability analysis, graphics and runtime checks |
 | `tools/build.py` | builds `dist/Gregtorio_<version>.zip`, optionally installs it |
 | `tools/check_syntax.py` | Lua syntax check (`--loaded` = only files `data.lua` actually loads) |
 | `tools/gen_sprites.py` | machine sprites/icons from GT5-Unofficial textures (`--gt <path to checkout>`) |
