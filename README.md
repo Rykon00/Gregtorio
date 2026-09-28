@@ -17,6 +17,7 @@ The repository root is the mod itself (`info.json`, `data.lua`, `prototypes/`, `
 | `prototypes/110-fork-luv.lua` | LuV: materials, assembly line, LuV machines, science pack, techs |
 | `prototypes/199-fork-finalize.lua` | draft guard (hides broken draft recipes) and auto-unlock of intermediates |
 | `locale/en/fork.cfg` | generated names for entries without a translation |
+| `tools/dev_link.py` | links the repo into the Factorio mods folder (working copy is loaded directly) |
 | `tools/build.py` | builds `dist/Gregtorio_<version>.zip`, optionally installs it |
 | `tools/check_syntax.py` | Lua syntax check (`--loaded` = only files `data.lua` actually loads) |
 | `tools/gen_sprites.py` | machine sprites/icons from GT5-Unofficial textures (`--gt <path to checkout>`) |
@@ -35,7 +36,12 @@ The repository root is the mod itself (`info.json`, `data.lua`, `prototypes/`, `
 ## Workflow
 
 ```bash
-# after changes: build and drop it straight into the Factorio mods folder
+# once: link the working copy into the Factorio mods folder
+# (existing Gregtorio zips are parked in mods/_gregtorio_zips/)
+python tools/dev_link.py
+# from then on every change/pull is live after restarting Factorio
+
+# alternative without a link: build the zip and copy it into the mods folder
 python tools/build.py --install
 
 # release
@@ -48,6 +54,10 @@ git tag v0.2.0 && git push --follow-tags
 Pushing a `v*` tag makes the GitHub Action build the zip and attach it to a GitHub release. The syntax check and the build run on every push and pull request.
 
 Note: the mod name in `info.json` stays `Gregtorio` so existing saves keep working.
+
+## Contributing
+
+See `CONTRIBUTING.md`. Everything on GitHub is in English.
 
 ## License
 
