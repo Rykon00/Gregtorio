@@ -64,7 +64,16 @@ end
 
 
 ---MAKING INSERTERS NOT REQUIRE POWER
-data.raw["inserter"]["burner-inserter"].energy_source = {type = "void"}
+--- Fork: the Manual Inserter runs on manual labor instead of for free (vanilla burner
+--- inserter energy, about 10 swings per manual labor; no free initial fuel)
+data.raw["inserter"]["burner-inserter"].energy_source = {
+	type = "burner",
+	fuel_categories = { "manual-labor" },
+	burner_usage = data.raw["burner-usage"]["manual-labor"] and "manual-labor" or nil,
+	effectivity = 1,
+	fuel_inventory_size = 1,
+	light_flicker = { color = { 0, 0, 0 } },
+}
 --data.raw["inserter"]["inserter"].energy_source = {type = "void"}
 --data.raw["inserter"]["long-handed-inserter"].energy_source = {type = "void"}
 --data.raw["inserter"]["fast-inserter"].energy_source = {type = "void"}
