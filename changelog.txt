@@ -1,4 +1,23 @@
 ---------------------------------------------------------------------------------------------------
+Version: 0.2.0
+Date: 2026-09-28
+  Features:
+    - IV is playable: the IV science pack is unlocked, 23 IV basic machines, 13 IV multiblock upgrades and all 17 GT++ industrial multiblocks are buildable.
+    - LuV is playable: HSS-S parts, rhodium-plated palladium, the LuV Assembly Line, LuV components, 37 LuV machines, a LuV science pack recipe and 9 LuV technologies.
+    - EV multiblocks that could be crafted but not placed now work: Alloy Blast Smelter, Extreme Entity Crusher, Ender IO machines (Slice'n'Splice, Soul Binder, Powered Spawner) and the HV Large Sifter.
+    - New sprites and icons built from GregTech 5 Unofficial textures (LGPL-3.0).
+    - English names for 520 items, buildings, fluids and technologies that showed "Unknown key".
+  Changes:
+    - Machines accept all recipe categories of their own and lower tiers (e.g. the EV Fluid Solidifier can now make MV/HV/EV recipes).
+    - Chemical baths have one fluid input and one fluid output (the platinum line needs an output).
+    - Iridium dust and HPIC wafers are made in the EV chemical reactor (every IV machine needs them).
+    - Intermediate recipes that no technology unlocked are now unlocked together with the recipes that need them.
+  Bugfixes:
+    - Added missing recipes: zirconium dust (Alloy Blast Smelter) and cryogenic helium.
+    - Gregtorio's own tungsten carbide technology was disabled together with the Space Age one of the same name.
+    - Industrial Wire Factory needed itself as an ingredient; Industrial Wire Factory and TurboCan Pro had no unlocking technology.
+    - Existing saves: newly added unlocks of already researched technologies are applied on load.
+---------------------------------------------------------------------------------------------------
 Version: 0.1.9
 Date: 2025-08-19
   Info:
