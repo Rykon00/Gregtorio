@@ -36,7 +36,7 @@ BASIC_GT = {
 }
 
 # tier color GT uses to tint the (gray) machine casings (IV = tungstensteel)
-TIER_TINT = {"IV": (100, 100, 160), "LuV": (255, 205, 225), "ZPM": (140, 225, 245)}
+TIER_TINT = {"IV": (100, 100, 160), "LuV": (255, 205, 225), "ZPM": (140, 225, 245), "UV": (130, 215, 140)}
 
 # casing item -> flat GT texture ("mod:path" under textures/blocks). Without an entry the item icon is used.
 CASING_TEXTURE = {
@@ -84,6 +84,11 @@ MULTIBLOCKS = {
                                   "gregtech:iconsets/OVERLAY_FRONT_ASSEMBLY_MATRIX", "reinforced-glass"),
     "fusion-reactor-mk1": ((9, 9), "gregtech:iconsets/MACHINE_CASING_FUSION", None,
                            "gregtech:iconsets/OVERLAY_FUSION1", "gregtech:iconsets/MACHINE_CASING_FUSION_COIL"),
+    # UV (127-fork-uv.lua)
+    "zpm-assembly-line": ((9, 3), "assembler-machine-casing", None,
+                          "gregtech:iconsets/OVERLAY_FRONT_ASSEMBLY_LINE", "grate-machine-casing"),
+    "fusion-reactor-mk2": ((9, 9), "gregtech:iconsets/MACHINE_CASING_FUSION_2", None,
+                           "gregtech:iconsets/OVERLAY_FUSION2", "gregtech:iconsets/MACHINE_CASING_FUSION_COIL"),
 }
 # multiblocks without an upstream item icon: the icon is the controller tile
 CONTROLLER_ICONS = {"neutron-activator"}
@@ -256,7 +261,7 @@ def main():
     OUT_ENTITY.mkdir(parents=True, exist_ok=True)
     OUT_ICON.mkdir(parents=True, exist_ok=True)
 
-    for tier in ("IV", "LuV", "ZPM"):
+    for tier in ("IV", "LuV", "ZPM", "UV"):
         for base in BASIC_GT:
             basic_machine(a.gt, base, tier)
     for name, spec in MULTIBLOCKS.items():
