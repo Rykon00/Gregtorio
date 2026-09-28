@@ -58,6 +58,8 @@ CASING_TEXTURE = {
     "multi-use-casing": "miscutils:TileEntities/MACHINE_CASING_STABLE_STELLITE",
     "assembler-machine-casing": "gregtech:iconsets/MACHINE_CASING_ASSEMBLER",
     "grate-machine-casing": "gregtech:iconsets/MACHINE_CASING_GRATE",
+    "clean-stainless-steel-casing": "gregtech:iconsets/MACHINE_CASING_CLEAN_STAINLESSSTEEL",
+    "titanium-reinforced-borosilicate-glass-block": "bartworks:TitaniumReinforcedBoronSilicateGlassBlock",
 }
 # per-multiblock casing override (e.g. the centrifuge)
 CASING_OVERRIDE = {
@@ -72,6 +74,22 @@ MULTIBLOCKS = {
                           "gregtech:iconsets/OVERLAY_FRONT_ASSEMBLY_LINE", "grate-machine-casing"),
     "ev-extreme-entity-crusher": ((3, 3), "solid-steel-machine-casing", "extreme-entity-crusher",
                                   "gregtech:iconsets/OVERLAY_FRONT_DISASSEMBLER", None),
+    # LuV endgame (125-fork-luv-endgame.lua); a casing with ":" is a GT texture, a face tuple is (idle, working)
+    "neutron-activator": ((3, 3), "gregtech:iconsets/MACHINE_CASING_RADIATIONPROOF", None,
+                          ("gregtech:icons/NeutronActivator_Off", "gregtech:icons/NeutronActivator_On"), None),
+    "bacterial-vat": ((5, 5), "clean-stainless-steel-casing", None,
+                      "gregtech:iconsets/OVERLAY_FRONT_BIOLOGICAL_COORDINATION",
+                      "titanium-reinforced-borosilicate-glass-block"),
+    "luv-circuit-assembly-line": ((9, 3), "assembler-machine-casing", None,
+                                  "gregtech:iconsets/OVERLAY_FRONT_ASSEMBLY_MATRIX", "reinforced-glass"),
+    "fusion-reactor-mk1": ((9, 9), "gregtech:iconsets/MACHINE_CASING_FUSION", None,
+                           "gregtech:iconsets/OVERLAY_FUSION1", "gregtech:iconsets/MACHINE_CASING_FUSION_COIL"),
+}
+# multiblocks without an upstream item icon: the icon is the controller tile
+CONTROLLER_ICONS = {"neutron-activator"}
+# items whose icon is a GT block texture (written to graphics/icons/fork/)
+TEXTURE_ICONS = {
+    "titanium-reinforced-borosilicate-glass-block": "bartworks:TitaniumReinforcedBoronSilicateGlassBlock",
 }
 # IV multiblocks: the casing is read from the recipe in 20-iv-age-entity.lua
 IV_MULTIBLOCK_FACES = {
@@ -136,7 +154,7 @@ def tint(img, rgb):
 
 
 def casing_tile(gt, casing, override=None):
-    spec = override or CASING_TEXTURE.get(casing)
+    spec = override or CASING_TEXTURE.get(casing) or (casing if ":" in casing else None)
     if spec and gt_path(gt, spec).exists():
         return frames_of(load(gt_path(gt, spec)))[0].resize((TILE, TILE), Image.NEAREST)
     return scaled(load(ICONS / f"{casing}.png"), TILE)
@@ -186,7 +204,9 @@ def multiblock(gt, name, size, casing, controller, face, middle):
                 tile = mid if (mid and 0 < y < h - 1) else cas
                 img.paste(tile, (x * TILE, y * TILE))
         ctrl = cas.copy()
-        if face:
+        if isinstance(face, tuple):
+            ctrl.alpha_composite(frames_of(load(gt_path(gt, face[1 if active else 0])))[0].resize((TILE, TILE), Image.NEAREST))
+        elif face:
             p = gt_path(gt, face + ("Active" if active and "controllerFaces" in face else "_ACTIVE" if active else ""))
             if not p.exists():
                 p = gt_path(gt, face)
@@ -199,6 +219,11 @@ def multiblock(gt, name, size, casing, controller, face, middle):
 
     build(False).save(OUT_ENTITY / f"{name}-idle.png")
     build(True).save(OUT_ENTITY / f"{name}-working.png")
+    if name in CONTROLLER_ICONS:
+        # no upstream item icon: the controller tile
+        img = build(False)
+        cx, cy = w // 2, h - 1 if h > 3 else h // 2
+        img.crop((cx * TILE, cy * TILE, (cx + 1) * TILE, (cy + 1) * TILE)).save(OUT_ICON / f"{name}.png")
 
 
 def icon_machine(name):
@@ -241,6 +266,8 @@ def main():
         multiblock(a.gt, name, (3, 3), casing, controller, IV_MULTIBLOCK_FACES.get(name), None)
     for name in ICON_MACHINES:
         icon_machine(name)
+    for name, spec in TEXTURE_ICONS.items():
+        casing_tile(gt=a.gt, casing=name, override=spec).save(OUT_ICON / f"{name}.png")
     print("Sprites:", len(list(OUT_ENTITY.glob("*.png"))), "Icons:", len(list(OUT_ICON.glob("*.png"))))
 
 
