@@ -170,3 +170,25 @@ fork_add_unlock("industrial-wire-factory", "iv-industrial-wire-factory")
 --- TurboCan Pro had no tech at all
 fork_add_unlock("iv-machines", "turbocan-pro-controller")
 fork_add_unlock("iv-machines", "iv-turbocan-pro")
+
+
+
+--------------------------------------------------------------------------------
+--- LV SCIENCE PACK: vanilla ingredients (transport belt + inserter) replaced by LV parts,
+--- in the style of the MV pack (LV components -> 4 packs). Everything is available when
+--- the LV science tech is researched: LV motor and tin cable (steam-turbine), LV piston
+--- (bending-machine), primitive electronic circuit (primitive-electronics).
+--------------------------------------------------------------------------------
+
+if data.raw.recipe["lv-science-pack"] then
+	local r = data.raw.recipe["lv-science-pack"]
+	r.energy_required = 20
+	r.ingredients = {
+		{ type = "item", name = "lv-motor", amount = 1 },
+		{ type = "item", name = "lv-piston", amount = 1 },
+		{ type = "item", name = "electronic-circuit", amount = 1 },
+		{ type = "item", name = "tin-cable", amount = 2 },
+	}
+	r.results = { { type = "item", name = "logistic-science-pack", amount = 2 } }
+	r.main_product = "logistic-science-pack"
+end
