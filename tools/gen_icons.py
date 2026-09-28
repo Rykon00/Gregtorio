@@ -29,6 +29,10 @@ DONORS = {
     "nano-power-ic": ("ultra-high-powered-integrated-circuit", 190),
     "pico-power-ic": ("ultra-high-powered-integrated-circuit", 130),
     "quantum-power-ic": ("ultra-high-powered-integrated-circuit", 0),
+    # phase 5a metals: the ingots get a hue, their parts take the ingot color
+    "cosmic-neutronium-ingot": ("neutronium-ingot", 275), "draconium-ingot": ("tritanium-ingot", 355),
+    "infinity-ingot": ("tritanium-ingot", 45), "transcendent-metal-ingot": ("neutronium-ingot", 185),
+    "dracofinium-ingot": ("tritanium-ingot", 330), "chromnorox-ingot": ("tritanium-ingot", 200),
 }
 
 

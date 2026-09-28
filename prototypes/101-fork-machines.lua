@@ -261,6 +261,18 @@ local SPECIAL_SHIFT = {
 		["naquadah-coil-block"] = "trinium-coil-block",
 		["trinium-coil-block"]  = "tritanium-coil-block",
 	},
+	--- UEV machines (131-fork-uev.lua): draconium cable, awakened draconium coils
+	uev = {
+		["tritanium-cable"]      = "draconium-cable",
+		["trinium-coil-block"]   = "tritanium-coil-block",
+		["tritanium-coil-block"] = "awakened-draconium-coil-block",
+	},
+	--- UIV machines (132-fork-uiv.lua): nether star cable, infinity coils
+	uiv = {
+		["draconium-cable"]      = "nether-star-cable",
+		["tritanium-coil-block"] = "awakened-draconium-coil-block",
+		["awakened-draconium-coil-block"] = "infinity-coil-block",
+	},
 }
 local function item_exists(n)
 	for t, _ in pairs(defines.prototypes.item) do

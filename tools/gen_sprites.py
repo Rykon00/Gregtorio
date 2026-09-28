@@ -37,7 +37,7 @@ BASIC_GT = {
 
 # tier color GT uses to tint the (gray) machine casings (IV = tungstensteel)
 TIER_TINT = {"IV": (100, 100, 160), "LuV": (255, 205, 225), "ZPM": (140, 225, 245), "UV": (130, 215, 140),
-             "UHV": (235, 120, 120)}
+             "UHV": (235, 120, 120), "UEV": (240, 200, 90), "UIV": (120, 150, 255)}
 
 # casing item -> flat GT texture ("mod:path" under textures/blocks). Without an entry the item icon is used.
 CASING_TEXTURE = {
@@ -92,6 +92,9 @@ MULTIBLOCKS = {
                            "gregtech:iconsets/OVERLAY_FUSION2", "gregtech:iconsets/MACHINE_CASING_FUSION_COIL"),
     # UHV (128-fork-uhv.lua)
     "fusion-reactor-mk3": ((9, 9), "gregtech:iconsets/MACHINE_CASING_FUSION_2", None,
+                           "gregtech:iconsets/OVERLAY_FUSION3", "gregtech:iconsets/MACHINE_CASING_FUSION_COIL"),
+    # UEV (131-fork-uev.lua): there is no MK4 overlay in GT, the MK3 one is reused
+    "fusion-reactor-mk4": ((9, 9), "gregtech:iconsets/MACHINE_CASING_FUSION_2", None,
                            "gregtech:iconsets/OVERLAY_FUSION3", "gregtech:iconsets/MACHINE_CASING_FUSION_COIL"),
     # water purification (129-fork-water-purification.lua)
     "water-purification-plant": ((5, 5), "gregtech:iconsets/MACHINE_CASING_INDUSTRIAL_WATER_PLANT", None,
@@ -269,7 +272,7 @@ def main():
     OUT_ENTITY.mkdir(parents=True, exist_ok=True)
     OUT_ICON.mkdir(parents=True, exist_ok=True)
 
-    for tier in ("IV", "LuV", "ZPM", "UV", "UHV"):
+    for tier in ("IV", "LuV", "ZPM", "UV", "UHV", "UEV", "UIV"):
         for base in BASIC_GT:
             basic_machine(a.gt, base, tier)
     for name, spec in MULTIBLOCKS.items():
