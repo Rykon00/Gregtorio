@@ -120,10 +120,7 @@ set_ingredient("assembler-machine-casing", "zpm-circuit", "iv-circuit")
 --- The naquadah coil block is ZPM material that cannot be made at LuV -> stays a draft
 if data.raw.recipe["naquadah-coil-block"] then data.raw.recipe["naquadah-coil-block"] = nil end
 
---- Circuit assembly line: only used for crystal processors (mutagen/bacterial vat missing) -> stays a draft
-for _, n in pairs({ "circuit-assembly-line-controller", "luv-circuit-assembly-line" }) do
-	if data.raw.recipe[n] then data.raw.recipe[n] = nil end
-end
+--- Circuit assembly line: finished in 125-fork-luv-endgame.lua (with the crystal processors)
 
 
 
@@ -138,7 +135,8 @@ do
 	m.icon_size = 32
 	m.minable = { mining_time = 1, result = "luv-assembly-line" }
 	m.crafting_categories = { "iv-assembly-line-recipes", "luv-assembly-line-recipes" }
-	m.crafting_speed = 1
+	--- An IV multiblock (IV energy hatches): recipes are timed as GT seconds * tier speed like everywhere else
+	m.crafting_speed = IV_SPEED
 	m.energy_usage = EU16_IV
 	m.fast_replaceable_group = "fr-assembly-line"
 	local w, h = 9, 3

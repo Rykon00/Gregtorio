@@ -5,8 +5,10 @@
 - Read `CONTRIBUTING.md` and the layout table in `README.md` first.
 - Upstream content lives in `prototypes/0*-*.lua` … `98-technology.lua`; keep changes there
   minimal. Fork logic lives in `prototypes/1xx-fork-*.lua`, loaded at the end of `data.lua`
-  in this order: 100 fixes, 101 machines, 102 resources, 110 LuV, 120 AE2 (ME network), 190 manual-labor
+  in this order: 100 fixes, 101 machines, 102 resources, 110 LuV, 120 AE2 (ME network),
+  125 LuV endgame (naquadah, bacterial vat, crystal processors, fusion MK1), 190 manual-labor
   burner usage (fist icon in the fuel slot), 199 finalize.
+  The phase plan is in `docs/ROADMAP.md`.
   Runtime fork code lives in `scripts/` and is required from `control.lua`.
 - `199-fork-finalize.lua` hides draft recipes with missing parts (`FORK-DRAFT` in the log) and
   auto-unlocks intermediates (`FORK-AUTOUNLOCK`). Check the log after changes.

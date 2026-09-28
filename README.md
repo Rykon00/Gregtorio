@@ -16,6 +16,7 @@ The repository root is the mod itself (`info.json`, `data.lua`, `prototypes/`, `
 | `prototypes/102-fork-resources.lua` | disables the vanilla resource patches (no spawning, not minable) |
 | `prototypes/110-fork-luv.lua` | LuV: materials, assembly line, LuV machines, science pack, techs |
 | `prototypes/120-fork-ae2.lua` | AE2 / ME network on top of the logistic network: ME Drives with storage cells, ME Interface, ME Terminal, ME Controller, techs |
+| `prototypes/125-fork-luv-endgame.lua` | LuV endgame: naquadah ore line and neutron activator, bacterial vat and mutagen, circuit assembly line and crystal processors, fusion reactor MK1 and the first plasmas |
 | `prototypes/190-fork-manual-labor.lua` | "manual labor" burner usage: fist instead of the gas pump in the fuel slot, "No manual labor" status |
 | `scripts/fork-me-terminal.lua` | runtime part of the ME network: terminal GUI (event driven), ME Interface default |
 | `prototypes/199-fork-finalize.lua` | draft guard (hides broken draft recipes) and auto-unlock of intermediates |
@@ -37,7 +38,7 @@ The repository root is the mod itself (`info.json`, `data.lua`, `prototypes/`, `
 |---|---|
 | Steam – EV | playable (upstream), gaps closed |
 | IV | playable (fork 0.2.0) |
-| LuV | playable (fork 0.2.0); crystal processors, bacterial vat and fusion are still drafts |
+| LuV | playable (fork 0.2.0); naquadah line, bacterial vat, crystal processors and fusion MK1 finished (see `docs/ROADMAP.md`) |
 | ZPM+ | draft; broken recipes are hidden on load (`FORK-DRAFT` in the log) |
 
 ## Workflow
