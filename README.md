@@ -37,7 +37,7 @@ The repository root is the mod itself (`info.json`, `data.lua`, `prototypes/`, `
 
 ```bash
 # once: link the working copy into the Factorio mods folder
-# (existing Gregtorio zips are parked in mods/_gregtorio_zips/)
+# (existing Gregtorio zips are moved to gregtorio-zips-backup/ next to the mods folder)
 python tools/dev_link.py
 # from then on every change/pull is live after restarting Factorio
 
