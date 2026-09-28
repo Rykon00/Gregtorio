@@ -8,8 +8,10 @@
   in this order: 100 fixes, 101 machines, 102 resources, 110 LuV, 120 AE2 (ME network),
   125 LuV endgame (naquadah, bacterial vat, crystal processors, fusion MK1), 126 ZPM, 127 UV
   (UV circuit, ZPM assembly line, UV components, fusion MK2), 128 UHV (wetware line, tritanium,
-  UHV components, fusion MK3), 130 molds
-  (mold slot instead of mold ingredient), 190 manual-labor
+  UHV components, fusion MK3), 129 water purification (grades 1-6, NPIC/PPIC/QPIC chips),
+  131 UEV (bio line, UEV components, fusion MK4), 132 UIV (optical line, UIV components),
+  150 molds (mold slot instead of mold ingredient; must load after every file that creates
+  machines), 190 manual-labor
   burner usage (fist icon in the fuel slot), 199 finalize.
   The phase plan is in `docs/ROADMAP.md`.
   Runtime fork code lives in `scripts/` and is required from `control.lua`.

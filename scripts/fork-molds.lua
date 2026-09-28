@@ -1,5 +1,5 @@
 --------------------------------------------------------------------------------
---- FORK MOLDS (runtime, see prototypes/130-fork-molds.lua)
+--- FORK MOLDS (runtime, see prototypes/150-fork-molds.lua)
 --- Machines with a mold slot are tracked in storage.fork_molds.machines. Every CHECK_TICKS
 --- each of them is checked: if its recipe needs a mold that is not in the mold slot, the
 --- machine is stopped (disabled_by_script) with the status "Missing mold"; as soon as the
