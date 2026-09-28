@@ -76,8 +76,13 @@ data.raw["underground-belt"]["underground-belt"].max_distance = 7
 
 
 ---DISABLE TRIGGERED TECHS
+--- Fork: Gregtorio-eigene Techs mit gleichem Namen wie Vanilla-Techs (z. B. "tungsten-carbide")
+--- nicht mit abschalten
+local function is_gregtorio_tech(t)
+  return t.icon and t.icon:sub(1, 14) == "__Gregtorio__/"
+end
 local function disable_trigger_tech(name)
-  if data.raw.technology[name] then
+  if data.raw.technology[name] and not is_gregtorio_tech(data.raw.technology[name]) then
     data.raw.technology[name].enabled = false
     data.raw.technology[name].hidden = true
 	data.raw.technology[name].research_trigger = nil
@@ -110,7 +115,7 @@ disable_trigger_tech("biter-egg-handling")
 
 ---DISABLE TECHS
 local function disable_tech(name)
-  if data.raw.technology[name] then
+  if data.raw.technology[name] and not is_gregtorio_tech(data.raw.technology[name]) then
     data.raw.technology[name].enabled = false
     data.raw.technology[name].hidden = true
     data.raw.technology[name].effects = {}
