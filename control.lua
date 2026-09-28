@@ -1,6 +1,8 @@
 
 --- Fork: ME terminal GUI and ME interface defaults (AE2, see prototypes/120-fork-ae2.lua)
 local fork_me = require("scripts.fork-me-terminal")
+--- Fork: AE2 autocrafting, pattern providers and crafting CPUs (see prototypes/121-fork-ae2-autocrafting.lua)
+local fork_ae2 = require("scripts.fork-me-autocraft")
 --- Fork: molds stay in the machine's mold slot (see prototypes/150-fork-molds.lua)
 local fork_molds = require("scripts.fork-molds")
 --- Fork: researching the first level of `victory` wins the game (see prototypes/135-fork-endgame.lua)
@@ -11,6 +13,7 @@ script.on_event(defines.events.on_built_entity, function(event)
     event.entity.remove_unfiltered_items = true
   end
   fork_me.on_built(event.entity)
+  fork_ae2.on_built(event.entity)
   fork_molds.on_built(event.entity)
 end)
 
@@ -18,6 +21,7 @@ script.on_event(defines.events.on_robot_built_entity, function(event)
   if event.entity.name == "trash-can" then
     event.entity.remove_unfiltered_items = true
   end
+  fork_ae2.on_built(event.entity)
   fork_molds.on_built(event.entity)
 end)
 
@@ -25,7 +29,13 @@ end)
 script.on_event({ defines.events.script_raised_built, defines.events.script_raised_revive,
   defines.events.on_space_platform_built_entity }, function(event)
   fork_me.on_built(event.entity)
+  fork_ae2.on_built(event.entity)
   fork_molds.on_built(event.entity)
+end)
+
+--- Fork: cloned entities (e.g. by other mods) need to be registered as well
+script.on_event(defines.events.on_entity_cloned, function(event)
+  fork_ae2.on_built(event.destination)
 end)
 
 -- Raise a custom event when the cutscene ends
@@ -95,6 +105,7 @@ script.on_configuration_changed(function(data)
 		end
 	end
 	fork_me.on_configuration_changed()
+	fork_ae2.on_configuration_changed()
 	fork_molds.on_configuration_changed()
 end)
 
