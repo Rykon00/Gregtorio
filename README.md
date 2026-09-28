@@ -20,6 +20,9 @@ The repository root is the mod itself (`info.json`, `data.lua`, `prototypes/`, `
 | `prototypes/126-fork-zpm.lua` | ZPM: naquadah alloy parts, europium, ZPM components, casing and hull, ZPM science pack, ZPM energy hatch, ZPM machines and multiblock upgrades, techs |
 | `prototypes/127-fork-uv.lua` | UV: naquadria, americium and neutronium (fusion), superconductors, UV circuit (crystal processor mainframe), ZPM assembly line, UV components, casing and hull, fusion reactor MK2 and its plasmas, UV science pack, UV energy hatch, UV machines and multiblock upgrades, techs |
 | `prototypes/128-fork-uhv.lua` | UHV: tritanium and the triamerotronium superconductor, the wetware line (UHV circuit), UHV components, casing and hull, fusion reactor MK3 with advanced fusion coils, UHV science pack, UHV energy hatch, UHV machines and multiblock upgrades, techs |
+| `prototypes/129-fork-water-purification.lua` | water purification plant (grades 1-6), europium/americium doped wafers, NPIC/PPIC/QPIC chips used by the ZPM/UV/UHV energy hatches and the MK2/MK3 controllers |
+| `prototypes/131-fork-uev.lua` | UEV: cosmic neutronium, draconium and infinity (fusion), dracofinium superconductor, bio line (UEV circuit), UEV components, casing and hull, fusion reactor MK4, UEV science pack, energy hatch, machines and multiblock upgrades, techs |
+| `prototypes/132-fork-uiv.lua` | UIV: transcendent metal (MK4), nether star cable, chromnorox superconductor, optical line (UIV circuit), UIV components, casing and hull, UIV science pack, energy hatch, machines and multiblock upgrades, techs |
 | `prototypes/150-fork-molds.lua` | molds stay in the machine: the mold is a module in a mold-only slot of alloy smelters, fluid solidifiers and extruders instead of an ingredient or machine component |
 | `scripts/fork-molds.lua` | stops machines with a mold recipe and no mold ("Missing mold"); gives machines their mold once in saves from before they had a mold slot |
 | `prototypes/190-fork-manual-labor.lua` | "manual labor" burner usage: fist instead of the gas pump in the fuel slot, "No manual labor" status |
@@ -47,7 +50,9 @@ The repository root is the mod itself (`info.json`, `data.lua`, `prototypes/`, `
 | ZPM | playable (fork); ZPM components, science pack, energy hatch and machines (see `docs/ROADMAP.md`) |
 | UV | playable (fork); UV circuit, ZPM assembly line, UV components, fusion MK2, science pack, energy hatch and machines (see `docs/ROADMAP.md`) |
 | UHV | playable (fork); wetware line and UHV circuit, UHV components, fusion MK3, science pack, energy hatch and machines (see `docs/ROADMAP.md`) |
-| UEV+ | draft; broken recipes are hidden on load (`FORK-DRAFT` in the log) |
+| UEV | playable (fork); water purification, bio line and UEV circuit, UEV components, fusion MK4, science pack, energy hatch and machines (see `docs/ROADMAP.md`) |
+| UIV | playable (fork); optical line and UIV circuit, UIV components, science pack, energy hatch and machines; fusion MK5 is open (see `docs/ROADMAP.md`) |
+| UMV+ | draft; broken recipes are hidden on load (`FORK-DRAFT` in the log) |
 
 ## Workflow
 
