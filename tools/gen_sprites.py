@@ -93,9 +93,13 @@ MULTIBLOCKS = {
     # UHV (128-fork-uhv.lua)
     "fusion-reactor-mk3": ((9, 9), "gregtech:iconsets/MACHINE_CASING_FUSION_2", None,
                            "gregtech:iconsets/OVERLAY_FUSION3", "gregtech:iconsets/MACHINE_CASING_FUSION_COIL"),
+    # water purification (129-fork-water-purification.lua)
+    "water-purification-plant": ((5, 5), "gregtech:iconsets/MACHINE_CASING_INDUSTRIAL_WATER_PLANT", None,
+                                 "gregtech:iconsets/OVERLAY_FRONT_PURIFICATION_PLANT",
+                                 "titanium-reinforced-borosilicate-glass-block"),
 }
 # multiblocks without an upstream item icon: the icon is the controller tile
-CONTROLLER_ICONS = {"neutron-activator"}
+CONTROLLER_ICONS = {"neutron-activator", "water-purification-plant"}
 # items whose icon is a GT block texture (written to graphics/icons/fork/)
 TEXTURE_ICONS = {
     "titanium-reinforced-borosilicate-glass-block": "bartworks:TitaniumReinforcedBoronSilicateGlassBlock",

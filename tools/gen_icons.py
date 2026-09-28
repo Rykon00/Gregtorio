@@ -23,6 +23,15 @@ TIERS = ["lv", "mv", "hv", "ev", "iv", "luv", "zpm", "uv", "uhv", "uev", "uiv", 
 TIER_HUE = {"luv": 320, "zpm": 190, "uv": 130, "uhv": 0, "uev": 90, "uiv": 150, "umv": 260, "uxv": 45}
 
 
+# explicit donors (icon to recolor, hue in degrees) where the longest-suffix guess picks a bad one
+DONORS = {
+    "npic-wafer": ("uhpic-wafer", 190), "ppic-wafer": ("uhpic-wafer", 130), "qpic-wafer": ("uhpic-wafer", 0),
+    "nano-power-ic": ("ultra-high-powered-integrated-circuit", 190),
+    "pico-power-ic": ("ultra-high-powered-integrated-circuit", 130),
+    "quantum-power-ic": ("ultra-high-powered-integrated-circuit", 0),
+}
+
+
 def existing():
     return {p.stem for p in ICONS.glob("*.png")}
 
@@ -126,7 +135,7 @@ def main():
     for n in names:
         if n in have:
             continue
-        donor, hue = donor_for(n, have)
+        donor, hue = DONORS.get(n) or donor_for(n, have)
         mc = material_color(n, have) if hue is None else None
         if mc:
             img = colorize(Image.open(ICONS / f"{donor}.png"), mc)
