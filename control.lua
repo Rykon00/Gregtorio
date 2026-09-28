@@ -1,8 +1,12 @@
 
+--- Fork: ME terminal GUI and ME interface defaults (AE2, see prototypes/120-fork-ae2.lua)
+local fork_me = require("scripts.fork-me-terminal")
+
 script.on_event(defines.events.on_built_entity, function(event)
   if event.entity.name == "trash-can" then
     event.entity.remove_unfiltered_items = true
   end
+  fork_me.on_built(event.entity)
 end)
 
 script.on_event(defines.events.on_robot_built_entity, function(event)
@@ -76,6 +80,7 @@ script.on_configuration_changed(function(data)
 			force.reset_technology_effects()
 		end
 	end
+	fork_me.on_configuration_changed()
 end)
 
 
