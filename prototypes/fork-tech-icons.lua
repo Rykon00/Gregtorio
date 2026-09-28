@@ -90,5 +90,10 @@ FORK_TECH_ICONS = {
 	["vanadium-gallium"] = true,
 	["yttrium-barium-cuprate"] = true,
 	["zirconium-carbide"] = true,
+	["zpm-components"] = true,
+	["zpm-energy-hatches"] = true,
+	["zpm-machines"] = true,
+	["zpm-materials"] = true,
+	["zpm-multiblocks"] = true,
 	["zyngen"] = true,
 }
