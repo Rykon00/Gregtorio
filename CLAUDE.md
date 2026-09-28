@@ -7,7 +7,8 @@
   minimal. Fork logic lives in `prototypes/1xx-fork-*.lua`, loaded at the end of `data.lua`
   in this order: 100 fixes, 101 machines, 102 resources, 110 LuV, 120 AE2 (ME network),
   125 LuV endgame (naquadah, bacterial vat, crystal processors, fusion MK1), 126 ZPM, 127 UV
-  (UV circuit, ZPM assembly line, UV components, fusion MK2), 130 molds
+  (UV circuit, ZPM assembly line, UV components, fusion MK2), 128 UHV (wetware line, tritanium,
+  UHV components, fusion MK3), 130 molds
   (mold slot instead of mold ingredient), 190 manual-labor
   burner usage (fist icon in the fuel slot), 199 finalize.
   The phase plan is in `docs/ROADMAP.md`.
