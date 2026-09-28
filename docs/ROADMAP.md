@@ -15,8 +15,8 @@ UEV = cryogenic, then promethium / UMV / UXV / max.
 |---|---|---|
 | 1 | Finish LuV: naquadah ore line, bacterial vat, mutagen, crystal processors, circuit assembly line, fusion reactor MK1 and the first plasmas | **done** (`prototypes/125-fork-luv-endgame.lua`) |
 | 2 | ZPM: ZPM science pack, ZPM components and machines (europium, naquadah alloy, osmiridium), ZPM energy hatch | **done** (`prototypes/126-fork-zpm.lua`) |
-| 3 | UV: fusion reactor MK2 (and its plasmas), wetware processors, crystal processor mainframe (UV circuit), UV components | open, next |
-| 4 | UHV: fusion reactor MK3, UHV components and circuits | open |
+| 3 | UV: UV circuit (crystal processor mainframe), ZPM assembly line, UV components, fusion reactor MK2 and its plasmas, UV science pack, UV energy hatch and machines | **done** (`prototypes/127-fork-uv.lua`) |
+| 4 | UHV: fusion reactor MK3, wetware processors (UHV circuit), UHV components | open, next |
 | 5 | UEV .. UXV and the endgame (stargate, victory) | open |
 | side | Water purification line (grades 1-8; the draft in `21-luv-age-item.lua` is commented out) | open |
 | side | AE2 autocrafting (patterns, molecular assembler on top of the ME network from `120-fork-ae2.lua`) | open |
@@ -121,9 +121,110 @@ first.
 - Upgrade multiblocks return the replaced parts. In phase 3 the UV upgrades will return naquadah
   coils, so check the auto-unlock of the naquadah coil again.
 
-### Suggested next step
+### Suggested next step (done in phase 3)
 
 Phase 3 (UV): fusion reactor MK2 (the `mk2-fusion-reactor-recipes` plasmas stay hidden until
 then), the UV circuit (crystal processor mainframe or wetware), the UV components (naquadah alloy
 cable, UV energy hatch), UV machines with `fork_make_tier_machine(base, "zpm", "uv", ...)` and the
 UV science pack (`agricultural-science-pack`). Switch the ZPM field generator to UV circuits then.
+
+## Phase 3: UV (done)
+
+Numbers: researchable technologies 252 -> 264 of 303 -> 313 (the 10 new ones, plus `tree-seeding` and
+`electromagnetic-science-pack`, which needed the UV science pack), draft recipes hidden by the draft guard
+65 -> 46 (19 became real recipes), auto-unlocked recipes 53 -> 53 (nothing moved, see below), machines
+placed by `devcheck runtime` 287 -> 325. Progression now stops at the UHV science pack
+(`electromagnetic-science-pack` is researchable but the pack has no recipe yet).
+
+`25-uv-age-item.lua` is still not loaded by `data.lua` (not valid Lua, mostly later tiers); the UV parts
+are rebuilt in `127-fork-uv.lua` after the GT5-Unofficial recipes.
+
+New technologies:
+
+| Technology | Science | Unlocks |
+|---|---|---|
+| `zpm-superconductors` | LuV | palladium-naqindium superconductor (dust, blast furnace, wire, cooled wire), molten naquadah, the alternative ZPM superconducting coil block |
+| `crystal-processor-mainframes` | ZPM | ITBTC alloy and its wire, the LuV superconductor wire, crystal processor mainframe (the UV circuit), ZPM field generator (moved here from `zpm-components`) |
+| `zpm-assembly-line` | ZPM | ZPM assembly line, naquadah alloy foil, palladium ingot and foil, lapotron crystal chain, lapotronic energy orb cluster |
+| `fusion-reactor-mk2` | ZPM | superdense europium plate, fusion machine casing, fusion reactor MK2 controller and reactor |
+| `fusion-plasmas-mk2` | ZPM | molten aluminium, beryllium, titanium, silver, silicon, chrome, cobalt, lutetium (from the rare earth line), americium, tritanium, and the sulfur, nitrogen, zinc, niobium, tin, titanium, oxygen and krypton plasmas |
+| `uv-materials` | ZPM | naquadria (ingot, melt, plate, foil), naquadah plate, naquadah alloy wire and cable, neutronium (melt from fusion, ingot, plate, rod, long rod, ring, round, gear, large gear, screw, rotor, frame), americium (ingot, plate, fine wire), gravistar |
+| `uv-components` | ZPM | UV motor, pump, conveyor module, piston, robot arm, emitter, sensor, field generator (all from the ZPM assembly line), osmium plate, UV casing and hull |
+| `uv-machines` | UV | the 23 basic machines one tier up (`uv-macerator`, `uv-assembling-machine`, ...) |
+| `uv-energy-hatches` | UV | naquamiridium superconductor, trinium wire and coil, UV voltage coil, UV energy hatch, the alternative UV superconducting coil block |
+| `uv-multiblocks` | UV | the 13 multiblock upgrades (EBF with trinium coils, vacuum freezer, large chemical reactor, ...) |
+
+Changed technologies: `agricultural-science-pack` (the UV science tech) unlocks `uv-science-pack` and requires
+`uv-components`; `zpm-energy-hatches` requires `zpm-superconductors`; `zpm-materials` also unlocks the
+enderium recipes; `electromagnetic-science-pack` (UHV science) requires `uv-multiblocks`.
+
+The UV science pack (`uv-science-pack`: UV motor, 2 UV circuits, 4 neutronium plates, 4 naquadah coils, a ZPM
+field generator and molten naquadria -> 10 packs) is made in the ZPM assembling machine.
+
+Auto-unlock: `FORK-AUTOUNLOCK` is identical to phase 2 (no unlock lost its old tech). The UV multiblock
+upgrades give the replaced naquadah coils back, but `naquadah-coil-block` is unlocked explicitly in
+`zpm-energy-hatches` since phase 2, so it stays there. Two chains that the auto-unlock would have pulled
+into new techs are listed explicitly instead: the osmium plate (`uv-components`) and the lapotron crystal
+chain (`zpm-assembly-line`).
+
+Choices and deviations from GT:
+
+- **UV circuit = crystal processor mainframe.** In GT the crystal line runs IV .. UV (mainframe) and the
+  wetware line LuV .. UHV: the wetware processor mainframe is the *UHV* circuit and the UV one is the wetware
+  supercomputer. The mainframe is a single recipe on the circuit assembly line and closes with the fork's own
+  ITBTC/enderium superconductor draft; wetware (bacterial vat, mutagen) belongs to phase 4 where it is needed
+  for UHV circuits.
+- **Fusion.** MK2 is the ZPM tier as in GT (16 ZPM energy hatches, UV circuits in the controller). Americium is
+  GT's lutetium + chrome. Lutetium comes from depleted thorium fuel rods in GT, which needs a nuclear reactor
+  the fork does not have: it is a by-product of the rare earth line here (like zirconium in
+  `100-fork-fixes.lua`). Neutronium is GT's americium + naquadria, which is a *MK3* recipe (600M EU threshold);
+  the MK3 needs UHV circuits, so it runs in the MK2 for now. Times of the plasmas are the drafts'; americium
+  takes 5 s per ingot.
+- **Superconductors** are cooled like the IV one: a batch of base wire, one pump of the tier, a melt of the
+  tier's pipe metal (enderium LuV, naquadah ZPM, neutronium UV) and cryogenic helium. The ZPM base alloy is
+  blasted in the LuV blast furnace and the UV base in the ZPM one: each tier's own blast furnace needs that
+  tier's energy hatch, which needs the superconductor. Enderium is made without thaumium and ender pearl dust
+  (4 dusts -> 4 ingots) and solidifies in a vacuum freezer (a fluid solidifier has no output for the helium).
+- **UV components** follow GT with these changes: the pump uses naquadah plates instead of the large naquadah
+  pipe; the field generator needs 8 UV circuits instead of 4 UHV circuits (none before phase 4). The assembly
+  line recipes take 30 GT seconds; the ZPM assembly line runs at speed 32 (twice the LuV one), so a component
+  takes a minute.
+- **UV voltage coil** uses fine americium wire instead of fluxed electrum (not in Gregtorio); the trinium coil
+  (UV blast furnace) is the draft with `enriched-naquadah-foil`.
+- **No PPIC/NPIC chips.** Their wafers need the europium and americium doped silicon, which needs grade 4 and
+  6 water (the water purification side quest). The MK2 controller and the UV energy hatch use UHPIC wafers and
+  chips, like the ZPM hatch did.
+- Superdense europium plates (MK2 controller) are 64 plates in the ZPM compressor.
+- Palladium had no ingot recipe (only the dust); a dust smelter recipe was added for the palladium foil of the
+  multilayered circuit board (lapotronic energy orb cluster).
+- Molten copper had only the foundry recipe from copper ore, which does not exist here: an extractor recipe
+  (`molten-copper-extraction`) was added for the zinc plasma.
+
+Closed open points from phase 2: the ZPM field generator uses 4 UV circuits, the ZPM energy hatch the ZPM
+superconductor, the ZPM pump enderium plates (GT: enderium pipe), and the ZPM assembly line exists.
+Existing saves that already researched `zpm-components` lose the ZPM field generator recipe until they research
+`crystal-processor-mainframes` (it needs UV circuits now).
+
+### Open points from phase 3
+
+- Wetware processors (UHV circuit) and the UHV field generator: phase 4. The UV field generator stays on 8 UV
+  circuits until then.
+- PPIC and NPIC chips need the water purification line; the MK2 controller and the ZPM/UV hatches use UHPICs.
+- Still drafts: force plasma (arcanite), astral titanium and runite plasma, the liquid fuels and the naquadah
+  fuel (`excited-*-liquid-fuel`, `naquadah-based-fuel-mk1`), `advanced-fusion-coil` (needs the UHV emitter).
+- `fusion-machine-casing-mk2` is a real recipe now (americium plate) but no tech unlocks it: it belongs to the MK3.
+- Plasmas are still only ingredients; there is no plasma generator.
+- Balance: the lutetium yield (4 rare earth dust -> 1 lutetium) and the 384 fine americium wires per UV motor make
+  the UV motor the bottleneck (48 americium ingots = 4 minutes of one MK2 reactor). Nothing was tuned in game.
+- Still unused from `25-uv-age-item.lua`: research station, draconic fusion crafter tiers, nano forge, bio
+  processors, cosmic neutronium, component assembly line, UV dynamo hatch.
+- Graphics: the UV basic machine sprites are generated from GT textures (tinted green), the MK2 reactor uses the
+  GT fusion casing MK2 texture, item and technology icons are recolored placeholders (`tools/gen_icons.py`).
+
+### Suggested next step
+
+Phase 4 (UHV): fusion reactor MK3 (`fusion-machine-casing-mk2` is ready; move the neutronium recipe there), the
+wetware line for the UHV circuit (bacterial vat and mutagen from phase 1: wetware circuit board, neuro processing
+unit, wetware processor mainframe), UHV components, UHV energy hatch and machines with
+`fork_make_tier_machine(base, "uv", "uhv", ...)`, and the UHV science pack (`electromagnetic-science-pack`). Then
+switch the UV field generator to UHV circuits.

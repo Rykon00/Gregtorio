@@ -120,7 +120,8 @@ local function clone_multiblock(def)
 	item.stack_size = 10
 end
 
-local ARGON = { type = "fluid", name = "argon", amount = 5 }
+--- (a fresh table per recipe: create_ingot puts it into the ingredient lists as it is)
+local function argon() return { type = "fluid", name = "argon", amount = 5 } end
 
 
 
@@ -306,14 +307,14 @@ create_ingot("itbtc-alloy", "luv", 10 * LUV_SPEED, {
 		{ type = "item", name = "copper-dust", amount = 7 },
 		{ type = "fluid", name = "oxygen", amount = 1400 },
 	},
-	30, "iv", IV_SPEED * 63, ARGON,
+	30, "iv", IV_SPEED * 63, argon(),
 	"luv", LUV_SPEED * 20, false, true, false, nil, true, false)
 create_ingot("enderium", nil, nil, {
 		{ type = "item", name = "tin-dust", amount = 2 },
 		{ type = "item", name = "platinum-dust", amount = 1 },
 		{ type = "item", name = "silver-dust", amount = 1 },
 	},
-	4, "ev", nil, ARGON,
+	4, "ev", nil, argon(),
 	"ev", EV_SPEED * 1.2, true, false, true, EV_SPEED * 80, true, false)
 create_metal_parts{ material = "enderium", speed = ENDERIUM_SPEED, make_plate = true }
 --- Draft typo: the wire mill category
@@ -326,7 +327,7 @@ create_ingot("palladium-naqindium", "luv", 10 * LUV_SPEED, {
 		{ type = "item", name = "palladium-dust", amount = 6 },
 		{ type = "item", name = "osmium-dust", amount = 1 },
 	},
-	13, "luv", LUV_SPEED * 81, ARGON,
+	13, "luv", LUV_SPEED * 81, argon(),
 	"luv", LUV_SPEED * 24, false, true, false, nil, true, false)
 create_metal_parts{ material = "palladium-naqindium", speed = 10, make_wire = true }
 create_item{
@@ -351,7 +352,7 @@ create_ingot("naquamiridium", "zpm", 10 * ZPM_SPEED, {
 		{ type = "item", name = "europium-ingot", amount = 1 },
 		{ type = "item", name = "samarium-dust", amount = 1 },
 	},
-	9, "zpm", ZPM_SPEED * 99, ARGON,
+	9, "zpm", ZPM_SPEED * 99, argon(),
 	"zpm", ZPM_SPEED * 30, false, true, false, nil, true, false)
 create_metal_parts{ material = "naquamiridium", speed = 10, make_wire = true }
 create_item{
@@ -734,11 +735,17 @@ end
 --- 10) PHASE 2 WORKAROUNDS THAT ARE NOT NEEDED ANY MORE
 ---   * ZPM field generator: 4 UV circuits like GT (it used 8 ZPM circuits)
 ---   * ZPM energy hatch: the ZPM superconductor instead of the naquadah cable
+---   * ZPM pump: enderium plates (GT: enderium pipe) instead of osmiridium plates. The enderium
+---     recipes move to zpm-materials, which comes before the pump.
 --- (the UHPICs stay: NPICs need the doped wafers of the water purification line)
 --------------------------------------------------------------------------------
 
 replace_ingredient("zpm-field-generator", "zpm-circuit", "uv-circuit", 4)
 replace_ingredient("zpm-energy-hatch", "naquadah-cable", "palladium-naqindium-superconductive-wire", 4)
+replace_ingredient("zpm-pump", "osmiridium-plate", "enderium-plate", 4)
+for _, r in pairs({ "molten-enderium", "solidify-enderium-ingot", "enderium-plate" }) do
+	fork_add_unlock("zpm-materials", r)
+end
 
 
 
@@ -805,8 +812,7 @@ tech{
 	name = "crystal-processor-mainframes", prerequisites = { "zpm-machines", "crystal-processors" }, packs = 8, count = 2500,
 	recipes = {
 		"itbtc-alloy-dust", "hot-itbtc-alloy-ingot", "itbtc-alloy-ingot", "itbtc-alloy-wire",
-		"molten-enderium", "solidify-enderium-ingot", "enderium-plate", "luv-superconductor-wire-16x",
-		"crystal-processor-mainframe", "zpm-field-generator",
+		"luv-superconductor-wire-16x", "crystal-processor-mainframe", "zpm-field-generator",
 	},
 }
 tech{
