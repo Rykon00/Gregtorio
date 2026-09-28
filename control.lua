@@ -67,8 +67,8 @@ script.on_event(defines.events.on_research_finished, function(event)
 end)
 
 
---- Fork: nach einem Mod-Update Tech-Effekte neu anwenden, damit Rezepte, die neu zu bereits
---- erforschten Techs hinzugekommen sind, auch in bestehenden Spielständen freigeschaltet werden.
+--- Fork: re-apply tech effects after a mod update so recipes newly added to already
+--- researched techs also get unlocked in existing saves.
 script.on_configuration_changed(function(data)
 	local changes = data.mod_changes and data.mod_changes[script.mod_name]
 	if changes or data.mod_startup_settings_changed then

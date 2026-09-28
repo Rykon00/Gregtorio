@@ -1,19 +1,19 @@
 --------------------------------------------------------------------------------
 --- FORK LuV
---- Macht die LuV-Stufe spielbar. Grundlage sind die Entwürfe in 21-luv-age-item.lua
---- (LuV-Bauteile, Assembly Line). Ergänzt wird, was dort fehlte:
----   * fehlende Materialteile (HSS-S, Samarium, Ruridit, Rhodium-Plated Palladium, V-Ga-Kabel)
----   * Tippfehler/Platzhalter in den Entwurfsrezepten
----   * Assembly Line als Gebäude
----   * LuV-Grundmaschinen und -Multiblock-Upgrades (Kopie der IV-Versionen, eine Stufe höher)
----   * LuV-Science-Pack-Rezept und die LuV-Technologien
---- Was darüber hinausgeht (Fusion, Crystal-Prozessoren, Bacterial Vat, Wasserlinie) bleibt
---- Entwurf und wird vom Draft-Guard in 199-fork-finalize.lua ausgeblendet.
+--- Makes the LuV tier playable. Based on the drafts in 21-luv-age-item.lua
+--- (LuV components, assembly line). Adds what was missing there:
+---   * missing material parts (HSS-S, samarium, ruridit, rhodium-plated palladium, V-Ga cable)
+---   * typos/placeholders in the draft recipes
+---   * the assembly line as a building
+---   * LuV basic machines and multiblock upgrades (copies of the IV versions, one tier up)
+---   * the LuV science pack recipe and the LuV technologies
+--- Anything beyond that (fusion, crystal processors, bacterial vat, water line) stays a
+--- draft and is hidden by the draft guard in 199-fork-finalize.lua.
 --------------------------------------------------------------------------------
 
 local function set_ingredient(recipe_name, from, to)
 	local r = data.raw.recipe[recipe_name]
-	if not r then log("FORK-LUV: Rezept fehlt: " .. recipe_name) return end
+	if not r then log("FORK-LUV: missing recipe: " .. recipe_name) return end
 	for _, key in pairs({ "ingredients", "results" }) do
 		for _, i in pairs(r[key] or {}) do
 			if i.name == from then i.name = to end
@@ -24,10 +24,10 @@ end
 
 
 --------------------------------------------------------------------------------
---- MATERIALTEILE
+--- MATERIAL PARTS
 --------------------------------------------------------------------------------
 
---- HSS-S: LuV-Hauptmaterial (Motor, Kolben, Pumpe, Roboterarm ...). Upstream hatte nur Folie.
+--- HSS-S: main LuV material (motor, piston, pump, robot arm ...). Upstream only had foil.
 create_metal_parts{
 	material = "hsss",
 	speed = HSSS_SPEED,
@@ -45,13 +45,13 @@ create_metal_parts{
 	make_frame = true,
 }
 
---- Samarium-Stab (für den magnetischen Samarium-Stab im LuV-Motor)
+--- Samarium rod (for the magnetic samarium rod in the LuV motor)
 create_metal_parts{ material = "samarium", speed = SAMARIUM_SPEED, make_rod = true }
 
---- Ruridit-Platte
+--- Ruridit plate
 create_metal_parts{ material = "ruridit", speed = RURIDIT_SPEED, make_plate = true }
 
---- Rhodium-Plated Palladium: Gehäuse-Material für LuV (Casing, Hull)
+--- Rhodium-plated palladium: LuV casing material (casing, hull)
 create_item{
 	name = "rhodium-plated-palladium-dust",
 	category = "iv-mixer-recipes",
@@ -74,7 +74,7 @@ create_item{
 }
 create_metal_parts{ material = "rhodium-plated-palladium", speed = RHODIUM_PLATED_PALLADIUM_SPEED or 20, make_plate = true }
 
---- Vanadium-Gallium-Kabel (für den LuV Machine Hull), wie die anderen Superleiter-Kabel
+--- Vanadium-gallium cable (for the LuV machine hull), like the other superconductor cables
 create_item{
 	name = "vanadium-gallium-cable",
 	category = "lv-assembling-machine-recipes",
@@ -90,18 +90,18 @@ create_item{
 
 
 --------------------------------------------------------------------------------
---- KORREKTUREN IN DEN ENTWÜRFEN
+--- FIXES IN THE DRAFTS
 --------------------------------------------------------------------------------
 
---- Tippfehler: Indium Gallium Phosphate -> Phosphide (das Item existiert so)
+--- Typo: indium gallium phosphate -> phosphide (the item that exists)
 set_ingredient("uhpic-wafer", "indium-gallium-phosphate", "indium-gallium-phosphide")
---- Naquadah gibt es erst mit Fusion (ZPM). Für den UHPIC-Wafer auf LuV: Europium-dotierter Weg -> Tungstensteel
+--- Naquadah only exists with fusion (ZPM). For the UHPIC wafer at LuV use tungstensteel instead
 set_ingredient("uhpic-wafer", "molten-naquadah", "molten-tungstensteel")
 
---- LuV-Superleiter: der geplante Barium-Titanat-Draht existiert nicht; LuV-Superleiter in GT ist YBCO
+--- LuV superconductor: the planned barium titanate wire does not exist; the LuV superconductor in GT is YBCO
 set_ingredient("luv-energy-hatch", "barium-titanate-cuproxide-superconductive-wire", "yttrium-barium-cuprate-cable")
 set_ingredient("superconducting-coil-block", "barium-titanate-cuproxide-superconductive-wire", "yttrium-barium-cuprate-cable")
---- Super-Coolant-Zellen gibt es noch nicht -> IV-Superleiter-Kühlung über kryogenes Helium
+--- Super coolant cells do not exist yet -> cool with cryogenic helium like the IV superconductors
 do
 	local r = data.raw.recipe["luv-energy-hatch"]
 	if r then
@@ -114,13 +114,13 @@ do
 	end
 end
 
---- Assembler Machine Casing brauchte ZPM-Schaltkreise für eine LuV-Maschine -> IV-Schaltkreise
+--- The assembler machine casing needed ZPM circuits for a LuV machine -> IV circuits
 set_ingredient("assembler-machine-casing", "zpm-circuit", "iv-circuit")
 
---- Naquadah Coil Block ist ZPM-Material, das auf LuV nicht herstellbar ist -> bleibt Entwurf
+--- The naquadah coil block is ZPM material that cannot be made at LuV -> stays a draft
 if data.raw.recipe["naquadah-coil-block"] then data.raw.recipe["naquadah-coil-block"] = nil end
 
---- Circuit Assembly Line: nur für Crystal-Prozessoren (Mutagen/Bacterial Vat fehlen) -> bleibt Entwurf
+--- Circuit assembly line: only used for crystal processors (mutagen/bacterial vat missing) -> stays a draft
 for _, n in pairs({ "circuit-assembly-line-controller", "luv-circuit-assembly-line" }) do
 	if data.raw.recipe[n] then data.raw.recipe[n] = nil end
 end
@@ -128,7 +128,7 @@ end
 
 
 --------------------------------------------------------------------------------
---- ASSEMBLY LINE (baut die LuV-Bauteile)
+--- ASSEMBLY LINE (builds the LuV components)
 --------------------------------------------------------------------------------
 
 do
@@ -173,7 +173,7 @@ end
 
 
 --------------------------------------------------------------------------------
---- LuV-MASCHINEN (Kopien der IV-Maschinen, Rezept eine Stufe höher)
+--- LuV MACHINES (copies of the IV machines, recipe one tier up)
 --------------------------------------------------------------------------------
 
 LUV_BASIC_MACHINES = IV_BASIC_MACHINES
@@ -207,7 +207,7 @@ create_recipe{
 
 
 --------------------------------------------------------------------------------
---- TECHNOLOGIEN
+--- TECHNOLOGIES
 --------------------------------------------------------------------------------
 
 local function sci(n)
@@ -228,7 +228,7 @@ local function tech(def)
 			effects[#effects + 1] = { type = "unlock-recipe", recipe = r }
 			data.raw.recipe[r].enabled = false
 		else
-			log("FORK-LUV: Tech " .. def.name .. ": Rezept fehlt " .. r)
+			log("FORK-LUV: tech " .. def.name .. ": missing recipe " .. r)
 		end
 	end
 	data:extend({ {
@@ -248,7 +248,7 @@ for _, p in pairs({ "hsss-nugget", "hsss-plate", "hsss-rod", "long-hsss-rod", "h
 	hsss_parts[#hsss_parts + 1] = p
 end
 
---- IV-Science: Materialien und Assembly Line
+--- IV science: materials and assembly line
 tech{
 	name = "hsss-parts", prerequisites = { "hsss", "utility-science-pack" }, packs = 6, count = 600,
 	recipes = hsss_parts,
@@ -285,7 +285,7 @@ tech{
 fork_add_unlock("space-science-pack", "luv-science-pack")
 table.insert(data.raw.technology["space-science-pack"].prerequisites, "luv-components")
 
---- LuV-Science: Maschinen und Energie
+--- LuV science: machines and energy
 local luv_machine_recipes = {}
 for _, base in pairs(LUV_BASIC_MACHINES) do
 	fork_make_tier_machine(base, "iv", "luv", 6, nil)
@@ -295,7 +295,7 @@ for _, base in pairs(LUV_UPGRADE_MACHINES) do
 	fork_make_tier_machine(base, "iv", "luv", nil, nil)
 	luv_machine_recipes[#luv_machine_recipes + 1] = "luv-" .. base
 end
---- Maschinen zuerst: UHPIC und Ludicrous Voltage Coil brauchen den LuV Assembler
+--- Machines first: the UHPIC and the ludicrous voltage coil need the LuV assembler
 tech{
 	name = "luv-machines", prerequisites = { "space-science-pack" }, packs = 7, count = 1000,
 	recipes = luv_machine_recipes,

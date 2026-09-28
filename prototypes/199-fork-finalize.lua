@@ -1,13 +1,13 @@
 --------------------------------------------------------------------------------
---- FORK AUTO-UNLOCK
---- Viele Vorprodukt-Rezepte (Legierungen, Metallteile, Zwischenprodukte) werden in
---- Upstream nie von einer Technologie freigeschaltet. Dadurch sind Rezepte sichtbar,
---- deren Zutaten man nicht herstellen kann.
+--- FORK FINALIZE (runs last in data.lua)
 ---
---- Regel: Schaltet eine Tech ein Rezept frei, dessen Zutat X von KEINEM freigeschalteten
---- Rezept hergestellt wird, dann schaltet dieselbe Tech auch die (nie freigeschalteten)
---- Gregtorio-Rezepte für X frei, rekursiv. Jede Ergänzung wird ins Log geschrieben
---- ("FORK-AUTOUNLOCK").
+--- 1) Draft guard, see below.
+--- 2) Auto-unlock: many intermediate recipes (alloys, metal parts, chemistry steps) are
+---    never unlocked by any technology upstream, so recipes are visible whose ingredients
+---    cannot be made.
+---    Rule: if a tech unlocks a recipe whose ingredient X is made by NO unlocked recipe,
+---    the same tech also unlocks the (never unlocked) Gregtorio recipes for X, recursively.
+---    Every addition is logged ("FORK-AUTOUNLOCK").
 --------------------------------------------------------------------------------
 
 local function is_gregtorio_category(c)
@@ -21,11 +21,10 @@ local function results_of(r)
 end
 
 --------------------------------------------------------------------------------
---- DRAFT-GUARD
---- Die höheren Tiers (LuV+) enthalten viele Entwurfs-Rezepte, die Items/Fluids/Kategorien
---- referenzieren, die es (noch) nicht gibt. Solche Rezepte würden das Laden abbrechen.
---- Sie werden hier entfernt und ins Log geschrieben ("FORK-DRAFT"). Sobald die fehlenden
---- Teile existieren, sind die Rezepte automatisch wieder aktiv.
+--- DRAFT GUARD
+--- The higher tiers (LuV+) contain many draft recipes that reference items/fluids/categories
+--- that do not exist (yet). Such recipes would abort loading. They are removed here and
+--- logged ("FORK-DRAFT"). As soon as the missing parts exist the recipes are active again.
 --------------------------------------------------------------------------------
 
 local function item_exists(n)
@@ -36,13 +35,13 @@ local function item_exists(n)
 end
 
 local function recipe_problem(r)
-	if not data.raw["recipe-category"][r.category or "crafting"] then return "Kategorie " .. tostring(r.category) end
+	if not data.raw["recipe-category"][r.category or "crafting"] then return "category " .. tostring(r.category) end
 	for _, key in pairs({ "ingredients", "results" }) do
 		for _, i in pairs(r[key] or {}) do
 			if i.type == "fluid" then
-				if not data.raw.fluid[i.name] then return "Fluid " .. tostring(i.name) end
+				if not data.raw.fluid[i.name] then return "fluid " .. tostring(i.name) end
 			elseif not item_exists(i.name) then
-				return "Item " .. tostring(i.name)
+				return "item " .. tostring(i.name)
 			end
 		end
 	end
@@ -61,7 +60,7 @@ while changed do
 	for name, r in pairs(data.raw.recipe) do
 		local problem = recipe_problem(r)
 		if problem then
-			log("FORK-DRAFT: Rezept " .. name .. " deaktiviert (fehlt: " .. problem .. ")")
+			log("FORK-DRAFT: recipe " .. name .. " disabled (missing " .. problem .. ")")
 			data.raw.recipe[name] = nil
 			removed[name] = true
 			changed = true
@@ -81,16 +80,16 @@ for _, tech in pairs(data.raw.technology) do
 	if tech.prerequisites then
 		local keep = {}
 		for _, p in pairs(tech.prerequisites) do
-			if data.raw.technology[p] then keep[#keep + 1] = p else log("FORK-DRAFT: Tech " .. tech.name .. " Voraussetzung fehlt: " .. p) end
+			if data.raw.technology[p] then keep[#keep + 1] = p else log("FORK-DRAFT: tech " .. tech.name .. " missing prerequisite: " .. p) end
 		end
 		tech.prerequisites = keep
 	end
 end
---- fehlende Subgroups anlegen statt abzustürzen
+--- create missing subgroups instead of crashing
 local function ensure_subgroup(sg)
 	if sg and not data.raw["item-subgroup"][sg] then
 		data:extend({ { type = "item-subgroup", name = sg, group = "processing-machine-recipes", order = "zz" } })
-		log("FORK-DRAFT: Subgroup angelegt: " .. sg)
+		log("FORK-DRAFT: created subgroup: " .. sg)
 	end
 end
 for _, r in pairs(data.raw.recipe) do ensure_subgroup(r.subgroup) end
@@ -103,7 +102,7 @@ for t, _ in pairs(defines.prototypes.item) do
 				if data.raw[et] and data.raw[et][it.place_result] then found = true end
 			end
 			if not found then
-				log("FORK-DRAFT: Item " .. it.name .. " place_result fehlt: " .. it.place_result)
+				log("FORK-DRAFT: item " .. it.name .. " missing place_result: " .. it.place_result)
 				it.place_result = nil
 			end
 		end
@@ -112,7 +111,7 @@ end
 
 
 
---- Kategorien, für die es überhaupt eine Maschine gibt
+--- Categories that have at least one machine
 local craftable_category = {}
 for _, t in pairs({ "assembling-machine", "furnace", "character" }) do
 	for _, e in pairs(data.raw[t] or {}) do
@@ -120,7 +119,7 @@ for _, t in pairs({ "assembling-machine", "furnace", "character" }) do
 	end
 end
 
---- Wer stellt was her (ohne Recycling/Voiding/Schrott)
+--- Who makes what (without recycling/voiding/scrap)
 local producers = {}
 for name, r in pairs(data.raw.recipe) do
 	if not name:match("%-recycling$") and not name:match("^void%-") and not name:match("scrap")
@@ -132,7 +131,7 @@ for name, r in pairs(data.raw.recipe) do
 	end
 end
 
---- Welche Rezepte sind überhaupt erreichbar (enabled oder von irgendeiner Tech)
+--- Which recipes are reachable at all (enabled or unlocked by any tech)
 local unlocked_anywhere = {}
 for name, r in pairs(data.raw.recipe) do
 	if r.enabled ~= false then unlocked_anywhere[name] = true end
@@ -157,12 +156,12 @@ local function pull(tech, recipe_name, depth)
 	if not r then return end
 	for _, ing in pairs(r.ingredients or {}) do
 		if ing.name and not has_available_producer(ing.name) then
-			--- gibt es ein Rezept, das genauso heißt wie das Produkt, ist das der "normale" Weg
+			--- a recipe named exactly like the product is the "normal" way
 			local candidates = producers[ing.name] or {}
 			for _, p in pairs(candidates) do
 				if p == ing.name then candidates = { p } break end
 			end
-			--- Rezepte ignorieren, deren Zutaten niemand herstellen kann
+			--- ignore recipes whose ingredients nobody can make
 			local usable = {}
 			for _, p in pairs(candidates) do
 				local ok = true
@@ -172,7 +171,7 @@ local function pull(tech, recipe_name, depth)
 				end
 				if ok then usable[#usable + 1] = p end
 			end
-			--- bevorzugt Rezepte, deren Zutaten schon herstellbar sind
+			--- prefer recipes whose ingredients can already be made
 			local ready = {}
 			for _, p in pairs(usable) do
 				local ok = true
@@ -188,7 +187,7 @@ local function pull(tech, recipe_name, depth)
 					data.raw.recipe[p].enabled = false
 					unlocked_anywhere[p] = true
 					added = added + 1
-					log("FORK-AUTOUNLOCK: " .. tech.name .. " -> " .. p .. " (für " .. ing.name .. ")")
+					log("FORK-AUTOUNLOCK: " .. tech.name .. " -> " .. p .. " (for " .. ing.name .. ")")
 					pull(tech, p, depth + 1)
 				end
 			end
@@ -196,7 +195,7 @@ local function pull(tech, recipe_name, depth)
 	end
 end
 
---- Techs in Forschungsreihenfolge abarbeiten, damit Vorprodukte bei der frühesten Tech landen
+--- Process techs in research order so intermediates land on the earliest tech
 local order, visited = {}, {}
 local function visit(name)
 	if visited[name] then return end
@@ -219,4 +218,4 @@ for _, tech in ipairs(order) do
 	end
 end
 
-log("FORK-AUTOUNLOCK: " .. added .. " Rezepte zusätzlich freigeschaltet")
+log("FORK-AUTOUNLOCK: " .. added .. " additional recipes unlocked")

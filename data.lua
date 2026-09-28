@@ -82,7 +82,7 @@ for _, fluid in pairs(data.raw["fluid"]) do
 	end
 end
 
---- Fork: Progressions-Fixes (muss nach 98-technology geladen werden)
+--- Fork: progression fixes (must be loaded after 98-technology)
 require("prototypes.100-fork-fixes")
 require("prototypes.101-fork-machines")
 require("prototypes.110-fork-luv")

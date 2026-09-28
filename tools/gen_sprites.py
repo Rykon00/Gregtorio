@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
-"""Erzeugt Entity-Sprites und Icons für die Fork-Maschinen (prototypes/101-fork-machines.lua).
+"""Generates entity sprites and icons for the fork machines (prototypes/101-fork-machines.lua).
 
-Quellen:
-  * GregTech-5-Texturen aus einem Checkout von GTNewHorizons/GT5-Unofficial (LGPL-3.0)
-  * vorhandene Gregtorio-Icons (Casings, Controller)
+Sources:
+  * GregTech 5 textures from a checkout of GTNewHorizons/GT5-Unofficial (LGPL-3.0)
+  * existing Gregtorio icons (casings, controllers)
 
     python tools/gen_sprites.py --gt C:/00_Repositories/GT5-Unofficial
 
-Ausgabe:
-  graphics/entity/fork/<name>-idle.png / -working.png   (working = vertikaler Frame-Streifen)
+Output:
+  graphics/entity/fork/<name>-idle.png / -working.png   (working = vertical frame strip)
   graphics/icons/fork/<name>.png                         (32x32)
 """
 import argparse, re
@@ -20,10 +20,10 @@ ICONS = ROOT / "graphics/icons"
 OUT_ENTITY = ROOT / "graphics/entity/fork"
 OUT_ICON = ROOT / "graphics/icons/fork"
 
-TILE = 32          # Factorio-Pixel pro Kachel in Gregtorio
-BASIC_FRAMES = 6   # Frames für Grundmaschinen (muss zu 101-fork-machines.lua passen)
+TILE = 32          # Factorio pixels per tile in Gregtorio
+BASIC_FRAMES = 6   # frames for basic machines (must match 101-fork-machines.lua)
 
-# Grundmaschine -> GT-Ordner unter textures/blocks/basicmachines (oder iconsets-Overlay)
+# basic machine -> GT folder under textures/blocks/basicmachines (or an iconsets overlay)
 BASIC_GT = {
     "wiremill": "wiremill", "bending-machine": "bender", "extruder": "extruder",
     "rock-crusher": "iconsets:OVERLAY_FRONT_ROCK_BREAKER", "lathe": "lathe", "macerator": "macerator",
@@ -35,10 +35,10 @@ BASIC_GT = {
     "autoclave": "autoclave", "alloy-smelter": "alloy_smelter", "compressor": "compressor",
 }
 
-# Tier-Farbe, mit der GT die (grauen) Maschinengehäuse einfärbt (IV = Tungstensteel)
+# tier color GT uses to tint the (gray) machine casings (IV = tungstensteel)
 TIER_TINT = {"IV": (100, 100, 160), "LuV": (255, 205, 225)}
 
-# Casing-Item -> flache GT-Textur ("mod:pfad" unter textures/blocks). Ohne Eintrag wird das Item-Icon benutzt.
+# casing item -> flat GT texture ("mod:path" under textures/blocks). Without an entry the item icon is used.
 CASING_TEXTURE = {
     "high-temperature-smelting-casing": "miscutils:TileEntities/MACHINE_CASING_STABLE_ZIRCONIUM_CARBIDE",
     "nichrome-coil-block": "gregtech:iconsets/MACHINE_COIL_NICHROME",
@@ -59,12 +59,12 @@ CASING_TEXTURE = {
     "assembler-machine-casing": "gregtech:iconsets/MACHINE_CASING_ASSEMBLER",
     "grate-machine-casing": "gregtech:iconsets/MACHINE_CASING_GRATE",
 }
-# pro Multiblock abweichendes Casing (z. B. Zentrifuge)
+# per-multiblock casing override (e.g. the centrifuge)
 CASING_OVERRIDE = {
     "iv-industrial-centrifuge": "miscutils:TileEntities/MACHINE_CASING_CENTRIFUGE",
 }
 
-# Multiblock -> (Größe in Kacheln, Casing-Item, Controller-Icon, GT-Controller-Face (optional), Mittelreihen-Item)
+# multiblock -> (size in tiles, casing item, controller icon, GT controller face (optional), middle row item)
 MULTIBLOCKS = {
     "ev-alloy-blast-smelter": ((3, 4), "high-temperature-smelting-casing", None,
                                "miscutils:iconsets/controllerFaces/alloyBlastSmelter", "nichrome-coil-block"),
@@ -73,7 +73,7 @@ MULTIBLOCKS = {
     "ev-extreme-entity-crusher": ((3, 3), "solid-steel-machine-casing", "extreme-entity-crusher",
                                   "gregtech:iconsets/OVERLAY_FRONT_DISASSEMBLER", None),
 }
-# IV-Multiblocks: Casing wird aus dem Rezept in 20-iv-age-entity.lua gelesen
+# IV multiblocks: the casing is read from the recipe in 20-iv-age-entity.lua
 IV_MULTIBLOCK_FACES = {
     "iv-industrial-electrolyzer": "miscutils:iconsets/controllerFaces/industrialElectrolyzer",
     "iv-industrial-cutting-factory": "miscutils:iconsets/controllerFaces/industrialCuttingMachine",
@@ -93,7 +93,7 @@ IV_MULTIBLOCK_FACES = {
     "iv-magnetic-flux-exhibiter": "gregtech:iconsets/OVERLAY_FRONT_EMS",
     "iv-chemical-bath-plant": "gregtech:iconsets/OVERLAY_FRONT_LARGE_CHEMICAL_REACTOR",
 }
-# Einzelblock-Maschinen (Ender IO): Icon 3x hochskaliert
+# single-block machines (Ender IO): icon upscaled 3x
 ICON_MACHINES = ["slice-n-splice", "soul-binder", "powered-spawner"]
 
 
@@ -103,7 +103,7 @@ def gt_path(gt, spec):
 
 
 def frames_of(img):
-    """GT-Animationen sind vertikale Streifen aus quadratischen Frames."""
+    """GT animations are vertical strips of square frames."""
     w, h = img.size
     n = max(1, h // w)
     return [img.crop((0, i * w, w, (i + 1) * w)) for i in range(n)]
@@ -143,7 +143,7 @@ def casing_tile(gt, casing, override=None):
 
 
 def basic_machine(gt, base, tier="IV"):
-    # Factorio ist Draufsicht: Oberseite (MACHINE_TOP + OVERLAY_TOP), sonst Vorderseite
+    # Factorio is top-down: use the top face (MACHINE_TOP + OVERLAY_TOP), otherwise the front
     src = BASIC_GT[base]
     if src.startswith("iconsets:"):
         side = tint(load(gt_path(gt, f"gregtech:iconsets/MACHINE_{tier}_SIDE")), TIER_TINT[tier])
@@ -208,7 +208,7 @@ def icon_machine(name):
 
 
 def iv_multiblock_casings():
-    """Casing = Zutat mit 'casing' im Namen und größter Menge im Rezept des Multiblock-Items."""
+    """Casing = the ingredient with 'casing' in its name and the largest amount in the multiblock recipe."""
     txt = (ROOT / "prototypes/20-iv-age-entity.lua").read_text(encoding="utf-8")
     out = {}
     for m in re.finditer(r'create_item\{\s*name\s*=\s*"(iv-[^"]+)"(.*?)\n\}', txt, re.S):
@@ -226,7 +226,7 @@ def iv_multiblock_casings():
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--gt", type=Path, required=True, help="Pfad zum GT5-Unofficial-Checkout")
+    ap.add_argument("--gt", type=Path, required=True, help="path to the GT5-Unofficial checkout")
     a = ap.parse_args()
     OUT_ENTITY.mkdir(parents=True, exist_ok=True)
     OUT_ICON.mkdir(parents=True, exist_ok=True)

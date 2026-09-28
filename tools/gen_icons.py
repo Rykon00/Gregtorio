@@ -1,14 +1,15 @@
 #!/usr/bin/env python3
-"""Erzeugt Platzhalter-Icons für Items, die in den Entwurfs-Tiers (LuV+) kein Icon haben.
+"""Generates placeholder icons for items in the draft tiers (LuV+) that have none.
 
-Für jedes fehlende Icon wird ein "Spender"-Icon gesucht und umgefärbt:
-  * Tier-Bauteile (luv-motor) -> Icon der Stufe darunter (iv-motor), in Tier-Farbe umgefärbt
-  * sonst das vorhandene Icon mit dem längsten gemeinsamen Namens-Ende
+For every missing icon a "donor" icon is picked and recolored:
+  * tier components (luv-motor) -> icon of the tier below (iv-motor), recolored in the tier color
+  * metal parts (hsss-plate) -> same part of another material, tinted with the material color
+  * otherwise the existing icon with the longest common name suffix
     (hot-atomic-separation-catalyst-ingot -> hot-...-ingot, thaumium-dust -> ...-dust)
-Die Farbe wird stabil aus dem Namen abgeleitet, damit sich Items unterscheiden lassen.
+The fallback color is derived from the name so items stay distinguishable.
 
     python tools/gen_icons.py name1 name2 ...
-    python tools/gen_icons.py --from-file liste.txt
+    python tools/gen_icons.py --from-file list.txt
 """
 import argparse, colorsys, hashlib, warnings
 warnings.filterwarnings("ignore", category=DeprecationWarning)
@@ -18,7 +19,7 @@ from PIL import Image
 ROOT = Path(__file__).resolve().parent.parent
 ICONS = ROOT / "graphics/icons"
 TIERS = ["lv", "mv", "hv", "ev", "iv", "luv", "zpm", "uv", "uhv", "uev", "uiv", "umv", "uxv"]
-# GT-Tierfarben (Hue in Grad)
+# GT tier colors (hue in degrees)
 TIER_HUE = {"luv": 320, "zpm": 190, "uv": 130, "uhv": 0, "uev": 90, "uiv": 150, "umv": 260, "uxv": 45}
 
 
@@ -52,7 +53,7 @@ PART_TOKENS = {"plate", "rod", "long", "gear", "large", "frame", "ring", "bolt",
 
 
 def material_color(name, have):
-    """Farbe des Materials aus dessen Barren-/Staub-Icon (für Metallteile wie hsss-plate)."""
+    """Material color from its ingot/dust icon (for metal parts like hsss-plate)."""
     tok = [t for t in name.split("-") if t not in PART_TOKENS]
     if not tok or len(tok) == len(name.split("-")):
         return None
@@ -67,7 +68,7 @@ def material_color(name, have):
 
 
 def colorize(img, rgb):
-    """Wie GT: Graustufen-Vorlage mit Materialfarbe multiplizieren."""
+    """Like GT: multiply a grayscale template with the material color."""
     img = img.convert("RGBA")
     px = img.load()
     lums = [(0.3 * r + 0.59 * g + 0.11 * b) for r, g, b, a in img.getdata() if a > 16]

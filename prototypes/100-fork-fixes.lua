@@ -1,19 +1,19 @@
 --------------------------------------------------------------------------------
 --- FORK FIXES
---- Schließt Lücken in der Progression von Upstream 0.1.9, ohne die Upstream-
---- Dateien stark umzubauen. Wird am Ende von data.lua geladen (nach 98-technology).
+--- Closes progression gaps in upstream 0.1.9 without restructuring the upstream
+--- files. Loaded at the end of data.lua (after 98-technology).
 --------------------------------------------------------------------------------
 
 local function recipe_exists(name)
 	if data.raw.recipe[name] then return true end
-	log("FORK-FIX: Rezept fehlt: " .. name)
+	log("FORK-FIX: missing recipe: " .. name)
 	return false
 end
 
---- Rezept zusätzlich von einer Technologie freischalten lassen
+--- Additionally unlock a recipe with a technology
 function fork_add_unlock(tech_name, recipe_name)
 	local tech = data.raw.technology[tech_name]
-	if not tech then log("FORK-FIX: Tech fehlt: " .. tech_name) return end
+	if not tech then log("FORK-FIX: missing tech: " .. tech_name) return end
 	if not recipe_exists(recipe_name) then return end
 	tech.effects = tech.effects or {}
 	for _, e in pairs(tech.effects) do
@@ -23,8 +23,8 @@ function fork_add_unlock(tech_name, recipe_name)
 	data.raw.recipe[recipe_name].enabled = false
 end
 
---- Rezept von jeder Tech freischalten lassen, die ein Rezept freischaltet, das `product` verbraucht.
---- So ist das Vorprodukt spätestens dann verfügbar, wenn es zum ersten Mal gebraucht wird.
+--- Unlock a recipe with every tech that unlocks a recipe consuming `product`.
+--- This makes the intermediate available no later than when it is first needed.
 function fork_unlock_with_consumers(recipe_name, product)
 	if not recipe_exists(recipe_name) then return end
 	local consumers = {}
@@ -43,13 +43,13 @@ function fork_unlock_with_consumers(recipe_name, product)
 			end
 		end
 	end
-	if not found then log("FORK-FIX: keine Tech verbraucht " .. product) end
+	if not found then log("FORK-FIX: no tech consumes " .. product) end
 end
 
---- Crafting-Kategorie zu einer Maschine hinzufügen
+--- Add a crafting category to a machine
 function fork_add_category(entity_type, entity_name, category)
 	local e = data.raw[entity_type] and data.raw[entity_type][entity_name]
-	if not e then log("FORK-FIX: Entity fehlt: " .. entity_name) return end
+	if not e then log("FORK-FIX: missing entity: " .. entity_name) return end
 	for _, c in pairs(e.crafting_categories) do if c == category then return end end
 	table.insert(e.crafting_categories, category)
 end
@@ -57,23 +57,23 @@ end
 
 
 --------------------------------------------------------------------------------
---- FEHLENDE FREISCHALTUNGEN (Rezept existiert, wird aber nie von einer Tech freigeschaltet)
+--- MISSING UNLOCKS (recipe exists but no tech ever unlocks it)
 --------------------------------------------------------------------------------
 
 local missing_unlocks = {
-	-- Rezept                            -- Produkt, das später gebraucht wird
+	-- recipe                            -- product that is needed later
 	{ "annealed-copper-wire",            "annealed-copper-wire" },           -- Microprocessor Mainframe, EV Polarizer
-	{ "epoxy-sheet",                     "epoxy-sheet" },                    -- Nanoprozessoren
-	{ "chloroplatinic-acid",             "chloroplatinic-acid" },            -- Platin-Linie
+	{ "epoxy-sheet",                     "epoxy-sheet" },                    -- nanoprocessors
+	{ "chloroplatinic-acid",             "chloroplatinic-acid" },            -- platinum line
 	{ "large-chromium-gear",             "large-chromium-gear" },            -- HV Semifluid Generator
 	{ "large-steel-boiler-controller",   "large-steel-boiler-controller" },  -- Large Steel Boiler
 	{ "long-aluminium-rod",              "long-aluminium-rod" },             -- Aluminium Spring
 	{ "stable-titanium-machine-casing",  "stable-titanium-machine-casing" }, -- EV Drilling Rig, Maceration Stack
-	{ "titanium-dust",                   "titanium-dust" },                  -- Titan, Staballoy, Niob-Titan
+	{ "titanium-dust",                   "titanium-dust" },                  -- titanium, staballoy, niobium-titanium
 	{ "titanium-gear-box-casing",        "titanium-gear-box-casing" },       -- Heat Vent Block (Alloy Blast Smelter)
-	{ "centrifuging-crushed-thorium",    "uranium-238-dust" },               -- Staballoy, Brennstäbe
+	{ "centrifuging-crushed-thorium",    "uranium-238-dust" },               -- staballoy, fuel rods
 	{ "vibrant-alloy-wire",              "vibrant-alloy-wire" },             -- Octadic Capacitor (Ender IO)
-	{ "dinitrogen-tetroxide",            "dinitrogen-tetroxide" },           -- Rocket Fuel -> Tier-3-Microminer -> Wolfram
+	{ "dinitrogen-tetroxide",            "dinitrogen-tetroxide" },           -- rocket fuel -> tier 3 microminer -> tungsten
 }
 for _, m in pairs(missing_unlocks) do
 	fork_unlock_with_consumers(m[1], m[2])
@@ -82,11 +82,11 @@ end
 
 
 --------------------------------------------------------------------------------
---- FEHLENDE REZEPTE
+--- MISSING RECIPES
 --------------------------------------------------------------------------------
 
---- ZIRCONIUM: wird für Zirconium Carbide (Alloy Blast Smelter) gebraucht, hatte aber keine Quelle.
---- Nebenprodukt der Seltenen-Erden-Linie (Rare Earth I).
+--- ZIRCONIUM: needed for zirconium carbide (Alloy Blast Smelter) but had no source.
+--- By-product of the rare earth line (Rare Earth I).
 create_recipe{
 	recipe_name = "rare-earth-1-zirconium-electrolysis",
 	category = "lv-electrolyzer-recipes",
@@ -104,7 +104,7 @@ create_recipe{
 }
 fork_unlock_with_consumers("rare-earth-1-zirconium-electrolysis", "zirconium-dust")
 
---- KRYOGENES HELIUM: wird zum Abkühlen von HSS-G/HSS-E/HSS-S und Niob-Titan gebraucht, hatte kein Rezept.
+--- CRYOGENIC HELIUM: needed to cool HSS-G/HSS-E/HSS-S and niobium-titanium, had no recipe.
 create_recipe{
 	recipe_name = "cryogenic-helium",
 	category = "mv-vacuum-freezer-recipes",
@@ -123,17 +123,17 @@ fork_unlock_with_consumers("cryogenic-helium", "cryogenic-helium")
 
 
 --------------------------------------------------------------------------------
---- MASCHINEN OHNE PASSENDE KATEGORIE
+--- MACHINES WITHOUT A MATCHING CATEGORY
 --------------------------------------------------------------------------------
 
---- Osmium Tetroxide (ev-distillation) konnte keine Destille herstellen
+--- No distillation tower could make osmium tetroxide (ev-distillation)
 fork_add_category("assembling-machine", "ev-short-distillation-tower", "ev-distillation-recipes")
 fork_add_category("assembling-machine", "ev-tall-distillation-tower", "ev-distillation-recipes")
 
 
 
 --------------------------------------------------------------------------------
---- IV-SCIENCE: Rezept existierte, wurde aber nie freigeschaltet (Progression endete bei EV)
+--- IV SCIENCE: the recipe existed but was never unlocked (progression ended at EV)
 --------------------------------------------------------------------------------
 
 fork_add_unlock("utility-science-pack", "iv-science-pack")
@@ -141,17 +141,17 @@ fork_add_unlock("utility-science-pack", "iv-science-pack")
 
 
 --------------------------------------------------------------------------------
---- HENNE-EI-PROBLEME
+--- CHICKEN-AND-EGG PROBLEMS
 --------------------------------------------------------------------------------
 
---- Iridium lief über den IV Chemical Reactor, aber jede IV-Maschine braucht Iridium (IV Emitter).
---- In GregTech kommt Iridium aus der Platin-Linie auf EV -> EV-Kategorie.
+--- Iridium required the IV chemical reactor, but every IV machine needs iridium (IV emitter).
+--- In GregTech iridium comes from the platinum line at EV -> EV category.
 if data.raw.recipe["iridium-dust"] then
 	data.raw.recipe["iridium-dust"].category = "ev-chemical-reactor-recipes"
 end
 
---- High Powered IC wird für den IV Energy Hatch gebraucht, lief aber über den IV Chemical Reactor,
---- der selbst IV Energy Hatches braucht -> EV-Kategorie.
+--- The High Powered IC is needed for the IV energy hatch but required the IV chemical reactor,
+--- which itself needs IV energy hatches -> EV category.
 if data.raw.recipe["hpic-wafer"] then
 	data.raw.recipe["hpic-wafer"].category = "ev-chemical-reactor-recipes"
 end
@@ -159,14 +159,14 @@ end
 
 
 --------------------------------------------------------------------------------
---- MULTIBLOCKS OHNE TECH
+--- MULTIBLOCKS WITHOUT A TECH
 --------------------------------------------------------------------------------
 
---- Die Tech "industrial-wire-factory" schaltete nur die Material Press frei, nicht die Wire Factory
+--- The "industrial-wire-factory" tech only unlocked the material press, not the wire factory
 fork_add_unlock("industrial-wire-factory", "industrial-wire-factory-controller")
 fork_add_unlock("industrial-wire-factory", "wire-factory-casing")
 fork_add_unlock("industrial-wire-factory", "iv-industrial-wire-factory")
 
---- TurboCan Pro hatte gar keine Tech
+--- TurboCan Pro had no tech at all
 fork_add_unlock("iv-machines", "turbocan-pro-controller")
 fork_add_unlock("iv-machines", "iv-turbocan-pro")

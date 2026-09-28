@@ -76,8 +76,7 @@ data.raw["underground-belt"]["underground-belt"].max_distance = 7
 
 
 ---DISABLE TRIGGERED TECHS
---- Fork: Gregtorio-eigene Techs mit gleichem Namen wie Vanilla-Techs (z. B. "tungsten-carbide")
---- nicht mit abschalten
+--- Fork: don't disable Gregtorio's own techs that share a name with a vanilla tech (e.g. "tungsten-carbide")
 local function is_gregtorio_tech(t)
   return t.icon and t.icon:sub(1, 14) == "__Gregtorio__/"
 end

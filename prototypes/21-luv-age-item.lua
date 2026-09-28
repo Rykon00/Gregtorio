@@ -1181,8 +1181,8 @@ create_item{
    
    
    
---[==[ FORK: Wasserlinie (Purified Water Grades) ist unfertiger Entwurf (Rezepte ohne Wrapper,
---- Items als Fluids usw.) und in GT erst ab UV relevant -> deaktiviert, bis sie ausgebaut wird.
+--[==[ FORK: the water line (purified water grades) is an unfinished draft (recipes without a wrapper,
+--- items used as fluids etc.) and only relevant from UV on in GT -> disabled until it is finished.
 ------------------
 --- WATER LINE ---
 ------------------
