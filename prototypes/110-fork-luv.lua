@@ -120,10 +120,7 @@ set_ingredient("assembler-machine-casing", "zpm-circuit", "iv-circuit")
 --- The naquadah coil block is ZPM material that cannot be made at LuV -> stays a draft
 if data.raw.recipe["naquadah-coil-block"] then data.raw.recipe["naquadah-coil-block"] = nil end
 
---- Circuit assembly line: only used for crystal processors (mutagen/bacterial vat missing) -> stays a draft
-for _, n in pairs({ "circuit-assembly-line-controller", "luv-circuit-assembly-line" }) do
-	if data.raw.recipe[n] then data.raw.recipe[n] = nil end
-end
+--- Circuit assembly line: finished in 125-fork-luv-endgame.lua (with the crystal processors)
 
 
 
