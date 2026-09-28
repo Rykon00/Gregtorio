@@ -22,6 +22,7 @@ The repository root is the mod itself (`info.json`, `data.lua`, `prototypes/`, `
 | `tools/check_syntax.py` | Lua syntax check (`--loaded` = only files `data.lua` actually loads) |
 | `tools/gen_sprites.py` | machine sprites/icons from GT5-Unofficial textures (`--gt <path to checkout>`) |
 | `tools/gen_icons.py` | placeholder icons (recolored neighbor icons) for items without an icon |
+| `tools/gen_tech_icons.py` | technology icons instead of the "NYI" placeholder (from the main unlocked item) |
 | `tools/gen_locale.py` | adds missing English names to `locale/en/fork.cfg` |
 
 ## Status
