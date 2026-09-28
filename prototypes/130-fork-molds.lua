@@ -3,8 +3,11 @@
 --- Upstream recipes list the mold as ingredient AND result, so every craft pushes the
 --- mold into the output slot. Here the mold becomes a module (category "mold") that sits
 --- permanently in the machine's module slot, like a real mold:
----   * recipes that return their mold lose it from ingredients and results; their names
----     are passed to the runtime script through the mod-data "fork-mold-recipes"
+---   * recipes that return their mold lose it from ingredients and results
+---   * machines whose recipe used up a mold (fluid solidifiers, extruders) no longer do;
+---     instead every recipe they can craft needs the mold in their mold slot
+---   * the names of all recipes that need a mold are passed to the runtime script through
+---     the mod-data "fork-mold-recipes" (log: FORK-MOLD)
 ---   * every machine that can craft such a recipe gets one module slot for molds only
 ---   * scripts/fork-molds.lua stops those machines with the status "Missing mold" while
 ---     a mold recipe is set and no mold is inserted
@@ -62,6 +65,45 @@ for rname, r in pairs(data.raw.recipe) do
 	end
 end
 
+--- Machines that were built WITH a mold (fluid solidifiers, extruders): the mold is no
+--- longer used up by the machine recipe; instead every recipe these machines can craft
+--- needs the mold in their mold slot.
+local function placed_machine(item_name)
+	for t, _ in pairs(defines.prototypes.item) do
+		local it = data.raw[t] and data.raw[t][item_name]
+		if it and it.place_result then
+			for _, et in pairs({ "assembling-machine", "furnace" }) do
+				local e = data.raw[et] and data.raw[et][it.place_result]
+				if e then return e end
+			end
+		end
+	end
+	return nil
+end
+local machine_mold_categories = {}
+for rname, r in pairs(data.raw.recipe) do
+	for mold, _ in pairs(is_mold) do
+		if count(r.ingredients, mold) > 0 and count(r.results, mold) == 0 then
+			local machine
+			for _, res in pairs(r.results or {}) do machine = machine or placed_machine(res.name) end
+			if machine then
+				r.ingredients = without(r.ingredients, mold)
+				for _, c in pairs(machine.crafting_categories or {}) do machine_mold_categories[c] = mold end
+				log("FORK-MOLD: " .. rname .. " no longer uses up a " .. mold .. ", " .. machine.name .. " gets a mold slot")
+			end
+		end
+	end
+end
+for rname, r in pairs(data.raw.recipe) do
+	local mold = machine_mold_categories[r.category or "crafting"]
+	if mold and not mold_recipes[rname] then
+		r.localised_description = { "recipe-description.fork-needs-mold", { "item-name." .. mold } }
+		mold_recipes[rname] = mold
+		mold_categories[r.category or "crafting"] = true
+	end
+end
+for c, _ in pairs(machine_mold_categories) do log("FORK-MOLD: every recipe of " .. c .. " needs a mold") end
+
 data:extend({ { type = "mod-data", name = "fork-mold-recipes", data = mold_recipes } })
 
 --- Machines: one mold slot for everything that can craft a mold recipe
@@ -90,6 +132,7 @@ for _, t in pairs({ "assembling-machine", "furnace" }) do
 				for name, _ in pairs(data.raw["module-category"]) do all[#all + 1] = name end
 				e.allowed_module_categories = all
 			end
+			log("FORK-MOLD: mold slot: " .. e.name)
 		end
 	end
 end

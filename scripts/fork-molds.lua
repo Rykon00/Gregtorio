@@ -21,8 +21,24 @@ local function has_mold_slot(proto)
 	return c ~= nil and c["mold"] == true and (proto.module_inventory_size or 0) > 0
 end
 
+--- names of all machines that currently have a mold slot
+local function mold_machine_names()
+	local names = {}
+	for name, proto in pairs(prototypes.get_entity_filtered{
+		{ filter = "type", type = "assembling-machine" }, { filter = "type", type = "furnace" } }) do
+		if has_mold_slot(proto) then names[#names + 1] = name end
+	end
+	return names
+end
+
+--- storage.fork_molds.known: machine names that already had their mold slot when this
+--- save was created or last updated (see on_configuration_changed)
 local function state()
-	storage.fork_molds = storage.fork_molds or { machines = {}, stopped = {}, molds_returned = true }
+	if not storage.fork_molds then
+		local known = {}
+		for _, n in pairs(mold_machine_names()) do known[n] = true end
+		storage.fork_molds = { machines = {}, stopped = {}, known = known }
+	end
 	return storage.fork_molds
 end
 
@@ -60,9 +76,9 @@ function M.on_built(entity)
 	state().machines[entity.unit_number] = entity
 end
 
---- Saves from before the mold slot: Factorio deletes the mold from the input/output of
---- machines whose recipe changed, so every machine with a mold recipe gets its mold back
---- once, directly into the mold slot.
+--- Saves from before a machine had its mold slot: the mold was either built into the
+--- machine or lay in its input/output (Factorio deletes it there when the recipe changes).
+--- Every such machine with a mold recipe gets a mold into its slot once.
 local function give_back_mold(entity, recipes)
 	local recipe = entity.get_recipe()
 	local mold = recipe and recipes[recipe.name]
@@ -73,23 +89,21 @@ local function give_back_mold(entity, recipes)
 end
 
 function M.on_configuration_changed()
-	local first = storage.fork_molds == nil or not storage.fork_molds.molds_returned
+	local old_save = storage.fork_molds == nil
 	local st = state()
-	st.molds_returned = true
+	st.known = st.known or {}
+	local names = mold_machine_names()
 	local recipes = mold_recipes()
-	local names = {}
-	for name, proto in pairs(prototypes.get_entity_filtered{
-		{ filter = "type", type = "assembling-machine" }, { filter = "type", type = "furnace" } }) do
-		if has_mold_slot(proto) then names[#names + 1] = name end
-	end
 	st.machines = {}
 	if #names == 0 then return end
 	for _, surface in pairs(game.surfaces) do
 		for _, e in pairs(surface.find_entities_filtered{ name = names }) do
 			st.machines[e.unit_number] = e
-			if first then give_back_mold(e, recipes) end
+			if old_save or not st.known[e.name] then give_back_mold(e, recipes) end
 		end
 	end
+	st.known = {}
+	for _, n in pairs(names) do st.known[n] = true end
 end
 
 script.on_nth_tick(CHECK_TICKS, function()
