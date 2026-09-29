@@ -9,7 +9,7 @@ local fork_fluids = require("scripts.fork-me-fluids")
 local fork_molds = require("scripts.fork-molds")
 --- Fork: researching the first level of `victory` wins the game (see prototypes/135-fork-endgame.lua)
 local fork_victory = require("scripts.fork-victory")
---- Fork: cooled fluid of the large plasma turbines (see prototypes/136-fork-power.lua)
+--- Fork: fuel check of the endgame generators, cooled fluid of the plasma turbines (see prototypes/136-fork-power.lua)
 local fork_power = require("scripts.fork-power")
 
 script.on_event(defines.events.on_built_entity, function(event)
