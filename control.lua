@@ -17,7 +17,7 @@ script.on_event(defines.events.on_built_entity, function(event)
     event.entity.remove_unfiltered_items = true
   end
   fork_me.on_built(event.entity)
-  fork_ae2.on_built(event.entity)
+  fork_ae2.on_built(event.entity, event.tags)
   fork_fluids.on_built(event.entity, fork_fluids.tags_from_event(event))
   fork_molds.on_built(event.entity)
   fork_power.on_built(event.entity)
@@ -27,7 +27,7 @@ script.on_event(defines.events.on_robot_built_entity, function(event)
   if event.entity.name == "trash-can" then
     event.entity.remove_unfiltered_items = true
   end
-  fork_ae2.on_built(event.entity)
+  fork_ae2.on_built(event.entity, event.tags)
   fork_fluids.on_built(event.entity, fork_fluids.tags_from_event(event))
   fork_molds.on_built(event.entity)
   fork_power.on_built(event.entity)
@@ -37,7 +37,7 @@ end)
 script.on_event({ defines.events.script_raised_built, defines.events.script_raised_revive,
   defines.events.on_space_platform_built_entity }, function(event)
   fork_me.on_built(event.entity)
-  fork_ae2.on_built(event.entity)
+  fork_ae2.on_built(event.entity, event.tags)
   fork_fluids.on_built(event.entity, fork_fluids.tags_from_event(event))
   fork_molds.on_built(event.entity)
   fork_power.on_built(event.entity)
@@ -45,9 +45,19 @@ end)
 
 --- Fork: cloned entities (e.g. by other mods) need to be registered as well (a cloned fluid drive starts empty)
 script.on_event(defines.events.on_entity_cloned, function(event)
-  fork_ae2.on_built(event.destination)
+  fork_ae2.on_built(event.destination, nil, event.source)
   fork_fluids.on_built(event.destination)
   fork_power.on_built(event.destination)
+end)
+
+--- Fork: the recipe choice of an ME Pattern Provider (for the furnaces next to it) is copied by settings
+--- paste and stored in blueprints
+script.on_event(defines.events.on_entity_settings_pasted, function(event)
+  fork_ae2.on_entity_settings_pasted(event)
+end)
+
+script.on_event(defines.events.on_player_setup_blueprint, function(event)
+  fork_ae2.on_player_setup_blueprint(event)
 end)
 
 --- Fork: a hand craft that consumes a loaded ME Fluid Drive item (the disassembly recipe) salvages its fluid

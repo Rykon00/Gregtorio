@@ -5,8 +5,10 @@ Version: 0.3.1
     - Naquadah fuel line (naquadah based fuel MK1 to MK3, excited uranium and plutonium fuels) and Large Naquadah Reactors from UV to UXV.
     - Dynamo hatches from LuV to UXV.
     - ME Fluid Drives: the fluid of a destroyed drive goes into the other drives of its network, the rest is kept as "recovered fluid" that the next drive placed in that network takes over (also with the "Take over" button in the drive window). Every step is reported in chat.
+    - ME Pattern Provider: open it to choose the recipe for the furnaces next to it. A furnace is an autocrafting pattern right away and no longer has to smelt the recipe once by hand. The choice is copied with the provider's settings and kept in blueprints.
   Changes:
     - Taking the cells out of a loaded ME Fluid Drive is hand crafting only; its fluid goes into the network you stand in. Assemblers set to this recipe lose it.
+    - The Crafting tab of the ME Terminal counts furnaces next to a pattern provider that have no recipe.
   Bugfixes:
     - Large Plasma Turbines only burn plasmas and Large Naquadah Reactors only naquadah and excited fuels. A wrong fluid (for example steam) stops the generator with "Wrong fuel" instead of being burnt; an empty generator shows "No fuel".
 ---------------------------------------------------------------------------------------------------
