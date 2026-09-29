@@ -50,6 +50,20 @@ script.on_event(defines.events.on_entity_cloned, function(event)
   fork_power.on_built(event.destination)
 end)
 
+--- Fork: a hand craft that consumes a loaded ME Fluid Drive item (the disassembly recipe) salvages its fluid
+script.on_event(defines.events.on_pre_player_crafted_item, function(event)
+  fork_fluids.on_pre_player_crafted_item(event)
+end)
+
+script.on_event(defines.events.on_player_cancelled_crafting, function(event)
+  fork_fluids.on_player_cancelled_crafting(event)
+end)
+
+--- Fork: a deleted surface takes its ME fluid drives and recovered fluid with it (reported to the forces)
+script.on_event(defines.events.on_pre_surface_deleted, function(event)
+  fork_fluids.on_pre_surface_deleted(event.surface_index)
+end)
+
 -- Raise a custom event when the cutscene ends
 script.on_event(defines.events.on_cutscene_cancelled, function(event)
 	local player = game.get_player(event.player_index)
