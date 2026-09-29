@@ -10,6 +10,7 @@ Version: 0.3.1
     - Taking the cells out of a loaded ME Fluid Drive is hand crafting only; its fluid goes into the network you stand in. Assemblers set to this recipe lose it.
     - The Crafting tab of the ME Terminal counts furnaces next to a pattern provider that have no recipe.
     - The crafting menu lists the recipes that only a machine can make once they are unlocked (red background, like in vanilla), for example the zinc recipes and the 4x Resistor. Fluid voiding and the replaced vanilla recipes stay hidden. Startup setting "Show machine recipes in the crafting menu" (default on) to hide them again.
+    - The start hints mention Factoriopedia (Alt+click): "Alternative recipes" and "Made in".
   Bugfixes:
     - Large Plasma Turbines only burn plasmas and Large Naquadah Reactors only naquadah and excited fuels. A wrong fluid (for example steam) stops the generator with "Wrong fuel" instead of being burnt; an empty generator shows "No fuel".
 ---------------------------------------------------------------------------------------------------
