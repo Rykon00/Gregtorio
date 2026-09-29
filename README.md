@@ -40,7 +40,6 @@ The repository root is the mod itself (`info.json`, `data.lua`, `prototypes/`, `
 | `tools/dev_link.py` | links the repo into the Factorio mods folder (working copy is loaded directly) |
 | `tools/devcheck/` | headless test harness: load check, progression/craftability analysis, graphics and runtime checks |
 | `tools/build.py` | builds `dist/Gregtorio_<version>.zip`, optionally installs it; `--portal` builds the mod portal zip `gregtorio-continued_<version>.zip` |
-| `tools/gen_thumbnail.py` | `thumbnail.png` from GT5-Unofficial fusion casing textures |
 | `tools/check_syntax.py` | Lua syntax check (`--loaded` = only files `data.lua` actually loads) |
 | `tools/gen_sprites.py` | machine sprites/icons from GT5-Unofficial textures (`--gt <path to checkout>`) |
 | `tools/gen_icons.py` | placeholder icons (recolored neighbor icons) for items without an icon |
