@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Mod portal page and discussion
+    url: https://mods.factorio.com/mod/gregtorio-continued/discussion
+    about: Questions about playing the mod, or quick feedback.
+  - name: Roadmap
+    url: https://github.com/Rykon00/Gregtorio/blob/main/docs/ROADMAP.md
+    about: What is done and what is planned, before requesting a feature.
