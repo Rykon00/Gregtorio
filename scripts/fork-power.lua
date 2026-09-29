@@ -19,22 +19,32 @@
 --- Work per step: at most CHECKS_PER_STEP generators (round robin); up to that many generators
 --- each one is checked every step.
 ---
---- Cooled fluid. GT's large plasma turbine returns one unit of the cooled fluid per unit of plasma
---- (helium plasma -> helium). A Factorio generator has one fluid box and no output, so this script
---- credits every turbine with the plasma it burnt (energy generated / fuel value, sampled every
---- 10 ticks) and pushes the cooled fluid into turbine output hatches standing next to it. Without
---- a hatch, or when the hatches are full, the cooled fluid is lost (GT voids it as well); at most
---- 1000 units are kept waiting per turbine.
+--- Cooled fluid (issue #28). GT's large plasma turbine returns one unit of the cooled fluid per unit
+--- of plasma (helium plasma -> helium). A Factorio generator has one fluid box and no output, so this
+--- script works it out from the energy: a generator with effectivity 1 burns exactly energy / fuel
+--- value of its fluid. Every tick the energy each running turbine generated (energy_generated_last_tick,
+--- which is 0 while it idles or runs dry) is added up; every INTERVAL ticks the sum is turned into
+--- plasma burnt and owed as cooled fluid, and the owed fluid is pushed into turbine output hatches
+--- standing next to the turbine. A plasma change between two steps (the turbine ran dry and got another
+--- fluid without being seen empty) credits the old plasma with at most the amount it had at the start
+--- of the step and the rest of the step's energy to the new fluid. What does not fit (hatches full or
+--- holding another fluid) stays owed for the next step, without a limit; without any hatch next to the
+--- turbine the cooled fluid is lost (GT voids it as well). Turbines stopped by a script (the fuel check
+--- below) are not counted: a stopped generator keeps its last energy_generated_last_tick.
+--- Accuracy: exact up to float rounding of the fluid amounts (devcheck: about 1e-6 relative); only a
+--- plasma change within one step can shift at most that step's burn between the two plasmas.
+--- Work per tick: one read per running turbine; the fluid is read once per step.
 ---
---- State (lazy, `storage.fork_power`): `turbines` by unit number with their last plasma and the
---- amount of cooled fluid still owed; `generators` by unit number with the reason this script
---- stopped them (nil while running); `cursor` of the round robin. Rebuilt from the map on
---- configuration changes.
+--- State (lazy, `storage.fork_power`): `turbines` by unit number with the plasma seen at the last step
+--- (`fluid`, `amount` in the turbine and its segment), `on` (counted this step), the `energy` summed
+--- since the last step and the cooled fluid still `owed` (by fluid name); `generators` by unit number
+--- with the reason this script stopped them (nil while running); `cursor` of the round robin. Rebuilt
+--- from the map on configuration changes.
 local M = {}
 
 local INTERVAL = 10
-local MAX_DEBT = 1000
 local CHECKS_PER_STEP = 200
+local MIN_INSERT = 1e-6                 -- insert_fluid refuses tiny amounts; less stays owed
 local NO_FUEL = ""                      -- `stopped` reason of an empty generator (else the fluid name)
 local STATUS_KEYS = { ["entity-status.fork-wrong-fuel"] = true, ["entity-status.fork-no-fuel"] = true }
 
@@ -71,18 +81,21 @@ end
 --- Fuel check
 --------------------------------------------------------------------------------
 
---- The fluid in the generator: its own part of the fluid box, else its pipeline segment
-local function fluid_of(entity)
+--- The fluid in the generator (its own part of the fluid box, else its pipeline segment) and, with
+--- `amount`, how much of it the generator and its segment hold
+local function fluid_of(entity, amount)
 	local fb = entity.fluidbox
 	local f = fb[1]
-	if f then return f.name end
-	local seg = fb.get_fluid_segment_contents(1)
+	local seg = (amount or not f) and fb.get_fluid_segment_contents(1)
+	if f then
+		return f.name, amount and f.amount + (seg and seg[f.name] or 0)
+	end
 	if seg then
-		for name, amount in pairs(seg) do
-			if amount > 0 then return name end
+		for name, n in pairs(seg) do
+			if n > 0 then return name, n end
 		end
 	end
-	return nil
+	return nil, 0
 end
 
 local function check(g)
@@ -156,8 +169,25 @@ end
 --- Registration
 --------------------------------------------------------------------------------
 
+--- Saves from before issue #28 kept one number (`debt`) owed for the last plasma
+local function upgrade_turbine(t)
+	if t.energy then return end
+	t.energy, t.owed = 0, {}
+	local out = t.fluid and cooled_of[t.fluid]
+	if out and (t.debt or 0) > 0 then t.owed[out] = t.debt end
+	t.debt = nil
+end
+
 local function register_turbine(st, entity)
-	st.turbines[entity.unit_number] = st.turbines[entity.unit_number] or { entity = entity, debt = 0 }
+	local t = st.turbines[entity.unit_number]
+	if not t then
+		t = { entity = entity, energy = 0, owed = {} }
+		st.turbines[entity.unit_number] = t
+	end
+	upgrade_turbine(t)
+	local fluid, amount = fluid_of(entity, true)
+	t.fluid, t.amount = fluid or t.fluid, amount
+	t.on = t.fluid ~= nil and not entity.disabled_by_script
 end
 
 function M.on_built(entity)
@@ -217,28 +247,52 @@ local function hatches_of(entity)
 	}
 end
 
-local function tick(st)
+--- Owe the cooled fluid for `energy` J burnt on `fluid`, at most `max` units of plasma; returns the
+--- energy left over
+local function credit(t, fluid, energy, max)
+	local proto = fluid and prototypes.fluid[fluid]
+	local fuel = proto and proto.fuel_value
+	if not (fuel and fuel > 0) then return energy end   -- not a fuel: it burnt none of it
+	local burnt = energy / fuel
+	if max and burnt > max then burnt = max end
+	local out = cooled_of[fluid]
+	if out and burnt > 0 then t.owed[out] = (t.owed[out] or 0) + burnt end
+	return energy - burnt * fuel
+end
+
+--- Every INTERVAL ticks: turn the energy of the step into cooled fluid, push it into the hatches and
+--- look at the fluid for the next step
+local function step(st)
 	for id, t in pairs(st.turbines) do
 		local e = t.entity
 		if not (e and e.valid) then
 			st.turbines[id] = nil
 		else
-			local fb = e.fluidbox[1]
-			if fb then t.fluid = fb.name end
-			local out = t.fluid and cooled_of[t.fluid]
-			if out then
-				local generated = e.energy_generated_last_tick
-				if generated > 0 then
-					local fuel = prototypes.fluid[t.fluid].fuel_value
-					if fuel and fuel > 0 then
-						t.debt = math.min(MAX_DEBT, (t.debt or 0) + generated * INTERVAL / fuel)
-					end
+			upgrade_turbine(t)
+			local fluid, amount = fluid_of(e, true)
+			if t.energy > 0 then
+				if fluid and t.fluid and fluid ~= t.fluid then
+					--- another fluid since the last step: the old plasma burnt at most what was there
+					credit(t, fluid, credit(t, t.fluid, t.energy, t.amount or 0))
+				else
+					credit(t, fluid or t.fluid, t.energy)
 				end
-				if (t.debt or 0) >= 0.001 then
-					for _, h in pairs(hatches_of(e)) do
-						local done = h.insert_fluid{ name = out, amount = t.debt }
-						t.debt = t.debt - done
-						if t.debt < 0.001 then break end
+				t.energy = 0
+			end
+			if fluid then t.fluid = fluid end
+			t.amount = amount
+			t.on = t.fluid ~= nil and not e.disabled_by_script
+			if next(t.owed) then
+				local hatches = hatches_of(e)
+				if #hatches == 0 then
+					t.owed = {}                      -- no hatch: lost, as in GT
+				else
+					for out, n in pairs(t.owed) do
+						for _, h in pairs(hatches) do
+							if n < MIN_INSERT then break end
+							n = n - h.insert_fluid{ name = out, amount = n }
+						end
+						t.owed[out] = n > 0 and n or nil
 					end
 				end
 			end
@@ -246,8 +300,18 @@ local function tick(st)
 	end
 end
 
-script.on_nth_tick(INTERVAL, function()
+script.on_event(defines.events.on_tick, function(event)
 	local st = storage.fork_power
+	--- every tick: the energy of the running turbines (0 while idle or dry)
+	if st then
+		for _, t in pairs(st.turbines) do
+			if t.on then
+				local e = t.entity
+				if e.valid then t.energy = t.energy + e.energy_generated_last_tick end
+			end
+		end
+	end
+	if event.tick % INTERVAL ~= 0 then return end
 	--- saves from before the fuel check (no configuration change when only the files changed):
 	--- look for the generators once
 	if not (st and st.generators) then
@@ -256,14 +320,23 @@ script.on_nth_tick(INTERVAL, function()
 	end
 	init()
 	check_step(st)
-	tick(st)
+	step(st)
 end)
 
---- For tests: the cooled fluid still owed by a turbine
+--- For tests: the cooled fluid still owed by a turbine (of one fluid, or all of them), and the energy
+--- counted since the last step
 remote.add_interface("gregtorio-power", {
-	debt = function(entity)
+	debt = function(entity, fluid)
 		local t = storage.fork_power and storage.fork_power.turbines[entity.unit_number]
-		return t and t.debt or 0
+		if not t then return 0 end
+		if fluid then return t.owed[fluid] or 0 end
+		local n = 0
+		for _, v in pairs(t.owed) do n = n + v end
+		return n
+	end,
+	energy = function(entity)
+		local t = storage.fork_power and storage.fork_power.turbines[entity.unit_number]
+		return t and t.energy or 0
 	end,
 })
 
