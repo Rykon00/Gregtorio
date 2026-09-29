@@ -45,5 +45,8 @@
 - The mod is `gregtorio-continued` (Gregtorio Continued) since 0.3.0, in the repo and on the mod
   portal; paths are `__gregtorio-continued__/...`. Do not rename it again (script state is kept per
   mod name). Portal zip: `tools/build.py --portal`.
+- **Changelog:** every change to the game adds its player-facing lines to the topmost section of
+  `changelog.txt` (the next version, no `Date:` line yet). Do not change `version` in `info.json`
+  and do not add a `Date:`; that is the release pull request into `upstream/release`.
 - The maintainer's local clone is linked into the Factorio mods folder (`tools/dev_link.py`),
   so pulling into it makes changes live after a Factorio restart.
