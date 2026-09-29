@@ -28,7 +28,7 @@ data.raw["furnace"]["stone-furnace"].energy_usage = "50kW"
 
 ---IRON CHEST
 data.raw["container"]["iron-chest"].picture = {
-  filename = "__Gregtorio__/graphics/entity/iron-chest.png",
+  filename = "__gregtorio-continued__/graphics/entity/iron-chest.png",
   priority = "extra-high",
   width = 32,
   height = 32
@@ -39,25 +39,25 @@ data.raw["fluid"]["steam"].fuel_value = "100kJ"
 
 ---STEEL CHEST, RENAMED TO GOLD CHEST
 data.raw["container"]["steel-chest"].picture = {
-  filename = "__Gregtorio__/graphics/entity/gold-chest.png",
+  filename = "__gregtorio-continued__/graphics/entity/gold-chest.png",
   priority = "extra-high",
   width = 32,
   height = 32
 }
 
 ---STONE BRICK, RENAMED TO STONE BRICKS
-data.raw["item"]["stone-brick"].icon = "__Gregtorio__/graphics/icons/stone-bricks.png"
+data.raw["item"]["stone-brick"].icon = "__gregtorio-continued__/graphics/icons/stone-bricks.png"
 data.raw["item"]["stone-brick"].icon_size = 32
 data.raw["item"]["stone-brick"].icon_mipmaps = 1
 
 ---WATER
-data.raw["fluid"]["water"].icon = "__Gregtorio__/graphics/fluids/water.png"
+data.raw["fluid"]["water"].icon = "__gregtorio-continued__/graphics/fluids/water.png"
 data.raw["fluid"]["water"].icon_size = 32
 
 
 ---WOODEN CHEST, RENAMED TO CHEST
 data.raw["container"]["wooden-chest"].picture = {
-  filename = "__Gregtorio__/graphics/entity/chest.png",
+  filename = "__gregtorio-continued__/graphics/entity/chest.png",
   priority = "extra-high",
   width = 32,
   height = 32
@@ -117,7 +117,7 @@ data:extend({
   {
 	  type = "item",
 	  name = "coal",
-      icon = "__Gregtorio__/graphics/icons/coal.png",
+      icon = "__gregtorio-continued__/graphics/icons/coal.png",
       icon_size = 32,
 	  fuel_value = "4MJ",
 	  fuel_category = "chemical",
@@ -190,7 +190,7 @@ data:extend({
 	{
 	  type = "item",
 	  name = "steel-chest",
-      icon = "__Gregtorio__/graphics/icons/gold-chest.png",
+      icon = "__gregtorio-continued__/graphics/icons/gold-chest.png",
       icon_size = 32,
 	  subgroup = "storage",
 	  order = "a[items]-c[steel-chest]",
@@ -218,7 +218,7 @@ data:extend({
   {
     type = "item",
     name = "iron-chest",
-    icon = "__Gregtorio__/graphics/icons/iron-chest.png",
+    icon = "__gregtorio-continued__/graphics/icons/iron-chest.png",
     icon_size = 32,
     subgroup = "storage",
     order = "a[items]-b[iron-chest]",
@@ -262,7 +262,7 @@ data:extend({
 	{
 	  type = "item",
 	  name = "iron-stick",
-      icon = "__Gregtorio__/graphics/icons/iron-rod.png",
+      icon = "__gregtorio-continued__/graphics/icons/iron-rod.png",
       icon_size = 32,
 	  subgroup = "subgroup-early-game-machine-replacements",
 	  order = "a[iron-stick]",
@@ -306,7 +306,7 @@ data:extend({
   {
 	  type = "item",
 	  name = "iron-gear-wheel",
-      icon = "__Gregtorio__/graphics/icons/iron-gear.png",
+      icon = "__gregtorio-continued__/graphics/icons/iron-gear.png",
 	  icon_size = 32,
 	  stack_size = 64
   },
@@ -436,7 +436,7 @@ data:extend({
 	{
 	  type = "item",
 	  name = "stone",
-	  icon = "__Gregtorio__/graphics/icons/cobblestone.png",
+	  icon = "__gregtorio-continued__/graphics/icons/cobblestone.png",
 	  icon_size = 32,
 	  subgroup = "subgroup-cobblestone-related",
 	  order = "a[cobblestone]",
@@ -449,7 +449,7 @@ data:extend({
 	{
 	  type = "item",
 	  name = "wood",
-	  icon = "__Gregtorio__/graphics/icons/oak-log.png",
+	  icon = "__gregtorio-continued__/graphics/icons/oak-log.png",
 	  icon_size = 32,
 	  subgroup = "subgroup-wood-related",
 	  order = "a[oak-log]",
@@ -465,7 +465,7 @@ data:extend({
 	{
 	  type = "item",
 	  name = "wooden-chest",
-	  icon = "__Gregtorio__/graphics/icons/chest.png",
+	  icon = "__gregtorio-continued__/graphics/icons/chest.png",
 	  icon_size = 32,
 	  subgroup = "storage",
 	  order = "a",
@@ -508,7 +508,7 @@ data:extend({
 	{
 	  type = "item",
 	  name = "manual-labor",
-	  icon = "__Gregtorio__/graphics/icons/manual-labor.png",
+	  icon = "__gregtorio-continued__/graphics/icons/manual-labor.png",
 	  icon_size = 32,
 	  stack_size = 200,
 	  fuel_value = "1MJ",

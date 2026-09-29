@@ -323,7 +323,7 @@ local function tech(def)
 	data:extend({ {
 		type = "technology",
 		name = def.name,
-		icon = "__Gregtorio__/graphics/technology/nyi.png",
+		icon = "__gregtorio-continued__/graphics/technology/nyi.png",
 		icon_size = 256,
 		effects = effects,
 		prerequisites = def.prerequisites,

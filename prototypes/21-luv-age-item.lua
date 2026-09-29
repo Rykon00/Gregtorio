@@ -1331,7 +1331,7 @@ create_recipe{
 	{
 		type = "item",
 		name = "tinted-industrial-glass",
-		icon = "__Gregtorio__/graphics/icons/tinted-industrial-glass.png",
+		icon = "__gregtorio-continued__/graphics/icons/tinted-industrial-glass.png",
 		icon_size = 32,
 		subgroup = "intermediate-product",
 		order = "a[manual-labor]",
@@ -1358,7 +1358,7 @@ create_recipe{
 	{
 		type = "item",
 		name = "clarifier-purification-unit",
-		icon = "__Gregtorio__/graphics/icons/clarifier-purification-unit.png",
+		icon = "__gregtorio-continued__/graphics/icons/clarifier-purification-unit.png",
 		icon_size = 32,
 		subgroup = "intermediate-product",
 		order = "a[manual-labor]",
@@ -1386,7 +1386,7 @@ create_recipe{
 	{
 		type = "item",
 		name = "clarifier-purification-unit-controller",
-		icon = "__Gregtorio__/graphics/icons/clarifier-purification-unit.png",
+		icon = "__gregtorio-continued__/graphics/icons/clarifier-purification-unit.png",
 		icon_size = 32,
 		subgroup = "intermediate-product",
 		order = "a[manual-labor]",
@@ -1423,7 +1423,7 @@ create_recipe{
 	{
 		type = "item",
 		name = "activated-carbon-mesh-filter",
-		icon = "__Gregtorio__/graphics/icons/activated-carbon-mesh-filter.png",
+		icon = "__gregtorio-continued__/graphics/icons/activated-carbon-mesh-filter.png",
 		icon_size = 32,
 		subgroup = "intermediate-product",
 		order = "a[manual-labor]",
@@ -1450,7 +1450,7 @@ create_recipe{
 	{
 		type = "item",
 		name = "pre-activated-carbon",
-		icon = "__Gregtorio__/graphics/icons/pre-activated-carbon.png",
+		icon = "__gregtorio-continued__/graphics/icons/pre-activated-carbon.png",
 		icon_size = 32,
 		subgroup = "intermediate-product",
 		order = "a[manual-labor]",
@@ -1473,7 +1473,7 @@ create_recipe{
 	{
 		type = "item",
 		name = "dirty-activated-carbon",
-		icon = "__Gregtorio__/graphics/icons/dirty-activated-carbon.png",
+		icon = "__gregtorio-continued__/graphics/icons/dirty-activated-carbon.png",
 		icon_size = 32,
 		subgroup = "intermediate-product",
 		order = "a[manual-labor]",
@@ -1495,7 +1495,7 @@ create_recipe{
 	{
 		type = "item",
 		name = "activated-carbon",
-		icon = "__Gregtorio__/graphics/icons/activated-carbon.png",
+		icon = "__gregtorio-continued__/graphics/icons/activated-carbon.png",
 		icon_size = 32,
 		subgroup = "intermediate-product",
 		order = "a[manual-labor]",
@@ -1546,7 +1546,7 @@ create_recipe{
 	{
 		type = "item",
 		name = "ozonation-purification-unit",
-		icon = "__Gregtorio__/graphics/icons/ozonation-purification-unit.png",
+		icon = "__gregtorio-continued__/graphics/icons/ozonation-purification-unit.png",
 		icon_size = 32,
 		subgroup = "intermediate-product",
 		order = "a[manual-labor]",
@@ -1575,7 +1575,7 @@ create_recipe{
 	{
 		type = "item",
 		name = "ozonation-purification-unit-controller",
-		icon = "__Gregtorio__/graphics/icons/ozonation-purification-unit.png",
+		icon = "__gregtorio-continued__/graphics/icons/ozonation-purification-unit.png",
 		icon_size = 32,
 		subgroup = "intermediate-product",
 		order = "a[manual-labor]",
@@ -1613,7 +1613,7 @@ create_recipe{
 	{
 		type = "item",
 		name = "inert-filtration-casing",
-		icon = "__Gregtorio__/graphics/icons/inert-filtration-casing.png",
+		icon = "__gregtorio-continued__/graphics/icons/inert-filtration-casing.png",
 		icon_size = 32,
 		subgroup = "intermediate-product",
 		order = "a[manual-labor]",
@@ -1640,7 +1640,7 @@ create_recipe{
 	{
 		type = "item",
 		name = "reactive-gas-containment-casing",
-		icon = "__Gregtorio__/graphics/icons/reactive-gas-containment-casing.png",
+		icon = "__gregtorio-continued__/graphics/icons/reactive-gas-containment-casing.png",
 		icon_size = 32,
 		subgroup = "intermediate-product",
 		order = "a[manual-labor]",
@@ -1708,7 +1708,7 @@ create_recipe{
 	{
 		type = "item",
 		name = "flocculation-purification-unit",
-		icon = "__Gregtorio__/graphics/icons/flocculation-purification-unit.png",
+		icon = "__gregtorio-continued__/graphics/icons/flocculation-purification-unit.png",
 		icon_size = 32,
 		subgroup = "intermediate-product",
 		order = "a[manual-labor]",
@@ -1742,7 +1742,7 @@ create_recipe{
 	{
 		type = "item",
 		name = "flocculation-purification-unit-controller",
-		icon = "__Gregtorio__/graphics/icons/flocculation-purification-unit.png",
+		icon = "__gregtorio-continued__/graphics/icons/flocculation-purification-unit.png",
 		icon_size = 32,
 		subgroup = "intermediate-product",
 		order = "a[manual-labor]",
@@ -1783,7 +1783,7 @@ create_recipe{
 	{
 		type = "item",
 		name = "slick-sterile-flocculation-casing",
-		icon = "__Gregtorio__/graphics/icons/slick-sterile-flocculation-casing.png",
+		icon = "__gregtorio-continued__/graphics/icons/slick-sterile-flocculation-casing.png",
 		icon_size = 32,
 		subgroup = "intermediate-product",
 		order = "a[manual-labor]",

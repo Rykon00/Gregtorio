@@ -717,7 +717,7 @@ function make_electric_machine(name, icon_name, entity_path, categories, fast_re
 			idle_animation = {
 				layers = {
 					{
-						filename = "__Gregtorio__/graphics/entity/" .. entity_path .. "/" .. entity_path .. "-idle.png",
+						filename = "__gregtorio-continued__/graphics/entity/" .. entity_path .. "/" .. entity_path .. "-idle.png",
 						width = length * 32,
 						height = width * 32,
 						frame_count = 1,
@@ -729,7 +729,7 @@ function make_electric_machine(name, icon_name, entity_path, categories, fast_re
 			animation = {
 				layers = {
 					{
-						filename = "__Gregtorio__/graphics/entity/" .. entity_path .. "/" .. entity_path .. "-working.png",
+						filename = "__gregtorio-continued__/graphics/entity/" .. entity_path .. "/" .. entity_path .. "-working.png",
 						width = length * 32,
 						height = width * 32,
 						frame_count = frames,
@@ -785,7 +785,7 @@ function create_burner_generator(def)
 	data:extend({{
 		type = "burner-generator",
 		name = def.name,
-		icon = def.icon or ("__Gregtorio__/graphics/icons/" .. def.name .. ".png"),
+		icon = def.icon or ("__gregtorio-continued__/graphics/icons/" .. def.name .. ".png"),
 		icon_size = def.icon_size or 32,
 		flags = {"placeable-neutral", "player-creation"},
 		minable = {mining_time = 0.5, result = def.name},
@@ -814,7 +814,7 @@ function create_burner_generator(def)
 			usage_priority = def.usage_priority or "secondary-output"
 		},
 		animation = {
-			filename = def.working_animation or ("__Gregtorio__/graphics/entity/" .. def.name .. "/" .. def.name .. "-working.png"),
+			filename = def.working_animation or ("__gregtorio-continued__/graphics/entity/" .. def.name .. "/" .. def.name .. "-working.png"),
 			width = def.width or 96,
 			height = def.height or 96,
 			frame_count = def.frame_count or 2,
@@ -822,7 +822,7 @@ function create_burner_generator(def)
 			animation_speed = def.animation_speed or 0.5
 		},
 		idle_animation = {
-			filename = def.idle_animation or ("__Gregtorio__/graphics/entity/" .. def.name .. "/" .. def.name .. "-idle.png"),
+			filename = def.idle_animation or ("__gregtorio-continued__/graphics/entity/" .. def.name .. "/" .. def.name .. "-idle.png"),
 			width = def.width or 96,
 			height = def.height or 96,
 			frame_count = def.frame_count or 1,

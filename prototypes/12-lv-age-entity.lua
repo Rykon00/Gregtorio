@@ -26,7 +26,7 @@ data:extend({
   {
     type = "boiler",
     name = "large-bronze-boiler",
-    icon = "__Gregtorio__/graphics/icons/large-bronze-boiler.png",
+    icon = "__gregtorio-continued__/graphics/icons/large-bronze-boiler.png",
     icon_size = 32,
     flags = {"placeable-neutral", "player-creation" },
     minable = {mining_time = 0.3, result = "large-bronze-boiler"},
@@ -74,7 +74,7 @@ data:extend({
 		structure = {
 		  layers = {
 			{
-			  filename = "__Gregtorio__/graphics/entity/large-bronze-boiler.png",
+			  filename = "__gregtorio-continued__/graphics/entity/large-bronze-boiler.png",
 			  width = 96,
 			  height = 128,
 			}
@@ -85,7 +85,7 @@ data:extend({
 		structure = {
 		  layers = {
 			{
-			  filename = "__Gregtorio__/graphics/entity/large-bronze-boiler.png",
+			  filename = "__gregtorio-continued__/graphics/entity/large-bronze-boiler.png",
 			  width = 96,
 			  height = 128,
 			}
@@ -96,7 +96,7 @@ data:extend({
 		structure = {
 		  layers = {
 			{
-			  filename = "__Gregtorio__/graphics/entity/large-bronze-boiler.png",
+			  filename = "__gregtorio-continued__/graphics/entity/large-bronze-boiler.png",
 			  width = 96,
 			  height = 128,
 			}
@@ -107,7 +107,7 @@ data:extend({
 		structure = {
 		  layers = {
 			{
-			  filename = "__Gregtorio__/graphics/entity/large-bronze-boiler.png",
+			  filename = "__gregtorio-continued__/graphics/entity/large-bronze-boiler.png",
 			  width = 96,
 			  height = 128,
 			}
@@ -142,7 +142,7 @@ data:extend({
   {
     type = "generator",
     name = "lv-steam-turbine",
-    icon = "__Gregtorio__/graphics/icons/lv-steam-turbine.png",
+    icon = "__gregtorio-continued__/graphics/icons/lv-steam-turbine.png",
     icon_size = 32,
     flags = {"placeable-neutral", "player-creation"},
     minable = { mining_time = 0.3, result = "lv-steam-turbine" },
@@ -180,7 +180,7 @@ data:extend({
     horizontal_animation = {
       layers = {
         {
-          filename = "__Gregtorio__/graphics/entity/lv-steam-turbine/lv-steam-turbine-working.png",
+          filename = "__gregtorio-continued__/graphics/entity/lv-steam-turbine/lv-steam-turbine-working.png",
 		  width = 96,
 		  height = 96,
           frame_count = 4,
@@ -192,7 +192,7 @@ data:extend({
     vertical_animation = {
       layers = {
         {
-          filename = "__Gregtorio__/graphics/entity/lv-steam-turbine/lv-steam-turbine-working.png",
+          filename = "__gregtorio-continued__/graphics/entity/lv-steam-turbine/lv-steam-turbine-working.png",
 		  width = 96,
 		  height = 96,
           frame_count = 4,
@@ -268,7 +268,7 @@ data:extend({
         type = "infinity-container",
         gui_mode = "none",
         name = "trash-can",
-        icon = "__Gregtorio__/graphics/entity/trash-can.png",
+        icon = "__gregtorio-continued__/graphics/entity/trash-can.png",
         icon_size = 32, icon_mipmaps = 4,
         flags = {"placeable-neutral", "player-creation"},
         minable = {mining_time = 0.1, result = "trash-can"},
@@ -287,7 +287,7 @@ data:extend({
 		picture = {
 		    layers = {
 				{
-				  filename = "__Gregtorio__/graphics/entity/trash-can.png",
+				  filename = "__gregtorio-continued__/graphics/entity/trash-can.png",
 				  priority = "extra-high",
 				  width = 32,
 				  height = 32,
@@ -313,7 +313,7 @@ data:extend({
   {
     type = "furnace",
     name = "fluid-trash-can",
-    icon = "__Gregtorio__/graphics/icons/fluid-trash-can.png",
+    icon = "__gregtorio-continued__/graphics/icons/fluid-trash-can.png",
     icon_size = 32,
     flags = {"placeable-neutral", "placeable-player", "player-creation"},
     minable = {mining_time = 0.2, result = "fluid-trash-can"},
@@ -337,7 +337,7 @@ data:extend({
 	  animation = {
 		layers = {
 		  {
-			filename = "__Gregtorio__/graphics/entity/fluid-trash-can.png",
+			filename = "__gregtorio-continued__/graphics/entity/fluid-trash-can.png",
 			width = 32,
 			height = 32,
 			frame_count = 1,

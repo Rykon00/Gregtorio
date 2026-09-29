@@ -1,6 +1,6 @@
 --- LV 1	MV 2	HV 4	EV 8	IV 16	LUV 32	ZPM 64	UV 128	UHV 256	UEV	512	UIV 1024	UMV 2048	UXV 4096
 
-local ICON_PATH = "__Gregtorio__/graphics/icons/"
+local ICON_PATH = "__gregtorio-continued__/graphics/icons/"
 
 
 

@@ -567,7 +567,7 @@ create_item{
 	{
 		type = "item",
 		name = "fusion-coil-block",
-		icon = "__Gregtorio__/graphics/icons/fusion-coil-block.png",
+		icon = "__gregtorio-continued__/graphics/icons/fusion-coil-block.png",
 		icon_size = 32,
 		subgroup = "intermediate-product",
 		order = "a[manual-labor]",
@@ -600,7 +600,7 @@ create_item{
 	{
 		type = "item",
 		name = "fusion-machine-casing-mk2",
-		icon = "__Gregtorio__/graphics/icons/fusion-machine-casing-mk2.png",
+		icon = "__gregtorio-continued__/graphics/icons/fusion-machine-casing-mk2.png",
 		icon_size = 32,
 		subgroup = "intermediate-product",
 		order = "a[manual-labor]",
@@ -631,7 +631,7 @@ create_item{
 	{
 		type = "item",
 		name = "fusion-reactor-computer-mk2",
-		icon = "__Gregtorio__/graphics/icons/fusion-reactor-computer-mk2.png",
+		icon = "__gregtorio-continued__/graphics/icons/fusion-reactor-computer-mk2.png",
 		icon_size = 32,
 		subgroup = "intermediate-product",
 		order = "a[manual-labor]",
@@ -665,7 +665,7 @@ create_item{
 	{
 		type = "item",
 		name = "fusion-reactor-mk2",
-		icon = "__Gregtorio__/graphics/icons/fusion-reactor-mk2.png",
+		icon = "__gregtorio-continued__/graphics/icons/fusion-reactor-mk2.png",
 		icon_size = 32,
 		subgroup = "intermediate-product",
 		order = "a[manual-labor]",

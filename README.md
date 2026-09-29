@@ -1,6 +1,6 @@
-# Gregtorio (fork)
+# Gregtorio Continued
 
-Fork of [Gregtorio](https://mods.factorio.com/mod/Gregtorio) by **Damien Reave**, a GregTech-style total overhaul mod for Factorio 2.0.
+Continuation of [Gregtorio](https://mods.factorio.com/mod/Gregtorio) by **Damien Reave**, a GregTech-style total overhaul mod for Factorio 2.0. On the mod portal: [Gregtorio Continued](https://mods.factorio.com/mod/gregtorio-continued) (`gregtorio-continued`).
 
 The upstream repository ([Damien-Reave/Gregtorio](https://github.com/Damien-Reave/Gregtorio)) only contains the LICENSE; the code was only published as zip files. This fork therefore starts from the unmodified **0.1.9** release from the mod portal (tag `v0.1.9-upstream`). Every change after that is a regular git commit.
 
@@ -39,7 +39,7 @@ The repository root is the mod itself (`info.json`, `data.lua`, `prototypes/`, `
 | `locale/en/fork.cfg` | generated names for entries without a translation |
 | `tools/dev_link.py` | links the repo into the Factorio mods folder (working copy is loaded directly) |
 | `tools/devcheck/` | headless test harness: load check, progression/craftability analysis, graphics and runtime checks |
-| `tools/build.py` | builds `dist/Gregtorio_<version>.zip`, optionally installs it; `--portal` builds the mod portal zip `gregtorio-continued_<version>.zip` |
+| `tools/build.py` | builds `dist/gregtorio-continued_<version>.zip`, optionally installs it; `--portal` leaves out the Photoshop sources (mod portal zip) |
 | `tools/check_syntax.py` | Lua syntax check (`--loaded` = only files `data.lua` actually loads) |
 | `tools/gen_sprites.py` | machine sprites/icons from GT5-Unofficial textures (`--gt <path to checkout>`) |
 | `tools/gen_icons.py` | placeholder icons (recolored neighbor icons) for items without an icon |
@@ -70,7 +70,8 @@ The repository root is the mod itself (`info.json`, `data.lua`, `prototypes/`, `
 
 ```bash
 # once: link the working copy into the Factorio mods folder
-# (existing Gregtorio zips are moved to gregtorio-zips-backup/ next to the mods folder)
+# (existing gregtorio-continued zips are moved to gregtorio-zips-backup/ next to the mods folder,
+#  an old "Gregtorio" link to this repo is removed)
 python tools/dev_link.py
 # from then on every change/pull is live after restarting Factorio
 
@@ -86,17 +87,17 @@ git tag v0.2.0 && git push --follow-tags
 
 Pushing a `v*` tag makes the GitHub Action build the zip and attach it to a GitHub release. The syntax check and the build run on every push and pull request.
 
-Note: the mod name in `info.json` stays `Gregtorio` so existing saves keep working.
-
 ## Mod portal
 
 The portal name `Gregtorio` belongs to the original author, Damien Reave, who can no longer
-update it. The fork is published as **Gregtorio Continued** (`gregtorio-continued`,
-https://mods.factorio.com/mod/gregtorio-continued). The repo keeps the internal name
-`Gregtorio`; `python tools/build.py --portal` renames the mod only inside the zip (name, title,
-description and every `__Gregtorio__/` path). Saves made with the dev version (`Gregtorio`) and
-saves made with the portal version (`gregtorio-continued`) are not interchangeable, because
-Factorio ties a save to the mod name.
+update it. Since 0.3.0 the mod is called **Gregtorio Continued** (`gregtorio-continued`,
+https://mods.factorio.com/mod/gregtorio-continued), in the repo as well as on the portal.
+`info.json` lists `! Gregtorio`, so the two cannot be enabled together.
+
+Saves from `Gregtorio` load with `gregtorio-continued`: prototype names did not change, so
+buildings, items and research stay. What a save keeps per mod name is lost once: the script
+state (contents of ME Fluid Drives, running autocrafting jobs, open terminal windows); machines
+with a mold recipe and an empty mold slot get a mold once.
 
 ## Contributing
 

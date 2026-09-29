@@ -3,7 +3,7 @@ data:extend({
   {
     type = "technology",
     name = "yafc-mode",
-    icon = "__Gregtorio__/graphics/technology/punch-trees.png",
+    icon = "__gregtorio-continued__/graphics/technology/punch-trees.png",
     icon_size = 256,
     effects = 	{
 		{ type = "unlock-recipe", recipe = "manual-labor-automation" },

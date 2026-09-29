@@ -14,7 +14,7 @@ data:extend({
   {
     type = "assembling-machine",
     name = "crafting-table",
-    icon = "__Gregtorio__/graphics/icons/crafting-table.png",
+    icon = "__gregtorio-continued__/graphics/icons/crafting-table.png",
     icon_size = 32,
     flags = {"placeable-neutral", "placeable-player", "player-creation"},
     minable = {mining_time = 0.2, result = "crafting-table"},
@@ -42,7 +42,7 @@ data:extend({
       animation = {
         layers = {
           {
-            filename = "__Gregtorio__/graphics/entity/crafting-table.png",
+            filename = "__gregtorio-continued__/graphics/entity/crafting-table.png",
             width = 180,
             height = 180,
             frame_count = 1,
@@ -92,7 +92,7 @@ data:extend({
 	{
     type = "furnace",
     name = "stone-furnace",
-    icon = "__Gregtorio__/graphics/icons/furnace.png",
+    icon = "__gregtorio-continued__/graphics/icons/furnace.png",
     icon_size = 32,
     flags = {"placeable-neutral", "placeable-player", "player-creation"},
     minable = {mining_time = 0.5, result = "stone-furnace"},
@@ -118,7 +118,7 @@ data:extend({
 	  animation = {
 		layers = {
 		  {
-			filename = "__Gregtorio__/graphics/entity/furnace.png",
+			filename = "__gregtorio-continued__/graphics/entity/furnace.png",
 			width = 128,
 			height = 128,
 			frame_count = 1,
@@ -168,7 +168,7 @@ data:extend({
   {
     type = "furnace",
     name = "iron-furnace",
-    icon = "__Gregtorio__/graphics/icons/iron-furnace.png",
+    icon = "__gregtorio-continued__/graphics/icons/iron-furnace.png",
     icon_size = 32,
     flags = {"placeable-neutral", "placeable-player", "player-creation"},
     minable = {mining_time = 0.5, result = "iron-furnace"},
@@ -194,7 +194,7 @@ data:extend({
 	  animation = {
 		layers = {
 		  {
-			filename = "__Gregtorio__/graphics/entity/iron-furnace.png",
+			filename = "__gregtorio-continued__/graphics/entity/iron-furnace.png",
 			width = 128,
 			height = 128,
 			frame_count = 1,
@@ -232,7 +232,7 @@ data:extend({
 {
     type = "assembling-machine",
     name = "manual-mine",
-    icon = "__Gregtorio__/graphics/icons/manual-mine.png",
+    icon = "__gregtorio-continued__/graphics/icons/manual-mine.png",
     icon_size = 64,
     flags = {"placeable-neutral", "placeable-player", "player-creation"},
     minable = {mining_time = 0.2, result = "manual-mine"},
@@ -254,7 +254,7 @@ data:extend({
 	  animation = {
 		layers = {
 		  {
-			filename = "__Gregtorio__/graphics/entity/manual-mine.png",
+			filename = "__gregtorio-continued__/graphics/entity/manual-mine.png",
 			width = 320,
 			height = 320,
 			frame_count = 1,
@@ -285,7 +285,7 @@ data:extend({
   {
     type = "assembling-machine",
     name = "manual-digsite",
-    icon = "__Gregtorio__/graphics/icons/manual-digsite.png",
+    icon = "__gregtorio-continued__/graphics/icons/manual-digsite.png",
     icon_size = 64,
     flags = {"placeable-neutral", "placeable-player", "player-creation"},
     minable = {mining_time = 0.2, result = "manual-digsite"},
@@ -307,7 +307,7 @@ data:extend({
       animation = {
         layers = {
           {
-            filename = "__Gregtorio__/graphics/entity/manual-digsite.png",
+            filename = "__gregtorio-continued__/graphics/entity/manual-digsite.png",
             width = 320,
             height = 320,
             frame_count = 1,
@@ -340,7 +340,7 @@ data:extend({
   {
     type = "lab",
     name = "manual-research-lab",
-    icon = "__Gregtorio__/graphics/icons/manual-research-lab.png",
+    icon = "__gregtorio-continued__/graphics/icons/manual-research-lab.png",
     icon_size = 64,
     flags = {"placeable-neutral", "placeable-player", "player-creation"},
     minable = {mining_time = 0.3, result = "manual-research-lab"},
@@ -365,7 +365,7 @@ data:extend({
     on_animation = {
       layers = {
         {
-          filename = "__Gregtorio__/graphics/entity/manual-research-lab.png",
+          filename = "__gregtorio-continued__/graphics/entity/manual-research-lab.png",
           width = 320,
           height = 320,
           frame_count = 1,
@@ -378,7 +378,7 @@ data:extend({
     off_animation = {
       layers = {
         {
-          filename = "__Gregtorio__/graphics/entity/manual-research-lab.png",
+          filename = "__gregtorio-continued__/graphics/entity/manual-research-lab.png",
           width = 320,
           height = 320,
           frame_count = 1,
@@ -409,7 +409,7 @@ data:extend({
   {
     type = "boiler",
     name = "small-coal-boiler",
-    icon = "__Gregtorio__/graphics/icons/small-coal-boiler.png",
+    icon = "__gregtorio-continued__/graphics/icons/small-coal-boiler.png",
     icon_size = 32,
     flags = {"placeable-neutral", "player-creation"},
     minable = {mining_time = 0.3, result = "small-coal-boiler"},
@@ -456,7 +456,7 @@ data:extend({
 		structure = {
 		  layers = {
 			{
-			  filename = "__Gregtorio__/graphics/entity/small-coal-boiler/small-coal-boiler.png",
+			  filename = "__gregtorio-continued__/graphics/entity/small-coal-boiler/small-coal-boiler.png",
 			  width = 96,
 			  height = 96,
 			  shift = util.by_pixel(0, 0),
@@ -469,7 +469,7 @@ data:extend({
 		structure = {
 		  layers = {
 			{
-			  filename = "__Gregtorio__/graphics/entity/small-coal-boiler/small-coal-boiler.png",
+			  filename = "__gregtorio-continued__/graphics/entity/small-coal-boiler/small-coal-boiler.png",
 			  width = 96,
 			  height = 96,
 			  shift = util.by_pixel(0, 0),
@@ -482,7 +482,7 @@ data:extend({
 		structure = {
 		  layers = {
 			{
-			  filename = "__Gregtorio__/graphics/entity/small-coal-boiler/small-coal-boiler.png",
+			  filename = "__gregtorio-continued__/graphics/entity/small-coal-boiler/small-coal-boiler.png",
 			  width = 96,
 			  height = 96,
 			  shift = util.by_pixel(0, 0),
@@ -495,7 +495,7 @@ data:extend({
 		structure = {
 		  layers = {
 			{
-			  filename = "__Gregtorio__/graphics/entity/small-coal-boiler/small-coal-boiler.png",
+			  filename = "__gregtorio-continued__/graphics/entity/small-coal-boiler/small-coal-boiler.png",
 			  width = 96,
 			  height = 96,
 			  shift = util.by_pixel(0, 0),
@@ -524,7 +524,7 @@ function make_steam_machine(name, entity_path, category, fast_replace, energy, f
   local machine = {
     type = "assembling-machine",
     name = name,
-    icon = "__Gregtorio__/graphics/icons/" .. name .. ".png",
+    icon = "__gregtorio-continued__/graphics/icons/" .. name .. ".png",
     icon_size = 32,
     flags = {"placeable-neutral", "placeable-player", "player-creation"},
     minable = { mining_time = 0.5, result = name },
@@ -562,7 +562,7 @@ function make_steam_machine(name, entity_path, category, fast_replace, energy, f
 		idle_animation = {
 		  layers = {
 			{
-			  filename = "__Gregtorio__/graphics/entity/" .. entity_path .. "/" .. entity_path .. "-idle.png",
+			  filename = "__gregtorio-continued__/graphics/entity/" .. entity_path .. "/" .. entity_path .. "-idle.png",
 			  width = 96,
 			  height = 96,
 			  frame_count = 1,
@@ -574,7 +574,7 @@ function make_steam_machine(name, entity_path, category, fast_replace, energy, f
 		animation = {
 		  layers = {
 			{
-			  filename = "__Gregtorio__/graphics/entity/" .. entity_path .. "/" .. entity_path .. "-working.png",
+			  filename = "__gregtorio-continued__/graphics/entity/" .. entity_path .. "/" .. entity_path .. "-working.png",
 			  width = 96,
 			  height = 96,
 			  frame_count = frames,
@@ -695,7 +695,7 @@ data:extend({
   {
     type = "assembling-machine",
     name = "coke-oven",
-    icon = "__Gregtorio__/graphics/icons/coke-oven.png",
+    icon = "__gregtorio-continued__/graphics/icons/coke-oven.png",
     icon_size = 32,
     flags = {"placeable-neutral", "placeable-player", "player-creation"},
     minable = {mining_time = 0.2, result = "coke-oven"},
@@ -719,7 +719,7 @@ data:extend({
 		idle_animation = {
 		  layers = {
 			{
-			  filename = "__Gregtorio__/graphics/entity/coke-oven/coke-oven-idle.png",
+			  filename = "__gregtorio-continued__/graphics/entity/coke-oven/coke-oven-idle.png",
 			  width = 96,
 			  height = 96,
 			  frame_count = 1,
@@ -731,7 +731,7 @@ data:extend({
 		animation = {
 		  layers = {
 			{
-			  filename = "__Gregtorio__/graphics/entity/coke-oven/coke-oven-working.png",
+			  filename = "__gregtorio-continued__/graphics/entity/coke-oven/coke-oven-working.png",
 			  width = 96,
 			  height = 96,
 			  frame_count = 2,
@@ -786,7 +786,7 @@ data:extend({
   {
     type = "assembling-machine",
     name = "primitive-blast-furnace",
-    icon = "__Gregtorio__/graphics/icons/primitive-blast-furnace.png",
+    icon = "__gregtorio-continued__/graphics/icons/primitive-blast-furnace.png",
     icon_size = 32,
     flags = {"placeable-neutral", "placeable-player", "player-creation" },
     minable = {mining_time = 0.2, result = "primitive-blast-furnace"},
@@ -811,7 +811,7 @@ data:extend({
 		idle_animation = {
 		  layers = {
 			{
-			  filename = "__Gregtorio__/graphics/entity/primitive-blast-furnace/pbf-idle.png",
+			  filename = "__gregtorio-continued__/graphics/entity/primitive-blast-furnace/pbf-idle.png",
 			  width = 96,
 			  height = 128,
 			  frame_count = 1,
@@ -823,7 +823,7 @@ data:extend({
 		animation = {
 		  layers = {
 			{
-			  filename = "__Gregtorio__/graphics/entity/primitive-blast-furnace/pbf-working.png",
+			  filename = "__gregtorio-continued__/graphics/entity/primitive-blast-furnace/pbf-working.png",
 			  width = 96,
 			  height = 128,
 			  frame_count = 2,

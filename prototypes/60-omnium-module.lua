@@ -4,7 +4,7 @@ data:extend({
 	{
 		type = "item",
 		name = "solidified-hydrogen",
-		icon = "__Gregtorio__/graphics/icons/solidified-hydrogen.png",
+		icon = "__gregtorio-continued__/graphics/icons/solidified-hydrogen.png",
 		icon_size = 32,
 		subgroup = "intermediate-product",
 		order = "a[manual-labor]",
@@ -28,7 +28,7 @@ data:extend({
 	{
 		type = "item",
 		name = "solidified-helium",
-		icon = "__Gregtorio__/graphics/icons/solidified-helium.png",
+		icon = "__gregtorio-continued__/graphics/icons/solidified-helium.png",
 		icon_size = 32,
 		subgroup = "intermediate-product",
 		order = "a[manual-labor]",
@@ -60,7 +60,7 @@ data:extend({
 	{
 		type = "item",
 		name = "solidified-nitrogen",
-		icon = "__Gregtorio__/graphics/icons/solidified-nitrogen.png",
+		icon = "__gregtorio-continued__/graphics/icons/solidified-nitrogen.png",
 		icon_size = 32,
 		subgroup = "intermediate-product",
 		order = "a[manual-labor]",
@@ -84,7 +84,7 @@ data:extend({
 	{
 		type = "item",
 		name = "solidified-oxygen",
-		icon = "__Gregtorio__/graphics/icons/solidified-oxygen.png",
+		icon = "__gregtorio-continued__/graphics/icons/solidified-oxygen.png",
 		icon_size = 32,
 		subgroup = "intermediate-product",
 		order = "a[manual-labor]",
@@ -110,7 +110,7 @@ data:extend({
 	{
 		type = "item",
 		name = "solidified-fluorine",
-		icon = "__Gregtorio__/graphics/icons/solidified-fluorine.png",
+		icon = "__gregtorio-continued__/graphics/icons/solidified-fluorine.png",
 		icon_size = 32,
 		subgroup = "intermediate-product",
 		order = "a[manual-labor]",
@@ -136,7 +136,7 @@ data:extend({
 	{
 		type = "item",
 		name = "solidified-neon",
-		icon = "__Gregtorio__/graphics/icons/solidified-neon.png",
+		icon = "__gregtorio-continued__/graphics/icons/solidified-neon.png",
 		icon_size = 32,
 		subgroup = "intermediate-product",
 		order = "a[manual-labor]",

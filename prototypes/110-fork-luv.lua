@@ -154,9 +154,9 @@ do
 	end
 	m.fluid_boxes_off_when_no_fluid_recipe = true
 	m.graphics_set = {
-		idle_animation = { layers = { { filename = "__Gregtorio__/graphics/entity/fork/luv-assembly-line-idle.png",
+		idle_animation = { layers = { { filename = "__gregtorio-continued__/graphics/entity/fork/luv-assembly-line-idle.png",
 			width = w * 32, height = h * 32, frame_count = 1, shift = { 0, 0 } } } },
-		animation = { layers = { { filename = "__Gregtorio__/graphics/entity/fork/luv-assembly-line-working.png",
+		animation = { layers = { { filename = "__gregtorio-continued__/graphics/entity/fork/luv-assembly-line-working.png",
 			width = w * 32, height = h * 32, frame_count = 1, shift = { 0, 0 } } } },
 	}
 	data:extend({ m })
@@ -232,7 +232,7 @@ local function tech(def)
 	data:extend({ {
 		type = "technology",
 		name = def.name,
-		icon = "__Gregtorio__/graphics/technology/nyi.png",
+		icon = "__gregtorio-continued__/graphics/technology/nyi.png",
 		icon_size = 256,
 		effects = effects,
 		prerequisites = def.prerequisites,

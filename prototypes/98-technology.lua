@@ -26,7 +26,7 @@ data:extend({
   {
     type = "technology",
     name = "punch-trees",
-    icon = "__Gregtorio__/graphics/technology/punch-trees.png",
+    icon = "__gregtorio-continued__/graphics/technology/punch-trees.png",
     icon_size = 256,
     effects = 	{
 		{ type = "unlock-recipe", recipe = "manual-digsite" },
@@ -48,7 +48,7 @@ data:extend({
   {
     type = "technology",
     name = "automation",
-    icon = "__Gregtorio__/graphics/technology/make-crafting-tables.png",
+    icon = "__gregtorio-continued__/graphics/technology/make-crafting-tables.png",
     icon_size = 256,
     effects = {
       { type = "unlock-recipe", recipe = "plank-crafting-table" },
@@ -70,7 +70,7 @@ data:extend({
   {
     type = "technology",
     name = "craft-wooden-tools",
-    icon = "__Gregtorio__/graphics/technology/craft-wooden-tools.png",
+    icon = "__gregtorio-continued__/graphics/technology/craft-wooden-tools.png",
     icon_size = 256,
     effects = {
       { type = "unlock-recipe", recipe = "manual-mine" },
@@ -91,7 +91,7 @@ data:extend({
   {
     type = "technology",
     name = "craft-stone-tools",
-    icon = "__Gregtorio__/graphics/technology/craft-stone-tools.png",
+    icon = "__gregtorio-continued__/graphics/technology/craft-stone-tools.png",
     icon_size = 256,
     effects = {
       { type = "unlock-recipe", recipe = "furnace-crafting-table" },
@@ -113,7 +113,7 @@ data:extend({
   {
     type = "technology",
     name = "smelt-iron-ingots",
-    icon = "__Gregtorio__/graphics/technology/smelt-iron-ingots.png",
+    icon = "__gregtorio-continued__/graphics/technology/smelt-iron-ingots.png",
     icon_size = 256,
     effects = {
 	  { type = "unlock-recipe", recipe = "iron-plate-crafting-table" },
@@ -143,7 +143,7 @@ data:extend({
   {
     type = "technology",
     name = "craft-iron-tools",
-    icon = "__Gregtorio__/graphics/technology/craft-iron-tools.png",
+    icon = "__gregtorio-continued__/graphics/technology/craft-iron-tools.png",
     icon_size = 256,
     effects = {
       { type = "unlock-recipe", recipe = "smooth-stone" },
@@ -212,7 +212,7 @@ data:extend({
   {
     type = "technology",
     name = "iron-furnace",
-    icon = "__Gregtorio__/graphics/technology/iron-furnace.png",
+    icon = "__gregtorio-continued__/graphics/technology/iron-furnace.png",
     icon_size = 256,
     effects = {
       { type = "unlock-recipe", recipe = "iron-furnace-crafting-table" }
@@ -232,7 +232,7 @@ data:extend({
   {
     type = "technology",
     name = "basic-backpack",
-    icon = "__Gregtorio__/graphics/technology/basic-backpack.png",
+    icon = "__gregtorio-continued__/graphics/technology/basic-backpack.png",
     icon_size = 256,
     effects = {
 		{ type = "character-inventory-slots-bonus", modifier = 20 },
@@ -258,7 +258,7 @@ data:extend({
   {
     type = "technology",
     name = "small-coal-boiler",
-    icon = "__Gregtorio__/graphics/technology/small-coal-boiler.png",
+    icon = "__gregtorio-continued__/graphics/technology/small-coal-boiler.png",
     icon_size = 256,
     effects = {
       { type = "unlock-recipe", recipe = "empty-bucket" },
@@ -297,7 +297,7 @@ data:extend({
   {
     type = "technology",
     name = "steam-alloy-smelter",
-    icon = "__Gregtorio__/graphics/technology/steam-alloy-smelter.png",
+    icon = "__gregtorio-continued__/graphics/technology/steam-alloy-smelter.png",
     icon_size = 256,
     effects = {
       { type = "unlock-recipe", recipe = "steam-alloy-smelter" },
@@ -318,7 +318,7 @@ data:extend({
   {
     type = "technology",
     name = "steam-compressor",
-    icon = "__Gregtorio__/graphics/technology/steam-compressor.png",
+    icon = "__gregtorio-continued__/graphics/technology/steam-compressor.png",
     icon_size = 256,
     effects = {
       { type = "unlock-recipe", recipe = "mining-redstone-vein" },
@@ -346,7 +346,7 @@ data:extend({
   {
     type = "technology",
     name = "steam-forge-hammer",
-    icon = "__Gregtorio__/graphics/technology/steam-forge-hammer.png",
+    icon = "__gregtorio-continued__/graphics/technology/steam-forge-hammer.png",
     icon_size = 256,
     effects = {
       { type = "unlock-recipe", recipe = "anvil" },
@@ -371,7 +371,7 @@ data:extend({
   {
     type = "technology",
     name = "steam-macerator",
-    icon = "__Gregtorio__/graphics/technology/steam-macerator.png",
+    icon = "__gregtorio-continued__/graphics/technology/steam-macerator.png",
     icon_size = 256,
     effects = {
       { type = "unlock-recipe", recipe = "mining-diamond-vein" },
@@ -402,7 +402,7 @@ data:extend({
   {
     type = "technology",
     name = "coke-oven",
-    icon = "__Gregtorio__/graphics/technology/coke-oven.png",
+    icon = "__gregtorio-continued__/graphics/technology/coke-oven.png",
     icon_size = 256,
     effects = {
       { type = "unlock-recipe", recipe = "sand-manual-digsite" },
@@ -426,7 +426,7 @@ data:extend({
   {
     type = "technology",
     name = "steel-processing",
-    icon = "__Gregtorio__/graphics/technology/primitive-blast-furnace.png",
+    icon = "__gregtorio-continued__/graphics/technology/primitive-blast-furnace.png",
     icon_size = 256,
     effects = {
       { type = "unlock-recipe", recipe = "mining-basaltic-mineral-sands-vein" },
@@ -465,7 +465,7 @@ data:extend({
   {
     type = "technology",
     name = "steel-backpack",
-    icon = "__Gregtorio__/graphics/technology/steel-backpack.png",
+    icon = "__gregtorio-continued__/graphics/technology/steel-backpack.png",
     icon_size = 256,
     effects = {
 		{ type = "character-inventory-slots-bonus", modifier = 20 },
@@ -485,7 +485,7 @@ data:extend({
   {
     type = "technology",
     name = "glassmaking",
-    icon = "__Gregtorio__/graphics/technology/glassmaking.png",
+    icon = "__gregtorio-continued__/graphics/technology/glassmaking.png",
     icon_size = 256,
     effects = {
       { type = "unlock-recipe", recipe = "flint-dust" },
@@ -508,7 +508,7 @@ data:extend({
   {
     type = "technology",
     name = "steam-extractor",
-    icon = "__Gregtorio__/graphics/technology/steam-extractor.png",
+    icon = "__gregtorio-continued__/graphics/technology/steam-extractor.png",
     icon_size = 256,
     effects = {
       { type = "unlock-recipe", recipe = "steam-extractor" },
@@ -529,7 +529,7 @@ data:extend({
   {
     type = "technology",
     name = "rubber",
-    icon = "__Gregtorio__/graphics/technology/rubber.png",
+    icon = "__gregtorio-continued__/graphics/technology/rubber.png",
     icon_size = 256,
     effects = {
       { type = "unlock-recipe", recipe = "raw-rubber-pulp-extractor" },
@@ -554,7 +554,7 @@ data:extend({
   {
     type = "technology",
     name = "primitive-electronics",
-    icon = "__Gregtorio__/graphics/technology/primitive-electronics.png",
+    icon = "__gregtorio-continued__/graphics/technology/primitive-electronics.png",
     icon_size = 256,
     effects = {
       { type = "unlock-recipe", recipe = "paper-crafting-table" },
@@ -588,7 +588,7 @@ data:extend({
   {
     type = "technology",
     name = "steam-turbine",
-    icon = "__Gregtorio__/graphics/technology/steam-turbine.png",
+    icon = "__gregtorio-continued__/graphics/technology/steam-turbine.png",
     icon_size = 256,
     effects = {
       { type = "unlock-recipe", recipe = "tin-plate-crafting-table" },
@@ -628,7 +628,7 @@ data:extend({
   {
     type = "technology",
     name = "wiremill",
-    icon = "__Gregtorio__/graphics/technology/wiremill.png",
+    icon = "__gregtorio-continued__/graphics/technology/wiremill.png",
     icon_size = 256,
     effects = {
       { type = "unlock-recipe", recipe = "lv-wiremill" },
@@ -652,7 +652,7 @@ data:extend({
   {
     type = "technology",
     name = "bending-machine",
-    icon = "__Gregtorio__/graphics/technology/bending-machine.png",
+    icon = "__gregtorio-continued__/graphics/technology/bending-machine.png",
     icon_size = 256,
     effects = {
       { type = "unlock-recipe", recipe = "steel-gear-crafting-table" },
@@ -705,7 +705,7 @@ data:extend({
   {
     type = "technology",
     name = "polarizer",
-    icon = "__Gregtorio__/graphics/technology/polarizer.png",
+    icon = "__gregtorio-continued__/graphics/technology/polarizer.png",
     icon_size = 256,
     effects = {
       { type = "unlock-recipe", recipe = "lv-polarizer" },
@@ -726,7 +726,7 @@ data:extend({
   {
     type = "technology",
     name = "mixer",
-    icon = "__Gregtorio__/graphics/technology/mixer.png",
+    icon = "__gregtorio-continued__/graphics/technology/mixer.png",
     icon_size = 256,
     effects = {
       { type = "unlock-recipe", recipe = "lv-mixer" },
@@ -748,7 +748,7 @@ data:extend({
   {
     type = "technology",
     name = "extractor",
-    icon = "__Gregtorio__/graphics/technology/extractor.png",
+    icon = "__gregtorio-continued__/graphics/technology/extractor.png",
     icon_size = 256,
     effects = {
       { type = "unlock-recipe", recipe = "rubber-ring-crafting-table" },
@@ -770,7 +770,7 @@ data:extend({
   {
     type = "technology",
     name = "semifluid-generator",
-    icon = "__Gregtorio__/graphics/technology/gas-turbine.png",
+    icon = "__gregtorio-continued__/graphics/technology/gas-turbine.png",
     icon_size = 256,
     effects = { 
       { type = "unlock-recipe", recipe = "lv-canning-machine" },   
@@ -795,7 +795,7 @@ data:extend({
   {
     type = "technology",
     name = "rock-crusher",
-    icon = "__Gregtorio__/graphics/technology/rock-crusher.png",
+    icon = "__gregtorio-continued__/graphics/technology/rock-crusher.png",
     icon_size = 256,
     effects = {
       { type = "unlock-recipe", recipe = "lv-rock-crusher" },
@@ -816,7 +816,7 @@ data:extend({
   {
     type = "technology",
     name = "lathe",
-    icon = "__Gregtorio__/graphics/technology/lathe.png",
+    icon = "__gregtorio-continued__/graphics/technology/lathe.png",
     icon_size = 256,
     effects = {
       { type = "unlock-recipe", recipe = "lv-lathe" },
@@ -843,7 +843,7 @@ data:extend({
   {
     type = "technology",
     name = "electrolyzer",
-    icon = "__Gregtorio__/graphics/technology/electrolyzer.png",
+    icon = "__gregtorio-continued__/graphics/technology/electrolyzer.png",
     icon_size = 256,
     effects = {
       { type = "unlock-recipe", recipe = "mining-magnetite-vein" },
@@ -868,7 +868,7 @@ data:extend({
   {
     type = "technology",
     name = "automation-2",
-    icon = "__Gregtorio__/graphics/technology/assembling-machine.png",
+    icon = "__gregtorio-continued__/graphics/technology/assembling-machine.png",
     icon_size = 256,
     effects = {
       { type = "unlock-recipe", recipe = "lv-conveyor-module" },
@@ -921,7 +921,7 @@ data:extend({
   {
     type = "technology",
     name = "ore-crushing",
-    icon = "__Gregtorio__/graphics/technology/ore-crushing.png",
+    icon = "__gregtorio-continued__/graphics/technology/ore-crushing.png",
     icon_size = 256,
     effects = {
       { type = "unlock-recipe", recipe = "lv-macerator" },
@@ -957,7 +957,7 @@ data:extend({
   {
     type = "technology",
     name = "ore-washing",
-    icon = "__Gregtorio__/graphics/technology/ore-washing.png",
+    icon = "__gregtorio-continued__/graphics/technology/ore-washing.png",
     icon_size = 256,
     effects = {
       { type = "unlock-recipe", recipe = "lv-ore-washer" },
@@ -997,7 +997,7 @@ data:extend({
   {
     type = "technology",
     name = "ore-centrifuging",
-    icon = "__Gregtorio__/graphics/technology/ore-centrifuging.png",
+    icon = "__gregtorio-continued__/graphics/technology/ore-centrifuging.png",
     icon_size = 256,
     effects = {
       { type = "unlock-recipe", recipe = "lv-centrifuge" },
@@ -1044,7 +1044,7 @@ data:extend({
   {
     type = "technology",
     name = "trash-cans",
-    icon = "__Gregtorio__/graphics/technology/trash-cans.png",
+    icon = "__gregtorio-continued__/graphics/technology/trash-cans.png",
     icon_size = 256,
     effects = {
       { type = "unlock-recipe", recipe = "trash-can" },
@@ -1106,7 +1106,7 @@ data:extend({
   {
     type = "technology",
     name = "large-bronze-boiler",
-    icon = "__Gregtorio__/graphics/technology/large-bronze-boiler.png",
+    icon = "__gregtorio-continued__/graphics/technology/large-bronze-boiler.png",
     icon_size = 256,
     effects = {
       { type = "unlock-recipe", recipe = "bronze-frame" },
@@ -1131,7 +1131,7 @@ data:extend({
   {
     type = "technology",
     name = "galena",
-    icon = "__Gregtorio__/graphics/technology/galena-processing.png",
+    icon = "__gregtorio-continued__/graphics/technology/galena-processing.png",
     icon_size = 256,
     effects = {
       { type = "unlock-recipe", recipe = "mining-galena-vein" },
@@ -1170,7 +1170,7 @@ data:extend({
   {
     type = "technology",
     name = "soldering-alloy",
-    icon = "__Gregtorio__/graphics/technology/soldering-alloy.png",
+    icon = "__gregtorio-continued__/graphics/technology/soldering-alloy.png",
     icon_size = 256,
     effects = {
       { type = "unlock-recipe", recipe = "mining-tetrahedrite-vein" },
@@ -1203,7 +1203,7 @@ data:extend({
   {
     type = "technology",
     name = "improved-electronic-parts",
-    icon = "__Gregtorio__/graphics/technology/primitive-electronics.png",
+    icon = "__gregtorio-continued__/graphics/technology/primitive-electronics.png",
     icon_size = 256,
     effects = {
       { type = "unlock-recipe", recipe = "resin-circuit-board" },
@@ -1228,7 +1228,7 @@ data:extend({
   {
     type = "technology",
     name = "pyrolyse-oven",
-    icon = "__Gregtorio__/graphics/technology/pyrolyse-oven.png",
+    icon = "__gregtorio-continued__/graphics/technology/pyrolyse-oven.png",
     icon_size = 256,
     effects = {
       { type = "unlock-recipe", recipe = "ulv-machine-casing" },
@@ -1253,7 +1253,7 @@ data:extend({
   {
     type = "technology",
     name = "basic-air-centrifuging",
-    icon = "__Gregtorio__/graphics/technology/basic-air-centrifuging.png",
+    icon = "__gregtorio-continued__/graphics/technology/basic-air-centrifuging.png",
     icon_size = 256,
     effects = {
       { type = "unlock-recipe", recipe = "zinc-foil" },
@@ -1277,7 +1277,7 @@ data:extend({
   {
     type = "technology",
     name = "chemical-reactor",
-    icon = "__Gregtorio__/graphics/technology/chemical-reactor.png",
+    icon = "__gregtorio-continued__/graphics/technology/chemical-reactor.png",
     icon_size = 256,
     effects = {
       { type = "unlock-recipe", recipe = "lv-chemical-reactor" },
@@ -1301,7 +1301,7 @@ data:extend({
   {
     type = "technology",
     name = "hydrochloric-acid",
-    icon = "__Gregtorio__/graphics/technology/hydrochloric-acid.png",
+    icon = "__gregtorio-continued__/graphics/technology/hydrochloric-acid.png",
     icon_size = 256,
     effects = {
       { type = "unlock-recipe", recipe = "mining-salt-vein" },
@@ -1336,7 +1336,7 @@ data:extend({
   {
     type = "technology",
     name = "primitive-electronic-circuit-assemblies",
-    icon = "__Gregtorio__/graphics/technology/primitive-electronic-circuit-assemblies.png",
+    icon = "__gregtorio-continued__/graphics/technology/primitive-electronic-circuit-assemblies.png",
     icon_size = 256,
     effects = {
       { type = "unlock-recipe", recipe = "mining-copper-tin-vein" },
@@ -1371,7 +1371,7 @@ data:extend({
   {
     type = "technology",
     name = "circuit-assembler",
-    icon = "__Gregtorio__/graphics/technology/circuit-assembler.png",
+    icon = "__gregtorio-continued__/graphics/technology/circuit-assembler.png",
     icon_size = 256,
     effects = {
 	  { type = "unlock-recipe", recipe = "mining-nether-quartz-vein" },
@@ -1440,7 +1440,7 @@ data:extend({
   {
     type = "technology",
     name = "invar",
-    icon = "__Gregtorio__/graphics/technology/invar-processing.png",
+    icon = "__gregtorio-continued__/graphics/technology/invar-processing.png",
     icon_size = 256,
     effects = {
       { type = "unlock-recipe", recipe = "lv-alloy-smelter" },
@@ -1483,7 +1483,7 @@ data:extend({
   {
     type = "technology",
     name = "cobalt-brass",
-    icon = "__Gregtorio__/graphics/technology/cobalt-brass.png",
+    icon = "__gregtorio-continued__/graphics/technology/cobalt-brass.png",
     icon_size = 256,
     effects = {
       { type = "unlock-recipe", recipe = "lapis-dust-macerator" },
@@ -1510,7 +1510,7 @@ data:extend({
   {
     type = "technology",
     name = "cutting-machine",
-    icon = "__Gregtorio__/graphics/technology/cutting-machine.png",
+    icon = "__gregtorio-continued__/graphics/technology/cutting-machine.png",
     icon_size = 256,
     effects = {
       { type = "unlock-recipe", recipe = "lv-cutting-machine" },
@@ -1534,7 +1534,7 @@ data:extend({
   {
     type = "technology",
     name = "electric-blast-furnace",
-    icon = "__Gregtorio__/graphics/technology/electric-blast-furnace.png",
+    icon = "__gregtorio-continued__/graphics/technology/electric-blast-furnace.png",
     icon_size = 256,
     effects = {
       { type = "unlock-recipe", recipe = "cupronickel-ingot" },
@@ -1566,7 +1566,7 @@ data:extend({
   {
     type = "technology",
     name = "greenhouse",
-    icon = "__Gregtorio__/graphics/technology/greenhouse.png",
+    icon = "__gregtorio-continued__/graphics/technology/greenhouse.png",
     icon_size = 256,
     effects = {   
       { type = "unlock-recipe", recipe = "steel-frame" },    
@@ -1591,7 +1591,7 @@ data:extend({
   {
     type = "technology",
     name = "gas-turbine",
-    icon = "__Gregtorio__/graphics/technology/gas-turbine.png",
+    icon = "__gregtorio-continued__/graphics/technology/gas-turbine.png",
     icon_size = 256,
     effects = { 
       { type = "unlock-recipe", recipe = "wood-tar-pyrolyse" },   
@@ -1615,7 +1615,7 @@ data:extend({
   {
     type = "technology",
     name = "sulfuric-acid",
-    icon = "__Gregtorio__/graphics/technology/sulfuric-acid.png",
+    icon = "__gregtorio-continued__/graphics/technology/sulfuric-acid.png",
     icon_size = 256,
     effects = {
       { type = "unlock-recipe", recipe = "lv-distillery" },
@@ -1640,7 +1640,7 @@ data:extend({
   {
     type = "technology",
     name = "rare-earth-processing",
-    icon = "__Gregtorio__/graphics/technology/rare-earth-processing.png",
+    icon = "__gregtorio-continued__/graphics/technology/rare-earth-processing.png",
     icon_size = 256,
     effects = { 
       { type = "unlock-recipe", recipe = "crushed-rare-earth-1" },   
@@ -1667,7 +1667,7 @@ data:extend({
   {
     type = "technology",
     name = "phosphorus-processing",
-    icon = "__Gregtorio__/graphics/technology/phosphorus-processing.png",
+    icon = "__gregtorio-continued__/graphics/technology/phosphorus-processing.png",
     icon_size = 256,
     effects = {
       { type = "unlock-recipe", recipe = "mining-apatite-vein" },
@@ -1705,7 +1705,7 @@ data:extend({
   {
     type = "technology",
     name = "basic-extended-crafting",
-    icon = "__Gregtorio__/graphics/technology/basic-extended-crafting.png",
+    icon = "__gregtorio-continued__/graphics/technology/basic-extended-crafting.png",
     icon_size = 256,
     effects = {
       { type = "unlock-recipe", recipe = "brick-dust-electrolysis" },
@@ -1811,7 +1811,7 @@ data:extend({
   {
     type = "technology",
     name = "microversium",
-    icon = "__Gregtorio__/graphics/technology/microversium.png",
+    icon = "__gregtorio-continued__/graphics/technology/microversium.png",
     icon_size = 256,
     effects = {
       { type = "unlock-recipe", recipe = "glowstone-dust" },
@@ -1840,7 +1840,7 @@ data:extend({
   {
     type = "technology",
     name = "overworld-data",
-    icon = "__Gregtorio__/graphics/technology/overworld-data.png",
+    icon = "__gregtorio-continued__/graphics/technology/overworld-data.png",
     icon_size = 256,
     effects = {
       { type = "unlock-recipe", recipe = "gold-plate" },  
@@ -1870,7 +1870,7 @@ data:extend({
   {
     type = "technology",
     name = "into-the-microverse",
-    icon = "__Gregtorio__/graphics/technology/into-the-microverse.png",
+    icon = "__gregtorio-continued__/graphics/technology/into-the-microverse.png",
     icon_size = 256,
     effects = {
       { type = "unlock-recipe", recipe = "conductive-iron-ingot" },
@@ -1898,7 +1898,7 @@ data:extend({
   {
     type = "technology",
     name = "microverse-resources",
-    icon = "__Gregtorio__/graphics/technology/microverse-resources.png",
+    icon = "__gregtorio-continued__/graphics/technology/microverse-resources.png",
     icon_size = 256,
     effects = microverse_resources,
 	prerequisites = { "into-the-microverse" },
@@ -1916,7 +1916,7 @@ data:extend({
   {
     type = "technology",
     name = "aluminium",
-    icon = "__Gregtorio__/graphics/technology/aluminium-processing.png",
+    icon = "__gregtorio-continued__/graphics/technology/aluminium-processing.png",
     icon_size = 256,
     effects = {
       { type = "unlock-recipe", recipe = "microminer-bauxite" },
@@ -1952,7 +1952,7 @@ data:extend({
   {
     type = "technology",
     name = "aluminium-backpack",
-    icon = "__Gregtorio__/graphics/technology/aluminium-backpack.png",
+    icon = "__gregtorio-continued__/graphics/technology/aluminium-backpack.png",
     icon_size = 256,
     effects = {
 		{ type = "character-inventory-slots-bonus", modifier = 20 },
@@ -1972,7 +1972,7 @@ data:extend({
   {
     type = "technology",
     name = "mv-components",
-    icon = "__Gregtorio__/graphics/technology/mv-components.png",
+    icon = "__gregtorio-continued__/graphics/technology/mv-components.png",
     icon_size = 256,
     effects = {
       { type = "unlock-recipe", recipe = "silver-wire" },
@@ -2005,7 +2005,7 @@ data:extend({
   {
     type = "technology",
     name = "mv-machines",
-    icon = "__Gregtorio__/graphics/technology/mv-machines.png",
+    icon = "__gregtorio-continued__/graphics/technology/mv-machines.png",
     icon_size = 256,
     effects = {
       { type = "unlock-recipe", recipe = "mv-steam-turbine" },
@@ -2047,7 +2047,7 @@ data:extend({
   {
     type = "technology",
     name = "mcsb",
-    icon = "__Gregtorio__/graphics/technology/mcsb.png",
+    icon = "__gregtorio-continued__/graphics/technology/mcsb.png",
     icon_size = 256,
     effects = {
       { type = "unlock-recipe", recipe = "silicon-dioxide" },
@@ -2074,7 +2074,7 @@ data:extend({
   {
     type = "technology",
     name = "laser-engraver",
-    icon = "__Gregtorio__/graphics/technology/laser-engraver.png",
+    icon = "__gregtorio-continued__/graphics/technology/laser-engraver.png",
     icon_size = 256,
     effects = {
       { type = "unlock-recipe", recipe = "mv-laser-engraver" },
@@ -2096,7 +2096,7 @@ data:extend({
   {
     type = "technology",
     name = "nand-chips",
-    icon = "__Gregtorio__/graphics/technology/nand-chips.png",
+    icon = "__gregtorio-continued__/graphics/technology/nand-chips.png",
     icon_size = 256,
     effects = {
       { type = "unlock-recipe", recipe = "simple-soc-wafer-sw" },
@@ -2123,7 +2123,7 @@ data:extend({
   {
     type = "technology",
     name = "polyethylene",
-    icon = "__Gregtorio__/graphics/technology/polyethylene.png",
+    icon = "__gregtorio-continued__/graphics/technology/polyethylene.png",
     icon_size = 256,
     effects = {
       { type = "unlock-recipe", recipe = "growing-wheat" },
@@ -2153,7 +2153,7 @@ data:extend({
   {
     type = "technology",
     name = "mv-energy-hatches",
-    icon = "__Gregtorio__/graphics/technology/mv-energy-hatches.png",
+    icon = "__gregtorio-continued__/graphics/technology/mv-energy-hatches.png",
     icon_size = 256,
     effects = {
       { type = "unlock-recipe", recipe = "medium-voltage-coil" },
@@ -2179,7 +2179,7 @@ data:extend({
   {
     type = "technology",
     name = "integrated-circuits",
-    icon = "__Gregtorio__/graphics/technology/integrated-circuits.png",
+    icon = "__gregtorio-continued__/graphics/technology/integrated-circuits.png",
     icon_size = 256,
     effects = {
       { type = "unlock-recipe", recipe = "annealed-copper-ingot" },
@@ -2206,7 +2206,7 @@ data:extend({
   {
     type = "technology",
     name = "advanced-integrated-circuits",
-    icon = "__Gregtorio__/graphics/technology/advanced-integrated-circuits.png",
+    icon = "__gregtorio-continued__/graphics/technology/advanced-integrated-circuits.png",
     icon_size = 256,
     effects = {
       { type = "unlock-recipe", recipe = "electrum-dust-smelter" },
@@ -2237,7 +2237,7 @@ data:extend({
   {
     type = "technology",
     name = "large-steel-boiler",
-    icon = "__Gregtorio__/graphics/technology/large-steel-boiler.png",
+    icon = "__gregtorio-continued__/graphics/technology/large-steel-boiler.png",
     icon_size = 256,
     effects = {
       { type = "unlock-recipe", recipe = "steel-pipe-casing" },
@@ -2259,7 +2259,7 @@ data:extend({
   {
     type = "technology",
     name = "multismelter",
-    icon = "__Gregtorio__/graphics/technology/multismelter.png",
+    icon = "__gregtorio-continued__/graphics/technology/multismelter.png",
     icon_size = 256,
     effects = {
       { type = "unlock-recipe", recipe = "multismelter-controller" },
@@ -2335,7 +2335,7 @@ data:extend({
   {
     type = "technology",
     name = "mv-tier-electrolysis",
-    icon = "__Gregtorio__/graphics/technology/mv-tier-electrolysis.png",
+    icon = "__gregtorio-continued__/graphics/technology/mv-tier-electrolysis.png",
     icon_size = 256,
     effects = {
       { type = "unlock-recipe", recipe = "ruby-dust-electrolysis" },
@@ -2363,7 +2363,7 @@ data:extend({
   {
     type = "technology",
     name = "extruder",
-    icon = "__Gregtorio__/graphics/technology/extruder.png",
+    icon = "__gregtorio-continued__/graphics/technology/extruder.png",
     icon_size = 256,
     effects = {
       { type = "unlock-recipe", recipe = "mv-extruder" },
@@ -2400,7 +2400,7 @@ data:extend({
   {
     type = "technology",
     name = "oil-gathering",
-    icon = "__Gregtorio__/graphics/technology/drilling-rig.png",
+    icon = "__gregtorio-continued__/graphics/technology/drilling-rig.png",
     icon_size = 256,
     effects = { 
       { type = "unlock-recipe", recipe = "centrifuge-vanadium-magnetite-dust" },   
@@ -2429,7 +2429,7 @@ data:extend({
   {
     type = "technology",
     name = "diesel",
-    icon = "__Gregtorio__/graphics/technology/diesel.png",
+    icon = "__gregtorio-continued__/graphics/technology/diesel.png",
     icon_size = 256,
     effects = { 
       { type = "unlock-recipe", recipe = "mv-combustion-generator" },
@@ -2458,7 +2458,7 @@ data:extend({
   {
     type = "technology",
     name = "ruby-juice",
-    icon = "__Gregtorio__/graphics/technology/ruby-juice.png",
+    icon = "__gregtorio-continued__/graphics/technology/ruby-juice.png",
     icon_size = 256,
     effects = { 
       { type = "unlock-recipe", recipe = "sodium-hydroxide" },     
@@ -2481,7 +2481,7 @@ data:extend({
   {
     type = "technology",
     name = "kanthal",
-    icon = "__Gregtorio__/graphics/technology/kanthal-processing.png",
+    icon = "__gregtorio-continued__/graphics/technology/kanthal-processing.png",
     icon_size = 256,
     effects = {
       { type = "unlock-recipe", recipe = "kanthal-dust" },
@@ -2503,7 +2503,7 @@ data:extend({
   {
     type = "technology",
     name = "kanthal-coils",
-    icon = "__Gregtorio__/graphics/technology/kanthal-coils.png",
+    icon = "__gregtorio-continued__/graphics/technology/kanthal-coils.png",
     icon_size = 256,
     effects = {
       { type = "unlock-recipe", recipe = "aluminium-foil" },
@@ -2529,7 +2529,7 @@ data:extend({
   {
     type = "technology",
     name = "advanced-extended-crafting",
-    icon = "__Gregtorio__/graphics/technology/advanced-extended-crafting.png",
+    icon = "__gregtorio-continued__/graphics/technology/advanced-extended-crafting.png",
     icon_size = 256,
     effects = {
       { type = "unlock-recipe", recipe = "electrum-plate" }, 
@@ -2552,7 +2552,7 @@ data:extend({
   {
     type = "technology",
     name = "advanced-mv-machines",
-    icon = "__Gregtorio__/graphics/technology/advanced-mv-machines.png",
+    icon = "__gregtorio-continued__/graphics/technology/advanced-mv-machines.png",
     icon_size = 256,
     effects = {
       { type = "unlock-recipe", recipe = "mining-beryllium-vein" },  
@@ -2590,7 +2590,7 @@ data:extend({
   {
     type = "technology",
     name = "autoclave",
-    icon = "__Gregtorio__/graphics/technology/autoclave.png",
+    icon = "__gregtorio-continued__/graphics/technology/autoclave.png",
     icon_size = 256,
     effects = {
       { type = "unlock-recipe", recipe = "mv-autoclave" },
@@ -2616,7 +2616,7 @@ data:extend({
   {
     type = "technology",
     name = "applied-energistics-crystals",
-    icon = "__Gregtorio__/graphics/technology/fluix-block.png",
+    icon = "__gregtorio-continued__/graphics/technology/fluix-block.png",
     icon_size = 256,
     effects = {
       { type = "unlock-recipe", recipe = "charged-certus-quartz-dust" },  
@@ -2651,7 +2651,7 @@ data:extend({
   {
     type = "technology",
     name = "applied-energistics-components",
-    icon = "__Gregtorio__/graphics/technology/ae2.png",
+    icon = "__gregtorio-continued__/graphics/technology/ae2.png",
     icon_size = 256,
     effects = {
       { type = "unlock-recipe", recipe = "nether-quartz-rod" },  
@@ -2747,7 +2747,7 @@ data:extend({
   {
     type = "technology",
     name = "manganese-processing",
-    icon = "__Gregtorio__/graphics/technology/manganese-processing.png",
+    icon = "__gregtorio-continued__/graphics/technology/manganese-processing.png",
     icon_size = 256,
     effects = {
       { type = "unlock-recipe", recipe = "mining-manganese-vein" }, 
@@ -2791,7 +2791,7 @@ data:extend({
   {
     type = "technology",
     name = "stainless-steel",
-    icon = "__Gregtorio__/graphics/technology/stainless-steel-processing.png",
+    icon = "__gregtorio-continued__/graphics/technology/stainless-steel-processing.png",
     icon_size = 256,
     effects = {
       { type = "unlock-recipe", recipe = "stainless-steel-dust" },
@@ -2820,7 +2820,7 @@ data:extend({
   {
     type = "technology",
     name = "stainless-steel-backpack",
-    icon = "__Gregtorio__/graphics/technology/stainless-steel-backpack.png",
+    icon = "__gregtorio-continued__/graphics/technology/stainless-steel-backpack.png",
     icon_size = 256,
     effects = {
 		{ type = "character-inventory-slots-bonus", modifier = 20 },
@@ -2840,7 +2840,7 @@ data:extend({
   {
     type = "technology",
     name = "cleanroom",
-    icon = "__Gregtorio__/graphics/technology/cleanroom.png",
+    icon = "__gregtorio-continued__/graphics/technology/cleanroom.png",
     icon_size = 256,
     effects = { 
       { type = "unlock-recipe", recipe = "steel-frame" },  
@@ -2863,7 +2863,7 @@ data:extend({
   {
     type = "technology",
     name = "energetic-alloy",
-    icon = "__Gregtorio__/graphics/technology/energetic-alloy-processing.png",
+    icon = "__gregtorio-continued__/graphics/technology/energetic-alloy-processing.png",
     icon_size = 256,
     effects = { 
       { type = "unlock-recipe", recipe = "energetic-alloy-ingot" },
@@ -2888,7 +2888,7 @@ data:extend({
   {
     type = "technology",
     name = "microprocessors",
-    icon = "__Gregtorio__/graphics/technology/microprocessors.png",
+    icon = "__gregtorio-continued__/graphics/technology/microprocessors.png",
     icon_size = 256,
     effects = { 
       { type = "unlock-recipe", recipe = "plastic-circuit-board-pe" },
@@ -2919,7 +2919,7 @@ data:extend({
   {
     type = "technology",
     name = "polyvinyl-chloride",
-    icon = "__Gregtorio__/graphics/technology/pvc-sheet.png",
+    icon = "__gregtorio-continued__/graphics/technology/pvc-sheet.png",
     icon_size = 256,
     effects = {
       { type = "unlock-recipe", recipe = "vinyl-chloride" },  
@@ -2943,7 +2943,7 @@ data:extend({
   {
     type = "technology",
     name = "nether-data",
-    icon = "__Gregtorio__/graphics/technology/nether-data.png",
+    icon = "__gregtorio-continued__/graphics/technology/nether-data.png",
     icon_size = 256,
     effects = { 
       { type = "unlock-recipe", recipe = "me-4k-storage-component" },  
@@ -2964,7 +2964,7 @@ data:extend({
   {
     type = "technology",
     name = "tier-two-microminers",
-    icon = "__Gregtorio__/graphics/technology/stainless-steel-plated-microminer.png",
+    icon = "__gregtorio-continued__/graphics/technology/stainless-steel-plated-microminer.png",
     icon_size = 256,
     effects = {
       { type = "unlock-recipe", recipe = "microminer-ender-pearls" },
@@ -3026,7 +3026,7 @@ data:extend({
   {
     type = "technology",
     name = "eyes-of-ender",
-    icon = "__Gregtorio__/graphics/technology/eyes-of-ender.png",
+    icon = "__gregtorio-continued__/graphics/technology/eyes-of-ender.png",
     icon_size = 256,
     effects = {
       { type = "unlock-recipe", recipe = "microminer-blaze-rods" },
@@ -3073,7 +3073,7 @@ data:extend({
   {
     type = "technology",
     name = "hv-components",
-    icon = "__Gregtorio__/graphics/technology/hv-components.png",
+    icon = "__gregtorio-continued__/graphics/technology/hv-components.png",
     icon_size = 256,
     effects = {
       { type = "unlock-recipe", recipe = "silver-cable" },
@@ -3102,7 +3102,7 @@ data:extend({
   {
     type = "technology",
     name = "neodymium",
-    icon = "__Gregtorio__/graphics/technology/neodymium.png",
+    icon = "__gregtorio-continued__/graphics/technology/neodymium.png",
     icon_size = 256,
     effects = {
       { type = "unlock-recipe", recipe = "crushed-neodymium" },
@@ -3124,7 +3124,7 @@ data:extend({
   {
     type = "technology",
     name = "vacuum-freezers",
-    icon = "__Gregtorio__/graphics/technology/vacuum-freezers.png",
+    icon = "__gregtorio-continued__/graphics/technology/vacuum-freezers.png",
     icon_size = 256,
     effects = {
       { type = "unlock-recipe", recipe = "vacuum-freezer-controller" },
@@ -3147,7 +3147,7 @@ data:extend({
   {
     type = "technology",
     name = "hv-machines",
-    icon = "__Gregtorio__/graphics/technology/hv-machines.png",
+    icon = "__gregtorio-continued__/graphics/technology/hv-machines.png",
     icon_size = 256,
     effects = {
       { type = "unlock-recipe", recipe = "hv-steam-turbine" },
@@ -3194,7 +3194,7 @@ data:extend({
   {
     type = "technology",
     name = "niobium-and-tantalum-extraction",
-    icon = "__Gregtorio__/graphics/technology/nyi.png",
+    icon = "__gregtorio-continued__/graphics/technology/nyi.png",
     icon_size = 256,
     effects = { 
       { type = "unlock-recipe", recipe = "pyrochlore-fluorination" },
@@ -3221,7 +3221,7 @@ data:extend({
   {
     type = "technology",
     name = "cetane-boosted-diesel",
-    icon = "__Gregtorio__/graphics/technology/cetane-boosted-diesel.png",
+    icon = "__gregtorio-continued__/graphics/technology/cetane-boosted-diesel.png",
     icon_size = 256,
     effects = {
        { type = "unlock-recipe", recipe = "carbon-monoxide" }, 
@@ -3248,7 +3248,7 @@ data:extend({
   {
     type = "technology",
     name = "smd-components",
-    icon = "__Gregtorio__/graphics/technology/smd-components.png",
+    icon = "__gregtorio-continued__/graphics/technology/smd-components.png",
     icon_size = 256,
     effects = {
       { type = "unlock-recipe", recipe = "fine-tantalum-wire" },
@@ -3287,7 +3287,7 @@ data:extend({
   {
     type = "technology",
     name = "hv-energy-hatches",
-    icon = "__Gregtorio__/graphics/technology/hv-energy-hatches.png",
+    icon = "__gregtorio-continued__/graphics/technology/hv-energy-hatches.png",
     icon_size = 256,
     effects = {
       { type = "unlock-recipe", recipe = "fine-black-steel-wire" },
@@ -3316,7 +3316,7 @@ data:extend({
   {
     type = "technology",
     name = "large-sifter",
-    icon = "__Gregtorio__/graphics/technology/large-sifter.png",
+    icon = "__gregtorio-continued__/graphics/technology/large-sifter.png",
     icon_size = 256,
     effects = {   
       { type = "unlock-recipe", recipe = "tumbaga-dust" },          
@@ -3348,7 +3348,7 @@ data:extend({
   {
     type = "technology",
     name = "bauxite-slurry-process",
-    icon = "__Gregtorio__/graphics/technology/bauxite-slurry-process.png",
+    icon = "__gregtorio-continued__/graphics/technology/bauxite-slurry-process.png",
     icon_size = 256,
     effects = {
        { type = "unlock-recipe", recipe = "quicklime" },
@@ -3382,7 +3382,7 @@ data:extend({
   {
     type = "technology",
     name = "advanced-hv-machines",
-    icon = "__Gregtorio__/graphics/technology/nyi.png",
+    icon = "__gregtorio-continued__/graphics/technology/nyi.png",
     icon_size = 256,
     effects = {
       { type = "unlock-recipe", recipe = "chromium-ingot" },
@@ -3407,7 +3407,7 @@ data:extend({
   {
     type = "technology",
     name = "mainframes",
-    icon = "__Gregtorio__/graphics/technology/nyi.png",
+    icon = "__gregtorio-continued__/graphics/technology/nyi.png",
     icon_size = 256,
     effects = {
 	  { type = "unlock-recipe", recipe = "microprocessor-mainframe" }, 
@@ -3427,7 +3427,7 @@ data:extend({
   {
     type = "technology",
     name = "nichrome-coils",
-    icon = "__Gregtorio__/graphics/technology/nichrome-coils.png",
+    icon = "__gregtorio-continued__/graphics/technology/nichrome-coils.png",
     icon_size = 256,
     effects = {
       { type = "unlock-recipe", recipe = "nichrome-dust" },
@@ -3456,7 +3456,7 @@ data:extend({
   {
     type = "technology",
     name = "oil-processing",
-    icon = "__Gregtorio__/graphics/technology/distillation-towers.png",
+    icon = "__gregtorio-continued__/graphics/technology/distillation-towers.png",
     icon_size = 256,
     effects = { 
       { type = "unlock-recipe", recipe = "distillation-tower-controller" },  
@@ -3490,7 +3490,7 @@ data:extend({
   {
     type = "technology",
     name = "more-gas-turbine-fuels",
-    icon = "__Gregtorio__/graphics/technology/more-gas-turbine-fuels.png",
+    icon = "__gregtorio-continued__/graphics/technology/more-gas-turbine-fuels.png",
     icon_size = 256,
     effects = { 
       { type = "unlock-recipe", recipe = "naphtha-cell" },
@@ -3519,7 +3519,7 @@ data:extend({
   {
     type = "technology",
     name = "implosion-compressor",
-    icon = "__Gregtorio__/graphics/technology/implosion-compressor.png",
+    icon = "__gregtorio-continued__/graphics/technology/implosion-compressor.png",
     icon_size = 256,
     effects = { 
       { type = "unlock-recipe", recipe = "reinforced-stone" },  
@@ -3546,7 +3546,7 @@ data:extend({
   {
     type = "technology",
     name = "ptfe",
-    icon = "__Gregtorio__/graphics/technology/nyi.png",
+    icon = "__gregtorio-continued__/graphics/technology/nyi.png",
     icon_size = 256,
     effects = {
       { type = "unlock-recipe", recipe = "cryolite-electrolysis" },
@@ -3572,7 +3572,7 @@ data:extend({
   {
     type = "technology",
     name = "radon",
-    icon = "__Gregtorio__/graphics/technology/radon.png",
+    icon = "__gregtorio-continued__/graphics/technology/radon.png",
     icon_size = 256,
     effects = {
       { type = "unlock-recipe", recipe = "microminer-radon-salt" }, 
@@ -3594,7 +3594,7 @@ data:extend({
   {
     type = "technology",
     name = "large-chemical-reactor",
-    icon = "__Gregtorio__/graphics/technology/large-chemical-reactor.png",
+    icon = "__gregtorio-continued__/graphics/technology/large-chemical-reactor.png",
     icon_size = 256,
     effects = {
       { type = "unlock-recipe", recipe = "chemically-inert-casing" }, 
@@ -3616,7 +3616,7 @@ data:extend({
   {
     type = "technology",
     name = "advanced-glue",
-    icon = "__Gregtorio__/graphics/technology/nyi.png",
+    icon = "__gregtorio-continued__/graphics/technology/nyi.png",
     icon_size = 256,
     effects = {
       { type = "unlock-recipe", recipe = "vinyl-acetate" }, 
@@ -3641,7 +3641,7 @@ data:extend({
   {
     type = "technology",
     name = "rocket-fuel",
-    icon = "__Gregtorio__/graphics/technology/nyi.png",
+    icon = "__gregtorio-continued__/graphics/technology/nyi.png",
     icon_size = 256,
     effects = {
       { type = "unlock-recipe", recipe = "hypochlorous-acid" }, 
@@ -3663,7 +3663,7 @@ data:extend({
   {
     type = "technology",
     name = "phosphorus-doped-monocrystaline-silicon-boules",
-    icon = "__Gregtorio__/graphics/technology/nyi.png",
+    icon = "__gregtorio-continued__/graphics/technology/nyi.png",
     icon_size = 256,
     effects = {  
       { type = "unlock-recipe", recipe = "phosphorus-doped-monocrystaline-silicon-boule" },  
@@ -3690,7 +3690,7 @@ data:extend({
   {
     type = "technology",
     name = "cryogenic-air-distillation",
-    icon = "__Gregtorio__/graphics/technology/nyi.png",
+    icon = "__gregtorio-continued__/graphics/technology/nyi.png",
     icon_size = 256,
     effects = {  
       { type = "unlock-recipe", recipe = "liquid-air" },  
@@ -3711,7 +3711,7 @@ data:extend({
   {
     type = "technology",
     name = "epoxy-processing",
-    icon = "__Gregtorio__/graphics/technology/nyi.png",
+    icon = "__gregtorio-continued__/graphics/technology/nyi.png",
     icon_size = 256,
     effects = {  
       { type = "unlock-recipe", recipe = "epichlorohydrin" },  
@@ -3733,7 +3733,7 @@ data:extend({
   {
     type = "technology",
     name = "the-end-data",
-    icon = "__Gregtorio__/graphics/technology/the-end-data.png",
+    icon = "__gregtorio-continued__/graphics/technology/the-end-data.png",
     icon_size = 256,
     effects = {
 	  { type = "unlock-recipe", recipe = "me-16k-storage-component" }, 
@@ -3754,7 +3754,7 @@ data:extend({
   {
     type = "technology",
     name = "elite-extended-crafting",
-    icon = "__Gregtorio__/graphics/technology/elite-extended-crafting.png",
+    icon = "__gregtorio-continued__/graphics/technology/elite-extended-crafting.png",
     icon_size = 256,
     effects = {
       { type = "unlock-recipe", recipe = "block-of-aluminium" }, 
@@ -3777,7 +3777,7 @@ data:extend({
   {
     type = "technology",
     name = "tier-three-microminers",
-    icon = "__Gregtorio__/graphics/technology/titanium-plated-microminer.png",
+    icon = "__gregtorio-continued__/graphics/technology/titanium-plated-microminer.png",
     icon_size = 256,
     effects = {
       { type = "unlock-recipe", recipe = "solidified-argon" },
@@ -3826,7 +3826,7 @@ data:extend({
   {
     type = "technology",
     name = "titanium",
-    icon = "__Gregtorio__/graphics/technology/nyi.png",
+    icon = "__gregtorio-continued__/graphics/technology/nyi.png",
     icon_size = 256,
     effects = {
       { type = "unlock-recipe", recipe = "microminer-ilmenite" },
@@ -3862,7 +3862,7 @@ data:extend({
   {
     type = "technology",
     name = "titanium-backpack",
-    icon = "__Gregtorio__/graphics/technology/titanium-backpack.png",
+    icon = "__gregtorio-continued__/graphics/technology/titanium-backpack.png",
     icon_size = 256,
     effects = {
 		{ type = "character-inventory-slots-bonus", modifier = 20 },
@@ -3882,7 +3882,7 @@ data:extend({
   {
     type = "technology",
     name = "reinforced-glass",
-    icon = "__Gregtorio__/graphics/technology/nyi.png",
+    icon = "__gregtorio-continued__/graphics/technology/nyi.png",
     icon_size = 256,
     effects = {
 	  { type = "unlock-recipe", recipe = "mixed-metal-ingot" }, 
@@ -3904,7 +3904,7 @@ data:extend({
   {
     type = "technology",
     name = "end-steel",
-    icon = "__Gregtorio__/graphics/technology/nyi.png",
+    icon = "__gregtorio-continued__/graphics/technology/nyi.png",
     icon_size = 256,
     effects = {
       { type = "unlock-recipe", recipe = "obsidian" },              
@@ -3928,7 +3928,7 @@ data:extend({
   {
     type = "technology",
     name = "ev-components",
-    icon = "__Gregtorio__/graphics/technology/nyi.png",
+    icon = "__gregtorio-continued__/graphics/technology/nyi.png",
     icon_size = 256,
     effects = {
       { type = "unlock-recipe", recipe = "aluminium-wire" },
@@ -3959,7 +3959,7 @@ data:extend({
   {
     type = "technology",
     name = "ev-machines",
-    icon = "__Gregtorio__/graphics/technology/nyi.png",
+    icon = "__gregtorio-continued__/graphics/technology/nyi.png",
     icon_size = 256,
     effects = {
       { type = "unlock-recipe", recipe = "ev-wiremill" },
@@ -4002,7 +4002,7 @@ data:extend({
   {
     type = "technology",
     name = "ev-energy-hatches",
-    icon = "__Gregtorio__/graphics/technology/nyi.png",
+    icon = "__gregtorio-continued__/graphics/technology/nyi.png",
     icon_size = 256,
     effects = { 
       { type = "unlock-recipe", recipe = "mpic-wafer-pd" },       
@@ -4034,7 +4034,7 @@ data:extend({
   {
     type = "technology",
     name = "rtm-alloy-coils",
-    icon = "__Gregtorio__/graphics/technology/rtm-alloy-coils.png",
+    icon = "__gregtorio-continued__/graphics/technology/rtm-alloy-coils.png",
     icon_size = 256,
     effects = {
       { type = "unlock-recipe", recipe = "rtm-alloy-dust" },
@@ -4062,7 +4062,7 @@ data:extend({
   {
     type = "technology",
     name = "advanced-ev-machines",
-    icon = "__Gregtorio__/graphics/technology/nyi.png",
+    icon = "__gregtorio-continued__/graphics/technology/nyi.png",
     icon_size = 256,
     effects = {
 	  { type = "unlock-recipe", recipe = "platinum-rod" },
@@ -4084,7 +4084,7 @@ data:extend({
   {
     type = "technology",
     name = "nanoprocessors",
-    icon = "__Gregtorio__/graphics/technology/nyi.png",
+    icon = "__gregtorio-continued__/graphics/technology/nyi.png",
     icon_size = 256,
     effects = { 
       { type = "unlock-recipe", recipe = "gold-foil" },  
@@ -4117,7 +4117,7 @@ data:extend({
   {
     type = "technology",
     name = "ender-io",
-    icon = "__Gregtorio__/graphics/technology/nyi.png",
+    icon = "__gregtorio-continued__/graphics/technology/nyi.png",
     icon_size = 256,
     effects = {          
       { type = "unlock-recipe", recipe = "dark-steel-plate" },	
@@ -4165,7 +4165,7 @@ data:extend({
   {
     type = "technology",
     name = "extreme-entity-crushers",
-    icon = "__Gregtorio__/graphics/technology/nyi.png",
+    icon = "__gregtorio-continued__/graphics/technology/nyi.png",
     icon_size = 256,
     effects = { 
       { type = "unlock-recipe", recipe = "borosilicate-glass-dust" },              
@@ -4197,7 +4197,7 @@ data:extend({
   {
     type = "technology",
     name = "uranium-processing",
-    icon = "__Gregtorio__/graphics/technology/nyi.png",
+    icon = "__gregtorio-continued__/graphics/technology/nyi.png",
     icon_size = 256,
     effects = { 
       { type = "unlock-recipe", recipe = "microminer-uranium" },              
@@ -4229,7 +4229,7 @@ data:extend({
   {
     type = "technology",
     name = "silicone-rubber",
-    icon = "__Gregtorio__/graphics/technology/nyi.png",
+    icon = "__gregtorio-continued__/graphics/technology/nyi.png",
     icon_size = 256,
     effects = { 
       { type = "unlock-recipe", recipe = "polydimethylsiloxane" },              
@@ -4258,7 +4258,7 @@ data:extend({
   {
     type = "technology",
     name = "polyphenylene-sulfide",
-    icon = "__Gregtorio__/graphics/technology/nyi.png",
+    icon = "__gregtorio-continued__/graphics/technology/nyi.png",
     icon_size = 256,
     effects = {
 	  { type = "unlock-recipe", recipe = "dichlorobenzene" }, 
@@ -4282,7 +4282,7 @@ data:extend({
   {
     type = "technology",
     name = "platinum-ore-processing",
-    icon = "__Gregtorio__/graphics/technology/nyi.png",
+    icon = "__gregtorio-continued__/graphics/technology/nyi.png",
     icon_size = 256,
     effects = { 
       { type = "unlock-recipe", recipe = "platinum-group-sludge-pentlandite" },          
@@ -4307,7 +4307,7 @@ data:extend({
   {
     type = "technology",
     name = "platinum-line-initialization",
-    icon = "__Gregtorio__/graphics/technology/nyi.png",
+    icon = "__gregtorio-continued__/graphics/technology/nyi.png",
     icon_size = 256,
     effects = {        
       { type = "unlock-recipe", recipe = "aqua-regia" },          
@@ -4329,7 +4329,7 @@ data:extend({
   {
     type = "technology",
     name = "platinum",
-    icon = "__Gregtorio__/graphics/technology/nyi.png",
+    icon = "__gregtorio-continued__/graphics/technology/nyi.png",
     icon_size = 256,
     effects = { 
       { type = "unlock-recipe", recipe = "ammonium-chloride" },          
@@ -4355,7 +4355,7 @@ data:extend({
   {
     type = "technology",
     name = "nuclear-power",
-    icon = "__Gregtorio__/graphics/technology/nuclear-reactor.png",
+    icon = "__gregtorio-continued__/graphics/technology/nuclear-reactor.png",
     icon_size = 256,
     effects = {
 	  { type = "unlock-recipe", recipe = "heat-vent" }, 
@@ -4391,7 +4391,7 @@ data:extend({
   {
     type = "technology",
     name = "nuclear-fuel-rods",
-    icon = "__Gregtorio__/graphics/technology/nyi.png",
+    icon = "__gregtorio-continued__/graphics/technology/nyi.png",
     icon_size = 256,
     effects = { 
       { type = "unlock-recipe", recipe = "raw-thorium-smelter" },
@@ -4421,7 +4421,7 @@ data:extend({
   {
     type = "technology",
     name = "palladium",
-    icon = "__Gregtorio__/graphics/technology/nyi.png",
+    icon = "__gregtorio-continued__/graphics/technology/nyi.png",
     icon_size = 256,
     effects = {         
       { type = "unlock-recipe", recipe = "sodium-formate" },          
@@ -4448,7 +4448,7 @@ data:extend({
   {
     type = "technology",
     name = "rhodium",
-    icon = "__Gregtorio__/graphics/technology/nyi.png",
+    icon = "__gregtorio-continued__/graphics/technology/nyi.png",
     icon_size = 256,
     effects = { 
       { type = "unlock-recipe", recipe = "potassium-pyrosulfate" },          
@@ -4478,7 +4478,7 @@ data:extend({
   {
     type = "technology",
     name = "ruthenium",
-    icon = "__Gregtorio__/graphics/technology/nyi.png",
+    icon = "__gregtorio-continued__/graphics/technology/nyi.png",
     icon_size = 256,
     effects = { 
       { type = "unlock-recipe", recipe = "soda-ash" },
@@ -4501,7 +4501,7 @@ data:extend({
   {
     type = "technology",
     name = "iridium",
-    icon = "__Gregtorio__/graphics/technology/nyi.png",
+    icon = "__gregtorio-continued__/graphics/technology/nyi.png",
     icon_size = 256,
     effects = { 
       { type = "unlock-recipe", recipe = "iridium-metal-residue" },
@@ -4527,7 +4527,7 @@ data:extend({
   {
     type = "technology",
     name = "osmium",
-    icon = "__Gregtorio__/graphics/technology/nyi.png",
+    icon = "__gregtorio-continued__/graphics/technology/nyi.png",
     icon_size = 256,
     effects = { 
       { type = "unlock-recipe", recipe = "osmium-tetroxide" },
@@ -4548,7 +4548,7 @@ data:extend({
   {
     type = "technology",
     name = "tungstate-processing",
-    icon = "__Gregtorio__/graphics/technology/nyi.png",
+    icon = "__gregtorio-continued__/graphics/technology/nyi.png",
     icon_size = 256,
     effects = { 
       { type = "unlock-recipe", recipe = "microminer-tungstate" },
@@ -4582,7 +4582,7 @@ data:extend({
   {
     type = "technology",
     name = "tungsten",
-    icon = "__Gregtorio__/graphics/technology/nyi.png",
+    icon = "__gregtorio-continued__/graphics/technology/nyi.png",
     icon_size = 256,
     effects = { 
       { type = "unlock-recipe", recipe = "tungstic-acid" },         
@@ -4609,7 +4609,7 @@ data:extend({
   {
     type = "technology",
     name = "tungstensteel",
-    icon = "__Gregtorio__/graphics/technology/nyi.png",
+    icon = "__gregtorio-continued__/graphics/technology/nyi.png",
     icon_size = 256,
     effects = { 
       { type = "unlock-recipe", recipe = "tungstensteel-dust" },      
@@ -4640,7 +4640,7 @@ data:extend({
   {
     type = "technology",
     name = "tungstensteel-backpack",
-    icon = "__Gregtorio__/graphics/technology/tungstensteel-backpack.png",
+    icon = "__gregtorio-continued__/graphics/technology/tungstensteel-backpack.png",
     icon_size = 256,
     effects = {
 		{ type = "character-inventory-slots-bonus", modifier = 20 },
@@ -4660,7 +4660,7 @@ data:extend({
   {
     type = "technology",
     name = "tungsten-carbide",
-    icon = "__Gregtorio__/graphics/technology/nyi.png",
+    icon = "__gregtorio-continued__/graphics/technology/nyi.png",
     icon_size = 256,
     effects = {          
       { type = "unlock-recipe", recipe = "molten-tungsten-carbide" },          
@@ -4684,7 +4684,7 @@ data:extend({
   {
     type = "technology",
     name = "staballoy",
-    icon = "__Gregtorio__/graphics/technology/nyi.png",
+    icon = "__gregtorio-continued__/graphics/technology/nyi.png",
     icon_size = 256,
     effects = { 
       { type = "unlock-recipe", recipe = "staballoy-dust" },
@@ -4707,7 +4707,7 @@ data:extend({
   {
     type = "technology",
     name = "zirconium-carbide",
-    icon = "__Gregtorio__/graphics/technology/nyi.png",
+    icon = "__gregtorio-continued__/graphics/technology/nyi.png",
     icon_size = 256,
     effects = { 
       { type = "unlock-recipe", recipe = "zirconium-carbide-dust" },
@@ -4732,7 +4732,7 @@ data:extend({
   {
     type = "technology",
     name = "alloy-blast-smelter",
-    icon = "__Gregtorio__/graphics/technology/nyi.png",
+    icon = "__gregtorio-continued__/graphics/technology/nyi.png",
     icon_size = 256,
     effects = { 
       { type = "unlock-recipe", recipe = "zirconium-carbide-dust" },               
@@ -4759,7 +4759,7 @@ data:extend({
   {
     type = "technology",
     name = "alloy-blast-smelting-older-materials",
-    icon = "__Gregtorio__/graphics/technology/nyi.png",
+    icon = "__gregtorio-continued__/graphics/technology/nyi.png",
     icon_size = 256,
     effects = { 
       { type = "unlock-recipe", recipe = "molten-nickel-zinc-ferrite" },
@@ -4795,7 +4795,7 @@ data:extend({
   {
     type = "technology",
     name = "polybenzimidazole",
-    icon = "__Gregtorio__/graphics/technology/nyi.png",
+    icon = "__gregtorio-continued__/graphics/technology/nyi.png",
     icon_size = 256,
     effects = { 
       { type = "unlock-recipe", recipe = "molten-niobium-titanium" },        
@@ -4815,7 +4815,7 @@ data:extend({
   {
     type = "technology",
     name = "niobium-titanium",
-    icon = "__Gregtorio__/graphics/technology/nyi.png",
+    icon = "__gregtorio-continued__/graphics/technology/nyi.png",
     icon_size = 256,
     effects = { 
       { type = "unlock-recipe", recipe = "molten-niobium-titanium" },          
@@ -4837,7 +4837,7 @@ data:extend({
   {
     type = "technology",
     name = "hssg",
-    icon = "__Gregtorio__/graphics/technology/nyi.png",
+    icon = "__gregtorio-continued__/graphics/technology/nyi.png",
     icon_size = 256,
     effects = {    
       { type = "unlock-recipe", recipe = "molten-hssg" },    
@@ -4861,7 +4861,7 @@ data:extend({
   {
     type = "technology",
     name = "hsse",
-    icon = "__Gregtorio__/graphics/technology/nyi.png",
+    icon = "__gregtorio-continued__/graphics/technology/nyi.png",
     icon_size = 256,
     effects = { 
       { type = "unlock-recipe", recipe = "hssg-dust" }, 
@@ -4884,7 +4884,7 @@ data:extend({
   {
     type = "technology",
     name = "hsss",
-    icon = "__Gregtorio__/graphics/technology/nyi.png",
+    icon = "__gregtorio-continued__/graphics/technology/nyi.png",
     icon_size = 256,
     effects = { 
       { type = "unlock-recipe", recipe = "molten-hsss" },    
@@ -4906,7 +4906,7 @@ data:extend({
   {
     type = "technology",
     name = "advanced-smds",
-    icon = "__Gregtorio__/graphics/technology/nyi.png",
+    icon = "__gregtorio-continued__/graphics/technology/nyi.png",
     icon_size = 256,
     effects = { 
       { type = "unlock-recipe", recipe = "advanced-smd-resistor" },  
@@ -4949,7 +4949,7 @@ data:extend({
   {
     type = "technology",
     name = "graphene",
-    icon = "__Gregtorio__/graphics/technology/nyi.png",
+    icon = "__gregtorio-continued__/graphics/technology/nyi.png",
     icon_size = 256,
     effects = {
       { type = "unlock-recipe", recipe = "graphene-pd" },
@@ -4970,7 +4970,7 @@ data:extend({
   {
     type = "technology",
     name = "iv-components",
-    icon = "__Gregtorio__/graphics/technology/nyi.png",
+    icon = "__gregtorio-continued__/graphics/technology/nyi.png",
     icon_size = 256,
     effects = {
       { type = "unlock-recipe", recipe = "tungsten-cable" },
@@ -5001,7 +5001,7 @@ data:extend({
   {
     type = "technology",
     name = "iv-machines",
-    icon = "__Gregtorio__/graphics/technology/nyi.png",
+    icon = "__gregtorio-continued__/graphics/technology/nyi.png",
     icon_size = 256,
     effects = { 
  
@@ -5021,7 +5021,7 @@ data:extend({
   {
     type = "technology",
     name = "indium",
-    icon = "__Gregtorio__/graphics/technology/nyi.png",
+    icon = "__gregtorio-continued__/graphics/technology/nyi.png",
     icon_size = 256,
     effects = { 
       { type = "unlock-recipe", recipe = "indium-concentrate" },  
@@ -5043,7 +5043,7 @@ data:extend({
   {
     type = "technology",
     name = "iv-energy-hatches",
-    icon = "__Gregtorio__/graphics/technology/nyi.png",
+    icon = "__gregtorio-continued__/graphics/technology/nyi.png",
     icon_size = 256,
     effects = { 
       { type = "unlock-recipe", recipe = "hpic-wafer" },       
@@ -5068,7 +5068,7 @@ data:extend({
   {
     type = "technology",
     name = "industrial-maceration-stack",
-    icon = "__Gregtorio__/graphics/technology/nyi.png",
+    icon = "__gregtorio-continued__/graphics/technology/nyi.png",
     icon_size = 256,
     effects = { 
       { type = "unlock-recipe", recipe = "industrial-maceration-stack-controller" },          
@@ -5089,7 +5089,7 @@ data:extend({
   {
     type = "technology",
     name = "industrial-wire-factory",
-    icon = "__Gregtorio__/graphics/technology/nyi.png",
+    icon = "__gregtorio-continued__/graphics/technology/nyi.png",
     icon_size = 256,
     effects = { 
       { type = "unlock-recipe", recipe = "industrial-wire-factory-controller" },          
@@ -5111,7 +5111,7 @@ data:extend({
   {
     type = "technology",
     name = "industrial-mixer",
-    icon = "__Gregtorio__/graphics/technology/nyi.png",
+    icon = "__gregtorio-continued__/graphics/technology/nyi.png",
     icon_size = 256,
     effects = { 
       { type = "unlock-recipe", recipe = "zirconium-carbide-rod" },          
@@ -5135,7 +5135,7 @@ data:extend({
   {
     type = "technology",
     name = "industrial-centrifuge",
-    icon = "__Gregtorio__/graphics/technology/nyi.png",
+    icon = "__gregtorio-continued__/graphics/technology/nyi.png",
     icon_size = 256,
     effects = { 
       { type = "unlock-recipe", recipe = "molten-maraging-steel-250" },
@@ -5163,7 +5163,7 @@ data:extend({
   {
     type = "technology",
     name = "hyper-intensity-laser-engraver",
-    icon = "__Gregtorio__/graphics/technology/nyi.png",
+    icon = "__gregtorio-continued__/graphics/technology/nyi.png",
     icon_size = 256,
     effects = { 
       { type = "unlock-recipe", recipe = "molten-hastelloy-x" },          
@@ -5193,7 +5193,7 @@ data:extend({
   {
     type = "technology",
     name = "industrial-extrusion-machine",
-    icon = "__Gregtorio__/graphics/technology/nyi.png",
+    icon = "__gregtorio-continued__/graphics/technology/nyi.png",
     icon_size = 256,
     effects = {      
       { type = "unlock-recipe", recipe = "molten-inconel-690" },          
@@ -5220,7 +5220,7 @@ data:extend({
   {
     type = "technology",
     name = "zyngen",
-    icon = "__Gregtorio__/graphics/technology/nyi.png",
+    icon = "__gregtorio-continued__/graphics/technology/nyi.png",
     icon_size = 256,
     effects = {       
       { type = "unlock-recipe", recipe = "molten-incoloy-ds" },          
@@ -5246,7 +5246,7 @@ data:extend({
   {
     type = "technology",
     name = "industrial-wire-factory",
-    icon = "__Gregtorio__/graphics/technology/nyi.png",
+    icon = "__gregtorio-continued__/graphics/technology/nyi.png",
     icon_size = 256,
     effects = {      
       { type = "unlock-recipe", recipe = "molten-tantalloy-60" },          
@@ -5271,7 +5271,7 @@ data:extend({
   {
     type = "technology",
     name = "large-electric-compressor",
-    icon = "__Gregtorio__/graphics/technology/nyi.png",
+    icon = "__gregtorio-continued__/graphics/technology/nyi.png",
     icon_size = 256,
     effects = { 
       { type = "unlock-recipe", recipe = "solidify-incoloy-903-ingot" },          
@@ -5296,7 +5296,7 @@ data:extend({
   {
     type = "technology",
     name = "magnetic-flux-exhibiter",
-    icon = "__Gregtorio__/graphics/technology/nyi.png",
+    icon = "__gregtorio-continued__/graphics/technology/nyi.png",
     icon_size = 256,
     effects = {   
       { type = "unlock-recipe", recipe = "magnetic-flux-exhibiter-controller" },
@@ -5321,7 +5321,7 @@ data:extend({
   {
     type = "technology",
     name = "industrial-electrolyzer",
-    icon = "__Gregtorio__/graphics/technology/nyi.png",
+    icon = "__gregtorio-continued__/graphics/technology/nyi.png",
     icon_size = 256,
     effects = {   
       { type = "unlock-recipe", recipe = "potin-dust" },
@@ -5353,7 +5353,7 @@ data:extend({
   {
     type = "technology",
     name = "industrial-precision-lathe",
-    icon = "__Gregtorio__/graphics/technology/nyi.png",
+    icon = "__gregtorio-continued__/graphics/technology/nyi.png",
     icon_size = 256,
     effects = {   
       { type = "unlock-recipe", recipe = "platinum-plate" },
@@ -5378,7 +5378,7 @@ data:extend({
   {
     type = "technology",
     name = "large-extractor",
-    icon = "__Gregtorio__/graphics/technology/nyi.png",
+    icon = "__gregtorio-continued__/graphics/technology/nyi.png",
     icon_size = 256,
     effects = {   
       { type = "unlock-recipe", recipe = "black-steel-rod" },
@@ -5403,7 +5403,7 @@ data:extend({
   {
     type = "technology",
     name = "industrial-cutting-factory",
-    icon = "__Gregtorio__/graphics/technology/nyi.png",
+    icon = "__gregtorio-continued__/graphics/technology/nyi.png",
     icon_size = 256,
     effects = {
       { type = "unlock-recipe", recipe = "molten-maraging-steel-300" },
@@ -5432,7 +5432,7 @@ data:extend({
   {
     type = "technology",
     name = "chemical-bath-plant",
-    icon = "__Gregtorio__/graphics/technology/nyi.png",
+    icon = "__gregtorio-continued__/graphics/technology/nyi.png",
     icon_size = 256,
     effects = {   
       { type = "unlock-recipe", recipe = "talonite-plate" },
@@ -5460,7 +5460,7 @@ data:extend({
   {
     type = "technology",
     name = "fluid-shaper",
-    icon = "__Gregtorio__/graphics/technology/nyi.png",
+    icon = "__gregtorio-continued__/graphics/technology/nyi.png",
     icon_size = 256,
     effects = {   
       { type = "unlock-recipe", recipe = "molten-inconel-625" },
@@ -5489,7 +5489,7 @@ data:extend({
   {
     type = "technology",
     name = "qubit-cpus",
-    icon = "__Gregtorio__/graphics/technology/nyi.png",
+    icon = "__gregtorio-continued__/graphics/technology/nyi.png",
     icon_size = 256,
     effects = { 
       { type = "unlock-recipe", recipe = "indium-gallium-phosphide" },  
@@ -5511,7 +5511,7 @@ data:extend({
   {
     type = "technology",
     name = "ruridit",
-    icon = "__Gregtorio__/graphics/technology/nyi.png",
+    icon = "__gregtorio-continued__/graphics/technology/nyi.png",
     icon_size = 256,
     effects = { 
       { type = "unlock-recipe", recipe = "molten-ruridit" },   
@@ -5536,7 +5536,7 @@ data:extend({
   {
     type = "technology",
     name = "yttrium-barium-cuprate",
-    icon = "__Gregtorio__/graphics/technology/nyi.png",
+    icon = "__gregtorio-continued__/graphics/technology/nyi.png",
     icon_size = 256,
     effects = { 
       { type = "unlock-recipe", recipe = "yttrium-barium-cuprate-dust" },  
@@ -5560,7 +5560,7 @@ data:extend({
   {
     type = "technology",
     name = "vanadium-gallium",
-    icon = "__Gregtorio__/graphics/technology/nyi.png",
+    icon = "__gregtorio-continued__/graphics/technology/nyi.png",
     icon_size = 256,
     effects = { 
       { type = "unlock-recipe", recipe = "molten-vanadium-gallium" },          
@@ -5584,7 +5584,7 @@ data:extend({
   {
     type = "technology",
     name = "luv-components",
-    icon = "__Gregtorio__/graphics/technology/nyi.png",
+    icon = "__gregtorio-continued__/graphics/technology/nyi.png",
     icon_size = 256,
     effects = {
       { type = "unlock-recipe", recipe = "molten-indalloy-140" },
@@ -5614,7 +5614,7 @@ data:extend({
   {
     type = "technology",
     name = "qubit-cpus",
-    icon = "__Gregtorio__/graphics/technology/nyi.png",
+    icon = "__gregtorio-continued__/graphics/technology/nyi.png",
     icon_size = 256,
     effects = { 
       { type = "unlock-recipe", recipe = "indium-gallium-phosphide" },  
@@ -5756,7 +5756,7 @@ data:extend({
   {
     type = "technology",
     name = "umv-science-pack",
-    icon = "__Gregtorio__/graphics/technology/umv-science-pack.png",
+    icon = "__gregtorio-continued__/graphics/technology/umv-science-pack.png",
     icon_size = 256,
     effects = {  
 		{ type = "unlock-recipe", recipe = "umv-science-pack" },    
@@ -5778,7 +5778,7 @@ data:extend({
   {
     type = "technology",
     name = "uxv-science-pack",
-    icon = "__Gregtorio__/graphics/technology/uxv-science-pack.png",
+    icon = "__gregtorio-continued__/graphics/technology/uxv-science-pack.png",
     icon_size = 256,
     effects = {  
 		{ type = "unlock-recipe", recipe = "uxv-science-pack" },    
@@ -5800,7 +5800,7 @@ data:extend({
   {
     type = "technology",
     name = "uxv-components",
-    icon = "__Gregtorio__/graphics/technology/uxv-components.png",
+    icon = "__gregtorio-continued__/graphics/technology/uxv-components.png",
     icon_size = 256,
     effects = {  
 		{ type = "unlock-recipe", recipe = "uxv-motor" },    
@@ -5829,7 +5829,7 @@ data:extend({
   {
     type = "technology",
     name = "stargate",
-    icon = "__Gregtorio__/graphics/technology/stargate.png",
+    icon = "__gregtorio-continued__/graphics/technology/stargate.png",
     icon_size = 256,
     effects = {  
 		{ type = "unlock-recipe", recipe = "stargate-ring-block" },    
@@ -5858,7 +5858,7 @@ data:extend({
 	{
 		type = "technology",
 		name = "victory",
-		icon = "__Gregtorio__/graphics/technology/max-science-pack.png",
+		icon = "__gregtorio-continued__/graphics/technology/max-science-pack.png",
 		icon_size = 256,
 		effects = {},
 		prerequisites = { "stargate" },
@@ -5880,7 +5880,7 @@ data:extend({
   {
     type = "technology",
     name = "quantum-processors",
-    icon = "__Gregtorio__/graphics/technology/nyi.png",
+    icon = "__gregtorio-continued__/graphics/technology/nyi.png",
     icon_size = 256,
     effects = { 
       { type = "unlock-recipe", recipe = "annealed-copper-foil" },  
@@ -5906,7 +5906,7 @@ data:extend({
   {
     type = "technology",
     name = "quantum-processor-mainframes",
-    icon = "__Gregtorio__/graphics/technology/nyi.png",
+    icon = "__gregtorio-continued__/graphics/technology/nyi.png",
     icon_size = 256,
     effects = { 
       { type = "unlock-recipe", recipe = "hssg-frame" },  
@@ -5927,7 +5927,7 @@ data:extend({
   {
     type = "technology",
     name = "crystal-processors",
-    icon = "__Gregtorio__/graphics/technology/nyi.png",
+    icon = "__gregtorio-continued__/graphics/technology/nyi.png",
     icon_size = 256,
     effects = { 
       { type = "unlock-recipe", recipe = "crystal-processor" },  
@@ -5950,7 +5950,7 @@ data:extend({
   {
     type = "technology",
     name = "wetware-processors",
-    icon = "__Gregtorio__/graphics/technology/nyi.png",
+    icon = "__gregtorio-continued__/graphics/technology/nyi.png",
     icon_size = 256,
     effects = { 
       { type = "unlock-recipe", recipe = "wetware-processor" },  
@@ -5973,7 +5973,7 @@ data:extend({
   {
     type = "technology",
     name = "matter-processors",
-    icon = "__Gregtorio__/graphics/technology/nyi.png",
+    icon = "__gregtorio-continued__/graphics/technology/nyi.png",
     icon_size = 256,
     effects = { 
       { type = "unlock-recipe", recipe = "matter-processor" },  
@@ -5996,7 +5996,7 @@ data:extend({
   {
     type = "technology",
     name = "dimensional-processors",
-    icon = "__Gregtorio__/graphics/technology/nyi.png",
+    icon = "__gregtorio-continued__/graphics/technology/nyi.png",
     icon_size = 256,
     effects = { 
       { type = "unlock-recipe", recipe = "dimensional-processor" },  
@@ -6020,7 +6020,7 @@ data:extend({
   {
     type = "technology",
     name = "thorium-fuel-cycle",
-    icon = "__Gregtorio__/graphics/technology/nyi.png",
+    icon = "__gregtorio-continued__/graphics/technology/nyi.png",
     icon_size = 256,
     effects = {
 	  { type = "unlock-recipe", recipe = "empty-fuel-rod" }, 
@@ -6042,7 +6042,7 @@ data:extend({
   {
     type = "technology",
     name = "uranium-fuel-cycle",
-    icon = "__Gregtorio__/graphics/technology/nyi.png",
+    icon = "__gregtorio-continued__/graphics/technology/nyi.png",
     icon_size = 256,
     effects = {
 	  { type = "unlock-recipe", recipe = "uranium-hexafluoride" }, 
@@ -6067,7 +6067,7 @@ data:extend({
   {
     type = "technology",
     name = "plutonium-fuel-cycle",
-    icon = "__Gregtorio__/graphics/technology/nyi.png",
+    icon = "__gregtorio-continued__/graphics/technology/nyi.png",
     icon_size = 256,
     effects = {
 	  { type = "unlock-recipe", recipe = "plutonium-enrichment" }, 
@@ -6089,7 +6089,7 @@ data:extend({
   {
     type = "technology",
     name = "americium-fuel-cycle",
-    icon = "__Gregtorio__/graphics/technology/nyi.png",
+    icon = "__gregtorio-continued__/graphics/technology/nyi.png",
     icon_size = 256,
     effects = {
 	  { type = "unlock-recipe", recipe = "americium-enrichment" }, 
@@ -6112,7 +6112,7 @@ data:extend({
   {
     type = "technology",
     name = "imaginary-time-stabilization",
-    icon = "__Gregtorio__/graphics/technology/nyi.png",
+    icon = "__gregtorio-continued__/graphics/technology/nyi.png",
     icon_size = 256,
     effects = {
 	  { type = "unlock-recipe", recipe = "stabilized-protactinium" }, 
