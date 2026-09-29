@@ -851,7 +851,11 @@ Numbers: researchable technologies 317 -> 319 of 359 -> 361 (the two new ones), 
   drives do not pull recovered fluid in by themselves; the upgrade planner leaves the fluid on the old item instead of moving it
   into the new drive; the hand craft and cancel events and the chat reports are untested in the real game.
 * Only normal quality; no items with own data; no spoilage in the job pool.
-* Furnaces are only patterns after they smelted the recipe once (`previous_recipe`); untested in the real game.
+* Furnaces (issue #27, done): the pattern provider holds a recipe choice for the furnaces next to it (window on the "open" key:
+  researched recipes of their categories), a pattern at once without a first smelt; copied by settings paste, blueprints and
+  cloning, `previous_recipe` as fallback, furnaces without either counted as `no-recipe`. Open: a furnace whose input fits two of
+  its recipes may smelt the other one (the job fails and returns its items); the window, paste and blueprint event are untested
+  in the real game.
 * One job per CPU, no co-processor or CPU storage tiers, no "keep N in stock", no circuit network interface.
 * The terminal GUI cannot be run headless: its layout (tabs, craft list, job list) and the sprites need a look in the real game;
   balance of costs, speeds and tier is untested.
