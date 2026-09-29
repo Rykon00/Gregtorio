@@ -1,17 +1,18 @@
 name: Build & Release
 
 # Every push and pull request: Lua syntax check and zip build.
-# Release: when info.json on main has a version without a matching tag vX.Y.Z (or a tag vX.Y.Z is
-# pushed by hand), this workflow creates the GitHub release with the zip and uploads the same zip
-# to the Factorio mod portal. Releasing = bump "version" in info.json, add the changelog.txt
-# section, merge into main.
+# Branches: main is development; upstream/release is the published state. A pull request from main
+# into upstream/release must bump "version" in info.json (no tag vX.Y.Z yet) and add its
+# changelog.txt section. When it is merged, this workflow creates the GitHub release vX.Y.Z with
+# the zip and uploads the same zip to the Factorio mod portal. A tag vX.Y.Z pushed by hand
+# releases too.
 # The portal upload needs the repository secret FACTORIO_MOD_API_KEY (an API key from
 # https://factorio.com/profile with the "ModPortal: Upload Mods" permission). Without it, or when
 # the portal already has that version, the upload step is skipped.
 
 on:
   push:
-    branches: [main]
+    branches: [main, upstream/release]
     tags: ["v*"]
   pull_request:
 
@@ -51,7 +52,7 @@ jobs:
           if [ "${GITHUB_REF_TYPE}" = "tag" ]; then
             [ "v$V" = "${GITHUB_REF_NAME}" ] || { echo "Tag ${GITHUB_REF_NAME} != info.json version $V"; exit 1; }
             RELEASE=true
-          elif [ "${GITHUB_EVENT_NAME}" = "push" ] && [ "${GITHUB_REF_NAME}" = "main" ]; then
+          elif [ "${GITHUB_EVENT_NAME}" = "push" ] && [ "${GITHUB_REF_NAME}" = "upstream/release" ]; then
             if git rev-parse -q --verify "refs/tags/v$V" >/dev/null; then
               echo "Tag v$V exists already: no release."
             else
@@ -60,6 +61,17 @@ jobs:
             fi
           fi
           echo "release=$RELEASE" >> "$GITHUB_OUTPUT"
+
+      - name: Release pull request checks (version bump, changelog)
+        if: github.event_name == 'pull_request' && github.base_ref == 'upstream/release'
+        run: |
+          V=${{ steps.rel.outputs.version }}
+          if git rev-parse -q --verify "refs/tags/v$V" >/dev/null; then
+            echo "::error::info.json version $V is released already (tag v$V). Bump the version for this release."
+            exit 1
+          fi
+          grep -q "^Version: $V$" changelog.txt || { echo "::error::changelog.txt has no section 'Version: $V'."; exit 1; }
+          echo "Merging this pull request releases $V (GitHub release and mod portal)."
 
       - name: GitHub release
         if: steps.rel.outputs.release == 'true'
