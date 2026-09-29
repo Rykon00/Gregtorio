@@ -1,6 +1,7 @@
 name: Build & Release
 
-# Every push and pull request: Lua syntax check and zip build.
+# Every push and pull request: Lua syntax check and zip build. Pull requests into main that change
+# the game must also change changelog.txt (label "no changelog" to skip).
 # Branches: main is development; upstream/release is the published state. A pull request from main
 # into upstream/release must bump "version" in info.json (no tag vX.Y.Z yet) and add its
 # changelog.txt section. When it is merged, this workflow creates the GitHub release vX.Y.Z with
@@ -26,6 +27,17 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
+
+      - name: Changelog entry for game changes (pull requests into main)
+        if: github.event_name == 'pull_request' && github.base_ref == 'main' && !contains(github.event.pull_request.labels.*.name, 'no changelog')
+        run: |
+          CHANGED=$(git diff --name-only "origin/${{ github.base_ref }}...HEAD")
+          if echo "$CHANGED" | grep -qE '^(prototypes/|scripts/|locale/|graphics/|control\.lua|data(-updates|-final-fixes)?\.lua|settings.*\.lua)'; then
+            if ! echo "$CHANGED" | grep -qx 'changelog.txt'; then
+              echo "::error::This pull request changes the game but not changelog.txt. Add its lines to the topmost section (the next version), or set the label 'no changelog'."
+              exit 1
+            fi
+          fi
 
       - name: Lua syntax check (loaded files only)
         run: |
