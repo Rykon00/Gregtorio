@@ -15,7 +15,10 @@ locale entries, commit messages, pull requests, issues, README and other docs.
 4. Before committing: `python tools/check_syntax.py --loaded`, and on Linux the headless
    harness `python tools/devcheck/devcheck.py all` (see `tools/devcheck/README.md`).
 5. Releases: bump `version` in `info.json`, add a section at the top of `changelog.txt`
-   (Factorio changelog format), merge, then push a tag `vX.Y.Z`.
+   (Factorio changelog format), merge, then create the GitHub release `vX.Y.Z`. Build the mod
+   portal zip with `python tools/build.py --portal` (`dist/gregtorio-continued_X.Y.Z.zip`) and
+   upload it to https://mods.factorio.com/mod/gregtorio-continued (attach the same zip to the
+   GitHub release).
 
 ## Commits
 
