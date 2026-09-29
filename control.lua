@@ -80,6 +80,11 @@ script.on_event(defines.events.on_cutscene_cancelled, function(event)
 	if player and player.character then
 		player.print("It is strongly recommended that you set Manual Labor to autocraft up to a high number (1000+) for the early game and enable autocrafting.")
 		player.print("You can safely disable all resource generation on Nauvis, its not used in this mod.")
+		--- Fork: where to find machine recipes (issue #49, prototypes/198-fork-crafting-menu.lua)
+		if settings.startup["gregtorio-continued-show-machine-recipes"].value then
+			player.print({ "fork-hint.machine-recipes" })
+		end
+		player.print({ "fork-hint.factoriopedia" })
 		player.character_crafting_speed_modifier = 1.0
 	end
 end)

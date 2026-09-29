@@ -37,6 +37,7 @@ The repository root is the mod itself (`info.json`, `data.lua`, `prototypes/`, `
 | `scripts/fork-me-terminal.lua` | runtime part of the ME network: terminal GUI (storage tab with items and fluids, crafting tab, event driven), ME Interface default, routes the fluid GUI events |
 | `scripts/fork-me-autocraft.lua` | autocrafting: patterns from provider-adjacent machines (item and fluid recipes), planner, jobs and crafting CPUs (bounded work every 20 ticks, fluid boxes filled and drained by index), remote interface `gregtorio-me-autocraft` |
 | `scripts/fork-me-fluids.lua` | fluids in the ME network: virtual per-drive storage (`storage.fork_me_fluids`), fluid interface import/export every 15 ticks, drive contents on the picked up item, drive and interface GUIs, remote interface `gregtorio-me-fluids` |
+| `prototypes/198-fork-crafting-menu.lua` | machine recipes in the crafting menu (issue #49): shows every recipe whose category has a machine (red background, like vanilla), except the allow-list `FORK_CRAFTING_MENU_HIDDEN` (fluid voiding, replaced vanilla recipes, recipes vanilla hides); startup setting `gregtorio-continued-show-machine-recipes` (`settings.lua`, default on) |
 | `prototypes/199-fork-finalize.lua` | draft guard (hides broken draft recipes) and auto-unlock of intermediates |
 | `locale/en/fork.cfg` | generated names for entries without a translation |
 | `tools/dev_link.py` | links the repo into the Factorio mods folder (working copy is loaded directly) |
