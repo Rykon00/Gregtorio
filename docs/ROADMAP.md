@@ -828,8 +828,13 @@ Numbers: researchable technologies 317 -> 319 of 359 -> 361 (the two new ones), 
 ### Open points
 
 * One temperature per fluid: exported at the default temperature (hot steam loses its heat); recipes that need another temperature
-  are not patterns. No fluid in blueprints; a destroyed drive loses its fluid; no per-drive fluid type limits or filters; the export
+  are not patterns. No fluid in blueprints (documented limit); no per-drive fluid type limits or filters; the export
   level applies to the interface's own box (connected pipes share it). The fluid GUIs are untested in the real game.
+* Recovery (issue #26, done): a destroyed drive's fluid goes into the other drives of its network, the rest is kept as recovered
+  fluid (per surface, with its position) that the next drive placed in that network (or the drive GUI's Take over button) takes
+  over; reported in the chat. The disassembly recipe is hand crafting only and recovers the fluid of a loaded item. Open: existing
+  drives do not pull recovered fluid in by themselves; the upgrade planner leaves the fluid on the old item instead of moving it
+  into the new drive; the hand craft and cancel events and the chat reports are untested in the real game.
 * Only normal quality; no items with own data; no spoilage in the job pool.
 * Furnaces are only patterns after they smelted the recipe once (`previous_recipe`); untested in the real game.
 * One job per CPU, no co-processor or CPU storage tiers, no "keep N in stock", no circuit network interface.
