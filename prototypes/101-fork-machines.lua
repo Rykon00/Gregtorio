@@ -12,7 +12,7 @@ local TIERS = { "lv", "mv", "hv", "ev", "iv", "luv", "zpm", "uv", "uhv", "uev", 
 local TIER_INDEX = {}
 for i, t in ipairs(TIERS) do TIER_INDEX[t] = i end
 
-local SPRITE_PATH = "__Gregtorio__/graphics/entity/fork/"
+local SPRITE_PATH = "__gregtorio-continued__/graphics/entity/fork/"
 
 local function tier_of(name)
 	local t = name:match("^(%a+)%-")
@@ -209,9 +209,9 @@ do
 	}
 	if m then
 		m.graphics_set = {
-			idle_animation = { layers = { { filename = "__Gregtorio__/graphics/entity/large-sifter/large-sifter-idle.png",
+			idle_animation = { layers = { { filename = "__gregtorio-continued__/graphics/entity/large-sifter/large-sifter-idle.png",
 				width = 160, height = 96, frame_count = 1, shift = { 0, 0 } } } },
-			animation = { layers = { { filename = "__Gregtorio__/graphics/entity/large-sifter/large-sifter-working.png",
+			animation = { layers = { { filename = "__gregtorio-continued__/graphics/entity/large-sifter/large-sifter-working.png",
 				width = 160, height = 96, frame_count = 1, shift = { 0, 0 } } } },
 		}
 	end
@@ -339,7 +339,7 @@ function fork_make_tier_machine(base, from_tier, to_tier, sprite_frames, unlock_
 	end
 	categories = add_unique(categories, extra)
 
-	local icon = sprite_frames and ("__Gregtorio__/graphics/icons/fork/" .. new_name .. ".png") or nil
+	local icon = sprite_frames and ("__gregtorio-continued__/graphics/icons/fork/" .. new_name .. ".png") or nil
 	clone_machine{
 		name = new_name, source = src_name, categories = categories,
 		crafting_speed = src.crafting_speed * 2,

@@ -1376,7 +1376,7 @@ create_recipe{
  	{
 		type = "item",
 		name = "neutronium-heavy-plating",
-		icon = "__Gregtorio__/graphics/icons/neutronium-heavy-plating.png",
+		icon = "__gregtorio-continued__/graphics/icons/neutronium-heavy-plating.png",
 		icon_size = 32,
 		subgroup = "intermediate-product",
 		order = "a[manual-labor]",
@@ -1405,7 +1405,7 @@ create_recipe{
  	{
 		type = "item",
 		name = "neutronium-plated-microminer",
-		icon = "__Gregtorio__/graphics/icons/neutronium-plated-microminer.png",
+		icon = "__gregtorio-continued__/graphics/icons/neutronium-plated-microminer.png",
 		icon_size = 32,
 		subgroup = "intermediate-product",
 		order = "a[manual-labor]",

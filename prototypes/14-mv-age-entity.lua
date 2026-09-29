@@ -16,7 +16,7 @@ data:extend({
   {
     type = "container",
     name = "diamond-chest",
-    icon = "__Gregtorio__/graphics/icons/diamond-chest.png",
+    icon = "__gregtorio-continued__/graphics/icons/diamond-chest.png",
     icon_size = 32,
     flags = {"placeable-neutral", "player-creation"},
     minable = {mining_time = 0.2, result = "diamond-chest"},
@@ -26,7 +26,7 @@ data:extend({
     selection_box = {{-0.5, -0.5}, {0.5, 0.5}},
     inventory_size = 64,
     picture = {
-      filename = "__Gregtorio__/graphics/entity/diamond-chest.png",
+      filename = "__gregtorio-continued__/graphics/entity/diamond-chest.png",
       priority = "extra-high",
       width = 32,
       height = 32
@@ -61,7 +61,7 @@ data:extend({
 {
     type = "boiler",
     name = "large-steel-boiler",
-    icon = "__Gregtorio__/graphics/icons/large-steel-boiler.png",
+    icon = "__gregtorio-continued__/graphics/icons/large-steel-boiler.png",
     icon_size = 32,
     flags = {"placeable-neutral", "player-creation" },
     minable = {mining_time = 0.3, result = "large-steel-boiler"},
@@ -109,7 +109,7 @@ data:extend({
 		structure = {
 		  layers = {
 			{
-			  filename = "__Gregtorio__/graphics/entity/large-steel-boiler.png",
+			  filename = "__gregtorio-continued__/graphics/entity/large-steel-boiler.png",
 			  width = 96,
 			  height = 128,
 			}
@@ -120,7 +120,7 @@ data:extend({
 		structure = {
 		  layers = {
 			{
-			  filename = "__Gregtorio__/graphics/entity/large-steel-boiler.png",
+			  filename = "__gregtorio-continued__/graphics/entity/large-steel-boiler.png",
 			  width = 96,
 			  height = 128,
 			}
@@ -131,7 +131,7 @@ data:extend({
 		structure = {
 		  layers = {
 			{
-			  filename = "__Gregtorio__/graphics/entity/large-steel-boiler.png",
+			  filename = "__gregtorio-continued__/graphics/entity/large-steel-boiler.png",
 			  width = 96,
 			  height = 128,
 			}
@@ -142,7 +142,7 @@ data:extend({
 		structure = {
 		  layers = {
 			{
-			  filename = "__Gregtorio__/graphics/entity/large-steel-boiler.png",
+			  filename = "__gregtorio-continued__/graphics/entity/large-steel-boiler.png",
 			  width = 96,
 			  height = 128,
 			}
@@ -175,7 +175,7 @@ data:extend({
   {
     type = "generator",
     name = "mv-steam-turbine",
-    icon = "__Gregtorio__/graphics/icons/mv-steam-turbine.png",
+    icon = "__gregtorio-continued__/graphics/icons/mv-steam-turbine.png",
     icon_size = 32,
     flags = {"placeable-neutral", "player-creation"},
     minable = { mining_time = 0.3, result = "mv-steam-turbine" },
@@ -213,7 +213,7 @@ data:extend({
     horizontal_animation = {
       layers = {
         {
-          filename = "__Gregtorio__/graphics/entity/mv-steam-turbine/mv-steam-turbine-working.png",
+          filename = "__gregtorio-continued__/graphics/entity/mv-steam-turbine/mv-steam-turbine-working.png",
 		  width = 96,
 		  height = 96,
           frame_count = 4,
@@ -225,7 +225,7 @@ data:extend({
     vertical_animation = {
       layers = {
         {
-          filename = "__Gregtorio__/graphics/entity/mv-steam-turbine/mv-steam-turbine-working.png",
+          filename = "__gregtorio-continued__/graphics/entity/mv-steam-turbine/mv-steam-turbine-working.png",
 		  width = 96,
 		  height = 96,
           frame_count = 4,
@@ -1055,7 +1055,7 @@ data:extend({
   {
     type = "assembling-machine",
     name = "basic-extended-crafting-table",
-    icon = "__Gregtorio__/graphics/icons/basic-extended-crafting-table.png",
+    icon = "__gregtorio-continued__/graphics/icons/basic-extended-crafting-table.png",
     icon_size = 32,
     flags = {"placeable-neutral", "placeable-player", "player-creation"},
     minable = {mining_time = 0.2, result = "basic-extended-crafting-table"},
@@ -1078,7 +1078,7 @@ data:extend({
       animation = {
         layers = {
           {
-            filename = "__Gregtorio__/graphics/entity/basic-extended-crafting-table.png",
+            filename = "__gregtorio-continued__/graphics/entity/basic-extended-crafting-table.png",
             width = 180,
             height = 180,
             frame_count = 1,
@@ -1098,7 +1098,7 @@ data:extend({
 local t1_construction_robot = table.deepcopy(data.raw["construction-robot"]["construction-robot"])
 t1_construction_robot.name = "t1-construction-robot"
 t1_construction_robot.icon_size = 32
-t1_construction_robot.icon = "__Gregtorio__/graphics/icons/t1-construction-robot.png"
+t1_construction_robot.icon = "__gregtorio-continued__/graphics/icons/t1-construction-robot.png"
 t1_construction_robot.max_health = 60
 t1_construction_robot.max_energy = "1.5MJ"
 t1_construction_robot.speed = 0.08
@@ -1123,7 +1123,7 @@ create_item{
 ---T1 LOGISTIC ROBOT
 local t1_logistic_robot = table.deepcopy(data.raw["logistic-robot"]["logistic-robot"])
 t1_logistic_robot.name = "t1-logistic-robot"
-t1_logistic_robot.icon = "__Gregtorio__/graphics/icons/t1-logistic-robot.png"
+t1_logistic_robot.icon = "__gregtorio-continued__/graphics/icons/t1-logistic-robot.png"
 t1_logistic_robot.max_health = 60
 t1_logistic_robot.icon_size = 32
 t1_logistic_robot.max_energy = "1.5MJ"

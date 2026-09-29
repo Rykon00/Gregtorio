@@ -87,7 +87,7 @@ data.raw["underground-belt"]["underground-belt"].max_distance = 7
 ---DISABLE TRIGGERED TECHS
 --- Fork: don't disable Gregtorio's own techs that share a name with a vanilla tech (e.g. "tungsten-carbide")
 local function is_gregtorio_tech(t)
-  return t.icon and t.icon:sub(1, 14) == "__Gregtorio__/"
+  return t.icon and t.icon:sub(1, 24) == "__gregtorio-continued__/"
 end
 local function disable_trigger_tech(name)
   if data.raw.technology[name] and not is_gregtorio_tech(data.raw.technology[name]) then
@@ -237,7 +237,7 @@ data.raw.technology["landfill"].prerequisites = { "rock-crusher" }
 ---LAMP
 data.raw.technology["lamp"].effects = { { type = "unlock-recipe", recipe = "torch" } }
 data.raw.technology["lamp"].unit = {count = 5, ingredients = {{"automation-science-pack", SP01 }}, time = 5 }
-data.raw.technology["lamp"].icon = "__Gregtorio__/graphics/technology/torches.png"
+data.raw.technology["lamp"].icon = "__gregtorio-continued__/graphics/technology/torches.png"
 data.raw.technology["lamp"].prerequisites = { "craft-automation-science-packs" }
 
 

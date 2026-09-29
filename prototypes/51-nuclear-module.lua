@@ -9,7 +9,7 @@ data:extend({
  	{
 		type = "item",
 		name = "thorium-fuel-rod",
-		icon = "__Gregtorio__/graphics/icons/thorium-fuel-rod.png",
+		icon = "__gregtorio-continued__/graphics/icons/thorium-fuel-rod.png",
 		icon_size = 32,
 		subgroup = "intermediate-product",
 		order = "a[manual-labor]",
@@ -41,7 +41,7 @@ data:extend({
  	{
 		type = "item",
 		name = "depleted-thorium-fuel-rod",
-		icon = "__Gregtorio__/graphics/icons/depleted-thorium-fuel-rod.png",
+		icon = "__gregtorio-continued__/graphics/icons/depleted-thorium-fuel-rod.png",
 		icon_size = 32,
 		subgroup = "intermediate-product",
 		order = "a[manual-labor]",
@@ -76,7 +76,7 @@ data:extend({
 	{
 	  type = "item",
 	  name = "unstable-protactinium",
-	  icon = "__Gregtorio__/graphics/icons/unstable-protactinium.png",
+	  icon = "__gregtorio-continued__/graphics/icons/unstable-protactinium.png",
 	  icon_size = 32,
 	  subgroup = "intermediate-product",
 	  order = "g[neptunium]-a[base]",
@@ -87,7 +87,7 @@ data:extend({
 	{
 		type = "item",
 		name = "stabilized-protactinium",
-		icon = "__Gregtorio__/graphics/icons/stabilized-protactinium.png",
+		icon = "__gregtorio-continued__/graphics/icons/stabilized-protactinium.png",
 		icon_size = 32,
 		subgroup = "intermediate-product",
 		order = "g[neptunium]-a[base]",
@@ -114,7 +114,7 @@ data:extend({
 	{
 		type = "item",
 		name = "unstable-neptunium",
-		icon = "__Gregtorio__/graphics/icons/unstable-neptunium.png",
+		icon = "__gregtorio-continued__/graphics/icons/unstable-neptunium.png",
 		icon_size = 32,
 		subgroup = "intermediate-product",
 		order = "g[neptunium]-a[base]",
@@ -125,7 +125,7 @@ data:extend({
 	{
 		type = "item",
 		name = "stabilized-neptunium",
-		icon = "__Gregtorio__/graphics/icons/stabilized-neptunium.png",
+		icon = "__gregtorio-continued__/graphics/icons/stabilized-neptunium.png",
 		icon_size = 32,
 		subgroup = "intermediate-product",
 		order = "g[neptunium]-a[base]",
@@ -151,7 +151,7 @@ data:extend({
  	{
 		type = "item",
 		name = "depleted-uranium-fuel-rod",
-		icon = "__Gregtorio__/graphics/icons/depleted-uranium-fuel-rod.png",
+		icon = "__gregtorio-continued__/graphics/icons/depleted-uranium-fuel-rod.png",
 		icon_size = 32,
 		subgroup = "intermediate-product",
 		order = "a[manual-labor]",
@@ -186,7 +186,7 @@ data:extend({
 	{
 		type = "item",
 		name = "plutonium",
-		icon = "__Gregtorio__/graphics/icons/plutonium.png",
+		icon = "__gregtorio-continued__/graphics/icons/plutonium.png",
 		icon_size = 32,
 		subgroup = "intermediate-product",
 		order = "g[neptunium]-a[base]",
@@ -195,7 +195,7 @@ data:extend({
 	{
 		type = "item",
 		name = "enriched-plutonium",
-		icon = "__Gregtorio__/graphics/icons/enriched-plutonium.png",
+		icon = "__gregtorio-continued__/graphics/icons/enriched-plutonium.png",
 		icon_size = 32,
 		subgroup = "intermediate-product",
 		order = "g[neptunium]-a[base]",
@@ -225,7 +225,7 @@ data:extend({
  	{
 		type = "item",
 		name = "plutonium-fuel-rod",
-		icon = "__Gregtorio__/graphics/icons/plutonium-fuel-rod.png",
+		icon = "__gregtorio-continued__/graphics/icons/plutonium-fuel-rod.png",
 		icon_size = 32,
 		subgroup = "intermediate-product",
 		order = "a[manual-labor]",
@@ -258,7 +258,7 @@ data:extend({
  	{
 		type = "item",
 		name = "depleted-plutonium-fuel-rod",
-		icon = "__Gregtorio__/graphics/icons/depleted-plutonium-fuel-rod.png",
+		icon = "__gregtorio-continued__/graphics/icons/depleted-plutonium-fuel-rod.png",
 		icon_size = 32,
 		subgroup = "intermediate-product",
 		order = "a[manual-labor]",
@@ -294,7 +294,7 @@ data:extend({
 	{
 		type = "item",
 		name = "unstable-curium",
-		icon = "__Gregtorio__/graphics/icons/unstable-curium.png",
+		icon = "__gregtorio-continued__/graphics/icons/unstable-curium.png",
 		icon_size = 32,
 		subgroup = "intermediate-product",
 		order = "g[curium]-a[base]",
@@ -305,7 +305,7 @@ data:extend({
 	{
 		type = "item",
 		name = "stabilized-curium",
-		icon = "__Gregtorio__/graphics/icons/stabilized-curium.png",
+		icon = "__gregtorio-continued__/graphics/icons/stabilized-curium.png",
 		icon_size = 32,
 		subgroup = "intermediate-product",
 		order = "g[curium]-a[base]",
@@ -332,7 +332,7 @@ data:extend({
  	{
 		type = "item",
 		name = "americium",
-		icon = "__Gregtorio__/graphics/icons/americium.png",
+		icon = "__gregtorio-continued__/graphics/icons/americium.png",
 		icon_size = 32,
 		subgroup = "intermediate-product",
 		order = "a[manual-labor]",
@@ -341,7 +341,7 @@ data:extend({
  	{
 		type = "item",
 		name = "enriched-americium",
-		icon = "__Gregtorio__/graphics/icons/enriched-americium.png",
+		icon = "__gregtorio-continued__/graphics/icons/enriched-americium.png",
 		icon_size = 32,
 		subgroup = "intermediate-product",
 		order = "a[manual-labor]",
@@ -367,7 +367,7 @@ data:extend({
  	{
 		type = "item",
 		name = "americium-fuel-rod",
-		icon = "__Gregtorio__/graphics/icons/americium-fuel-rod.png",
+		icon = "__gregtorio-continued__/graphics/icons/americium-fuel-rod.png",
 		icon_size = 32,
 		subgroup = "intermediate-product",
 		order = "a[manual-labor]",
@@ -400,7 +400,7 @@ data:extend({
  	{
 		type = "item",
 		name = "depleted-americium-fuel-rod",
-		icon = "__Gregtorio__/graphics/icons/depleted-americium-fuel-rod.png",
+		icon = "__gregtorio-continued__/graphics/icons/depleted-americium-fuel-rod.png",
 		icon_size = 32,
 		subgroup = "intermediate-product",
 		order = "a[manual-labor]",
@@ -434,7 +434,7 @@ data:extend({
 	{
 		type = "item",
 		name = "unstable-berkelium",
-		icon = "__Gregtorio__/graphics/icons/unstable-berkelium.png",
+		icon = "__gregtorio-continued__/graphics/icons/unstable-berkelium.png",
 		icon_size = 32,
 		subgroup = "intermediate-product",
 		order = "z[unstable-berkelium]",
@@ -445,7 +445,7 @@ data:extend({
 	{
 		type = "item",
 		name = "stabilized-berkelium",
-		icon = "__Gregtorio__/graphics/icons/stabilized-berkelium.png",
+		icon = "__gregtorio-continued__/graphics/icons/stabilized-berkelium.png",
 		icon_size = 32,
 		subgroup = "intermediate-product",
 		order = "z[unstable-berkelium]",
@@ -472,7 +472,7 @@ data:extend({
 	{
 		type = "item",
 		name = "unstable-californium",
-		icon = "__Gregtorio__/graphics/icons/unstable-californium.png",
+		icon = "__gregtorio-continued__/graphics/icons/unstable-californium.png",
 		icon_size = 32,
 		subgroup = "intermediate-product",
 		order = "z[unstable-californium]",
@@ -483,7 +483,7 @@ data:extend({
 	{
 		type = "item",
 		name = "stabilized-californium",
-		icon = "__Gregtorio__/graphics/icons/stabilized-californium.png",
+		icon = "__gregtorio-continued__/graphics/icons/stabilized-californium.png",
 		icon_size = 32,
 		subgroup = "intermediate-product",
 		order = "z[unstable-californium]",
@@ -510,7 +510,7 @@ data:extend({
 	{
 		type = "item",
 		name = "unstable-californium-decay-intermediates",
-		icon = "__Gregtorio__/graphics/icons/unstable-californium-decay-intermediates.png",
+		icon = "__gregtorio-continued__/graphics/icons/unstable-californium-decay-intermediates.png",
 		icon_size = 32,
 		subgroup = "intermediate-product",
 		order = "z[unstable-californium-decay-intermediates]",
@@ -525,7 +525,7 @@ data:extend({
 	{
 		type = "item",
 		name = "unstable-actinium",
-		icon = "__Gregtorio__/graphics/icons/unstable-actinium.png",
+		icon = "__gregtorio-continued__/graphics/icons/unstable-actinium.png",
 		icon_size = 32,
 		subgroup = "intermediate-product",
 		order = "z[unstable-actinium]",
@@ -536,7 +536,7 @@ data:extend({
    	{
 		type = "item",
 		name = "stabilized-actinium",
-		icon = "__Gregtorio__/graphics/icons/stabilized-actinium.png",
+		icon = "__gregtorio-continued__/graphics/icons/stabilized-actinium.png",
 		icon_size = 32,
 		subgroup = "intermediate-product",
 		order = "z[unstable-actinium]",
@@ -563,7 +563,7 @@ data:extend({
 	{
 		type = "item",
 		name = "unstable-francium",
-		icon = "__Gregtorio__/graphics/icons/unstable-francium.png",
+		icon = "__gregtorio-continued__/graphics/icons/unstable-francium.png",
 		icon_size = 32,
 		subgroup = "intermediate-product",
 		order = "z[unstable-francium]",
@@ -574,7 +574,7 @@ data:extend({
 	{
 		type = "item",
 		name = "stabilized-francium",
-		icon = "__Gregtorio__/graphics/icons/stabilized-francium.png",
+		icon = "__gregtorio-continued__/graphics/icons/stabilized-francium.png",
 		icon_size = 32,
 		subgroup = "intermediate-product",
 		order = "z[unstable-francium]",
@@ -601,7 +601,7 @@ data:extend({
 	{
 		type = "item",
 		name = "unstable-radium",
-		icon = "__Gregtorio__/graphics/icons/unstable-radium.png",
+		icon = "__gregtorio-continued__/graphics/icons/unstable-radium.png",
 		icon_size = 32,
 		subgroup = "intermediate-product",
 		order = "z[unstable-radium]",
@@ -612,7 +612,7 @@ data:extend({
 	{
 		type = "item",
 		name = "stabilized-radium",
-		icon = "__Gregtorio__/graphics/icons/stabilized-radium.png",
+		icon = "__gregtorio-continued__/graphics/icons/stabilized-radium.png",
 		icon_size = 32,
 		subgroup = "intermediate-product",
 		order = "z[unstable-radium]",
@@ -656,7 +656,7 @@ data:extend({
 	{
 		type = "item",
 		name = "reactor-fuel-processing-plant-controller",
-		icon = "__Gregtorio__/graphics/icons/reactor-fuel-processing-plant-controller.png",
+		icon = "__gregtorio-continued__/graphics/icons/reactor-fuel-processing-plant-controller.png",
 		icon_size = 32,
 		stack_size = 64,
 	}, 
@@ -680,7 +680,7 @@ data:extend({
 	{
 		type = "item",
 		name = "reactor-fuel-processing-plant",
-		icon = "__Gregtorio__/graphics/icons/reactor-fuel-processing-plant.png",
+		icon = "__gregtorio-continued__/graphics/icons/reactor-fuel-processing-plant.png",
 		icon_size = 32,
 		stack_size = 64,
 	}, 
@@ -706,7 +706,7 @@ data:extend({
 	{
 		type = "item",
 		name = "hastelloy-n-sealant-block",
-		icon = "__Gregtorio__/graphics/icons/hastelloy-n-sealant-block.png",
+		icon = "__gregtorio-continued__/graphics/icons/hastelloy-n-sealant-block.png",
 		icon_size = 32,
 		stack_size = 64,
 	}, 
@@ -728,7 +728,7 @@ data:extend({
 	{
 		type = "item",
 		name = "hastelloy-n-sealant-block",
-		icon = "__Gregtorio__/graphics/icons/hastelloy-n-sealant-block.png",
+		icon = "__gregtorio-continued__/graphics/icons/hastelloy-n-sealant-block.png",
 		icon_size = 32,
 		stack_size = 64,
 	}, 
@@ -751,7 +751,7 @@ data:extend({
 	{
 		type = "item",
 		name = "super-tank-v",
-		icon = "__Gregtorio__/graphics/icons/super-tank-v.png",
+		icon = "__gregtorio-continued__/graphics/icons/super-tank-v.png",
 		icon_size = 32,
 		stack_size = 64,
 	},
@@ -775,7 +775,7 @@ data:extend({
 	{
 		type = "item",
 		name = "hermetic-casing-v",
-		icon = "__Gregtorio__/graphics/icons/hermetic-casing-v.png",
+		icon = "__gregtorio-continued__/graphics/icons/hermetic-casing-v.png",
 		icon_size = 32,
 		stack_size = 64,
 	},
@@ -871,7 +871,7 @@ data:extend({
 	{
 		type = "item",
 		name = "lithium-7",
-		icon = "__Gregtorio__/graphics/icons/lithium-7.png",
+		icon = "__gregtorio-continued__/graphics/icons/lithium-7.png",
 		icon_size = 32,
 		stack_size = 64,
 	},
@@ -992,7 +992,7 @@ data:extend({
 	{
 		type = "item",
 		name = "zirconium-pellet",
-		icon = "__Gregtorio__/graphics/icons/zirconium-pellet.png",
+		icon = "__gregtorio-continued__/graphics/icons/zirconium-pellet.png",
 		icon_size = 32,
 		stack_size = 64,
 	},
@@ -1013,7 +1013,7 @@ data:extend({
 	{
 		type = "item",
 		name = "zirconium-pellet-dust",
-		icon = "__Gregtorio__/graphics/icons/zirconium-pellet-dust.png",
+		icon = "__gregtorio-continued__/graphics/icons/zirconium-pellet-dust.png",
 		icon_size = 32,
 		stack_size = 64,
 	},
@@ -1033,7 +1033,7 @@ data:extend({
 	{
 		type = "item",
 		name = "cooked-zirconium-pellet-dust",
-		icon = "__Gregtorio__/graphics/icons/cooked-zirconium-pellet-dust.png",
+		icon = "__gregtorio-continued__/graphics/icons/cooked-zirconium-pellet-dust.png",
 		icon_size = 32,
 		stack_size = 64,
 	},
@@ -1187,7 +1187,7 @@ data:extend({
 	{
 		type = "item",
 		name = "thorium-lftr-reactor-controller",
-		icon = "__Gregtorio__/graphics/icons/thorium-lftr-reactor-controller.png",
+		icon = "__gregtorio-continued__/graphics/icons/thorium-lftr-reactor-controller.png",
 		icon_size = 32,
 		stack_size = 64,
 	}, 
@@ -1212,7 +1212,7 @@ data:extend({
 	{
 		type = "item",
 		name = "thorium-lftr-reactor",
-		icon = "__Gregtorio__/graphics/icons/thorium-lftr-reactor.png",
+		icon = "__gregtorio-continued__/graphics/icons/thorium-lftr-reactor.png",
 		icon_size = 32,
 		stack_size = 64,
 	}, 
@@ -1236,7 +1236,7 @@ data:extend({
 	{
 		type = "item",
 		name = "hastelloy-n-reactor-casing",
-		icon = "__Gregtorio__/graphics/icons/hastelloy-n-reactor-casing.png",
+		icon = "__gregtorio-continued__/graphics/icons/hastelloy-n-reactor-casing.png",
 		icon_size = 32,
 		stack_size = 64,
 	}, 
@@ -1258,7 +1258,7 @@ data:extend({
  	{
 		type = "item",
 		name = "heat-capacity-reactor-plating",
-		icon = "__Gregtorio__/graphics/icons/heat-capacity-reactor-plating.png",
+		icon = "__gregtorio-continued__/graphics/icons/heat-capacity-reactor-plating.png",
 		icon_size = 32,
 		stack_size = 64,
 	}, 
@@ -1280,7 +1280,7 @@ data:extend({
   	{
 		type = "item",
 		name = "reactor-plating",
-		icon = "__Gregtorio__/graphics/icons/reactor-plating.png",
+		icon = "__gregtorio-continued__/graphics/icons/reactor-plating.png",
 		icon_size = 32,
 		stack_size = 64,
 	}, 
@@ -1301,7 +1301,7 @@ data:extend({
 	{
 		type = "item",
 		name = "zeron-100-reactor-shielding",
-		icon = "__Gregtorio__/graphics/icons/zeron-100-reactor-shielding.png",
+		icon = "__gregtorio-continued__/graphics/icons/zeron-100-reactor-shielding.png",
 		icon_size = 32,
 		stack_size = 64,
 	}, 
@@ -1337,7 +1337,7 @@ data:extend({
 	{
 		type = "item",
 		name = "data-orb",
-		icon = "__Gregtorio__/graphics/icons/data-orb.png",
+		icon = "__gregtorio-continued__/graphics/icons/data-orb.png",
 		icon_size = 32,
 		stack_size = 64,
 	}, 

@@ -13,9 +13,9 @@
 --- stays a draft and is hidden by the draft guard in 199-fork-finalize.lua.
 --------------------------------------------------------------------------------
 
-local SPRITE_PATH = "__Gregtorio__/graphics/entity/fork/"
-local FORK_ICON_PATH = "__Gregtorio__/graphics/icons/fork/"
-local FLUID_ICON_PATH = "__Gregtorio__/graphics/fluids/"
+local SPRITE_PATH = "__gregtorio-continued__/graphics/entity/fork/"
+local FORK_ICON_PATH = "__gregtorio-continued__/graphics/icons/fork/"
+local FLUID_ICON_PATH = "__gregtorio-continued__/graphics/fluids/"
 
 local function set_ingredient(recipe_name, from, to)
 	local r = data.raw.recipe[recipe_name]
@@ -491,7 +491,7 @@ local function tech(def)
 	data:extend({ {
 		type = "technology",
 		name = def.name,
-		icon = "__Gregtorio__/graphics/technology/nyi.png",
+		icon = "__gregtorio-continued__/graphics/technology/nyi.png",
 		icon_size = 256,
 		effects = effects,
 		prerequisites = def.prerequisites,

@@ -677,7 +677,7 @@ data:extend({
   {
     type = "assembling-machine",
     name = "advanced-extended-crafting-table",
-    icon = "__Gregtorio__/graphics/icons/advanced-extended-crafting-table.png",
+    icon = "__gregtorio-continued__/graphics/icons/advanced-extended-crafting-table.png",
     icon_size = 32,
     flags = {"placeable-neutral", "placeable-player", "player-creation"},
     minable = {mining_time = 0.2, result = "advanced-extended-crafting-table"},
@@ -700,7 +700,7 @@ data:extend({
       animation = {
         layers = {
           {
-            filename = "__Gregtorio__/graphics/entity/advanced-extended-crafting-table.png",
+            filename = "__gregtorio-continued__/graphics/entity/advanced-extended-crafting-table.png",
             width = 180,
             height = 180,
             frame_count = 1,
@@ -715,7 +715,7 @@ data:extend({
   {
     type = "assembling-machine",
     name = "elite-extended-crafting-table",
-    icon = "__Gregtorio__/graphics/icons/elite-extended-crafting-table.png",
+    icon = "__gregtorio-continued__/graphics/icons/elite-extended-crafting-table.png",
     icon_size = 32,
     flags = {"placeable-neutral", "placeable-player", "player-creation"},
     minable = {mining_time = 0.2, result = "elite-extended-crafting-table"},
@@ -738,7 +738,7 @@ data:extend({
       animation = {
         layers = {
           {
-            filename = "__Gregtorio__/graphics/entity/elite-extended-crafting-table.png",
+            filename = "__gregtorio-continued__/graphics/entity/elite-extended-crafting-table.png",
             width = 180,
             height = 180,
             frame_count = 1,
@@ -753,7 +753,7 @@ data:extend({
   {
     type = "assembling-machine",
     name = "ultimate-extended-crafting-table",
-    icon = "__Gregtorio__/graphics/icons/ultimate-extended-crafting-table.png",
+    icon = "__gregtorio-continued__/graphics/icons/ultimate-extended-crafting-table.png",
     icon_size = 32,
     flags = {"placeable-neutral", "placeable-player", "player-creation"},
     minable = {mining_time = 0.2, result = "ultimate-extended-crafting-table"},
@@ -776,7 +776,7 @@ data:extend({
       animation = {
         layers = {
           {
-            filename = "__Gregtorio__/graphics/entity/ultimate-extended-crafting-table.png",
+            filename = "__gregtorio-continued__/graphics/entity/ultimate-extended-crafting-table.png",
             width = 180,
             height = 180,
             frame_count = 1,

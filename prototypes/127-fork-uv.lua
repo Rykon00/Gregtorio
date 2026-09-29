@@ -17,8 +17,8 @@
 --- waits for later phases.
 --------------------------------------------------------------------------------
 
-local SPRITE_PATH = "__Gregtorio__/graphics/entity/fork/"
-local FLUID_ICON_PATH = "__Gregtorio__/graphics/fluids/"
+local SPRITE_PATH = "__gregtorio-continued__/graphics/entity/fork/"
+local FLUID_ICON_PATH = "__gregtorio-continued__/graphics/fluids/"
 
 local function recipe_exists(name)
 	if data.raw.recipe[name] then return true end
@@ -780,7 +780,7 @@ local function tech(def)
 	data:extend({ {
 		type = "technology",
 		name = def.name,
-		icon = "__Gregtorio__/graphics/technology/nyi.png",
+		icon = "__gregtorio-continued__/graphics/technology/nyi.png",
 		icon_size = 256,
 		effects = effects,
 		prerequisites = def.prerequisites,

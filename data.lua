@@ -1,5 +1,5 @@
 
-ICON_PATH = "__Gregtorio__/graphics/icons/"
+ICON_PATH = "__gregtorio-continued__/graphics/icons/"
 
 YAFC_MODE = false
 
@@ -69,7 +69,7 @@ for _, fluid in pairs(data.raw["fluid"]) do
 	-- fluids can have disable_voiding set to true to prevent a voiding recipe from being made
 	if not fluid.disable_voiding and not blacklist[fluid.name] then
 		create_recipe{
-			icon = "__Gregtorio__/graphics/fluids/black-fluid.png",
+			icon = "__gregtorio-continued__/graphics/fluids/black-fluid.png",
 			category = "fluid-voiding-recipes",
 			name = "void-" .. fluid.name,
 			ingredients = {{type = "fluid", name = fluid.name, amount = 100}},

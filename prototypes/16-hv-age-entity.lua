@@ -17,7 +17,7 @@ data:extend({
   {
     type = "generator",
     name = "mv-steam-turbine",
-    icon = "__Gregtorio__/graphics/icons/mv-steam-turbine.png",
+    icon = "__gregtorio-continued__/graphics/icons/mv-steam-turbine.png",
     icon_size = 32,
     flags = {"placeable-neutral", "player-creation"},
     minable = { mining_time = 0.3, result = "mv-steam-turbine" },
@@ -55,7 +55,7 @@ data:extend({
     horizontal_animation = {
       layers = {
         {
-          filename = "__Gregtorio__/graphics/entity/hv-steam-turbine/hv-steam-turbine-working.png",
+          filename = "__gregtorio-continued__/graphics/entity/hv-steam-turbine/hv-steam-turbine-working.png",
 		  width = 96,
 		  height = 96,
           frame_count = 4,
@@ -67,7 +67,7 @@ data:extend({
     vertical_animation = {
       layers = {
         {
-          filename = "__Gregtorio__/graphics/entity/hv-steam-turbine/hv-steam-turbine-working.png",
+          filename = "__gregtorio-continued__/graphics/entity/hv-steam-turbine/hv-steam-turbine-working.png",
 		  width = 96,
 		  height = 96,
           frame_count = 4,

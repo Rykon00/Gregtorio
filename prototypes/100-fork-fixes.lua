@@ -109,7 +109,7 @@ create_recipe{
 	recipe_name = "cryogenic-helium",
 	category = "mv-vacuum-freezer-recipes",
 	subgroup = "subgroup-mv-vacuum-freezer-recipes",
-	icon = "__Gregtorio__/graphics/fluids/cryogenic-helium.png",
+	icon = "__gregtorio-continued__/graphics/fluids/cryogenic-helium.png",
 	energy_required = 4,
 	ingredients = {
 		{ type = "fluid", name = "helium", amount = 100 },

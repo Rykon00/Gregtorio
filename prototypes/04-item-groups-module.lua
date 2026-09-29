@@ -122,7 +122,7 @@ data:extend({
     type = "item-group",
     name = "handcrafting-tab",
     order = "c",
-    icon = "__Gregtorio__/graphics/item-groups/handcrafting-tab.png",
+    icon = "__gregtorio-continued__/graphics/item-groups/handcrafting-tab.png",
     icon_size = 128
   },
   {
@@ -163,7 +163,7 @@ data:extend({
     type = "item-group",
     name = "mining-tab",
     order = "m",
-    icon = "__Gregtorio__/graphics/item-groups/mining-tab.png",
+    icon = "__gregtorio-continued__/graphics/item-groups/mining-tab.png",
     icon_size = 128
   },
   {
@@ -192,7 +192,7 @@ data:extend({
     type = "item-group",
     name = "microminer-tab",
     order = "n",
-    icon = "__Gregtorio__/graphics/item-groups/microminer-tab.png",
+    icon = "__gregtorio-continued__/graphics/item-groups/microminer-tab.png",
     icon_size = 128
   },
   {
@@ -299,7 +299,7 @@ data:extend({
     type = "item-group",
     name = "assembling-machine-tab",
     order = "x",
-    icon = "__Gregtorio__/graphics/item-groups/assembling-machine-tab.png",
+    icon = "__gregtorio-continued__/graphics/item-groups/assembling-machine-tab.png",
     icon_size = 128
   },
   {
@@ -344,7 +344,7 @@ data:extend({
     type = "item-group",
     name = "processing-machine-recipes",
     order = "y",
-    icon = "__Gregtorio__/graphics/item-groups/processing-machines-tab.png",
+    icon = "__gregtorio-continued__/graphics/item-groups/processing-machines-tab.png",
     icon_size = 128
   },
   {

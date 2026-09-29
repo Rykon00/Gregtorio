@@ -1,5 +1,5 @@
 -- Define icon path prefix
-local fluid_icon_path = "__Gregtorio__/graphics/fluids/"
+local fluid_icon_path = "__gregtorio-continued__/graphics/fluids/"
 
 -- Define base and flow colors for each unique icon
 local fluid_colors_by_icon = {

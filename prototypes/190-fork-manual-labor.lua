@@ -10,7 +10,7 @@ data:extend({
 		type = "burner-usage",
 		name = "manual-labor",
 		empty_slot_sprite = {
-			filename = "__Gregtorio__/graphics/icons/fork/empty-manual-labor-slot.png",
+			filename = "__gregtorio-continued__/graphics/icons/fork/empty-manual-labor-slot.png",
 			priority = "extra-high-no-scale",
 			size = 64,
 			flags = { "gui-icon" },
@@ -18,7 +18,7 @@ data:extend({
 		empty_slot_caption = { "gui.fork-manual-labor" },
 		empty_slot_description = { "gui.fork-manual-labor-description" },
 		icon = {
-			filename = "__Gregtorio__/graphics/icons/fork/manual-labor-icon-red.png",
+			filename = "__gregtorio-continued__/graphics/icons/fork/manual-labor-icon-red.png",
 			priority = "extra-high-no-scale",
 			width = 64,
 			height = 64,

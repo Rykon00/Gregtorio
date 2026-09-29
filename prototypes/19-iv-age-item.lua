@@ -3390,7 +3390,7 @@ create_item{
     {
 		type = "item",
 		name = "monazite-rare-earth-filtrate",
-		icon = "__Gregtorio__/graphics/icons/monazite-rare-earth-filtrate.png",
+		icon = "__gregtorio-continued__/graphics/icons/monazite-rare-earth-filtrate.png",
 		icon_size = 32,
 		subgroup = "intermediate-product",
 		order = "a[wood]-a[plank]",
@@ -3399,7 +3399,7 @@ create_item{
     {
 		type = "item",
 		name = "thorium-phosphate-cake",
-		icon = "__Gregtorio__/graphics/icons/thorium-phosphate-cake.png",
+		icon = "__gregtorio-continued__/graphics/icons/thorium-phosphate-cake.png",
 		icon_size = 32,
 		subgroup = "intermediate-product",
 		order = "a[wood]-a[plank]",
@@ -3421,7 +3421,7 @@ create_item{
     {
 		type = "item",
 		name = "thorium-phosphate-concentrate",
-		icon = "__Gregtorio__/graphics/icons/thorium-phosphate-concentrate.png",
+		icon = "__gregtorio-continued__/graphics/icons/thorium-phosphate-concentrate.png",
 		icon_size = 32,
 		subgroup = "intermediate-product",
 		order = "a[wood]-a[plank]",
@@ -3458,7 +3458,7 @@ create_item{
     {
 		type = "item",
 		name = "neutralized-monazite-rare-earth-filtrate",
-		icon = "__Gregtorio__/graphics/icons/neutralized-monazite-rare-earth-filtrate.png",
+		icon = "__gregtorio-continued__/graphics/icons/neutralized-monazite-rare-earth-filtrate.png",
 		icon_size = 32,
 		subgroup = "intermediate-product",
 		order = "a[wood]-a[plank]",
@@ -3483,7 +3483,7 @@ create_item{
     {
 		type = "item",
 		name = "monazite-rare-earth-hydroxide-concentrate",
-		icon = "__Gregtorio__/graphics/icons/monazite-rare-earth-hydroxide-concentrate.png",
+		icon = "__gregtorio-continued__/graphics/icons/monazite-rare-earth-hydroxide-concentrate.png",
 		icon_size = 32,
 		subgroup = "intermediate-product",
 		order = "a[wood]-a[plank]",
@@ -3492,7 +3492,7 @@ create_item{
     {
 		type = "item",
 		name = "uranium-filtrate",
-		icon = "__Gregtorio__/graphics/icons/uranium-filtrate.png",
+		icon = "__gregtorio-continued__/graphics/icons/uranium-filtrate.png",
 		icon_size = 32,
 		subgroup = "intermediate-product",
 		order = "a[wood]-a[plank]",
@@ -3515,7 +3515,7 @@ create_item{
     {
 		type = "item",
 		name = "neutralized-uranium-filtrate",
-		icon = "__Gregtorio__/graphics/icons/neutralized-uranium-filtrate.png",
+		icon = "__gregtorio-continued__/graphics/icons/neutralized-uranium-filtrate.png",
 		icon_size = 32,
 		subgroup = "intermediate-product",
 		order = "a[wood]-a[plank]",
@@ -3555,7 +3555,7 @@ create_item{
     {
 		type = "item",
 		name = "dried-monazite-rare-earth-concentrate",
-		icon = "__Gregtorio__/graphics/icons/dried-monazite-rare-earth-concentrate.png",
+		icon = "__gregtorio-continued__/graphics/icons/dried-monazite-rare-earth-concentrate.png",
 		icon_size = 32,
 		subgroup = "intermediate-product",
 		order = "a[wood]-a[plank]",
@@ -3577,7 +3577,7 @@ create_item{
     {
 		type = "item",
 		name = "bastnasite-rare-earth-oxides",
-		icon = "__Gregtorio__/graphics/icons/bastnasite-rare-earth-oxides.png",
+		icon = "__gregtorio-continued__/graphics/icons/bastnasite-rare-earth-oxides.png",
 		icon_size = 32,
 		subgroup = "intermediate-product",
 		order = "a[wood]-a[plank]",
@@ -3600,7 +3600,7 @@ create_item{
     {
 		type = "item",
 		name = "acid-leached-bastnasite-rare-earth-oxides",
-		icon = "__Gregtorio__/graphics/icons/acid-leached-bastnasite-rare-earth-oxides.png",
+		icon = "__gregtorio-continued__/graphics/icons/acid-leached-bastnasite-rare-earth-oxides.png",
 		icon_size = 32,
 		subgroup = "intermediate-product",
 		order = "a[wood]-a[plank]",
@@ -3624,7 +3624,7 @@ create_item{
     {
 		type = "item",
 		name = "roasted-rare-earth-oxides",
-		icon = "__Gregtorio__/graphics/icons/roasted-rare-earth-oxides.png",
+		icon = "__gregtorio-continued__/graphics/icons/roasted-rare-earth-oxides.png",
 		icon_size = 32,
 		subgroup = "intermediate-product",
 		order = "a[wood]-a[plank]",
@@ -3647,7 +3647,7 @@ create_item{
     {
 		type = "item",
 		name = "wet-rare-earth-oxides",
-		icon = "__Gregtorio__/graphics/icons/wet-rare-earth-oxides.png",
+		icon = "__gregtorio-continued__/graphics/icons/wet-rare-earth-oxides.png",
 		icon_size = 32,
 		subgroup = "intermediate-product",
 		order = "a[wood]-a[plank]",
@@ -3671,7 +3671,7 @@ create_item{
     {
 		type = "item",
 		name = "cerium-oxidised-rare-earth-oxides",
-		icon = "__Gregtorio__/graphics/icons/cerium-oxidised-rare-earth-oxides.png",
+		icon = "__gregtorio-continued__/graphics/icons/cerium-oxidised-rare-earth-oxides.png",
 		icon_size = 32,
 		subgroup = "intermediate-product",
 		order = "a[wood]-a[plank]",
@@ -3695,7 +3695,7 @@ create_item{
     {
 		type = "item",
 		name = "bastnasite-rarer-earth-oxides",
-		icon = "__Gregtorio__/graphics/icons/bastnasite-rarer-earth-oxides.png",
+		icon = "__gregtorio-continued__/graphics/icons/bastnasite-rarer-earth-oxides.png",
 		icon_size = 32,
 		subgroup = "intermediate-product",
 		order = "a[wood]-a[plank]",
@@ -3774,7 +3774,7 @@ create_item{
     {
 		type = "item",
 		name = "cerium-dioxide",
-		icon = "__Gregtorio__/graphics/icons/cerium-dioxide.png",
+		icon = "__gregtorio-continued__/graphics/icons/cerium-dioxide.png",
 		icon_size = 32,
 		subgroup = "intermediate-product",
 		order = "a[wood]-a[plank]",
@@ -3796,7 +3796,7 @@ create_item{
     {
 		type = "item",
 		name = "cooled-monazite-rare-earth-concentrate",
-		icon = "__Gregtorio__/graphics/icons/cooled-monazite-rare-earth-concentrate.png",
+		icon = "__gregtorio-continued__/graphics/icons/cooled-monazite-rare-earth-concentrate.png",
 		icon_size = 32,
 		subgroup = "intermediate-product",
 		order = "a[wood]-a[plank]",
@@ -3819,7 +3819,7 @@ create_item{
     {
 		type = "item",
 		name = "europium-iii-oxide",
-		icon = "__Gregtorio__/graphics/icons/europium-iii-oxide.png",
+		icon = "__gregtorio-continued__/graphics/icons/europium-iii-oxide.png",
 		icon_size = 32,
 		subgroup = "intermediate-product",
 		order = "a[wood]-a[plank]",
@@ -3828,7 +3828,7 @@ create_item{
     {
 		type = "item",
 		name = "monazite-rarer-earth-sediment",
-		icon = "__Gregtorio__/graphics/icons/monazite-rarer-earth-sediment.png",
+		icon = "__gregtorio-continued__/graphics/icons/monazite-rarer-earth-sediment.png",
 		icon_size = 32,
 		subgroup = "intermediate-product",
 		order = "a[wood]-a[plank]",
@@ -3851,7 +3851,7 @@ create_item{
     {
 		type = "item",
 		name = "heterogenous-halogenic-monazite-rare-earth-mixture",
-		icon = "__Gregtorio__/graphics/icons/heterogenous-halogenic-monazite-rare-earth-mixture.png",
+		icon = "__gregtorio-continued__/graphics/icons/heterogenous-halogenic-monazite-rare-earth-mixture.png",
 		icon_size = 32,
 		subgroup = "intermediate-product",
 		order = "a[wood]-a[plank]",
@@ -3903,7 +3903,7 @@ create_item{
     {
 		type = "item",
 		name = "neodymium-rare-earth-concentrate",
-		icon = "__Gregtorio__/graphics/icons/neodymium-rare-earth-concentrate.png",
+		icon = "__gregtorio-continued__/graphics/icons/neodymium-rare-earth-concentrate.png",
 		icon_size = 32,
 		subgroup = "intermediate-product",
 		order = "a[wood]-a[plank]",
@@ -3912,7 +3912,7 @@ create_item{
     {
 		type = "item",
 		name = "samaric-rare-earth-concentrate",
-		icon = "__Gregtorio__/graphics/icons/samaric-rare-earth-concentrate.png",
+		icon = "__gregtorio-continued__/graphics/icons/samaric-rare-earth-concentrate.png",
 		icon_size = 32,
 		subgroup = "intermediate-product",
 		order = "a[wood]-a[plank]",
@@ -3936,7 +3936,7 @@ create_item{
     {
 		type = "item",
 		name = "lanthanum-chloride",
-		icon = "__Gregtorio__/graphics/icons/lanthanum-chloride.png",
+		icon = "__gregtorio-continued__/graphics/icons/lanthanum-chloride.png",
 		icon_size = 32,
 		subgroup = "intermediate-product",
 		order = "a[wood]-a[plank]",
@@ -3945,7 +3945,7 @@ create_item{
     {
 		type = "item",
 		name = "neodymium-oxide",
-		icon = "__Gregtorio__/graphics/icons/neodymium-oxide.png",
+		icon = "__gregtorio-continued__/graphics/icons/neodymium-oxide.png",
 		icon_size = 32,
 		subgroup = "intermediate-product",
 		order = "a[wood]-a[plank]",
@@ -3969,7 +3969,7 @@ create_item{
     {
 		type = "item",
 		name = "lanthanum-oxide",
-		icon = "__Gregtorio__/graphics/icons/lanthanum-oxide.png",
+		icon = "__gregtorio-continued__/graphics/icons/lanthanum-oxide.png",
 		icon_size = 32,
 		subgroup = "intermediate-product",
 		order = "a[wood]-a[plank]",
@@ -3993,7 +3993,7 @@ create_item{
     {
 		type = "item",
 		name = "flawless-lanthanum-hexaboride",
-		icon = "__Gregtorio__/graphics/icons/flawless-lanthanum-hexaboride.png",
+		icon = "__gregtorio-continued__/graphics/icons/flawless-lanthanum-hexaboride.png",
 		icon_size = 32,
 		subgroup = "intermediate-product",
 		order = "a[wood]-a[plank]",
@@ -4017,7 +4017,7 @@ create_item{
     {
 		type = "item",
 		name = "saturated-monazite-rare-earth",
-		icon = "__Gregtorio__/graphics/icons/saturated-monazite-rare-earth.png",
+		icon = "__gregtorio-continued__/graphics/icons/saturated-monazite-rare-earth.png",
 		icon_size = 32,
 		subgroup = "intermediate-product",
 		order = "a[wood]-a[plank]",
@@ -4041,7 +4041,7 @@ create_item{
     {
 		type = "item",
 		name = "samaric-residue-dust",
-		icon = "__Gregtorio__/graphics/icons/samaric-residue-dust.png",
+		icon = "__gregtorio-continued__/graphics/icons/samaric-residue-dust.png",
 		icon_size = 32,
 		subgroup = "intermediate-product",
 		order = "a[wood]-a[plank]",
@@ -4064,7 +4064,7 @@ create_item{
     {
 		type = "item",
 		name = "gadolinium-dust",
-		icon = "__Gregtorio__/graphics/icons/gadolinium-dust.png",
+		icon = "__gregtorio-continued__/graphics/icons/gadolinium-dust.png",
 		icon_size = 32,
 		subgroup = "intermediate-product",
 		order = "a[wood]-a[plank]",
@@ -4090,7 +4090,7 @@ create_item{
     {
 		type = "item",
 		name = "europium-oxide",
-		icon = "__Gregtorio__/graphics/icons/europium-oxide.png",
+		icon = "__gregtorio-continued__/graphics/icons/europium-oxide.png",
 		icon_size = 32,
 		subgroup = "intermediate-product",
 		order = "a[wood]-a[plank]",
@@ -4132,7 +4132,7 @@ create_item{
     {
 		type = "item",
 		name = "cerium-chloride",
-		icon = "__Gregtorio__/graphics/icons/cerium-chloride.png",
+		icon = "__gregtorio-continued__/graphics/icons/cerium-chloride.png",
 		icon_size = 32,
 		subgroup = "intermediate-product",
 		order = "a[wood]-a[plank]",
@@ -4156,7 +4156,7 @@ create_item{
     {
 		type = "item",
 		name = "cerium-oxalate",
-		icon = "__Gregtorio__/graphics/icons/cerium-oxalate.png",
+		icon = "__gregtorio-continued__/graphics/icons/cerium-oxalate.png",
 		icon_size = 32,
 		subgroup = "intermediate-product",
 		order = "a[wood]-a[plank]",
@@ -4180,7 +4180,7 @@ create_item{
     {
 		type = "item",
 		name = "cerium-iii-oxide",
-		icon = "__Gregtorio__/graphics/icons/cerium-iii-oxide.png",
+		icon = "__gregtorio-continued__/graphics/icons/cerium-iii-oxide.png",
 		icon_size = 32,
 		subgroup = "intermediate-product",
 		order = "a[wood]-a[plank]",
@@ -4203,7 +4203,7 @@ create_item{
     {
 		type = "item",
 		name = "cerium-dust",
-		icon = "__Gregtorio__/graphics/icons/cerium-dust.png",
+		icon = "__gregtorio-continued__/graphics/icons/cerium-dust.png",
 		icon_size = 32,
 		subgroup = "intermediate-product",
 		order = "a[wood]-a[plank]",

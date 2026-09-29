@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Replaces the "NYI" (not yet implemented) placeholder technology icons.
 
-Input: a TSV with one technology per line, "<tech-name>\\t<__Gregtorio__/... icon path>",
+Input: a TSV with one technology per line, "<tech-name>\\t<__gregtorio-continued__/... icon path>",
 naming the item or fluid whose icon should represent the technology (usually the main
 product it unlocks: the material, machine or component).
 
@@ -79,7 +79,7 @@ def main():
         if "\t" not in line:
             continue
         tech, icon = line.split("\t", 1)
-        src = ROOT / icon.replace("__Gregtorio__/", "", 1)
+        src = ROOT / icon.replace("__gregtorio-continued__/", "", 1)
         if not src.exists():
             print(f"skip {tech}: {icon} not found")
             continue

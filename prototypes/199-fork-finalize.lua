@@ -232,8 +232,8 @@ log("FORK-AUTOUNLOCK: " .. added .. " additional recipes unlocked")
 require("prototypes.fork-tech-icons")
 for name, _ in pairs(FORK_TECH_ICONS) do
 	local t = data.raw.technology[name]
-	if t and t.icon and t.icon:sub(1, 14) == "__Gregtorio__/" then
-		t.icon = "__Gregtorio__/graphics/technology/fork/" .. name .. ".png"
+	if t and t.icon and t.icon:sub(1, 24) == "__gregtorio-continued__/" then
+		t.icon = "__gregtorio-continued__/graphics/technology/fork/" .. name .. ".png"
 		t.icon_size = 256
 	end
 end
