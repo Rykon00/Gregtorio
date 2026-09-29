@@ -39,7 +39,8 @@
   (needs network access to factorio.com and FACTORIO_USERNAME/FACTORIO_TOKEN for the dependency
   mods), then `python tools/devcheck/devcheck.py all`. It must end with `RESULT: OK`. For changes
   that could affect existing saves also run `migrate --from-ref 0e935ba` (upstream 0.1.9) or `--from-ref <previous release tag>`. See
-  `tools/devcheck/README.md`.
+  `tools/devcheck/README.md`. Runtime maps use a fixed seed and a cleared test area, so a red run is
+  reproducible (`--seed <printed seed>`) and never bad luck; `--seed random` checks other terrain.
 - Every referenced `__gregtorio-continued__/...` file must exist (headless Factorio does not check
   graphics, the real game crashes on missing files).
 - The mod is `gregtorio-continued` (Gregtorio Continued) since 0.3.0, in the repo and on the mod
