@@ -9,6 +9,8 @@ local fork_fluids = require("scripts.fork-me-fluids")
 local fork_molds = require("scripts.fork-molds")
 --- Fork: researching the first level of `victory` wins the game (see prototypes/135-fork-endgame.lua)
 local fork_victory = require("scripts.fork-victory")
+--- Fork: cooled fluid of the large plasma turbines (see prototypes/136-fork-power.lua)
+local fork_power = require("scripts.fork-power")
 
 script.on_event(defines.events.on_built_entity, function(event)
   if event.entity.name == "trash-can" then
@@ -18,6 +20,7 @@ script.on_event(defines.events.on_built_entity, function(event)
   fork_ae2.on_built(event.entity)
   fork_fluids.on_built(event.entity, fork_fluids.tags_from_event(event))
   fork_molds.on_built(event.entity)
+  fork_power.on_built(event.entity)
 end)
 
 script.on_event(defines.events.on_robot_built_entity, function(event)
@@ -27,6 +30,7 @@ script.on_event(defines.events.on_robot_built_entity, function(event)
   fork_ae2.on_built(event.entity)
   fork_fluids.on_built(event.entity, fork_fluids.tags_from_event(event))
   fork_molds.on_built(event.entity)
+  fork_power.on_built(event.entity)
 end)
 
 --- Fork: entities built by other scripts or on space platforms
@@ -36,12 +40,14 @@ script.on_event({ defines.events.script_raised_built, defines.events.script_rais
   fork_ae2.on_built(event.entity)
   fork_fluids.on_built(event.entity, fork_fluids.tags_from_event(event))
   fork_molds.on_built(event.entity)
+  fork_power.on_built(event.entity)
 end)
 
 --- Fork: cloned entities (e.g. by other mods) need to be registered as well (a cloned fluid drive starts empty)
 script.on_event(defines.events.on_entity_cloned, function(event)
   fork_ae2.on_built(event.destination)
   fork_fluids.on_built(event.destination)
+  fork_power.on_built(event.destination)
 end)
 
 -- Raise a custom event when the cutscene ends
@@ -114,6 +120,7 @@ script.on_configuration_changed(function(data)
 	fork_fluids.on_configuration_changed()
 	fork_ae2.on_configuration_changed()
 	fork_molds.on_configuration_changed()
+	fork_power.on_configuration_changed()
 end)
 
 
