@@ -39,7 +39,8 @@ The repository root is the mod itself (`info.json`, `data.lua`, `prototypes/`, `
 | `locale/en/fork.cfg` | generated names for entries without a translation |
 | `tools/dev_link.py` | links the repo into the Factorio mods folder (working copy is loaded directly) |
 | `tools/devcheck/` | headless test harness: load check, progression/craftability analysis, graphics and runtime checks |
-| `tools/build.py` | builds `dist/Gregtorio_<version>.zip`, optionally installs it |
+| `tools/build.py` | builds `dist/Gregtorio_<version>.zip`, optionally installs it; `--portal` builds the mod portal zip `gregtorio-continued_<version>.zip` |
+| `tools/gen_thumbnail.py` | `thumbnail.png` from GT5-Unofficial fusion casing textures |
 | `tools/check_syntax.py` | Lua syntax check (`--loaded` = only files `data.lua` actually loads) |
 | `tools/gen_sprites.py` | machine sprites/icons from GT5-Unofficial textures (`--gt <path to checkout>`) |
 | `tools/gen_icons.py` | placeholder icons (recolored neighbor icons) for items without an icon |
@@ -88,10 +89,20 @@ Pushing a `v*` tag makes the GitHub Action build the zip and attach it to a GitH
 
 Note: the mod name in `info.json` stays `Gregtorio` so existing saves keep working.
 
+## Mod portal
+
+The portal name `Gregtorio` belongs to the original author, Damien Reave, who can no longer
+update it. The fork is published as **Gregtorio Continued** (`gregtorio-continued`,
+https://mods.factorio.com/mod/gregtorio-continued). The repo keeps the internal name
+`Gregtorio`; `python tools/build.py --portal` renames the mod only inside the zip (name, title,
+description and every `__Gregtorio__/` path). Saves made with the dev version (`Gregtorio`) and
+saves made with the portal version (`gregtorio-continued`) are not interchangeable, because
+Factorio ties a save to the mod name.
+
 ## Contributing
 
 See `CONTRIBUTING.md`. Everything on GitHub is in English.
 
 ## License
 
-GPLv3 like the original (see `LICENSE`). Textures taken from [GT5-Unofficial](https://github.com/GTNewHorizons/GT5-Unofficial) are LGPL-3.0.
+GPLv3 like the original by Damien Reave (see `LICENSE`). Textures taken from [GT5-Unofficial](https://github.com/GTNewHorizons/GT5-Unofficial) are LGPL-3.0.

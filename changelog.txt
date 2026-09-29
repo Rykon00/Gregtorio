@@ -1,4 +1,25 @@
 ---------------------------------------------------------------------------------------------------
+Version: 0.3.0
+Date: 2026-09-29
+  Info:
+    - Published on the mod portal as "gregtorio-continued" (Gregtorio Continued). The name "Gregtorio" belongs to the original author, Damien Reave, who can no longer update it. This continuation keeps his work and credits him.
+  Features:
+    - The GregTech: New Horizons progression is complete up to victory: LuV endgame (naquadah line, bacterial vat, crystal processors, fusion reactor MK1), then ZPM, UV, UHV, UEV, UIV, UMV and UXV with their circuits, components, energy hatches, machines, multiblock upgrades and science packs.
+    - Fusion reactors MK1 to MK5 with their plasmas and endgame metals (europium, americium, tritanium, cosmic neutronium, infinity, transcendent metal, spacetime, universium).
+    - Wetware, bio and optical circuit lines; water purification plant with grades 1 to 6 and the NPIC, PPIC and QPIC chips.
+    - Stargate and MAX science pack; researching Victory level 1 wins the game (you can continue playing).
+    - ME network (AE2): ME Controller, ME Drives with storage cells (1k to 256k), ME Interface and ME Terminal on top of the logistic network.
+    - ME autocrafting: ME Pattern Provider (the recipe of the machine next to it becomes a pattern, GT machines included), ME Molecular Assembler, ME Crafting CPU and a Crafting tab in the terminal with plan preview, missing items and job list.
+    - ME fluids: ME Fluid Drives with fluid storage cells, ME Fluid Interface (import and export), fluids in the terminal and fluid recipes in autocrafting.
+  Changes:
+    - Molds are no longer used up: alloy smelters, fluid solidifiers and extruders have a mold slot, and their recipes need a mold there. Existing machines get their mold once.
+    - The Manual Inserter runs on manual labor instead of for free.
+    - The LV science pack is made from an LV motor, LV piston, primitive circuit and tin cables (2 packs) instead of a belt and an inserter.
+    - Buildings that burn manual labor show the fist in the empty fuel slot and "No manual labor" instead of "No fuel".
+    - Placeholder recipes that turned stone into endgame science packs are replaced by real recipes.
+  Graphics:
+    - Machine sprites for the new tiers and technology icons instead of the "NYI" placeholder, generated from GregTech 5 Unofficial textures (LGPL-3.0); fluid technologies show a GT fluid cell. Many item icons are still recolored placeholders.
+---------------------------------------------------------------------------------------------------
 Version: 0.2.0
 Date: 2026-09-28
   Features:

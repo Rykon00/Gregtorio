@@ -1,6 +1,6 @@
 {
   "name": "Gregtorio",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "title": "Gregtorio",
   "author": "Damien Reave, rykon_",
     "factorio_version": "2.0",
@@ -15,5 +15,5 @@
 		"? AfraidOfTheDark >= 1.0.31",
 		"? far-reach >= 2.0.0"
 	],
-  "description": "A hyper-complex total overhaul mod for Factorio that takes you from digging for clay with a shovel up to collapsing entire universes for space ship components. If you've ever wished you could play GregTech without any lag, instability or chunkloading issues, you're in the right place.\n\nFork by rykon_: IV and LuV are playable, missing machines and unlocks added. https://github.com/Rykon00/Gregtorio"
+  "description": "A hyper-complex total overhaul mod for Factorio that takes you from digging for clay with a shovel up to collapsing entire universes for space ship components. If you've ever wished you could play GregTech without any lag, instability or chunkloading issues, you're in the right place.\n\nContinued by rykon_: the GregTech: New Horizons progression up to UXV and victory, AE2-style ME storage with autocrafting and fluids. https://github.com/Rykon00/Gregtorio"
 }

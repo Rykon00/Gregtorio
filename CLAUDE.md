@@ -37,5 +37,7 @@
   `tools/devcheck/README.md`.
 - Every referenced `__Gregtorio__/...` file must exist (headless Factorio does not check
   graphics, the real game crashes on missing files).
+- The mod portal version is `gregtorio-continued` (built with `tools/build.py --portal`); the repo keeps
+  the internal name `Gregtorio`. Never rename it in the repo.
 - The maintainer's local clone is linked into the Factorio mods folder (`tools/dev_link.py`),
   so pulling into it makes changes live after a Factorio restart.
