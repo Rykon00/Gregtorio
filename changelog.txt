@@ -13,6 +13,7 @@ Version: 0.3.1
     - The start hints mention Factoriopedia (Alt+click): "Alternative recipes" and "Made in".
   Bugfixes:
     - Large Plasma Turbines only burn plasmas and Large Naquadah Reactors only naquadah and excited fuels. A wrong fluid (for example steam) stops the generator with "Wrong fuel" instead of being burnt; an empty generator shows "No fuel".
+    - Turbine Output Hatch: a Large Plasma Turbine now returns exactly one unit of cooled fluid per unit of plasma it burns, at any load (before, up to 12% went missing at partial or changing load). Cooled fluid that does not fit into full hatches waits in the turbine instead of being lost.
 ---------------------------------------------------------------------------------------------------
 Version: 0.3.0
 Date: 2026-09-29
