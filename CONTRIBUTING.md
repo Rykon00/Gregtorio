@@ -15,14 +15,15 @@ locale entries, commit messages, pull requests, issues, README and other docs.
 4. Before committing: `python tools/check_syntax.py --loaded`, and on Linux the headless
    harness `python tools/devcheck/devcheck.py all` (see `tools/devcheck/README.md`).
 5. Releases: bump `version` in `info.json`, add a section at the top of `changelog.txt`
-   (Factorio changelog format), merge, then create the GitHub release `vX.Y.Z`. Build the mod
-   portal zip with `python tools/build.py --portal` (`dist/gregtorio-continued_X.Y.Z.zip`),
-   upload it as a new release on https://mods.factorio.com/mod/gregtorio-continued and attach
-   the same zip to the GitHub release.
+   (Factorio changelog format) and merge into `main`. The workflow `.github/workflows/release.yml`
+   sees a version without a tag `vX.Y.Z`, creates the GitHub release with the zip and uploads the
+   same zip to https://mods.factorio.com/mod/gregtorio-continued (repository secret
+   `FACTORIO_MOD_API_KEY`: API key from https://factorio.com/profile with the permission
+   "ModPortal: Upload Mods"). Without the secret it only creates the GitHub release; the zip can
+   then be uploaded by hand (`python tools/build.py --portal`).
 
 ## Commits
 
 - Imperative subject line, max ~70 characters, blank line, then the why and the what.
 - One logical change per commit.
-- The mod name is `gregtorio-continued` (since 0.3.0). Do not rename it again: Factorio keeps
-  script state per mod name.
+- The mod name stays `Gregtorio` so existing saves keep working.
