@@ -14,8 +14,14 @@ locale entries, commit messages, pull requests, issues, README and other docs.
    After that, Factorio loads the working copy directly; restart Factorio after changes.
 4. Before committing: `python tools/check_syntax.py --loaded`, and on Linux the headless
    harness `python tools/devcheck/devcheck.py all` (see `tools/devcheck/README.md`).
-5. Releases: `main` is development, `upstream/release` is the published state. Bump `version` in
-   `info.json`, add a section at the top of `changelog.txt` (Factorio changelog format), then open
+5. Changelog: the topmost section of `changelog.txt` is always the **next** version
+   (`Version: X.Y.Z` without a `Date:` line). Every pull request into `main` that changes the
+   game (prototypes, scripts, locale, graphics) adds its player-facing lines there, in the
+   Factorio changelog format (`Features:`, `Changes:`, `Bugfixes:`, `Balancing:`, `Graphics:`,
+   `Info:`). Pure tooling or docs changes need no entry. CI fails a game-changing pull request
+   into `main` without a `changelog.txt` change unless it has the label `no changelog`.
+6. Releases: `main` is development, `upstream/release` is the published state. Set `version` in
+   `info.json` to the topmost changelog section, add its `Date: YYYY-MM-DD` line, then open
    a pull request from `main` into `upstream/release`. Its checks fail if the version is released
    already or has no changelog section. Merging it makes `.github/workflows/release.yml` create
    the GitHub release `vX.Y.Z` with the zip and upload the same zip to
