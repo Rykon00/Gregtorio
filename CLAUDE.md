@@ -23,8 +23,9 @@
   The phase plan is in `docs/ROADMAP.md`.
   Runtime fork code lives in `scripts/` and is required from `control.lua` (`fork-me-terminal.lua`,
   `fork-me-autocraft.lua`, `fork-me-fluids.lua`, `fork-molds.lua`, `fork-victory.lua`, `fork-power.lua`).
-  Tick intervals in use: `on_nth_tick` 60 (ME terminal), 30 (molds), 20 (autocrafting), 15 (fluids),
-  10 (plasma turbines); registrations for the same interval overwrite each other, so a new periodic
+  Tick intervals in use: `on_nth_tick` 60 (ME terminal), 30 (molds), 20 (autocrafting), 15 (fluids);
+  `on_tick` (fork-power: turbine energy every tick, fuel check and output hatches every 10th tick);
+  registrations for the same interval (or a second `on_tick`) overwrite each other, so a new periodic
   task picks a free interval. `on_init` belongs to the ME terminal, so other scripts keep their state
   lazy (`storage.fork_ae2`, `storage.fork_me_fluids`, `storage.fork_molds`, `storage.fork_power`).
 - Generators (`generator` prototypes that burn fluids by fuel value, 136) are demand driven; an

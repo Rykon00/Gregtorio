@@ -242,7 +242,8 @@ create_item{
 	},
 }
 --- The turbine output hatch: a 1x1 tank next to a plasma turbine that receives the cooled
---- fluid (scripts/fork-power.lua); without one the cooled fluid is lost, as in GT
+--- fluid (scripts/fork-power.lua, exact since issue #28); what does not fit waits in the
+--- turbine, without a hatch the cooled fluid is lost, as in GT
 local HATCH = "turbine-output-hatch"
 create_item{
 	name = HATCH,

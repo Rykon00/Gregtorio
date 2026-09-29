@@ -651,8 +651,8 @@ differs by one line: `plasma-turbine` pulls in the long tungstensteel rod, which
 placed by `devcheck runtime` 510 -> 510 (generators are not assembling machines), unlocked but uncraftable recipes 0. Every
 plasma the fusion reactors make is a fuel now; boron, calcium, helium, krypton and iron plasma stay ingredients as well.
 
-Files: `prototypes/136-fork-power.lua` (loaded after 135 and before 150) and `scripts/fork-power.lua` (`on_nth_tick` 10:
-the fuel check and the cooled fluid of the plasma turbines).
+Files: `prototypes/136-fork-power.lua` (loaded after 135 and before 150) and `scripts/fork-power.lua` (`on_tick`: the
+energy of the plasma turbines every tick; every 10th tick the fuel check and the cooled fluid for the output hatches).
 
 ### Content
 
@@ -668,11 +668,12 @@ the fuel check and the cooled fluid of the plasma turbines).
   turbine casings, 14 tungstensteel frames and a tungstensteel turbine rotor (blades like the magnalium ones); ZPM and UV
   are upgrades (previous turbine + dynamo hatch + hull, the replaced hatch and hull come back) like the multiblock upgrades
   of the tiers. GT's large plasma turbine returns the cooled fluid, one unit per unit of plasma: a Factorio generator has
-  one fluid box and no output, so `scripts/fork-power.lua` credits every turbine with the plasma it burnt (energy generated
-  / fuel value, sampled every 10 ticks) and pushes the cooled fluid into **turbine output hatches** (1x1 tanks, tech
+  one fluid box and no output, so `scripts/fork-power.lua` credits every turbine with the plasma it burnt (the energy it
+  generated, summed every tick, / fuel value; see "Cooled fluid" below) and pushes the cooled fluid into **turbine output
+  hatches** (1x1 tanks, tech
   `plasma-turbine`) standing next to the turbine: helium plasma -> helium, nitrogen -> nitrogen, oxygen -> oxygen,
-  krypton -> krypton, neon -> neon, tin -> molten tin, titanium -> molten titanium, iron -> molten iron. Without a hatch or
-  with full hatches the cooled fluid is lost (GT voids it too; up to 1000 units wait per turbine). Zinc and niobium have
+  krypton -> krypton, neon -> neon, tin -> molten tin, titanium -> molten titanium, iron -> molten iron. Without a hatch
+  the cooled fluid is lost (GT voids it too); what does not fit into full hatches waits in the turbine. Zinc and niobium have
   no molten fluid here, boron, calcium and sulfur none at all, so those return nothing.
 * **Naquadah fuel line** (tech `naquadah-fuels`, ZPM science, needs `fusion-plasmas-mk2` and `enriched-naquadah`): the
   drafts of `21-luv-age-item.lua` made real. 16 enriched naquadah dust + 300 hydrofluoric acid -> 200 acid naquadah
@@ -714,6 +715,19 @@ the fuel check and the cooled fluid of the plasma turbines).
   unit per tick (steam: 10 units, 1 MJ), once. The north/south input-output connection stays: generators are chained
   like steam engines, a generator in a steam or fuel line of the wrong fluid just stops and lets it through, and changing
   the connections would alter placed generators and their pipes.
+* **Cooled fluid** (issue #28). A `generator` with effectivity 1 burns exactly energy / fuel value of its fluid, so the
+  script adds up `energy_generated_last_tick` of every running turbine every tick (0 while it idles or runs dry; turbines
+  stopped by a script are left out, a stopped generator keeps its last value) and every 10 ticks turns the sum into
+  plasma burnt and owes the cooled fluid. The owed fluid goes into the hatches next to the turbine; what does not fit (full,
+  or holding another fluid) stays owed for the next step without a limit, fractions included; without any hatch it is
+  lost. When the plasma changes between two steps without the turbine being seen empty, the old plasma is credited with at
+  most the amount it had at the start of the step and the rest of the step to the new fluid. Accuracy (`devcheck runtime`,
+  "cooled fluid test"): 4, 2 and 1.5 helium plasma burnt to the last drop at full load, 40 % load and a 5-in-23-ticks
+  burst load return 4.000004, 2.000002 and 1.500001 helium (float rounding of the tank, 1e-6); a full hatch keeps the rest
+  owed and gets all of it once emptied; two turbines side by side on helium and nitrogen plasma fill only their own hatch.
+  The test tolerance is 0.1 % + 0.001 units. The one-tick sample every 10 ticks it replaces returned 1.933 helium for 2
+  plasma at 40 % load (-3.3 %), -1.7 % under a random load and -12 % under the burst load. Cost: one property read per
+  running turbine per tick (about 0.25 µs), the fluid is read once per step.
 
 ### Balance
 
@@ -769,8 +783,8 @@ steam, plasma in a naquadah reactor or naquadah fuel in a plasma turbine stop th
 
 * One generator entity per tier and fuel family instead of GT's single multiblocks whose output the dynamo hatch caps;
   no turbine rotor materials, fitting or overflow efficiency; the plasma efficiency is 100 %.
-* The cooled fluid goes to a separate output hatch entity (runtime) and is approximate: the turbine's energy of one tick
-  every 10 ticks stands for the 10 ticks.
+* The cooled fluid goes to a separate output hatch entity (runtime), up to 10 ticks after the plasma was burnt; it is
+  exact (see "Cooled fluid" above). What does not fit into the hatches waits in the turbine instead of being voided.
 * The naquadah reactor has no depleted fuel output and no coolant bonus; fuel MK4 to MK6 are not built (orundum, awakened
   draconium, hypogen, atomic separation catalyst are not in the mod). The chain skips naquadah asphalt, the cracking of the
   fuels, antimony trioxide, tiberium, high density uranium and plutonium and the naquadah fuel refinery.
@@ -781,7 +795,9 @@ steam, plasma in a naquadah reactor or naquadah fuel in a plasma turbine stop th
 Nothing that was unlocked changes; the recipes this side quest turns from drafts into real ones (`acid-naquadah-emulsion`,
 `naquadah-emulsion`, `naquadah-solution`, `radioactive-sludge-centrifuging`, `naquadah-based-fuel-mk1`,
 `plutonium-based-liquid-fuel`, the two excited fuels) were hidden before. The plasma recipes are unchanged. `migrate
---from-ref 0e935ba` and `--from-ref v0.3.0` load.
+--from-ref 0e935ba` and `--from-ref v0.3.0` load. Turbines placed with the sampling version of the cooled fluid (before
+issue #28, not released) keep their owed fluid and run on; `migrate` builds one under load in the old save and checks the
+helium for its plasma after the update (`plasma turbine of the old save`).
 
 ### Open points
 
@@ -790,8 +806,13 @@ Nothing that was unlocked changes; the recipes this side quest turns from drafts
 * Graphics: the turbines use the GT large turbine front (tungstensteel) as a top-down sprite, the reactors the GT naquadah
   reactor casing with the radiation proof casing inside, tinted per tier; the output hatch is the ME fluid interface in
   orange; the hatch and part icons are recolored placeholders (`tools/gen_icons.py`).
-* The cooled fluid could become exact with a per-tick sample, or engine-only with one `fusion-generator` entity per plasma
-  (filtered input and output); the GT single-block plasma generators (plasma cells) would be another engine-only way.
+* ~~The cooled fluid could become exact with a per-tick sample~~ (done, issue #28: the energy is summed every tick). An
+  engine-only turbine (one `fusion-generator` entity per plasma with filtered input and output, or GT's single-block
+  plasma generators) would drop the script and the hatch entity, but needs one entity per plasma and tier and a migration
+  of placed turbines; not needed for accuracy any more.
+* Left of the cooled fluid: a turbine switched off by another mod (`active = false`) keeps its last
+  `energy_generated_last_tick` and would be counted; a plasma change within one step can shift at most that step's burn
+  between the two plasmas.
 * The MK3 reactor and up make plasma far faster than the turbines burn it (one MK3 on iron plasma: 14.9 GW); higher tier
   turbines (UHV+, like GT++'s XL turbines) would use it.
 
