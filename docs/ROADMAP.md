@@ -651,7 +651,8 @@ differs by one line: `plasma-turbine` pulls in the long tungstensteel rod, which
 placed by `devcheck runtime` 510 -> 510 (generators are not assembling machines), unlocked but uncraftable recipes 0. Every
 plasma the fusion reactors make is a fuel now; boron, calcium, helium, krypton and iron plasma stay ingredients as well.
 
-Files: `prototypes/136-fork-power.lua` (loaded after 135 and before 150) and `scripts/fork-power.lua` (`on_nth_tick` 10).
+Files: `prototypes/136-fork-power.lua` (loaded after 135 and before 150) and `scripts/fork-power.lua` (`on_nth_tick` 10:
+the fuel check and the cooled fluid of the plasma turbines).
 
 ### Content
 
@@ -662,7 +663,7 @@ Files: `prototypes/136-fork-power.lua` (loaded after 135 and before 150) and `sc
   x burning time per mB): excited uranium fuel 1.296 GJ, excited plutonium fuel 4.86 GJ, naquadah based fuel MK1 58.5 GJ,
   MK2 161 GJ, MK3 760.9 GJ per unit.
 * **Large plasma turbines** (LuV, ZPM, UV; techs `plasma-turbine`, `zpm-plasma-turbine`, `uv-plasma-turbine`): 3x3
-  `generator` entities that burn any fluid with a fuel value (like the steam turbines), capped at four amps of their tier
+  `generator` entities that burn only plasmas (fuel check below), capped at four amps of their tier
   (4 x EU32: 81.92, 163.84 and 327.68 MW). The LuV one is built from a controller, the LuV dynamo hatch, 28 tungstensteel
   turbine casings, 14 tungstensteel frames and a tungstensteel turbine rotor (blades like the magnalium ones); ZPM and UV
   are upgrades (previous turbine + dynamo hatch + hull, the replaced hatch and hull come back) like the multiblock upgrades
@@ -691,13 +692,28 @@ Files: `prototypes/136-fork-power.lua` (loaded after 135 and before 150) and `sc
   "excited" in the fusion reactor MK2 (the drafts: 10 uranium fuel + 100 hydrogen -> 10, 20 plutonium fuel + 16 molten
   lutetium -> 20).
 * **Large naquadah reactors** (UV to UXV; techs `large-naquadah-reactor`, `uhv-naquadah-reactor` ... `uxv-naquadah-reactor`):
-  5x5 `generator` entities like the turbines, capped at 4 x EU32 of the tier (327.68 MW, 655.36 MW, 1.31, 2.62, 5.24 and
+  5x5 `generator` entities like the turbines that burn only naquadah based fuel MK1 to MK3 and the excited uranium and
+  plutonium fuels (fuel check below), capped at 4 x EU32 of the tier (327.68 MW, 655.36 MW, 1.31, 2.62, 5.24 and
   10.49 GW). The UV one: controller (UV hull, 4 UV circuits, 2 ZPM field generators, 4 ZPM pumps, naquadah and osmium
   plates, trinium and indalloy melt), the UV dynamo hatch, 48 naquadah reactor casings (4 naquadah plates, 4 lead plates, a
   thick neutron reflector, a europium plate) and 4 UV hulls; UHV to UXV are upgrades (previous reactor + dynamo hatch + 4
   hulls). GT's coolant bonus and depleted fuel output are left out.
 * **Dynamo hatches LuV to UXV**: copies of the energy hatch recipe of the tier (same parts, category and time), like
   upstream's EV and IV dynamo hatches. Unlocked with the generator of their tier.
+* **Fuel check** (issue #25). A `generator` burns any fluid with a fuel value, steam (100 kJ) included, and a fluid box
+  filter takes a single fluid, so without a check a plasma turbine ran on naquadah fuel, a naquadah reactor on plasma
+  (both at full output) and both on steam (6 MW, one unit per tick). `136-fork-power.lua` writes the accepted fuels of
+  each generator into the mod data `fork-power` (`fuels`: the plasmas of the fuel value table for the turbines, the
+  naquadah and excited fuels for the reactors, so a fuel added there is picked up). `scripts/fork-power.lua` tracks every
+  generator (built, cloned, and all of them after a configuration change or once in an older save) and checks the fluid in
+  its fluid box or pipeline segment every 10 ticks (round robin, at most 200 per step): a wrong fluid stops it
+  (`disabled_by_script`, status "Wrong fuel: <fluid>"), the fluid stays in it; an empty generator is stopped too ("No
+  fuel"), so a wrong fluid that arrives later is never burnt; with an accepted fuel it runs again (up to 10 ticks after the
+  fuel arrives). Only generators the script stopped are switched back on. The window: a running generator whose fuel
+  runs out and is replaced by a wrong fluid between two checks burns it until the next check, at most 10 ticks and one
+  unit per tick (steam: 10 units, 1 MJ), once. The north/south input-output connection stays: generators are chained
+  like steam engines, a generator in a steam or fuel line of the wrong fluid just stops and lets it through, and changing
+  the connections would alter placed generators and their pipes.
 
 ### Balance
 
@@ -736,19 +752,18 @@ Generators (4 amps of the tier) and what they burn at full load:
 | LuV large plasma turbine | 81.92 MW | 1/s | - | - | controller (LuV hull, 2 LuV circuits, 4 large naquadah alloy gears, 12 tungstensteel plates), LuV dynamo hatch (the parts of the LuV energy hatch), 28 tungstensteel turbine casings (168 tungstensteel plates, 28 titanium turbine casings), 14 tungstensteel frames, turbine rotor (16 plates, 8 screws, a long rod) |
 | ZPM large plasma turbine | 163.84 MW | 2/s | - | - | LuV turbine + ZPM dynamo hatch + ZPM hull |
 | UV large plasma turbine | 327.68 MW | 4/s | - | - | ZPM turbine + UV dynamo hatch + UV hull |
-| UV large naquadah reactor | 327.68 MW | (4/s) | 0.0056/s (1 unit per 3 min) | 0.25/s | controller (UV hull, 4 UV circuits, 2 ZPM field generators, 4 ZPM pumps, 8 naquadah and 8 osmium plates, 4 trinium ingots of melt, indalloy), UV dynamo hatch, 48 casings (192 naquadah plates, 192 lead plates, 48 thick neutron reflectors, 48 europium plates), 4 UV hulls |
-| UHV large naquadah reactor | 655.36 MW | | 1 unit per 89 s | 0.5/s | UV reactor + UHV dynamo hatch + 4 UHV hulls |
-| UEV large naquadah reactor | 1.31 GW | | 1 unit per 45 s | 1/s | + UEV dynamo hatch + 4 UEV hulls |
-| UIV large naquadah reactor | 2.62 GW | | 1 unit per 22 s | 2/s | + UIV dynamo hatch + 4 UIV hulls |
-| UMV large naquadah reactor | 5.24 GW | | 1 unit per 11 s | 4/s | + UMV dynamo hatch + 4 UMV hulls |
-| UXV large naquadah reactor | 10.49 GW | | 1 unit per 6 s | 8/s | + UXV dynamo hatch + 4 UXV hulls |
+| UV large naquadah reactor | 327.68 MW | - | 0.0056/s (1 unit per 3 min) | 0.25/s | controller (UV hull, 4 UV circuits, 2 ZPM field generators, 4 ZPM pumps, 8 naquadah and 8 osmium plates, 4 trinium ingots of melt, indalloy), UV dynamo hatch, 48 casings (192 naquadah plates, 192 lead plates, 48 thick neutron reflectors, 48 europium plates), 4 UV hulls |
+| UHV large naquadah reactor | 655.36 MW | - | 1 unit per 89 s | 0.5/s | UV reactor + UHV dynamo hatch + 4 UHV hulls |
+| UEV large naquadah reactor | 1.31 GW | - | 1 unit per 45 s | 1/s | + UEV dynamo hatch + 4 UEV hulls |
+| UIV large naquadah reactor | 2.62 GW | - | 1 unit per 22 s | 2/s | + UIV dynamo hatch + 4 UIV hulls |
+| UMV large naquadah reactor | 5.24 GW | - | 1 unit per 11 s | 4/s | + UMV dynamo hatch + 4 UMV hulls |
+| UXV large naquadah reactor | 10.49 GW | - | 1 unit per 6 s | 8/s | + UXV dynamo hatch + 4 UXV hulls |
 
 Net gain in practice: one MK1 on deuterium and helium-3 (40.96 MW) makes 62.5 helium plasma per second, enough for 62 LuV,
 31 ZPM or 15 UV plasma turbines (5.12 GW), a net 5.08 GW. One EV blast furnace on acid naquadah emulsion (16 enriched
 naquadah dust per 180 s) feeds 0.036 naquadah fuel MK1 per second through the line, worth 2.08 GW of naquadah reactor
-output; one enriched naquadah dust is 23.4 GJ of MK1 fuel. The generators burn any fluid with a fuel value: a plasma
-turbine also runs on naquadah fuel and a naquadah reactor on plasma (and both on steam, at 100 kJ per unit), there is no
-multi-fluid filter in the engine.
+output; one enriched naquadah dust is 23.4 GJ of MK1 fuel. The generators burn only their own fuels (fuel check above):
+steam, plasma in a naquadah reactor or naquadah fuel in a plasma turbine stop them.
 
 ### Deviations from GT
 
