@@ -1,0 +1,30 @@
+name: Development task
+description: A planned change for maintainers and contributors (for example a finding from a pull request).
+title: "[Task] "
+labels: ["task"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: What is wrong or missing, with file and line references.
+    validations:
+      required: true
+  - type: textarea
+    id: check
+    attributes:
+      label: To check first
+      description: What should be confirmed in game or with tools/devcheck before changing anything.
+  - type: textarea
+    id: fixes
+    attributes:
+      label: Possible fixes
+    validations:
+      required: true
+  - type: textarea
+    id: done
+    attributes:
+      label: Done when
+      description: Acceptance criteria, including the devcheck tests that must pass.
+    validations:
+      required: true

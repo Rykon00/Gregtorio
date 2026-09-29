@@ -1,0 +1,37 @@
+name: Feature or content request
+description: New content, a missing GTNH mechanic or a quality-of-life change.
+title: "[Feature] "
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What should be added or changed
+    validations:
+      required: true
+  - type: textarea
+    id: why
+    attributes:
+      label: Why
+      description: What problem does it solve, or what is missing compared with GTNH?
+    validations:
+      required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - Progression / tiers
+        - Machines and multiblocks
+        - Power generation
+        - ME network (AE2)
+        - Graphics and icons
+        - Quality of life
+        - Other
+    validations:
+      required: true
+  - type: textarea
+    id: reference
+    attributes:
+      label: GTNH reference
+      description: Link or name of the GTNH / GT5-Unofficial machine, recipe or mechanic, if there is one.
