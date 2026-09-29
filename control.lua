@@ -9,39 +9,69 @@ local fork_fluids = require("scripts.fork-me-fluids")
 local fork_molds = require("scripts.fork-molds")
 --- Fork: researching the first level of `victory` wins the game (see prototypes/135-fork-endgame.lua)
 local fork_victory = require("scripts.fork-victory")
+--- Fork: fuel check of the endgame generators, cooled fluid of the plasma turbines (see prototypes/136-fork-power.lua)
+local fork_power = require("scripts.fork-power")
 
 script.on_event(defines.events.on_built_entity, function(event)
   if event.entity.name == "trash-can" then
     event.entity.remove_unfiltered_items = true
   end
   fork_me.on_built(event.entity)
-  fork_ae2.on_built(event.entity)
+  fork_ae2.on_built(event.entity, event.tags)
   fork_fluids.on_built(event.entity, fork_fluids.tags_from_event(event))
   fork_molds.on_built(event.entity)
+  fork_power.on_built(event.entity)
 end)
 
 script.on_event(defines.events.on_robot_built_entity, function(event)
   if event.entity.name == "trash-can" then
     event.entity.remove_unfiltered_items = true
   end
-  fork_ae2.on_built(event.entity)
+  fork_ae2.on_built(event.entity, event.tags)
   fork_fluids.on_built(event.entity, fork_fluids.tags_from_event(event))
   fork_molds.on_built(event.entity)
+  fork_power.on_built(event.entity)
 end)
 
 --- Fork: entities built by other scripts or on space platforms
 script.on_event({ defines.events.script_raised_built, defines.events.script_raised_revive,
   defines.events.on_space_platform_built_entity }, function(event)
   fork_me.on_built(event.entity)
-  fork_ae2.on_built(event.entity)
+  fork_ae2.on_built(event.entity, event.tags)
   fork_fluids.on_built(event.entity, fork_fluids.tags_from_event(event))
   fork_molds.on_built(event.entity)
+  fork_power.on_built(event.entity)
 end)
 
 --- Fork: cloned entities (e.g. by other mods) need to be registered as well (a cloned fluid drive starts empty)
 script.on_event(defines.events.on_entity_cloned, function(event)
-  fork_ae2.on_built(event.destination)
+  fork_ae2.on_built(event.destination, nil, event.source)
   fork_fluids.on_built(event.destination)
+  fork_power.on_built(event.destination)
+end)
+
+--- Fork: the recipe choice of an ME Pattern Provider (for the furnaces next to it) is copied by settings
+--- paste and stored in blueprints
+script.on_event(defines.events.on_entity_settings_pasted, function(event)
+  fork_ae2.on_entity_settings_pasted(event)
+end)
+
+script.on_event(defines.events.on_player_setup_blueprint, function(event)
+  fork_ae2.on_player_setup_blueprint(event)
+end)
+
+--- Fork: a hand craft that consumes a loaded ME Fluid Drive item (the disassembly recipe) salvages its fluid
+script.on_event(defines.events.on_pre_player_crafted_item, function(event)
+  fork_fluids.on_pre_player_crafted_item(event)
+end)
+
+script.on_event(defines.events.on_player_cancelled_crafting, function(event)
+  fork_fluids.on_player_cancelled_crafting(event)
+end)
+
+--- Fork: a deleted surface takes its ME fluid drives and recovered fluid with it (reported to the forces)
+script.on_event(defines.events.on_pre_surface_deleted, function(event)
+  fork_fluids.on_pre_surface_deleted(event.surface_index)
 end)
 
 -- Raise a custom event when the cutscene ends
@@ -114,6 +144,7 @@ script.on_configuration_changed(function(data)
 	fork_fluids.on_configuration_changed()
 	fork_ae2.on_configuration_changed()
 	fork_molds.on_configuration_changed()
+	fork_power.on_configuration_changed()
 end)
 
 

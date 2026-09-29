@@ -21,7 +21,7 @@ UEV = cryogenic, UIV = promethium, then UMV / UXV / max (the stargate).
 | 5b | UMV, UXV, MAX and the endgame (stargate, victory), fusion MK5 | **done** (`prototypes/133-fork-umv.lua`, `134-fork-uxv.lua`, `135-fork-endgame.lua`, `scripts/fork-victory.lua`) |
 | side | Water purification line: grades 1-6 done in `129-fork-water-purification.lua`; grades 7 (degasifier) and 8 (quark extraction) open | partly done |
 | side | AE2 autocrafting (patterns, molecular assembler on top of the ME network from `120-fork-ae2.lua`) and fluids in the ME network (fluid drives, fluid interface, fluid recipes as patterns) | **done** (`prototypes/121-fork-ae2-autocrafting.lua`, `122-fork-ae2-fluids.lua`, `scripts/fork-me-autocraft.lua`, `scripts/fork-me-fluids.lua`, `docs/AE2.md`) |
-| side | Plasma generator (plasmas are only ingredients so far) | open |
+| side | Endgame power: plasma turbines, naquadah fuel line and large naquadah reactors, dynamo hatches LuV to UXV | **done** (`prototypes/136-fork-power.lua`, `scripts/fork-power.lua`, see "Side quest: endgame power") |
 | side | Graphics and balance of the tiers from UHV up in the real game | open |
 
 ## Phase 1: LuV (done)
@@ -50,9 +50,9 @@ New technologies (all LuV science):
 
 - Still drafts, need later tiers: crystal processor mainframe (UV circuit, ITBTC/enderium
   superconductor wire), force plasma (arcanite), all MK2+ fusion recipes, lapotronic energy orb
-  cluster (qubit processing unit, naquadah alloy foil), the naquadah fuel line
-  (`acid-naquadah-emulsion`, naquadah fuels for the naquadah generator).
-- Plasmas are only ingredients so far; there is no plasma generator (GT plasma turbine).
+  cluster (qubit processing unit, naquadah alloy foil), ~~the naquadah fuel line
+  (`acid-naquadah-emulsion`, naquadah fuels for the naquadah generator)~~ (done in "Side quest: endgame power").
+- ~~Plasmas are only ingredients so far; there is no plasma generator (GT plasma turbine).~~ Done in "Side quest: endgame power".
 - Fusion in GT needs a start-up energy buffer per recipe; here it is a normal machine with a
   high power draw (40.96 MW).
 - Balance: the assembly line now runs at IV speed (16) instead of 1, so assembly line recipes take
@@ -213,14 +213,14 @@ Existing saves that already researched `zpm-components` lose the ZPM field gener
 - Wetware processors (UHV circuit) and the UHV field generator: phase 4. The UV field generator stays on 8 UV
   circuits until then.
 - PPIC and NPIC chips need the water purification line; the MK2 controller and the ZPM/UV hatches use UHPICs.
-- Still drafts: force plasma (arcanite), astral titanium and runite plasma, the liquid fuels and the naquadah
-  fuel (`excited-*-liquid-fuel`, `naquadah-based-fuel-mk1`), `advanced-fusion-coil` (needs the UHV emitter).
+- Still drafts: force plasma (arcanite), astral titanium and runite plasma, ~~the liquid fuels and the naquadah
+  fuel (`excited-*-liquid-fuel`, `naquadah-based-fuel-mk1`)~~ (done in "Side quest: endgame power"), `advanced-fusion-coil` (needs the UHV emitter).
 - `fusion-machine-casing-mk2` is a real recipe now (americium plate) but no tech unlocks it: it belongs to the MK3.
-- Plasmas are still only ingredients; there is no plasma generator.
+- ~~Plasmas are still only ingredients; there is no plasma generator.~~ Done in "Side quest: endgame power".
 - Balance: the lutetium yield (4 rare earth dust -> 1 lutetium) and the 384 fine americium wires per UV motor make
   the UV motor the bottleneck (48 americium ingots = 4 minutes of one MK2 reactor). Nothing was tuned in game.
 - Still unused from `25-uv-age-item.lua`: research station, draconic fusion crafter tiers, nano forge, bio
-  processors, cosmic neutronium, component assembly line, UV dynamo hatch.
+  processors, cosmic neutronium, component assembly line, ~~UV dynamo hatch~~ (done in "Side quest: endgame power").
 - Graphics: the UV basic machine sprites are generated from GT textures (tinted green), the MK2 reactor uses the
   GT fusion casing MK2 texture, item and technology icons are recolored placeholders (`tools/gen_icons.py`).
 
@@ -337,17 +337,17 @@ in game.
 
 ### Open points from phase 4
 
-- Still drafts: force plasma (arcanite), astral titanium and runite plasma, the liquid fuels and the naquadah fuel,
+- Still drafts: force plasma (arcanite), astral titanium and runite plasma, ~~the liquid fuels and the naquadah fuel~~ (done in "Side quest: endgame power"),
   the MK4 and MK5 reactors (`fusion-reactor-mk4-controller` needs UEV circuits, `fusion-machine-casing-mk3` a category
   typo `uvh-...`, `advanced-fusion-coil-ii` the energy module), the UEV, UIV and UMV superconductor coil blocks,
   bio cells.
 - PPIC, NPIC and QPIC chips (water purification line) and complex SMDs: the MK3 controller, the ZPM to UHV hatches and
   the wetware mainframe use UHPICs and advanced SMDs.
-- Plasmas (also iron plasma) are still only ingredients; there is no plasma generator.
+- ~~Plasmas (also iron plasma) are still only ingredients; there is no plasma generator.~~ Done in "Side quest: endgame power".
 - No fluxed electrum, draconium, cosmic neutronium or bedrockium: tritanium and triamerotronium stand in for them.
 - The UV energy hatch cooling and the UHV one use cryogenic helium; there are no super coolant cells (draft
   `super-coolant` needs callisto ice).
-- Still unused from `27-uhv-age-item.lua`: UHV dynamo hatch, awakened draconium coil block (UEV), attuned tengam
+- Still unused from `27-uhv-age-item.lua`: ~~UHV dynamo hatch~~ (done in "Side quest: endgame power"), awakened draconium coil block (UEV), attuned tengam
   microminer, integrated ore factory, neutronium compressor, singularities.
 - Graphics: the UHV basic machine sprites are generated from GT textures (tinted red), the MK3 reactor uses the GT
   fusion casing MK2 texture and the MK3 overlay, item and technology icons are recolored placeholders
@@ -475,7 +475,7 @@ The cosmic neutronium of a UEV part includes the 18 ingots of melt in its fluids
 - Fusion MK5: needs `advanced-fusion-coil-ii` (energy module, compact fusion coil, rhugnor plate), `fusion-machine-casing-mk4` (naquadah alloy block, chromatic
   glass) and molten rhugnor (infinity + molten quantum), which no line makes. The MK4 drafts `molten-rhugnor` and `molten-flerovium` (plutonium-241) stay drafts.
 - Water purification grades 7 and 8, FPIC/APIC chips, complex SMDs.
-- Most plasmas (sulfur, nitrogen, zinc, niobium, tin, titanium, oxygen, neon, boron, calcium) are still only ingredients or unused; there is no plasma generator.
+- ~~Most plasmas (sulfur, nitrogen, zinc, niobium, tin, titanium, oxygen, neon, boron, calcium) are still only ingredients or unused; there is no plasma generator.~~ Done in "Side quest: endgame power".
 - No bedrockium, fluxed electrum, UU matter, quantium, attuned tengam, super coolant. The quantum force transformer, dimensional plasma forge, godforge
   and the rest of `29-uev-age-item.lua` / `31-uiv-age-item.lua` are for later.
 - Graphics: the UEV/UIV basic machine sprites are generated from GT textures (tinted gold and blue), the MK4 reactor reuses the MK3 art, the new items
@@ -627,7 +627,7 @@ Open (quality-of-life techs whose vanilla gate is disabled; either re-gate them 
 - Not built: the GT quantum force transformer, dimensional plasma forge, godforge, magmatter, dark matter, mellion, shirabon, six-phased copper, the eye of harmony and the
   UXV/MAX-only items of `90-uxv-age-item.lua` (mega ultimate battery, ridiculously large capacitor, artificial universe cell, ...). There is no MAX tier: no MAX circuit,
   hatch or machines.
-- Still drafts (29): force plasma (arcanite), astral titanium and runite plasma, the liquid fuels and naquadah fuel, plutonium/high-density plutonium, super coolant, UU
+- Still drafts (29, 21 since the endgame power side quest): force plasma (arcanite), astral titanium and runite plasma, ~~the liquid fuels and naquadah fuel~~, plutonium/high-density plutonium, super coolant, UU
   matter (magic essence, void/shadow metal, ichorium), 1080k space cell, the naquadah cracking chains, orundum, the lapotronic energy orb cluster draft, bio cells for
   microminers.
 
@@ -637,12 +637,163 @@ Side quests, in the order that helps the endgame most:
 
 1. Balance and graphics in the real game: the tier from UHV up (see the bottleneck tables of 4, 5a and 5b), the pack counts of the last techs, the QPIC counts, real
    sprites for the MK4/MK5 reactors and the last machine tiers, real icons for the exotic/temporal lines and the stargate parts.
-2. Plasma generator (GT plasma turbine): the plasmas (iron, sulfur, nitrogen, zinc, niobium, tin, titanium, oxygen, neon, boron, calcium ...) are only ingredients, several are
-   unused.
+2. ~~Plasma generator (GT plasma turbine)~~ (done, see "Side quest: endgame power").
 3. Water purification grades 7 (degasifier) and 8 (quark extraction), FPIC/APIC chips and complex SMDs, which would let the QPIC stand-ins of the UEV to UXV hatches go.
 4. ~~AE2 autocrafting~~ (done, see "Side quest: AE2 autocrafting").
 5. The technologies of the final pass list: decide for each "open" one whether it gets a Gregtorio gate or is hidden.
 6. A MAX tier (MAX circuit, hatch, machines, and the GT items the stargate could take) if the endgame should go on after `victory`.
+
+## Side quest: endgame power (done)
+
+Numbers: researchable technologies 319 -> 329 of 361 -> 371 (the 10 new ones), draft recipes hidden by the draft guard
+29 -> 21 (the naquadah fuel line and the liquid fuels are real recipes now), auto-unlocked recipes 53 -> 54 (`FORK-AUTOUNLOCK`
+differs by one line: `plasma-turbine` pulls in the long tungstensteel rod, which no technology unlocked before), machines
+placed by `devcheck runtime` 510 -> 510 (generators are not assembling machines), unlocked but uncraftable recipes 0. Every
+plasma the fusion reactors make is a fuel now; boron, calcium, helium, krypton and iron plasma stay ingredients as well.
+
+Files: `prototypes/136-fork-power.lua` (loaded after 135 and before 150) and `scripts/fork-power.lua` (`on_nth_tick` 10:
+the fuel check and the cooled fluid of the plasma turbines).
+
+### Content
+
+* **Fuel values.** Every plasma has GT5-Unofficial's plasma fuel value (`ProcessingCell.java`, EU per mB) with Gregtorio's
+  1 EU = 1 kJ (32 EU/t of LV = 640 kW): helium 81.92 MJ per unit, boron 112.64, calcium 188.42, neon 20.48 (GT's default,
+  1024 x mass), sulfur 170.39, nitrogen 129.02, zinc 226.3, niobium 269.52, tin 150, titanium 196.61, oxygen 131.07,
+  krypton 86.02 (default), iron 206.44 MJ. The naquadah and liquid nuclear fuels have GoodGenerator's values (basic output
+  x burning time per mB): excited uranium fuel 1.296 GJ, excited plutonium fuel 4.86 GJ, naquadah based fuel MK1 58.5 GJ,
+  MK2 161 GJ, MK3 760.9 GJ per unit.
+* **Large plasma turbines** (LuV, ZPM, UV; techs `plasma-turbine`, `zpm-plasma-turbine`, `uv-plasma-turbine`): 3x3
+  `generator` entities that burn only plasmas (fuel check below), capped at four amps of their tier
+  (4 x EU32: 81.92, 163.84 and 327.68 MW). The LuV one is built from a controller, the LuV dynamo hatch, 28 tungstensteel
+  turbine casings, 14 tungstensteel frames and a tungstensteel turbine rotor (blades like the magnalium ones); ZPM and UV
+  are upgrades (previous turbine + dynamo hatch + hull, the replaced hatch and hull come back) like the multiblock upgrades
+  of the tiers. GT's large plasma turbine returns the cooled fluid, one unit per unit of plasma: a Factorio generator has
+  one fluid box and no output, so `scripts/fork-power.lua` credits every turbine with the plasma it burnt (energy generated
+  / fuel value, sampled every 10 ticks) and pushes the cooled fluid into **turbine output hatches** (1x1 tanks, tech
+  `plasma-turbine`) standing next to the turbine: helium plasma -> helium, nitrogen -> nitrogen, oxygen -> oxygen,
+  krypton -> krypton, neon -> neon, tin -> molten tin, titanium -> molten titanium, iron -> molten iron. Without a hatch or
+  with full hatches the cooled fluid is lost (GT voids it too; up to 1000 units wait per turbine). Zinc and niobium have
+  no molten fluid here, boron, calcium and sulfur none at all, so those return nothing.
+* **Naquadah fuel line** (tech `naquadah-fuels`, ZPM science, needs `fusion-plasmas-mk2` and `enriched-naquadah`): the
+  drafts of `21-luv-age-item.lua` made real. 16 enriched naquadah dust + 300 hydrofluoric acid -> 200 acid naquadah
+  emulsion + 3 radioactive sludge (EV blast furnace, 180 s); 8 quicklime + 100 acid emulsion -> 100 naquadah emulsion + 4
+  fluorspar; 100 emulsion -> 50 naquadah solution + sludge (centrifuge); 20 solution -> 10 light naquadah fuel + 5 heavy
+  naquadah fuel + 60 naquadah gas + 10 water (EV distillation tower, new name `naquadah-solution-distillation`: the draft's
+  step was overwritten by two later drafts of the same name); 780 light + 360 heavy -> 100 naquadah based fuel MK1
+  (fusion reactor MK2, 12.5 s, GT's amounts; the draft had a tenth). Radioactive sludge is centrifuged into enriched
+  naquadah dust, uranium 238, plutonium 239 and radon (the draft without its calcium and tiberium dust). MK2 (tech
+  `uhv-naquadah-reactor`): 100 MK1 + 1500 naquadah gas + 1 nether star + 16 naquadria dust -> 100 MK2 in the UHV mixer
+  (GT: nether star dust and fluxed electrum dust in a large chemical reactor). MK3 (tech `uev-naquadah-reactor`): 100 MK2
+  + 800 heavy naquadah fuel + 32 uranium 238 dust + 16 plutonium 239 dust + 8 naquadria dust -> 100 MK3 in the UEV mixer
+  (GT: the naquadah fuel refinery with extremely unstable naquadah, tiberium and high density uranium/plutonium). The
+  liquid nuclear fuels of GoodGenerator: uranium based liquid fuel (64 uranium 238 dust, 8 potassium, 4 naquadah dust,
+  1000 radon -> 1000; GT: high density uranium and quantium) and plutonium based liquid fuel (the draft with 64 plutonium
+  239 dust and 2 neutronium ingots instead of high density plutonium and neutronium dust, 1000 units like GT) are
+  "excited" in the fusion reactor MK2 (the drafts: 10 uranium fuel + 100 hydrogen -> 10, 20 plutonium fuel + 16 molten
+  lutetium -> 20).
+* **Large naquadah reactors** (UV to UXV; techs `large-naquadah-reactor`, `uhv-naquadah-reactor` ... `uxv-naquadah-reactor`):
+  5x5 `generator` entities like the turbines that burn only naquadah based fuel MK1 to MK3 and the excited uranium and
+  plutonium fuels (fuel check below), capped at 4 x EU32 of the tier (327.68 MW, 655.36 MW, 1.31, 2.62, 5.24 and
+  10.49 GW). The UV one: controller (UV hull, 4 UV circuits, 2 ZPM field generators, 4 ZPM pumps, naquadah and osmium
+  plates, trinium and indalloy melt), the UV dynamo hatch, 48 naquadah reactor casings (4 naquadah plates, 4 lead plates, a
+  thick neutron reflector, a europium plate) and 4 UV hulls; UHV to UXV are upgrades (previous reactor + dynamo hatch + 4
+  hulls). GT's coolant bonus and depleted fuel output are left out.
+* **Dynamo hatches LuV to UXV**: copies of the energy hatch recipe of the tier (same parts, category and time), like
+  upstream's EV and IV dynamo hatches. Unlocked with the generator of their tier.
+* **Fuel check** (issue #25). A `generator` burns any fluid with a fuel value, steam (100 kJ) included, and a fluid box
+  filter takes a single fluid, so without a check a plasma turbine ran on naquadah fuel, a naquadah reactor on plasma
+  (both at full output) and both on steam (6 MW, one unit per tick). `136-fork-power.lua` writes the accepted fuels of
+  each generator into the mod data `fork-power` (`fuels`: the plasmas of the fuel value table for the turbines, the
+  naquadah and excited fuels for the reactors, so a fuel added there is picked up). `scripts/fork-power.lua` tracks every
+  generator (built, cloned, and all of them after a configuration change or once in an older save) and checks the fluid in
+  its fluid box or pipeline segment every 10 ticks (round robin, at most 200 per step): a wrong fluid stops it
+  (`disabled_by_script`, status "Wrong fuel: <fluid>"), the fluid stays in it; an empty generator is stopped too ("No
+  fuel"), so a wrong fluid that arrives later is never burnt; with an accepted fuel it runs again (up to 10 ticks after the
+  fuel arrives). Only generators the script stopped are switched back on. The window: a running generator whose fuel
+  runs out and is replaced by a wrong fluid between two checks burns it until the next check, at most 10 ticks and one
+  unit per tick (steam: 10 units, 1 MJ), once. The north/south input-output connection stays: generators are chained
+  like steam engines, a generator in a steam or fuel line of the wrong fluid just stops and lets it through, and changing
+  the connections would alter placed generators and their pipes.
+
+### Balance
+
+Energy per craft of a fusion recipe is the same in the MK1, MK2 and MK3 (each doubles speed and power: `energy_required` x
+1.28 MJ); the MK4 halves it and the MK5 halves it again. "Gain" is plasma energy out / reactor energy in per craft.
+
+| Plasma | Fuel value per unit | Recipe (reactor) | Energy in per craft | Energy out per craft | Gain | Units/s from one reactor | Plasma power |
+|---|---|---|---|---|---|---|---|
+| helium (D + He-3) | 81.92 MJ | 125 in 2 s (MK1) | 81.9 MJ | 10 240 MJ | 125x | 62.5 | 5.12 GW |
+| helium (D + T) | 81.92 MJ | 125 in 4 s (MK1) | 163.8 MJ | 10 240 MJ | 62.5x | 31.25 | 2.56 GW |
+| boron | 112.64 MJ | 14.4 in 12 s (MK1) | 491.5 MJ | 1622 MJ | 3.3x | 1.2 | 135 MW |
+| calcium | 188.42 MJ | 16 in 32 s (MK1) | 1311 MJ | 3015 MJ | 2.3x | 0.5 | 94 MW |
+| neon | 20.48 MJ | 1000 in 32 s (MK1) | 1311 MJ | 20 480 MJ | 2.7x (15.6x without its boron and calcium plasma) | 31.25 | 640 MW |
+| sulfur | 170.39 MJ | 144 in 8 s (MK2) | 655.4 MJ | 24 537 MJ | 37x | 18 | 3.07 GW |
+| nitrogen | 129.02 MJ | 125 in 4 s (MK2) | 327.7 MJ | 16 128 MJ | 49x | 31.25 | 4.03 GW |
+| zinc | 226.3 MJ | 72 in 8 s (MK2) | 655.4 MJ | 16 294 MJ | 25x | 9 | 2.04 GW |
+| niobium | 269.52 MJ | 144 in 8 s (MK2) | 655.4 MJ | 38 810 MJ | 59x | 18 | 4.85 GW |
+| tin | 150 MJ | 288 in 8 s (MK2) | 655.4 MJ | 43 200 MJ | 66x | 36 | 5.4 GW |
+| titanium | 196.61 MJ | 144 in 80 s (MK2) | 6554 MJ | 28 312 MJ | 4.3x | 1.8 | 354 MW |
+| oxygen | 131.07 MJ | 144 in 120 s (MK2) | 9830 MJ | 18 874 MJ | 1.3x (1.9x without its boron plasma) | 1.2 | 157 MW |
+| krypton | 86.02 MJ | 144 in 16 s (MK2) | 1311 MJ | 12 386 MJ | 3.8x (9.4x without its niobium and zinc plasma) | 9 | 774 MW |
+| iron | 206.44 MJ | 144 in 2 s (MK3) | 327.7 MJ | 29 727 MJ | 91x | 72 | 14.9 GW |
+
+| Fuel | Fuel value per unit | Recipe (reactor) | Energy in per craft | Energy out per craft | Gain |
+|---|---|---|---|---|---|
+| excited uranium based liquid fuel | 1.296 GJ | 10 uranium fuel + 100 hydrogen -> 10 in 5 s (MK2) | 409.6 MJ | 12 960 MJ | 32x |
+| excited plutonium based liquid fuel | 4.86 GJ | 20 plutonium fuel + 16 molten lutetium -> 20 in 5 s (MK2) | 409.6 MJ | 97 200 MJ | 237x |
+| naquadah based fuel MK1 | 58.5 GJ | 780 light + 360 heavy naquadah fuel -> 100 in 12.5 s (MK2) | 1024 MJ | 5.85 TJ | 5700x |
+| naquadah based fuel MK2 | 161 GJ | 100 MK1 + 1500 naquadah gas + nether star + naquadria -> 100 (UHV mixer) | - | 16.1 TJ | 2.75x MK1 |
+| naquadah based fuel MK3 | 760.9 GJ | 100 MK2 + 800 heavy naquadah fuel + uranium, plutonium, naquadria -> 100 (UEV mixer) | - | 76.1 TJ | 4.7x MK2 |
+
+Generators (4 amps of the tier) and what they burn at full load:
+
+| Generator | Output | Helium plasma | Naquadah fuel MK1 | Excited uranium fuel | Cost |
+|---|---|---|---|---|---|
+| LuV large plasma turbine | 81.92 MW | 1/s | - | - | controller (LuV hull, 2 LuV circuits, 4 large naquadah alloy gears, 12 tungstensteel plates), LuV dynamo hatch (the parts of the LuV energy hatch), 28 tungstensteel turbine casings (168 tungstensteel plates, 28 titanium turbine casings), 14 tungstensteel frames, turbine rotor (16 plates, 8 screws, a long rod) |
+| ZPM large plasma turbine | 163.84 MW | 2/s | - | - | LuV turbine + ZPM dynamo hatch + ZPM hull |
+| UV large plasma turbine | 327.68 MW | 4/s | - | - | ZPM turbine + UV dynamo hatch + UV hull |
+| UV large naquadah reactor | 327.68 MW | - | 0.0056/s (1 unit per 3 min) | 0.25/s | controller (UV hull, 4 UV circuits, 2 ZPM field generators, 4 ZPM pumps, 8 naquadah and 8 osmium plates, 4 trinium ingots of melt, indalloy), UV dynamo hatch, 48 casings (192 naquadah plates, 192 lead plates, 48 thick neutron reflectors, 48 europium plates), 4 UV hulls |
+| UHV large naquadah reactor | 655.36 MW | - | 1 unit per 89 s | 0.5/s | UV reactor + UHV dynamo hatch + 4 UHV hulls |
+| UEV large naquadah reactor | 1.31 GW | - | 1 unit per 45 s | 1/s | + UEV dynamo hatch + 4 UEV hulls |
+| UIV large naquadah reactor | 2.62 GW | - | 1 unit per 22 s | 2/s | + UIV dynamo hatch + 4 UIV hulls |
+| UMV large naquadah reactor | 5.24 GW | - | 1 unit per 11 s | 4/s | + UMV dynamo hatch + 4 UMV hulls |
+| UXV large naquadah reactor | 10.49 GW | - | 1 unit per 6 s | 8/s | + UXV dynamo hatch + 4 UXV hulls |
+
+Net gain in practice: one MK1 on deuterium and helium-3 (40.96 MW) makes 62.5 helium plasma per second, enough for 62 LuV,
+31 ZPM or 15 UV plasma turbines (5.12 GW), a net 5.08 GW. One EV blast furnace on acid naquadah emulsion (16 enriched
+naquadah dust per 180 s) feeds 0.036 naquadah fuel MK1 per second through the line, worth 2.08 GW of naquadah reactor
+output; one enriched naquadah dust is 23.4 GJ of MK1 fuel. The generators burn only their own fuels (fuel check above):
+steam, plasma in a naquadah reactor or naquadah fuel in a plasma turbine stop them.
+
+### Deviations from GT
+
+* One generator entity per tier and fuel family instead of GT's single multiblocks whose output the dynamo hatch caps;
+  no turbine rotor materials, fitting or overflow efficiency; the plasma efficiency is 100 %.
+* The cooled fluid goes to a separate output hatch entity (runtime) and is approximate: the turbine's energy of one tick
+  every 10 ticks stands for the 10 ticks.
+* The naquadah reactor has no depleted fuel output and no coolant bonus; fuel MK4 to MK6 are not built (orundum, awakened
+  draconium, hypogen, atomic separation catalyst are not in the mod). The chain skips naquadah asphalt, the cracking of the
+  fuels, antimony trioxide, tiberium, high density uranium and plutonium and the naquadah fuel refinery.
+* GT's single-block naquadah reactors (naquadah rods) and single-block plasma generators are not built.
+
+### Existing saves
+
+Nothing that was unlocked changes; the recipes this side quest turns from drafts into real ones (`acid-naquadah-emulsion`,
+`naquadah-emulsion`, `naquadah-solution`, `radioactive-sludge-centrifuging`, `naquadah-based-fuel-mk1`,
+`plutonium-based-liquid-fuel`, the two excited fuels) were hidden before. The plasma recipes are unchanged. `migrate
+--from-ref 0e935ba` and `--from-ref v0.3.0` load.
+
+### Open points
+
+* Balance is untested in game: the caps of the generators (4 amps), the plasma values (helium is 125x the reactor's
+  energy, boron and calcium 2-3x), the naquadah chain's yields, the recipe times of the turbine and reactor parts.
+* Graphics: the turbines use the GT large turbine front (tungstensteel) as a top-down sprite, the reactors the GT naquadah
+  reactor casing with the radiation proof casing inside, tinted per tier; the output hatch is the ME fluid interface in
+  orange; the hatch and part icons are recolored placeholders (`tools/gen_icons.py`).
+* The cooled fluid could become exact with a per-tick sample, or engine-only with one `fusion-generator` entity per plasma
+  (filtered input and output); the GT single-block plasma generators (plasma cells) would be another engine-only way.
+* The MK3 reactor and up make plasma far faster than the turbines burn it (one MK3 on iron plasma: 14.9 GW); higher tier
+  turbines (UHV+, like GT++'s XL turbines) would use it.
 
 ## Side quest: AE2 autocrafting (done)
 
@@ -692,10 +843,19 @@ Numbers: researchable technologies 317 -> 319 of 359 -> 361 (the two new ones), 
 ### Open points
 
 * One temperature per fluid: exported at the default temperature (hot steam loses its heat); recipes that need another temperature
-  are not patterns. No fluid in blueprints; a destroyed drive loses its fluid; no per-drive fluid type limits or filters; the export
+  are not patterns. No fluid in blueprints (documented limit); no per-drive fluid type limits or filters; the export
   level applies to the interface's own box (connected pipes share it). The fluid GUIs are untested in the real game.
+* Recovery (issue #26, done): a destroyed drive's fluid goes into the other drives of its network, the rest is kept as recovered
+  fluid (per surface, with its position) that the next drive placed in that network (or the drive GUI's Take over button) takes
+  over; reported in the chat. The disassembly recipe is hand crafting only and recovers the fluid of a loaded item. Open: existing
+  drives do not pull recovered fluid in by themselves; the upgrade planner leaves the fluid on the old item instead of moving it
+  into the new drive; the hand craft and cancel events and the chat reports are untested in the real game.
 * Only normal quality; no items with own data; no spoilage in the job pool.
-* Furnaces are only patterns after they smelted the recipe once (`previous_recipe`); untested in the real game.
+* Furnaces (issue #27, done): the pattern provider holds a recipe choice for the furnaces next to it (window on the "open" key:
+  researched recipes of their categories), a pattern at once without a first smelt; copied by settings paste, blueprints and
+  cloning, `previous_recipe` as fallback, furnaces without either counted as `no-recipe`. Open: a furnace whose input fits two of
+  its recipes may smelt the other one (the job fails and returns its items); the window, paste and blueprint event are untested
+  in the real game.
 * One job per CPU, no co-processor or CPU storage tiers, no "keep N in stock", no circuit network interface.
 * The terminal GUI cannot be run headless: its layout (tabs, craft list, job list) and the sprites need a look in the real game;
   balance of costs, speeds and tier is untested.

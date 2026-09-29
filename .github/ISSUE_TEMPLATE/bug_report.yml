@@ -1,0 +1,73 @@
+name: Bug report
+description: Something breaks, crashes or behaves wrong in the game.
+title: "[Bug] "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting! Please check the [open issues](https://github.com/Rykon00/Gregtorio/issues) first.
+        For balance ("too expensive", "too strong") use the balance template instead.
+  - type: textarea
+    id: what
+    attributes:
+      label: What happens
+      description: What goes wrong? Include the error message if there is one.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: What should happen
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Research ...
+        2. Place ...
+        3. ...
+    validations:
+      required: true
+  - type: input
+    id: mod-version
+    attributes:
+      label: Gregtorio Continued version
+      description: From the mod list in game, or the commit if you run the repo directly.
+      placeholder: "0.3.0"
+    validations:
+      required: true
+  - type: input
+    id: factorio-version
+    attributes:
+      label: Factorio version
+      placeholder: "2.0.77"
+    validations:
+      required: true
+  - type: textarea
+    id: mods
+    attributes:
+      label: Other mods
+      description: Everything besides Gregtorio Continued and its dependencies, or "none".
+    validations:
+      required: true
+  - type: dropdown
+    id: save
+    attributes:
+      label: Save game
+      options:
+        - New game with Gregtorio Continued
+        - Save from the original Gregtorio, loaded with Gregtorio Continued
+        - Save from an older Gregtorio Continued version
+        - Not related to a save
+    validations:
+      required: true
+  - type: textarea
+    id: log
+    attributes:
+      label: Log, screenshots, save
+      description: |
+        For crashes attach `factorio-current.log` (Windows: `%APPDATA%\Factorio`). Screenshots help for GUI and graphics problems.
+      render: shell

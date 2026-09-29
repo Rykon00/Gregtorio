@@ -104,12 +104,33 @@ MULTIBLOCKS = {
     "water-purification-plant": ((5, 5), "gregtech:iconsets/MACHINE_CASING_INDUSTRIAL_WATER_PLANT", None,
                                  "gregtech:iconsets/OVERLAY_FRONT_PURIFICATION_PLANT",
                                  "titanium-reinforced-borosilicate-glass-block"),
+    # endgame power (136-fork-power.lua): the large naquadah reactor, UHV to UXV tinted
+    "uv-large-naquadah-reactor": ((5, 5), "gregtech:iconsets/NAQUADAH_REACTOR_CASING", None,
+                                  ("gregtech:iconsets/NAQUADAH_REACTOR_FLUID_FRONT",
+                                   "gregtech:iconsets/NAQUADAH_REACTOR_FLUID_FRONT_ACTIVE"),
+                                  "gregtech:iconsets/MACHINE_CASING_RADIATIONPROOF"),
 }
 # multiblocks without an upstream item icon: the icon is the controller tile
-CONTROLLER_ICONS = {"neutron-activator", "water-purification-plant"}
+CONTROLLER_ICONS = {"neutron-activator", "water-purification-plant", "uv-large-naquadah-reactor"}
+# tinted copies of a multiblock's sprites and icon (136-fork-power.lua: the tier upgrades)
+TINTED_COPIES = {
+    "uv-large-naquadah-reactor": {"uhv": "UHV", "uev": "UEV", "uiv": "UIV", "umv": "UMV", "uxv": "UXV"},
+    "luv-large-plasma-turbine": {"zpm": "ZPM", "uv": "UV"},
+}
+# large plasma turbine (136-fork-power.lua): the 3x3 front of GT's large turbine (tungstensteel
+# rotor, animated when active); the icon is the middle tile
+PLASMA_TURBINE = "luv-large-plasma-turbine"
+PLASMA_TURBINE_FACE = "gregtech:iconsets/LARGETURBINE_TU"
 # items whose icon is a GT block texture (written to graphics/icons/fork/)
 TEXTURE_ICONS = {
     "titanium-reinforced-borosilicate-glass-block": "bartworks:TitaniumReinforcedBoronSilicateGlassBlock",
+    "tungstensteel-turbine-casing": "gregtech:iconsets/MACHINE_CASING_TURBINE_TUNGSTENSTEEL",
+    "naquadah-reactor-casing": "gregtech:iconsets/NAQUADAH_REACTOR_CASING",
+}
+# sprites derived from existing fork graphics (name -> (source name, tint)): the turbine output
+# hatch is the ME fluid interface in orange
+DERIVED = {
+    "turbine-output-hatch": ("me-fluid-interface", (255, 170, 80)),
 }
 # IV multiblocks: the casing is read from the recipe in 20-iv-age-entity.lua
 IV_MULTIBLOCK_FACES = {
@@ -246,6 +267,40 @@ def multiblock(gt, name, size, casing, controller, face, middle):
         img.crop((cx * TILE, cy * TILE, (cx + 1) * TILE, (cy + 1) * TILE)).save(OUT_ICON / f"{name}.png")
 
 
+def plasma_turbine(gt, name):
+    """3x3 face of GT's large turbine: tiles 1..9 idle, the ACTIVE strips animated (frame 0 used)."""
+    def build(active):
+        img = Image.new("RGBA", (3 * TILE, 3 * TILE))
+        for i in range(9):
+            spec = PLASMA_TURBINE_FACE + ("_ACTIVE" if active else "") + str(i + 1)
+            tile = frames_of(load(gt_path(gt, spec)))[0].resize((TILE, TILE), Image.NEAREST)
+            img.paste(tile, ((i % 3) * TILE, (i // 3) * TILE))
+        return img
+    build(False).save(OUT_ENTITY / f"{name}-idle.png")
+    build(True).save(OUT_ENTITY / f"{name}-working.png")
+    build(False).crop((TILE, TILE, 2 * TILE, 2 * TILE)).save(OUT_ICON / f"{name}.png")
+
+
+def tinted_copies(base, tiers):
+    """<tier>-<rest of base name>: the base sprites and icon in the tier color."""
+    rest = base.split("-", 1)[1]
+    for tier, key in tiers.items():
+        name = f"{tier}-{rest}"
+        for suffix, folder in (("-idle.png", OUT_ENTITY), ("-working.png", OUT_ENTITY), (".png", OUT_ICON)):
+            src = folder / f"{base}{suffix}"
+            if src.exists():
+                tint(load(src), TIER_TINT[key]).save(folder / f"{name}{suffix}")
+
+
+def derived(name, source, rgb):
+    """Tinted copy of a fork sprite and icon (the AE2 sprites live in graphics/entity/fork/ae2/)."""
+    for folder, src in ((OUT_ENTITY, OUT_ENTITY / "ae2" / f"{source}.png"), (OUT_ICON, OUT_ICON / f"{source}.png")):
+        if not src.exists():
+            src = folder / f"{source}.png"
+        if src.exists():
+            tint(load(src), rgb).save(folder / f"{name}.png")
+
+
 def icon_machine(name):
     img = scaled(load(ICONS / f"{name}.png"), 3 * TILE)
     img.save(OUT_ENTITY / f"{name}-idle.png")
@@ -288,6 +343,11 @@ def main():
         icon_machine(name)
     for name, spec in TEXTURE_ICONS.items():
         casing_tile(gt=a.gt, casing=name, override=spec).save(OUT_ICON / f"{name}.png")
+    plasma_turbine(a.gt, PLASMA_TURBINE)
+    for base, tiers in TINTED_COPIES.items():
+        tinted_copies(base, tiers)
+    for name, (source, rgb) in DERIVED.items():
+        derived(name, source, rgb)
     print("Sprites:", len(list(OUT_ENTITY.glob("*.png"))), "Icons:", len(list(OUT_ICON.glob("*.png"))))
 
 
