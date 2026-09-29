@@ -4,7 +4,7 @@
 ---   * every plasma a fusion reactor makes gets a fuel value (GT5-Unofficial values, 1 EU = 1 kJ
 ---     like the rest of Gregtorio: 32 EU/t of LV = 640 kW)
 ---   * large plasma turbines (LuV, ZPM, UV; GT: the large plasma turbine, capped by its dynamo
----     hatch): burn any plasma, return the cooled fluid (helium plasma -> helium) into a turbine
+---     hatch): burn only plasmas, return the cooled fluid (helium plasma -> helium) into a turbine
 ---     output hatch next to them (runtime, scripts/fork-power.lua)
 ---   * the naquadah fuel line of GoodGenerator (acid naquadah emulsion -> emulsion -> solution ->
 ---     light and heavy naquadah fuel and naquadah gas -> naquadah based fuel MK1 to MK3) and the
@@ -13,7 +13,8 @@
 ---   * dynamo hatches LuV to UXV: copies of the energy hatch of the tier, the part every large
 ---     generator needs
 --- The generators are `generator` prototypes that burn the fluid's fuel value (like the steam
---- turbines): one machine per tier burns every fuel, the tier caps the output at four amps
+--- turbines): one machine per tier and fuel family (a runtime check stops it on any other fluid,
+--- steam included), the tier caps the output at four amps
 --- (4 x EU32 of the tier). Balance and deviations from GT: docs/ROADMAP.md, "Endgame power".
 --- Loaded after 135-fork-endgame.lua and before 150-fork-molds.lua.
 --------------------------------------------------------------------------------
@@ -80,7 +81,9 @@ end
 --- 2) GENERATORS
 --- A `generator` that burns fluids by fuel value (like the LV steam turbine), no filter, pass
 --- through north/south. max_power_output caps the tier; scale_fluid_usage makes the fluid usage
---- follow the fuel value. A fluid without fuel value blocks instead of being destroyed.
+--- follow the fuel value. A fluid without fuel value blocks instead of being destroyed; a fuel
+--- the generator does not accept (steam, the other generator's fuels) stops it through
+--- scripts/fork-power.lua (the accepted fuels are in the mod data, section 7).
 ---   def = { name, size, power, volume, icon }
 --------------------------------------------------------------------------------
 
@@ -528,16 +531,31 @@ end
 
 
 --------------------------------------------------------------------------------
---- 7) MOD DATA for scripts/fork-power.lua (the turbines, the cooled fluids, the hatch)
+--- 7) MOD DATA for scripts/fork-power.lua (the turbines, the cooled fluids, the hatch, and the
+--- fuels each generator accepts: the engine burns any fluid with a fuel value, steam included,
+--- and a fluid box filter takes only one fluid, so the script stops a generator on a wrong fuel)
 --------------------------------------------------------------------------------
+
+local plasma_fuels, reactor_fuels = {}, {}
+for _, p in pairs(PLASMAS) do
+	if data.raw.fluid[p[1]] then plasma_fuels[#plasma_fuels + 1] = p[1] end
+end
+for _, f in pairs(FUELS) do reactor_fuels[#reactor_fuels + 1] = f[1] end
+local turbines = { "luv-large-plasma-turbine", "zpm-large-plasma-turbine", "uv-large-plasma-turbine" }
+local fuels = {}
+for _, n in pairs(turbines) do fuels[n] = plasma_fuels end
+for _, tier in pairs({ "uv", "uhv", "uev", "uiv", "umv", "uxv" }) do
+	fuels[tier .. "-large-naquadah-reactor"] = reactor_fuels
+end
 
 data:extend({ {
 	type = "mod-data",
 	name = "fork-power",
 	data = {
-		turbines = { "luv-large-plasma-turbine", "zpm-large-plasma-turbine", "uv-large-plasma-turbine" },
+		turbines = turbines,
 		cooled = cooled,
 		hatch = HATCH,
+		fuels = fuels,
 	},
 } })
 
