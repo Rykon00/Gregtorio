@@ -20,7 +20,7 @@ UEV = cryogenic, UIV = promethium, then UMV / UXV / max (the stargate).
 | 5a | UEV and UIV: bio and optical lines, cosmic neutronium / draconium / infinity / transcendent metal, UEV and UIV components, fusion MK4, science packs, energy hatches and machines | **done** (`prototypes/131-fork-uev.lua`, `132-fork-uiv.lua`) |
 | 5b | UMV, UXV, MAX and the endgame (stargate, victory), fusion MK5 | **done** (`prototypes/133-fork-umv.lua`, `134-fork-uxv.lua`, `135-fork-endgame.lua`, `scripts/fork-victory.lua`) |
 | side | Water purification line: grades 1-6 done in `129-fork-water-purification.lua`; grades 7 (degasifier) and 8 (quark extraction) open | partly done |
-| side | AE2 autocrafting (patterns, molecular assembler on top of the ME network from `120-fork-ae2.lua`) | **done** (`prototypes/121-fork-ae2-autocrafting.lua`, `scripts/fork-me-autocraft.lua`, `docs/AE2.md`) |
+| side | AE2 autocrafting (patterns, molecular assembler on top of the ME network from `120-fork-ae2.lua`) and fluids in the ME network (fluid drives, fluid interface, fluid recipes as patterns) | **done** (`prototypes/121-fork-ae2-autocrafting.lua`, `122-fork-ae2-fluids.lua`, `scripts/fork-me-autocraft.lua`, `scripts/fork-me-fluids.lua`, `docs/AE2.md`) |
 | side | Plasma generator (plasmas are only ingredients so far) | open |
 | side | Graphics and balance of the tiers from UHV up in the real game | open |
 
@@ -652,7 +652,8 @@ Player guide and the full design: `docs/AE2.md`. Summary:
   ME Molecular Assembler (item-only recipes, speed 6), ME Crafting CPU (2x2, needs power). Sprites and icons from
   `tools/gen_ae2_sprites.py`.
 * **Patterns:** a provider next to any assembling machine or furnace inside the network makes that machine's recipe a pattern.
-  Recipes with fluids are ignored (no fluid storage in the ME network), also shown in the terminal.
+  Recipes with fluids work since the fluid support (below) when the used fluid boxes have no pipes; machines the network cannot
+  use are counted per reason in the terminal.
 * **Planning:** recursive, storage first, loops and shortfalls reported before the start; the job only starts when the plan is
   complete.
 * **Jobs:** the planned items are taken into the job's own pool at the start; the CPU feeds idle pattern machines by script in bounded steps
@@ -664,9 +665,35 @@ Player guide and the full design: `docs/AE2.md`. Summary:
   cancelled, CPU and machine removal during jobs and a GT machine as pattern machine. Existing saves: nothing changes for existing
   ME networks; the state is created lazily and rebuilt in `on_configuration_changed`.
 
+### Fluids (done)
+
+Numbers: researchable technologies 317 -> 319 of 359 -> 361 (the two new ones), unlocked but uncraftable recipes 0.
+
+* **Content** (`prototypes/122-fork-ae2-fluids.lua`, techs `me-fluid-storage` (EV, after `me-autocrafting`) and `me-fluid-storage-256k`
+  (IV, after `me-storage-256k`)): fluid storage cells (housing + storage component + pump, 8000 units per "1k"), ME Fluid Drives 1k to
+  256k (four cells: 32 000 to 8 192 000 units, with disassembly recipes) and the ME Fluid Interface (1x1 tank of 5000 units).
+  Graphics from `tools/gen_ae2_sprites.py --fluids` (derived from the item PNGs, no GT checkout needed).
+* **Storage** (`scripts/fork-me-fluids.lua`): the logistic network has no fluids, so a fluid drive is a passive entity whose contents
+  are a `fluid -> amount` table in `storage.fork_me_fluids`; the network total is the sum over the drives standing in the network
+  (looked up on demand, so merging or splitting networks needs nothing). Fluids are stored by name without temperature. A picked up
+  drive carries its contents on the item (tags, shown in the tooltip) and gives them back when placed; a destroyed drive loses them.
+* **Interface:** import (default) empties the fluid segment connected to it into the network, export fills it with a chosen fluid up to
+  a chosen level (panel next to the tank GUI). Every 15 ticks, 8 interfaces round robin, booking only the engine's return values.
+* **Autocrafting:** items and fluids are resources (`fluid/<name>` keys) in stock, plan and job pool; a pattern machine with a fluid
+  recipe is used when the boxes the recipe needs have no pipes: the CPU sets the input boxes by index (fixed point safe amounts plus
+  a 0.01 margin), waits until less than one craft is left, drains the output boxes and counts crafts with `products_finished`.
+  Ignored machines are counted per reason (`stack`, `fluid-box`, `fluid-pipes`, `fluid-temperature`).
+* **GUI:** the terminal's storage tab lists the fluids and their capacity (not takeable by hand), the crafting tab lists fluids with
+  their unit amounts, the "open GUI" key on a drive shows its contents.
+* **Tests:** the runtime test of `tools/devcheck` (1500 ticks now) builds a second network with a tank feeding an import interface,
+  an export interface, a drive round trip by script and by construction robots, a reactor with a pipe that must be ignored, a reported
+  fluid shortfall and three fluid jobs (fluid in and out, out only, in only); fluid conservation and amounts are checked.
+
 ### Open points
 
-* Fluid recipes cannot be autocrafted (needs a fluid storage for the network).
+* One temperature per fluid: exported at the default temperature (hot steam loses its heat); recipes that need another temperature
+  are not patterns. No fluid in blueprints; a destroyed drive loses its fluid; no per-drive fluid type limits or filters; the export
+  level applies to the interface's own box (connected pipes share it). The fluid GUIs are untested in the real game.
 * Only normal quality; no items with own data; no spoilage in the job pool.
 * Furnaces are only patterns after they smelted the recipe once (`previous_recipe`); untested in the real game.
 * One job per CPU, no co-processor or CPU storage tiers, no "keep N in stock", no circuit network interface.
