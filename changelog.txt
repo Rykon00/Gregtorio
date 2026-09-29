@@ -1,4 +1,15 @@
 ---------------------------------------------------------------------------------------------------
+Version: 0.3.1
+  Features:
+    - Endgame power: plasmas have fuel values; Large Plasma Turbines (LuV, ZPM, UV) burn them, and a Turbine Output Hatch next to a turbine collects the cooled fluid (helium, nitrogen, ...).
+    - Naquadah fuel line (naquadah based fuel MK1 to MK3, excited uranium and plutonium fuels) and Large Naquadah Reactors from UV to UXV.
+    - Dynamo hatches from LuV to UXV.
+    - ME Fluid Drives: the fluid of a destroyed drive goes into the other drives of its network, the rest is kept as "recovered fluid" that the next drive placed in that network takes over (also with the "Take over" button in the drive window). Every step is reported in chat.
+  Changes:
+    - Taking the cells out of a loaded ME Fluid Drive is hand crafting only; its fluid goes into the network you stand in. Assemblers set to this recipe lose it.
+  Bugfixes:
+    - Large Plasma Turbines only burn plasmas and Large Naquadah Reactors only naquadah and excited fuels. A wrong fluid (for example steam) stops the generator with "Wrong fuel" instead of being burnt; an empty generator shows "No fuel".
+---------------------------------------------------------------------------------------------------
 Version: 0.3.0
 Date: 2026-09-29
   Info:
