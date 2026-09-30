@@ -9,6 +9,7 @@ Regenerate them with `python tools/gen_review_sheet.py all`.
 | `icons-*.png` | the 393 item icons that were placeholders |
 | `techs-*.png` | the 66 technology icons that changed with them |
 | `sprites-*.png` | the 131 machines with new sprites (idle and working) |
+| `upgrades-<tier>.png`, `upgrades-icons.png` | the 117 IV to UXV upgrade multiblocks: EV sprite and icon before, with the energy hatches of the tier after (`python tools/gen_review_sheet.py upgrades`) |
 | `icon-sources.tsv` | for every item, the textures it is made of (`tools/gen_gt_icons.py --sources`) |
 
 ## How the graphics are made
@@ -60,6 +61,16 @@ python tools/gen_review_sheet.py all                                           #
   tier on the corner tiles (GT's hull of the tier + GT's 2A dynamo overlay of the tier), the way a GT
   generator shows its tier; their item icons carry the hatch as a badge. The LuV turbine and the UV
   reactor get their own tier's hatches, so every tier follows the same pattern.
+* **IV to UXV upgrade multiblocks** (13 families, 117 machines; `UPGRADE_MULTIBLOCKS` in `gen_sprites.py`):
+  they keep the upstream art of their EV version and get one extra sprite layer per machine,
+  `graphics/entity/fork/<tier>-<base>-hatches.png`: two GT energy hatches of the tier (GT's hull of the
+  tier + GT's 2A energy input overlay of the tier) on the bottom corners, left and right of the controller
+  most of these sprites show there. The layer has the size of the EV sprite; for sprites that are not
+  rectangular (greenhouse, drilling rig) the hatch sits on the nearest opaque tile of the corner's quarter.
+  The top corners stay free, so no pipe port or tower top is covered. `fork_make_tier_machine`
+  (`101-fork-machines.lua`) adds the layer to the idle and working animation (one frame, repeated as often
+  as the layer below) and replaces the one the copy of the previous tier brings along. The item icon is
+  the EV item icon with the hatch as a 16 px badge, like the turbines and reactors.
 
 ## Inventory: placeholders before this change
 
@@ -80,14 +91,10 @@ technology shows (174 technologies; the 6 ME technologies come from `gen_ae2_spr
 | UHV, UEV, UIV, UMV, UXV basic machines (115) | GT tier texture + tint, mostly hidden under the overlay | tier hull frame |
 | large plasma turbine ZPM to UXV (7) | LuV sprite tinted | tier dynamo hatches |
 | large naquadah reactor UHV to UXV (5) | UV sprite tinted | tier dynamo hatches |
-| IV to UXV upgrade multiblocks: electric blast furnace, vacuum freezer, large chemical reactor, microverse projector, both distillation towers, implosion compressor, cracker, multismelter, pyrolyse oven, greenhouse, drilling rig, alloy blast smelter | upstream art of the EV version | **unchanged**, see below |
+| IV to UXV upgrade multiblocks (117): electric blast furnace, vacuum freezer, large chemical reactor, microverse projector, both distillation towers, implosion compressor, cracker, multismelter, pyrolyse oven, greenhouse, drilling rig, alloy blast smelter | upstream art of the EV version | EV art + tier energy hatches (layer), badged icon |
 
 ### Still placeholders, and why
 
-* **Upgrade multiblocks** (13 families, IV to UXV): they share the upstream art of their EV version,
-  entity and item icon (upstream already shares it between HV and EV). They are animated multi-layer
-  upstream sprites of different sizes; a tier mark needs an extra sprite layer per entity, which is a
-  prototype change outside this graphics pass.
 * **Fluids**: Gregtorio draws its 284 fluids with 78 shared colour icons (upstream's style). The 36
   fluids the fork added follow it (for example the grade 1 to 8 waters use the water icon). Replacing
   only those would make them the odd ones out; a GT fluid texture pass for all fluids is its own change.
@@ -102,7 +109,8 @@ technology shows (174 technologies; the 6 ME technologies come from `gen_ae2_spr
 * Dark GT materials (naquadah alloy, universium, transcendent metal, tritanium, cosmic neutronium) are
   dark in GT as well; check that they are readable on the inventory background.
 * Fusion reactors MK4/MK5 placed next to an MK3; the UHV to UXV machines in a row with a UV one; a row
-  of turbines and reactors from LuV/UV to UXV (the corner hatches).
+  of turbines and reactors from LuV/UV to UXV (the corner hatches); an EV and an IV to UXV electric blast
+  furnace, greenhouse and tall distillation tower (the bottom hatches on the upstream art).
 * The technology tree from UHV up: the technology icons follow the new item icons.
 
 ## Item icons by line

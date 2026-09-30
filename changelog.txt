@@ -25,6 +25,7 @@ Version: 0.3.2
     - Real icons for 393 items that had recolored placeholder icons, from GregTech textures: LuV to UXV components, hatches, casings and hulls, the wetware, bio, optical, exotic and temporal circuits, stem cells, wafers, power ICs, SMDs, fusion and coil blocks, stargate parts, coolant cells, and the new metals in GregTech's material icons and colours. Their technologies show the new icons.
     - Fusion Reactor MK4 and MK5 have their own look (the fusion casings and coils of GregTech's compact fusion reactors MK-IV and MK-V) instead of the MK3 one.
     - UHV to UXV machines show the machine casing of their tier around the machine; Large Plasma Turbines and Large Naquadah Reactors show the dynamo hatches of their tier instead of a colour tint.
+    - IV to UXV upgrade multiblocks (electric blast furnace, vacuum freezer, large chemical reactor, microverse projector, distillation towers, implosion compressor, cracker, multismelter, pyrolyse oven, greenhouse, drilling rig, alloy blast smelter) show two energy hatches of their tier on the EV art, and their item icons carry the hatch as a badge, so the tiers can be told apart.
     - Graphics from GT5-Unofficial (LGPL-3.0) and NewHorizonsCoreMod (GPL-3.0), see the License section of the README.
 ---------------------------------------------------------------------------------------------------
 Version: 0.3.1

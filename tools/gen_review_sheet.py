@@ -8,9 +8,10 @@ sprites at up to 192 pixels.
     python tools/gen_review_sheet.py icons                  # the items of tools/gt-icon-items.txt
     python tools/gen_review_sheet.py techs                  # changed technology icons
     python tools/gen_review_sheet.py sprites                # changed entity sprites
+    python tools/gen_review_sheet.py upgrades               # IV to UXV upgrade multiblocks: EV look vs tier hatches
     python tools/gen_review_sheet.py all --ref origin/main --out docs/graphics-review
 
-Output: <out>/icons-<n>-<group>.png, techs.png, sprites-<n>-<group>.png
+Output: <out>/icons-<n>-<group>.png, techs.png, sprites-<n>-<group>.png, upgrades-<tier>.png, upgrades-icons.png
 """
 import argparse, io, re, subprocess, warnings
 warnings.filterwarnings("ignore", category=DeprecationWarning)
@@ -161,14 +162,36 @@ def sprites(ref, out):
         sheet(f"Entity sprites: {title}", entries, box, 4 if box > 128 else 6, out / f"sprites-{k:02d}-{slug(title)}.png")
 
 
+def upgrades(ref, out):
+    """the upgrade multiblocks (gen_sprites.UPGRADE_MULTIBLOCKS): before = the EV sprite and icon every tier
+    showed, after = the EV sprite with the tier's hatch layer and the badged icon"""
+    from gen_sprites import UPGRADE_MULTIBLOCKS, UPGRADE_TIERS
+    icons = []
+    for tier in UPGRADE_TIERS:
+        entries = []
+        for base, (sprite, icon) in UPGRADE_MULTIBLOCKS.items():
+            name = f"{tier.lower()}-{base}"
+            ev = at_ref(ref, f"graphics/entity/{sprite}-idle.png")
+            after, layer = now(f"graphics/entity/{sprite}-idle.png"), now(f"graphics/entity/fork/{name}-hatches.png")
+            if after is not None and layer is not None:
+                after.alpha_composite(layer)
+            entries.append((name, ev, after))
+            icons.append((name, at_ref(ref, f"graphics/icons/{icon}.png"), now(f"graphics/icons/fork/{name}.png")))
+        sheet(f"Upgrade multiblocks {tier}: EV sprite + {tier} energy hatches", entries, 128, 5,
+              out / f"upgrades-{tier.lower()}.png")
+    by_base = sorted(icons, key=lambda e: [b for b in UPGRADE_MULTIBLOCKS if e[0].endswith("-" + b)][0])
+    sheet("Upgrade multiblock icons IV to UXV (one row per multiblock)", by_base, 48, len(UPGRADE_TIERS),
+          out / "upgrades-icons.png")
+
+
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("what", choices=["icons", "techs", "sprites", "all"])
+    ap.add_argument("what", choices=["icons", "techs", "sprites", "upgrades", "all"])
     ap.add_argument("--ref", default="origin/main")
     ap.add_argument("--out", type=Path, default=ROOT / "docs/graphics-review")
     a = ap.parse_args()
     a.out.mkdir(parents=True, exist_ok=True)
-    for what, fn in (("icons", icons), ("techs", techs), ("sprites", sprites)):
+    for what, fn in (("icons", icons), ("techs", techs), ("sprites", sprites), ("upgrades", upgrades)):
         if a.what in (what, "all"):
             fn(a.ref, a.out)
 
