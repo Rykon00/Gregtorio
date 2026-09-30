@@ -23,7 +23,8 @@ UEV = cryogenic, UIV = promethium, then UMV / UXV / max (the stargate).
 | side | AE2 autocrafting (patterns, molecular assembler on top of the ME network from `120-fork-ae2.lua`) and fluids in the ME network (fluid drives, fluid interface, fluid recipes as patterns) | **done** (`prototypes/121-fork-ae2-autocrafting.lua`, `122-fork-ae2-fluids.lua`, `scripts/fork-me-autocraft.lua`, `scripts/fork-me-fluids.lua`, `docs/AE2.md`) |
 | side | Endgame power: plasma turbines (LuV to UXV, the UHV to UXV ones from issue #34), naquadah fuel line and large naquadah reactors, dynamo hatches LuV to UXV | **done** (`prototypes/136-fork-power.lua`, `scripts/fork-power.lua`, see "Side quest: endgame power") |
 | side | Drafts and endgame materials: triage of every draft, super coolant, fluxed electrum, bedrockium, quantium (issues #39, #36) | **done** (`prototypes/137-fork-endgame-materials.lua`, see "Drafts and endgame materials") |
-| side | Graphics and balance of the tiers from UHV up in the real game | open |
+| side | Graphics: item and technology icons from GT textures instead of placeholders, own sprites for fusion MK4/MK5, a tier look for the UHV to UXV machines, plasma turbines and naquadah reactors (issues #40, #41) | **done** (`tools/gen_gt_icons.py`, `tools/gen_sprites.py`, review sheets and inventory in `docs/graphics-review/`) |
+| side | Balance of the tiers from UHV up in the real game, and a look at the new graphics there | open |
 
 ## Phase 1: LuV (done)
 
@@ -120,8 +121,8 @@ first.
   energy module, black plutonium / bedrockium / neutronium microminers, hot isostatic
   pressurization unit, wetware processors, fusion MK2, draconic fusion crafter.
 - Graphics: the ZPM basic machine sprites are generated from GT textures (tinted aqua); the
-  multiblock upgrades keep the graphics of the LuV version; item icons are recolored placeholders
-  (`tools/gen_icons.py`).
+  multiblock upgrades keep the graphics of the LuV version; item icons were recolored placeholders
+  (`tools/gen_icons.py`), since issue #40 they come from GT textures (`tools/gen_gt_icons.py`).
 - Upgrade multiblocks return the replaced parts. In phase 3 the UV upgrades will return naquadah
   coils, so check the auto-unlock of the naquadah coil again.
 
@@ -223,7 +224,8 @@ Existing saves that already researched `zpm-components` lose the ZPM field gener
 - Still unused from `25-uv-age-item.lua`: research station, draconic fusion crafter tiers, nano forge, bio
   processors, cosmic neutronium, component assembly line, ~~UV dynamo hatch~~ (done in "Side quest: endgame power").
 - Graphics: the UV basic machine sprites are generated from GT textures (tinted green), the MK2 reactor uses the
-  GT fusion casing MK2 texture, item and technology icons are recolored placeholders (`tools/gen_icons.py`).
+  GT fusion casing MK2 texture, item and technology icons were recolored placeholders (`tools/gen_icons.py`); since
+  issue #40 they come from GT textures (`tools/gen_gt_icons.py`).
 
 ### Suggested next step (done in phase 4)
 
@@ -354,8 +356,9 @@ in game.
 - Still unused from `27-uhv-age-item.lua`: ~~UHV dynamo hatch~~ (done in "Side quest: endgame power"), awakened draconium coil block (UEV), attuned tengam
   microminer, integrated ore factory, neutronium compressor, singularities.
 - Graphics: the UHV basic machine sprites are generated from GT textures (tinted red), the MK3 reactor uses the GT
-  fusion casing MK2 texture and the MK3 overlay, item and technology icons are recolored placeholders
-  (`tools/gen_icons.py`); the wetware items and stem cells reuse unrelated neighbor icons and need real ones.
+  fusion casing MK2 texture and the MK3 overlay, item and technology icons were recolored placeholders
+  (`tools/gen_icons.py`) and the wetware items and stem cells reused unrelated neighbor icons. Since issues #40 and #41
+  the icons come from GT textures and the UHV machines show the GT hull of their tier around the machine.
 - Balance is untested in game (see the table above).
 
 ### Suggested next step (done in phase 5a)
@@ -443,7 +446,7 @@ Choices and deviations from GT:
 - **Superconductors** `dracofinium` (UEV: draconium, infinity, cosmic neutronium) and `chromnorox` (UIV: transcendent metal, infinity,
   draconium) are the names of the drafts; the recipes are invented on the pattern of triamerotronium.
 - **Fusion MK4** is the UEV tier (16 UEV hatches, 32 UEV hulls), casing MK3 has the category typo fixed and needs one UHV motor (the draft: 2 motors
-  and a piston, 79 casings would have been 240 motors), 16 advanced fusion coils (draft 32, MK3 8). The MK4 reactor reuses the MK3 art.
+  and a piston, 79 casings would have been 240 motors), 16 advanced fusion coils (draft 32, MK3 8). The MK4 reactor reused the MK3 art until issue #41 (now the art of GoodGenerator's compact fusion computer MK-IV).
 - **Upstream stone recipes.** Upstream has `stone -> umv-science-pack` and `stone -> uxv-science-pack` placeholders. With the UIV pack craftable they
   would have opened the whole endgame for free, so both recipes are removed until 5b. Their techs stay (researchable, pack without recipe).
 
@@ -482,8 +485,9 @@ The cosmic neutronium of a UEV part includes the 18 ingots of melt in its fluids
 - ~~Most plasmas (sulfur, nitrogen, zinc, niobium, tin, titanium, oxygen, neon, boron, calcium) are still only ingredients or unused; there is no plasma generator.~~ Done in "Side quest: endgame power".
 - No ~~bedrockium, fluxed electrum~~, UU matter, ~~quantium~~, attuned tengam, ~~super coolant~~ (issue #36; UU matter is not built, see "Drafts and endgame materials"). The quantum force transformer, dimensional plasma forge, godforge
   and the rest of `29-uev-age-item.lua` / `31-uiv-age-item.lua` are for later.
-- Graphics: the UEV/UIV basic machine sprites are generated from GT textures (tinted gold and blue), the MK4 reactor reuses the MK3 art, the new items
-  and technologies have recolored placeholder icons (`tools/gen_icons.py`, `tools/gen_tech_icons.py`).
+- Graphics: the UEV/UIV basic machine sprites are generated from GT textures (tinted gold and blue, since issue #41 inside the GT hull of
+  their tier), the MK4 reactor reused the MK3 art (own art since issue #41), the new items and technologies had recolored placeholder
+  icons (`tools/gen_icons.py`, `tools/gen_tech_icons.py`; GT textures since issue #40).
 - Balance is untested in game (see the table above).
 
 ### Suggested next step (done in phase 5b)
@@ -546,7 +550,7 @@ Choices and deviations from GT:
   makes), molten flerovium is americium + calcium plasma (draft: plutonium-241); both are MK4 recipes, so nothing that the MK5 makes is needed to
   build it and there is no bootstrap recipe. The energy module (GT: ZPM assembly line, not loaded before) uses UHPIC wafers instead of ASOC wafers.
   Coil II uses a UEV emitter and sensor: a UIV emitter or field generator would need UMV circuits, which need spacetime, which the MK5 makes. The
-  controller uses UEV field generators (as the draft), UIV circuits, QPIC wafers (PICO wafers are not built) and chromnorox wire. The MK5 reuses the MK3 art.
+  controller uses UEV field generators (as the draft), UIV circuits, QPIC wafers (PICO wafers are not built) and chromnorox wire. The MK5 reused the MK3 art until issue #41 (now the art of GoodGenerator's compact fusion computer MK-V).
 - **Spacetime and universium are MK5 products** (GT: tesseracts in the dimensionally transcendent plasma forge). Spacetime = transcendent metal +
   rhugnor, universium = spacetime + flerovium, 1.5 s per ingot in one MK5. The parts are made like the transcendent metal ones (large gear 4 ingots).
 - **Cables.** GT's UMV cable is quantium (since issue #36 the UMV components take quantium cable; the machines and the hull keep the spacetime one): spacetime cable (wire + rubber + sheet like the draconium cable); UXV: universium cable.
@@ -666,8 +670,10 @@ The inserter capacity bonuses start at MV instead of LV: level 1 only raises the
 
 ### Open points from phase 5b
 
-- The MK5 reuses the MK3 art, the UMV/UXV basic machine sprites are tinted GT textures (violet and white), the new item icons are recolored placeholders
-  (`tools/gen_icons.py`; the stargate parts of parts and the exotic/temporal items reuse unrelated neighbor icons), the new technologies have icons of their main item.
+- The MK5 reused the MK3 art, the UMV/UXV basic machine sprites were tinted GT textures (violet and white), the new item icons were recolored placeholders
+  (`tools/gen_icons.py`; the stargate parts and the exotic/temporal items reused unrelated neighbor icons), the new technologies have icons of their main item.
+  Since issues #40 and #41: own MK5 art, the UMV/UXV machines inside the GT hull of their tier, item icons from GT textures (the stargate parts from
+  the GTNH core mod).
 - Balance is untested in game: the pack counts of the last techs (see above), the stargate (20 500 universium ingots), the QPIC counts of the hatches.
 - Not built: the GT quantum force transformer, dimensional plasma forge, godforge, magmatter, dark matter, mellion, shirabon, six-phased copper, the eye of harmony and the
   UXV/MAX-only items of `90-uxv-age-item.lua` (mega ultimate battery, ridiculously large capacitor, artificial universe cell, ...). There is no MAX tier: no MAX circuit,
@@ -680,8 +686,9 @@ The inserter capacity bonuses start at MV instead of LV: level 1 only raises the
 
 Side quests, in the order that helps the endgame most:
 
-1. Balance and graphics in the real game: the tier from UHV up (see the bottleneck tables of 4, 5a and 5b), the pack counts of the last techs, the power IC counts, real
-   sprites for the MK4/MK5 reactors and the last machine tiers, real icons for the exotic/temporal lines and the stargate parts.
+1. Balance and graphics in the real game: the tier from UHV up (see the bottleneck tables of 4, 5a and 5b), the pack counts of the last techs, the power IC counts.
+   ~~Real sprites for the MK4/MK5 reactors and the last machine tiers, real icons for the exotic/temporal lines and the stargate parts~~ (done, issues #40 and
+   #41, `docs/graphics-review/`; still to be seen in the real game).
 2. ~~Plasma generator (GT plasma turbine)~~ (done, see "Side quest: endgame power").
 3. ~~Water purification grades 7 (degasifier) and 8 (quark extraction), FPIC/APIC chips and complex SMDs, which would let the QPIC stand-ins of the UEV to UXV hatches go.~~
    (done, see "Side quest: water purification grades 7 and 8").
@@ -813,7 +820,8 @@ the UXV energy hatch.
 
 - UU matter (see above), and GT's super coolant in the bio and optical circuits, the PCB factory and the fridge casing.
 - Fluxed electrum's dust recipe (electrum, redstone, naquadah) is invented: GT5-Unofficial has none (it is in the GTNH core mod).
-- Icons of the new items and techs are recolored placeholders (`tools/gen_icons.py`, `tools/gen_tech_icons.py`).
+- Icons of the new items and techs were recolored placeholders (`tools/gen_icons.py`, `tools/gen_tech_icons.py`); since issue #40 they come from GT
+  textures (`tools/gen_gt_icons.py`).
 - Balance of the new chains is untested in game.
 
 ## Side quest: endgame power (done)
@@ -1178,10 +1186,10 @@ turbine returns 2.0000 helium for 2.0000 plasma after the update.
 * The MK4 and MK5 need half the energy per craft (0.64 MJ per recipe second), so their plasmas are 44x to 50x their
   reactor draw and 15x (helium, nitrogen) to 28x (iron) over the full chain, above the 11x to 17x band of the MK1 to MK3.
   Kept: at UEV the reactor draw is a small part of the base (one of each UEV machine: 6.9 GW).
-* Graphics: the turbines use the GT large turbine front (tungstensteel) as a top-down sprite (ZPM to UXV tinted in the
-  tier color, like the reactors), the reactors the GT naquadah reactor casing with the radiation proof casing inside,
-  tinted per tier; the output hatch is the ME fluid interface in
-  orange; the hatch and part icons are recolored placeholders (`tools/gen_icons.py`).
+* Graphics: the turbines use the GT large turbine front (tungstensteel) as a top-down sprite, the reactors the GT naquadah
+  reactor casing with the radiation proof casing inside; every tier shows four GT dynamo hatches of its tier on the corner
+  tiles (issue #41; before, the tiers above LuV/UV were tinted copies); the output hatch is the ME fluid interface in
+  orange; the hatch and part icons come from GT textures (issue #40; before, recolored placeholders).
 * ~~The cooled fluid could become exact with a per-tick sample~~ (done, issue #28: the energy is summed every tick). An
   engine-only turbine (one `fusion-generator` entity per plasma with filtered input and output, or GT's single-block
   plasma generators) would drop the script and the hatch entity, but needs one entity per plasma and tier and a migration
@@ -1281,8 +1289,8 @@ Tests: `devcheck check` lists the 12 new recipes in `REQUIRED_RECIPES` (unlocked
 crafts grades 7 and 8, the wafers and chips, the five complex SMDs, the catalyst, the UEV and UIV energy hatches, the MK4 controller and the wetware
 mainframe once each in a real machine (`recipe test: ok`).
 
-Open: the icons of the new items and techs are recolored placeholders (`tools/gen_icons.py`); balance (catalyst life, SMD and chip costs) is
-untested in the real game.
+The icons of the new items and techs come from GT textures since issue #40 (`tools/gen_gt_icons.py`). Open: balance (catalyst life, SMD and chip
+costs) is untested in the real game.
 
 ## Side quest: AE2 autocrafting (done)
 

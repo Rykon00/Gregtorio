@@ -21,6 +21,11 @@ Version: 0.3.2
     - Helium-3: 50 per compressed end stone in 200 s instead of 100 in 40 s.
     - Fusion recipes take longer: helium plasma 10 s in the MK1 (was 2 s from helium-3, 4 s from tritium), nitrogen plasma 8 s (was 4 s), niobium plasma 20 s (was 8 s), tin plasma 24 s (was 8 s) in the MK2.
     - Sulfur plasma takes 72 molten lithium and 72 molten aluminium (was 16 each) and 16 s in the MK2 (was 8 s); iron plasma takes 72 molten silicon and 72 molten magnesium (was 16 each) and 8 s in the MK3 (was 2 s).
+  Graphics:
+    - Real icons for 393 items that had recolored placeholder icons, from GregTech textures: LuV to UXV components, hatches, casings and hulls, the wetware, bio, optical, exotic and temporal circuits, stem cells, wafers, power ICs, SMDs, fusion and coil blocks, stargate parts, coolant cells, and the new metals in GregTech's material icons and colours. Their technologies show the new icons.
+    - Fusion Reactor MK4 and MK5 have their own look (the fusion casings and coils of GregTech's compact fusion reactors MK-IV and MK-V) instead of the MK3 one.
+    - UHV to UXV machines show the machine casing of their tier around the machine; Large Plasma Turbines and Large Naquadah Reactors show the dynamo hatches of their tier instead of a colour tint.
+    - Graphics from GT5-Unofficial (LGPL-3.0) and NewHorizonsCoreMod (GPL-3.0), see the License section of the README.
 ---------------------------------------------------------------------------------------------------
 Version: 0.3.1
 Date: 2026-09-30
