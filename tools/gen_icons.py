@@ -44,6 +44,9 @@ DONORS = {
     # phase 5b metals (spacetime and universium are the UMV and UXV metals, rhugnor a fusion melt)
     "spacetime-ingot": ("neutronium-ingot", 265), "universium-ingot": ("tritanium-ingot", 205),
     "rhugnor-ingot": ("tritanium-ingot", 320), "hypocosmium-ingot": ("tritanium-ingot", 290),
+    # issue #36: quantium (the fluxed electrum and bedrockium ingots have upstream icons), the new dusts
+    "quantium-ingot": ("neutronium-ingot", 285), "quantium-dust": ("naquadah-dust", 285),
+    "callisto-ice-dust": ("naquadah-dust", 195), "fluxed-electrum-dust": ("naquadah-dust", 50),
 }
 
 

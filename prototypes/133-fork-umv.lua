@@ -597,7 +597,8 @@ create_recipe{
 --------------------------------------------------------------------------------
 --- 2) SPACETIME, THE UMV METAL, ITS CABLE AND THE HYPOCOSMIUM SUPERCONDUCTOR
 --- Parts as the transcendent metal ones (large gear = 4 ingots). GT's UMV cable is quantium, which
---- is not built: the cable is spacetime (wire + rubber + sheet, like the other cables).
+--- was not built: the cable is spacetime (wire + rubber + sheet, like the other cables). Since issue #36
+--- the UMV components take quantium cable (137-fork-endgame-materials.lua); machines and hull keep this one.
 --- The superconductor is the name of the draft (hypocosmium); the recipe is invented on the pattern
 --- of chromnorox: equal parts spacetime, infinity and rhugnor. Cooled like the UIV one (UMV pump,
 --- melt, cryogenic helium).

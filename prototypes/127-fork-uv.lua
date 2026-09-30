@@ -634,7 +634,8 @@ create_recipe{
 --------------------------------------------------------------------------------
 --- 7) UV VOLTAGE COIL, TRINIUM COIL AND UV ENERGY HATCH
 --- GT: the UV coil is a magnetic samarium rod with 16 fine fluxed electrum wires; fluxed
---- electrum does not exist in Gregtorio, so it is americium (the UV metal) here.
+--- electrum did not exist in Gregtorio, so it is americium (the UV metal) here
+--- (137-fork-endgame-materials.lua switches it to fluxed electrum, issue #36).
 --- Energy hatch like the ZPM one in 126-fork-zpm.lua: cryogenic helium instead of coolant cells,
 --- UHPICs instead of the PPIC chip (needs the water purification line).
 --- Trinium coil: the UV blast furnace coil (draft in 23-zpm-age-item.lua).

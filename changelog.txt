@@ -3,10 +3,16 @@ Version: 0.3.2
   Features:
     - Lapotronic Energy Orbs technology (ZPM): the lapotronic energy orb and a second recipe for the lapotronic energy orb cluster in the circuit assembler (eight orbs, qubit CPU chips, naquadah alloy).
     - High density plutonium (wrapped plutonium ingot, high density plutonium nugget from the implosion compressor, high density plutonium), unlocked by Naquadah Fuels.
+    - Super coolant (LuV technology Super Coolant): ledox and callisto ice from a new end microminer recipe, mixed with lapis coolant.
+    - Fluxed electrum (ZPM), bedrockium (UV) and quantium (UHV), each with its technology; bedrockium and quantium come from new end microminer recipes.
+    - Space coolant cells (UHV): the 180k, 540k and 1080k space cells and the 1080k super coolant cell.
     - Large Plasma Turbines for UHV (655.36 MW), UEV (1.31 GW), UIV (2.62 GW), UMV (5.24 GW) and UXV (10.49 GW), each an upgrade of the turbine one tier below with the dynamo hatch and a hull of its tier, unlocked by the technologies UHV to UXV Plasma Turbine. One fusion reactor feeds about 12 turbines of its own tier: MK3 UV, MK4 UEV, MK5 UIV turbines.
   Changes:
     - The UHV to UXV dynamo hatches are also unlocked by the plasma turbine technology of their tier.
     - Plutonium based liquid fuel takes one high density plutonium (like GregTech) instead of 64 plutonium 239 dust.
+    - GregTech materials instead of stand-ins: grade 5 water takes 100 super coolant (grade 5 plants stop until you make it), grade 7 water super coolant instead of cryogenic helium; the UEV to UXV energy and dynamo hatches take 2, 4, 6 and 8 1080k super coolant cells, the UIV to UXV ones super coolant instead of cryogenic helium.
+    - The UV voltage coil takes fine fluxed electrum wire, the UHV emitter and sensor fluxed electrum foil, the fusion reactor MK3 controller molten fluxed electrum, naquadah based fuel MK2 32 fluxed electrum dust (was 16 naquadria dust).
+    - The UHV components take bedrockium cable instead of tritanium cable, the UEV machine casing bedrockium plates; the UEV components take molten quantium instead of molten cosmic neutronium, the UMV components quantium cable instead of spacetime cable.
     - Removed draft content that could never be made and that belongs to other mods (Thaumcraft infused gold, thaumium, magic essence, void and shadow metal, ichorium; force, astral titanium and runite plasma; the atomic separation catalyst, orundum and the naquadah fuel cracking).
   Balancing:
     - Fusion power: one Fusion Reactor MK1 makes about 1 GW of helium plasma (12.5 per second, 12 LuV plasma turbines) instead of 5.12 GW; an MK2 makes about 2 GW, an MK3 about 4 GW. The cheap plasmas give 11x to 17x the energy of their whole input chain instead of up to 70x.
