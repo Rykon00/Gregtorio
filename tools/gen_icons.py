@@ -1,6 +1,9 @@
 #!/usr/bin/env python3
 """Generates placeholder icons for items in the draft tiers (LuV+) that have none.
 
+These are stand-ins: add the item to tools/gt-icon-items.txt and let tools/gen_gt_icons.py make the real
+icon from GT textures (issue #40); every item that had a placeholder so far has one.
+
 For every missing icon a "donor" icon is picked and recolored:
   * tier components (luv-motor) -> icon of the tier below (iv-motor), recolored in the tier color
   * metal parts (hsss-plate) -> same part of another material, tinted with the material color
