@@ -46,8 +46,8 @@ create_item{
 		item("long-spacetime-rod", 4),
 		item("long-universium-rod", 4),
 		item("universium-frame", 2),
-		fluid("molten-universium", 576),
-		fluid("molten-spacetime", 576),
+		fluid("molten-universium", 288), -- issue #33: 576 before
+		fluid("molten-spacetime", 288),
 		fluid("molten-indalloy-140", 288),
 	},
 }
@@ -103,18 +103,21 @@ create_item{
 --- made them cyclic). Chevron block: 7 in the stargate, one chevron upgrade each.
 --------------------------------------------------------------------------------
 
+--- Issue #33: counts trimmed so the stargate takes about 10 hours of a UXV factory instead of 32 (see
+--- "Balance pass: endgame" in docs/ROADMAP.md). A ring block has no field generator any more (8 of the 14
+--- UXV field generators of the stargate), the chevron block takes its emitter and pistons through the
+--- chevron upgrade only, base, power unit and controller take half the parts or less.
 F.redo("stargate-ring-block", {
 	category = AL,
 	energy_required = minutes(5),
 	subgroup = "subgroup-stargate",
 	ingredients = {
 		item("universium-plate", 16),
-		item("stargate-frame-part", 3),
+		item("stargate-frame-part", 2),
 		item("stargate-chevron", 1),
-		item("stargate-radiation-containment-plate", 3),
-		item("uxv-field-generator", 1),
+		item("stargate-radiation-containment-plate", 2),
 		item("uxv-circuit", 4),
-		fluid("molten-universium", 576),
+		fluid("molten-universium", 288),
 		fluid("molten-indalloy-140", 288),
 	},
 })
@@ -125,12 +128,10 @@ F.redo("stargate-chevron-block", {
 	ingredients = {
 		item("universium-plate", 16),
 		item("stargate-chevron-upgrade", 1),
-		item("stargate-frame-part", 2),
-		item("stargate-radiation-containment-plate", 2),
-		item("uxv-emitter", 1),
-		item("uxv-piston", 2),
-		item("uxv-circuit", 4),
-		fluid("molten-universium", 576),
+		item("stargate-frame-part", 1),
+		item("stargate-radiation-containment-plate", 1),
+		item("uxv-circuit", 2),
+		fluid("molten-universium", 288),
 		fluid("molten-indalloy-140", 288),
 	},
 })
@@ -139,11 +140,10 @@ F.redo("stargate-chevron-upgrade", {
 	energy_required = minutes(3),
 	subgroup = "subgroup-stargate",
 	ingredients = {
-		item("stargate-frame-part", 2),
+		item("stargate-frame-part", 1),
 		item("stargate-chevron", 1),
 		item("uxv-sensor", 1),
-		item("uxv-emitter", 1),
-		item("uxv-piston", 2),
+		item("uxv-piston", 1),
 		fluid("molten-universium", 288),
 		fluid("molten-indalloy-140", 288),
 	},
@@ -153,15 +153,15 @@ F.redo("stargate-base", {
 	energy_required = minutes(10),
 	subgroup = "subgroup-stargate",
 	ingredients = {
-		item("uxv-field-generator", 4),
-		item("uxv-emitter", 4),
-		item("uxv-robot-arm", 4),
-		item("advanced-fusion-coil-ii", 2),
-		item("stargate-radiation-containment-plate", 4),
-		item("stargate-frame-part", 4),
-		item("uxv-circuit", 16),
-		item("eternity-superconductive-wire", 32),
-		fluid("molten-universium", 1152),
+		item("uxv-field-generator", 1),
+		item("uxv-emitter", 1),
+		item("uxv-robot-arm", 1),
+		item("advanced-fusion-coil-ii", 1),
+		item("stargate-radiation-containment-plate", 2),
+		item("stargate-frame-part", 2),
+		item("uxv-circuit", 8),
+		item("eternity-superconductive-wire", 16),
+		fluid("molten-universium", 288),
 		fluid("molten-indalloy-140", 576),
 	},
 })
@@ -170,14 +170,14 @@ F.redo("stargate-power-unit", {
 	energy_required = minutes(10),
 	subgroup = "subgroup-stargate",
 	ingredients = {
-		item("advanced-fusion-coil-ii", 4),
-		item("uxv-field-generator", 2),
-		item("uxv-energy-hatch", 4),
-		item("stargate-radiation-containment-plate", 4),
-		item("universium-plate", 32),
-		item("uxv-circuit", 8),
-		item("eternity-superconductive-wire", 64),
-		fluid("molten-universium", 1152),
+		item("advanced-fusion-coil-ii", 1),
+		item("uxv-field-generator", 1),
+		item("uxv-energy-hatch", 2),
+		item("stargate-radiation-containment-plate", 2),
+		item("universium-plate", 16),
+		item("uxv-circuit", 4),
+		item("eternity-superconductive-wire", 32),
+		fluid("molten-universium", 288),
 		fluid("molten-indalloy-140", 576),
 	},
 })
@@ -186,14 +186,14 @@ F.redo("stargate-controller", {
 	energy_required = minutes(10),
 	subgroup = "subgroup-stargate",
 	ingredients = {
-		item("uxv-circuit", 32),
-		item("uxv-sensor", 2),
-		item("uxv-emitter", 2),
-		item("uxv-conveyor-module", 4),
-		item("gravi-star", 16),
-		item("stargate-frame-part", 4),
-		item("stargate-radiation-containment-plate", 4),
-		fluid("molten-universium", 576),
+		item("uxv-circuit", 8),
+		item("uxv-sensor", 1),
+		item("uxv-emitter", 1),
+		item("uxv-conveyor-module", 2),
+		item("gravi-star", 8),
+		item("stargate-frame-part", 2),
+		item("stargate-radiation-containment-plate", 2),
+		fluid("molten-universium", 288),
 		fluid("molten-indalloy-140", 576),
 	},
 })
@@ -219,8 +219,8 @@ F.redo("stargate", {
 })
 
 --- The MAX science pack (draft recipe of 11-lv-age-item.lua, 1 stargate -> 1000 packs, UXV assembler).
---- One level of `victory` takes 1000 of them: a stargate is what the first level costs, every
---- further level doubles it.
+--- Level 1 of `victory` takes 15 of them (issue #30, prototypes/138-fork-research-balance.lua): one stargate
+--- is what the first level costs, and its 1000 packs last for the first six levels.
 
 
 

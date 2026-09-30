@@ -258,8 +258,19 @@ create_endgame_parts{
 	skip_fine_wire = true,
 	skip_foil = true,
 	skip_bolt = true,
+	skip_large_gear = true,
 	skip_dense_plate = true,
 	skip_superdense_plate = true,
+}
+--- Issue #31: 4 ingots of melt like the large tritanium gear (the generic large gear is 40 ingots,
+--- which made the UV piston cost as much as the UHV one)
+create_item{
+	name = "large-neutronium-gear",
+	category = "zpm-fluid-solidifier-recipes",
+	energy_required = ZPM_SPEED * 6.4,
+	ingredients = {
+		{ type = "fluid", name = "molten-neutronium", amount = 57.6 },
+	},
 }
 
 --- Gravistar (GT: autoclave, quantum star + molten neutronium) for the UV emitter and sensor
@@ -470,12 +481,14 @@ local function join(a, b)
 	return a
 end
 
+--- Issue #31: 64 fine americium wires (GT: 384, 48 americium ingots) and 8 long neutronium rods
+--- (GT: 4), like the cut UHV to UXV motors (48 to 64 fine wires, 8 long rods)
 uv_component("uv-motor", join({
 	{ type = "item", name = "long-magnetic-samarium-rod", amount = 2 },
-	{ type = "item", name = "long-neutronium-rod", amount = 4 },
+	{ type = "item", name = "long-neutronium-rod", amount = 8 },
 	{ type = "item", name = "neutronium-ring", amount = 4 },
 	{ type = "item", name = "neutronium-round", amount = 16 },
-	{ type = "item", name = "fine-americium-wire", amount = 384 },
+	{ type = "item", name = "fine-americium-wire", amount = 64 },
 	{ type = "item", name = "naquadah-alloy-cable", amount = 8 },
 }, uv_fluids(129.6, true)))
 uv_component("uv-pump", join({
