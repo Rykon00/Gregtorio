@@ -106,7 +106,7 @@ F.components{
 --- coil is the eternal coil of the draft in 90-uxv-age-item.lua (an optical mainframe, spacetime wire,
 --- screws and foil, an eternal singularity, a melt); here it is universium wire and screws, spacetime
 --- foil, a UMV circuit and a spacetime melt. Energy hatch as in 133-fork-umv.lua, with twice the
---- QPICs.
+--- APICs (they stand in for GT's YPIC, which is not built).
 --------------------------------------------------------------------------------
 
 create_item{
@@ -138,7 +138,7 @@ create_item{
 	ingredients = {
 		{ type = "item", name = "uxv-machine-hull", amount = 1 },
 		{ type = "item", name = "eternity-superconductive-wire", amount = 4 },
-		{ type = "item", name = "quantum-power-ic", amount = 32 },
+		{ type = "item", name = "atto-power-ic", amount = 16 },
 		{ type = "item", name = "uxv-circuit", amount = 2 },
 		{ type = "item", name = "extended-mega-ultimate-voltage-coil", amount = 2 },
 		{ type = "item", name = "uxv-pump", amount = 1 },
@@ -252,7 +252,7 @@ F.tech{
 	recipes = uxv_machine_recipes,
 }
 F.tech{
-	name = "uxv-energy-hatches", prerequisites = { "uxv-machines" }, packs = 14, count = 3000,
+	name = "uxv-energy-hatches", prerequisites = { "uxv-machines", "atto-power-ics" }, packs = 14, count = 3000,
 	recipes = {
 		"hot-eternity-ingot", "eternity-ingot", "eternity-dust", "eternity-wire",
 		"eternity-superconductive-wire", "superconducting-coil-block-uxv", "eternal-coil-block",

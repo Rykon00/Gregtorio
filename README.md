@@ -22,7 +22,7 @@ The repository root is the mod itself (`info.json`, `data.lua`, `prototypes/`, `
 | `prototypes/126-fork-zpm.lua` | ZPM: naquadah alloy parts, europium, ZPM components, casing and hull, ZPM science pack, ZPM energy hatch, ZPM machines and multiblock upgrades, techs |
 | `prototypes/127-fork-uv.lua` | UV: naquadria, americium and neutronium (fusion), superconductors, UV circuit (crystal processor mainframe), ZPM assembly line, UV components, casing and hull, fusion reactor MK2 and its plasmas, UV science pack, UV energy hatch, UV machines and multiblock upgrades, techs |
 | `prototypes/128-fork-uhv.lua` | UHV: tritanium and the triamerotronium superconductor, the wetware line (UHV circuit), UHV components, casing and hull, fusion reactor MK3 with advanced fusion coils, UHV science pack, UHV energy hatch, UHV machines and multiblock upgrades, techs |
-| `prototypes/129-fork-water-purification.lua` | water purification plant (grades 1-6), europium/americium doped wafers, NPIC/PPIC/QPIC chips used by the ZPM/UV/UHV energy hatches and the MK2/MK3 controllers |
+| `prototypes/129-fork-water-purification.lua` | water purification plant (grades 1-8, quark creation catalyst), europium/americium doped wafers, NPIC/PPIC/QPIC/FPIC/APIC chips used by the ZPM to UXV energy and dynamo hatches and the MK2 to MK5 controllers, complex SMDs for the wetware to temporal circuit lines |
 | `prototypes/131-fork-uev.lua` | UEV: cosmic neutronium, draconium and infinity (fusion), dracofinium superconductor, bio line (UEV circuit), UEV components, casing and hull, fusion reactor MK4, UEV science pack, energy hatch, machines and multiblock upgrades, techs |
 | `prototypes/132-fork-uiv.lua` | UIV: transcendent metal (MK4), nether star cable, chromnorox superconductor, optical line (UIV circuit), UIV components, casing and hull, UIV science pack, energy hatch, machines and multiblock upgrades, techs |
 | `prototypes/133-fork-umv.lua` | fusion reactor MK5 (advanced fusion coil II, casing MK4, rhugnor, flerovium, energy module), spacetime (UMV metal) and universium (UXV metal) from the MK5, spacetime cable, hypocosmium superconductor, exotic line (UMV circuit), UMV components, casing and hull, UMV science pack, energy hatch, machines and multiblock upgrades, techs; also the helpers shared with 134 and 135 (global table `FORK5B`) |
@@ -68,7 +68,7 @@ The repository root is the mod itself (`info.json`, `data.lua`, `prototypes/`, `
 | UXV | playable (fork); temporal line and UXV circuit, UXV components, science pack, energy hatch and machines (see `docs/ROADMAP.md`) |
 | MAX, stargate, victory | playable (fork); the stargate makes 1000 MAX science packs, the first level of `victory` wins the game. Balance of the last tiers is untested in the real game |
 | Endgame power | playable (fork); plasma turbines from LuV, the naquadah fuel line and large naquadah reactors from UV, dynamo hatches LuV to UXV (see `docs/ROADMAP.md`, "Side quest: endgame power") |
-| Drafts | the rest of the GTNH endgame chains (UU matter, water purification grades 7-8, naquadah fuel MK4+, ...) is draft; broken recipes are hidden on load (`FORK-DRAFT` in the log) |
+| Drafts | the rest of the GTNH endgame chains (UU matter, naquadah fuel MK4+, ...) is draft; broken recipes are hidden on load (`FORK-DRAFT` in the log) |
 
 ## Workflow
 

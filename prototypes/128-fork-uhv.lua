@@ -224,8 +224,8 @@ create_item{
 --- (circuit assembly line, 16 circuits per craft, 2 of the previous stage per circuit):
 ---   stem cells -> wetware circuit board + neuro processing unit
 ---   -> wetware processor (uses the crystal CPU) -> assembly -> supercomputer -> mainframe
---- Changes against GT: no complex SMDs (they need the water purification line), no ytterbium
---- wire (niobium-titanium instead), the mainframe uses the UV superconductor.
+--- Changes against GT: no ytterbium wire (niobium-titanium instead), the mainframe uses the UV
+--- superconductor. The mainframe takes complex SMDs like GT (issue #35, 129-fork-water-purification.lua).
 --------------------------------------------------------------------------------
 
 create_item{
@@ -342,8 +342,8 @@ create_recipe{
 	ingredients = {
 		{ type = "item", name = "tritanium-frame", amount = 16 },
 		{ type = "item", name = "wetware-processor-supercomputer", amount = 32 },
-		{ type = "item", name = "advanced-smd-inductor-wrap", amount = 8 },
-		{ type = "item", name = "advanced-smd-capacitor-wrap", amount = 16 },
+		{ type = "item", name = "complex-smd-inductor", amount = 32 },
+		{ type = "item", name = "complex-smd-capacitor", amount = 64 },
 		{ type = "item", name = "ram-chip-wrap", amount = 32 },
 		{ type = "item", name = "europium-plate", amount = 8 },
 		{ type = "item", name = "naquamiridium-superconductive-wire", amount = 16 },

@@ -29,6 +29,14 @@ DONORS = {
     "nano-power-ic": ("ultra-high-powered-integrated-circuit", 190),
     "pico-power-ic": ("ultra-high-powered-integrated-circuit", 130),
     "quantum-power-ic": ("ultra-high-powered-integrated-circuit", 0),
+    # issue #35: FPIC and APIC (UEV and UIV hue), complex SMDs, quark creation catalyst
+    "fpic-wafer": ("uhpic-wafer", 90), "apic-wafer": ("uhpic-wafer", 150),
+    "femto-power-ic": ("ultra-high-powered-integrated-circuit", 90),
+    "atto-power-ic": ("ultra-high-powered-integrated-circuit", 150),
+    "complex-smd-transistor": ("advanced-smd-transistor", 0), "complex-smd-resistor": ("advanced-smd-resistor", 0),
+    "complex-smd-capacitor": ("advanced-smd-capacitor", 0), "complex-smd-diode": ("advanced-smd-diode", 0),
+    "complex-smd-inductor": ("advanced-smd-inductor", 0),
+    "quark-creation-catalyst": ("uev-field-generator", 300),
     # phase 5a metals: the ingots get a hue, their parts take the ingot color
     "cosmic-neutronium-ingot": ("neutronium-ingot", 275), "draconium-ingot": ("tritanium-ingot", 355),
     "infinity-ingot": ("tritanium-ingot", 45), "transcendent-metal-ingot": ("neutronium-ingot", 185),

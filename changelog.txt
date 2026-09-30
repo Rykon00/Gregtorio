@@ -6,7 +6,11 @@ Version: 0.3.1
     - Dynamo hatches from LuV to UXV.
     - ME Fluid Drives: the fluid of a destroyed drive goes into the other drives of its network, the rest is kept as "recovered fluid" that the next drive placed in that network takes over (also with the "Take over" button in the drive window). Every step is reported in chat.
     - ME Pattern Provider: open it to choose the recipe for the furnaces next to it. A furnace is an autocrafting pattern right away and no longer has to smelt the recipe once by hand. The choice is copied with the provider's settings and kept in blueprints.
+    - Water purification grades 7 (degassed, UHV) and 8 (quark extraction with a reusable Quark Creation Catalyst, UEV) in the Water Purification Plant.
+    - Femto and Atto Power ICs (FPIC, APIC) and complex SMDs (transistor, resistor, capacitor, diode, inductor) with the technologies Femto Power ICs, Atto Power ICs and Complex SMDs.
   Changes:
+    - The UEV energy and dynamo hatches and the fusion reactor MK4 controller use FPICs; the UIV to UXV energy and dynamo hatches and the MK5 controller use APICs instead of Quantum Power ICs. Their technologies need the new chip technology.
+    - The wetware mainframe, the bio supercomputer and mainframe and the assembly, supercomputer and mainframe of the optical, exotic and temporal lines use complex SMDs instead of advanced SMDs (a quarter of the count). The wetware mainframes technology needs Complex SMDs.
     - Taking the cells out of a loaded ME Fluid Drive is hand crafting only; its fluid goes into the network you stand in. Assemblers set to this recipe lose it.
     - The Crafting tab of the ME Terminal counts furnaces next to a pattern provider that have no recipe.
     - The crafting menu lists the recipes that only a machine can make once they are unlocked (red background, like in vanilla), for example the zinc recipes and the 4x Resistor. Fluid voiding and the replaced vanilla recipes stay hidden. Startup setting "Show machine recipes in the crafting menu" (default on) to hide them again.
