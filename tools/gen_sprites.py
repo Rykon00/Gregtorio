@@ -115,7 +115,8 @@ CONTROLLER_ICONS = {"neutron-activator", "water-purification-plant", "uv-large-n
 # tinted copies of a multiblock's sprites and icon (136-fork-power.lua: the tier upgrades)
 TINTED_COPIES = {
     "uv-large-naquadah-reactor": {"uhv": "UHV", "uev": "UEV", "uiv": "UIV", "umv": "UMV", "uxv": "UXV"},
-    "luv-large-plasma-turbine": {"zpm": "ZPM", "uv": "UV"},
+    "luv-large-plasma-turbine": {"zpm": "ZPM", "uv": "UV", "uhv": "UHV", "uev": "UEV", "uiv": "UIV", "umv": "UMV",
+                                 "uxv": "UXV"},
 }
 # large plasma turbine (136-fork-power.lua): the 3x3 front of GT's large turbine (tungstensteel
 # rotor, animated when active); the icon is the middle tile
