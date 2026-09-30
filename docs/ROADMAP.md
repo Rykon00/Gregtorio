@@ -21,7 +21,7 @@ UEV = cryogenic, UIV = promethium, then UMV / UXV / max (the stargate).
 | 5b | UMV, UXV, MAX and the endgame (stargate, victory), fusion MK5 | **done** (`prototypes/133-fork-umv.lua`, `134-fork-uxv.lua`, `135-fork-endgame.lua`, `scripts/fork-victory.lua`) |
 | side | Water purification line: grades 1-8, the NPIC to APIC chips and complex SMDs | **done** (`prototypes/129-fork-water-purification.lua`, see "Side quest: water purification grades 7 and 8") |
 | side | AE2 autocrafting (patterns, molecular assembler on top of the ME network from `120-fork-ae2.lua`) and fluids in the ME network (fluid drives, fluid interface, fluid recipes as patterns) | **done** (`prototypes/121-fork-ae2-autocrafting.lua`, `122-fork-ae2-fluids.lua`, `scripts/fork-me-autocraft.lua`, `scripts/fork-me-fluids.lua`, `docs/AE2.md`) |
-| side | Endgame power: plasma turbines, naquadah fuel line and large naquadah reactors, dynamo hatches LuV to UXV | **done** (`prototypes/136-fork-power.lua`, `scripts/fork-power.lua`, see "Side quest: endgame power") |
+| side | Endgame power: plasma turbines (LuV to UXV, the UHV to UXV ones from issue #34), naquadah fuel line and large naquadah reactors, dynamo hatches LuV to UXV | **done** (`prototypes/136-fork-power.lua`, `scripts/fork-power.lua`, see "Side quest: endgame power") |
 | side | Graphics and balance of the tiers from UHV up in the real game | open |
 
 ## Phase 1: LuV (done)
@@ -705,12 +705,13 @@ energy of the plasma turbines every tick; every 10th tick the fuel check and the
   krypton 86.02 (default), iron 206.44 MJ. The naquadah and liquid nuclear fuels have GoodGenerator's values (basic output
   x burning time per mB): excited uranium fuel 1.296 GJ, excited plutonium fuel 4.86 GJ, naquadah based fuel MK1 58.5 GJ,
   MK2 161 GJ, MK3 760.9 GJ per unit.
-* **Large plasma turbines** (LuV, ZPM, UV; techs `plasma-turbine`, `zpm-plasma-turbine`, `uv-plasma-turbine`): 3x3
-  `generator` entities that burn only plasmas (fuel check below), capped at four amps of their tier
-  (4 x EU32: 81.92, 163.84 and 327.68 MW). The LuV one is built from a controller, the LuV dynamo hatch, 28 tungstensteel
-  turbine casings, 14 tungstensteel frames and a tungstensteel turbine rotor (blades like the magnalium ones); ZPM and UV
+* **Large plasma turbines** (LuV to UXV; techs `plasma-turbine`, `zpm-plasma-turbine`, `uv-plasma-turbine`, and
+  since issue #34 `uhv-plasma-turbine` ... `uxv-plasma-turbine`): 3x3 `generator` entities that burn only plasmas (fuel
+  check below), capped at four amps of their tier (4 x EU32: 81.92, 163.84, 327.68, 655.36 MW, 1.31, 2.62, 5.24 and
+  10.49 GW). The LuV one is built from a controller, the LuV dynamo hatch, 28 tungstensteel
+  turbine casings, 14 tungstensteel frames and a tungstensteel turbine rotor (blades like the magnalium ones); ZPM to UXV
   are upgrades (previous turbine + dynamo hatch + hull, the replaced hatch and hull come back) like the multiblock upgrades
-  of the tiers. GT's large plasma turbine returns the cooled fluid, one unit per unit of plasma: a Factorio generator has
+  of the tiers. See "Turbines above UV" below. GT's large plasma turbine returns the cooled fluid, one unit per unit of plasma: a Factorio generator has
   one fluid box and no output, so `scripts/fork-power.lua` credits every turbine with the plasma it burnt (the energy it
   generated, summed every tick, / fuel value; see "Cooled fluid" below) and pushes the cooled fluid into **turbine output
   hatches** (1x1 tanks, tech
@@ -743,7 +744,8 @@ energy of the plasma turbines every tick; every 10th tick the fuel check and the
   thick neutron reflector, a europium plate) and 4 UV hulls; UHV to UXV are upgrades (previous reactor + dynamo hatch + 4
   hulls). GT's coolant bonus and depleted fuel output are left out.
 * **Dynamo hatches LuV to UXV**: copies of the energy hatch recipe of the tier (same parts, category and time), like
-  upstream's EV and IV dynamo hatches. Unlocked with the generator of their tier.
+  upstream's EV and IV dynamo hatches. Unlocked with the generator of their tier (UHV to UXV: by the plasma turbine and
+  the naquadah reactor tech of the tier, whichever is researched first).
 * **Fuel check** (issue #25). A `generator` burns any fluid with a fuel value, steam (100 kJ) included, and a fluid box
   filter takes a single fluid, so without a check a plasma turbine ran on naquadah fuel, a naquadah reactor on plasma
   (both at full output) and both on steam (6 MW, one unit per tick). `136-fork-power.lua` writes the accepted fuels of
@@ -819,6 +821,11 @@ Generators (4 amps of the tier) and what they burn at full load:
 | LuV large plasma turbine | 81.92 MW | 1/s | - | - | controller (LuV hull, 2 LuV circuits, 4 large naquadah alloy gears, 12 tungstensteel plates), LuV dynamo hatch (the parts of the LuV energy hatch), 28 tungstensteel turbine casings (168 tungstensteel plates, 28 titanium turbine casings), 14 tungstensteel frames, turbine rotor (16 plates, 8 screws, a long rod) |
 | ZPM large plasma turbine | 163.84 MW | 2/s | - | - | LuV turbine + ZPM dynamo hatch + ZPM hull |
 | UV large plasma turbine | 327.68 MW | 4/s | - | - | ZPM turbine + UV dynamo hatch + UV hull |
+| UHV large plasma turbine | 655.36 MW | 8/s | - | - | UV turbine + UHV dynamo hatch + UHV hull |
+| UEV large plasma turbine | 1.31 GW | 16/s | - | - | UHV turbine + UEV dynamo hatch + UEV hull |
+| UIV large plasma turbine | 2.62 GW | 32/s | - | - | UEV turbine + UIV dynamo hatch + UIV hull |
+| UMV large plasma turbine | 5.24 GW | 64/s | - | - | UIV turbine + UMV dynamo hatch + UMV hull |
+| UXV large plasma turbine | 10.49 GW | 128/s | - | - | UMV turbine + UXV dynamo hatch + UXV hull |
 | UV large naquadah reactor | 327.68 MW | - | 0.0056/s (1 unit per 3 min) | 0.25/s | controller (UV hull, 4 UV circuits, 2 ZPM field generators, 4 ZPM pumps, 8 naquadah and 8 osmium plates, 4 trinium ingots of melt, indalloy), UV dynamo hatch, 48 casings (192 naquadah plates, 192 lead plates, 48 thick neutron reflectors, 48 europium plates), 4 UV hulls |
 | UHV large naquadah reactor | 655.36 MW | - | 1 unit per 89 s | 0.5/s | UV reactor + UHV dynamo hatch + 4 UHV hulls |
 | UEV large naquadah reactor | 1.31 GW | - | 1 unit per 45 s | 1/s | + UEV dynamo hatch + 4 UEV hulls |
@@ -916,27 +923,93 @@ through input logistics and turbine flow, is limited here by the recipe time.
 
 Net gain in practice (issue #32; before: one MK1 on D + He-3 made 62.5 helium plasma per second, 5.12 GW for 62 LuV
 turbines, a net 5.08 GW): one MK1 on deuterium and helium-3 (40.96 MW) makes 12.5 helium plasma per second, 1.02 GW, and
-its deuterium and helium-3 draw another 48 MW (3 LuV centrifuges), a net 0.94 GW. The turbines one reactor feeds on its best
-cheap plasma:
+its deuterium and helium-3 draw another 48 MW (3 LuV centrifuges), a net 0.94 GW. The turbines one reactor feeds on its cheap
+plasmas (issue #34 added the UHV to UXV turbines and the MK4 and MK5; the turbine of the reactor's own machine tier in
+bold, "before" is before issue #32):
 
-| Reactor | Plasma | Plasma power | LuV turbines | ZPM turbines | UV turbines | Before |
-|---|---|---|---|---|---|---|
-| MK1 (40.96 MW) | helium | 1.02 GW | 12.5 | 6.25 | 3.1 | 5.12 GW: 62.5 / 31 / 15.6 |
-| MK2 (81.92 MW) | helium (MK1 recipe) | 2.05 GW | 25 | 12.5 | 6.25 | 10.24 GW: 125 / 62.5 / 31 |
-| MK2 | nitrogen | 2.02 GW | 24.6 | 12.3 | 6.2 | 4.03 GW: 49 / 24.6 / 12.3 |
-| MK2 | tin | 1.8 GW | 22 | 11 | 5.5 | 5.4 GW: 66 / 33 / 16.5 |
-| MK3 (163.84 MW) | helium (MK1 recipe) | 4.1 GW | 50 | 25 | 12.5 | 20.5 GW: 250 / 125 / 62.5 |
-| MK3 | iron | 3.72 GW | 45 | 22.7 | 11.3 | 14.9 GW: 181 / 91 / 45 |
+| Reactor | Plasma | Plasma power | LuV | ZPM | UV | UHV | UEV | UIV | UMV | UXV | Before (LuV / ZPM / UV) |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| MK1 (40.96 MW) | helium | 1.02 GW | **12.5** | 6.25 | 3.1 | 1.6 | 0.8 | 0.4 | 0.2 | 0.1 | 5.12 GW: 62.5 / 31 / 15.6 |
+| MK2 (81.92 MW) | helium (MK1 recipe) | 2.05 GW | 25 | **12.5** | 6.25 | 3.1 | 1.6 | 0.8 | 0.4 | 0.2 | 10.24 GW: 125 / 62.5 / 31 |
+| MK2 | nitrogen | 2.02 GW | 24.6 | **12.3** | 6.2 | 3.1 | 1.5 | 0.8 | 0.4 | 0.2 | 4.03 GW: 49 / 24.6 / 12.3 |
+| MK2 | tin | 1.8 GW | 22 | **11** | 5.5 | 2.7 | 1.4 | 0.7 | 0.3 | 0.2 | 5.4 GW: 66 / 33 / 16.5 |
+| MK3 (163.84 MW) | helium (MK1 recipe) | 4.1 GW | 50 | 25 | **12.5** | 6.25 | 3.1 | 1.6 | 0.8 | 0.4 | 20.5 GW: 250 / 125 / 62.5 |
+| MK3 | nitrogen | 4.03 GW | 49 | 24.6 | **12.3** | 6.2 | 3.1 | 1.5 | 0.8 | 0.4 | 8.06 GW: 98 / 49 / 24.6 |
+| MK3 | tin | 3.6 GW | 44 | 22 | **11** | 5.5 | 2.7 | 1.4 | 0.7 | 0.3 | 10.8 GW: 132 / 66 / 33 |
+| MK3 | iron | 3.72 GW | 45 | 22.7 | **11.3** | 5.7 | 2.8 | 1.4 | 0.7 | 0.4 | 14.9 GW: 181 / 91 / 45 |
+| MK4 (327.68 MW) | helium | 16.4 GW | 200 | 100 | 50 | 25 | **12.5** | 6.25 | 3.1 | 1.6 | 82 GW: 1000 / 500 / 250 |
+| MK4 | nitrogen | 16.1 GW | 197 | 98 | 49 | 24.6 | **12.3** | 6.2 | 3.1 | 1.5 | 32 GW: 394 / 197 / 98 |
+| MK4 | tin | 14.4 GW | 176 | 88 | 44 | 22 | **11** | 5.5 | 2.7 | 1.4 | 43 GW: 527 / 264 / 132 |
+| MK4 | iron | 14.9 GW | 181 | 91 | 45 | 22.7 | **11.3** | 5.7 | 2.8 | 1.4 | 59 GW: 726 / 363 / 181 |
+| MK5 (655.36 MW) | helium | 32.8 GW | 400 | 200 | 100 | 50 | 25 | **12.5** | 6.25 | 3.1 | 164 GW: 2000 / 1000 / 500 |
+| MK5 | nitrogen | 32.3 GW | 394 | 197 | 98 | 49 | 24.6 | **12.3** | 6.2 | 3.1 | 65 GW: 787 / 394 / 197 |
+| MK5 | tin | 28.8 GW | 352 | 176 | 88 | 44 | 22 | **11** | 5.5 | 2.7 | 86 GW: 1055 / 527 / 264 |
+| MK5 | iron | 29.7 GW | 363 | 181 | 91 | 45 | 22.7 | **11.3** | 5.7 | 2.8 | 119 GW: 1452 / 726 / 363 |
+
+Without the turbines of issue #34 one MK4 needed 50 UV turbines on helium and one MK5 100; with them it is 12.5 of the
+reactor's own tier, as for the MK1 to MK3.
 
 One EV blast furnace on acid naquadah emulsion (16 enriched naquadah dust per 180 s) feeds 0.036 naquadah fuel MK1 per
 second through the line, worth 2.08 GW of naquadah reactor output; one enriched naquadah dust is 23.4 GJ of MK1 fuel. The
 generators burn only their own fuels (fuel check above): steam, plasma in a naquadah reactor or naquadah fuel in a plasma
 turbine stop them.
 
+### Turbines above UV (issue #34)
+
+Numbers: researchable technologies 355 -> 360 of 374 -> 379 (the 5 new ones), draft recipes hidden by the draft guard 21
+-> 21, `FORK-DRAFT` and `FORK-AUTOUNLOCK` identical to main, unlocked but uncraftable recipes 0. Tech by tech: the 374
+technologies of main keep their prerequisites, science packs and unlocks; the new ones unlock the dynamo hatch and the
+turbine of their tier (the dynamo hatches UHV to UXV are now unlocked by two techs each, the plasma turbine and the
+naquadah reactor of the tier).
+
+| Turbine | Output | Helium plasma at full load | Recipe (60 s in the tier's assembling machine) | Technology (science) | Prerequisites |
+|---|---|---|---|---|---|
+| UHV large plasma turbine | 655.36 MW | 8/s | UV turbine + UHV dynamo hatch + UHV hull (UV dynamo hatch and UV hull back) | `uhv-plasma-turbine` (UHV, 2500) | `uv-plasma-turbine`, `uhv-energy-hatches` |
+| UEV large plasma turbine | 1.31 GW | 16/s | UHV turbine + UEV dynamo hatch + UEV hull | `uev-plasma-turbine` (UEV, 2500) | `uhv-plasma-turbine`, `uev-energy-hatches` |
+| UIV large plasma turbine | 2.62 GW | 32/s | UEV turbine + UIV dynamo hatch + UIV hull | `uiv-plasma-turbine` (UIV, 2500) | `uev-plasma-turbine`, `uiv-energy-hatches` |
+| UMV large plasma turbine | 5.24 GW | 64/s | UIV turbine + UMV dynamo hatch + UMV hull | `umv-plasma-turbine` (UMV, 2500) | `uiv-plasma-turbine`, `umv-energy-hatches` |
+| UXV large plasma turbine | 10.49 GW | 128/s | UMV turbine + UXV dynamo hatch + UXV hull | `uxv-plasma-turbine` (UXV, 2500) | `umv-plasma-turbine`, `uxv-energy-hatches` |
+
+They are the same `generator` prototype as the LuV to UV turbines (fuel check, turbine output hatch, fast replace group),
+listed in the mod data `fork-power`, so `scripts/fork-power.lua` picks them up without a code change or a migration.
+
+**Fluid usage per tick.** A `generator` burns at most `fluid_usage_per_tick` units per tick, so with 1 unit (LuV to UV) it
+could never make more than 60 x the fuel value per second: 4.92 GW on helium plasma, 1.23 GW on neon. The UXV turbine made
+4.92 GW instead of 10.49 GW on helium, the UMV turbine was short as well, the UEV one on neon. `make_generator` now sets it
+to the cap divided by the weakest accepted fuel (neon plasma for the turbines, excited uranium fuel for the reactors),
+rounded up: 1 for LuV to UHV and every naquadah reactor (unchanged), 2, 3, 5 and 9 for UEV, UIV, UMV and UXV. The fuel
+check window grows with it on those four: steam in a UXV turbine burns at most 90 units (9 MJ) in the 10 ticks.
+
+**GT++'s XL plasma turbine** (`MTELargerTurbinePlasmaLegacy`: "runs as fast as 16 Large Turbines", 12 rotor hatches, any
+number of dynamo hatches of mixed voltage, no tier of its own; plasma efficiency falls for high tier rotors on low grade
+plasma) is not followed. Here there are no rotors and no flow; the tier of the dynamo hatch sets the output of every
+generator (the turbines LuV to UV and the naquadah reactors UV to UXV). An XL turbine as 16 UV turbines would be a
+5.24 GW generator from UV, skip the UHV to UMV hatches and give one step instead of a line. One turbine per tier keeps
+the pattern of the reactors, uses the dynamo hatches that already exist and the fast replace upgrade. It gives the XL
+turbine's advantage too, fewer entities per GW: a UXV turbine replaces 32 UV turbines, and the runtime cost is per turbine
+(one property read per running turbine per tick, unchanged), so a 16 GW MK4 on helium is 12.5 UEV turbines (13 reads per
+tick) instead of 50 UV turbines.
+
+**MK4 and MK5 (decision: unchanged).** The MK4 and MK5 run the fusion recipes 16 and 32 times as fast as the MK1 because
+they run at the speed of their tier (UEV_SPEED 512 and UIV_SPEED 1024, like every machine), and every reactor from MK1 to
+MK5 feeds 12.5 turbines of its own machine tier on helium (11 to 12.3 on nitrogen, tin and iron; table in "Net gain in
+practice"). Measured against one of every machine of the tier that researches it (IV 0.39, LuV 0.45, ZPM 0.87, UV 1.72,
+UHV 3.44, UEV 6.88, UIV 13.76, UMV 27.5, UXV 55 GW), one reactor on helium runs 2.3 LuV bases (MK1), 2.4 ZPM (MK2), 2.4 UEV
+(MK4) and 2.4 UIV bases (MK5). A change of the MK4 and MK5 would break this line; the one that is off is the MK3 (UV speed,
+UHV research: 1.2 UHV bases, see "Open points"). What the MK4 and MK5 do change: half the energy per craft (0.64 MJ per
+recipe second), so a reactor makes 44x to 50x its draw instead of 22x to 25x and the full chain rises from 11.5x to 14.9x
+(helium), 11.7x to 15.3x (nitrogen), 15.7x to 24.5x (tin) and 17.2x to 27.7x (iron). Kept, and listed as an open point.
+
+Tests (`devcheck runtime`): the fuel check test has a UXV turbine on steam and a UEV turbine on naquadah fuel (stopped
+with "Wrong fuel", fluid kept, then they run on helium plasma); the new turbine tier test runs one UHV to UXV turbine each
+(helium, nitrogen, iron plasma) and a UXV one on neon under twice their output: each makes exactly four amps of its tier
+and its hatch holds the cooled fluid for the plasma burnt (helium, nitrogen, molten iron, neon; worst error 1.3e-7).
+
 ### Deviations from GT
 
 * One generator entity per tier and fuel family instead of GT's single multiblocks whose output the dynamo hatch caps;
   no turbine rotor materials, fitting or overflow efficiency; the plasma efficiency is 100 %.
+* No XL plasma turbine (GT++); the UHV to UXV turbines take its place (issue #34, see "Turbines above UV").
 * The cooled fluid goes to a separate output hatch entity (runtime), up to 10 ticks after the plasma was burnt; it is
   exact (see "Cooled fluid" above). What does not fit into the hatches waits in the turbine instead of being voided.
 * The naquadah reactor has no depleted fuel output and no coolant bonus; fuel MK4 to MK6 are not built (orundum, awakened
@@ -952,6 +1025,10 @@ Nothing that was unlocked changes; the recipes this side quest turns from drafts
 --from-ref 0e935ba` and `--from-ref v0.3.0` load. Turbines placed with the sampling version of the cooled fluid (before
 issue #28, not released) keep their owed fluid and run on; `migrate` builds one under load in the old save and checks the
 helium for its plasma after the update (`plasma turbine of the old save`).
+Issue #34 (UHV to UXV turbines): the prototypes of the LuV to UV turbines and of the reactors are unchanged (same names,
+fluid usage 1), `storage.fork_power` keeps its layout; the new turbines are registered like the old ones when they are
+built. Researched `*-naquadah-reactor` techs keep their dynamo hatch. `migrate --from-ref v0.3.1` loads, and its LuV
+turbine returns 2.0000 helium for 2.0000 plasma after the update.
 
 ### Open points
 
@@ -960,10 +1037,19 @@ helium for its plasma after the update (`plasma turbine of the old save`).
   reactor parts.
 * The naquadah fuel line (UV) is more than 100x its processing energy and feeds 2.08 GW per EV blast furnace, stronger per
   unit of energy than any plasma; it is limited by enriched naquadah. Not changed in issue #32.
-* The MK4 and MK5 run the MK1 to MK3 plasma recipes 16 and 32 times as fast as the MK1 (one MK4 on helium: 16.4 GW for
-  327.68 MW); there are no turbines above UV yet, and UEV machines draw 123 to 307 MW each.
-* Graphics: the turbines use the GT large turbine front (tungstensteel) as a top-down sprite, the reactors the GT naquadah
-  reactor casing with the radiation proof casing inside, tinted per tier; the output hatch is the ME fluid interface in
+* ~~The MK4 and MK5 run the MK1 to MK3 plasma recipes 16 and 32 times as fast as the MK1 (one MK4 on helium: 16.4 GW for
+  327.68 MW); there are no turbines above UV yet.~~ Issue #34: UHV to UXV turbines; the MK4 and MK5 speed stays (see
+  "Turbines above UV").
+* The MK3 runs at UV speed but is researched with UHV science (the MK1, MK2, MK4 and MK5 run at the speed of their
+  research tier): at UHV one MK3 (4.1 GW on helium) runs 1.2 UHV bases instead of the 2.4 of the others, and the MK3 to
+  MK4 step is 4x instead of 2x. UHV speed (8.2 GW, 12.5 UHV turbines) would fit the line; not changed in issue #34 (it
+  changes the MK3 numbers of issue #32).
+* The MK4 and MK5 need half the energy per craft (0.64 MJ per recipe second), so their plasmas are 44x to 50x their
+  reactor draw and 15x (helium, nitrogen) to 28x (iron) over the full chain, above the 11x to 17x band of the MK1 to MK3.
+  Kept: at UEV the reactor draw is a small part of the base (one of each UEV machine: 6.9 GW).
+* Graphics: the turbines use the GT large turbine front (tungstensteel) as a top-down sprite (ZPM to UXV tinted in the
+  tier color, like the reactors), the reactors the GT naquadah reactor casing with the radiation proof casing inside,
+  tinted per tier; the output hatch is the ME fluid interface in
   orange; the hatch and part icons are recolored placeholders (`tools/gen_icons.py`).
 * ~~The cooled fluid could become exact with a per-tick sample~~ (done, issue #28: the energy is summed every tick). An
   engine-only turbine (one `fusion-generator` entity per plasma with filtered input and output, or GT's single-block
@@ -972,8 +1058,10 @@ helium for its plasma after the update (`plasma turbine of the old save`).
 * Left of the cooled fluid: a turbine switched off by another mod (`active = false`) keeps its last
   `energy_generated_last_tick` and would be counted; a plasma change within one step can shift at most that step's burn
   between the two plasmas.
-* The MK3 reactor and up make plasma faster than a few turbines burn it (one MK3 on iron plasma: 3.72 GW, 11 UV turbines,
-  before issue #32 14.9 GW); higher tier turbines (UHV+, like GT++'s XL turbines) would use it.
+* ~~The MK3 reactor and up make plasma faster than a few turbines burn it; higher tier turbines (UHV+, like GT++'s XL
+  turbines) would use it.~~ Done in issue #34 (UHV to UXV turbines).
+* Balance of the UHV to UXV turbines is untested in game: their recipe times (60 s of the tier's assembler), the flow
+  of 128 helium plasma per second into one UXV turbine, and whether one per tier is enough steps.
 
 ## Side quest: water purification grades 7 and 8 (done)
 

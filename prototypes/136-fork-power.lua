@@ -3,7 +3,7 @@
 --- Power generation from LuV up the GTNH way, on top of the fusion reactors of 125 to 133:
 ---   * every plasma a fusion reactor makes gets a fuel value (GT5-Unofficial values, 1 EU = 1 kJ
 ---     like the rest of Gregtorio: 32 EU/t of LV = 640 kW)
----   * large plasma turbines (LuV, ZPM, UV; GT: the large plasma turbine, capped by its dynamo
+---   * large plasma turbines (LuV to UXV; GT: the large plasma turbine, capped by its dynamo
 ---     hatch): burn only plasmas, return the cooled fluid (helium plasma -> helium) into a turbine
 ---     output hatch next to them (runtime, scripts/fork-power.lua)
 ---   * the naquadah fuel line of GoodGenerator (acid naquadah emulsion -> emulsion -> solution ->
@@ -126,8 +126,17 @@ end
 --- follow the fuel value. A fluid without fuel value blocks instead of being destroyed; a fuel
 --- the generator does not accept (steam, the other generator's fuels) stops it through
 --- scripts/fork-power.lua (the accepted fuels are in the mod data, section 7).
----   def = { name, size, power, volume, icon }
+--- fluid_usage_per_tick is the most a generator burns per tick, so it also caps the output at
+--- 60 x fuel value per second (one unit of helium plasma per tick: 4.92 GW, of neon plasma:
+--- 1.23 GW). It is set so that the weakest accepted fuel still reaches the cap (issue #34): 1 up
+--- to the UHV turbine and for every naquadah reactor, 2 to 9 units for the UEV to UXV turbines.
+---   def = { name, size, power, volume, icon, min_fuel (J per unit of the weakest accepted fuel) }
 --------------------------------------------------------------------------------
+
+--- "81.92MW" -> 81.92e6
+local function watts(power)
+	return tonumber(power:match("^[%d.]+")) * ({ kW = 1e3, MW = 1e6, GW = 1e9 })[power:match("%a+$")]
+end
 
 local function make_generator(def)
 	local w = def.size
@@ -153,7 +162,7 @@ local function make_generator(def)
 		selection_box = { { -half, -half }, { half, half } },
 		fast_replaceable_group = def.fast_replaceable_group,
 		max_power_output = def.power,
-		fluid_usage_per_tick = 1,
+		fluid_usage_per_tick = math.max(1, math.ceil(watts(def.power) / 60 / def.min_fuel)),
 		effectivity = 1,
 		burns_fluid = true,
 		scale_fluid_usage = true,
@@ -222,10 +231,14 @@ end
 
 
 --------------------------------------------------------------------------------
---- 4) LARGE PLASMA TURBINES (LuV, ZPM, UV)
+--- 4) LARGE PLASMA TURBINES (LuV .. UXV)
 --- GT: tungstensteel turbine casings and frames, a turbine rotor, the dynamo hatch caps the
---- output. Here one 3x3 generator per tier; the ZPM and UV turbines are upgrades of the LuV
---- one (the replaced dynamo hatch comes back, like the multiblock upgrades of the tiers).
+--- output. Here one 3x3 generator per tier; ZPM to UXV are upgrades of the tier below (the
+--- replaced dynamo hatch comes back, like the multiblock upgrades of the tiers). Issue #34 added
+--- UHV to UXV: each MKn fusion reactor feeds 12.5 turbines of its own machine tier on helium
+--- plasma (MK1 LuV, MK2 ZPM, MK3 UV, MK4 UEV, MK5 UIV). GT++'s XL plasma turbine (16 turbines in
+--- one, any dynamo hatches) is not followed: the tier of the dynamo hatch caps every generator
+--- here, see docs/ROADMAP.md, "Endgame power".
 --------------------------------------------------------------------------------
 
 create_item{
@@ -359,12 +372,18 @@ local function upgrade(base, tier, kind, hulls)
 		main_product = name,
 	}
 end
-upgrade("luv", "zpm", "large-plasma-turbine", 1)
-upgrade("luv", "uv", "large-plasma-turbine", 1)
+local TURBINE_TIERS = { "luv", "zpm", "uv", "uhv", "uev", "uiv", "umv", "uxv" }
+for i = 2, #TURBINE_TIERS do
+	upgrade("luv", TURBINE_TIERS[i], "large-plasma-turbine", 1)
+end
 
-for _, tier in pairs({ "luv", "zpm", "uv" }) do
+local min_plasma = math.huge
+for _, p in pairs(PLASMAS) do
+	if data.raw.fluid[p[1]] then min_plasma = math.min(min_plasma, p[2] * 1e3) end
+end
+for _, tier in pairs(TURBINE_TIERS) do
 	make_generator{
-		name = tier .. "-large-plasma-turbine", size = 3, power = CAP[tier], volume = 1000,
+		name = tier .. "-large-plasma-turbine", size = 3, power = CAP[tier], volume = 1000, min_fuel = min_plasma,
 		icon = FORK_ICON_PATH .. tier .. "-large-plasma-turbine.png",
 		fast_replaceable_group = "fr-large-plasma-turbine",
 	}
@@ -563,9 +582,11 @@ create_item{
 for _, tier in pairs({ "uhv", "uev", "uiv", "umv", "uxv" }) do
 	upgrade("uv", tier, "large-naquadah-reactor", 4)
 end
+local min_fuel = math.huge
+for _, f in pairs(FUELS) do min_fuel = math.min(min_fuel, f[2] * 1e3) end
 for _, tier in pairs({ "uv", "uhv", "uev", "uiv", "umv", "uxv" }) do
 	make_generator{
-		name = tier .. "-large-naquadah-reactor", size = 5, power = CAP[tier], volume = 1000,
+		name = tier .. "-large-naquadah-reactor", size = 5, power = CAP[tier], volume = 1000, min_fuel = min_fuel,
 		icon = FORK_ICON_PATH .. tier .. "-large-naquadah-reactor.png",
 		fast_replaceable_group = "fr-large-naquadah-reactor",
 	}
@@ -584,7 +605,8 @@ for _, p in pairs(PLASMAS) do
 	if data.raw.fluid[p[1]] then plasma_fuels[#plasma_fuels + 1] = p[1] end
 end
 for _, f in pairs(FUELS) do reactor_fuels[#reactor_fuels + 1] = f[1] end
-local turbines = { "luv-large-plasma-turbine", "zpm-large-plasma-turbine", "uv-large-plasma-turbine" }
+local turbines = {}
+for _, tier in pairs(TURBINE_TIERS) do turbines[#turbines + 1] = tier .. "-large-plasma-turbine" end
 local fuels = {}
 for _, n in pairs(turbines) do fuels[n] = plasma_fuels end
 for _, tier in pairs({ "uv", "uhv", "uev", "uiv", "umv", "uxv" }) do
@@ -623,6 +645,17 @@ F.tech{
 	name = "uv-plasma-turbine", prerequisites = { "zpm-plasma-turbine", "uv-energy-hatches" }, packs = 9, count = 2500,
 	recipes = { "uv-dynamo-hatch", "uv-large-plasma-turbine" },
 }
+--- UHV to UXV (issue #34): the dynamo hatch of the tier is also unlocked by the naquadah reactor
+--- of the tier, whichever comes first
+for i = 4, #TURBINE_TIERS do
+	local tier = TURBINE_TIERS[i]
+	F.tech{
+		name = tier .. "-plasma-turbine",
+		prerequisites = { TURBINE_TIERS[i - 1] .. "-plasma-turbine", tier .. "-energy-hatches" },
+		packs = i + 6, count = 2500,
+		recipes = { tier .. "-dynamo-hatch", tier .. "-large-plasma-turbine" },
+	}
+end
 F.tech{
 	name = "naquadah-fuels", prerequisites = { "fusion-plasmas-mk2", "enriched-naquadah" }, packs = 8, count = 3000,
 	recipes = {
