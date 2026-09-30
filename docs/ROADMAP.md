@@ -62,7 +62,7 @@ New technologies (all LuV science):
 
 Outside the phases: some vanilla technologies (armor equipment, inserter capacity bonus,
 `bulk-inserter`, `explosives`, ...) are not researchable in `devcheck`; that was already the case
-before phase 1 and has not been looked into yet (listed and sorted in the final pass of phase 5b).
+before phase 1 (listed and sorted in the final pass of phase 5b; the quality-of-life ones are researchable since issue #29).
 
 ### Suggested next step (done in phase 2)
 
@@ -615,9 +615,50 @@ Intentional (vanilla equipment, armor and military techs the mod does not use; b
 `fusion-reactor` (the vanilla one; Gregtorio has its own fusion techs), `fusion-reactor-equipment`, `mech-armor`, `modular-armor`, `night-vision-equipment`,
 `personal-roboport-equipment`, `personal-roboport-mk2-equipment`, `power-armor`, `power-armor-mk2`, `spidertron`, `explosives` (`sulfur-processing`).
 
-Open (quality-of-life techs whose vanilla gate is disabled; either re-gate them onto a Gregtorio tech or hide them): `bulk-inserter`, `stack-inserter`,
-`inserter-capacity-bonus-1` to `-7` (`advanced-circuit`, `carbon-fiber`), `transport-belt-capacity-1` and `-2`, `logistics-3` and `turbo-transport-belt` (`lubricant`),
-`worker-robots-speed-1` to `-7` and `worker-robots-storage-1` to `-3` (`robotics`).
+Quality-of-life (issue #29, done): the 23 techs whose vanilla gate is disabled (`advanced-circuit`, `carbon-fiber`, `lubricant`, `robotics`) are researchable
+now. `prototypes/103-fork-qol-techs.lua` replaces their prerequisites with the Gregtorio tech of their tier and their packs with the Gregtorio packs of that tier,
+with the counts and times of the neighbouring tier techs (MV 3 packs 30 s, HV 4 packs 30 s, EV 5 packs 45 s, IV 6 packs 60 s, LuV 7 packs 90 s, ZPM 8 packs 120 s;
+the highest pack costs 1, the ones below 2, 3, 5, 8, 12, 18, 28 like in `98-technology.lua`). Nothing is hidden: the mod has construction and logistic robots
+(`t1-construction-robot`, `t1-logistic-robot`, MV), so the worker robot techs have something to act on.
+
+Numbers: researchable technologies 332 -> 355 of 374 (the 23), draft recipes hidden by the draft guard 21 -> 21, auto-unlocked recipes unchanged (the
+`FORK-DRAFT` and `FORK-AUTOUNLOCK` lines are identical), the unlocks of every technology unchanged (the 23 unlock the same recipes as before), unlocked but
+uncraftable recipes 0. `devcheck check` now fails if an enabled technology outside the 19 intentional ones (`UNRESEARCHABLE_OK`) cannot be researched, or if one of
+the 23 (`QOL_TECHS`) is neither researchable nor hidden.
+
+Belts follow the mod's own belts: the transport belt is LV (steam age), the fast belt MV with an LV conveyor module; express is HV with an MV conveyor module,
+turbo EV with an HV conveyor module (splitters: two pistons of that tier). The vanilla recipes they unlock get GT recipes in `crafting-or-assembling-recipes`
+(hand crafting and assembling machines, like the fast belts and inserters); their vanilla ingredients (lubricant, carbon fiber, jelly, tungsten plate, the vanilla
+`processing-unit` counts) are gone, and the turbo recipes lose their Vulcanus-only surface condition. The recycling recipes follow the new ingredients (generated
+by the quality mod after the data stage). No other technology depends on the 23, so saves are not affected (none of them could be researched before).
+
+| Technology | Tier | Prerequisites | Packs, count | Recipe |
+|---|---|---|---|---|
+| `bulk-inserter` | MV | `fast-inserter`, `logistics-2`, `mv-components` | 3 packs, 300 | fast inserter, MV robot arm, 2 MV circuits, 2 aluminium plates |
+| `inserter-capacity-bonus-1` | MV | `bulk-inserter` | 3 packs, 300 | (bulk inserter capacity +1 only, so it stays behind the bulk inserter) |
+| `inserter-capacity-bonus-2` | MV | `inserter-capacity-bonus-1` | 3 packs, 360 | |
+| `inserter-capacity-bonus-3` | HV | `inserter-capacity-bonus-2`, `chemical-science-pack` | 4 packs, 450 | |
+| `inserter-capacity-bonus-4` | HV | `inserter-capacity-bonus-3` | 4 packs, 550 | |
+| `inserter-capacity-bonus-5` | EV | `inserter-capacity-bonus-4`, `production-science-pack` | 5 packs, 600 | |
+| `inserter-capacity-bonus-6` | EV | `inserter-capacity-bonus-5` | 5 packs, 600 | |
+| `inserter-capacity-bonus-7` | IV | `inserter-capacity-bonus-6`, `utility-science-pack` | 6 packs, 800 | |
+| `stack-inserter` | HV | `bulk-inserter`, `hv-components` | 4 packs, 500 | bulk inserter, HV robot arm, 2 HV circuits, 2 stainless steel plates |
+| `logistics-3` | HV | `logistics-2`, `hv-components` | 4 packs, 450 | 4 fast belts + MV conveyor module -> 4; 2 fast undergrounds + MV conveyor module -> 2; fast splitter + 2 MV pistons |
+| `turbo-transport-belt` | EV | `logistics-3`, `ev-components` | 5 packs, 600 | 4 express belts + HV conveyor module -> 4; 2 express undergrounds + HV conveyor module -> 2; express splitter + 2 HV pistons |
+| `transport-belt-capacity-1` | EV | `stack-inserter`, `production-science-pack` | 5 packs, 600 | (belt stack size, used by stack inserters) |
+| `transport-belt-capacity-2` | IV | `transport-belt-capacity-1`, `utility-science-pack` | 6 packs, 800 | |
+| `worker-robots-speed-1` | MV | `construction-robotics`, `logistic-robotics` | 3 packs, 340 | |
+| `worker-robots-speed-2` | HV | `worker-robots-speed-1`, `chemical-science-pack` | 4 packs, 450 | |
+| `worker-robots-speed-3` | HV | `worker-robots-speed-2` | 4 packs, 550 | |
+| `worker-robots-speed-4` | EV | `worker-robots-speed-3`, `production-science-pack` | 5 packs, 600 | |
+| `worker-robots-speed-5` | IV | `worker-robots-speed-4`, `utility-science-pack` | 6 packs, 800 | |
+| `worker-robots-speed-6` | LuV | `worker-robots-speed-5`, `space-science-pack` | 7 packs, 1000 | |
+| `worker-robots-speed-7` | ZPM | `worker-robots-speed-6`, `metallurgic-science-pack` | 8 packs, `2^(L-6)*1000` (infinite, 2000 for level 7) | |
+| `worker-robots-storage-1` | MV | `logistic-robotics` | 3 packs, 340 | |
+| `worker-robots-storage-2` | HV | `worker-robots-storage-1`, `chemical-science-pack` | 4 packs, 500 | |
+| `worker-robots-storage-3` | EV | `worker-robots-storage-2`, `production-science-pack` | 5 packs, 600 | |
+
+The inserter capacity bonuses start at MV instead of LV: level 1 only raises the bulk inserter capacity, and the bulk inserter is MV.
 
 ### Open points from phase 5b
 
@@ -641,7 +682,8 @@ Side quests, in the order that helps the endgame most:
 3. ~~Water purification grades 7 (degasifier) and 8 (quark extraction), FPIC/APIC chips and complex SMDs, which would let the QPIC stand-ins of the UEV to UXV hatches go.~~
    (done, see "Side quest: water purification grades 7 and 8").
 4. ~~AE2 autocrafting~~ (done, see "Side quest: AE2 autocrafting").
-5. The technologies of the final pass list: decide for each "open" one whether it gets a Gregtorio gate or is hidden.
+5. ~~The technologies of the final pass list: decide for each "open" one whether it gets a Gregtorio gate or is hidden.~~ (done, issue #29: all 23 are
+   researchable, see "Final pass" above).
 6. A MAX tier (MAX circuit, hatch, machines, and the GT items the stargate could take) if the endgame should go on after `victory`.
 
 ## Side quest: endgame power (done)
