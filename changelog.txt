@@ -1,9 +1,13 @@
 ---------------------------------------------------------------------------------------------------
 Version: 0.3.2
   Features:
+    - Lapotronic Energy Orbs technology (ZPM): the lapotronic energy orb and a second recipe for the lapotronic energy orb cluster in the circuit assembler (eight orbs, qubit CPU chips, naquadah alloy).
+    - High density plutonium (wrapped plutonium ingot, high density plutonium nugget from the implosion compressor, high density plutonium), unlocked by Naquadah Fuels.
     - Large Plasma Turbines for UHV (655.36 MW), UEV (1.31 GW), UIV (2.62 GW), UMV (5.24 GW) and UXV (10.49 GW), each an upgrade of the turbine one tier below with the dynamo hatch and a hull of its tier, unlocked by the technologies UHV to UXV Plasma Turbine. One fusion reactor feeds about 12 turbines of its own tier: MK3 UV, MK4 UEV, MK5 UIV turbines.
   Changes:
     - The UHV to UXV dynamo hatches are also unlocked by the plasma turbine technology of their tier.
+    - Plutonium based liquid fuel takes one high density plutonium (like GregTech) instead of 64 plutonium 239 dust.
+    - Removed draft content that could never be made and that belongs to other mods (Thaumcraft infused gold, thaumium, magic essence, void and shadow metal, ichorium; force, astral titanium and runite plasma; the atomic separation catalyst, orundum and the naquadah fuel cracking).
   Balancing:
     - Fusion power: one Fusion Reactor MK1 makes about 1 GW of helium plasma (12.5 per second, 12 LuV plasma turbines) instead of 5.12 GW; an MK2 makes about 2 GW, an MK3 about 4 GW. The cheap plasmas give 11x to 17x the energy of their whole input chain instead of up to 70x.
     - Helium-3: 50 per compressed end stone in 200 s instead of 100 in 40 s.
