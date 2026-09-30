@@ -7,8 +7,9 @@
   minimal. Fork logic lives in `prototypes/1xx-fork-*.lua`, loaded at the end of `data.lua`
   in this order: 100 fixes, 101 machines, 102 resources, 103 QoL techs (re-gates the vanilla inserter, belt and
   worker robot techs of issue #29 onto Gregtorio techs, GT recipes for bulk/stack inserters and express/turbo belts), 110 LuV, 120 AE2 (ME network),
-  121 AE2 autocrafting (pattern provider, molecular assembler, crafting CPU; runtime in
-  `scripts/fork-me-autocraft.lua`, guide `docs/AE2.md`), 122 AE2 fluids (fluid cells, fluid drives,
+  121 AE2 autocrafting (pattern provider, molecular assembler, crafting CPU and its IV/LuV tiers, level
+  maintainer, circuit interface; runtime in `scripts/fork-me-autocraft.lua` and `scripts/fork-me-circuit.lua`,
+  guide `docs/AE2.md`), 122 AE2 fluids (fluid cells, fluid drives,
   fluid interface; runtime in `scripts/fork-me-fluids.lua`), 125 LuV endgame (naquadah, bacterial vat, crystal processors, fusion MK1), 126 ZPM, 127 UV
   (UV circuit, ZPM assembly line, UV components, fusion MK2), 128 UHV (wetware line, tritanium,
   UHV components, fusion MK3), 129 water purification (grades 1-8, NPIC/PPIC/QPIC/FPIC/APIC chips, complex SMDs; the FPIC/APIC users in 131-134 list its techs as prerequisites),
@@ -28,7 +29,9 @@
   `FORK_CRAFTING_MENU_HIDDEN`, devcheck fails otherwise; startup setting in `settings.lua`), 199 finalize.
   The phase plan is in `docs/ROADMAP.md`.
   Runtime fork code lives in `scripts/` and is required from `control.lua` (`fork-me-terminal.lua`,
-  `fork-me-autocraft.lua`, `fork-me-fluids.lua`, `fork-molds.lua`, `fork-victory.lua`, `fork-power.lua`).
+  `fork-me-autocraft.lua`, `fork-me-fluids.lua`, `fork-me-circuit.lua`, `fork-molds.lua`, `fork-victory.lua`,
+  `fork-power.lua`). `fork-me-circuit.lua` registers no interval: it runs as a step hook of the autocrafting
+  step (20), and the terminal module registers every GUI event and routes it (fluids, circuit).
   Tick intervals in use: `on_nth_tick` 60 (ME terminal), 30 (molds), 20 (autocrafting), 15 (fluids);
   `on_tick` (fork-power: turbine energy every tick, fuel check and output hatches every 10th tick);
   registrations for the same interval (or a second `on_tick`) overwrite each other, so a new periodic
