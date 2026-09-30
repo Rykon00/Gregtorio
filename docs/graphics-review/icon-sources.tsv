@@ -151,18 +151,18 @@ long-tritanium-rod	colour of Tritanium #600000 + gt:gregtech/textures/items/mate
 long-universium-rod	colour of Universium #263145 + gt:gregtech/textures/items/materialicons/CUSTOM/universium/stickLong
 ludicrous-voltage-coil	gt:gregtech/textures/items/gt.metaitem.03/146
 luv-circuit-assembly-line	gt:gregtech/textures/blocks/iconsets/MACHINE_CASING_ASSEMBLER + gt:gregtech/textures/blocks/iconsets/OVERLAY_FRONT_ASSEMBLY_MATRIX + gt:gregtech/textures/blocks/iconsets/MACHINE_CASING_GRATE
-luv-conveyor-module	gt:gregtech/textures/items/gt.metaitem.01/635
+luv-conveyor-module	gt:gregtech/textures/items/gt.metaitem.01/635 + lifted for dark slots, light outline
 luv-dynamo-hatch	gt:gregtech/textures/blocks/iconsets/MACHINE_LuV_SIDE + gt:gregtech/textures/blocks/iconsets/OVERLAY_ENERGY_OUT_MULTI_2A_LuV
-luv-emitter	gt:gregtech/textures/items/gt.metaitem.01/685
+luv-emitter	gt:gregtech/textures/items/gt.metaitem.01/685 + lifted for dark slots, light outline
 luv-energy-hatch	gt:gregtech/textures/blocks/iconsets/MACHINE_LuV_SIDE + gt:gregtech/textures/blocks/iconsets/OVERLAY_ENERGY_IN_MULTI_2A_LuV
-luv-field-generator	gt:gregtech/textures/items/gt.metaitem.01/675
+luv-field-generator	gt:gregtech/textures/items/gt.metaitem.01/675 + lifted for dark slots, light outline
 luv-machine-casing	gt:gregtech/textures/blocks/iconsets/MACHINE_LuV_SIDE
 luv-machine-hull	gt:gregtech/textures/blocks/iconsets/MACHINE_LuV_SIDE + gt:gregtech/textures/blocks/iconsets/OVERLAY_ENERGY_OUT_LuV
-luv-motor	gt:gregtech/textures/items/gt.metaitem.01/606
-luv-piston	gt:gregtech/textures/items/gt.metaitem.01/645
-luv-pump	gt:gregtech/textures/items/gt.metaitem.01/615
-luv-robot-arm	gt:gregtech/textures/items/gt.metaitem.01/655
-luv-sensor	gt:gregtech/textures/items/gt.metaitem.01/695
+luv-motor	gt:gregtech/textures/items/gt.metaitem.01/606 + lifted for dark slots, light outline
+luv-piston	gt:gregtech/textures/items/gt.metaitem.01/645 + lifted for dark slots, light outline
+luv-pump	gt:gregtech/textures/items/gt.metaitem.01/615 + lifted for dark slots, light outline
+luv-robot-arm	gt:gregtech/textures/items/gt.metaitem.01/655 + lifted for dark slots, light outline
+luv-sensor	gt:gregtech/textures/items/gt.metaitem.01/695 + lifted for dark slots, light outline
 luv-superconductor-wire-16x	
 magnetic-samarium-rod	colour of SamariumMagnetic #ffffcc + gt:gregtech/textures/items/materialicons/MAGNETIC/stick + gt:gregtech/textures/items/materialicons/MAGNETIC/stick_OVERLAY
 mega-ultimate-voltage-coil	gt:gregtech/textures/items/gt.metaitem.03/261
@@ -290,58 +290,58 @@ tritanium-round	colour of Tritanium #600000 + gt:gregtech/textures/items/materia
 tritanium-screw	colour of Tritanium #600000 + gt:gregtech/textures/items/materialicons/NONE/screw
 tungstensteel-turbine-blade	colour of TungstenSteel #6464a0 + gt:gregtech/textures/items/materialicons/METALLIC/turbineBlade
 tungstensteel-turbine-rotor	colour of TungstenSteel #6464a0 + gt:gregtech/textures/items/materialicons/NONE/toolTurbine
-uev-conveyor-module	gt:gregtech/textures/items/gt.metaitem.01/639
+uev-conveyor-module	gt:gregtech/textures/items/gt.metaitem.01/639 + lifted for dark slots, light outline
 uev-dynamo-hatch	gt:gregtech/textures/blocks/iconsets/MACHINE_UEV_SIDE + gt:gregtech/textures/blocks/iconsets/OVERLAY_ENERGY_OUT_MULTI_2A_UEV
-uev-emitter	gt:gregtech/textures/items/gt.metaitem.01/689
+uev-emitter	gt:gregtech/textures/items/gt.metaitem.01/689 + lifted for dark slots, light outline
 uev-energy-hatch	gt:gregtech/textures/blocks/iconsets/MACHINE_UEV_SIDE + gt:gregtech/textures/blocks/iconsets/OVERLAY_ENERGY_IN_MULTI_2A_UEV
-uev-field-generator	gt:gregtech/textures/items/gt.metaitem.01/679
+uev-field-generator	gt:gregtech/textures/items/gt.metaitem.01/679 + lifted for dark slots, light outline
 uev-machine-casing	gt:gregtech/textures/blocks/iconsets/MACHINE_UEV_SIDE
 uev-machine-hull	gt:gregtech/textures/blocks/iconsets/MACHINE_UEV_SIDE + gt:gregtech/textures/blocks/iconsets/OVERLAY_ENERGY_OUT_UEV
-uev-motor	gt:gregtech/textures/items/gt.metaitem.01/595
-uev-piston	gt:gregtech/textures/items/gt.metaitem.01/649
-uev-pump	gt:gregtech/textures/items/gt.metaitem.01/619
-uev-robot-arm	gt:gregtech/textures/items/gt.metaitem.01/659
-uev-sensor	gt:gregtech/textures/items/gt.metaitem.01/699
+uev-motor	gt:gregtech/textures/items/gt.metaitem.01/595 + lifted for dark slots, light outline
+uev-piston	gt:gregtech/textures/items/gt.metaitem.01/649 + lifted for dark slots, light outline
+uev-pump	gt:gregtech/textures/items/gt.metaitem.01/619 + lifted for dark slots, light outline
+uev-robot-arm	gt:gregtech/textures/items/gt.metaitem.01/659 + lifted for dark slots, light outline
+uev-sensor	gt:gregtech/textures/items/gt.metaitem.01/699 + lifted for dark slots, light outline
 uhpic-wafer	gt:gregtech/textures/items/gt.metaitem.03/58
-uhv-conveyor-module	gt:gregtech/textures/items/gt.metaitem.01/638
+uhv-conveyor-module	gt:gregtech/textures/items/gt.metaitem.01/638 + lifted for dark slots, light outline
 uhv-dynamo-hatch	gt:gregtech/textures/blocks/iconsets/MACHINE_UHV_SIDE + gt:gregtech/textures/blocks/iconsets/OVERLAY_ENERGY_OUT_MULTI_2A_UHV
-uhv-emitter	gt:gregtech/textures/items/gt.metaitem.01/688
+uhv-emitter	gt:gregtech/textures/items/gt.metaitem.01/688 + lifted for dark slots, light outline
 uhv-energy-hatch	gt:gregtech/textures/blocks/iconsets/MACHINE_UHV_SIDE + gt:gregtech/textures/blocks/iconsets/OVERLAY_ENERGY_IN_MULTI_2A_UHV
-uhv-field-generator	gt:gregtech/textures/items/gt.metaitem.01/678
+uhv-field-generator	gt:gregtech/textures/items/gt.metaitem.01/678 + lifted for dark slots, light outline
 uhv-machine-casing	gt:gregtech/textures/blocks/iconsets/MACHINE_UHV_SIDE
 uhv-machine-hull	gt:gregtech/textures/blocks/iconsets/MACHINE_UHV_SIDE + gt:gregtech/textures/blocks/iconsets/OVERLAY_ENERGY_OUT_UHV
-uhv-motor	gt:gregtech/textures/items/gt.metaitem.01/596
-uhv-piston	gt:gregtech/textures/items/gt.metaitem.01/648
-uhv-pump	gt:gregtech/textures/items/gt.metaitem.01/618
-uhv-robot-arm	gt:gregtech/textures/items/gt.metaitem.01/658
-uhv-sensor	gt:gregtech/textures/items/gt.metaitem.01/698
-uiv-conveyor-module	gt:gregtech/textures/items/gt.metaitem.01/29
+uhv-motor	gt:gregtech/textures/items/gt.metaitem.01/596 + lifted for dark slots, light outline
+uhv-piston	gt:gregtech/textures/items/gt.metaitem.01/648 + lifted for dark slots, light outline
+uhv-pump	gt:gregtech/textures/items/gt.metaitem.01/618 + lifted for dark slots, light outline
+uhv-robot-arm	gt:gregtech/textures/items/gt.metaitem.01/658 + lifted for dark slots, light outline
+uhv-sensor	gt:gregtech/textures/items/gt.metaitem.01/698 + lifted for dark slots, light outline
+uiv-conveyor-module	gt:gregtech/textures/items/gt.metaitem.01/29 + lifted for dark slots, light outline
 uiv-dynamo-hatch	gt:gregtech/textures/blocks/iconsets/MACHINE_UIV_SIDE + gt:gregtech/textures/blocks/iconsets/OVERLAY_ENERGY_OUT_MULTI_2A_UIV
-uiv-emitter	gt:gregtech/textures/items/gt.metaitem.01/37
+uiv-emitter	gt:gregtech/textures/items/gt.metaitem.01/37 + lifted for dark slots, light outline
 uiv-energy-hatch	gt:gregtech/textures/blocks/iconsets/MACHINE_UIV_SIDE + gt:gregtech/textures/blocks/iconsets/OVERLAY_ENERGY_IN_MULTI_2A_UIV
-uiv-field-generator	gt:gregtech/textures/items/gt.metaitem.01/45
+uiv-field-generator	gt:gregtech/textures/items/gt.metaitem.01/45 + lifted for dark slots, light outline
 uiv-machine-casing	gt:gregtech/textures/blocks/iconsets/MACHINE_UIV_SIDE
 uiv-machine-hull	gt:gregtech/textures/blocks/iconsets/MACHINE_UIV_SIDE + gt:gregtech/textures/blocks/iconsets/OVERLAY_ENERGY_OUT_UIV
-uiv-motor	gt:gregtech/textures/items/gt.metaitem.01/17
-uiv-piston	gt:gregtech/textures/items/gt.metaitem.01/21
-uiv-pump	gt:gregtech/textures/items/gt.metaitem.01/25
-uiv-robot-arm	gt:gregtech/textures/items/gt.metaitem.01/33
-uiv-sensor	gt:gregtech/textures/items/gt.metaitem.01/41
+uiv-motor	gt:gregtech/textures/items/gt.metaitem.01/17 + lifted for dark slots, light outline
+uiv-piston	gt:gregtech/textures/items/gt.metaitem.01/21 + lifted for dark slots, light outline
+uiv-pump	gt:gregtech/textures/items/gt.metaitem.01/25 + lifted for dark slots, light outline
+uiv-robot-arm	gt:gregtech/textures/items/gt.metaitem.01/33 + lifted for dark slots, light outline
+uiv-sensor	gt:gregtech/textures/items/gt.metaitem.01/41 + lifted for dark slots, light outline
 ultimate-voltage-coil	gt:gregtech/textures/items/gt.metaitem.03/148
 ultra-high-powered-integrated-circuit	gt:gregtech/textures/items/gt.metaitem.03/59
 umv-circuit	core:dreamcraft/textures/items/itemCircuitUMV
-umv-conveyor-module	gt:gregtech/textures/items/gt.metaitem.01/30
+umv-conveyor-module	gt:gregtech/textures/items/gt.metaitem.01/30 + lifted for dark slots, light outline
 umv-dynamo-hatch	gt:gregtech/textures/blocks/iconsets/MACHINE_UMV_SIDE + gt:gregtech/textures/blocks/iconsets/OVERLAY_ENERGY_OUT_MULTI_2A_UMV
-umv-emitter	gt:gregtech/textures/items/gt.metaitem.01/38
+umv-emitter	gt:gregtech/textures/items/gt.metaitem.01/38 + lifted for dark slots, light outline
 umv-energy-hatch	gt:gregtech/textures/blocks/iconsets/MACHINE_UMV_SIDE + gt:gregtech/textures/blocks/iconsets/OVERLAY_ENERGY_IN_MULTI_2A_UMV
-umv-field-generator	gt:gregtech/textures/items/gt.metaitem.01/46
+umv-field-generator	gt:gregtech/textures/items/gt.metaitem.01/46 + lifted for dark slots, light outline
 umv-machine-casing	gt:gregtech/textures/blocks/iconsets/MACHINE_UMV_SIDE
 umv-machine-hull	gt:gregtech/textures/blocks/iconsets/MACHINE_UMV_SIDE + gt:gregtech/textures/blocks/iconsets/OVERLAY_ENERGY_OUT_UMV
-umv-motor	gt:gregtech/textures/items/gt.metaitem.01/18
-umv-piston	gt:gregtech/textures/items/gt.metaitem.01/22
-umv-pump	gt:gregtech/textures/items/gt.metaitem.01/26
-umv-robot-arm	gt:gregtech/textures/items/gt.metaitem.01/34
-umv-sensor	gt:gregtech/textures/items/gt.metaitem.01/42
+umv-motor	gt:gregtech/textures/items/gt.metaitem.01/18 + lifted for dark slots, light outline
+umv-piston	gt:gregtech/textures/items/gt.metaitem.01/22 + lifted for dark slots, light outline
+umv-pump	gt:gregtech/textures/items/gt.metaitem.01/26 + lifted for dark slots, light outline
+umv-robot-arm	gt:gregtech/textures/items/gt.metaitem.01/34 + lifted for dark slots, light outline
+umv-sensor	gt:gregtech/textures/items/gt.metaitem.01/42 + lifted for dark slots, light outline
 universium-cable	colour of Universium #263145
 universium-foil	colour of Universium #263145 + gt:gregtech/textures/items/materialicons/CUSTOM/universium/foil
 universium-frame	colour of Universium #263145 + gt:gregtech/textures/blocks/materialicons/NONE/frameGt
@@ -354,18 +354,18 @@ universium-rotor	colour of Universium #263145 + gt:gregtech/textures/items/mater
 universium-round	colour of Universium #263145 + gt:gregtech/textures/items/materialicons/CUSTOM/universium/round
 universium-screw	colour of Universium #263145 + gt:gregtech/textures/items/materialicons/CUSTOM/universium/screw
 universium-wire	colour of Universium #263145
-uv-conveyor-module	gt:gregtech/textures/items/gt.metaitem.01/637
+uv-conveyor-module	gt:gregtech/textures/items/gt.metaitem.01/637 + lifted for dark slots, light outline
 uv-dynamo-hatch	gt:gregtech/textures/blocks/iconsets/MACHINE_UV_SIDE + gt:gregtech/textures/blocks/iconsets/OVERLAY_ENERGY_OUT_MULTI_2A_UV
-uv-emitter	gt:gregtech/textures/items/gt.metaitem.01/687
+uv-emitter	gt:gregtech/textures/items/gt.metaitem.01/687 + lifted for dark slots, light outline
 uv-energy-hatch	gt:gregtech/textures/blocks/iconsets/MACHINE_UV_SIDE + gt:gregtech/textures/blocks/iconsets/OVERLAY_ENERGY_IN_MULTI_2A_UV
-uv-field-generator	gt:gregtech/textures/items/gt.metaitem.01/677
+uv-field-generator	gt:gregtech/textures/items/gt.metaitem.01/677 + lifted for dark slots, light outline
 uv-machine-casing	gt:gregtech/textures/blocks/iconsets/MACHINE_UV_SIDE
 uv-machine-hull	gt:gregtech/textures/blocks/iconsets/MACHINE_UV_SIDE + gt:gregtech/textures/blocks/iconsets/OVERLAY_ENERGY_OUT_UV
-uv-motor	gt:gregtech/textures/items/gt.metaitem.01/608
-uv-piston	gt:gregtech/textures/items/gt.metaitem.01/647
-uv-pump	gt:gregtech/textures/items/gt.metaitem.01/617
-uv-robot-arm	gt:gregtech/textures/items/gt.metaitem.01/657
-uv-sensor	gt:gregtech/textures/items/gt.metaitem.01/697
+uv-motor	gt:gregtech/textures/items/gt.metaitem.01/608 + lifted for dark slots, light outline
+uv-piston	gt:gregtech/textures/items/gt.metaitem.01/647 + lifted for dark slots, light outline
+uv-pump	gt:gregtech/textures/items/gt.metaitem.01/617 + lifted for dark slots, light outline
+uv-robot-arm	gt:gregtech/textures/items/gt.metaitem.01/657 + lifted for dark slots, light outline
+uv-sensor	gt:gregtech/textures/items/gt.metaitem.01/697 + lifted for dark slots, light outline
 uxv-circuit	core:dreamcraft/textures/items/itemCircuitUXV
 uxv-dynamo-hatch	gt:gregtech/textures/blocks/iconsets/MACHINE_UXV_SIDE + gt:gregtech/textures/blocks/iconsets/OVERLAY_ENERGY_OUT_MULTI_2A_UXV
 uxv-energy-hatch	gt:gregtech/textures/blocks/iconsets/MACHINE_UXV_SIDE + gt:gregtech/textures/blocks/iconsets/OVERLAY_ENERGY_IN_MULTI_2A_UXV
@@ -379,15 +379,15 @@ wetware-processor-supercomputer	gt:gregtech/textures/items/gt.metaitem.03/94
 wrapped-plutonium-ingot	gt:goodgenerator/textures/items/wrappedPlutoniumIngot
 zero-point-module-voltage-coil	gt:gregtech/textures/items/gt.metaitem.03/147
 zpm-assembly-line	gt:gregtech/textures/blocks/iconsets/MACHINE_CASING_ASSEMBLER + gt:gregtech/textures/blocks/iconsets/OVERLAY_FRONT_ASSEMBLY_LINE + gt:gregtech/textures/blocks/iconsets/MACHINE_CASING_GRATE
-zpm-conveyor-module	gt:gregtech/textures/items/gt.metaitem.01/636
+zpm-conveyor-module	gt:gregtech/textures/items/gt.metaitem.01/636 + lifted for dark slots, light outline
 zpm-dynamo-hatch	gt:gregtech/textures/blocks/iconsets/MACHINE_ZPM_SIDE + gt:gregtech/textures/blocks/iconsets/OVERLAY_ENERGY_OUT_MULTI_2A_ZPM
-zpm-emitter	gt:gregtech/textures/items/gt.metaitem.01/686
+zpm-emitter	gt:gregtech/textures/items/gt.metaitem.01/686 + lifted for dark slots, light outline
 zpm-energy-hatch	gt:gregtech/textures/blocks/iconsets/MACHINE_ZPM_SIDE + gt:gregtech/textures/blocks/iconsets/OVERLAY_ENERGY_IN_MULTI_2A_ZPM
-zpm-field-generator	gt:gregtech/textures/items/gt.metaitem.01/676
+zpm-field-generator	gt:gregtech/textures/items/gt.metaitem.01/676 + lifted for dark slots, light outline
 zpm-machine-casing	gt:gregtech/textures/blocks/iconsets/MACHINE_ZPM_SIDE
 zpm-machine-hull	gt:gregtech/textures/blocks/iconsets/MACHINE_ZPM_SIDE + gt:gregtech/textures/blocks/iconsets/OVERLAY_ENERGY_OUT_ZPM
-zpm-motor	gt:gregtech/textures/items/gt.metaitem.01/607
-zpm-piston	gt:gregtech/textures/items/gt.metaitem.01/646
-zpm-pump	gt:gregtech/textures/items/gt.metaitem.01/616
-zpm-robot-arm	gt:gregtech/textures/items/gt.metaitem.01/656
-zpm-sensor	gt:gregtech/textures/items/gt.metaitem.01/696
+zpm-motor	gt:gregtech/textures/items/gt.metaitem.01/607 + lifted for dark slots, light outline
+zpm-piston	gt:gregtech/textures/items/gt.metaitem.01/646 + lifted for dark slots, light outline
+zpm-pump	gt:gregtech/textures/items/gt.metaitem.01/616 + lifted for dark slots, light outline
+zpm-robot-arm	gt:gregtech/textures/items/gt.metaitem.01/656 + lifted for dark slots, light outline
+zpm-sensor	gt:gregtech/textures/items/gt.metaitem.01/696 + lifted for dark slots, light outline

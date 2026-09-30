@@ -25,7 +25,7 @@ placeholder icon; an item without a GT source is reported and keeps its icon).
 import argparse, re, warnings
 warnings.filterwarnings("ignore", category=DeprecationWarning)
 from pathlib import Path
-from PIL import Image, ImageDraw
+from PIL import Image, ImageDraw, ImageFilter
 
 ROOT = Path(__file__).resolve().parent.parent
 ICONS = ROOT / "graphics/icons"
@@ -60,6 +60,9 @@ COMPONENT_IDS = {
     "field-generator": [675, 676, 677, 678, 679, 45, 46, 47],
 }
 HIGH_TIERS = ["luv", "zpm", "uv", "uhv", "uev", "uiv", "umv", "uxv"]
+# Composer.readable: gamma for the dark tones and the colour of the outline of the component icons
+READABLE_GAMMA = 0.6
+READABLE_OUTLINE = (176, 176, 184)
 
 # fusion reactor MK -> (casing, coil, controller face): GT MK1-MK3, then the casings of GT++ and the coils and
 # screens of GoodGenerator's compact fusion computers MK-IV and MK-V (the same art gen_sprites.py uses)
@@ -355,6 +358,24 @@ class Composer:
                     px[x, y] = tuple(min(255, int(c * (0.35 + l))) for c in rgb) + (a,)
         return img
 
+    def readable(self, img):
+        """For Factorio's dark slots: GT draws its components in one untinted pass for Minecraft's light
+        grey slot, many in near-black greys or as thin outlines. Dark tones are lifted with a gamma curve
+        (keeps the hue, so the tier colour stays) and the shape gets a 1 px light outline."""
+        self.t.trace.append("lifted for dark slots, light outline")
+        img = fit(img).copy()
+        px = img.load()
+        for y in range(SIZE):
+            for x in range(SIZE):
+                r, g, b, a = px[x, y]
+                if a:
+                    px[x, y] = tuple(int(255 * (c / 255) ** READABLE_GAMMA) for c in (r, g, b)) + (a,)
+        mask = img.getchannel("A").point(lambda a: 255 if a else 0).filter(ImageFilter.MaxFilter(3))
+        out = Image.new("RGBA", (SIZE, SIZE), READABLE_OUTLINE + (0,))
+        out.putalpha(mask)
+        out.alpha_composite(img)
+        return out
+
     def badge(self, base, mark, factor=0.5):
         """a small GT part in the bottom right corner of a GT texture"""
         out = fit(base).copy()
@@ -375,7 +396,7 @@ def icon_table(c):
     # tier components (LuV .. UXV) and the tier parts GT has
     for part, ids in COMPONENT_IDS.items():
         for tier, i in zip(HIGH_TIERS, ids):
-            T[f"{tier}-{part}"] = lambda i=i: c.gt(f"{M1}{i}")
+            T[f"{tier}-{part}"] = lambda i=i: c.readable(c.gt(f"{M1}{i}"))
     for tier in HIGH_TIERS:
         T[f"{tier}-machine-casing"] = lambda t=tier: c.casing(t)
         T[f"{tier}-machine-hull"] = lambda t=tier: c.hatch(t, "OVERLAY_ENERGY_OUT_{T}")

@@ -21,6 +21,7 @@ UEV = cryogenic, UIV = promethium, then UMV / UXV / max (the stargate).
 | 5b | UMV, UXV, MAX and the endgame (stargate, victory), fusion MK5 | **done** (`prototypes/133-fork-umv.lua`, `134-fork-uxv.lua`, `135-fork-endgame.lua`, `scripts/fork-victory.lua`) |
 | side | Water purification line: grades 1-8, the NPIC to APIC chips and complex SMDs | **done** (`prototypes/129-fork-water-purification.lua`, see "Side quest: water purification grades 7 and 8") |
 | side | AE2 autocrafting (patterns, molecular assembler on top of the ME network from `120-fork-ae2.lua`) and fluids in the ME network (fluid drives, fluid interface, fluid recipes as patterns) | **done** (`prototypes/121-fork-ae2-autocrafting.lua`, `122-fork-ae2-fluids.lua`, `scripts/fork-me-autocraft.lua`, `scripts/fork-me-fluids.lua`, `docs/AE2.md`) |
+| side | AE2 extras (issue #38): level maintainer, crafting CPU tiers, circuit interface, fluid interface settings in blueprints | **done** (`prototypes/121-fork-ae2-autocrafting.lua`, `scripts/fork-me-circuit.lua`, see "AE2 extras" below) |
 | side | Endgame power: plasma turbines (LuV to UXV, the UHV to UXV ones from issue #34), naquadah fuel line and large naquadah reactors, dynamo hatches LuV to UXV | **done** (`prototypes/136-fork-power.lua`, `scripts/fork-power.lua`, see "Side quest: endgame power") |
 | side | Drafts and endgame materials: triage of every draft, super coolant, fluxed electrum, bedrockium, quantium (issues #39, #36) | **done** (`prototypes/137-fork-endgame-materials.lua`, see "Drafts and endgame materials") |
 | side | Graphics: item and technology icons from GT textures instead of placeholders, own sprites for fusion MK4/MK5, a tier look for the UHV to UXV machines, plasma turbines and naquadah reactors (issues #40, #41) | **done** (`tools/gen_gt_icons.py`, `tools/gen_sprites.py`, review sheets and inventory in `docs/graphics-review/`) |
@@ -1340,7 +1341,8 @@ Numbers: researchable technologies 317 -> 319 of 359 -> 361 (the two new ones), 
 ### Open points
 
 * One temperature per fluid: exported at the default temperature (hot steam loses its heat); recipes that need another temperature
-  are not patterns. No fluid in blueprints (documented limit); no per-drive fluid type limits or filters; the export
+  are not patterns. No fluid contents in blueprints (documented limit; the fluid interface settings are kept since issue
+  #38); no per-drive fluid type limits or filters; the export
   level applies to the interface's own box (connected pipes share it). The fluid GUIs are untested in the real game.
 * Recovery (issue #26, done): a destroyed drive's fluid goes into the other drives of its network, the rest is kept as recovered
   fluid (per surface, with its position) that the next drive placed in that network (or the drive GUI's Take over button) takes
@@ -1357,6 +1359,40 @@ Numbers: researchable technologies 317 -> 319 of 359 -> 361 (the two new ones), 
   cloning, `previous_recipe` as fallback, furnaces without either counted as `no-recipe`. Open: a furnace whose input fits two of
   its recipes may smelt the other one (the job fails and returns its items); the window, paste and blueprint event are untested
   in the real game.
-* One job per CPU, no co-processor or CPU storage tiers, no "keep N in stock", no circuit network interface.
+* ~~One job per CPU, no co-processor or CPU storage tiers, no "keep N in stock", no circuit network interface.~~ Done in
+  "AE2 extras (issue #38)": CPU tiers with job slots and speed (no CPU storage: job sizes stay unlimited), the level
+  maintainer, the circuit interface. ~~No fluid in blueprints~~: fluid interface settings are kept (drive contents stay
+  on the item by design).
 * The terminal GUI cannot be run headless: its layout (tabs, craft list, job list) and the sprites need a look in the real game;
   balance of costs, speeds and tier is untested.
+
+### AE2 extras (issue #38, done)
+
+Player guide and design: `docs/AE2.md` ("CPU tiers", "Keeping items in stock", "Circuit network", "Settings in blueprints
+and copy/paste"). Numbers: 3 new technologies (`me-automation` EV, `me-co-processing` IV, `me-quantum-crafting` LuV), all
+researchable; 4 new recipes and nothing else unlocked or auto-unlocked (`FORK-AUTOUNLOCK` unchanged).
+
+* **Keep N in stock:** ME Level Maintainer (1x1 lamp, 30 kW, EV): one item or fluid and an amount; below it, a crafting job for
+  the difference starts when a pattern exists and a powered CPU has a free slot; no second job while a job of the network
+  crafts that resource. The lamp's circuit condition switches it; "amount from the circuit" reads the resource's signal.
+* **CPU tiers:** ME Co-Processing Crafting CPU (IV: 2 jobs, 2x hand-overs) and ME Quantum Crafting CPU (LuV: 4 jobs, 4x), upgrade
+  planner chain from the ME Crafting CPU. Numbers in the mod-data `fork-me-autocraft`; all jobs of a step share 96 hand-overs.
+* **Circuit interface:** ME Circuit Interface (constant combinator, EV tech): items (with quality) and fluids (floored) of the
+  network, or only its filters (20), refreshed about once a second.
+* **Fluids in blueprints:** the fluid interface's mode, fluid and level are blueprint tags and copied by settings paste and
+  cloning; the fluid drive has no settings (its contents stay on the item).
+* **Tick budget:** no new interval: a step hook of the autocrafting step (20 ticks) checks 4 maintainers (at most one job start)
+  and updates 2 circuit interfaces, round robin.
+* **Tests:** `tools/devcheck` runtime: level maintainer (exactly one job, stops at N, refills the difference, circuit amount and
+  condition), CPU tiers (two jobs at once, a third waits, quantum slots), circuit interface (wire equals the contents, filters,
+  change), settings copy (blueprint tags, built and revived, paste, clone). `migrate --from-ref v0.3.1`: a job started with the
+  old version finishes on the old CPU after the update.
+
+#### Open points
+
+* Untested in the real game: the maintainer and circuit interface panels (relative to the lamp and combinator GUIs), the lamp
+  GUI's circuit condition set by hand, settings paste by hand between fluid interfaces (the prototype allows it through
+  `additional_pastable_entities`), the upgrade planner on CPUs, the new sprites, balance of costs and tiers.
+* No crafting request of several resources from the circuit network (AE2's "craft what the signal asks for"); one maintainer per
+  resource. No CPU storage (AE2 crafting storage): a job's size is not limited by its CPU.
+* The circuit interface refreshes 2 interfaces per 20 ticks: with many interfaces each is refreshed less than once a second.

@@ -7,6 +7,9 @@ Version: 0.3.2
     - Fluxed electrum (ZPM), bedrockium (UV) and quantium (UHV), each with its technology; bedrockium and quantium come from new end microminer recipes.
     - Space coolant cells (UHV): the 180k, 540k and 1080k space cells and the 1080k super coolant cell.
     - Large Plasma Turbines for UHV (655.36 MW), UEV (1.31 GW), UIV (2.62 GW), UMV (5.24 GW) and UXV (10.49 GW), each an upgrade of the turbine one tier below with the dynamo hatch and a hull of its tier, unlocked by the technologies UHV to UXV Plasma Turbine. One fusion reactor feeds about 12 turbines of its own tier: MK3 UV, MK4 UEV, MK5 UIV turbines.
+    - ME Level Maintainer (technology ME Automation, EV): keeps an amount of an item or fluid in the ME network by starting a crafting job for the difference, one job at a time. Its lamp circuit condition switches it on and off; it can take the amount from a circuit signal.
+    - ME Circuit Interface (technology ME Automation): puts the items and fluids of the ME network, or only the filtered ones, onto the circuit network.
+    - ME Co-Processing Crafting CPU (IV, two jobs at once, twice as fast) and ME Quantum Crafting CPU (LuV, four jobs at once, four times as fast). The upgrade planner swaps Crafting CPU tiers.
   Changes:
     - The UHV to UXV dynamo hatches are also unlocked by the plasma turbine technology of their tier.
     - Plutonium based liquid fuel takes one high density plutonium (like GregTech) instead of 64 plutonium 239 dust.
@@ -15,6 +18,8 @@ Version: 0.3.2
     - The UHV components take bedrockium cable instead of tritanium cable, the UEV machine casing bedrockium plates; the UEV components take molten quantium instead of molten cosmic neutronium, the UMV components quantium cable instead of spacetime cable.
     - Removed draft content that could never be made and that belongs to other mods (Thaumcraft infused gold, thaumium, magic essence, void and shadow metal, ichorium; force, astral titanium and runite plasma; the atomic separation catalyst, orundum and the naquadah fuel cracking).
     - ME Fluid Drives: recovered fluid flows into the fluid drives of its network by itself as soon as they have room (for example after an export), not only into a newly placed drive. The chat reports it once when all of it is back.
+    - ME Fluid Interface: mode, fluid and fill level are copied with the entity settings (shift right click, shift left click) and kept in blueprints and clones.
+    - The Crafting tab of the ME Terminal shows the job slots of the network's Crafting CPUs.
     - ME Fluid Drives: upgrading a loaded drive (upgrade planner with robots, or fast replace by hand) moves its fluid into the new drive; what does not fit goes into the network, the rest becomes recovered fluid. The old drive item comes back empty.
   Balancing:
     - Fusion power: one Fusion Reactor MK1 makes about 1 GW of helium plasma (12.5 per second, 12 LuV plasma turbines) instead of 5.12 GW; an MK2 makes about 2 GW, an MK3 about 4 GW. The cheap plasmas give 11x to 17x the energy of their whole input chain instead of up to 70x.
