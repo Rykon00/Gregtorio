@@ -30,6 +30,7 @@ The repository root is the mod itself (`info.json`, `data.lua`, `prototypes/`, `
 | `prototypes/134-fork-uxv.lua` | UXV: universium parts and cable, eternity superconductor, temporal line (UXV circuit), UXV components, casing and hull, UXV science pack, energy hatch, machines and multiblock upgrades, techs |
 | `prototypes/135-fork-endgame.lua` | endgame: the stargate and its parts from UXV parts, the MAX science pack, the tech `stargate` |
 | `prototypes/136-fork-power.lua` | endgame power: fuel values of the plasmas, plasma balance (issue #32: helium-3 yield, fusion recipe times and inputs), large plasma turbines (LuV to UXV) with turbine output hatches for the cooled fluid, the naquadah fuel line (acid emulsion, emulsion, solution, light and heavy naquadah fuel, naquadah based fuel MK1 to MK3, the excited uranium and plutonium fuels), large naquadah reactors (UV to UXV), dynamo hatches LuV to UXV, techs |
+| `prototypes/137-fork-endgame-materials.lua` | issues #39 and #36: the drafts removed for good (Thaumcraft, GT++ RuneScape plasmas, atomic separation catalyst and naquadah fuel cracking; deleted, `FORK-REMOVED` in the log), the circuit assembler recipe of the lapotronic energy orb cluster (tech `lapotronic-energy-orbs`), high density plutonium for the plutonium based liquid fuel |
 | `scripts/fork-power.lua` | the cooled fluid of the plasma turbines: the plasma a turbine burns (its energy, summed every tick) goes as the cooled fluid into the turbine output hatches next to it, one unit per unit |
 | `scripts/fork-victory.lua` | researching the first level of the tech `victory` wins the game (the game can be continued) |
 | `prototypes/150-fork-molds.lua` | molds stay in the machine: the mold is a module in a mold-only slot of alloy smelters, fluid solidifiers and extruders instead of an ingredient or machine component |
@@ -69,7 +70,7 @@ The repository root is the mod itself (`info.json`, `data.lua`, `prototypes/`, `
 | UXV | playable (fork); temporal line and UXV circuit, UXV components, science pack, energy hatch and machines (see `docs/ROADMAP.md`) |
 | MAX, stargate, victory | playable (fork); the stargate makes 1000 MAX science packs, the first level of `victory` wins the game. Balance of the last tiers is untested in the real game |
 | Endgame power | playable (fork); plasma turbines LuV to UXV, the naquadah fuel line and large naquadah reactors from UV, dynamo hatches LuV to UXV (see `docs/ROADMAP.md`, "Side quest: endgame power") |
-| Drafts | the rest of the GTNH endgame chains (UU matter, naquadah fuel MK4+, ...) is draft; broken recipes are hidden on load (`FORK-DRAFT` in the log) |
+| Drafts | every draft is triaged (`docs/ROADMAP.md`, "Drafts and endgame materials"): made real, replaced or removed for good; the draft guard (`FORK-DRAFT` in the log) may only hide the documented rest list (`DRAFTS_OK` in `tools/devcheck/devcheck.py`) |
 
 ## Workflow
 

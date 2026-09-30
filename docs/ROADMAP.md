@@ -22,6 +22,7 @@ UEV = cryogenic, UIV = promethium, then UMV / UXV / max (the stargate).
 | side | Water purification line: grades 1-8, the NPIC to APIC chips and complex SMDs | **done** (`prototypes/129-fork-water-purification.lua`, see "Side quest: water purification grades 7 and 8") |
 | side | AE2 autocrafting (patterns, molecular assembler on top of the ME network from `120-fork-ae2.lua`) and fluids in the ME network (fluid drives, fluid interface, fluid recipes as patterns) | **done** (`prototypes/121-fork-ae2-autocrafting.lua`, `122-fork-ae2-fluids.lua`, `scripts/fork-me-autocraft.lua`, `scripts/fork-me-fluids.lua`, `docs/AE2.md`) |
 | side | Endgame power: plasma turbines (LuV to UXV, the UHV to UXV ones from issue #34), naquadah fuel line and large naquadah reactors, dynamo hatches LuV to UXV | **done** (`prototypes/136-fork-power.lua`, `scripts/fork-power.lua`, see "Side quest: endgame power") |
+| side | Drafts and endgame materials: triage of every draft, super coolant, fluxed electrum, bedrockium, quantium (issues #39, #36) | PR 1 done, PR 2 open (`prototypes/137-fork-endgame-materials.lua`, see "Drafts and endgame materials") |
 | side | Graphics and balance of the tiers from UHV up in the real game | open |
 
 ## Phase 1: LuV (done)
@@ -49,8 +50,8 @@ New technologies (all LuV science):
 ### Open points from phase 1
 
 - Still drafts, need later tiers: crystal processor mainframe (UV circuit, ITBTC/enderium
-  superconductor wire), force plasma (arcanite), all MK2+ fusion recipes, lapotronic energy orb
-  cluster (qubit processing unit, naquadah alloy foil), ~~the naquadah fuel line
+  superconductor wire), ~~force plasma (arcanite)~~ (removed, issue #39), all MK2+ fusion recipes, ~~lapotronic energy orb
+  cluster (qubit processing unit, naquadah alloy foil)~~ (issue #39, see "Drafts and endgame materials"), ~~the naquadah fuel line
   (`acid-naquadah-emulsion`, naquadah fuels for the naquadah generator)~~ (done in "Side quest: endgame power").
 - ~~Plasmas are only ingredients so far; there is no plasma generator (GT plasma turbine).~~ Done in "Side quest: endgame power".
 - Fusion in GT needs a start-up energy buffer per recipe; here it is a normal machine with a
@@ -213,7 +214,7 @@ Existing saves that already researched `zpm-components` lose the ZPM field gener
 - Wetware processors (UHV circuit) and the UHV field generator: phase 4. The UV field generator stays on 8 UV
   circuits until then.
 - PPIC and NPIC chips need the water purification line; the MK2 controller and the ZPM/UV hatches use UHPICs.
-- Still drafts: force plasma (arcanite), astral titanium and runite plasma, ~~the liquid fuels and the naquadah
+- Still drafts: ~~force plasma (arcanite), astral titanium and runite plasma~~ (removed, issue #39), ~~the liquid fuels and the naquadah
   fuel (`excited-*-liquid-fuel`, `naquadah-based-fuel-mk1`)~~ (done in "Side quest: endgame power"), `advanced-fusion-coil` (needs the UHV emitter).
 - `fusion-machine-casing-mk2` is a real recipe now (americium plate) but no tech unlocks it: it belongs to the MK3.
 - ~~Plasmas are still only ingredients; there is no plasma generator.~~ Done in "Side quest: endgame power".
@@ -337,7 +338,7 @@ in game.
 
 ### Open points from phase 4
 
-- Still drafts: force plasma (arcanite), astral titanium and runite plasma, ~~the liquid fuels and the naquadah fuel~~ (done in "Side quest: endgame power"),
+- Still drafts: ~~force plasma (arcanite), astral titanium and runite plasma~~ (removed, issue #39), ~~the liquid fuels and the naquadah fuel~~ (done in "Side quest: endgame power"),
   the MK4 and MK5 reactors (`fusion-reactor-mk4-controller` needs UEV circuits, `fusion-machine-casing-mk3` a category
   typo `uvh-...`, `advanced-fusion-coil-ii` the energy module), the UEV, UIV and UMV superconductor coil blocks,
   bio cells.
@@ -668,9 +669,9 @@ The inserter capacity bonuses start at MV instead of LV: level 1 only raises the
 - Not built: the GT quantum force transformer, dimensional plasma forge, godforge, magmatter, dark matter, mellion, shirabon, six-phased copper, the eye of harmony and the
   UXV/MAX-only items of `90-uxv-age-item.lua` (mega ultimate battery, ridiculously large capacitor, artificial universe cell, ...). There is no MAX tier: no MAX circuit,
   hatch or machines.
-- Still drafts (29, 21 since the endgame power side quest): force plasma (arcanite), astral titanium and runite plasma, ~~the liquid fuels and naquadah fuel~~, plutonium/high-density plutonium, super coolant, UU
-  matter (magic essence, void/shadow metal, ichorium), 1080k space cell, the naquadah cracking chains, orundum, the lapotronic energy orb cluster draft, bio cells for
-  microminers.
+- Still drafts (29, 21 since the endgame power side quest): ~~force plasma (arcanite), astral titanium and runite plasma~~ (removed), ~~the liquid fuels and naquadah fuel~~, ~~plutonium/high-density plutonium~~ (made real), super coolant, ~~UU
+  matter (magic essence, void/shadow metal, ichorium)~~ (removed), 1080k space cell, ~~the naquadah cracking chains, orundum~~ (removed), ~~the lapotronic energy orb cluster draft~~ (made real), ~~bio cells for
+  microminers~~ (the tier five infused gold microminer, removed). Issue #39, see "Drafts and endgame materials"; super coolant and the space cell follow in PR 2 (issue #36).
 
 ### Suggested next step
 
@@ -685,6 +686,104 @@ Side quests, in the order that helps the endgame most:
 5. ~~The technologies of the final pass list: decide for each "open" one whether it gets a Gregtorio gate or is hidden.~~ (done, issue #29: all 23 are
    researchable, see "Final pass" above).
 6. A MAX tier (MAX circuit, hatch, machines, and the GT items the stargate could take) if the endgame should go on after `victory`.
+
+## Drafts and endgame materials (issues #39 and #36)
+
+Two pull requests: **PR 1** (issue #39) triages every draft the draft guard still hid and closes the ones that need no new
+material; **PR 2** (issue #36) adds the endgame materials the GT drafts expect and closes the drafts that depend on them.
+Everything is in `prototypes/137-fork-endgame-materials.lua` (loaded after 136, whose plutonium fuel and dynamo hatches it
+changes).
+
+Decisions: **(a)** made real, built from what the mod has and adapted like the phases did; **(b)** removed for good: the
+recipes and the items only they used are deleted in 137 (`FORK-REMOVED` in the log), so neither the draft guard nor the
+crafting menu, Factoriopedia or the quality recycling recipes ever see them; **(c)** the missing part is replaced by an
+existing item.
+
+### Triage of the drafts (issue #39)
+
+The 21 recipes of `FORK-DRAFT` before (the list of "Still drafts" in phases 1 to 5b):
+
+| Draft recipe | Missing | Decision | Tier | Technology | PR |
+|---|---|---|---|---|---|
+| `lapotronic-energy-orb-cluster` (circuit assembler) | qubit processing unit | (c) GT's QBit processing unit is the qubit CPU chip | ZPM | `lapotronic-energy-orbs` (new) | 1 |
+| `force-plasma` | molten arcanite | (b) GT++ RuneScape/WoW materials (arcanite: thorium, energy crystal and Thaumcraft aspects); nothing needs the plasma | - | - | 1 |
+| `astral-titanium-plasma` | force plasma | (b) same chain | - | - | 1 |
+| `runite-plasma` | astral titanium plasma, molten titansteel | (b) same chain (titansteel: Thaumcraft aspects) | - | - | 1 |
+| `wrapped-plutonium-ingot` | plutonium oxide-uranium mixture | (c) its metal content: 3 plutonium 239 and 1 uranium 238 dust per wrap | ZPM | `naquadah-fuels` | 1 |
+| `high-density-plutonium-nugget` | HSS-S dust (byproduct) | (c) byproduct left out | ZPM | `naquadah-fuels` | 1 |
+| `high-density-plutonium-eic` | UEV electric implosion compressor | (b) GT's EIC is not built, the implosion compressors have no fluid input for its neutronium, and the nugget route makes the same item | - | - | 1 |
+| `microminer-infused-gold` ("bio cells for microminers": the tier five microminer) | tier five microminer output | (b) Thaumcraft infused gold; the whole infused gold ore line goes with it | - | - | 1 |
+| `magic-essence` | UU matter | (b) Thaumcraft (salis mundis) | - | - | 1 |
+| `void-metal-dust` | UU matter | (b) Thaumcraft (thaumium goes with it) | - | - | 1 |
+| `shadow-metal-dust` | UU matter | (b) Thaumcraft addon | - | - | 1 |
+| `ichorium-dust` | UU matter | (b) Thaumic Tinkerer | - | - | 1 |
+| `raw-atomic-separation-catalyst` | blaze powder | (b) GoodGenerator's catalyst of blaze powder, manyullyn/ardite (Tinkers) and orundum (Arknights); only the fuel cracking uses it | - | - | 1 |
+| `orundum-plate` | tiberium plate | (b) same chain | - | - | 1 |
+| `hot-atomic-separation-catalyst-ingot` | molten plutonium 239 | (b) same chain (the vacuum freezer step `atomic-separation-catalyst-ingot` goes with it) | - | - | 1 |
+| `naquadah-solution-cracking` | cracked naquadah heavy fuel | (b) the naquadah fuel cracking needs the catalyst above, naquadah asphalt and thulium/thorium melts; the fuel line of the endgame power side quest works without it | - | - | 1 |
+| `naquadah-heavy-fuel-cracking` | naquadah heavy fuel | (b) same | - | - | 1 |
+| `naquadah-asphalt-cracking` | naquadah asphalt | (b) same | - | - | 1 |
+| `super-coolant` | callisto ice dust | (a) with callisto ice and ledox from the end microminer | see materials | see materials | 2 |
+| `1080k-space-cell` | dense fluxed electrum plate | (a) with fluxed electrum | see materials | see materials | 2 |
+| `1080k-super-coolant-cell` | super coolant | (a) with super coolant | see materials | see materials | 2 |
+
+Removed with them (items only these drafts used): raw and crushed infused gold, infused gold dust (and the three ore
+processing recipes), salis mundis, thaumium dust, magic essence, void metal, shadow metal and ichorium dust, raw atomic
+separation catalyst, orundum plate, hot and cold atomic separation catalyst ingot, the bogus item
+`high-density-plutonium-eic`: 14 items and 21 recipes (35 `FORK-REMOVED` lines). No technology unlocked any of them; the
+fork-power mod data and the other recipes never referenced them (the draft guard would report a recipe that did). Their
+icons stay in `graphics/icons/` (unused).
+
+### Triage of the endgame materials (issue #36)
+
+| Material | Built | How (GT source) | Replaces (stand-in -> real) | Tier | Technology | PR |
+|---|---|---|---|---|---|---|
+| super coolant | yes | the draft (HV mixer: ledox dust, callisto ice dust, lapis coolant); ledox and callisto ice from a new end microminer recipe (GT: ores on Europa/Callisto and space mining asteroids) | grade 5 water (GT: 100 super coolant per craft, none here before), grade 7 water (cryogenic helium), UIV/UMV/UXV energy and dynamo hatches (cryogenic helium; GT uses super coolant from UIV up, UHV and UEV use IC2 coolant) | LuV | `super-coolant` | 2 |
+| 1080k super coolant cell | yes | the drafts: 180k -> 540k -> 1080k space cell (tungstensteel, the dense fluxed electrum plate), canned with 600 super coolant (GT: `Reactor_Coolant_Sp_6`) | UEV 2, UIV 4, UMV 6, UXV 8 cells per energy and dynamo hatch (GT) | UHV | `space-coolant-cells` | 2 |
+| fluxed electrum | yes | electrum, redstone and naquadah dust -> ZPM blast furnace and vacuum freezer, melt from the ZPM alloy blast smelter (GT: 9000 K, the dust recipe is not in GT5-Unofficial, Redstone Arsenal's is electrum + redstone) | UV voltage coil (fine americium wire), UHV emitter and sensor (tritanium foil), fusion MK3 controller (tritanium melt), naquadah fuel MK2 (naquadria dust) | ZPM | `fluxed-electrum` | 2 |
+| bedrockium | yes | new end microminer recipe (upstream draft `microminer-bedrockium`, GT: cosmic asteroid) -> the existing ore line -> UV blast furnace (GT: 9900 K) | UHV cable in the eight UHV components (tritanium cable), UEV casing (cosmic neutronium plates) | UV | `bedrockium` | 2 |
+| quantium | yes | new end microminer recipe (GT: ore on Venus/Horus, niobium asteroid) -> UHV blast furnace (GT: 9900 K), melt from the extractor | UEV components (cosmic neutronium melt), UMV cable in the eight UMV components (spacetime cable) | UHV | `quantium` | 2 |
+| UU matter | no | GT: mass fabricator (energy, optionally UU amplifier from scrap) | - | - | - | 2 |
+
+Not switched, on purpose:
+
+- **The UHV parts stay tritanium** (phase 5a): only their cable becomes bedrockium, which is a UV material here, so nothing moves
+  in front of its tier. The tritanium cable stays in the UHV machines and hull.
+- **The uranium based liquid fuel keeps naquadah dust** for GT's quantium dust: the fuel is ZPM (`naquadah-fuels`), quantium UHV.
+- **The UHV and UEV hatches keep cryogenic helium** (GT: IC2 coolant, not super coolant).
+- **The tritanium coil stays the UHV blast furnace coil**: GT's fluxed electrum coil is its 9901 K coil level, above the UHV one.
+- **UU matter is not built.** Its magic consumers are removed. The rest are the MK4 fusion parts, where it is one of four fluids
+  (with cinobite, octiron and astral titanium, none of them in the mod; tritanium and cosmic neutronium melt stand in for all four)
+  and the UEV to UXV hatches (which leave it out). It needs GT's mass fabricator, a machine the fork does not have. Open point.
+
+### Numbers
+
+PR 1: researchable technologies 360 -> 361 of 379 -> 380 (the new `lapotronic-energy-orbs`), draft recipes hidden by the
+draft guard 21 -> 3 (the documented rest list `DRAFTS_OK` of `tools/devcheck/devcheck.py`: the three drafts of PR 2), auto-unlocked
+recipes 54 -> 53, machines placed by `devcheck runtime` 510 -> 510, unlocked but uncraftable recipes 0, crafting menu check green
+(2745 -> 2750 machine recipes shown, 241 kept hidden).
+
+`FORK-AUTOUNLOCK` differs by one line, on purpose: `advanced-smds -> fine-niobium-titanium-wire` is gone because the wire is now
+unlocked by `advanced-smds` explicitly. The cluster uses the wire, and the auto-unlock would have visited the new tech first and
+moved the wire there (the tech-by-tech diff showed it); the explicit unlock keeps it where it was.
+
+Tech by tech against `origin/main`: prerequisites and science packs of the 379 existing technologies are unchanged; the only
+changed unlocks are `naquadah-fuels` (+ wrapped plutonium ingot, high density plutonium nugget, high density plutonium) and the
+new tech (lapotronic energy orb, the cluster's circuit assembler recipe). No unlock was lost or moved (`advanced-smds` keeps the
+fine niobium-titanium wire).
+
+### Existing saves
+
+- `plutonium-based-liquid-fuel` takes 1 high density plutonium (GT) instead of 64 plutonium 239 dust; its three steps are
+  unlocked by `naquadah-fuels`, which saves that have the fuel researched already.
+- The removed items could never be made (no technology unlocked their recipes); if a save holds some (console), Factorio drops
+  them on load.
+- `migrate --from-ref v0.3.1` loads.
+
+### Open points
+
+- UU matter (see above), and GT's super coolant in the bio and optical circuits, the PCB factory and the fridge casing.
+- Balance of the new chains is untested in game.
 
 ## Side quest: endgame power (done)
 
@@ -1014,7 +1113,8 @@ and its hatch holds the cooled fluid for the plasma burnt (helium, nitrogen, mol
   exact (see "Cooled fluid" above). What does not fit into the hatches waits in the turbine instead of being voided.
 * The naquadah reactor has no depleted fuel output and no coolant bonus; fuel MK4 to MK6 are not built (orundum, awakened
   draconium, hypogen, atomic separation catalyst are not in the mod). The chain skips naquadah asphalt, the cracking of the
-  fuels, antimony trioxide, tiberium, high density uranium and plutonium and the naquadah fuel refinery.
+  fuels (removed for good in issue #39 with the atomic separation catalyst), antimony trioxide, tiberium, high density uranium
+  and ~~plutonium~~ (high density plutonium is built since issue #39) and the naquadah fuel refinery.
 * GT's single-block naquadah reactors (naquadah rods) and single-block plasma generators are not built.
 
 ### Existing saves

@@ -399,7 +399,8 @@ end
 ---   -> light and heavy naquadah fuel, naquadah gas, water (distillation tower)
 ---   light + heavy -> naquadah based fuel MK1 (fusion MK2), MK2 (UHV mixer), MK3 (UEV mixer)
 --- Shortened against GT: no naquadah asphalt and no cracking of the fuels, no antimony
---- trioxide, no tiberium, no high density uranium/plutonium (uranium and plutonium dust instead),
+--- trioxide, no tiberium, no high density uranium (uranium dust instead; high density plutonium
+--- replaces the plutonium dust in 137-fork-endgame-materials.lua),
 --- no naquadah fuel refinery. The liquid nuclear fuels of GoodGenerator (uranium, plutonium) are
 --- mixed from dust and "excited" in the fusion reactor MK2 (the drafts).
 --- Fuel values: GoodGenerator GGConfigLoader (basic output x burning time per mB, 1 EU = 1 kJ).
@@ -434,8 +435,9 @@ for _, f in pairs(FUELS) do data.raw.fluid[f[1]].fuel_value = eu(f[2]) end
 
 --- The drafts: the emulsion has no antimony trioxide (no such item), the sludge centrifuging
 --- no calcium and tiberium dust (no such items), the fuel MK1 takes GT's amounts (the draft had
---- a tenth), the plutonium fuel takes plutonium dust instead of high density plutonium (whose
---- chain is a draft) and neutronium ingots instead of dust (no dust here), and makes GT's 1000 units
+--- a tenth), the plutonium fuel takes plutonium dust instead of high density plutonium (the
+--- chain is made real in 137-fork-endgame-materials.lua, which switches the fuel to it) and
+--- neutronium ingots instead of dust (no dust here), and makes GT's 1000 units
 do
 	local r = data.raw.recipe["naquadah-emulsion"]
 	if r then

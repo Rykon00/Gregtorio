@@ -62,6 +62,7 @@ FORK_TECH_ICONS = {
 	["iv-components"] = true,
 	["iv-energy-hatches"] = true,
 	["iv-machines"] = true,
+	["lapotronic-energy-orbs"] = true,
 	["large-electric-compressor"] = true,
 	["large-extractor"] = true,
 	["large-naquadah-reactor"] = true,
