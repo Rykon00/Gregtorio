@@ -21,8 +21,11 @@ UEV = cryogenic, UIV = promethium, then UMV / UXV / max (the stargate).
 | 5b | UMV, UXV, MAX and the endgame (stargate, victory), fusion MK5 | **done** (`prototypes/133-fork-umv.lua`, `134-fork-uxv.lua`, `135-fork-endgame.lua`, `scripts/fork-victory.lua`) |
 | side | Water purification line: grades 1-8, the NPIC to APIC chips and complex SMDs | **done** (`prototypes/129-fork-water-purification.lua`, see "Side quest: water purification grades 7 and 8") |
 | side | AE2 autocrafting (patterns, molecular assembler on top of the ME network from `120-fork-ae2.lua`) and fluids in the ME network (fluid drives, fluid interface, fluid recipes as patterns) | **done** (`prototypes/121-fork-ae2-autocrafting.lua`, `122-fork-ae2-fluids.lua`, `scripts/fork-me-autocraft.lua`, `scripts/fork-me-fluids.lua`, `docs/AE2.md`) |
-| side | Endgame power: plasma turbines, naquadah fuel line and large naquadah reactors, dynamo hatches LuV to UXV | **done** (`prototypes/136-fork-power.lua`, `scripts/fork-power.lua`, see "Side quest: endgame power") |
-| side | Graphics and balance of the tiers from UHV up in the real game | open |
+| side | AE2 extras (issue #38): level maintainer, crafting CPU tiers, circuit interface, fluid interface settings in blueprints | **done** (`prototypes/121-fork-ae2-autocrafting.lua`, `scripts/fork-me-circuit.lua`, see "AE2 extras" below) |
+| side | Endgame power: plasma turbines (LuV to UXV, the UHV to UXV ones from issue #34), naquadah fuel line and large naquadah reactors, dynamo hatches LuV to UXV | **done** (`prototypes/136-fork-power.lua`, `scripts/fork-power.lua`, see "Side quest: endgame power") |
+| side | Drafts and endgame materials: triage of every draft, super coolant, fluxed electrum, bedrockium, quantium (issues #39, #36) | **done** (`prototypes/137-fork-endgame-materials.lua`, see "Drafts and endgame materials") |
+| side | Graphics: item and technology icons from GT textures instead of placeholders, own sprites for fusion MK4/MK5, a tier look for the UHV to UXV machines, plasma turbines and naquadah reactors (issues #40, #41) | **done** (`tools/gen_gt_icons.py`, `tools/gen_sprites.py`, review sheets and inventory in `docs/graphics-review/`) |
+| side | Balance of the tiers from UHV up in the real game, and a look at the new graphics there | open |
 
 ## Phase 1: LuV (done)
 
@@ -49,8 +52,8 @@ New technologies (all LuV science):
 ### Open points from phase 1
 
 - Still drafts, need later tiers: crystal processor mainframe (UV circuit, ITBTC/enderium
-  superconductor wire), force plasma (arcanite), all MK2+ fusion recipes, lapotronic energy orb
-  cluster (qubit processing unit, naquadah alloy foil), ~~the naquadah fuel line
+  superconductor wire), ~~force plasma (arcanite)~~ (removed, issue #39), all MK2+ fusion recipes, ~~lapotronic energy orb
+  cluster (qubit processing unit, naquadah alloy foil)~~ (issue #39, see "Drafts and endgame materials"), ~~the naquadah fuel line
   (`acid-naquadah-emulsion`, naquadah fuels for the naquadah generator)~~ (done in "Side quest: endgame power").
 - ~~Plasmas are only ingredients so far; there is no plasma generator (GT plasma turbine).~~ Done in "Side quest: endgame power".
 - Fusion in GT needs a start-up energy buffer per recipe; here it is a normal machine with a
@@ -119,8 +122,8 @@ first.
   energy module, black plutonium / bedrockium / neutronium microminers, hot isostatic
   pressurization unit, wetware processors, fusion MK2, draconic fusion crafter.
 - Graphics: the ZPM basic machine sprites are generated from GT textures (tinted aqua); the
-  multiblock upgrades keep the graphics of the LuV version; item icons are recolored placeholders
-  (`tools/gen_icons.py`).
+  multiblock upgrades keep the graphics of the LuV version; item icons were recolored placeholders
+  (`tools/gen_icons.py`), since issue #40 they come from GT textures (`tools/gen_gt_icons.py`).
 - Upgrade multiblocks return the replaced parts. In phase 3 the UV upgrades will return naquadah
   coils, so check the auto-unlock of the naquadah coil again.
 
@@ -192,7 +195,7 @@ Choices and deviations from GT:
   pipe; the field generator needs 8 UV circuits instead of 4 UHV circuits (none before phase 4). The assembly
   line recipes take 30 GT seconds; the ZPM assembly line runs at speed 32 (twice the LuV one), so a component
   takes a minute.
-- **UV voltage coil** uses fine americium wire instead of fluxed electrum (not in Gregtorio); the trinium coil
+- **UV voltage coil** uses ~~fine americium wire instead of fluxed electrum (not in Gregtorio)~~ fine fluxed electrum wire like GT since issue #36; the trinium coil
   (UV blast furnace) is the draft with `enriched-naquadah-foil`.
 - **No PPIC/NPIC chips.** Their wafers need the europium and americium doped silicon, which needs grade 4 and
   6 water (the water purification side quest). The MK2 controller and the UV energy hatch use UHPIC wafers and
@@ -213,16 +216,18 @@ Existing saves that already researched `zpm-components` lose the ZPM field gener
 - Wetware processors (UHV circuit) and the UHV field generator: phase 4. The UV field generator stays on 8 UV
   circuits until then.
 - PPIC and NPIC chips need the water purification line; the MK2 controller and the ZPM/UV hatches use UHPICs.
-- Still drafts: force plasma (arcanite), astral titanium and runite plasma, ~~the liquid fuels and the naquadah
+- Still drafts: ~~force plasma (arcanite), astral titanium and runite plasma~~ (removed, issue #39), ~~the liquid fuels and the naquadah
   fuel (`excited-*-liquid-fuel`, `naquadah-based-fuel-mk1`)~~ (done in "Side quest: endgame power"), `advanced-fusion-coil` (needs the UHV emitter).
 - `fusion-machine-casing-mk2` is a real recipe now (americium plate) but no tech unlocks it: it belongs to the MK3.
 - ~~Plasmas are still only ingredients; there is no plasma generator.~~ Done in "Side quest: endgame power".
-- Balance: the lutetium yield (4 rare earth dust -> 1 lutetium) and the 384 fine americium wires per UV motor make
-  the UV motor the bottleneck (48 americium ingots = 4 minutes of one MK2 reactor). Nothing was tuned in game.
+- ~~Balance: the lutetium yield (4 rare earth dust -> 1 lutetium) and the 384 fine americium wires per UV motor make
+  the UV motor the bottleneck (48 americium ingots = 4 minutes of one MK2 reactor).~~ Issue #31, see "Balance pass: endgame": 64 fine
+  americium wires, the large neutronium gear 4 ingots, the lutetium yield kept on purpose.
 - Still unused from `25-uv-age-item.lua`: research station, draconic fusion crafter tiers, nano forge, bio
   processors, cosmic neutronium, component assembly line, ~~UV dynamo hatch~~ (done in "Side quest: endgame power").
 - Graphics: the UV basic machine sprites are generated from GT textures (tinted green), the MK2 reactor uses the
-  GT fusion casing MK2 texture, item and technology icons are recolored placeholders (`tools/gen_icons.py`).
+  GT fusion casing MK2 texture, item and technology icons were recolored placeholders (`tools/gen_icons.py`); since
+  issue #40 they come from GT textures (`tools/gen_gt_icons.py`).
 
 ### Suggested next step (done in phase 4)
 
@@ -279,7 +284,7 @@ Choices and deviations from GT:
   circuit costs about one craft of stem cells (64 per craft: 2 chip parts, 2 osmiridium dust, 1000 growth medium).
 - **Tritanium instead of cosmic neutronium and bedrockium.** Neither can be made (no cosmic neutronium line, no
   bedrockium microminer). The UHV motor, piston, robot arm, emitter, sensor and field generator use tritanium (the fusion
-  MK2 already makes its melt), and the cable is tritanium cable (GT: bedrockium). The tritanium recipe of the MK2 was
+  MK2 already makes its melt), and the cable is tritanium cable (GT: bedrockium; bedrockium cable since issue #36). The tritanium recipe of the MK2 was
   the draft's 16 mB in 16 s (one motor = 9 minutes of a reactor); it is 3 titanium + 2 duranium -> 1 ingot of melt in
   3 s now, and the large tritanium gear is 4 ingots (the generic large gear would be 40). The cable is 1 wire per cable
   like GT (the UV cable needed 4).
@@ -303,7 +308,8 @@ Choices and deviations from GT:
   The recipes are in the ZPM assembly line (no new line needed) and take 30 GT seconds: 1 minute per component.
 - **UHV voltage coil** uses fine tritanium wire (draft). GT's UHV blast furnace coil is fluxed electrum (not in
   Gregtorio); the UHV multiblocks use a tritanium coil (16 wires, 8 foils, a melt) instead. The UHV energy hatch uses
-  UHPICs instead of quantum power ICs and cryogenic helium instead of super coolant cells, like the UV hatch.
+  UHPICs instead of quantum power ICs and cryogenic helium instead of super coolant cells, like the UV hatch (issue #36: GT's UHV
+  hatch takes IC2 coolant, not super coolant, so the cryogenic helium stays).
 
 Existing saves (unlocks that changed):
 
@@ -316,7 +322,8 @@ Existing saves (unlocks that changed):
 - Everything else only adds recipes. `migrate --from-ref 0e935ba` and `--from-ref 5dd7c92` (before this phase) load.
 
 Bottlenecks of the UHV parts (tritanium is 14.4 melt per ingot, 3 s per ingot in one MK2 reactor; 1 ingot needs 3
-titanium and 2 duranium melt):
+titanium and 2 duranium melt). **Before the balance pass:** these counts leave out the chain below the top metal (the two
+duranium melts of a tritanium ingot take 58 s of an MK1); full-chain times in a reference factory are in "Balance pass: endgame":
 
 | Part | Tritanium ingots | Other main inputs |
 |---|---|---|
@@ -328,7 +335,8 @@ titanium and 2 duranium melt):
 | UHV emitter / sensor | 56 each | motor, 4 UHV circuits, 8 gravistars |
 | UHV field generator | 256 (13 minutes) | 4 emitters, 8 UHV circuits |
 
-The UV motor needs 48 americium ingots (4 minutes at 5 s per ingot), so a UHV motor is cheaper than the UV one; the
+~~The UV motor needs 48 americium ingots (4 minutes at 5 s per ingot), so a UHV motor is cheaper than the UV one~~ (full chain: the
+UHV motor costs more, see "Balance pass: endgame"); the
 field generator is about as expensive as the UV one. One MK3 needs about 900 tritanium ingots for the 8 advanced
 fusion coils, 64 UHV circuits for their emitters and sensors, and 380 americium plates (casings and the superdense
 plate). The UHV circuit chain costs one stem cell craft per circuit: 16 circuits need 32 supercomputers, 64
@@ -337,21 +345,24 @@ in game.
 
 ### Open points from phase 4
 
-- Still drafts: force plasma (arcanite), astral titanium and runite plasma, ~~the liquid fuels and the naquadah fuel~~ (done in "Side quest: endgame power"),
+- Still drafts: ~~force plasma (arcanite), astral titanium and runite plasma~~ (removed, issue #39), ~~the liquid fuels and the naquadah fuel~~ (done in "Side quest: endgame power"),
   the MK4 and MK5 reactors (`fusion-reactor-mk4-controller` needs UEV circuits, `fusion-machine-casing-mk3` a category
   typo `uvh-...`, `advanced-fusion-coil-ii` the energy module), the UEV, UIV and UMV superconductor coil blocks,
   bio cells.
 - ~~PPIC, NPIC and QPIC chips (water purification line) and complex SMDs: the MK3 controller, the ZPM to UHV hatches and
   the wetware mainframe use UHPICs and advanced SMDs.~~ Done in phase 5a and "Side quest: water purification grades 7 and 8".
 - ~~Plasmas (also iron plasma) are still only ingredients; there is no plasma generator.~~ Done in "Side quest: endgame power".
-- No fluxed electrum, draconium, cosmic neutronium or bedrockium: tritanium and triamerotronium stand in for them.
-- The UV energy hatch cooling and the UHV one use cryogenic helium; there are no super coolant cells (draft
-  `super-coolant` needs callisto ice).
+- No ~~fluxed electrum~~, draconium, cosmic neutronium or ~~bedrockium~~: tritanium and triamerotronium stand in for them (fluxed electrum
+  and bedrockium since issue #36; draconium and cosmic neutronium came in phase 5a).
+- ~~The UV energy hatch cooling and the UHV one use cryogenic helium; there are no super coolant cells (draft
+  `super-coolant` needs callisto ice).~~ Issue #36: super coolant and the 1080k super coolant cell exist; GT cools the UV and UHV hatches
+  with IC2 coolant, so they keep cryogenic helium.
 - Still unused from `27-uhv-age-item.lua`: ~~UHV dynamo hatch~~ (done in "Side quest: endgame power"), awakened draconium coil block (UEV), attuned tengam
   microminer, integrated ore factory, neutronium compressor, singularities.
 - Graphics: the UHV basic machine sprites are generated from GT textures (tinted red), the MK3 reactor uses the GT
-  fusion casing MK2 texture and the MK3 overlay, item and technology icons are recolored placeholders
-  (`tools/gen_icons.py`); the wetware items and stem cells reuse unrelated neighbor icons and need real ones.
+  fusion casing MK2 texture and the MK3 overlay, item and technology icons were recolored placeholders
+  (`tools/gen_icons.py`) and the wetware items and stem cells reused unrelated neighbor icons. Since issues #40 and #41
+  the icons come from GT textures and the UHV machines show the GT hull of their tier around the machine.
 - Balance is untested in game (see the table above).
 
 ### Suggested next step (done in phase 5a)
@@ -430,8 +441,8 @@ Choices and deviations from GT:
   Bio cells come from stem cells, mutagen and growth medium (GT: cosmic neutronium dust); the bio processor takes wetware processors, the
   optical processor bio processors. The optical fiber is borosilicate glass (GT: lumiium, chromatic glass).
 - **UEV components** follow GT with these changes: infinity parts, draconium cable and cosmic neutronium fine wire as in GT, but attuned
-  tengam -> magnetic samarium rods, quantium -> cosmic neutronium melt, infinity catalyst foil -> infinity foil, bedrockium/nether star plates
-  -> cosmic neutronium plates; fine wire and foil counts cut (GT: 512 fine wires, 256 foils).
+  tengam -> magnetic samarium rods, ~~quantium -> cosmic neutronium melt~~ (quantium since issue #36), infinity catalyst foil -> infinity foil,
+  bedrockium/nether star plates -> cosmic neutronium plates (the casing takes bedrockium plates since issue #36); fine wire and foil counts cut (GT: 512 fine wires, 256 foils).
 - **UIV components:** transcendent metal (a MK4 product from infinity melt and krypton plasma; GT: raw tesseract in the dimensionally
   transcendent plasma forge), nether star cable (1 nether star = 1 motor's cable), fine cosmic neutronium wire instead of proto-halkonite
   steel wire, infinity plates in the pump. The UEV field generator uses 4 UIV circuits like GT; the UIV one uses 8 UIV circuits (UMV circuits
@@ -439,7 +450,7 @@ Choices and deviations from GT:
 - **Superconductors** `dracofinium` (UEV: draconium, infinity, cosmic neutronium) and `chromnorox` (UIV: transcendent metal, infinity,
   draconium) are the names of the drafts; the recipes are invented on the pattern of triamerotronium.
 - **Fusion MK4** is the UEV tier (16 UEV hatches, 32 UEV hulls), casing MK3 has the category typo fixed and needs one UHV motor (the draft: 2 motors
-  and a piston, 79 casings would have been 240 motors), 16 advanced fusion coils (draft 32, MK3 8). The MK4 reactor reuses the MK3 art.
+  and a piston, 79 casings would have been 240 motors), 16 advanced fusion coils (draft 32, MK3 8). The MK4 reactor reused the MK3 art until issue #41 (now the art of GoodGenerator's compact fusion computer MK-IV).
 - **Upstream stone recipes.** Upstream has `stone -> umv-science-pack` and `stone -> uxv-science-pack` placeholders. With the UIV pack craftable they
   would have opened the whole endgame for free, so both recipes are removed until 5b. Their techs stay (researchable, pack without recipe).
 
@@ -453,7 +464,7 @@ Existing saves (unlocks that changed):
   tech stays researched. `umv-science-pack` and `uxv-science-pack` lose their stone recipes.
 - Everything else only adds recipes. `migrate --from-ref 0e935ba` and `--from-ref dcb0e9e` (before this phase) load.
 
-Bottlenecks of the new parts, in ingots of the metal (tritanium: the UHV row without the naquadria melt; 1 ingot = 14.4 mB). Every component takes
+**Before the balance pass** (top metal only; full-chain times in "Balance pass: endgame"): bottlenecks of the new parts, in ingots of the metal (tritanium: the UHV row without the naquadria melt; 1 ingot = 14.4 mB). Every component takes
 one minute in the ZPM assembly line. Cosmic neutronium is 1 neutronium + 1 tritanium per ingot, infinity 1 cosmic neutronium + 1 draconium (MK4: 1.5 s per
 ingot, MK3 bootstrap: 6 s and twice the inputs), draconium 1 americium (+ iron plasma, 3 s in the MK3):
 
@@ -476,10 +487,11 @@ The cosmic neutronium of a UEV part includes the 18 ingots of melt in its fluids
   glass) and molten rhugnor (infinity + molten quantum), which no line makes. The MK4 drafts `molten-rhugnor` and `molten-flerovium` (plutonium-241) stay drafts.
 - ~~Water purification grades 7 and 8, FPIC/APIC chips, complex SMDs.~~ Done, see "Side quest: water purification grades 7 and 8".
 - ~~Most plasmas (sulfur, nitrogen, zinc, niobium, tin, titanium, oxygen, neon, boron, calcium) are still only ingredients or unused; there is no plasma generator.~~ Done in "Side quest: endgame power".
-- No bedrockium, fluxed electrum, UU matter, quantium, attuned tengam, super coolant. The quantum force transformer, dimensional plasma forge, godforge
+- No ~~bedrockium, fluxed electrum~~, UU matter, ~~quantium~~, attuned tengam, ~~super coolant~~ (issue #36; UU matter is not built, see "Drafts and endgame materials"). The quantum force transformer, dimensional plasma forge, godforge
   and the rest of `29-uev-age-item.lua` / `31-uiv-age-item.lua` are for later.
-- Graphics: the UEV/UIV basic machine sprites are generated from GT textures (tinted gold and blue), the MK4 reactor reuses the MK3 art, the new items
-  and technologies have recolored placeholder icons (`tools/gen_icons.py`, `tools/gen_tech_icons.py`).
+- Graphics: the UEV/UIV basic machine sprites are generated from GT textures (tinted gold and blue, since issue #41 inside the GT hull of
+  their tier), the MK4 reactor reused the MK3 art (own art since issue #41), the new items and technologies had recolored placeholder
+  icons (`tools/gen_icons.py`, `tools/gen_tech_icons.py`; GT textures since issue #40).
 - Balance is untested in game (see the table above).
 
 ### Suggested next step (done in phase 5b)
@@ -500,8 +512,8 @@ dark matter, shirabon, mellion, the eye of harmony and coal recipes). What phase
 `134-fork-uxv.lua` and `135-fork-endgame.lua`. `133-fork-umv.lua` also defines the helpers of the three files (the global table
 `FORK5B`: `metal`, `cable`, `circuit_line`, `components`, `tech`, ...), because a UXV part is a UMV part with the next metal.
 
-New technologies (the counts are 2500-3500 units, one unit takes 60 s; upstream has 2300 for the UMV, 2600 for the UXV and 3000 for the
-stargate tech):
+New technologies (the counts were 2500-3500 units, one unit takes 60 s; upstream has 2300 for the UMV, 2600 for the UXV and 3000 for the
+stargate tech; issue #30 cut them to 40-140, see "Balance pass: endgame"):
 
 | Technology | Science | Unlocks |
 |---|---|---|
@@ -542,10 +554,10 @@ Choices and deviations from GT:
   makes), molten flerovium is americium + calcium plasma (draft: plutonium-241); both are MK4 recipes, so nothing that the MK5 makes is needed to
   build it and there is no bootstrap recipe. The energy module (GT: ZPM assembly line, not loaded before) uses UHPIC wafers instead of ASOC wafers.
   Coil II uses a UEV emitter and sensor: a UIV emitter or field generator would need UMV circuits, which need spacetime, which the MK5 makes. The
-  controller uses UEV field generators (as the draft), UIV circuits, QPIC wafers (PICO wafers are not built) and chromnorox wire. The MK5 reuses the MK3 art.
+  controller uses UEV field generators (as the draft), UIV circuits, QPIC wafers (PICO wafers are not built) and chromnorox wire. The MK5 reused the MK3 art until issue #41 (now the art of GoodGenerator's compact fusion computer MK-V).
 - **Spacetime and universium are MK5 products** (GT: tesseracts in the dimensionally transcendent plasma forge). Spacetime = transcendent metal +
   rhugnor, universium = spacetime + flerovium, 1.5 s per ingot in one MK5. The parts are made like the transcendent metal ones (large gear 4 ingots).
-- **Cables.** GT's UMV cable is quantium (not built): spacetime cable (wire + rubber + sheet like the draconium cable); UXV: universium cable.
+- **Cables.** GT's UMV cable is quantium (since issue #36 the UMV components take quantium cable; the machines and the hull keep the spacetime one): spacetime cable (wire + rubber + sheet like the draconium cable); UXV: universium cable.
 - **Superconductors.** `hypocosmium` (UMV: spacetime, infinity, rhugnor) is the name of the draft; `eternity` (UXV: universium, spacetime, hypocosmium)
   takes the name of the example in `03-helper-functions-module.lua`. Recipes invented on the pattern of chromnorox, cooled with cryogenic helium in the pump.
   The mainframes use the superconductor of the tier below (UMV: chromnorox, UXV: hypocosmium), like the earlier ones.
@@ -567,8 +579,8 @@ Choices and deviations from GT:
   (the draft had a ring block in the chevron block and in the power unit).
 - **Victory.** `victory` stays the upstream infinite tech (1000 * 2^(L-1) units of all 15 packs, prerequisite `stargate`). `scripts/fork-victory.lua` calls
   `game.set_game_state{ game_finished = true, player_won = true, can_continue = true, victorious_force = force }` the first time it is researched; the
-  further levels are normal research. `devcheck runtime` researches it by script at tick 550 and expects `game.finished`. One level needs exactly 1000 MAX packs =
-  one stargate, the next level two.
+  further levels are normal research. `devcheck runtime` researches it by script at tick 550 and expects `game.finished`. One level needed exactly 1000 MAX packs =
+  one stargate, the next level two (issue #30: `15 * 2^(L-1)` units, one stargate lasts for the first six levels).
 - **Placeholder recipes.** A search for recipes that turn cheap items into endgame items (stone, dirt, single plates -> UV or higher items) found only the two
   stone science pack recipes, which are replaced; the stargate parts of the draft (ingredients = themselves) are replaced too.
 
@@ -580,7 +592,7 @@ Existing saves (unlocks that changed):
 - `umv-science-pack` and `uxv-science-pack` (techs, researched in saves that got there by console) have a new prerequisite; a researched tech stays researched.
 - Everything else only adds recipes and techs. `migrate --from-ref 0e935ba` and `--from-ref 5f00391` (before this phase) load.
 
-Bottlenecks of the new parts (ingots of the metal, melt and ingots together; 1 ingot = 14.4 mB; the melt comes from one MK5 at 1.5 s per ingot). Every
+**Before the balance pass** (top metal only; the stargate parts changed, full-chain times in "Balance pass: endgame"): bottlenecks of the new parts (ingots of the metal, melt and ingots together; 1 ingot = 14.4 mB; the melt comes from one MK5 at 1.5 s per ingot). Every
 component takes one minute in the ZPM assembly line:
 
 | Part | Ingots (spacetime for UMV, universium for UXV) | Other main inputs |
@@ -597,9 +609,10 @@ Fusion MK5: 4900 transcendent metal, 1700 rhugnor and 630 flerovium ingots, 1600
 stars) and 79 UIV motors' worth of casings; the 16 coils II need 16 UEV emitters and sensors. Stargate (all parts, in ingots of universium equivalents): frame
 part 48 (+44 spacetime), radiation containment plate 28 (+64 neutronium), chevron 24, ring block 730, chevron block 1040, chevron upgrade 530, base 3560, power
 unit 1820 (4 coils II), controller 1210, iris upgrade 290 (+640 neutronium): the stargate is about 20 500 ingots of universium (8.5 hours of one MK5), 3400 of
-spacetime, 4000 of neutronium, 1000 gravi stars, 620 UXV circuits.
+spacetime, 4000 of neutronium, 1000 gravi stars, 620 UXV circuits. ~~(8.5 hours)~~ Issue #33: with the whole metal chain it was 32 hours of the UXV
+reference factory; after the balance pass 10.6 hours, 2 UXV field generators and 196 UXV circuits.
 
-The research of the tiers is far bigger than the stargate: the phase 5b techs alone (incl. the upstream `umv-science-pack`, `uxv-science-pack` and `stargate` techs) take
+~~The research of the tiers is far bigger than the stargate~~ (issue #30: scaled down from UV to `victory`, see "Balance pass: endgame"; the counts below are before it): the phase 5b techs alone (incl. the upstream `umv-science-pack`, `uxv-science-pack` and `stargate` techs) take
 104 000 promethium, 47 100 UMV and 12 000 UXV packs (10 packs per craft, one UIV / UMV field generator per craft), and level 1 of `victory` another 5000 promethium,
 3000 UMV, 2000 UXV and 1000 MAX packs (plus 256 000 automation packs ...). Every unit of the last techs needs packs of all tiers below. These counts come from the
 upstream `SP` tables and are the first thing to tune in the real game.
@@ -662,22 +675,27 @@ The inserter capacity bonuses start at MV instead of LV: level 1 only raises the
 
 ### Open points from phase 5b
 
-- The MK5 reuses the MK3 art, the UMV/UXV basic machine sprites are tinted GT textures (violet and white), the new item icons are recolored placeholders
-  (`tools/gen_icons.py`; the stargate parts of parts and the exotic/temporal items reuse unrelated neighbor icons), the new technologies have icons of their main item.
-- Balance is untested in game: the pack counts of the last techs (see above), the stargate (20 500 universium ingots), the QPIC counts of the hatches.
+- The MK5 reused the MK3 art, the UMV/UXV basic machine sprites were tinted GT textures (violet and white), the new item icons were recolored placeholders
+  (`tools/gen_icons.py`; the stargate parts and the exotic/temporal items reused unrelated neighbor icons), the new technologies have icons of their main item.
+  Since issues #40 and #41: own MK5 art, the UMV/UXV machines inside the GT hull of their tier, item icons from GT textures (the stargate parts from
+  the GTNH core mod).
+- ~~Balance is untested in game: the pack counts of the last techs (see above), the stargate (20 500 universium ingots), the QPIC counts of the hatches.~~
+  Issues #30, #31, #33: see "Balance pass: endgame" (the hatches use APICs since #52); still to be played.
 - Not built: the GT quantum force transformer, dimensional plasma forge, godforge, magmatter, dark matter, mellion, shirabon, six-phased copper, the eye of harmony and the
   UXV/MAX-only items of `90-uxv-age-item.lua` (mega ultimate battery, ridiculously large capacitor, artificial universe cell, ...). There is no MAX tier: no MAX circuit,
   hatch or machines.
-- Still drafts (29, 21 since the endgame power side quest): force plasma (arcanite), astral titanium and runite plasma, ~~the liquid fuels and naquadah fuel~~, plutonium/high-density plutonium, super coolant, UU
-  matter (magic essence, void/shadow metal, ichorium), 1080k space cell, the naquadah cracking chains, orundum, the lapotronic energy orb cluster draft, bio cells for
-  microminers.
+- Still drafts (29, 21 since the endgame power side quest): ~~force plasma (arcanite), astral titanium and runite plasma~~ (removed), ~~the liquid fuels and naquadah fuel~~, ~~plutonium/high-density plutonium~~ (made real), ~~super coolant~~ (made real), ~~UU
+  matter (magic essence, void/shadow metal, ichorium)~~ (removed), ~~1080k space cell~~ (made real), ~~the naquadah cracking chains, orundum~~ (removed), ~~the lapotronic energy orb cluster draft~~ (made real), ~~bio cells for
+  microminers~~ (the tier five infused gold microminer, removed). Issues #39 and #36, see "Drafts and endgame materials".
 
 ### Suggested next step
 
 Side quests, in the order that helps the endgame most:
 
-1. Balance and graphics in the real game: the tier from UHV up (see the bottleneck tables of 4, 5a and 5b), the pack counts of the last techs, the power IC counts, real
-   sprites for the MK4/MK5 reactors and the last machine tiers, real icons for the exotic/temporal lines and the stargate parts.
+1. Balance and graphics in the real game: the tier from UHV up (see the bottleneck tables of 4, 5a and 5b), the pack counts of the last techs, the power IC counts
+   (analysed and tuned in "Balance pass: endgame", issues #30, #31, #33; still to be played).
+   ~~Real sprites for the MK4/MK5 reactors and the last machine tiers, real icons for the exotic/temporal lines and the stargate parts~~ (done, issues #40 and
+   #41, `docs/graphics-review/`; still to be seen in the real game).
 2. ~~Plasma generator (GT plasma turbine)~~ (done, see "Side quest: endgame power").
 3. ~~Water purification grades 7 (degasifier) and 8 (quark extraction), FPIC/APIC chips and complex SMDs, which would let the QPIC stand-ins of the UEV to UXV hatches go.~~
    (done, see "Side quest: water purification grades 7 and 8").
@@ -685,6 +703,133 @@ Side quests, in the order that helps the endgame most:
 5. ~~The technologies of the final pass list: decide for each "open" one whether it gets a Gregtorio gate or is hidden.~~ (done, issue #29: all 23 are
    researchable, see "Final pass" above).
 6. A MAX tier (MAX circuit, hatch, machines, and the GT items the stargate could take) if the endgame should go on after `victory`.
+
+## Drafts and endgame materials (issues #39 and #36)
+
+Two pull requests: **PR 1** (issue #39) triages every draft the draft guard still hid and closes the ones that need no new
+material; **PR 2** (issue #36) adds the endgame materials the GT drafts expect and closes the drafts that depend on them.
+Everything is in `prototypes/137-fork-endgame-materials.lua` (loaded after 136, whose plutonium fuel and dynamo hatches it
+changes).
+
+Decisions: **(a)** made real, built from what the mod has and adapted like the phases did; **(b)** removed for good: the
+recipes and the items only they used are deleted in 137 (`FORK-REMOVED` in the log), so neither the draft guard nor the
+crafting menu, Factoriopedia or the quality recycling recipes ever see them; **(c)** the missing part is replaced by an
+existing item.
+
+### Triage of the drafts (issue #39)
+
+The 21 recipes of `FORK-DRAFT` before (the list of "Still drafts" in phases 1 to 5b):
+
+| Draft recipe | Missing | Decision | Tier | Technology | PR |
+|---|---|---|---|---|---|
+| `lapotronic-energy-orb-cluster` (circuit assembler) | qubit processing unit | (c) GT's QBit processing unit is the qubit CPU chip | ZPM | `lapotronic-energy-orbs` (new) | 1 |
+| `force-plasma` | molten arcanite | (b) GT++ RuneScape/WoW materials (arcanite: thorium, energy crystal and Thaumcraft aspects); nothing needs the plasma | - | - | 1 |
+| `astral-titanium-plasma` | force plasma | (b) same chain | - | - | 1 |
+| `runite-plasma` | astral titanium plasma, molten titansteel | (b) same chain (titansteel: Thaumcraft aspects) | - | - | 1 |
+| `wrapped-plutonium-ingot` | plutonium oxide-uranium mixture | (c) its metal content: 3 plutonium 239 and 1 uranium 238 dust per wrap | ZPM | `naquadah-fuels` | 1 |
+| `high-density-plutonium-nugget` | HSS-S dust (byproduct) | (c) byproduct left out | ZPM | `naquadah-fuels` | 1 |
+| `high-density-plutonium-eic` | UEV electric implosion compressor | (b) GT's EIC is not built, the implosion compressors have no fluid input for its neutronium, and the nugget route makes the same item | - | - | 1 |
+| `microminer-infused-gold` ("bio cells for microminers": the tier five microminer) | tier five microminer output | (b) Thaumcraft infused gold; the whole infused gold ore line goes with it | - | - | 1 |
+| `magic-essence` | UU matter | (b) Thaumcraft (salis mundis) | - | - | 1 |
+| `void-metal-dust` | UU matter | (b) Thaumcraft (thaumium goes with it) | - | - | 1 |
+| `shadow-metal-dust` | UU matter | (b) Thaumcraft addon | - | - | 1 |
+| `ichorium-dust` | UU matter | (b) Thaumic Tinkerer | - | - | 1 |
+| `raw-atomic-separation-catalyst` | blaze powder | (b) GoodGenerator's catalyst of blaze powder, manyullyn/ardite (Tinkers) and orundum (Arknights); only the fuel cracking uses it | - | - | 1 |
+| `orundum-plate` | tiberium plate | (b) same chain | - | - | 1 |
+| `hot-atomic-separation-catalyst-ingot` | molten plutonium 239 | (b) same chain (the vacuum freezer step `atomic-separation-catalyst-ingot` goes with it) | - | - | 1 |
+| `naquadah-solution-cracking` | cracked naquadah heavy fuel | (b) the naquadah fuel cracking needs the catalyst above, naquadah asphalt and thulium/thorium melts; the fuel line of the endgame power side quest works without it | - | - | 1 |
+| `naquadah-heavy-fuel-cracking` | naquadah heavy fuel | (b) same | - | - | 1 |
+| `naquadah-asphalt-cracking` | naquadah asphalt | (b) same | - | - | 1 |
+| `super-coolant` | callisto ice dust | (a) with callisto ice and ledox from the end microminer | see materials | see materials | 2 (done) |
+| `1080k-space-cell` | dense fluxed electrum plate | (a) with fluxed electrum | see materials | see materials | 2 (done) |
+| `1080k-super-coolant-cell` | super coolant | (a) with super coolant | see materials | see materials | 2 (done) |
+
+Removed with them (items only these drafts used): raw and crushed infused gold, infused gold dust (and the three ore
+processing recipes), salis mundis, thaumium dust, magic essence, void metal, shadow metal and ichorium dust, raw atomic
+separation catalyst, orundum plate, hot and cold atomic separation catalyst ingot, the bogus item
+`high-density-plutonium-eic`: 14 items and 21 recipes (35 `FORK-REMOVED` lines). No technology unlocked any of them; the
+fork-power mod data and the other recipes never referenced them (the draft guard would report a recipe that did). Their
+icons stay in `graphics/icons/` (unused).
+
+### Triage of the endgame materials (issue #36)
+
+| Material | Built | How (GT source) | Replaces (stand-in -> real) | Tier | Technology | PR |
+|---|---|---|---|---|---|---|
+| super coolant | yes | the draft (HV mixer: ledox dust, callisto ice dust, lapis coolant); ledox and callisto ice from a new end microminer recipe (GT: ores on Europa/Callisto and space mining asteroids) | grade 5 water (GT: 100 super coolant per craft, none here before), grade 7 water (cryogenic helium), UIV/UMV/UXV energy and dynamo hatches (cryogenic helium; GT uses super coolant from UIV up, UHV and UEV use IC2 coolant) | LuV | `super-coolant` | 2 |
+| 1080k super coolant cell | yes | the drafts: 180k -> 540k -> 1080k space cell (tungstensteel, the dense fluxed electrum plate), canned with 600 super coolant (GT: `Reactor_Coolant_Sp_6`) | UEV 2, UIV 4, UMV 6, UXV 8 cells per energy and dynamo hatch (GT) | UHV | `space-coolant-cells` | 2 |
+| fluxed electrum | yes | electrum, redstone and naquadah dust -> ZPM blast furnace and vacuum freezer, melt from the ZPM alloy blast smelter (GT: 9000 K, the dust recipe is not in GT5-Unofficial, Redstone Arsenal's is electrum + redstone) | UV voltage coil (fine americium wire), UHV emitter and sensor (tritanium foil), fusion MK3 controller (tritanium melt), naquadah fuel MK2 (naquadria dust) | ZPM | `fluxed-electrum` | 2 |
+| bedrockium | yes | new end microminer recipe (upstream draft `microminer-bedrockium`, GT: cosmic asteroid) -> the existing ore line -> UV blast furnace (GT: 9900 K) | UHV cable in the eight UHV components (tritanium cable), UEV casing (cosmic neutronium plates) | UV | `bedrockium` | 2 |
+| quantium | yes | new end microminer recipe (GT: ore on Venus/Horus, niobium asteroid) -> UHV blast furnace (GT: 9900 K), melt from the extractor | UEV components (cosmic neutronium melt), UMV cable in the eight UMV components (spacetime cable) | UHV | `quantium` | 2 |
+| UU matter | no | GT: mass fabricator (energy, optionally UU amplifier from scrap) | - | - | - | 2 |
+
+Not switched, on purpose:
+
+- **The UHV parts stay tritanium** (phase 5a): only their cable becomes bedrockium, which is a UV material here, so nothing moves
+  in front of its tier. The tritanium cable stays in the UHV machines and hull.
+- **The uranium based liquid fuel keeps naquadah dust** for GT's quantium dust: the fuel is ZPM (`naquadah-fuels`), quantium UHV.
+- **The UHV and UEV hatches keep cryogenic helium** (GT: IC2 coolant, not super coolant).
+- **The tritanium coil stays the UHV blast furnace coil**: GT's fluxed electrum coil is its 9901 K coil level, above the UHV one.
+- **UU matter is not built.** Its magic consumers are removed. The rest are the MK4 fusion parts, where it is one of four fluids
+  (with cinobite, octiron and astral titanium, none of them in the mod; tritanium and cosmic neutronium melt stand in for all four)
+  and the UEV to UXV hatches (which leave it out). It needs GT's mass fabricator, a machine the fork does not have. Open point.
+
+### Numbers
+
+Both PRs against `origin/main`: researchable technologies 360 -> 366 of 379 -> 385, draft recipes hidden by the draft guard
+21 -> 0 (`DRAFTS_OK` is empty), drafts removed for good 35 prototypes, auto-unlocked recipes 54 -> 53, machines placed by
+`devcheck runtime` 510 -> 510 (no new machine), unlocked but uncraftable recipes 0, crafting menu 2745 -> 2784 machine recipes
+shown, 241 kept hidden, 0 hidden without an allow-list entry.
+
+PR 1: researchable technologies 360 -> 361 of 379 -> 380 (the new `lapotronic-energy-orbs`), draft recipes hidden by the
+draft guard 21 -> 3 (the documented rest list `DRAFTS_OK` of `tools/devcheck/devcheck.py`: the three drafts of PR 2), auto-unlocked
+recipes 54 -> 53, machines placed by `devcheck runtime` 510 -> 510, unlocked but uncraftable recipes 0, crafting menu check green
+(2745 -> 2750 machine recipes shown, 241 kept hidden).
+
+`FORK-AUTOUNLOCK` differs by one line, on purpose: `advanced-smds -> fine-niobium-titanium-wire` is gone because the wire is now
+unlocked by `advanced-smds` explicitly. The cluster uses the wire, and the auto-unlock would have visited the new tech first and
+moved the wire there (the tech-by-tech diff showed it); the explicit unlock keeps it where it was.
+
+Tech by tech against `origin/main`: prerequisites and science packs of the 379 existing technologies are unchanged; the only
+changed unlocks are `naquadah-fuels` (+ wrapped plutonium ingot, high density plutonium nugget, high density plutonium) and the
+new tech (lapotronic energy orb, the cluster's circuit assembler recipe). No unlock was lost or moved (`advanced-smds` keeps the
+fine niobium-titanium wire).
+
+PR 2: researchable technologies 361 -> 366 of 380 -> 385 (`super-coolant` LuV, `fluxed-electrum` ZPM, `bedrockium` UV,
+`space-coolant-cells` and `quantium` UHV), draft recipes 3 -> 0, `FORK-AUTOUNLOCK` identical to PR 1 (53 lines), machines placed
+510 -> 510, uncraftable 0, crafting menu 2750 -> 2784 shown. Tech by tech against PR 1: the 380 technologies keep their science
+packs and unlocks (every recipe of the new materials is unlocked explicitly by its new tech, none moved); five of them get one
+prerequisite each, the material they now use first: `water-purification` + `super-coolant`, `uv-energy-hatches` +
+`fluxed-electrum`, `uhv-components` + `bedrockium`, `uev-energy-hatches` + `space-coolant-cells`, `uev-components` + `quantium`.
+Each new tech sits at or below the tier of its first user (LuV for LuV, ZPM before UV, UV for UV science, UHV for UHV and UEV
+science).
+
+Tests: `REQUIRED_RECIPES` of `devcheck check` lists the made-real drafts and the new materials (23 of 23 unlocked and craftable);
+the recipe test of `devcheck runtime` crafts 14 more recipes once in a real machine (30 of 30), among them the circuit assembler
+cluster, the plutonium steps, super coolant, the 1080k cell, the three hot ingots, the melts, naquadah fuel MK2, grade 5 water and
+the UXV energy hatch.
+
+### Existing saves
+
+- `plutonium-based-liquid-fuel` takes 1 high density plutonium (GT) instead of 64 plutonium 239 dust; its three steps are
+  unlocked by `naquadah-fuels`, which saves that have the fuel researched already.
+- The removed items could never be made (no technology unlocked their recipes); if a save holds some (console), Factorio drops
+  them on load.
+- Issue #36 changes the ingredients of recipes that saves may have unlocked: grade 5 water (+100 super coolant) and grade 7 water
+  (super coolant), the UEV to UXV energy and dynamo hatches (1080k super coolant cells, UIV up super coolant), the UV voltage coil,
+  the UHV emitter and sensor, the eight UHV components (bedrockium cable), the fusion MK3 controller, naquadah fuel MK2, the UEV
+  casing, the eight UEV components (quantium melt) and the eight UMV components (quantium cable). They stay unlocked; a save that
+  researched them needs the new material tech before it can craft them again (as in phase 5a and the water purification side quest).
+  Water purification plants on grade 5 stop until super coolant arrives. Researched techs stay researched when they get a new
+  prerequisite.
+- `migrate --from-ref v0.3.1` loads (both PRs).
+
+### Open points
+
+- UU matter (see above), and GT's super coolant in the bio and optical circuits, the PCB factory and the fridge casing.
+- Fluxed electrum's dust recipe (electrum, redstone, naquadah) is invented: GT5-Unofficial has none (it is in the GTNH core mod).
+- Icons of the new items and techs were recolored placeholders (`tools/gen_icons.py`, `tools/gen_tech_icons.py`); since issue #40 they come from GT
+  textures (`tools/gen_gt_icons.py`).
+- Balance of the new chains is untested in game.
 
 ## Side quest: endgame power (done)
 
@@ -705,12 +850,13 @@ energy of the plasma turbines every tick; every 10th tick the fuel check and the
   krypton 86.02 (default), iron 206.44 MJ. The naquadah and liquid nuclear fuels have GoodGenerator's values (basic output
   x burning time per mB): excited uranium fuel 1.296 GJ, excited plutonium fuel 4.86 GJ, naquadah based fuel MK1 58.5 GJ,
   MK2 161 GJ, MK3 760.9 GJ per unit.
-* **Large plasma turbines** (LuV, ZPM, UV; techs `plasma-turbine`, `zpm-plasma-turbine`, `uv-plasma-turbine`): 3x3
-  `generator` entities that burn only plasmas (fuel check below), capped at four amps of their tier
-  (4 x EU32: 81.92, 163.84 and 327.68 MW). The LuV one is built from a controller, the LuV dynamo hatch, 28 tungstensteel
-  turbine casings, 14 tungstensteel frames and a tungstensteel turbine rotor (blades like the magnalium ones); ZPM and UV
+* **Large plasma turbines** (LuV to UXV; techs `plasma-turbine`, `zpm-plasma-turbine`, `uv-plasma-turbine`, and
+  since issue #34 `uhv-plasma-turbine` ... `uxv-plasma-turbine`): 3x3 `generator` entities that burn only plasmas (fuel
+  check below), capped at four amps of their tier (4 x EU32: 81.92, 163.84, 327.68, 655.36 MW, 1.31, 2.62, 5.24 and
+  10.49 GW). The LuV one is built from a controller, the LuV dynamo hatch, 28 tungstensteel
+  turbine casings, 14 tungstensteel frames and a tungstensteel turbine rotor (blades like the magnalium ones); ZPM to UXV
   are upgrades (previous turbine + dynamo hatch + hull, the replaced hatch and hull come back) like the multiblock upgrades
-  of the tiers. GT's large plasma turbine returns the cooled fluid, one unit per unit of plasma: a Factorio generator has
+  of the tiers. See "Turbines above UV" below. GT's large plasma turbine returns the cooled fluid, one unit per unit of plasma: a Factorio generator has
   one fluid box and no output, so `scripts/fork-power.lua` credits every turbine with the plasma it burnt (the energy it
   generated, summed every tick, / fuel value; see "Cooled fluid" below) and pushes the cooled fluid into **turbine output
   hatches** (1x1 tanks, tech
@@ -726,13 +872,13 @@ energy of the plasma turbines every tick; every 10th tick the fuel check and the
   step was overwritten by two later drafts of the same name); 780 light + 360 heavy -> 100 naquadah based fuel MK1
   (fusion reactor MK2, 12.5 s, GT's amounts; the draft had a tenth). Radioactive sludge is centrifuged into enriched
   naquadah dust, uranium 238, plutonium 239 and radon (the draft without its calcium and tiberium dust). MK2 (tech
-  `uhv-naquadah-reactor`): 100 MK1 + 1500 naquadah gas + 1 nether star + 16 naquadria dust -> 100 MK2 in the UHV mixer
+  `uhv-naquadah-reactor`): 100 MK1 + 1500 naquadah gas + 1 nether star + ~~16 naquadria dust~~ 32 fluxed electrum dust (issue #36) -> 100 MK2 in the UHV mixer
   (GT: nether star dust and fluxed electrum dust in a large chemical reactor). MK3 (tech `uev-naquadah-reactor`): 100 MK2
   + 800 heavy naquadah fuel + 32 uranium 238 dust + 16 plutonium 239 dust + 8 naquadria dust -> 100 MK3 in the UEV mixer
   (GT: the naquadah fuel refinery with extremely unstable naquadah, tiberium and high density uranium/plutonium). The
   liquid nuclear fuels of GoodGenerator: uranium based liquid fuel (64 uranium 238 dust, 8 potassium, 4 naquadah dust,
-  1000 radon -> 1000; GT: high density uranium and quantium) and plutonium based liquid fuel (the draft with 64 plutonium
-  239 dust and 2 neutronium ingots instead of high density plutonium and neutronium dust, 1000 units like GT) are
+  1000 radon -> 1000; GT: high density uranium and quantium) and plutonium based liquid fuel (the draft with 2 neutronium ingots instead of neutronium dust, 1000 units like GT; it took 64 plutonium
+  239 dust instead of high density plutonium until issue #39) are
   "excited" in the fusion reactor MK2 (the drafts: 10 uranium fuel + 100 hydrogen -> 10, 20 plutonium fuel + 16 molten
   lutetium -> 20).
 * **Large naquadah reactors** (UV to UXV; techs `large-naquadah-reactor`, `uhv-naquadah-reactor` ... `uxv-naquadah-reactor`):
@@ -743,7 +889,8 @@ energy of the plasma turbines every tick; every 10th tick the fuel check and the
   thick neutron reflector, a europium plate) and 4 UV hulls; UHV to UXV are upgrades (previous reactor + dynamo hatch + 4
   hulls). GT's coolant bonus and depleted fuel output are left out.
 * **Dynamo hatches LuV to UXV**: copies of the energy hatch recipe of the tier (same parts, category and time), like
-  upstream's EV and IV dynamo hatches. Unlocked with the generator of their tier.
+  upstream's EV and IV dynamo hatches. Unlocked with the generator of their tier (UHV to UXV: by the plasma turbine and
+  the naquadah reactor tech of the tier, whichever is researched first).
 * **Fuel check** (issue #25). A `generator` burns any fluid with a fuel value, steam (100 kJ) included, and a fluid box
   filter takes a single fluid, so without a check a plasma turbine ran on naquadah fuel, a naquadah reactor on plasma
   (both at full output) and both on steam (6 MW, one unit per tick). `136-fork-power.lua` writes the accepted fuels of
@@ -775,24 +922,34 @@ energy of the plasma turbines every tick; every 10th tick the fuel check and the
 ### Balance
 
 Energy per craft of a fusion recipe is the same in the MK1, MK2 and MK3 (each doubles speed and power: `energy_required` x
-1.28 MJ); the MK4 halves it and the MK5 halves it again. "Gain" is plasma energy out / reactor energy in per craft.
+1.28 MJ); the MK4 and MK5 halve it (0.64 MJ). "Gain" is plasma energy out / reactor energy in per craft; "full chain" also
+counts the machine energy of every input (see "Full-chain analysis" below). Issue #32 changed the values marked "before";
+the new ones are in the table of `prototypes/136-fork-power.lua` (section 1b, plasma balance).
 
-| Plasma | Fuel value per unit | Recipe (reactor) | Energy in per craft | Energy out per craft | Gain | Units/s from one reactor | Plasma power |
-|---|---|---|---|---|---|---|---|
-| helium (D + He-3) | 81.92 MJ | 125 in 2 s (MK1) | 81.9 MJ | 10 240 MJ | 125x | 62.5 | 5.12 GW |
-| helium (D + T) | 81.92 MJ | 125 in 4 s (MK1) | 163.8 MJ | 10 240 MJ | 62.5x | 31.25 | 2.56 GW |
-| boron | 112.64 MJ | 14.4 in 12 s (MK1) | 491.5 MJ | 1622 MJ | 3.3x | 1.2 | 135 MW |
-| calcium | 188.42 MJ | 16 in 32 s (MK1) | 1311 MJ | 3015 MJ | 2.3x | 0.5 | 94 MW |
-| neon | 20.48 MJ | 1000 in 32 s (MK1) | 1311 MJ | 20 480 MJ | 2.7x (15.6x without its boron and calcium plasma) | 31.25 | 640 MW |
-| sulfur | 170.39 MJ | 144 in 8 s (MK2) | 655.4 MJ | 24 537 MJ | 37x | 18 | 3.07 GW |
-| nitrogen | 129.02 MJ | 125 in 4 s (MK2) | 327.7 MJ | 16 128 MJ | 49x | 31.25 | 4.03 GW |
-| zinc | 226.3 MJ | 72 in 8 s (MK2) | 655.4 MJ | 16 294 MJ | 25x | 9 | 2.04 GW |
-| niobium | 269.52 MJ | 144 in 8 s (MK2) | 655.4 MJ | 38 810 MJ | 59x | 18 | 4.85 GW |
-| tin | 150 MJ | 288 in 8 s (MK2) | 655.4 MJ | 43 200 MJ | 66x | 36 | 5.4 GW |
-| titanium | 196.61 MJ | 144 in 80 s (MK2) | 6554 MJ | 28 312 MJ | 4.3x | 1.8 | 354 MW |
-| oxygen | 131.07 MJ | 144 in 120 s (MK2) | 9830 MJ | 18 874 MJ | 1.3x (1.9x without its boron plasma) | 1.2 | 157 MW |
-| krypton | 86.02 MJ | 144 in 16 s (MK2) | 1311 MJ | 12 386 MJ | 3.8x (9.4x without its niobium and zinc plasma) | 9 | 774 MW |
-| iron | 206.44 MJ | 144 in 2 s (MK3) | 327.7 MJ | 29 727 MJ | 91x | 72 | 14.9 GW |
+| Plasma | Fuel value per unit | Recipe (reactor) | Energy in per craft | Energy out per craft | Gain | Full chain | Units/s from one reactor | Plasma power |
+|---|---|---|---|---|---|---|---|---|
+| helium (D + He-3) | 81.92 MJ | 125 in 10 s (MK1; before 2 s) | 409.6 MJ | 10 240 MJ | 25x (before 125x) | 11.5x (before 29.6x) | 12.5 (before 62.5) | 1.02 GW (before 5.12) |
+| helium (D + T) | 81.92 MJ | 125 in 10 s (MK1; before 4 s) | 409.6 MJ | 10 240 MJ | 25x (before 62.5x) | 6.2x (before 7.3x) | 12.5 (before 31.25) | 1.02 GW (before 2.56) |
+| boron | 112.64 MJ | 14.4 in 12 s (MK1) | 491.5 MJ | 1622 MJ | 3.3x | 2.7x (before 3.0x) | 1.2 | 135 MW |
+| calcium | 188.42 MJ | 16 in 32 s (MK1) | 1311 MJ | 3015 MJ | 2.3x | 2.2x | 0.5 | 94 MW |
+| neon | 20.48 MJ | 1000 in 32 s (MK1) | 1311 MJ | 20 480 MJ | 2.7x (15.6x without its boron and calcium plasma) | 2.4x (before 2.5x) | 31.25 | 640 MW |
+| sulfur | 170.39 MJ | 72 lithium + 72 aluminium melt -> 144 in 16 s (MK2; before 16 + 16 in 8 s) | 1311 MJ | 24 537 MJ | 18.7x (before 37x) | 16.8x (before 35.7x) | 9 (before 18) | 1.53 GW (before 3.07) |
+| nitrogen | 129.02 MJ | 125 in 8 s (MK2; before 4 s) | 655.4 MJ | 16 128 MJ | 24.6x (before 49x) | 11.7x (before 15.3x) | 15.6 (before 31.25) | 2.02 GW (before 4.03) |
+| zinc | 226.3 MJ | 72 in 8 s (MK2) | 655.4 MJ | 16 294 MJ | 25x | 6.0x | 9 | 2.04 GW |
+| niobium | 269.52 MJ | 144 in 20 s (MK2; before 8 s) | 1638 MJ | 38 810 MJ | 23.7x (before 59x) | 15.6x (before 25.7x) | 7.2 (before 18) | 1.94 GW (before 4.85) |
+| tin | 150 MJ | 288 in 24 s (MK2; before 8 s) | 1966 MJ | 43 200 MJ | 22x (before 66x) | 15.8x (before 55.8x) | 12 (before 36) | 1.8 GW (before 5.4) |
+| titanium | 196.61 MJ | 144 in 80 s (MK2) | 6554 MJ | 28 312 MJ | 4.3x | 4.2x | 1.8 | 354 MW |
+| oxygen | 131.07 MJ | 144 in 120 s (MK2) | 9830 MJ | 18 874 MJ | 1.3x (1.9x without its boron plasma) | 1.2x | 1.2 | 157 MW |
+| krypton | 86.02 MJ | 144 in 16 s (MK2) | 1311 MJ | 12 386 MJ | 3.8x (9.4x without its niobium and zinc plasma) | 1.3x (before 1.5x) | 9 | 774 MW |
+| iron | 206.44 MJ | 72 silicon + 72 magnesium melt -> 144 in 8 s (MK3; before 16 + 16 in 2 s) | 1311 MJ | 29 727 MJ | 22.7x (before 91x) | 17.2x (before 70.9x) | 18 (before 72) | 3.72 GW (before 14.9) |
+
+Helium-3 (issue #32): `end-stone-centrifuging` makes 50 helium-3 per compressed end stone in 200 s (before 100 in 40 s),
+1.92 MJ per unit like deuterium (before 0.19 MJ). The fuel values are unchanged (GT's). The recipes that use a plasma as an
+ingredient keep their amounts: helium plasma in grade 5 water (10), boron plasma (14.4) and sunnarium (4); krypton plasma in
+grade 6 water (10) and transcendent metal (14.4); boron and calcium plasma in neon plasma (144 and 16); boron plasma in
+oxygen plasma (144); calcium plasma in flerovium (14.4); iron plasma in draconium (14.4); niobium and zinc plasma in krypton
+plasma (144 each). They need little: a water purification plant on grade 5 water uses 0.5 helium plasma per second, one MK1
+makes 12.5.
 
 | Fuel | Fuel value per unit | Recipe (reactor) | Energy in per craft | Energy out per craft | Gain |
 |---|---|---|---|---|---|
@@ -809,6 +966,11 @@ Generators (4 amps of the tier) and what they burn at full load:
 | LuV large plasma turbine | 81.92 MW | 1/s | - | - | controller (LuV hull, 2 LuV circuits, 4 large naquadah alloy gears, 12 tungstensteel plates), LuV dynamo hatch (the parts of the LuV energy hatch), 28 tungstensteel turbine casings (168 tungstensteel plates, 28 titanium turbine casings), 14 tungstensteel frames, turbine rotor (16 plates, 8 screws, a long rod) |
 | ZPM large plasma turbine | 163.84 MW | 2/s | - | - | LuV turbine + ZPM dynamo hatch + ZPM hull |
 | UV large plasma turbine | 327.68 MW | 4/s | - | - | ZPM turbine + UV dynamo hatch + UV hull |
+| UHV large plasma turbine | 655.36 MW | 8/s | - | - | UV turbine + UHV dynamo hatch + UHV hull |
+| UEV large plasma turbine | 1.31 GW | 16/s | - | - | UHV turbine + UEV dynamo hatch + UEV hull |
+| UIV large plasma turbine | 2.62 GW | 32/s | - | - | UEV turbine + UIV dynamo hatch + UIV hull |
+| UMV large plasma turbine | 5.24 GW | 64/s | - | - | UIV turbine + UMV dynamo hatch + UMV hull |
+| UXV large plasma turbine | 10.49 GW | 128/s | - | - | UMV turbine + UXV dynamo hatch + UXV hull |
 | UV large naquadah reactor | 327.68 MW | - | 0.0056/s (1 unit per 3 min) | 0.25/s | controller (UV hull, 4 UV circuits, 2 ZPM field generators, 4 ZPM pumps, 8 naquadah and 8 osmium plates, 4 trinium ingots of melt, indalloy), UV dynamo hatch, 48 casings (192 naquadah plates, 192 lead plates, 48 thick neutron reflectors, 48 europium plates), 4 UV hulls |
 | UHV large naquadah reactor | 655.36 MW | - | 1 unit per 89 s | 0.5/s | UV reactor + UHV dynamo hatch + 4 UHV hulls |
 | UEV large naquadah reactor | 1.31 GW | - | 1 unit per 45 s | 1/s | + UEV dynamo hatch + 4 UEV hulls |
@@ -816,21 +978,189 @@ Generators (4 amps of the tier) and what they burn at full load:
 | UMV large naquadah reactor | 5.24 GW | - | 1 unit per 11 s | 4/s | + UMV dynamo hatch + 4 UMV hulls |
 | UXV large naquadah reactor | 10.49 GW | - | 1 unit per 6 s | 8/s | + UXV dynamo hatch + 4 UXV hulls |
 
-Net gain in practice: one MK1 on deuterium and helium-3 (40.96 MW) makes 62.5 helium plasma per second, enough for 62 LuV,
-31 ZPM or 15 UV plasma turbines (5.12 GW), a net 5.08 GW. One EV blast furnace on acid naquadah emulsion (16 enriched
-naquadah dust per 180 s) feeds 0.036 naquadah fuel MK1 per second through the line, worth 2.08 GW of naquadah reactor
-output; one enriched naquadah dust is 23.4 GJ of MK1 fuel. The generators burn only their own fuels (fuel check above):
-steam, plasma in a naquadah reactor or naquadah fuel in a plasma turbine stop them.
+#### Full-chain analysis (issue #32)
+
+Every machine here uses the same energy per recipe second at any tier (a LuV centrifuge is 32 times as fast as the LV one
+and draws 32 times the power), so the energy of a chain does not depend on the machines the player builds: centrifuge
+0.48 MJ, extractor 0.24 MJ, electrolyzer and electric blast furnace 0.6 MJ, fusion reactor 1.28 MJ per recipe second. The
+full chain of a plasma is its reactor energy plus the machine energy of its inputs, charged fully to the main product
+(byproducts such as the hydrogen of water electrolysis count as free), down to water and the microminer outputs. The
+microverse projector, the ore processing up to the ingots and the poly-si dust are left out, so the metal plasmas are a
+little dearer than shown. The inputs:
+
+| Input | Recipe | Energy per unit | Per GW of plasma (new values) |
+|---|---|---|---|
+| deuterium | 100 water -> 5 in 20 s (centrifuge) | 1.92 MJ | 12.2/s for helium (1.5 LuV centrifuges, 244 water/s), 23.3/s for nitrogen |
+| tritium | 160 deuterium -> 40 in 32 s (centrifuge) | 8.06 MJ | 12.2/s for D + T helium (another 49 deuterium/s) |
+| helium-3 | 1 compressed end stone -> 50 in 200 s (centrifuge; before 100 in 40 s) | 1.92 MJ (before 0.19) | 12.2/s for helium (1.5 LuV centrifuges, 0.24 compressed end stone/s), 8.7/s for tin |
+| molten metal | 1 ingot -> 14.4 in 19.2 s (extractor) | 0.32 MJ + the ingot | |
+| silicon ingot | 1 poly-si dust in 127.2 s (electric blast furnace) | 76 MJ (5.3 MJ per unit of melt) | 0.17/s for iron (0.7 LuV blast furnaces), 0.26/s for niobium |
+| aluminium ingot | 3 carbon + 10 alumina -> 4 in 120 s (electric blast furnace) | 18 MJ | 0.2/s for sulfur |
+| lithium, magnesium | lepidolite and magnesia electrolysis | 6.4 MJ, 1.2 MJ | |
+
+The raw materials are no limit: one EV microverse projector makes 64 tier three microminer outputs in 150 s, which are
+4096 compressed end stone, and the ores come from the same microminers. What scaling costs is the reactor, the machines of
+the chain and their power. Per GW of plasma power with the new values:
+
+| Plasma | Reactors per GW | Reactor draw per GW | Chain draw per GW | Main inputs per GW |
+|---|---|---|---|---|
+| helium (D + He-3) | 0.98 MK1 | 40 MW | 47 MW (before: 0.2 MK1, 8 + 26 MW) | 12.2 deuterium + 12.2 helium-3/s |
+| helium (D + T) | 0.98 MK1 | 40 MW | 122 MW | 12.2 deuterium + 12.2 tritium/s (61 deuterium/s in all) |
+| nitrogen | 0.5 MK2 | 41 MW | 45 MW | 23.3 deuterium/s, 1 molten beryllium/s |
+| sulfur | 0.65 MK2 | 53 MW | 6 MW | 2.9 molten lithium + 2.9 molten aluminium/s |
+| niobium | 0.52 MK2 | 42 MW | 22 MW | 3.7 molten cobalt + 3.7 molten silicon/s |
+| tin | 0.56 MK2 | 46 MW | 18 MW | 3.3 molten silver/s, 8.7 helium-3/s |
+| iron | 0.27 MK3 | 44 MW | 14 MW | 2.4 molten silicon + 2.4 molten magnesium/s |
+
+A base to compare with, one of every machine of a tier at full load (the machines `iv-*` to `uv-*`, multiblocks included):
+IV 0.39 GW (53 machines), LuV 0.45 GW (38), ZPM 0.87 GW (37), UV 1.72 GW (36); one of each from IV to UV draws 3.4 GW.
+Before, one MK1 on D + He-3 (5.12 GW) ran more than all of them together. Now one MK1 (1.02 GW) runs one of each IV and LuV
+machine (0.84 GW); a ZPM base needs a second MK1 or an MK2 (2.05 GW on helium), a UV base an MK3 (4.1 GW on helium, 3.72 GW
+on iron) or two MK2. The other power of these tiers: below fusion there is only steam (vanilla nuclear reactor and steam
+turbines, 5.82 MW per turbine), so fusion stays by far the strongest option of LuV and ZPM. At UV the naquadah fuel line
+arrives: naquadah based fuel MK1 is more than 100x its processing energy (the enriched naquadah left out), and one EV blast
+furnace on acid naquadah emulsion feeds 2.08 GW; it is limited by the naquadah, not by energy (see "Open points").
+
+The band: the cheap plasmas (helium, sulfur, nitrogen, niobium, tin, iron) are 11.5x to 17.2x over the full chain and 18.7x
+to 25x at the reactor, so one reactor makes about 25 times its draw: 1 GW per MK1, 2 GW per MK2, 4 GW per MK3. Zinc (6x, it
+needs tritium) and D + T helium (6.2x) stay below the band; boron, calcium, neon, titanium, oxygen and krypton (1.2x to
+4.2x) are ingredients first and stay as they were. Order of the levers: the input cost first (helium-3 at the price of
+deuterium; half an ingot of each metal for sulfur and iron, whose nugget inputs cost nothing), then the recipe time for the
+output per reactor (helium x5, tin x3, niobium x2.5, nitrogen and sulfur x2, iron x4); the fuel values stay GT's. The input
+cost alone could not do it: with the upstream times one MK1 would still make 5.12 GW, whatever its inputs cost.
+
+#### Comparison with GT5-Unofficial
+
+GT5-Unofficial (GTNH), `FusionReactorRecipes.java`, with 1 EU = 1 kJ like here. The fuel values are the same (EU per L,
+`ProcessingCell.java`; the large plasma turbine makes fuel value x flow EU, times the plasma efficiency of its rotor):
+
+| Plasma | GT recipe | GT energy per craft | GT gain at the reactor | Start-up energy | Here, new |
+|---|---|---|---|---|---|
+| helium (D + He-3) | 125 + 125 -> 125 in 16 ticks at 1920 EU/t | 30.7 MJ | 333x | 60 GJ | 25x |
+| helium (D + T) | 125 + 125 -> 125 in 16 ticks at 3840 EU/t | 61.4 MJ | 167x | 40 GJ | 25x |
+| sulfur | 16 aluminium + 16 lithium -> 144 in 32 ticks at 10 240 EU/t | 327.7 MJ | 75x | 240 GJ | 18.7x |
+| nitrogen | 16 beryllium + 375 deuterium -> 125 in 16 ticks at 15 360 EU/t | 245.8 MJ | 66x | 180 GJ | 24.6x |
+| niobium | 144 cobalt + 144 silicon -> 144 in 16 ticks at 49 152 EU/t | 786 MJ | 49x | 200 GJ | 23.7x |
+| tin | 144 silver + 375 helium-3 -> 288 in 16 ticks at 49 152 EU/t | 786 MJ | 55x | 280 GJ | 22x |
+| iron | 16 silicon + 16 magnesium -> 144 in 32 ticks at 7680 EU/t | 245.8 MJ | 121x | 360 GJ | 22.7x |
+
+GT's reactor is even more generous than Gregtorio's was (one MK1 on D + He-3: 156 helium plasma per second, 12.8 GW). What
+limits it there:
+
+* **The inputs.** Hydrogen from water electrolysis (1000 water -> 2000 hydrogen, 100 s at 30 EU/t: 0.03 MJ per unit),
+  deuterium from 160 hydrogen (8 s at 20 EU/t: 0.2 MJ), tritium from 160 deuterium (8 s at 80 EU/t: 1.12 MJ), helium-3 from
+  80 helium (8 s at 80 EU/t) and the helium from endstone dust (36 dust -> 4320 helium in 9.6 min): 3.4 MJ and 0.13
+  endstone dust per unit of helium-3. At the base tier of each machine GT's full chain is 21x for D + He-3 (helium-3 is the
+  cost) and 45x for D + T, before start-up and turbines. Here deuterium was already 10 times GT's energy (1.92 MJ, water
+  straight to deuterium) and helium-3 a twentieth of it (0.19 MJ); helium-3 now costs 1.92 MJ.
+* **Overclocking.** A GT machine above the recipe's tier runs twice as fast for four times the power, so each tier doubles
+  the energy per craft. The deuterium and helium-3 recipes are LV (20 and 80 EU/t); in LuV machines they cost 32 times the
+  energy, and GT's chain falls to a few x unless the player builds many low tier machines. Gregtorio has no such loss (the
+  energy per craft is the same at every tier), which is why its chain gains stayed high.
+* **Start-up energy** (40 to 360 GJ, stored in the energy hatches before the first craft) and the reactor tier it needs: a
+  one-time cost that is not built here (the reactor starts at once).
+* **Turbines.** The flow of a large plasma turbine is set by its rotor, and the efficiency drops away from the optimal flow.
+  Here the turbine is capped at four amps of its tier and burns at 100 %.
+
+So the 11x to 17x here sits between GT's full chain at the base tier (21x to 45x for helium) and GT with overclocked
+machines (a few x), with the reactor at about 25x instead of GT's 50x to 330x: the output per reactor, which GT limits
+through input logistics and turbine flow, is limited here by the recipe time.
+
+Net gain in practice (issue #32; before: one MK1 on D + He-3 made 62.5 helium plasma per second, 5.12 GW for 62 LuV
+turbines, a net 5.08 GW): one MK1 on deuterium and helium-3 (40.96 MW) makes 12.5 helium plasma per second, 1.02 GW, and
+its deuterium and helium-3 draw another 48 MW (3 LuV centrifuges), a net 0.94 GW. The turbines one reactor feeds on its cheap
+plasmas (issue #34 added the UHV to UXV turbines and the MK4 and MK5; the turbine of the reactor's own machine tier in
+bold, "before" is before issue #32):
+
+| Reactor | Plasma | Plasma power | LuV | ZPM | UV | UHV | UEV | UIV | UMV | UXV | Before (LuV / ZPM / UV) |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| MK1 (40.96 MW) | helium | 1.02 GW | **12.5** | 6.25 | 3.1 | 1.6 | 0.8 | 0.4 | 0.2 | 0.1 | 5.12 GW: 62.5 / 31 / 15.6 |
+| MK2 (81.92 MW) | helium (MK1 recipe) | 2.05 GW | 25 | **12.5** | 6.25 | 3.1 | 1.6 | 0.8 | 0.4 | 0.2 | 10.24 GW: 125 / 62.5 / 31 |
+| MK2 | nitrogen | 2.02 GW | 24.6 | **12.3** | 6.2 | 3.1 | 1.5 | 0.8 | 0.4 | 0.2 | 4.03 GW: 49 / 24.6 / 12.3 |
+| MK2 | tin | 1.8 GW | 22 | **11** | 5.5 | 2.7 | 1.4 | 0.7 | 0.3 | 0.2 | 5.4 GW: 66 / 33 / 16.5 |
+| MK3 (163.84 MW) | helium (MK1 recipe) | 4.1 GW | 50 | 25 | **12.5** | 6.25 | 3.1 | 1.6 | 0.8 | 0.4 | 20.5 GW: 250 / 125 / 62.5 |
+| MK3 | nitrogen | 4.03 GW | 49 | 24.6 | **12.3** | 6.2 | 3.1 | 1.5 | 0.8 | 0.4 | 8.06 GW: 98 / 49 / 24.6 |
+| MK3 | tin | 3.6 GW | 44 | 22 | **11** | 5.5 | 2.7 | 1.4 | 0.7 | 0.3 | 10.8 GW: 132 / 66 / 33 |
+| MK3 | iron | 3.72 GW | 45 | 22.7 | **11.3** | 5.7 | 2.8 | 1.4 | 0.7 | 0.4 | 14.9 GW: 181 / 91 / 45 |
+| MK4 (327.68 MW) | helium | 16.4 GW | 200 | 100 | 50 | 25 | **12.5** | 6.25 | 3.1 | 1.6 | 82 GW: 1000 / 500 / 250 |
+| MK4 | nitrogen | 16.1 GW | 197 | 98 | 49 | 24.6 | **12.3** | 6.2 | 3.1 | 1.5 | 32 GW: 394 / 197 / 98 |
+| MK4 | tin | 14.4 GW | 176 | 88 | 44 | 22 | **11** | 5.5 | 2.7 | 1.4 | 43 GW: 527 / 264 / 132 |
+| MK4 | iron | 14.9 GW | 181 | 91 | 45 | 22.7 | **11.3** | 5.7 | 2.8 | 1.4 | 59 GW: 726 / 363 / 181 |
+| MK5 (655.36 MW) | helium | 32.8 GW | 400 | 200 | 100 | 50 | 25 | **12.5** | 6.25 | 3.1 | 164 GW: 2000 / 1000 / 500 |
+| MK5 | nitrogen | 32.3 GW | 394 | 197 | 98 | 49 | 24.6 | **12.3** | 6.2 | 3.1 | 65 GW: 787 / 394 / 197 |
+| MK5 | tin | 28.8 GW | 352 | 176 | 88 | 44 | 22 | **11** | 5.5 | 2.7 | 86 GW: 1055 / 527 / 264 |
+| MK5 | iron | 29.7 GW | 363 | 181 | 91 | 45 | 22.7 | **11.3** | 5.7 | 2.8 | 119 GW: 1452 / 726 / 363 |
+
+Without the turbines of issue #34 one MK4 needed 50 UV turbines on helium and one MK5 100; with them it is 12.5 of the
+reactor's own tier, as for the MK1 to MK3.
+
+One EV blast furnace on acid naquadah emulsion (16 enriched naquadah dust per 180 s) feeds 0.036 naquadah fuel MK1 per
+second through the line, worth 2.08 GW of naquadah reactor output; one enriched naquadah dust is 23.4 GJ of MK1 fuel. The
+generators burn only their own fuels (fuel check above): steam, plasma in a naquadah reactor or naquadah fuel in a plasma
+turbine stop them.
+
+### Turbines above UV (issue #34)
+
+Numbers: researchable technologies 355 -> 360 of 374 -> 379 (the 5 new ones), draft recipes hidden by the draft guard 21
+-> 21, `FORK-DRAFT` and `FORK-AUTOUNLOCK` identical to main, unlocked but uncraftable recipes 0. Tech by tech: the 374
+technologies of main keep their prerequisites, science packs and unlocks; the new ones unlock the dynamo hatch and the
+turbine of their tier (the dynamo hatches UHV to UXV are now unlocked by two techs each, the plasma turbine and the
+naquadah reactor of the tier).
+
+| Turbine | Output | Helium plasma at full load | Recipe (60 s in the tier's assembling machine) | Technology (science) | Prerequisites |
+|---|---|---|---|---|---|
+| UHV large plasma turbine | 655.36 MW | 8/s | UV turbine + UHV dynamo hatch + UHV hull (UV dynamo hatch and UV hull back) | `uhv-plasma-turbine` (UHV, 2500) | `uv-plasma-turbine`, `uhv-energy-hatches` |
+| UEV large plasma turbine | 1.31 GW | 16/s | UHV turbine + UEV dynamo hatch + UEV hull | `uev-plasma-turbine` (UEV, 2500) | `uhv-plasma-turbine`, `uev-energy-hatches` |
+| UIV large plasma turbine | 2.62 GW | 32/s | UEV turbine + UIV dynamo hatch + UIV hull | `uiv-plasma-turbine` (UIV, 2500) | `uev-plasma-turbine`, `uiv-energy-hatches` |
+| UMV large plasma turbine | 5.24 GW | 64/s | UIV turbine + UMV dynamo hatch + UMV hull | `umv-plasma-turbine` (UMV, 2500) | `uiv-plasma-turbine`, `umv-energy-hatches` |
+| UXV large plasma turbine | 10.49 GW | 128/s | UMV turbine + UXV dynamo hatch + UXV hull | `uxv-plasma-turbine` (UXV, 2500) | `umv-plasma-turbine`, `uxv-energy-hatches` |
+
+They are the same `generator` prototype as the LuV to UV turbines (fuel check, turbine output hatch, fast replace group),
+listed in the mod data `fork-power`, so `scripts/fork-power.lua` picks them up without a code change or a migration.
+
+**Fluid usage per tick.** A `generator` burns at most `fluid_usage_per_tick` units per tick, so with 1 unit (LuV to UV) it
+could never make more than 60 x the fuel value per second: 4.92 GW on helium plasma, 1.23 GW on neon. The UXV turbine made
+4.92 GW instead of 10.49 GW on helium, the UMV turbine was short as well, the UEV one on neon. `make_generator` now sets it
+to the cap divided by the weakest accepted fuel (neon plasma for the turbines, excited uranium fuel for the reactors),
+rounded up: 1 for LuV to UHV and every naquadah reactor (unchanged), 2, 3, 5 and 9 for UEV, UIV, UMV and UXV. The fuel
+check window grows with it on those four: steam in a UXV turbine burns at most 90 units (9 MJ) in the 10 ticks.
+
+**GT++'s XL plasma turbine** (`MTELargerTurbinePlasmaLegacy`: "runs as fast as 16 Large Turbines", 12 rotor hatches, any
+number of dynamo hatches of mixed voltage, no tier of its own; plasma efficiency falls for high tier rotors on low grade
+plasma) is not followed. Here there are no rotors and no flow; the tier of the dynamo hatch sets the output of every
+generator (the turbines LuV to UV and the naquadah reactors UV to UXV). An XL turbine as 16 UV turbines would be a
+5.24 GW generator from UV, skip the UHV to UMV hatches and give one step instead of a line. One turbine per tier keeps
+the pattern of the reactors, uses the dynamo hatches that already exist and the fast replace upgrade. It gives the XL
+turbine's advantage too, fewer entities per GW: a UXV turbine replaces 32 UV turbines, and the runtime cost is per turbine
+(one property read per running turbine per tick, unchanged), so a 16 GW MK4 on helium is 12.5 UEV turbines (13 reads per
+tick) instead of 50 UV turbines.
+
+**MK4 and MK5 (decision: unchanged).** The MK4 and MK5 run the fusion recipes 16 and 32 times as fast as the MK1 because
+they run at the speed of their tier (UEV_SPEED 512 and UIV_SPEED 1024, like every machine), and every reactor from MK1 to
+MK5 feeds 12.5 turbines of its own machine tier on helium (11 to 12.3 on nitrogen, tin and iron; table in "Net gain in
+practice"). Measured against one of every machine of the tier that researches it (IV 0.39, LuV 0.45, ZPM 0.87, UV 1.72,
+UHV 3.44, UEV 6.88, UIV 13.76, UMV 27.5, UXV 55 GW), one reactor on helium runs 2.3 LuV bases (MK1), 2.4 ZPM (MK2), 2.4 UEV
+(MK4) and 2.4 UIV bases (MK5). A change of the MK4 and MK5 would break this line; the one that is off is the MK3 (UV speed,
+UHV research: 1.2 UHV bases, see "Open points"). What the MK4 and MK5 do change: half the energy per craft (0.64 MJ per
+recipe second), so a reactor makes 44x to 50x its draw instead of 22x to 25x and the full chain rises from 11.5x to 14.9x
+(helium), 11.7x to 15.3x (nitrogen), 15.7x to 24.5x (tin) and 17.2x to 27.7x (iron). Kept, and listed as an open point.
+
+Tests (`devcheck runtime`): the fuel check test has a UXV turbine on steam and a UEV turbine on naquadah fuel (stopped
+with "Wrong fuel", fluid kept, then they run on helium plasma); the new turbine tier test runs one UHV to UXV turbine each
+(helium, nitrogen, iron plasma) and a UXV one on neon under twice their output: each makes exactly four amps of its tier
+and its hatch holds the cooled fluid for the plasma burnt (helium, nitrogen, molten iron, neon; worst error 1.3e-7).
 
 ### Deviations from GT
 
 * One generator entity per tier and fuel family instead of GT's single multiblocks whose output the dynamo hatch caps;
   no turbine rotor materials, fitting or overflow efficiency; the plasma efficiency is 100 %.
+* No XL plasma turbine (GT++); the UHV to UXV turbines take its place (issue #34, see "Turbines above UV").
 * The cooled fluid goes to a separate output hatch entity (runtime), up to 10 ticks after the plasma was burnt; it is
   exact (see "Cooled fluid" above). What does not fit into the hatches waits in the turbine instead of being voided.
 * The naquadah reactor has no depleted fuel output and no coolant bonus; fuel MK4 to MK6 are not built (orundum, awakened
   draconium, hypogen, atomic separation catalyst are not in the mod). The chain skips naquadah asphalt, the cracking of the
-  fuels, antimony trioxide, tiberium, high density uranium and plutonium and the naquadah fuel refinery.
+  fuels (removed for good in issue #39 with the atomic separation catalyst), antimony trioxide, tiberium, high density uranium
+  and ~~plutonium~~ (high density plutonium is built since issue #39) and the naquadah fuel refinery.
 * GT's single-block naquadah reactors (naquadah rods) and single-block plasma generators are not built.
 
 ### Existing saves
@@ -841,14 +1171,32 @@ Nothing that was unlocked changes; the recipes this side quest turns from drafts
 --from-ref 0e935ba` and `--from-ref v0.3.0` load. Turbines placed with the sampling version of the cooled fluid (before
 issue #28, not released) keep their owed fluid and run on; `migrate` builds one under load in the old save and checks the
 helium for its plasma after the update (`plasma turbine of the old save`).
+Issue #34 (UHV to UXV turbines): the prototypes of the LuV to UV turbines and of the reactors are unchanged (same names,
+fluid usage 1), `storage.fork_power` keeps its layout; the new turbines are registered like the old ones when they are
+built. Researched `*-naquadah-reactor` techs keep their dynamo hatch. `migrate --from-ref v0.3.1` loads, and its LuV
+turbine returns 2.0000 helium for 2.0000 plasma after the update.
 
 ### Open points
 
-* Balance is untested in game: the caps of the generators (4 amps), the plasma values (helium is 125x the reactor's
-  energy, boron and calcium 2-3x), the naquadah chain's yields, the recipe times of the turbine and reactor parts.
+* Balance is untested in game: the caps of the generators (4 amps), the plasma balance of issue #32 (about 1 GW per MK1,
+  11x to 17x over the full chain for the cheap plasmas), the naquadah chain's yields, the recipe times of the turbine and
+  reactor parts.
+* The naquadah fuel line (UV) is more than 100x its processing energy and feeds 2.08 GW per EV blast furnace, stronger per
+  unit of energy than any plasma; it is limited by enriched naquadah. Not changed in issue #32.
+* ~~The MK4 and MK5 run the MK1 to MK3 plasma recipes 16 and 32 times as fast as the MK1 (one MK4 on helium: 16.4 GW for
+  327.68 MW); there are no turbines above UV yet.~~ Issue #34: UHV to UXV turbines; the MK4 and MK5 speed stays (see
+  "Turbines above UV").
+* The MK3 runs at UV speed but is researched with UHV science (the MK1, MK2, MK4 and MK5 run at the speed of their
+  research tier): at UHV one MK3 (4.1 GW on helium) runs 1.2 UHV bases instead of the 2.4 of the others, and the MK3 to
+  MK4 step is 4x instead of 2x. UHV speed (8.2 GW, 12.5 UHV turbines) would fit the line; not changed in issue #34 (it
+  changes the MK3 numbers of issue #32).
+* The MK4 and MK5 need half the energy per craft (0.64 MJ per recipe second), so their plasmas are 44x to 50x their
+  reactor draw and 15x (helium, nitrogen) to 28x (iron) over the full chain, above the 11x to 17x band of the MK1 to MK3.
+  Kept: at UEV the reactor draw is a small part of the base (one of each UEV machine: 6.9 GW).
 * Graphics: the turbines use the GT large turbine front (tungstensteel) as a top-down sprite, the reactors the GT naquadah
-  reactor casing with the radiation proof casing inside, tinted per tier; the output hatch is the ME fluid interface in
-  orange; the hatch and part icons are recolored placeholders (`tools/gen_icons.py`).
+  reactor casing with the radiation proof casing inside; every tier shows four GT dynamo hatches of its tier on the corner
+  tiles (issue #41; before, the tiers above LuV/UV were tinted copies); the output hatch is the ME fluid interface in
+  orange; the hatch and part icons come from GT textures (issue #40; before, recolored placeholders).
 * ~~The cooled fluid could become exact with a per-tick sample~~ (done, issue #28: the energy is summed every tick). An
   engine-only turbine (one `fusion-generator` entity per plasma with filtered input and output, or GT's single-block
   plasma generators) would drop the script and the hatch entity, but needs one entity per plasma and tier and a migration
@@ -856,8 +1204,10 @@ helium for its plasma after the update (`plasma turbine of the old save`).
 * Left of the cooled fluid: a turbine switched off by another mod (`active = false`) keeps its last
   `energy_generated_last_tick` and would be counted; a plasma change within one step can shift at most that step's burn
   between the two plasmas.
-* The MK3 reactor and up make plasma far faster than the turbines burn it (one MK3 on iron plasma: 14.9 GW); higher tier
-  turbines (UHV+, like GT++'s XL turbines) would use it.
+* ~~The MK3 reactor and up make plasma faster than a few turbines burn it; higher tier turbines (UHV+, like GT++'s XL
+  turbines) would use it.~~ Done in issue #34 (UHV to UXV turbines).
+* Balance of the UHV to UXV turbines is untested in game: their recipe times (60 s of the tier's assembler), the flow
+  of 128 helium plasma per second into one UXV turbine, and whether one per tier is enough steps.
 
 ## Side quest: water purification grades 7 and 8 (done)
 
@@ -920,7 +1270,7 @@ Choices and deviations from GT:
 - **One plant, one recipe per grade**, no linkage blocks, 90 % yield like grades 1-6. The degasifier's control signals (one random inert gas,
   a superconductor, a catalyst and coolant per cycle) become one recipe with all of them; the gas is helium (GT: helium 10 000, neon 7500,
   krypton 5000 or xenon 2500 per cycle), because neon, krypton and xenon come only from liquid ender air, which no line makes. Super coolant
-  is cryogenic helium (like the UV to UXV hatches); the superconductor is triamerotronium dust (GT: the base melt of the UHV superconductor).
+  is ~~cryogenic helium (like the UV to UXV hatches)~~ super coolant since issue #36 (100 per craft; grade 5 takes 100 as well, like GT); the superconductor is triamerotronium dust (GT: the base melt of the UHV superconductor).
 - **Quark extraction without catalyst alignment.** GT puts two of six aligned quark catalysts in, gets two unaligned ones and stable baryonic
   matter out, and realigns them in a laser engraver (the first ones come from the plasma forge, UMV). Here one reusable catalyst item (GT's
   housing recipe) that breaks in 1 of 10 crafts; no baryonic matter. One catalyst lasts about 9000 grade 8 water, 900 APIC wafers.
@@ -946,8 +1296,8 @@ Tests: `devcheck check` lists the 12 new recipes in `REQUIRED_RECIPES` (unlocked
 crafts grades 7 and 8, the wafers and chips, the five complex SMDs, the catalyst, the UEV and UIV energy hatches, the MK4 controller and the wetware
 mainframe once each in a real machine (`recipe test: ok`).
 
-Open: the icons of the new items and techs are recolored placeholders (`tools/gen_icons.py`); balance (catalyst life, SMD and chip costs) is
-untested in the real game.
+The icons of the new items and techs come from GT textures since issue #40 (`tools/gen_gt_icons.py`). Open: balance (catalyst life, SMD and chip
+costs) is untested in the real game.
 
 ## Side quest: AE2 autocrafting (done)
 
@@ -997,19 +1347,340 @@ Numbers: researchable technologies 317 -> 319 of 359 -> 361 (the two new ones), 
 ### Open points
 
 * One temperature per fluid: exported at the default temperature (hot steam loses its heat); recipes that need another temperature
-  are not patterns. No fluid in blueprints (documented limit); no per-drive fluid type limits or filters; the export
+  are not patterns. No fluid contents in blueprints (documented limit; the fluid interface settings are kept since issue
+  #38); no per-drive fluid type limits or filters; the export
   level applies to the interface's own box (connected pipes share it). The fluid GUIs are untested in the real game.
 * Recovery (issue #26, done): a destroyed drive's fluid goes into the other drives of its network, the rest is kept as recovered
   fluid (per surface, with its position) that the next drive placed in that network (or the drive GUI's Take over button) takes
-  over; reported in the chat. The disassembly recipe is hand crafting only and recovers the fluid of a loaded item. Open: existing
-  drives do not pull recovered fluid in by themselves; the upgrade planner leaves the fluid on the old item instead of moving it
-  into the new drive; the hand craft and cancel events and the chat reports are untested in the real game.
+  over; reported in the chat. The disassembly recipe is hand crafting only and recovers the fluid of a loaded item.
+* Recovery follow-up (issue #43, done): the drives of a network pull its recovered fluid in by themselves when they have room (fluid
+  step, 4 entries per step, round robin, reported once per entry); upgrading a loaded drive (upgrade planner with robots or on a
+  platform, fast replace by hand) moves its fluid into the new drive, the rest into the network, then into the recovered fluid, and
+  the old item carries none. Old and new drive are linked by spot and tick (`to_be_upgraded()` for robots, `on_pre_build` for the
+  hand path; see `docs/AE2.md`, "Upgrades"). Open: the hand fast replace, the hand craft and cancel events and the chat reports are
+  untested in the real game (the headless run has no player).
 * Only normal quality; no items with own data; no spoilage in the job pool.
 * Furnaces (issue #27, done): the pattern provider holds a recipe choice for the furnaces next to it (window on the "open" key:
   researched recipes of their categories), a pattern at once without a first smelt; copied by settings paste, blueprints and
   cloning, `previous_recipe` as fallback, furnaces without either counted as `no-recipe`. Open: a furnace whose input fits two of
   its recipes may smelt the other one (the job fails and returns its items); the window, paste and blueprint event are untested
   in the real game.
-* One job per CPU, no co-processor or CPU storage tiers, no "keep N in stock", no circuit network interface.
+* ~~One job per CPU, no co-processor or CPU storage tiers, no "keep N in stock", no circuit network interface.~~ Done in
+  "AE2 extras (issue #38)": CPU tiers with job slots and speed (no CPU storage: job sizes stay unlimited), the level
+  maintainer, the circuit interface. ~~No fluid in blueprints~~: fluid interface settings are kept (drive contents stay
+  on the item by design).
 * The terminal GUI cannot be run headless: its layout (tabs, craft list, job list) and the sprites need a look in the real game;
   balance of costs, speeds and tier is untested.
+
+### AE2 extras (issue #38, done)
+
+Player guide and design: `docs/AE2.md` ("CPU tiers", "Keeping items in stock", "Circuit network", "Settings in blueprints
+and copy/paste"). Numbers: 3 new technologies (`me-automation` EV, `me-co-processing` IV, `me-quantum-crafting` LuV), all
+researchable; 4 new recipes and nothing else unlocked or auto-unlocked (`FORK-AUTOUNLOCK` unchanged).
+
+* **Keep N in stock:** ME Level Maintainer (1x1 lamp, 30 kW, EV): one item or fluid and an amount; below it, a crafting job for
+  the difference starts when a pattern exists and a powered CPU has a free slot; no second job while a job of the network
+  crafts that resource. The lamp's circuit condition switches it; "amount from the circuit" reads the resource's signal.
+* **CPU tiers:** ME Co-Processing Crafting CPU (IV: 2 jobs, 2x hand-overs) and ME Quantum Crafting CPU (LuV: 4 jobs, 4x), upgrade
+  planner chain from the ME Crafting CPU. Numbers in the mod-data `fork-me-autocraft`; all jobs of a step share 96 hand-overs.
+* **Circuit interface:** ME Circuit Interface (constant combinator, EV tech): items (with quality) and fluids (floored) of the
+  network, or only its filters (20), refreshed about once a second.
+* **Fluids in blueprints:** the fluid interface's mode, fluid and level are blueprint tags and copied by settings paste and
+  cloning; the fluid drive has no settings (its contents stay on the item).
+* **Tick budget:** no new interval: a step hook of the autocrafting step (20 ticks) checks 4 maintainers (at most one job start)
+  and updates 2 circuit interfaces, round robin.
+* **Tests:** `tools/devcheck` runtime: level maintainer (exactly one job, stops at N, refills the difference, circuit amount and
+  condition), CPU tiers (two jobs at once, a third waits, quantum slots), circuit interface (wire equals the contents, filters,
+  change), settings copy (blueprint tags, built and revived, paste, clone). `migrate --from-ref v0.3.1`: a job started with the
+  old version finishes on the old CPU after the update.
+
+#### Open points
+
+* Untested in the real game: the maintainer and circuit interface panels (relative to the lamp and combinator GUIs), the lamp
+  GUI's circuit condition set by hand, settings paste by hand between fluid interfaces (the prototype allows it through
+  `additional_pastable_entities`), the upgrade planner on CPUs, the new sprites, balance of costs and tiers.
+* No crafting request of several resources from the circuit network (AE2's "craft what the signal asks for"); one maintainer per
+  resource. No CPU storage (AE2 crafting storage): a job's size is not limited by its CPU.
+* The circuit interface refreshes 2 interfaces per 20 ticks: with many interfaces each is refreshed less than once a second.
+
+## Balance pass: endgame (issues #30, #31, #33)
+
+Method as in issue #32: analyse first, write it down, then change as little as needed. Every number below comes from the final
+prototypes (recipes with amounts and times, machine speeds and technology counts from `devcheck.py check --balance-out`, a new section
+of the devcheck dump) and the model `tools/balance_model.py`. The numbers in the issues were from 0.3.0 and are outdated (FPIC/APIC
+hatches since #52, the fusion times of #32, the materials of #36).
+
+### The model
+
+For every item the model sums the machine time of its whole chain, from the raw inputs through the fusion reactors to the part
+(machine-seconds per machine class; recipe time / machine speed). The time of an item in a reference factory is the largest
+work / capacity over the machines that limit the endgame, all of them busy with that one item:
+
+* **fusion reactors**, nested: an MK*k* recipe runs in any reactor from MK*k* up (speed MK1 32, MK2 64, MK3 128, MK4 512, MK5 1024);
+* **ZPM assembly lines** (speed 32: every component from UV to UXV and the stargate parts; the LuV assembly line, 16, at LuV);
+* **circuit assembly lines** (64: every circuit line), **bacterial vats** (1) and **water purification plants** (1).
+
+The basic machines of the tier (speed 128 at UV to 4096 at UXV) are counted but built as needed; recipes below IV are commodity
+supply. Byproducts are free (as in #32) except the loop fluids bacterial sludge and P507; the raw crystal chip comes from GT's loop
+recipe (25 mutagen per chip, not the 1000 of the start recipe); at UV the neutronium comes from the MK2 bootstrap recipe.
+
+What the bottleneck tables of phases 4, 5a and 5b missed: they counted ingots of the top metal only. Every endgame metal is made of
+one or two ingots of each metal below it (universium = spacetime + flerovium, spacetime = transcendent metal + rhugnor, rhugnor =
+infinity + transcendent metal, transcendent metal = infinity + krypton plasma, infinity = cosmic neutronium + draconium, cosmic
+neutronium = neutronium + tritanium, tritanium = titanium + 2 duranium from the MK1, ...). One universium ingot is 26 000
+reactor-seconds (at speed 1) over its chain, 17 times its own MK5 recipe. The stargate took 32 hours of the UXV factory, not the
+8.5 hours of one MK5 of phase 5b.
+
+### Reference factory
+
+One "unit" of a tier's power is 12.5 large plasma turbines of the tier on helium plasma (issue #34): LuV 1 MK1, ZPM 1 MK2, UV 2 MK2
+(the MK3 is UHV research), UHV 2 MK3, UEV 1 MK4, UIV 1 MK5, UMV 2 MK5, UXV 4 MK5. The unit doubles with every tier, and it runs:
+
+| Tier | Power | Metal reactors | ZPM assembly lines | Circuit assembly lines | Bacterial vats | Purification plants | Metal reactors' share of the unit |
+|---|---|---|---|---|---|---|---|
+| LuV | 1 MK1 (1.02 GW) | 2 MK1 | 1 (LuV line) | 1 | 4 | 1 | 8 % |
+| ZPM | 1 MK2 (2.05 GW) | 2 MK2 + 2 MK1 | 2 | 2 | 4 | 1 | 12 % |
+| UV | 2 MK2 (4.1 GW) | 4 MK2 + 2 MK1 | 2 | 2 | 8 | 2 | 10 % |
+| UHV | 2 MK3 (8.2 GW) | 4 MK3 + 2 MK2 | 2 | 2 | 8 | 2 | 10 % |
+| UEV | 1 MK4 (16.4 GW) | 2 MK4 + 2 MK3 | 4 | 4 | 16 | 4 | 6 % |
+| UIV | 1 MK5 (32.8 GW) | 2 MK5 + 2 MK4 | 4 | 4 | 16 | 4 | 6 % |
+| UMV | 2 MK5 (65.5 GW) | 4 MK5 + 2 MK4 | 8 | 8 | 32 | 8 | 5 % |
+| UXV | 4 MK5 (131 GW) | 8 MK5 + 2 MK4 | 8 | 8 | 32 | 8 | 4.5 % |
+
+Metal reactors: twice the power reactors of the newest MK plus two of the MK before. The rest of the unit runs the machines of the
+tier (one of each at full load: UV 1.72 GW ... UXV 55 GW, see "Turbines above UV"); assembly lines, vats and plants draw 5 to 10 MW
+each. Research: 20 labs with research speed 6 (x3.7). The pack production rate of a factory is its time per pack in the tables below;
+a technology costs the pack production of all its packs (every tier, not only the highest) in the factory of its highest pack.
+
+### Findings
+
+* **UV motor (#31).** One UV motor took 1.6 minutes of the UV factory (62 americium ingots: 48 for the 384 fine wires, 14 for the
+  bootstrap neutronium). That is less than the other UV parts (pump 2.7, piston 6.7, robot arm 14.3, field generator 14.6 minutes)
+  and in line with the UHV motor (64 s in the UHV factory: its tritanium needs MK1 duranium). GT has the same 384 fine americium
+  wires; the UV motor only looked expensive because phase 4 cut the UHV motor to 48 fine wires (GT: 512). The real outlier was the
+  **large neutronium gear**: the generic 40 ingots of melt (phase 4 made the tritanium one 4), so a UV piston cost 172 americium
+  ingots, as much as a UHV piston, and the robot arm (a piston and two motors) 390.
+* **Lutetium.** One americium ingot needs one lutetium dust (GT: 16 L each); 4 rare earth (I) dust give 1 lutetium in the EV
+  electrolyzer. GT gets lutetium from thorium (5 thorium dust -> 4 lutetium in the HTGR, depleted thorium rods) and from the lanthanide
+  chain (4000 L monazite froth -> 16 lutetium among 120 lanthanide dusts, 13 %). The 25 % here sits between the two and costs almost
+  nothing at UV speed (0.75 s per lutetium in a UV electrolyzer). **Kept deliberately** at 4:1; it is no bottleneck. Americium is as
+  fast as in GT (5 s per ingot in the MK2; GT 4.8 s per 16 L).
+* **Stargate (#33).** 32 hours of the UXV factory: the base alone 6.1 hours (4 UXV field generators, 4 robot arms), the power unit 3,
+  the controller 2.1, the 8 ring blocks (a UXV field generator each) 10.5, the 7 chevron blocks (each with the emitter and pistons of
+  its chevron upgrade once more) 9.3. The 14 UXV field generators and 624 UXV circuits were half of it.
+* **UMV/UXV parts and hatches (#33).** No component or hatch takes hours: the UXV field generator is the largest (49.5 minutes of the
+  UXV factory), the UMV and UXV energy hatches take 11 and 9 minutes (8 and 16 APICs since #52; the 16 and 32 QPICs of the issue are
+  gone). From tier to tier in the same (UXV) factory the parts grow 1.0x to 3.8x (motors 8 s, 8 s, 11 s, 25 s, 96 s, 126 s; field
+  generators 2.2, 3.9, 9.3, 11, 29, 50 minutes; hatches 35 s, 35 s, 52 s, 1.7, 6.0, 8.9 minutes); in the factory of their own tier,
+  which doubles, they take about the same time. Nothing is an order of magnitude off its neighbours, so they stay as they are.
+* **Research (#30).** Every technology from UV up cost far more than anything it unlocks. In the factory of its tier a typical
+  technology (3000 units) took 2.5 hours at LuV, 8 at ZPM, 37 at UV, 113 at UHV and UEV, 206 at UIV, 267 at UMV and 482 at UXV. The
+  technologies with UIV to MAX packs took 8200 hours, the stargate technology alone 482 (and 13.5 hours of labs at 1200 s per unit),
+  level 1 of `victory` 288 (256 of them for the 14 lower packs, 1000 units of each). Most of a unit's cost is the packs below the
+  highest one: a UXV unit needs 1 UXV, 2 UMV, 3 UIV, 5 UEV, 8 UHV, 12 UV and 18 ZPM packs, and the UXV pack is 3.6 of its 9.6 minutes.
+  Cutting only UIV to victory would make those technologies cheaper than the UHV and UEV ones, so the pass scales everything from UV
+  up (the maintainer's decision).
+* **Fusion times (lever 3, not used).** Duranium takes 32 s per 16 L in the MK1 (GT: 3.2 s; every other fusion metal is within a few
+  percent of GT) and is 90 % of the chain of tritanium, so of cosmic neutronium, infinity and everything above. Rhugnor takes 3276.8
+  against 768 for the other MK4 metals and is half of spacetime. With both at the GT/MK4 value the stargate would take 22.5 instead of
+  32 hours, but the UHV parts would become cheaper than the UV ones. Not needed for the targets; open point.
+
+### Changes
+
+Levers in the order of the issues: unit counts of technologies, ingredient counts of parts. No yield or recipe time changed, the
+fusion values of #32 and the turbines of #34 are unchanged, no prototype is renamed.
+
+* **UV motor** (`127-fork-uv.lua`): 64 fine americium wires instead of 384 and 8 long neutronium rods instead of 4 (the UHV to UXV
+  motors have 48 to 64 fine wires and 8 long rods): 22 americium ingots instead of 62 with the bootstrap neutronium.
+* **Large neutronium gear**: 4 ingots of melt (57.6) instead of 40, like the large tritanium to universium gears.
+* **Stargate** (`135-fork-endgame.lua`, old counts in brackets):
+  - ring block: no UXV field generator (1), 2 frame parts (3), 2 radiation containment plates (3), 288 molten universium (576);
+  - chevron block: no emitter (1) and pistons (2) of its own, 1 frame part (2), 1 plate (2), 2 UXV circuits (4), 288 universium (576);
+  - chevron upgrade: 1 frame part (2), 1 piston (2), no emitter (1);
+  - base: 1 UXV field generator (4), 1 emitter (4), 1 robot arm (4), 1 coil II (2), 2 plates (4), 2 frame parts (4), 8 circuits (16),
+    16 eternity superconductor wires (32), 288 universium (1152);
+  - power unit: 1 coil II (4), 1 field generator (2), 2 UXV energy hatches (4), 2 plates (4), 16 universium plates (32), 4 circuits
+    (8), 32 eternity superconductor wires (64), 288 universium (1152);
+  - controller: 8 UXV circuits (32), 1 sensor (2), 1 emitter (2), 2 conveyor modules (4), 8 gravi stars (16), 2 frame parts (4),
+    2 plates (4), 288 universium (576);
+  - frame part: 288 molten universium and 288 molten spacetime (576 each).
+
+  The top level (8 ring blocks, 7 chevron blocks, base, power unit, controller, chevron and iris upgrade) is unchanged. The stargate
+  needs 2 UXV field generators and 196 UXV circuits instead of 14 and 624.
+* **Research** (new file `138-fork-research-balance.lua`, loaded after 137): explicit unit counts for the 70 technologies from UV to
+  UXV. Each tier is scaled so a technology costs about as long as a ZPM technology of the same count in the factory of its tier
+  (seconds of pack production per unit, median over the tier's technologies; ZPM 9.8 s): UV /4.5, UHV /13.9, UEV /13.9, UIV /25.3,
+  UMV /32.2, UXV /59.3, rounded to 5 (to 25 above 200). The factory doubles with every tier, so the real cost still doubles per tier.
+  `victory`: `15 * 2^(L-1)` instead of `1000 * 2^(L-1)` (/59.3 like UXV). Left alone: the infinite `research-productivity`, the
+  vanilla technologies that cannot be researched (`UNRESEARCHABLE_OK`), and the unit times (with the new counts the labs are never the
+  limit; the stargate technology takes 13.5 minutes of labs). Level 1 of `victory` now costs the stargate (its 1000 MAX packs; the
+  first six levels take 945 of them) plus 4 hours for 15 units of the other packs: 14.5 hours, 1.4 stargates, instead of 288 hours.
+
+### Before and after
+
+Times of one item in the reference factory of its tier and in the UXV factory (the same yardstick for every tier); "Limit" is the
+machine class that sets the time after the pass.
+
+UV components:
+
+| Part | Factory | Time in the factory of its tier | Limit | Time in the UXV factory |
+|---|---|---|---|---|
+| uv-motor | UV | 1.6 min -> **70 s** | fusion | 8 s |
+| uv-pump | UV | 2.7 min -> **2.2 min** | fusion | 15 s |
+| uv-conveyor-module | UV | 3.9 min -> **3.0 min** | fusion | 22 s |
+| uv-piston | UV | 6.7 min -> **2.9 min** | fusion | 15 s |
+| uv-robot-arm | UV | 14.3 min -> **6.3 min** | fusion | 45 s |
+| uv-emitter | UV | 2.9 min -> **2.5 min** | fusion | 30 s |
+| uv-sensor | UV | 3.3 min -> **2.8 min** | fusion | 30 s |
+| uv-field-generator | UV | 14.6 min -> **12.7 min** | fusion | 2.2 min |
+
+One component of each tier:
+
+| Part | Factory | Time in the factory of its tier | Limit | Time in the UXV factory |
+|---|---|---|---|---|
+| uv-motor | UV | 1.6 min -> **70 s** | fusion | 8 s |
+| uhv-motor | UHV | 64 s | fusion | 8 s |
+| uev-motor | UEV | 80 s | fusion | 11 s |
+| uiv-motor | UIV | 74 s | fusion | 25 s |
+| umv-motor | UMV | 2.9 min | fusion | 1.6 min |
+| uxv-motor | UXV | 2.1 min | fusion | 2.1 min |
+| uv-sensor | UV | 3.3 min -> **2.8 min** | fusion | 30 s |
+| uhv-sensor | UHV | 3.0 min | circuit assembly line | 45 s |
+| uev-sensor | UEV | 3.9 min | fusion | 1.7 min |
+| uiv-sensor | UIV | 4.7 min | fusion | 2.3 min |
+| umv-sensor | UMV | 10.1 min | fusion | 5.6 min |
+| uxv-sensor | UXV | 9.3 min | fusion | 9.3 min |
+| uv-field-generator | UV | 14.6 min -> **12.7 min** | fusion | 2.2 min |
+| uhv-field-generator | UEV | 7.9 min | circuit assembly line | 3.9 min |
+| uev-field-generator | UEV | 21.8 min | fusion | 9.3 min |
+| uiv-field-generator | UIV | 27.6 min | fusion | 11.0 min |
+| umv-field-generator | UXV | 28.7 min | fusion | 28.7 min |
+| uxv-field-generator | UXV | 49.5 min | fusion | 49.5 min |
+
+Energy hatches and fusion controllers:
+
+| Part | Factory | Time in the factory of its tier | Limit | Time in the UXV factory |
+|---|---|---|---|---|
+| uv-energy-hatch | UV | 3.3 min -> **2.8 min** | fusion | 35 s |
+| uhv-energy-hatch | UHV | 4.1 min -> **4.0 min** | fusion | 35 s |
+| uev-energy-hatch | UEV | 4.9 min | fusion | 52 s |
+| uiv-energy-hatch | UIV | 5.1 min | fusion | 1.7 min |
+| umv-energy-hatch | UMV | 10.8 min | fusion | 6.0 min |
+| uxv-energy-hatch | UXV | 8.9 min | fusion | 8.9 min |
+| fusion-reactor-mk3-controller | UHV | 21.5 min | assembly line | 5.4 min |
+| fusion-reactor-mk4-controller | UEV | 31.4 min -> **31.1 min** | fusion | 10.5 min |
+| fusion-reactor-mk5-controller | UIV | 57.3 min | bacterial vat | 28.6 min |
+
+Science packs (one pack; a craft makes 10, the MAX pack is 1/1000 of a stargate):
+
+| Part | Factory | Time in the factory of its tier | Limit | Time in the UXV factory |
+|---|---|---|---|---|
+| agricultural-science-pack | UV | 28 s -> **26 s** | fusion | 6 s |
+| electromagnetic-science-pack | UHV | 56 s | assembly line | 14 s |
+| cryogenic-science-pack | UEV | 64 s | fusion | 26 s |
+| promethium-science-pack | UIV | 2.1 min | bacterial vat | 62 s |
+| umv-science-pack | UMV | 2.4 min | fusion | 82 s |
+| uxv-science-pack | UXV | 3.6 min | fusion | 3.6 min |
+| max-science-pack | UXV | 1.9 min -> **38 s** | fusion | 1.9 min -> 38 s |
+
+Stargate:
+
+| Part | Factory | Time in the factory of its tier | Limit | Time in the UXV factory |
+|---|---|---|---|---|
+| stargate-frame-part | UXV | 4.1 min -> **2.4 min** | fusion | 4.1 min -> 2.4 min |
+| stargate-radiation-containment-plate | UXV | 1.7 min | fusion | 1.7 min |
+| stargate-chevron | UXV | 4.2 min | fusion | 4.2 min |
+| stargate-iris-blade | UXV | 1.7 min | fusion | 1.7 min |
+| stargate-ring-block | UXV | 78.7 min -> **19.0 min** | fusion | 78.7 min -> 19.0 min |
+| stargate-chevron-block | UXV | 79.8 min -> **29.9 min** | fusion | 79.8 min -> 29.9 min |
+| stargate-chevron-upgrade | UXV | 41.7 min -> **21.7 min** | fusion | 41.7 min -> 21.7 min |
+| stargate-base | UXV | 6.1 h -> **1.7 h** | fusion | 6.1 h -> 1.7 h |
+| stargate-power-unit | UXV | 3.0 h -> **87.4 min** | fusion | 3.0 h -> 87.4 min |
+| stargate-controller | UXV | 2.1 h -> **49.1 min** | fusion | 2.1 h -> 49.1 min |
+| stargate-iris-upgrade | UXV | 17.0 min | fusion | 17.0 min |
+| **stargate** (8 ring blocks, 7 chevron blocks, the rest once) | UXV | 32.0 h -> **10.6 h** | fusion | 32.0 h -> 10.6 h |
+
+Research per tier (pack production in the factory of the tier; the intentionally unresearchable vanilla techs and the infinite research productivity left out):
+
+| Tier (highest pack) | Techs | Sum before | Sum after | Typical tech (3000 units before) | Largest after |
+|---|---|---|---|---|---|
+| LUV | 20 | 33.5 h | 33.5 h | 2.5 h -> 2.5 h | 3.3 h (zpm-components) |
+| ZPM | 16 | 102.7 h | 102.7 h | 8.1 h -> 8.1 h | 10.8 h (uv-components) |
+| UV | 13 | 444.1 h | 99.0 h | 36.9 h -> 8.3 h | 13.5 h (uhv-components) |
+| UHV | 15 | 1607.5 h | 117.4 h | 112.7 h -> 8.5 h | 11.3 h (uev-components) |
+| UEV | 13 | 1582.3 h | 117.0 h | 113.0 h -> 8.5 h | 12.2 h (uiv-components) |
+| UIV | 13 | 2559.3 h | 102.2 h | 205.8 h -> 8.2 h | 9.6 h (uiv-energy-hatches) |
+| UMV | 10 | 2546.8 h | 79.0 h | 267.1 h -> 8.3 h | 9.6 h (uxv-components) |
+| UXV | 7 | 3099.1 h | 50.6 h | 481.9 h -> 8.0 h | 8.0 h (stargate) |
+
+UIV to victory, tech by tech:
+
+| Technology | Tier | Units | Packs of the tier and up | Pack production | Labs (20 labs, research speed 6) |
+|---|---|---|---|---|---|
+| `exotic-processor-mainframes` | UIV | 3000 -> 120 | 120 UIV | 205.8 h -> 8.2 h | 40.5 min -> 1.6 min |
+| `exotic-processors` | UIV | 2500 -> 100 | 100 UIV | 171.5 h -> 6.9 h | 33.8 min -> 81 s |
+| `fusion-coil-ii` | UIV | 2500 -> 100 | 100 UIV | 171.5 h -> 6.9 h | 33.8 min -> 81 s |
+| `fusion-plasmas-mk5` | UIV | 3000 -> 120 | 120 UIV | 205.8 h -> 8.2 h | 40.5 min -> 1.6 min |
+| `fusion-reactor-mk5` | UIV | 3000 -> 120 | 120 UIV | 205.8 h -> 8.2 h | 40.5 min -> 1.6 min |
+| `uiv-energy-hatches` | UIV | 3500 -> 140 | 140 UIV | 240.1 h -> 9.6 h | 47.3 min -> 1.9 min |
+| `uiv-machines` | UIV | 3000 -> 120 | 120 UIV | 205.8 h -> 8.2 h | 40.5 min -> 1.6 min |
+| `uiv-multiblocks` | UIV | 3500 -> 140 | 140 UIV | 240.1 h -> 9.6 h | 47.3 min -> 1.9 min |
+| `uiv-naquadah-reactor` | UIV | 3000 -> 120 | 120 UIV | 205.8 h -> 8.2 h | 40.5 min -> 1.6 min |
+| `uiv-plasma-turbine` | UIV | 2500 -> 100 | 100 UIV | 171.5 h -> 6.9 h | 33.8 min -> 81 s |
+| `umv-components` | UIV | 3000 -> 120 | 120 UIV | 205.8 h -> 8.2 h | 40.5 min -> 1.6 min |
+| `umv-materials` | UIV | 2500 -> 100 | 100 UIV | 171.5 h -> 6.9 h | 33.8 min -> 81 s |
+| `umv-science-pack` | UIV | 2300 -> 90 | 90 UIV | 157.8 h -> 6.2 h | 7.6 h -> 17.8 min |
+| `temporal-processor-mainframes` | UMV | 3000 -> 95 | 190 UIV, 95 UMV | 267.1 h -> 8.3 h | 40.5 min -> 77 s |
+| `temporal-processors` | UMV | 3000 -> 95 | 190 UIV, 95 UMV | 267.1 h -> 8.3 h | 40.5 min -> 77 s |
+| `umv-energy-hatches` | UMV | 3000 -> 95 | 190 UIV, 95 UMV | 267.1 h -> 8.3 h | 40.5 min -> 77 s |
+| `umv-machines` | UMV | 2500 -> 80 | 160 UIV, 80 UMV | 222.6 h -> 7.0 h | 33.8 min -> 65 s |
+| `umv-multiblocks` | UMV | 3000 -> 95 | 190 UIV, 95 UMV | 267.1 h -> 8.3 h | 40.5 min -> 77 s |
+| `umv-naquadah-reactor` | UMV | 3000 -> 95 | 190 UIV, 95 UMV | 267.1 h -> 8.3 h | 40.5 min -> 77 s |
+| `umv-plasma-turbine` | UMV | 2500 -> 80 | 160 UIV, 80 UMV | 222.6 h -> 7.0 h | 33.8 min -> 65 s |
+| `uxv-components` | UMV | 3500 -> 110 | 220 UIV, 110 UMV | 311.7 h -> 9.6 h | 47.3 min -> 89 s |
+| `uxv-materials` | UMV | 2500 -> 80 | 160 UIV, 80 UMV | 222.6 h -> 7.0 h | 33.8 min -> 65 s |
+| `uxv-science-pack` | UMV | 2600 -> 80 | 160 UIV, 80 UMV | 231.5 h -> 7.0 h | 10.2 h -> 18.7 min |
+| `stargate` | UXV | 3000 -> 50 | 150 UIV, 100 UMV, 50 UXV | 481.9 h -> 8.0 h | 13.5 h -> 13.5 min |
+| `uxv-energy-hatches` | UXV | 3000 -> 50 | 150 UIV, 100 UMV, 50 UXV | 481.9 h -> 8.0 h | 40.5 min -> 41 s |
+| `uxv-machines` | UXV | 3000 -> 50 | 150 UIV, 100 UMV, 50 UXV | 481.9 h -> 8.0 h | 40.5 min -> 41 s |
+| `uxv-multiblocks` | UXV | 3000 -> 50 | 150 UIV, 100 UMV, 50 UXV | 481.9 h -> 8.0 h | 40.5 min -> 41 s |
+| `uxv-naquadah-reactor` | UXV | 3000 -> 50 | 150 UIV, 100 UMV, 50 UXV | 481.9 h -> 8.0 h | 40.5 min -> 41 s |
+| `uxv-plasma-turbine` | UXV | 2500 -> 40 | 120 UIV, 80 UMV, 40 UXV | 401.6 h -> 6.4 h | 33.8 min -> 32 s |
+| `victory` | UXV | 1000 -> 15 | 75 UIV, 45 UMV, 30 UXV, 15 MAX | 288.2 h -> 4.0 h | 4.5 h -> 4.1 min |
+
+UIV to victory: 8205.2 h -> 231.8 h
+
+Targets met: the stargate takes hours (10.6), not days; its largest part 1.7 hours; the UXV technologies and the stargate technology
+8 hours each, about one stargate; level 1 of `victory` 1.4 stargates; the UV motor is in line with the UHV motor (70 s and 64 s in
+the factories of their tiers). Not met, on purpose: the parts grow 1.0x to 3.8x per tier in a fixed factory instead of 2x to 4x
+everywhere (UV to UHV about 1x, because the UHV metals are cheap apart from duranium; UMV to UXV 1.3x to 1.7x). No part stands out,
+and raising the lower tiers would go against the issues.
+
+Comparison with GT5-Unofficial (`AssemblyLineRecipes.java`, `ResearchStationAssemblyLine.java`): GT's UV motor has 384 fine americium
+wires, its UHV to UMV motors 512 fine wires and 8 to 32 long rods, its sensors 192 to 256 foils, its field generators 384 to 512 fine
+wires, its hatches 2 power ICs. The fork cuts the fine wires and foils of every tier to 48 to 64 (now the UV motor too) and keeps 4 to
+16 power ICs. GT's stargate (NewHorizonsCoreMod: extreme crafting grids with 9 UXV field generators per ring block, BEC recipes of
+8 000 000 s, grade 8 water by the billion) is a project of weeks and has no counterpart here; GT has no research.
+
+### Numbers
+
+`devcheck all`: RESULT OK (every runtime test, the victory test included); `migrate --from-ref v0.3.1`: loads, every old-save check
+ok. Researchable technologies 369 of 388 (unchanged), draft recipes hidden 0, the `FORK-DRAFT`, `FORK-AUTOUNLOCK` (54) and
+`FORK-REMOVED` (35) lines identical to main, unlocked but uncraftable recipes 0. Tech by tech against main: prerequisites, science
+packs and unlocks of all 388 technologies identical, no unlock lost or moved; 71 unit counts changed. Recipes changed: the 9 above
+(and the recycling recipes the quality mod generates from them).
+
+### Existing saves
+
+No unlock moves and no item is renamed. Research in progress keeps its progress as a fraction, so a technology whose count drops
+finishes sooner; researched technologies stay researched. The nine recipes change their ingredients like any recipe change.
+
+### Open points
+
+* Balance in the real game: whether 10 hours for the stargate and 8 hours per technology feel right; the bacterial vats (the research
+  of UIV and UXV is limited by the 16 and 32 vats of the reference factory; they are cheap LuV machines, but a player has to build
+  them); the circuit assembly lines (the UXV circuits are 40 % of the stargate).
+* Duranium (32 s per 16 L, GT 3.2 s) and rhugnor (4.3x the other MK4 metals): the largest levers left in the metal chains.
+* The infinite `research-productivity` (75 hours per level at UEV) keeps its formula.
+* The model counts no transport, no machine build cost and no start-up; the byproducts of the naquadah line are charged to its main
+  product.

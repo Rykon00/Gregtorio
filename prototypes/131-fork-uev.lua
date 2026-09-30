@@ -447,7 +447,7 @@ create_recipe{
 --- Changes against GT:
 ---   * attuned tengam rods -> magnetic samarium rods (no tengam), bedrockium / nether star plates
 ---     -> cosmic neutronium plates, quantium -> cosmic neutronium melt, infinity catalyst foil ->
----     infinity foil
+---     infinity foil (137-fork-endgame-materials.lua puts quantium melt in, issue #36)
 ---   * fine wire and foil counts cut (GT: 512 fine cosmic neutronium wires, 256 foils): motor 64
 ---     fine wires, emitter and sensor 32 foils, field generator 64 fine wires
 ---   * field generator: UEV circuits instead of UIV circuits (none before the UIV part of this
@@ -551,7 +551,8 @@ uev_component("uev-field-generator", join({
 	{ type = "item", name = "draconium-cable", amount = 32 },
 }, uev_fluids(false)))
 
---- Casing and hull: cosmic neutronium plates (draft: bedrockium) and draconium cable
+--- Casing and hull: cosmic neutronium plates (draft: bedrockium; bedrockium plates since issue #36,
+--- 137-fork-endgame-materials.lua) and draconium cable
 create_item{
 	name = "uev-machine-casing",
 	category = "lv-assembling-machine-recipes",

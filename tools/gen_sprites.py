@@ -10,6 +10,12 @@ Sources:
 Output:
   graphics/entity/fork/<name>-idle.png / -working.png   (working = vertical frame strip)
   graphics/icons/fork/<name>.png                         (32x32)
+A file whose pixels did not change is not rewritten.
+
+Tier look (issue #41): basic machines from UHV up show the GT hull texture of their tier as a frame
+around the machine overlay (HULL_TIERS); the large plasma turbines and naquadah reactors show the GT
+dynamo hatches of their tier in the corners (TIER_COPIES) instead of a tinted copy. The IV to UXV upgrade
+multiblocks keep the EV sprite and get a layer with GT energy hatches of their tier (UPGRADE_MULTIBLOCKS).
 """
 import argparse, re
 from pathlib import Path
@@ -94,17 +100,20 @@ MULTIBLOCKS = {
     # UHV (128-fork-uhv.lua)
     "fusion-reactor-mk3": ((9, 9), "gregtech:iconsets/MACHINE_CASING_FUSION_2", None,
                            "gregtech:iconsets/OVERLAY_FUSION3", "gregtech:iconsets/MACHINE_CASING_FUSION_COIL"),
-    # UEV (131-fork-uev.lua): there is no MK4 overlay in GT, the MK3 one is reused
-    "fusion-reactor-mk4": ((9, 9), "gregtech:iconsets/MACHINE_CASING_FUSION_2", None,
-                           "gregtech:iconsets/OVERLAY_FUSION3", "gregtech:iconsets/MACHINE_CASING_FUSION_COIL"),
-    # UIV (133-fork-umv.lua): the MK5 reuses the MK3 overlay as well
-    "fusion-reactor-mk5": ((9, 9), "gregtech:iconsets/MACHINE_CASING_FUSION_2", None,
-                           "gregtech:iconsets/OVERLAY_FUSION3", "gregtech:iconsets/MACHINE_CASING_FUSION_COIL"),
+    # UEV (131-fork-uev.lua) and UMV (133-fork-umv.lua): GT has no MK4/MK5 reactor of its own; the art of
+    # GoodGenerator's compact fusion computers MK-IV and MK-V: GT++ fusion machine casing MK-III / MK-IV,
+    # compact fusion coil Mk-II prototype / finaltype, the GT++ screen (idle, working)
+    "fusion-reactor-mk4": ((9, 9), "miscutils:iconsets/MACHINE_CASING_FUSION_3", None,
+                           ("miscutils:TileEntities/adv_machine_screen_random1",
+                            "miscutils:TileEntities/adv_machine_screen_random3"), "goodgenerator:fuison/4"),
+    "fusion-reactor-mk5": ((9, 9), "miscutils:iconsets/MACHINE_CASING_FUSION_4", None,
+                           ("miscutils:TileEntities/adv_machine_screen_random1",
+                            "miscutils:TileEntities/overlay_rainbowscreen"), "goodgenerator:fuison/5"),
     # water purification (129-fork-water-purification.lua)
     "water-purification-plant": ((5, 5), "gregtech:iconsets/MACHINE_CASING_INDUSTRIAL_WATER_PLANT", None,
                                  "gregtech:iconsets/OVERLAY_FRONT_PURIFICATION_PLANT",
                                  "titanium-reinforced-borosilicate-glass-block"),
-    # endgame power (136-fork-power.lua): the large naquadah reactor, UHV to UXV tinted
+    # endgame power (136-fork-power.lua): the large naquadah reactor (UHV to UXV: TIER_COPIES)
     "uv-large-naquadah-reactor": ((5, 5), "gregtech:iconsets/NAQUADAH_REACTOR_CASING", None,
                                   ("gregtech:iconsets/NAQUADAH_REACTOR_FLUID_FRONT",
                                    "gregtech:iconsets/NAQUADAH_REACTOR_FLUID_FRONT_ACTIVE"),
@@ -112,11 +121,39 @@ MULTIBLOCKS = {
 }
 # multiblocks without an upstream item icon: the icon is the controller tile
 CONTROLLER_ICONS = {"neutron-activator", "water-purification-plant", "uv-large-naquadah-reactor"}
-# tinted copies of a multiblock's sprites and icon (136-fork-power.lua: the tier upgrades)
-TINTED_COPIES = {
-    "uv-large-naquadah-reactor": {"uhv": "UHV", "uev": "UEV", "uiv": "UIV", "umv": "UMV", "uxv": "UXV"},
-    "luv-large-plasma-turbine": {"zpm": "ZPM", "uv": "UV"},
+# tier versions of a generator (136-fork-power.lua): the base sprite with dynamo hatches of the tier
+# (GT hull of the tier + GT's dynamo hatch overlay) on the corner tiles; the base itself gets its own
+# tier's hatches too. The icon gets the hatch as a badge.
+TIER_COPIES = {
+    "uv-large-naquadah-reactor": ["UV", "UHV", "UEV", "UIV", "UMV", "UXV"],
+    "luv-large-plasma-turbine": ["LuV", "ZPM", "UV", "UHV", "UEV", "UIV", "UMV", "UXV"],
 }
+DYNAMO_OVERLAY = "gregtech:iconsets/OVERLAY_ENERGY_OUT_MULTI_2A_{}"
+# basic machines of these tiers: the tier's hull (MACHINE_<tier>_SIDE) as a frame of 3x3 tiles, the
+# machine's top (MACHINE_<tier>_TOP + overlay) on the middle 2x2 tiles
+HULL_TIERS = {"UHV", "UEV", "UIV", "UMV", "UXV"}
+# upgrade multiblocks (IV_UPGRADE_MACHINES in 101-fork-machines.lua): IV to UXV keep the upstream sprite of
+# the EV version (base -> (sprite without "-idle.png" under graphics/entity, item icon under graphics/icons));
+# each tier gets <tier>-<base>-hatches.png, an extra layer of the sprite's size with GT energy hatches of the
+# tier (hull of the tier + GT's energy input overlay) in its two bottom corners, next to the controller that
+# most of these sprites show in the middle of the bottom row, and an icon with the hatch as a badge
+UPGRADE_MULTIBLOCKS = {
+    "electric-blast-furnace": ("mv-electric-blast-furnace/mv-electric-blast-furnace", "hv-electric-blast-furnace"),
+    "vacuum-freezer": ("vacuum-freezer/vacuum-freezer", "vacuum-freezer"),
+    "large-chemical-reactor": ("large-chemical-reactor/large-chemical-reactor", "large-chemical-reactor"),
+    "microverse-projector": ("small-microverse-projector/small-microverse-projector", "small-microverse-projector"),
+    "tall-distillation-tower": ("tall-distillation-tower/tall-distillation-tower", "tall-distillation-tower"),
+    "short-distillation-tower": ("short-distillation-tower/short-distillation-tower", "short-distillation-tower"),
+    "implosion-compressor": ("implosion-compressor/implosion-compressor", "implosion-compressor"),
+    "cracker": ("cracker/cracker", "cracker"),
+    "multismelter": ("mv-multismelter/mv-multismelter", "hv-multismelter"),
+    "pyrolyse-oven": ("mv-pyrolyse-oven/mv-pyrolyse-oven", "hv-pyrolyse-oven"),
+    "greenhouse": ("greenhouse/greenhouse", "greenhouse"),
+    "drilling-rig": ("mv-drilling-rig/mv-drilling-rig", "mv-drilling-rig"),
+    "alloy-blast-smelter": ("fork/ev-alloy-blast-smelter", "alloy-blast-smelter"),
+}
+UPGRADE_TIERS = ["IV", "LuV", "ZPM", "UV", "UHV", "UEV", "UIV", "UMV", "UXV"]
+ENERGY_OVERLAY = "gregtech:iconsets/OVERLAY_ENERGY_IN_MULTI_2A_{}"
 # large plasma turbine (136-fork-power.lua): the 3x3 front of GT's large turbine (tungstensteel
 # rotor, animated when active); the icon is the middle tile
 PLASMA_TURBINE = "luv-large-plasma-turbine"
@@ -176,12 +213,21 @@ def scaled(img, size):
     return img.resize((size, size), Image.NEAREST)
 
 
+def save(img, path):
+    """write only when the pixels changed (keeps the diff to the sprites that really changed)"""
+    if path.exists():
+        old = Image.open(path).convert("RGBA")
+        if old.size == img.size and old.tobytes() == img.convert("RGBA").tobytes():
+            return
+    img.save(path, optimize=True)
+
+
 def save_strip(frames, path):
     w, h = frames[0].size
     strip = Image.new("RGBA", (w, h * len(frames)))
     for i, f in enumerate(frames):
         strip.paste(f, (0, i * h))
-    strip.save(path)
+    save(strip, path)
 
 
 def tint(img, rgb):
@@ -226,11 +272,30 @@ def basic_machine(gt, base, tier="IV"):
         fr = side.copy()
         if act_frames:
             fr.alpha_composite(act_frames[i % len(act_frames)].resize(fr.size, Image.NEAREST))
-        working.append(scaled(fr, 3 * TILE))
+        working.append(fr)
     name = f"{tier.lower()}-{base}"
-    scaled(idle, 3 * TILE).save(OUT_ENTITY / f"{name}-idle.png")
-    save_strip(working, OUT_ENTITY / f"{name}-working.png")
-    scaled(idle, TILE).save(OUT_ICON / f"{name}.png")
+    if tier in HULL_TIERS:
+        hull = tint(load(gt_path(gt, f"gregtech:iconsets/MACHINE_{tier}_SIDE")), TIER_TINT[tier])
+        save(in_hull(hull, idle, 3 * TILE), OUT_ENTITY / f"{name}-idle.png")
+        save_strip([in_hull(hull, fr, 3 * TILE) for fr in working], OUT_ENTITY / f"{name}-working.png")
+        save(in_hull(hull, idle, TILE), OUT_ICON / f"{name}.png")
+        return
+    save(scaled(idle, 3 * TILE), OUT_ENTITY / f"{name}-idle.png")
+    save_strip([scaled(fr, 3 * TILE) for fr in working], OUT_ENTITY / f"{name}-working.png")
+    save(scaled(idle, TILE), OUT_ICON / f"{name}.png")
+
+
+def in_hull(hull, top, size):
+    """the machine top (16 px) on the middle of a frame of the tier's hull: 3x3 hull tiles and the top on
+    the middle 2x2 for a sprite, the hull at 2x and the top at 1x for an icon"""
+    img = Image.new("RGBA", (size, size))
+    step = size // 3 if size > TILE else size
+    for y in range(0, size, step):
+        for x in range(0, size, step):
+            img.paste(scaled(hull, step), (x, y))
+    inner = size * 2 // 3 if size > TILE else size // 2
+    img.alpha_composite(scaled(top, inner), ((size - inner) // 2, (size - inner) // 2))
+    return img
 
 
 def multiblock(gt, name, size, casing, controller, face, middle):
@@ -258,13 +323,13 @@ def multiblock(gt, name, size, casing, controller, face, middle):
         img.paste(ctrl, (cx * TILE, cy * TILE), ctrl)
         return img
 
-    build(False).save(OUT_ENTITY / f"{name}-idle.png")
-    build(True).save(OUT_ENTITY / f"{name}-working.png")
+    save(build(False), OUT_ENTITY / f"{name}-idle.png")
+    save(build(True), OUT_ENTITY / f"{name}-working.png")
     if name in CONTROLLER_ICONS:
         # no upstream item icon: the controller tile
         img = build(False)
         cx, cy = w // 2, h - 1 if h > 3 else h // 2
-        img.crop((cx * TILE, cy * TILE, (cx + 1) * TILE, (cy + 1) * TILE)).save(OUT_ICON / f"{name}.png")
+        save(img.crop((cx * TILE, cy * TILE, (cx + 1) * TILE, (cy + 1) * TILE)), OUT_ICON / f"{name}.png")
 
 
 def plasma_turbine(gt, name):
@@ -276,20 +341,81 @@ def plasma_turbine(gt, name):
             tile = frames_of(load(gt_path(gt, spec)))[0].resize((TILE, TILE), Image.NEAREST)
             img.paste(tile, ((i % 3) * TILE, (i // 3) * TILE))
         return img
-    build(False).save(OUT_ENTITY / f"{name}-idle.png")
-    build(True).save(OUT_ENTITY / f"{name}-working.png")
-    build(False).crop((TILE, TILE, 2 * TILE, 2 * TILE)).save(OUT_ICON / f"{name}.png")
+    save(build(False), OUT_ENTITY / f"{name}-idle.png")
+    save(build(True), OUT_ENTITY / f"{name}-working.png")
+    save(build(False).crop((TILE, TILE, 2 * TILE, 2 * TILE)), OUT_ICON / f"{name}.png")
 
 
-def tinted_copies(base, tiers):
-    """<tier>-<rest of base name>: the base sprites and icon in the tier color."""
+def dynamo_hatch(gt, tier):
+    """GT's dynamo hatch of a tier: the tier's hull with the tier's dynamo overlay (16 px)"""
+    img = tint(load(gt_path(gt, f"gregtech:iconsets/MACHINE_{tier}_SIDE")), TIER_TINT[tier])
+    img.alpha_composite(frames_of(load(gt_path(gt, DYNAMO_OVERLAY.format(tier))))[0])
+    return img
+
+
+def tier_copies(gt, base, tiers):
+    """<tier>-<rest of base name>: the base sprites with the tier's dynamo hatches on the corner tiles,
+    the base icon with the hatch as a badge in its bottom right corner"""
     rest = base.split("-", 1)[1]
-    for tier, key in tiers.items():
-        name = f"{tier}-{rest}"
-        for suffix, folder in (("-idle.png", OUT_ENTITY), ("-working.png", OUT_ENTITY), (".png", OUT_ICON)):
-            src = folder / f"{base}{suffix}"
-            if src.exists():
-                tint(load(src), TIER_TINT[key]).save(folder / f"{name}{suffix}")
+    src = {suffix: load(folder / f"{base}{suffix}")
+           for suffix, folder in (("-idle.png", OUT_ENTITY), ("-working.png", OUT_ENTITY), (".png", OUT_ICON))}
+    for tier in tiers:
+        name = f"{tier.lower()}-{rest}"
+        hatch = dynamo_hatch(gt, tier)
+        for suffix in ("-idle.png", "-working.png"):
+            img = src[suffix].copy()
+            w, h = img.size
+            for x, y in ((0, 0), (w - TILE, 0), (0, h - TILE), (w - TILE, h - TILE)):
+                img.paste(scaled(hatch, TILE), (x, y))
+            save(img, OUT_ENTITY / f"{name}{suffix}")
+        icon = src[".png"].copy()
+        icon.alpha_composite(hatch, (TILE - hatch.width, TILE - hatch.height))
+        save(icon, OUT_ICON / f"{name}.png")
+
+
+def energy_hatch(gt, tier):
+    """GT's energy hatch of a tier: the tier's hull with the tier's 2A energy input overlay (16 px)"""
+    img = tint(load(gt_path(gt, f"gregtech:iconsets/MACHINE_{tier}_SIDE")), TIER_TINT[tier])
+    img.alpha_composite(frames_of(load(gt_path(gt, ENERGY_OVERLAY.format(tier))))[0])
+    return img
+
+
+def hatch_spots(sprites):
+    """one tile per bottom corner for a hatch: the spot nearest to the corner, inside the corner's quarter of
+    the sprite, on which every given sprite (idle, working) is opaque (the sprites are not all rectangular);
+    the top corners stay free, so the hatches cover no pipe ports or tower tops"""
+    w, h = sprites[0].size
+    alphas = [s.getchannel("A").load() for s in sprites]
+
+    def solid(x0, y0):
+        return all(a[x, y] >= 128 for a in alphas for y in range(y0, y0 + TILE, 2) for x in range(x0, x0 + TILE, 2))
+
+    spots = []
+    for right, bottom in ((0, 1), (1, 1)):
+        cands = [(dx + dy, dx, dy) for dx in range(0, w // 2 - TILE + 1) for dy in range(0, h // 2 - TILE + 1)]
+        for _, dx, dy in sorted(cands):
+            x, y = (w - TILE - dx) if right else dx, (h - TILE - dy) if bottom else dy
+            if solid(x, y):
+                spots.append((x, y))
+                break
+    return spots
+
+
+def upgrade_hatches(gt, base, sprite, icon):
+    """<tier>-<base>-hatches.png (layer on the unchanged EV sprite) and <tier>-<base>.png (badged icon)"""
+    src = [load(ROOT / "graphics/entity" / f"{sprite}{s}.png") for s in ("-idle", "-working")]
+    spots = hatch_spots(src)
+    base_icon = load(ICONS / f"{icon}.png")
+    for tier in UPGRADE_TIERS:
+        name = f"{tier.lower()}-{base}"
+        hatch = energy_hatch(gt, tier)
+        layer = Image.new("RGBA", src[0].size)
+        for xy in spots:
+            layer.paste(scaled(hatch, TILE), xy)
+        save(layer, OUT_ENTITY / f"{name}-hatches.png")
+        img = base_icon.copy()
+        img.alpha_composite(hatch, (TILE - hatch.width, TILE - hatch.height))
+        save(img, OUT_ICON / f"{name}.png")
 
 
 def derived(name, source, rgb):
@@ -298,13 +424,13 @@ def derived(name, source, rgb):
         if not src.exists():
             src = folder / f"{source}.png"
         if src.exists():
-            tint(load(src), rgb).save(folder / f"{name}.png")
+            save(tint(load(src), rgb), folder / f"{name}.png")
 
 
 def icon_machine(name):
     img = scaled(load(ICONS / f"{name}.png"), 3 * TILE)
-    img.save(OUT_ENTITY / f"{name}-idle.png")
-    img.save(OUT_ENTITY / f"{name}-working.png")
+    save(img, OUT_ENTITY / f"{name}-idle.png")
+    save(img, OUT_ENTITY / f"{name}-working.png")
 
 
 def iv_multiblock_casings():
@@ -342,10 +468,12 @@ def main():
     for name in ICON_MACHINES:
         icon_machine(name)
     for name, spec in TEXTURE_ICONS.items():
-        casing_tile(gt=a.gt, casing=name, override=spec).save(OUT_ICON / f"{name}.png")
+        save(casing_tile(gt=a.gt, casing=name, override=spec), OUT_ICON / f"{name}.png")
     plasma_turbine(a.gt, PLASMA_TURBINE)
-    for base, tiers in TINTED_COPIES.items():
-        tinted_copies(base, tiers)
+    for base, tiers in TIER_COPIES.items():
+        tier_copies(a.gt, base, tiers)
+    for base, (sprite, icon) in UPGRADE_MULTIBLOCKS.items():
+        upgrade_hatches(a.gt, base, sprite, icon)
     for name, (source, rgb) in DERIVED.items():
         derived(name, source, rgb)
     print("Sprites:", len(list(OUT_ENTITY.glob("*.png"))), "Icons:", len(list(OUT_ICON.glob("*.png"))))

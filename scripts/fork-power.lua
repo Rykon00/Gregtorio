@@ -12,9 +12,9 @@
 --- saves from before the fuel check).
 --- Window: a running generator whose fuel runs out and is replaced by a wrong fluid within one
 --- interval burns that fluid until the next check, then it stays stopped. That is at most INTERVAL
---- ticks of its output and at most one unit per tick (fluid_usage_per_tick = 1): steam at most 10
---- units (1 MJ), a naquadah fuel in a UV plasma turbine at most 54.6 MJ, a plasma in a UXV
---- reactor at most 10 units. A generator that ran dry is stopped before the next fluid arrives, so
+--- ticks of its output and at most fluid_usage_per_tick units per tick (1, the UEV to UXV plasma
+--- turbines 2 to 9): steam at most 10 units (1 MJ), in a UXV turbine 90 units (9 MJ), a naquadah
+--- fuel in a UV plasma turbine at most 54.6 MJ, a plasma in a UXV reactor at most 10 units. A generator that ran dry is stopped before the next fluid arrives, so
 --- the window needs the segment emptied and refilled between two checks.
 --- Work per step: at most CHECKS_PER_STEP generators (round robin); up to that many generators
 --- each one is checked every step.

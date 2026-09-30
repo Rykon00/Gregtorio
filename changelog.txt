@@ -1,4 +1,44 @@
 ---------------------------------------------------------------------------------------------------
+Version: 0.3.2
+Date: 2026-09-30
+  Features:
+    - Lapotronic Energy Orbs technology (ZPM): the lapotronic energy orb and a second recipe for the lapotronic energy orb cluster in the circuit assembler (eight orbs, qubit CPU chips, naquadah alloy).
+    - High density plutonium (wrapped plutonium ingot, high density plutonium nugget from the implosion compressor, high density plutonium), unlocked by Naquadah Fuels.
+    - Super coolant (LuV technology Super Coolant): ledox and callisto ice from a new end microminer recipe, mixed with lapis coolant.
+    - Fluxed electrum (ZPM), bedrockium (UV) and quantium (UHV), each with its technology; bedrockium and quantium come from new end microminer recipes.
+    - Space coolant cells (UHV): the 180k, 540k and 1080k space cells and the 1080k super coolant cell.
+    - Large Plasma Turbines for UHV (655.36 MW), UEV (1.31 GW), UIV (2.62 GW), UMV (5.24 GW) and UXV (10.49 GW), each an upgrade of the turbine one tier below with the dynamo hatch and a hull of its tier, unlocked by the technologies UHV to UXV Plasma Turbine. One fusion reactor feeds about 12 turbines of its own tier: MK3 UV, MK4 UEV, MK5 UIV turbines.
+    - ME Level Maintainer (technology ME Automation, EV): keeps an amount of an item or fluid in the ME network by starting a crafting job for the difference, one job at a time. Its lamp circuit condition switches it on and off; it can take the amount from a circuit signal.
+    - ME Circuit Interface (technology ME Automation): puts the items and fluids of the ME network, or only the filtered ones, onto the circuit network.
+    - ME Co-Processing Crafting CPU (IV, two jobs at once, twice as fast) and ME Quantum Crafting CPU (LuV, four jobs at once, four times as fast). The upgrade planner swaps Crafting CPU tiers.
+  Changes:
+    - The UHV to UXV dynamo hatches are also unlocked by the plasma turbine technology of their tier.
+    - Plutonium based liquid fuel takes one high density plutonium (like GregTech) instead of 64 plutonium 239 dust.
+    - GregTech materials instead of stand-ins: grade 5 water takes 100 super coolant (grade 5 plants stop until you make it), grade 7 water super coolant instead of cryogenic helium; the UEV to UXV energy and dynamo hatches take 2, 4, 6 and 8 1080k super coolant cells, the UIV to UXV ones super coolant instead of cryogenic helium.
+    - The UV voltage coil takes fine fluxed electrum wire, the UHV emitter and sensor fluxed electrum foil, the fusion reactor MK3 controller molten fluxed electrum, naquadah based fuel MK2 32 fluxed electrum dust (was 16 naquadria dust).
+    - The UHV components take bedrockium cable instead of tritanium cable, the UEV machine casing bedrockium plates; the UEV components take molten quantium instead of molten cosmic neutronium, the UMV components quantium cable instead of spacetime cable.
+    - Removed draft content that could never be made and that belongs to other mods (Thaumcraft infused gold, thaumium, magic essence, void and shadow metal, ichorium; force, astral titanium and runite plasma; the atomic separation catalyst, orundum and the naquadah fuel cracking).
+    - ME Fluid Drives: recovered fluid flows into the fluid drives of its network by itself as soon as they have room (for example after an export), not only into a newly placed drive. The chat reports it once when all of it is back.
+    - ME Fluid Interface: mode, fluid and fill level are copied with the entity settings (shift right click, shift left click) and kept in blueprints and clones.
+    - The Crafting tab of the ME Terminal shows the job slots of the network's Crafting CPUs.
+    - ME Fluid Drives: upgrading a loaded drive (upgrade planner with robots, or fast replace by hand) moves its fluid into the new drive; what does not fit goes into the network, the rest becomes recovered fluid. The old drive item comes back empty.
+  Balancing:
+    - Fusion power: one Fusion Reactor MK1 makes about 1 GW of helium plasma (12.5 per second, 12 LuV plasma turbines) instead of 5.12 GW; an MK2 makes about 2 GW, an MK3 about 4 GW. The cheap plasmas give 11x to 17x the energy of their whole input chain instead of up to 70x.
+    - Helium-3: 50 per compressed end stone in 200 s instead of 100 in 40 s.
+    - Fusion recipes take longer: helium plasma 10 s in the MK1 (was 2 s from helium-3, 4 s from tritium), nitrogen plasma 8 s (was 4 s), niobium plasma 20 s (was 8 s), tin plasma 24 s (was 8 s) in the MK2.
+    - Sulfur plasma takes 72 molten lithium and 72 molten aluminium (was 16 each) and 16 s in the MK2 (was 8 s); iron plasma takes 72 molten silicon and 72 molten magnesium (was 16 each) and 8 s in the MK3 (was 2 s).
+    - Research from UV to victory costs far fewer units: UV technologies about a quarter (for example UV Energy Hatches 450 instead of 2000), UHV and UEV about a fourteenth, UIV about a 25th, UMV about a 32nd, UXV and the Stargate technology about a 60th (Stargate 50 instead of 3000). Each technology now takes about as long as a ZPM technology in a factory of its tier.
+    - Victory takes 15 units per level instead of 1000 (15 * 2^(L-1)): level 1 costs one stargate and a few packs of each tier; the 1000 MAX packs of one stargate last for the first six levels.
+    - UV motor: 64 fine americium wires instead of 384 and 8 long neutronium rods instead of 4.
+    - Large neutronium gear: 57.6 molten neutronium (4 ingots) instead of 576, like the large tritanium gear; the UV piston, robot arm and everything with them get cheaper.
+    - Stargate parts take fewer parts: the ring block has no UXV field generator, the base and power unit one UXV field generator each (was 4 and 2), the controller 8 UXV circuits (was 32), the chevron block its emitter and pistons only through the chevron upgrade; less molten universium and fewer frame parts and radiation containment plates. The stargate needs 2 UXV field generators and about 200 UXV circuits instead of 14 and 620.
+  Graphics:
+    - Real icons for 393 items that had recolored placeholder icons, from GregTech textures: LuV to UXV components, hatches, casings and hulls, the wetware, bio, optical, exotic and temporal circuits, stem cells, wafers, power ICs, SMDs, fusion and coil blocks, stargate parts, coolant cells, and the new metals in GregTech's material icons and colours. Their technologies show the new icons.
+    - Fusion Reactor MK4 and MK5 have their own look (the fusion casings and coils of GregTech's compact fusion reactors MK-IV and MK-V) instead of the MK3 one.
+    - UHV to UXV machines show the machine casing of their tier around the machine; Large Plasma Turbines and Large Naquadah Reactors show the dynamo hatches of their tier instead of a colour tint.
+    - IV to UXV upgrade multiblocks (electric blast furnace, vacuum freezer, large chemical reactor, microverse projector, distillation towers, implosion compressor, cracker, multismelter, pyrolyse oven, greenhouse, drilling rig, alloy blast smelter) show two energy hatches of their tier on the EV art, and their item icons carry the hatch as a badge, so the tiers can be told apart.
+    - Graphics from GT5-Unofficial (LGPL-3.0) and NewHorizonsCoreMod (GPL-3.0), see the License section of the README.
+---------------------------------------------------------------------------------------------------
 Version: 0.3.1
 Date: 2026-09-30
   Features:

@@ -29,26 +29,32 @@ The repository root is the mod itself (`info.json`, `data.lua`, `prototypes/`, `
 | `prototypes/133-fork-umv.lua` | fusion reactor MK5 (advanced fusion coil II, casing MK4, rhugnor, flerovium, energy module), spacetime (UMV metal) and universium (UXV metal) from the MK5, spacetime cable, hypocosmium superconductor, exotic line (UMV circuit), UMV components, casing and hull, UMV science pack, energy hatch, machines and multiblock upgrades, techs; also the helpers shared with 134 and 135 (global table `FORK5B`) |
 | `prototypes/134-fork-uxv.lua` | UXV: universium parts and cable, eternity superconductor, temporal line (UXV circuit), UXV components, casing and hull, UXV science pack, energy hatch, machines and multiblock upgrades, techs |
 | `prototypes/135-fork-endgame.lua` | endgame: the stargate and its parts from UXV parts, the MAX science pack, the tech `stargate` |
-| `prototypes/136-fork-power.lua` | endgame power: fuel values of the plasmas, large plasma turbines (LuV, ZPM, UV) with turbine output hatches for the cooled fluid, the naquadah fuel line (acid emulsion, emulsion, solution, light and heavy naquadah fuel, naquadah based fuel MK1 to MK3, the excited uranium and plutonium fuels), large naquadah reactors (UV to UXV), dynamo hatches LuV to UXV, techs |
+| `prototypes/136-fork-power.lua` | endgame power: fuel values of the plasmas, plasma balance (issue #32: helium-3 yield, fusion recipe times and inputs), large plasma turbines (LuV to UXV) with turbine output hatches for the cooled fluid, the naquadah fuel line (acid emulsion, emulsion, solution, light and heavy naquadah fuel, naquadah based fuel MK1 to MK3, the excited uranium and plutonium fuels), large naquadah reactors (UV to UXV), dynamo hatches LuV to UXV, techs |
+| `prototypes/137-fork-endgame-materials.lua` | issues #39 and #36: the drafts removed for good (Thaumcraft, GT++ RuneScape plasmas, atomic separation catalyst and naquadah fuel cracking; deleted, `FORK-REMOVED` in the log), the circuit assembler recipe of the lapotronic energy orb cluster (tech `lapotronic-energy-orbs`), high density plutonium for the plutonium based liquid fuel; issue #36: super coolant (ledox and callisto ice from the end microminer), the space coolant cells, fluxed electrum, bedrockium and quantium with their techs, and the stand-ins they replace (hatches, UV coil, UHV/UEV/UMV components, grade 5 and 7 water, fusion MK3 controller, naquadah fuel MK2) |
+| `prototypes/138-fork-research-balance.lua` | issue #30: the unit counts of the technologies from UV to `victory`, scaled so each costs about as long as a ZPM technology in the reference factory of its tier (see "Balance pass: endgame" in `docs/ROADMAP.md`) |
 | `scripts/fork-power.lua` | the cooled fluid of the plasma turbines: the plasma a turbine burns (its energy, summed every tick) goes as the cooled fluid into the turbine output hatches next to it, one unit per unit |
 | `scripts/fork-victory.lua` | researching the first level of the tech `victory` wins the game (the game can be continued) |
 | `prototypes/150-fork-molds.lua` | molds stay in the machine: the mold is a module in a mold-only slot of alloy smelters, fluid solidifiers and extruders instead of an ingredient or machine component |
 | `scripts/fork-molds.lua` | stops machines with a mold recipe and no mold ("Missing mold"); gives machines their mold once in saves from before they had a mold slot |
 | `prototypes/190-fork-manual-labor.lua` | "manual labor" burner usage: fist instead of the gas pump in the fuel slot, "No manual labor" status |
-| `scripts/fork-me-terminal.lua` | runtime part of the ME network: terminal GUI (storage tab with items and fluids, crafting tab, event driven), ME Interface default, routes the fluid GUI events |
-| `scripts/fork-me-autocraft.lua` | autocrafting: patterns from provider-adjacent machines (item and fluid recipes), planner, jobs and crafting CPUs (bounded work every 20 ticks, fluid boxes filled and drained by index), remote interface `gregtorio-me-autocraft` |
+| `scripts/fork-me-terminal.lua` | runtime part of the ME network: terminal GUI (storage tab with items and fluids, crafting tab, event driven), ME Interface default, routes the fluid and circuit GUI events |
+| `scripts/fork-me-autocraft.lua` | autocrafting: patterns from provider-adjacent machines (item and fluid recipes), planner, jobs and crafting CPUs with their tiers (job slots, speed; bounded work every 20 ticks, fluid boxes filled and drained by index), remote interface `gregtorio-me-autocraft` |
+| `scripts/fork-me-circuit.lua` | issue #38: ME Level Maintainer (keeps an item or fluid in stock by starting crafting jobs, circuit amount and on/off) and ME Circuit Interface (network contents on the circuit wire), a step hook of the autocrafting step; settings in blueprints; remote interface `gregtorio-me-circuit` |
 | `scripts/fork-me-fluids.lua` | fluids in the ME network: virtual per-drive storage (`storage.fork_me_fluids`), fluid interface import/export every 15 ticks, drive contents on the picked up item, drive and interface GUIs, remote interface `gregtorio-me-fluids` |
 | `prototypes/198-fork-crafting-menu.lua` | machine recipes in the crafting menu (issue #49): shows every recipe whose category has a machine (red background, like vanilla), except the allow-list `FORK_CRAFTING_MENU_HIDDEN` (fluid voiding, replaced vanilla recipes, recipes vanilla hides); startup setting `gregtorio-continued-show-machine-recipes` (`settings.lua`, default on) |
 | `prototypes/199-fork-finalize.lua` | draft guard (hides broken draft recipes) and auto-unlock of intermediates |
 | `locale/en/fork.cfg` | generated names for entries without a translation |
 | `tools/dev_link.py` | links the repo into the Factorio mods folder (working copy is loaded directly) |
 | `tools/devcheck/` | headless test harness: load check, progression/craftability analysis, graphics and runtime checks |
+| `tools/balance_model.py` | full-chain cost model for balance passes: time of a part or a technology in a reference factory per tier, from the balance dump of `devcheck.py check --balance-out` |
 | `tools/build.py` | builds `dist/gregtorio-continued_<version>.zip`, optionally installs it; `--portal` leaves out the Photoshop sources (mod portal zip) |
 | `tools/check_syntax.py` | Lua syntax check (`--loaded` = only files `data.lua` actually loads) |
-| `tools/gen_sprites.py` | machine sprites/icons from GT5-Unofficial textures (`--gt <path to checkout>`) |
-| `tools/gen_icons.py` | placeholder icons (recolored neighbor icons) for items without an icon |
+| `tools/gen_sprites.py` | machine sprites/icons from GT5-Unofficial textures (`--gt <path to checkout>`); tier hulls from UHV up, tier dynamo hatches on the turbines and reactors, tier energy hatch layers and icons for the IV to UXV upgrade multiblocks |
+| `tools/gen_gt_icons.py` | item icons from GT textures for the items in `tools/gt-icon-items.txt` (GT texture of the item, GT material icon sets in GT's colours, or a composition of GT parts); `--gt`, `--core <NewHorizonsCoreMod checkout>` |
+| `tools/gen_icons.py` | placeholder icons (recolored neighbor icons) for new items without an icon; replace them with `gen_gt_icons.py` (add the item to `tools/gt-icon-items.txt`) |
 | `tools/gen_ae2_sprites.py` | ME network and autocrafting sprites, icons and tech icons (GT5-Unofficial casings + Pillow); `--fluids` derives the fluid drive, cell and interface graphics from the item PNGs without a GT checkout |
-| `tools/gen_tech_icons.py` | technology icons instead of the "NYI" placeholder (from the main unlocked item) |
+| `tools/gen_tech_icons.py` | technology icons instead of the "NYI" placeholder (from the main unlocked item, listed in `tools/tech-icons.tsv`) |
+| `tools/gen_review_sheet.py` | before/after contact sheets of changed icons and sprites (`docs/graphics-review/`) |
 | `tools/gen_ui_icons.py` | GUI icons derived from item icons (empty manual-labor slot, red "no manual labor" alert) |
 | `tools/gen_locale.py` | adds missing English names to `locale/en/fork.cfg` |
 
@@ -68,8 +74,8 @@ The repository root is the mod itself (`info.json`, `data.lua`, `prototypes/`, `
 | UMV | playable (fork); exotic line and UMV circuit, UMV components, science pack, energy hatch and machines (see `docs/ROADMAP.md`) |
 | UXV | playable (fork); temporal line and UXV circuit, UXV components, science pack, energy hatch and machines (see `docs/ROADMAP.md`) |
 | MAX, stargate, victory | playable (fork); the stargate makes 1000 MAX science packs, the first level of `victory` wins the game. Balance of the last tiers is untested in the real game |
-| Endgame power | playable (fork); plasma turbines from LuV, the naquadah fuel line and large naquadah reactors from UV, dynamo hatches LuV to UXV (see `docs/ROADMAP.md`, "Side quest: endgame power") |
-| Drafts | the rest of the GTNH endgame chains (UU matter, naquadah fuel MK4+, ...) is draft; broken recipes are hidden on load (`FORK-DRAFT` in the log) |
+| Endgame power | playable (fork); plasma turbines LuV to UXV, the naquadah fuel line and large naquadah reactors from UV, dynamo hatches LuV to UXV (see `docs/ROADMAP.md`, "Side quest: endgame power") |
+| Drafts | every draft is triaged (`docs/ROADMAP.md`, "Drafts and endgame materials"): made real, replaced or removed for good; the draft guard (`FORK-DRAFT` in the log) may only hide the documented rest list (`DRAFTS_OK` in `tools/devcheck/devcheck.py`) |
 
 ## Workflow
 
@@ -110,4 +116,14 @@ See `CONTRIBUTING.md`. Everything on GitHub is in English.
 
 ## License
 
-GPLv3 like the original by Damien Reave (see `LICENSE`). Textures taken from [GT5-Unofficial](https://github.com/GTNewHorizons/GT5-Unofficial) are LGPL-3.0.
+GPLv3 like the original by Damien Reave (see `LICENSE`).
+
+Graphics taken from other projects (generated by the `tools/gen_*.py` scripts; `docs/graphics-review/icon-sources.tsv`
+names the textures of every generated item icon):
+
+* [GT5-Unofficial](https://github.com/GTNewHorizons/GT5-Unofficial) by GTNewHorizons, LGPL-3.0: machine, casing, hatch,
+  component, circuit, material and fluid cell textures. This includes the mods merged into that repository under the
+  same license: GT++ (`miscutils`: fusion casings MK-III/MK-IV and coils, controller screens), GoodGenerator (compact
+  fusion coils, high density plutonium, wrapped plutonium ingot, radioactive waste), bartworks (borosilicate glass, wrap band).
+* [NewHorizonsCoreMod](https://github.com/GTNewHorizons/NewHorizonsCoreMod) by GTNewHorizons, GPL-3.0: stargate chevron,
+  frame part and radiation containment plate, the UMV and UXV circuits.

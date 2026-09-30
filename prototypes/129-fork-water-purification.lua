@@ -260,7 +260,8 @@ grade_recipe(6, 20, {
 --- superconductor base melt, 32 ingots of neutronium melt and super coolant. Here one recipe with
 --- all of them: helium (GT: 10000 per cycle; neon, krypton and xenon come only from ender air,
 --- which no line makes), triamerotronium dust (the UHV superconductor; GT takes the melt), one ingot
---- of neutronium melt and cryogenic helium instead of super coolant.
+--- of neutronium melt and cryogenic helium instead of super coolant (137-fork-endgame-materials.lua
+--- switches grade 7 to super coolant and gives grade 5 its GT super coolant, issue #36).
 grade_recipe(7, 25, {
 	{ type = "fluid", name = "grade-6-water", amount = 1000 },
 	{ type = "fluid", name = "helium", amount = 500 },
