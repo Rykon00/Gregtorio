@@ -5,7 +5,8 @@
 - Read `CONTRIBUTING.md` and the layout table in `README.md` first.
 - Upstream content lives in `prototypes/0*-*.lua` … `98-technology.lua`; keep changes there
   minimal. Fork logic lives in `prototypes/1xx-fork-*.lua`, loaded at the end of `data.lua`
-  in this order: 100 fixes, 101 machines, 102 resources, 110 LuV, 120 AE2 (ME network),
+  in this order: 100 fixes, 101 machines, 102 resources, 103 QoL techs (re-gates the vanilla inserter, belt and
+  worker robot techs of issue #29 onto Gregtorio techs, GT recipes for bulk/stack inserters and express/turbo belts), 110 LuV, 120 AE2 (ME network),
   121 AE2 autocrafting (pattern provider, molecular assembler, crafting CPU; runtime in
   `scripts/fork-me-autocraft.lua`, guide `docs/AE2.md`), 122 AE2 fluids (fluid cells, fluid drives,
   fluid interface; runtime in `scripts/fork-me-fluids.lua`), 125 LuV endgame (naquadah, bacterial vat, crystal processors, fusion MK1), 126 ZPM, 127 UV
