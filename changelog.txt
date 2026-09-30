@@ -1,5 +1,6 @@
 ---------------------------------------------------------------------------------------------------
 Version: 0.3.2
+Date: 2026-09-30
   Features:
     - Lapotronic Energy Orbs technology (ZPM): the lapotronic energy orb and a second recipe for the lapotronic energy orb cluster in the circuit assembler (eight orbs, qubit CPU chips, naquadah alloy).
     - High density plutonium (wrapped plutonium ingot, high density plutonium nugget from the implosion compressor, high density plutonium), unlocked by Naquadah Fuels.
