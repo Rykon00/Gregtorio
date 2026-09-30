@@ -1,5 +1,6 @@
 ---------------------------------------------------------------------------------------------------
 Version: 0.3.1
+Date: 2026-09-30
   Features:
     - Endgame power: plasmas have fuel values; Large Plasma Turbines (LuV, ZPM, UV) burn them, and a Turbine Output Hatch next to a turbine collects the cooled fluid (helium, nitrogen, ...).
     - Naquadah fuel line (naquadah based fuel MK1 to MK3, excited uranium and plutonium fuels) and Large Naquadah Reactors from UV to UXV.
