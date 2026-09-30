@@ -22,6 +22,8 @@
   137 endgame materials (issues #39 and #36: deletes the drafts removed for good, `FORK-REMOVED` in the log; the
   lapotronic energy orb cluster and high density plutonium drafts; super coolant, the 1080k super coolant cell, fluxed electrum,
   bedrockium and quantium with the stand-ins they replace; must load after 136, whose plutonium fuel and dynamo hatches it changes),
+  138 research balance (issue #30: explicit unit counts of the technologies from UV to `victory`; loads after every file that
+  defines technologies; balance passes use `tools/balance_model.py` on `devcheck.py check --balance-out`),
   150 molds (mold slot instead of mold ingredient; must load after every file that creates
   machines), 190 manual-labor
   burner usage (fist icon in the fuel slot), 198 crafting menu (shows machine recipes, which upstream

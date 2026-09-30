@@ -220,8 +220,9 @@ Existing saves that already researched `zpm-components` lose the ZPM field gener
   fuel (`excited-*-liquid-fuel`, `naquadah-based-fuel-mk1`)~~ (done in "Side quest: endgame power"), `advanced-fusion-coil` (needs the UHV emitter).
 - `fusion-machine-casing-mk2` is a real recipe now (americium plate) but no tech unlocks it: it belongs to the MK3.
 - ~~Plasmas are still only ingredients; there is no plasma generator.~~ Done in "Side quest: endgame power".
-- Balance: the lutetium yield (4 rare earth dust -> 1 lutetium) and the 384 fine americium wires per UV motor make
-  the UV motor the bottleneck (48 americium ingots = 4 minutes of one MK2 reactor). Nothing was tuned in game.
+- ~~Balance: the lutetium yield (4 rare earth dust -> 1 lutetium) and the 384 fine americium wires per UV motor make
+  the UV motor the bottleneck (48 americium ingots = 4 minutes of one MK2 reactor).~~ Issue #31, see "Balance pass: endgame": 64 fine
+  americium wires, the large neutronium gear 4 ingots, the lutetium yield kept on purpose.
 - Still unused from `25-uv-age-item.lua`: research station, draconic fusion crafter tiers, nano forge, bio
   processors, cosmic neutronium, component assembly line, ~~UV dynamo hatch~~ (done in "Side quest: endgame power").
 - Graphics: the UV basic machine sprites are generated from GT textures (tinted green), the MK2 reactor uses the
@@ -321,7 +322,8 @@ Existing saves (unlocks that changed):
 - Everything else only adds recipes. `migrate --from-ref 0e935ba` and `--from-ref 5dd7c92` (before this phase) load.
 
 Bottlenecks of the UHV parts (tritanium is 14.4 melt per ingot, 3 s per ingot in one MK2 reactor; 1 ingot needs 3
-titanium and 2 duranium melt):
+titanium and 2 duranium melt). **Before the balance pass:** these counts leave out the chain below the top metal (the two
+duranium melts of a tritanium ingot take 58 s of an MK1); full-chain times in a reference factory are in "Balance pass: endgame":
 
 | Part | Tritanium ingots | Other main inputs |
 |---|---|---|
@@ -333,7 +335,8 @@ titanium and 2 duranium melt):
 | UHV emitter / sensor | 56 each | motor, 4 UHV circuits, 8 gravistars |
 | UHV field generator | 256 (13 minutes) | 4 emitters, 8 UHV circuits |
 
-The UV motor needs 48 americium ingots (4 minutes at 5 s per ingot), so a UHV motor is cheaper than the UV one; the
+~~The UV motor needs 48 americium ingots (4 minutes at 5 s per ingot), so a UHV motor is cheaper than the UV one~~ (full chain: the
+UHV motor costs more, see "Balance pass: endgame"); the
 field generator is about as expensive as the UV one. One MK3 needs about 900 tritanium ingots for the 8 advanced
 fusion coils, 64 UHV circuits for their emitters and sensors, and 380 americium plates (casings and the superdense
 plate). The UHV circuit chain costs one stem cell craft per circuit: 16 circuits need 32 supercomputers, 64
@@ -461,7 +464,7 @@ Existing saves (unlocks that changed):
   tech stays researched. `umv-science-pack` and `uxv-science-pack` lose their stone recipes.
 - Everything else only adds recipes. `migrate --from-ref 0e935ba` and `--from-ref dcb0e9e` (before this phase) load.
 
-Bottlenecks of the new parts, in ingots of the metal (tritanium: the UHV row without the naquadria melt; 1 ingot = 14.4 mB). Every component takes
+**Before the balance pass** (top metal only; full-chain times in "Balance pass: endgame"): bottlenecks of the new parts, in ingots of the metal (tritanium: the UHV row without the naquadria melt; 1 ingot = 14.4 mB). Every component takes
 one minute in the ZPM assembly line. Cosmic neutronium is 1 neutronium + 1 tritanium per ingot, infinity 1 cosmic neutronium + 1 draconium (MK4: 1.5 s per
 ingot, MK3 bootstrap: 6 s and twice the inputs), draconium 1 americium (+ iron plasma, 3 s in the MK3):
 
@@ -509,8 +512,8 @@ dark matter, shirabon, mellion, the eye of harmony and coal recipes). What phase
 `134-fork-uxv.lua` and `135-fork-endgame.lua`. `133-fork-umv.lua` also defines the helpers of the three files (the global table
 `FORK5B`: `metal`, `cable`, `circuit_line`, `components`, `tech`, ...), because a UXV part is a UMV part with the next metal.
 
-New technologies (the counts are 2500-3500 units, one unit takes 60 s; upstream has 2300 for the UMV, 2600 for the UXV and 3000 for the
-stargate tech):
+New technologies (the counts were 2500-3500 units, one unit takes 60 s; upstream has 2300 for the UMV, 2600 for the UXV and 3000 for the
+stargate tech; issue #30 cut them to 40-140, see "Balance pass: endgame"):
 
 | Technology | Science | Unlocks |
 |---|---|---|
@@ -576,8 +579,8 @@ Choices and deviations from GT:
   (the draft had a ring block in the chevron block and in the power unit).
 - **Victory.** `victory` stays the upstream infinite tech (1000 * 2^(L-1) units of all 15 packs, prerequisite `stargate`). `scripts/fork-victory.lua` calls
   `game.set_game_state{ game_finished = true, player_won = true, can_continue = true, victorious_force = force }` the first time it is researched; the
-  further levels are normal research. `devcheck runtime` researches it by script at tick 550 and expects `game.finished`. One level needs exactly 1000 MAX packs =
-  one stargate, the next level two.
+  further levels are normal research. `devcheck runtime` researches it by script at tick 550 and expects `game.finished`. One level needed exactly 1000 MAX packs =
+  one stargate, the next level two (issue #30: `15 * 2^(L-1)` units, one stargate lasts for the first six levels).
 - **Placeholder recipes.** A search for recipes that turn cheap items into endgame items (stone, dirt, single plates -> UV or higher items) found only the two
   stone science pack recipes, which are replaced; the stargate parts of the draft (ingredients = themselves) are replaced too.
 
@@ -589,7 +592,7 @@ Existing saves (unlocks that changed):
 - `umv-science-pack` and `uxv-science-pack` (techs, researched in saves that got there by console) have a new prerequisite; a researched tech stays researched.
 - Everything else only adds recipes and techs. `migrate --from-ref 0e935ba` and `--from-ref 5f00391` (before this phase) load.
 
-Bottlenecks of the new parts (ingots of the metal, melt and ingots together; 1 ingot = 14.4 mB; the melt comes from one MK5 at 1.5 s per ingot). Every
+**Before the balance pass** (top metal only; the stargate parts changed, full-chain times in "Balance pass: endgame"): bottlenecks of the new parts (ingots of the metal, melt and ingots together; 1 ingot = 14.4 mB; the melt comes from one MK5 at 1.5 s per ingot). Every
 component takes one minute in the ZPM assembly line:
 
 | Part | Ingots (spacetime for UMV, universium for UXV) | Other main inputs |
@@ -606,9 +609,10 @@ Fusion MK5: 4900 transcendent metal, 1700 rhugnor and 630 flerovium ingots, 1600
 stars) and 79 UIV motors' worth of casings; the 16 coils II need 16 UEV emitters and sensors. Stargate (all parts, in ingots of universium equivalents): frame
 part 48 (+44 spacetime), radiation containment plate 28 (+64 neutronium), chevron 24, ring block 730, chevron block 1040, chevron upgrade 530, base 3560, power
 unit 1820 (4 coils II), controller 1210, iris upgrade 290 (+640 neutronium): the stargate is about 20 500 ingots of universium (8.5 hours of one MK5), 3400 of
-spacetime, 4000 of neutronium, 1000 gravi stars, 620 UXV circuits.
+spacetime, 4000 of neutronium, 1000 gravi stars, 620 UXV circuits. ~~(8.5 hours)~~ Issue #33: with the whole metal chain it was 32 hours of the UXV
+reference factory; after the balance pass 10.6 hours, 2 UXV field generators and 196 UXV circuits.
 
-The research of the tiers is far bigger than the stargate: the phase 5b techs alone (incl. the upstream `umv-science-pack`, `uxv-science-pack` and `stargate` techs) take
+~~The research of the tiers is far bigger than the stargate~~ (issue #30: scaled down from UV to `victory`, see "Balance pass: endgame"; the counts below are before it): the phase 5b techs alone (incl. the upstream `umv-science-pack`, `uxv-science-pack` and `stargate` techs) take
 104 000 promethium, 47 100 UMV and 12 000 UXV packs (10 packs per craft, one UIV / UMV field generator per craft), and level 1 of `victory` another 5000 promethium,
 3000 UMV, 2000 UXV and 1000 MAX packs (plus 256 000 automation packs ...). Every unit of the last techs needs packs of all tiers below. These counts come from the
 upstream `SP` tables and are the first thing to tune in the real game.
@@ -675,7 +679,8 @@ The inserter capacity bonuses start at MV instead of LV: level 1 only raises the
   (`tools/gen_icons.py`; the stargate parts and the exotic/temporal items reused unrelated neighbor icons), the new technologies have icons of their main item.
   Since issues #40 and #41: own MK5 art, the UMV/UXV machines inside the GT hull of their tier, item icons from GT textures (the stargate parts from
   the GTNH core mod).
-- Balance is untested in game: the pack counts of the last techs (see above), the stargate (20 500 universium ingots), the QPIC counts of the hatches.
+- ~~Balance is untested in game: the pack counts of the last techs (see above), the stargate (20 500 universium ingots), the QPIC counts of the hatches.~~
+  Issues #30, #31, #33: see "Balance pass: endgame" (the hatches use APICs since #52); still to be played.
 - Not built: the GT quantum force transformer, dimensional plasma forge, godforge, magmatter, dark matter, mellion, shirabon, six-phased copper, the eye of harmony and the
   UXV/MAX-only items of `90-uxv-age-item.lua` (mega ultimate battery, ridiculously large capacitor, artificial universe cell, ...). There is no MAX tier: no MAX circuit,
   hatch or machines.
@@ -687,7 +692,8 @@ The inserter capacity bonuses start at MV instead of LV: level 1 only raises the
 
 Side quests, in the order that helps the endgame most:
 
-1. Balance and graphics in the real game: the tier from UHV up (see the bottleneck tables of 4, 5a and 5b), the pack counts of the last techs, the power IC counts.
+1. Balance and graphics in the real game: the tier from UHV up (see the bottleneck tables of 4, 5a and 5b), the pack counts of the last techs, the power IC counts
+   (analysed and tuned in "Balance pass: endgame", issues #30, #31, #33; still to be played).
    ~~Real sprites for the MK4/MK5 reactors and the last machine tiers, real icons for the exotic/temporal lines and the stargate parts~~ (done, issues #40 and
    #41, `docs/graphics-review/`; still to be seen in the real game).
 2. ~~Plasma generator (GT plasma turbine)~~ (done, see "Side quest: endgame power").
@@ -1396,3 +1402,285 @@ researchable; 4 new recipes and nothing else unlocked or auto-unlocked (`FORK-AU
 * No crafting request of several resources from the circuit network (AE2's "craft what the signal asks for"); one maintainer per
   resource. No CPU storage (AE2 crafting storage): a job's size is not limited by its CPU.
 * The circuit interface refreshes 2 interfaces per 20 ticks: with many interfaces each is refreshed less than once a second.
+
+## Balance pass: endgame (issues #30, #31, #33)
+
+Method as in issue #32: analyse first, write it down, then change as little as needed. Every number below comes from the final
+prototypes (recipes with amounts and times, machine speeds and technology counts from `devcheck.py check --balance-out`, a new section
+of the devcheck dump) and the model `tools/balance_model.py`. The numbers in the issues were from 0.3.0 and are outdated (FPIC/APIC
+hatches since #52, the fusion times of #32, the materials of #36).
+
+### The model
+
+For every item the model sums the machine time of its whole chain, from the raw inputs through the fusion reactors to the part
+(machine-seconds per machine class; recipe time / machine speed). The time of an item in a reference factory is the largest
+work / capacity over the machines that limit the endgame, all of them busy with that one item:
+
+* **fusion reactors**, nested: an MK*k* recipe runs in any reactor from MK*k* up (speed MK1 32, MK2 64, MK3 128, MK4 512, MK5 1024);
+* **ZPM assembly lines** (speed 32: every component from UV to UXV and the stargate parts; the LuV assembly line, 16, at LuV);
+* **circuit assembly lines** (64: every circuit line), **bacterial vats** (1) and **water purification plants** (1).
+
+The basic machines of the tier (speed 128 at UV to 4096 at UXV) are counted but built as needed; recipes below IV are commodity
+supply. Byproducts are free (as in #32) except the loop fluids bacterial sludge and P507; the raw crystal chip comes from GT's loop
+recipe (25 mutagen per chip, not the 1000 of the start recipe); at UV the neutronium comes from the MK2 bootstrap recipe.
+
+What the bottleneck tables of phases 4, 5a and 5b missed: they counted ingots of the top metal only. Every endgame metal is made of
+one or two ingots of each metal below it (universium = spacetime + flerovium, spacetime = transcendent metal + rhugnor, rhugnor =
+infinity + transcendent metal, transcendent metal = infinity + krypton plasma, infinity = cosmic neutronium + draconium, cosmic
+neutronium = neutronium + tritanium, tritanium = titanium + 2 duranium from the MK1, ...). One universium ingot is 26 000
+reactor-seconds (at speed 1) over its chain, 17 times its own MK5 recipe. The stargate took 32 hours of the UXV factory, not the
+8.5 hours of one MK5 of phase 5b.
+
+### Reference factory
+
+One "unit" of a tier's power is 12.5 large plasma turbines of the tier on helium plasma (issue #34): LuV 1 MK1, ZPM 1 MK2, UV 2 MK2
+(the MK3 is UHV research), UHV 2 MK3, UEV 1 MK4, UIV 1 MK5, UMV 2 MK5, UXV 4 MK5. The unit doubles with every tier, and it runs:
+
+| Tier | Power | Metal reactors | ZPM assembly lines | Circuit assembly lines | Bacterial vats | Purification plants | Metal reactors' share of the unit |
+|---|---|---|---|---|---|---|---|
+| LuV | 1 MK1 (1.02 GW) | 2 MK1 | 1 (LuV line) | 1 | 4 | 1 | 8 % |
+| ZPM | 1 MK2 (2.05 GW) | 2 MK2 + 2 MK1 | 2 | 2 | 4 | 1 | 12 % |
+| UV | 2 MK2 (4.1 GW) | 4 MK2 + 2 MK1 | 2 | 2 | 8 | 2 | 10 % |
+| UHV | 2 MK3 (8.2 GW) | 4 MK3 + 2 MK2 | 2 | 2 | 8 | 2 | 10 % |
+| UEV | 1 MK4 (16.4 GW) | 2 MK4 + 2 MK3 | 4 | 4 | 16 | 4 | 6 % |
+| UIV | 1 MK5 (32.8 GW) | 2 MK5 + 2 MK4 | 4 | 4 | 16 | 4 | 6 % |
+| UMV | 2 MK5 (65.5 GW) | 4 MK5 + 2 MK4 | 8 | 8 | 32 | 8 | 5 % |
+| UXV | 4 MK5 (131 GW) | 8 MK5 + 2 MK4 | 8 | 8 | 32 | 8 | 4.5 % |
+
+Metal reactors: twice the power reactors of the newest MK plus two of the MK before. The rest of the unit runs the machines of the
+tier (one of each at full load: UV 1.72 GW ... UXV 55 GW, see "Turbines above UV"); assembly lines, vats and plants draw 5 to 10 MW
+each. Research: 20 labs with research speed 6 (x3.7). The pack production rate of a factory is its time per pack in the tables below;
+a technology costs the pack production of all its packs (every tier, not only the highest) in the factory of its highest pack.
+
+### Findings
+
+* **UV motor (#31).** One UV motor took 1.6 minutes of the UV factory (62 americium ingots: 48 for the 384 fine wires, 14 for the
+  bootstrap neutronium). That is less than the other UV parts (pump 2.7, piston 6.7, robot arm 14.3, field generator 14.6 minutes)
+  and in line with the UHV motor (64 s in the UHV factory: its tritanium needs MK1 duranium). GT has the same 384 fine americium
+  wires; the UV motor only looked expensive because phase 4 cut the UHV motor to 48 fine wires (GT: 512). The real outlier was the
+  **large neutronium gear**: the generic 40 ingots of melt (phase 4 made the tritanium one 4), so a UV piston cost 172 americium
+  ingots, as much as a UHV piston, and the robot arm (a piston and two motors) 390.
+* **Lutetium.** One americium ingot needs one lutetium dust (GT: 16 L each); 4 rare earth (I) dust give 1 lutetium in the EV
+  electrolyzer. GT gets lutetium from thorium (5 thorium dust -> 4 lutetium in the HTGR, depleted thorium rods) and from the lanthanide
+  chain (4000 L monazite froth -> 16 lutetium among 120 lanthanide dusts, 13 %). The 25 % here sits between the two and costs almost
+  nothing at UV speed (0.75 s per lutetium in a UV electrolyzer). **Kept deliberately** at 4:1; it is no bottleneck. Americium is as
+  fast as in GT (5 s per ingot in the MK2; GT 4.8 s per 16 L).
+* **Stargate (#33).** 32 hours of the UXV factory: the base alone 6.1 hours (4 UXV field generators, 4 robot arms), the power unit 3,
+  the controller 2.1, the 8 ring blocks (a UXV field generator each) 10.5, the 7 chevron blocks (each with the emitter and pistons of
+  its chevron upgrade once more) 9.3. The 14 UXV field generators and 624 UXV circuits were half of it.
+* **UMV/UXV parts and hatches (#33).** No component or hatch takes hours: the UXV field generator is the largest (49.5 minutes of the
+  UXV factory), the UMV and UXV energy hatches take 11 and 9 minutes (8 and 16 APICs since #52; the 16 and 32 QPICs of the issue are
+  gone). From tier to tier in the same (UXV) factory the parts grow 1.0x to 3.8x (motors 8 s, 8 s, 11 s, 25 s, 96 s, 126 s; field
+  generators 2.2, 3.9, 9.3, 11, 29, 50 minutes; hatches 35 s, 35 s, 52 s, 1.7, 6.0, 8.9 minutes); in the factory of their own tier,
+  which doubles, they take about the same time. Nothing is an order of magnitude off its neighbours, so they stay as they are.
+* **Research (#30).** Every technology from UV up cost far more than anything it unlocks. In the factory of its tier a typical
+  technology (3000 units) took 2.5 hours at LuV, 8 at ZPM, 37 at UV, 113 at UHV and UEV, 206 at UIV, 267 at UMV and 482 at UXV. The
+  technologies with UIV to MAX packs took 8200 hours, the stargate technology alone 482 (and 13.5 hours of labs at 1200 s per unit),
+  level 1 of `victory` 288 (256 of them for the 14 lower packs, 1000 units of each). Most of a unit's cost is the packs below the
+  highest one: a UXV unit needs 1 UXV, 2 UMV, 3 UIV, 5 UEV, 8 UHV, 12 UV and 18 ZPM packs, and the UXV pack is 3.6 of its 9.6 minutes.
+  Cutting only UIV to victory would make those technologies cheaper than the UHV and UEV ones, so the pass scales everything from UV
+  up (the maintainer's decision).
+* **Fusion times (lever 3, not used).** Duranium takes 32 s per 16 L in the MK1 (GT: 3.2 s; every other fusion metal is within a few
+  percent of GT) and is 90 % of the chain of tritanium, so of cosmic neutronium, infinity and everything above. Rhugnor takes 3276.8
+  against 768 for the other MK4 metals and is half of spacetime. With both at the GT/MK4 value the stargate would take 22.5 instead of
+  32 hours, but the UHV parts would become cheaper than the UV ones. Not needed for the targets; open point.
+
+### Changes
+
+Levers in the order of the issues: unit counts of technologies, ingredient counts of parts. No yield or recipe time changed, the
+fusion values of #32 and the turbines of #34 are unchanged, no prototype is renamed.
+
+* **UV motor** (`127-fork-uv.lua`): 64 fine americium wires instead of 384 and 8 long neutronium rods instead of 4 (the UHV to UXV
+  motors have 48 to 64 fine wires and 8 long rods): 22 americium ingots instead of 62 with the bootstrap neutronium.
+* **Large neutronium gear**: 4 ingots of melt (57.6) instead of 40, like the large tritanium to universium gears.
+* **Stargate** (`135-fork-endgame.lua`, old counts in brackets):
+  - ring block: no UXV field generator (1), 2 frame parts (3), 2 radiation containment plates (3), 288 molten universium (576);
+  - chevron block: no emitter (1) and pistons (2) of its own, 1 frame part (2), 1 plate (2), 2 UXV circuits (4), 288 universium (576);
+  - chevron upgrade: 1 frame part (2), 1 piston (2), no emitter (1);
+  - base: 1 UXV field generator (4), 1 emitter (4), 1 robot arm (4), 1 coil II (2), 2 plates (4), 2 frame parts (4), 8 circuits (16),
+    16 eternity superconductor wires (32), 288 universium (1152);
+  - power unit: 1 coil II (4), 1 field generator (2), 2 UXV energy hatches (4), 2 plates (4), 16 universium plates (32), 4 circuits
+    (8), 32 eternity superconductor wires (64), 288 universium (1152);
+  - controller: 8 UXV circuits (32), 1 sensor (2), 1 emitter (2), 2 conveyor modules (4), 8 gravi stars (16), 2 frame parts (4),
+    2 plates (4), 288 universium (576);
+  - frame part: 288 molten universium and 288 molten spacetime (576 each).
+
+  The top level (8 ring blocks, 7 chevron blocks, base, power unit, controller, chevron and iris upgrade) is unchanged. The stargate
+  needs 2 UXV field generators and 196 UXV circuits instead of 14 and 624.
+* **Research** (new file `138-fork-research-balance.lua`, loaded after 137): explicit unit counts for the 70 technologies from UV to
+  UXV. Each tier is scaled so a technology costs about as long as a ZPM technology of the same count in the factory of its tier
+  (seconds of pack production per unit, median over the tier's technologies; ZPM 9.8 s): UV /4.5, UHV /13.9, UEV /13.9, UIV /25.3,
+  UMV /32.2, UXV /59.3, rounded to 5 (to 25 above 200). The factory doubles with every tier, so the real cost still doubles per tier.
+  `victory`: `15 * 2^(L-1)` instead of `1000 * 2^(L-1)` (/59.3 like UXV). Left alone: the infinite `research-productivity`, the
+  vanilla technologies that cannot be researched (`UNRESEARCHABLE_OK`), and the unit times (with the new counts the labs are never the
+  limit; the stargate technology takes 13.5 minutes of labs). Level 1 of `victory` now costs the stargate (its 1000 MAX packs; the
+  first six levels take 945 of them) plus 4 hours for 15 units of the other packs: 14.5 hours, 1.4 stargates, instead of 288 hours.
+
+### Before and after
+
+Times of one item in the reference factory of its tier and in the UXV factory (the same yardstick for every tier); "Limit" is the
+machine class that sets the time after the pass.
+
+UV components:
+
+| Part | Factory | Time in the factory of its tier | Limit | Time in the UXV factory |
+|---|---|---|---|---|
+| uv-motor | UV | 1.6 min -> **70 s** | fusion | 8 s |
+| uv-pump | UV | 2.7 min -> **2.2 min** | fusion | 15 s |
+| uv-conveyor-module | UV | 3.9 min -> **3.0 min** | fusion | 22 s |
+| uv-piston | UV | 6.7 min -> **2.9 min** | fusion | 15 s |
+| uv-robot-arm | UV | 14.3 min -> **6.3 min** | fusion | 45 s |
+| uv-emitter | UV | 2.9 min -> **2.5 min** | fusion | 30 s |
+| uv-sensor | UV | 3.3 min -> **2.8 min** | fusion | 30 s |
+| uv-field-generator | UV | 14.6 min -> **12.7 min** | fusion | 2.2 min |
+
+One component of each tier:
+
+| Part | Factory | Time in the factory of its tier | Limit | Time in the UXV factory |
+|---|---|---|---|---|
+| uv-motor | UV | 1.6 min -> **70 s** | fusion | 8 s |
+| uhv-motor | UHV | 64 s | fusion | 8 s |
+| uev-motor | UEV | 80 s | fusion | 11 s |
+| uiv-motor | UIV | 74 s | fusion | 25 s |
+| umv-motor | UMV | 2.9 min | fusion | 1.6 min |
+| uxv-motor | UXV | 2.1 min | fusion | 2.1 min |
+| uv-sensor | UV | 3.3 min -> **2.8 min** | fusion | 30 s |
+| uhv-sensor | UHV | 3.0 min | circuit assembly line | 45 s |
+| uev-sensor | UEV | 3.9 min | fusion | 1.7 min |
+| uiv-sensor | UIV | 4.7 min | fusion | 2.3 min |
+| umv-sensor | UMV | 10.1 min | fusion | 5.6 min |
+| uxv-sensor | UXV | 9.3 min | fusion | 9.3 min |
+| uv-field-generator | UV | 14.6 min -> **12.7 min** | fusion | 2.2 min |
+| uhv-field-generator | UEV | 7.9 min | circuit assembly line | 3.9 min |
+| uev-field-generator | UEV | 21.8 min | fusion | 9.3 min |
+| uiv-field-generator | UIV | 27.6 min | fusion | 11.0 min |
+| umv-field-generator | UXV | 28.7 min | fusion | 28.7 min |
+| uxv-field-generator | UXV | 49.5 min | fusion | 49.5 min |
+
+Energy hatches and fusion controllers:
+
+| Part | Factory | Time in the factory of its tier | Limit | Time in the UXV factory |
+|---|---|---|---|---|
+| uv-energy-hatch | UV | 3.3 min -> **2.8 min** | fusion | 35 s |
+| uhv-energy-hatch | UHV | 4.1 min -> **4.0 min** | fusion | 35 s |
+| uev-energy-hatch | UEV | 4.9 min | fusion | 52 s |
+| uiv-energy-hatch | UIV | 5.1 min | fusion | 1.7 min |
+| umv-energy-hatch | UMV | 10.8 min | fusion | 6.0 min |
+| uxv-energy-hatch | UXV | 8.9 min | fusion | 8.9 min |
+| fusion-reactor-mk3-controller | UHV | 21.5 min | assembly line | 5.4 min |
+| fusion-reactor-mk4-controller | UEV | 31.4 min -> **31.1 min** | fusion | 10.5 min |
+| fusion-reactor-mk5-controller | UIV | 57.3 min | bacterial vat | 28.6 min |
+
+Science packs (one pack; a craft makes 10, the MAX pack is 1/1000 of a stargate):
+
+| Part | Factory | Time in the factory of its tier | Limit | Time in the UXV factory |
+|---|---|---|---|---|
+| agricultural-science-pack | UV | 28 s -> **26 s** | fusion | 6 s |
+| electromagnetic-science-pack | UHV | 56 s | assembly line | 14 s |
+| cryogenic-science-pack | UEV | 64 s | fusion | 26 s |
+| promethium-science-pack | UIV | 2.1 min | bacterial vat | 62 s |
+| umv-science-pack | UMV | 2.4 min | fusion | 82 s |
+| uxv-science-pack | UXV | 3.6 min | fusion | 3.6 min |
+| max-science-pack | UXV | 1.9 min -> **38 s** | fusion | 1.9 min -> 38 s |
+
+Stargate:
+
+| Part | Factory | Time in the factory of its tier | Limit | Time in the UXV factory |
+|---|---|---|---|---|
+| stargate-frame-part | UXV | 4.1 min -> **2.4 min** | fusion | 4.1 min -> 2.4 min |
+| stargate-radiation-containment-plate | UXV | 1.7 min | fusion | 1.7 min |
+| stargate-chevron | UXV | 4.2 min | fusion | 4.2 min |
+| stargate-iris-blade | UXV | 1.7 min | fusion | 1.7 min |
+| stargate-ring-block | UXV | 78.7 min -> **19.0 min** | fusion | 78.7 min -> 19.0 min |
+| stargate-chevron-block | UXV | 79.8 min -> **29.9 min** | fusion | 79.8 min -> 29.9 min |
+| stargate-chevron-upgrade | UXV | 41.7 min -> **21.7 min** | fusion | 41.7 min -> 21.7 min |
+| stargate-base | UXV | 6.1 h -> **1.7 h** | fusion | 6.1 h -> 1.7 h |
+| stargate-power-unit | UXV | 3.0 h -> **87.4 min** | fusion | 3.0 h -> 87.4 min |
+| stargate-controller | UXV | 2.1 h -> **49.1 min** | fusion | 2.1 h -> 49.1 min |
+| stargate-iris-upgrade | UXV | 17.0 min | fusion | 17.0 min |
+| **stargate** (8 ring blocks, 7 chevron blocks, the rest once) | UXV | 32.0 h -> **10.6 h** | fusion | 32.0 h -> 10.6 h |
+
+Research per tier (pack production in the factory of the tier; the intentionally unresearchable vanilla techs and the infinite research productivity left out):
+
+| Tier (highest pack) | Techs | Sum before | Sum after | Typical tech (3000 units before) | Largest after |
+|---|---|---|---|---|---|
+| LUV | 20 | 33.5 h | 33.5 h | 2.5 h -> 2.5 h | 3.3 h (zpm-components) |
+| ZPM | 16 | 102.7 h | 102.7 h | 8.1 h -> 8.1 h | 10.8 h (uv-components) |
+| UV | 13 | 444.1 h | 99.0 h | 36.9 h -> 8.3 h | 13.5 h (uhv-components) |
+| UHV | 15 | 1607.5 h | 117.4 h | 112.7 h -> 8.5 h | 11.3 h (uev-components) |
+| UEV | 13 | 1582.3 h | 117.0 h | 113.0 h -> 8.5 h | 12.2 h (uiv-components) |
+| UIV | 13 | 2559.3 h | 102.2 h | 205.8 h -> 8.2 h | 9.6 h (uiv-energy-hatches) |
+| UMV | 10 | 2546.8 h | 79.0 h | 267.1 h -> 8.3 h | 9.6 h (uxv-components) |
+| UXV | 7 | 3099.1 h | 50.6 h | 481.9 h -> 8.0 h | 8.0 h (stargate) |
+
+UIV to victory, tech by tech:
+
+| Technology | Tier | Units | Packs of the tier and up | Pack production | Labs (20 labs, research speed 6) |
+|---|---|---|---|---|---|
+| `exotic-processor-mainframes` | UIV | 3000 -> 120 | 120 UIV | 205.8 h -> 8.2 h | 40.5 min -> 1.6 min |
+| `exotic-processors` | UIV | 2500 -> 100 | 100 UIV | 171.5 h -> 6.9 h | 33.8 min -> 81 s |
+| `fusion-coil-ii` | UIV | 2500 -> 100 | 100 UIV | 171.5 h -> 6.9 h | 33.8 min -> 81 s |
+| `fusion-plasmas-mk5` | UIV | 3000 -> 120 | 120 UIV | 205.8 h -> 8.2 h | 40.5 min -> 1.6 min |
+| `fusion-reactor-mk5` | UIV | 3000 -> 120 | 120 UIV | 205.8 h -> 8.2 h | 40.5 min -> 1.6 min |
+| `uiv-energy-hatches` | UIV | 3500 -> 140 | 140 UIV | 240.1 h -> 9.6 h | 47.3 min -> 1.9 min |
+| `uiv-machines` | UIV | 3000 -> 120 | 120 UIV | 205.8 h -> 8.2 h | 40.5 min -> 1.6 min |
+| `uiv-multiblocks` | UIV | 3500 -> 140 | 140 UIV | 240.1 h -> 9.6 h | 47.3 min -> 1.9 min |
+| `uiv-naquadah-reactor` | UIV | 3000 -> 120 | 120 UIV | 205.8 h -> 8.2 h | 40.5 min -> 1.6 min |
+| `uiv-plasma-turbine` | UIV | 2500 -> 100 | 100 UIV | 171.5 h -> 6.9 h | 33.8 min -> 81 s |
+| `umv-components` | UIV | 3000 -> 120 | 120 UIV | 205.8 h -> 8.2 h | 40.5 min -> 1.6 min |
+| `umv-materials` | UIV | 2500 -> 100 | 100 UIV | 171.5 h -> 6.9 h | 33.8 min -> 81 s |
+| `umv-science-pack` | UIV | 2300 -> 90 | 90 UIV | 157.8 h -> 6.2 h | 7.6 h -> 17.8 min |
+| `temporal-processor-mainframes` | UMV | 3000 -> 95 | 190 UIV, 95 UMV | 267.1 h -> 8.3 h | 40.5 min -> 77 s |
+| `temporal-processors` | UMV | 3000 -> 95 | 190 UIV, 95 UMV | 267.1 h -> 8.3 h | 40.5 min -> 77 s |
+| `umv-energy-hatches` | UMV | 3000 -> 95 | 190 UIV, 95 UMV | 267.1 h -> 8.3 h | 40.5 min -> 77 s |
+| `umv-machines` | UMV | 2500 -> 80 | 160 UIV, 80 UMV | 222.6 h -> 7.0 h | 33.8 min -> 65 s |
+| `umv-multiblocks` | UMV | 3000 -> 95 | 190 UIV, 95 UMV | 267.1 h -> 8.3 h | 40.5 min -> 77 s |
+| `umv-naquadah-reactor` | UMV | 3000 -> 95 | 190 UIV, 95 UMV | 267.1 h -> 8.3 h | 40.5 min -> 77 s |
+| `umv-plasma-turbine` | UMV | 2500 -> 80 | 160 UIV, 80 UMV | 222.6 h -> 7.0 h | 33.8 min -> 65 s |
+| `uxv-components` | UMV | 3500 -> 110 | 220 UIV, 110 UMV | 311.7 h -> 9.6 h | 47.3 min -> 89 s |
+| `uxv-materials` | UMV | 2500 -> 80 | 160 UIV, 80 UMV | 222.6 h -> 7.0 h | 33.8 min -> 65 s |
+| `uxv-science-pack` | UMV | 2600 -> 80 | 160 UIV, 80 UMV | 231.5 h -> 7.0 h | 10.2 h -> 18.7 min |
+| `stargate` | UXV | 3000 -> 50 | 150 UIV, 100 UMV, 50 UXV | 481.9 h -> 8.0 h | 13.5 h -> 13.5 min |
+| `uxv-energy-hatches` | UXV | 3000 -> 50 | 150 UIV, 100 UMV, 50 UXV | 481.9 h -> 8.0 h | 40.5 min -> 41 s |
+| `uxv-machines` | UXV | 3000 -> 50 | 150 UIV, 100 UMV, 50 UXV | 481.9 h -> 8.0 h | 40.5 min -> 41 s |
+| `uxv-multiblocks` | UXV | 3000 -> 50 | 150 UIV, 100 UMV, 50 UXV | 481.9 h -> 8.0 h | 40.5 min -> 41 s |
+| `uxv-naquadah-reactor` | UXV | 3000 -> 50 | 150 UIV, 100 UMV, 50 UXV | 481.9 h -> 8.0 h | 40.5 min -> 41 s |
+| `uxv-plasma-turbine` | UXV | 2500 -> 40 | 120 UIV, 80 UMV, 40 UXV | 401.6 h -> 6.4 h | 33.8 min -> 32 s |
+| `victory` | UXV | 1000 -> 15 | 75 UIV, 45 UMV, 30 UXV, 15 MAX | 288.2 h -> 4.0 h | 4.5 h -> 4.1 min |
+
+UIV to victory: 8205.2 h -> 231.8 h
+
+Targets met: the stargate takes hours (10.6), not days; its largest part 1.7 hours; the UXV technologies and the stargate technology
+8 hours each, about one stargate; level 1 of `victory` 1.4 stargates; the UV motor is in line with the UHV motor (70 s and 64 s in
+the factories of their tiers). Not met, on purpose: the parts grow 1.0x to 3.8x per tier in a fixed factory instead of 2x to 4x
+everywhere (UV to UHV about 1x, because the UHV metals are cheap apart from duranium; UMV to UXV 1.3x to 1.7x). No part stands out,
+and raising the lower tiers would go against the issues.
+
+Comparison with GT5-Unofficial (`AssemblyLineRecipes.java`, `ResearchStationAssemblyLine.java`): GT's UV motor has 384 fine americium
+wires, its UHV to UMV motors 512 fine wires and 8 to 32 long rods, its sensors 192 to 256 foils, its field generators 384 to 512 fine
+wires, its hatches 2 power ICs. The fork cuts the fine wires and foils of every tier to 48 to 64 (now the UV motor too) and keeps 4 to
+16 power ICs. GT's stargate (NewHorizonsCoreMod: extreme crafting grids with 9 UXV field generators per ring block, BEC recipes of
+8 000 000 s, grade 8 water by the billion) is a project of weeks and has no counterpart here; GT has no research.
+
+### Numbers
+
+`devcheck all`: RESULT OK (every runtime test, the victory test included); `migrate --from-ref v0.3.1`: loads, every old-save check
+ok. Researchable technologies 369 of 388 (unchanged), draft recipes hidden 0, the `FORK-DRAFT`, `FORK-AUTOUNLOCK` (54) and
+`FORK-REMOVED` (35) lines identical to main, unlocked but uncraftable recipes 0. Tech by tech against main: prerequisites, science
+packs and unlocks of all 388 technologies identical, no unlock lost or moved; 71 unit counts changed. Recipes changed: the 9 above
+(and the recycling recipes the quality mod generates from them).
+
+### Existing saves
+
+No unlock moves and no item is renamed. Research in progress keeps its progress as a fraction, so a technology whose count drops
+finishes sooner; researched technologies stay researched. The nine recipes change their ingredients like any recipe change.
+
+### Open points
+
+* Balance in the real game: whether 10 hours for the stargate and 8 hours per technology feel right; the bacterial vats (the research
+  of UIV and UXV is limited by the 16 and 32 vats of the reference factory; they are cheap LuV machines, but a player has to build
+  them); the circuit assembly lines (the UXV circuits are 40 % of the stargate).
+* Duranium (32 s per 16 L, GT 3.2 s) and rhugnor (4.3x the other MK4 metals): the largest levers left in the metal chains.
+* The infinite `research-productivity` (75 hours per level at UEV) keeps its formula.
+* The model counts no transport, no machine build cost and no start-up; the byproducts of the naquadah line are charged to its main
+  product.
