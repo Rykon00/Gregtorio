@@ -19,7 +19,8 @@
   (plasma fuel values, plasma balance of issue #32, large plasma turbines with turbine output hatches, naquadah fuel line, large
   naquadah reactors, dynamo hatches LuV to UXV; runtime in `scripts/fork-power.lua`: fuel check, turbine output hatch),
   137 endgame materials (issues #39 and #36: deletes the drafts removed for good, `FORK-REMOVED` in the log; the
-  lapotronic energy orb cluster and high density plutonium drafts; must load after 136, whose plutonium fuel it changes),
+  lapotronic energy orb cluster and high density plutonium drafts; super coolant, the 1080k super coolant cell, fluxed electrum,
+  bedrockium and quantium with the stand-ins they replace; must load after 136, whose plutonium fuel and dynamo hatches it changes),
   150 molds (mold slot instead of mold ingredient; must load after every file that creates
   machines), 190 manual-labor
   burner usage (fist icon in the fuel slot), 198 crafting menu (shows machine recipes, which upstream

@@ -500,7 +500,8 @@ create_recipe{
 	},
 	results = { { type = "fluid", name = "uranium-based-liquid-fuel", amount = 1000 } },
 }
---- GT: MK1 + naquadah gas + nether star dust + fluxed electrum dust (naquadria here)
+--- GT: MK1 + naquadah gas + nether star dust + fluxed electrum dust (naquadria here; fluxed
+--- electrum since issue #36, 137-fork-endgame-materials.lua)
 create_recipe{
 	name = "naquadah-based-fuel-mk2",
 	category = "uhv-mixer-recipes",

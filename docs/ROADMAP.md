@@ -22,7 +22,7 @@ UEV = cryogenic, UIV = promethium, then UMV / UXV / max (the stargate).
 | side | Water purification line: grades 1-8, the NPIC to APIC chips and complex SMDs | **done** (`prototypes/129-fork-water-purification.lua`, see "Side quest: water purification grades 7 and 8") |
 | side | AE2 autocrafting (patterns, molecular assembler on top of the ME network from `120-fork-ae2.lua`) and fluids in the ME network (fluid drives, fluid interface, fluid recipes as patterns) | **done** (`prototypes/121-fork-ae2-autocrafting.lua`, `122-fork-ae2-fluids.lua`, `scripts/fork-me-autocraft.lua`, `scripts/fork-me-fluids.lua`, `docs/AE2.md`) |
 | side | Endgame power: plasma turbines (LuV to UXV, the UHV to UXV ones from issue #34), naquadah fuel line and large naquadah reactors, dynamo hatches LuV to UXV | **done** (`prototypes/136-fork-power.lua`, `scripts/fork-power.lua`, see "Side quest: endgame power") |
-| side | Drafts and endgame materials: triage of every draft, super coolant, fluxed electrum, bedrockium, quantium (issues #39, #36) | PR 1 done, PR 2 open (`prototypes/137-fork-endgame-materials.lua`, see "Drafts and endgame materials") |
+| side | Drafts and endgame materials: triage of every draft, super coolant, fluxed electrum, bedrockium, quantium (issues #39, #36) | **done** (`prototypes/137-fork-endgame-materials.lua`, see "Drafts and endgame materials") |
 | side | Graphics and balance of the tiers from UHV up in the real game | open |
 
 ## Phase 1: LuV (done)
@@ -193,7 +193,7 @@ Choices and deviations from GT:
   pipe; the field generator needs 8 UV circuits instead of 4 UHV circuits (none before phase 4). The assembly
   line recipes take 30 GT seconds; the ZPM assembly line runs at speed 32 (twice the LuV one), so a component
   takes a minute.
-- **UV voltage coil** uses fine americium wire instead of fluxed electrum (not in Gregtorio); the trinium coil
+- **UV voltage coil** uses ~~fine americium wire instead of fluxed electrum (not in Gregtorio)~~ fine fluxed electrum wire like GT since issue #36; the trinium coil
   (UV blast furnace) is the draft with `enriched-naquadah-foil`.
 - **No PPIC/NPIC chips.** Their wafers need the europium and americium doped silicon, which needs grade 4 and
   6 water (the water purification side quest). The MK2 controller and the UV energy hatch use UHPIC wafers and
@@ -280,7 +280,7 @@ Choices and deviations from GT:
   circuit costs about one craft of stem cells (64 per craft: 2 chip parts, 2 osmiridium dust, 1000 growth medium).
 - **Tritanium instead of cosmic neutronium and bedrockium.** Neither can be made (no cosmic neutronium line, no
   bedrockium microminer). The UHV motor, piston, robot arm, emitter, sensor and field generator use tritanium (the fusion
-  MK2 already makes its melt), and the cable is tritanium cable (GT: bedrockium). The tritanium recipe of the MK2 was
+  MK2 already makes its melt), and the cable is tritanium cable (GT: bedrockium; bedrockium cable since issue #36). The tritanium recipe of the MK2 was
   the draft's 16 mB in 16 s (one motor = 9 minutes of a reactor); it is 3 titanium + 2 duranium -> 1 ingot of melt in
   3 s now, and the large tritanium gear is 4 ingots (the generic large gear would be 40). The cable is 1 wire per cable
   like GT (the UV cable needed 4).
@@ -304,7 +304,8 @@ Choices and deviations from GT:
   The recipes are in the ZPM assembly line (no new line needed) and take 30 GT seconds: 1 minute per component.
 - **UHV voltage coil** uses fine tritanium wire (draft). GT's UHV blast furnace coil is fluxed electrum (not in
   Gregtorio); the UHV multiblocks use a tritanium coil (16 wires, 8 foils, a melt) instead. The UHV energy hatch uses
-  UHPICs instead of quantum power ICs and cryogenic helium instead of super coolant cells, like the UV hatch.
+  UHPICs instead of quantum power ICs and cryogenic helium instead of super coolant cells, like the UV hatch (issue #36: GT's UHV
+  hatch takes IC2 coolant, not super coolant, so the cryogenic helium stays).
 
 Existing saves (unlocks that changed):
 
@@ -345,9 +346,11 @@ in game.
 - ~~PPIC, NPIC and QPIC chips (water purification line) and complex SMDs: the MK3 controller, the ZPM to UHV hatches and
   the wetware mainframe use UHPICs and advanced SMDs.~~ Done in phase 5a and "Side quest: water purification grades 7 and 8".
 - ~~Plasmas (also iron plasma) are still only ingredients; there is no plasma generator.~~ Done in "Side quest: endgame power".
-- No fluxed electrum, draconium, cosmic neutronium or bedrockium: tritanium and triamerotronium stand in for them.
-- The UV energy hatch cooling and the UHV one use cryogenic helium; there are no super coolant cells (draft
-  `super-coolant` needs callisto ice).
+- No ~~fluxed electrum~~, draconium, cosmic neutronium or ~~bedrockium~~: tritanium and triamerotronium stand in for them (fluxed electrum
+  and bedrockium since issue #36; draconium and cosmic neutronium came in phase 5a).
+- ~~The UV energy hatch cooling and the UHV one use cryogenic helium; there are no super coolant cells (draft
+  `super-coolant` needs callisto ice).~~ Issue #36: super coolant and the 1080k super coolant cell exist; GT cools the UV and UHV hatches
+  with IC2 coolant, so they keep cryogenic helium.
 - Still unused from `27-uhv-age-item.lua`: ~~UHV dynamo hatch~~ (done in "Side quest: endgame power"), awakened draconium coil block (UEV), attuned tengam
   microminer, integrated ore factory, neutronium compressor, singularities.
 - Graphics: the UHV basic machine sprites are generated from GT textures (tinted red), the MK3 reactor uses the GT
@@ -431,8 +434,8 @@ Choices and deviations from GT:
   Bio cells come from stem cells, mutagen and growth medium (GT: cosmic neutronium dust); the bio processor takes wetware processors, the
   optical processor bio processors. The optical fiber is borosilicate glass (GT: lumiium, chromatic glass).
 - **UEV components** follow GT with these changes: infinity parts, draconium cable and cosmic neutronium fine wire as in GT, but attuned
-  tengam -> magnetic samarium rods, quantium -> cosmic neutronium melt, infinity catalyst foil -> infinity foil, bedrockium/nether star plates
-  -> cosmic neutronium plates; fine wire and foil counts cut (GT: 512 fine wires, 256 foils).
+  tengam -> magnetic samarium rods, ~~quantium -> cosmic neutronium melt~~ (quantium since issue #36), infinity catalyst foil -> infinity foil,
+  bedrockium/nether star plates -> cosmic neutronium plates (the casing takes bedrockium plates since issue #36); fine wire and foil counts cut (GT: 512 fine wires, 256 foils).
 - **UIV components:** transcendent metal (a MK4 product from infinity melt and krypton plasma; GT: raw tesseract in the dimensionally
   transcendent plasma forge), nether star cable (1 nether star = 1 motor's cable), fine cosmic neutronium wire instead of proto-halkonite
   steel wire, infinity plates in the pump. The UEV field generator uses 4 UIV circuits like GT; the UIV one uses 8 UIV circuits (UMV circuits
@@ -477,7 +480,7 @@ The cosmic neutronium of a UEV part includes the 18 ingots of melt in its fluids
   glass) and molten rhugnor (infinity + molten quantum), which no line makes. The MK4 drafts `molten-rhugnor` and `molten-flerovium` (plutonium-241) stay drafts.
 - ~~Water purification grades 7 and 8, FPIC/APIC chips, complex SMDs.~~ Done, see "Side quest: water purification grades 7 and 8".
 - ~~Most plasmas (sulfur, nitrogen, zinc, niobium, tin, titanium, oxygen, neon, boron, calcium) are still only ingredients or unused; there is no plasma generator.~~ Done in "Side quest: endgame power".
-- No bedrockium, fluxed electrum, UU matter, quantium, attuned tengam, super coolant. The quantum force transformer, dimensional plasma forge, godforge
+- No ~~bedrockium, fluxed electrum~~, UU matter, ~~quantium~~, attuned tengam, ~~super coolant~~ (issue #36; UU matter is not built, see "Drafts and endgame materials"). The quantum force transformer, dimensional plasma forge, godforge
   and the rest of `29-uev-age-item.lua` / `31-uiv-age-item.lua` are for later.
 - Graphics: the UEV/UIV basic machine sprites are generated from GT textures (tinted gold and blue), the MK4 reactor reuses the MK3 art, the new items
   and technologies have recolored placeholder icons (`tools/gen_icons.py`, `tools/gen_tech_icons.py`).
@@ -546,7 +549,7 @@ Choices and deviations from GT:
   controller uses UEV field generators (as the draft), UIV circuits, QPIC wafers (PICO wafers are not built) and chromnorox wire. The MK5 reuses the MK3 art.
 - **Spacetime and universium are MK5 products** (GT: tesseracts in the dimensionally transcendent plasma forge). Spacetime = transcendent metal +
   rhugnor, universium = spacetime + flerovium, 1.5 s per ingot in one MK5. The parts are made like the transcendent metal ones (large gear 4 ingots).
-- **Cables.** GT's UMV cable is quantium (not built): spacetime cable (wire + rubber + sheet like the draconium cable); UXV: universium cable.
+- **Cables.** GT's UMV cable is quantium (since issue #36 the UMV components take quantium cable; the machines and the hull keep the spacetime one): spacetime cable (wire + rubber + sheet like the draconium cable); UXV: universium cable.
 - **Superconductors.** `hypocosmium` (UMV: spacetime, infinity, rhugnor) is the name of the draft; `eternity` (UXV: universium, spacetime, hypocosmium)
   takes the name of the example in `03-helper-functions-module.lua`. Recipes invented on the pattern of chromnorox, cooled with cryogenic helium in the pump.
   The mainframes use the superconductor of the tier below (UMV: chromnorox, UXV: hypocosmium), like the earlier ones.
@@ -669,9 +672,9 @@ The inserter capacity bonuses start at MV instead of LV: level 1 only raises the
 - Not built: the GT quantum force transformer, dimensional plasma forge, godforge, magmatter, dark matter, mellion, shirabon, six-phased copper, the eye of harmony and the
   UXV/MAX-only items of `90-uxv-age-item.lua` (mega ultimate battery, ridiculously large capacitor, artificial universe cell, ...). There is no MAX tier: no MAX circuit,
   hatch or machines.
-- Still drafts (29, 21 since the endgame power side quest): ~~force plasma (arcanite), astral titanium and runite plasma~~ (removed), ~~the liquid fuels and naquadah fuel~~, ~~plutonium/high-density plutonium~~ (made real), super coolant, ~~UU
-  matter (magic essence, void/shadow metal, ichorium)~~ (removed), 1080k space cell, ~~the naquadah cracking chains, orundum~~ (removed), ~~the lapotronic energy orb cluster draft~~ (made real), ~~bio cells for
-  microminers~~ (the tier five infused gold microminer, removed). Issue #39, see "Drafts and endgame materials"; super coolant and the space cell follow in PR 2 (issue #36).
+- Still drafts (29, 21 since the endgame power side quest): ~~force plasma (arcanite), astral titanium and runite plasma~~ (removed), ~~the liquid fuels and naquadah fuel~~, ~~plutonium/high-density plutonium~~ (made real), ~~super coolant~~ (made real), ~~UU
+  matter (magic essence, void/shadow metal, ichorium)~~ (removed), ~~1080k space cell~~ (made real), ~~the naquadah cracking chains, orundum~~ (removed), ~~the lapotronic energy orb cluster draft~~ (made real), ~~bio cells for
+  microminers~~ (the tier five infused gold microminer, removed). Issues #39 and #36, see "Drafts and endgame materials".
 
 ### Suggested next step
 
@@ -723,9 +726,9 @@ The 21 recipes of `FORK-DRAFT` before (the list of "Still drafts" in phases 1 to
 | `naquadah-solution-cracking` | cracked naquadah heavy fuel | (b) the naquadah fuel cracking needs the catalyst above, naquadah asphalt and thulium/thorium melts; the fuel line of the endgame power side quest works without it | - | - | 1 |
 | `naquadah-heavy-fuel-cracking` | naquadah heavy fuel | (b) same | - | - | 1 |
 | `naquadah-asphalt-cracking` | naquadah asphalt | (b) same | - | - | 1 |
-| `super-coolant` | callisto ice dust | (a) with callisto ice and ledox from the end microminer | see materials | see materials | 2 |
-| `1080k-space-cell` | dense fluxed electrum plate | (a) with fluxed electrum | see materials | see materials | 2 |
-| `1080k-super-coolant-cell` | super coolant | (a) with super coolant | see materials | see materials | 2 |
+| `super-coolant` | callisto ice dust | (a) with callisto ice and ledox from the end microminer | see materials | see materials | 2 (done) |
+| `1080k-space-cell` | dense fluxed electrum plate | (a) with fluxed electrum | see materials | see materials | 2 (done) |
+| `1080k-super-coolant-cell` | super coolant | (a) with super coolant | see materials | see materials | 2 (done) |
 
 Removed with them (items only these drafts used): raw and crushed infused gold, infused gold dust (and the three ore
 processing recipes), salis mundis, thaumium dust, magic essence, void metal, shadow metal and ichorium dust, raw atomic
@@ -758,6 +761,11 @@ Not switched, on purpose:
 
 ### Numbers
 
+Both PRs against `origin/main`: researchable technologies 360 -> 366 of 379 -> 385, draft recipes hidden by the draft guard
+21 -> 0 (`DRAFTS_OK` is empty), drafts removed for good 35 prototypes, auto-unlocked recipes 54 -> 53, machines placed by
+`devcheck runtime` 510 -> 510 (no new machine), unlocked but uncraftable recipes 0, crafting menu 2745 -> 2784 machine recipes
+shown, 241 kept hidden, 0 hidden without an allow-list entry.
+
 PR 1: researchable technologies 360 -> 361 of 379 -> 380 (the new `lapotronic-energy-orbs`), draft recipes hidden by the
 draft guard 21 -> 3 (the documented rest list `DRAFTS_OK` of `tools/devcheck/devcheck.py`: the three drafts of PR 2), auto-unlocked
 recipes 54 -> 53, machines placed by `devcheck runtime` 510 -> 510, unlocked but uncraftable recipes 0, crafting menu check green
@@ -772,17 +780,40 @@ changed unlocks are `naquadah-fuels` (+ wrapped plutonium ingot, high density pl
 new tech (lapotronic energy orb, the cluster's circuit assembler recipe). No unlock was lost or moved (`advanced-smds` keeps the
 fine niobium-titanium wire).
 
+PR 2: researchable technologies 361 -> 366 of 380 -> 385 (`super-coolant` LuV, `fluxed-electrum` ZPM, `bedrockium` UV,
+`space-coolant-cells` and `quantium` UHV), draft recipes 3 -> 0, `FORK-AUTOUNLOCK` identical to PR 1 (53 lines), machines placed
+510 -> 510, uncraftable 0, crafting menu 2750 -> 2784 shown. Tech by tech against PR 1: the 380 technologies keep their science
+packs and unlocks (every recipe of the new materials is unlocked explicitly by its new tech, none moved); five of them get one
+prerequisite each, the material they now use first: `water-purification` + `super-coolant`, `uv-energy-hatches` +
+`fluxed-electrum`, `uhv-components` + `bedrockium`, `uev-energy-hatches` + `space-coolant-cells`, `uev-components` + `quantium`.
+Each new tech sits at or below the tier of its first user (LuV for LuV, ZPM before UV, UV for UV science, UHV for UHV and UEV
+science).
+
+Tests: `REQUIRED_RECIPES` of `devcheck check` lists the made-real drafts and the new materials (23 of 23 unlocked and craftable);
+the recipe test of `devcheck runtime` crafts 14 more recipes once in a real machine (30 of 30), among them the circuit assembler
+cluster, the plutonium steps, super coolant, the 1080k cell, the three hot ingots, the melts, naquadah fuel MK2, grade 5 water and
+the UXV energy hatch.
+
 ### Existing saves
 
 - `plutonium-based-liquid-fuel` takes 1 high density plutonium (GT) instead of 64 plutonium 239 dust; its three steps are
   unlocked by `naquadah-fuels`, which saves that have the fuel researched already.
 - The removed items could never be made (no technology unlocked their recipes); if a save holds some (console), Factorio drops
   them on load.
-- `migrate --from-ref v0.3.1` loads.
+- Issue #36 changes the ingredients of recipes that saves may have unlocked: grade 5 water (+100 super coolant) and grade 7 water
+  (super coolant), the UEV to UXV energy and dynamo hatches (1080k super coolant cells, UIV up super coolant), the UV voltage coil,
+  the UHV emitter and sensor, the eight UHV components (bedrockium cable), the fusion MK3 controller, naquadah fuel MK2, the UEV
+  casing, the eight UEV components (quantium melt) and the eight UMV components (quantium cable). They stay unlocked; a save that
+  researched them needs the new material tech before it can craft them again (as in phase 5a and the water purification side quest).
+  Water purification plants on grade 5 stop until super coolant arrives. Researched techs stay researched when they get a new
+  prerequisite.
+- `migrate --from-ref v0.3.1` loads (both PRs).
 
 ### Open points
 
 - UU matter (see above), and GT's super coolant in the bio and optical circuits, the PCB factory and the fridge casing.
+- Fluxed electrum's dust recipe (electrum, redstone, naquadah) is invented: GT5-Unofficial has none (it is in the GTNH core mod).
+- Icons of the new items and techs are recolored placeholders (`tools/gen_icons.py`, `tools/gen_tech_icons.py`).
 - Balance of the new chains is untested in game.
 
 ## Side quest: endgame power (done)
@@ -826,13 +857,13 @@ energy of the plasma turbines every tick; every 10th tick the fuel check and the
   step was overwritten by two later drafts of the same name); 780 light + 360 heavy -> 100 naquadah based fuel MK1
   (fusion reactor MK2, 12.5 s, GT's amounts; the draft had a tenth). Radioactive sludge is centrifuged into enriched
   naquadah dust, uranium 238, plutonium 239 and radon (the draft without its calcium and tiberium dust). MK2 (tech
-  `uhv-naquadah-reactor`): 100 MK1 + 1500 naquadah gas + 1 nether star + 16 naquadria dust -> 100 MK2 in the UHV mixer
+  `uhv-naquadah-reactor`): 100 MK1 + 1500 naquadah gas + 1 nether star + ~~16 naquadria dust~~ 32 fluxed electrum dust (issue #36) -> 100 MK2 in the UHV mixer
   (GT: nether star dust and fluxed electrum dust in a large chemical reactor). MK3 (tech `uev-naquadah-reactor`): 100 MK2
   + 800 heavy naquadah fuel + 32 uranium 238 dust + 16 plutonium 239 dust + 8 naquadria dust -> 100 MK3 in the UEV mixer
   (GT: the naquadah fuel refinery with extremely unstable naquadah, tiberium and high density uranium/plutonium). The
   liquid nuclear fuels of GoodGenerator: uranium based liquid fuel (64 uranium 238 dust, 8 potassium, 4 naquadah dust,
-  1000 radon -> 1000; GT: high density uranium and quantium) and plutonium based liquid fuel (the draft with 64 plutonium
-  239 dust and 2 neutronium ingots instead of high density plutonium and neutronium dust, 1000 units like GT) are
+  1000 radon -> 1000; GT: high density uranium and quantium) and plutonium based liquid fuel (the draft with 2 neutronium ingots instead of neutronium dust, 1000 units like GT; it took 64 plutonium
+  239 dust instead of high density plutonium until issue #39) are
   "excited" in the fusion reactor MK2 (the drafts: 10 uranium fuel + 100 hydrogen -> 10, 20 plutonium fuel + 16 molten
   lutetium -> 20).
 * **Large naquadah reactors** (UV to UXV; techs `large-naquadah-reactor`, `uhv-naquadah-reactor` ... `uxv-naquadah-reactor`):
@@ -1224,7 +1255,7 @@ Choices and deviations from GT:
 - **One plant, one recipe per grade**, no linkage blocks, 90 % yield like grades 1-6. The degasifier's control signals (one random inert gas,
   a superconductor, a catalyst and coolant per cycle) become one recipe with all of them; the gas is helium (GT: helium 10 000, neon 7500,
   krypton 5000 or xenon 2500 per cycle), because neon, krypton and xenon come only from liquid ender air, which no line makes. Super coolant
-  is cryogenic helium (like the UV to UXV hatches); the superconductor is triamerotronium dust (GT: the base melt of the UHV superconductor).
+  is ~~cryogenic helium (like the UV to UXV hatches)~~ super coolant since issue #36 (100 per craft; grade 5 takes 100 as well, like GT); the superconductor is triamerotronium dust (GT: the base melt of the UHV superconductor).
 - **Quark extraction without catalyst alignment.** GT puts two of six aligned quark catalysts in, gets two unaligned ones and stable baryonic
   matter out, and realigns them in a laser engraver (the first ones come from the plasma forge, UMV). Here one reusable catalyst item (GT's
   housing recipe) that breaks in 1 of 10 crafts; no baryonic matter. One catalyst lasts about 9000 grade 8 water, 900 APIC wafers.

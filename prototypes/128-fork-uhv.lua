@@ -359,7 +359,8 @@ create_recipe{
 --- 3) UHV COMPONENTS (zpm-assembly-line-recipes, like the UV ones)
 --- GT5-Unofficial assembly line recipes; 1 GT ingot of fluid = 14.4, 2000 L lubricant = 200.
 --- Changes against GT:
----   * cosmic neutronium -> tritanium, bedrockium cable -> tritanium cable (see above)
+---   * cosmic neutronium -> tritanium, bedrockium cable -> tritanium cable (see above; since issue #36
+---     137-fork-endgame-materials.lua puts the bedrockium cable and the fluxed electrum foils in)
 ---   * fine wire and foil counts cut to a tenth or a quarter (GT: 512 fine neutronium wires,
 ---     256 fluxed electrum foils): motor 48 fine wires, emitter and sensor 32 foils, field generator
 ---     64 fine wires. Fluxed electrum does not exist here.
