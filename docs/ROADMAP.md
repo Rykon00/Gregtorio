@@ -775,24 +775,34 @@ energy of the plasma turbines every tick; every 10th tick the fuel check and the
 ### Balance
 
 Energy per craft of a fusion recipe is the same in the MK1, MK2 and MK3 (each doubles speed and power: `energy_required` x
-1.28 MJ); the MK4 halves it and the MK5 halves it again. "Gain" is plasma energy out / reactor energy in per craft.
+1.28 MJ); the MK4 and MK5 halve it (0.64 MJ). "Gain" is plasma energy out / reactor energy in per craft; "full chain" also
+counts the machine energy of every input (see "Full-chain analysis" below). Issue #32 changed the values marked "before";
+the new ones are in the table of `prototypes/136-fork-power.lua` (section 1b, plasma balance).
 
-| Plasma | Fuel value per unit | Recipe (reactor) | Energy in per craft | Energy out per craft | Gain | Units/s from one reactor | Plasma power |
-|---|---|---|---|---|---|---|---|
-| helium (D + He-3) | 81.92 MJ | 125 in 2 s (MK1) | 81.9 MJ | 10 240 MJ | 125x | 62.5 | 5.12 GW |
-| helium (D + T) | 81.92 MJ | 125 in 4 s (MK1) | 163.8 MJ | 10 240 MJ | 62.5x | 31.25 | 2.56 GW |
-| boron | 112.64 MJ | 14.4 in 12 s (MK1) | 491.5 MJ | 1622 MJ | 3.3x | 1.2 | 135 MW |
-| calcium | 188.42 MJ | 16 in 32 s (MK1) | 1311 MJ | 3015 MJ | 2.3x | 0.5 | 94 MW |
-| neon | 20.48 MJ | 1000 in 32 s (MK1) | 1311 MJ | 20 480 MJ | 2.7x (15.6x without its boron and calcium plasma) | 31.25 | 640 MW |
-| sulfur | 170.39 MJ | 144 in 8 s (MK2) | 655.4 MJ | 24 537 MJ | 37x | 18 | 3.07 GW |
-| nitrogen | 129.02 MJ | 125 in 4 s (MK2) | 327.7 MJ | 16 128 MJ | 49x | 31.25 | 4.03 GW |
-| zinc | 226.3 MJ | 72 in 8 s (MK2) | 655.4 MJ | 16 294 MJ | 25x | 9 | 2.04 GW |
-| niobium | 269.52 MJ | 144 in 8 s (MK2) | 655.4 MJ | 38 810 MJ | 59x | 18 | 4.85 GW |
-| tin | 150 MJ | 288 in 8 s (MK2) | 655.4 MJ | 43 200 MJ | 66x | 36 | 5.4 GW |
-| titanium | 196.61 MJ | 144 in 80 s (MK2) | 6554 MJ | 28 312 MJ | 4.3x | 1.8 | 354 MW |
-| oxygen | 131.07 MJ | 144 in 120 s (MK2) | 9830 MJ | 18 874 MJ | 1.3x (1.9x without its boron plasma) | 1.2 | 157 MW |
-| krypton | 86.02 MJ | 144 in 16 s (MK2) | 1311 MJ | 12 386 MJ | 3.8x (9.4x without its niobium and zinc plasma) | 9 | 774 MW |
-| iron | 206.44 MJ | 144 in 2 s (MK3) | 327.7 MJ | 29 727 MJ | 91x | 72 | 14.9 GW |
+| Plasma | Fuel value per unit | Recipe (reactor) | Energy in per craft | Energy out per craft | Gain | Full chain | Units/s from one reactor | Plasma power |
+|---|---|---|---|---|---|---|---|---|
+| helium (D + He-3) | 81.92 MJ | 125 in 10 s (MK1; before 2 s) | 409.6 MJ | 10 240 MJ | 25x (before 125x) | 11.5x (before 29.6x) | 12.5 (before 62.5) | 1.02 GW (before 5.12) |
+| helium (D + T) | 81.92 MJ | 125 in 10 s (MK1; before 4 s) | 409.6 MJ | 10 240 MJ | 25x (before 62.5x) | 6.2x (before 7.3x) | 12.5 (before 31.25) | 1.02 GW (before 2.56) |
+| boron | 112.64 MJ | 14.4 in 12 s (MK1) | 491.5 MJ | 1622 MJ | 3.3x | 2.7x (before 3.0x) | 1.2 | 135 MW |
+| calcium | 188.42 MJ | 16 in 32 s (MK1) | 1311 MJ | 3015 MJ | 2.3x | 2.2x | 0.5 | 94 MW |
+| neon | 20.48 MJ | 1000 in 32 s (MK1) | 1311 MJ | 20 480 MJ | 2.7x (15.6x without its boron and calcium plasma) | 2.4x (before 2.5x) | 31.25 | 640 MW |
+| sulfur | 170.39 MJ | 72 lithium + 72 aluminium melt -> 144 in 16 s (MK2; before 16 + 16 in 8 s) | 1311 MJ | 24 537 MJ | 18.7x (before 37x) | 16.8x (before 35.7x) | 9 (before 18) | 1.53 GW (before 3.07) |
+| nitrogen | 129.02 MJ | 125 in 8 s (MK2; before 4 s) | 655.4 MJ | 16 128 MJ | 24.6x (before 49x) | 11.7x (before 15.3x) | 15.6 (before 31.25) | 2.02 GW (before 4.03) |
+| zinc | 226.3 MJ | 72 in 8 s (MK2) | 655.4 MJ | 16 294 MJ | 25x | 6.0x | 9 | 2.04 GW |
+| niobium | 269.52 MJ | 144 in 20 s (MK2; before 8 s) | 1638 MJ | 38 810 MJ | 23.7x (before 59x) | 15.6x (before 25.7x) | 7.2 (before 18) | 1.94 GW (before 4.85) |
+| tin | 150 MJ | 288 in 24 s (MK2; before 8 s) | 1966 MJ | 43 200 MJ | 22x (before 66x) | 15.8x (before 55.8x) | 12 (before 36) | 1.8 GW (before 5.4) |
+| titanium | 196.61 MJ | 144 in 80 s (MK2) | 6554 MJ | 28 312 MJ | 4.3x | 4.2x | 1.8 | 354 MW |
+| oxygen | 131.07 MJ | 144 in 120 s (MK2) | 9830 MJ | 18 874 MJ | 1.3x (1.9x without its boron plasma) | 1.2x | 1.2 | 157 MW |
+| krypton | 86.02 MJ | 144 in 16 s (MK2) | 1311 MJ | 12 386 MJ | 3.8x (9.4x without its niobium and zinc plasma) | 1.3x (before 1.5x) | 9 | 774 MW |
+| iron | 206.44 MJ | 72 silicon + 72 magnesium melt -> 144 in 8 s (MK3; before 16 + 16 in 2 s) | 1311 MJ | 29 727 MJ | 22.7x (before 91x) | 17.2x (before 70.9x) | 18 (before 72) | 3.72 GW (before 14.9) |
+
+Helium-3 (issue #32): `end-stone-centrifuging` makes 50 helium-3 per compressed end stone in 200 s (before 100 in 40 s),
+1.92 MJ per unit like deuterium (before 0.19 MJ). The fuel values are unchanged (GT's). The recipes that use a plasma as an
+ingredient keep their amounts: helium plasma in grade 5 water (10), boron plasma (14.4) and sunnarium (4); krypton plasma in
+grade 6 water (10) and transcendent metal (14.4); boron and calcium plasma in neon plasma (144 and 16); boron plasma in
+oxygen plasma (144); calcium plasma in flerovium (14.4); iron plasma in draconium (14.4); niobium and zinc plasma in krypton
+plasma (144 each). They need little: a water purification plant on grade 5 water uses 0.5 helium plasma per second, one MK1
+makes 12.5.
 
 | Fuel | Fuel value per unit | Recipe (reactor) | Energy in per craft | Energy out per craft | Gain |
 |---|---|---|---|---|---|
@@ -816,11 +826,112 @@ Generators (4 amps of the tier) and what they burn at full load:
 | UMV large naquadah reactor | 5.24 GW | - | 1 unit per 11 s | 4/s | + UMV dynamo hatch + 4 UMV hulls |
 | UXV large naquadah reactor | 10.49 GW | - | 1 unit per 6 s | 8/s | + UXV dynamo hatch + 4 UXV hulls |
 
-Net gain in practice: one MK1 on deuterium and helium-3 (40.96 MW) makes 62.5 helium plasma per second, enough for 62 LuV,
-31 ZPM or 15 UV plasma turbines (5.12 GW), a net 5.08 GW. One EV blast furnace on acid naquadah emulsion (16 enriched
-naquadah dust per 180 s) feeds 0.036 naquadah fuel MK1 per second through the line, worth 2.08 GW of naquadah reactor
-output; one enriched naquadah dust is 23.4 GJ of MK1 fuel. The generators burn only their own fuels (fuel check above):
-steam, plasma in a naquadah reactor or naquadah fuel in a plasma turbine stop them.
+#### Full-chain analysis (issue #32)
+
+Every machine here uses the same energy per recipe second at any tier (a LuV centrifuge is 32 times as fast as the LV one
+and draws 32 times the power), so the energy of a chain does not depend on the machines the player builds: centrifuge
+0.48 MJ, extractor 0.24 MJ, electrolyzer and electric blast furnace 0.6 MJ, fusion reactor 1.28 MJ per recipe second. The
+full chain of a plasma is its reactor energy plus the machine energy of its inputs, charged fully to the main product
+(byproducts such as the hydrogen of water electrolysis count as free), down to water and the microminer outputs. The
+microverse projector, the ore processing up to the ingots and the poly-si dust are left out, so the metal plasmas are a
+little dearer than shown. The inputs:
+
+| Input | Recipe | Energy per unit | Per GW of plasma (new values) |
+|---|---|---|---|
+| deuterium | 100 water -> 5 in 20 s (centrifuge) | 1.92 MJ | 12.2/s for helium (1.5 LuV centrifuges, 244 water/s), 23.3/s for nitrogen |
+| tritium | 160 deuterium -> 40 in 32 s (centrifuge) | 8.06 MJ | 12.2/s for D + T helium (another 49 deuterium/s) |
+| helium-3 | 1 compressed end stone -> 50 in 200 s (centrifuge; before 100 in 40 s) | 1.92 MJ (before 0.19) | 12.2/s for helium (1.5 LuV centrifuges, 0.24 compressed end stone/s), 8.7/s for tin |
+| molten metal | 1 ingot -> 14.4 in 19.2 s (extractor) | 0.32 MJ + the ingot | |
+| silicon ingot | 1 poly-si dust in 127.2 s (electric blast furnace) | 76 MJ (5.3 MJ per unit of melt) | 0.17/s for iron (0.7 LuV blast furnaces), 0.26/s for niobium |
+| aluminium ingot | 3 carbon + 10 alumina -> 4 in 120 s (electric blast furnace) | 18 MJ | 0.2/s for sulfur |
+| lithium, magnesium | lepidolite and magnesia electrolysis | 6.4 MJ, 1.2 MJ | |
+
+The raw materials are no limit: one EV microverse projector makes 64 tier three microminer outputs in 150 s, which are
+4096 compressed end stone, and the ores come from the same microminers. What scaling costs is the reactor, the machines of
+the chain and their power. Per GW of plasma power with the new values:
+
+| Plasma | Reactors per GW | Reactor draw per GW | Chain draw per GW | Main inputs per GW |
+|---|---|---|---|---|
+| helium (D + He-3) | 0.98 MK1 | 40 MW | 47 MW (before: 0.2 MK1, 8 + 26 MW) | 12.2 deuterium + 12.2 helium-3/s |
+| helium (D + T) | 0.98 MK1 | 40 MW | 122 MW | 12.2 deuterium + 12.2 tritium/s (61 deuterium/s in all) |
+| nitrogen | 0.5 MK2 | 41 MW | 45 MW | 23.3 deuterium/s, 1 molten beryllium/s |
+| sulfur | 0.65 MK2 | 53 MW | 6 MW | 2.9 molten lithium + 2.9 molten aluminium/s |
+| niobium | 0.52 MK2 | 42 MW | 22 MW | 3.7 molten cobalt + 3.7 molten silicon/s |
+| tin | 0.56 MK2 | 46 MW | 18 MW | 3.3 molten silver/s, 8.7 helium-3/s |
+| iron | 0.27 MK3 | 44 MW | 14 MW | 2.4 molten silicon + 2.4 molten magnesium/s |
+
+A base to compare with, one of every machine of a tier at full load (the machines `iv-*` to `uv-*`, multiblocks included):
+IV 0.39 GW (53 machines), LuV 0.45 GW (38), ZPM 0.87 GW (37), UV 1.72 GW (36); one of each from IV to UV draws 3.4 GW.
+Before, one MK1 on D + He-3 (5.12 GW) ran more than all of them together. Now one MK1 (1.02 GW) runs one of each IV and LuV
+machine (0.84 GW); a ZPM base needs a second MK1 or an MK2 (2.05 GW on helium), a UV base an MK3 (4.1 GW on helium, 3.72 GW
+on iron) or two MK2. The other power of these tiers: below fusion there is only steam (vanilla nuclear reactor and steam
+turbines, 5.82 MW per turbine), so fusion stays by far the strongest option of LuV and ZPM. At UV the naquadah fuel line
+arrives: naquadah based fuel MK1 is more than 100x its processing energy (the enriched naquadah left out), and one EV blast
+furnace on acid naquadah emulsion feeds 2.08 GW; it is limited by the naquadah, not by energy (see "Open points").
+
+The band: the cheap plasmas (helium, sulfur, nitrogen, niobium, tin, iron) are 11.5x to 17.2x over the full chain and 18.7x
+to 25x at the reactor, so one reactor makes about 25 times its draw: 1 GW per MK1, 2 GW per MK2, 4 GW per MK3. Zinc (6x, it
+needs tritium) and D + T helium (6.2x) stay below the band; boron, calcium, neon, titanium, oxygen and krypton (1.2x to
+4.2x) are ingredients first and stay as they were. Order of the levers: the input cost first (helium-3 at the price of
+deuterium; half an ingot of each metal for sulfur and iron, whose nugget inputs cost nothing), then the recipe time for the
+output per reactor (helium x5, tin x3, niobium x2.5, nitrogen and sulfur x2, iron x4); the fuel values stay GT's. The input
+cost alone could not do it: with the upstream times one MK1 would still make 5.12 GW, whatever its inputs cost.
+
+#### Comparison with GT5-Unofficial
+
+GT5-Unofficial (GTNH), `FusionReactorRecipes.java`, with 1 EU = 1 kJ like here. The fuel values are the same (EU per L,
+`ProcessingCell.java`; the large plasma turbine makes fuel value x flow EU, times the plasma efficiency of its rotor):
+
+| Plasma | GT recipe | GT energy per craft | GT gain at the reactor | Start-up energy | Here, new |
+|---|---|---|---|---|---|
+| helium (D + He-3) | 125 + 125 -> 125 in 16 ticks at 1920 EU/t | 30.7 MJ | 333x | 60 GJ | 25x |
+| helium (D + T) | 125 + 125 -> 125 in 16 ticks at 3840 EU/t | 61.4 MJ | 167x | 40 GJ | 25x |
+| sulfur | 16 aluminium + 16 lithium -> 144 in 32 ticks at 10 240 EU/t | 327.7 MJ | 75x | 240 GJ | 18.7x |
+| nitrogen | 16 beryllium + 375 deuterium -> 125 in 16 ticks at 15 360 EU/t | 245.8 MJ | 66x | 180 GJ | 24.6x |
+| niobium | 144 cobalt + 144 silicon -> 144 in 16 ticks at 49 152 EU/t | 786 MJ | 49x | 200 GJ | 23.7x |
+| tin | 144 silver + 375 helium-3 -> 288 in 16 ticks at 49 152 EU/t | 786 MJ | 55x | 280 GJ | 22x |
+| iron | 16 silicon + 16 magnesium -> 144 in 32 ticks at 7680 EU/t | 245.8 MJ | 121x | 360 GJ | 22.7x |
+
+GT's reactor is even more generous than Gregtorio's was (one MK1 on D + He-3: 156 helium plasma per second, 12.8 GW). What
+limits it there:
+
+* **The inputs.** Hydrogen from water electrolysis (1000 water -> 2000 hydrogen, 100 s at 30 EU/t: 0.03 MJ per unit),
+  deuterium from 160 hydrogen (8 s at 20 EU/t: 0.2 MJ), tritium from 160 deuterium (8 s at 80 EU/t: 1.12 MJ), helium-3 from
+  80 helium (8 s at 80 EU/t) and the helium from endstone dust (36 dust -> 4320 helium in 9.6 min): 3.4 MJ and 0.13
+  endstone dust per unit of helium-3. At the base tier of each machine GT's full chain is 21x for D + He-3 (helium-3 is the
+  cost) and 45x for D + T, before start-up and turbines. Here deuterium was already 10 times GT's energy (1.92 MJ, water
+  straight to deuterium) and helium-3 a twentieth of it (0.19 MJ); helium-3 now costs 1.92 MJ.
+* **Overclocking.** A GT machine above the recipe's tier runs twice as fast for four times the power, so each tier doubles
+  the energy per craft. The deuterium and helium-3 recipes are LV (20 and 80 EU/t); in LuV machines they cost 32 times the
+  energy, and GT's chain falls to a few x unless the player builds many low tier machines. Gregtorio has no such loss (the
+  energy per craft is the same at every tier), which is why its chain gains stayed high.
+* **Start-up energy** (40 to 360 GJ, stored in the energy hatches before the first craft) and the reactor tier it needs: a
+  one-time cost that is not built here (the reactor starts at once).
+* **Turbines.** The flow of a large plasma turbine is set by its rotor, and the efficiency drops away from the optimal flow.
+  Here the turbine is capped at four amps of its tier and burns at 100 %.
+
+So the 11x to 17x here sits between GT's full chain at the base tier (21x to 45x for helium) and GT with overclocked
+machines (a few x), with the reactor at about 25x instead of GT's 50x to 330x: the output per reactor, which GT limits
+through input logistics and turbine flow, is limited here by the recipe time.
+
+Net gain in practice (issue #32; before: one MK1 on D + He-3 made 62.5 helium plasma per second, 5.12 GW for 62 LuV
+turbines, a net 5.08 GW): one MK1 on deuterium and helium-3 (40.96 MW) makes 12.5 helium plasma per second, 1.02 GW, and
+its deuterium and helium-3 draw another 48 MW (3 LuV centrifuges), a net 0.94 GW. The turbines one reactor feeds on its best
+cheap plasma:
+
+| Reactor | Plasma | Plasma power | LuV turbines | ZPM turbines | UV turbines | Before |
+|---|---|---|---|---|---|---|
+| MK1 (40.96 MW) | helium | 1.02 GW | 12.5 | 6.25 | 3.1 | 5.12 GW: 62.5 / 31 / 15.6 |
+| MK2 (81.92 MW) | helium (MK1 recipe) | 2.05 GW | 25 | 12.5 | 6.25 | 10.24 GW: 125 / 62.5 / 31 |
+| MK2 | nitrogen | 2.02 GW | 24.6 | 12.3 | 6.2 | 4.03 GW: 49 / 24.6 / 12.3 |
+| MK2 | tin | 1.8 GW | 22 | 11 | 5.5 | 5.4 GW: 66 / 33 / 16.5 |
+| MK3 (163.84 MW) | helium (MK1 recipe) | 4.1 GW | 50 | 25 | 12.5 | 20.5 GW: 250 / 125 / 62.5 |
+| MK3 | iron | 3.72 GW | 45 | 22.7 | 11.3 | 14.9 GW: 181 / 91 / 45 |
+
+One EV blast furnace on acid naquadah emulsion (16 enriched naquadah dust per 180 s) feeds 0.036 naquadah fuel MK1 per
+second through the line, worth 2.08 GW of naquadah reactor output; one enriched naquadah dust is 23.4 GJ of MK1 fuel. The
+generators burn only their own fuels (fuel check above): steam, plasma in a naquadah reactor or naquadah fuel in a plasma
+turbine stop them.
 
 ### Deviations from GT
 
@@ -844,8 +955,13 @@ helium for its plasma after the update (`plasma turbine of the old save`).
 
 ### Open points
 
-* Balance is untested in game: the caps of the generators (4 amps), the plasma values (helium is 125x the reactor's
-  energy, boron and calcium 2-3x), the naquadah chain's yields, the recipe times of the turbine and reactor parts.
+* Balance is untested in game: the caps of the generators (4 amps), the plasma balance of issue #32 (about 1 GW per MK1,
+  11x to 17x over the full chain for the cheap plasmas), the naquadah chain's yields, the recipe times of the turbine and
+  reactor parts.
+* The naquadah fuel line (UV) is more than 100x its processing energy and feeds 2.08 GW per EV blast furnace, stronger per
+  unit of energy than any plasma; it is limited by enriched naquadah. Not changed in issue #32.
+* The MK4 and MK5 run the MK1 to MK3 plasma recipes 16 and 32 times as fast as the MK1 (one MK4 on helium: 16.4 GW for
+  327.68 MW); there are no turbines above UV yet, and UEV machines draw 123 to 307 MW each.
 * Graphics: the turbines use the GT large turbine front (tungstensteel) as a top-down sprite, the reactors the GT naquadah
   reactor casing with the radiation proof casing inside, tinted per tier; the output hatch is the ME fluid interface in
   orange; the hatch and part icons are recolored placeholders (`tools/gen_icons.py`).
@@ -856,8 +972,8 @@ helium for its plasma after the update (`plasma turbine of the old save`).
 * Left of the cooled fluid: a turbine switched off by another mod (`active = false`) keeps its last
   `energy_generated_last_tick` and would be counted; a plasma change within one step can shift at most that step's burn
   between the two plasmas.
-* The MK3 reactor and up make plasma far faster than the turbines burn it (one MK3 on iron plasma: 14.9 GW); higher tier
-  turbines (UHV+, like GT++'s XL turbines) would use it.
+* The MK3 reactor and up make plasma faster than a few turbines burn it (one MK3 on iron plasma: 3.72 GW, 11 UV turbines,
+  before issue #32 14.9 GW); higher tier turbines (UHV+, like GT++'s XL turbines) would use it.
 
 ## Side quest: water purification grades 7 and 8 (done)
 

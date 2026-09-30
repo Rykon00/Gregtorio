@@ -1,4 +1,11 @@
 ---------------------------------------------------------------------------------------------------
+Version: 0.3.2
+  Balancing:
+    - Fusion power: one Fusion Reactor MK1 makes about 1 GW of helium plasma (12.5 per second, 12 LuV plasma turbines) instead of 5.12 GW; an MK2 makes about 2 GW, an MK3 about 4 GW. The cheap plasmas give 11x to 17x the energy of their whole input chain instead of up to 70x.
+    - Helium-3: 50 per compressed end stone in 200 s instead of 100 in 40 s.
+    - Fusion recipes take longer: helium plasma 10 s in the MK1 (was 2 s from helium-3, 4 s from tritium), nitrogen plasma 8 s (was 4 s), niobium plasma 20 s (was 8 s), tin plasma 24 s (was 8 s) in the MK2.
+    - Sulfur plasma takes 72 molten lithium and 72 molten aluminium (was 16 each) and 16 s in the MK2 (was 8 s); iron plasma takes 72 molten silicon and 72 molten magnesium (was 16 each) and 8 s in the MK3 (was 2 s).
+---------------------------------------------------------------------------------------------------
 Version: 0.3.1
 Date: 2026-09-30
   Features:
