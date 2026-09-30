@@ -424,7 +424,8 @@ make_multiblock{
 	speed = LUV_SPEED, energy = "40.96MW",
 }
 
---- Fusion fuels: tritium from deuterium and helium-3 from end stone (both like GT5)
+--- Fusion fuels: tritium from deuterium and helium-3 from end stone (both like GT5); the helium-3
+--- yield and time are set in 136-fork-power.lua (plasma balance, issue #32)
 create_recipe{
 	name = "deuterium-centrifuging",
 	category = "hv-centrifuge-recipes",

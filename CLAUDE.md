@@ -16,7 +16,7 @@
   133 UMV (fusion MK5, spacetime, exotic line, UMV components; also the shared helpers, global
   table `FORK5B`), 134 UXV (universium, temporal line, UXV components), 135 endgame (stargate,
   MAX science pack; researching `victory` wins the game via `scripts/fork-victory.lua`), 136 power
-  (plasma fuel values, large plasma turbines with turbine output hatches, naquadah fuel line, large
+  (plasma fuel values, plasma balance of issue #32, large plasma turbines with turbine output hatches, naquadah fuel line, large
   naquadah reactors, dynamo hatches LuV to UXV; runtime in `scripts/fork-power.lua`: fuel check, turbine output hatch),
   150 molds (mold slot instead of mold ingredient; must load after every file that creates
   machines), 190 manual-labor

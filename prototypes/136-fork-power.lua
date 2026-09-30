@@ -78,6 +78,48 @@ end
 
 
 --------------------------------------------------------------------------------
+--- 1b) PLASMA BALANCE (issue #32)
+--- Energy per recipe second is the same in every machine tier here (speed and power double
+--- together), so the input chain of a plasma costs the same energy at any tier; GT's
+--- overclocking doubles the energy per craft with every tier instead. With the upstream times
+--- and yields one MK1 on D + He-3 made 5.12 GW (125x its draw, 30x over the full chain), more
+--- than one of every IV to UV machine draws together. The cheap plasmas are brought to 11x to
+--- 17x over the full chain and about 1 GW of plasma per MK1, 2 GW per MK2 and 4 GW per MK3:
+---   * helium-3 costs as much energy as deuterium (1.92 MJ per unit instead of 0.19): 50 per
+---     compressed end stone in 200 s (GT: 7.5 per endstone dust, 3.4 MJ, through helium)
+---   * the helium, nitrogen, niobium and tin plasma recipes take longer
+---   * sulfur and iron plasma take half an ingot of each metal instead of a nugget
+--- The fuel values stay GT's. Numbers and the full-chain analysis: docs/ROADMAP.md, "Balance".
+---   recipe = { energy_required, { [ingredient or result] = new amount } }
+--------------------------------------------------------------------------------
+
+local PLASMA_BALANCE = {
+	["end-stone-centrifuging"] = { 50 * HV_SPEED, { ["helium-3"] = 50 } },
+	["helium-plasma-first"]    = { 10 * LUV_SPEED, {} },
+	["helium-plasma-second"]   = { 10 * LUV_SPEED, {} },
+	["nitrogen-plasma"]        = { 8 * ZPM_SPEED, {} },
+	["niobium-plasma"]         = { 20 * ZPM_SPEED, {} },
+	["tin-plasma"]             = { 24 * ZPM_SPEED, {} },
+	["sulfur-plasma"]          = { 16 * ZPM_SPEED, { ["molten-lithium"] = 72, ["molten-aluminium"] = 72 } },
+	["iron-plasma"]            = { 8 * UV_SPEED, { ["molten-silicon"] = 72, ["molten-magnesium"] = 72 } },
+}
+for name, b in pairs(PLASMA_BALANCE) do
+	local r = data.raw.recipe[name]
+	if r then
+		r.energy_required = b[1]
+		for _, list in pairs({ r.ingredients or {}, r.results or {} }) do
+			for _, x in pairs(list) do
+				if b[2][x.name] then x.amount = b[2][x.name] end
+			end
+		end
+	else
+		log(LOG .. "missing plasma recipe: " .. name)
+	end
+end
+
+
+
+--------------------------------------------------------------------------------
 --- 2) GENERATORS
 --- A `generator` that burns fluids by fuel value (like the LV steam turbine), no filter, pass
 --- through north/south. max_power_output caps the tier; scale_fluid_usage makes the fluid usage
