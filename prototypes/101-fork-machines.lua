@@ -319,16 +319,47 @@ IV_BASIC_MACHINES = {
 	"canning-machine", "mixer", "ore-washer", "laser-engraver", "fluid-solidifier", "chemical-bath",
 	"polarizer", "circuit-assembler", "autoclave", "alloy-smelter", "compressor",
 }
---- Multiblocks that come as an upgrade of the EV version (same graphics as EV)
+--- Multiblocks that come as an upgrade of the EV version (graphics of the EV version with energy hatches of the tier)
 IV_UPGRADE_MACHINES = {
 	"electric-blast-furnace", "vacuum-freezer", "large-chemical-reactor", "microverse-projector",
 	"tall-distillation-tower", "short-distillation-tower", "implosion-compressor", "cracker",
 	"multismelter", "pyrolyse-oven", "greenhouse", "drilling-rig", "alloy-blast-smelter",
 }
 
+local UPGRADE_HATCHES = {}
+for _, base in pairs(IV_UPGRADE_MACHINES) do UPGRADE_HATCHES[base] = true end
+
+--- Upgrade multiblocks keep the EV sprite of their source; the GT energy hatches of their tier are an extra
+--- layer of the same size on it (<tier>-<base>-hatches.png from tools/gen_sprites.py, UPGRADE_MULTIBLOCKS).
+--- The copy of the previous tier brings that tier's layer along, it is replaced.
+local function set_tier_hatches(m, name)
+	for _, key in pairs({ "idle_animation", "animation" }) do
+		local anim = m.graphics_set and m.graphics_set[key]
+		if anim then
+			if not anim.layers then
+				anim = { layers = { anim } }
+				m.graphics_set[key] = anim
+			end
+			local layers = {}
+			for _, l in pairs(anim.layers) do
+				if not (l.filename or ""):match("%-hatches%.png$") then layers[#layers + 1] = l end
+			end
+			local b = layers[1]
+			layers[#layers + 1] = {
+				filename = SPRITE_PATH .. name .. "-hatches.png",
+				width = b.width, height = b.height, scale = b.scale, shift = b.shift,
+				frame_count = 1, repeat_count = (b.frame_count or 1) * (b.repeat_count or 1),
+				animation_speed = b.animation_speed,
+			}
+			anim.layers = layers
+		end
+	end
+end
+
 --- Create a machine one tier up (entity, item, recipe). Global so 110-fork-luv.lua can use it.
 function fork_make_tier_machine(base, from_tier, to_tier, sprite_frames, unlock_tech)
 	local src_name, new_name = from_tier .. "-" .. base, to_tier .. "-" .. base
+	local hatches = not sprite_frames and UPGRADE_HATCHES[base]
 	local src = data.raw["assembling-machine"][src_name]
 	if not src then log("FORK-MACHINE: no source machine " .. src_name) return end
 	local categories = table.deepcopy(src.crafting_categories)
@@ -339,14 +370,15 @@ function fork_make_tier_machine(base, from_tier, to_tier, sprite_frames, unlock_
 	end
 	categories = add_unique(categories, extra)
 
-	local icon = sprite_frames and ("__gregtorio-continued__/graphics/icons/fork/" .. new_name .. ".png") or nil
-	clone_machine{
+	local icon = (sprite_frames or hatches) and ("__gregtorio-continued__/graphics/icons/fork/" .. new_name .. ".png") or nil
+	local m = clone_machine{
 		name = new_name, source = src_name, categories = categories,
 		crafting_speed = src.crafting_speed * 2,
 		energy_usage = scale_energy(src.energy_usage, 2),
 		sprite = sprite_frames and { new_name, sprite_frames } or nil,
 		icon = icon,
 	}
+	if m and hatches then set_tier_hatches(m, new_name) end
 
 	--- Item
 	local src_item = data.raw.item[src_name]
