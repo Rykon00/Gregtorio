@@ -29,6 +29,12 @@ python tools/gen_review_sheet.py all                                           #
   Gregtorio icons, without mipmaps like the other fork icons): LuV to UXV components, voltage coils, the
   wetware, bio, optical, exotic and temporal circuits (GT's "temporally transcendent" line for the
   temporal one), wafers, power ICs, complex SMDs, fusion casings and coils, stargate parts, space coolant cells.
+* **Tier components** (motor, pump, conveyor module, piston, robot arm, emitter, sensor, field generator,
+  LuV to UXV): GT draws them in a single untinted pass (`GeneratedItemRenderer`: one icon, colour 1,1,1;
+  extra passes `gt.metaitem.01/<id>/<k>.png` exist only for battery-like items), made for Minecraft's light
+  grey slot: many are near-black greys or thin outlines (the conveyor module is a belt outline, the motor a
+  diagonal cylinder). On Factorio's dark slot they vanished, so the tool lifts their dark tones with a
+  gamma curve (0.6, keeps the tier colour) and gives them a 1 px light outline (`Composer.readable`).
 * **Materials** (ingot, hot ingot, plate, dense and superdense plate, foil, rod, long rod, gear, large
   gear, ring, bolt, screw, rotor, round, nugget, dust, fine wire, frame, turbine blade) are rendered the
   way GT does it: the icon of the material's GT icon set (falling back to `NONE`) multiplied with GT's
@@ -96,9 +102,9 @@ technology shows (174 technologies; the 6 ME technologies come from `gen_ae2_spr
 
 ## What to look at in game
 
-* The LuV+ components are GT's own textures, drawn differently from upstream's LV to IV components
-  (GT's motor is a diamond, the UHV parts are dark). Check that the step from IV to LuV in the crafting
-  menu is acceptable.
+* The LuV+ components are GT's own textures (lifted and outlined for the dark slot), drawn differently from
+  upstream's LV to IV components (GT's motor is a diagonal cylinder). Check that the step from IV to LuV in
+  the crafting menu is acceptable.
 * Dark GT materials (naquadah alloy, universium, transcendent metal, tritanium, cosmic neutronium) are
   dark in GT as well; check that they are readable on the inventory background.
 * Fusion reactors MK4/MK5 placed next to an MK3; the UHV to UXV machines in a row with a UV one; a row
@@ -113,62 +119,62 @@ technology shows (174 technologies; the 6 ME technologies come from `gen_ae2_spr
 
 | Item | Made from |
 |---|---|
-| `luv-conveyor-module` | GT item 01/635 |
-| `luv-emitter` | GT item 01/685 |
-| `luv-field-generator` | GT item 01/675 |
-| `luv-motor` | GT item 01/606 |
-| `luv-piston` | GT item 01/645 |
-| `luv-pump` | GT item 01/615 |
-| `luv-robot-arm` | GT item 01/655 |
-| `luv-sensor` | GT item 01/695 |
-| `uev-conveyor-module` | GT item 01/639 |
-| `uev-emitter` | GT item 01/689 |
-| `uev-field-generator` | GT item 01/679 |
-| `uev-motor` | GT item 01/595 |
-| `uev-piston` | GT item 01/649 |
-| `uev-pump` | GT item 01/619 |
-| `uev-robot-arm` | GT item 01/659 |
-| `uev-sensor` | GT item 01/699 |
-| `uhv-conveyor-module` | GT item 01/638 |
-| `uhv-emitter` | GT item 01/688 |
-| `uhv-field-generator` | GT item 01/678 |
-| `uhv-motor` | GT item 01/596 |
-| `uhv-piston` | GT item 01/648 |
-| `uhv-pump` | GT item 01/618 |
-| `uhv-robot-arm` | GT item 01/658 |
-| `uhv-sensor` | GT item 01/698 |
-| `uiv-conveyor-module` | GT item 01/29 |
-| `uiv-emitter` | GT item 01/37 |
-| `uiv-field-generator` | GT item 01/45 |
-| `uiv-motor` | GT item 01/17 |
-| `uiv-piston` | GT item 01/21 |
-| `uiv-pump` | GT item 01/25 |
-| `uiv-robot-arm` | GT item 01/33 |
-| `uiv-sensor` | GT item 01/41 |
-| `umv-conveyor-module` | GT item 01/30 |
-| `umv-emitter` | GT item 01/38 |
-| `umv-field-generator` | GT item 01/46 |
-| `umv-motor` | GT item 01/18 |
-| `umv-piston` | GT item 01/22 |
-| `umv-pump` | GT item 01/26 |
-| `umv-robot-arm` | GT item 01/34 |
-| `umv-sensor` | GT item 01/42 |
-| `uv-conveyor-module` | GT item 01/637 |
-| `uv-emitter` | GT item 01/687 |
-| `uv-field-generator` | GT item 01/677 |
-| `uv-motor` | GT item 01/608 |
-| `uv-piston` | GT item 01/647 |
-| `uv-pump` | GT item 01/617 |
-| `uv-robot-arm` | GT item 01/657 |
-| `uv-sensor` | GT item 01/697 |
-| `zpm-conveyor-module` | GT item 01/636 |
-| `zpm-emitter` | GT item 01/686 |
-| `zpm-field-generator` | GT item 01/676 |
-| `zpm-motor` | GT item 01/607 |
-| `zpm-piston` | GT item 01/646 |
-| `zpm-pump` | GT item 01/616 |
-| `zpm-robot-arm` | GT item 01/656 |
-| `zpm-sensor` | GT item 01/696 |
+| `luv-conveyor-module` | GT item 01/635, lifted for dark slots, light outline |
+| `luv-emitter` | GT item 01/685, lifted for dark slots, light outline |
+| `luv-field-generator` | GT item 01/675, lifted for dark slots, light outline |
+| `luv-motor` | GT item 01/606, lifted for dark slots, light outline |
+| `luv-piston` | GT item 01/645, lifted for dark slots, light outline |
+| `luv-pump` | GT item 01/615, lifted for dark slots, light outline |
+| `luv-robot-arm` | GT item 01/655, lifted for dark slots, light outline |
+| `luv-sensor` | GT item 01/695, lifted for dark slots, light outline |
+| `uev-conveyor-module` | GT item 01/639, lifted for dark slots, light outline |
+| `uev-emitter` | GT item 01/689, lifted for dark slots, light outline |
+| `uev-field-generator` | GT item 01/679, lifted for dark slots, light outline |
+| `uev-motor` | GT item 01/595, lifted for dark slots, light outline |
+| `uev-piston` | GT item 01/649, lifted for dark slots, light outline |
+| `uev-pump` | GT item 01/619, lifted for dark slots, light outline |
+| `uev-robot-arm` | GT item 01/659, lifted for dark slots, light outline |
+| `uev-sensor` | GT item 01/699, lifted for dark slots, light outline |
+| `uhv-conveyor-module` | GT item 01/638, lifted for dark slots, light outline |
+| `uhv-emitter` | GT item 01/688, lifted for dark slots, light outline |
+| `uhv-field-generator` | GT item 01/678, lifted for dark slots, light outline |
+| `uhv-motor` | GT item 01/596, lifted for dark slots, light outline |
+| `uhv-piston` | GT item 01/648, lifted for dark slots, light outline |
+| `uhv-pump` | GT item 01/618, lifted for dark slots, light outline |
+| `uhv-robot-arm` | GT item 01/658, lifted for dark slots, light outline |
+| `uhv-sensor` | GT item 01/698, lifted for dark slots, light outline |
+| `uiv-conveyor-module` | GT item 01/29, lifted for dark slots, light outline |
+| `uiv-emitter` | GT item 01/37, lifted for dark slots, light outline |
+| `uiv-field-generator` | GT item 01/45, lifted for dark slots, light outline |
+| `uiv-motor` | GT item 01/17, lifted for dark slots, light outline |
+| `uiv-piston` | GT item 01/21, lifted for dark slots, light outline |
+| `uiv-pump` | GT item 01/25, lifted for dark slots, light outline |
+| `uiv-robot-arm` | GT item 01/33, lifted for dark slots, light outline |
+| `uiv-sensor` | GT item 01/41, lifted for dark slots, light outline |
+| `umv-conveyor-module` | GT item 01/30, lifted for dark slots, light outline |
+| `umv-emitter` | GT item 01/38, lifted for dark slots, light outline |
+| `umv-field-generator` | GT item 01/46, lifted for dark slots, light outline |
+| `umv-motor` | GT item 01/18, lifted for dark slots, light outline |
+| `umv-piston` | GT item 01/22, lifted for dark slots, light outline |
+| `umv-pump` | GT item 01/26, lifted for dark slots, light outline |
+| `umv-robot-arm` | GT item 01/34, lifted for dark slots, light outline |
+| `umv-sensor` | GT item 01/42, lifted for dark slots, light outline |
+| `uv-conveyor-module` | GT item 01/637, lifted for dark slots, light outline |
+| `uv-emitter` | GT item 01/687, lifted for dark slots, light outline |
+| `uv-field-generator` | GT item 01/677, lifted for dark slots, light outline |
+| `uv-motor` | GT item 01/608, lifted for dark slots, light outline |
+| `uv-piston` | GT item 01/647, lifted for dark slots, light outline |
+| `uv-pump` | GT item 01/617, lifted for dark slots, light outline |
+| `uv-robot-arm` | GT item 01/657, lifted for dark slots, light outline |
+| `uv-sensor` | GT item 01/697, lifted for dark slots, light outline |
+| `zpm-conveyor-module` | GT item 01/636, lifted for dark slots, light outline |
+| `zpm-emitter` | GT item 01/686, lifted for dark slots, light outline |
+| `zpm-field-generator` | GT item 01/676, lifted for dark slots, light outline |
+| `zpm-motor` | GT item 01/607, lifted for dark slots, light outline |
+| `zpm-piston` | GT item 01/646, lifted for dark slots, light outline |
+| `zpm-pump` | GT item 01/616, lifted for dark slots, light outline |
+| `zpm-robot-arm` | GT item 01/656, lifted for dark slots, light outline |
+| `zpm-sensor` | GT item 01/696, lifted for dark slots, light outline |
 
 ### Casings, hulls and power hatches (34)
 
