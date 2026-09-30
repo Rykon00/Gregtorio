@@ -14,6 +14,7 @@ The repository root is the mod itself (`info.json`, `data.lua`, `prototypes/`, `
 | `prototypes/100-fork-fixes.lua` | missing unlocks and recipes, chicken-and-egg fixes |
 | `prototypes/101-fork-machines.lua` | tier categories, EV/IV machines and multiblocks, `fork_make_tier_machine` |
 | `prototypes/102-fork-resources.lua` | disables the vanilla resource patches (no spawning, not minable) |
+| `prototypes/103-fork-qol-techs.lua` | issue #29: the vanilla quality-of-life techs (bulk/stack inserter, inserter capacity bonus, express and turbo belts, belt capacity, worker robot speed and cargo size) gated onto Gregtorio techs with Gregtorio science packs, GT recipes for the inserters and belts they unlock |
 | `prototypes/110-fork-luv.lua` | LuV: materials, assembly line, LuV machines, science pack, techs |
 | `prototypes/120-fork-ae2.lua` | AE2 / ME network on top of the logistic network: ME Drives with storage cells, ME Interface, ME Terminal, ME Controller, techs |
 | `prototypes/121-fork-ae2-autocrafting.lua` | AE2 autocrafting: ME Pattern Provider, ME Molecular Assembler, ME Crafting CPU, tech `me-autocrafting` (guide: `docs/AE2.md`) |
@@ -22,12 +23,14 @@ The repository root is the mod itself (`info.json`, `data.lua`, `prototypes/`, `
 | `prototypes/126-fork-zpm.lua` | ZPM: naquadah alloy parts, europium, ZPM components, casing and hull, ZPM science pack, ZPM energy hatch, ZPM machines and multiblock upgrades, techs |
 | `prototypes/127-fork-uv.lua` | UV: naquadria, americium and neutronium (fusion), superconductors, UV circuit (crystal processor mainframe), ZPM assembly line, UV components, casing and hull, fusion reactor MK2 and its plasmas, UV science pack, UV energy hatch, UV machines and multiblock upgrades, techs |
 | `prototypes/128-fork-uhv.lua` | UHV: tritanium and the triamerotronium superconductor, the wetware line (UHV circuit), UHV components, casing and hull, fusion reactor MK3 with advanced fusion coils, UHV science pack, UHV energy hatch, UHV machines and multiblock upgrades, techs |
-| `prototypes/129-fork-water-purification.lua` | water purification plant (grades 1-6), europium/americium doped wafers, NPIC/PPIC/QPIC chips used by the ZPM/UV/UHV energy hatches and the MK2/MK3 controllers |
+| `prototypes/129-fork-water-purification.lua` | water purification plant (grades 1-8, quark creation catalyst), europium/americium doped wafers, NPIC/PPIC/QPIC/FPIC/APIC chips used by the ZPM to UXV energy and dynamo hatches and the MK2 to MK5 controllers, complex SMDs for the wetware to temporal circuit lines |
 | `prototypes/131-fork-uev.lua` | UEV: cosmic neutronium, draconium and infinity (fusion), dracofinium superconductor, bio line (UEV circuit), UEV components, casing and hull, fusion reactor MK4, UEV science pack, energy hatch, machines and multiblock upgrades, techs |
 | `prototypes/132-fork-uiv.lua` | UIV: transcendent metal (MK4), nether star cable, chromnorox superconductor, optical line (UIV circuit), UIV components, casing and hull, UIV science pack, energy hatch, machines and multiblock upgrades, techs |
 | `prototypes/133-fork-umv.lua` | fusion reactor MK5 (advanced fusion coil II, casing MK4, rhugnor, flerovium, energy module), spacetime (UMV metal) and universium (UXV metal) from the MK5, spacetime cable, hypocosmium superconductor, exotic line (UMV circuit), UMV components, casing and hull, UMV science pack, energy hatch, machines and multiblock upgrades, techs; also the helpers shared with 134 and 135 (global table `FORK5B`) |
 | `prototypes/134-fork-uxv.lua` | UXV: universium parts and cable, eternity superconductor, temporal line (UXV circuit), UXV components, casing and hull, UXV science pack, energy hatch, machines and multiblock upgrades, techs |
 | `prototypes/135-fork-endgame.lua` | endgame: the stargate and its parts from UXV parts, the MAX science pack, the tech `stargate` |
+| `prototypes/136-fork-power.lua` | endgame power: fuel values of the plasmas, large plasma turbines (LuV, ZPM, UV) with turbine output hatches for the cooled fluid, the naquadah fuel line (acid emulsion, emulsion, solution, light and heavy naquadah fuel, naquadah based fuel MK1 to MK3, the excited uranium and plutonium fuels), large naquadah reactors (UV to UXV), dynamo hatches LuV to UXV, techs |
+| `scripts/fork-power.lua` | the cooled fluid of the plasma turbines: the plasma a turbine burns (its energy, summed every tick) goes as the cooled fluid into the turbine output hatches next to it, one unit per unit |
 | `scripts/fork-victory.lua` | researching the first level of the tech `victory` wins the game (the game can be continued) |
 | `prototypes/150-fork-molds.lua` | molds stay in the machine: the mold is a module in a mold-only slot of alloy smelters, fluid solidifiers and extruders instead of an ingredient or machine component |
 | `scripts/fork-molds.lua` | stops machines with a mold recipe and no mold ("Missing mold"); gives machines their mold once in saves from before they had a mold slot |
@@ -35,6 +38,7 @@ The repository root is the mod itself (`info.json`, `data.lua`, `prototypes/`, `
 | `scripts/fork-me-terminal.lua` | runtime part of the ME network: terminal GUI (storage tab with items and fluids, crafting tab, event driven), ME Interface default, routes the fluid GUI events |
 | `scripts/fork-me-autocraft.lua` | autocrafting: patterns from provider-adjacent machines (item and fluid recipes), planner, jobs and crafting CPUs (bounded work every 20 ticks, fluid boxes filled and drained by index), remote interface `gregtorio-me-autocraft` |
 | `scripts/fork-me-fluids.lua` | fluids in the ME network: virtual per-drive storage (`storage.fork_me_fluids`), fluid interface import/export every 15 ticks, drive contents on the picked up item, drive and interface GUIs, remote interface `gregtorio-me-fluids` |
+| `prototypes/198-fork-crafting-menu.lua` | machine recipes in the crafting menu (issue #49): shows every recipe whose category has a machine (red background, like vanilla), except the allow-list `FORK_CRAFTING_MENU_HIDDEN` (fluid voiding, replaced vanilla recipes, recipes vanilla hides); startup setting `gregtorio-continued-show-machine-recipes` (`settings.lua`, default on) |
 | `prototypes/199-fork-finalize.lua` | draft guard (hides broken draft recipes) and auto-unlock of intermediates |
 | `locale/en/fork.cfg` | generated names for entries without a translation |
 | `tools/dev_link.py` | links the repo into the Factorio mods folder (working copy is loaded directly) |
@@ -64,7 +68,8 @@ The repository root is the mod itself (`info.json`, `data.lua`, `prototypes/`, `
 | UMV | playable (fork); exotic line and UMV circuit, UMV components, science pack, energy hatch and machines (see `docs/ROADMAP.md`) |
 | UXV | playable (fork); temporal line and UXV circuit, UXV components, science pack, energy hatch and machines (see `docs/ROADMAP.md`) |
 | MAX, stargate, victory | playable (fork); the stargate makes 1000 MAX science packs, the first level of `victory` wins the game. Balance of the last tiers is untested in the real game |
-| Drafts | the rest of the GTNH endgame chains (plasma generator, UU matter, water purification grades 7-8, ...) is draft; broken recipes are hidden on load (`FORK-DRAFT` in the log) |
+| Endgame power | playable (fork); plasma turbines from LuV, the naquadah fuel line and large naquadah reactors from UV, dynamo hatches LuV to UXV (see `docs/ROADMAP.md`, "Side quest: endgame power") |
+| Drafts | the rest of the GTNH endgame chains (UU matter, naquadah fuel MK4+, ...) is draft; broken recipes are hidden on load (`FORK-DRAFT` in the log) |
 
 ## Workflow
 

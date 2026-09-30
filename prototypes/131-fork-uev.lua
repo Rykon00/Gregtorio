@@ -311,8 +311,8 @@ create_item{
 --- 2 of the previous stage per circuit): stem cells -> bio cells -> bioware board + bio processing
 --- unit -> bio processor (takes wetware processors) -> assembly -> supercomputer -> mainframe.
 --- Changes against GT: bio cells are made from stem cells, mutagen and growth medium (GT: cosmic
---- neutronium dust), no complex SMDs (advanced ones, see the water purification file), no PCB factory
---- (the boards come from the wetware board), the mainframe uses the UHV superconductor.
+--- neutronium dust), no PCB factory (the boards come from the wetware board), the mainframe uses the
+--- UHV superconductor. Supercomputer and mainframe take complex SMDs like GT (129-fork-water-purification.lua).
 --------------------------------------------------------------------------------
 
 create_item{
@@ -410,7 +410,7 @@ create_recipe{
 	ingredients = {
 		{ type = "item", name = "bioware-printed-circuit-board", amount = 16 },
 		{ type = "item", name = "bio-processor-assembly", amount = 32 },
-		{ type = "item", name = "advanced-smd-inductor", amount = 8 },
+		{ type = "item", name = "complex-smd-inductor", amount = 2 },
 		{ type = "item", name = "nor-memory-chip-wrap", amount = 16 },
 		{ type = "item", name = "ram-chip-wrap", amount = 32 },
 		{ type = "item", name = "niobium-titanium-wire-4x", amount = 24 },
@@ -428,8 +428,8 @@ create_recipe{
 	ingredients = {
 		{ type = "item", name = "infinity-frame", amount = 16 },
 		{ type = "item", name = "bio-processor-supercomputer", amount = 32 },
-		{ type = "item", name = "advanced-smd-inductor-wrap", amount = 8 },
-		{ type = "item", name = "advanced-smd-capacitor-wrap", amount = 16 },
+		{ type = "item", name = "complex-smd-inductor", amount = 32 },
+		{ type = "item", name = "complex-smd-capacitor", amount = 64 },
 		{ type = "item", name = "ram-chip-wrap", amount = 32 },
 		{ type = "item", name = "cosmic-neutronium-plate", amount = 8 },
 		{ type = "item", name = "triamerotronium-superconductive-wire", amount = 16 },
@@ -581,7 +581,7 @@ create_item{
 ---   * casing MK3: category typo `uvh-...`; UU matter, cinobite, octiron and astral titanium ->
 ---     tritanium and cosmic neutronium melt, one UHV motor per casing (the draft: 2 motors and a
 ---     piston, 79 casings would have been 240 motors)
----   * the controller uses dracofinium wire (draft: triamerotronium) and QPIC wafers
+---   * the controller uses dracofinium wire (draft: triamerotronium) and FPIC wafers (GT)
 ---   * the reactor takes 16 advanced fusion coils (draft: 32; the MK3 takes 8): each needs a UHV
 ---     emitter and sensor
 ---   * superdense neutronium plate: 64 plates in the UHV compressor
@@ -621,7 +621,7 @@ redo("fusion-reactor-mk4-controller", {
 		{ type = "item", name = "uev-circuit", amount = 4 },
 		{ type = "item", name = "superdense-neutronium-plate", amount = 1 },
 		{ type = "item", name = "uhv-field-generator", amount = 2 },
-		{ type = "item", name = "qpic-wafer", amount = 48 },
+		{ type = "item", name = "fpic-wafer", amount = 48 },
 		{ type = "item", name = "dracofinium-superconductive-wire", amount = 64 },
 		{ type = "fluid", name = "molten-indalloy-140", amount = 288 },
 		{ type = "fluid", name = "molten-cosmic-neutronium", amount = 115.2 },
@@ -658,8 +658,8 @@ clone_multiblock{
 --- GT: the UEV coil is a magnetic samarium rod with 16 fine cosmic neutronium wires. The UEV blast
 --- furnace coil is awakened draconium (GT: draconium melt in a chemical bath); here it is built like
 --- the tritanium coil: wire, foil and a melt.
---- Energy hatch as in 128-fork-uhv.lua: cryogenic helium instead of coolant cells, QPICs instead of
---- FPICs (not built), no UU matter.
+--- Energy hatch as in 128-fork-uhv.lua: cryogenic helium instead of coolant cells, FPICs (GT), no UU
+--- matter.
 --------------------------------------------------------------------------------
 
 create_item{
@@ -689,7 +689,7 @@ create_item{
 	ingredients = {
 		{ type = "item", name = "uev-machine-hull", amount = 1 },
 		{ type = "item", name = "dracofinium-superconductive-wire", amount = 4 },
-		{ type = "item", name = "quantum-power-ic", amount = 4 },
+		{ type = "item", name = "femto-power-ic", amount = 4 },
 		{ type = "item", name = "uev-circuit", amount = 2 },
 		{ type = "item", name = "extremely-ultimate-voltage-coil", amount = 2 },
 		{ type = "item", name = "uev-pump", amount = 1 },
@@ -847,7 +847,7 @@ tech{
 	recipes = uev_machine_recipes,
 }
 tech{
-	name = "uev-energy-hatches", prerequisites = { "uev-machines" }, packs = 11, count = 3000,
+	name = "uev-energy-hatches", prerequisites = { "uev-machines", "femto-power-ics" }, packs = 11, count = 3000,
 	recipes = {
 		"hot-dracofinium-ingot", "dracofinium-ingot", "dracofinium-dust", "dracofinium-wire",
 		"dracofinium-superconductive-wire", "superconducting-coil-block-uev", "awakened-draconium-coil-block",
@@ -859,7 +859,7 @@ tech{
 	recipes = uev_multiblock_recipes,
 }
 tech{
-	name = "fusion-reactor-mk4", prerequisites = { "uev-energy-hatches", "pico-quantum-power-ics" }, packs = 11, count = 4000,
+	name = "fusion-reactor-mk4", prerequisites = { "uev-energy-hatches", "femto-power-ics" }, packs = 11, count = 4000,
 	recipes = { "superdense-neutronium-plate", "fusion-machine-casing-mk3", "fusion-reactor-mk4-controller",
 		"fusion-reactor-mk4" },
 }

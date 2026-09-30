@@ -1,0 +1,53 @@
+name: Balance feedback
+description: A recipe, machine, generator or technology is too expensive, too cheap, too slow or too strong.
+title: "[Balance] "
+labels: ["balance"]
+body:
+  - type: dropdown
+    id: tier
+    attributes:
+      label: Tier
+      options:
+        - Steam / ULV
+        - LV
+        - MV
+        - HV
+        - EV
+        - IV
+        - LuV
+        - ZPM
+        - UV
+        - UHV
+        - UEV
+        - UIV
+        - UMV
+        - UXV / endgame
+        - Not tier specific
+    validations:
+      required: true
+  - type: input
+    id: subject
+    attributes:
+      label: Recipe, machine or technology
+      placeholder: "e.g. UV motor, Large Naquadah Reactor, victory"
+    validations:
+      required: true
+  - type: textarea
+    id: problem
+    attributes:
+      label: What is off
+      description: Numbers help most (amounts, times, power, how long it took you).
+    validations:
+      required: true
+  - type: textarea
+    id: suggestion
+    attributes:
+      label: Suggestion
+      description: What would feel right? A GTNH reference is welcome.
+  - type: input
+    id: mod-version
+    attributes:
+      label: Gregtorio Continued version
+      placeholder: "0.3.0"
+    validations:
+      required: true

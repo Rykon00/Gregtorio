@@ -177,7 +177,8 @@ create_item{
 --- previous stage per circuit): optical fiber -> optical board + optical processing unit -> optical
 --- processor (takes bio processors) -> assembly -> supercomputer -> mainframe.
 --- Changes against GT: the optical fiber is a borosilicate glass part (GT: lumiium and chromatic glass),
---- no optical SMDs (advanced ones again), the mainframe uses the UEV superconductor.
+--- no optical SMDs (the processor keeps advanced ones; assembly, supercomputer and mainframe take
+--- complex SMDs like GT), the mainframe uses the UEV superconductor.
 --------------------------------------------------------------------------------
 
 create_item{
@@ -254,8 +255,8 @@ create_recipe{
 		{ type = "item", name = "optical-printed-circuit-board", amount = 16 },
 		{ type = "item", name = "optical-processor", amount = 32 },
 		{ type = "item", name = "ram-chip-wrap", amount = 24 },
-		{ type = "item", name = "advanced-smd-diode", amount = 8 },
-		{ type = "item", name = "advanced-smd-resistor", amount = 8 },
+		{ type = "item", name = "complex-smd-diode", amount = 2 },
+		{ type = "item", name = "complex-smd-resistor", amount = 2 },
 		{ type = "item", name = "niobium-titanium-wire-4x", amount = 16 },
 		{ type = "fluid", name = "molten-indalloy-140", amount = 28.8 },
 	},
@@ -269,7 +270,7 @@ create_recipe{
 	ingredients = {
 		{ type = "item", name = "optical-printed-circuit-board", amount = 16 },
 		{ type = "item", name = "optical-processor-assembly", amount = 32 },
-		{ type = "item", name = "advanced-smd-inductor", amount = 8 },
+		{ type = "item", name = "complex-smd-inductor", amount = 2 },
 		{ type = "item", name = "nor-memory-chip-wrap", amount = 16 },
 		{ type = "item", name = "ram-chip-wrap", amount = 32 },
 		{ type = "item", name = "niobium-titanium-wire-4x", amount = 24 },
@@ -287,8 +288,8 @@ create_recipe{
 	ingredients = {
 		{ type = "item", name = "transcendent-metal-frame", amount = 16 },
 		{ type = "item", name = "optical-processor-supercomputer", amount = 32 },
-		{ type = "item", name = "advanced-smd-inductor-wrap", amount = 8 },
-		{ type = "item", name = "advanced-smd-capacitor-wrap", amount = 16 },
+		{ type = "item", name = "complex-smd-inductor", amount = 32 },
+		{ type = "item", name = "complex-smd-capacitor", amount = 64 },
 		{ type = "item", name = "ram-chip-wrap", amount = 32 },
 		{ type = "item", name = "transcendent-metal-plate", amount = 8 },
 		{ type = "item", name = "dracofinium-superconductive-wire", amount = 16 },
@@ -436,8 +437,8 @@ create_item{
 --- GT: the UIV coil is a magnetic samarium rod with 16 fine transcendent metal wires. The UIV blast
 --- furnace coil is the infinity coil of the draft in 29-uev-age-item.lua (infinity wire, screws,
 --- cosmic neutronium foil, a UEV circuit; draconium melt instead of awakened draconium).
---- Energy hatch as in 131-fork-uev.lua: cryogenic helium instead of super coolant, QPICs instead of
---- APICs (twice as many, they stand in for the missing chip tier), no UU matter.
+--- Energy hatch as in 131-fork-uev.lua: cryogenic helium instead of super coolant, APICs (GT), no UU
+--- matter.
 --------------------------------------------------------------------------------
 
 create_item{
@@ -469,7 +470,7 @@ create_item{
 	ingredients = {
 		{ type = "item", name = "uiv-machine-hull", amount = 1 },
 		{ type = "item", name = "chromnorox-superconductive-wire", amount = 4 },
-		{ type = "item", name = "quantum-power-ic", amount = 8 },
+		{ type = "item", name = "atto-power-ic", amount = 4 },
 		{ type = "item", name = "uiv-circuit", amount = 2 },
 		{ type = "item", name = "insanely-ultimate-voltage-coil", amount = 2 },
 		{ type = "item", name = "uiv-pump", amount = 1 },
@@ -624,7 +625,7 @@ tech{
 	recipes = uiv_machine_recipes,
 }
 tech{
-	name = "uiv-energy-hatches", prerequisites = { "uiv-machines" }, packs = 12, count = 3500,
+	name = "uiv-energy-hatches", prerequisites = { "uiv-machines", "atto-power-ics" }, packs = 12, count = 3500,
 	recipes = {
 		"hot-chromnorox-ingot", "chromnorox-ingot", "chromnorox-dust", "chromnorox-wire",
 		"chromnorox-superconductive-wire", "superconducting-coil-block-uiv", "infinity-coil-block",
