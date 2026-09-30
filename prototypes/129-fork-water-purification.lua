@@ -1,20 +1,24 @@
 --------------------------------------------------------------------------------
---- FORK WATER PURIFICATION (roadmap phase 5a, side quest)
+--- FORK WATER PURIFICATION (roadmap phase 5a, side quest; grades 7 and 8: issue #35)
 --- The water line of GT (purified water grades 1-8) is a draft in 21-luv-age-item.lua that is
---- commented out (eight plant units with linkage blocks, recipes without wrappers). Phase 5a
---- needs it only as far as the doped wafers and the power ICs: grades 1 to 6.
+--- commented out (eight plant units with linkage blocks, recipes without wrappers).
 ---   * one water purification plant (5x5) instead of one multiblock per grade; the grades are its
 ---     recipes: water -> 1 (carbon filter) -> 2 (ozone) -> 3 (polyaluminium chloride)
----     -> 4 (acid/base) -> 5 (helium plasma) -> 6 (krypton plasma as the UV light); 90 % yield per grade like GT
+---     -> 4 (acid/base) -> 5 (helium plasma) -> 6 (krypton plasma as the UV light)
+---     -> 7 (degasifier: helium, a superconductor, neutronium melt, coolant)
+---     -> 8 (quark extraction: a quark creation catalyst); 90 % yield per grade like GT
 ---   * europium and americium doped boules and wafers (the boules had no recipe; they cut the wafers
 ---     with grade 4 and 6 water, the drafts in 11-lv-age-item.lua)
----   * NPIC, PPIC and QPIC wafers and chips. They replace the UHPIC workarounds of phases 2 to 4:
----     the ZPM, UV and UHV energy hatches, the MK2 and MK3 fusion controllers
---- Grades 7 (degasifier) and 8 (quark extraction) and the FPIC/APIC chips stay open: nothing in
---- UEV/UIV needs them.
+---   * NPIC, PPIC, QPIC, FPIC and APIC wafers and chips. They replace the UHPIC workarounds of
+---     phases 2 to 4 and the QPIC stand-ins of phases 5a and 5b: the ZPM to UXV energy (and dynamo)
+---     hatches, the MK2 to MK5 fusion controllers
+---   * complex SMDs (GT: nanochip assembly complex, not in the mod): UV assembling machine recipes
+---     from tritanium and neutronium parts; the wetware, bio, optical, exotic and temporal lines
+---     use them where GT uses complex SMDs
 --- Deviations from GT: no linkage blocks and no separate units, no plant casings (chemically inert,
---- filter and PTFE pipe casings instead), the flocculation waste, the lenses and the catalyst
---- items are left out, super coolant is not needed (helium plasma alone heats grade 5).
+--- filter and PTFE pipe casings instead), the flocculation waste, the lenses, the degasifier's
+--- control signals and the catalyst alignment are left out, super coolant is replaced by
+--- cryogenic helium (grade 7) or not needed (grade 5, helium plasma alone heats it).
 --- Wafers give 1 wafer per engraving (GT: 1 to 4), chips 2 per wafer like the UHPIC.
 --------------------------------------------------------------------------------
 
@@ -252,6 +256,52 @@ grade_recipe(6, 20, {
 	{ type = "fluid", name = "krypton-plasma", amount = 10 },
 }, {})
 
+--- Grade 7 (GT: degasifier, UHV). GT asks each cycle for one of helium, neon, krypton or xenon, a
+--- superconductor base melt, 32 ingots of neutronium melt and super coolant. Here one recipe with
+--- all of them: helium (GT: 10000 per cycle; neon, krypton and xenon come only from ender air,
+--- which no line makes), triamerotronium dust (the UHV superconductor; GT takes the melt), one ingot
+--- of neutronium melt and cryogenic helium instead of super coolant.
+grade_recipe(7, 25, {
+	{ type = "fluid", name = "grade-6-water", amount = 1000 },
+	{ type = "fluid", name = "helium", amount = 500 },
+	{ type = "fluid", name = "molten-neutronium", amount = 14.4 },
+	{ type = "fluid", name = "cryogenic-helium", amount = 100 },
+	{ type = "item", name = "triamerotronium-dust", amount = 1 },
+}, {})
+
+--- Grade 8 (GT: quark extraction, UEV). GT puts two of six aligned quark creation catalysts into the
+--- unit, gets two unaligned ones back and realigns them with the stable baryonic matter of the
+--- recipe. Here one quark creation catalyst (GT's catalyst housing, from the ZPM assembly line) that
+--- comes back like the carbon filter of grade 1: 9 of 10 crafts return it.
+create_item{
+	name = "quark-creation-catalyst",
+	category = "zpm-assembly-line-recipes",
+	energy_required = 60 * ZPM_SPEED,
+	subgroup = "subgroup-zpm-assembly-line-recipes",
+	stack_size = 16,
+	ingredients = {
+		{ type = "item", name = "neutronium-plate", amount = 16 },
+		{ type = "item", name = "infinity-plate", amount = 16 },
+		{ type = "item", name = "tritanium-plate", amount = 16 },
+		{ type = "item", name = "cosmic-neutronium-plate", amount = 16 },
+		{ type = "item", name = "fine-tritanium-wire", amount = 32 },
+		{ type = "item", name = "fine-cosmic-neutronium-wire", amount = 32 },
+		{ type = "item", name = "uhv-circuit", amount = 16 },
+		{ type = "item", name = "uev-circuit", amount = 8 },
+		{ type = "item", name = "uev-field-generator", amount = 1 },
+		{ type = "fluid", name = "molten-neutronium", amount = 230.4 },
+		{ type = "fluid", name = "molten-infinity", amount = 230.4 },
+		{ type = "fluid", name = "molten-tritanium", amount = 230.4 },
+		{ type = "fluid", name = "molten-cosmic-neutronium", amount = 230.4 },
+	},
+}
+grade_recipe(8, 30, {
+	{ type = "fluid", name = "grade-7-water", amount = 1000 },
+	{ type = "item", name = "quark-creation-catalyst", amount = 1 },
+}, {
+	{ type = "item", name = "quark-creation-catalyst", amount = 1, probability = 0.9 },
+})
+
 --- Upstream's ingredient of the doped wafers is 10 mB of grade 4 / 6 water per cut and 10 per
 --- engraving: leave as it is.
 
@@ -261,8 +311,11 @@ grade_recipe(6, 20, {
 --- 4) DOPED BOULES, WAFERS AND POWER ICs
 --- Boules: 64 poly-silicon, 8 ingots of the dopant, gallium arsenide and nitrogen like the
 --- phosphorus one; 96 (europium) and 128 (americium) wafers per boule.
---- NPIC wafer: europium wafer, PPIC and QPIC wafer: americium wafer, one engraving each; the
---- higher the grade of the water, the better the chip. Chips: 2 per wafer with lubricant, like the
+--- NPIC wafer: europium wafer, PPIC, QPIC, FPIC and APIC wafer: americium wafer, one engraving
+--- each; the higher the grade of the water, the better the chip. GT makes the FPIC in the beamline
+--- with a mask prepared from the QPIC mask with infinity catalyst: the FPIC wafer takes an infinity
+--- foil and grade 7 water. GT has no recipe for the APIC wafer (it is only an ingredient): grade 8
+--- water, an infinity and two cosmic neutronium foils. Chips: 2 per wafer with lubricant, like the
 --- UHPIC. The NAND memory wafer variants of the drafts get their europium / americium wafers now
 --- and are unlocked with them (the auto-unlock would have put them into the assembly line tech);
 --- the other draft variants (CPU, SoC ...) have a producer already and stay unreachable.
@@ -291,21 +344,30 @@ create_item{
 	},
 }
 
-local function pic_wafer(name, category_name, time, wafer, water)
+local function pic_wafer(name, category_name, time, wafer, water, extra)
+	local ingredients = {
+		{ type = "item", name = wafer, amount = 1 },
+		{ type = "fluid", name = water, amount = 10 },
+	}
+	for _, i in pairs(extra or {}) do ingredients[#ingredients + 1] = i end
 	create_item{
 		name = name,
 		category = category_name,
 		energy_required = time,
 		subgroup = "subgroup-luv-circuit-assembly-line-recipes",
-		ingredients = {
-			{ type = "item", name = wafer, amount = 1 },
-			{ type = "fluid", name = water, amount = 10 },
-		},
+		ingredients = ingredients,
 	}
 end
 pic_wafer("npic-wafer", "luv-laser-engraver-recipes", 5 * LUV_SPEED, "europium-doped-wafer", "grade-4-water")
 pic_wafer("ppic-wafer", "zpm-laser-engraver-recipes", 5 * ZPM_SPEED, "americium-doped-wafer", "grade-5-water")
 pic_wafer("qpic-wafer", "zpm-laser-engraver-recipes", 8 * ZPM_SPEED, "americium-doped-wafer", "grade-6-water")
+pic_wafer("fpic-wafer", "uhv-laser-engraver-recipes", 10 * UHV_SPEED, "americium-doped-wafer", "grade-7-water", {
+	{ type = "item", name = "infinity-foil", amount = 1 },
+})
+pic_wafer("apic-wafer", "uev-laser-engraver-recipes", 12 * UEV_SPEED, "americium-doped-wafer", "grade-8-water", {
+	{ type = "item", name = "infinity-foil", amount = 1 },
+	{ type = "item", name = "cosmic-neutronium-foil", amount = 2 },
+})
 
 local function pic_chip(name, category_name, time, wafer)
 	create_item{
@@ -323,19 +385,70 @@ end
 pic_chip("nano-power-ic", "luv-assembling-machine-recipes", 45 * LUV_SPEED, "npic-wafer")
 pic_chip("pico-power-ic", "zpm-assembling-machine-recipes", 45 * ZPM_SPEED, "ppic-wafer")
 pic_chip("quantum-power-ic", "zpm-assembling-machine-recipes", 45 * ZPM_SPEED, "qpic-wafer")
+pic_chip("femto-power-ic", "uhv-assembling-machine-recipes", 45 * UHV_SPEED, "fpic-wafer")
+pic_chip("atto-power-ic", "uev-assembling-machine-recipes", 45 * UEV_SPEED, "apic-wafer")
 
 
 
 --------------------------------------------------------------------------------
---- 5) THE WORKAROUNDS OF PHASES 2 TO 4
+--- 5) COMPLEX SMDs
+--- GT makes them in the nanochip assembly complex (a multiblock with modules and its own circuit
+--- components), which the mod does not have. Here they are UV assembling machine recipes shaped
+--- like the advanced SMDs of 19-iv-age-item.lua, one tier of materials up: tritanium foil and
+--- fine wire, neutronium screws and rings, polybenzimidazole. GT lets 4 complex SMDs replace 16
+--- advanced ones, so a craft gives 16 (the advanced recipes give 64) and the circuit recipes that
+--- switch take a quarter of the count.
+--------------------------------------------------------------------------------
+
+local function complex_smd(kind, ingredients)
+	ingredients[#ingredients + 1] = { type = "fluid", name = "polybenzimidazole", amount = 57.6 }
+	create_item{
+		name = "complex-smd-" .. kind,
+		category = "uv-assembling-machine-recipes",
+		energy_required = 15 * UV_SPEED,
+		subgroup = "subgroup-circuit-parts-assembler",
+		ingredients = ingredients,
+		results = { { type = "item", name = "complex-smd-" .. kind, amount = 16 } },
+	}
+end
+complex_smd("transistor", {
+	{ type = "item", name = "tritanium-foil", amount = 2 },
+	{ type = "item", name = "fine-tritanium-wire", amount = 16 },
+	{ type = "item", name = "neutronium-screw", amount = 4 },
+})
+complex_smd("resistor", {
+	{ type = "item", name = "graphene", amount = 4 },
+	{ type = "item", name = "fine-tritanium-wire", amount = 16 },
+})
+complex_smd("capacitor", {
+	{ type = "item", name = "thin-polybenzimidazole-sheet", amount = 8 },
+	{ type = "item", name = "tritanium-foil", amount = 2 },
+	{ type = "item", name = "neutronium-screw", amount = 4 },
+})
+complex_smd("diode", {
+	{ type = "item", name = "indium-gallium-phosphide", amount = 2 },
+	{ type = "item", name = "fine-tritanium-wire", amount = 16 },
+})
+complex_smd("inductor", {
+	{ type = "item", name = "neutronium-ring", amount = 1 },
+	{ type = "item", name = "fine-tritanium-wire", amount = 32 },
+	{ type = "item", name = "neutronium-screw", amount = 4 },
+})
+
+
+
+--------------------------------------------------------------------------------
+--- 6) THE WORKAROUNDS OF PHASES 2 TO 4
 ---   * ZPM energy hatch: NPICs instead of UHPICs (GT)
 ---   * UV energy hatch: PPICs (GT)
 ---   * UHV energy hatch: QPICs (GT)
 ---   * MK2 controller: NPIC wafers. GT uses PPIC wafers, but they need americium, which only the
 ---     MK2 reactor makes, so the NPIC wafer is the closest one that does not dead-end.
 ---   * MK3 controller: QPIC wafers (draft)
---- The wetware mainframe keeps its advanced SMDs: the complex SMDs come from GT's nanochip
---- assembly complex, which is not part of this mod.
+--- The later hatches and controllers are defined in 131 to 134 and use the FPIC (UEV hatch, MK4
+--- controller) and APIC (UIV hatch, MK5 controller; UMV and UXV hatches as the stand-in for GT's
+--- ZPIC and YPIC) there; the dynamo hatches of 136 copy the energy hatch recipes. The circuit lines
+--- (128, 131 to 133) use the complex SMDs of section 5.
 --------------------------------------------------------------------------------
 
 replace_ingredient("zpm-energy-hatch", "ultra-high-powered-integrated-circuit", "nano-power-ic", 4)
@@ -353,13 +466,21 @@ replace_ingredient("fusion-reactor-mk3-controller", "uhpic-wafer", "qpic-wafer",
 --- MK2 controller.
 --- pico-quantum-power-ics (ZPM science): grade 6 water (krypton plasma comes from the MK2 reactor),
 --- the americium wafer, PPIC and QPIC; needed by the UV and UHV hatches and the MK3 controller.
+--- complex-smds (UV science): tritanium and neutronium are UV materials; needed by the wetware
+--- mainframe (the UHV circuit).
+--- femto-power-ics (UHV science): grade 7 water (triamerotronium from the UHV hatch tech, neutronium),
+--- the FPIC (infinity foil from uev-materials); needed by the UEV hatch and the MK4 controller.
+--- atto-power-ics (UEV science): the quark creation catalyst (its UEV field generator takes UIV
+--- circuits, so it comes after the optical mainframe), grade 8 water, the APIC; needed by the UIV to
+--- UXV hatches and the MK5 controller.
 --------------------------------------------------------------------------------
 
 local function sci(n)
 	local packs = { "automation-science-pack", "logistic-science-pack", "military-science-pack",
 		"chemical-science-pack", "production-science-pack", "utility-science-pack", "space-science-pack",
-		"metallurgic-science-pack", "agricultural-science-pack", "electromagnetic-science-pack" }
-	local amounts = { SP10, SP09, SP08, SP07, SP06, SP05, SP04, SP03, SP02, SP01 }
+		"metallurgic-science-pack", "agricultural-science-pack", "electromagnetic-science-pack",
+		"cryogenic-science-pack" }
+	local amounts = { SP11, SP10, SP09, SP08, SP07, SP06, SP05, SP04, SP03, SP02, SP01 }
 	local out = {}
 	for i = 1, n do
 		out[#out + 1] = { packs[i], amounts[#amounts - n + i] }
@@ -406,6 +527,21 @@ tech{
 	recipes = { "grade-6-water", "americium-doped-monocrystaline-silicon-boule", "americium-doped-wafer", "ppic-wafer", "qpic-wafer",
 		"pico-power-ic", "quantum-power-ic", "nand-memory-wafer-ad" },
 }
+tech{
+	name = "complex-smds", prerequisites = { "uhv-materials" }, packs = 9, count = 2000,
+	recipes = { "complex-smd-transistor", "complex-smd-resistor", "complex-smd-capacitor", "complex-smd-diode",
+		"complex-smd-inductor" },
+}
+tech{
+	name = "femto-power-ics", prerequisites = { "pico-quantum-power-ics", "uhv-energy-hatches", "uev-materials" },
+	packs = 10, count = 3000,
+	recipes = { "grade-7-water", "fpic-wafer", "femto-power-ic" },
+}
+tech{
+	name = "atto-power-ics", prerequisites = { "femto-power-ics", "uev-machines", "optical-processor-mainframes" },
+	packs = 11, count = 3000,
+	recipes = { "quark-creation-catalyst", "grade-8-water", "apic-wafer", "atto-power-ic" },
+}
 
 --- The auto-unlock used to put the phosphorus NAND wafer into the assembly line tech (nothing else made
 --- NAND wafers); the explicit unlocks above would take that away, so it is bound to its tech here
@@ -424,3 +560,6 @@ add_prerequisite("fusion-reactor-mk2", "nano-power-ics")
 add_prerequisite("uv-energy-hatches", "pico-quantum-power-ics")
 add_prerequisite("uhv-energy-hatches", "pico-quantum-power-ics")
 add_prerequisite("fusion-reactor-mk3", "pico-quantum-power-ics")
+add_prerequisite("wetware-processor-mainframes", "complex-smds")
+--- uev-materials, uev-machines and the techs that use the FPIC and APIC are created in 131 to 134;
+--- those files list femto-power-ics / atto-power-ics / complex-smds as prerequisites themselves

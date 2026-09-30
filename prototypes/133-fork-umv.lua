@@ -268,15 +268,15 @@ function F.circuit_line(p)
 		{ type = "item", name = board, amount = 16 },
 		{ type = "item", name = proc, amount = 32 },
 		{ type = "item", name = "ram-chip-wrap", amount = 24 },
-		{ type = "item", name = "advanced-smd-diode", amount = 8 },
-		{ type = "item", name = "advanced-smd-resistor", amount = 8 },
+		{ type = "item", name = "complex-smd-diode", amount = 2 },
+		{ type = "item", name = "complex-smd-resistor", amount = 2 },
 		{ type = "item", name = "niobium-titanium-wire-4x", amount = 16 },
 		{ type = "fluid", name = "molten-indalloy-140", amount = 28.8 },
 	})
 	line(proc .. "-supercomputer", 480 * base, {
 		{ type = "item", name = board, amount = 16 },
 		{ type = "item", name = proc .. "-assembly", amount = 32 },
-		{ type = "item", name = "advanced-smd-inductor", amount = 8 },
+		{ type = "item", name = "complex-smd-inductor", amount = 2 },
 		{ type = "item", name = "nor-memory-chip-wrap", amount = 16 },
 		{ type = "item", name = "ram-chip-wrap", amount = 32 },
 		{ type = "item", name = "niobium-titanium-wire-4x", amount = 24 },
@@ -287,8 +287,8 @@ function F.circuit_line(p)
 	line(proc .. "-mainframe", 960 * base, {
 		{ type = "item", name = p.metal .. "-frame", amount = 16 },
 		{ type = "item", name = proc .. "-supercomputer", amount = 32 },
-		{ type = "item", name = "advanced-smd-inductor-wrap", amount = 8 },
-		{ type = "item", name = "advanced-smd-capacitor-wrap", amount = 16 },
+		{ type = "item", name = "complex-smd-inductor", amount = 32 },
+		{ type = "item", name = "complex-smd-capacitor", amount = 64 },
 		{ type = "item", name = "ram-chip-wrap", amount = 32 },
 		{ type = "item", name = p.metal .. "-plate", amount = 8 },
 		{ type = "item", name = p.sc_wire, amount = 16 },
@@ -430,8 +430,8 @@ end
 ---     draft is the advanced fusion coil, rhugnor plates
 ---   * casing MK4: naquadah alloy plates instead of blocks, rhugnor plates instead of chromatic
 ---     glass, one UIV motor (the draft: 2 UEV motors and a piston), rhugnor and flerovium melts
----   * controller: UEV field generators like the draft, UIV circuits, QPIC wafers (PICO wafers are not
----     built) and the chromnorox superconductor
+---   * controller: UEV field generators like the draft, UIV circuits, APIC wafers (GT) and the
+---     chromnorox superconductor
 ---   * the reactor takes 16 coils II (the draft: 32) like the MK4 takes 16 coils
 --- The MK5 makes spacetime and universium. Neither is needed to build it.
 --------------------------------------------------------------------------------
@@ -536,7 +536,7 @@ F.redo("fusion-reactor-mk5-controller", {
 		{ type = "item", name = "uiv-circuit", amount = 4 },
 		{ type = "item", name = "superdense-neutronium-plate", amount = 2 },
 		{ type = "item", name = "uev-field-generator", amount = 2 },
-		{ type = "item", name = "qpic-wafer", amount = 64 },
+		{ type = "item", name = "apic-wafer", amount = 64 },
 		{ type = "item", name = "chromnorox-superconductive-wire", amount = 64 },
 		{ type = "fluid", name = "molten-indalloy-140", amount = 288 },
 		{ type = "fluid", name = "molten-transcendent-metal", amount = 115.2 },
@@ -636,8 +636,9 @@ create_item{
 --- The optical line one step up: exotic board (optical board + spacetime foil), exotic processing
 --- unit (optical unit + a gravi star, 4 per craft), exotic processor (takes optical processors),
 --- assembly, supercomputer and the mainframe with the UIV superconductor.
---- Changes against GT: no exotic chips and optical SMDs (advanced SMDs again), wafers and
---- power ICs are not part of the line.
+--- Changes against GT: no exotic chips and optical SMDs (the processor takes advanced SMDs, assembly,
+--- supercomputer and mainframe complex SMDs like the optical line), wafers and power ICs are not part
+--- of the line.
 --------------------------------------------------------------------------------
 
 F.circuit_line{
@@ -668,8 +669,8 @@ F.components{
 --- 5) UMV VOLTAGE COIL, SPACETIME COIL AND UMV ENERGY HATCH
 --- GT: the UMV coil is a magnetic samarium rod with 16 fine spacetime wires. The UMV blast furnace
 --- coil is built like the infinity coil (spacetime wire and screws, transcendent metal foil, a UIV
---- circuit and a melt). Energy hatch as in 132-fork-uiv.lua: cryogenic helium, QPICs (twice as many as
---- in the UIV hatch: they stand in for the missing chip tier), no UU matter.
+--- circuit and a melt). Energy hatch as in 132-fork-uiv.lua: cryogenic helium, APICs (twice as many as
+--- in the UIV hatch: they stand in for GT's ZPIC, which is not built), no UU matter.
 --------------------------------------------------------------------------------
 
 create_item{
@@ -701,7 +702,7 @@ create_item{
 	ingredients = {
 		{ type = "item", name = "umv-machine-hull", amount = 1 },
 		{ type = "item", name = "hypocosmium-superconductive-wire", amount = 4 },
-		{ type = "item", name = "quantum-power-ic", amount = 16 },
+		{ type = "item", name = "atto-power-ic", amount = 8 },
 		{ type = "item", name = "umv-circuit", amount = 2 },
 		{ type = "item", name = "mega-ultimate-voltage-coil", amount = 2 },
 		{ type = "item", name = "umv-pump", amount = 1 },
@@ -793,7 +794,7 @@ do
 			"advanced-fusion-coil-ii" },
 	}
 	F.tech{
-		name = "fusion-reactor-mk5", prerequisites = { "fusion-coil-ii", "uiv-multiblocks" }, packs = 12, count = 3000,
+		name = "fusion-reactor-mk5", prerequisites = { "fusion-coil-ii", "uiv-multiblocks", "atto-power-ics" }, packs = 12, count = 3000,
 		recipes = { "fusion-machine-casing-mk4", "fusion-reactor-mk5-controller", "fusion-reactor-mk5" },
 	}
 	F.tech{
@@ -832,7 +833,7 @@ F.tech{
 	recipes = umv_machine_recipes,
 }
 F.tech{
-	name = "umv-energy-hatches", prerequisites = { "umv-machines" }, packs = 13, count = 3000,
+	name = "umv-energy-hatches", prerequisites = { "umv-machines", "atto-power-ics" }, packs = 13, count = 3000,
 	recipes = {
 		"hot-hypocosmium-ingot", "hypocosmium-ingot", "hypocosmium-dust", "hypocosmium-wire",
 		"hypocosmium-superconductive-wire", "superconducting-coil-block-umv", "spacetime-coil-block",

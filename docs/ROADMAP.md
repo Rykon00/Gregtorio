@@ -19,7 +19,7 @@ UEV = cryogenic, UIV = promethium, then UMV / UXV / max (the stargate).
 | 4 | UHV: wetware processors (UHV circuit), UHV components, fusion reactor MK3, UHV science pack, energy hatch and machines | **done** (`prototypes/128-fork-uhv.lua`) |
 | 5a | UEV and UIV: bio and optical lines, cosmic neutronium / draconium / infinity / transcendent metal, UEV and UIV components, fusion MK4, science packs, energy hatches and machines | **done** (`prototypes/131-fork-uev.lua`, `132-fork-uiv.lua`) |
 | 5b | UMV, UXV, MAX and the endgame (stargate, victory), fusion MK5 | **done** (`prototypes/133-fork-umv.lua`, `134-fork-uxv.lua`, `135-fork-endgame.lua`, `scripts/fork-victory.lua`) |
-| side | Water purification line: grades 1-6 done in `129-fork-water-purification.lua`; grades 7 (degasifier) and 8 (quark extraction) open | partly done |
+| side | Water purification line: grades 1-8, the NPIC to APIC chips and complex SMDs | **done** (`prototypes/129-fork-water-purification.lua`, see "Side quest: water purification grades 7 and 8") |
 | side | AE2 autocrafting (patterns, molecular assembler on top of the ME network from `120-fork-ae2.lua`) and fluids in the ME network (fluid drives, fluid interface, fluid recipes as patterns) | **done** (`prototypes/121-fork-ae2-autocrafting.lua`, `122-fork-ae2-fluids.lua`, `scripts/fork-me-autocraft.lua`, `scripts/fork-me-fluids.lua`, `docs/AE2.md`) |
 | side | Endgame power: plasma turbines, naquadah fuel line and large naquadah reactors, dynamo hatches LuV to UXV | **done** (`prototypes/136-fork-power.lua`, `scripts/fork-power.lua`, see "Side quest: endgame power") |
 | side | Graphics and balance of the tiers from UHV up in the real game | open |
@@ -341,8 +341,8 @@ in game.
   the MK4 and MK5 reactors (`fusion-reactor-mk4-controller` needs UEV circuits, `fusion-machine-casing-mk3` a category
   typo `uvh-...`, `advanced-fusion-coil-ii` the energy module), the UEV, UIV and UMV superconductor coil blocks,
   bio cells.
-- PPIC, NPIC and QPIC chips (water purification line) and complex SMDs: the MK3 controller, the ZPM to UHV hatches and
-  the wetware mainframe use UHPICs and advanced SMDs.
+- ~~PPIC, NPIC and QPIC chips (water purification line) and complex SMDs: the MK3 controller, the ZPM to UHV hatches and
+  the wetware mainframe use UHPICs and advanced SMDs.~~ Done in phase 5a and "Side quest: water purification grades 7 and 8".
 - ~~Plasmas (also iron plasma) are still only ingredients; there is no plasma generator.~~ Done in "Side quest: endgame power".
 - No fluxed electrum, draconium, cosmic neutronium or bedrockium: tritanium and triamerotronium stand in for them.
 - The UV energy hatch cooling and the UHV one use cryogenic helium; there are no super coolant cells (draft
@@ -474,7 +474,7 @@ The cosmic neutronium of a UEV part includes the 18 ingots of melt in its fluids
 
 - Fusion MK5: needs `advanced-fusion-coil-ii` (energy module, compact fusion coil, rhugnor plate), `fusion-machine-casing-mk4` (naquadah alloy block, chromatic
   glass) and molten rhugnor (infinity + molten quantum), which no line makes. The MK4 drafts `molten-rhugnor` and `molten-flerovium` (plutonium-241) stay drafts.
-- Water purification grades 7 and 8, FPIC/APIC chips, complex SMDs.
+- ~~Water purification grades 7 and 8, FPIC/APIC chips, complex SMDs.~~ Done, see "Side quest: water purification grades 7 and 8".
 - ~~Most plasmas (sulfur, nitrogen, zinc, niobium, tin, titanium, oxygen, neon, boron, calcium) are still only ingredients or unused; there is no plasma generator.~~ Done in "Side quest: endgame power".
 - No bedrockium, fluxed electrum, UU matter, quantium, attuned tengam, super coolant. The quantum force transformer, dimensional plasma forge, godforge
   and the rest of `29-uev-age-item.lua` / `31-uiv-age-item.lua` are for later.
@@ -635,10 +635,11 @@ Open (quality-of-life techs whose vanilla gate is disabled; either re-gate them 
 
 Side quests, in the order that helps the endgame most:
 
-1. Balance and graphics in the real game: the tier from UHV up (see the bottleneck tables of 4, 5a and 5b), the pack counts of the last techs, the QPIC counts, real
+1. Balance and graphics in the real game: the tier from UHV up (see the bottleneck tables of 4, 5a and 5b), the pack counts of the last techs, the power IC counts, real
    sprites for the MK4/MK5 reactors and the last machine tiers, real icons for the exotic/temporal lines and the stargate parts.
 2. ~~Plasma generator (GT plasma turbine)~~ (done, see "Side quest: endgame power").
-3. Water purification grades 7 (degasifier) and 8 (quark extraction), FPIC/APIC chips and complex SMDs, which would let the QPIC stand-ins of the UEV to UXV hatches go.
+3. ~~Water purification grades 7 (degasifier) and 8 (quark extraction), FPIC/APIC chips and complex SMDs, which would let the QPIC stand-ins of the UEV to UXV hatches go.~~
+   (done, see "Side quest: water purification grades 7 and 8").
 4. ~~AE2 autocrafting~~ (done, see "Side quest: AE2 autocrafting").
 5. The technologies of the final pass list: decide for each "open" one whether it gets a Gregtorio gate or is hidden.
 6. A MAX tier (MAX circuit, hatch, machines, and the GT items the stargate could take) if the endgame should go on after `victory`.
@@ -815,6 +816,96 @@ helium for its plasma after the update (`plasma turbine of the old save`).
   between the two plasmas.
 * The MK3 reactor and up make plasma far faster than the turbines burn it (one MK3 on iron plasma: 14.9 GW); higher tier
   turbines (UHV+, like GT++'s XL turbines) would use it.
+
+## Side quest: water purification grades 7 and 8 (done)
+
+Issue #35. Numbers: researchable technologies 329 -> 332 of 371 -> 374 (the 3 new ones), draft recipes hidden by the draft guard
+21 -> 21 (the `FORK-DRAFT` lines are identical), auto-unlocked recipes 54 -> 54 (the `FORK-AUTOUNLOCK` lines are identical), machines
+placed by `devcheck runtime` 510 -> 510 (no new machine; the new recipe test places 16 more above the grid), unlocked but uncraftable
+recipes 0. The tech-by-tech unlock diff against `origin/main` only adds the 12 recipes of the new techs; no unlock was lost or moved, no
+technology became unresearchable.
+
+Everything is in `prototypes/129-fork-water-purification.lua`; the hatches and controllers that take the new chips are changed where they
+are defined (131 to 134), and the dynamo hatches of 136 copy the energy hatch recipes, so they follow.
+
+New technologies:
+
+| Technology | Science | Prerequisites | Unlocks |
+|---|---|---|---|
+| `complex-smds` | UV | `uhv-materials` | complex SMD transistor, resistor, capacitor, diode, inductor |
+| `femto-power-ics` | UHV | `pico-quantum-power-ics`, `uhv-energy-hatches`, `uev-materials` | grade 7 water, FPIC wafer, Femto Power IC |
+| `atto-power-ics` | UEV | `femto-power-ics`, `uev-machines`, `optical-processor-mainframes` | quark creation catalyst, grade 8 water, APIC wafer, Atto Power IC |
+
+Changed prerequisites: `wetware-processor-mainframes` + `complex-smds`; `uev-energy-hatches` + `femto-power-ics`; `fusion-reactor-mk4`
+`femto-power-ics` instead of `pico-quantum-power-ics`; `uiv-energy-hatches`, `umv-energy-hatches`, `uxv-energy-hatches` and `fusion-reactor-mk5`
++ `atto-power-ics`.
+
+Recipes:
+
+- **Grade 7** (plant, 25 s): 1000 grade 6 water, 500 helium, 14.4 molten neutronium, 100 cryogenic helium, 1 triamerotronium dust -> 900.
+- **Grade 8** (plant, 30 s): 1000 grade 7 water and a quark creation catalyst, which comes back in 9 of 10 crafts -> 900. The catalyst (ZPM
+  assembly line, 1 min) is GT's catalyst housing: 16 plates each of neutronium, infinity, tritanium and cosmic neutronium, 32 fine tritanium
+  and cosmic neutronium wires, 16 UHV and 8 UEV circuits, a UEV field generator, 16 ingots of melt each of the four metals.
+- **FPIC wafer** (UHV laser engraver): americium doped wafer, infinity foil, 10 grade 7 water. **APIC wafer** (UEV laser engraver):
+  americium doped wafer, infinity foil, 2 cosmic neutronium foils, 10 grade 8 water. **Chips**: 2 per wafer with lubricant (UHV / UEV
+  assembling machine), like the NPIC to QPIC.
+- **Complex SMDs** (UV assembling machine, 15 s, 16 per craft, 57.6 polybenzimidazole each): transistor = 2 tritanium foils, 16 fine
+  tritanium wires, 4 neutronium screws; resistor = 4 graphene, 16 fine tritanium wires; capacitor = 8 thin PBI sheets, 2 tritanium foils,
+  4 neutronium screws; diode = 2 indium gallium phosphide, 16 fine tritanium wires; inductor = neutronium ring, 32 fine tritanium wires,
+  4 neutronium screws.
+
+Where the chips go (GT: 2 chips of the tier per hatch; the fork has used 4 since phase 5a):
+
+| Recipe | Before | Now | GT |
+|---|---|---|---|
+| UEV energy / dynamo hatch | 4 QPIC | 4 FPIC | 2 FPIC |
+| UIV energy / dynamo hatch | 8 QPIC | 4 APIC | 2 APIC |
+| UMV energy / dynamo hatch | 16 QPIC | 8 APIC | 2 ZPIC (not built) |
+| UXV energy / dynamo hatch | 32 QPIC | 16 APIC | 2 YPIC (not built) |
+| MK4 controller | 48 QPIC wafers | 48 FPIC wafers | 64 FPIC wafers |
+| MK5 controller | 64 QPIC wafers | 64 APIC wafers | 64 APIC wafers |
+
+Unchanged on purpose: the MK2 controller keeps NPIC wafers (GT: PPIC; the americium they need comes from the MK2 itself), the MK3 controller
+QPIC wafers and the ZPM/UV/UHV hatches NPIC/PPIC/QPIC are GT's, the energy module keeps UHPIC wafers (GT: ASOC wafers, not a power IC).
+
+Complex SMDs replace advanced SMDs in the recipes GT builds with them (GT takes 4 complex SMDs instead of 16 advanced ones, so the counts are
+a quarter): wetware mainframe (32 inductors, 64 capacitors instead of 8 inductor and 16 capacitor wraps), bio supercomputer and mainframe,
+optical assembly, supercomputer and mainframe. The exotic and temporal lines (133 and 134, no GT recipe with SMDs) follow the optical line.
+The processors and the wetware and bio assemblies keep advanced SMDs, as in GT.
+
+Choices and deviations from GT:
+
+- **One plant, one recipe per grade**, no linkage blocks, 90 % yield like grades 1-6. The degasifier's control signals (one random inert gas,
+  a superconductor, a catalyst and coolant per cycle) become one recipe with all of them; the gas is helium (GT: helium 10 000, neon 7500,
+  krypton 5000 or xenon 2500 per cycle), because neon, krypton and xenon come only from liquid ender air, which no line makes. Super coolant
+  is cryogenic helium (like the UV to UXV hatches); the superconductor is triamerotronium dust (GT: the base melt of the UHV superconductor).
+- **Quark extraction without catalyst alignment.** GT puts two of six aligned quark catalysts in, gets two unaligned ones and stable baryonic
+  matter out, and realigns them in a laser engraver (the first ones come from the plasma forge, UMV). Here one reusable catalyst item (GT's
+  housing recipe) that breaks in 1 of 10 crafts; no baryonic matter. One catalyst lasts about 9000 grade 8 water, 900 APIC wafers.
+- **FPIC and APIC wafers** follow the NPIC to QPIC pattern (americium doped wafer + purified water in the laser engraver). GT engraves the FPIC
+  with a beamline mask prepared from the QPIC mask with infinity catalyst (hence the infinity foil); GT5-Unofficial has no recipe that makes the
+  APIC wafer, so its extra foils are invented. Grade 7 and 8 water appear here and not elsewhere: GT uses them for the neutron accelerators and
+  plasma forge recipes, which the mod does not have.
+- **Tier placement.** Grade 7 needs triamerotronium (`uhv-energy-hatches`) and the FPIC an infinity foil (`uev-materials`), both UHV science.
+  Grade 8's catalyst needs a UEV field generator, which takes UIV circuits since phase 5a, so `atto-power-ics` comes after the optical mainframe
+  (UEV science). The UIV hatch techs need the UIV circuit anyway.
+- **Complex SMDs** come from the UV assembling machine (GT: nanochip assembly complex with its own circuit components, not in the mod), shaped
+  like the advanced SMD recipes one tier of materials up. They are UV science so the UHV circuit (wetware mainframe) can use them.
+
+Existing saves:
+
+- `uev-energy-hatch`, `uiv-energy-hatch`, `umv-energy-hatch`, `uxv-energy-hatch` (and their dynamo hatches), `fusion-reactor-mk4-controller`,
+  `fusion-reactor-mk5-controller` and the circuit recipes above changed ingredients. They stay unlocked by their techs; saves that researched
+  them need `femto-power-ics` / `atto-power-ics` / `complex-smds` before they can craft them again (same as in phase 5a). Researched techs stay
+  researched when they get a new prerequisite.
+- Everything else only adds recipes and techs. `migrate --from-ref 0e935ba`, `--from-ref v0.3.0` and `--from-ref origin/main` load.
+
+Tests: `devcheck check` lists the 12 new recipes in `REQUIRED_RECIPES` (unlocked by a researchable tech, products obtainable); `devcheck runtime`
+crafts grades 7 and 8, the wafers and chips, the five complex SMDs, the catalyst, the UEV and UIV energy hatches, the MK4 controller and the wetware
+mainframe once each in a real machine (`recipe test: ok`).
+
+Open: the icons of the new items and techs are recolored placeholders (`tools/gen_icons.py`); balance (catalyst life, SMD and chip costs) is
+untested in the real game.
 
 ## Side quest: AE2 autocrafting (done)
 
