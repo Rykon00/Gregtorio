@@ -8,6 +8,8 @@ Version: 0.3.2
     - The UHV to UXV dynamo hatches are also unlocked by the plasma turbine technology of their tier.
     - Plutonium based liquid fuel takes one high density plutonium (like GregTech) instead of 64 plutonium 239 dust.
     - Removed draft content that could never be made and that belongs to other mods (Thaumcraft infused gold, thaumium, magic essence, void and shadow metal, ichorium; force, astral titanium and runite plasma; the atomic separation catalyst, orundum and the naquadah fuel cracking).
+    - ME Fluid Drives: recovered fluid flows into the fluid drives of its network by itself as soon as they have room (for example after an export), not only into a newly placed drive. The chat reports it once when all of it is back.
+    - ME Fluid Drives: upgrading a loaded drive (upgrade planner with robots, or fast replace by hand) moves its fluid into the new drive; what does not fit goes into the network, the rest becomes recovered fluid. The old drive item comes back empty.
   Balancing:
     - Fusion power: one Fusion Reactor MK1 makes about 1 GW of helium plasma (12.5 per second, 12 LuV plasma turbines) instead of 5.12 GW; an MK2 makes about 2 GW, an MK3 about 4 GW. The cheap plasmas give 11x to 17x the energy of their whole input chain instead of up to 70x.
     - Helium-3: 50 per compressed end stone in 200 s instead of 100 in 40 s.

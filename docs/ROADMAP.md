@@ -1305,9 +1305,13 @@ Numbers: researchable technologies 317 -> 319 of 359 -> 361 (the two new ones), 
   level applies to the interface's own box (connected pipes share it). The fluid GUIs are untested in the real game.
 * Recovery (issue #26, done): a destroyed drive's fluid goes into the other drives of its network, the rest is kept as recovered
   fluid (per surface, with its position) that the next drive placed in that network (or the drive GUI's Take over button) takes
-  over; reported in the chat. The disassembly recipe is hand crafting only and recovers the fluid of a loaded item. Open: existing
-  drives do not pull recovered fluid in by themselves; the upgrade planner leaves the fluid on the old item instead of moving it
-  into the new drive; the hand craft and cancel events and the chat reports are untested in the real game.
+  over; reported in the chat. The disassembly recipe is hand crafting only and recovers the fluid of a loaded item.
+* Recovery follow-up (issue #43, done): the drives of a network pull its recovered fluid in by themselves when they have room (fluid
+  step, 4 entries per step, round robin, reported once per entry); upgrading a loaded drive (upgrade planner with robots or on a
+  platform, fast replace by hand) moves its fluid into the new drive, the rest into the network, then into the recovered fluid, and
+  the old item carries none. Old and new drive are linked by spot and tick (`to_be_upgraded()` for robots, `on_pre_build` for the
+  hand path; see `docs/AE2.md`, "Upgrades"). Open: the hand fast replace, the hand craft and cancel events and the chat reports are
+  untested in the real game (the headless run has no player).
 * Only normal quality; no items with own data; no spoilage in the job pool.
 * Furnaces (issue #27, done): the pattern provider holds a recipe choice for the furnaces next to it (window on the "open" key:
   researched recipes of their categories), a pattern at once without a first smelt; copied by settings paste, blueprints and
