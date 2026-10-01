@@ -9,7 +9,7 @@ researchable, every unlocked recipe can be made, and everything unfinished stays
 draft (`FORK-DRAFT` in the log). Checked with `tools/devcheck` (see its README).
 
 Science packs: LuV = space, ZPM = metallurgic, UV = agricultural, UHV = electromagnetic,
-UEV = cryogenic, UIV = promethium, then UMV / UXV / max (the stargate).
+UEV = cryogenic, UIV = promethium, then UMV / UXV / max (the stargate; since phase 6b also from MAX parts).
 
 | Phase | Content | Status |
 |---|---|---|
@@ -26,7 +26,7 @@ UEV = cryogenic, UIV = promethium, then UMV / UXV / max (the stargate).
 | side | Drafts and endgame materials: triage of every draft, super coolant, fluxed electrum, bedrockium, quantium (issues #39, #36) | **done** (`prototypes/137-fork-endgame-materials.lua`, see "Drafts and endgame materials") |
 | side | Graphics: item and technology icons from GT textures instead of placeholders, own sprites for fusion MK4/MK5, a tier look for the UHV to UXV machines, plasma turbines and naquadah reactors (issues #40, #41) | **done** (`tools/gen_gt_icons.py`, `tools/gen_sprites.py`, review sheets and inventory in `docs/graphics-review/`) |
 | 6a | Quantum force transformer and dimensionally transcendent plasma forge (issue #37, part 1) | **done** (`prototypes/139-fork-endgame-multiblocks.lua`, see "Phase 6a: QFT and DTPF") |
-| 6b | MAX tier and the godforge (issue #37, part 2) | open (hooks in "Phase 6a: QFT and DTPF") |
+| 6b | MAX tier and the godforge (issue #37, part 2) | **done** (`prototypes/140-fork-godforge.lua`, `141-fork-max.lua`, see "Phase 6b: MAX tier and godforge") |
 | side | Balance of the tiers from UHV up in the real game, and a look at the new graphics there | open |
 
 ## Phase 1: LuV (done)
@@ -1846,13 +1846,15 @@ or the MAX tier (marked `6b hook` in `139-fork-endgame-multiblocks.lua` where th
 
 1. **Universium in the DTPF** (`molten-universium-dtpf-crude`, `-resplendent`): GT makes universium in the godforge and the eye of
    harmony, not in the DTPF. Here it is a DTPF recipe from spacetime and flerovium (the inputs of the MK5 recipe). 6b decides
-   whether the godforge takes over; the recipes keep their names for saves.
+   whether the godforge takes over; the recipes keep their names for saves. *(6b: the godforge's molten module makes universium too;
+   the DTPF recipes stay as the pre-victory route.)*
 2. **Stellar catalyst**: GT's top DTPF tier needs raw star matter (a godforge product), its exotic tier americium and bismuth plasma.
-   The resplendent catalyst is the top tier here; 6b can add the stellar one and a third recipe tier.
+   The resplendent catalyst is the top tier here; 6b can add the stellar one and a third recipe tier. *(6b: done, `dtpf-stellar-catalyst`.)*
 3. **MAX recipes of the DTPF and the QFT**, not built: timepiece, time and space conversion, chipped amalgatite (DTPF, MAX), the
-   temporal harmony recipe (QFT: shirabon and eternity from a universium nanite and a timepiece).
+   temporal harmony recipe (QFT: shirabon and eternity from a universium nanite and a timepiece). *(6b: still not built, their
+   materials do not exist.)*
 4. **The eye of harmony** takes four plasma forges (and four godforges) in GT: the item `dimensionally-transcendent-plasma-forge`
-   is ready for that recipe.
+   is ready for that recipe. *(6b: the eye of harmony is not built, see "Phase 6b".)*
 
 ### Numbers
 
@@ -1878,4 +1880,186 @@ Saves from 0.3.2 load (`migrate --from-ref v0.3.2`).
   (platinum group dusts for a fraction of the platinum line) are too strong at UMV; the levers are `DTPF_INPUT`, `DTPF_TIME` and the
   catalyst amounts at the top of the DTPF part of `139-fork-endgame-multiblocks.lua`.
 - The QFT recipes GT has but the mod lacks materials for (see above); a rare earth recipe for the mod's rare earth (I) line.
-- 6b: the hooks above.
+- ~~6b: the hooks above~~ (see "Phase 6b: MAX tier and godforge").
+
+## Phase 6b: MAX tier and godforge (issue #37, part 2)
+
+What comes after the win: GT's Forge of the Gods (TecTech `MTEForgeOfGods` and its four modules) and a MAX tier on top of it, both
+on MAX science (the packs of the stargate). `victory` stays the win condition and is unchanged. Content in two new files, loaded
+after 139 and before 138 (which sets their unit counts): `prototypes/140-fork-godforge.lua` and `prototypes/141-fork-max.lua`.
+Sources: GT5-Unofficial (TecTech `godforge/`, `Godforge.java`, `ResearchStationAssemblyLine.java`, `BECRecipes.java`,
+`MTEExoticModule`, `MTEEyeOfHarmony`, `MixerRecipes`/`LaserEngraverRecipes` for the stellar catalyst), the core mod
+(`DTPFRecipes`, `ScriptNanochipRecipes` for the Planck circuit, `ScriptGregtechPlusPlus` for the QFT's temporal harmony) and the
+drafts `80-umv-age-item.lua` and `90-uxv-age-item.lua` (not loaded).
+
+### Post-victory and the long-term sink
+
+* **Gate.** `victory` is an infinite technology, and Factorio counts an infinite technology as researched for prerequisites only at
+  its last level (checked headless: after level 1 a technology that needs it is still not accepted). So the 6b technologies follow
+  `stargate` and need MAX packs. The MAX packs come from the stargate (1000 per stargate); level 1 of `victory` takes 15 of them, so
+  in practice the first stargate wins the game and the rest of its packs start 6b. Researching `victory` is unchanged in old and new
+  saves (the runtime test still wins the game, then researches a post-victory technology).
+* **Sink.** Two infinite technologies: the further levels of `victory` (unchanged, `15 * 2^(L-1)`), and **`godforge-upgrades`** (GT's
+  graviton shard upgrades): every level gives the godforge's star matter, universium and magmatter recipes +5 % productivity (up to the
+  engine's +300 %), `55 * 2^(L-1)` units, level 1 about 8 hours. Both eat MAX packs, and the second MAX pack recipe (below) makes MAX
+  packs a product of the MAX tier and the godforge, so the sink keeps the whole endgame running.
+
+### Content
+
+| Technology | Prerequisites | Units | Unlocks |
+|---|---|---|---|
+| `godforge` | `stargate`, `dtpf-resplendent-catalyst` | 55 | stellar energy siphon casing, singularity reinforced stellar shielding casing, remote graviton flow modulator, godforge controller, the godforge; raw star matter; lead, thorium and naquadria plasma (plasma module) |
+| `godforge-molten-module` | `godforge` | 55 | universium in the godforge |
+| `godforge-exotic-module` | `godforge-molten-module` | 55 | time and space from spacetime, the 7 magmatter recipes |
+| `dtpf-stellar-catalyst` | `godforge` | 55 | stellar catalyst, the six stellar metal recipes of the plasma forge |
+| `godforge-upgrades` (infinite) | `godforge-exotic-module` | `55 * 2^(L-1)` | +5 % productivity per level for raw star matter, godforge universium and magmatter |
+| `max-materials` | `godforge-exotic-module` | 55 | magmatter parts (ingot, plate, rods, frame, gears, ring, round, screw, rotor, wires, foil), magmatter cable |
+| `planck-processors` | `max-materials` | 55 | Planck board, processing unit, processor, assembly, supercomputer |
+| `planck-processor-mainframes` | `planck-processors` | 55 | the Planck processor mainframe (= `max-circuit`) |
+| `max-components` | `planck-processor-mainframes` | 55 | MAX motor, pump, conveyor module, piston, robot arm, emitter, sensor, field generator, MAX casing and hull, the MAX science pack from MAX parts |
+| `max-machines` | `max-components` | 55 | the 23 basic machines one tier up |
+| `max-energy-hatches` | `max-machines` | 55 | maximum voltage coil, MAX energy hatch |
+| `max-multiblocks` | `max-energy-hatches` | 55 | the 13 multiblock upgrades |
+| `max-plasma-turbine` | `max-energy-hatches`, `uxv-plasma-turbine` | 55 | MAX dynamo hatch, MAX large plasma turbine |
+
+All with the 15 packs up to MAX, 60 s per unit. Machines:
+
+| Machine | Size | Tier | Power | Speed | Technology | Recipe |
+|---|---|---|---|---|---|---|
+| godforge | 13x13 | UXV | 2621.44 MW (one UXV amp) | 4096 | `godforge` | UXV assembler, 5 min: controller, 64 shielding casings, 8 siphon casings, 4 graviton flow modulators, 2 UXV energy hatches, 8 UXV hulls |
+| MAX basic machines (23) | 3x3 | MAX | twice the UXV machine (MAX assembler 1.97 GW) | 8192 | `max-machines` | the UXV recipe with every tiered part one tier up (`fork_make_tier_machine`) |
+| MAX multiblock upgrades (13) | as the EV version | MAX | twice the UXV one (MAX EBF 4.92 GW) | 8192 | `max-multiblocks` | the UXV multiblock with MAX parts |
+| MAX large plasma turbine | 3x3 | MAX | makes up to 20 971.52 MW (four MAX amps) | - | `max-plasma-turbine` | upgrade of the UXV turbine with the MAX dynamo hatch and a MAX hull (the old hatch and hull come back) |
+
+The godforge has five fluid inputs north, one west and two outputs south, like the plasma forge. The MAX turbine is in the mod data of
+`136-fork-power.lua`, so the fuel check and the turbine output hatch work for it.
+
+**Godforge recipes** (category `godforge-recipes`; every recipe but the star matter burns 0.25 raw star matter per second of godforge
+time, GT's star fuel):
+
+| Recipe | Inputs | Output | Time | Module (GT) |
+|---|---|---|---|---|
+| raw star matter | 1000 hydrogen, 1000 helium, 10 crude catalyst | 100 raw star matter | 20 s | eye of harmony in GT |
+| lead / thorium plasma | 1 lead ingot / 1 thorium dust | 144 plasma | 1 s | plasma module, tier 0 |
+| naquadria plasma | 144 molten naquadria | 144 plasma | 10 s | plasma module, tier 1 |
+| universium | 144 spacetime, 144 flerovium | 288 universium | 1.25 s | eye of harmony in GT |
+| time and space | 288 molten spacetime | 144 tachyon rich temporal fluid, 144 spatially enlarged fluid | 10 s | GT: centrifuge from tesseracts |
+| magmatter (7: from neutronium, tritanium, cosmic neutronium, draconium, infinity, rhugnor, flerovium) | 1000 molten metal, 7 of each fluid | 80 molten magmatter | 20 s | exotic module, magmatter mode |
+
+**Stellar catalyst** (the 6b hook of 139): in the plasma forge, 100 resplendent catalyst, 100 lead plasma, 100 thorium plasma, 10
+naquadria plasma and 2.5 raw star matter -> 100 stellar catalyst in 20 s (GT: 1000 exotic catalyst, 1000 lead and thorium plasma,
+100 naquadria plasma, 25 raw star matter). Its six metal recipes make four times the crude batch (576) in the same time, for 0.25
+stellar catalyst per second of MK5 time (crude 1.5, resplendent 0.5).
+
+**MAX tier.** Magmatter is the MAX metal: its parts come from the UXV machines (`F.metal`), like every metal comes from the tier below.
+The Planck line is the temporal line one step up (circuit assembly line, 16 per craft, 10 % slower), its mainframe uses the eternity
+superconductor (UXV). The MAX components are the UXV recipes with magmatter and magmatter cable (`F.components`: universium plates in
+the pump, MAX/UXV/UMV circuits in the robot arm, 8 MAX circuits in the field generator), a minute each in the ZPM assembly line. The
+maximum voltage coil is a magnetic samarium rod with 16 fine magmatter wires (MAX assembler); the MAX energy and dynamo hatch take a
+MAX hull, 8 eternity superconductor wires, 32 APICs, 2 MAX circuits, 2 coils, a MAX pump, super coolant and indalloy. The second MAX
+science pack recipe (`max-science-pack-from-magmatter`, UXV assembler) takes a MAX motor, 2 MAX circuits, 4 magmatter plates, 4 eternal
+coils, a UXV field generator and 144 molten magmatter and makes 100 packs; the stargate recipe stays.
+
+New fluids: raw star matter, lead, thorium and naquadria plasma (no fuel value: the turbines do not burn them), tachyon rich temporal
+fluid, spatially enlarged fluid, molten magmatter, the stellar catalyst. New items: 15 magmatter parts and the cable, 6 Planck items
+(`max-circuit` included), 8 MAX components, MAX casing, hull, energy hatch, dynamo hatch, the maximum voltage coil, the 4 godforge parts
+and the godforge, the 36 MAX machines and the MAX turbine.
+
+### Deviations from GT
+
+- **The godforge is one entity.** GT's controller only holds the star; up to 16 modules (smelting, molten, plasma, exotic) do the work,
+  each a multiblock of its own, powered by wireless EU, and 31 upgrades bought with 112 graviton shards (from four milestones: EU used,
+  recipes run, fuel burnt, structure) unlock the modules, rings, heat, parallels and voltage. Here one 13x13 machine runs every module's
+  recipes; the modules are three technologies (forge with the plasma module, molten module, exotic module) and the upgrades one infinite
+  technology (`godforge-upgrades`, productivity). No heat, fuel factor, rings, milestones or shards; power through the energy hatches in
+  its recipe like the plasma forge. GT's smelting module and the molten module's EBF copies are not built (the MAX EBF covers them).
+- **Fuel.** GT's star burns residue, raw star matter or MHDCSM per second while the modules run; here each recipe burns raw star matter
+  by its time. Raw star matter is an eye of harmony product in GT (1e9 litres of hydrogen and helium per 1e5); here the godforge makes
+  it itself, with crude catalyst to ignite the star.
+- **Exotic module.** GT draws a random challenge every cycle (QGP mode: up to seven random plasmas; magmatter mode: a random metal's
+  plasma and random amounts of temporal and spatial fluid). Here one magmatter recipe per metal, with the metal's melt instead of its
+  plasma (the mod has no plasmas of these metals) at GT's average ratio (12.5 litres per litre of magmatter), and equal amounts of the
+  two fluids so the spacetime split feeds it exactly. The player picks the metal (neutronium is the cheapest). Quark gluon plasma is not
+  built: GT uses it only for nanites.
+- **Universium** comes from the eye of harmony in GT (rocket tiers 7 to 9), never from the plasma forge. Here the godforge's molten
+  module makes it from the MK5 inputs at half per ingot. The plasma forge recipes (6a) stay: universium is needed for the stargate, before
+  the godforge, so they are the faster pre-victory route (6a hook 1: the godforge takes over after victory, nothing is removed).
+- **No eye of harmony** (6a hook 4 stays open). GT's eye is a mining multiblock: per dimension it turns hydrogen and helium into the
+  ore dusts of that dimension, plasmas, raw star matter and white or black dwarf matter (the "dark matter" of the drafts; GT has no dark
+  matter), which feed nanites and MHDCSM. None of these has a consumer in the mod, and its two jobs here (raw star matter, universium) are
+  done by the godforge. Its controller would take four godforges and four plasma forges; the item is ready if it comes later.
+- **MAX tier.** GT has the MAX circuit (Planck-scale circuit, from the nanochip assembly complex) and the MAX component items, but no
+  recipe for the components, no MAX energy, dynamo or laser hatch, no MAX superconductor and no MAX machines; its UXV parts already use
+  magmatter and its generators stop at UXV. The fork builds the MAX tier by its UMV -> UXV pattern: magmatter as the metal, the eternity
+  superconductor (UXV) in the hatches (GT's UXV hatch takes the UMV superconductor too), the eternal coil stays the top heating coil. The
+  MAX circuit line is named after the Planck circuit: GT's own "transcendent" circuits are the icons of the fork's UXV (temporal) line.
+- **UXV field generator** keeps 8 UXV circuits (GT: 4 MAX circuits): the stargate needs it, and the MAX circuit comes after the stargate.
+- **MAX turbine.** GT has none (its dynamo hatches stop at UXV); here it continues the turbine table of issue #34 so the MAX machines
+  (twice the UXV draw) have a generator of their tier.
+- **6a hook 3, MAX recipes of the plasma forge and the QFT**, still not built: the timepiece, the time/space conversions and chipped
+  amalgatite need tesseracts, quantum anomalies, dilithium, dark iron, nanites, gems and the stargate crystal slurry; the QFT's temporal
+  harmony needs eternal singularities, energised tesseracts, primordial matter and shirabon. None exists in the mod. With equal amounts of
+  time and space in the magmatter recipe the conversions have no job.
+
+### Balance
+
+`python tools/balance_model.py dump.json` (and `--max` for magmatter per metal and universium). The **MAX reference factory** is the
+UXV one doubled: 8 MK5 of power (12.5 MAX turbines on helium plasma), 16 MK5 and 2 MK4 metal reactors, 16 ZPM and circuit assembly
+lines, 64 bacterial vats, 16 purification plants, and 4 godforges (10.5 GW, 4 %). The technologies with MAX packs are counted in it,
+except `victory` (researched with the UXV factory and stargate packs, as before); the MAX pack from MAX parts, magmatter from the
+neutronium recipe (the fastest). Times of one item:
+
+| Item | Factory | Time | Limit |
+|---|---|---|---|
+| godforge | UXV | 11.7 h (247 800 GJ; the stargate: 10.6 h, 225 900 GJ) | fusion |
+| godforge | MAX | 6.2 h | fusion |
+| raw star matter, 100 | MAX | 5 s (52 GJ) | godforge |
+| magmatter ingot | MAX | 1.0 s (21 GJ; draconium 22, tritanium 32, flerovium 34, cosmic neutronium 43, infinity 56, rhugnor 132 GJ) | godforge |
+| universium ingot, fusion / godforge | MAX | 1.5 s (16.7 GJ) / 0.7 s (8.5 GJ) | fusion |
+| MAX circuit | MAX | 50 s | fusion |
+| MAX motor / pump / piston / conveyor module | MAX | 44 s / 1.7 min / 1.7 min / 2.0 min | godforge, fusion |
+| MAX emitter, sensor | MAX | 4.9 min each | fusion |
+| MAX robot arm | MAX | 10.8 min | fusion |
+| MAX field generator | MAX | 26.9 min | fusion |
+| MAX energy hatch | MAX | 4.7 min | fusion |
+| MAX large plasma turbine (from the UXV one) | MAX | 14.8 min | fusion |
+| MAX science pack, from MAX parts / from the stargate | MAX / UXV | 19 s / 38 s | fusion |
+
+A unit of a MAX technology (one pack of each tier) costs 8.4 minutes of the MAX factory, most of it the packs below MAX; 55 units are
+7.7 hours, as long as a UXV technology in its factory (stargate: 50 units, 8.0 hours). The labs need 0.7 minutes. In the factory of
+their own tier the MAX parts take 0.33x to 0.6x the time of the UXV parts (motor 2.1 -> 0.7 min, robot arm 17.9 -> 10.8 min, field
+generator 49.5 -> 26.9 min, energy hatch 8.9 -> 4.7 min); from UMV to UXV it was 0.7x to 0.9x. A magmatter ingot from neutronium costs
+about as much energy as a universium ingot from the fusion reactors (21 against 16.7 GJ) and the MAX factory is twice the UXV one, so the
+MAX tier is not harder than the UXV tier; the levers are `MAGMATTER_RATIO` and the metal list in 140 (see open points).
+
+### Numbers
+
+`devcheck all`: RESULT OK; `migrate --from-ref v0.3.2`: loads, every old-save check ok. Researchable technologies 372 -> 385 of
+391 -> 404 (the 13 new ones), draft recipes hidden 0, the `FORK-DRAFT`, `FORK-AUTOUNLOCK` (54) and `FORK-REMOVED` (35) lines
+identical to phase 6a (every new recipe is unlocked explicitly), unlocked but uncraftable recipes 0. Tech by tech against phase 6a:
+prerequisites, science packs, unlocks and unit counts of all 391 technologies identical, only additions; no recipe changed. Recipes
+97 new (173 with the quality mod's recycling recipes). Machines placed by `devcheck runtime` 512 -> 549 (the godforge and the 36 MAX
+machines), crafting menu 2838 -> 2935 machine recipes shown, 241 kept hidden, 0 hidden without an allow-list entry. Required recipes of
+`devcheck check` 34 -> 57; the recipe test of `devcheck runtime` 33 -> 39 (raw star matter and neutronium magmatter in a godforge, the
+stellar catalyst in a plasma forge, the MAX motor in a ZPM assembly line, the maximum voltage coil in a MAX assembler, the MAX pack
+from MAX parts in a UXV assembler); the turbine tier test has two MAX turbines (helium and neon plasma: exactly four MAX amps, the
+cooled fluid back to the drop); a new post-victory test researches `godforge-upgrades` after `victory` (accepted by the engine, level
+1 gives +5 % productivity). Graphics: sprites from GT textures (godforge support and inner casing, controller; the MAX hull for the
+basic machines, MAX energy and dynamo hatches on the upgrades and the turbine), 39 item icons (GT's magmatter icon set, the MAX
+components and coil of `gt.metaitem`, GT's cosmic circuits for the Planck line, the core mod's Planck circuit), 13 technology icons,
+review sheets in `docs/graphics-review/phase-6b/`.
+
+### Existing saves
+
+Only additions: new items, recipes, technologies and fluids; no prototype renamed, no recipe or technology of phase 6a changed, so no
+`FORK-AUTOUNLOCK` change. Saves from 0.3.2 load (`migrate --from-ref v0.3.2`); `victory` wins the game as before. The 6a hooks that were
+replaced: none removed (the DTPF universium recipes stay next to the godforge's).
+
+### Open points
+
+- Balance in the real game: the godforge (11.7 hours in the UXV factory, about one stargate); magmatter, which is cheap from neutronium
+  (`MAGMATTER_RATIO` and `MAGMATTER_METALS` in 140; GT's random challenges do not let the player pick the cheapest metal), so the MAX
+  parts take only a third to 0.6 of the UXV parts' time in the factory of their tier; the star fuel (`STAR_FUEL`) and the MAX pack from
+  MAX parts.
+- The eye of harmony, quark gluon plasma, the MAX recipes of the plasma forge and the QFT (see above).
+- The godforge sprite is a plain field of GT's godforge casings with the controller; GT's star and rings are not drawn.

@@ -24,7 +24,10 @@
   bedrockium and quantium with the stand-ins they replace; must load after 136, whose plutonium fuel and dynamo hatches it changes),
   139 endgame multiblocks (phase 6a, issue #37: the dimensionally transcendent plasma forge with its catalysts and metal recipes, the
   quantum force transformer and its recipes; loads after 137 and **before** 138, which sets the unit counts of its technologies;
-  phase 6b hooks are marked `6b hook`), 138 research balance (issue #30: explicit unit counts of the technologies from UV to `victory`; loads after every file that
+  phase 6b hooks are marked `6b hook`), 140 godforge (phase 6b: the godforge, raw star matter, magmatter, the stellar catalyst of the
+  plasma forge, the infinite `godforge-upgrades`), 141 MAX tier (phase 6b: magmatter parts, the Planck line and MAX circuit, MAX
+  components, hatches, machines and turbine; needs 140's magmatter and adds its turbine to 136's mod data); 140 and 141 load after
+  139 and **before** 138, 138 research balance (issue #30: explicit unit counts of the technologies from UV to `victory`; loads after every file that
   defines technologies; balance passes use `tools/balance_model.py` on `devcheck.py check --balance-out`),
   150 molds (mold slot instead of mold ingredient; must load after every file that creates
   machines), 190 manual-labor
