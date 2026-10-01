@@ -8,19 +8,6 @@ table.insert(data.raw.lab.lab.inputs, "uxv-science-pack")
 table.insert(data.raw.lab.lab.inputs, "max-science-pack")
 
 --------------------------
----MAIN MENU SIMULATIONS---
---------------------------
--- The vanilla menu simulation "nauvis_biter_base_laser_defense" walks a character in power armor through a
--- biter base. With Gregtorio loaded the character can die there, and its on_tick script reads
--- character.position without a validity check (unlike its sister simulations), which stops the main menu
--- with "The scenario level caused a non-recoverable error ... LuaEntity was invalid". Every other vanilla
--- simulation stays; none of their scripts uses a prototype that Gregtorio removes.
-local menu_simulations = data.raw["utility-constants"]["default"].main_menu_simulations
-if menu_simulations then
-  menu_simulations.nauvis_biter_base_laser_defense = nil
-end
-
---------------------------
 ---VANILLA ITEM REMOVAL---
 --------------------------
 
@@ -135,8 +122,13 @@ disable_trigger_tech("biter-egg-handling")
 
 
 ---DISABLE TECHS
+-- the effects of the disabled techs, for the main menu simulations (prototypes/fork-menu-simulations.lua)
+FORK_DISABLED_TECH_EFFECTS = {}
 local function disable_tech(name)
   if data.raw.technology[name] and not is_gregtorio_tech(data.raw.technology[name]) then
+    for _, effect in pairs(data.raw.technology[name].effects or {}) do
+      table.insert(FORK_DISABLED_TECH_EFFECTS, effect)
+    end
     data.raw.technology[name].enabled = false
     data.raw.technology[name].hidden = true
     data.raw.technology[name].effects = {}
@@ -450,3 +442,4 @@ disable_tech("discharge-defense-equipment")
 disable_tech("explosive-rocketry")
 disable_tech("tank")
 disable_tech("tesla-weapons")
+require("prototypes.fork-menu-simulations")

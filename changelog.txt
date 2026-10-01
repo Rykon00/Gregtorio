@@ -1,7 +1,7 @@
 ---------------------------------------------------------------------------------------------------
-Version: 0.3.3
+Version: 0.4.0
   Bugfixes:
-    - The main menu no longer stops with "The scenario level caused a non-recoverable error" (LuaEntity was invalid): the vanilla "biter base laser defense" menu simulation, whose character can die with Gregtorio and whose script does not handle that, is no longer shown. All other menu simulations stay.
+    - The main menu no longer stops with "The scenario level caused a non-recoverable error" (LuaEntity was invalid). Menu simulations that research every technology (research_all_technologies) did not get the bonuses of the vanilla weapon and health technologies that Gregtorio disables, so the character of the "biter base laser defense" simulation died and its script failed. Those simulations now get the bonuses of the disabled technologies and run as in vanilla; no simulation is removed.
 ---------------------------------------------------------------------------------------------------
 Version: 0.3.2
 Date: 2026-09-30
