@@ -25,6 +25,8 @@ UEV = cryogenic, UIV = promethium, then UMV / UXV / max (the stargate).
 | side | Endgame power: plasma turbines (LuV to UXV, the UHV to UXV ones from issue #34), naquadah fuel line and large naquadah reactors, dynamo hatches LuV to UXV | **done** (`prototypes/136-fork-power.lua`, `scripts/fork-power.lua`, see "Side quest: endgame power") |
 | side | Drafts and endgame materials: triage of every draft, super coolant, fluxed electrum, bedrockium, quantium (issues #39, #36) | **done** (`prototypes/137-fork-endgame-materials.lua`, see "Drafts and endgame materials") |
 | side | Graphics: item and technology icons from GT textures instead of placeholders, own sprites for fusion MK4/MK5, a tier look for the UHV to UXV machines, plasma turbines and naquadah reactors (issues #40, #41) | **done** (`tools/gen_gt_icons.py`, `tools/gen_sprites.py`, review sheets and inventory in `docs/graphics-review/`) |
+| 6a | Quantum force transformer and dimensionally transcendent plasma forge (issue #37, part 1) | **done** (`prototypes/139-fork-endgame-multiblocks.lua`, see "Phase 6a: QFT and DTPF") |
+| 6b | MAX tier and the godforge (issue #37, part 2) | open (hooks in "Phase 6a: QFT and DTPF") |
 | side | Balance of the tiers from UHV up in the real game, and a look at the new graphics there | open |
 
 ## Phase 1: LuV (done)
@@ -487,7 +489,7 @@ The cosmic neutronium of a UEV part includes the 18 ingots of melt in its fluids
   glass) and molten rhugnor (infinity + molten quantum), which no line makes. The MK4 drafts `molten-rhugnor` and `molten-flerovium` (plutonium-241) stay drafts.
 - ~~Water purification grades 7 and 8, FPIC/APIC chips, complex SMDs.~~ Done, see "Side quest: water purification grades 7 and 8".
 - ~~Most plasmas (sulfur, nitrogen, zinc, niobium, tin, titanium, oxygen, neon, boron, calcium) are still only ingredients or unused; there is no plasma generator.~~ Done in "Side quest: endgame power".
-- No ~~bedrockium, fluxed electrum~~, UU matter, ~~quantium~~, attuned tengam, ~~super coolant~~ (issue #36; UU matter is not built, see "Drafts and endgame materials"). The quantum force transformer, dimensional plasma forge, godforge
+- No ~~bedrockium, fluxed electrum~~, UU matter, ~~quantium~~, attuned tengam, ~~super coolant~~ (issue #36; UU matter is not built, see "Drafts and endgame materials"). The ~~quantum force transformer, dimensional plasma forge~~ (phase 6a), godforge
   and the rest of `29-uev-age-item.lua` / `31-uiv-age-item.lua` are for later.
 - Graphics: the UEV/UIV basic machine sprites are generated from GT textures (tinted gold and blue, since issue #41 inside the GT hull of
   their tier), the MK4 reactor reused the MK3 art (own art since issue #41), the new items and technologies had recolored placeholder
@@ -555,7 +557,8 @@ Choices and deviations from GT:
   build it and there is no bootstrap recipe. The energy module (GT: ZPM assembly line, not loaded before) uses UHPIC wafers instead of ASOC wafers.
   Coil II uses a UEV emitter and sensor: a UIV emitter or field generator would need UMV circuits, which need spacetime, which the MK5 makes. The
   controller uses UEV field generators (as the draft), UIV circuits, QPIC wafers (PICO wafers are not built) and chromnorox wire. The MK5 reused the MK3 art until issue #41 (now the art of GoodGenerator's compact fusion computer MK-V).
-- **Spacetime and universium are MK5 products** (GT: tesseracts in the dimensionally transcendent plasma forge). Spacetime = transcendent metal +
+- **Spacetime and universium are MK5 products** (GT: tesseracts in the dimensionally transcendent plasma forge; since phase 6a the
+  DTPF makes them too, with less input, see "Phase 6a: QFT and DTPF"). Spacetime = transcendent metal +
   rhugnor, universium = spacetime + flerovium, 1.5 s per ingot in one MK5. The parts are made like the transcendent metal ones (large gear 4 ingots).
 - **Cables.** GT's UMV cable is quantium (since issue #36 the UMV components take quantium cable; the machines and the hull keep the spacetime one): spacetime cable (wire + rubber + sheet like the draconium cable); UXV: universium cable.
 - **Superconductors.** `hypocosmium` (UMV: spacetime, infinity, rhugnor) is the name of the draft; `eternity` (UXV: universium, spacetime, hypocosmium)
@@ -681,7 +684,7 @@ The inserter capacity bonuses start at MV instead of LV: level 1 only raises the
   the GTNH core mod).
 - ~~Balance is untested in game: the pack counts of the last techs (see above), the stargate (20 500 universium ingots), the QPIC counts of the hatches.~~
   Issues #30, #31, #33: see "Balance pass: endgame" (the hatches use APICs since #52); still to be played.
-- Not built: the GT quantum force transformer, dimensional plasma forge, godforge, magmatter, dark matter, mellion, shirabon, six-phased copper, the eye of harmony and the
+- Not built: the GT ~~quantum force transformer, dimensional plasma forge~~ (phase 6a), godforge, magmatter, dark matter, mellion, shirabon, six-phased copper, the eye of harmony and the
   UXV/MAX-only items of `90-uxv-age-item.lua` (mega ultimate battery, ridiculously large capacitor, artificial universe cell, ...). There is no MAX tier: no MAX circuit,
   hatch or machines.
 - Still drafts (29, 21 since the endgame power side quest): ~~force plasma (arcanite), astral titanium and runite plasma~~ (removed), ~~the liquid fuels and naquadah fuel~~, ~~plutonium/high-density plutonium~~ (made real), ~~super coolant~~ (made real), ~~UU
@@ -702,7 +705,8 @@ Side quests, in the order that helps the endgame most:
 4. ~~AE2 autocrafting~~ (done, see "Side quest: AE2 autocrafting").
 5. ~~The technologies of the final pass list: decide for each "open" one whether it gets a Gregtorio gate or is hidden.~~ (done, issue #29: all 23 are
    researchable, see "Final pass" above).
-6. A MAX tier (MAX circuit, hatch, machines, and the GT items the stargate could take) if the endgame should go on after `victory`.
+6. A MAX tier (MAX circuit, hatch, machines, and the GT items the stargate could take) if the endgame should go on after `victory`
+   (issue #37: phase 6a, the QFT and the DTPF, is done; phase 6b is the MAX tier and the godforge).
 
 ## Drafts and endgame materials (issues #39 and #36)
 
@@ -1684,3 +1688,194 @@ finishes sooner; researched technologies stay researched. The nine recipes chang
 * The infinite `research-productivity` (75 hours per level at UEV) keeps its formula.
 * The model counts no transport, no machine build cost and no start-up; the byproducts of the naquadah line are charged to its main
   product.
+
+## Phase 6a: QFT and DTPF (issue #37, part 1)
+
+GT's two big endgame processing multiblocks, on top of the UMV tier: the **dimensionally transcendent plasma forge** (DTPF,
+GT's `MTEPlasmaForge`) and the **quantum force transformer** (QFT, GT++'s `MTEQuantumForceTransformer`). Everything is in
+`prototypes/139-fork-endgame-multiblocks.lua`; it loads after 137 and before 138, which sets the unit counts of its technologies.
+The MAX tier and the godforge are phase 6b; the spots it has to revisit are listed under "Hooks for 6b" below. Sources: the drafts
+in `29-uev-age-item.lua`, `31-uiv-age-item.lua`, `80-umv-age-item.lua`, `90-uxv-age-item.lua` (not loaded) and GT5-Unofficial
+(`MTEPlasmaForge`, `PlasmaForgeRecipes`, `TranscendentPlasmaMixerRecipes`, the core mod's `DTPFRecipes`/`DTPFCalculator`,
+`MTEQuantumForceTransformer`, `RecipeLoaderChemicalSkips`, GoodGenerator's `NaquadahRecipeLoader`).
+
+### Content
+
+| Technology | Science | Prerequisites | Units | Unlocks |
+|---|---|---|---|---|
+| `dimensionally-transcendent-plasma-forge` | UMV | `umv-multiblocks`, `fusion-plasmas-mk5` | 95 (8.3 h) | dimensionally transcendent casing, dimensional bridge, DTPF controller, the DTPF, crude catalyst, the six crude metal recipes |
+| `dtpf-resplendent-catalyst` | UXV | `dimensionally-transcendent-plasma-forge`, `uxv-multiblocks` | 50 (8.0 h) | resplendent catalyst, the six resplendent metal recipes |
+| `quantum-force-transformer` | UMV | `umv-multiblocks` | 95 (8.3 h) | QFT coil casing, QFT controller, the QFT, its 29 recipes |
+
+The unit counts are in `138-fork-research-balance.lua`: about 8 hours of pack production in the reference factory of the tier,
+like the other UMV and UXV technologies.
+
+Machines (both cloned from the fusion reactor MK5: electric, powered through the energy hatches in their recipe like the
+reactors, one amp of their tier):
+
+| Machine | Size | Tier | Power | Speed | Fluid ports | Recipe (UMV assembler, 5 min) |
+|---|---|---|---|---|---|---|
+| dimensionally transcendent plasma forge | 11x11 | UMV | 1310.72 MW | 2048 | 6 in (5 north, 1 west), 2 out (south) | controller, 48 dimensionally transcendent casings, 16 dimensional bridges, 32 spacetime coils, 2 UMV energy hatches, 8 UMV hulls |
+| quantum force transformer | 9x9 | UMV | 1310.72 MW | 2048 | 4 in (north), 2 out (south) | controller, 16 QFT coil casings, 32 titanium reinforced borosilicate glass, 2 UMV energy hatches, 8 UMV hulls |
+
+Parts: the DTPF casing (UMV assembler: osmiridium plates, spacetime screws, a 1080k super coolant cell, a UV emitter, a
+triamerotronium superconductor wire), the dimensional bridge (ZPM assembly line: casing, UHV field generator, UV emitter and
+circuits, PPIC wafers, triamerotronium wire), the DTPF controller (ZPM assembly line: 4 bridges, 4 UIV energy hatches, chromnorox
+wire, 4 super coolant cells, 20 UMV circuits, 4 UIV field generators and pumps, superdense neutronium); the QFT coil casing (UMV
+assembler: infinity coil, 4 super coolant cells, transcendent metal, a superconducting coil block) and the QFT controller (ZPM
+assembly line: UIV circuits, pumps, field generators and robot arms). GT builds both at UIV with UEV parts; here they are UMV
+machines (the techs are UMV science), so the parts are one tier up. GT items the mod does not have are left out (eternal singularity,
+quantum anomaly, the ZPM battery, oganesson and californium; mutated living solder is indalloy 140, enriched naquadah is naquadah,
+laurenium screws are spacetime screws, the microwave energy transmitter is a UV emitter).
+
+**DTPF recipes** (2 catalysts, 12 metal recipes). The catalysts are made in the forge (5 s and 10 s):
+
+| Catalyst | Inputs (100 each) | GT |
+|---|---|---|
+| excited dimensionally transcendent crude catalyst | helium, iron, calcium, niobium plasma | the same four plasmas (transcendent plasma mixer) |
+| excited dimensionally transcendent resplendent catalyst | crude catalyst, boron, sulfur, nitrogen, zinc, titanium plasma | GT's resplendent catalyst also takes radon, nickel and silver plasma, which the mod does not have |
+
+Each metal recipe is the fusion recipe of the metal (the MK3 to MK5 recipe, which stays the entry route) with two thirds of its
+inputs per ingot, in a third of the reactor time (the DTPF and the reactors draw the same 0.64 MW per crafting speed), plus
+catalyst; the resplendent tier makes twice the batch in the same time:
+
+| Metal | Inputs per craft (crude / resplendent) | Output | Time | Catalyst crude / resplendent |
+|---|---|---|---|---|
+| neutronium | 96 / 192 each of americium, naquadria | 144 / 288 | 0.625 s | 5.6 / 3.75 |
+| cosmic neutronium | neutronium, tritanium | 144 / 288 | 1.25 s | 11.25 / 7.5 |
+| infinity | cosmic neutronium, draconium | 144 / 288 | 1.25 s | 11.25 / 7.5 |
+| transcendent metal | infinity, krypton plasma | 144 / 288 | 1.25 s | 11.25 / 7.5 |
+| spacetime | transcendent metal, rhugnor | 144 / 288 | 2.5 s | 22.5 / 15 |
+| universium (6b hook) | spacetime, flerovium | 144 / 288 | 2.5 s | 22.5 / 15 |
+
+The catalyst per craft is 1.5 crude (0.5 resplendent) per second that a MK5 would take for the batch (GT: the catalyst stands for
+the energy of the normal route).
+
+**QFT recipes** (29, 20 s; the naquadah ones 10 s). GT's recipes whose inputs and outputs the mod has, one recipe per main output,
+each with 100 nitrogen plasma as the focus plasma; every output has its GT amount at 100 %, the focused one gets (N+1)/2N, the
+others 1/2N (GT's neptunium focus with N outputs: 58 % and 8 % with six outputs):
+
+| Input (GT name) | Outputs (64 each) | Recipes |
+|---|---|---|
+| 32 metallic platinum powder (platinum metallic powder) | platinum, palladium, iridium, osmium, rhodium, ruthenium dust | 6 |
+| 32 metallic palladium powder (palladium metallic powder) | palladium, platinum, rhodium plated palladium dust | 3 |
+| 32 iridium metal residue (iridium leach residue) | iridium, platinum, osmiridium dust | 3 |
+| 32 rarest metal mixture (rarest metal residue) | osmium, iridium, osmiridium dust | 3 |
+| 32 crude rhodium residue (crude rhodium metal) | rhodium, palladium, platinum, rhodium plated palladium dust | 4 |
+| 32 iridium group sludge (leach residue) | iridium, osmium, rhodium, ruthenium dust | 4 |
+| 32 naquadah oxide mixture (naquadah earth), 64 sodium, carbon, 1000 hydrogen, 1000 fluorine, 100 oxygen | 16 naquadahine dust, titanium dust, adamantium dust, gallium | 4 |
+| 32 enriched naquadah oxide mixture (enriched naquadah earth), 64 zinc dust, carbon, 1000 sulfuric acid, 100 oxygen | 16 enriched naquadah sulphate, trinium dust; 1000 waste liquid | 2 |
+
+Not built, because the mod lacks an input or output (the missing GT part in brackets): early plastics (polystyrene), rubbers
+(styrene butadiene rubber, rubber), glues (stable adhesive), the two titanium/tungsten/indium recipes (tungsten carbide, rhenium and
+hafnium dust), radioactives (thorium 232, uranium 233, plutonium 238 and 241), the monazite and bastnasite lines and the cerium-rich
+mixture (monazite and bastnasite cannot be obtained; holmium, cerium, gadolinium, lanthanum dust), naquadria (naquadria earth,
+naquadria supersolid), netherite, prismarine, stem cells, late plastics, Kevlar, biocells, seaweed and the temporal harmony recipe.
+So the QFT has no rare earth recipe: none of GT's fits the mod's rare earth line (rare earth (I) dust).
+
+What the QFT saves, per focused output against the mod's own line (input per output): platinum metallic powder 0.86 per dust (the
+platinum line: 6 per rhodium, 96 per iridium, 144 per ruthenium, 240 per osmium dust); iridium group sludge 0.67 per iridium dust (4
+in the line); naquadah oxide mixture 3.2 per naquadahine dust (7.8); enriched naquadah oxide mixture 0.75 per trinium dust (24). The
+platinum numbers are GT's: the QFT is a chain skip of that size there too.
+
+### Deviations from GT
+
+- **DTPF catalysts.** No transcendent plasma mixer: the forge makes its two catalysts itself. Crude is GT's recipe, resplendent GT's
+  without radon, nickel and silver plasma; prosaic (radon, nickel plasma), exotic (americium, bismuth plasma) and stellar (raw star
+  matter) are not built. No dimensionally transcendent residue.
+- **No heat, runtime discount or convergence.** GT gates the catalyst tiers by coil heat (10 800 to 13 500 K), cuts the catalyst by
+  up to 50 % after 8 hours of running and trades catalyst for perfect overclocks with a transdimensional alignment matrix. Here every
+  recipe has a fixed catalyst amount (the way the quark creation catalyst of the water purification plant has a fixed break chance);
+  the technology of the catalyst stands for the coil tier.
+- **DTPF metals.** GT makes neutronium from molten iron, cosmic neutronium from molten copper, transcendent metal from raw tesseracts
+  and spacetime from energised tesseracts, infinity and hypogen; that would skip the whole fusion chain (and the mod has no
+  tesseracts, hypogen or infinity catalyst). Here the DTPF takes the inputs of the fusion recipe: same chain, less of it, faster.
+- **QFT focus.** GT chooses the focused output with a circuit and boosts all outputs with fermium plasma; parallels come from the
+  number of catalyst items in a catalyst housing, the recipe and focus tiers from tiered casings. Here: one recipe per main output with
+  GT's neptunium chances at the recipe's own tier, nitrogen plasma (GT's neptunium plasma is made from radon and nitrogen plasma), no
+  catalysts, no tiered casings, no fermium.
+- **QFT naquadah.** GT gives one inert naquadah dust per 32 naquadah earth (activated to 0.67 naquadah ingots in GT's neutron
+  activator); the mod's line ends in naquadahine dust (3 make 30 hot naquadah ingots), so the QFT gives 16 naquadahine dust per craft
+  at 100 % (10 at focus), about twice the yield of the line, and 16 enriched naquadah sulphate for GT's inert enriched naquadah.
+  Fluids are scaled to the 1000 of a fluid port (GT: 64 000 hydrogen and fluorine, 16 000 sulfuric acid, 32 000 waste liquid).
+- **Size and tier.** Single entities of 11x11 and 9x9 (GT: 33x24x33 and 15x21x15), UMV (GT: UIV controllers), one UMV amp.
+
+### Efficiency: DTPF against the fusion reactors
+
+`python tools/balance_model.py dump.json --dtpf` (dump from `devcheck.py check --balance-out`). The default model (and every number
+of "Balance pass: endgame") still uses the fusion route; `--dtpf` puts the six DTPF recipes of a catalyst tier in place of the
+fusion recipes of those metals. Energy is that of the metal machines over the whole chain (fusion reactors at 0.64 MW per crafting
+speed, the DTPF at 1310.72 MW), per ingot (14.4 mB):
+
+| Metal | Fusion | DTPF crude | DTPF resplendent |
+|---|---|---|---|
+| neutronium | 0.5 GJ | 0.3 GJ (1.6x) | 0.2 GJ (1.9x) |
+| cosmic neutronium | 2.2 GJ | 1.4 GJ (1.6x) | 1.3 GJ (1.8x) |
+| infinity | 3.3 GJ | 1.6 GJ (2.1x) | 1.4 GJ (2.3x) |
+| transcendent metal | 4.0 GJ | 1.5 GJ (2.6x) | 1.3 GJ (3.1x) |
+| spacetime | 14.2 GJ | 5.0 GJ (2.8x) | 4.4 GJ (3.2x) |
+| universium | 16.7 GJ | 4.9 GJ (3.4x) | 4.3 GJ (3.9x) |
+
+So per GW the DTPF route makes 1.6x (neutronium) to 3.4x (universium; 3.9x resplendent) the metal. Per input: one universium ingot
+takes 7 americium, 3 naquadria, 3 tritanium, 3 draconium, 2 krypton plasma and 1 flerovium (in ingots; 3 infinity, 2 transcendent
+metal, 1 spacetime on the way) through the fusion reactors, and 1.67 americium, 0.31 naquadria, 0.46 tritanium, 0.69 draconium, 0.59
+krypton plasma and 0.67 flerovium (1.04 infinity, 0.89 transcendent metal, 0.67 spacetime) through the DTPF: 4.2x less americium,
+1.5x to 9.8x less of the others. Each step alone takes two thirds of the inputs (1.5x).
+
+In the reference factory, with DTPFs of the same power in place of MK5 metal reactors (one DTPF for two MK5; the best split of the 8
+UXV / 4 UMV metal MK5s, the rest of the factory unchanged):
+
+| Item | Factory | Fusion | DTPF crude | DTPF resplendent |
+|---|---|---|---|---|
+| UMV science pack | UMV | 2.4 min | 1.4 min (2 MK5 -> 1 DTPF) | - (UXV science) |
+| UXV motor | UXV | 2.1 min | 0.8 min (4 MK5 -> 2 DTPF) | 0.5 min (2 MK5 -> 1 DTPF) |
+| UXV field generator | UXV | 49.5 min | 20.0 min | 14.1 min |
+| UXV science pack | UXV | 3.6 min | 1.6 min | 1.2 min |
+| **stargate** | UXV | **10.6 h** (225 900 GJ) | **4.4 h** (73 300 GJ) | **3.0 h** (64 000 GJ) |
+
+The stargate takes 2.4x (crude) and 3.5x (resplendent) less time and 3.1x and 3.5x less energy. Fusion stays the limit with crude
+catalyst (the forge still needs the krypton, flerovium, rhugnor and catalyst plasmas from the reactors); one resplendent forge does
+the work of two crude ones. The research per technology is unchanged (8 hours); the new technologies add 16.6 hours at UMV and 8 at
+UXV.
+
+### Hooks for 6b
+
+GT uses no MAX-tier part in these two machines or their recipes (the DTPF controller is UIV, its eternal coil UMV, the QFT's top
+casings UXV), so no UXV part had to stand in for a MAX part in this phase. The places where GT's version goes through the godforge
+or the MAX tier (marked `6b hook` in `139-fork-endgame-multiblocks.lua` where there is code):
+
+1. **Universium in the DTPF** (`molten-universium-dtpf-crude`, `-resplendent`): GT makes universium in the godforge and the eye of
+   harmony, not in the DTPF. Here it is a DTPF recipe from spacetime and flerovium (the inputs of the MK5 recipe). 6b decides
+   whether the godforge takes over; the recipes keep their names for saves.
+2. **Stellar catalyst**: GT's top DTPF tier needs raw star matter (a godforge product), its exotic tier americium and bismuth plasma.
+   The resplendent catalyst is the top tier here; 6b can add the stellar one and a third recipe tier.
+3. **MAX recipes of the DTPF and the QFT**, not built: timepiece, time and space conversion, chipped amalgatite (DTPF, MAX), the
+   temporal harmony recipe (QFT: shirabon and eternity from a universium nanite and a timepiece).
+4. **The eye of harmony** takes four plasma forges (and four godforges) in GT: the item `dimensionally-transcendent-plasma-forge`
+   is ready for that recipe.
+
+### Numbers
+
+`devcheck all`: RESULT OK; `migrate --from-ref v0.3.2`: loads, every old-save check ok. Researchable technologies 369 -> 372 of
+388 -> 391 (the three new ones), draft recipes hidden 0, the `FORK-DRAFT`, `FORK-AUTOUNLOCK` (54) and `FORK-REMOVED` (35) lines
+identical to main (no auto-unlock moved: every recipe of the new machines is unlocked explicitly, and all their inputs have a
+producer already), unlocked but uncraftable recipes 0. Tech by tech against main: prerequisites, science packs, unlocks and unit
+counts of all 388 technologies identical; only additions. Machines placed by `devcheck runtime` 510 -> 512, crafting menu
+2788 -> 2838 machine recipes shown (the 50 new ones), 241 kept hidden, 0 hidden without an allow-list entry. Required recipes of
+`devcheck check` 23 -> 34; the recipe test of `devcheck runtime` 30 -> 33 (the crude catalyst and crude spacetime in the DTPF, the
+platinum metallic powder recipe in the QFT; a main product with a probability only has to finish its craft). Graphics: sprites from
+GT's DTPF (dimensionally transcendent casing, dimensional bridge, DTPF screen) and QFT (bulk production frame, QFT coil, controller
+face) textures, 7 item icons, 3 technology icons, review sheets in `docs/graphics-review/phase-6a/`.
+
+### Existing saves
+
+Only additions: new items, recipes, technologies and two fluids; no prototype renamed, no recipe or technology of main changed.
+Saves from 0.3.2 load (`migrate --from-ref v0.3.2`).
+
+### Open points
+
+- Balance in the real game: whether the DTPF (3x less energy per universium ingot, stargate 10.6 -> 3 to 4.4 hours) and the QFT
+  (platinum group dusts for a fraction of the platinum line) are too strong at UMV; the levers are `DTPF_INPUT`, `DTPF_TIME` and the
+  catalyst amounts at the top of the DTPF part of `139-fork-endgame-multiblocks.lua`.
+- The QFT recipes GT has but the mod lacks materials for (see above); a rare earth recipe for the mod's rare earth (I) line.
+- 6b: the hooks above.
