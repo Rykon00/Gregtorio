@@ -8,6 +8,16 @@ table.insert(data.raw.lab.lab.inputs, "uxv-science-pack")
 table.insert(data.raw.lab.lab.inputs, "max-science-pack")
 
 --------------------------
+---MAIN MENU SIMULATIONS---
+--------------------------
+-- The vanilla main menu simulations replay saves and scripts built around vanilla entities, several of
+-- which Gregtorio removes or changes (burner mining drill, electric furnace, equipment, ...). Some of
+-- their scripts then touch an entity that no longer exists ("LuaEntity API call when LuaEntity was
+-- invalid" in level::on_tick, e.g. nauvis_biter_base_laser_defense) and stop the menu with a
+-- non-recoverable error. They do not show Gregtorio either, so the menu shows none of them.
+data.raw["utility-constants"]["default"].main_menu_simulations = {}
+
+--------------------------
 ---VANILLA ITEM REMOVAL---
 --------------------------
 

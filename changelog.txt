@@ -1,4 +1,8 @@
 ---------------------------------------------------------------------------------------------------
+Version: 0.3.3
+  Bugfixes:
+    - The main menu no longer stops with "The scenario level caused a non-recoverable error" (LuaEntity was invalid): the vanilla menu simulations, which rely on vanilla entities that Gregtorio removes, are turned off.
+---------------------------------------------------------------------------------------------------
 Version: 0.3.2
 Date: 2026-09-30
   Features:
