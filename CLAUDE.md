@@ -44,6 +44,10 @@
   registrations for the same interval (or a second `on_tick`) overwrite each other, so a new periodic
   task picks a free interval. `on_init` belongs to the ME terminal, so other scripts keep their state
   lazy (`storage.fork_ae2`, `storage.fork_me_fluids`, `storage.fork_molds`, `storage.fork_power`).
+- `data-final-fixes.lua` disables vanilla techs (`disable_tech`: hidden, no effects). The main menu simulations that call
+  `research_all_technologies()` get the bonuses of those techs from `prototypes/fork-menu-simulations.lua` (PR #65: the
+  laser defense simulation's character died without them and its script stopped the menu); after changing the disabled
+  techs or the character, run `python tools/devcheck/devcheck.py menusim --sim all --compare`.
 - Generators (`generator` prototypes that burn fluids by fuel value, 136) are demand driven; an
   input-output fluid box keeps part of its fluid in the pipeline segment (`get_fluid_count` reports
   only the entity's part, `fluidbox.get_fluid_segment_contents` the rest), so tests count both.

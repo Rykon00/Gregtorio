@@ -11,6 +11,8 @@ Version: 0.4.0
   Graphics:
     - The plasma forge and the quantum force transformer, their parts and technologies use GregTech textures (dimensionally transcendent casing, dimensional bridge, plasma forge screen; QFT coil and controller).
     - The godforge, the MAX tier's machines, hatches, components, magmatter parts, the Planck circuits and the new technologies use GregTech textures (godforge casings and controller, MAX hull, GT's MAX components and coil, magmatter icon set, the Planck-scale circuit).
+  Bugfixes:
+    - The main menu no longer stops with "The scenario level caused a non-recoverable error" (LuaEntity was invalid). Menu simulations that research every technology (research_all_technologies) did not get the bonuses of the vanilla weapon and health technologies that Gregtorio disables, so the character of the "biter base laser defense" simulation died and its script failed. Those simulations now get the bonuses of the disabled technologies and run as in vanilla; no simulation is removed.
 ---------------------------------------------------------------------------------------------------
 Version: 0.3.2
 Date: 2026-09-30

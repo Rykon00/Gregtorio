@@ -39,6 +39,7 @@ The repository root is the mod itself (`info.json`, `data.lua`, `prototypes/`, `
 | `scripts/fork-victory.lua` | researching the first level of the tech `victory` wins the game (the game can be continued) |
 | `prototypes/150-fork-molds.lua` | molds stay in the machine: the mold is a module in a mold-only slot of alloy smelters, fluid solidifiers and extruders instead of an ingredient or machine component |
 | `scripts/fork-molds.lua` | stops machines with a mold recipe and no mold ("Missing mold"); gives machines their mold once in saves from before they had a mold slot |
+| `prototypes/fork-menu-simulations.lua` | main menu simulations (PR #65), loaded from `data-final-fixes.lua`: simulations that call `research_all_technologies()` get the bonuses of the vanilla techs Gregtorio disables (the laser defense simulation's character died without them); check with `devcheck.py menusim --sim all --compare` |
 | `prototypes/190-fork-manual-labor.lua` | "manual labor" burner usage: fist instead of the gas pump in the fuel slot, "No manual labor" status |
 | `scripts/fork-me-terminal.lua` | runtime part of the ME network: terminal GUI (storage tab with items and fluids, crafting tab, event driven), ME Interface default, routes the fluid and circuit GUI events |
 | `scripts/fork-me-autocraft.lua` | autocrafting: patterns from provider-adjacent machines (item and fluid recipes), planner, jobs and crafting CPUs with their tiers (job slots, speed; bounded work every 20 ticks, fluid boxes filled and drained by index), remote interface `gregtorio-me-autocraft` |
