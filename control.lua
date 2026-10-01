@@ -1,5 +1,11 @@
 
---- Fork: ME terminal GUI and ME interface defaults (AE2, see prototypes/120-fork-ae2.lua)
+--- Fork: ME network core: cable graph, controller, drives and cells, storage API (AE2, issue #68, see prototypes/120-fork-ae2.lua)
+local fork_net = require("scripts.fork-me-network")
+--- Fork: ME Interface and import/export buses, the I/O step (also runs the fluid step)
+local fork_io = require("scripts.fork-me-io")
+--- Fork: migration of ME networks from before issue #68 (logistic network based)
+local fork_migrate = require("scripts.fork-me-migrate")
+--- Fork: ME terminal GUI, routes the GUI events of every ME window
 local fork_me = require("scripts.fork-me-terminal")
 --- Fork: AE2 autocrafting, pattern providers and crafting CPUs (see prototypes/121-fork-ae2-autocrafting.lua)
 local fork_ae2 = require("scripts.fork-me-autocraft")
@@ -14,11 +20,15 @@ local fork_victory = require("scripts.fork-victory")
 --- Fork: fuel check of the endgame generators, cooled fluid of the plasma turbines (see prototypes/136-fork-power.lua)
 local fork_power = require("scripts.fork-power")
 
+--- the blueprint handler of the autocrafting module also tags ME Interfaces and buses
+fork_ae2.blueprint_hooks[#fork_ae2.blueprint_hooks + 1] = fork_io.tag_blueprint
+
 script.on_event(defines.events.on_built_entity, function(event)
   if event.entity.name == "trash-can" then
     event.entity.remove_unfiltered_items = true
   end
-  fork_me.on_built(event.entity)
+  fork_net.on_built(event.entity, event)
+  fork_io.on_built(event.entity, event.tags)
   fork_ae2.on_built(event.entity, event.tags)
   fork_fluids.on_built(event.entity, fork_fluids.tags_from_event(event))
   fork_circuit.on_built(event.entity, event.tags)
@@ -30,6 +40,8 @@ script.on_event(defines.events.on_robot_built_entity, function(event)
   if event.entity.name == "trash-can" then
     event.entity.remove_unfiltered_items = true
   end
+  fork_net.on_built(event.entity, event)
+  fork_io.on_built(event.entity, event.tags)
   fork_ae2.on_built(event.entity, event.tags)
   fork_fluids.on_built(event.entity, fork_fluids.tags_from_event(event))
   fork_circuit.on_built(event.entity, event.tags)
@@ -40,7 +52,8 @@ end)
 --- Fork: entities built by other scripts or on space platforms
 script.on_event({ defines.events.script_raised_built, defines.events.script_raised_revive,
   defines.events.on_space_platform_built_entity }, function(event)
-  fork_me.on_built(event.entity)
+  fork_net.on_built(event.entity, event)
+  fork_io.on_built(event.entity, event.tags)
   fork_ae2.on_built(event.entity, event.tags)
   fork_fluids.on_built(event.entity, fork_fluids.tags_from_event(event))
   fork_circuit.on_built(event.entity, event.tags)
@@ -51,6 +64,8 @@ end)
 --- Fork: cloned entities (e.g. by other mods) need to be registered as well (a cloned fluid drive starts empty,
 --- the settings of providers, fluid interfaces, level maintainers and circuit interfaces are copied)
 script.on_event(defines.events.on_entity_cloned, function(event)
+  fork_net.on_built(event.destination)
+  fork_io.on_built(event.destination, nil, event.source)
   fork_ae2.on_built(event.destination, nil, event.source)
   fork_fluids.on_built(event.destination, nil, event.source)
   fork_circuit.on_built(event.destination, nil, event.source)
@@ -61,6 +76,7 @@ end)
 --- Interfaces, Level Maintainers and Circuit Interfaces are copied by settings paste and stored in blueprints
 --- (the blueprint handler of fork-me-autocraft.lua tags all of them)
 script.on_event(defines.events.on_entity_settings_pasted, function(event)
+  fork_io.on_entity_settings_pasted(event)
   fork_ae2.on_entity_settings_pasted(event)
   fork_fluids.on_entity_settings_pasted(event)
   fork_circuit.on_entity_settings_pasted(event)
@@ -68,6 +84,38 @@ end)
 
 script.on_event(defines.events.on_player_setup_blueprint, function(event)
   fork_ae2.on_player_setup_blueprint(event)
+end)
+
+--- Fork: removed ME members. Mined: a fluid drive's fluid and an ME Drive's cells (with their contents) go
+--- into the mined buffer; destroyed or removed by a script: the fluid is salvaged, the cells are spilled. The
+--- fluid module runs first (it looks at the network the entity still belongs to), then the graph is updated.
+local REMOVED_FILTER = {}
+for _, t in pairs({ "simple-entity-with-force", "storage-tank", "lamp", "electric-energy-interface", "container",
+  "constant-combinator", "assembling-machine", "furnace" }) do
+  REMOVED_FILTER[#REMOVED_FILTER + 1] = { filter = "type", type = t }
+end
+local function on_mined(event)
+  fork_fluids.on_mined_event(event)
+  fork_io.on_removed(event.entity)
+  fork_net.on_removed(event.entity, event.buffer)
+end
+for _, name in pairs({ "on_player_mined_entity", "on_robot_mined_entity", "on_space_platform_mined_entity" }) do
+  script.on_event(defines.events[name], on_mined, REMOVED_FILTER)
+end
+script.on_event(defines.events.on_entity_died, function(event)
+  fork_fluids.on_removed(event.entity, true)
+  fork_io.on_removed(event.entity)
+  fork_net.on_removed(event.entity, nil)
+end, REMOVED_FILTER)
+script.on_event(defines.events.script_raised_destroy, function(event)
+  fork_fluids.on_removed(event.entity, false)
+  fork_io.on_removed(event.entity)
+  fork_net.on_removed(event.entity, nil)
+end, REMOVED_FILTER)
+
+--- Fork: a rotated import or export bus faces another entity
+script.on_event(defines.events.on_player_rotated_entity, function(event)
+  fork_io.on_rotated(event.entity)
 end)
 
 --- Fork: a hand craft that consumes a loaded ME Fluid Drive item (the disassembly recipe) salvages its fluid
@@ -155,10 +203,15 @@ script.on_configuration_changed(function(data)
 			force.reset_technology_effects()
 		end
 	end
+	--- the ME graph first (the only map scan), then the migration of old ME networks (issue #68), then the
+	--- modules that read the graph
+	fork_net.rebuild()
+	fork_migrate.run()
 	fork_me.on_configuration_changed()
 	fork_fluids.on_configuration_changed()
 	fork_ae2.on_configuration_changed()
 	fork_circuit.on_configuration_changed()
+	fork_io.on_configuration_changed()
 	fork_molds.on_configuration_changed()
 	fork_power.on_configuration_changed()
 end)
