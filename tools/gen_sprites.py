@@ -14,7 +14,7 @@ A file whose pixels did not change is not rewritten.
 
 Tier look (issue #41): basic machines from UHV up show the GT hull texture of their tier as a frame
 around the machine overlay (HULL_TIERS); the large plasma turbines and naquadah reactors show the GT
-dynamo hatches of their tier in the corners (TIER_COPIES) instead of a tinted copy. The IV to UXV upgrade
+dynamo hatches of their tier in the corners (TIER_COPIES) instead of a tinted copy. The IV to MAX upgrade
 multiblocks keep the EV sprite and get a layer with GT energy hatches of their tier (UPGRADE_MULTIBLOCKS).
 """
 import argparse, re
@@ -44,7 +44,7 @@ BASIC_GT = {
 # tier color GT uses to tint the (gray) machine casings (IV = tungstensteel)
 TIER_TINT = {"IV": (100, 100, 160), "LuV": (255, 205, 225), "ZPM": (140, 225, 245), "UV": (130, 215, 140),
              "UHV": (235, 120, 120), "UEV": (240, 200, 90), "UIV": (120, 150, 255),
-             "UMV": (190, 120, 235), "UXV": (245, 245, 250)}
+             "UMV": (190, 120, 235), "UXV": (245, 245, 250), "MAX": (255, 255, 255)}
 
 # casing item -> flat GT texture ("mod:path" under textures/blocks). Without an entry the item icon is used.
 CASING_TEXTURE = {
@@ -113,6 +113,21 @@ MULTIBLOCKS = {
     "water-purification-plant": ((5, 5), "gregtech:iconsets/MACHINE_CASING_INDUSTRIAL_WATER_PLANT", None,
                                  "gregtech:iconsets/OVERLAY_FRONT_PURIFICATION_PLANT",
                                  "titanium-reinforced-borosilicate-glass-block"),
+    # phase 6a (139-fork-endgame-multiblocks.lua; item icons from tools/gen_gt_icons.py): GT's dimensionally
+    # transcendent plasma forge (dimensionally transcendent casing, dimensional bridge, the DTPF screen) and the
+    # quantum force transformer (GT++ bulk production frame, QFT coil, the GT++ controller face)
+    "dimensionally-transcendent-plasma-forge": ((11, 11), "gregtech:iconsets/MACHINE_DIM_TRANS_CASING", None,
+                                                ("gregtech:iconsets/OVERLAY_DTPF_OFF",
+                                                 "gregtech:iconsets/OVERLAY_DTPF_ON"),
+                                                "gregtech:iconsets/MACHINE_DIM_BRIDGE"),
+    "quantum-force-transformer": ((9, 9), "miscutils:TileEntities/machine_top", None,
+                                  "miscutils:iconsets/controllerFaces/quantumForceTransformer",
+                                  "gregtech:iconsets/MACHINE_CASING_QFT_COIL"),
+    # phase 6b (140-fork-godforge.lua): GT's forge of the gods (its support casing, its inner casing
+    # as the middle rows, the controller with its glowing eye)
+    "godforge": ((13, 13), "gregtech:iconsets/GODFORGE_SUPPORT", None,
+                 ("gregtech:iconsets/GODFORGE_CONTROLLER", "gregtech:iconsets/GODFORGE_CONTROLLER_GLOW"),
+                 "gregtech:iconsets/GODFORGE_INNER"),
     # endgame power (136-fork-power.lua): the large naquadah reactor (UHV to UXV: TIER_COPIES)
     "uv-large-naquadah-reactor": ((5, 5), "gregtech:iconsets/NAQUADAH_REACTOR_CASING", None,
                                   ("gregtech:iconsets/NAQUADAH_REACTOR_FLUID_FRONT",
@@ -126,12 +141,12 @@ CONTROLLER_ICONS = {"neutron-activator", "water-purification-plant", "uv-large-n
 # tier's hatches too. The icon gets the hatch as a badge.
 TIER_COPIES = {
     "uv-large-naquadah-reactor": ["UV", "UHV", "UEV", "UIV", "UMV", "UXV"],
-    "luv-large-plasma-turbine": ["LuV", "ZPM", "UV", "UHV", "UEV", "UIV", "UMV", "UXV"],
+    "luv-large-plasma-turbine": ["LuV", "ZPM", "UV", "UHV", "UEV", "UIV", "UMV", "UXV", "MAX"],
 }
 DYNAMO_OVERLAY = "gregtech:iconsets/OVERLAY_ENERGY_OUT_MULTI_2A_{}"
 # basic machines of these tiers: the tier's hull (MACHINE_<tier>_SIDE) as a frame of 3x3 tiles, the
 # machine's top (MACHINE_<tier>_TOP + overlay) on the middle 2x2 tiles
-HULL_TIERS = {"UHV", "UEV", "UIV", "UMV", "UXV"}
+HULL_TIERS = {"UHV", "UEV", "UIV", "UMV", "UXV", "MAX"}
 # upgrade multiblocks (IV_UPGRADE_MACHINES in 101-fork-machines.lua): IV to UXV keep the upstream sprite of
 # the EV version (base -> (sprite without "-idle.png" under graphics/entity, item icon under graphics/icons));
 # each tier gets <tier>-<base>-hatches.png, an extra layer of the sprite's size with GT energy hatches of the
@@ -152,7 +167,7 @@ UPGRADE_MULTIBLOCKS = {
     "drilling-rig": ("mv-drilling-rig/mv-drilling-rig", "mv-drilling-rig"),
     "alloy-blast-smelter": ("fork/ev-alloy-blast-smelter", "alloy-blast-smelter"),
 }
-UPGRADE_TIERS = ["IV", "LuV", "ZPM", "UV", "UHV", "UEV", "UIV", "UMV", "UXV"]
+UPGRADE_TIERS = ["IV", "LuV", "ZPM", "UV", "UHV", "UEV", "UIV", "UMV", "UXV", "MAX"]
 ENERGY_OVERLAY = "gregtech:iconsets/OVERLAY_ENERGY_IN_MULTI_2A_{}"
 # large plasma turbine (136-fork-power.lua): the 3x3 front of GT's large turbine (tungstensteel
 # rotor, animated when active); the icon is the middle tile
@@ -457,7 +472,7 @@ def main():
     OUT_ENTITY.mkdir(parents=True, exist_ok=True)
     OUT_ICON.mkdir(parents=True, exist_ok=True)
 
-    for tier in ("IV", "LuV", "ZPM", "UV", "UHV", "UEV", "UIV", "UMV", "UXV"):
+    for tier in ("IV", "LuV", "ZPM", "UV", "UHV", "UEV", "UIV", "UMV", "UXV", "MAX"):
         for base in BASIC_GT:
             basic_machine(a.gt, base, tier)
     for name, spec in MULTIBLOCKS.items():

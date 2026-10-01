@@ -122,8 +122,13 @@ disable_trigger_tech("biter-egg-handling")
 
 
 ---DISABLE TECHS
+-- the effects of the disabled techs, for the main menu simulations (prototypes/fork-menu-simulations.lua)
+FORK_DISABLED_TECH_EFFECTS = {}
 local function disable_tech(name)
   if data.raw.technology[name] and not is_gregtorio_tech(data.raw.technology[name]) then
+    for _, effect in pairs(data.raw.technology[name].effects or {}) do
+      table.insert(FORK_DISABLED_TECH_EFFECTS, effect)
+    end
     data.raw.technology[name].enabled = false
     data.raw.technology[name].hidden = true
     data.raw.technology[name].effects = {}
@@ -437,3 +442,4 @@ disable_tech("discharge-defense-equipment")
 disable_tech("explosive-rocketry")
 disable_tech("tank")
 disable_tech("tesla-weapons")
+require("prototypes.fork-menu-simulations")
