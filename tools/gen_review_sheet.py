@@ -8,7 +8,7 @@ sprites at up to 192 pixels.
     python tools/gen_review_sheet.py icons                  # the items of tools/gt-icon-items.txt
     python tools/gen_review_sheet.py techs                  # changed technology icons
     python tools/gen_review_sheet.py sprites                # changed entity sprites
-    python tools/gen_review_sheet.py upgrades               # IV to UXV upgrade multiblocks: EV look vs tier hatches
+    python tools/gen_review_sheet.py upgrades               # IV to MAX upgrade multiblocks: EV look vs tier hatches
     python tools/gen_review_sheet.py all --ref origin/main --out docs/graphics-review
 
 Output: <out>/icons-<n>-<group>.png, techs.png, sprites-<n>-<group>.png, upgrades-<tier>.png, upgrades-icons.png
@@ -34,6 +34,7 @@ ICON_GROUPS = [
     ("Water purification: wafers, power ICs, SMDs, catalyst", r"wafer$|power-ic$|integrated-circuit$|^complex-smd|quark"),
     ("Chip and SMD wraps", r"-wrap$"),
     ("Plasma forge and quantum force transformer (phase 6a)", r"^dimensional|^quantum-force"),
+    ("MAX tier and godforge (phase 6b)", r"^max-|^maximum-|magmatter|^planck|^godforge|graviton|stellar"),
     ("Fusion", r"^fusion-|^advanced-fusion"),
     ("Coils", r"coil"),
     ("Power: plutonium, cells, storage, turbines, reactors", r"plutonium|space-cell|coolant|energy|lapotronic|sludge|turbine|naquadah-reactor"),
@@ -149,6 +150,7 @@ def sprites(ref, out):
         n = Path(f).stem
         g = ("Fusion reactors" if "fusion" in n else "Large plasma turbines" if "plasma-turbine" in n else
              "Plasma forge and quantum force transformer" if n.startswith(("dimensional", "quantum-force")) else
+             "Godforge" if n.startswith("godforge") else
              "Large naquadah reactors" if "naquadah-reactor" in n else "Basic machines " + n.split("-")[0].upper())
         groups.setdefault(g, []).append(f)
     for k, (title, fs) in enumerate(sorted(groups.items()), 1):
@@ -182,7 +184,7 @@ def upgrades(ref, out):
         sheet(f"Upgrade multiblocks {tier}: EV sprite + {tier} energy hatches", entries, 128, 5,
               out / f"upgrades-{tier.lower()}.png")
     by_base = sorted(icons, key=lambda e: [b for b in UPGRADE_MULTIBLOCKS if e[0].endswith("-" + b)][0])
-    sheet("Upgrade multiblock icons IV to UXV (one row per multiblock)", by_base, 48, len(UPGRADE_TIERS),
+    sheet("Upgrade multiblock icons IV to MAX (one row per multiblock)", by_base, 48, len(UPGRADE_TIERS),
           out / "upgrades-icons.png")
 
 

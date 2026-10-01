@@ -215,7 +215,7 @@ function F.circuit_line(p)
 	local proc = pre .. "-processor"
 	local prev = p.prev .. "-processor"
 	local cat = p.assembler_tier .. "-assembling-machine-recipes"
-	local unit_speed = p.assembler_tier == "uiv" and UIV_SPEED or UMV_SPEED
+	local unit_speed = ({ uiv = UIV_SPEED, umv = UMV_SPEED, uxv = UXV_SPEED })[p.assembler_tier]
 
 	create_item{
 		name = board,

@@ -88,6 +88,20 @@ local FORK_RESEARCH_COUNTS = {
 	["uxv-multiblocks"] = 50, -- 3000
 	["uxv-naquadah-reactor"] = 50, -- 3000
 	["uxv-plasma-turbine"] = 40, -- 2500
+	-- phase 6b (140-fork-godforge.lua, 141-fork-max.lua), MAX science: about 8 hours of pack production each in
+	-- the MAX reference factory (the UXV one doubled, with godforges; tools/balance_model.py)
+	["godforge"] = 55,
+	["godforge-molten-module"] = 55,
+	["godforge-exotic-module"] = 55,
+	["dtpf-stellar-catalyst"] = 55,
+	["max-materials"] = 55,
+	["planck-processors"] = 55,
+	["planck-processor-mainframes"] = 55,
+	["max-components"] = 55,
+	["max-machines"] = 55,
+	["max-energy-hatches"] = 55,
+	["max-multiblocks"] = 55,
+	["max-plasma-turbine"] = 55,
 }
 for name, count in pairs(FORK_RESEARCH_COUNTS) do
 	local tech = data.raw.technology[name]
@@ -102,3 +116,8 @@ end
 --- (1000 MAX packs from one stargate) and 15 units of the other 14 packs; the MAX packs of one stargate
 --- last for the first six levels (15 * (2^6 - 1) = 945).
 data.raw.technology["victory"].unit.count_formula = "15 * 2^(L-1)"
+
+--- Phase 6b: the infinite `godforge-upgrades` (GT's graviton shard upgrades), the long-term sink after victory
+--- with the further victory levels: level 1 costs as much as a MAX technology (8 hours), every level twice the one
+--- before
+data.raw.technology["godforge-upgrades"].unit.count_formula = "55 * 2^(L-1)"
