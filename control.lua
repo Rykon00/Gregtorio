@@ -105,7 +105,7 @@ end)
 local REMOVED_FILTER = {}
 --- (logistic chests and cargo wagons: the inventory of a storage bus leaves the network at once)
 for _, t in pairs({ "simple-entity-with-force", "storage-tank", "lamp", "electric-energy-interface", "container",
-  "constant-combinator", "assembling-machine", "furnace", "logistic-container", "cargo-wagon" }) do
+  "constant-combinator", "assembling-machine", "furnace", "logistic-container", "cargo-wagon", "pipe-to-ground" }) do
   REMOVED_FILTER[#REMOVED_FILTER + 1] = { filter = "type", type = t }
 end
 local function on_mined(event)
