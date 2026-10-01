@@ -1,4 +1,9 @@
 ---------------------------------------------------------------------------------------------------
+Version: 0.4.1
+Date: 2026-10-01
+  Bugfixes:
+    - ME windows (drive, terminal, interface, buses, storage bus, controller, pattern provider, CPU, level maintainer, circuit and fluid interface) closed about a second after opening, and the ME Drive window showed no cell slots: they looked up their block in a way the game does not support for these entities.
+---------------------------------------------------------------------------------------------------
 Version: 0.4.0
 Date: 2026-10-01
   Features:
