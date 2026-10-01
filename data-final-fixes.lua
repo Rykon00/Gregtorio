@@ -10,12 +10,15 @@ table.insert(data.raw.lab.lab.inputs, "max-science-pack")
 --------------------------
 ---MAIN MENU SIMULATIONS---
 --------------------------
--- The vanilla main menu simulations replay saves and scripts built around vanilla entities, several of
--- which Gregtorio removes or changes (burner mining drill, electric furnace, equipment, ...). Some of
--- their scripts then touch an entity that no longer exists ("LuaEntity API call when LuaEntity was
--- invalid" in level::on_tick, e.g. nauvis_biter_base_laser_defense) and stop the menu with a
--- non-recoverable error. They do not show Gregtorio either, so the menu shows none of them.
-data.raw["utility-constants"]["default"].main_menu_simulations = {}
+-- The vanilla menu simulation "nauvis_biter_base_laser_defense" walks a character in power armor through a
+-- biter base. With Gregtorio loaded the character can die there, and its on_tick script reads
+-- character.position without a validity check (unlike its sister simulations), which stops the main menu
+-- with "The scenario level caused a non-recoverable error ... LuaEntity was invalid". Every other vanilla
+-- simulation stays; none of their scripts uses a prototype that Gregtorio removes.
+local menu_simulations = data.raw["utility-constants"]["default"].main_menu_simulations
+if menu_simulations then
+  menu_simulations.nauvis_biter_base_laser_defense = nil
+end
 
 --------------------------
 ---VANILLA ITEM REMOVAL---
