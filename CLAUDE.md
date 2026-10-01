@@ -12,8 +12,8 @@
   `docs/ME-REWORK.md`),
   121 AE2 autocrafting (pattern provider, molecular assembler, crafting CPU and its IV/LuV tiers, level
   maintainer, circuit interface; runtime in `scripts/fork-me-autocraft.lua` and `scripts/fork-me-circuit.lua`,
-  guide `docs/AE2.md`), 122 AE2 fluids (fluid cells, fluid drives,
-  fluid interface; runtime in `scripts/fork-me-fluids.lua`), 125 LuV endgame (naquadah, bacterial vat, crystal processors, fusion MK1), 126 ZPM, 127 UV
+  guide `docs/AE2.md`), 122 AE2 fluids (fluid cells for the ME Drive, fluid interface, fluid
+  buses; the old fluid drives hidden; fluids are stored by `scripts/fork-me-network.lua`, the interface in `scripts/fork-me-fluids.lua`), 125 LuV endgame (naquadah, bacterial vat, crystal processors, fusion MK1), 126 ZPM, 127 UV
   (UV circuit, ZPM assembly line, UV components, fusion MK2), 128 UHV (wetware line, tritanium,
   UHV components, fusion MK3), 129 water purification (grades 1-8, NPIC/PPIC/QPIC/FPIC/APIC chips, complex SMDs; the FPIC/APIC users in 131-134 list its techs as prerequisites),
   131 UEV (bio line, UEV components, fusion MK4), 132 UIV (optical line, UIV components),

@@ -18,7 +18,7 @@ The repository root is the mod itself (`info.json`, `data.lua`, `prototypes/`, `
 | `prototypes/110-fork-luv.lua` | LuV: materials, assembly line, LuV machines, science pack, techs |
 | `prototypes/120-fork-ae2.lua` | AE2 / ME network (issue #68, design record `docs/ME-REWORK.md`): ME Cable (placed by the fluix cable), ME Controller, ME Drive with 10 cell slots, storage cells (items with tags), ME Interface, ME Import and Export Bus, ME Terminal, techs; the old logistic-network prototypes stay hidden for saves |
 | `prototypes/121-fork-ae2-autocrafting.lua` | AE2 autocrafting: ME Pattern Provider, ME Molecular Assembler, ME Crafting CPU, tech `me-autocrafting` (guide: `docs/AE2.md`) |
-| `prototypes/122-fork-ae2-fluids.lua` | AE2 fluids: fluid storage cells, ME Fluid Drives, ME Fluid Interface, techs `me-fluid-storage` and `me-fluid-storage-256k` (guide: `docs/AE2.md`) |
+| `prototypes/122-fork-ae2-fluids.lua` | AE2 fluids (issue #68 R2): fluid storage cells for the ME Drive (items with tags), ME Fluid Interface, ME Fluid Import and Export Bus, techs `me-fluid-storage` and `me-fluid-storage-256k`; the old ME Fluid Drives stay hidden for saves (guide: `docs/AE2.md`) |
 | `prototypes/125-fork-luv-endgame.lua` | LuV endgame: naquadah ore line and neutron activator, bacterial vat and mutagen, circuit assembly line and crystal processors, fusion reactor MK1 and the first plasmas |
 | `prototypes/126-fork-zpm.lua` | ZPM: naquadah alloy parts, europium, ZPM components, casing and hull, ZPM science pack, ZPM energy hatch, ZPM machines and multiblock upgrades, techs |
 | `prototypes/127-fork-uv.lua` | UV: naquadria, americium and neutronium (fusion), superconductors, UV circuit (crystal processor mainframe), ZPM assembly line, UV components, casing and hull, fusion reactor MK2 and its plasmas, UV science pack, UV energy hatch, UV machines and multiblock upgrades, techs |
@@ -47,7 +47,7 @@ The repository root is the mod itself (`info.json`, `data.lua`, `prototypes/`, `
 | `scripts/fork-me-terminal.lua` | ME Terminal GUI (status line, storage tab with items, fluids and the player's inventory, crafting tab), routes the GUI events of every ME window |
 | `scripts/fork-me-autocraft.lua` | autocrafting: patterns from provider-adjacent machines (item and fluid recipes), planner, jobs and crafting CPUs with their tiers (job slots, speed; bounded work every 20 ticks, fluid boxes filled and drained by index), remote interface `gregtorio-me-autocraft` |
 | `scripts/fork-me-circuit.lua` | issue #38: ME Level Maintainer (keeps an item or fluid in stock by starting crafting jobs, circuit amount and on/off) and ME Circuit Interface (network contents on the circuit wire), a step hook of the autocrafting step; settings in blueprints; remote interface `gregtorio-me-circuit` |
-| `scripts/fork-me-fluids.lua` | fluids in the ME network: virtual per-drive storage (`storage.fork_me_fluids`), fluid interface import/export every 15 ticks, drive contents on the picked up item, drive and interface GUIs, remote interface `gregtorio-me-fluids` |
+| `scripts/fork-me-fluids.lua` | the ME Fluid Interface (import/export in the 15-tick I/O step, panel, settings in blueprints and paste) and the fluid calls of the other modules on top of the storage engine of `fork-me-network.lua`, remote interface `gregtorio-me-fluids` |
 | `prototypes/198-fork-crafting-menu.lua` | machine recipes in the crafting menu (issue #49): shows every recipe whose category has a machine (red background, like vanilla), except the allow-list `FORK_CRAFTING_MENU_HIDDEN` (fluid voiding, replaced vanilla recipes, recipes vanilla hides); startup setting `gregtorio-continued-show-machine-recipes` (`settings.lua`, default on) |
 | `prototypes/199-fork-finalize.lua` | draft guard (hides broken draft recipes) and auto-unlock of intermediates |
 | `locale/en/fork.cfg` | generated names for entries without a translation |
@@ -59,7 +59,7 @@ The repository root is the mod itself (`info.json`, `data.lua`, `prototypes/`, `
 | `tools/gen_sprites.py` | machine sprites/icons from GT5-Unofficial textures (`--gt <path to checkout>`); tier hulls from UHV up, tier dynamo hatches on the turbines and reactors, tier energy hatch layers and icons for the IV to UXV upgrade multiblocks |
 | `tools/gen_gt_icons.py` | item icons from GT textures for the items in `tools/gt-icon-items.txt` (GT texture of the item, GT material icon sets in GT's colours, or a composition of GT parts); `--gt`, `--core <NewHorizonsCoreMod checkout>` |
 | `tools/gen_icons.py` | placeholder icons (recolored neighbor icons) for new items without an icon; replace them with `gen_gt_icons.py` (add the item to `tools/gt-icon-items.txt`) |
-| `tools/gen_ae2_sprites.py` | ME network and autocrafting sprites, icons and tech icons (GT5-Unofficial casings + Pillow); `--fluids` derives the fluid drive, cell and interface graphics from the item PNGs without a GT checkout; `--r1` the cable, drive, controller and bus graphics of issue #68 |
+| `tools/gen_ae2_sprites.py` | ME network and autocrafting sprites, icons and tech icons (GT5-Unofficial casings + Pillow); `--fluids` derives the fluid drive, cell and interface graphics from the item PNGs without a GT checkout; `--r1` the cable, drive, controller and bus graphics of issue #68, `--r2` the fluid buses |
 | `tools/gen_tech_icons.py` | technology icons instead of the "NYI" placeholder (from the main unlocked item, listed in `tools/tech-icons.tsv`) |
 | `tools/gen_review_sheet.py` | before/after contact sheets of changed icons and sprites (`docs/graphics-review/`) |
 | `tools/gen_ui_icons.py` | GUI icons derived from item icons (empty manual-labor slot, red "no manual labor" alert) |
@@ -116,7 +116,7 @@ https://mods.factorio.com/mod/gregtorio-continued), in the repo as well as on th
 
 Saves from `Gregtorio` load with `gregtorio-continued`: prototype names did not change, so
 buildings, items and research stay. What a save keeps per mod name is lost once: the script
-state (contents of ME Fluid Drives, running autocrafting jobs, open terminal windows); machines
+state (contents of the old ME Fluid Drives, running autocrafting jobs, open terminal windows); machines
 with a mold recipe and an empty mold slot get a mold once.
 
 ## Contributing
