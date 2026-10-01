@@ -4,6 +4,7 @@ Version: 0.4.1
     - ME windows (drive, terminal, interface, buses, storage bus, controller, pattern provider, CPU, level maintainer, circuit and fluid interface) closed about a second after opening, and the ME Drive window showed no cell slots: they looked up their block in a way the game does not support for these entities.
 ---------------------------------------------------------------------------------------------------
 Version: 0.4.0
+Date: 2026-10-01
   Features:
     - Dimensionally Transcendent Plasma Forge (UMV, 11x11, 1.31 GW): makes neutronium, cosmic neutronium, infinity, transcendent metal, spacetime and universium from the inputs of their fusion recipes with two thirds of the input per ingot and in a third of the reactor time, burning an excited dimensionally transcendent catalyst. The fusion reactors keep their recipes. Technology Dimensionally Transcendent Plasma Forge (UMV science).
     - Excited dimensionally transcendent catalysts, made in the forge: crude (helium, iron, calcium and niobium plasma) and resplendent (UXV technology Resplendent Plasma Forge Catalyst: the crude catalyst with boron, sulfur, nitrogen, zinc and titanium plasma), with which the forge makes twice the batch in the same time for less catalyst per ingot.
