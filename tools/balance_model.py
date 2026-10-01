@@ -9,13 +9,19 @@ Recipes of basic machines from IV up are counted but never limit (built as neede
 
     python tools/balance_model.py dump.json [--json out.json]
     python tools/balance_model.py dump.json --dtpf     # phase 6a: DTPF route against the fusion route
+    python tools/balance_model.py dump.json --max      # phase 6b: magmatter and universium in the godforge
 
 The fusion reactors are the default route for every metal; the recipes of the dimensionally transcendent plasma
-forge and the quantum force transformer (phase 6a) are only used with `dtpf=` (see compare_dtpf).
+forge and the quantum force transformer (phase 6a) are only used with `dtpf=` (see compare_dtpf). The godforge
+(phase 6b) is a machine class like the assembly lines; its recipes are the only route to raw star matter and
+magmatter, and the fusion recipes stay the default route of universium. The MAX reference factory (`max`) is the
+UXV one doubled, with godforges; the technologies with MAX packs (except `victory`) are counted in it, with the
+MAX pack from MAX parts (`max-science-pack-from-magmatter`) and magmatter from its fastest godforge recipe.
 """
 import json, re, sys, collections, math
 
-TIERS = ["lv", "mv", "hv", "ev", "iv", "luv", "zpm", "uv", "uhv", "uev", "uiv", "umv", "uxv"]
+TIERS = ["lv", "mv", "hv", "ev", "iv", "luv", "zpm", "uv", "uhv", "uev", "uiv", "umv", "uxv", "max"]
+TIER_RE = "(" + "|".join(TIERS) + ")-"
 TI = {t: i for i, t in enumerate(TIERS)}
 MK_SPEED = {1: 32, 2: 64, 3: 128, 4: 512, 5: 1024}
 FUSION_CAT = {  # category -> minimum MK
@@ -33,6 +39,7 @@ FIXED = {  # category -> (class, speed of the best machine)
     "bacterial-vat-recipes": ("bacterial-vat", 1),
     "dimensionally-transcendent-plasma-forge-recipes": ("dtpf", 2048),
     "quantum-force-transformer-recipes": ("qft", 2048),
+    "godforge-recipes": ("godforge", 4096),
 }
 DTPF_CAT = "dimensionally-transcendent-plasma-forge-recipes"
 OPTIONAL_CATS = {DTPF_CAT, "quantum-force-transformer-recipes"}  # phase 6a: not part of the default route
@@ -41,7 +48,7 @@ DTPF_METALS = ["molten-neutronium", "molten-cosmic-neutronium", "molten-infinity
                "molten-spacetime", "molten-universium"]
 # power per crafting speed (MW): every fusion recipe runs in the MK4/MK5 of the endgame factories
 # (327.68 MW / 512, 655.36 MW / 1024), the DTPF draws 1310.72 MW at speed 2048
-MW_PER_SPEED = {"fusion": 0.64, "dtpf": 1310.72 / 2048}
+MW_PER_SPEED = {"fusion": 0.64, "dtpf": 1310.72 / 2048, "godforge": 2621.44 / 4096}
 FREE_RAW = {"p507"}  # loop reagent of the naquadah line
 GLOBAL_OV = {"raw-crystal-chip": "raw-crystal-chip-loop"}  # steady state of the GT loop
 CREDIT = {"bacterial-sludge", "p507"}  # loop byproducts: a recipe that returns them is credited
@@ -93,7 +100,7 @@ class Model:
         # best basic machine speed per category at this tier
         self.cat_speed = {}
         for c in self.C.values():
-            m = re.match(r"(lv|mv|hv|ev|iv|luv|zpm|uv|uhv|uev|uiv|umv|uxv)-", c["name"])
+            m = re.match(TIER_RE, c["name"])
             if m and TI[m.group(1)] > TI[tier]:
                 continue
             for cat in c["categories"] or []:
@@ -109,7 +116,7 @@ class Model:
             if c == "assembly-line" and TI[self.tier] < TI["zpm"]:
                 sp = 16
             return c, sp
-        m = re.match(r"^(lv|mv|hv|ev|iv|luv|zpm|uv|uhv|uev|uiv|umv|uxv)-(.*)", cat)
+        m = re.match("^" + TIER_RE + "(.*)", cat)
         if not m or TI[m.group(1)] < TI["iv"]:
             return "commodity", self.cat_speed.get(cat, 0) or 1
         return "basic:" + m.group(2), self.cat_speed.get(cat, 0) or 1
@@ -132,7 +139,7 @@ class Model:
             ing = {i["name"] for i in rec["ingredients"]}
             bootstrap = "bootstrap" in r
             cyc = bool(ing & set(stack)) or item in ing
-            m = re.match(r"^(lv|mv|hv|ev|iv|luv|zpm|uv|uhv|uev|uiv|umv|uxv)-", rec["category"])
+            m = re.match("^" + TIER_RE, rec["category"])
             tier = TI[m.group(1)] if m else 0
             return (cyc, not main, bootstrap, tier, len(rec["ingredients"]), r)
         return sorted(cands, key=score)[0]
@@ -231,10 +238,11 @@ def part_time(w, factory):
 # Reference factory per tier: one power unit = 12.5 large plasma turbines of the tier on helium plasma
 # (LuV 1 MK1, ZPM 1 MK2, UV 2 MK2, UHV 2 MK3, UEV 1 MK4, UIV 1 MK5, UMV 2 MK5, UXV 4 MK5).
 # Metal reactors: twice the power reactors of the newest MK plus 2 of the MK before.
-def fac(power, fusion, lines, vats, plants, dtpf=0):
+def fac(power, fusion, lines, vats, plants, dtpf=0, godforge=0):
     return {"power": power, "fusion": fusion,
             "count": {"assembly-line": lines, "circuit-assembly-line": lines, "bacterial-vat": vats,
-                      "water-purification": plants, "basic": 10 ** 9, "dtpf": dtpf, "qft": 10 ** 9}}
+                      "water-purification": plants, "basic": 10 ** 9, "dtpf": dtpf, "qft": 10 ** 9,
+                      "godforge": godforge}}
 FACTORY = {
     "luv": fac({1: 1}, {1: 2},       1, 4, 1),
     "zpm": fac({2: 1}, {2: 2, 1: 2}, 2, 4, 1),
@@ -244,6 +252,8 @@ FACTORY = {
     "uiv": fac({5: 1}, {5: 2, 4: 2}, 4, 16, 4),
     "umv": fac({5: 2}, {5: 4, 4: 2}, 8, 32, 8),
     "uxv": fac({5: 4}, {5: 8, 4: 2}, 8, 32, 8),
+    # phase 6b: the UXV unit doubled (8 MK5 of power: 12.5 MAX turbines) with 4 godforges (2.62 GW each, 4 %)
+    "max": fac({5: 8}, {5: 16, 4: 2}, 16, 64, 16, godforge=4),
 }
 
 
@@ -259,7 +269,10 @@ ITEMS = {  # tier of the factory that makes it -> items
             "stargate-frame-part", "stargate-radiation-containment-plate", "stargate-chevron", "stargate-iris-blade",
             "stargate-ring-block", "stargate-chevron-block", "stargate-base", "stargate-power-unit", "stargate-controller",
             "stargate-chevron-upgrade", "stargate-iris-upgrade", "stargate", "max-science-pack"],
+    "max": ["raw-star-matter", "molten-magmatter", "magmatter-ingot", "godforge", "max-circuit"]
+           + [f"max-{c}" for c in COMP] + ["max-energy-hatch", "max-science-pack", "max-large-plasma-turbine"],
 }
+MAGMATTER = "molten-magmatter"
 
 
 PACKS = ["automation", "logistic", "military", "chemical", "production", "utility", "space", "metallurgic",
@@ -290,6 +303,7 @@ def energy(w):
     """GJ of fusion reactors and DTPFs for one unit (work at speed 1 for fusion, seconds of one DTPF)"""
     e = sum(v for c, v in w.items() if c.startswith("fusion-mk")) * MW_PER_SPEED["fusion"]
     e += w.get("dtpf", 0) * MW_PER_SPEED["dtpf"] * 2048
+    e += w.get("godforge", 0) * MW_PER_SPEED["godforge"] * 4096
     return e / 1000
 
 
@@ -324,19 +338,46 @@ def compare_dtpf(f):
     return out
 
 
+def max_overrides(f):
+    """MAX factory: the MAX pack from MAX parts, magmatter from the godforge recipe that is fastest in the MAX
+    factory (the player picks the metal)"""
+    m = Model(f, "max")
+    if not m.producers.get(MAGMATTER):
+        return {}  # a dump from before phase 6b
+    best = min((part_time(Model(f, "max", {MAGMATTER: r}).work(MAGMATTER), FACTORY["max"])[0], r)
+               for r in m.producers.get(MAGMATTER, []))
+    return {"max-science-pack": "max-science-pack-from-magmatter", MAGMATTER: best[1]}
+
+
+def compare_max(f):
+    """phase 6b: magmatter per metal, universium through the fusion reactors and the godforge"""
+    out = {"magmatter": {}, "universium": {}}
+    base = Model(f, "max")
+    for r in base.producers.get(MAGMATTER, []):
+        w = Model(f, "max", {MAGMATTER: r}).work(MAGMATTER)
+        t, b, _ = part_time(w, FACTORY["max"])
+        out["magmatter"][r] = {"time_ingot": t * INGOT, "bottleneck": b, "gj_ingot": energy(w) * INGOT}
+    for route, ov in (("fusion", {}), ("godforge", {"molten-universium": "molten-universium-godforge"})):
+        w = Model(f, "max", ov).work("molten-universium")
+        out["universium"][route] = {"time_ingot": part_time(w, FACTORY["max"])[0] * INGOT,
+                                    "gj_ingot": energy(w) * INGOT}
+    return out
+
+
 def fmt(s):
     return f"{s/3600:.1f} h" if s >= 5400 else f"{s/60:.1f} min"
 
 def run(f, verbose=True):
     res = {"parts": {}, "research": {}}
     models = {}
+    tier_ov = dict(TIER_OV, max=max_overrides(f))
     for tier, items in ITEMS.items():
-        m = models[tier] = Model(f, tier, TIER_OV.get(tier, {}))
+        m = models[tier] = Model(f, tier, tier_ov.get(tier, {}))
         for it in items:
             w = m.work(it)
             t, b, per = part_time(w, FACTORY[tier])
             tx, bx, _ = part_time(w, FACTORY["uxv"])
-            res["parts"][it] = {"tier": tier, "time": t, "bottleneck": b, "uxv_time": tx,
+            res["parts"][it if it not in res["parts"] else f"{it}@{tier}"] = {"tier": tier, "time": t, "bottleneck": b, "uxv_time": tx,
                                 "per": {k: v for k, v in per.items()}}
     # research: techs whose highest pack is UIV or above, in the factory of their highest pack
     mx = models["uxv"]
@@ -346,9 +387,10 @@ def run(f, verbose=True):
         top = t["ingredients"][-1]["name"]
         if PACK_TIER.get(top) not in ("luv", "zpm", "uv", "uhv", "uev", "uiv", "umv", "uxv", "max"):
             continue
-        tier = {"max": "uxv"}.get(PACK_TIER[top], PACK_TIER[top])
+        # `victory` in the UXV factory (MAX packs from the stargate), the phase 6b technologies in the MAX factory
+        tier = "uxv" if n == "victory" else PACK_TIER[top]
         if tier not in models:
-            models[tier] = Model(f, tier, TIER_OV.get(tier, {}))
+            models[tier] = Model(f, tier, tier_ov.get(tier, {}))
         m = models[tier]
         count = t.get("count") or eval(t["count_formula"].replace("^", "**").replace("L", "1"))
         w = collections.Counter()
@@ -377,6 +419,13 @@ if __name__ == "__main__":
             print(f"{x['tier']:4s} {it:22s}", "  ".join(
                 f"{r} {fmt(x[r])}" + (f" ({x['split'][r]} DTPF)" if r in x["split"] else "") + f" {x['gj'][r]:.0f} GJ"
                 for r in ("fusion", "crude", "resplendent") if r in x))
+        sys.exit(0)
+    if "--max" in sys.argv:
+        c = compare_max(sys.argv[1])
+        for rn, x in sorted(c["magmatter"].items(), key=lambda kv: kv[1]["time_ingot"]):
+            print(f"magmatter {rn:42s} {fmt(x['time_ingot']):>9s} per ingot ({x['bottleneck']}) {x['gj_ingot']:.0f} GJ")
+        for rn, x in c["universium"].items():
+            print(f"universium {rn:9s} {fmt(x['time_ingot']):>9s} per ingot {x['gj_ingot']:.1f} GJ")
         sys.exit(0)
     r = run(sys.argv[1])
     if "--json" in sys.argv:
