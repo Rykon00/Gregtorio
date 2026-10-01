@@ -6,7 +6,10 @@
 - Upstream content lives in `prototypes/0*-*.lua` … `98-technology.lua`; keep changes there
   minimal. Fork logic lives in `prototypes/1xx-fork-*.lua`, loaded at the end of `data.lua`
   in this order: 100 fixes, 101 machines, 102 resources, 103 QoL techs (re-gates the vanilla inserter, belt and
-  worker robot techs of issue #29 onto Gregtorio techs, GT recipes for bulk/stack inserters and express/turbo belts), 110 LuV, 120 AE2 (ME network),
+  worker robot techs of issue #29 onto Gregtorio techs, GT recipes for bulk/stack inserters and express/turbo belts), 110 LuV, 120 AE2 (ME network since issue #68: cables,
+  controller, drives with cells, interface, buses, terminal; the old logistic-network prototypes stay hidden for
+  saves; runtime in `scripts/fork-me-network.lua`, `fork-me-io.lua`, `fork-me-migrate.lua`, design record
+  `docs/ME-REWORK.md`),
   121 AE2 autocrafting (pattern provider, molecular assembler, crafting CPU and its IV/LuV tiers, level
   maintainer, circuit interface; runtime in `scripts/fork-me-autocraft.lua` and `scripts/fork-me-circuit.lua`,
   guide `docs/AE2.md`), 122 AE2 fluids (fluid cells, fluid drives,
@@ -35,15 +38,20 @@
   `create_recipe` hides; a recipe that must stay hidden goes into its allow-list
   `FORK_CRAFTING_MENU_HIDDEN`, devcheck fails otherwise; startup setting in `settings.lua`), 199 finalize.
   The phase plan is in `docs/ROADMAP.md`.
-  Runtime fork code lives in `scripts/` and is required from `control.lua` (`fork-me-terminal.lua`,
-  `fork-me-autocraft.lua`, `fork-me-fluids.lua`, `fork-me-circuit.lua`, `fork-molds.lua`, `fork-victory.lua`,
-  `fork-power.lua`). `fork-me-circuit.lua` registers no interval: it runs as a step hook of the autocrafting
-  step (20), and the terminal module registers every GUI event and routes it (fluids, circuit).
-  Tick intervals in use: `on_nth_tick` 60 (ME terminal), 30 (molds), 20 (autocrafting), 15 (fluids);
+  Runtime fork code lives in `scripts/` and is required from `control.lua` (`fork-me-network.lua`, `fork-me-io.lua`,
+  `fork-me-migrate.lua`, `fork-me-terminal.lua`, `fork-me-autocraft.lua`, `fork-me-fluids.lua`, `fork-me-circuit.lua`,
+  `fork-molds.lua`, `fork-victory.lua`, `fork-power.lua`). The ME modules use the storage API of
+  `fork-me-network.lua`, never a logistic network. `fork-me-circuit.lua` registers no interval: it runs as a step hook
+  of the autocrafting step (20); the fluid step runs inside the I/O step of `fork-me-io.lua` (15); the network's slow
+  step (drive lights, sweep) runs inside the terminal step (60); the terminal module registers every GUI event and
+  routes it (network, I/O, fluids, circuit, autocrafting); `control.lua` registers the build and removal events
+  of all ME modules (the graph first on build, last on removal).
+  Tick intervals in use: `on_nth_tick` 60 (ME terminal), 30 (molds), 20 (autocrafting), 15 (ME I/O and fluids);
   `on_tick` (fork-power: turbine energy every tick, fuel check and output hatches every 10th tick);
   registrations for the same interval (or a second `on_tick`) overwrite each other, so a new periodic
   task picks a free interval. `on_init` belongs to the ME terminal, so other scripts keep their state
-  lazy (`storage.fork_ae2`, `storage.fork_me_fluids`, `storage.fork_molds`, `storage.fork_power`).
+  lazy (`storage.fork_ae2`, `storage.fork_me_fluids`, `storage.fork_me_net`, `storage.fork_me_io`, `storage.fork_molds`,
+  `storage.fork_power`); `on_configuration_changed` rebuilds the ME graph first, then runs the ME migration.
 - `data-final-fixes.lua` disables vanilla techs (`disable_tech`: hidden, no effects). The main menu simulations that call
   `research_all_technologies()` get the bonuses of those techs from `prototypes/fork-menu-simulations.lua` (PR #65: the
   laser defense simulation's character died without them and its script stopped the menu); after changing the disabled

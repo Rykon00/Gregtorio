@@ -16,7 +16,7 @@ The repository root is the mod itself (`info.json`, `data.lua`, `prototypes/`, `
 | `prototypes/102-fork-resources.lua` | disables the vanilla resource patches (no spawning, not minable) |
 | `prototypes/103-fork-qol-techs.lua` | issue #29: the vanilla quality-of-life techs (bulk/stack inserter, inserter capacity bonus, express and turbo belts, belt capacity, worker robot speed and cargo size) gated onto Gregtorio techs with Gregtorio science packs, GT recipes for the inserters and belts they unlock |
 | `prototypes/110-fork-luv.lua` | LuV: materials, assembly line, LuV machines, science pack, techs |
-| `prototypes/120-fork-ae2.lua` | AE2 / ME network on top of the logistic network: ME Drives with storage cells, ME Interface, ME Terminal, ME Controller, techs |
+| `prototypes/120-fork-ae2.lua` | AE2 / ME network (issue #68, design record `docs/ME-REWORK.md`): ME Cable (placed by the fluix cable), ME Controller, ME Drive with 10 cell slots, storage cells (items with tags), ME Interface, ME Import and Export Bus, ME Terminal, techs; the old logistic-network prototypes stay hidden for saves |
 | `prototypes/121-fork-ae2-autocrafting.lua` | AE2 autocrafting: ME Pattern Provider, ME Molecular Assembler, ME Crafting CPU, tech `me-autocrafting` (guide: `docs/AE2.md`) |
 | `prototypes/122-fork-ae2-fluids.lua` | AE2 fluids: fluid storage cells, ME Fluid Drives, ME Fluid Interface, techs `me-fluid-storage` and `me-fluid-storage-256k` (guide: `docs/AE2.md`) |
 | `prototypes/125-fork-luv-endgame.lua` | LuV endgame: naquadah ore line and neutron activator, bacterial vat and mutagen, circuit assembly line and crystal processors, fusion reactor MK1 and the first plasmas |
@@ -41,7 +41,10 @@ The repository root is the mod itself (`info.json`, `data.lua`, `prototypes/`, `
 | `scripts/fork-molds.lua` | stops machines with a mold recipe and no mold ("Missing mold"); gives machines their mold once in saves from before they had a mold slot |
 | `prototypes/fork-menu-simulations.lua` | main menu simulations (PR #65), loaded from `data-final-fixes.lua`: simulations that call `research_all_technologies()` get the bonuses of the vanilla techs Gregtorio disables (the laser defense simulation's character died without them); check with `devcheck.py menusim --sim all --compare` |
 | `prototypes/190-fork-manual-labor.lua` | "manual labor" burner usage: fist instead of the gas pump in the fuel slot, "No manual labor" status |
-| `scripts/fork-me-terminal.lua` | runtime part of the ME network: terminal GUI (storage tab with items and fluids, crafting tab, event driven), ME Interface default, routes the fluid and circuit GUI events |
+| `scripts/fork-me-network.lua` | ME network core (issue #68): the cable graph (kept from the build and removal events), networks with their controller and status, storage cells and the storage API (insert, extract, count, contents), the ME Drive (slots, window, lights), the cable router, remote interface `gregtorio-me-network` |
+| `scripts/fork-me-io.lua` | ME Interface and import/export buses, the I/O step every 15 ticks (also runs the fluid step), bus window, remote interface `gregtorio-me-io` |
+| `scripts/fork-me-migrate.lua` | converts ME networks from before issue #68 (old drives into drives with cells, controller, interface, cables), checks the item totals, remote interface `gregtorio-me-migrate` |
+| `scripts/fork-me-terminal.lua` | ME Terminal GUI (status line, storage tab with items, fluids and the player's inventory, crafting tab), routes the GUI events of every ME window |
 | `scripts/fork-me-autocraft.lua` | autocrafting: patterns from provider-adjacent machines (item and fluid recipes), planner, jobs and crafting CPUs with their tiers (job slots, speed; bounded work every 20 ticks, fluid boxes filled and drained by index), remote interface `gregtorio-me-autocraft` |
 | `scripts/fork-me-circuit.lua` | issue #38: ME Level Maintainer (keeps an item or fluid in stock by starting crafting jobs, circuit amount and on/off) and ME Circuit Interface (network contents on the circuit wire), a step hook of the autocrafting step; settings in blueprints; remote interface `gregtorio-me-circuit` |
 | `scripts/fork-me-fluids.lua` | fluids in the ME network: virtual per-drive storage (`storage.fork_me_fluids`), fluid interface import/export every 15 ticks, drive contents on the picked up item, drive and interface GUIs, remote interface `gregtorio-me-fluids` |
@@ -56,7 +59,7 @@ The repository root is the mod itself (`info.json`, `data.lua`, `prototypes/`, `
 | `tools/gen_sprites.py` | machine sprites/icons from GT5-Unofficial textures (`--gt <path to checkout>`); tier hulls from UHV up, tier dynamo hatches on the turbines and reactors, tier energy hatch layers and icons for the IV to UXV upgrade multiblocks |
 | `tools/gen_gt_icons.py` | item icons from GT textures for the items in `tools/gt-icon-items.txt` (GT texture of the item, GT material icon sets in GT's colours, or a composition of GT parts); `--gt`, `--core <NewHorizonsCoreMod checkout>` |
 | `tools/gen_icons.py` | placeholder icons (recolored neighbor icons) for new items without an icon; replace them with `gen_gt_icons.py` (add the item to `tools/gt-icon-items.txt`) |
-| `tools/gen_ae2_sprites.py` | ME network and autocrafting sprites, icons and tech icons (GT5-Unofficial casings + Pillow); `--fluids` derives the fluid drive, cell and interface graphics from the item PNGs without a GT checkout |
+| `tools/gen_ae2_sprites.py` | ME network and autocrafting sprites, icons and tech icons (GT5-Unofficial casings + Pillow); `--fluids` derives the fluid drive, cell and interface graphics from the item PNGs without a GT checkout; `--r1` the cable, drive, controller and bus graphics of issue #68 |
 | `tools/gen_tech_icons.py` | technology icons instead of the "NYI" placeholder (from the main unlocked item, listed in `tools/tech-icons.tsv`) |
 | `tools/gen_review_sheet.py` | before/after contact sheets of changed icons and sprites (`docs/graphics-review/`) |
 | `tools/gen_ui_icons.py` | GUI icons derived from item icons (empty manual-labor slot, red "no manual labor" alert) |
@@ -133,3 +136,8 @@ names the textures of every generated item icon):
   fusion coils, high density plutonium, wrapped plutonium ingot, radioactive waste), bartworks (borosilicate glass, wrap band).
 * [NewHorizonsCoreMod](https://github.com/GTNewHorizons/NewHorizonsCoreMod) by GTNewHorizons, GPL-3.0: stargate chevron,
   frame part and radiation containment plate, the UMV, UXV and MAX (Planck) circuits.
+
+The ME network graphics (`tools/gen_ae2_sprites.py`) use only GT5-Unofficial casings and screens and shapes drawn
+with Pillow; the ME cable, the ME Drive's cell bays, the bus plates and arrows of issue #68 are drawn by the script
+or derived from those sprites. No textures of Applied Energistics 2 are used (its assets are not under a license
+compatible with this mod's GPLv3).
