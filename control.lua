@@ -1,7 +1,9 @@
 
 --- Fork: ME network core: cable graph, controller, drives and cells, storage API (AE2, issue #68, see prototypes/120-fork-ae2.lua)
 local fork_net = require("scripts.fork-me-network")
---- Fork: ME Interface and import/export buses, the I/O step (also runs the fluid step)
+--- Fork: ME Storage Bus: a chest or cargo wagon as network storage (its visits run in the I/O step)
+local fork_sbus = require("scripts.fork-me-storagebus")
+--- Fork: ME Interface and import/export buses, the I/O step (also runs the fluid step and the storage bus visits)
 local fork_io = require("scripts.fork-me-io")
 --- Fork: migration of ME networks from before issue #68 (logistic network based)
 local fork_migrate = require("scripts.fork-me-migrate")
@@ -25,6 +27,7 @@ local fork_power = require("scripts.fork-power")
 --- the blueprint handler of the autocrafting module also tags ME Interfaces, buses and drives
 fork_ae2.blueprint_hooks[#fork_ae2.blueprint_hooks + 1] = fork_io.tag_blueprint
 fork_ae2.blueprint_hooks[#fork_ae2.blueprint_hooks + 1] = fork_net.tag_blueprint
+fork_ae2.blueprint_hooks[#fork_ae2.blueprint_hooks + 1] = fork_sbus.tag_blueprint
 
 script.on_event(defines.events.on_built_entity, function(event)
   if event.entity.name == "trash-can" then
@@ -32,6 +35,7 @@ script.on_event(defines.events.on_built_entity, function(event)
   end
   fork_net.on_built(event.entity, event)
   fork_io.on_built(event.entity, event.tags)
+  fork_sbus.on_built(event.entity, event.tags)
   fork_ae2.on_built(event.entity, event.tags)
   fork_fluids.on_built(event.entity, event.tags)
   fork_circuit.on_built(event.entity, event.tags)
@@ -45,6 +49,7 @@ script.on_event(defines.events.on_robot_built_entity, function(event)
   end
   fork_net.on_built(event.entity, event)
   fork_io.on_built(event.entity, event.tags)
+  fork_sbus.on_built(event.entity, event.tags)
   fork_ae2.on_built(event.entity, event.tags)
   fork_fluids.on_built(event.entity, event.tags)
   fork_circuit.on_built(event.entity, event.tags)
@@ -57,6 +62,7 @@ script.on_event({ defines.events.script_raised_built, defines.events.script_rais
   defines.events.on_space_platform_built_entity }, function(event)
   fork_net.on_built(event.entity, event)
   fork_io.on_built(event.entity, event.tags)
+  fork_sbus.on_built(event.entity, event.tags)
   fork_ae2.on_built(event.entity, event.tags)
   fork_fluids.on_built(event.entity, event.tags)
   fork_circuit.on_built(event.entity, event.tags)
@@ -70,6 +76,7 @@ script.on_event(defines.events.on_entity_cloned, function(event)
   fork_net.on_built(event.destination)
   fork_net.on_cloned(event.source, event.destination)
   fork_io.on_built(event.destination, nil, event.source)
+  fork_sbus.on_built(event.destination, nil, event.source)
   fork_ae2.on_built(event.destination, nil, event.source)
   fork_fluids.on_built(event.destination, nil, event.source)
   fork_circuit.on_built(event.destination, nil, event.source)
@@ -82,6 +89,7 @@ end)
 script.on_event(defines.events.on_entity_settings_pasted, function(event)
   fork_net.on_entity_settings_pasted(event)
   fork_io.on_entity_settings_pasted(event)
+  fork_sbus.on_entity_settings_pasted(event)
   fork_ae2.on_entity_settings_pasted(event)
   fork_fluids.on_entity_settings_pasted(event)
   fork_circuit.on_entity_settings_pasted(event)
@@ -95,13 +103,15 @@ end)
 --- a fluid interface's content back into the network; destroyed or removed by a script: the cells are spilled.
 --- The fluid module runs first (it looks at the network the entity still belongs to), then the graph is updated.
 local REMOVED_FILTER = {}
+--- (logistic chests and cargo wagons: the inventory of a storage bus leaves the network at once)
 for _, t in pairs({ "simple-entity-with-force", "storage-tank", "lamp", "electric-energy-interface", "container",
-  "constant-combinator", "assembling-machine", "furnace" }) do
+  "constant-combinator", "assembling-machine", "furnace", "logistic-container", "cargo-wagon" }) do
   REMOVED_FILTER[#REMOVED_FILTER + 1] = { filter = "type", type = t }
 end
 local function on_mined(event)
   fork_fluids.on_mined_event(event)
   fork_io.on_removed(event.entity)
+  fork_sbus.on_removed(event.entity)
   fork_net.on_removed(event.entity, event.buffer)
 end
 for _, name in pairs({ "on_player_mined_entity", "on_robot_mined_entity", "on_space_platform_mined_entity" }) do
@@ -110,18 +120,21 @@ end
 script.on_event(defines.events.on_entity_died, function(event)
   fork_fluids.on_removed(event.entity)
   fork_io.on_removed(event.entity)
+  fork_sbus.on_removed(event.entity)
   fork_net.on_removed(event.entity, nil)
 end, REMOVED_FILTER)
 script.on_event(defines.events.script_raised_destroy, function(event)
   fork_fluids.on_removed(event.entity)
   fork_io.on_removed(event.entity)
+  fork_sbus.on_removed(event.entity)
   fork_net.on_removed(event.entity, nil)
 end, REMOVED_FILTER)
 
---- Fork: a rotated import or export bus faces another entity
+--- Fork: a rotated import, export or storage bus faces another entity
 script.on_event(defines.events.on_player_rotated_entity, function(event)
   fork_io.on_rotated(event.entity)
   fork_net.on_rotated(event.entity)
+  fork_sbus.on_rotated(event.entity)
 end)
 
 -- Raise a custom event when the cutscene ends
@@ -205,6 +218,7 @@ script.on_configuration_changed(function(data)
 	fork_ae2.on_configuration_changed()
 	fork_circuit.on_configuration_changed()
 	fork_io.on_configuration_changed()
+	fork_sbus.on_configuration_changed()
 	fork_molds.on_configuration_changed()
 	fork_power.on_configuration_changed()
 end)
