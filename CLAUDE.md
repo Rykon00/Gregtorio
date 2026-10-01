@@ -8,13 +8,13 @@
   in this order: 100 fixes, 101 machines, 102 resources, 103 QoL techs (re-gates the vanilla inserter, belt and
   worker robot techs of issue #29 onto Gregtorio techs, GT recipes for bulk/stack inserters and express/turbo belts), 110 LuV, 120 AE2 (ME network since issue #68: cables,
   controller, drives with cells, interface, buses, storage bus, terminal; the old logistic-network prototypes stay
-  hidden for saves; runtime in `scripts/fork-me-network.lua`, `fork-me-io.lua`, `fork-me-storagebus.lua`,
+  hidden for saves; runtime in `scripts/fork-me-network.lua`, `fork-me-io.lua`, `fork-me-storagebus.lua`, `fork-me-fluid-storagebus.lua`,
   `fork-me-migrate.lua`, design record
   `docs/ME-REWORK.md`),
   121 AE2 autocrafting (pattern provider, molecular assembler, crafting CPU and its IV/LuV tiers, level
   maintainer, circuit interface; runtime in `scripts/fork-me-autocraft.lua` and `scripts/fork-me-circuit.lua`,
   guide `docs/AE2.md`), 122 AE2 fluids (fluid cells for the ME Drive, fluid interface, fluid
-  buses; the old fluid drives hidden; fluids are stored by `scripts/fork-me-network.lua`, the interface in `scripts/fork-me-fluids.lua`), 125 LuV endgame (naquadah, bacterial vat, crystal processors, fusion MK1), 126 ZPM, 127 UV
+  buses, fluid storage bus (runtime `scripts/fork-me-fluid-storagebus.lua`: one bus per fluid segment); the old fluid drives hidden; fluids are stored by `scripts/fork-me-network.lua`, the interface in `scripts/fork-me-fluids.lua`), 125 LuV endgame (naquadah, bacterial vat, crystal processors, fusion MK1), 126 ZPM, 127 UV
   (UV circuit, ZPM assembly line, UV components, fusion MK2), 128 UHV (wetware line, tritanium,
   UHV components, fusion MK3), 129 water purification (grades 1-8, NPIC/PPIC/QPIC/FPIC/APIC chips, complex SMDs; the FPIC/APIC users in 131-134 list its techs as prerequisites),
   131 UEV (bio line, UEV components, fusion MK4), 132 UIV (optical line, UIV components),
@@ -40,11 +40,11 @@
   `FORK_CRAFTING_MENU_HIDDEN`, devcheck fails otherwise; startup setting in `settings.lua`), 199 finalize.
   The phase plan is in `docs/ROADMAP.md`.
   Runtime fork code lives in `scripts/` and is required from `control.lua` (`fork-me-network.lua`, `fork-me-io.lua`,
-  `fork-me-storagebus.lua`, `fork-me-migrate.lua`, `fork-me-terminal.lua`, `fork-me-autocraft.lua`, `fork-me-fluids.lua`, `fork-me-circuit.lua`,
+  `fork-me-storagebus.lua`, `fork-me-fluid-storagebus.lua`, `fork-me-migrate.lua`, `fork-me-terminal.lua`, `fork-me-autocraft.lua`, `fork-me-fluids.lua`, `fork-me-circuit.lua`,
   `fork-me-gui.lua`, `fork-me-windows.lua`, `fork-molds.lua`, `fork-victory.lua`, `fork-power.lua`). The ME modules use the storage API of
   `fork-me-network.lua`, never a logistic network. `fork-me-circuit.lua` registers no interval: it runs as a step hook
   of the autocrafting step (20); the fluid step and the storage bus visits (8 per step) run inside the I/O step of
-  `fork-me-io.lua` (15); a storage bus is an external cell of the storage engine (`N.ext_*`); the network's slow
+  `fork-me-io.lua` (15); a storage bus is an external cell of the storage engine (`N.ext_*`), so is a fluid storage bus (8 visits per step too); the network's slow
   step (drive lights, sweep) and the refresh of open ME windows run inside the terminal step (60); the terminal
   module registers every GUI event and hands it to `fork-me-gui.lua` (`dispatch`: actions by the `fork_me_act` tag;
   one window style, the block windows are in `fork-me-windows.lua`, issue #68 R3); `control.lua` registers the build and removal events
@@ -53,7 +53,7 @@
   `on_tick` (fork-power: turbine energy every tick, fuel check and output hatches every 10th tick);
   registrations for the same interval (or a second `on_tick`) overwrite each other, so a new periodic
   task picks a free interval. `on_init` belongs to the ME terminal, so other scripts keep their state
-  lazy (`storage.fork_ae2`, `storage.fork_me_fluids`, `storage.fork_me_net`, `storage.fork_me_io`, `storage.fork_me_sbus`,
+  lazy (`storage.fork_ae2`, `storage.fork_me_fluids`, `storage.fork_me_net`, `storage.fork_me_io`, `storage.fork_me_sbus`, `storage.fork_me_fsbus`,
   `storage.fork_molds`,
   `storage.fork_power`); `on_configuration_changed` rebuilds the ME graph first, then runs the ME migration.
 - `data-final-fixes.lua` disables vanilla techs (`disable_tech`: hidden, no effects). The main menu simulations that call
