@@ -5,7 +5,7 @@ local fork_net = require("scripts.fork-me-network")
 local fork_io = require("scripts.fork-me-io")
 --- Fork: migration of ME networks from before issue #68 (logistic network based)
 local fork_migrate = require("scripts.fork-me-migrate")
---- Fork: ME terminal GUI, routes the GUI events of every ME window
+--- Fork: ME terminal (the hub window), routes the GUI events of every ME window (scripts/fork-me-gui.lua)
 local fork_me = require("scripts.fork-me-terminal")
 --- Fork: AE2 autocrafting, pattern providers and crafting CPUs (see prototypes/121-fork-ae2-autocrafting.lua)
 local fork_ae2 = require("scripts.fork-me-autocraft")
@@ -13,6 +13,8 @@ local fork_ae2 = require("scripts.fork-me-autocraft")
 local fork_fluids = require("scripts.fork-me-fluids")
 --- Fork: AE2 level maintainer and circuit interface (issue #38, see prototypes/121-fork-ae2-autocrafting.lua)
 local fork_circuit = require("scripts.fork-me-circuit")
+--- Fork: the windows of the ME blocks (issue #68 step R3; after the modules whose functions they call)
+require("scripts.fork-me-windows")
 --- Fork: molds stay in the machine's mold slot (see prototypes/150-fork-molds.lua)
 local fork_molds = require("scripts.fork-molds")
 --- Fork: researching the first level of `victory` wins the game (see prototypes/135-fork-endgame.lua)
@@ -20,8 +22,9 @@ local fork_victory = require("scripts.fork-victory")
 --- Fork: fuel check of the endgame generators, cooled fluid of the plasma turbines (see prototypes/136-fork-power.lua)
 local fork_power = require("scripts.fork-power")
 
---- the blueprint handler of the autocrafting module also tags ME Interfaces and buses
+--- the blueprint handler of the autocrafting module also tags ME Interfaces, buses and drives
 fork_ae2.blueprint_hooks[#fork_ae2.blueprint_hooks + 1] = fork_io.tag_blueprint
+fork_ae2.blueprint_hooks[#fork_ae2.blueprint_hooks + 1] = fork_net.tag_blueprint
 
 script.on_event(defines.events.on_built_entity, function(event)
   if event.entity.name == "trash-can" then
@@ -65,6 +68,7 @@ end)
 --- the settings of providers, fluid interfaces, level maintainers and circuit interfaces are copied)
 script.on_event(defines.events.on_entity_cloned, function(event)
   fork_net.on_built(event.destination)
+  fork_net.on_cloned(event.source, event.destination)
   fork_io.on_built(event.destination, nil, event.source)
   fork_ae2.on_built(event.destination, nil, event.source)
   fork_fluids.on_built(event.destination, nil, event.source)
@@ -72,10 +76,11 @@ script.on_event(defines.events.on_entity_cloned, function(event)
   fork_power.on_built(event.destination)
 end)
 
---- Fork: the recipe choice of an ME Pattern Provider (for the furnaces next to it) and the settings of ME Fluid
---- Interfaces, Level Maintainers and Circuit Interfaces are copied by settings paste and stored in blueprints
---- (the blueprint handler of fork-me-autocraft.lua tags all of them)
+--- Fork: the recipe choice of an ME Pattern Provider (for the furnaces next to it) and the settings of ME Drives,
+--- ME Interfaces, buses, ME Fluid Interfaces, Level Maintainers and Circuit Interfaces are copied by settings
+--- paste and stored in blueprints (the blueprint handler of fork-me-autocraft.lua tags all of them)
 script.on_event(defines.events.on_entity_settings_pasted, function(event)
+  fork_net.on_entity_settings_pasted(event)
   fork_io.on_entity_settings_pasted(event)
   fork_ae2.on_entity_settings_pasted(event)
   fork_fluids.on_entity_settings_pasted(event)

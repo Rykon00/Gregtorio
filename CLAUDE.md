@@ -40,11 +40,12 @@
   The phase plan is in `docs/ROADMAP.md`.
   Runtime fork code lives in `scripts/` and is required from `control.lua` (`fork-me-network.lua`, `fork-me-io.lua`,
   `fork-me-migrate.lua`, `fork-me-terminal.lua`, `fork-me-autocraft.lua`, `fork-me-fluids.lua`, `fork-me-circuit.lua`,
-  `fork-molds.lua`, `fork-victory.lua`, `fork-power.lua`). The ME modules use the storage API of
+  `fork-me-gui.lua`, `fork-me-windows.lua`, `fork-molds.lua`, `fork-victory.lua`, `fork-power.lua`). The ME modules use the storage API of
   `fork-me-network.lua`, never a logistic network. `fork-me-circuit.lua` registers no interval: it runs as a step hook
   of the autocrafting step (20); the fluid step runs inside the I/O step of `fork-me-io.lua` (15); the network's slow
-  step (drive lights, sweep) runs inside the terminal step (60); the terminal module registers every GUI event and
-  routes it (network, I/O, fluids, circuit, autocrafting); `control.lua` registers the build and removal events
+  step (drive lights, sweep) and the refresh of open ME windows run inside the terminal step (60); the terminal
+  module registers every GUI event and hands it to `fork-me-gui.lua` (`dispatch`: actions by the `fork_me_act` tag;
+  one window style, the block windows are in `fork-me-windows.lua`, issue #68 R3); `control.lua` registers the build and removal events
   of all ME modules (the graph first on build, last on removal).
   Tick intervals in use: `on_nth_tick` 60 (ME terminal), 30 (molds), 20 (autocrafting), 15 (ME I/O and fluids);
   `on_tick` (fork-power: turbine energy every tick, fuel check and output hatches every 10th tick);
