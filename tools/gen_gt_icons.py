@@ -32,13 +32,13 @@ ICONS = ROOT / "graphics/icons"
 LIST = ROOT / "tools/gt-icon-items.txt"
 SIZE = 32
 
-TIERS = ["lv", "mv", "hv", "ev", "iv", "luv", "zpm", "uv", "uhv", "uev", "uiv", "umv", "uxv"]
+TIERS = ["lv", "mv", "hv", "ev", "iv", "luv", "zpm", "uv", "uhv", "uev", "uiv", "umv", "uxv", "max"]
 GT_TIER = {"lv": "LV", "mv": "MV", "hv": "HV", "ev": "EV", "iv": "IV", "luv": "LuV", "zpm": "ZPM", "uv": "UV",
-           "uhv": "UHV", "uev": "UEV", "uiv": "UIV", "umv": "UMV", "uxv": "UXV"}
+           "uhv": "UHV", "uev": "UEV", "uiv": "UIV", "umv": "UMV", "uxv": "UXV", "max": "MAX"}
 # tier colour of the fork's machine casings (same as TIER_TINT in gen_sprites.py)
 TIER_TINT = {"iv": (100, 100, 160), "luv": (255, 205, 225), "zpm": (140, 225, 245), "uv": (130, 215, 140),
              "uhv": (235, 120, 120), "uev": (240, 200, 90), "uiv": (120, 150, 255), "umv": (190, 120, 235),
-             "uxv": (245, 245, 250)}
+             "uxv": (245, 245, 250), "max": (255, 255, 255)}
 
 M1 = "gt:gregtech/textures/items/gt.metaitem.01/"
 M3 = "gt:gregtech/textures/items/gt.metaitem.03/"
@@ -48,18 +48,18 @@ GTPP_TE = "gt:miscutils/textures/blocks/TileEntities/"
 GG = "gt:goodgenerator/textures/"
 CORE = "core:dreamcraft/textures/items/"
 
-# GT component ids (gt.metaitem.01), LuV .. UXV
+# GT component ids (gt.metaitem.01), LuV .. MAX
 COMPONENT_IDS = {
-    "motor": [606, 607, 608, 596, 595, 17, 18, 19],
-    "pump": [615, 616, 617, 618, 619, 25, 26, 27],
-    "conveyor-module": [635, 636, 637, 638, 639, 29, 30, 31],
-    "piston": [645, 646, 647, 648, 649, 21, 22, 23],
-    "robot-arm": [655, 656, 657, 658, 659, 33, 34, 35],
-    "emitter": [685, 686, 687, 688, 689, 37, 38, 39],
-    "sensor": [695, 696, 697, 698, 699, 41, 42, 43],
-    "field-generator": [675, 676, 677, 678, 679, 45, 46, 47],
+    "motor": [606, 607, 608, 596, 595, 17, 18, 19, 20],
+    "pump": [615, 616, 617, 618, 619, 25, 26, 27, 28],
+    "conveyor-module": [635, 636, 637, 638, 639, 29, 30, 31, 32],
+    "piston": [645, 646, 647, 648, 649, 21, 22, 23, 24],
+    "robot-arm": [655, 656, 657, 658, 659, 33, 34, 35, 36],
+    "emitter": [685, 686, 687, 688, 689, 37, 38, 39, 40],
+    "sensor": [695, 696, 697, 698, 699, 41, 42, 43, 44],
+    "field-generator": [675, 676, 677, 678, 679, 45, 46, 47, 48],
 }
-HIGH_TIERS = ["luv", "zpm", "uv", "uhv", "uev", "uiv", "umv", "uxv"]
+HIGH_TIERS = ["luv", "zpm", "uv", "uhv", "uev", "uiv", "umv", "uxv", "max"]
 # Composer.readable: gamma for the dark tones and the colour of the outline of the component icons
 READABLE_GAMMA = 0.6
 READABLE_OUTLINE = (176, 176, 184)
@@ -99,6 +99,8 @@ MATERIALS = {
     "rhodium-plated-palladium": ("SHINY", (0xDC, 0xDC, 0xF0)),      # Materials.Chrome colour, like bartworks
     # GT++ (MaterialsElements.java)
     "rhugnor": ("CUSTOM/rhugnor", (190, 0, 255)),
+    # GT builds magmatter with a material builder (TextureSet.SET_MAGMATTER, no colour)
+    "magmatter": ("CUSTOM/magmatter", (255, 255, 255)),
 }
 
 # fork part name -> GT OrePrefix texture; "{m}" is the material
@@ -409,7 +411,7 @@ def icon_table(c):
     for name, i in {"ludicrous-voltage-coil": 146, "zero-point-module-voltage-coil": 147, "ultimate-voltage-coil": 148,
                     "highly-ultimate-voltage-coil": 149, "extremely-ultimate-voltage-coil": 259,
                     "insanely-ultimate-voltage-coil": 260, "mega-ultimate-voltage-coil": 261,
-                    "extended-mega-ultimate-voltage-coil": 262}.items():
+                    "extended-mega-ultimate-voltage-coil": 262, "maximum-voltage-coil": 263}.items():
         T[name] = lambda i=i: c.gt(f"{M3}{i}")
 
     # circuit lines: GT's wetware, bio, optical, exotic and (for the fork's temporal line) the
@@ -430,6 +432,13 @@ def icon_table(c):
     # GT has no exotic/temporal chip: its optical CPU with the board of the line as a badge
     T["exotic-processing-unit"] = lambda: c.badge(c.gt(f"{M3}726"), c.gt(f"{M3}729"))
     T["temporal-processing-unit"] = lambda: c.badge(c.gt(f"{M3}726"), c.gt(f"{M3}731"))
+    # phase 6b: the fork's MAX line (Planck) takes GT's cosmic circuits, which the fork does not use otherwise (its
+    # UXV line has the transcendent ones); the MAX circuit is GTNH's Planck-scale circuit of the core mod
+    for name, i in {"planck-printed-circuit-board": 730, "planck-processor": 170, "planck-processor-assembly": 171,
+                    "planck-processor-supercomputer": 172}.items():
+        T[name] = lambda i=i: c.gt(f"{M3}{i}")
+    T["planck-processing-unit"] = lambda: c.badge(c.gt(f"{M3}726"), c.gt(f"{M3}730"))
+    T["max-circuit"] = lambda: c.gt(f"{CORE}itemPlanckCircuit")
     T["crystal-cpu"] = lambda: c.gt(f"{M3}70")
     T["raw-crystal-chip"] = lambda: c.gt(f"{M3}69")
     T["raw-crystal-chip-part"] = lambda: c.gt(f"{M3}74")
@@ -502,6 +511,26 @@ def icon_table(c):
     T["large-plasma-turbine-controller"] = lambda: c.face(f"{BLK}MACHINE_CASING_TURBINE_TUNGSTENSTEEL",
                                                           f"{BLK}LARGETURBINE_TU5")
     T["tungstensteel-turbine-rotor"] = lambda: c.part("tungstensteel", "toolTurbine")
+    # phase 6a: GT's dimensionally transcendent plasma forge and GT++'s quantum force transformer (their blocks,
+    # the controller faces gen_sprites.py uses)
+    T["dimensionally-transcendent-casing"] = lambda: c.gt(f"{BLK}MACHINE_DIM_TRANS_CASING")
+    T["dimensional-bridge"] = lambda: c.gt(f"{BLK}MACHINE_DIM_BRIDGE")
+    T["dimensionally-transcendent-plasma-forge-controller"] = lambda: c.face(f"{BLK}MACHINE_DIM_TRANS_CASING",
+                                                                              f"{BLK}OVERLAY_DTPF_ON")
+    T["dimensionally-transcendent-plasma-forge"] = lambda: c.mini(f"{BLK}MACHINE_DIM_TRANS_CASING",
+                                                                  f"{BLK}MACHINE_DIM_BRIDGE", f"{BLK}OVERLAY_DTPF_ON")
+    T["quantum-force-transformer-coil-casing"] = lambda: c.gt(f"{BLK}MACHINE_CASING_QFT_COIL")
+    T["quantum-force-transformer-controller"] = lambda: c.face(f"{GTPP_TE}machine_top",
+                                                               f"{GTPP}controllerFaces/quantumForceTransformer")
+    T["quantum-force-transformer"] = lambda: c.mini(f"{GTPP_TE}machine_top", f"{BLK}MACHINE_CASING_QFT_COIL",
+                                                    f"{GTPP}controllerFaces/quantumForceTransformer")
+
+    # phase 6b: the forge of the gods (its blocks, the controller face gen_sprites.py uses)
+    T["stellar-energy-siphon-casing"] = lambda: c.gt(f"{BLK}GODFORGE_ENERGY")
+    T["singularity-reinforced-stellar-shielding-casing"] = lambda: c.gt(f"{BLK}GODFORGE_SUPPORT")
+    T["remote-graviton-flow-modulator"] = lambda: c.gt(f"{BLK}GRAVITON_CASING_0")
+    T["godforge-controller"] = lambda: c.face(f"{BLK}GODFORGE_SUPPORT", f"{BLK}GODFORGE_CONTROLLER")
+    T["godforge"] = lambda: c.mini(f"{BLK}GODFORGE_SUPPORT", f"{BLK}GODFORGE_ENERGY", f"{BLK}GODFORGE_CONTROLLER")
 
     # stargate (NewHorizonsCoreMod)
     T["stargate-chevron"] = lambda: c.gt(f"{CORE}itemStargateChevron")

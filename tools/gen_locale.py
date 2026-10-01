@@ -17,7 +17,7 @@ OUT = LOC / "fork.cfg"
 
 WORDS = {
     "ulv": "ULV", "lv": "LV", "mv": "MV", "hv": "HV", "ev": "EV", "iv": "IV", "luv": "LuV", "zpm": "ZPM",
-    "uv": "UV", "uhv": "UHV", "uev": "UEV", "uiv": "UIV", "umv": "UMV", "uxv": "UXV",
+    "uv": "UV", "uhv": "UHV", "uev": "UEV", "uiv": "UIV", "umv": "UMV", "uxv": "UXV", "max": "MAX", "dtpf": "DTPF",
     "hsss": "HSS-S", "hssg": "HSS-G", "hsse": "HSS-E", "rtm": "RTM", "ptfe": "PTFE", "me": "ME",
     "uhpic": "UHPIC", "hpic": "HPIC", "npic": "NPIC", "ppic": "PPIC", "qpic": "QPIC", "fpic": "FPIC", "apic": "APIC", "smds": "SMDs", "ic": "IC", "ics": "ICs", "smd": "SMD", "cpu": "CPU", "ram": "RAM", "nand": "NAND", "nor": "NOR",
     "n": "N", "mk1": "MK1", "mk2": "MK2", "mk3": "MK3", "mk4": "MK4", "mk5": "MK5", "16x": "16x", "4x": "4x",

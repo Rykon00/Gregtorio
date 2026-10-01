@@ -40,6 +40,10 @@ crystal-cpu	gt:gregtech/textures/items/gt.metaitem.03/70
 dense-fluxed-electrum-plate	gt:gregtech/textures/items/materialicons/CUSTOM/fluxed/plateDense
 dense-naquadah-alloy-plate	colour of NaquadahAlloy #282828 + gt:gregtech/textures/items/materialicons/NONE/plateDense
 dense-osmiridium-plate	colour of Osmiridium #6464ff + gt:gregtech/textures/items/materialicons/NONE/plateDense
+dimensional-bridge	gt:gregtech/textures/blocks/iconsets/MACHINE_DIM_BRIDGE
+dimensionally-transcendent-casing	gt:gregtech/textures/blocks/iconsets/MACHINE_DIM_TRANS_CASING
+dimensionally-transcendent-plasma-forge	gt:gregtech/textures/blocks/iconsets/MACHINE_DIM_TRANS_CASING + gt:gregtech/textures/blocks/iconsets/OVERLAY_DTPF_ON + gt:gregtech/textures/blocks/iconsets/MACHINE_DIM_BRIDGE
+dimensionally-transcendent-plasma-forge-controller	gt:gregtech/textures/blocks/iconsets/MACHINE_DIM_TRANS_CASING + gt:gregtech/textures/blocks/iconsets/OVERLAY_DTPF_ON
 dracofinium-dust	colour of SuperconductorUEVBase #ae0808 + gt:gregtech/textures/items/materialicons/SHINY/dust + gt:gregtech/textures/items/materialicons/SHINY/dust_OVERLAY
 dracofinium-ingot	colour of SuperconductorUEVBase #ae0808 + gt:gregtech/textures/items/materialicons/SHINY/ingot + gt:gregtech/textures/items/materialicons/SHINY/ingot_OVERLAY
 dracofinium-superconductive-wire	colour of SuperconductorUEVBase #ae0808
@@ -66,6 +70,7 @@ femto-power-ic	gt:gregtech/textures/items/gt.metaitem.03/267
 fine-americium-wire	colour of Americium #c8c8c8 + gt:gregtech/textures/items/materialicons/NONE/wireFine + gt:gregtech/textures/items/materialicons/NONE/wireFine_OVERLAY
 fine-cosmic-neutronium-wire	colour of CosmicNeutronium #323237 + gt:gregtech/textures/items/materialicons/NONE/wireFine + gt:gregtech/textures/items/materialicons/CUSTOM/cosmicneutronium/wireFine_OVERLAY
 fine-fluxed-electrum-wire	gt:gregtech/textures/items/materialicons/CUSTOM/fluxed/wireFine + gt:gregtech/textures/items/materialicons/NONE/wireFine_OVERLAY
+fine-magmatter-wire	gt:gregtech/textures/items/materialicons/CUSTOM/magmatter/wireFine + gt:gregtech/textures/items/materialicons/CUSTOM/magmatter/wireFine_OVERLAY
 fine-spacetime-wire	gt:gregtech/textures/items/materialicons/CUSTOM/spacetime/wireFine + gt:gregtech/textures/items/materialicons/CUSTOM/spacetime/wireFine_OVERLAY
 fine-transcendent-metal-wire	colour of TranscendentMetal #323232 + gt:gregtech/textures/items/materialicons/NONE/wireFine + gt:gregtech/textures/items/materialicons/NONE/wireFine_OVERLAY
 fine-tritanium-wire	colour of Tritanium #600000 + gt:gregtech/textures/items/materialicons/NONE/wireFine + gt:gregtech/textures/items/materialicons/NONE/wireFine_OVERLAY
@@ -89,6 +94,8 @@ fusion-reactor-mk4	gt:miscutils/textures/blocks/iconsets/MACHINE_CASING_FUSION_3
 fusion-reactor-mk4-controller	gt:miscutils/textures/blocks/iconsets/MACHINE_CASING_FUSION_3 + gt:miscutils/textures/blocks/TileEntities/adv_machine_screen_random3
 fusion-reactor-mk5	gt:miscutils/textures/blocks/iconsets/MACHINE_CASING_FUSION_4 + gt:miscutils/textures/blocks/TileEntities/overlay_rainbowscreen + gt:goodgenerator/textures/blocks/fuison/5
 fusion-reactor-mk5-controller	gt:miscutils/textures/blocks/iconsets/MACHINE_CASING_FUSION_4 + gt:miscutils/textures/blocks/TileEntities/overlay_rainbowscreen
+godforge	gt:gregtech/textures/blocks/iconsets/GODFORGE_SUPPORT + gt:gregtech/textures/blocks/iconsets/GODFORGE_CONTROLLER + gt:gregtech/textures/blocks/iconsets/GODFORGE_ENERGY
+godforge-controller	gt:gregtech/textures/blocks/iconsets/GODFORGE_SUPPORT + gt:gregtech/textures/blocks/iconsets/GODFORGE_CONTROLLER
 high-density-plutonium	gt:goodgenerator/textures/items/highDensityPlutonium
 high-density-plutonium-nugget	gt:goodgenerator/textures/items/highDensityPlutoniumNugget
 highly-ultimate-voltage-coil	gt:gregtech/textures/items/gt.metaitem.03/149
@@ -132,6 +139,7 @@ itbtc-alloy-wire	colour of Tetraindiumditindibariumtitaniumheptacoppertetrakaide
 lapotronic-energy-orb-cluster	gt:gregtech/textures/items/gt.metaitem.01/599
 large-hsss-gear	colour of HSSS #660033 + gt:gregtech/textures/items/materialicons/NONE/gearGt
 large-infinity-gear	gt:gregtech/textures/items/materialicons/CUSTOM/infinity/gearGt
+large-magmatter-gear	gt:gregtech/textures/items/materialicons/CUSTOM/magmatter/gearGt + gt:gregtech/textures/items/materialicons/CUSTOM/magmatter/gearGt_OVERLAY
 large-naquadah-alloy-gear	colour of NaquadahAlloy #282828 + gt:gregtech/textures/items/materialicons/NONE/gearGt
 large-naquadah-reactor-controller	gt:gregtech/textures/blocks/iconsets/NAQUADAH_REACTOR_CASING + gt:gregtech/textures/blocks/iconsets/NAQUADAH_REACTOR_FLUID_FRONT
 large-neutronium-gear	colour of Neutronium #fafafa + gt:gregtech/textures/items/materialicons/NONE/gearGt
@@ -142,6 +150,7 @@ large-tritanium-gear	colour of Tritanium #600000 + gt:gregtech/textures/items/ma
 large-universium-gear	colour of Universium #263145 + gt:gregtech/textures/items/materialicons/CUSTOM/universium/gearGt
 long-hsss-rod	colour of HSSS #660033 + gt:gregtech/textures/items/materialicons/NONE/stickLong
 long-infinity-rod	gt:gregtech/textures/items/materialicons/CUSTOM/infinity/stickLong
+long-magmatter-rod	gt:gregtech/textures/items/materialicons/CUSTOM/magmatter/stickLong + gt:gregtech/textures/items/materialicons/CUSTOM/magmatter/stickLong_OVERLAY
 long-magnetic-samarium-rod	colour of SamariumMagnetic #ffffcc + gt:gregtech/textures/items/materialicons/MAGNETIC/stickLong + gt:gregtech/textures/items/materialicons/MAGNETIC/stickLong_OVERLAY
 long-naquadah-alloy-rod	colour of NaquadahAlloy #282828 + gt:gregtech/textures/items/materialicons/NONE/stickLong
 long-neutronium-rod	colour of Neutronium #fafafa + gt:gregtech/textures/items/materialicons/NONE/stickLong
@@ -164,7 +173,33 @@ luv-pump	gt:gregtech/textures/items/gt.metaitem.01/615 + lifted for dark slots, 
 luv-robot-arm	gt:gregtech/textures/items/gt.metaitem.01/655 + lifted for dark slots, light outline
 luv-sensor	gt:gregtech/textures/items/gt.metaitem.01/695 + lifted for dark slots, light outline
 luv-superconductor-wire-16x	
+magmatter-cable	gt:gregtech/textures/items/materialicons/CUSTOM/magmatter/ingot + colour of magmatter #414141
+magmatter-foil	gt:gregtech/textures/items/materialicons/CUSTOM/magmatter/foil + gt:gregtech/textures/items/materialicons/CUSTOM/magmatter/foil_OVERLAY
+magmatter-frame	gt:gregtech/textures/blocks/materialicons/CUSTOM/magmatter/frameGt + gt:gregtech/textures/blocks/materialicons/CUSTOM/magmatter/frameGt_OVERLAY
+magmatter-gear	gt:gregtech/textures/items/materialicons/CUSTOM/magmatter/gearGtSmall + gt:gregtech/textures/items/materialicons/CUSTOM/magmatter/gearGtSmall_OVERLAY
+magmatter-ingot	gt:gregtech/textures/items/materialicons/CUSTOM/magmatter/ingot + gt:gregtech/textures/items/materialicons/CUSTOM/magmatter/ingot_OVERLAY
+magmatter-plate	gt:gregtech/textures/items/materialicons/CUSTOM/magmatter/plate + gt:gregtech/textures/items/materialicons/CUSTOM/magmatter/plate_OVERLAY
+magmatter-ring	gt:gregtech/textures/items/materialicons/CUSTOM/magmatter/ring + gt:gregtech/textures/items/materialicons/CUSTOM/magmatter/ring_OVERLAY
+magmatter-rod	gt:gregtech/textures/items/materialicons/CUSTOM/magmatter/stick + gt:gregtech/textures/items/materialicons/CUSTOM/magmatter/stick_OVERLAY
+magmatter-rotor	gt:gregtech/textures/items/materialicons/CUSTOM/magmatter/rotor + gt:gregtech/textures/items/materialicons/CUSTOM/magmatter/rotor_OVERLAY
+magmatter-round	gt:gregtech/textures/items/materialicons/CUSTOM/magmatter/round + gt:gregtech/textures/items/materialicons/CUSTOM/magmatter/round_OVERLAY
+magmatter-screw	gt:gregtech/textures/items/materialicons/CUSTOM/magmatter/screw + gt:gregtech/textures/items/materialicons/CUSTOM/magmatter/screw_OVERLAY
+magmatter-wire	gt:gregtech/textures/items/materialicons/CUSTOM/magmatter/ingot + colour of magmatter #414141
 magnetic-samarium-rod	colour of SamariumMagnetic #ffffcc + gt:gregtech/textures/items/materialicons/MAGNETIC/stick + gt:gregtech/textures/items/materialicons/MAGNETIC/stick_OVERLAY
+max-circuit	core:dreamcraft/textures/items/itemPlanckCircuit
+max-conveyor-module	gt:gregtech/textures/items/gt.metaitem.01/32 + lifted for dark slots, light outline
+max-dynamo-hatch	gt:gregtech/textures/blocks/iconsets/MACHINE_MAX_SIDE + gt:gregtech/textures/blocks/iconsets/OVERLAY_ENERGY_OUT_MULTI_2A_MAX
+max-emitter	gt:gregtech/textures/items/gt.metaitem.01/40 + lifted for dark slots, light outline
+max-energy-hatch	gt:gregtech/textures/blocks/iconsets/MACHINE_MAX_SIDE + gt:gregtech/textures/blocks/iconsets/OVERLAY_ENERGY_IN_MULTI_2A_MAX
+max-field-generator	gt:gregtech/textures/items/gt.metaitem.01/48 + lifted for dark slots, light outline
+max-machine-casing	gt:gregtech/textures/blocks/iconsets/MACHINE_MAX_SIDE
+max-machine-hull	gt:gregtech/textures/blocks/iconsets/MACHINE_MAX_SIDE + gt:gregtech/textures/blocks/iconsets/OVERLAY_ENERGY_OUT_MAX
+max-motor	gt:gregtech/textures/items/gt.metaitem.01/20 + lifted for dark slots, light outline
+max-piston	gt:gregtech/textures/items/gt.metaitem.01/24 + lifted for dark slots, light outline
+max-pump	gt:gregtech/textures/items/gt.metaitem.01/28 + lifted for dark slots, light outline
+max-robot-arm	gt:gregtech/textures/items/gt.metaitem.01/36 + lifted for dark slots, light outline
+max-sensor	gt:gregtech/textures/items/gt.metaitem.01/44 + lifted for dark slots, light outline
+maximum-voltage-coil	gt:gregtech/textures/items/gt.metaitem.03/263
 mega-ultimate-voltage-coil	gt:gregtech/textures/items/gt.metaitem.03/261
 multilayered-fiber-reinforced-circuit-board	gt:gregtech/textures/items/gt.metaitem.01/712
 multilayered-fiber-reinforced-printed-circuit-board	gt:gregtech/textures/items/gt.metaitem.03/104
@@ -217,23 +252,33 @@ palladium-naqindium-ingot	colour of Tetranaquadahdiindiumhexaplatiumosminid #0a0
 palladium-naqindium-superconductive-wire	colour of Tetranaquadahdiindiumhexaplatiumosminid #0a0a0a
 palladium-naqindium-wire	colour of Tetranaquadahdiindiumhexaplatiumosminid #0a0a0a
 pico-power-ic	gt:gregtech/textures/items/gt.metaitem.03/163
+planck-printed-circuit-board	gt:gregtech/textures/items/gt.metaitem.03/730
+planck-processing-unit	gt:gregtech/textures/items/gt.metaitem.03/726 + gt:gregtech/textures/items/gt.metaitem.03/730
+planck-processor	gt:gregtech/textures/items/gt.metaitem.03/170
+planck-processor-assembly	gt:gregtech/textures/items/gt.metaitem.03/171
+planck-processor-supercomputer	gt:gregtech/textures/items/gt.metaitem.03/172
 ppic-wafer	gt:gregtech/textures/items/gt.metaitem.03/162
 qpic-wafer	gt:gregtech/textures/items/gt.metaitem.03/164
 quantium-cable	colour of Quantium #00d10b
 quantium-dust	colour of Quantium #00d10b + gt:gregtech/textures/items/materialicons/SHINY/dust + gt:gregtech/textures/items/materialicons/SHINY/dust_OVERLAY
 quantium-ingot	colour of Quantium #00d10b + gt:gregtech/textures/items/materialicons/SHINY/ingot + gt:gregtech/textures/items/materialicons/SHINY/ingot_OVERLAY
 quantium-wire	colour of Quantium #00d10b
+quantum-force-transformer	gt:miscutils/textures/blocks/TileEntities/machine_top + gt:miscutils/textures/blocks/iconsets/controllerFaces/quantumForceTransformer + gt:gregtech/textures/blocks/iconsets/MACHINE_CASING_QFT_COIL
+quantum-force-transformer-coil-casing	gt:gregtech/textures/blocks/iconsets/MACHINE_CASING_QFT_COIL
+quantum-force-transformer-controller	gt:miscutils/textures/blocks/TileEntities/machine_top + gt:miscutils/textures/blocks/iconsets/controllerFaces/quantumForceTransformer
 quantum-power-ic	gt:gregtech/textures/items/gt.metaitem.03/165
 quark-creation-catalyst	gt:gregtech/textures/items/gt.metaitem.03/241
 radioactive-sludge	gt:goodgenerator/textures/items/radioactiveWaste
 ram-chip-wrap	gt:bartworks/textures/items/WrapOverlay + gt:gregtech/textures/items/gt.metaitem.03/39
 raw-crystal-chip	gt:gregtech/textures/items/gt.metaitem.03/69
 raw-crystal-chip-part	gt:gregtech/textures/items/gt.metaitem.03/74
+remote-graviton-flow-modulator	gt:gregtech/textures/blocks/iconsets/GRAVITON_CASING_0
 rhodium-plated-palladium-dust	colour of rhodium-plated-palladium #dcdcf0 + gt:gregtech/textures/items/materialicons/SHINY/dust + gt:gregtech/textures/items/materialicons/SHINY/dust_OVERLAY
 rhugnor-ingot	colour of rhugnor #be00ff + gt:gregtech/textures/items/materialicons/CUSTOM/rhugnor/ingot + gt:gregtech/textures/items/materialicons/CUSTOM/rhugnor/ingot_OVERLAY
 rhugnor-plate	colour of rhugnor #be00ff + gt:gregtech/textures/items/materialicons/CUSTOM/rhugnor/plate + gt:gregtech/textures/items/materialicons/CUSTOM/rhugnor/plate_OVERLAY
 ruridit-plate	colour of ruridit #a4a4a4 + gt:gregtech/textures/items/materialicons/METALLIC/plate
 samarium-rod	colour of Samarium #ffffcc + gt:gregtech/textures/items/materialicons/NONE/stick
+singularity-reinforced-stellar-shielding-casing	gt:gregtech/textures/blocks/iconsets/GODFORGE_SUPPORT
 spacetime-cable	gt:gregtech/textures/items/materialicons/CUSTOM/spacetime/ingot + colour of SpaceTime #361b47
 spacetime-coil-block	gt:gregtech/textures/blocks/iconsets/MACHINE_COIL_TRINIUM_BACKGROUND + gt:gregtech/textures/blocks/iconsets/MACHINE_COIL_TRINIUM_FOREGROUND + gt:gregtech/textures/blocks/materialicons/CUSTOM/spacetime/BLOCK_SPACETIME
 spacetime-foil	gt:gregtech/textures/items/materialicons/CUSTOM/spacetime/foil
@@ -251,6 +296,7 @@ stargate-chevron	core:dreamcraft/textures/items/itemStargateChevron
 stargate-frame-part	core:dreamcraft/textures/items/itemStargateFramePart
 stargate-iris-blade	colour of Neutronium #fafafa + gt:gregtech/textures/items/materialicons/NONE/turbineBlade
 stargate-radiation-containment-plate	core:dreamcraft/textures/items/itemStargateShieldingFoil
+stellar-energy-siphon-casing	gt:gregtech/textures/blocks/iconsets/GODFORGE_ENERGY
 stem-cells	gt:gregtech/textures/items/gt.metaitem.03/73
 superconducting-coil-block	gt:gregtech/textures/blocks/iconsets/MACHINE_COIL_SUPERCONDUCTOR
 superdense-americium-plate	colour of Americium #c8c8c8 + gt:gregtech/textures/items/materialicons/NONE/plateSuperdense
