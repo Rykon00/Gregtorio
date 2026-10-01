@@ -1,4 +1,12 @@
 ---------------------------------------------------------------------------------------------------
+Version: 0.4.0
+  Features:
+    - Dimensionally Transcendent Plasma Forge (UMV, 11x11, 1.31 GW): makes neutronium, cosmic neutronium, infinity, transcendent metal, spacetime and universium from the inputs of their fusion recipes with two thirds of the input per ingot and in a third of the reactor time, burning an excited dimensionally transcendent catalyst. The fusion reactors keep their recipes. Technology Dimensionally Transcendent Plasma Forge (UMV science).
+    - Excited dimensionally transcendent catalysts, made in the forge: crude (helium, iron, calcium and niobium plasma) and resplendent (UXV technology Resplendent Plasma Forge Catalyst: the crude catalyst with boron, sulfur, nitrogen, zinc and titanium plasma), with which the forge makes twice the batch in the same time for less catalyst per ingot.
+    - Quantum Force Transformer (UMV, 9x9, 1.31 GW): the platinum line (platinum and palladium metallic powder, iridium metal residue, rarest metal mixture, crude rhodium residue, iridium group sludge) and the naquadah line (naquadah and enriched naquadah oxide mixture) in one step, one recipe per main output, with nitrogen plasma. Technology Quantum Force Transformer (UMV science).
+  Graphics:
+    - The plasma forge and the quantum force transformer, their parts and technologies use GregTech textures (dimensionally transcendent casing, dimensional bridge, plasma forge screen; QFT coil and controller).
+---------------------------------------------------------------------------------------------------
 Version: 0.3.2
 Date: 2026-09-30
   Features:

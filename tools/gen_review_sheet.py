@@ -33,6 +33,7 @@ ICON_GROUPS = [
     ("Crystal chips and boards", r"crystal|multilayered"),
     ("Water purification: wafers, power ICs, SMDs, catalyst", r"wafer$|power-ic$|integrated-circuit$|^complex-smd|quark"),
     ("Chip and SMD wraps", r"-wrap$"),
+    ("Plasma forge and quantum force transformer (phase 6a)", r"^dimensional|^quantum-force"),
     ("Fusion", r"^fusion-|^advanced-fusion"),
     ("Coils", r"coil"),
     ("Power: plutonium, cells, storage, turbines, reactors", r"plutonium|space-cell|coolant|energy|lapotronic|sludge|turbine|naquadah-reactor"),
@@ -147,6 +148,7 @@ def sprites(ref, out):
     for f in files:
         n = Path(f).stem
         g = ("Fusion reactors" if "fusion" in n else "Large plasma turbines" if "plasma-turbine" in n else
+             "Plasma forge and quantum force transformer" if n.startswith(("dimensional", "quantum-force")) else
              "Large naquadah reactors" if "naquadah-reactor" in n else "Basic machines " + n.split("-")[0].upper())
         groups.setdefault(g, []).append(f)
     for k, (title, fs) in enumerate(sorted(groups.items()), 1):

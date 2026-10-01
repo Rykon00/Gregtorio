@@ -113,6 +113,16 @@ MULTIBLOCKS = {
     "water-purification-plant": ((5, 5), "gregtech:iconsets/MACHINE_CASING_INDUSTRIAL_WATER_PLANT", None,
                                  "gregtech:iconsets/OVERLAY_FRONT_PURIFICATION_PLANT",
                                  "titanium-reinforced-borosilicate-glass-block"),
+    # phase 6a (139-fork-endgame-multiblocks.lua; item icons from tools/gen_gt_icons.py): GT's dimensionally
+    # transcendent plasma forge (dimensionally transcendent casing, dimensional bridge, the DTPF screen) and the
+    # quantum force transformer (GT++ bulk production frame, QFT coil, the GT++ controller face)
+    "dimensionally-transcendent-plasma-forge": ((11, 11), "gregtech:iconsets/MACHINE_DIM_TRANS_CASING", None,
+                                                ("gregtech:iconsets/OVERLAY_DTPF_OFF",
+                                                 "gregtech:iconsets/OVERLAY_DTPF_ON"),
+                                                "gregtech:iconsets/MACHINE_DIM_BRIDGE"),
+    "quantum-force-transformer": ((9, 9), "miscutils:TileEntities/machine_top", None,
+                                  "miscutils:iconsets/controllerFaces/quantumForceTransformer",
+                                  "gregtech:iconsets/MACHINE_CASING_QFT_COIL"),
     # endgame power (136-fork-power.lua): the large naquadah reactor (UHV to UXV: TIER_COPIES)
     "uv-large-naquadah-reactor": ((5, 5), "gregtech:iconsets/NAQUADAH_REACTOR_CASING", None,
                                   ("gregtech:iconsets/NAQUADAH_REACTOR_FLUID_FRONT",

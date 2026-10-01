@@ -502,6 +502,19 @@ def icon_table(c):
     T["large-plasma-turbine-controller"] = lambda: c.face(f"{BLK}MACHINE_CASING_TURBINE_TUNGSTENSTEEL",
                                                           f"{BLK}LARGETURBINE_TU5")
     T["tungstensteel-turbine-rotor"] = lambda: c.part("tungstensteel", "toolTurbine")
+    # phase 6a: GT's dimensionally transcendent plasma forge and GT++'s quantum force transformer (their blocks,
+    # the controller faces gen_sprites.py uses)
+    T["dimensionally-transcendent-casing"] = lambda: c.gt(f"{BLK}MACHINE_DIM_TRANS_CASING")
+    T["dimensional-bridge"] = lambda: c.gt(f"{BLK}MACHINE_DIM_BRIDGE")
+    T["dimensionally-transcendent-plasma-forge-controller"] = lambda: c.face(f"{BLK}MACHINE_DIM_TRANS_CASING",
+                                                                              f"{BLK}OVERLAY_DTPF_ON")
+    T["dimensionally-transcendent-plasma-forge"] = lambda: c.mini(f"{BLK}MACHINE_DIM_TRANS_CASING",
+                                                                  f"{BLK}MACHINE_DIM_BRIDGE", f"{BLK}OVERLAY_DTPF_ON")
+    T["quantum-force-transformer-coil-casing"] = lambda: c.gt(f"{BLK}MACHINE_CASING_QFT_COIL")
+    T["quantum-force-transformer-controller"] = lambda: c.face(f"{GTPP_TE}machine_top",
+                                                               f"{GTPP}controllerFaces/quantumForceTransformer")
+    T["quantum-force-transformer"] = lambda: c.mini(f"{GTPP_TE}machine_top", f"{BLK}MACHINE_CASING_QFT_COIL",
+                                                    f"{GTPP}controllerFaces/quantumForceTransformer")
 
     # stargate (NewHorizonsCoreMod)
     T["stargate-chevron"] = lambda: c.gt(f"{CORE}itemStargateChevron")

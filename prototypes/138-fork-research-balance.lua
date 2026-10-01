@@ -5,8 +5,9 @@
 --- of the same count in the factory of its tier (the factory doubles with every tier, so the real cost still
 --- doubles): UV /4.5, UHV and UEV /13.9, UIV /25.3, UMV /32.2, UXV /59.3, rounded. The UXV technologies and
 --- the `stargate` technology then cost about as long as building the stargate (8 against 10 hours).
---- Loaded after every file that defines or changes technologies. The infinite `research-productivity` keeps
---- its formula; the vanilla techs in devcheck's UNRESEARCHABLE_OK are left alone.
+--- Loaded after every file that defines or changes technologies (also after 139, the phase 6a multiblocks, whose
+--- technologies get their counts here). The infinite `research-productivity` keeps its formula; the vanilla techs
+--- in devcheck's UNRESEARCHABLE_OK are left alone.
 local FORK_RESEARCH_COUNTS = {
 	-- UV (agricultural pack): /4.5
 	["bedrockium"] = 900, -- 4000
@@ -67,6 +68,8 @@ local FORK_RESEARCH_COUNTS = {
 	["umv-materials"] = 100, -- 2500
 	["umv-science-pack"] = 90, -- 2300
 	-- UMV: /32.2
+	["dimensionally-transcendent-plasma-forge"] = 95, -- new in phase 6a (139-fork-endgame-multiblocks.lua)
+	["quantum-force-transformer"] = 95, -- new in phase 6a
 	["temporal-processor-mainframes"] = 95, -- 3000
 	["temporal-processors"] = 95, -- 3000
 	["umv-energy-hatches"] = 95, -- 3000
@@ -78,6 +81,7 @@ local FORK_RESEARCH_COUNTS = {
 	["uxv-materials"] = 80, -- 2500
 	["uxv-science-pack"] = 80, -- 2600
 	-- UXV and MAX: /59.3
+	["dtpf-resplendent-catalyst"] = 50, -- new in phase 6a
 	["stargate"] = 50, -- 3000
 	["uxv-energy-hatches"] = 50, -- 3000
 	["uxv-machines"] = 50, -- 3000

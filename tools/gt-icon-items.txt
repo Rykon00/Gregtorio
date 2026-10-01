@@ -42,6 +42,10 @@ crystal-cpu
 dense-fluxed-electrum-plate
 dense-naquadah-alloy-plate
 dense-osmiridium-plate
+dimensional-bridge
+dimensionally-transcendent-casing
+dimensionally-transcendent-plasma-forge
+dimensionally-transcendent-plasma-forge-controller
 dracofinium-dust
 dracofinium-ingot
 dracofinium-superconductive-wire
@@ -225,6 +229,9 @@ quantium-cable
 quantium-dust
 quantium-ingot
 quantium-wire
+quantum-force-transformer
+quantum-force-transformer-coil-casing
+quantum-force-transformer-controller
 quantum-power-ic
 quark-creation-catalyst
 radioactive-sludge
