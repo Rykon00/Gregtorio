@@ -30,7 +30,7 @@ script.on_event(defines.events.on_built_entity, function(event)
   fork_net.on_built(event.entity, event)
   fork_io.on_built(event.entity, event.tags)
   fork_ae2.on_built(event.entity, event.tags)
-  fork_fluids.on_built(event.entity, fork_fluids.tags_from_event(event))
+  fork_fluids.on_built(event.entity, event.tags)
   fork_circuit.on_built(event.entity, event.tags)
   fork_molds.on_built(event.entity)
   fork_power.on_built(event.entity)
@@ -43,7 +43,7 @@ script.on_event(defines.events.on_robot_built_entity, function(event)
   fork_net.on_built(event.entity, event)
   fork_io.on_built(event.entity, event.tags)
   fork_ae2.on_built(event.entity, event.tags)
-  fork_fluids.on_built(event.entity, fork_fluids.tags_from_event(event))
+  fork_fluids.on_built(event.entity, event.tags)
   fork_circuit.on_built(event.entity, event.tags)
   fork_molds.on_built(event.entity)
   fork_power.on_built(event.entity)
@@ -55,7 +55,7 @@ script.on_event({ defines.events.script_raised_built, defines.events.script_rais
   fork_net.on_built(event.entity, event)
   fork_io.on_built(event.entity, event.tags)
   fork_ae2.on_built(event.entity, event.tags)
-  fork_fluids.on_built(event.entity, fork_fluids.tags_from_event(event))
+  fork_fluids.on_built(event.entity, event.tags)
   fork_circuit.on_built(event.entity, event.tags)
   fork_molds.on_built(event.entity)
   fork_power.on_built(event.entity)
@@ -86,9 +86,9 @@ script.on_event(defines.events.on_player_setup_blueprint, function(event)
   fork_ae2.on_player_setup_blueprint(event)
 end)
 
---- Fork: removed ME members. Mined: a fluid drive's fluid and an ME Drive's cells (with their contents) go
---- into the mined buffer; destroyed or removed by a script: the fluid is salvaged, the cells are spilled. The
---- fluid module runs first (it looks at the network the entity still belongs to), then the graph is updated.
+--- Fork: removed ME members. Mined: an ME Drive's cells (with their items and fluids) go into the mined buffer,
+--- a fluid interface's content back into the network; destroyed or removed by a script: the cells are spilled.
+--- The fluid module runs first (it looks at the network the entity still belongs to), then the graph is updated.
 local REMOVED_FILTER = {}
 for _, t in pairs({ "simple-entity-with-force", "storage-tank", "lamp", "electric-energy-interface", "container",
   "constant-combinator", "assembling-machine", "furnace" }) do
@@ -103,12 +103,12 @@ for _, name in pairs({ "on_player_mined_entity", "on_robot_mined_entity", "on_sp
   script.on_event(defines.events[name], on_mined, REMOVED_FILTER)
 end
 script.on_event(defines.events.on_entity_died, function(event)
-  fork_fluids.on_removed(event.entity, true)
+  fork_fluids.on_removed(event.entity)
   fork_io.on_removed(event.entity)
   fork_net.on_removed(event.entity, nil)
 end, REMOVED_FILTER)
 script.on_event(defines.events.script_raised_destroy, function(event)
-  fork_fluids.on_removed(event.entity, false)
+  fork_fluids.on_removed(event.entity)
   fork_io.on_removed(event.entity)
   fork_net.on_removed(event.entity, nil)
 end, REMOVED_FILTER)
@@ -116,20 +116,6 @@ end, REMOVED_FILTER)
 --- Fork: a rotated import or export bus faces another entity
 script.on_event(defines.events.on_player_rotated_entity, function(event)
   fork_io.on_rotated(event.entity)
-end)
-
---- Fork: a hand craft that consumes a loaded ME Fluid Drive item (the disassembly recipe) salvages its fluid
-script.on_event(defines.events.on_pre_player_crafted_item, function(event)
-  fork_fluids.on_pre_player_crafted_item(event)
-end)
-
-script.on_event(defines.events.on_player_cancelled_crafting, function(event)
-  fork_fluids.on_player_cancelled_crafting(event)
-end)
-
---- Fork: a deleted surface takes its ME fluid drives and recovered fluid with it (reported to the forces)
-script.on_event(defines.events.on_pre_surface_deleted, function(event)
-  fork_fluids.on_pre_surface_deleted(event.surface_index)
 end)
 
 -- Raise a custom event when the cutscene ends
@@ -206,6 +192,7 @@ script.on_configuration_changed(function(data)
 	--- the ME graph first (the only map scan), then the migration of old ME networks (issue #68), then the
 	--- modules that read the graph
 	fork_net.rebuild()
+	fork_migrate.run_fluids()
 	fork_migrate.run()
 	fork_me.on_configuration_changed()
 	fork_fluids.on_configuration_changed()
