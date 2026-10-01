@@ -116,6 +116,7 @@ end, REMOVED_FILTER)
 --- Fork: a rotated import or export bus faces another entity
 script.on_event(defines.events.on_player_rotated_entity, function(event)
   fork_io.on_rotated(event.entity)
+  fork_net.on_rotated(event.entity)
 end)
 
 -- Raise a custom event when the cutscene ends
