@@ -149,6 +149,58 @@ local function check_turbine()
 	log("DEVCHECK-MIGRATE-TURBINE " .. (#problems == 0 and "ok" or "failed") .. string.format(" (%.4f plasma -> %.4f helium)", burnt, back))
 end
 
+--- Issue #91: an update that adds recipes to technologies (or moves them) reaches existing saves through the
+--- technology effect reset of Gregtorio's on_configuration_changed. The old save researches these technologies (and
+--- their prerequisites); after the update every recipe that a researched technology unlocks must be enabled.
+local TT_TECHS = { "steam-compressor", "extruder", "end-steel", "alloy-blast-smelter", "industrial-mixer",
+	"tier-three-microminers", "naquadah-processing", "uv-multiblocks" }
+local TT_CHECK_TICK = 60
+
+local function setup_techs()
+	local force, n = game.forces.player, 0
+	local function research(name)
+		local t = force.technologies[name]
+		if not t or t.researched then return end
+		for p, _ in pairs(t.prerequisites) do research(p) end
+		t.researched = true
+		n = n + 1
+	end
+	for _, name in pairs(TT_TECHS) do research(name) end
+	storage.tt_enabled = {}
+	for name, r in pairs(force.recipes) do if r.enabled then storage.tt_enabled[name] = true end end
+	log("DEVCHECK-MIGRATE-SETUP-TECHS ok (" .. n .. " technologies researched)")
+end
+
+local function check_techs()
+	if not storage.tt_enabled then
+		log("DEVCHECK-MIGRATE-TECHS skipped")
+		return
+	end
+	local force, problems, recipes, techs, new = game.forces.player, {}, 0, 0, 0
+	for name, t in pairs(force.technologies) do
+		if t.researched then
+			techs = techs + 1
+			for _, e in pairs(t.prototype.effects) do
+				if e.type == "unlock-recipe" then
+					local r = force.recipes[e.recipe]
+					recipes = recipes + 1
+					if not r.enabled then
+						problems[#problems + 1] = e.recipe .. " of the researched technology " .. name .. " is not enabled"
+					elseif not storage.tt_enabled[e.recipe] then
+						new = new + 1
+					end
+				end
+			end
+		end
+	end
+	for i, m in pairs(problems) do
+		if i > 20 then break end
+		log("DEVCHECK-MIGRATE-FAIL techs: " .. m)
+	end
+	log("DEVCHECK-MIGRATE-TECHS " .. (#problems == 0 and "ok" or "failed") .. " (" .. recipes .. " recipes of " .. techs
+		.. " researched technologies enabled, " .. new .. " of them new; " .. #problems .. " not enabled)")
+end
+
 local A = "gregtorio-me-autocraft"
 local PT_ASSEMBLER, PT_FURNACE = { 14.5, Y + 8.5 }, { 19, Y + 13 }
 local PT_PROVIDER_A, PT_PROVIDER_F = { 16.5, Y + 8.5 }, { 17.5, Y + 12.5 }
@@ -751,6 +803,7 @@ end
 script.on_init(function()
 	setup_power()
 	setup_turbine()
+	setup_techs()
 	storage.items = "skipped"
 	storage.patterns = "skipped"
 	storage.state = "skipped"
@@ -835,6 +888,10 @@ script.on_nth_tick(30, function(event)
 	if storage.job and not storage.job_recipe then
 		storage.job_recipe = true
 		game.forces.player.recipes[PT_RECIPE].enabled = true
+	end
+	if not storage.techs_checked and event.tick >= TT_CHECK_TICK then
+		storage.techs_checked = true
+		check_techs()
 	end
 	if not storage.handover_checked and event.tick >= HO_CHECK_TICK then
 		storage.handover_checked = true

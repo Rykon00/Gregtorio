@@ -63,7 +63,7 @@ put("basic", { "air", "nether-air", "ender-air", "distilled-water", "salt-water"
 	"fluorine-rich-waste-liquid", "liquid-concrete" })
 put("gases", { "hydrogen", "deuterium", "tritium", "helium", "helium-3", "nitrogen", "oxygen", "argon", "neon", "krypton",
 	"xenon", "radon", "chlorine", "ozone", "carbon-dioxide", "carbon-monoxide", "nitrogen-dioxide",
-	"dinitrogen-tetroxide", "sulfur-dioxide", "sulfur-trioxide", "hydrogen-sulfide" })
+	"dinitrogen-tetroxide", "sulfur-dioxide", "sulfur-trioxide", "hydrogen-sulfide", "hydrogen-cyanide" })
 put("acids", { "aqua-regia", "nitration-mixture", "hydrogen-peroxide", "iron-iii-chloride", "antimony-pentachloride",
 	"antimony-pentachloride-solution", "antimony-pentafluoride", "antimony-trichloride-solution", "titanium-tetrachloride",
 	"silicon-tetrachloride", "sodium-tungstate", "polyaluminium-chloride" })
@@ -76,7 +76,7 @@ put("fuels", { "naphtha", "refinery-gas", "light-fuel", "heavy-fuel", "diesel", 
 	"methane", "ethane", "propane", "ethylene", "propene", "butene", "butadiene" })
 put("organic", { "acetic-acid", "formic-acid", "phthalic-acid", "acetone", "benzene", "toluene", "dimethylbenzene", "phenol",
 	"butyraldehyde", "chlorobenzene", "dichlorobenzene", "nitrochlorobenzene", "dichlorobenzidine", "diaminobenzidine",
-	"chloroform", "dimethylhydrazine", "diphenyl-isophthalate", "epichlorohydrin", "ethanol", "methanol", "ether",
+	"chloroform", "chloroacetic-acid", "ethyl-cyanoacetate", "formaldehyde", "dimethylhydrazine", "diphenyl-isophthalate", "epichlorohydrin", "ethanol", "methanol", "ether",
 	"methyl-acetate", "vinyl-acetate", "vinyl-chloride", "tetrafluoroethylene", "tetranitromethane", "sodium-formate",
 	"p507", "biomass", "bacterial-sludge", "enriched-bacterial-sludge", "growth-medium", "mutagen" })
 put("polymers", { "glue", "advanced-glue", "super-glue", "epoxy", "liquid-rubber", "silicone-rubber", "ptfe" })

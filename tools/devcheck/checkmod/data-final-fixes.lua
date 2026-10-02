@@ -65,7 +65,28 @@ for n, e in pairs(data.raw.resource) do
 	D("M", n, m.result or "", names(m.results), e.category or "basic-solid")
 end
 for n, e in pairs(data.raw["offshore-pump"] or {}) do D("O", n, e.fluid or "") end
+--- B item burnt_result fuel_category | U entity fuel_categories (burners: a fuel's burnt result comes out of them)
+for t, _ in pairs(defines.prototypes.item) do
+	for n, it in pairs(data.raw[t] or {}) do
+		if it.burnt_result and it.fuel_category then D("B", n, it.burnt_result, it.fuel_category) end
+	end
+end
+for t, _ in pairs(defines.prototypes.entity) do
+	for n, e in pairs(data.raw[t] or {}) do
+		for _, src in pairs({ e.energy_source, e.burner }) do
+			if type(src) == "table" and src.type == "burner" and (src.burnt_inventory_size or 0) > 0 then
+				D("U", n, table.concat(src.fuel_categories or { src.fuel_category or "chemical" }, ","))
+			end
+		end
+	end
+end
 section("DUMP", dump)
+
+--- Issue #91: the Gregtorio recipes that stay locked on purpose (FORK_RECIPES_LOCKED in
+--- prototypes/142-fork-recipe-unlocks.lua; absent in older versions)
+local lk = {}
+for name, reason in pairs(FORK_RECIPES_LOCKED or {}) do lk[#lk + 1] = name .. "\t" .. reason end
+section("LOCKEDOK", lk)
 
 --- Every __gregtorio-continued__/ file referenced anywhere, with its owner prototype
 local paths, seen = {}, {}

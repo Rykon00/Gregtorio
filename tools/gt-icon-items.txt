@@ -35,10 +35,12 @@ complex-smd-diode
 complex-smd-inductor
 complex-smd-resistor
 complex-smd-transistor
+component-assembly-line
 cosmic-neutronium-foil
 cosmic-neutronium-ingot
 cosmic-neutronium-plate
 crystal-cpu
+cyanoacetic-acid
 dense-fluxed-electrum-plate
 dense-naquadah-alloy-plate
 dense-osmiridium-plate
@@ -281,6 +283,7 @@ rhugnor-plate
 ruridit-plate
 samarium-rod
 singularity-reinforced-stellar-shielding-casing
+sodium-cyanide
 spacetime-cable
 spacetime-coil-block
 spacetime-foil
