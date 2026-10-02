@@ -32,7 +32,10 @@
   142 recipe unlocks (issue #91: every Gregtorio recipe gets a technology from its explicit table `UNLOCKS`, the
   producers GT has and Gregtorio lacked, the component assembly line and the ender tanks; a recipe that must stay
   locked goes into the allow-list `FORK_RECIPES_LOCKED` with its reason, devcheck fails otherwise; `KEEP` pins what
-  the auto-unlock of 199 placed before, so new unlocks do not move it), 150 molds (mold slot instead of mold ingredient; must load after every file that creates
+  the auto-unlock of 199 placed before, so new unlocks do not move it), 143 casting (issue #91: solidifier casts of every
+  form and extractor melts of every ingot from its table `MATERIALS` (tier, technology, the colour of a new melt);
+  199's auto-unlock ignores these recipes (`FORK_CASTING.recipes`), else an ingot would count as its own producer;
+  must load before 150, whose molds it needs, and before 196, 198 and 199), 150 molds (mold slot instead of mold ingredient; must load after every file that creates
   machines), 190 manual-labor
   burner usage (fist icon in the fuel slot), 196 subgroups (the Fluids tab: every Gregtorio fluid gets a row of the item
   group `fluids` by its explicit table or a name pattern; a new fluid goes into one, the fallback row
