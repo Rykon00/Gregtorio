@@ -1,5 +1,10 @@
 # Roadmap: GregTech: New Horizons progression
 
+> Since issue #83 the ME network (the AE2 sections below: `120-122`, `scripts/fork-me-*.lua`, `docs/AE2.md`,
+> `docs/ME-REWORK.md`, `tools/gen_ae2_sprites.py`) is the mod [me-network](https://github.com/Rykon00/me-network);
+> the paths below are the ones of that time. Gregtorio keeps its recipes and tiers in
+> `prototypes/120-fork-me-network-compat.lua` (`docs/SPLIT.md`).
+
 The goal is the GTNH progression (tier gating, key materials, the big multiblocks) on top of
 the upstream Gregtorio drafts, adapted to Factorio: fewer steps where GT only adds tedium, same
 order of tiers and the same key materials. One phase per pull request.
