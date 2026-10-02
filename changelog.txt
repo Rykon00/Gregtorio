@@ -1,4 +1,8 @@
 ---------------------------------------------------------------------------------------------------
+Version: 0.5.1
+  Changes:
+    - Needs ME Network 0.2.0: the ME Interface and the ME Import, Export and Storage Bus handle items and fluids, the ME Fluid Interface and the ME Fluid Import, Export and Storage Bus are gone (placed ones become the unified blocks with their settings and fluid). ME Fluid Storage unlocks the fluid storage cells only.
+---------------------------------------------------------------------------------------------------
 Version: 0.5.0
 Date: 2026-10-02
   Features:

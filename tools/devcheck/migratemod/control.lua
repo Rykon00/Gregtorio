@@ -555,7 +555,9 @@ end
 --- set to export. Before the save the totals of the network (items and fluids, also in the chests and tanks of the
 --- buses) plus what sits in the interface and the bus chests, and every block's settings are recorded; after the
 --- update (me-network has the state now) they must be the same, and the drive must still be in the controller's
---- network (through the underground pair).
+--- network (through the underground pair). Since me-network 0.2.0 (its issue #3) the fluid interface and the fluid
+--- storage bus become an ME Interface and an ME Storage Bus in their place: the check finds them there and compares
+--- their settings in the unified form (a fluid row on every side; fluid filters as "fluid/<name>").
 local HO_Y = Y + 30
 local SB, FSB, IO = "gregtorio-me-storagebus", "gregtorio-me-fluid-storagebus", "gregtorio-me-io"
 local HO_CHECK_TICK = 90
@@ -579,8 +581,44 @@ local function handover_totals(st)
 			add(c.quality == "normal" and c.name or (c.name .. "@" .. c.quality), c.count)
 		end
 	end
-	for k, v in pairs(st.fiface.get_fluid_contents()) do add("fluid/" .. k, v) end
+	if st.fiface.valid then
+		for k, v in pairs(st.fiface.get_fluid_contents()) do add("fluid/" .. k, v) end
+	else                                                  -- me-network 0.2.0: the unified interface's sides
+		local new = game.surfaces[1].find_entity("me-network-interface", st.fiface_pos)
+		for _, t in pairs(new and remote.call(IO, "interface_tanks", new) or {}) do
+			for k, v in pairs(t.get_fluid_contents()) do add("fluid/" .. k, v) end
+		end
+	end
 	return out
+end
+
+--- me-network 0.2.0: the replacements of the old fluid interface and fluid storage bus (at their positions)
+local function unified_of(st)
+	local s = game.surfaces[1]
+	return s.find_entity("me-network-interface", st.fiface_pos), s.find_entity("me-storage-bus", st.fsbus_pos)
+end
+
+--- the settings of the fluid interface and the fluid storage bus in the unified form, before (old remote calls)
+--- and after (the unified blocks) the update
+local function unified_settings(st)
+	if st.fiface.valid then
+		local f = remote.call(F, "get_interface", st.fiface)
+		local fs = remote.call(FSB, "get_settings", st.fsbus) or {}
+		local rows, sides = {}, {}
+		if f and f.mode == "export" and f.fluid then
+			rows = { [1] = { type = "fluid", name = f.fluid, amount = f.level } }
+			sides = { 1, 1, 1, 1 }
+		end
+		local filters = {}
+		for i, name in ipairs(fs.filters or {}) do filters[i] = "fluid/" .. name end
+		return { rows = rows, sides = sides }, { mode = fs.mode, priority = fs.priority, filters = filters }
+	end
+	local fi, fsb = unified_of(st)
+	local config = fi and remote.call(IO, "get_interface_config", fi) or {}
+	local rows = {}
+	for i, c in pairs(config) do rows[i] = { type = c.type, name = c.name, amount = c.amount } end
+	return { rows = rows, sides = fi and remote.call(IO, "get_interface_sides", fi) or {} },
+		fsb and remote.call(SB, "get_settings", fsb) or {}
 end
 
 --- the settings of the blocks (without what a block reports about its last step: status, target)
@@ -590,10 +628,9 @@ local function handover_settings(st)
 		import = remote.call(IO, "get_bus", st.ibus),
 		export = remote.call(IO, "get_bus", st.ebus),
 		storage_bus = remote.call(SB, "get_settings", st.sbus),
-		fluid_storage_bus = remote.call(FSB, "get_settings", st.fsbus),
-		fluid_interface = remote.call(F, "get_interface", st.fiface),
 		drive = remote.call(NET, "drive_settings", st.drive),
 	}
+	out.fluid_interface, out.fluid_storage_bus = unified_settings(st)
 	for _, t in pairs(out) do
 		if type(t) == "table" then t.status, t.target = nil, nil end
 	end
@@ -621,6 +658,7 @@ local function setup_handover()
 	local south = defines.direction.south
 	st.iface = place("me-network-interface", 47.5, HO_Y + 0.5)
 	st.fiface = place("me-fluid-interface", 47.5, HO_Y + 1.5)
+	st.fiface_pos = { 47.5, HO_Y + 1.5 }
 	st.ibus = place("me-import-bus", 48.5, HO_Y + 0.5, south)
 	st.ichest = place("iron-chest", 48.5, HO_Y + 1.5)
 	st.ebus = place("me-export-bus", 49.5, HO_Y + 0.5, south)
@@ -629,6 +667,7 @@ local function setup_handover()
 	st.schest = place("iron-chest", 50.5, HO_Y + 1.5)
 	st.schest.insert{ name = "stone", count = 77 }
 	st.fsbus = place("me-fluid-storage-bus", 52.5, HO_Y + 0.5, south)
+	st.fsbus_pos = { 52.5, HO_Y + 0.5 }
 	st.tank = place("storage-tank", 53.5, HO_Y + 2.5)
 	st.tank.insert_fluid{ name = "water", amount = 3000 }
 	--- the drive is reached only through the underground pair
@@ -676,8 +715,15 @@ local function check_handover()
 	local function expect(ok, what) if not ok then problems[#problems + 1] = what end end
 	expect(st.connected, "test setup: the drive was not connected through the underground pair in the old save")
 	local valid = true
-	for _, k in pairs({ "ctrl", "iface", "fiface", "ibus", "ebus", "sbus", "fsbus", "drive", "u1", "u2" }) do
+	for _, k in pairs({ "ctrl", "iface", "ibus", "ebus", "sbus", "drive", "u1", "u2" }) do
 		if not (st[k] and st[k].valid) then valid = false; expect(false, k .. " is gone") end
+	end
+	--- me-network 0.2.0: the fluid interface and the fluid storage bus are the unified blocks now
+	local fi, fsb = unified_of(st)
+	if not (fi and fsb and not st.fiface.valid and not st.fsbus.valid) then
+		valid = false
+		expect(false, "the fluid interface and the fluid storage bus were not replaced by the unified blocks: "
+			.. tostring(fi) .. ", " .. tostring(fsb))
 	end
 	if valid then
 		expect(remote.call(NET, "same_network", st.ctrl, st.drive), "the drive is not in the controller's network (underground pair)")
