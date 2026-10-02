@@ -87,6 +87,9 @@ def main():
     else:
         link.symlink_to(ROOT, target_is_directory=True)
     print(f"linked {link} -> {ROOT}")
+    # issue #83: the ME network is the mod me-network, a dependency
+    if not (mods / "me-network").exists() and not list(mods.glob("me-network_*.zip")):
+        print("Gregtorio needs the mod me-network: link its clone (tools/dev_link.py there) or install it from the mod portal.")
     print("Restart Factorio to load the working copy.")
 
 

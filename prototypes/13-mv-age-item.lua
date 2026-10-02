@@ -1829,16 +1829,9 @@ create_item{
   
   
   
+---BASIC STORAGE HOUSING: item in me-network, recipe in 120-fork-me-network-compat.lua (issue #83)
+
 ---OVERWORLD DATA
-create_item{
-	name = "basic-storage-housing",
-	category = "lv-assembling-machine-recipes",
-	ingredients = {
-		{type = "item", name = "steel-plate", amount = 4},
-		{type = "item", name = "steel-screw", amount = 4},
-		{type = "item", name = "glass", amount = 1},
-    }
-}
 create_item{
 	name = "overworld-data",
 	category = "lv-assembling-machine-recipes",
@@ -2369,33 +2362,11 @@ create_item{
   
 
 
----FLUIX CABLE
-create_item{
-	name = "fluix-cable",
-	category = "mv-assembling-machine-recipes",
-	energy_required = 10,
-	ingredients = {
-		{type = "item", name = "quartz-fiber", amount = 3},
-		{type = "item", name = "fluix-dust", amount = 2},
-    },
-	results = {
-		{type = "item", name = "fluix-cable", amount = 3}
-    }
-}
+---FLUIX CABLE: item in me-network, recipe in 120-fork-me-network-compat.lua (issue #83)
   
 
 
----ME INTERFACE
-create_item{
-	name = "me-interface",
-	ingredients = {
-      {type = "item", name = "mv-machine-casing", amount = 1},
-      {type = "item", name = "aluminium-plate", amount = 4},
-      {type = "item", name = "fluix-cable", amount = 2},
-      {type = "item", name = "formation-core", amount = 1},
-      {type = "item", name = "annihilation-core", amount = 1},
-    }
-} 
+---ME INTERFACE: item in me-network, recipe in 120-fork-me-network-compat.lua (issue #83)
     
 	
 	
@@ -2464,26 +2435,7 @@ create_recipe{
 
   
   
----ME DRIVE
-create_item{
-	name = "me-drive",
-	ingredients = {
-		{type = "item", name = "aluminium-plate", amount = 4},
-		{type = "item", name = "me-chest", amount = 1},
-		{type = "item", name = "fluix-cable", amount = 2},
-		{type = "item", name = "mv-emitter", amount = 1},
-		{type = "item", name = "processing-unit", amount = 1},
-    }
-}
-create_item{
-	name = "me-chest",
-	ingredients = {
-		{type = "item", name = "steel-plate", amount = 4},
-		{type = "item", name = "steel-chest", amount = 1},
-		{type = "item", name = "fluix-cable", amount = 2},
-		{type = "item", name = "advanced-circuit", amount = 2},
-    }
-}
+---ME DRIVE: item in me-network, recipe in 120-fork-me-network-compat.lua (issue #83)
 
 
 
@@ -2529,29 +2481,11 @@ create_item{
 
 
 
----ME CONTROLLER
-create_item{
-	name = "me-controller",
-	ingredients = {
-		{type = "item", name = "aluminium-plate", amount = 4},
-		{type = "item", name = "fluix-block", amount = 1},
-		{type = "item", name = "engineering-processor", amount = 2},
-		{type = "item", name = "processing-unit", amount = 2},
-    }
-} 
+---ME CONTROLLER: item in me-network, recipe in 120-fork-me-network-compat.lua (issue #83)
 
 
 
----ME TERMINAL
-create_item{
-	name = "me-terminal",
-	ingredients = {
-		{type = "item", name = "nether-quartz-rod", amount = 4},
-		{type = "item", name = "certus-quartz-screw", amount = 4},
-		{type = "item", name = "computer-monitor", amount = 1},
-		{type = "item", name = "processing-unit", amount = 2},
-    }
-} 
+---ME TERMINAL: item in me-network, recipe in 120-fork-me-network-compat.lua (issue #83)
 
 
 
@@ -2663,106 +2597,21 @@ create_item{
 }
 
 
----ME 1K STORAGE COMPONENT
-create_item{
-	name = "me-1k-storage-component",
-	recipe_name = "me-1k-storage-component-lv",
-	category = "lv-circuit-assembler-recipes",
-	energy_required = 5,
-	ingredients = {
-      {type = "item", name = "resin-printed-circuit-board", amount = 1},
-      {type = "item", name = "certus-quartz-dust", amount = 2},
-      {type = "item", name = "electronic-circuit", amount = 2},
-      {type = "item", name = "logic-processor", amount = 1},
-      {type = "fluid", name = "soldering-alloy", amount = 7.2},
-    },
-	results = {
-      {type = "item", name = "me-1k-storage-component", amount = 1}
-    }
-}
-create_recipe{
-	recipe_name = "me-1k-storage-component-nand",
-	category = "lv-circuit-assembler-recipes",
-	energy_required = 5,
-	ingredients = {
-		{type = "item", name = "resin-printed-circuit-board", amount = 1},
-		{type = "item", name = "certus-quartz-dust", amount = 2},
-		{type = "item", name = "nand-chip", amount = 2},
-		{type = "item", name = "logic-processor", amount = 1},
-		{type = "fluid", name = "soldering-alloy", amount = 7.2},
-    },
-	results = {
-      {type = "item", name = "me-1k-storage-component", amount = 1}
-    }
-}
+---ME 1K STORAGE COMPONENT: item in me-network, recipe in 120-fork-me-network-compat.lua (issue #83)
 
 
 
 
----ME 4K STORAGE COMPONENT
-create_item{
-	name = "me-4k-storage-component",
-	category = "lv-circuit-assembler-recipes",
-	energy_required = 10,
-	ingredients = {
-		{type = "item", name = "phenolic-printed-circuit-board", amount = 1},
-		{type = "item", name = "nand-chip", amount = 16 },
-		{type = "item", name = "electronic-circuit", amount = 4 },
-		{type = "item", name = "logic-processor", amount = 1},
-		{type = "fluid", name = "soldering-alloy", amount = 7.2},
-    }
-}
+---ME 4K STORAGE COMPONENT: item in me-network, recipe in 120-fork-me-network-compat.lua (issue #83)
 
 
 
----ME 16K STORAGE COMPONENT
-create_item{
-	name = "me-16k-storage-component",
-	category = "mv-circuit-assembler-recipes",
-	energy_required = 20,
-	ingredients = {
-		{type = "item", name = "plastic-printed-circuit-board", amount = 1},
-		{type = "item", name = "electronic-circuit", amount = 16 },
-		{type = "item", name = "advanced-circuit", amount = 4 },
-		{type = "item", name = "calculation-processor", amount = 1},
-		{type = "fluid", name = "soldering-alloy", amount = 7.2},
-    }
-}
+---ME 16K STORAGE COMPONENT: item in me-network, recipe in 120-fork-me-network-compat.lua (issue #83)
 
 
 
----ME 64K STORAGE COMPONENT
-create_item{
-	name = "me-64k-storage-component",
-	category = "hv-circuit-assembler-recipes",
-	energy_required = 40,
-	ingredients = {
-      {type = "item", name = "epoxy-printed-circuit-board", amount = 1},
-      {type = "item", name = "advanced-circuit", amount = 16},
-      {type = "item", name = "processing-unit", amount = 4},
-      {type = "item", name = "calculation-processor", amount = 1},
-      {type = "fluid", name = "soldering-alloy", amount = 7.2},
-    },
-	results = {
-      {type = "item", name = "me-64k-storage-component", amount = 1}
-    }
-}
+---ME 64K STORAGE COMPONENT: item in me-network, recipe in 120-fork-me-network-compat.lua (issue #83)
 
 
 
----ME 256K STORAGE COMPONENT
-create_item{
-	name = "me-256k-storage-component",
-	category = "ev-circuit-assembler-recipes",
-	energy_required = 80,
-	ingredients = {
-      {type = "item", name = "fiber-reinforced-printed-circuit-board", amount = 1},
-      {type = "item", name = "processing-unit", amount = 16},
-      {type = "item", name = "ev-circuit", amount = 4},
-      {type = "item", name = "engineering-processor", amount = 1},
-      {type = "fluid", name = "soldering-alloy", amount = 7.2},
-    },
-	results = {
-      {type = "item", name = "me-256k-storage-component", amount = 1}
-    }
-}
+---ME 256K STORAGE COMPONENT: item in me-network, recipe in 120-fork-me-network-compat.lua (issue #83)

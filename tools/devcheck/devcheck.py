@@ -10,6 +10,7 @@
     python tools/devcheck/devcheck.py all       # check + runtime
     python tools/devcheck/devcheck.py menusim --sim all --compare
                                                 # run the main menu simulations with and without the mod
+    python tools/devcheck/devcheck.py handover  # issue #83: prototype of the ME state hand-over to me-network
 
 Everything is kept in .devcheck/ in the repository root (git-ignored).
 
@@ -93,7 +94,7 @@ def setup(a):
 
     MODS.mkdir(exist_ok=True)
     for name in required_mods():
-        if list(MODS.glob(f"{name}_*.zip")):
+        if list(MODS.glob(f"{name}_*.zip")) or (name == ME_NETWORK and me_network_dir()):
             continue
         if a.mods_from:
             found = sorted(Path(a.mods_from).glob(f"{name}_*.zip"))
@@ -117,6 +118,18 @@ def setup(a):
 # --------------------------------------------------------------------------------------------
 
 MOD_NAMES = ("Gregtorio", "gregtorio-continued")   # the mod before and since 0.3.0
+ME_NETWORK = "me-network"                           # the ME network since issue #83 (docs/SPLIT.md), a dependency
+
+
+def me_network_dir():
+    """me-network as a checkout: ME_NETWORK_DIR, else the sibling ../me-network; None: the me-network_*.zip in
+    .devcheck/mods is used (setup downloads it from the mod portal like the other dependencies)"""
+    d = Path(os.environ.get("ME_NETWORK_DIR") or (ROOT.parent / ME_NETWORK))
+    return d if (d / "info.json").exists() else None
+
+
+def needs_me_network(info):
+    return any(re.split(r"\s*[<>=]", dep.strip())[0].strip() == ME_NETWORK for dep in info.get("dependencies", []))
 
 
 def link_dir(link, target):
@@ -142,7 +155,8 @@ def prepare_mods(with_runtime=False, gregtorio_zip=None, with_migrate=False, men
     """mods/ = dependency zips + the mod (working copy or a zip) + devcheck helper mods.
     menusim: name of a main menu simulation for the menusim helper mod; gregtorio=False leaves the mod out."""
     for p in MODS.iterdir():
-        if p.name.startswith(MOD_NAMES + ("zz-gregtorio-devcheck",)) or p.name == "mod-list.json":
+        if p.name.startswith(MOD_NAMES + ("zz-gregtorio-devcheck",)) or p.name == "mod-list.json" or (
+                p.name == ME_NETWORK and not p.is_file()):
             remove_path(p)
     if not gregtorio:
         info = None
@@ -157,7 +171,17 @@ def prepare_mods(with_runtime=False, gregtorio_zip=None, with_migrate=False, men
         link_dir(MODS / info["name"], ROOT)
     link_dir(MODS / "zz-gregtorio-devcheck", HERE / "checkmod")
     enabled = ["base", "space-age", "quality", "elevated-rails"] + ([info["name"]] if info else []) + ["zz-gregtorio-devcheck"]
-    enabled += [z.name.rsplit("_", 1)[0] for z in MODS.glob("*.zip") if not z.name.startswith(MOD_NAMES)]
+    zips = [z.name.rsplit("_", 1)[0] for z in MODS.glob("*.zip") if not z.name.startswith(MOD_NAMES)]
+    enabled += [n for n in zips if n != ME_NETWORK]
+    disabled = []
+    if info and needs_me_network(info):
+        # issue #83: a me-network checkout (ME_NETWORK_DIR or ../me-network) wins over the portal zip
+        if me_network_dir():
+            link_dir(MODS / ME_NETWORK, me_network_dir())
+        enabled.append(ME_NETWORK)
+    elif ME_NETWORK in zips:
+        # older versions of the mod (migrate) contain the ME network themselves and refuse to load next to it
+        disabled.append(ME_NETWORK)
     if with_runtime:
         link_dir(MODS / "zz-gregtorio-devcheck-runtime", HERE / "runtimemod")
         enabled.append("zz-gregtorio-devcheck-runtime")
@@ -169,7 +193,8 @@ def prepare_mods(with_runtime=False, gregtorio_zip=None, with_migrate=False, men
         shutil.copytree(HERE / "menusimmod", MODS / "zz-gregtorio-devcheck-menusim")
         (MODS / "zz-gregtorio-devcheck-menusim" / "config.lua").write_text(f"return {{ name = {json.dumps(menusim)} }}\n")
         enabled.append("zz-gregtorio-devcheck-menusim")
-    (MODS / "mod-list.json").write_text(json.dumps({"mods": [{"name": n, "enabled": True} for n in enabled]}))
+    (MODS / "mod-list.json").write_text(json.dumps({"mods": [{"name": n, "enabled": True} for n in enabled]
+                                                    + [{"name": n, "enabled": False} for n in disabled]}))
 
 
 def factorio(*args):
@@ -569,104 +594,18 @@ def runtime(a):
     err = re.search(r"(Error.*|non-recoverable.*)", log)
     fails += re.findall(r"DEVCHECK-RUNTIME-FAIL (.*)", log)
     print(f"benchmark: {ran.group(0) if ran else 'did not run'}")
-    # issue #68: the ME network core (cable graph, cells, terminal, import/export)
-    me_tests = [(label, re.search(rf"DEVCHECK-RUNTIME-{key} (.*)", log)) for key, label in
-                (("MEGRAPH", "ME graph test"), ("MECELLS", "ME cell test"), ("METERMINAL", "ME terminal test"),
-                 ("MEIO", "ME import/export test"))]
-    for label, m in me_tests:
+    # the ME network's runtime tests are in me-network since issue #83 (its tools/devcheck)
+    tests = (("MOLD", "mold test"), ("POWER", "power test"), ("FUEL", "fuel check test"), ("COOLED", "cooled fluid test"),
+             ("TIERS", "turbine tier test"), ("RECIPES", "recipe test"), ("VICTORY", "victory test"),
+             ("POSTVICTORY", "post-victory test"))
+    for key, label in tests:
+        m = re.search(rf"DEVCHECK-RUNTIME-{key} (.*)", log)
         print(f"{label}: {m.group(1) if m else 'did not run'}")
-    mold = re.search(r"DEVCHECK-RUNTIME-MOLD (.*)", log)
-    print(f"mold test: {mold.group(1) if mold else 'did not run'}")
-    autocraft = re.search(r"DEVCHECK-RUNTIME-AUTOCRAFT (.*)", log)
-    print(f"autocrafting test: {autocraft.group(1) if autocraft else 'did not run'}")
-    furnace = re.search(r"DEVCHECK-RUNTIME-FURNACE (.*)", log)
-    print(f"furnace pattern test: {furnace.group(1) if furnace else 'did not run'}")
-    fluids = re.search(r"DEVCHECK-RUNTIME-FLUIDS (.*)", log)
-    print(f"fluid test: {fluids.group(1) if fluids else 'did not run'}")
-    recovery = re.search(r"DEVCHECK-RUNTIME-FLUIDCELLS (.*)", log)
-    print(f"ME fluid cell test: {recovery.group(1) if recovery else 'did not run'}")
-    power = re.search(r"DEVCHECK-RUNTIME-POWER (.*)", log)
-    print(f"power test: {power.group(1) if power else 'did not run'}")
-    fuel = re.search(r"DEVCHECK-RUNTIME-FUEL (.*)", log)
-    print(f"fuel check test: {fuel.group(1) if fuel else 'did not run'}")
-    cooled = re.search(r"DEVCHECK-RUNTIME-COOLED (.*)", log)
-    print(f"cooled fluid test: {cooled.group(1) if cooled else 'did not run'}")
-    tiers = re.search(r"DEVCHECK-RUNTIME-TIERS (.*)", log)
-    print(f"turbine tier test: {tiers.group(1) if tiers else 'did not run'}")
-    recipes = re.search(r"DEVCHECK-RUNTIME-RECIPES (.*)", log)
-    print(f"recipe test: {recipes.group(1) if recipes else 'did not run'}")
-    # issue #38: level maintainer, CPU tiers, circuit interface and blueprint/paste of the settings
-    extras = [(label, re.search(rf"DEVCHECK-RUNTIME-{key} (.*)", log)) for key, label in
-              (("MAINTAINER", "level maintainer test"), ("CPUTIERS", "crafting CPU tier test"),
-               ("CIRCUIT", "circuit interface test"), ("SETTINGS", "settings copy test"),
-               ("MER3", "ME partitions and windows test (issue #68 R3)"),
-               ("MESTORAGEBUS", "ME storage bus test (issue #68)"),
-               ("MEFLUIDSTORAGEBUS", "ME fluid storage bus test (issue #68)"),
-               ("PATSWITCH", "pattern recipe switching test (issue #80)"),
-               ("PATLINE", "processing line test (issue #80)"))]
-    for label, m in extras:
-        print(f"{label}: {m.group(1) if m else 'did not run'}")
-    victory = re.search(r"DEVCHECK-RUNTIME-VICTORY (.*)", log)
-    print(f"victory test: {victory.group(1) if victory else 'did not run'}")
-    post = re.search(r"DEVCHECK-RUNTIME-POSTVICTORY (.*)", log)
-    print(f"post-victory test: {post.group(1) if post else 'did not run'}")
-    for label, m in me_tests:
         if not m:
             fails.append(f"{label} did not run (needs --ticks >= 1500)")
         elif not m.group(1).startswith("ok"):
             fails.append(f"{label} failed")
-    if not mold:
-        fails.append("mold test did not run (needs --ticks >= 1500)")
-    if not autocraft:
-        fails.append("autocrafting test did not run (needs --ticks >= 1500)")
-    elif not autocraft.group(1).startswith("ok"):
-        fails.append("autocrafting test failed")
-    if not furnace:
-        fails.append("furnace pattern test did not run (needs --ticks >= 1500)")
-    elif not furnace.group(1).startswith("ok"):
-        fails.append("furnace pattern test failed")
-    if not fluids:
-        fails.append("fluid test did not run (needs --ticks >= 1500)")
-    elif not fluids.group(1).startswith("ok"):
-        fails.append("fluid test failed")
-    if not recovery:
-        fails.append("ME fluid cell test did not run (needs --ticks >= 1500)")
-    elif not recovery.group(1).startswith("ok"):
-        fails.append("ME fluid cell test failed")
-    if not power:
-        fails.append("power test did not run (needs --ticks >= 420)")
-    elif not power.group(1).startswith("ok"):
-        fails.append("power test failed")
-    if not fuel:
-        fails.append("fuel check test did not run (needs --ticks >= 1500)")
-    elif not fuel.group(1).startswith("ok"):
-        fails.append("fuel check test failed")
-    if not cooled:
-        fails.append("cooled fluid test did not run (needs --ticks >= 1500)")
-    elif not cooled.group(1).startswith("ok"):
-        fails.append("cooled fluid test failed")
-    if not tiers:
-        fails.append("turbine tier test did not run (needs --ticks >= 1500)")
-    elif not tiers.group(1).startswith("ok"):
-        fails.append("turbine tier test failed")
-    if not recipes:
-        fails.append("recipe test did not run (needs --ticks >= 1500)")
-    elif not recipes.group(1).startswith("ok"):
-        fails.append("recipe test failed")
-    for label, m in extras:
-        if not m:
-            fails.append(f"{label} did not run (needs --ticks >= 1500)")
-        elif not m.group(1).startswith("ok"):
-            fails.append(f"{label} failed")
-    if not victory:
-        fails.append("victory test did not run (needs --ticks >= 1500)")
-    elif not victory.group(1).startswith("ok"):
-        fails.append("victory test failed")
-    if not post:
-        fails.append("post-victory test did not run (needs --ticks >= 1500)")
-    elif not post.group(1).startswith("ok"):
-        fails.append("post-victory test failed")
-    report("runtime problems (placement, ME graph, cell, terminal and import/export tests, mold test, autocrafting test, furnace pattern test, fluid test, ME fluid cell test, power test, fuel check test, cooled fluid test, turbine tier test, recipe test, level maintainer test, crafting CPU tier test, circuit interface test, settings copy test, victory test, post-victory test)", fails)
+    report("runtime problems (placement, " + ", ".join(label for _, label in tests) + ")", fails)
     if err or not ran or fails:
         print(err.group(1) if err else "")
         print("\nRESULT: PROBLEMS FOUND")
@@ -711,6 +650,8 @@ def migrate(a):
     print(f"old save with a level maintainer: {setup.group(1) if setup else 'no result'}")
     setup = re.search(r"DEVCHECK-MIGRATE-SETUP-ITEMS (.*)", log)
     print(f"old save with a logistic ME network (items): {setup.group(1) if setup else 'no result'}")
+    setup = re.search(r"DEVCHECK-MIGRATE-SETUP-HANDOVER (.*)", log)
+    print(f"old save with a network for the hand-over (issue #83): {setup.group(1) if setup else 'no result'}")
     prepare_mods(with_migrate=True)
     log = factorio("--benchmark", str(WORK / "migrate-map.zip"), "--benchmark-ticks", str(a.ticks))
     ran = re.search(r"Performed (\d+) updates", log)
@@ -727,6 +668,14 @@ def migrate(a):
     print(f"crafting job of the old save: {job.group(1) if job else 'no result'}")
     items = re.search(r"DEVCHECK-MIGRATE-ITEMS (.*)", log)
     print(f"ME network of the old save converted (issue #68): {items.group(1) if items else 'no result'}")
+    handover = re.search(r"DEVCHECK-MIGRATE-HANDOVER (.*)", log)
+    print(f"ME state handed over to me-network (issue #83): {handover.group(1) if handover else 'no result'}")
+    # issue #83: the fingerprints of what gregtorio-continued gave and what me-network got must be equal
+    gave = re.findall(r"FORK-ME-HANDOVER: gave (\S+) (\S+)", log)
+    took = re.search(r"ME-NETWORK-HANDOVER: (ok|MISMATCH.*|refused.*)", log)
+    print(f"hand-over fingerprints: {(took.group(1) if took else 'no hand-over') if gave else 'nothing to hand over'}"
+          + (f" ({sum(1 for _, f in gave if f != 'nil')} of {len(gave)} tables with state)" if gave else ""))
+    handover_ok = (not gave or (took and took.group(1) == "ok")) and not (handover and handover.group(1).startswith("failed"))
     for line in re.findall(r"FORK-ME-MIGRATE: (.*)", log):
         print("  migration: " + line)
     for f in re.findall(r"DEVCHECK-MIGRATE-FAIL (.*)", log):
@@ -736,8 +685,93 @@ def migrate(a):
     ok = ran and fluids and not fluids.group(1).startswith("failed") and power and not power.group(1).startswith("failed") \
         and turbine and not turbine.group(1).startswith("failed") \
         and patterns and not patterns.group(1).startswith("failed") and job and not job.group(1).startswith("failed") \
-        and items and not items.group(1).startswith("failed")
+        and items and not items.group(1).startswith("failed") and handover_ok
     return 0 if ok else 1
+
+
+HANDOVER = HERE / "handover"
+HANDOVER_MODS = WORK / "handover-mods"
+
+
+def handover_mods(giver=None, taker=False, skip=None):
+    """mods for the hand-over prototype: the giver (1 = old Gregtorio, 2 = new Gregtorio, depends on the taker),
+    the taker (me-network); skip = a storage table the giver leaves out"""
+    if HANDOVER_MODS.exists():
+        shutil.rmtree(HANDOVER_MODS)
+    HANDOVER_MODS.mkdir()
+    enabled = ["base"]
+    for name, src, version, deps in (
+            ("zz-handover-giver", "giver", f"{giver}.0.0", ["zz-handover-taker >= 1.0.0"] if giver == 2 else []),
+            ("zz-handover-taker", "taker", "1.0.0", [])):
+        if (name == "zz-handover-giver" and not giver) or (name == "zz-handover-taker" and not taker):
+            continue
+        d = HANDOVER_MODS / name
+        shutil.copytree(HANDOVER / src, d)
+        shutil.copy2(HANDOVER / "shared.lua", d / "shared.lua")
+        (d / "info.json").write_text(json.dumps({"name": name, "version": version, "title": name, "author": "devcheck",
+                                                 "factorio_version": "2.0", "dependencies": ["base"] + deps}))
+        if src == "giver":
+            (d / "config.lua").write_text(f"return {{ skip = {json.dumps(skip)} }}\n" if skip else "return {}\n")
+        enabled.append(name)
+    (HANDOVER_MODS / "mod-list.json").write_text(json.dumps({"mods": [{"name": n, "enabled": True} for n in enabled]}))
+
+
+def handover_run(*args):
+    binary = FACTORIO / ("bin/x64/factorio.exe" if os.name == "nt" else "bin/x64/factorio")
+    r = subprocess.run([str(binary), "--mod-directory", str(HANDOVER_MODS), *args], capture_output=True, text=True)
+    LOG.write_text(r.stdout + r.stderr)
+    return r.stdout + r.stderr
+
+
+def handover(a):
+    """Issue #83: prototype of the one-time hand-over of the ME state from gregtorio-continued to me-network, with two
+    stand-in mods (tools/devcheck/handover/): the event order when the taker is added and the giver updated in the
+    same load, what survives the remote call, the guards, and a broken hand-over that must be noticed."""
+    save = WORK / "handover-map.zip"
+    fails = []
+    handover_mods(giver=1)
+    log = handover_run("--create", str(save))
+    if load_errors(log) or not_saved(log):
+        print("could not create the old save:\n" + (load_errors(log) or not_saved(log)))
+        return 1
+
+    def load(skip=None):
+        handover_mods(giver=2, taker=True, skip=skip)
+        return handover_run("--benchmark", str(save), "--benchmark-ticks", "2")
+
+    log = load()
+    print("event order (giver = gregtorio-continued updated, taker = me-network added):")
+    for line in re.findall(r"HANDOVER-ORDER (.*)", log):
+        print("  " + line)
+    for line in re.findall(r"HANDOVER-CHECK (.*)", log):
+        print("  check: " + line)
+    result = re.search(r"HANDOVER-RESULT (.*)", log)
+    print(f"hand-over: {result.group(1) if result else 'did not run'}")
+    script_err = re.search(r"Error while running event .*", log)
+    if not (result and result.group(1) == "ok") or script_err or not re.search(r"Performed \d+ updates", log):
+        fails.append("the hand-over failed" + (": " + script_err.group(0) if script_err else ""))
+    log = load(skip="fork_me_io")
+    result = re.search(r"HANDOVER-RESULT (.*)", log)
+    missing = re.findall(r"HANDOVER-CHECK failed: (.*)", log)
+    print(f"broken hand-over (fork_me_io left out): {result.group(1) if result else 'did not run'}"
+          + (f" ({'; '.join(missing)})" if missing else ""))
+    if not (result and result.group(1) == "failed"):
+        fails.append("a hand-over without fork_me_io was not noticed")
+    handover_mods(giver=1, taker=True)
+    err = load_errors(handover_run("--benchmark", str(save), "--benchmark-ticks", "2")) or ""
+    guard = re.search(r"zz-handover-taker: .*", err)
+    print(f"old giver with the taker: {'refused: ' + guard.group(0) if guard else ('refused: ' + err if err else 'LOADED')}")
+    if "contains the ME network itself" not in err:
+        fails.append("the taker loaded next to the old giver")
+    handover_mods(giver=2)
+    err = load_errors(handover_run("--benchmark", str(save), "--benchmark-ticks", "2")) or ""
+    dep = re.search(r"Missing required dependency [^\n]*", err)
+    print(f"new giver without the taker: {'refused: ' + dep.group(0) if dep else ('refused: ' + err if err else 'LOADED')}")
+    if not err:
+        fails.append("the new giver loaded without the taker")
+    report("hand-over prototype problems", fails)
+    print("\nRESULT:", "OK" if not fails else "PROBLEMS FOUND")
+    return 1 if fails else 0
 
 
 def menusim_list(gregtorio):
@@ -827,6 +861,7 @@ def main():
     ms.add_argument("--compare", action="store_true", help="also run without Gregtorio")
     ms.add_argument("--ticks", type=int, help="ticks to run (default: the simulation's length)")
     ms.add_argument("--verbose", action="store_true", help="print the log lines with --sim all too")
+    sub.add_parser("handover", help="issue #83: prototype of the ME state hand-over to me-network")
     al = sub.add_parser("all")
     al.add_argument("--ticks", type=int, default=1500)
     al.add_argument("--locale-out")
@@ -843,6 +878,8 @@ def main():
         return migrate(a)
     if a.cmd == "menusim":
         return menusim(a)
+    if a.cmd == "handover":
+        return handover(a)
     return check(a) or runtime(a)
 
 
