@@ -89,7 +89,7 @@ any item any more (the drafts removed for good in #39) and were left alone.
 
 **Technology icons**: no technology shows "NYI"; 66 had the icon of a placeholder item (or of a tinted
 machine) and are regenerated from the new icons. `tools/tech-icons.tsv` now lists which item every fork
-technology shows (174 technologies; the 6 ME technologies come from `gen_ae2_sprites.py`).
+technology shows (174 technologies; the 6 ME technologies came from `gen_ae2_sprites.py`, which is in the mod me-network since issue #83).
 
 **Entities that reused another entity's sprite**:
 

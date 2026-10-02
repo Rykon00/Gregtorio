@@ -16,10 +16,8 @@ The repository root is the mod itself (`info.json`, `data.lua`, `prototypes/`, `
 | `prototypes/102-fork-resources.lua` | disables the vanilla resource patches (no spawning, not minable) |
 | `prototypes/103-fork-qol-techs.lua` | issue #29: the vanilla quality-of-life techs (bulk/stack inserter, inserter capacity bonus, express and turbo belts, belt capacity, worker robot speed and cargo size) gated onto Gregtorio techs with Gregtorio science packs, GT recipes for the inserters and belts they unlock |
 | `prototypes/110-fork-luv.lua` | LuV: materials, assembly line, LuV machines, science pack, techs |
-| `docs/SPLIT.md` | issue #83: the plan for moving the ME network into its own mod `me-network` (inventory, coupling, state hand-over, release order) |
-| `prototypes/120-fork-ae2.lua` | AE2 / ME network (issue #68, design record `docs/ME-REWORK.md`): ME Cable (placed by the fluix cable), ME Controller, ME Drive with 10 cell slots, storage cells (items with tags), ME Interface, ME Import and Export Bus, ME Terminal, techs; the old logistic-network prototypes stay hidden for saves |
-| `prototypes/121-fork-ae2-autocrafting.lua` | AE2 autocrafting: ME Pattern Provider (9 pattern slots), ME Blank Pattern and ME Encoded Pattern (issue #80), ME Molecular Assembler, ME Crafting CPU, tech `me-autocrafting` (guide: `docs/AE2.md`) |
-| `prototypes/122-fork-ae2-fluids.lua` | AE2 fluids (issue #68 R2): fluid storage cells for the ME Drive (items with tags), ME Fluid Interface, ME Fluid Import and Export Bus, techs `me-fluid-storage` and `me-fluid-storage-256k`; the old ME Fluid Drives stay hidden for saves (guide: `docs/AE2.md`) |
+| `docs/SPLIT.md` | issue #83: moving the ME network into its own mod `me-network` (inventory, coupling, state hand-over, release order, the checks of the split) |
+| `prototypes/120-fork-me-network-compat.lua` | the ME network on Gregtorio's tiers (issue #83): the ME network (cables, controller, drives with cells, terminal, interfaces, buses, storage buses, autocrafting, fluids) is the mod [me-network](https://github.com/Rykon00/me-network), a dependency; this file gives its items the GT recipes, its nine technologies Gregtorio's prerequisites and science, and builds the molecular assembler from the HV assembler (me-network's data-stage API `ME_NETWORK`) |
 | `prototypes/125-fork-luv-endgame.lua` | LuV endgame: naquadah ore line and neutron activator, bacterial vat and mutagen, circuit assembly line and crystal processors, fusion reactor MK1 and the first plasmas |
 | `prototypes/126-fork-zpm.lua` | ZPM: naquadah alloy parts, europium, ZPM components, casing and hull, ZPM science pack, ZPM energy hatch, ZPM machines and multiblock upgrades, techs |
 | `prototypes/127-fork-uv.lua` | UV: naquadria, americium and neutronium (fusion), superconductors, UV circuit (crystal processor mainframe), ZPM assembly line, UV components, casing and hull, fusion reactor MK2 and its plasmas, UV science pack, UV energy hatch, UV machines and multiblock upgrades, techs |
@@ -42,18 +40,7 @@ The repository root is the mod itself (`info.json`, `data.lua`, `prototypes/`, `
 | `scripts/fork-molds.lua` | stops machines with a mold recipe and no mold ("Missing mold"); gives machines their mold once in saves from before they had a mold slot |
 | `prototypes/fork-menu-simulations.lua` | main menu simulations (PR #65), loaded from `data-final-fixes.lua`: simulations that call `research_all_technologies()` get the bonuses of the vanilla techs Gregtorio disables (the laser defense simulation's character died without them); check with `devcheck.py menusim --sim all --compare` |
 | `prototypes/190-fork-manual-labor.lua` | "manual labor" burner usage: fist instead of the gas pump in the fuel slot, "No manual labor" status |
-| `scripts/fork-me-network.lua` | ME network core (issue #68): the cable graph (kept from the build and removal events), networks with their controller and status, storage cells and the storage API (insert, extract, count, contents), the ME Drive (slots, lights; the logic behind its window), cell partitions and drive priorities (insertion and extraction order, blueprint tag and settings paste of a drive), external cells (the storage bus), the cable router, remote interface `gregtorio-me-network` |
-| `scripts/fork-me-io.lua` | ME Interface (config rows: item and amount kept in it, the rest imported; old slot filters converted lazily) and import/export buses, the I/O step every 15 ticks (also runs the fluid step and the storage bus visits), remote interface `gregtorio-me-io` |
-| `scripts/fork-me-storagebus.lua` | ME Storage Bus (issue #68, after R3): a chest, logistic chest or cargo wagon as network storage (an external cell of the storage engine), the bounded visits that read the inventory, filters, priority, read/write mode, one bus per inventory, blueprint tag and settings paste, remote interface `gregtorio-me-storagebus` |
-| `scripts/fork-me-fluid-storagebus.lua` | ME Fluid Storage Bus (issue #68): the fluid segment of the tank it faces as network storage (an external cell with fluid keys), one bus per segment (claims by segment id, conflicts in unit order), the bounded visits, the temperature rule, filters, priority, mode, blueprint tag and settings paste, remote interface `gregtorio-me-fluid-storagebus` |
-| `scripts/fork-me-migrate.lua` | converts ME networks from before issue #68 (old drives into drives with cells, controller, interface, cables), checks the item totals, remote interface `gregtorio-me-migrate` |
-| `scripts/fork-me-terminal.lua` | ME Terminal, the hub window (status line, Storage tab with items, fluids, kind filter and the player's inventory, Crafting tab with plan preview, Jobs tab, Cells tab with drives and cells, Patterns tab that encodes and clears patterns), registers every GUI event of the mod and hands it to `fork-me-gui.lua`, opens the ME windows on click, remote interface `gregtorio-me-terminal` |
-| `scripts/fork-me-gui.lua` | issue #68 R3: the shared GUI of the ME windows (title bar, close and drag, slot buttons, number fields, k/M/G amounts), action routing by element tags, the window registry, refresh of open windows (bounded, in the terminal step) |
-| `scripts/fork-me-windows.lua` | issue #68 R3: the windows of the ME blocks (drive, storage cell with partition, controller, pattern provider with its pattern slots, crafting CPU, level maintainer, circuit interface, fluid interface, ME Interface, buses, storage bus) with their read and set functions, remote interface `gregtorio-me-gui` |
-| `scripts/fork-me-autocraft.lua` | autocrafting: the pattern provider's 9 slots (encoded patterns, issue #80: crafting patterns set their recipe on the machines next to the provider, processing patterns push into a machine or chest, outputs that come back into the network are taken by the waiting job), pattern order by provider priority, blueprints with pending patterns, migration of the providers of 0.4.1; planner, jobs and crafting CPUs with their tiers (job slots, speed; bounded work every 20 ticks, fluid boxes filled and drained by index), remote interface `gregtorio-me-autocraft` |
-| `scripts/fork-me-patterns.lua` | issue #80: the pattern data (crafting or processing, validation, identity), the blank and encoded pattern items (tags, tooltip), encoding and clearing |
-| `scripts/fork-me-circuit.lua` | issue #38: ME Level Maintainer (keeps an item or fluid in stock by starting crafting jobs, circuit amount and on/off) and ME Circuit Interface (network contents on the circuit wire), a step hook of the autocrafting step; settings in blueprints; remote interface `gregtorio-me-circuit` |
-| `scripts/fork-me-fluids.lua` | the ME Fluid Interface (import/export in the 15-tick I/O step, settings in blueprints and paste) and the fluid calls of the other modules on top of the storage engine of `fork-me-network.lua`, remote interface `gregtorio-me-fluids` |
+| `scripts/fork-me-handover.lua` | issue #83: the one-time hand-over of the ME state of older saves to me-network (remote interface `gregtorio-me-handover`, taken by me-network in its `on_init`; fingerprints of every table) |
 | `prototypes/198-fork-crafting-menu.lua` | machine recipes in the crafting menu (issue #49): shows every recipe whose category has a machine (red background, like vanilla), except the allow-list `FORK_CRAFTING_MENU_HIDDEN` (fluid voiding, replaced vanilla recipes, recipes vanilla hides); startup setting `gregtorio-continued-show-machine-recipes` (`settings.lua`, default on) |
 | `prototypes/199-fork-finalize.lua` | draft guard (hides broken draft recipes) and auto-unlock of intermediates |
 | `locale/en/fork.cfg` | generated names for entries without a translation |
@@ -65,7 +52,6 @@ The repository root is the mod itself (`info.json`, `data.lua`, `prototypes/`, `
 | `tools/gen_sprites.py` | machine sprites/icons from GT5-Unofficial textures (`--gt <path to checkout>`); tier hulls from UHV up, tier dynamo hatches on the turbines and reactors, tier energy hatch layers and icons for the IV to UXV upgrade multiblocks |
 | `tools/gen_gt_icons.py` | item icons from GT textures for the items in `tools/gt-icon-items.txt` (GT texture of the item, GT material icon sets in GT's colours, or a composition of GT parts); `--gt`, `--core <NewHorizonsCoreMod checkout>` |
 | `tools/gen_icons.py` | placeholder icons (recolored neighbor icons) for new items without an icon; replace them with `gen_gt_icons.py` (add the item to `tools/gt-icon-items.txt`) |
-| `tools/gen_ae2_sprites.py` | ME network and autocrafting sprites, icons and tech icons (GT5-Unofficial casings + Pillow); `--fluids` derives the fluid drive, cell and interface graphics from the item PNGs without a GT checkout; `--r1` the cable, drive, controller and bus graphics of issue #68, `--r2` the fluid buses, `--patterns` the blank and encoded pattern icons (issue #80) |
 | `tools/gen_tech_icons.py` | technology icons instead of the "NYI" placeholder (from the main unlocked item, listed in `tools/tech-icons.tsv`) |
 | `tools/gen_review_sheet.py` | before/after contact sheets of changed icons and sprites (`docs/graphics-review/`) |
 | `tools/gen_ui_icons.py` | GUI icons derived from item icons (empty manual-labor slot, red "no manual labor" alert) |
@@ -118,7 +104,8 @@ Pushing a `v*` tag makes the GitHub Action build the zip and attach it to a GitH
 The portal name `Gregtorio` belongs to the original author, Damien Reave, who can no longer
 update it. Since 0.3.0 the mod is called **Gregtorio Continued** (`gregtorio-continued`,
 https://mods.factorio.com/mod/gregtorio-continued), in the repo as well as on the portal.
-`info.json` lists `! Gregtorio`, so the two cannot be enabled together.
+`info.json` lists `! Gregtorio`, so the two cannot be enabled together. Since 0.5.0 it depends on
+[ME Network](https://mods.factorio.com/mod/me-network) (`me-network`), which the game downloads with it.
 
 Saves from `Gregtorio` load with `gregtorio-continued`: prototype names did not change, so
 buildings, items and research stay. What a save keeps per mod name is lost once: the script
@@ -143,7 +130,4 @@ names the textures of every generated item icon):
 * [NewHorizonsCoreMod](https://github.com/GTNewHorizons/NewHorizonsCoreMod) by GTNewHorizons, GPL-3.0: stargate chevron,
   frame part and radiation containment plate, the UMV, UXV and MAX (Planck) circuits.
 
-The ME network graphics (`tools/gen_ae2_sprites.py`) use only GT5-Unofficial casings and screens and shapes drawn
-with Pillow; the ME cable, the ME Drive's cell bays, the bus plates and arrows of issue #68 are drawn by the script
-or derived from those sprites. No textures of Applied Energistics 2 are used (its assets are not under a license
-compatible with this mod's GPLv3).
+The ME network and its graphics are in the mod [me-network](https://github.com/Rykon00/me-network) since issue #83.

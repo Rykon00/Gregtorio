@@ -2,8 +2,8 @@
 
 The ME network (issues #68, #38, #80: cables, controller, drives with cells, interface, buses, storage buses,
 terminal, autocrafting, fluids) moves out of Gregtorio Continued into its own mod **`me-network`** ("ME Network",
-https://github.com/Rykon00/me-network), which `gregtorio-continued` depends on. This is the plan and the record of
-the checks made before anything moved.
+https://github.com/Rykon00/me-network), which `gregtorio-continued` depends on. This is the plan, the record of
+the checks made before anything moved (sections 1 to 6), and the record of the split itself (section 7).
 
 Decided in the issue: mod name `me-network`, title "ME Network", author rykon_, GPLv3, first version 0.1.0,
 Factorio 2.0, described as "inspired by Applied Energistics 2". **Every prototype name stays** (entities, items,
@@ -135,9 +135,10 @@ Script state is kept per mod. Today it lives in `gregtorio-continued`'s `storage
   the tables into its own `storage`, then initialises as today. me-network's `on_configuration_changed` then runs
   exactly what Gregtorio's does today for the ME part (graph rebuild, migrations of old networks, the modules).
 - The tables, the keys and the code that reads them stay the same, so nothing has to be converted.
-- Gregtorio logs a fingerprint of each table it gives (`FORK-ME-HANDOVER: gave`), me-network one of each it got
-  (`ME-NETWORK-HANDOVER: got`): an order-independent walk of the table with entities as their unit numbers and shared
-  tables as references. `devcheck migrate` compares them.
+- Gregtorio sends a fingerprint of each table with it and logs it (`FORK-ME-HANDOVER: gave`); me-network computes
+  the fingerprint of what it got (`ME-NETWORK-HANDOVER: got`), compares and logs `ok` or `MISMATCH`: an
+  order-independent walk of the table with entities as their unit numbers and shared tables as references.
+  `devcheck migrate` fails on a mismatch.
 
 ### Verified headless (Factorio 2.0.77): `devcheck.py handover`
 
@@ -197,8 +198,8 @@ info.json            name me-network, title "ME Network", version 0.1.0, author 
 changelog.txt        Version: 0.1.0 (no Date)
 README.md, LICENSE (GPLv3; the GT texture notice, LGPL-3.0, kept), CONTRIBUTING.md, CLAUDE.md, thumbnail.png
 data.lua, control.lua
-prototypes/          network.lua (120), autocrafting.lua (121), fluids.lua (122), recipes.lua (standalone recipes
-                     and technologies), api.lua (ME_NETWORK)
+prototypes/          network.lua (120), autocrafting.lua (121), fluids.lua (122), each with its standalone recipes and
+                     technologies next to the items; api.lua (ME_NETWORK)
 scripts/             fork-me-*.lua (names kept: they require each other; renaming can follow)
 graphics/            the same relative paths as in Gregtorio
 locale/en/me-network.cfg
@@ -218,8 +219,10 @@ of this split) and credits the origin.
 - **me-network devcheck** (`tools/devcheck/devcheck.py` of me-network): `check` (loads, every unlocked recipe
   craftable in vanilla, missing files, sprite sizes) and `runtime` (all ME runtime tests), on vanilla and with
   `--with-gregtorio DIR` (a Gregtorio checkout as sibling mod: the same tests on the GT recipes and machines). The
-  tests that use GT machines today (a macerator as pattern machine, HV chemical reactors and an EV extractor with
-  fluid recipes, the GT gear recipe) pick the machines and recipes of the environment they run in.
+  tests name a few GT machines and recipes (a macerator as pattern machine, HV chemical reactors and an EV extractor
+  with fluid recipes, the GT gear recipe, an iron furnace with a dust recipe); without Gregtorio the test mod adds
+  stand-ins with the same names, numbers, sizes and fluid boxes (test fixtures, not part of the mod), so the same
+  test code runs in both.
 - **Gregtorio devcheck:** `check` and `runtime` keep the GT tests (molds, power, fuel check, cooled fluid, turbine
   tiers, recipes, victory); `migrate` keeps the migration of old Gregtorio saves (the ME parts of `migratemod`
   stay: they test Gregtorio saves) and checks the hand-over fingerprints. It gets me-network as a sibling checkout
@@ -261,3 +264,61 @@ Steps for the maintainer, in this order:
 
 No blocker was found: the engine runs the new mod's `on_init` first, a remote call keeps everything the ME state
 holds, the portal name `me-network` is free (checked 2026-10-02), and every coupling has a replacement above.
+
+## 7. The split (record)
+
+Done in Rykon00/me-network (0.1.0) and in this repository (0.5.0). Measured with Factorio 2.0.77, headless.
+
+### What moved, what stayed
+
+As planned in sections 1 and 2. me-network got the history of the moved files (`git filter-repo` over the moved
+paths, 128 commits, issue references rewritten to `Rykon00/Gregtorio#N`) and, on top, the restructuring: renamed
+prototype files, `info.json`, `data.lua` (the guard), `control.lua`, `prototypes/api.lua`, the standalone recipes and
+technologies next to the items, the receiving side of the hand-over, its devcheck, docs and release workflow.
+Gregtorio keeps `prototypes/120-fork-me-network-compat.lua`, `scripts/fork-me-handover.lua`, the recipe names
+`me-1k-storage-component-lv` and `-nand` in its locale, and the GT materials of section 1.
+
+### Prototype dump: no difference
+
+Every prototype (`serpent` of each `data.raw` entry, 15 664 of them) of `main` before the split (f08fafd) and of
+this branch with me-network: **byte-identical** after `__gregtorio-continued__` and `__me-network__` are normalised
+to one token. There is no other difference to explain: the same recipes (ingredients, categories, times, subgroups,
+`hide_from_player_crafting`, `auto_recycle`), technologies (prerequisites, units, unlocks, icons), entities, items
+(stack sizes, subgroups, orders, types), fluids, mod-data and custom inputs. Every one of the 7 641 referenced files
+exists in the mod its path names (7 443 `__gregtorio-continued__/`, 198 `__me-network__/`). The log lines of 199 are
+the same: `FORK-AUTOUNLOCK` 54 lines, identical (none involves an ME recipe), `FORK-DRAFT` hides 0 recipes (its 4
+lines create subgroups), `FORK-REMOVED` 35, identical. The technology list is unchanged: the nine ME technologies
+are made by me-network and given Gregtorio's prerequisites, science and unlocks by the compat file, so only their
+owner moved.
+
+### Tests
+
+| Run | Result |
+|---|---|
+| Gregtorio + me-network, `devcheck.py all` | RESULT: OK. Check: 385 of 404 technologies researchable (the 19 of `UNRESEARCHABLE_OK`), 0 uncraftable, 57 of 57 required recipes, 0 drafts, crafting menu 2928 shown / 241 kept / 0 unexpected (as before). Runtime: 549 machines placed, molds, power, fuel check, cooled fluid, turbine tiers, recipes, victory, post-victory ok |
+| `devcheck.py handover` (the prototype of section 3) | RESULT: OK (order, survival, both guards, broken hand-over noticed) |
+| `migrate --from-ref v0.4.1` (last release) | ok: patterns, job and maintainer, the hand-over network (6 kinds of items and fluids equal, settings of 7 blocks kept, drive behind the underground pair connected), fingerprints ok (7 of 10 tables with state) |
+| `migrate --from-ref f08fafd` (`main` before the split) | ok: the same as v0.4.1 (encoded patterns given in the old save), fingerprints ok (7 of 10 tables) |
+| `migrate --from-ref v0.3.2` (logistic-network ME) | ok: fluid drives (52 754 units kept), logistic network converted (258 items, 39 cables, 0 differences), patterns, job; fingerprints ok (3 of 10 tables), the two migration steps run in me-network |
+| `menusim` (laser defense simulation) | RESULT: OK |
+| me-network `devcheck.py all` (vanilla, Space Age, quality) | RESULT: OK: 38 of 38 recipes, 9 of 9 technologies, all 17 runtime tests ok on the stand-ins |
+| me-network `devcheck.py check --base-only` | RESULT: OK: all 251 unlocked recipes of the base game craftable |
+| me-network `devcheck.py all --with-gregtorio` | RESULT: OK: 37 of 37 recipes (the standalone 1k component recipe removed by Gregtorio), all 17 runtime tests ok on Gregtorio's machines and recipes |
+
+The hand-over broken on purpose (`fork_me_io` left out of `take()`): `migrate --from-ref v0.4.1` fails (exit 1) on
+the interface config and the import and export bus filters of the old save
+(`handover: interface settings {}, before {{amount = 10, name = "iron-plate", quality = "normal"}}`, and the same for
+the two buses); the fingerprints of the other tables still match, as they should.
+
+### What to check in a real game
+
+- An old save (0.4.1 or `main` before the split) with an ME network, loaded with this version and me-network: the
+  drives' cells (open a drive, the terminal's Cells tab), the items and fluids in the terminal, patterns in the
+  providers, a running job finishing, level maintainers, interface config rows and bus filters, storage buses on
+  their chests and tanks, the drive lights (drawn again by me-network). The log has `ME-NETWORK-HANDOVER: ok`.
+- A new game with only me-network (vanilla, with and without Space Age): research ME Network (red and green
+  science), craft cables, a controller, a drive with a 1k cell and a terminal, store items; ME Autocrafting (blue):
+  encode a pattern in the terminal, a provider next to an assembler, a CPU, craft through the terminal.
+- me-network next to Gregtorio 0.4.1: the game refuses to load with the message of me-network's `data.lua` (checked
+  headless with the 0.4.1 zip: "this version of Gregtorio Continued (before 0.5.0) contains its own ME network").
+
