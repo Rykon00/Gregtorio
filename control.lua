@@ -11,7 +11,8 @@ local fork_io = require("scripts.fork-me-io")
 local fork_migrate = require("scripts.fork-me-migrate")
 --- Fork: ME terminal (the hub window), routes the GUI events of every ME window (scripts/fork-me-gui.lua)
 local fork_me = require("scripts.fork-me-terminal")
---- Fork: AE2 autocrafting, pattern providers and crafting CPUs (see prototypes/121-fork-ae2-autocrafting.lua)
+--- Fork: AE2 autocrafting, pattern providers with encoded patterns (issue #80) and crafting CPUs (see
+--- prototypes/121-fork-ae2-autocrafting.lua; the pattern items in scripts/fork-me-patterns.lua)
 local fork_ae2 = require("scripts.fork-me-autocraft")
 --- Fork: AE2 fluid storage, fluid drives and fluid interfaces (see prototypes/122-fork-ae2-fluids.lua)
 local fork_fluids = require("scripts.fork-me-fluids")
@@ -90,7 +91,7 @@ script.on_event(defines.events.on_entity_cloned, function(event)
   fork_power.on_built(event.destination)
 end)
 
---- Fork: the recipe choice of an ME Pattern Provider (for the furnaces next to it) and the settings of ME Drives,
+--- Fork: the priority of an ME Pattern Provider (its patterns travel in blueprints, see fork-me-autocraft.lua) and the settings of ME Drives,
 --- ME Interfaces, buses, ME Fluid Interfaces, Level Maintainers and Circuit Interfaces are copied by settings
 --- paste and stored in blueprints (the blueprint handler of fork-me-autocraft.lua tags all of them)
 script.on_event(defines.events.on_entity_settings_pasted, function(event)
@@ -107,8 +108,9 @@ script.on_event(defines.events.on_player_setup_blueprint, function(event)
   fork_ae2.on_player_setup_blueprint(event)
 end)
 
---- Fork: removed ME members. Mined: an ME Drive's cells (with their items and fluids) go into the mined buffer,
---- a fluid interface's content back into the network; destroyed or removed by a script: the cells are spilled.
+--- Fork: removed ME members. Mined: an ME Drive's cells (with their items and fluids) and an ME Pattern Provider's
+--- encoded patterns go into the mined buffer, a fluid interface's content back into the network; destroyed or
+--- removed by a script: the cells and patterns are spilled.
 --- The fluid module runs first (it looks at the network the entity still belongs to), then the graph is updated.
 local REMOVED_FILTER = {}
 --- (logistic chests and cargo wagons: the inventory of a storage bus leaves the network at once; pipes, underground
@@ -123,6 +125,7 @@ local function on_mined(event)
   fork_io.on_removed(event.entity)
   fork_sbus.on_removed(event.entity)
   fork_fsbus.on_removed(event.entity)
+  fork_ae2.on_removed(event.entity, event.buffer)
   fork_net.on_removed(event.entity, event.buffer)
 end
 for _, name in pairs({ "on_player_mined_entity", "on_robot_mined_entity", "on_space_platform_mined_entity" }) do
@@ -133,6 +136,7 @@ script.on_event(defines.events.on_entity_died, function(event)
   fork_io.on_removed(event.entity)
   fork_sbus.on_removed(event.entity)
   fork_fsbus.on_removed(event.entity)
+  fork_ae2.on_removed(event.entity, nil)
   fork_net.on_removed(event.entity, nil)
 end, REMOVED_FILTER)
 script.on_event(defines.events.script_raised_destroy, function(event)
@@ -140,6 +144,7 @@ script.on_event(defines.events.script_raised_destroy, function(event)
   fork_io.on_removed(event.entity)
   fork_sbus.on_removed(event.entity)
   fork_fsbus.on_removed(event.entity)
+  fork_ae2.on_removed(event.entity, nil)
   fork_net.on_removed(event.entity, nil)
 end, REMOVED_FILTER)
 

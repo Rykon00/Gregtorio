@@ -11,9 +11,10 @@
   hidden for saves; runtime in `scripts/fork-me-network.lua`, `fork-me-io.lua`, `fork-me-storagebus.lua`, `fork-me-fluid-storagebus.lua`,
   `fork-me-migrate.lua`, design record
   `docs/ME-REWORK.md`),
-  121 AE2 autocrafting (pattern provider, molecular assembler, crafting CPU and its IV/LuV tiers, level
-  maintainer, circuit interface; runtime in `scripts/fork-me-autocraft.lua` and `scripts/fork-me-circuit.lua`,
-  guide `docs/AE2.md`), 122 AE2 fluids (fluid cells for the ME Drive, fluid interface, fluid
+  121 AE2 autocrafting (pattern provider with 9 slots for encoded patterns, blank and encoded pattern items (issue #80),
+  molecular assembler, crafting CPU and its IV/LuV tiers, level maintainer, circuit interface; runtime in
+  `scripts/fork-me-autocraft.lua`, `scripts/fork-me-patterns.lua` and `scripts/fork-me-circuit.lua`, guide `docs/AE2.md`,
+  pattern design in `docs/ME-REWORK.md`, "Encoded patterns"), 122 AE2 fluids (fluid cells for the ME Drive, fluid interface, fluid
   buses, fluid storage bus (runtime `scripts/fork-me-fluid-storagebus.lua`: one bus per fluid segment); the old fluid drives hidden; fluids are stored by `scripts/fork-me-network.lua`, the interface in `scripts/fork-me-fluids.lua`), 125 LuV endgame (naquadah, bacterial vat, crystal processors, fusion MK1), 126 ZPM, 127 UV
   (UV circuit, ZPM assembly line, UV components, fusion MK2), 128 UHV (wetware line, tritanium,
   UHV components, fusion MK3), 129 water purification (grades 1-8, NPIC/PPIC/QPIC/FPIC/APIC chips, complex SMDs; the FPIC/APIC users in 131-134 list its techs as prerequisites),
@@ -40,10 +41,11 @@
   `FORK_CRAFTING_MENU_HIDDEN`, devcheck fails otherwise; startup setting in `settings.lua`), 199 finalize.
   The phase plan is in `docs/ROADMAP.md`.
   Runtime fork code lives in `scripts/` and is required from `control.lua` (`fork-me-network.lua`, `fork-me-io.lua`,
-  `fork-me-storagebus.lua`, `fork-me-fluid-storagebus.lua`, `fork-me-migrate.lua`, `fork-me-terminal.lua`, `fork-me-autocraft.lua`, `fork-me-fluids.lua`, `fork-me-circuit.lua`,
+  `fork-me-storagebus.lua`, `fork-me-fluid-storagebus.lua`, `fork-me-migrate.lua`, `fork-me-terminal.lua`, `fork-me-autocraft.lua` (with `fork-me-patterns.lua`), `fork-me-fluids.lua`, `fork-me-circuit.lua`,
   `fork-me-gui.lua`, `fork-me-windows.lua`, `fork-molds.lua`, `fork-victory.lua`, `fork-power.lua`). The ME modules use the storage API of
   `fork-me-network.lua`, never a logistic network. `fork-me-circuit.lua` registers no interval: it runs as a step hook
-  of the autocrafting step (20); the fluid step and the storage bus visits (8 per step) run inside the I/O step of
+  of the autocrafting step (20); processing patterns catch their outputs through the network's insert functions
+  (`N.on_arrival`, no tick); the fluid step and the storage bus visits (8 per step) run inside the I/O step of
   `fork-me-io.lua` (15); a storage bus is an external cell of the storage engine (`N.ext_*`), so is a fluid storage bus (8 visits per step too); the network's slow
   step (drive lights, sweep) and the refresh of open ME windows run inside the terminal step (60); the terminal
   module registers every GUI event and hands it to `fork-me-gui.lua` (`dispatch`: actions by the `fork_me_act` tag;
