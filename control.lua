@@ -1,25 +1,6 @@
 
---- Fork: ME network core: cable graph, controller, drives and cells, storage API (AE2, issue #68, see prototypes/120-fork-ae2.lua)
-local fork_net = require("scripts.fork-me-network")
---- Fork: ME Storage Bus: a chest or cargo wagon as network storage (its visits run in the I/O step)
-local fork_sbus = require("scripts.fork-me-storagebus")
---- Fork: ME Fluid Storage Bus: the fluid segment of a tank as network storage (its visits run in the I/O step)
-local fork_fsbus = require("scripts.fork-me-fluid-storagebus")
---- Fork: ME Interface and import/export buses, the I/O step (also runs the fluid step and the storage bus visits)
-local fork_io = require("scripts.fork-me-io")
---- Fork: migration of ME networks from before issue #68 (logistic network based)
-local fork_migrate = require("scripts.fork-me-migrate")
---- Fork: ME terminal (the hub window), routes the GUI events of every ME window (scripts/fork-me-gui.lua)
-local fork_me = require("scripts.fork-me-terminal")
---- Fork: AE2 autocrafting, pattern providers with encoded patterns (issue #80) and crafting CPUs (see
---- prototypes/121-fork-ae2-autocrafting.lua; the pattern items in scripts/fork-me-patterns.lua)
-local fork_ae2 = require("scripts.fork-me-autocraft")
---- Fork: AE2 fluid storage, fluid drives and fluid interfaces (see prototypes/122-fork-ae2-fluids.lua)
-local fork_fluids = require("scripts.fork-me-fluids")
---- Fork: AE2 level maintainer and circuit interface (issue #38, see prototypes/121-fork-ae2-autocrafting.lua)
-local fork_circuit = require("scripts.fork-me-circuit")
---- Fork: the windows of the ME blocks (issue #68 step R3; after the modules whose functions they call)
-require("scripts.fork-me-windows")
+--- Fork: the ME network is the mod me-network (issue #83); this hands the ME state of older saves over to it once
+local fork_handover = require("scripts.fork-me-handover")
 --- Fork: molds stay in the machine's mold slot (see prototypes/150-fork-molds.lua)
 local fork_molds = require("scripts.fork-molds")
 --- Fork: researching the first level of `victory` wins the game (see prototypes/135-fork-endgame.lua)
@@ -27,133 +8,24 @@ local fork_victory = require("scripts.fork-victory")
 --- Fork: fuel check of the endgame generators, cooled fluid of the plasma turbines (see prototypes/136-fork-power.lua)
 local fork_power = require("scripts.fork-power")
 
---- the blueprint handler of the autocrafting module also tags ME Interfaces, buses and drives
-fork_ae2.blueprint_hooks[#fork_ae2.blueprint_hooks + 1] = fork_io.tag_blueprint
-fork_ae2.blueprint_hooks[#fork_ae2.blueprint_hooks + 1] = fork_net.tag_blueprint
-fork_ae2.blueprint_hooks[#fork_ae2.blueprint_hooks + 1] = fork_sbus.tag_blueprint
-fork_ae2.blueprint_hooks[#fork_ae2.blueprint_hooks + 1] = fork_fsbus.tag_blueprint
-
-script.on_event(defines.events.on_built_entity, function(event)
-  if event.entity.name == "trash-can" then
-    event.entity.remove_unfiltered_items = true
+local function on_built(event)
+  local entity = event.entity
+  if entity.name == "trash-can" then
+    entity.remove_unfiltered_items = true
   end
-  fork_net.on_built(event.entity, event)
-  fork_io.on_built(event.entity, event.tags)
-  fork_sbus.on_built(event.entity, event.tags)
-  fork_fsbus.on_built(event.entity, event.tags)
-  fork_ae2.on_built(event.entity, event.tags)
-  fork_fluids.on_built(event.entity, event.tags)
-  fork_circuit.on_built(event.entity, event.tags)
-  fork_molds.on_built(event.entity)
-  fork_power.on_built(event.entity)
-end)
+  fork_molds.on_built(entity)
+  fork_power.on_built(entity)
+end
+script.on_event({ defines.events.on_built_entity, defines.events.on_robot_built_entity }, on_built)
 
-script.on_event(defines.events.on_robot_built_entity, function(event)
-  if event.entity.name == "trash-can" then
-    event.entity.remove_unfiltered_items = true
-  end
-  fork_net.on_built(event.entity, event)
-  fork_io.on_built(event.entity, event.tags)
-  fork_sbus.on_built(event.entity, event.tags)
-  fork_fsbus.on_built(event.entity, event.tags)
-  fork_ae2.on_built(event.entity, event.tags)
-  fork_fluids.on_built(event.entity, event.tags)
-  fork_circuit.on_built(event.entity, event.tags)
-  fork_molds.on_built(event.entity)
-  fork_power.on_built(event.entity)
-end)
-
---- Fork: entities built by other scripts or on space platforms
+--- Fork: entities built by other scripts or on space platforms, and cloned ones
 script.on_event({ defines.events.script_raised_built, defines.events.script_raised_revive,
   defines.events.on_space_platform_built_entity }, function(event)
-  fork_net.on_built(event.entity, event)
-  fork_io.on_built(event.entity, event.tags)
-  fork_sbus.on_built(event.entity, event.tags)
-  fork_fsbus.on_built(event.entity, event.tags)
-  fork_ae2.on_built(event.entity, event.tags)
-  fork_fluids.on_built(event.entity, event.tags)
-  fork_circuit.on_built(event.entity, event.tags)
   fork_molds.on_built(event.entity)
   fork_power.on_built(event.entity)
 end)
-
---- Fork: cloned entities (e.g. by other mods) need to be registered as well (a cloned fluid drive starts empty,
---- the settings of providers, fluid interfaces, level maintainers and circuit interfaces are copied)
 script.on_event(defines.events.on_entity_cloned, function(event)
-  fork_net.on_built(event.destination)
-  fork_net.on_cloned(event.source, event.destination)
-  fork_io.on_built(event.destination, nil, event.source)
-  fork_sbus.on_built(event.destination, nil, event.source)
-  fork_fsbus.on_built(event.destination, nil, event.source)
-  fork_ae2.on_built(event.destination, nil, event.source)
-  fork_fluids.on_built(event.destination, nil, event.source)
-  fork_circuit.on_built(event.destination, nil, event.source)
   fork_power.on_built(event.destination)
-end)
-
---- Fork: the priority of an ME Pattern Provider (its patterns travel in blueprints, see fork-me-autocraft.lua) and the settings of ME Drives,
---- ME Interfaces, buses, ME Fluid Interfaces, Level Maintainers and Circuit Interfaces are copied by settings
---- paste and stored in blueprints (the blueprint handler of fork-me-autocraft.lua tags all of them)
-script.on_event(defines.events.on_entity_settings_pasted, function(event)
-  fork_net.on_entity_settings_pasted(event)
-  fork_io.on_entity_settings_pasted(event)
-  fork_sbus.on_entity_settings_pasted(event)
-  fork_fsbus.on_entity_settings_pasted(event)
-  fork_ae2.on_entity_settings_pasted(event)
-  fork_fluids.on_entity_settings_pasted(event)
-  fork_circuit.on_entity_settings_pasted(event)
-end)
-
-script.on_event(defines.events.on_player_setup_blueprint, function(event)
-  fork_ae2.on_player_setup_blueprint(event)
-end)
-
---- Fork: removed ME members. Mined: an ME Drive's cells (with their items and fluids) and an ME Pattern Provider's
---- encoded patterns go into the mined buffer, a fluid interface's content back into the network; destroyed or
---- removed by a script: the cells and patterns are spilled.
---- The fluid module runs first (it looks at the network the entity still belongs to), then the graph is updated.
-local REMOVED_FILTER = {}
---- (logistic chests and cargo wagons: the inventory of a storage bus leaves the network at once; pipes, underground
---- pipes and pumps: a removed one may split the fluid segment of a fluid storage bus)
-for _, t in pairs({ "simple-entity-with-force", "storage-tank", "lamp", "electric-energy-interface", "container",
-  "constant-combinator", "assembling-machine", "furnace", "logistic-container", "cargo-wagon", "pipe", "pipe-to-ground",
-  "pump" }) do
-  REMOVED_FILTER[#REMOVED_FILTER + 1] = { filter = "type", type = t }
-end
-local function on_mined(event)
-  fork_fluids.on_mined_event(event)
-  fork_io.on_removed(event.entity)
-  fork_sbus.on_removed(event.entity)
-  fork_fsbus.on_removed(event.entity)
-  fork_ae2.on_removed(event.entity, event.buffer)
-  fork_net.on_removed(event.entity, event.buffer)
-end
-for _, name in pairs({ "on_player_mined_entity", "on_robot_mined_entity", "on_space_platform_mined_entity" }) do
-  script.on_event(defines.events[name], on_mined, REMOVED_FILTER)
-end
-script.on_event(defines.events.on_entity_died, function(event)
-  fork_fluids.on_removed(event.entity)
-  fork_io.on_removed(event.entity)
-  fork_sbus.on_removed(event.entity)
-  fork_fsbus.on_removed(event.entity)
-  fork_ae2.on_removed(event.entity, nil)
-  fork_net.on_removed(event.entity, nil)
-end, REMOVED_FILTER)
-script.on_event(defines.events.script_raised_destroy, function(event)
-  fork_fluids.on_removed(event.entity)
-  fork_io.on_removed(event.entity)
-  fork_sbus.on_removed(event.entity)
-  fork_fsbus.on_removed(event.entity)
-  fork_ae2.on_removed(event.entity, nil)
-  fork_net.on_removed(event.entity, nil)
-end, REMOVED_FILTER)
-
---- Fork: a rotated import, export or (fluid) storage bus faces another entity
-script.on_event(defines.events.on_player_rotated_entity, function(event)
-  fork_io.on_rotated(event.entity)
-  fork_net.on_rotated(event.entity)
-  fork_sbus.on_rotated(event.entity)
-  fork_fsbus.on_rotated(event.entity)
 end)
 
 -- Raise a custom event when the cutscene ends
@@ -227,18 +99,8 @@ script.on_configuration_changed(function(data)
 			force.reset_technology_effects()
 		end
 	end
-	--- the ME graph first (the only map scan), then the migration of old ME networks (issue #68), then the
-	--- modules that read the graph
-	fork_net.rebuild()
-	fork_migrate.run_fluids()
-	fork_migrate.run()
-	fork_me.on_configuration_changed()
-	fork_fluids.on_configuration_changed()
-	fork_ae2.on_configuration_changed()
-	fork_circuit.on_configuration_changed()
-	fork_io.on_configuration_changed()
-	fork_sbus.on_configuration_changed()
-	fork_fsbus.on_configuration_changed()
+	--- the ME network (its graph rebuild and the migrations of old ME networks) is me-network's since issue #83
+	fork_handover.on_configuration_changed()
 	fork_molds.on_configuration_changed()
 	fork_power.on_configuration_changed()
 end)

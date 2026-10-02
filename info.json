@@ -11,11 +11,12 @@
 		"quality >= 2.0.0",
 		"configurable-valves >= 0.2.1",
 		"autocraft-logistics >= 1.0.0",
+		"me-network >= 0.1.0",
 		"? BottleneckLite >= 1.3.4",
 		"? companion-drones-mjlfix >= 2.0.10",
 		"? AfraidOfTheDark >= 1.0.31",
 		"? far-reach >= 2.0.0",
 		"! Gregtorio"
 	],
-  "description": "Continuation of Gregtorio by Damien Reave: a GregTech-style total overhaul from digging clay with a shovel up to the stargate. Adds the GregTech: New Horizons progression up to UXV and victory, AE2-style ME storage with autocrafting and fluids, and fixes. Source and issues: https://github.com/Rykon00/Gregtorio"
+  "description": "Continuation of Gregtorio by Damien Reave: a GregTech-style total overhaul from digging clay with a shovel up to the stargate. Adds the GregTech: New Horizons progression up to UXV and victory, puts the ME Network mod (ME storage with autocrafting and fluids) on its tiers, and fixes. Source and issues: https://github.com/Rykon00/Gregtorio"
 }
