@@ -110,6 +110,8 @@ require("prototypes.138-fork-research-balance")
 require("prototypes.142-fork-recipe-unlocks")
 --- issue #91: casts of every form, melts of every ingot, the missing melts (before the molds and the Fluids tab)
 require("prototypes.143-fork-casting")
+--- issue #91: GregTech's producers and uses of the fluids nothing made or used
+require("prototypes.144-fork-dead-fluids")
 require("prototypes.150-fork-molds")
 require("prototypes.190-fork-manual-labor")
 --- subgroups of the Fluids tab (after every file that creates fluids)

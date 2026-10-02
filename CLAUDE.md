@@ -35,7 +35,9 @@
   the auto-unlock of 199 placed before, so new unlocks do not move it), 143 casting (issue #91: solidifier casts of every
   form and extractor melts of every ingot from its table `MATERIALS` (tier, technology, the colour of a new melt);
   199's auto-unlock ignores these recipes (`FORK_CASTING.recipes`), else an ingot would count as its own producer;
-  must load before 150, whose molds it needs, and before 196, 198 and 199), 150 molds (mold slot instead of mold ingredient; must load after every file that creates
+  must load before 150, whose molds it needs, and before 196, 198 and 199), 144 dead fluids (issue #91: GT's uses and
+  producers of fluids nothing made or used; the blast furnace gas variants of `EBF_GASES` are in `FORK_GAS_VARIANTS`,
+  which 199's auto-unlock ignores like the casts), 150 molds (mold slot instead of mold ingredient; must load after every file that creates
   machines), 190 manual-labor
   burner usage (fist icon in the fuel slot), 196 subgroups (the Fluids tab: every Gregtorio fluid gets a row of the item
   group `fluids` by its explicit table or a name pattern; a new fluid goes into one, the fallback row
