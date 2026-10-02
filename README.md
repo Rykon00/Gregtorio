@@ -16,6 +16,7 @@ The repository root is the mod itself (`info.json`, `data.lua`, `prototypes/`, `
 | `prototypes/102-fork-resources.lua` | disables the vanilla resource patches (no spawning, not minable) |
 | `prototypes/103-fork-qol-techs.lua` | issue #29: the vanilla quality-of-life techs (bulk/stack inserter, inserter capacity bonus, express and turbo belts, belt capacity, worker robot speed and cargo size) gated onto Gregtorio techs with Gregtorio science packs, GT recipes for the inserters and belts they unlock |
 | `prototypes/110-fork-luv.lua` | LuV: materials, assembly line, LuV machines, science pack, techs |
+| `docs/SPLIT.md` | issue #83: the plan for moving the ME network into its own mod `me-network` (inventory, coupling, state hand-over, release order) |
 | `prototypes/120-fork-ae2.lua` | AE2 / ME network (issue #68, design record `docs/ME-REWORK.md`): ME Cable (placed by the fluix cable), ME Controller, ME Drive with 10 cell slots, storage cells (items with tags), ME Interface, ME Import and Export Bus, ME Terminal, techs; the old logistic-network prototypes stay hidden for saves |
 | `prototypes/121-fork-ae2-autocrafting.lua` | AE2 autocrafting: ME Pattern Provider (9 pattern slots), ME Blank Pattern and ME Encoded Pattern (issue #80), ME Molecular Assembler, ME Crafting CPU, tech `me-autocrafting` (guide: `docs/AE2.md`) |
 | `prototypes/122-fork-ae2-fluids.lua` | AE2 fluids (issue #68 R2): fluid storage cells for the ME Drive (items with tags), ME Fluid Interface, ME Fluid Import and Export Bus, techs `me-fluid-storage` and `me-fluid-storage-256k`; the old ME Fluid Drives stay hidden for saves (guide: `docs/AE2.md`) |
@@ -57,7 +58,7 @@ The repository root is the mod itself (`info.json`, `data.lua`, `prototypes/`, `
 | `prototypes/199-fork-finalize.lua` | draft guard (hides broken draft recipes) and auto-unlock of intermediates |
 | `locale/en/fork.cfg` | generated names for entries without a translation |
 | `tools/dev_link.py` | links the repo into the Factorio mods folder (working copy is loaded directly) |
-| `tools/devcheck/` | headless test harness: load check, progression/craftability analysis, graphics and runtime checks |
+| `tools/devcheck/` | headless test harness: load check, progression/craftability analysis, graphics and runtime checks; `handover` runs the prototype of the ME state hand-over of issue #83 (`docs/SPLIT.md`) |
 | `tools/balance_model.py` | full-chain cost model for balance passes: time of a part or a technology in a reference factory per tier, from the balance dump of `devcheck.py check --balance-out`; `--dtpf` compares the plasma forge route with the fusion route |
 | `tools/build.py` | builds `dist/gregtorio-continued_<version>.zip`, optionally installs it; `--portal` leaves out the Photoshop sources (mod portal zip) |
 | `tools/check_syntax.py` | Lua syntax check (`--loaded` = only files `data.lua` actually loads) |

@@ -10,6 +10,7 @@
     python tools/devcheck/devcheck.py all       # check + runtime
     python tools/devcheck/devcheck.py menusim --sim all --compare
                                                 # run the main menu simulations with and without the mod
+    python tools/devcheck/devcheck.py handover  # issue #83: prototype of the ME state hand-over to me-network
 
 Everything is kept in .devcheck/ in the repository root (git-ignored).
 
@@ -740,6 +741,91 @@ def migrate(a):
     return 0 if ok else 1
 
 
+HANDOVER = HERE / "handover"
+HANDOVER_MODS = WORK / "handover-mods"
+
+
+def handover_mods(giver=None, taker=False, skip=None):
+    """mods for the hand-over prototype: the giver (1 = old Gregtorio, 2 = new Gregtorio, depends on the taker),
+    the taker (me-network); skip = a storage table the giver leaves out"""
+    if HANDOVER_MODS.exists():
+        shutil.rmtree(HANDOVER_MODS)
+    HANDOVER_MODS.mkdir()
+    enabled = ["base"]
+    for name, src, version, deps in (
+            ("zz-handover-giver", "giver", f"{giver}.0.0", ["zz-handover-taker >= 1.0.0"] if giver == 2 else []),
+            ("zz-handover-taker", "taker", "1.0.0", [])):
+        if (name == "zz-handover-giver" and not giver) or (name == "zz-handover-taker" and not taker):
+            continue
+        d = HANDOVER_MODS / name
+        shutil.copytree(HANDOVER / src, d)
+        shutil.copy2(HANDOVER / "shared.lua", d / "shared.lua")
+        (d / "info.json").write_text(json.dumps({"name": name, "version": version, "title": name, "author": "devcheck",
+                                                 "factorio_version": "2.0", "dependencies": ["base"] + deps}))
+        if src == "giver":
+            (d / "config.lua").write_text(f"return {{ skip = {json.dumps(skip)} }}\n" if skip else "return {}\n")
+        enabled.append(name)
+    (HANDOVER_MODS / "mod-list.json").write_text(json.dumps({"mods": [{"name": n, "enabled": True} for n in enabled]}))
+
+
+def handover_run(*args):
+    binary = FACTORIO / ("bin/x64/factorio.exe" if os.name == "nt" else "bin/x64/factorio")
+    r = subprocess.run([str(binary), "--mod-directory", str(HANDOVER_MODS), *args], capture_output=True, text=True)
+    LOG.write_text(r.stdout + r.stderr)
+    return r.stdout + r.stderr
+
+
+def handover(a):
+    """Issue #83: prototype of the one-time hand-over of the ME state from gregtorio-continued to me-network, with two
+    stand-in mods (tools/devcheck/handover/): the event order when the taker is added and the giver updated in the
+    same load, what survives the remote call, the guards, and a broken hand-over that must be noticed."""
+    save = WORK / "handover-map.zip"
+    fails = []
+    handover_mods(giver=1)
+    log = handover_run("--create", str(save))
+    if load_errors(log) or not_saved(log):
+        print("could not create the old save:\n" + (load_errors(log) or not_saved(log)))
+        return 1
+
+    def load(skip=None):
+        handover_mods(giver=2, taker=True, skip=skip)
+        return handover_run("--benchmark", str(save), "--benchmark-ticks", "2")
+
+    log = load()
+    print("event order (giver = gregtorio-continued updated, taker = me-network added):")
+    for line in re.findall(r"HANDOVER-ORDER (.*)", log):
+        print("  " + line)
+    for line in re.findall(r"HANDOVER-CHECK (.*)", log):
+        print("  check: " + line)
+    result = re.search(r"HANDOVER-RESULT (.*)", log)
+    print(f"hand-over: {result.group(1) if result else 'did not run'}")
+    script_err = re.search(r"Error while running event .*", log)
+    if not (result and result.group(1) == "ok") or script_err or not re.search(r"Performed \d+ updates", log):
+        fails.append("the hand-over failed" + (": " + script_err.group(0) if script_err else ""))
+    log = load(skip="fork_me_io")
+    result = re.search(r"HANDOVER-RESULT (.*)", log)
+    missing = re.findall(r"HANDOVER-CHECK failed: (.*)", log)
+    print(f"broken hand-over (fork_me_io left out): {result.group(1) if result else 'did not run'}"
+          + (f" ({'; '.join(missing)})" if missing else ""))
+    if not (result and result.group(1) == "failed"):
+        fails.append("a hand-over without fork_me_io was not noticed")
+    handover_mods(giver=1, taker=True)
+    err = load_errors(handover_run("--benchmark", str(save), "--benchmark-ticks", "2")) or ""
+    guard = re.search(r"zz-handover-taker: .*", err)
+    print(f"old giver with the taker: {'refused: ' + guard.group(0) if guard else ('refused: ' + err if err else 'LOADED')}")
+    if "contains the ME network itself" not in err:
+        fails.append("the taker loaded next to the old giver")
+    handover_mods(giver=2)
+    err = load_errors(handover_run("--benchmark", str(save), "--benchmark-ticks", "2")) or ""
+    dep = re.search(r"Missing required dependency [^\n]*", err)
+    print(f"new giver without the taker: {'refused: ' + dep.group(0) if dep else ('refused: ' + err if err else 'LOADED')}")
+    if not err:
+        fails.append("the new giver loaded without the taker")
+    report("hand-over prototype problems", fails)
+    print("\nRESULT:", "OK" if not fails else "PROBLEMS FOUND")
+    return 1 if fails else 0
+
+
 def menusim_list(gregtorio):
     """{name: (save file, length)} of the main menu simulations, as the game has them with this mod set"""
     prepare_mods(menusim="none", gregtorio=gregtorio)
@@ -827,6 +913,7 @@ def main():
     ms.add_argument("--compare", action="store_true", help="also run without Gregtorio")
     ms.add_argument("--ticks", type=int, help="ticks to run (default: the simulation's length)")
     ms.add_argument("--verbose", action="store_true", help="print the log lines with --sim all too")
+    sub.add_parser("handover", help="issue #83: prototype of the ME state hand-over to me-network")
     al = sub.add_parser("all")
     al.add_argument("--ticks", type=int, default=1500)
     al.add_argument("--locale-out")
@@ -843,6 +930,8 @@ def main():
         return migrate(a)
     if a.cmd == "menusim":
         return menusim(a)
+    if a.cmd == "handover":
+        return handover(a)
     return check(a) or runtime(a)
 
 
