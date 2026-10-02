@@ -693,6 +693,15 @@ local RT = {
 	{ "lv-extractor", "melt-steel-ingot" },
 	{ "ev-extractor", "melt-titanium-ingot" },
 	{ "iv-extractor", "melt-iridium-ingot" },
+	-- issue #91 part 3 (prototypes/144-fork-dead-fluids.lua): blast furnace recipes with neon, krypton and xenon, nitric
+	-- acid from nitrogen dioxide, raw gasoline, gasoline and its cell
+	{ "ev-electric-blast-furnace", "hot-titanium-ingot-neon" },
+	{ "ev-electric-blast-furnace", "hot-tungsten-ingot-krypton" },
+	{ "iv-electric-blast-furnace", "hot-iridium-ingot-xenon" },
+	{ "hv-large-chemical-reactor", "nitric-acid-from-nitrogen-dioxide" },
+	{ "hv-large-chemical-reactor", "raw-gasoline" },
+	{ "hv-large-chemical-reactor", "gasoline" },
+	{ "lv-canning-machine", "gasoline-cell" },
 }
 
 local function rt_product(recipe)

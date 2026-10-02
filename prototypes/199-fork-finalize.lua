@@ -121,8 +121,12 @@ end
 
 --- Who makes what (without recycling/voiding/scrap). The casts and melts of 143-fork-casting.lua only turn a
 --- material into another form of it (ingot -> melt -> ingot): counted as producers they would let an ingot stand in
---- for itself, and the auto-unlock would no longer pull in the recipe that really makes it (issue #91).
-local casting = FORK_CASTING and FORK_CASTING.recipes or {}
+--- for itself, and the auto-unlock would no longer pull in the recipe that really makes it (issue #91). The same for
+--- the blast furnace variants with another gas of 144-fork-dead-fluids.lua, which stand in for their base recipe.
+local casting = {}
+for _, list in pairs({ FORK_CASTING and FORK_CASTING.recipes or {}, FORK_GAS_VARIANTS or {} }) do
+	for name, _ in pairs(list) do casting[name] = true end
+end
 local producers = {}
 for name, r in pairs(data.raw.recipe) do
 	if not name:match("%-recycling$") and not name:match("^void%-") and not name:match("scrap") and not casting[name]

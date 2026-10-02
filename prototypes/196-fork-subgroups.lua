@@ -72,7 +72,7 @@ put("ore-solutions", { "bauxite-slurry", "heated-bauxite-slurry", "indium-concen
 	"sulfuric-iron-solution", "sulfuric-nickel-solution", "acidic-iridium-dioxide-solution", "acidic-osmium-solution",
 	"sluice-juice", "ruby-juice" })
 put("fuels", { "naphtha", "refinery-gas", "light-fuel", "heavy-fuel", "diesel", "cetane-boosted-diesel", "gasoline",
-	"high-octane-gasoline", "rocket-fuel", "creosote", "wood-gas", "wood-tar", "wood-vinegar", "charcoal-byproducts",
+	"high-octane-gasoline", "raw-gasoline", "rocket-fuel", "creosote", "wood-gas", "wood-tar", "wood-vinegar", "charcoal-byproducts",
 	"methane", "ethane", "propane", "ethylene", "propene", "butene", "butadiene" })
 put("organic", { "acetic-acid", "formic-acid", "phthalic-acid", "acetone", "benzene", "toluene", "dimethylbenzene", "phenol",
 	"butyraldehyde", "chlorobenzene", "dichlorobenzene", "nitrochlorobenzene", "dichlorobenzidine", "diaminobenzidine",

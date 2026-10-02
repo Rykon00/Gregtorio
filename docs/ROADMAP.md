@@ -2131,3 +2131,26 @@ and melts are no producers for the auto-unlock of 199: ingot -> melt -> ingot wo
 the auto-unlock stopped pulling in 21 real recipes (iridium ingot among them, which broke LuV). Same amounts as the
 machine routes, so the casts are no shortcut in material; they beat the lossy crafting table recipes, as in GT, and some
 parts come a tier earlier than main's machine route (listed in the pull request).
+
+### Part 3: dead fluids (`prototypes/144-fork-dead-fluids.lua`)
+
+After parts 1 and 2 (the melts of black steel, blue steel, tantalum and tungsten with their casts; the nether and ender
+air; charcoal byproducts; super glue; diluted hydrochloric acid's concentration) and leaving out the fluids that
+generators burn (the plasmas and the naquadah and excited fuels have fuel values in 136 and are burnt by the plasma
+turbines and large naquadah reactors; the audit counted only recipe uses), GregTech's uses and producers:
+
+- neon, krypton, xenon: GT's blast furnace gases (`BlastFurnaceGasStat.java`): every blast furnace recipe with argon,
+  helium or radon gets a variant with each, at GT's ratios to the gas it replaces (time x 0.6/0.5/0.4, gas x
+  0.55/0.4/0.25 of the nitrogen base; argon 0.8 and 0.85, helium 0.9 and 1, radon 0.7 and 0.7); 23 recipes, 69 variants,
+  unlocked with the base recipe and at the earliest with end-steel. Nitrogen recipes are left out (some use it as a
+  reactant).
+- nitrogen dioxide: GT's 2 NO2 + O + H2O -> 2 HNO3.
+- gasoline: GT's raw gasoline and gasoline (two HV recipes, raw gasoline is a new fluid) and a gasoline cell for the
+  combustion generator at GT's fuel value (576 EU per litre; Gregtorio's cells are 500 J per GT EU, 800 per cell).
+
+No GT counterpart or no GT use Gregtorio could take, proposals in the pull request: high octane gasoline (GT: gasoline,
+octane, nitrous oxide, toluene and anti-knock; octane comes from the distillation of hydrocracked light fuel, a cracking
+line Gregtorio does not have), butyraldehyde (GT: hydroformylation of propene; its only use is butanol, whose uses are
+GT++ chains Gregtorio does not have), imaginary time (not in GT; only the unloaded upstream drafts of
+51-nuclear-module.lua use it), molten sunnarium (GT's sunnarium is used by the solar panel mods of GTNH, not by GT) and
+exhausted water (not in GT; a byproduct of upstream's deuterium recipe).
