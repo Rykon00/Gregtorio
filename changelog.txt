@@ -1,6 +1,7 @@
 ---------------------------------------------------------------------------------------------------
 Version: 0.5.1
   Changes:
+    - Gregtorio's fluids are in the Fluids tab of the signal and fluid choosers instead of "Unsorted", in rows by kind (gases, acids, fuels, plasmas, molten metals and more); the vanilla fluids Gregtorio redefines are back in the vanilla row, and the iron gear is no longer in "Unsorted".
     - Needs ME Network 0.2.0: the ME Interface and the ME Import, Export and Storage Bus handle items and fluids, the ME Fluid Interface and the ME Fluid Import, Export and Storage Bus are gone (placed ones become the unified blocks with their settings and fluid). ME Fluid Storage unlocks the fluid storage cells only.
 ---------------------------------------------------------------------------------------------------
 Version: 0.5.0

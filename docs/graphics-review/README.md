@@ -12,6 +12,7 @@ Regenerate them with `python tools/gen_review_sheet.py all`.
 | `upgrades-<tier>.png`, `upgrades-icons.png` | the 117 IV to UXV upgrade multiblocks: EV sprite and icon before, with the energy hatches of the tier after (`python tools/gen_review_sheet.py upgrades`) |
 | `phase-6a/` | phase 6a (issue #37): the item icons, technology icons and sprites of the dimensionally transcendent plasma forge and the quantum force transformer (`python tools/gen_review_sheet.py all --out <dir>`, the sheets of the new group) |
 | `phase-6b/` | phase 6b (issue #37): the item icons (MAX tier and godforge group), technology icons, the godforge sprite, the MAX basic machines, the MAX upgrade multiblocks and the MAX large plasma turbine (`python tools/gen_review_sheet.py all --ref <6a head> --out <dir>`, the sheets of the new group) |
+| `fluids-tab.png` | the Fluids tab of the signal and fluid choosers: one block per subgroup (a row in the game), the fluid icons with their names (`python tools/devcheck/devcheck.py check --fluids-out fluids.tsv`, then `python tools/gen_review_sheet.py fluids --fluids fluids.tsv`) |
 | `icon-sources.tsv` | for every item, the textures it is made of (`tools/gen_gt_icons.py --sources`) |
 
 ## How the graphics are made
