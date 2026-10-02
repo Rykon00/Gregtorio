@@ -85,7 +85,10 @@ put("coolants", { "cryogenic-helium", "lapis-coolant", "super-coolant", "sodium-
 put("molten-elements", { "mercury", "molten-glass", "molten-borosilicate-glass", "molten-aluminium", "molten-americium",
 	"molten-beryllium", "molten-chrome", "molten-cobalt", "molten-europium", "molten-flerovium", "molten-gallium",
 	"molten-lithium", "molten-lutetium", "molten-magnesium", "molten-neodymium", "molten-silicon", "molten-silver",
-	"molten-tantalum", "molten-tin", "molten-titanium", "molten-tungsten" })
+	"molten-tantalum", "molten-tin", "molten-titanium", "molten-tungsten",
+	-- issue #91: the melts of the elements that had none
+	"molten-gold", "molten-lead", "molten-nickel", "molten-zinc", "molten-iridium", "molten-osmium", "molten-palladium",
+	"molten-platinum", "molten-samarium" })
 put("molten-alloys", { "soldering-alloy" })
 put("molten-superalloys", { "molten-hastelloy-c276", "molten-hastelloy-w", "molten-hastelloy-x", "molten-incoloy-020",
 	"molten-incoloy-903", "molten-incoloy-ds", "molten-incoloy-ma956", "molten-inconel-625", "molten-inconel-690",
@@ -97,7 +100,11 @@ put("molten-exotic", { "molten-naquadah", "molten-naquadah-alloy", "molten-naqua
 	"molten-infinity", "molten-transcendent-metal", "molten-spacetime", "molten-universium", "molten-magmatter",
 	"molten-rhugnor", "molten-quantium", "molten-sunnarium", "molten-microversium", "molten-enderium",
 	"molten-glowstone", "molten-vibrant-alloy", "molten-grisium", "molten-indovanadium", "molten-ruridit",
-	"liquid-blaze" })
+	"liquid-blaze",
+	-- issue #91: the new melts of the endgame materials and the superconductor bases
+	"molten-bedrockium", "molten-eternity", "molten-crystaltine", "molten-enriched-naquadah", "molten-ledox",
+	"molten-itbtc-alloy", "molten-palladium-naqindium", "molten-naquamiridium", "molten-triamerotronium",
+	"molten-dracofinium", "molten-chromnorox", "molten-hypocosmium", "molten-yttrium-barium-cuprate" })
 --- tiered: the plasma forge catalysts crude < resplendent < stellar, then the godforge fluids
 FLUID_SUBGROUP["excited-dimensionally-transcendent-crude-catalyst"] = { "endgame", 1 }
 FLUID_SUBGROUP["excited-dimensionally-transcendent-resplendent-catalyst"] = { "endgame", 2 }

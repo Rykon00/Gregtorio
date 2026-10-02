@@ -2115,3 +2115,19 @@ Not done: the large heat exchanger, large and high pressure steam turbine, fluid
 supercapacitor are unlocked but are items without an entity (upstream has none); the dusts of neutronium, black plutonium,
 infinity catalyst and cosmic neutronium from the new missions have no use (GT turns them into ingots in the blast
 furnace; Gregtorio makes these metals in the fusion reactor).
+
+### Part 2: solidifier and melting (`prototypes/143-fork-casting.lua`)
+
+GT's casts per form (GT litres per part, seconds; here a tenth of the litres, the time at the material's tier): ingot
+144 1.6, plate 144 1.6, block 1296 (mass x 9 ticks; here 14.4 s), nugget 16 0.8, gear (GT's small gear) 144 0.8, large
+gear (GT's gear) 576 6.4, rotor 612 (mass ticks; here 4.9 s like the upstream endgame casts), rod 72 7.5, long rod 144
+15, bolt 18 2.5, ring 36 5, screw 18 2.5, round 16 2.5; the extractor melts an ingot into 144 in 24 ticks. Per material
+the table `MATERIALS` has the solidifier tier (its ingot cast's tier, else the higher of its ingot recipe's machine tier
+and its technology's tier) and the technology (the later of the material's and the tier's solidifier and extractor); the
+forms are the items that exist and have no cast from the melt yet. 322 casts, 113 melt recipes (10 of them for materials
+whose existing melt recipe is the IV extractor recipe of the fusion inputs, unlocked at LuV or ZPM), 45 new melts (not
+for the mixed metal, wrapped plutonium and iridium alloy ingots, which are items; chromium has molten chrome). The casts
+and melts are no producers for the auto-unlock of 199: ingot -> melt -> ingot would let an ingot stand in for itself and
+the auto-unlock stopped pulling in 21 real recipes (iridium ingot among them, which broke LuV). Same amounts as the
+machine routes, so the casts are no shortcut in material; they beat the lossy crafting table recipes, as in GT, and some
+parts come a tier earlier than main's machine route (listed in the pull request).

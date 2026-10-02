@@ -119,10 +119,13 @@ for _, t in pairs({ "assembling-machine", "furnace", "character" }) do
 	end
 end
 
---- Who makes what (without recycling/voiding/scrap)
+--- Who makes what (without recycling/voiding/scrap). The casts and melts of 143-fork-casting.lua only turn a
+--- material into another form of it (ingot -> melt -> ingot): counted as producers they would let an ingot stand in
+--- for itself, and the auto-unlock would no longer pull in the recipe that really makes it (issue #91).
+local casting = FORK_CASTING and FORK_CASTING.recipes or {}
 local producers = {}
 for name, r in pairs(data.raw.recipe) do
-	if not name:match("%-recycling$") and not name:match("^void%-") and not name:match("scrap")
+	if not name:match("%-recycling$") and not name:match("^void%-") and not name:match("scrap") and not casting[name]
 		and is_gregtorio_category(r.category) and craftable_category[r.category] then
 		for _, p in pairs(results_of(r)) do
 			producers[p] = producers[p] or {}

@@ -675,6 +675,24 @@ local RT = {
 	{ "lv-compressor", "block-of-copper" },
 	{ "iv-alloy-blast-smelter", "molten-hastelloy-c276" },
 	{ "ev-fluid-solidifier", "solidify-hastelloy-c276-ingot" },
+	-- issue #91 part 2 (prototypes/143-fork-casting.lua): a cast of every form (with the mold) and melts of the
+	-- extractor, a new melt (steel), one whose old melt came at ZPM (titanium) and one at IV (iridium)
+	{ "lv-fluid-solidifier", "solidify-steel-ingot" },
+	{ "lv-fluid-solidifier", "solidify-steel-plate" },
+	{ "lv-fluid-solidifier", "solidify-block-of-steel" },
+	{ "mv-fluid-solidifier", "solidify-hsss-nugget" },
+	{ "lv-fluid-solidifier", "solidify-steel-gear" },
+	{ "lv-fluid-solidifier", "solidify-large-steel-gear" },
+	{ "lv-fluid-solidifier", "solidify-steel-rotor" },
+	{ "lv-fluid-solidifier", "solidify-steel-rod" },
+	{ "lv-fluid-solidifier", "solidify-long-steel-rod" },
+	{ "lv-fluid-solidifier", "solidify-steel-bolt" },
+	{ "lv-fluid-solidifier", "solidify-tin-ring" },
+	{ "lv-fluid-solidifier", "solidify-steel-screw" },
+	{ "ev-fluid-solidifier", "solidify-soularium-round" },
+	{ "lv-extractor", "melt-steel-ingot" },
+	{ "ev-extractor", "melt-titanium-ingot" },
+	{ "iv-extractor", "melt-iridium-ingot" },
 }
 
 local function rt_product(recipe)
