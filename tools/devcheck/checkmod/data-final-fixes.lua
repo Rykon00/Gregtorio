@@ -134,6 +134,19 @@ for kind, list in pairs(FORK_CRAFTING_MENU_HIDDEN or {}) do
 end
 section("CRAFTMENU", cm)
 
+--- Fluids tab: name, subgroup (Factorio's default "other" when there is none), its group and order, hidden,
+--- parameter, order, icon, icon_size (prototypes/196-fork-subgroups.lua; `devcheck.py check --fluids-out`)
+local fl = {}
+for n, f in pairs(data.raw.fluid) do
+	local sg = f.subgroup or "other"
+	local sgp = data.raw["item-subgroup"][sg] or {}
+	local icon = f.icon or (f.icons and f.icons[1] and f.icons[1].icon) or ""
+	local size = f.icon_size or (f.icons and f.icons[1] and f.icons[1].icon_size) or 64
+	fl[#fl + 1] = table.concat({ n, sg, sgp.group or "other", sgp.order or "", tostring(f.hidden == true),
+		tostring(f.parameter == true), f.order or "", icon, size }, "\t")
+end
+section("FLUIDS", fl)
+
 --- Balance data (`devcheck.py check --balance-out`): recipes with amounts and times, machine speeds,
 --- technology unit counts. One JSON object per line.
 local bal = {}

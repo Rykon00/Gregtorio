@@ -31,7 +31,9 @@
   defines technologies; balance passes use `tools/balance_model.py` on `devcheck.py check --balance-out`),
   150 molds (mold slot instead of mold ingredient; must load after every file that creates
   machines), 190 manual-labor
-  burner usage (fist icon in the fuel slot), 198 crafting menu (shows machine recipes, which upstream
+  burner usage (fist icon in the fuel slot), 196 subgroups (the Fluids tab: every Gregtorio fluid gets a row of the item
+  group `fluids` by its explicit table or a name pattern; a new fluid goes into one, the fallback row
+  `gregtorio-fluids-unsorted` is a devcheck warning; loads after every file that creates fluids), 198 crafting menu (shows machine recipes, which upstream
   `create_recipe` hides; a recipe that must stay hidden goes into its allow-list
   `FORK_CRAFTING_MENU_HIDDEN`, devcheck fails otherwise; startup setting in `settings.lua`), 199 finalize.
   The phase plan is in `docs/ROADMAP.md`.

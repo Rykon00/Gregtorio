@@ -52,8 +52,7 @@ end
 
 local function only_fluids(r)
 	for _, res in pairs(r.results or {}) do
-		local f = res.type == "fluid" and data.raw.fluid[res.name]
-		if not f or f.subgroup then return false end
+		if not (res.type == "fluid" and data.raw.fluid[res.name]) then return false end
 	end
 	return r.results ~= nil and #r.results > 0
 end
@@ -66,8 +65,8 @@ for name, r in pairs(data.raw.recipe) do
 			kept = kept + 1
 		else
 			r.hide_from_player_crafting = false
-			--- recipes of a fluid without a subgroup (the ABS molten metals) would land in the
-			--- default fluid subgroup; put them next to the other recipes of their machine
+			--- recipes without a subgroup that only make fluids (the ABS molten metals) would land in
+			--- their fluid's row of the Fluids tab (196); put them next to the other recipes of their machine
 			if not r.subgroup and only_fluids(r) and data.raw["item-subgroup"]["subgroup-" .. category] then
 				r.subgroup = "subgroup-" .. category
 			end

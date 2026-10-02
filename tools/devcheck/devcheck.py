@@ -29,6 +29,8 @@ zips into a folder and pass --mods-from DIR.
     never be obtained, or no reachable machine with enough fluid inputs/outputs
   * an enabled technology cannot be researched and is not in UNRESEARCHABLE_OK (the vanilla
     armor/equipment techs), or one of the issue #29 QoL techs is neither researchable nor hidden
+  * a fluid that is not hidden (the parameter fluids excepted) is not in the Fluids tab: its subgroup is missing or
+    not in the item group "fluids"; fluids in the fallback row gregtorio-fluids-unsorted are a warning
 It also reports how many technologies are researchable and where progression stops.
 """
 import argparse, json, os, re, shutil, subprocess, sys, tarfile, urllib.parse, urllib.request
@@ -386,6 +388,28 @@ def check_crafting_menu(m, sec):
     return info, problems + stale
 
 
+FLUID_FALLBACK = "gregtorio-fluids-unsorted"
+
+
+def check_fluids_tab(sec):
+    """Every fluid that is not hidden is in the Fluids tab: its subgroup belongs to the group "fluids" (Factorio puts
+    a fluid without one into "Unsorted"); the base game's parameter fluids are excepted. The check covers every fluid
+    of the devcheck load (vanilla, Gregtorio and its dependencies), so a vanilla fluid that Gregtorio redefines
+    counts too. Returns (info lines, fluids in the fallback row as a warning, problems)."""
+    rows, fallback, problems = {}, [], []
+    for name, sg, group, _sgo, hidden, param, *_ in sec.get("FLUIDS", []):
+        if hidden == "true" or param == "true":
+            continue
+        if group != "fluids":
+            problems.append(f"{name} (subgroup {sg}, group {group})")
+            continue
+        rows[sg] = rows.get(sg, 0) + 1
+        if sg == FLUID_FALLBACK:
+            fallback.append(name)
+    info = [f"{sum(rows.values())} fluids in {len(rows)} rows: " + ", ".join(f"{sg} {n}" for sg, n in rows.items())]
+    return info, sorted(fallback), sorted(problems)
+
+
 def check_files(sec):
     missing = []
     for path, owner in sec.get("PATHS", []):
@@ -556,6 +580,16 @@ def check(a):
     for line in menu_info:
         print("  " + line)
     report("machine recipes hidden from the crafting menu without an allow-list entry", menu)
+    fluid_info, fluid_fallback, fluid_problems = check_fluids_tab(sec)
+    print("\nfluids tab:")
+    for line in fluid_info:
+        print("  " + line)
+    report(f"WARNING: fluids in the fallback row {FLUID_FALLBACK} (sort them in prototypes/196-fork-subgroups.lua)",
+           fluid_fallback)
+    report("fluids outside the Fluids tab (subgroup missing or not in the group fluids)", fluid_problems)
+    if getattr(a, "fluids_out", None):
+        Path(a.fluids_out).write_text("\n".join("\t".join(r) for r in sec.get("FLUIDS", [])) + "\n", encoding="utf-8")
+        print(f"\nfluid list written to {a.fluids_out} (input for tools/gen_review_sheet.py fluids)")
     if a.locale_out:
         Path(a.locale_out).write_text("\n".join("\t".join(r) for r in sec.get("LOCALE", [])))
         print(f"\nlocale name list written to {a.locale_out} (input for tools/gen_locale.py)")
@@ -564,7 +598,7 @@ def check(a):
         Path(a.balance_out).write_text("[\n" + ",\n".join(rows) + "\n]\n", encoding="utf-8")
         print(f"\nbalance data written to {a.balance_out} (recipes, machines, technologies as JSON)")
     ok = not (files or [s for s in sprites if not s.startswith("(")] or uncraft or menu or required or unresearchable
-              or new_drafts)
+              or new_drafts or fluid_problems)
     print("\nRESULT:", "OK" if ok else "PROBLEMS FOUND")
     return 0 if ok else 1
 
@@ -847,6 +881,7 @@ def main():
     c.add_argument("--locale-out", help="also write the locale name list for tools/gen_locale.py")
     c.add_argument("--techs", help="regex: list matching technologies and whether they are researchable")
     c.add_argument("--balance-out", help="also write recipes (amounts, times), machine speeds and technology counts as JSON")
+    c.add_argument("--fluids-out", help="also write the fluids with subgroup, order and icon (for gen_review_sheet.py fluids)")
     r = sub.add_parser("runtime")
     r.add_argument("--ticks", type=int, default=1500)
     r.add_argument("--seed", default=str(DEFAULT_SEED), help=f"map seed or `random` (default {DEFAULT_SEED})")
