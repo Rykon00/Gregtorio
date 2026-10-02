@@ -81,3 +81,12 @@
 - ME tests: me-network's `tools/devcheck/devcheck.py all --with-gregtorio <this checkout>` runs the ME runtime tests on
   Gregtorio's recipes and machines; run it when the compat file changes. `devcheck.py migrate` here checks the
   hand-over of old saves (fingerprints, totals and settings of an ME network of the old save).
+- **Local sessions on the maintainer's Windows machine:** `C:\00_Repositories\Gregtorio` is linked into the Factorio mods
+  folder, so never switch branches or edit files there. Work in **one** worktree next to it
+  (`git worktree add ..\Gregtorio-<topic> -b <branch> origin/main`). Do not add more worktrees to compare versions: use
+  `git show <ref>:<path>`, `git diff <ref>` or `devcheck.py ... --from-ref <ref>`; a second checkout that cannot be
+  avoided is yours to remove as well. A `.devcheck` may hold junctions (to the Steam install's `data` folder, to the
+  mod checkouts): `git worktree remove`, `rm -r` and PowerShell's `Remove-Item -Recurse` follow junctions on Windows
+  and empty what they point to. So when your pull request is open, clean up in this order and say so in your report:
+  remove every junction under `.devcheck` with `cmd /c rmdir <junction>`, then run `git worktree remove <path>` from
+  the linked clone. The branch stays on GitHub; follow-up work makes a new worktree from it.
