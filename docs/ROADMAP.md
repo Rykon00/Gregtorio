@@ -2068,3 +2068,50 @@ replaced: none removed (the DTPF universium recipes stay next to the godforge's)
   MAX parts.
 - The eye of harmony, quark gluon plasma, the MAX recipes of the plasma forge and the QFT (see above).
 - The godforge sprite is a plain field of GT's godforge casings with the controller; GT's star and rings are not drawn.
+
+## Recipe audit (issue #91)
+
+The audit of issue #91 (`devcheck check --balance-out` on main at 13a9245): recipes that exist but no technology unlocks,
+casts the fluid solidifier does not have, melts the fluid extractor does not have, fluids nothing makes or uses. The
+maintainer's decisions (issue comment): unlock all of them; every castable form of every material with a molten fluid in
+the solidifier, with the one generic mold; a fluid extractor recipe for every ingot with a molten fluid and molten fluids
+for the materials without one; the dead fluids get their GregTech producers and uses. Three pull requests, each based on
+the one before.
+
+### Part 1: unlocks (`prototypes/142-fork-recipe-unlocks.lua`)
+
+Re-run of the audit: 331 Gregtorio recipes (created or changed by Gregtorio, not hidden) that no researchable technology
+unlocked (the issue's 320, the 11 furnace recipes `raw-*-smelter` of the ore lines, `quantum-processor`, a vanilla recipe
+Gregtorio rewrites). Each got a technology in the explicit table `UNLOCKS`, found like this: a research-order simulation of
+the dump (technologies by tier, then by their number of prerequisites) gives the first technology after which a recipe
+can be crafted; it was moved to the technology of its material or machine (the blocks, 16x wires, long rods and plates of
+a metal to the technology of its ingot) or of its line where that is where a player looks, at or above the tier of the
+simulation's choice. Exceptions, on EV technologies like upstream's other alloy blast smelter alloys although the smelter
+needs IV parts: the GT++ alloys without a technology of their own (with `alloy-blast-smelter`) and the PBI recipes (with
+`polybenzimidazole`). Lines whose product main makes later by another route went to that route's technology, so nothing
+comes earlier than on main: bastnasite (neodymium) to `neodymium`, molybdenite (molybdenum) to `tungstate-processing`,
+the PTFE carbon fibres to `nanoprocessors`, chromite to `titanium`. Unlocking new producers moved some of the auto-unlock's
+earlier choices (its rule pulls the producer of an ingredient nothing unlocked makes); `KEEP` pins them where they were, and
+every recipe main unlocks is on the same technologies as before.
+
+Producers GT has and Gregtorio lacked, so the unlocked recipes can be made: signalum (EnderIO's alloy smelter recipe of
+GTNH), the naquadah doped boule (GT's EBF recipe on Gregtorio's boule scale), charcoal byproducts (GT's pyrolyse oven),
+super glue (GT++'s ten-step glue line condensed into seven recipes without the catalysts, new technology `super-glue`, IV),
+the ender tanks as machines (the air collector with the ender tank recipes; upstream's entities were commented out), the
+component assembly line (GoodGenerator's CoAL: GT's controller recipe, the ZPM assembly line's sprites, crafting speed 1 so
+a recipe takes GT's base time) for the 32 `-coal` recipes, and microminer missions of the tier three microminer for the
+ores of GT's space veins (neutronium, black plutonium, infinity catalyst, cosmic neutronium; chromite on the tier two
+microminer). The depleted fuel rods are the burnt result of the fuel rods in the EV nuclear reactor; devcheck's model
+counts burnt results now. The tier four microminer (the lunar mission, its signalum engine, moon dust) got the technology
+`tier-four-microminers` (IV).
+
+Stay locked (`FORK_RECIPES_LOCKED`, devcheck fails on any other locked Gregtorio recipe): calcium, cerium-rich mixture and
+phosphorus (placeholders without ingredients: items from nothing), the ultimate extended crafting component, catalyst and
+table (the component needs four of itself; Extended Crafting is not in GTNH), the five firestone recipes (no firestone ore:
+GT has no firestone vein) and `plastic-circuit-board-peca` (its polyethylcyanoacrylate sheet is commented out upstream:
+16 boards from copper foil and acid).
+
+Not done: the large heat exchanger, large and high pressure steam turbine, fluid nuclear reactor and lapotronic
+supercapacitor are unlocked but are items without an entity (upstream has none); the dusts of neutronium, black plutonium,
+infinity catalyst and cosmic neutronium from the new missions have no use (GT turns them into ingots in the blast
+furnace; Gregtorio makes these metals in the fusion reactor).

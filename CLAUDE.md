@@ -29,7 +29,10 @@
   components, hatches, machines and turbine; needs 140's magmatter and adds its turbine to 136's mod data); 140 and 141 load after
   139 and **before** 138, 138 research balance (issue #30: explicit unit counts of the technologies from UV to `victory`; loads after every file that
   defines technologies; balance passes use `tools/balance_model.py` on `devcheck.py check --balance-out`),
-  150 molds (mold slot instead of mold ingredient; must load after every file that creates
+  142 recipe unlocks (issue #91: every Gregtorio recipe gets a technology from its explicit table `UNLOCKS`, the
+  producers GT has and Gregtorio lacked, the component assembly line and the ender tanks; a recipe that must stay
+  locked goes into the allow-list `FORK_RECIPES_LOCKED` with its reason, devcheck fails otherwise; `KEEP` pins what
+  the auto-unlock of 199 placed before, so new unlocks do not move it), 150 molds (mold slot instead of mold ingredient; must load after every file that creates
   machines), 190 manual-labor
   burner usage (fist icon in the fuel slot), 196 subgroups (the Fluids tab: every Gregtorio fluid gets a row of the item
   group `fluids` by its explicit table or a name pattern; a new fluid goes into one, the fallback row

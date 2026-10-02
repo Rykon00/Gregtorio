@@ -661,6 +661,20 @@ local RT = {
 	{ "zpm-assembly-line", "max-motor" },
 	{ "max-assembling-machine", "maximum-voltage-coil" },
 	{ "uxv-assembling-machine", "max-science-pack-from-magmatter" },
+	-- issue #91 (prototypes/142-fork-recipe-unlocks.lua): the producers GT has and Gregtorio lacked, the new machines
+	-- (ender tank, component assembly line), a microminer mission and recipes that were never unlocked
+	{ "lv-alloy-smelter", "signalum-ingot" },
+	{ "ev-electric-blast-furnace", "naquadah-doped-monocrystaline-silicon-boule" },
+	{ "mv-pyrolyse-oven", "charcoal-byproducts" },
+	{ "ev-large-chemical-reactor", "cyanoacetic-acid" },
+	{ "iv-large-chemical-reactor", "super-glue" },
+	{ "nether-air-ender-tank", "nether-air-collection" },
+	{ "component-assembly-line", "lv-motor-coal" },
+	{ "lv-assembling-machine", "microminer-neutronium" },
+	{ "mv-canning-machine", "depleted-uranium-fuel-rod-centrifuging" },
+	{ "lv-compressor", "block-of-copper" },
+	{ "iv-alloy-blast-smelter", "molten-hastelloy-c276" },
+	{ "ev-fluid-solidifier", "solidify-hastelloy-c276-ingot" },
 }
 
 local function rt_product(recipe)
@@ -681,6 +695,9 @@ function setup_recipe_test(s)
 			s.create_entity{ name = "substation", position = { x + 5, RT_Y + 7 }, force = "player" }
 			e.force.recipes[def[2]].enabled = true
 			e.set_recipe(def[2])
+			-- a recipe that needs a mold (prototypes/150-fork-molds.lua) gets one in the mold slot
+			local molds = prototypes.mod_data["fork-mold-recipes"]
+			if molds and molds.data[def[2]] then e.get_module_inventory().insert{ name = molds.data[def[2]] } end
 			for _, ing in pairs(prototypes.recipe[def[2]].ingredients) do
 				if ing.type == "item" then
 					local n = e.insert{ name = ing.name, count = ing.amount }

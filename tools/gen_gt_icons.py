@@ -101,6 +101,8 @@ MATERIALS = {
     "rhugnor": ("CUSTOM/rhugnor", (190, 0, 255)),
     # GT builds magmatter with a material builder (TextureSet.SET_MAGMATTER, no colour)
     "magmatter": ("CUSTOM/magmatter", (255, 255, 255)),
+    # GT++ (MaterialMisc.java): the glue line of issue #91
+    "sodium-cyanide": ("DULL", (180, 190, 255)), "cyanoacetic-acid": ("DULL", (130, 130, 40)),
 }
 
 # fork part name -> GT OrePrefix texture; "{m}" is the material
@@ -538,6 +540,13 @@ def icon_table(c):
     T["stargate-radiation-containment-plate"] = lambda: c.gt(f"{CORE}itemStargateShieldingFoil")
     # GT has no iris blade: GT's turbine blade shape in the neutronium of the stargate frame
     T["stargate-iris-blade"] = lambda: c.part("neutronium", "turbineBlade")
+
+    # issue #91: the component assembly line (GoodGenerator: its UV casing, GT's controller face) and the dusts of
+    # the glue line, which the fork names without "-dust"
+    T["component-assembly-line"] = lambda: c.mini(f"{GG}blocks/compAsslineCasing/7", f"{BLK}MACHINE_CASING_ASSEMBLER",
+                                                  f"{BLK}OVERLAY_FRONT_COMPONENT_ASSEMBLY_LINE")
+    T["sodium-cyanide"] = lambda: c.part("sodium-cyanide", "dust")
+    T["cyanoacetic-acid"] = lambda: c.part("cyanoacetic-acid", "dust")
 
     # multi-amp wires (upstream: 16x = a block of the metal)
     T["luv-superconductor-wire-16x"] = lambda: bar(c.m.colour("itbtc-alloy"), 2, n=4)
