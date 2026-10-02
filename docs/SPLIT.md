@@ -240,7 +240,9 @@ of this split) and credits the origin.
 Steps for the maintainer, in this order:
 
 1. Merge the me-network pull request into its `main`.
-2. me-network release PR `main` → `upstream/release` (version 0.1.0 with its `Date:`). Merging it creates the GitHub
+2. Create the branch `upstream/release` in Rykon00/me-network at the first commit of its `main` (aa19bcb, the
+   imported history, before the mod was made), so the release pull request contains the whole mod. Then the
+   me-network release PR `main` → `upstream/release` (version 0.1.0 with its `Date:`). Merging it creates the GitHub
    release v0.1.0 with the zip. **Do not add the secret yet**: the portal API cannot create a new mod, the upload
    step would fail (without the secret it is skipped).
 3. Upload that zip by hand on https://mods.factorio.com (new mod `me-network`), set the thumbnail and description.
