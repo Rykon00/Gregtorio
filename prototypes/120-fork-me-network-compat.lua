@@ -437,7 +437,8 @@ ME.make_molecular_assembler{
 
 
 --------------------------------------------------------------------------------
---- THE RECIPES OF THE OLD 122 (fluids)
+--- THE RECIPES OF THE OLD 122 (fluids). Since me-network 0.2.0 (its issue #3) the ME Interface and the ME Import,
+--- Export and Storage Bus handle fluids themselves; the ME Fluid Interface and the fluid buses have no recipe any more.
 --------------------------------------------------------------------------------
 
 local FLUID_CELLS = {
@@ -464,38 +465,6 @@ for i, c in ipairs(FLUID_CELLS) do
 	data.raw.recipe[cell].auto_recycle = false         -- a recycler would void the fluid
 end
 
-recipe_of{
-	name = "me-fluid-interface",
-	category = "hv-assembling-machine-recipes",
-	subgroup = "fork-me-network",
-	order = "h",
-	energy_required = 10 * HV_SPEED,
-	ingredients = {
-		{ type = "item", name = "me-interface", amount = 1 },
-		{ type = "item", name = "hv-pump", amount = 1 },
-		{ type = "item", name = "pipe", amount = 4 },
-		{ type = "item", name = "fluix-cable", amount = 2 },
-	},
-}
-
-for _, bus in pairs({
-	{ name = "me-fluid-import-bus", base = "me-import-bus", order = "h2" },
-	{ name = "me-fluid-export-bus", base = "me-export-bus", order = "h3" },
-	{ name = "me-fluid-storage-bus", base = "me-storage-bus", order = "h4" },
-}) do
-	recipe_of{
-		name = bus.name,
-		category = "hv-assembling-machine-recipes",
-		subgroup = "fork-me-network",
-		order = bus.order,
-		energy_required = 10 * HV_SPEED,
-		ingredients = {
-			{ type = "item", name = bus.base, amount = 1 },
-			{ type = "item", name = "hv-pump", amount = 1 },
-			{ type = "item", name = "pipe", amount = 2 },
-		},
-	}
-end
 
 
 
@@ -551,9 +520,9 @@ tech("me-co-processing", { "me-autocrafting", "me-storage-256k", "iv-components"
 	{ "me-co-processing-cpu" }, SEVEN)
 tech("me-quantum-crafting", { "me-co-processing", "luv-machines" }, 7, 1500, { "me-quantum-crafting-cpu" }, SEVEN)
 
---- EV: fluid cells up to 64k, the fluid interface, the fluid buses (import, export, storage); IV: 256k fluid cells
+--- EV: fluid cells up to 64k; IV: 256k fluid cells (the ME Interface and the buses move fluids from the start since
+--- me-network 0.2.0: the network stores them once fluid cells exist, or in a tank behind a storage bus)
 tech("me-fluid-storage", { "me-autocrafting" }, 5, 600, {
-	"me-fluid-interface", "me-fluid-import-bus", "me-fluid-export-bus", "me-fluid-storage-bus",
 	"me-1k-fluid-storage-cell", "me-4k-fluid-storage-cell", "me-16k-fluid-storage-cell", "me-64k-fluid-storage-cell",
 })
 tech("me-fluid-storage-256k", { "me-fluid-storage", "me-storage-256k" }, 6, 800, { "me-256k-fluid-storage-cell" })
