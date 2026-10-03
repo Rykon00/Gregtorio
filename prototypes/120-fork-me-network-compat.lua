@@ -47,6 +47,13 @@ local function move_to(subgroup, item_name, order)
 	if recipe then recipe.subgroup = subgroup; recipe.order = order end
 end
 
+--- item ingredients from a flat list: name, amount, name, amount ...
+local function I(list)
+	local t = {}
+	for i = 1, #list, 2 do t[#t + 1] = { type = "item", name = list[i], amount = list[i + 1] } end
+	return t
+end
+
 
 
 --------------------------------------------------------------------------------
@@ -347,53 +354,6 @@ recipe_of{
 }
 
 recipe_of{
-	name = "me-crafting-cpu",
-	category = "ev-assembling-machine-recipes",
-	subgroup = "fork-me-network",
-	order = "g",
-	energy_required = 10 * EV_SPEED,
-	ingredients = {
-		{ type = "item", name = "ev-machine-hull", amount = 1 },
-		{ type = "item", name = "me-controller", amount = 1 },
-		{ type = "item", name = "me-64k-storage-component", amount = 2 },     -- issue #68: cells carry contents, components do not
-		{ type = "item", name = "processing-unit", amount = 4 },
-		{ type = "item", name = "fluix-cable", amount = 8 },
-	},
-}
-
-recipe_of{
-	name = "me-co-processing-cpu",
-	category = "iv-assembling-machine-recipes",
-	subgroup = "fork-me-network",
-	order = "g2",
-	energy_required = 10 * IV_SPEED,
-	ingredients = {
-		{ type = "item", name = "me-crafting-cpu", amount = 1 },
-		{ type = "item", name = "iv-machine-hull", amount = 1 },
-		{ type = "item", name = "me-256k-storage-component", amount = 2 },
-		{ type = "item", name = "acceleration-card", amount = 4 },
-		{ type = "item", name = "iv-circuit", amount = 4 },
-		{ type = "item", name = "fluix-cable", amount = 16 },
-	},
-}
-
-recipe_of{
-	name = "me-quantum-crafting-cpu",
-	category = "luv-assembling-machine-recipes",
-	subgroup = "fork-me-network",
-	order = "g3",
-	energy_required = 10 * LUV_SPEED,
-	ingredients = {
-		{ type = "item", name = "me-co-processing-cpu", amount = 1 },
-		{ type = "item", name = "luv-machine-hull", amount = 1 },
-		{ type = "item", name = "luv-emitter", amount = 2 },
-		{ type = "item", name = "acceleration-card", amount = 8 },
-		{ type = "item", name = "luv-circuit", amount = 4 },
-		{ type = "item", name = "fluix-cable", amount = 32 },
-	},
-}
-
-recipe_of{
 	name = "me-level-maintainer",
 	category = "ev-assembling-machine-recipes",
 	subgroup = "fork-me-network",
@@ -433,6 +393,52 @@ ME.make_molecular_assembler{
 	crafting_speed = 6,
 	energy_usage = EU12_HV,
 }
+
+
+
+--------------------------------------------------------------------------------
+--- THE CRAFTING BLOCKS OF THE MULTIBLOCK CRAFTING CPUS (me-network 0.3.0, its issue #6; Gregtorio issue #111)
+--- GregTech New Horizons' AE2 recipes (NewHorizonsCoreMod, scripts/ScriptAppliedEnergistics2.java): the crafting unit
+--- from titanium, the logic, calculation and engineering processor and two LV circuits (GTNH makes it at the crafting
+--- table; here the HV assembler of its crafting storages), a crafting storage from a crafting unit and the storage
+--- component of its size (HV assembler, 20 s; 256k: EV), the co-processing unit from a crafting unit and two
+--- engineering processors (HV, 5 s), the monitor from a crafting unit and an ME Storage Monitor (MV, 20 s; Gregtorio
+--- has no storage monitor, its nearest part is the computer monitor of the ME Terminal). The three single-entity CPUs
+--- are legacy blocks without a recipe since me-network 0.3.0. Guarded by the item: me-network 0.2.0 has no crafting
+--- blocks (the release of issue #101 raises the dependency, and the guard can go then).
+--------------------------------------------------------------------------------
+
+local HAS_CRAFTING_BLOCKS = data.raw.item["me-crafting-unit"] ~= nil
+if HAS_CRAFTING_BLOCKS then
+	--- with me-network's subgroup and order of the item (fork-me-crafting-cpu, h0 to h7)
+	local function block(name, category, energy_required, ingredients)
+		local item = data.raw.item[name]
+		ME.replace_recipe{
+			name = name,
+			category = category,
+			enabled = false,
+			energy_required = energy_required,
+			ingredients = ingredients,
+			results = { { type = "item", name = name, amount = 1 } },
+			hide_from_player_crafting = true,
+			subgroup = item.subgroup,
+			order = item.order,
+		}
+	end
+
+	block("me-crafting-unit", "hv-assembling-machine-recipes", 10 * HV_SPEED, I{ "titanium-plate", 4,
+		"logic-processor", 1, "calculation-processor", 1, "engineering-processor", 1, "electronic-circuit", 2 })
+	for _, size in ipairs({ "1k", "4k", "16k", "64k" }) do
+		block("me-" .. size .. "-crafting-storage", "hv-assembling-machine-recipes", 20 * HV_SPEED,
+			I{ "me-crafting-unit", 1, "me-" .. size .. "-storage-component", 1 })
+	end
+	block("me-256k-crafting-storage", "ev-assembling-machine-recipes", 20 * EV_SPEED,
+		I{ "me-crafting-unit", 1, "me-256k-storage-component", 1 })
+	block("me-crafting-co-processing-unit", "hv-assembling-machine-recipes", 5 * HV_SPEED,
+		I{ "me-crafting-unit", 1, "engineering-processor", 2 })
+	block("me-crafting-monitor", "mv-assembling-machine-recipes", 20 * MV_SPEED,
+		I{ "me-crafting-unit", 1, "computer-monitor", 1 })
+end
 
 
 
@@ -482,11 +488,6 @@ local HAS_CARDS = data.raw.item["me-basic-card"] ~= nil
 if HAS_CARDS then
 	local function card(name, order, ingredients)
 		recipe_of{ name = name, subgroup = "fork-me-cards", order = order, ingredients = ingredients }
-	end
-	local function I(list)
-		local t = {}
-		for i = 1, #list, 2 do t[#t + 1] = { type = "item", name = list[i], amount = list[i + 1] } end
-		return t
 	end
 
 	ME.remove_recipe("me-advanced-card")
@@ -567,16 +568,26 @@ tech("me-storage-256k", { "me-storage-64k", "industrial-precision-lathe", "ev-ma
 	"me-256k-storage-cell",
 })
 
---- EV: autocrafting (the CPU needs 64k components)
-tech("me-autocrafting", { "me-storage-64k" }, 5, 600,
-	{ "me-pattern-provider", "me-blank-pattern", "me-molecular-assembler", "me-crafting-cpu" }, SEVEN)
---- issue #38: level maintainer and circuit interface (EV), bigger CPUs at IV (256k components and acceleration
---- cards, IV components) and LuV (LuV components and hull)
+--- the crafting blocks a technology unlocks (none with me-network 0.2.0)
+local function with_blocks(recipes, blocks)
+	if HAS_CRAFTING_BLOCKS then
+		for _, name in ipairs(blocks) do recipes[#recipes + 1] = name end
+	end
+	return recipes
+end
+
+--- EV: autocrafting and the first crafting CPU (a crafting unit, 1k and 4k crafting storage, the monitor)
+tech("me-autocrafting", { "me-storage-64k" }, 5, 600, with_blocks(
+	{ "me-pattern-provider", "me-blank-pattern", "me-molecular-assembler" },
+	{ "me-crafting-unit", "me-1k-crafting-storage", "me-4k-crafting-storage", "me-crafting-monitor" }), SEVEN)
+--- issue #38: level maintainer and circuit interface (EV); issue #111: the 16k and 64k crafting storage and the
+--- co-processing unit at IV, the 256k crafting storage at LuV
 tech("me-automation", { "me-autocrafting", "circuit-network" }, 5, 800,
 	{ "me-level-maintainer", "me-circuit-interface" }, SEVEN)
-tech("me-co-processing", { "me-autocrafting", "me-storage-256k", "iv-components" }, 6, 1200,
-	{ "me-co-processing-cpu" }, SEVEN)
-tech("me-quantum-crafting", { "me-co-processing", "luv-machines" }, 7, 1500, { "me-quantum-crafting-cpu" }, SEVEN)
+tech("me-co-processing", { "me-autocrafting", "me-storage-256k", "iv-components" }, 6, 1200, with_blocks({},
+	{ "me-16k-crafting-storage", "me-64k-crafting-storage", "me-crafting-co-processing-unit" }), SEVEN)
+tech("me-quantum-crafting", { "me-co-processing", "luv-machines" }, 7, 1500,
+	with_blocks({}, { "me-256k-crafting-storage" }), SEVEN)
 
 --- EV: fluid cells up to 64k; IV: 256k fluid cells (the ME Interface and the buses move fluids from the start since
 --- me-network 0.2.0: the network stores them once fluid cells exist, or in a tank behind a storage bus)
