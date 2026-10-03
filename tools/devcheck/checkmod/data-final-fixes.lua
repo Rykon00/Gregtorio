@@ -209,3 +209,10 @@ for n, tech in pairs(data.raw.technology) do
 	})
 end
 section("BALANCE", bal)
+
+--- Startup settings of the mod (name, value), so a check knows what it is looking at (`devcheck.py check --set`)
+local st = {}
+for name, v in pairs(settings.startup) do
+	if name:find("^gregtorio%-continued%-") then st[#st + 1] = name .. "\t" .. tostring(v.value) end
+end
+section("SETTINGS", st)
