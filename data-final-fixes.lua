@@ -443,3 +443,5 @@ disable_tech("explosive-rocketry")
 disable_tech("tank")
 disable_tech("tesla-weapons")
 require("prototypes.fork-menu-simulations")
+--- Fork: cheap research (startup setting, default off); after every change to the technologies above
+require("prototypes.fork-one-pack-research")
