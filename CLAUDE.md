@@ -64,6 +64,10 @@
   `research_all_technologies()` get the bonuses of those techs from `prototypes/fork-menu-simulations.lua` (PR #65: the
   laser defense simulation's character died without them and its script stopped the menu); after changing the disabled
   techs or the character, run `python tools/devcheck/devcheck.py menusim --sim all --compare`.
+- Cheap research: the startup setting `gregtorio-continued-one-pack-research` (default off) makes every technology with
+  science packs cost one research unit with one pack of each kind (`prototypes/fork-one-pack-research.lua`, required last
+  in `data-final-fixes.lua`, after everything that sets unit counts). `devcheck.py all` loads the mod a second time with
+  it on; `devcheck.py check --set <setting>=true|false` forces any bool startup setting for a run.
 - Generators (`generator` prototypes that burn fluids by fuel value, 136) are demand driven; an
   input-output fluid box keeps part of its fluid in the pipeline segment (`get_fluid_count` reports
   only the entity's part, `fluidbox.get_fluid_segment_contents` the rest), so tests count both.
