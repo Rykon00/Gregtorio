@@ -37,7 +37,8 @@
   form and extractor melts of every ingot from its table `MATERIALS` (tier, technology, the colour of a new melt);
   199's auto-unlock ignores these recipes (`FORK_CASTING.recipes`), else an ingot would count as its own producer;
   must load before 150, whose molds it needs, and before 196, 198 and 199), 145 power multiblocks (issue #97: the large
-  steam turbine and the high pressure steam turbine as generators of 136 with superheated steam; their technologies are
+  steam turbine and the high pressure steam turbine as generators of 136 with superheated steam, the fluid nuclear reactor
+  (burner recipe machine for the fuel rods) and the large heat exchanger with coolant and hot coolant; their technologies are
   named in 142's `UNLOCKS`, so it loads after 138 and **before** 142, and before 196 for its fluids; it takes 136's
   generator from the global `FORK_POWER` and adds to its mod data `fork-power`), 144 dead fluids (issue #91: GT's uses and
   producers of fluids nothing made or used; the blast furnace gas variants of `EBF_GASES` are in `FORK_GAS_VARIANTS`,

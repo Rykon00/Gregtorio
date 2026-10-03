@@ -34,6 +34,7 @@ FORK_TECH_ICONS = {
 	["exotic-processors"] = true,
 	["extreme-entity-crushers"] = true,
 	["femto-power-ics"] = true,
+	["fluid-nuclear-reactor"] = true,
 	["fluid-shaper"] = true,
 	["fluxed-electrum"] = true,
 	["fusion-coil-ii"] = true,

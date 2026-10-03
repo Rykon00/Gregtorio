@@ -14,6 +14,8 @@
 --- Steam turbines (issue #97): the large and the high pressure steam turbine make their GT output, burn their GT flow
 --- and give back distilled water and steam through output hatches; the wrong steam stops them; the multiblocks of
 --- issue #97 can be blueprinted and mined.
+--- Nuclear chain (issue #97): fluid nuclear reactor -> large heat exchanger -> high pressure steam turbine -> large
+--- steam turbine makes power from fuel rods; depleted rods come out; the steam recipe of the heat exchanger is exact.
 --- Victory: when the other tests have reported, `victory` is researched by script and must win the game.
 
 local VICTORY_DEADLINE = 1450
@@ -27,6 +29,7 @@ local function tests_running()
 	check(storage.tiers and storage.tiers.done, "turbine tiers")
 	check(storage.recipe_test and storage.recipe_test.done, "recipes of issue #35")
 	check(storage.steam and storage.steam.done, "steam turbines")
+	check(storage.chain and storage.chain.done, "nuclear chain")
 	return running
 end
 
@@ -816,7 +819,7 @@ local ST = {
 	{ "hp_st",   "high-pressure-steam-turbine",  -110.5, "steam",             100,    28.35e6 },
 }
 --- the multiblocks of issue #97 that exist in this version (the placement test)
-ST_PLACE = { "large-steam-turbine", "high-pressure-steam-turbine" }
+ST_PLACE = { "large-steam-turbine", "high-pressure-steam-turbine", "large-heat-exchanger", "fluid-nuclear-reactor" }
 local ST_PLACE_X = -80.5
 
 function setup_steam_test(s)
@@ -918,8 +921,131 @@ function steam_test()
 		.. "; wrong fuels stopped; " .. placed .. " placed, blueprinted and mined)")
 end
 
+--- Nuclear chain (issue #97): a fluid nuclear reactor with two uranium rods and coolant, piped into a large heat
+--- exchanger on superheated steam (distilled water put in), a high pressure steam turbine on top of it, its steam
+--- through a turbine output hatch and pipes into a large steam turbine (with its own hatch for the water), both
+--- turbines on one network with a load of twice their output. The first rod is shortened to 2 s, so a depleted rod
+--- must come out while the second one burns. At NC_TICK: every machine has run, both turbines have made power, the
+--- energy of the two turbines since NC_FROM is 3.95 MJ per hot coolant the reactor made in that time (20
+--- superheated steam x 135 kJ + 20 steam x 62.5 kJ) within the pipes' and the 4 s crafts' slack, and the large steam
+--- turbine's hatch holds distilled water. Coolant and distilled water are topped up every tick (a crafting machine's
+--- input box holds twice the recipe's amount). A second heat exchanger on the steam recipe gets 32 hot coolant and 80
+--- distilled water: exactly 1280 steam and 32 coolant, nothing left.
+local NC_Y = 345
+local NC_X = -250.5
+local NC_FROM, NC_TICK = 300, 1380
+local NC_PER_HOT = 20 * 200e3 * 0.675 + 20 * 100e3 * 0.625
+
+function setup_chain_test(s)
+	local fails = {}
+	local x, y = NC_X, NC_Y
+	local nc = {}
+	storage.chain = nc
+	local ok, err = pcall(function()
+		local function make(name, px, py)
+			return s.create_entity{ name = name, position = { px, py }, force = "player", raise_built = true }
+		end
+		nc.reactor = make("fluid-nuclear-reactor", x - 4, y)
+		nc.lhe = make("large-heat-exchanger", x, y)
+		nc.hp = make("high-pressure-steam-turbine", x, y - 3)
+		nc.hatch = make("turbine-output-hatch", x + 2, y - 3)
+		nc.lst = make("large-steam-turbine", x + 2, y - 8)
+		nc.water = make("turbine-output-hatch", x, y - 8)
+		for _, p in pairs({ { x - 4, y - 2 }, { x - 3, y - 2 }, { x - 2, y - 2 }, { x - 2, y - 1 }, { x - 2, y },
+			{ x + 2, y - 4 }, { x + 2, y - 5 }, { x + 2, y - 6 } }) do
+			make("pipe", p[1], p[2])
+		end
+		for _, r in pairs({ "hot-coolant", "large-heat-exchanger-superheated-steam", "large-heat-exchanger-steam" }) do
+			game.forces.player.recipes[r].enabled = true
+		end
+		nc.reactor.set_recipe("hot-coolant")
+		nc.lhe.set_recipe("large-heat-exchanger-superheated-steam")
+		local function put(e, fluid, n)
+			local got = e.insert_fluid{ name = fluid, amount = n }
+			if math.abs(got - n) > 1e-6 then fails[#fails + 1] = "chain test: " .. e.name .. " took only " .. got .. " " .. fluid end
+		end
+		put(nc.reactor, "coolant", 42)
+		put(nc.lhe, "distilled-water", 40)
+		local rods = nc.reactor.get_fuel_inventory().insert{ name = "uranium-fuel-rod", count = 2 }
+		if rods ~= 2 then fails[#fails + 1] = "chain test: the reactor took " .. rods .. " fuel rods" end
+		local eei = s.create_entity{ name = "electric-energy-interface", position = { x + 7, y - 2 }, force = "player" }
+		eei.power_production = 0
+		eei.power_usage = 2 * (28.35e6 + 11.25e6) / 60
+		eei.electric_buffer_size = 1e8
+		s.create_entity{ name = "substation", position = { x + 7, y - 6 }, force = "player" }
+		--- the heat exchanger on steam, alone
+		nc.lhe2 = make("large-heat-exchanger", x + 20, y)
+		nc.lhe2.set_recipe("large-heat-exchanger-steam")
+		put(nc.lhe2, "hot-coolant", 32)
+		put(nc.lhe2, "distilled-water", 80)
+		nc.energy, nc.hp_on, nc.lst_on = 0, false, false
+	end)
+	if not ok then fails[#fails + 1] = "chain test: " .. tostring(err) end
+	return fails
+end
+
+--- every tick: shorten the first rod, add up the turbines' energy
+function chain_tick(tick)
+	local nc = storage.chain
+	if not nc or nc.done or not (nc.hp and nc.hp.valid and nc.lst and nc.lst.valid and nc.reactor.valid) then return end
+	nc.reactor.insert_fluid{ name = "coolant", amount = 100 }
+	nc.lhe.insert_fluid{ name = "distilled-water", amount = 100 }
+	if tick == 30 then
+		local b = nc.reactor.burner
+		if b.currently_burning then b.remaining_burning_fuel = 2 * 10.5e6 end
+	end
+	local hp, lst = nc.hp.energy_generated_last_tick, nc.lst.energy_generated_last_tick
+	if hp > 0 then nc.hp_on = true end
+	if lst > 0 then nc.lst_on = true end
+	if tick == NC_FROM then nc.from = nc.reactor.products_finished end
+	if tick > NC_FROM then nc.energy = nc.energy + hp + lst end
+end
+
+function chain_test()
+	local nc = storage.chain
+	if not nc or nc.done or game.tick < NC_TICK then return end
+	nc.done = true
+	local problems = {}
+	local function expect(ok, what) if not ok then problems[#problems + 1] = what end end
+	local summary = ""
+	for _, k in pairs({ "reactor", "lhe", "hp", "hatch", "lst", "water", "lhe2" }) do
+		expect(nc[k] and nc[k].valid, k .. " missing")
+	end
+	if #problems == 0 then
+		local r = nc.reactor
+		local depleted = r.get_burnt_result_inventory().get_item_count("depleted-uranium-fuel-rod")
+		expect(depleted == 1, "the reactor gave " .. depleted .. " depleted rods (one rod was shortened to 2 s)")
+		expect(r.burner.currently_burning ~= nil, "the reactor does not burn the second rod")
+		expect(r.products_finished >= 4, "the reactor made only " .. r.products_finished .. " crafts of hot coolant")
+		expect(nc.lhe.products_finished >= 4, "the heat exchanger made only " .. nc.lhe.products_finished .. " crafts")
+		expect(nc.hp_on and nc.lst_on, "a turbine never made power (high pressure " .. tostring(nc.hp_on)
+			.. ", large " .. tostring(nc.lst_on) .. ")")
+		local hot = 21 * (r.products_finished - (nc.from or 0))
+		local want = hot * NC_PER_HOT
+		local ratio = want > 0 and nc.energy / want or 0
+		expect(ratio > 0.6 and ratio < 1.25, string.format("the turbines made %.1f MJ for %d hot coolant (%.1f MJ expected)",
+			nc.energy / 1e6, hot, want / 1e6))
+		local water = nc.water.get_fluid_count("distilled-water")
+		expect(water > 0, "no distilled water in the large steam turbine's hatch")
+		local seconds = (NC_TICK - NC_FROM) / 60
+		--- the heat exchanger on steam: two crafts
+		local e2 = nc.lhe2
+		local steam, cool = e2.get_fluid_count("steam"), e2.get_fluid_count("coolant")
+		local wleft, hleft = e2.get_fluid_count("distilled-water"), e2.get_fluid_count("hot-coolant")
+		expect(math.abs(steam - 1280) < 1e-6 and math.abs(cool - 32) < 1e-6 and wleft < 1e-6 and hleft < 1e-6,
+			string.format("heat exchanger on steam: %.3f steam, %.3f coolant, %.3f water and %.3f hot coolant left (1280, 32, 0, 0)",
+				steam, cool, wleft, hleft))
+		summary = string.format(" (%d hot coolant in %.0f s -> %.1f MW from both turbines, %.0f %% of 3.95 MJ per hot coolant;"
+			.. " %d depleted rod; %.2f distilled water back; steam recipe 32 hot coolant -> %.0f steam)",
+			hot, seconds, nc.energy / seconds / 1e6, ratio * 100, depleted, water, steam)
+	end
+	for _, p in pairs(problems) do log("DEVCHECK-RUNTIME-FAIL nuclear chain test: " .. p) end
+	log("DEVCHECK-RUNTIME-CHAIN " .. (#problems == 0 and "ok" or "failed") .. summary)
+end
+
 script.on_event(defines.events.on_tick, function(event)
 	fuel_window_tick()
+	chain_tick(event.tick)
 	cooled_load_tick(event.tick)
 	local m = storage.mold_machine
 	if storage.mold_done then return end
@@ -968,6 +1094,7 @@ script.on_nth_tick(10, function()
 	if not (storage.tiers and storage.tiers.done) then tier_test() end
 	if not (storage.recipe_test and storage.recipe_test.done) then recipe_test() end
 	steam_test()
+	chain_test()
 	victory_test()
 end)
 
@@ -1031,6 +1158,7 @@ script.on_init(function()
 	for _, f in pairs(setup_tier_test(s)) do fails[#fails + 1] = f end
 	for _, f in pairs(setup_recipe_test(s)) do fails[#fails + 1] = f end
 	for _, f in pairs(setup_steam_test(s)) do fails[#fails + 1] = f end
+	for _, f in pairs(setup_chain_test(s)) do fails[#fails + 1] = f end
 	log("DEVCHECK-RUNTIME placed=" .. placed .. " with_recipe=" .. with_recipe .. " failed=" .. #fails)
 	for _, f in pairs(fails) do log("DEVCHECK-RUNTIME-FAIL " .. f) end
 end)

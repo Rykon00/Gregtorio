@@ -494,7 +494,7 @@ local UNLOCKS = {
 		"carbon-plate", "raw-carbon-fibers-ptfe", "raw-carbon-mesh",
 	},
 	["nuclear-power"] = { -- EV
-		"large-heat-exchanger", "large-heat-exchanger-controller", "reactor-pressure-vessel",
+		"reactor-pressure-vessel",
 	},
 	["large-steam-turbine"] = { -- EV (issue #97; the magnalium parts and casings are also on industrial-mixer)
 		"blue-steel-frame", "large-steam-turbine", "large-steam-turbine-controller", "long-magnalium-rod",
@@ -531,6 +531,11 @@ local UNLOCKS = {
 	["high-pressure-steam-turbine"] = { -- IV (issue #97)
 		"high-pressure-steam-turbine", "high-pressure-steam-turbine-controller", "titanium-turbine-casing",
 	},
+	["fluid-nuclear-reactor"] = { -- IV (issue #97; the heat exchanger moves here from nuclear-power, the reactor from
+		-- fusion-reactor-mk1, the iridium neutron reflector is also on fusion-reactor-mk1)
+		"coolant", "fluid-nuclear-reactor", "hot-coolant", "iridium-neutron-reflector", "large-heat-exchanger",
+		"large-heat-exchanger-controller", "large-heat-exchanger-steam", "large-heat-exchanger-superheated-steam",
+	},
 	["fluid-shaper"] = { -- IV
 		"inconel-625-bolt", "inconel-625-plate", "inconel-625-rod", "inconel-625-screw", "solidify-inconel-625-ingot",
 	},
@@ -561,9 +566,6 @@ local UNLOCKS = {
 	},
 	["super-coolant"] = { -- LuV
 		"ledox-plate", "raw-ledox-multismelter", "raw-ledox-smelter",
-	},
-	["fusion-reactor-mk1"] = { -- LuV
-		"fluid-nuclear-reactor",
 	},
 	["nano-power-ics"] = { -- LuV
 		"cpu-wafer-ed", "graphene-ed", "simple-soc-wafer-ed", "soc-wafer-ed",
