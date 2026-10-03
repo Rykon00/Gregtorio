@@ -16,6 +16,8 @@
 --- issue #97 can be blueprinted and mined.
 --- Nuclear chain (issue #97): fluid nuclear reactor -> large heat exchanger -> high pressure steam turbine -> large
 --- steam turbine makes power from fuel rods; depleted rods come out; the steam recipe of the heat exchanger is exact.
+--- Lapotronic supercapacitor (issue #97): charges and discharges at two amps of its tier, holds its capacity by tier
+--- and loses GT's 1 % per day.
 --- Victory: when the other tests have reported, `victory` is researched by script and must win the game.
 
 local VICTORY_DEADLINE = 1450
@@ -30,6 +32,7 @@ local function tests_running()
 	check(storage.recipe_test and storage.recipe_test.done, "recipes of issue #35")
 	check(storage.steam and storage.steam.done, "steam turbines")
 	check(storage.chain and storage.chain.done, "nuclear chain")
+	check(storage.lsc and storage.lsc.done, "supercapacitor")
 	return running
 end
 
@@ -819,7 +822,8 @@ local ST = {
 	{ "hp_st",   "high-pressure-steam-turbine",  -110.5, "steam",             100,    28.35e6 },
 }
 --- the multiblocks of issue #97 that exist in this version (the placement test)
-ST_PLACE = { "large-steam-turbine", "high-pressure-steam-turbine", "large-heat-exchanger", "fluid-nuclear-reactor" }
+ST_PLACE = { "large-steam-turbine", "high-pressure-steam-turbine", "large-heat-exchanger", "fluid-nuclear-reactor",
+	"lapotronic-supercapacitor" }
 local ST_PLACE_X = -80.5
 
 function setup_steam_test(s)
@@ -1043,9 +1047,112 @@ function chain_test()
 	log("DEVCHECK-RUNTIME-CHAIN " .. (#problems == 0 and "ok" or "failed") .. summary)
 end
 
+--- Lapotronic supercapacitor (issue #97): an IV one on a network with a LuV plasma turbine (81.92 MW, secondary
+--- output; an electric energy interface is tertiary like the accumulator and does not charge it), which is removed
+--- at LS_SWITCH; then a UHV air collector (40.96 MW, a recipe without ingredients, its air removed every tick) runs
+--- from it. It must charge from tick LS_FROM to LS_SWITCH and discharge from LS_SWITCH + LS_FROM to LS_TICK at its
+--- 20.48 MW (within 3 %; its own loss is 0.6 % of that). The IV, LuV and ZPM ones must hold 27 blocks of 37.5,
+--- 187.5 and 937.5 GJ. Loss: a ZPM one without a network is set to 1 TJ at tick 100; at LS_TICK it must have lost
+--- exactly 1 % of its capacity per day for the whole steps of 10 ticks since (scripts/fork-power.lua).
+local LS_Y = 345
+local LS_X = -170.5
+local LS_FROM, LS_SWITCH, LS_TICK = 20, 300, 600
+local LS_LOSS_FROM = 100
+local LS_FLOW = 20.48e6
+local LS = {
+	{ "lapotronic-supercapacitor", 27 * 37.5e9 },
+	{ "luv-lapotronic-supercapacitor", 27 * 187.5e9 },
+	{ "zpm-lapotronic-supercapacitor", 27 * 937.5e9 },
+}
+
+function setup_lsc_test(s)
+	local fails = {}
+	local ls = {}
+	storage.lsc = ls
+	local ok, err = pcall(function()
+		ls.iv = s.create_entity{ name = LS[1][1], position = { LS_X, LS_Y }, force = "player", raise_built = true }
+		ls.turbine = s.create_entity{ name = "luv-large-plasma-turbine", position = { LS_X + 6, LS_Y - 1 }, force = "player",
+			raise_built = true }
+		local got = ls.turbine.insert_fluid{ name = "helium-plasma", amount = 100 }
+		if got < 100 then fails[#fails + 1] = "supercapacitor test: the turbine took only " .. got .. " plasma" end
+		ls.load = s.create_entity{ name = "uhv-air-collector", position = { LS_X + 6, LS_Y + 5 }, force = "player" }
+		for name, r in pairs(prototypes.recipe) do
+			if r.category == "lv-air-collector-recipes" and #r.ingredients == 0 then ls.recipe = name break end
+		end
+		if not ls.recipe then fails[#fails + 1] = "supercapacitor test: no air collector recipe" end
+		s.create_entity{ name = "substation", position = { LS_X + 4, LS_Y - 4 }, force = "player" }
+		ls.others = {}
+		for i, def in ipairs(LS) do
+			if i > 1 then
+				ls.others[def[1]] = s.create_entity{ name = def[1], position = { LS_X + 12 * (i - 1), LS_Y + 20 },
+					force = "player", raise_built = true }
+			end
+		end
+	end)
+	if not ok then fails[#fails + 1] = "supercapacitor test: " .. tostring(err) end
+	return fails
+end
+
+function lsc_tick(tick)
+	local ls = storage.lsc
+	if not ls or ls.done or not (ls.iv and ls.iv.valid and ls.load and ls.load.valid) then return end
+	if tick == LS_FROM then ls.e0 = ls.iv.energy end
+	if tick == LS_LOSS_FROM then
+		local z = ls.others[LS[3][1]]
+		if z and z.valid then z.energy = 1e12 end
+	end
+	if tick == LS_SWITCH then
+		ls.e1 = ls.iv.energy
+		if ls.turbine and ls.turbine.valid then ls.turbine.destroy() end
+		ls.load.force.recipes[ls.recipe].enabled = true
+		ls.load.set_recipe(ls.recipe)
+	end
+	if tick == LS_SWITCH + LS_FROM then ls.e2 = ls.iv.energy end
+	if tick > LS_SWITCH then ls.load.clear_fluid_inside() end
+end
+
+function lsc_test()
+	local ls = storage.lsc
+	if not ls or ls.done or game.tick < LS_TICK then return end
+	ls.done = true
+	local problems = {}
+	local function expect(ok, what) if not ok then problems[#problems + 1] = what end end
+	local summary = ""
+	local z = ls.others and ls.others[LS[3][1]]
+	if not (ls.iv and ls.iv.valid and z and z.valid and ls.e0 and ls.e1 and ls.e2) then
+		expect(false, "supercapacitors missing or a phase did not run")
+	else
+		for _, def in ipairs(LS) do
+			local e = def[1] == LS[1][1] and ls.iv or ls.others[def[1]]
+			expect(e and e.valid and math.abs(e.electric_buffer_size - def[2]) <= 1e-9 * def[2],
+				def[1] .. " holds " .. (e and e.valid and e.electric_buffer_size or 0) .. " J, not " .. def[2])
+		end
+		local charged = ls.e1 - ls.e0
+		local want_in = LS_FLOW * (LS_SWITCH - LS_FROM) / 60
+		expect(charged > 0.97 * want_in and charged <= want_in * 1.0001,
+			string.format("charged %.1f MJ in %d ticks (%.1f MJ at 20.48 MW)", charged / 1e6, LS_SWITCH - LS_FROM, want_in / 1e6))
+		local out = ls.e2 - ls.iv.energy
+		local want_out = LS_FLOW * (LS_TICK - LS_SWITCH - LS_FROM) / 60
+		expect(out > 0.97 * want_out and out < 1.03 * want_out,
+			string.format("gave %.1f MJ in %d ticks (%.1f MJ at 20.48 MW)", out / 1e6, LS_TICK - LS_SWITCH - LS_FROM, want_out / 1e6))
+		local steps = 0
+		for t = LS_LOSS_FROM + 1, game.tick do if t % 10 == 0 then steps = steps + 1 end end
+		local loss = LS[3][2] / 100 / 86400 * 10 / 60 * steps
+		local lost = 1e12 - z.energy
+		expect(math.abs(lost - loss) <= 1e-6 * loss + 1,
+			string.format("the ZPM supercapacitor lost %.0f J in %d steps, not %.0f", lost, steps, loss))
+		summary = string.format(" (IV: %.2f MW in, %.2f MW out; capacities %.1f / %.1f / %.1f GJ; ZPM loss %.0f kW)",
+			charged / ((LS_SWITCH - LS_FROM) / 60) / 1e6, out / ((LS_TICK - LS_SWITCH - LS_FROM) / 60) / 1e6,
+			LS[1][2] / 1e9, LS[2][2] / 1e9, LS[3][2] / 1e9, lost / (steps * 10 / 60) / 1e3)
+	end
+	for _, p in pairs(problems) do log("DEVCHECK-RUNTIME-FAIL supercapacitor test: " .. p) end
+	log("DEVCHECK-RUNTIME-LSC " .. (#problems == 0 and "ok" or "failed") .. summary)
+end
+
 script.on_event(defines.events.on_tick, function(event)
 	fuel_window_tick()
 	chain_tick(event.tick)
+	lsc_tick(event.tick)
 	cooled_load_tick(event.tick)
 	local m = storage.mold_machine
 	if storage.mold_done then return end
@@ -1095,6 +1202,7 @@ script.on_nth_tick(10, function()
 	if not (storage.recipe_test and storage.recipe_test.done) then recipe_test() end
 	steam_test()
 	chain_test()
+	lsc_test()
 	victory_test()
 end)
 
@@ -1159,6 +1267,7 @@ script.on_init(function()
 	for _, f in pairs(setup_recipe_test(s)) do fails[#fails + 1] = f end
 	for _, f in pairs(setup_steam_test(s)) do fails[#fails + 1] = f end
 	for _, f in pairs(setup_chain_test(s)) do fails[#fails + 1] = f end
+	for _, f in pairs(setup_lsc_test(s)) do fails[#fails + 1] = f end
 	log("DEVCHECK-RUNTIME placed=" .. placed .. " with_recipe=" .. with_recipe .. " failed=" .. #fails)
 	for _, f in pairs(fails) do log("DEVCHECK-RUNTIME-FAIL " .. f) end
 end)

@@ -38,10 +38,15 @@
 --- plasma change within one step can shift at most that step's burn between the two plasmas.
 --- Work per tick: one read per running turbine; the fluid is read once per step.
 ---
+--- Supercapacitor loss (issue #97). GT's lapotronic supercapacitor loses 1 % of its capacity per day. The
+--- accumulators listed in the mod data `capacitors` (name -> loss in W) lose loss x INTERVAL / 60 J every
+--- INTERVAL ticks, down to 0. Work per step: one read and one write per supercapacitor; nothing per tick.
+---
 --- State (lazy, `storage.fork_power`): `turbines` by unit number with the plasma seen at the last step
 --- (`fluid`, `amount` in the turbine and its segment), `on` (counted this step), the `energy` summed
 --- since the last step and the cooled fluid still `owed` (by fluid name); `generators` by unit number
---- with the reason this script stopped them (nil while running); `cursor` of the round robin. Rebuilt
+--- with the reason this script stopped them (nil while running); `cursor` of the round robin; `capacitors` by unit
+--- number (the entity). Rebuilt
 --- from the map on configuration changes.
 local M = {}
 
@@ -56,12 +61,15 @@ local function mod_data()
 	return md and md.data or { turbines = {}, cooled = {}, hatch = "turbine-output-hatch", fuels = {} }
 end
 
-local turbine_names, cooled_of, ratio_of, effectivity_of, hatch_name, fuels_of
+local turbine_names, cooled_of, ratio_of, effectivity_of, hatch_name, fuels_of, loss_of
 local function init()
 	if turbine_names then return end
 	local d = mod_data()
 	turbine_names, cooled_of, hatch_name, fuels_of = {}, d.cooled or {}, d.hatch, {}
-	ratio_of, effectivity_of = d.ratio or {}, d.effectivity or {}
+	ratio_of, effectivity_of, loss_of = d.ratio or {}, d.effectivity or {}, {}
+	for name, w in pairs(d.capacitors or {}) do
+		if prototypes.entity[name] then loss_of[name] = w end
+	end
 	for _, n in pairs(d.turbines or {}) do turbine_names[n] = true end
 	for gen, list in pairs(d.fuels or {}) do
 		if prototypes.entity[gen] then
@@ -78,6 +86,7 @@ local function state()
 		storage.fork_power = st
 	end
 	st.generators = st.generators or {}         -- saves from before the fuel check
+	st.capacitors = st.capacitors or {}         -- saves from before issue #97
 	return st
 end
 
@@ -199,6 +208,7 @@ function M.on_built(entity)
 	if not (entity and entity.valid) then return end
 	if turbine_names[entity.name] then register_turbine(state(), entity) end
 	if fuels_of[entity.name] then register_generator(state(), entity) end
+	if loss_of[entity.name] then state().capacitors[entity.unit_number] = entity end
 end
 
 --- Existing generators after a mod change (state lost, new generators or new fuel lists): register
@@ -210,6 +220,9 @@ function M.on_configuration_changed()
 		if prototypes.entity[n] and not seen[n] then names[#names + 1] = n; seen[n] = true end
 	end
 	for n, _ in pairs(fuels_of) do
+		if not seen[n] then names[#names + 1] = n; seen[n] = true end
+	end
+	for n, _ in pairs(loss_of) do
 		if not seen[n] then names[#names + 1] = n; seen[n] = true end
 	end
 	local st = state()
@@ -229,11 +242,31 @@ function M.on_configuration_changed()
 		end
 	end
 	st.cursor = nil
+	st.capacitors = {}
 	if #names == 0 then return end
 	for _, surface in pairs(game.surfaces) do
 		for _, e in pairs(surface.find_entities_filtered{ name = names }) do
 			if turbine_names[e.name] then register_turbine(st, e) end
 			if fuels_of[e.name] then register_generator(st, e) end
+			if loss_of[e.name] then st.capacitors[e.unit_number] = e end
+		end
+	end
+end
+
+--------------------------------------------------------------------------------
+--- Supercapacitor loss
+--------------------------------------------------------------------------------
+
+local function capacitor_step(st)
+	for id, e in pairs(st.capacitors) do
+		if e.valid then
+			local loss = loss_of[e.name]
+			if loss then
+				local energy = e.energy - loss * INTERVAL / 60
+				e.energy = energy > 0 and energy or 0
+			end
+		else
+			st.capacitors[id] = nil
 		end
 	end
 end
@@ -326,6 +359,7 @@ script.on_event(defines.events.on_tick, function(event)
 	init()
 	check_step(st)
 	step(st)
+	if st.capacitors then capacitor_step(st) end
 end)
 
 --- For tests: the cooled fluid still owed by a turbine (of one fluid, or all of them), and the energy

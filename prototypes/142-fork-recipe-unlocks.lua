@@ -586,6 +586,12 @@ local UNLOCKS = {
 		"lapotronic-capacitor-iv", "lapotronic-supercapacitor", "lapotronic-supercapacitor-casing",
 		"lapotronic-supercapacitor-controller",
 	},
+	["luv-lapotronic-supercapacitor"] = { -- ZPM (issue #97)
+		"lapotronic-capacitor-luv", "luv-lapotronic-supercapacitor",
+	},
+	["zpm-lapotronic-supercapacitor"] = { -- ZPM (issue #97; the energy module is also on fusion-coil-ii)
+		"energy-module", "lapotronic-capacitor-zpm", "zpm-lapotronic-supercapacitor",
+	},
 	["uv-multiblocks"] = { -- UV
 		"component-assembly-line", "ev-circuit-wrap", "ev-conveyor-module-coal", "ev-emitter-coal",
 		"ev-field-generator-coal", "ev-motor-coal", "ev-piston-coal", "ev-pump-coal", "ev-robot-arm-coal",
