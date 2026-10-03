@@ -260,12 +260,15 @@ palladium-naqindium-dust
 palladium-naqindium-ingot
 palladium-naqindium-superconductive-wire
 palladium-naqindium-wire
+palladium-salt
 pico-power-ic
 planck-printed-circuit-board
 planck-processing-unit
 planck-processor
 planck-processor-assembly
 planck-processor-supercomputer
+platinum-residue
+platinum-salt
 ppic-wafer
 qpic-wafer
 quantium-cable
@@ -281,7 +284,10 @@ radioactive-sludge
 ram-chip-wrap
 raw-crystal-chip
 raw-crystal-chip-part
+refined-platinum-salt
 remote-graviton-flow-modulator
+reprecipitated-palladium
+reprecipitated-platinum
 rhodium-plated-palladium-dust
 rhugnor-ingot
 rhugnor-plate

@@ -107,6 +107,10 @@ MATERIALS = {
     "gasoline": "Gasoline",
     # issue #98: black plutonium (hot ingot, ingot), the high octane cell, sodium bisulfate
     "black-plutonium": "BlackPlutonium", "high-octane-gasoline": "HighOctaneGasoline", "sodium-bisulfate": "SodiumBisulfate",
+    # issue #96: bartworks Werkstoffe of the platinum line (WerkstoffLoader.java, their colours; dusts)
+    "platinum-salt": ("DULL", (255, 255, 200)), "refined-platinum-salt": ("DULL", (255, 255, 200)),
+    "reprecipitated-platinum": ("DULL", (255, 255, 200)), "platinum-residue": ("DULL", (100, 99, 46)),
+    "palladium-salt": ("DULL", (177, 177, 177)), "reprecipitated-palladium": ("DULL", (177, 177, 177)),
 }
 
 # fork part name -> GT OrePrefix texture; "{m}" is the material
@@ -556,6 +560,10 @@ def icon_table(c):
     # issue #98: the high octane cell (like the gasoline cell), sodium bisulfate (GT: a dust)
     T["high-octane-gasoline-cell"] = lambda: c.part("high-octane-gasoline", "cell")
     T["sodium-bisulfate"] = lambda: c.part("sodium-bisulfate", "dust")
+    # issue #96: the dusts of the platinum line, which the fork names without "-dust"
+    for m in ("platinum-salt", "refined-platinum-salt", "reprecipitated-platinum", "platinum-residue", "palladium-salt",
+              "reprecipitated-palladium"):
+        T[m] = lambda m=m: c.part(m, "dust")
 
     # multi-amp wires (upstream: 16x = a block of the metal)
     T["luv-superconductor-wire-16x"] = lambda: bar(c.m.colour("itbtc-alloy"), 2, n=4)

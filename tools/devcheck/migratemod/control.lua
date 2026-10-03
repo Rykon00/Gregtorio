@@ -153,7 +153,7 @@ end
 --- technology effect reset of Gregtorio's on_configuration_changed. The old save researches these technologies (and
 --- their prerequisites); after the update every recipe that a researched technology unlocks must be enabled.
 local TT_TECHS = { "steam-compressor", "extruder", "end-steel", "alloy-blast-smelter", "industrial-mixer",
-	"tier-three-microminers", "naquadah-processing", "uv-multiblocks" }
+	"tier-three-microminers", "naquadah-processing", "uv-multiblocks", "osmium" }
 local TT_CHECK_TICK = 60
 
 local function setup_techs()
@@ -204,8 +204,21 @@ end
 --- Issues #98 and #96: fluids and items that an update removes are mapped to their nearest counterpart by the
 --- JSON migrations of migrations/. The old save holds them in storage tanks and a chest; after the update the tanks
 --- must hold the counterpart (the same amount) and the chest the counterpart items. Versions without them: skipped.
-local RM_FLUIDS = { ["exhausted-water"] = "water" }
-local RM_ITEMS = {}
+--- Issue #96: the old save also runs the GTCEu platinum line: machines with its recipes and their item inputs; after
+--- the update a machine whose recipe is gone has none (`nil`), the others keep theirs (renamed: the new name).
+local RM_FLUIDS = { ["exhausted-water"] = "water",
+	["platinum-palladium-leachate"] = "platinum-concentrate", ["chloroplatinic-acid"] = "platinum-concentrate",
+	["palladium-rich-ammonia"] = "palladium-enriched-ammonia" }
+local RM_ITEMS = { ["ammonia-hexachloroplatinate"] = "platinum-salt", ["crude-platinum-residue"] = "metallic-platinum-powder",
+	["raw-platinum-powder"] = "reprecipitated-platinum", ["crude-palladium-residue"] = "palladium-salt",
+	["raw-palladium-powder"] = "reprecipitated-palladium", ["platinum-group-residue"] = "platinum-residue" }
+local RM_MACHINES = {
+	{ "lv-chemical-reactor", "platinum-palladium-leachate-processing", nil },
+	{ "lv-electrolyzer", "chloroplatinic-acid", nil },
+	{ "lv-ore-washer", "palladium-dust", "crushed-palladium-washing" },
+	{ "lv-mixer", "aqua-regia", "aqua-regia" },
+	{ "mv-electric-blast-furnace", "platinum-group-residue-processing", "platinum-group-residue-processing" },
+}
 local RM_AT = { -30.5, Y + 30.5 }
 
 local function setup_removed()
@@ -225,13 +238,28 @@ local function setup_removed()
 	for old, new in pairs(RM_ITEMS) do
 		if prototypes.item[old] then items[#items + 1] = { old = old, new = new, count = chest.insert{ name = old, count = 5 } } end
 	end
-	if #list == 0 and #items == 0 then
+	local machines = {}
+	for i, m in pairs(RM_MACHINES) do
+		local r = prototypes.recipe[m[2]]
+		if prototypes.entity[m[1]] and r then
+			local e = s.create_entity{ name = m[1], position = { RM_AT[1] + 8 * (i - 1), RM_AT[2] + 12 }, force = "player",
+				raise_built = true }
+			game.forces.player.recipes[m[2]].enabled = true
+			e.set_recipe(m[2])
+			for _, ing in pairs(r.ingredients) do
+				if ing.type == "item" then e.insert{ name = ing.name, count = ing.amount * 2 } end
+			end
+			machines[#machines + 1] = { entity = e, old = m[2], new = m[3] }
+		end
+	end
+	if #list == 0 and #items == 0 and #machines == 0 then
 		storage.removed = "skipped"
 		log("DEVCHECK-MIGRATE-SETUP-REMOVED skipped (none of the removed fluids or items in this version)")
 		return
 	end
-	storage.removed = { tanks = list, chest = chest, items = items }
-	log("DEVCHECK-MIGRATE-SETUP-REMOVED ok (" .. #list .. " fluids in tanks, " .. #items .. " items in a chest)")
+	storage.removed = { tanks = list, chest = chest, items = items, machines = machines }
+	log("DEVCHECK-MIGRATE-SETUP-REMOVED ok (" .. #list .. " fluids in tanks, " .. #items .. " items in a chest, "
+		.. #machines .. " machines with recipes of the old line)")
 end
 
 local function check_removed()
@@ -253,9 +281,18 @@ local function check_removed()
 		local got = p.chest.valid and p.chest.get_item_count(name) or 0
 		if got ~= count then problems[#problems + 1] = "the chest holds " .. got .. " " .. name .. " of " .. count end
 	end
+	for _, m in pairs(p.machines or {}) do
+		local r = m.entity.valid and m.entity.get_recipe()
+		local got = r and r.name or nil
+		if not m.entity.valid then
+			problems[#problems + 1] = "the machine with " .. m.old .. " is gone"
+		elseif got ~= m.new then
+			problems[#problems + 1] = "the machine with " .. m.old .. " has " .. tostring(got) .. ", not " .. tostring(m.new)
+		end
+	end
 	for _, m in pairs(problems) do log("DEVCHECK-MIGRATE-FAIL removed: " .. m) end
 	log("DEVCHECK-MIGRATE-REMOVED " .. (#problems == 0 and "ok" or "failed") .. " (" .. #p.tanks .. " fluids, "
-		.. #p.items .. " items mapped)")
+		.. #p.items .. " items mapped, " .. #(p.machines or {}) .. " machines checked)")
 end
 
 local A = "gregtorio-me-autocraft"

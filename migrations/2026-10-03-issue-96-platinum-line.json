@@ -1,0 +1,18 @@
+{
+  "item": [
+    ["ammonia-hexachloroplatinate", "platinum-salt"],
+    ["crude-platinum-residue", "metallic-platinum-powder"],
+    ["raw-platinum-powder", "reprecipitated-platinum"],
+    ["crude-palladium-residue", "palladium-salt"],
+    ["raw-palladium-powder", "reprecipitated-palladium"],
+    ["platinum-group-residue", "platinum-residue"]
+  ],
+  "fluid": [
+    ["platinum-palladium-leachate", "platinum-concentrate"],
+    ["chloroplatinic-acid", "platinum-concentrate"],
+    ["palladium-rich-ammonia", "palladium-enriched-ammonia"]
+  ],
+  "recipe": [
+    ["palladium-dust", "crushed-palladium-washing"]
+  ]
+}
