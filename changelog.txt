@@ -17,6 +17,8 @@ Version: 0.5.1
   Changes:
     - Gregtorio's fluids are in the Fluids tab of the signal and fluid choosers instead of "Unsorted", in rows by kind (gases, acids, fuels, plasmas, molten metals and more); the vanilla fluids Gregtorio redefines are back in the vanilla row, and the iron gear is no longer in "Unsorted".
     - Needs ME Network 0.2.0: the ME Interface and the ME Import, Export and Storage Bus handle items and fluids, the ME Fluid Interface and the ME Fluid Import, Export and Storage Bus are gone (placed ones become the unified blocks with their settings and fluid). ME Fluid Storage unlocks the fluid storage cells only.
+  Graphics:
+    - The Component Assembly Line has its own look (GT's iridium casing, GoodGenerator's component assembly line casing and controller), the Nether Air and Ender Air Ender Tanks look like ender tanks instead of air collectors (GT's animated ender fluid link in an HV or EV hull, red for nether air), the gasoline cell is GT's orange fluid cell, and 13 melts are brighter or take GT's colour (enriched naquadah glows green as in GT; bedrockium, the ZPM superconductor base, dark steel and others are no longer near-black).
 ---------------------------------------------------------------------------------------------------
 Version: 0.5.0
 Date: 2026-10-02

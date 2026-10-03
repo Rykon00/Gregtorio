@@ -9,12 +9,13 @@ sprites at up to 192 pixels.
     python tools/gen_review_sheet.py techs                  # changed technology icons
     python tools/gen_review_sheet.py sprites                # changed entity sprites
     python tools/gen_review_sheet.py upgrades               # IV to MAX upgrade multiblocks: EV look vs tier hatches
+    python tools/gen_review_sheet.py fluid-icons            # changed fluid icons (graphics/fluids)
     python tools/gen_review_sheet.py fluids --fluids <file> # the Fluids tab, rows per subgroup (no before/after);
                                                             # <file> from `devcheck.py check --fluids-out <file>`
     python tools/gen_review_sheet.py all --ref origin/main --out docs/graphics-review
 
 Output: <out>/icons-<n>-<group>.png, techs.png, sprites-<n>-<group>.png, upgrades-<tier>.png, upgrades-icons.png,
-fluids-tab.png
+fluid-icons.png, fluids-tab.png
 """
 import argparse, io, re, subprocess, warnings
 warnings.filterwarnings("ignore", category=DeprecationWarning)
@@ -145,6 +146,14 @@ def techs(ref, out):
               out / f"techs-{i // 60 + 1}.png")
 
 
+def fluid_icons(ref, out):
+    """issue #99: the fluid icons that changed (the melts of issue #91 that were too dark)"""
+    files = [f for f in changed(ref, "graphics/fluids/*.png") if f.endswith(".png")]
+    if files:
+        entries = [(Path(f).stem, at_ref(ref, f), now(f)) for f in files]
+        sheet(f"Fluid icons ({len(entries)})", entries, 64, 6, out / "fluid-icons.png")
+
+
 def sprites(ref, out):
     files = [f for f in changed(ref, "graphics/entity/fork/*.png") if f.endswith("-idle.png") or
              (f.endswith("-working.png") and not Path(f.replace("-working", "-idle")).exists())]
@@ -154,6 +163,8 @@ def sprites(ref, out):
         g = ("Fusion reactors" if "fusion" in n else "Large plasma turbines" if "plasma-turbine" in n else
              "Plasma forge and quantum force transformer" if n.startswith(("dimensional", "quantum-force")) else
              "Godforge" if n.startswith("godforge") else
+             "Component assembly line" if n.startswith("component-assembly-line") else
+             "Ender tanks" if "ender-tank" in n else
              "Large naquadah reactors" if "naquadah-reactor" in n else "Basic machines " + n.split("-")[0].upper())
         groups.setdefault(g, []).append(f)
     for k, (title, fs) in enumerate(sorted(groups.items()), 1):
@@ -254,7 +265,7 @@ def fluids(listing, out, data_dir, cols=10):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("what", choices=["icons", "techs", "sprites", "upgrades", "fluids", "all"])
+    ap.add_argument("what", choices=["icons", "techs", "sprites", "upgrades", "fluid-icons", "fluids", "all"])
     ap.add_argument("--ref", default="origin/main")
     ap.add_argument("--out", type=Path, default=ROOT / "docs/graphics-review")
     ap.add_argument("--fluids", help="fluids: the list of `devcheck.py check --fluids-out <file>`")
@@ -262,7 +273,8 @@ def main():
                     help="fluids: the game's data folder, for the vanilla icons and names")
     a = ap.parse_args()
     a.out.mkdir(parents=True, exist_ok=True)
-    for what, fn in (("icons", icons), ("techs", techs), ("sprites", sprites), ("upgrades", upgrades)):
+    for what, fn in (("icons", icons), ("techs", techs), ("sprites", sprites), ("upgrades", upgrades),
+                     ("fluid-icons", fluid_icons)):
         if a.what in (what, "all"):
             fn(a.ref, a.out)
     if a.what == "fluids" or (a.what == "all" and a.fluids):

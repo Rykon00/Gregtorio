@@ -103,6 +103,8 @@ MATERIALS = {
     "magmatter": ("CUSTOM/magmatter", (255, 255, 255)),
     # GT++ (MaterialMisc.java): the glue line of issue #91
     "sodium-cyanide": ("DULL", (180, 190, 255)), "cyanoacetic-acid": ("DULL", (130, 130, 40)),
+    # issue #99: GT's gasoline (SET_FLUID, orange) for its cell
+    "gasoline": "Gasoline",
 }
 
 # fork part name -> GT OrePrefix texture; "{m}" is the material
@@ -545,6 +547,8 @@ def icon_table(c):
     # the glue line, which the fork names without "-dust"
     T["component-assembly-line"] = lambda: c.mini(f"{GG}blocks/compAsslineCasing/7", f"{BLK}MACHINE_CASING_ASSEMBLER",
                                                   f"{BLK}OVERLAY_FRONT_COMPONENT_ASSEMBLY_LINE")
+    # issue #99: the gasoline cell of #94 (GT: Materials.Gasoline's cell, the FLUID icon set in its orange)
+    T["gasoline-cell"] = lambda: c.part("gasoline", "cell")
     T["sodium-cyanide"] = lambda: c.part("sodium-cyanide", "dust")
     T["cyanoacetic-acid"] = lambda: c.part("cyanoacetic-acid", "dust")
 
@@ -566,9 +570,42 @@ def material_items(names):
     return out
 
 
+# issue #99: GT's own molten colour (MaterialBuilder.setMoltenARGB, MaterialsInit.java) and the GT++ alloys GT keeps
+# in gtPlusPlus/core/material/MaterialsAlloy.java ("Material Colour"), which the CamelCase lookup does not find
+MOLTEN = {
+    "enriched-naquadah": ((0x40, 0xFF, 0x40), "GT NaquadahEnriched setMoltenARGB"),
+    "eglin-steel": ((139, 69, 19), "GT++ EGLIN_STEEL"),
+    "tumbaga": ((255, 178, 15), "GT++ TUMBAGA"),
+    "potin": ((201, 151, 129), "GT++ POTIN"),
+    "zirconium-carbide": ((222, 202, 180), "GT++ ZIRCONIUM_CARBIDE"),
+}
+# issue #99: GT draws a melt glowing; a melt whose colour has no channel above this is lifted (hue and saturation
+# kept, brightness v -> 0.45 + 0.55 v), else near-black materials (the ZPM superconductor base, bedrockium) give
+# black melts that cannot be told apart in the Fluids tab and in pipes
+MOLTEN_MIN = 153
+
+
+def glowing(rgb):
+    v = max(rgb) / 255
+    if max(rgb) >= MOLTEN_MIN:
+        return rgb
+    target = 0.45 + 0.55 * v
+    if v == 0:
+        return (round(target * 255),) * 3
+    return tuple(min(255, round(c * target / v)) for c in rgb)
+
+
 def molten_colour(tex, mats, mat):
-    """GT's colour of a material (MATERIALS, else GT's material of the same name in CamelCase); materials GT does not
-    have (GT++ and bartworks keep theirs elsewhere) take the average colour of the fork's own ingot icon"""
+    """GT's colour of a material (MOLTEN, MATERIALS, else GT's material of the same name in CamelCase); materials GT
+    does not have take the average colour of the fork's own ingot icon; dark colours are lifted (glowing)"""
+    rgb, src = molten_source(tex, mats, mat)
+    lit = glowing(rgb)
+    return lit, src + ("" if lit == rgb else " (lifted from %d %d %d)" % rgb)
+
+
+def molten_source(tex, mats, mat):
+    if mat in MOLTEN:
+        return MOLTEN[mat]
     gt_name = "".join(w.capitalize() for w in mat.split("-"))
     try:
         if mat in MATERIALS:
