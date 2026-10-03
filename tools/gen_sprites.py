@@ -19,7 +19,7 @@ multiblocks keep the EV sprite and get a layer with GT energy hatches of their t
 """
 import argparse, re
 from pathlib import Path
-from PIL import Image
+from PIL import Image, ImageOps
 
 ROOT = Path(__file__).resolve().parent.parent
 ICONS = ROOT / "graphics/icons"
@@ -95,6 +95,13 @@ MULTIBLOCKS = {
     # UV (127-fork-uv.lua)
     "zpm-assembly-line": ((9, 3), "assembler-machine-casing", None,
                           "gregtech:iconsets/OVERLAY_FRONT_ASSEMBLY_LINE", "grate-machine-casing"),
+    # issue #99: the component assembly line (142-fork-recipe-unlocks.lua; GoodGenerator's MTEComponentAssemblyLine):
+    # GT's iridium casing (its casing index 183), GoodGenerator's UV component assembly line casing as the middle
+    # row, the CoAL controller face (idle, active)
+    "component-assembly-line": ((9, 3), "gregtech:iconsets/MACHINE_CASING_IRIDIUM", None,
+                                ("gregtech:iconsets/OVERLAY_FRONT_COMPONENT_ASSEMBLY_LINE",
+                                 "gregtech:iconsets/OVERLAY_FRONT_COMPONENT_ASSEMBLY_LINE_ACTIVE"),
+                                "goodgenerator:compAsslineCasing/7"),
     "fusion-reactor-mk2": ((9, 9), "gregtech:iconsets/MACHINE_CASING_FUSION_2", None,
                            "gregtech:iconsets/OVERLAY_FUSION2", "gregtech:iconsets/MACHINE_CASING_FUSION_COIL"),
     # UHV (128-fork-uhv.lua)
@@ -183,6 +190,12 @@ TEXTURE_ICONS = {
 # hatch is the ME fluid interface in orange
 DERIVED = {
     "turbine-output-hatch": ("me-fluid-interface", (255, 170, 80)),
+}
+# issue #99: the ender tanks (name -> GT tier of the air collector they copy, tint of the ender fluid link)
+ENDER_LINK = "gregtech:iconsets/ENDERFLUIDLINK_OVERLAY"
+ENDER_TANKS = {
+    "nether-air-ender-tank": ("HV", ((40, 0, 0), (255, 140, 70))),     # recoloured from dark red to glowing orange
+    "ender-air-ender-tank": ("EV", None),                               # GT's teal as it is
 }
 # IV multiblocks: the casing is read from the recipe in 20-iv-age-entity.lua
 IV_MULTIBLOCK_FACES = {
@@ -442,6 +455,25 @@ def derived(name, source, rgb):
             save(tint(load(src), rgb), folder / f"{name}.png")
 
 
+def recolour(img, dark, light):
+    """the image's brightness as a ramp from `dark` to `light` (alpha kept)"""
+    out = ImageOps.colorize(ImageOps.autocontrast(img.convert("L")), dark, light).convert("RGBA")
+    out.putalpha(img.getchannel("A"))
+    return out
+
+
+def ender_tank(gt, name, tier, ramp):
+    """Issue #99: the ender tanks (142-fork-recipe-unlocks.lua, copies of the HV and EV air collector): the GT hull of
+    their tier around GT's ender fluid link (the tank of TecTech's ender fluid link cover, animated: the working
+    strip), recoloured per air (nether red, ender as GT draws it), so they are no longer air collectors on the map."""
+    hull = load(gt_path(gt, f"gregtech:iconsets/MACHINE_{tier}_SIDE"))
+    frames = frames_of(load(gt_path(gt, ENDER_LINK)))
+    if ramp:
+        frames = [recolour(f, *ramp) for f in frames]
+    save(in_hull(hull, frames[0], 3 * TILE), OUT_ENTITY / f"{name}-idle.png")
+    save_strip([in_hull(hull, f, 3 * TILE) for f in frames], OUT_ENTITY / f"{name}-working.png")
+
+
 def icon_machine(name):
     img = scaled(load(ICONS / f"{name}.png"), 3 * TILE)
     save(img, OUT_ENTITY / f"{name}-idle.png")
@@ -491,6 +523,8 @@ def main():
         upgrade_hatches(a.gt, base, sprite, icon)
     for name, (source, rgb) in DERIVED.items():
         derived(name, source, rgb)
+    for name, (tier, ramp) in ENDER_TANKS.items():
+        ender_tank(a.gt, name, tier, ramp)
     print("Sprites:", len(list(OUT_ENTITY.glob("*.png"))), "Icons:", len(list(OUT_ICON.glob("*.png"))))
 
 

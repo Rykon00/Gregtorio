@@ -20,6 +20,18 @@
 
 local F = FORK5B
 local FLUID_ICON_PATH = "__gregtorio-continued__/graphics/fluids/"
+local SPRITE_PATH = "__gregtorio-continued__/graphics/entity/fork/"
+
+--- the graphics of a machine from tools/gen_sprites.py: <name>-idle.png and <name>-working.png (a vertical strip of
+--- `frames` frames, each `ticks` ticks long)
+local function fork_sprites(name, w, h, frames, ticks)
+	local function layer(file, n, repeats)
+		return { layers = { { filename = SPRITE_PATH .. name .. file, width = w * 32, height = h * 32, frame_count = n,
+			repeat_count = repeats, line_length = 1, animation_speed = 1 / ticks, shift = { 0, 0 } } } }
+	end
+	--- the idle animation needs the frame count of the working one
+	return { idle_animation = layer("-idle.png", 1, frames > 1 and frames or nil), animation = layer("-working.png", frames) }
+end
 
 
 
@@ -152,13 +164,15 @@ glue_step("super-glue", "iv-chemical-reactor-recipes", 55, {
 --- The ender tanks (upstream 15-hv-age-item.lua: the items come from the microverse projector, their entities were
 --- commented out, so the nether and ender air collection had no machine). GT collects nether and ender air with the
 --- air collector in the Nether and the End; here the tank filled on the other side stands in for it: the HV and the
---- EV air collector with the ender tank's recipes. Graphics: the air collector's (no own sprite yet).
+--- EV air collector with the ender tank's recipes. Graphics (issue #99): the GT hull of the tier around GT's animated
+--- ender fluid link, red for nether air (tools/gen_sprites.py, ENDER_TANKS).
 local function ender_tank(name, source, category)
 	local m = table.deepcopy(data.raw["assembling-machine"][source])
 	m.name = name
 	m.icon = ICON_PATH .. name .. ".png"
 	m.icon_size = 32
 	m.icons = nil
+	m.graphics_set = fork_sprites(name, 3, 3, 8, 8)
 	m.minable = { mining_time = 0.5, result = name }
 	m.crafting_categories = { category }
 	m.fast_replaceable_group = nil
@@ -176,7 +190,8 @@ ender_tank("ender-air-ender-tank", "ev-air-collector", "ender-air-ender-tank-rec
 --- controller recipe (UHV/2, 30 s in the assembly line; GT's 4 superdense iridium plates, 256 ingots, are 28
 --- iridium blocks here, the PBI pipes PBI sheets). GT runs a CoAL recipe at its own voltage (ULV to EV) and overclocks it by the casing
 --- tier; here at crafting speed 1, so a recipe takes GT's base time (64 LV motors in 48 s).
---- Graphics: the ZPM assembly line's sprites (no own sprite yet), a placeholder icon.
+--- Graphics (issue #99): GT's iridium casing, GoodGenerator's UV component assembly line casing and the CoAL
+--- controller face (tools/gen_sprites.py); the icon from the same textures (tools/gen_gt_icons.py).
 do
 	local COAL = "component-assembly-line"
 	local m = table.deepcopy(data.raw["assembling-machine"]["zpm-assembly-line"])
@@ -184,6 +199,7 @@ do
 	m.icon = ICON_PATH .. COAL .. ".png"
 	m.icon_size = 32
 	m.icons = nil
+	m.graphics_set = fork_sprites(COAL, 9, 3, 1, 1)
 	m.minable = { mining_time = 1, result = COAL }
 	m.crafting_categories = { "uv-coal-recipes" }
 	m.crafting_speed = 1

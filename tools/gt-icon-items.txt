@@ -98,6 +98,7 @@ fusion-reactor-mk4
 fusion-reactor-mk4-controller
 fusion-reactor-mk5
 fusion-reactor-mk5-controller
+gasoline-cell
 godforge
 godforge-controller
 high-density-plutonium
