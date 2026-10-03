@@ -18,7 +18,8 @@
   table `FORK5B`), 134 UXV (universium, temporal line, UXV components), 135 endgame (stargate,
   MAX science pack; researching `victory` wins the game via `scripts/fork-victory.lua`), 136 power
   (plasma fuel values, plasma balance of issue #32, large plasma turbines with turbine output hatches, naquadah fuel line, large
-  naquadah reactors, dynamo hatches LuV to UXV; runtime in `scripts/fork-power.lua`: fuel check, turbine output hatch),
+  naquadah reactors, dynamo hatches LuV to UXV; runtime in `scripts/fork-power.lua`: fuel check, turbine output hatch
+  with a ratio per fluid and the generator's effectivity from the mod data, used by 145's steam turbines),
   137 endgame materials (issues #39 and #36: deletes the drafts removed for good, `FORK-REMOVED` in the log; the
   lapotronic energy orb cluster and high density plutonium drafts; super coolant, the 1080k super coolant cell, fluxed electrum,
   bedrockium and quantium with the stand-ins they replace; must load after 136, whose plutonium fuel and dynamo hatches it changes),
@@ -35,7 +36,10 @@
   the auto-unlock of 199 placed before, so new unlocks do not move it), 143 casting (issue #91: solidifier casts of every
   form and extractor melts of every ingot from its table `MATERIALS` (tier, technology, the colour of a new melt);
   199's auto-unlock ignores these recipes (`FORK_CASTING.recipes`), else an ingot would count as its own producer;
-  must load before 150, whose molds it needs, and before 196, 198 and 199), 144 dead fluids (issue #91: GT's uses and
+  must load before 150, whose molds it needs, and before 196, 198 and 199), 145 power multiblocks (issue #97: the large
+  steam turbine and the high pressure steam turbine as generators of 136 with superheated steam; their technologies are
+  named in 142's `UNLOCKS`, so it loads after 138 and **before** 142, and before 196 for its fluids; it takes 136's
+  generator from the global `FORK_POWER` and adds to its mod data `fork-power`), 144 dead fluids (issue #91: GT's uses and
   producers of fluids nothing made or used; the blast furnace gas variants of `EBF_GASES` are in `FORK_GAS_VARIANTS`,
   which 199's auto-unlock ignores like the casts), 150 molds (mold slot instead of mold ingredient; must load after every file that creates
   machines), 190 manual-labor

@@ -496,6 +496,11 @@ local UNLOCKS = {
 	["nuclear-power"] = { -- EV
 		"large-heat-exchanger", "large-heat-exchanger-controller", "reactor-pressure-vessel",
 	},
+	["large-steam-turbine"] = { -- EV (issue #97; the magnalium parts and casings are also on industrial-mixer)
+		"blue-steel-frame", "large-steam-turbine", "large-steam-turbine-controller", "long-magnalium-rod",
+		"magnalium-bolt", "magnalium-ingot", "magnalium-plate", "magnalium-rod", "magnalium-screw",
+		"magnalium-turbine-blade", "magnalium-turbine-rotor", "steel-turbine-casing", "turbine-output-hatch",
+	},
 	["nuclear-fuel-rods"] = { -- EV
 		"depleted-thorium-fuel-rod-centrifuging", "depleted-uranium-fuel-rod-centrifuging",
 	},
@@ -521,9 +526,10 @@ local UNLOCKS = {
 		"large-talonite-gear",
 	},
 	["industrial-mixer"] = { -- IV
-		"high-pressure-steam-turbine", "high-pressure-steam-turbine-controller", "large-steam-turbine",
-		"large-steam-turbine-controller", "long-magnalium-rod", "magnalium-bolt", "magnalium-rod", "magnalium-screw",
-		"magnalium-turbine-blade", "magnalium-turbine-rotor",
+		"long-magnalium-rod", "magnalium-bolt", "magnalium-rod", "magnalium-screw",
+	},
+	["high-pressure-steam-turbine"] = { -- IV (issue #97)
+		"high-pressure-steam-turbine", "high-pressure-steam-turbine-controller", "titanium-turbine-casing",
 	},
 	["fluid-shaper"] = { -- IV
 		"inconel-625-bolt", "inconel-625-plate", "inconel-625-rod", "inconel-625-screw", "solidify-inconel-625-ingot",

@@ -41,8 +41,8 @@ BASIC_GT = {
     "autoclave": "autoclave", "alloy-smelter": "alloy_smelter", "compressor": "compressor",
 }
 
-# tier color GT uses to tint the (gray) machine casings (IV = tungstensteel)
-TIER_TINT = {"IV": (100, 100, 160), "LuV": (255, 205, 225), "ZPM": (140, 225, 245), "UV": (130, 215, 140),
+# tier color GT uses to tint the (gray) machine casings (EV = titanium, IV = tungstensteel)
+TIER_TINT = {"EV": (220, 160, 240), "IV": (100, 100, 160), "LuV": (255, 205, 225), "ZPM": (140, 225, 245), "UV": (130, 215, 140),
              "UHV": (235, 120, 120), "UEV": (240, 200, 90), "UIV": (120, 150, 255),
              "UMV": (190, 120, 235), "UXV": (245, 245, 250), "MAX": (255, 255, 255)}
 
@@ -180,6 +180,12 @@ ENERGY_OVERLAY = "gregtech:iconsets/OVERLAY_ENERGY_IN_MULTI_2A_{}"
 # rotor, animated when active); the icon is the middle tile
 PLASMA_TURBINE = "luv-large-plasma-turbine"
 PLASMA_TURBINE_FACE = "gregtech:iconsets/LARGETURBINE_TU"
+# issue #97 (145-fork-power-multiblocks.lua): the steam turbines, GT's large turbine face of their casing (steel,
+# titanium) with the dynamo hatch of their recipe on the corner tiles; the item icons are upstream's
+STEAM_TURBINES = {
+    "large-steam-turbine": ("gregtech:iconsets/LARGETURBINE_ST", "EV"),
+    "high-pressure-steam-turbine": ("gregtech:iconsets/LARGETURBINE_TI", "IV"),
+}
 # items whose icon is a GT block texture (written to graphics/icons/fork/)
 TEXTURE_ICONS = {
     "titanium-reinforced-borosilicate-glass-block": "bartworks:TitaniumReinforcedBoronSilicateGlassBlock",
@@ -360,18 +366,30 @@ def multiblock(gt, name, size, casing, controller, face, middle):
         save(img.crop((cx * TILE, cy * TILE, (cx + 1) * TILE, (cy + 1) * TILE)), OUT_ICON / f"{name}.png")
 
 
-def plasma_turbine(gt, name):
+def turbine_face(gt, face, active):
     """3x3 face of GT's large turbine: tiles 1..9 idle, the ACTIVE strips animated (frame 0 used)."""
-    def build(active):
-        img = Image.new("RGBA", (3 * TILE, 3 * TILE))
-        for i in range(9):
-            spec = PLASMA_TURBINE_FACE + ("_ACTIVE" if active else "") + str(i + 1)
-            tile = frames_of(load(gt_path(gt, spec)))[0].resize((TILE, TILE), Image.NEAREST)
-            img.paste(tile, ((i % 3) * TILE, (i // 3) * TILE))
-        return img
-    save(build(False), OUT_ENTITY / f"{name}-idle.png")
-    save(build(True), OUT_ENTITY / f"{name}-working.png")
-    save(build(False).crop((TILE, TILE, 2 * TILE, 2 * TILE)), OUT_ICON / f"{name}.png")
+    img = Image.new("RGBA", (3 * TILE, 3 * TILE))
+    for i in range(9):
+        spec = face + ("_ACTIVE" if active else "") + str(i + 1)
+        tile = frames_of(load(gt_path(gt, spec)))[0].resize((TILE, TILE), Image.NEAREST)
+        img.paste(tile, ((i % 3) * TILE, (i // 3) * TILE))
+    return img
+
+
+def plasma_turbine(gt, name):
+    save(turbine_face(gt, PLASMA_TURBINE_FACE, False), OUT_ENTITY / f"{name}-idle.png")
+    save(turbine_face(gt, PLASMA_TURBINE_FACE, True), OUT_ENTITY / f"{name}-working.png")
+    save(turbine_face(gt, PLASMA_TURBINE_FACE, False).crop((TILE, TILE, 2 * TILE, 2 * TILE)), OUT_ICON / f"{name}.png")
+
+
+def steam_turbine(gt, name, face, tier):
+    """issue #97: the turbine face with the dynamo hatches of its tier on the corner tiles (like TIER_COPIES)"""
+    hatch = scaled(dynamo_hatch(gt, tier), TILE)
+    for active, suffix in ((False, "-idle.png"), (True, "-working.png")):
+        img = turbine_face(gt, face, active)
+        for x, y in ((0, 0), (2 * TILE, 0), (0, 2 * TILE), (2 * TILE, 2 * TILE)):
+            img.paste(hatch, (x, y))
+        save(img, OUT_ENTITY / f"{name}{suffix}")
 
 
 def dynamo_hatch(gt, tier):
@@ -517,6 +535,8 @@ def main():
     for name, spec in TEXTURE_ICONS.items():
         save(casing_tile(gt=a.gt, casing=name, override=spec), OUT_ICON / f"{name}.png")
     plasma_turbine(a.gt, PLASMA_TURBINE)
+    for name, (face, tier) in STEAM_TURBINES.items():
+        steam_turbine(a.gt, name, face, tier)
     for base, tiers in TIER_COPIES.items():
         tier_copies(a.gt, base, tiers)
     for base, (sprite, icon) in UPGRADE_MULTIBLOCKS.items():
