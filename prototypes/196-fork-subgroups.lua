@@ -58,6 +58,8 @@ FLUID_SUBGROUP["sulfuric-acid"] = { "fluid", "a[fluid]-b[oil]-f[sulfuric-acid]" 
 FLUID_SUBGROUP["lava"] = { "fluid", "b[new-fluid]-b[vulcanus]-a[lava]" }
 FLUID_SUBGROUP["ammonia"] = { "fluid", "b[new-fluid]-e[aquilo]-b[ammonia]" }
 FLUID_SUBGROUP["fluorine"] = { "fluid", "b[new-fluid]-e[aquilo]-c[fluorine]" }
+--- issue #97: superheated steam (145-fork-power-multiblocks.lua) next to steam
+FLUID_SUBGROUP["superheated-steam"] = { "fluid", "a[fluid]-a[water]-b[steam]-s[superheated]" }
 
 put("basic", { "air", "nether-air", "ender-air", "distilled-water", "salt-water", "exhausted-water", "waste-liquid",
 	"fluorine-rich-waste-liquid", "liquid-concrete" })

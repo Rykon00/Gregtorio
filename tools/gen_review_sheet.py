@@ -165,6 +165,10 @@ def sprites(ref, out):
              "Godforge" if n.startswith("godforge") else
              "Component assembly line" if n.startswith("component-assembly-line") else
              "Ender tanks" if "ender-tank" in n else
+             # issue #97
+             "Steam turbines" if "steam-turbine" in n else
+             "Heat exchanger and fluid nuclear reactor" if n.startswith(("large-heat-exchanger", "fluid-nuclear")) else
+             "Lapotronic supercapacitors" if "lapotronic-supercapacitor" in n else
              "Large naquadah reactors" if "naquadah-reactor" in n else "Basic machines " + n.split("-")[0].upper())
         groups.setdefault(g, []).append(f)
     for k, (title, fs) in enumerate(sorted(groups.items()), 1):
@@ -176,7 +180,7 @@ def sprites(ref, out):
             w = f.replace("-idle.png", "-working.png")
             if w != f and (ROOT / w).exists():
                 entries.append((Path(w).stem, first_frame(at_ref(ref, w)), first_frame(now(w))))
-        box = 192 if "Fusion" in title or "naquadah" in title else 128 if "turbine" in title else 96
+        box = 192 if "Fusion" in title or "naquadah" in title or "supercapacitor" in title else 128 if "turbine" in title else 96
         sheet(f"Entity sprites: {title}", entries, box, 4 if box > 128 else 6, out / f"sprites-{k:02d}-{slug(title)}.png")
 
 

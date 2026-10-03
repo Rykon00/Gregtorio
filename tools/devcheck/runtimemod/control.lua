@@ -11,6 +11,9 @@
 --- their tier and return the cooled fluid of the plasma they burnt.
 --- Recipes of issue #35: grades 7 and 8, FPIC/APIC wafers and chips, complex SMDs and the recipes that
 --- use them are crafted once each (setup_recipe_test).
+--- Steam turbines (issue #97): the large and the high pressure steam turbine make their GT output, burn their GT flow
+--- and give back distilled water and steam through output hatches; the wrong steam stops them; the multiblocks of
+--- issue #97 can be blueprinted and mined.
 --- Victory: when the other tests have reported, `victory` is researched by script and must win the game.
 
 local VICTORY_DEADLINE = 1450
@@ -23,6 +26,7 @@ local function tests_running()
 	check(storage.cooled and storage.cooled.done, "cooled fluid")
 	check(storage.tiers and storage.tiers.done, "turbine tiers")
 	check(storage.recipe_test and storage.recipe_test.done, "recipes of issue #35")
+	check(storage.steam and storage.steam.done, "steam turbines")
 	return running
 end
 
@@ -794,6 +798,126 @@ function setup_mold_test(s)
 	return {}
 end
 
+--- Steam turbines (issue #97, prototypes/145-fork-power-multiblocks.lua): a large steam turbine on steam and a high
+--- pressure steam turbine on superheated steam, each overloaded by an electric energy interface and with a turbine
+--- output hatch next to it. At ST_TICK each must make its full output (11.25 MW, 28.35 MW), have burnt about its GT
+--- flow (180 steam/s, 210 superheated steam/s; the fluid counted in the turbine and its pipeline segment), and its
+--- hatch must hold what it gives back: 0.0625 distilled water per steam, one steam per superheated steam (hatch +
+--- owed + the energy of the current step). Fuel check: superheated steam in the large turbine and steam in the high
+--- pressure one make no power and stay. Placement: each multiblock of issue #97 is put into a blueprint (it must be
+--- in it) and mined into an inventory (its item must come back).
+local ST_Y = 310                                        -- between the power test (260) and the cooled fluid test (370)
+local ST_TICK = 240
+local ST = {
+	--  key      entity                          x       fluid               amount  power (W)  fuel x effectivity  back               ratio   flow/s
+	{ "lst",     "large-steam-turbine",          -200.5, "steam",             1000,   11.25e6,   100e3 * 0.625,      "distilled-water", 0.0625, 180 },
+	{ "hp",      "high-pressure-steam-turbine",  -170.5, "superheated-steam", 1000,   28.35e6,   200e3 * 0.675,      "steam",           1,      210 },
+	{ "lst_sh",  "large-steam-turbine",          -140.5, "superheated-steam", 100,    11.25e6 },
+	{ "hp_st",   "high-pressure-steam-turbine",  -110.5, "steam",             100,    28.35e6 },
+}
+--- the multiblocks of issue #97 that exist in this version (the placement test)
+ST_PLACE = { "large-steam-turbine", "high-pressure-steam-turbine" }
+local ST_PLACE_X = -80.5
+
+function setup_steam_test(s)
+	local fails = {}
+	storage.steam = { t = {} }
+	for _, def in ipairs(ST) do
+		local ok, err = pcall(function()
+			local g = s.create_entity{ name = def[2], position = { def[3], ST_Y }, force = "player", raise_built = true }
+			local got = g.insert_fluid{ name = def[4], amount = def[5] }
+			if math.abs(got - def[5]) > 1e-6 then fails[#fails + 1] = "steam test: " .. def[1] .. " took only " .. got .. " " .. def[4] end
+			local eei = s.create_entity{ name = "electric-energy-interface", position = { def[3], ST_Y + 6 }, force = "player" }
+			eei.power_production = 0
+			eei.power_usage = 1.5 * def[6] / 60
+			eei.electric_buffer_size = 1e8
+			s.create_entity{ name = "substation", position = { def[3] + 4, ST_Y + 6 }, force = "player" }
+			local h = def[8] and s.create_entity{ name = "turbine-output-hatch", position = { def[3] + 2, ST_Y }, force = "player", raise_built = true }
+			storage.steam.t[def[1]] = { g = g, h = h }
+		end)
+		if not ok then fails[#fails + 1] = "steam test " .. def[1] .. ": " .. tostring(err) end
+	end
+	--- placement: built 10 tiles apart
+	storage.steam.place = {}
+	for i, name in ipairs(ST_PLACE) do
+		local ok, err = pcall(function()
+			local e = s.create_entity{ name = name, position = { ST_PLACE_X + 10 * (i - 1), ST_Y }, force = "player", raise_built = true }
+			storage.steam.place[name] = e
+		end)
+		if not ok then fails[#fails + 1] = "placement test " .. name .. ": " .. tostring(err) end
+	end
+	return fails
+end
+
+function steam_test()
+	local st = storage.steam
+	if not st or st.done or game.tick < ST_TICK then return end
+	st.done = true
+	local problems = {}
+	local function expect(ok, what) if not ok then problems[#problems + 1] = what end end
+	local seconds = game.tick / 60
+	local parts = {}
+	for _, def in ipairs(ST) do
+		local c = st.t[def[1]]
+		if not (c and c.g.valid and (not def[8] or (c.h and c.h.valid))) then
+			expect(false, def[1] .. " missing")
+		elseif def[8] then
+			local g, h = c.g, c.h
+			local mw = g.energy_generated_last_tick * 60 / 1e6
+			expect(math.abs(mw * 1e6 - def[6]) <= 1e-3 * def[6], def[1] .. " makes " .. mw .. " MW, not " .. def[6] / 1e6)
+			local burnt = def[5] - fc_fluid_in(g, def[4])
+			expect(burnt > 0.9 * def[10] * (seconds - 0.2) and burnt < 1.02 * def[10] * seconds,
+				def[1] .. " burnt " .. burnt .. " " .. def[4] .. " in " .. seconds .. " s (GT flow " .. def[10] .. "/s)")
+			local back = h.get_fluid_count(def[8])
+			local owed = remote.call("gregtorio-power", "debt", g, def[8])
+				+ remote.call("gregtorio-power", "energy", g) / def[7] * def[9]
+			local want = burnt * def[9]
+			expect(back > 0, def[1] .. ": the output hatch got no " .. def[8])
+			expect(math.abs(back + owed - want) <= cooled_tolerance(want),
+				def[1] .. ": hatch holds " .. back .. " " .. def[8] .. " (+ " .. owed .. " owed) for " .. burnt .. " " .. def[4] .. " burnt")
+			expect(h.get_fluid_count(def[4]) == 0, def[1] .. ": " .. def[4] .. " leaked into the output hatch")
+			parts[#parts + 1] = string.format("%s %.2f MW, %.1f %s -> %.3f %s", def[2], mw, burnt, def[4], back + owed, def[8])
+		else
+			local g = c.g
+			local left = fc_fluid_in(g, def[4])
+			expect(g.energy_generated_last_tick == 0, def[1] .. ": runs on " .. def[4])
+			expect(math.abs(left - def[5]) < 1e-6, def[1] .. ": burnt " .. (def[5] - left) .. " " .. def[4])
+			local cs = g.custom_status
+			expect(g.disabled_by_script and cs and cs.label[1] == "entity-status.fork-wrong-fuel",
+				def[1] .. ": not stopped with \"Wrong fuel\"")
+		end
+	end
+	--- placement: blueprint, then mine
+	local inv = game.create_inventory(4)
+	local placed = 0
+	for name, e in pairs(st.place or {}) do
+		if not (e and e.valid) then
+			expect(false, "placement test: " .. name .. " missing")
+		else
+			inv.clear()
+			inv.insert{ name = "blueprint" }
+			local bp = inv[1]
+			local box = e.selection_box
+			bp.create_blueprint{ surface = e.surface, force = e.force, area = { { box.left_top.x - 0.5, box.left_top.y - 0.5 },
+				{ box.right_bottom.x + 0.5, box.right_bottom.y + 0.5 } } }
+			local found = false
+			for _, be in pairs(bp.get_blueprint_entities() or {}) do
+				if be.name == name then found = true end
+			end
+			expect(found, "placement test: " .. name .. " is not in its blueprint")
+			inv.clear()
+			expect(e.mine{ inventory = inv, force = true }, "placement test: " .. name .. " could not be mined")
+			expect(inv.get_item_count(name) == 1, "placement test: mining " .. name .. " gave " .. inv.get_item_count(name) .. " items")
+			placed = placed + 1
+		end
+	end
+	inv.destroy()
+	expect(placed == #ST_PLACE, "placement test: " .. placed .. " of " .. #ST_PLACE .. " multiblocks checked")
+	for _, p in pairs(problems) do log("DEVCHECK-RUNTIME-FAIL steam turbine test: " .. p) end
+	log("DEVCHECK-RUNTIME-STEAM " .. (#problems == 0 and "ok" or "failed") .. " (" .. table.concat(parts, "; ")
+		.. "; wrong fuels stopped; " .. placed .. " placed, blueprinted and mined)")
+end
+
 script.on_event(defines.events.on_tick, function(event)
 	fuel_window_tick()
 	cooled_load_tick(event.tick)
@@ -843,6 +967,7 @@ script.on_nth_tick(10, function()
 	if not (storage.cooled and storage.cooled.done) then cooled_test() end
 	if not (storage.tiers and storage.tiers.done) then tier_test() end
 	if not (storage.recipe_test and storage.recipe_test.done) then recipe_test() end
+	steam_test()
 	victory_test()
 end)
 
@@ -905,6 +1030,7 @@ script.on_init(function()
 	for _, f in pairs(setup_cooled_test(s)) do fails[#fails + 1] = f end
 	for _, f in pairs(setup_tier_test(s)) do fails[#fails + 1] = f end
 	for _, f in pairs(setup_recipe_test(s)) do fails[#fails + 1] = f end
+	for _, f in pairs(setup_steam_test(s)) do fails[#fails + 1] = f end
 	log("DEVCHECK-RUNTIME placed=" .. placed .. " with_recipe=" .. with_recipe .. " failed=" .. #fails)
 	for _, f in pairs(fails) do log("DEVCHECK-RUNTIME-FAIL " .. f) end
 end)

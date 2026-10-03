@@ -130,7 +130,8 @@ end
 --- 60 x fuel value per second (one unit of helium plasma per tick: 4.92 GW, of neon plasma:
 --- 1.23 GW). It is set so that the weakest accepted fuel still reaches the cap (issue #34): 1 up
 --- to the UHV turbine and for every naquadah reactor, 2 to 9 units for the UEV to UXV turbines.
----   def = { name, size, power, volume, icon, min_fuel (J per unit of the weakest accepted fuel) }
+---   def = { name, size, power, volume, icon, min_fuel (J per unit of the weakest accepted fuel),
+---           effectivity (default 1; the steam turbines of 145 burn below and above 1) }
 --------------------------------------------------------------------------------
 
 --- "81.92MW" -> 81.92e6
@@ -162,8 +163,8 @@ local function make_generator(def)
 		selection_box = { { -half, -half }, { half, half } },
 		fast_replaceable_group = def.fast_replaceable_group,
 		max_power_output = def.power,
-		fluid_usage_per_tick = math.max(1, math.ceil(watts(def.power) / 60 / def.min_fuel)),
-		effectivity = 1,
+		fluid_usage_per_tick = math.max(1, math.ceil(watts(def.power) / 60 / (def.min_fuel * (def.effectivity or 1)))),
+		effectivity = def.effectivity or 1,
 		burns_fluid = true,
 		scale_fluid_usage = true,
 		destroy_non_fuel_fluid = false,
@@ -298,19 +299,21 @@ create_item{
 }
 --- The turbine output hatch: a 1x1 tank next to a plasma turbine that receives the cooled
 --- fluid (scripts/fork-power.lua, exact since issue #28); what does not fit waits in the
---- turbine, without a hatch the cooled fluid is lost, as in GT
+--- turbine, without a hatch the cooled fluid is lost, as in GT. Issue #97: an EV recipe (steel
+--- turbine casing instead of the tungstensteel one), the large steam turbine of 145 needs it for
+--- its distilled water
 local HATCH = "turbine-output-hatch"
 create_item{
 	name = HATCH,
 	icon = FORK_ICON_PATH .. HATCH .. ".png",
-	category = AL("luv"),
-	energy_required = 10 * LUV_SPEED,
-	subgroup = "subgroup-luv-age-multiblocks",
+	category = AL("ev"),
+	energy_required = 10 * EV_SPEED,
+	subgroup = "subgroup-ev-age-multiblocks",
 	place_result = HATCH,
 	stack_size = 50,
 	ingredients = {
-		{ type = "item", name = "tungstensteel-turbine-casing", amount = 1 },
-		{ type = "item", name = "tungstensteel-plate", amount = 4 },
+		{ type = "item", name = "steel-turbine-casing", amount = 1 },
+		{ type = "item", name = "titanium-plate", amount = 4 },
 		{ type = "item", name = "pipe", amount = 2 },
 	},
 }
@@ -622,10 +625,17 @@ data:extend({ {
 	data = {
 		turbines = turbines,
 		cooled = cooled,
+		--- issue #97: units of the cooled fluid per unit burnt (default 1) and the effectivity of a
+		--- turbine (default 1; the script divides the energy by it), filled by 145
+		ratio = {},
+		effectivity = {},
 		hatch = HATCH,
 		fuels = fuels,
 	},
 } })
+
+--- For 145-fork-power-multiblocks.lua (issue #97): the generator and the tier caps
+FORK_POWER = { make_generator = make_generator, CAP = CAP, HATCH = HATCH }
 
 
 

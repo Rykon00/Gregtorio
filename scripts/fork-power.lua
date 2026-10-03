@@ -31,6 +31,9 @@
 --- holding another fluid) stays owed for the next step, without a limit; without any hatch next to the
 --- turbine the cooled fluid is lost (GT voids it as well). Turbines stopped by a script (the fuel check
 --- below) are not counted: a stopped generator keeps its last energy_generated_last_tick.
+--- Issue #97: the steam turbines of 145 use the same machinery. The mod data gives a ratio per burnt
+--- fluid (distilled water: 0.0625 per unit of steam; default 1) and the effectivity of a turbine (the
+--- steam turbines burn energy / (fuel value x effectivity); default 1).
 --- Accuracy: exact up to float rounding of the fluid amounts (devcheck: about 1e-6 relative); only a
 --- plasma change within one step can shift at most that step's burn between the two plasmas.
 --- Work per tick: one read per running turbine; the fluid is read once per step.
@@ -53,11 +56,12 @@ local function mod_data()
 	return md and md.data or { turbines = {}, cooled = {}, hatch = "turbine-output-hatch", fuels = {} }
 end
 
-local turbine_names, cooled_of, hatch_name, fuels_of
+local turbine_names, cooled_of, ratio_of, effectivity_of, hatch_name, fuels_of
 local function init()
 	if turbine_names then return end
 	local d = mod_data()
 	turbine_names, cooled_of, hatch_name, fuels_of = {}, d.cooled or {}, d.hatch, {}
+	ratio_of, effectivity_of = d.ratio or {}, d.effectivity or {}
 	for _, n in pairs(d.turbines or {}) do turbine_names[n] = true end
 	for gen, list in pairs(d.fuels or {}) do
 		if prototypes.entity[gen] then
@@ -253,10 +257,11 @@ local function credit(t, fluid, energy, max)
 	local proto = fluid and prototypes.fluid[fluid]
 	local fuel = proto and proto.fuel_value
 	if not (fuel and fuel > 0) then return energy end   -- not a fuel: it burnt none of it
+	fuel = fuel * (effectivity_of[t.entity.name] or 1)  -- the energy one unit gives in this turbine
 	local burnt = energy / fuel
 	if max and burnt > max then burnt = max end
 	local out = cooled_of[fluid]
-	if out and burnt > 0 then t.owed[out] = (t.owed[out] or 0) + burnt end
+	if out and burnt > 0 then t.owed[out] = (t.owed[out] or 0) + burnt * (ratio_of[fluid] or 1) end
 	return energy - burnt * fuel
 end
 
