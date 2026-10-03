@@ -469,6 +469,64 @@ end
 
 
 --------------------------------------------------------------------------------
+--- THE UPGRADE CARDS AND THE ME CELL WORKBENCH (me-network 0.3.0, its issue #17; Gregtorio issue #95)
+--- GregTech New Horizons' AE2 recipes (NewHorizonsCoreMod, scripts/ScriptAppliedEnergistics2.java). Gregtorio's
+--- upstream advanced-card (13-mv-age-item.lua) is GTNH's Advanced Card already (2 platinum, 3 titanium, 1 red alloy,
+--- 1 calculation processor), so it stays the one Advanced Card: the cards are made from it, and me-network's
+--- me-advanced-card loses its recipe and is hidden (no save holds it: 0.3.0 is me-network's first version with
+--- cards). Guarded by the item: with me-network 0.2.0 there are no cards (the release of 0.5.1 raises the dependency
+--- to >= 0.3.0, issue #101, and the guard can go then).
+--------------------------------------------------------------------------------
+
+local HAS_CARDS = data.raw.item["me-basic-card"] ~= nil
+if HAS_CARDS then
+	local function card(name, order, ingredients)
+		recipe_of{ name = name, subgroup = "fork-me-cards", order = order, ingredients = ingredients }
+	end
+	local function I(list)
+		local t = {}
+		for i = 1, #list, 2 do t[#t + 1] = { type = "item", name = list[i], amount = list[i + 1] } end
+		return t
+	end
+
+	ME.remove_recipe("me-advanced-card")
+	local me_advanced = data.raw.item["me-advanced-card"]
+	if me_advanced then me_advanced.hidden = true; me_advanced.hidden_in_factoriopedia = true end
+	move_to("fork-me-cards", "advanced-card", "b")
+	move_to("fork-me-cards", "acceleration-card", "h")
+
+	--- GTNH: gold, aluminium, red alloy, calculation processor (the Advanced Card's pattern with gold and aluminium)
+	card("me-basic-card", "a", I{ "gold-plate", 2, "aluminium-plate", 3, "red-alloy-plate", 1, "calculation-processor", 1 })
+	--- GTNH: basic card, two 1k storage components, charged certus quartz
+	card("me-capacity-card", "c",
+		I{ "me-basic-card", 1, "me-1k-storage-component", 2, "charged-certus-quartz", 1 })
+	--- GTNH: basic card, two calculation processors, an ME Void Storage Cell (a cell without a storage component;
+	--- me-network has none, so its shell, the storage housing)
+	card("me-overflow-destruction-card", "d",
+		I{ "me-basic-card", 1, "calculation-processor", 2, "basic-storage-housing", 1 })
+	--- GTNH: advanced card, engineering, logic and calculation processor
+	card("me-fuzzy-card", "e",
+		I{ "advanced-card", 1, "engineering-processor", 1, "logic-processor", 1, "calculation-processor", 1 })
+	--- GTNH: advanced card, two IC2 redstone inverter upgrades (decider combinators here), calculation processor
+	card("me-inverter-card", "f", I{ "advanced-card", 1, "decider-combinator", 2, "calculation-processor", 1 })
+	--- GTNH: advanced card, engineering and logic processor, an EV item distributor (the turbo splitter here)
+	card("me-equal-distribution-card", "g",
+		I{ "advanced-card", 1, "engineering-processor", 1, "logic-processor", 1, "turbo-splitter", 1 })
+
+	--- GTNH: computer screen cover, two titanium screws (stainless steel here: Gregtorio has no titanium screw),
+	--- crafting table, two titanium plates, calculation processor
+	recipe_of{
+		name = "me-cell-workbench",
+		subgroup = "fork-me-cards",
+		order = "z",
+		ingredients = I{ "computer-monitor", 1, "stainless-steel-screw", 2, "crafting-table", 1, "titanium-plate", 2,
+			"calculation-processor", 1 },
+	}
+end
+
+
+
+--------------------------------------------------------------------------------
 --- TECHNOLOGIES (Gregtorio's tiers and science packs)
 --------------------------------------------------------------------------------
 
@@ -526,3 +584,12 @@ tech("me-fluid-storage", { "me-autocrafting" }, 5, 600, {
 	"me-1k-fluid-storage-cell", "me-4k-fluid-storage-cell", "me-16k-fluid-storage-cell", "me-64k-fluid-storage-cell",
 })
 tech("me-fluid-storage-256k", { "me-fluid-storage", "me-storage-256k" }, 6, 800, { "me-256k-fluid-storage-cell" })
+
+--- IV: the cards and the workbench, next to the Advanced Card (platinum) of ME 256k Storage; the Inverter Card needs
+--- decider combinators, the Equal Distribution Card a turbo splitter
+if HAS_CARDS then
+	tech("me-upgrade-cards", { "me-storage-256k", "circuit-network", "turbo-transport-belt" }, 6, 1000, {
+		"me-basic-card", "me-capacity-card", "me-overflow-destruction-card", "me-fuzzy-card", "me-inverter-card",
+		"me-equal-distribution-card", "me-cell-workbench",
+	})
+end
