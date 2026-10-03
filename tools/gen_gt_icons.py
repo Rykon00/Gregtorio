@@ -111,6 +111,10 @@ MATERIALS = {
     "platinum-salt": ("DULL", (255, 255, 200)), "refined-platinum-salt": ("DULL", (255, 255, 200)),
     "reprecipitated-platinum": ("DULL", (255, 255, 200)), "platinum-residue": ("DULL", (100, 99, 46)),
     "palladium-salt": ("DULL", (177, 177, 177)), "reprecipitated-palladium": ("DULL", (177, 177, 177)),
+    "potassium-disulfate": ("DULL", (251, 187, 102)), "rhodium-filter-cake": ("DULL", (119, 102, 73)),
+    "reprecipitated-rhodium": ("DULL", (119, 102, 73)), "iridium-dioxide": ("DULL", (132, 102, 73)),
+    "sludge-dust-residue": ("DULL", (132, 102, 73)), "iridium-chloride": ("DULL", (132, 102, 73)),
+    "metallic-sludge-dust-residue": ("DULL", (132, 102, 73)),
 }
 
 # fork part name -> GT OrePrefix texture; "{m}" is the material
@@ -562,7 +566,8 @@ def icon_table(c):
     T["sodium-bisulfate"] = lambda: c.part("sodium-bisulfate", "dust")
     # issue #96: the dusts of the platinum line, which the fork names without "-dust"
     for m in ("platinum-salt", "refined-platinum-salt", "reprecipitated-platinum", "platinum-residue", "palladium-salt",
-              "reprecipitated-palladium"):
+              "reprecipitated-palladium", "potassium-disulfate", "rhodium-filter-cake", "reprecipitated-rhodium",
+              "iridium-dioxide", "sludge-dust-residue", "iridium-chloride", "metallic-sludge-dust-residue"):
         T[m] = lambda m=m: c.part(m, "dust")
 
     # multi-amp wires (upstream: 16x = a block of the metal)

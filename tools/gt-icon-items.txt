@@ -142,6 +142,8 @@ infinity-rotor
 infinity-round
 infinity-screw
 insanely-ultimate-voltage-coil
+iridium-chloride
+iridium-dioxide
 itbtc-alloy-dust
 itbtc-alloy-ingot
 itbtc-alloy-wire
@@ -210,6 +212,7 @@ max-robot-arm
 max-sensor
 maximum-voltage-coil
 mega-ultimate-voltage-coil
+metallic-sludge-dust-residue
 multilayered-fiber-reinforced-circuit-board
 multilayered-fiber-reinforced-printed-circuit-board
 nand-memory-chip-wrap
@@ -269,6 +272,7 @@ planck-processor-assembly
 planck-processor-supercomputer
 platinum-residue
 platinum-salt
+potassium-disulfate
 ppic-wafer
 qpic-wafer
 quantium-cable
@@ -288,12 +292,15 @@ refined-platinum-salt
 remote-graviton-flow-modulator
 reprecipitated-palladium
 reprecipitated-platinum
+reprecipitated-rhodium
+rhodium-filter-cake
 rhodium-plated-palladium-dust
 rhugnor-ingot
 rhugnor-plate
 ruridit-plate
 samarium-rod
 singularity-reinforced-stellar-shielding-casing
+sludge-dust-residue
 sodium-bisulfate
 sodium-cyanide
 spacetime-cable

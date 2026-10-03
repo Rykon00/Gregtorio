@@ -66,12 +66,12 @@ put("basic", { "air", "nether-air", "ender-air", "distilled-water", "salt-water"
 put("gases", { "hydrogen", "deuterium", "tritium", "helium", "helium-3", "nitrogen", "oxygen", "argon", "neon", "krypton",
 	"xenon", "radon", "chlorine", "ozone", "carbon-dioxide", "carbon-monoxide", "nitrogen-dioxide",
 	"dinitrogen-tetroxide", "sulfur-dioxide", "sulfur-trioxide", "hydrogen-sulfide", "hydrogen-cyanide" })
-put("acids", { "aqua-regia", "nitration-mixture", "hydrogen-peroxide", "iron-iii-chloride", "antimony-pentachloride",
+put("acids", { "aqua-regia", "nitration-mixture", "iron-iii-chloride", "antimony-pentachloride",
 	"antimony-pentachloride-solution", "antimony-pentafluoride", "antimony-trichloride-solution", "titanium-tetrachloride",
 	"silicon-tetrachloride", "sodium-tungstate", "polyaluminium-chloride" })
 put("ore-solutions", { "bauxite-slurry", "heated-bauxite-slurry", "indium-concentrate", "lead-zinc-solution",
 	"rhodium-sulfate-solution", "sulfuric-copper-solution",
-	"sulfuric-iron-solution", "sulfuric-nickel-solution", "acidic-iridium-dioxide-solution", "acidic-osmium-solution",
+	"sulfuric-iron-solution", "sulfuric-nickel-solution", "acidic-osmium-solution",
 	"sluice-juice", "ruby-juice" })
 put("fuels", { "naphtha", "refinery-gas", "light-fuel", "heavy-fuel", "diesel", "cetane-boosted-diesel", "gasoline",
 	"high-octane-gasoline", "raw-gasoline", "rocket-fuel", "creosote", "wood-gas", "wood-tar", "wood-vinegar", "charcoal-byproducts",
@@ -115,6 +115,10 @@ put("molten-exotic", { "molten-black-plutonium" })
 --- issue #96 (146-fork-platinum-line.lua): the platinum line of GTNH
 put("ore-solutions", { "platinum-concentrate", "palladium-enriched-ammonia" })
 put("acids", { "ammonium-chloride" })
+put("ore-solutions", { "rhodium-sulfate", "rhodium-salt-solution", "rhodium-filter-cake-solution",
+	"ruthenium-tetroxide-solution", "ruthenium-tetroxide", "osmium-solution", "acidic-iridium-solution" })
+put("molten-elements", { "molten-potassium" })
+put("molten-alloys", { "molten-potassium-disulfate" })
 --- tiered: the plasma forge catalysts crude < resplendent < stellar, then the godforge fluids
 FLUID_SUBGROUP["excited-dimensionally-transcendent-crude-catalyst"] = { "endgame", 1 }
 FLUID_SUBGROUP["excited-dimensionally-transcendent-resplendent-catalyst"] = { "endgame", 2 }

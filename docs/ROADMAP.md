@@ -2176,8 +2176,11 @@ PlatinumSludgeRecipes.java`), which replaces it: part 1 (platinum and palladium)
 centrifuge, the platinum concentrate (from the metallic powder and straight from the ores with platinum group metals),
 platinum salt and reprecipitated platinum, palladium enriched ammonia, palladium salt and reprecipitated palladium, and
 bartworks' rule that ore processing gives twice the metallic powder instead of platinum or palladium dust. The six
-technologies keep their names. Until part 2 the rhodium, ruthenium, iridium and osmium branches of 19 run on the new
-platinum residue and the residues of the sludge centrifuge. Per metallic platinum powder (salt loop closed): 0.71
+technologies keep their names. Part 2 replaces the rhodium, ruthenium, osmium and iridium branches with bartworks' (potassium
+disulfate, rhodium sulfate, filter cake and reprecipitated rhodium; sodium ruthenate and ruthenium tetroxide; osmium
+solution; iridium dioxide and iridium chloride; GT's fluid heater step of the ruthenium line is part of its
+distillation, Gregtorio has no fluid heater). Per platinum residue: about 0.21 rhodium, 0.75 ruthenium, 0.31 iridium,
+0.03 osmium (the GTCEu platinum group residue gave 0.67, 0.19, 0.29, 0.12). Per metallic platinum powder (salt loop closed): 0.71
 platinum dust, 128 palladium enriched ammonia, 0.71 platinum residue; one palladium unit (a powder or 100 ammonia):
 0.36 palladium dust.
 
