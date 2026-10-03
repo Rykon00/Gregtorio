@@ -153,9 +153,13 @@ def remove_path(p):
         shutil.rmtree(p)
 
 
-def prepare_mods(with_runtime=False, gregtorio_zip=None, with_migrate=False, menusim=None, gregtorio=True):
+def prepare_mods(with_runtime=False, gregtorio_zip=None, with_migrate=False, menusim=None, gregtorio=True,
+                 settings=None):
     """mods/ = dependency zips + the mod (working copy or a zip) + devcheck helper mods.
-    menusim: name of a main menu simulation for the menusim helper mod; gregtorio=False leaves the mod out."""
+    menusim: name of a main menu simulation for the menusim helper mod; gregtorio=False leaves the mod out.
+    settings: {startup setting name: bool} forced for this run (`check --set`); without it every setting has its
+    default, because mod-settings.dat is removed (a value stored by an earlier run would win over the default)."""
+    remove_path(MODS / "mod-settings.dat")
     for p in MODS.iterdir():
         if p.name.startswith(MOD_NAMES + ("zz-gregtorio-devcheck",)) or p.name == "mod-list.json" or (
                 p.name == ME_NETWORK and not p.is_file()):
@@ -195,6 +199,19 @@ def prepare_mods(with_runtime=False, gregtorio_zip=None, with_migrate=False, men
         shutil.copytree(HERE / "menusimmod", MODS / "zz-gregtorio-devcheck-menusim")
         (MODS / "zz-gregtorio-devcheck-menusim" / "config.lua").write_text(f"return {{ name = {json.dumps(menusim)} }}\n")
         enabled.append("zz-gregtorio-devcheck-menusim")
+    if settings:
+        # a generated mod: forces the settings in the settings stage, after the mod defined them
+        d = MODS / "zz-gregtorio-devcheck-settings"
+        d.mkdir()
+        (d / "info.json").write_text(json.dumps({
+            "name": "zz-gregtorio-devcheck-settings", "version": "1.0.0", "title": "Gregtorio devcheck settings",
+            "author": "rykon_", "factorio_version": "2.0", "dependencies": ["? " + n for n in MOD_NAMES]}))
+        (d / "settings-final-fixes.lua").write_text("".join(
+            f"do local s = data.raw['bool-setting'][{json.dumps(n)}] "
+            f"assert(s, 'devcheck --set: no bool setting ' .. {json.dumps(n)}) "
+            f"s.hidden = true s.forced_value = {'true' if v else 'false'} s.default_value = s.forced_value end\n"
+            for n, v in settings.items()))
+        enabled.append("zz-gregtorio-devcheck-settings")
     (MODS / "mod-list.json").write_text(json.dumps({"mods": [{"name": n, "enabled": True} for n in enabled]
                                                     + [{"name": n, "enabled": False} for n in disabled]}))
 
@@ -569,8 +586,40 @@ def check_locked(m, sec):
     return out, n, len(allowed)
 
 
+ONE_PACK = "gregtorio-continued-one-pack-research"
+
+
+def check_one_pack(sec):
+    """Startup setting gregtorio-continued-one-pack-research (prototypes/fork-one-pack-research.lua): when it is on,
+    every technology with science packs costs one unit of one pack of each kind; when it is off, at least one
+    technology costs more (the setting must not be on by default). Returns (info line, problems)."""
+    value = next((r[1] for r in sec.get("SETTINGS", []) if r[0] == ONE_PACK), "absent")
+    techs = [json.loads("\t".join(r)) for r in sec.get("BALANCE", [])]
+    techs = [t for t in techs if t.get("kind") == "tech" and (t.get("count") or t.get("count_formula"))]
+
+    def cheap(t):
+        return (t.get("count") == 1 or t.get("count_formula") == "1") and all(
+            i.get("amount") == 1 for i in t.get("ingredients") or [])
+    n = sum(1 for t in techs if cheap(t))
+    if value == "true":
+        return (f"on: {n} of {len(techs)} technologies cost one science pack of each kind",
+                [t["name"] for t in techs if not cheap(t)])
+    return (f"{value}: {len(techs) - n} of {len(techs)} technologies cost more than one science pack of each kind",
+            [f"setting is {value} but every technology is cheap"] if techs and n == len(techs) else [])
+
+
+def parse_settings(pairs):
+    out = {}
+    for p in pairs or []:
+        name, _, value = p.partition("=")
+        if value not in ("true", "false"):
+            sys.exit(f"--set {p}: expected <bool startup setting>=true|false")
+        out[name] = value == "true"
+    return out
+
+
 def check(a):
-    prepare_mods()
+    prepare_mods(settings=parse_settings(getattr(a, "set", None)))
     log = factorio("--create", str(WORK / "check-map.zip"))
     err = load_errors(log)
     sec = sections(log)
@@ -631,6 +680,9 @@ def check(a):
     report(f"WARNING: fluids in the fallback row {FLUID_FALLBACK} (sort them in prototypes/196-fork-subgroups.lua)",
            fluid_fallback)
     report("fluids outside the Fluids tab (subgroup missing or not in the group fluids)", fluid_problems)
+    one_pack_info, one_pack = check_one_pack(sec)
+    print(f"\ncheap research ({ONE_PACK}): {one_pack_info}")
+    report("technologies that cost more than one science pack of each kind although the setting is on", one_pack)
     if getattr(a, "fluids_out", None):
         Path(a.fluids_out).write_text("\n".join("\t".join(r) for r in sec.get("FLUIDS", [])) + "\n", encoding="utf-8")
         print(f"\nfluid list written to {a.fluids_out} (input for tools/gen_review_sheet.py fluids)")
@@ -642,9 +694,23 @@ def check(a):
         Path(a.balance_out).write_text("[\n" + ",\n".join(rows) + "\n]\n", encoding="utf-8")
         print(f"\nbalance data written to {a.balance_out} (recipes, machines, technologies as JSON)")
     ok = not (files or [s for s in sprites if not s.startswith("(")] or uncraft or menu or required or unresearchable
-              or new_drafts or fluid_problems or locked)
+              or new_drafts or fluid_problems or locked or one_pack)
     print("\nRESULT:", "OK" if ok else "PROBLEMS FOUND")
     return 0 if ok else 1
+
+
+def one_pack(a):
+    """Part of `all`: loads the mod with the cheap research setting on and checks every technology."""
+    prepare_mods(settings={ONE_PACK: True})
+    log = factorio("--create", str(WORK / "check-map.zip"))
+    if load_errors(log):
+        print(f"\nload with {ONE_PACK}=true: FAILED\n" + load_errors(log))
+        return 1
+    info, problems = check_one_pack(sections(log))
+    print(f"\ncheap research, loaded with the setting on: {info}")
+    report("technologies that cost more than one science pack of each kind although the setting is on", problems)
+    print("\nRESULT:", "PROBLEMS FOUND" if problems else "OK")
+    return 1 if problems else 0
 
 
 def seed_args(a):
@@ -987,6 +1053,8 @@ def main():
     c.add_argument("--techs", help="regex: list matching technologies and whether they are researchable")
     c.add_argument("--balance-out", help="also write recipes (amounts, times), machine speeds and technology counts as JSON")
     c.add_argument("--fluids-out", help="also write the fluids with subgroup, order and icon (for gen_review_sheet.py fluids)")
+    c.add_argument("--set", action="append", metavar="SETTING=true|false",
+                   help="force a bool startup setting for this run, e.g. gregtorio-continued-one-pack-research=true")
     r = sub.add_parser("runtime")
     r.add_argument("--ticks", type=int, default=1500)
     r.add_argument("--seed", default=str(DEFAULT_SEED), help=f"map seed or `random` (default {DEFAULT_SEED})")
@@ -1022,7 +1090,7 @@ def main():
         return menusim(a)
     if a.cmd == "handover":
         return handover(a)
-    return check(a) or runtime(a)
+    return check(a) or one_pack(a) or runtime(a)
 
 
 if __name__ == "__main__":
