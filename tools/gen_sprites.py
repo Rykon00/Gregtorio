@@ -140,6 +140,14 @@ MULTIBLOCKS = {
                                   ("gregtech:iconsets/NAQUADAH_REACTOR_FLUID_FRONT",
                                    "gregtech:iconsets/NAQUADAH_REACTOR_FLUID_FRONT_ACTIVE"),
                                   "gregtech:iconsets/MACHINE_CASING_RADIATIONPROOF"),
+    # issue #97 (145-fork-power-multiblocks.lua): GT's large heat exchanger (stable titanium casing, titanium pipe
+    # casings in the middle row, its controller face) and the fluid nuclear reactor (GT's radiation proof casing
+    # around the upstream reactor icon; IC2's reactor has no texture in GT)
+    "large-heat-exchanger": ((3, 3), "stable-titanium-machine-casing", None,
+                             "gregtech:iconsets/OVERLAY_FRONT_HEAT_EXCHANGER",
+                             "gregtech:iconsets/MACHINE_CASING_PIPE_TITANIUM"),
+    "fluid-nuclear-reactor": ((3, 3), "gregtech:iconsets/MACHINE_CASING_RADIATIONPROOF", "fluid-nuclear-reactor",
+                              None, None),
 }
 # multiblocks without an upstream item icon: the icon is the controller tile
 CONTROLLER_ICONS = {"neutron-activator", "water-purification-plant", "uv-large-naquadah-reactor"}
