@@ -58,6 +58,8 @@ FLUID_SUBGROUP["sulfuric-acid"] = { "fluid", "a[fluid]-b[oil]-f[sulfuric-acid]" 
 FLUID_SUBGROUP["lava"] = { "fluid", "b[new-fluid]-b[vulcanus]-a[lava]" }
 FLUID_SUBGROUP["ammonia"] = { "fluid", "b[new-fluid]-e[aquilo]-b[ammonia]" }
 FLUID_SUBGROUP["fluorine"] = { "fluid", "b[new-fluid]-e[aquilo]-c[fluorine]" }
+--- issue #97: superheated steam (145-fork-power-multiblocks.lua) next to steam
+FLUID_SUBGROUP["superheated-steam"] = { "fluid", "a[fluid]-a[water]-b[steam]-s[superheated]" }
 
 put("basic", { "air", "nether-air", "ender-air", "distilled-water", "salt-water", "waste-liquid",
 	"fluorine-rich-waste-liquid", "liquid-concrete" })
@@ -81,7 +83,7 @@ put("organic", { "acetic-acid", "formic-acid", "phthalic-acid", "acetone", "benz
 	"p507", "biomass", "bacterial-sludge", "enriched-bacterial-sludge", "growth-medium", "mutagen" })
 put("polymers", { "glue", "advanced-glue", "super-glue", "epoxy", "liquid-rubber", "silicone-rubber", "ptfe" })
 put("coolants", { "cryogenic-helium", "lapis-coolant", "super-coolant", "sodium-potassium", "liquid-air",
-	"liquid-nether-air", "liquid-ender-air" })
+	"liquid-nether-air", "liquid-ender-air", "coolant", "hot-coolant" })
 put("molten-elements", { "mercury", "molten-glass", "molten-borosilicate-glass", "molten-aluminium", "molten-americium",
 	"molten-beryllium", "molten-chrome", "molten-cobalt", "molten-europium", "molten-flerovium", "molten-gallium",
 	"molten-lithium", "molten-lutetium", "molten-magnesium", "molten-neodymium", "molten-silicon", "molten-silver",
@@ -105,7 +107,7 @@ put("molten-exotic", { "molten-naquadah", "molten-naquadah-alloy", "molten-naqua
 	"molten-bedrockium", "molten-eternity", "molten-crystaltine", "molten-enriched-naquadah", "molten-ledox",
 	"molten-itbtc-alloy", "molten-palladium-naqindium", "molten-naquamiridium", "molten-triamerotronium",
 	"molten-dracofinium", "molten-chromnorox", "molten-hypocosmium", "molten-yttrium-barium-cuprate" })
---- issue #98 (145-fork-gt-routes.lua): the high octane line, sodium persulfate, the black plutonium melt
+--- issue #98 (147-fork-gt-routes.lua): the high octane line, sodium persulfate, the black plutonium melt
 put("fuels", { "hydrocracked-light-fuel", "octane", "anti-knock-agent" })
 put("gases", { "nitrous-oxide" })
 put("acids", { "sodium-persulfate" })

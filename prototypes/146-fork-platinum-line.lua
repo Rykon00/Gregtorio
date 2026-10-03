@@ -17,7 +17,7 @@
 --- The six technologies keep their names; their recipes: the block "issue #96" of UNLOCKS in 142.
 --- Amounts: fluids at a tenth of GT's litres, items as in GT, GT's voltage as the recipe tier (time: GT's seconds
 --- times the tier's speed). Where GT has a small and a bulk variant of a recipe (tiny dust outputs), the bulk one is
---- taken, or the tiny dust is a 1/9 chance. Loaded after 145 and before 142.
+--- taken, or the tiny dust is a 1/9 chance. Loaded after 147 (the GT routes) and before 142.
 --------------------------------------------------------------------------------
 
 local F = FORK5B

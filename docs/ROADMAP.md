@@ -2118,7 +2118,7 @@ furnace). Correction (issue #98): GT's fusion reactor makes only neutronium (`Fu
 Gregtorio's fusion recipes for cosmic neutronium, infinity and draconium (`131-fork-uev.lua`) are fork additions (GTNH
 makes them in the plasma forge and, cosmic neutronium, through Avaritia). Neutronium and infinity catalyst dust have a
 use (the neutronium chain of 23/127 and the infinity catalyst); black plutonium and cosmic neutronium dust go through
-GT's blast furnace and vacuum freezer since #98 (`145-fork-gt-routes.lua`).
+GT's blast furnace and vacuum freezer since #98 (`147-fork-gt-routes.lua`).
 
 ### Part 2: solidifier and melting (`prototypes/143-fork-casting.lua`)
 
@@ -2161,7 +2161,7 @@ GT++ chains Gregtorio does not have), imaginary time (not in GT; only the unload
 assembly line; Gregtorio's upstream draconic core is in the unloaded 23-zpm-age-item.lua) and
 exhausted water (not in GT; a byproduct of upstream's deuterium recipe).
 
-Issue #98 (`prototypes/145-fork-gt-routes.lua`) did the rest: the PECA board deleted (GT has no polyethylcyanoacrylate),
+Issue #98 (`prototypes/147-fork-gt-routes.lua`) did the rest: the PECA board deleted (GT has no polyethylcyanoacrylate),
 the printed board at GT's 40 s and its sodium persulfate variant, black plutonium and cosmic neutronium through GT's
 blast furnace (every gas) and vacuum freezer, the high octane gasoline line (hydrocracked light fuel, octane, nitrous
 oxide, anti-knock agent; the large chemical reactors from EV up got a fifth fluid input for it) with its cell, GT's
@@ -2183,3 +2183,60 @@ distillation, Gregtorio has no fluid heater). Per platinum residue: about 0.21 r
 0.03 osmium (the GTCEu platinum group residue gave 0.67, 0.19, 0.29, 0.12). Per metallic platinum powder (salt loop closed): 0.71
 platinum dust, 128 palladium enriched ammonia, 0.71 platinum residue; one palladium unit (a powder or 100 ammonia):
 0.36 palladium dust.
+
+## Steam, nuclear and storage multiblocks (issue #97)
+
+The five multiblocks whose items the recipe audit unlocked get an entity. GT source: GT5-Unofficial
+(`multi/turbines/MTELargeTurbineSteam.java`, `MTELargeTurbineHPSteam.java`, `api/util/TurbineStatCalculator.java`,
+`multi/MTEHeatExchanger.java`, `api/registries/LHECoolantRegistry.java`, kekztech `MTELapotronicSuperCapacitor.java`);
+the premise check is in the comments of issue #97.
+
+### Units
+
+* **Energy per unit** stays GT's at 1 EU = 1 kJ, as in 136.
+* **Steam** has its own scale, set long ago by the LV steam turbine (0.2244 steam per tick, 100 kJ, effectivity 0.475 =
+  GT's 32 EU/t): one unit of steam is 100 L of GT steam. Superheated steam takes the same scale. GT's 2 L steam = 1 EU
+  becomes the effectivity 0.5 x rotor efficiency of a steam generator; superheated steam (GT: 1 L = 1 EU) gets twice the
+  fuel value of steam (200 kJ) and the same effectivity rule.
+* **Other fluids** use Gregtorio's tenth (one unit = 10 L), like the molten metals and distilled water.
+* **Steam rates** are GT's flows at that scale and GT's EU/t at 20 kJ/s per EU/t, not scaled by tier: the steam machines
+  burn the same steam as the LV turbine and the boilers, so they keep GT's ratio to them (the large steam turbine is 17.6
+  LV turbines in GT and here). They stay below four amps of their dynamo hatch's tier (the cap of 136).
+* **Stored energy** keeps GT's time at the hatch power instead: a battery is measured in how long it carries its
+  hatches, and the hatches carry Gregtorio's tier amps (IV: 10.24 MW instead of 8192 EU/t). So a capacitor block holds
+  GT's EU x (Gregtorio amp / GT amp) of its tier: IV / 16, LuV / 32, ZPM / 64.
+
+### The machines
+
+| Multiblock | Factorio shape | In | Out | GT | Gregtorio | Technology |
+|---|---|---|---|---|---|---|
+| Large Steam Turbine (`large-steam-turbine`) | 3x3 `generator` of 136 (fuel check: steam only), EV dynamo hatch in its recipe (upstream) | steam N/S | power; distilled water into a turbine output hatch next to it | large magnalium rotor: 125 %, 900 L/t steam -> 562.5 EU/t; 1 L distilled water per 160 L steam | 180 steam/s -> 11.25 MW (effectivity 0.625); 0.0625 distilled water per steam (11.25/s) | new `large-steam-turbine` (EV, after `ev-energy-hatches`): the upstream recipe is EV/HV (HV hull, processing units, EV dynamo hatch); its magnalium parts were on `industrial-mixer` only because the auto-unlock put them there |
+| High Pressure Steam Turbine (`high-pressure-steam-turbine`) | 3x3 `generator` (superheated steam only), IV dynamo hatch | superheated steam N/S | power; steam 1:1 into a turbine output hatch | large titanium rotor (titanium casings; the upstream recipe has no rotor): 135 %, 1050 L/t -> 1417.5 EU/t; 1 L steam per L | 210 superheated steam/s -> 28.35 MW (effectivity 0.675); 210 steam/s back (1.17 large steam turbines) | new `high-pressure-steam-turbine` (IV, after `large-steam-turbine` and `iv-energy-hatches`), as GT's IV controller |
+| Large Heat Exchanger (`large-heat-exchanger`) | 3x3 recipe machine without power (GT: no power either), two recipes | hot coolant, distilled water | coolant, steam or superheated steam | 1 L hot coolant -> 400 L steam or 200 L superheated steam; up to 1600 L/s; 1 L water per 160 L steam | 16 hot coolant + 40 water -> 16 coolant + 640 steam, or + 20 water -> 320 superheated steam, per 0.1 s (up to 160 hot coolant/s = GT's 1600 L/s; 2 MJ per hot coolant) | moves from `nuclear-power` (EV) to the new `fluid-nuclear-reactor` (IV): without the lava recipe (see below) it only works with the reactor |
+| Fluid Nuclear Reactor (`fluid-nuclear-reactor`) | 3x3 recipe machine with a burner energy source for fuel rods (fuel slot, depleted rods in the burnt result slot) | fuel rods, coolant | depleted rods, hot coolant | IC2's reactor in fluid mode; the heat -> hot coolant ratio is not in any source on this machine | the heat of the basic nuclear reactor (10.5 MW, which the fluid reactor is built from) as hot coolant: 21 coolant -> 21 hot coolant in 4 s (5.25/s, 2 MJ each); a uranium rod (6000 MJ) makes 3000 hot coolant | new `fluid-nuclear-reactor` (IV, after `nuclear-fuel-rods`, `high-pressure-steam-turbine` and the IV iridium of `iv-components`) instead of `fusion-reactor-mk1` (LuV): GT's reactor is IC2's (EV/IV), its only LuV-locked part was the iridium neutron reflector (an IV assembler recipe), which the new technology unlocks too |
+| Lapotronic Supercapacitor (`lapotronic-supercapacitor`, upgrades `luv-`, `zpm-lapotronic-supercapacitor`) | 5x5 `accumulator` per capacitor tier, the higher ones as upgrades of the one below (like 136's turbines); passive loss by script | power through its energy hatch | power through its dynamo hatch | per block IV 6e8, LuV 6e9, ZPM 6e10 EU; I/O by the hatches (2 A each); 1 % of the capacity per day lost | 27 blocks per entity: IV 37.5 GJ per block (1012.5 GJ), LuV 187.5 GJ (5062.5 GJ), ZPM 937.5 GJ (25 312.5 GJ); I/O 2 A of the hatch tier (IV 20.48 MW, LuV 40.96 MW, ZPM 81.92 MW); 1 % per day lost (IV: 117 kW) | IV on `lapotronic-energy-orbs` (ZPM, where the orbs are); LuV and ZPM on new technologies after the dynamo hatches of their tier, the ZPM one also unlocks the energy module (so far only on `fusion-coil-ii`) |
+
+Fluids: `superheated-steam` (fuel value 200 kJ), `coolant`, `hot-coolant` (rows in 196); coolant from GT's mixer recipe
+(1 lapis dust + 100 distilled water -> 100 coolant, 12.8 s). The chain of one fluid nuclear reactor: 5.25 hot coolant/s
+-> 105 superheated steam/s -> half a high pressure turbine (14.2 MW) -> 105 steam/s -> a large steam turbine at 58 %
+(6.6 MW): 20.7 MW, twice the basic nuclear reactor on the same rods (GT's turbines are over 100 % efficient and the
+steam is used twice, as in GT).
+
+The output hatch: the turbine output hatch of 136 gets an EV recipe (steel turbine casing, titanium plates, pipes) and is
+unlocked with the large steam turbine as well; the script returns the burnt fluid at a per-fluid ratio (1 for the
+plasmas and superheated steam, 0.0625 distilled water per steam) and divides the energy by the generator's
+effectivity.
+
+### Deviations from GT
+
+* No rotors: the efficiency of the rotor the recipe names (magnalium) or the casing suggests (titanium) is fixed; no
+  loose fit, no overflow penalty, no ramp-up.
+* **No lava recipe** in the heat exchanger and no pahoehoe lava: Gregtorio's lava is endless (the MV drilling rig, 50
+  lava/s for 640 kW); at GT's ratio that would be 800 steam/s (about 40 MW) from one MV machine.
+* **No superheated threshold:** a recipe cannot require a flow (too little input only makes the machine craft less
+  often), so the player picks steam or superheated steam by recipe; the superheated recipe comes with the high pressure
+  turbine. No dry-heating explosion, no efficiency ramp.
+* The fluid reactor has no reactor grid: its heat is the basic reactor's, whatever rod burns in it.
+* The LuV capacitor block takes osmiridium plates and rods instead of GT's frames and screws (Gregtorio has none).
+* The supercapacitor has 27 blocks of one tier and one pair of hatches; no mixed tiers, no glass rule, no wireless, no
+  UV and higher blocks (Gregtorio has no energy cluster; UHV and up are GT's Long.MAX blocks).

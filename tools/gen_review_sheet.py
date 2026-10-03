@@ -156,7 +156,8 @@ def fluid_icons(ref, out):
 
 def sprites(ref, out):
     files = [f for f in changed(ref, "graphics/entity/fork/*.png") if f.endswith("-idle.png") or
-             (f.endswith("-working.png") and not Path(f.replace("-working", "-idle")).exists())]
+             (f.endswith("-working.png") and not Path(f.replace("-working", "-idle")).exists()) or
+             "lapotronic-supercapacitor" in f]   # issue #97: accumulators have one picture
     groups = {}
     for f in files:
         n = Path(f).stem
@@ -165,6 +166,10 @@ def sprites(ref, out):
              "Godforge" if n.startswith("godforge") else
              "Component assembly line" if n.startswith("component-assembly-line") else
              "Ender tanks" if "ender-tank" in n else
+             # issue #97
+             "Steam turbines" if "steam-turbine" in n else
+             "Heat exchanger and fluid nuclear reactor" if n.startswith(("large-heat-exchanger", "fluid-nuclear")) else
+             "Lapotronic supercapacitors" if "lapotronic-supercapacitor" in n else
              "Large naquadah reactors" if "naquadah-reactor" in n else "Basic machines " + n.split("-")[0].upper())
         groups.setdefault(g, []).append(f)
     for k, (title, fs) in enumerate(sorted(groups.items()), 1):
@@ -176,7 +181,11 @@ def sprites(ref, out):
             w = f.replace("-idle.png", "-working.png")
             if w != f and (ROOT / w).exists():
                 entries.append((Path(w).stem, first_frame(at_ref(ref, w)), first_frame(now(w))))
-        box = 192 if "Fusion" in title or "naquadah" in title else 128 if "turbine" in title else 96
+        if "supercapacitor" in title:
+            # issue #97: the new icons of the upgrades and capacitor blocks with them
+            for f in changed(ref, "graphics/icons/fork/*lapotronic*.png"):
+                entries.append(("icon " + Path(f).stem, at_ref(ref, f), now(f)))
+        box =192 if "Fusion" in title or "naquadah" in title or "supercapacitor" in title else 128 if "turbine" in title else 96
         sheet(f"Entity sprites: {title}", entries, box, 4 if box > 128 else 6, out / f"sprites-{k:02d}-{slug(title)}.png")
 
 
