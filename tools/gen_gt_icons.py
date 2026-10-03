@@ -105,6 +105,8 @@ MATERIALS = {
     "sodium-cyanide": ("DULL", (180, 190, 255)), "cyanoacetic-acid": ("DULL", (130, 130, 40)),
     # issue #99: GT's gasoline (SET_FLUID, orange) for its cell
     "gasoline": "Gasoline",
+    # issue #98: black plutonium (hot ingot, ingot), the high octane cell, sodium bisulfate
+    "black-plutonium": "BlackPlutonium", "high-octane-gasoline": "HighOctaneGasoline", "sodium-bisulfate": "SodiumBisulfate",
 }
 
 # fork part name -> GT OrePrefix texture; "{m}" is the material
@@ -551,6 +553,9 @@ def icon_table(c):
     T["gasoline-cell"] = lambda: c.part("gasoline", "cell")
     T["sodium-cyanide"] = lambda: c.part("sodium-cyanide", "dust")
     T["cyanoacetic-acid"] = lambda: c.part("cyanoacetic-acid", "dust")
+    # issue #98: the high octane cell (like the gasoline cell), sodium bisulfate (GT: a dust)
+    T["high-octane-gasoline-cell"] = lambda: c.part("high-octane-gasoline", "cell")
+    T["sodium-bisulfate"] = lambda: c.part("sodium-bisulfate", "dust")
 
     # multi-amp wires (upstream: 16x = a block of the metal)
     T["luv-superconductor-wire-16x"] = lambda: bar(c.m.colour("itbtc-alloy"), 2, n=4)

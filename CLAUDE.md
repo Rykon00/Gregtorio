@@ -29,6 +29,9 @@
   components, hatches, machines and turbine; needs 140's magmatter and adds its turbine to 136's mod data); 140 and 141 load after
   139 and **before** 138, 138 research balance (issue #30: explicit unit counts of the technologies from UV to `victory`; loads after every file that
   defines technologies; balance passes use `tools/balance_model.py` on `devcheck.py check --balance-out`),
+  145 GT routes (issue #98: the PECA board deleted, sodium persulfate, black plutonium and cosmic neutronium through the
+  blast furnace and vacuum freezer, the high octane line, GT's deuterium and PPIC wafer; loads after 138 and **before** 142,
+  whose block `UNLOCKS_98` unlocks its recipes, and 143, which casts the black plutonium ingot),
   142 recipe unlocks (issue #91: every Gregtorio recipe gets a technology from its explicit table `UNLOCKS`, the
   producers GT has and Gregtorio lacked, the component assembly line and the ender tanks; a recipe that must stay
   locked goes into the allow-list `FORK_RECIPES_LOCKED` with its reason, devcheck fails otherwise; `KEEP` pins what

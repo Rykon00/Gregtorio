@@ -783,6 +783,8 @@ def migrate(a):
     print(f"old save with a network for the hand-over (issue #83): {setup.group(1) if setup else 'no result'}")
     setup = re.search(r"DEVCHECK-MIGRATE-SETUP-TECHS (.*)", log)
     print(f"old save with researched technologies (issue #91): {setup.group(1) if setup else 'no result'}")
+    setup = re.search(r"DEVCHECK-MIGRATE-SETUP-REMOVED (.*)", log)
+    print(f"old save with removed fluids and items (issues #98, #96): {setup.group(1) if setup else 'no result'}")
     prepare_mods(with_migrate=True, gregtorio_zip=bumped_working_copy(old))
     log = factorio("--benchmark", str(WORK / "migrate-map.zip"), "--benchmark-ticks", str(a.ticks))
     ran = re.search(r"Performed (\d+) updates", log)
@@ -803,6 +805,8 @@ def migrate(a):
     print(f"ME state handed over to me-network (issue #83): {handover.group(1) if handover else 'no result'}")
     techs = re.search(r"DEVCHECK-MIGRATE-TECHS (.*)", log)
     print(f"technology effects of the old save (issue #91): {techs.group(1) if techs else 'no result'}")
+    removed = re.search(r"DEVCHECK-MIGRATE-REMOVED (.*)", log)
+    print(f"removed fluids and items of the old save (issues #98, #96): {removed.group(1) if removed else 'no result'}")
     # issue #83: the fingerprints of what gregtorio-continued gave and what me-network got must be equal
     gave = re.findall(r"FORK-ME-HANDOVER: gave (\S+) (\S+)", log)
     took = re.search(r"ME-NETWORK-HANDOVER: (ok|MISMATCH.*|refused.*)", log)
@@ -819,7 +823,8 @@ def migrate(a):
         and turbine and not turbine.group(1).startswith("failed") \
         and patterns and not patterns.group(1).startswith("failed") and job and not job.group(1).startswith("failed") \
         and items and not items.group(1).startswith("failed") and handover_ok \
-        and techs and not techs.group(1).startswith("failed")
+        and techs and not techs.group(1).startswith("failed") \
+        and removed and not removed.group(1).startswith("failed")
     return 0 if ok else 1
 
 

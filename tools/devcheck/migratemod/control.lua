@@ -201,6 +201,63 @@ local function check_techs()
 		.. " researched technologies enabled, " .. new .. " of them new; " .. #problems .. " not enabled)")
 end
 
+--- Issues #98 and #96: fluids and items that an update removes are mapped to their nearest counterpart by the
+--- JSON migrations of migrations/. The old save holds them in storage tanks and a chest; after the update the tanks
+--- must hold the counterpart (the same amount) and the chest the counterpart items. Versions without them: skipped.
+local RM_FLUIDS = { ["exhausted-water"] = "water" }
+local RM_ITEMS = {}
+local RM_AT = { -30.5, Y + 30.5 }
+
+local function setup_removed()
+	local s, list = game.surfaces[1], {}
+	s.request_to_generate_chunks(RM_AT, 2)
+	s.force_generate_chunk_requests()
+	local x = RM_AT[1]
+	for old, new in pairs(RM_FLUIDS) do
+		if prototypes.fluid[old] then
+			local t = s.create_entity{ name = "storage-tank", position = { x, RM_AT[2] }, force = "player" }
+			list[#list + 1] = { tank = t, old = old, new = new, amount = t.insert_fluid{ name = old, amount = 1000 } }
+			x = x + 4
+		end
+	end
+	local chest = s.create_entity{ name = "iron-chest", position = { RM_AT[1], RM_AT[2] + 4 }, force = "player" }
+	local items = {}
+	for old, new in pairs(RM_ITEMS) do
+		if prototypes.item[old] then items[#items + 1] = { old = old, new = new, count = chest.insert{ name = old, count = 5 } } end
+	end
+	if #list == 0 and #items == 0 then
+		storage.removed = "skipped"
+		log("DEVCHECK-MIGRATE-SETUP-REMOVED skipped (none of the removed fluids or items in this version)")
+		return
+	end
+	storage.removed = { tanks = list, chest = chest, items = items }
+	log("DEVCHECK-MIGRATE-SETUP-REMOVED ok (" .. #list .. " fluids in tanks, " .. #items .. " items in a chest)")
+end
+
+local function check_removed()
+	local p = storage.removed
+	if p == nil or p == "skipped" then
+		log("DEVCHECK-MIGRATE-REMOVED skipped")
+		return
+	end
+	local problems = {}
+	for _, e in pairs(p.tanks) do
+		local got = e.tank.valid and e.tank.get_fluid_count(e.new) or 0
+		if math.abs(got - e.amount) > 1e-3 then
+			problems[#problems + 1] = e.old .. ": the tank holds " .. got .. " " .. e.new .. " of " .. e.amount
+		end
+	end
+	local want = {}
+	for _, e in pairs(p.items) do want[e.new] = (want[e.new] or 0) + e.count end
+	for name, count in pairs(want) do
+		local got = p.chest.valid and p.chest.get_item_count(name) or 0
+		if got ~= count then problems[#problems + 1] = "the chest holds " .. got .. " " .. name .. " of " .. count end
+	end
+	for _, m in pairs(problems) do log("DEVCHECK-MIGRATE-FAIL removed: " .. m) end
+	log("DEVCHECK-MIGRATE-REMOVED " .. (#problems == 0 and "ok" or "failed") .. " (" .. #p.tanks .. " fluids, "
+		.. #p.items .. " items mapped)")
+end
+
 local A = "gregtorio-me-autocraft"
 local PT_ASSEMBLER, PT_FURNACE = { 14.5, Y + 8.5 }, { 19, Y + 13 }
 local PT_PROVIDER_A, PT_PROVIDER_F = { 16.5, Y + 8.5 }, { 17.5, Y + 12.5 }
@@ -804,6 +861,7 @@ script.on_init(function()
 	setup_power()
 	setup_turbine()
 	setup_techs()
+	setup_removed()
 	storage.items = "skipped"
 	storage.patterns = "skipped"
 	storage.state = "skipped"
@@ -892,6 +950,7 @@ script.on_nth_tick(30, function(event)
 	if not storage.techs_checked and event.tick >= TT_CHECK_TICK then
 		storage.techs_checked = true
 		check_techs()
+		check_removed()
 	end
 	if not storage.handover_checked and event.tick >= HO_CHECK_TICK then
 		storage.handover_checked = true

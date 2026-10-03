@@ -53,6 +53,7 @@ FORK_TECH_ICONS = {
 	["godforge-upgrades"] = true,
 	["graphene"] = true,
 	["greenhouse"] = true,
+	["high-octane-gasoline"] = true,
 	["hsse"] = true,
 	["hssg"] = true,
 	["hsss"] = true,

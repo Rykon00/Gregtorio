@@ -59,7 +59,7 @@ FLUID_SUBGROUP["lava"] = { "fluid", "b[new-fluid]-b[vulcanus]-a[lava]" }
 FLUID_SUBGROUP["ammonia"] = { "fluid", "b[new-fluid]-e[aquilo]-b[ammonia]" }
 FLUID_SUBGROUP["fluorine"] = { "fluid", "b[new-fluid]-e[aquilo]-c[fluorine]" }
 
-put("basic", { "air", "nether-air", "ender-air", "distilled-water", "salt-water", "exhausted-water", "waste-liquid",
+put("basic", { "air", "nether-air", "ender-air", "distilled-water", "salt-water", "waste-liquid",
 	"fluorine-rich-waste-liquid", "liquid-concrete" })
 put("gases", { "hydrogen", "deuterium", "tritium", "helium", "helium-3", "nitrogen", "oxygen", "argon", "neon", "krypton",
 	"xenon", "radon", "chlorine", "ozone", "carbon-dioxide", "carbon-monoxide", "nitrogen-dioxide",
@@ -75,7 +75,7 @@ put("fuels", { "naphtha", "refinery-gas", "light-fuel", "heavy-fuel", "diesel", 
 	"high-octane-gasoline", "raw-gasoline", "rocket-fuel", "creosote", "wood-gas", "wood-tar", "wood-vinegar", "charcoal-byproducts",
 	"methane", "ethane", "propane", "ethylene", "propene", "butene", "butadiene" })
 put("organic", { "acetic-acid", "formic-acid", "phthalic-acid", "acetone", "benzene", "toluene", "dimethylbenzene", "phenol",
-	"butyraldehyde", "chlorobenzene", "dichlorobenzene", "nitrochlorobenzene", "dichlorobenzidine", "diaminobenzidine",
+	"chlorobenzene", "dichlorobenzene", "nitrochlorobenzene", "dichlorobenzidine", "diaminobenzidine",
 	"chloroform", "chloroacetic-acid", "ethyl-cyanoacetate", "formaldehyde", "dimethylhydrazine", "diphenyl-isophthalate", "epichlorohydrin", "ethanol", "methanol", "ether",
 	"methyl-acetate", "vinyl-acetate", "vinyl-chloride", "tetrafluoroethylene", "tetranitromethane", "sodium-formate",
 	"p507", "biomass", "bacterial-sludge", "enriched-bacterial-sludge", "growth-medium", "mutagen" })
@@ -105,11 +105,16 @@ put("molten-exotic", { "molten-naquadah", "molten-naquadah-alloy", "molten-naqua
 	"molten-bedrockium", "molten-eternity", "molten-crystaltine", "molten-enriched-naquadah", "molten-ledox",
 	"molten-itbtc-alloy", "molten-palladium-naqindium", "molten-naquamiridium", "molten-triamerotronium",
 	"molten-dracofinium", "molten-chromnorox", "molten-hypocosmium", "molten-yttrium-barium-cuprate" })
+--- issue #98 (145-fork-gt-routes.lua): the high octane line, sodium persulfate, the black plutonium melt
+put("fuels", { "hydrocracked-light-fuel", "octane", "anti-knock-agent" })
+put("gases", { "nitrous-oxide" })
+put("acids", { "sodium-persulfate" })
+put("molten-exotic", { "molten-black-plutonium" })
 --- tiered: the plasma forge catalysts crude < resplendent < stellar, then the godforge fluids
 FLUID_SUBGROUP["excited-dimensionally-transcendent-crude-catalyst"] = { "endgame", 1 }
 FLUID_SUBGROUP["excited-dimensionally-transcendent-resplendent-catalyst"] = { "endgame", 2 }
 FLUID_SUBGROUP["excited-dimensionally-transcendent-stellar-catalyst"] = { "endgame", 3 }
-put("endgame", { "raw-star-matter", "spatially-enlarged-fluid", "tachyon-rich-temporal-fluid", "imaginary-time" })
+put("endgame", { "raw-star-matter", "spatially-enlarged-fluid", "tachyon-rich-temporal-fluid" })
 
 --- patterns for whole lines (and for new fluids of a known kind); rank = a capture that orders the line by tier
 local FLUID_PATTERNS = {

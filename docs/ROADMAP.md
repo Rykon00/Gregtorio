@@ -2114,7 +2114,11 @@ GT has no firestone vein) and `plastic-circuit-board-peca` (its polyethylcyanoac
 Not done: the large heat exchanger, large and high pressure steam turbine, fluid nuclear reactor and lapotronic
 supercapacitor are unlocked but are items without an entity (upstream has none); the dusts of neutronium, black plutonium,
 infinity catalyst and cosmic neutronium from the new missions have no use (GT turns them into ingots in the blast
-furnace; Gregtorio makes these metals in the fusion reactor).
+furnace). Correction (issue #98): GT's fusion reactor makes only neutronium (`FusionReactorRecipes.java:131-137`);
+Gregtorio's fusion recipes for cosmic neutronium, infinity and draconium (`131-fork-uev.lua`) are fork additions (GTNH
+makes them in the plasma forge and, cosmic neutronium, through Avaritia). Neutronium and infinity catalyst dust have a
+use (the neutronium chain of 23/127 and the infinity catalyst); black plutonium and cosmic neutronium dust go through
+GT's blast furnace and vacuum freezer since #98 (`145-fork-gt-routes.lua`).
 
 ### Part 2: solidifier and melting (`prototypes/143-fork-casting.lua`)
 
@@ -2152,5 +2156,14 @@ No GT counterpart or no GT use Gregtorio could take, proposals in the pull reque
 octane, nitrous oxide, toluene and anti-knock; octane comes from the distillation of hydrocracked light fuel, a cracking
 line Gregtorio does not have), butyraldehyde (GT: hydroformylation of propene; its only use is butanol, whose uses are
 GT++ chains Gregtorio does not have), imaginary time (not in GT; only the unloaded upstream drafts of
-51-nuclear-module.lua use it), molten sunnarium (GT's sunnarium is used by the solar panel mods of GTNH, not by GT) and
+51-nuclear-module.lua use it), molten sunnarium (correction, issue #98: GT uses it, in the PPIC wafer, NH
+`ChemicalReactorRecipes.java:251-257`, the PrNPIC mask of gtnhlanth, the DEFC draconic core of kubatech and the research
+assembly line; Gregtorio's upstream draconic core is in the unloaded 23-zpm-age-item.lua) and
 exhausted water (not in GT; a byproduct of upstream's deuterium recipe).
+
+Issue #98 (`prototypes/145-fork-gt-routes.lua`) did the rest: the PECA board deleted (GT has no polyethylcyanoacrylate),
+the printed board at GT's 40 s and its sodium persulfate variant, black plutonium and cosmic neutronium through GT's
+blast furnace (every gas) and vacuum freezer, the high octane gasoline line (hydrocracked light fuel, octane, nitrous
+oxide, anti-knock agent; the large chemical reactors from EV up got a fifth fluid input for it) with its cell, GT's
+deuterium from hydrogen instead of upstream's water recipe, GT's PPIC wafer with molten sunnarium; exhausted water,
+butyraldehyde and imaginary time deleted (old saves: exhausted water becomes water).

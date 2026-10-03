@@ -702,6 +702,21 @@ local RT = {
 	{ "hv-large-chemical-reactor", "raw-gasoline" },
 	{ "hv-large-chemical-reactor", "gasoline" },
 	{ "lv-canning-machine", "gasoline-cell" },
+	-- issue #98 (prototypes/145-fork-gt-routes.lua): the second printed board and sodium persulfate, black plutonium
+	-- and cosmic neutronium in the blast furnace (without gas and with a gas) and the vacuum freezer, the high octane
+	-- line (its reactor recipe has five fluid inputs), GT's deuterium and PPIC wafer
+	{ "lv-chemical-reactor", "plastic-printed-circuit-board-sodium-persulfate" },
+	{ "lv-electrolyzer", "sodium-persulfate" },
+	{ "zpm-electric-blast-furnace", "hot-black-plutonium-ingot" },
+	{ "zpm-electric-blast-furnace", "hot-cosmic-neutronium-ingot-xenon" },
+	{ "zpm-vacuum-freezer", "black-plutonium-ingot" },
+	{ "zpm-vacuum-freezer", "cosmic-neutronium-ingot-from-hot-ingot" },
+	{ "hv-cracker", "hydrocracked-light-fuel" },
+	{ "hv-tall-distillation-tower", "distilling-hydrocracked-light-fuel" },
+	{ "ev-large-chemical-reactor", "high-octane-gasoline" },
+	{ "lv-canning-machine", "high-octane-gasoline-cell" },
+	{ "lv-centrifuge", "deuterium" },
+	{ "zpm-large-chemical-reactor", "ppic-wafer-sunnarium" },
 }
 
 local function rt_product(recipe)

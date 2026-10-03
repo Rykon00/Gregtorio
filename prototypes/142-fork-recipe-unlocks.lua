@@ -599,6 +599,25 @@ local UNLOCKS = {
 		"microminer-infinity-catalyst",
 	},
 }
+--- Issue #98 (prototypes/145-fork-gt-routes.lua): the second printed board with sodium persulfate where the printed
+--- board is (microprocessors), black plutonium and cosmic neutronium in the blast furnace with their dusts (the
+--- missions of bedrockium and quantium), the high octane line on its own technology, GT's PPIC wafer with the
+--- other one
+local UNLOCKS_98 = {
+	["microprocessors"] = { -- MV
+		"plastic-printed-circuit-board-sodium-persulfate", "sodium-persulfate", "sodium-bisulfate",
+		"sodium-bisulfate-from-sodium-hydroxide",
+	},
+	["high-octane-gasoline"] = { -- EV
+		"hydrocracked-light-fuel", "distilling-hydrocracked-light-fuel", "nitrous-oxide", "anti-knock-agent",
+		"high-octane-gasoline", "high-octane-gasoline-cell",
+	},
+	["pico-quantum-power-ics"] = { -- ZPM
+		"ppic-wafer-sunnarium",
+	},
+	["bedrockium"] = F.join({ "black-plutonium-ingot" }, FORK_GT_ROUTES.black_plutonium), -- UV
+	["quantium"] = F.join({ "cosmic-neutronium-ingot-from-hot-ingot" }, FORK_GT_ROUTES.cosmic_neutronium), -- UHV
+}
 --- The auto-unlock of 199 visits the technologies in its own order and pulls the producers of what their recipes
 --- need into the first one that needs them. With the recipes above some of its earlier choices would move to
 --- another technology or (where an unlocked recipe now makes the item as a byproduct) to none: they stay where
@@ -611,7 +630,7 @@ local KEEP = {
 	["end-steel"] = { "endstone-dust" },
 	["rhodium"] = { "sulfur-dioxide", "sulfur-trioxide" },
 }
-for _, list in pairs({ UNLOCKS, KEEP }) do
+for _, list in pairs({ UNLOCKS, KEEP, UNLOCKS_98 }) do
 	for tech, recipes in pairs(list) do
 		for _, r in pairs(recipes) do
 			if data.raw.recipe[r] then fork_add_unlock(tech, r) else log("FORK-UNLOCK: missing recipe: " .. r) end
@@ -637,6 +656,4 @@ FORK_RECIPES_LOCKED = {
 	["centrifuging-crushed-firestone"] = "needs crushed firestone",
 	["raw-firestone-ore-smelter"] = "no source of firestone ore",
 	["raw-firestone-ore-multismelter"] = "no source of firestone ore",
-	["plastic-circuit-board-peca"] = "upstream commented out its polyethylcyanoacrylate sheet (13-mv-age-item.lua): "
-		.. "without it 16 boards from copper foil and acid, twice the polyethylene recipe for no plastic",
 }

@@ -24,6 +24,7 @@ bio-processor
 bio-processor-assembly
 bio-processor-supercomputer
 bioware-printed-circuit-board
+black-plutonium-ingot
 callisto-ice-dust
 chromnorox-dust
 chromnorox-ingot
@@ -103,9 +104,12 @@ godforge
 godforge-controller
 high-density-plutonium
 high-density-plutonium-nugget
+high-octane-gasoline-cell
 highly-ultimate-voltage-coil
 hot-bedrockium-ingot
+hot-black-plutonium-ingot
 hot-chromnorox-ingot
+hot-cosmic-neutronium-ingot
 hot-dracofinium-ingot
 hot-eternity-ingot
 hot-fluxed-electrum-ingot
@@ -284,6 +288,7 @@ rhugnor-plate
 ruridit-plate
 samarium-rod
 singularity-reinforced-stellar-shielding-casing
+sodium-bisulfate
 sodium-cyanide
 spacetime-cable
 spacetime-coil-block
