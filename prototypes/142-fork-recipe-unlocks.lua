@@ -478,8 +478,7 @@ local UNLOCKS = {
 	},
 	["platinum-ore-processing"] = { -- EV
 		"centrifuging-crushed-palladium", "centrifuging-crushed-platinum", "centrifuging-crushed-sheldonite",
-		"crushed-palladium", "crushed-platinum", "palladium-dust", "raw-sheldonite-multismelter", "raw-sheldonite-smelter",
-		"sheldonite-dust", "sheldonite-dust-electrolysis",
+		"crushed-palladium", "crushed-platinum", "sheldonite-dust", "sheldonite-dust-electrolysis",
 	},
 	["polybenzimidazole"] = { -- EV
 		"plastic-circuit-board-pbi", "raw-carbon-fibers", "raw-carbon-fibers-pbi",
@@ -618,6 +617,26 @@ local UNLOCKS_98 = {
 	["bedrockium"] = F.join({ "black-plutonium-ingot" }, FORK_GT_ROUTES.black_plutonium), -- UV
 	["quantium"] = F.join({ "cosmic-neutronium-ingot-from-hot-ingot" }, FORK_GT_ROUTES.cosmic_neutronium), -- UHV
 }
+--- Issue #96 (prototypes/146-fork-platinum-line.lua): GTNH's platinum line on the six technologies of the upstream
+--- line (their names kept): the ore washer and the sludge on platinum ore processing, aqua regia, the sludge centrifuge
+--- and the concentrate on platinum line initialization, the salts and reprecipitated platinum on platinum, the
+--- palladium steps on palladium
+local UNLOCKS_96 = {
+	["platinum-ore-processing"] = { -- EV
+		"crushed-platinum-washing", "crushed-palladium-washing", "platinum-group-sludge-chalcopyrite",
+	},
+	["platinum-line-initialization"] = F.join({ -- EV
+		"platinum-group-sludge-centrifuging", "platinum-concentrate",
+	}, FORK_PLATINUM_LINE.feeds),
+	["platinum"] = { -- EV
+		"platinum-salt", "refined-platinum-salt", "metallic-platinum-powder-from-refined-salt",
+		"reprecipitated-platinum-processing",
+	},
+	["palladium"] = { -- EV
+		"palladium-enriched-ammonia", "palladium-salt", "palladium-salt-from-ammonia", "metallic-palladium-powder-from-salt",
+		"reprecipitated-palladium-processing",
+	},
+}
 --- The auto-unlock of 199 visits the technologies in its own order and pulls the producers of what their recipes
 --- need into the first one that needs them. With the recipes above some of its earlier choices would move to
 --- another technology or (where an unlocked recipe now makes the item as a byproduct) to none: they stay where
@@ -630,7 +649,7 @@ local KEEP = {
 	["end-steel"] = { "endstone-dust" },
 	["rhodium"] = { "sulfur-dioxide", "sulfur-trioxide" },
 }
-for _, list in pairs({ UNLOCKS, KEEP, UNLOCKS_98 }) do
+for _, list in pairs({ UNLOCKS, KEEP, UNLOCKS_98, UNLOCKS_96 }) do
 	for tech, recipes in pairs(list) do
 		for _, r in pairs(recipes) do
 			if data.raw.recipe[r] then fork_add_unlock(tech, r) else log("FORK-UNLOCK: missing recipe: " .. r) end

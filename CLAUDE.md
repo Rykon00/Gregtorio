@@ -32,6 +32,9 @@
   145 GT routes (issue #98: the PECA board deleted, sodium persulfate, black plutonium and cosmic neutronium through the
   blast furnace and vacuum freezer, the high octane line, GT's deuterium and PPIC wafer; loads after 138 and **before** 142,
   whose block `UNLOCKS_98` unlocks its recipes, and 143, which casts the black plutonium ingot),
+  146 platinum line (issue #96: GTNH's bartworks line instead of upstream's GTCEu line of 19, the direct platinum and
+  palladium dust recipes turned into metallic powder; loads after 145 and before 142, block `UNLOCKS_96`; old saves map
+  the removed intermediates with the JSON migrations of `migrations/`),
   142 recipe unlocks (issue #91: every Gregtorio recipe gets a technology from its explicit table `UNLOCKS`, the
   producers GT has and Gregtorio lacked, the component assembly line and the ender tanks; a recipe that must stay
   locked goes into the allow-list `FORK_RECIPES_LOCKED` with its reason, devcheck fails otherwise; `KEEP` pins what

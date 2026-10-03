@@ -68,7 +68,7 @@ put("acids", { "aqua-regia", "nitration-mixture", "hydrogen-peroxide", "iron-iii
 	"antimony-pentachloride-solution", "antimony-pentafluoride", "antimony-trichloride-solution", "titanium-tetrachloride",
 	"silicon-tetrachloride", "sodium-tungstate", "polyaluminium-chloride" })
 put("ore-solutions", { "bauxite-slurry", "heated-bauxite-slurry", "indium-concentrate", "lead-zinc-solution",
-	"palladium-rich-ammonia", "platinum-palladium-leachate", "rhodium-sulfate-solution", "sulfuric-copper-solution",
+	"rhodium-sulfate-solution", "sulfuric-copper-solution",
 	"sulfuric-iron-solution", "sulfuric-nickel-solution", "acidic-iridium-dioxide-solution", "acidic-osmium-solution",
 	"sluice-juice", "ruby-juice" })
 put("fuels", { "naphtha", "refinery-gas", "light-fuel", "heavy-fuel", "diesel", "cetane-boosted-diesel", "gasoline",
@@ -110,6 +110,9 @@ put("fuels", { "hydrocracked-light-fuel", "octane", "anti-knock-agent" })
 put("gases", { "nitrous-oxide" })
 put("acids", { "sodium-persulfate" })
 put("molten-exotic", { "molten-black-plutonium" })
+--- issue #96 (146-fork-platinum-line.lua): the platinum line of GTNH
+put("ore-solutions", { "platinum-concentrate", "palladium-enriched-ammonia" })
+put("acids", { "ammonium-chloride" })
 --- tiered: the plasma forge catalysts crude < resplendent < stellar, then the godforge fluids
 FLUID_SUBGROUP["excited-dimensionally-transcendent-crude-catalyst"] = { "endgame", 1 }
 FLUID_SUBGROUP["excited-dimensionally-transcendent-resplendent-catalyst"] = { "endgame", 2 }

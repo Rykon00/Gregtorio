@@ -717,6 +717,17 @@ local RT = {
 	{ "lv-canning-machine", "high-octane-gasoline-cell" },
 	{ "lv-centrifuge", "deuterium" },
 	{ "zpm-large-chemical-reactor", "ppic-wafer-sunnarium" },
+	-- issue #96 (prototypes/146-fork-platinum-line.lua): GTNH's platinum line, the sludge to platinum and palladium dust
+	{ "lv-chemical-reactor", "platinum-group-sludge-pentlandite" },
+	{ "lv-centrifuge", "platinum-group-sludge-centrifuging" },
+	{ "lv-chemical-reactor", "platinum-concentrate" },
+	{ "hv-large-chemical-reactor", "platinum-salt" },
+	{ "hv-large-sifter", "refined-platinum-salt" },
+	{ "mv-electric-blast-furnace", "metallic-platinum-powder-from-refined-salt" },
+	{ "lv-chemical-reactor", "reprecipitated-platinum-processing" },
+	{ "lv-chemical-reactor", "palladium-salt" },
+	{ "hv-large-chemical-reactor", "reprecipitated-palladium-processing" },
+	{ "lv-ore-washer", "crushed-platinum-washing" },
 }
 
 local function rt_product(recipe)

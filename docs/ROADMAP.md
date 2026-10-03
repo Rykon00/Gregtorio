@@ -2167,3 +2167,16 @@ blast furnace (every gas) and vacuum freezer, the high octane gasoline line (hyd
 oxide, anti-knock agent; the large chemical reactors from EV up got a fifth fluid input for it) with its cell, GT's
 deuterium from hydrogen instead of upstream's water recipe, GT's PPIC wafer with molten sunnarium; exhausted water,
 butyraldehyde and imaginary time deleted (old saves: exhausted water becomes water).
+
+### Platinum line (issue #96, `prototypes/146-fork-platinum-line.lua`)
+
+Upstream's platinum line (19-iv-age-item.lua: leachate, hexachloroplatinate, chloroplatinic acid, rarest metal
+mixture) is GregTech CEu's. GTNH uses bartworks' chain (`bartworks/system/material/gtenhancement/
+PlatinumSludgeRecipes.java`), which replaces it: part 1 (platinum and palladium) takes GT's sludge sources and sludge
+centrifuge, the platinum concentrate (from the metallic powder and straight from the ores with platinum group metals),
+platinum salt and reprecipitated platinum, palladium enriched ammonia, palladium salt and reprecipitated palladium, and
+bartworks' rule that ore processing gives twice the metallic powder instead of platinum or palladium dust. The six
+technologies keep their names. Until part 2 the rhodium, ruthenium, iridium and osmium branches of 19 run on the new
+platinum residue and the residues of the sludge centrifuge. Per metallic platinum powder (salt loop closed): 0.71
+platinum dust, 128 palladium enriched ammonia, 0.71 platinum residue; one palladium unit (a powder or 100 ammonia):
+0.36 palladium dust.
