@@ -158,6 +158,7 @@ local MATERIALS = {
 	["osmium"] = { "zpm", "zpm-energy-hatches", color = { 50, 50, 255 } },
 	["palladium"] = { "zpm", "zpm-assembly-line", color = { 177, 177, 177 } },
 	["bedrockium"] = { "uv", "bedrockium", color = { 138, 138, 138 } },
+	["black-plutonium"] = { "uv", "bedrockium", color = { 142, 142, 142 } },   -- issue #98
 	["naquamiridium"] = { "uv", "uv-energy-hatches", color = { 224, 210, 7 } },
 	["tritanium"] = { "uv", "uhv-materials" },
 	["cosmic-neutronium"] = { "uhv", "uev-materials" },

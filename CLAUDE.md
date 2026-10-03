@@ -19,7 +19,8 @@
   MAX science pack; researching `victory` wins the game via `scripts/fork-victory.lua`), 136 power
   (plasma fuel values, plasma balance of issue #32, large plasma turbines with turbine output hatches, naquadah fuel line, large
   naquadah reactors, dynamo hatches LuV to UXV; runtime in `scripts/fork-power.lua`: fuel check, turbine output hatch
-  with a ratio per fluid and the generator's effectivity from the mod data, used by 145's steam turbines),
+  with a ratio per fluid and the generator's effectivity from the mod data, used by 145's steam turbines, and the passive
+  loss of 145's supercapacitors, mod data `capacitors`),
   137 endgame materials (issues #39 and #36: deletes the drafts removed for good, `FORK-REMOVED` in the log; the
   lapotronic energy orb cluster and high density plutonium drafts; super coolant, the 1080k super coolant cell, fluxed electrum,
   bedrockium and quantium with the stand-ins they replace; must load after 136, whose plutonium fuel and dynamo hatches it changes),
@@ -30,6 +31,9 @@
   components, hatches, machines and turbine; needs 140's magmatter and adds its turbine to 136's mod data); 140 and 141 load after
   139 and **before** 138, 138 research balance (issue #30: explicit unit counts of the technologies from UV to `victory`; loads after every file that
   defines technologies; balance passes use `tools/balance_model.py` on `devcheck.py check --balance-out`),
+  147 GT routes (issue #98: the PECA board deleted, sodium persulfate, black plutonium and cosmic neutronium through the
+  blast furnace and vacuum freezer, the high octane line, GT's deuterium and PPIC wafer; loads after 138 and **before** 142,
+  whose block `UNLOCKS_98` unlocks its recipes, and 143, which casts the black plutonium ingot),
   142 recipe unlocks (issue #91: every Gregtorio recipe gets a technology from its explicit table `UNLOCKS`, the
   producers GT has and Gregtorio lacked, the component assembly line and the ender tanks; a recipe that must stay
   locked goes into the allow-list `FORK_RECIPES_LOCKED` with its reason, devcheck fails otherwise; `KEEP` pins what
@@ -38,7 +42,8 @@
   199's auto-unlock ignores these recipes (`FORK_CASTING.recipes`), else an ingot would count as its own producer;
   must load before 150, whose molds it needs, and before 196, 198 and 199), 145 power multiblocks (issue #97: the large
   steam turbine and the high pressure steam turbine as generators of 136 with superheated steam, the fluid nuclear reactor
-  (burner recipe machine for the fuel rods) and the large heat exchanger with coolant and hot coolant; their technologies are
+  (burner recipe machine for the fuel rods) and the large heat exchanger with coolant and hot coolant, the lapotronic
+  supercapacitor as an accumulator per capacitor tier (IV, LuV and ZPM upgrades); their technologies are
   named in 142's `UNLOCKS`, so it loads after 138 and **before** 142, and before 196 for its fluids; it takes 136's
   generator from the global `FORK_POWER` and adds to its mod data `fork-power`), 144 dead fluids (issue #91: GT's uses and
   producers of fluids nothing made or used; the blast furnace gas variants of `EBF_GASES` are in `FORK_GAS_VARIANTS`,
@@ -56,8 +61,8 @@
   table list and fingerprint function equal to me-network's `scripts/fork-me-handover.lua`). Everything else of the ME
   network (runtime, graphics, locale, its tests, `docs/AE2.md`, `docs/ME-REWORK.md`) is in the me-network repository;
   an ME change goes there, Gregtorio only changes the compat file when a recipe or a tier changes.
-  Tick intervals in use: `on_nth_tick` 30 (molds); `on_tick` (fork-power: turbine energy every tick, fuel check and
-  output hatches every 10th tick); registrations for the same interval (or a second `on_tick`) overwrite each other,
+  Tick intervals in use: `on_nth_tick` 30 (molds); `on_tick` (fork-power: turbine energy every tick, fuel check,
+  output hatches and the supercapacitor loss every 10th tick); registrations for the same interval (or a second `on_tick`) overwrite each other,
   so a new periodic task picks a free interval. The scripts keep their state lazy (`storage.fork_molds`,
   `storage.fork_power`).
 - `data-final-fixes.lua` disables vanilla techs (`disable_tech`: hidden, no effects). The main menu simulations that call

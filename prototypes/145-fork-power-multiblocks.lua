@@ -7,6 +7,8 @@
 ---   * the fluid nuclear reactor (IV): fuel rods heat coolant into hot coolant, no power of its own
 ---   * the large heat exchanger (IV): hot coolant and distilled water into coolant and steam or superheated
 ---     steam
+---   * the lapotronic supercapacitor (IV, LuV and ZPM capacitor blocks): an accumulator per capacitor tier with
+---     GT's passive loss (scripts/fork-power.lua)
 --- Units and the GT numbers: docs/ROADMAP.md, "Steam, nuclear and storage multiblocks (issue #97)".
 --- Steam is on the scale of the LV steam turbine (one unit = 100 L of GT steam, 100 kJ); GT's 2 L steam
 --- = 1 EU is the effectivity 0.5 x rotor efficiency, superheated steam (GT: 1 L = 1 EU) has twice the
@@ -207,6 +209,122 @@ end
 
 
 --------------------------------------------------------------------------------
+--- 5) LAPOTRONIC SUPERCAPACITOR
+--- GT (kekztech): a multiblock of capacitor blocks, its capacity their sum (IV 6e8, LuV 6e9, ZPM 6e10 EU per
+--- block), charged by energy hatches and discharged by dynamo hatches (2 A each), losing 1 % of the capacity per
+--- day. Here one 5x5 accumulator per capacitor tier with the upstream recipe's 27 blocks and one energy and dynamo
+--- hatch; LuV and ZPM are upgrades of the tier below (the replaced blocks and hatches come back). A battery is
+--- measured in how long it carries its hatches, and the hatches carry Gregtorio's tier amps (IV: 10.24 MW against
+--- GT's 8192 EU/t), so a block holds GT's EU x (Gregtorio amp / GT amp of its tier): IV / 16, LuV / 32, ZPM / 64.
+--- I/O: two amps of the hatch tier. The loss is taken by scripts/fork-power.lua every 10 ticks (mod data
+--- `capacitors`: the loss in W). GT's UV block needs an energy cluster, which Gregtorio does not have; UHV and up
+--- hold GT's Long.MAX.
+---   def = { tier, capacitor item, capacity per block (J), amp of the tier (W) }
+--------------------------------------------------------------------------------
+
+local LSC = "lapotronic-supercapacitor"
+local LSC_BLOCKS = 27
+local LSC_TIERS = {
+	{ "iv", "lapotronic-capacitor-iv", 6e8 / 16 * 1e3, 10.24e6 },
+	{ "luv", "lapotronic-capacitor-luv", 6e9 / 32 * 1e3, 20.48e6 },
+	{ "zpm", "lapotronic-capacitor-zpm", 6e10 / 64 * 1e3, 40.96e6 },
+}
+POWER.capacitors = POWER.capacitors or {}
+
+--- GT's capacitor blocks of LuV and ZPM (kekztech Assembler.java): the orb cluster with 4 osmiridium frames and
+--- 24 screws (Gregtorio has osmiridium plates and rods), the energy module with 4 naquadah alloy frames and 24 screws
+for _, c in pairs({
+	{ "luv", "iv-assembling-machine-recipes", 40 * IV_SPEED, {
+		{ type = "item", name = "lapotronic-energy-orb-cluster", amount = 1 },
+		{ type = "item", name = "osmiridium-plate", amount = 4 },
+		{ type = "item", name = "osmiridium-rod", amount = 4 },
+	} },
+	{ "zpm", "luv-assembling-machine-recipes", 80 * LUV_SPEED, {
+		{ type = "item", name = "energy-module", amount = 1 },
+		{ type = "item", name = "naquadah-alloy-frame", amount = 4 },
+		{ type = "item", name = "naquadah-alloy-screw", amount = 24 },
+	} },
+}) do
+	create_item{
+		name = "lapotronic-capacitor-" .. c[1],
+		icon = "__gregtorio-continued__/graphics/icons/fork/lapotronic-capacitor-" .. c[1] .. ".png",
+		category = c[2],
+		energy_required = c[3],
+		subgroup = data.raw.item["lapotronic-capacitor-iv"].subgroup,
+		ingredients = c[4],
+	}
+end
+
+for i, t in ipairs(LSC_TIERS) do
+	local tier = t[1]
+	local name = i == 1 and LSC or tier .. "-" .. LSC
+	local capacity = LSC_BLOCKS * t[3]
+	if i == 1 then
+		local item = data.raw.item[LSC]
+		item.place_result = LSC
+		item.subgroup = "subgroup-iv-age-multiblocks"
+	else
+		local below = LSC_TIERS[i - 1]
+		local prev = i == 2 and LSC or below[1] .. "-" .. LSC
+		create_item{
+			name = name,
+			icon = "__gregtorio-continued__/graphics/icons/fork/" .. name .. ".png",
+			category = tier .. "-assembling-machine-recipes",
+			energy_required = 60 * (tier == "luv" and LUV_SPEED or ZPM_SPEED),
+			subgroup = "subgroup-iv-age-multiblocks",
+			place_result = name,
+			stack_size = 10,
+			ingredients = {
+				{ type = "item", name = prev, amount = 1 },
+				{ type = "item", name = t[2], amount = LSC_BLOCKS },
+				{ type = "item", name = tier .. "-energy-hatch", amount = 1 },
+				{ type = "item", name = tier .. "-dynamo-hatch", amount = 1 },
+			},
+			results = {
+				{ type = "item", name = name, amount = 1 },
+				{ type = "item", name = below[2], amount = LSC_BLOCKS },
+				{ type = "item", name = below[1] .. "-energy-hatch", amount = 1 },
+				{ type = "item", name = below[1] .. "-dynamo-hatch", amount = 1 },
+			},
+			main_product = name,
+		}
+	end
+	local item = data.raw.item[name]
+	local flow = string.format("%.6gMW", 2 * t[4] / 1e6)
+	data:extend({ {
+		type = "accumulator",
+		name = name,
+		icon = item.icon,
+		icon_size = item.icon_size or 32,
+		flags = { "placeable-neutral", "player-creation" },
+		minable = { mining_time = 1, result = name },
+		max_health = 1000,
+		corpse = "big-remnants",
+		dying_explosion = "big-explosion",
+		collision_box = { { -2.3, -2.3 }, { 2.3, 2.3 } },
+		selection_box = { { -2.5, -2.5 }, { 2.5, 2.5 } },
+		fast_replaceable_group = LSC,
+		energy_source = {
+			type = "electric",
+			buffer_capacity = string.format("%.6gGJ", capacity / 1e9),
+			usage_priority = "tertiary",
+			input_flow_limit = flow,
+			output_flow_limit = flow,
+		},
+		chargable_graphics = {
+			picture = { layers = { { filename = SPRITE_PATH .. name .. ".png", width = 160, height = 160 } } },
+		},
+		circuit_wire_max_distance = 9,
+		default_output_signal = { type = "virtual", name = "signal-A" },
+		localised_description = { "entity-description." .. name },
+	} })
+	--- GT: 1 % of the capacity per day (capacity / (100 x 86400 x 20) EU/t)
+	POWER.capacitors[name] = capacity / 100 / 86400
+end
+
+
+
+--------------------------------------------------------------------------------
 --- TECHNOLOGIES (the recipes are in the unlock table of 142)
 --------------------------------------------------------------------------------
 
@@ -223,4 +341,19 @@ F.tech{
 F.tech{
 	name = "fluid-nuclear-reactor", prerequisites = { "nuclear-fuel-rods", "high-pressure-steam-turbine", "iv-components" },
 	packs = 6, count = 800, recipes = {},
+}
+--- The IV supercapacitor stays on lapotronic-energy-orbs (ZPM science, where the orbs are); the upgrades follow the
+--- hatches of their tier (the LuV dynamo hatch comes with the plasma turbine, the ZPM one with the ZPM plasma
+--- turbine); the ZPM one also unlocks the energy module (a ZPM assembly line recipe that only the MK5 fusion coil used,
+--- so far on fusion-coil-ii)
+F.tech{
+	name = "luv-lapotronic-supercapacitor",
+	prerequisites = { "lapotronic-energy-orbs", "plasma-turbine", "luv-energy-hatches", "naquadah-alloy", "zpm-materials" },
+	packs = 8, count = 2000, recipes = {},
+}
+F.tech{
+	name = "zpm-lapotronic-supercapacitor",
+	prerequisites = { "luv-lapotronic-supercapacitor", "zpm-plasma-turbine", "zpm-energy-hatches",
+		"crystal-processor-mainframes" },
+	packs = 8, count = 2000, recipes = {},
 }

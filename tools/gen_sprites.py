@@ -199,7 +199,19 @@ TEXTURE_ICONS = {
     "titanium-reinforced-borosilicate-glass-block": "bartworks:TitaniumReinforcedBoronSilicateGlassBlock",
     "tungstensteel-turbine-casing": "gregtech:iconsets/MACHINE_CASING_TURBINE_TUNGSTENSTEEL",
     "naquadah-reactor-casing": "gregtech:iconsets/NAQUADAH_REACTOR_CASING",
+    # issue #97: kekztech's LuV and ZPM lapotronic capacitor blocks
+    "lapotronic-capacitor-luv": "kekztech:LapotronicEnergyUnit2_side",
+    "lapotronic-capacitor-zpm": "kekztech:LapotronicEnergyUnit3_side",
 }
+# issue #97: the lapotronic supercapacitors (one 5x5 accumulator per capacitor tier): kekztech's LSC casing as the
+# border, the capacitor blocks of the tier inside, the controller in the top middle, GT's energy and dynamo hatch of
+# the tier in the bottom corners; the LuV and ZPM icons are the upstream icon with the tier's dynamo hatch as a badge
+SUPERCAPACITORS = {
+    "lapotronic-supercapacitor": ("IV", "kekztech:LapotronicEnergyUnit1_side"),
+    "luv-lapotronic-supercapacitor": ("LuV", "kekztech:LapotronicEnergyUnit2_side"),
+    "zpm-lapotronic-supercapacitor": ("ZPM", "kekztech:LapotronicEnergyUnit3_side"),
+}
+SUPERCAPACITOR_CASING = "kekztech:LSCBase_side"
 # sprites derived from existing fork graphics (name -> (source name, tint)): the turbine output
 # hatch is the ME fluid interface in orange
 DERIVED = {
@@ -400,6 +412,25 @@ def steam_turbine(gt, name, face, tier):
         save(img, OUT_ENTITY / f"{name}{suffix}")
 
 
+def supercapacitor(gt, name, tier, unit):
+    """issue #97: 5x5, casing border, capacitor blocks inside, controller top middle, hatches in the bottom corners"""
+    cas, cap = casing_tile(gt, SUPERCAPACITOR_CASING), casing_tile(gt, unit)
+    img = Image.new("RGBA", (5 * TILE, 5 * TILE))
+    for y in range(5):
+        for x in range(5):
+            img.paste(cap if 0 < x < 4 and 0 < y < 4 else cas, (x * TILE, y * TILE))
+    ctrl = scaled(load(ICONS / "lapotronic-supercapacitor-controller.png"), TILE)
+    img.alpha_composite(ctrl, (2 * TILE, 0))
+    img.paste(scaled(energy_hatch(gt, tier), TILE), (0, 4 * TILE))
+    img.paste(scaled(dynamo_hatch(gt, tier), TILE), (4 * TILE, 4 * TILE))
+    save(img, OUT_ENTITY / f"{name}.png")
+    if tier != "IV":
+        icon = load(ICONS / "lapotronic-supercapacitor.png").copy()
+        hatch = dynamo_hatch(gt, tier)
+        icon.alpha_composite(hatch, (TILE - hatch.width, TILE - hatch.height))
+        save(icon, OUT_ICON / f"{name}.png")
+
+
 def dynamo_hatch(gt, tier):
     """GT's dynamo hatch of a tier: the tier's hull with the tier's dynamo overlay (16 px)"""
     img = tint(load(gt_path(gt, f"gregtech:iconsets/MACHINE_{tier}_SIDE")), TIER_TINT[tier])
@@ -545,6 +576,8 @@ def main():
     plasma_turbine(a.gt, PLASMA_TURBINE)
     for name, (face, tier) in STEAM_TURBINES.items():
         steam_turbine(a.gt, name, face, tier)
+    for name, (tier, unit) in SUPERCAPACITORS.items():
+        supercapacitor(a.gt, name, tier, unit)
     for base, tiers in TIER_COPIES.items():
         tier_copies(a.gt, base, tiers)
     for base, (sprite, icon) in UPGRADE_MULTIBLOCKS.items():
