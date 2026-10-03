@@ -240,9 +240,10 @@ def load_errors(log):
 
 
 def not_saved(log):
-    """--create runs on_init and then saves; a failed save (e.g. a function in `storage`) keeps the
-    previous map file, so the next run would test an old map"""
-    m = re.search(r"Writing .* failed.*|Error while running event .*on_save.*\n.*", log)
+    """--create runs on_init and then saves; a failed save (e.g. a function in `storage`) or an error in on_init
+    (e.g. a test helper calling a remote function the mod version does not have) keeps the previous map file, so
+    the next run would test an old map and report its results"""
+    m = re.search(r"Writing .* failed.*|Error while running event .*\n.*", log)
     return "the map was not saved: " + m.group(0).strip() if m else None
 
 
@@ -830,6 +831,9 @@ def migrate(a):
         return 1
     if not_saved(log):
         print(not_saved(log))
+        if not old_me:
+            print("an old version may need the me-network of its time: --old-me-network <ref> "
+                  "(v0.1.0 for --from-ref v0.5.0)")
         return 1
     setup = re.search(r"DEVCHECK-MIGRATE-SETUP (.*)", log)
     print(f"old save with loaded fluid drives: {setup.group(1) if setup else 'no result'}")
