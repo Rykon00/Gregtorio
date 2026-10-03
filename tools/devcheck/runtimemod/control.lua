@@ -728,6 +728,19 @@ local RT = {
 	{ "lv-chemical-reactor", "palladium-salt" },
 	{ "hv-large-chemical-reactor", "reprecipitated-palladium-processing" },
 	{ "lv-ore-washer", "crushed-platinum-washing" },
+	-- the residue branches (rhodium, ruthenium, osmium, iridium)
+	{ "lv-chemical-reactor", "potassium-disulfate" },
+	{ "mv-electric-blast-furnace", "platinum-group-residue-processing" },
+	{ "hv-large-chemical-reactor", "rhodium-sulfate-processing" },
+	{ "hv-large-sifter", "rhodium-filter-cake" },
+	{ "hv-large-chemical-reactor", "reprecipitated-rhodium-processing" },
+	{ "mv-electric-blast-furnace", "iridium-group-sludge-processing" },
+	{ "hv-tall-distillation-tower", "ruthenium-tetroxide-solution-distillation" },
+	{ "mv-fluid-solidifier", "ruthenium-tetroxide" },
+	{ "iv-tall-distillation-tower", "osmium-solution" },
+	{ "hv-large-chemical-reactor", "iridium-chloride" },
+	{ "ev-large-chemical-reactor", "iridium-dust" },
+	{ "lv-centrifuge", "sludge-dust-residue-centrifuging" },
 }
 
 local function rt_product(recipe)

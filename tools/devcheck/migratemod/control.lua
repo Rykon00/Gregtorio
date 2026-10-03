@@ -208,16 +208,21 @@ end
 --- the update a machine whose recipe is gone has none (`nil`), the others keep theirs (renamed: the new name).
 local RM_FLUIDS = { ["exhausted-water"] = "water",
 	["platinum-palladium-leachate"] = "platinum-concentrate", ["chloroplatinic-acid"] = "platinum-concentrate",
-	["palladium-rich-ammonia"] = "palladium-enriched-ammonia" }
+	["palladium-rich-ammonia"] = "palladium-enriched-ammonia",
+	["acidic-iridium-dioxide-solution"] = "acidic-iridium-solution" }
 local RM_ITEMS = { ["ammonia-hexachloroplatinate"] = "platinum-salt", ["crude-platinum-residue"] = "metallic-platinum-powder",
 	["raw-platinum-powder"] = "reprecipitated-platinum", ["crude-palladium-residue"] = "palladium-salt",
-	["raw-palladium-powder"] = "reprecipitated-palladium", ["platinum-group-residue"] = "platinum-residue" }
+	["raw-palladium-powder"] = "reprecipitated-palladium", ["platinum-group-residue"] = "platinum-residue",
+	["potassium-pyrosulfate"] = "potassium-disulfate", ["iridium-dioxide-residue"] = "iridium-dioxide",
+	["ammonia-hexachloroiridiate"] = "iridium-chloride" }
 local RM_MACHINES = {
 	{ "lv-chemical-reactor", "platinum-palladium-leachate-processing", nil },
 	{ "lv-electrolyzer", "chloroplatinic-acid", nil },
 	{ "lv-ore-washer", "palladium-dust", "crushed-palladium-washing" },
 	{ "lv-mixer", "aqua-regia", "aqua-regia" },
 	{ "mv-electric-blast-furnace", "platinum-group-residue-processing", "platinum-group-residue-processing" },
+	{ "lv-chemical-reactor", "ammonia-hexachloroiridiate", nil },
+	{ "lv-chemical-bath", "rhodium-sulfate-processing", nil },    -- the recipe stays, in the chemical reactor
 }
 local RM_AT = { -30.5, Y + 30.5 }
 

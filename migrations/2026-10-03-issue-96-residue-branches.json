@@ -1,0 +1,10 @@
+{
+  "item": [
+    ["potassium-pyrosulfate", "potassium-disulfate"],
+    ["iridium-dioxide-residue", "iridium-dioxide"],
+    ["ammonia-hexachloroiridiate", "iridium-chloride"]
+  ],
+  "fluid": [
+    ["acidic-iridium-dioxide-solution", "acidic-iridium-solution"]
+  ]
+}

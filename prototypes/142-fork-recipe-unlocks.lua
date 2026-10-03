@@ -620,7 +620,8 @@ local UNLOCKS_98 = {
 --- Issue #96 (prototypes/146-fork-platinum-line.lua): GTNH's platinum line on the six technologies of the upstream
 --- line (their names kept): the ore washer and the sludge on platinum ore processing, aqua regia, the sludge centrifuge
 --- and the concentrate on platinum line initialization, the salts and reprecipitated platinum on platinum, the
---- palladium steps on palladium
+--- palladium steps on palladium, and each residue branch on the technology of its metal (the recipes it keeps by name
+--- stay on it from 98-technology.lua)
 local UNLOCKS_96 = {
 	["platinum-ore-processing"] = { -- EV
 		"crushed-platinum-washing", "crushed-palladium-washing", "platinum-group-sludge-chalcopyrite",
@@ -635,6 +636,22 @@ local UNLOCKS_96 = {
 	["palladium"] = { -- EV
 		"palladium-enriched-ammonia", "palladium-salt", "palladium-salt-from-ammonia", "metallic-palladium-powder-from-salt",
 		"reprecipitated-palladium-processing",
+	},
+	["rhodium"] = { -- EV
+		"potassium-disulfate", "molten-potassium-disulfate", "sulfuric-acid-from-sulfur-trioxide", "solidify-potassium",
+		"rhodium-salt-solution",
+		"rhodium-nitrate", "sodium-nitrate-from-sodium-hydroxide", "rhodium-filter-cake", "rhodium-filter-cake-solution",
+		"reprecipitated-rhodium", "reprecipitated-rhodium-processing",
+	},
+	["ruthenium"] = { -- EV
+		"ruthenium-tetroxide-solution", "ruthenium-tetroxide-solution-distillation",
+	},
+	["iridium"] = { -- EV
+		"iridium-dioxide", "acidic-iridium-solution", "iridium-chloride", "sludge-dust-residue-centrifuging",
+		"metallic-sludge-dust-residue-centrifuging",
+	},
+	["osmium"] = { -- EV
+		"osmium-solution",
 	},
 }
 --- The auto-unlock of 199 visits the technologies in its own order and pulls the producers of what their recipes
