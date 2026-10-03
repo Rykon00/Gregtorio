@@ -65,7 +65,28 @@ for n, e in pairs(data.raw.resource) do
 	D("M", n, m.result or "", names(m.results), e.category or "basic-solid")
 end
 for n, e in pairs(data.raw["offshore-pump"] or {}) do D("O", n, e.fluid or "") end
+--- B item burnt_result fuel_category | U entity fuel_categories (burners: a fuel's burnt result comes out of them)
+for t, _ in pairs(defines.prototypes.item) do
+	for n, it in pairs(data.raw[t] or {}) do
+		if it.burnt_result and it.fuel_category then D("B", n, it.burnt_result, it.fuel_category) end
+	end
+end
+for t, _ in pairs(defines.prototypes.entity) do
+	for n, e in pairs(data.raw[t] or {}) do
+		for _, src in pairs({ e.energy_source, e.burner }) do
+			if type(src) == "table" and src.type == "burner" and (src.burnt_inventory_size or 0) > 0 then
+				D("U", n, table.concat(src.fuel_categories or { src.fuel_category or "chemical" }, ","))
+			end
+		end
+	end
+end
 section("DUMP", dump)
+
+--- Issue #91: the Gregtorio recipes that stay locked on purpose (FORK_RECIPES_LOCKED in
+--- prototypes/142-fork-recipe-unlocks.lua; absent in older versions)
+local lk = {}
+for name, reason in pairs(FORK_RECIPES_LOCKED or {}) do lk[#lk + 1] = name .. "\t" .. reason end
+section("LOCKEDOK", lk)
 
 --- Every __gregtorio-continued__/ file referenced anywhere, with its owner prototype
 local paths, seen = {}, {}
@@ -134,6 +155,19 @@ for kind, list in pairs(FORK_CRAFTING_MENU_HIDDEN or {}) do
 end
 section("CRAFTMENU", cm)
 
+--- Fluids tab: name, subgroup (Factorio's default "other" when there is none), its group and order, hidden,
+--- parameter, order, icon, icon_size (prototypes/196-fork-subgroups.lua; `devcheck.py check --fluids-out`)
+local fl = {}
+for n, f in pairs(data.raw.fluid) do
+	local sg = f.subgroup or "other"
+	local sgp = data.raw["item-subgroup"][sg] or {}
+	local icon = f.icon or (f.icons and f.icons[1] and f.icons[1].icon) or ""
+	local size = f.icon_size or (f.icons and f.icons[1] and f.icons[1].icon_size) or 64
+	fl[#fl + 1] = table.concat({ n, sg, sgp.group or "other", sgp.order or "", tostring(f.hidden == true),
+		tostring(f.parameter == true), f.order or "", icon, size }, "\t")
+end
+section("FLUIDS", fl)
+
 --- Balance data (`devcheck.py check --balance-out`): recipes with amounts and times, machine speeds,
 --- technology unit counts. One JSON object per line.
 local bal = {}
@@ -175,3 +209,10 @@ for n, tech in pairs(data.raw.technology) do
 	})
 end
 section("BALANCE", bal)
+
+--- Startup settings of the mod (name, value), so a check knows what it is looking at (`devcheck.py check --set`)
+local st = {}
+for name, v in pairs(settings.startup) do
+	if name:find("^gregtorio%-continued%-") then st[#st + 1] = name .. "\t" .. tostring(v.value) end
+end
+section("SETTINGS", st)

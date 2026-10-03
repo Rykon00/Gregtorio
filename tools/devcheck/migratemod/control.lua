@@ -149,6 +149,157 @@ local function check_turbine()
 	log("DEVCHECK-MIGRATE-TURBINE " .. (#problems == 0 and "ok" or "failed") .. string.format(" (%.4f plasma -> %.4f helium)", burnt, back))
 end
 
+--- Issue #91: an update that adds recipes to technologies (or moves them) reaches existing saves through the
+--- technology effect reset of Gregtorio's on_configuration_changed. The old save researches these technologies (and
+--- their prerequisites); after the update every recipe that a researched technology unlocks must be enabled.
+local TT_TECHS = { "steam-compressor", "extruder", "end-steel", "alloy-blast-smelter", "industrial-mixer",
+	"tier-three-microminers", "naquadah-processing", "uv-multiblocks", "osmium" }
+local TT_CHECK_TICK = 60
+
+local function setup_techs()
+	local force, n = game.forces.player, 0
+	local function research(name)
+		local t = force.technologies[name]
+		if not t or t.researched then return end
+		for p, _ in pairs(t.prerequisites) do research(p) end
+		t.researched = true
+		n = n + 1
+	end
+	for _, name in pairs(TT_TECHS) do research(name) end
+	storage.tt_enabled = {}
+	for name, r in pairs(force.recipes) do if r.enabled then storage.tt_enabled[name] = true end end
+	log("DEVCHECK-MIGRATE-SETUP-TECHS ok (" .. n .. " technologies researched)")
+end
+
+local function check_techs()
+	if not storage.tt_enabled then
+		log("DEVCHECK-MIGRATE-TECHS skipped")
+		return
+	end
+	local force, problems, recipes, techs, new = game.forces.player, {}, 0, 0, 0
+	for name, t in pairs(force.technologies) do
+		if t.researched then
+			techs = techs + 1
+			for _, e in pairs(t.prototype.effects) do
+				if e.type == "unlock-recipe" then
+					local r = force.recipes[e.recipe]
+					recipes = recipes + 1
+					if not r.enabled then
+						problems[#problems + 1] = e.recipe .. " of the researched technology " .. name .. " is not enabled"
+					elseif not storage.tt_enabled[e.recipe] then
+						new = new + 1
+					end
+				end
+			end
+		end
+	end
+	for i, m in pairs(problems) do
+		if i > 20 then break end
+		log("DEVCHECK-MIGRATE-FAIL techs: " .. m)
+	end
+	log("DEVCHECK-MIGRATE-TECHS " .. (#problems == 0 and "ok" or "failed") .. " (" .. recipes .. " recipes of " .. techs
+		.. " researched technologies enabled, " .. new .. " of them new; " .. #problems .. " not enabled)")
+end
+
+--- Issues #98 and #96: fluids and items that an update removes are mapped to their nearest counterpart by the
+--- JSON migrations of migrations/. The old save holds them in storage tanks and a chest; after the update the tanks
+--- must hold the counterpart (the same amount) and the chest the counterpart items. Versions without them: skipped.
+--- Issue #96: the old save also runs the GTCEu platinum line: machines with its recipes and their item inputs; after
+--- the update a machine whose recipe is gone has none (`nil`), the others keep theirs (renamed: the new name).
+local RM_FLUIDS = { ["exhausted-water"] = "water",
+	["platinum-palladium-leachate"] = "platinum-concentrate", ["chloroplatinic-acid"] = "platinum-concentrate",
+	["palladium-rich-ammonia"] = "palladium-enriched-ammonia",
+	["acidic-iridium-dioxide-solution"] = "acidic-iridium-solution" }
+local RM_ITEMS = { ["ammonia-hexachloroplatinate"] = "platinum-salt", ["crude-platinum-residue"] = "metallic-platinum-powder",
+	["raw-platinum-powder"] = "reprecipitated-platinum", ["crude-palladium-residue"] = "palladium-salt",
+	["raw-palladium-powder"] = "reprecipitated-palladium", ["platinum-group-residue"] = "platinum-residue",
+	["potassium-pyrosulfate"] = "potassium-disulfate", ["iridium-dioxide-residue"] = "iridium-dioxide",
+	["ammonia-hexachloroiridiate"] = "iridium-chloride" }
+local RM_MACHINES = {
+	{ "lv-chemical-reactor", "platinum-palladium-leachate-processing", nil },
+	{ "lv-electrolyzer", "chloroplatinic-acid", nil },
+	{ "lv-ore-washer", "palladium-dust", "crushed-palladium-washing" },
+	{ "lv-mixer", "aqua-regia", "aqua-regia" },
+	{ "mv-electric-blast-furnace", "platinum-group-residue-processing", "platinum-group-residue-processing" },
+	{ "lv-chemical-reactor", "ammonia-hexachloroiridiate", nil },
+	{ "lv-chemical-bath", "rhodium-sulfate-processing", nil },    -- the recipe stays, in the chemical reactor
+}
+local RM_AT = { -30.5, Y + 30.5 }
+
+local function setup_removed()
+	local s, list = game.surfaces[1], {}
+	s.request_to_generate_chunks(RM_AT, 2)
+	s.force_generate_chunk_requests()
+	local x = RM_AT[1]
+	for old, new in pairs(RM_FLUIDS) do
+		if prototypes.fluid[old] then
+			local t = s.create_entity{ name = "storage-tank", position = { x, RM_AT[2] }, force = "player" }
+			list[#list + 1] = { tank = t, old = old, new = new, amount = t.insert_fluid{ name = old, amount = 1000 } }
+			x = x + 4
+		end
+	end
+	local chest = s.create_entity{ name = "iron-chest", position = { RM_AT[1], RM_AT[2] + 4 }, force = "player" }
+	local items = {}
+	for old, new in pairs(RM_ITEMS) do
+		if prototypes.item[old] then items[#items + 1] = { old = old, new = new, count = chest.insert{ name = old, count = 5 } } end
+	end
+	local machines = {}
+	for i, m in pairs(RM_MACHINES) do
+		local r = prototypes.recipe[m[2]]
+		if prototypes.entity[m[1]] and r then
+			local e = s.create_entity{ name = m[1], position = { RM_AT[1] + 8 * (i - 1), RM_AT[2] + 12 }, force = "player",
+				raise_built = true }
+			game.forces.player.recipes[m[2]].enabled = true
+			e.set_recipe(m[2])
+			for _, ing in pairs(r.ingredients) do
+				if ing.type == "item" then e.insert{ name = ing.name, count = ing.amount * 2 } end
+			end
+			machines[#machines + 1] = { entity = e, old = m[2], new = m[3] }
+		end
+	end
+	if #list == 0 and #items == 0 and #machines == 0 then
+		storage.removed = "skipped"
+		log("DEVCHECK-MIGRATE-SETUP-REMOVED skipped (none of the removed fluids or items in this version)")
+		return
+	end
+	storage.removed = { tanks = list, chest = chest, items = items, machines = machines }
+	log("DEVCHECK-MIGRATE-SETUP-REMOVED ok (" .. #list .. " fluids in tanks, " .. #items .. " items in a chest, "
+		.. #machines .. " machines with recipes of the old line)")
+end
+
+local function check_removed()
+	local p = storage.removed
+	if p == nil or p == "skipped" then
+		log("DEVCHECK-MIGRATE-REMOVED skipped")
+		return
+	end
+	local problems = {}
+	for _, e in pairs(p.tanks) do
+		local got = e.tank.valid and e.tank.get_fluid_count(e.new) or 0
+		if math.abs(got - e.amount) > 1e-3 then
+			problems[#problems + 1] = e.old .. ": the tank holds " .. got .. " " .. e.new .. " of " .. e.amount
+		end
+	end
+	local want = {}
+	for _, e in pairs(p.items) do want[e.new] = (want[e.new] or 0) + e.count end
+	for name, count in pairs(want) do
+		local got = p.chest.valid and p.chest.get_item_count(name) or 0
+		if got ~= count then problems[#problems + 1] = "the chest holds " .. got .. " " .. name .. " of " .. count end
+	end
+	for _, m in pairs(p.machines or {}) do
+		local r = m.entity.valid and m.entity.get_recipe()
+		local got = r and r.name or nil
+		if not m.entity.valid then
+			problems[#problems + 1] = "the machine with " .. m.old .. " is gone"
+		elseif got ~= m.new then
+			problems[#problems + 1] = "the machine with " .. m.old .. " has " .. tostring(got) .. ", not " .. tostring(m.new)
+		end
+	end
+	for _, m in pairs(problems) do log("DEVCHECK-MIGRATE-FAIL removed: " .. m) end
+	log("DEVCHECK-MIGRATE-REMOVED " .. (#problems == 0 and "ok" or "failed") .. " (" .. #p.tanks .. " fluids, "
+		.. #p.items .. " items mapped, " .. #(p.machines or {}) .. " machines checked)")
+end
+
 local A = "gregtorio-me-autocraft"
 local PT_ASSEMBLER, PT_FURNACE = { 14.5, Y + 8.5 }, { 19, Y + 13 }
 local PT_PROVIDER_A, PT_PROVIDER_F = { 16.5, Y + 8.5 }, { 17.5, Y + 12.5 }
@@ -555,7 +706,9 @@ end
 --- set to export. Before the save the totals of the network (items and fluids, also in the chests and tanks of the
 --- buses) plus what sits in the interface and the bus chests, and every block's settings are recorded; after the
 --- update (me-network has the state now) they must be the same, and the drive must still be in the controller's
---- network (through the underground pair).
+--- network (through the underground pair). Since me-network 0.2.0 (its issue #3) the fluid interface and the fluid
+--- storage bus become an ME Interface and an ME Storage Bus in their place: the check finds them there and compares
+--- their settings in the unified form (a fluid row on every side; fluid filters as "fluid/<name>").
 local HO_Y = Y + 30
 local SB, FSB, IO = "gregtorio-me-storagebus", "gregtorio-me-fluid-storagebus", "gregtorio-me-io"
 local HO_CHECK_TICK = 90
@@ -579,8 +732,44 @@ local function handover_totals(st)
 			add(c.quality == "normal" and c.name or (c.name .. "@" .. c.quality), c.count)
 		end
 	end
-	for k, v in pairs(st.fiface.get_fluid_contents()) do add("fluid/" .. k, v) end
+	if st.fiface.valid then
+		for k, v in pairs(st.fiface.get_fluid_contents()) do add("fluid/" .. k, v) end
+	else                                                  -- me-network 0.2.0: the unified interface's sides
+		local new = game.surfaces[1].find_entity("me-network-interface", st.fiface_pos)
+		for _, t in pairs(new and remote.call(IO, "interface_tanks", new) or {}) do
+			for k, v in pairs(t.get_fluid_contents()) do add("fluid/" .. k, v) end
+		end
+	end
 	return out
+end
+
+--- me-network 0.2.0: the replacements of the old fluid interface and fluid storage bus (at their positions)
+local function unified_of(st)
+	local s = game.surfaces[1]
+	return s.find_entity("me-network-interface", st.fiface_pos), s.find_entity("me-storage-bus", st.fsbus_pos)
+end
+
+--- the settings of the fluid interface and the fluid storage bus in the unified form, before (old remote calls)
+--- and after (the unified blocks) the update
+local function unified_settings(st)
+	if st.fiface.valid then
+		local f = remote.call(F, "get_interface", st.fiface)
+		local fs = remote.call(FSB, "get_settings", st.fsbus) or {}
+		local rows, sides = {}, {}
+		if f and f.mode == "export" and f.fluid then
+			rows = { [1] = { type = "fluid", name = f.fluid, amount = f.level } }
+			sides = { 1, 1, 1, 1 }
+		end
+		local filters = {}
+		for i, name in ipairs(fs.filters or {}) do filters[i] = "fluid/" .. name end
+		return { rows = rows, sides = sides }, { mode = fs.mode, priority = fs.priority, filters = filters }
+	end
+	local fi, fsb = unified_of(st)
+	local config = fi and remote.call(IO, "get_interface_config", fi) or {}
+	local rows = {}
+	for i, c in pairs(config) do rows[i] = { type = c.type, name = c.name, amount = c.amount } end
+	return { rows = rows, sides = fi and remote.call(IO, "get_interface_sides", fi) or {} },
+		fsb and remote.call(SB, "get_settings", fsb) or {}
 end
 
 --- the settings of the blocks (without what a block reports about its last step: status, target)
@@ -590,10 +779,9 @@ local function handover_settings(st)
 		import = remote.call(IO, "get_bus", st.ibus),
 		export = remote.call(IO, "get_bus", st.ebus),
 		storage_bus = remote.call(SB, "get_settings", st.sbus),
-		fluid_storage_bus = remote.call(FSB, "get_settings", st.fsbus),
-		fluid_interface = remote.call(F, "get_interface", st.fiface),
 		drive = remote.call(NET, "drive_settings", st.drive),
 	}
+	out.fluid_interface, out.fluid_storage_bus = unified_settings(st)
 	for _, t in pairs(out) do
 		if type(t) == "table" then t.status, t.target = nil, nil end
 	end
@@ -621,6 +809,7 @@ local function setup_handover()
 	local south = defines.direction.south
 	st.iface = place("me-network-interface", 47.5, HO_Y + 0.5)
 	st.fiface = place("me-fluid-interface", 47.5, HO_Y + 1.5)
+	st.fiface_pos = { 47.5, HO_Y + 1.5 }
 	st.ibus = place("me-import-bus", 48.5, HO_Y + 0.5, south)
 	st.ichest = place("iron-chest", 48.5, HO_Y + 1.5)
 	st.ebus = place("me-export-bus", 49.5, HO_Y + 0.5, south)
@@ -629,6 +818,7 @@ local function setup_handover()
 	st.schest = place("iron-chest", 50.5, HO_Y + 1.5)
 	st.schest.insert{ name = "stone", count = 77 }
 	st.fsbus = place("me-fluid-storage-bus", 52.5, HO_Y + 0.5, south)
+	st.fsbus_pos = { 52.5, HO_Y + 0.5 }
 	st.tank = place("storage-tank", 53.5, HO_Y + 2.5)
 	st.tank.insert_fluid{ name = "water", amount = 3000 }
 	--- the drive is reached only through the underground pair
@@ -676,8 +866,15 @@ local function check_handover()
 	local function expect(ok, what) if not ok then problems[#problems + 1] = what end end
 	expect(st.connected, "test setup: the drive was not connected through the underground pair in the old save")
 	local valid = true
-	for _, k in pairs({ "ctrl", "iface", "fiface", "ibus", "ebus", "sbus", "fsbus", "drive", "u1", "u2" }) do
+	for _, k in pairs({ "ctrl", "iface", "ibus", "ebus", "sbus", "drive", "u1", "u2" }) do
 		if not (st[k] and st[k].valid) then valid = false; expect(false, k .. " is gone") end
+	end
+	--- me-network 0.2.0: the fluid interface and the fluid storage bus are the unified blocks now
+	local fi, fsb = unified_of(st)
+	if not (fi and fsb and not st.fiface.valid and not st.fsbus.valid) then
+		valid = false
+		expect(false, "the fluid interface and the fluid storage bus were not replaced by the unified blocks: "
+			.. tostring(fi) .. ", " .. tostring(fsb))
 	end
 	if valid then
 		expect(remote.call(NET, "same_network", st.ctrl, st.drive), "the drive is not in the controller's network (underground pair)")
@@ -705,6 +902,8 @@ end
 script.on_init(function()
 	setup_power()
 	setup_turbine()
+	setup_techs()
+	setup_removed()
 	storage.items = "skipped"
 	storage.patterns = "skipped"
 	storage.state = "skipped"
@@ -789,6 +988,11 @@ script.on_nth_tick(30, function(event)
 	if storage.job and not storage.job_recipe then
 		storage.job_recipe = true
 		game.forces.player.recipes[PT_RECIPE].enabled = true
+	end
+	if not storage.techs_checked and event.tick >= TT_CHECK_TICK then
+		storage.techs_checked = true
+		check_techs()
+		check_removed()
 	end
 	if not storage.handover_checked and event.tick >= HO_CHECK_TICK then
 		storage.handover_checked = true

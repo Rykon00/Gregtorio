@@ -2068,3 +2068,175 @@ replaced: none removed (the DTPF universium recipes stay next to the godforge's)
   MAX parts.
 - The eye of harmony, quark gluon plasma, the MAX recipes of the plasma forge and the QFT (see above).
 - The godforge sprite is a plain field of GT's godforge casings with the controller; GT's star and rings are not drawn.
+
+## Recipe audit (issue #91)
+
+The audit of issue #91 (`devcheck check --balance-out` on main at 13a9245): recipes that exist but no technology unlocks,
+casts the fluid solidifier does not have, melts the fluid extractor does not have, fluids nothing makes or uses. The
+maintainer's decisions (issue comment): unlock all of them; every castable form of every material with a molten fluid in
+the solidifier, with the one generic mold; a fluid extractor recipe for every ingot with a molten fluid and molten fluids
+for the materials without one; the dead fluids get their GregTech producers and uses. Three pull requests, each based on
+the one before.
+
+### Part 1: unlocks (`prototypes/142-fork-recipe-unlocks.lua`)
+
+Re-run of the audit: 331 Gregtorio recipes (created or changed by Gregtorio, not hidden) that no researchable technology
+unlocked (the issue's 320, the 11 furnace recipes `raw-*-smelter` of the ore lines, `quantum-processor`, a vanilla recipe
+Gregtorio rewrites). Each got a technology in the explicit table `UNLOCKS`, found like this: a research-order simulation of
+the dump (technologies by tier, then by their number of prerequisites) gives the first technology after which a recipe
+can be crafted; it was moved to the technology of its material or machine (the blocks, 16x wires, long rods and plates of
+a metal to the technology of its ingot) or of its line where that is where a player looks, at or above the tier of the
+simulation's choice. Exceptions, on EV technologies like upstream's other alloy blast smelter alloys although the smelter
+needs IV parts: the GT++ alloys without a technology of their own (with `alloy-blast-smelter`) and the PBI recipes (with
+`polybenzimidazole`). Lines whose product main makes later by another route went to that route's technology, so nothing
+comes earlier than on main: bastnasite (neodymium) to `neodymium`, molybdenite (molybdenum) to `tungstate-processing`,
+the PTFE carbon fibres to `nanoprocessors`, chromite to `titanium`. Unlocking new producers moved some of the auto-unlock's
+earlier choices (its rule pulls the producer of an ingredient nothing unlocked makes); `KEEP` pins them where they were, and
+every recipe main unlocks is on the same technologies as before.
+
+Producers GT has and Gregtorio lacked, so the unlocked recipes can be made: signalum (EnderIO's alloy smelter recipe of
+GTNH), the naquadah doped boule (GT's EBF recipe on Gregtorio's boule scale), charcoal byproducts (GT's pyrolyse oven),
+super glue (GT++'s ten-step glue line condensed into seven recipes without the catalysts, new technology `super-glue`, IV),
+the ender tanks as machines (the air collector with the ender tank recipes; upstream's entities were commented out), the
+component assembly line (GoodGenerator's CoAL: GT's controller recipe, the ZPM assembly line's sprites, crafting speed 1 so
+a recipe takes GT's base time) for the 32 `-coal` recipes, and microminer missions of the tier three microminer for the
+ores of GT's space veins (neutronium, black plutonium, infinity catalyst, cosmic neutronium; chromite on the tier two
+microminer). The depleted fuel rods are the burnt result of the fuel rods in the EV nuclear reactor; devcheck's model
+counts burnt results now. The tier four microminer (the lunar mission, its signalum engine, moon dust) got the technology
+`tier-four-microminers` (IV).
+
+Stay locked (`FORK_RECIPES_LOCKED`, devcheck fails on any other locked Gregtorio recipe): calcium, cerium-rich mixture and
+phosphorus (placeholders without ingredients: items from nothing), the ultimate extended crafting component, catalyst and
+table (the component needs four of itself; Extended Crafting is not in GTNH), the five firestone recipes (no firestone ore:
+GT has no firestone vein) and `plastic-circuit-board-peca` (its polyethylcyanoacrylate sheet is commented out upstream:
+16 boards from copper foil and acid).
+
+Not done: the large heat exchanger, large and high pressure steam turbine, fluid nuclear reactor and lapotronic
+supercapacitor are unlocked but are items without an entity (upstream has none); the dusts of neutronium, black plutonium,
+infinity catalyst and cosmic neutronium from the new missions have no use (GT turns them into ingots in the blast
+furnace). Correction (issue #98): GT's fusion reactor makes only neutronium (`FusionReactorRecipes.java:131-137`);
+Gregtorio's fusion recipes for cosmic neutronium, infinity and draconium (`131-fork-uev.lua`) are fork additions (GTNH
+makes them in the plasma forge and, cosmic neutronium, through Avaritia). Neutronium and infinity catalyst dust have a
+use (the neutronium chain of 23/127 and the infinity catalyst); black plutonium and cosmic neutronium dust go through
+GT's blast furnace and vacuum freezer since #98 (`147-fork-gt-routes.lua`).
+
+### Part 2: solidifier and melting (`prototypes/143-fork-casting.lua`)
+
+GT's casts per form (GT litres per part, seconds; here a tenth of the litres, the time at the material's tier): ingot
+144 1.6, plate 144 1.6, block 1296 (mass x 9 ticks; here 14.4 s), nugget 16 0.8, gear (GT's small gear) 144 0.8, large
+gear (GT's gear) 576 6.4, rotor 612 (mass ticks; here 4.9 s like the upstream endgame casts), rod 72 7.5, long rod 144
+15, bolt 18 2.5, ring 36 5, screw 18 2.5, round 16 2.5; the extractor melts an ingot into 144 in 24 ticks. Per material
+the table `MATERIALS` has the solidifier tier (its ingot cast's tier, else the higher of its ingot recipe's machine tier
+and its technology's tier) and the technology (the later of the material's and the tier's solidifier and extractor); the
+forms are the items that exist and have no cast from the melt yet. 322 casts, 113 melt recipes (10 of them for materials
+whose existing melt recipe is the IV extractor recipe of the fusion inputs, unlocked at LuV or ZPM), 45 new melts (not
+for the mixed metal, wrapped plutonium and iridium alloy ingots, which are items; chromium has molten chrome). The casts
+and melts are no producers for the auto-unlock of 199: ingot -> melt -> ingot would let an ingot stand in for itself and
+the auto-unlock stopped pulling in 21 real recipes (iridium ingot among them, which broke LuV). Same amounts as the
+machine routes, so the casts are no shortcut in material; they beat the lossy crafting table recipes, as in GT, and some
+parts come a tier earlier than main's machine route (listed in the pull request).
+
+### Part 3: dead fluids (`prototypes/144-fork-dead-fluids.lua`)
+
+After parts 1 and 2 (the melts of black steel, blue steel, tantalum and tungsten with their casts; the nether and ender
+air; charcoal byproducts; super glue; diluted hydrochloric acid's concentration) and leaving out the fluids that
+generators burn (the plasmas and the naquadah and excited fuels have fuel values in 136 and are burnt by the plasma
+turbines and large naquadah reactors; the audit counted only recipe uses), GregTech's uses and producers:
+
+- neon, krypton, xenon: GT's blast furnace gases (`BlastFurnaceGasStat.java`): every blast furnace recipe with argon,
+  helium or radon gets a variant with each, at GT's ratios to the gas it replaces (time x 0.6/0.5/0.4, gas x
+  0.55/0.4/0.25 of the nitrogen base; argon 0.8 and 0.85, helium 0.9 and 1, radon 0.7 and 0.7); 23 recipes, 69 variants,
+  unlocked with the base recipe and at the earliest with end-steel. Nitrogen recipes are left out (some use it as a
+  reactant).
+- nitrogen dioxide: GT's 2 NO2 + O + H2O -> 2 HNO3.
+- gasoline: GT's raw gasoline and gasoline (two HV recipes, raw gasoline is a new fluid) and a gasoline cell for the
+  combustion generator at GT's fuel value (576 EU per litre; Gregtorio's cells are 500 J per GT EU, 800 per cell).
+
+No GT counterpart or no GT use Gregtorio could take, proposals in the pull request: high octane gasoline (GT: gasoline,
+octane, nitrous oxide, toluene and anti-knock; octane comes from the distillation of hydrocracked light fuel, a cracking
+line Gregtorio does not have), butyraldehyde (GT: hydroformylation of propene; its only use is butanol, whose uses are
+GT++ chains Gregtorio does not have), imaginary time (not in GT; only the unloaded upstream drafts of
+51-nuclear-module.lua use it), molten sunnarium (correction, issue #98: GT uses it, in the PPIC wafer, NH
+`ChemicalReactorRecipes.java:251-257`, the PrNPIC mask of gtnhlanth, the DEFC draconic core of kubatech and the research
+assembly line; Gregtorio's upstream draconic core is in the unloaded 23-zpm-age-item.lua) and
+exhausted water (not in GT; a byproduct of upstream's deuterium recipe).
+
+Issue #98 (`prototypes/147-fork-gt-routes.lua`) did the rest: the PECA board deleted (GT has no polyethylcyanoacrylate),
+the printed board at GT's 40 s and its sodium persulfate variant, black plutonium and cosmic neutronium through GT's
+blast furnace (every gas) and vacuum freezer, the high octane gasoline line (hydrocracked light fuel, octane, nitrous
+oxide, anti-knock agent; the large chemical reactors from EV up got a fifth fluid input for it) with its cell, GT's
+deuterium from hydrogen instead of upstream's water recipe, GT's PPIC wafer with molten sunnarium; exhausted water,
+butyraldehyde and imaginary time deleted (old saves: exhausted water becomes water).
+
+### Platinum line (issue #96, `prototypes/146-fork-platinum-line.lua`)
+
+Upstream's platinum line (19-iv-age-item.lua: leachate, hexachloroplatinate, chloroplatinic acid, rarest metal
+mixture) is GregTech CEu's. GTNH uses bartworks' chain (`bartworks/system/material/gtenhancement/
+PlatinumSludgeRecipes.java`), which replaces it: part 1 (platinum and palladium) takes GT's sludge sources and sludge
+centrifuge, the platinum concentrate (from the metallic powder and straight from the ores with platinum group metals),
+platinum salt and reprecipitated platinum, palladium enriched ammonia, palladium salt and reprecipitated palladium, and
+bartworks' rule that ore processing gives twice the metallic powder instead of platinum or palladium dust. The six
+technologies keep their names. Part 2 replaces the rhodium, ruthenium, osmium and iridium branches with bartworks' (potassium
+disulfate, rhodium sulfate, filter cake and reprecipitated rhodium; sodium ruthenate and ruthenium tetroxide; osmium
+solution; iridium dioxide and iridium chloride; GT's fluid heater step of the ruthenium line is part of its
+distillation, Gregtorio has no fluid heater). Per platinum residue: about 0.21 rhodium, 0.75 ruthenium, 0.31 iridium,
+0.03 osmium (the GTCEu platinum group residue gave 0.67, 0.19, 0.29, 0.12). Per metallic platinum powder (salt loop closed): 0.71
+platinum dust, 128 palladium enriched ammonia, 0.71 platinum residue; one palladium unit (a powder or 100 ammonia):
+0.36 palladium dust.
+
+## Steam, nuclear and storage multiblocks (issue #97)
+
+The five multiblocks whose items the recipe audit unlocked get an entity. GT source: GT5-Unofficial
+(`multi/turbines/MTELargeTurbineSteam.java`, `MTELargeTurbineHPSteam.java`, `api/util/TurbineStatCalculator.java`,
+`multi/MTEHeatExchanger.java`, `api/registries/LHECoolantRegistry.java`, kekztech `MTELapotronicSuperCapacitor.java`);
+the premise check is in the comments of issue #97.
+
+### Units
+
+* **Energy per unit** stays GT's at 1 EU = 1 kJ, as in 136.
+* **Steam** has its own scale, set long ago by the LV steam turbine (0.2244 steam per tick, 100 kJ, effectivity 0.475 =
+  GT's 32 EU/t): one unit of steam is 100 L of GT steam. Superheated steam takes the same scale. GT's 2 L steam = 1 EU
+  becomes the effectivity 0.5 x rotor efficiency of a steam generator; superheated steam (GT: 1 L = 1 EU) gets twice the
+  fuel value of steam (200 kJ) and the same effectivity rule.
+* **Other fluids** use Gregtorio's tenth (one unit = 10 L), like the molten metals and distilled water.
+* **Steam rates** are GT's flows at that scale and GT's EU/t at 20 kJ/s per EU/t, not scaled by tier: the steam machines
+  burn the same steam as the LV turbine and the boilers, so they keep GT's ratio to them (the large steam turbine is 17.6
+  LV turbines in GT and here). They stay below four amps of their dynamo hatch's tier (the cap of 136).
+* **Stored energy** keeps GT's time at the hatch power instead: a battery is measured in how long it carries its
+  hatches, and the hatches carry Gregtorio's tier amps (IV: 10.24 MW instead of 8192 EU/t). So a capacitor block holds
+  GT's EU x (Gregtorio amp / GT amp) of its tier: IV / 16, LuV / 32, ZPM / 64.
+
+### The machines
+
+| Multiblock | Factorio shape | In | Out | GT | Gregtorio | Technology |
+|---|---|---|---|---|---|---|
+| Large Steam Turbine (`large-steam-turbine`) | 3x3 `generator` of 136 (fuel check: steam only), EV dynamo hatch in its recipe (upstream) | steam N/S | power; distilled water into a turbine output hatch next to it | large magnalium rotor: 125 %, 900 L/t steam -> 562.5 EU/t; 1 L distilled water per 160 L steam | 180 steam/s -> 11.25 MW (effectivity 0.625); 0.0625 distilled water per steam (11.25/s) | new `large-steam-turbine` (EV, after `ev-energy-hatches`): the upstream recipe is EV/HV (HV hull, processing units, EV dynamo hatch); its magnalium parts were on `industrial-mixer` only because the auto-unlock put them there |
+| High Pressure Steam Turbine (`high-pressure-steam-turbine`) | 3x3 `generator` (superheated steam only), IV dynamo hatch | superheated steam N/S | power; steam 1:1 into a turbine output hatch | large titanium rotor (titanium casings; the upstream recipe has no rotor): 135 %, 1050 L/t -> 1417.5 EU/t; 1 L steam per L | 210 superheated steam/s -> 28.35 MW (effectivity 0.675); 210 steam/s back (1.17 large steam turbines) | new `high-pressure-steam-turbine` (IV, after `large-steam-turbine` and `iv-energy-hatches`), as GT's IV controller |
+| Large Heat Exchanger (`large-heat-exchanger`) | 3x3 recipe machine without power (GT: no power either), two recipes | hot coolant, distilled water | coolant, steam or superheated steam | 1 L hot coolant -> 400 L steam or 200 L superheated steam; up to 1600 L/s; 1 L water per 160 L steam | 16 hot coolant + 40 water -> 16 coolant + 640 steam, or + 20 water -> 320 superheated steam, per 0.1 s (up to 160 hot coolant/s = GT's 1600 L/s; 2 MJ per hot coolant) | moves from `nuclear-power` (EV) to the new `fluid-nuclear-reactor` (IV): without the lava recipe (see below) it only works with the reactor |
+| Fluid Nuclear Reactor (`fluid-nuclear-reactor`) | 3x3 recipe machine with a burner energy source for fuel rods (fuel slot, depleted rods in the burnt result slot) | fuel rods, coolant | depleted rods, hot coolant | IC2's reactor in fluid mode; the heat -> hot coolant ratio is not in any source on this machine | the heat of the basic nuclear reactor (10.5 MW, which the fluid reactor is built from) as hot coolant: 21 coolant -> 21 hot coolant in 4 s (5.25/s, 2 MJ each); a uranium rod (6000 MJ) makes 3000 hot coolant | new `fluid-nuclear-reactor` (IV, after `nuclear-fuel-rods`, `high-pressure-steam-turbine` and the IV iridium of `iv-components`) instead of `fusion-reactor-mk1` (LuV): GT's reactor is IC2's (EV/IV), its only LuV-locked part was the iridium neutron reflector (an IV assembler recipe), which the new technology unlocks too |
+| Lapotronic Supercapacitor (`lapotronic-supercapacitor`, upgrades `luv-`, `zpm-lapotronic-supercapacitor`) | 5x5 `accumulator` per capacitor tier, the higher ones as upgrades of the one below (like 136's turbines); passive loss by script | power through its energy hatch | power through its dynamo hatch | per block IV 6e8, LuV 6e9, ZPM 6e10 EU; I/O by the hatches (2 A each); 1 % of the capacity per day lost | 27 blocks per entity: IV 37.5 GJ per block (1012.5 GJ), LuV 187.5 GJ (5062.5 GJ), ZPM 937.5 GJ (25 312.5 GJ); I/O 2 A of the hatch tier (IV 20.48 MW, LuV 40.96 MW, ZPM 81.92 MW); 1 % per day lost (IV: 117 kW) | IV on `lapotronic-energy-orbs` (ZPM, where the orbs are); LuV and ZPM on new technologies after the dynamo hatches of their tier, the ZPM one also unlocks the energy module (so far only on `fusion-coil-ii`) |
+
+Fluids: `superheated-steam` (fuel value 200 kJ), `coolant`, `hot-coolant` (rows in 196); coolant from GT's mixer recipe
+(1 lapis dust + 100 distilled water -> 100 coolant, 12.8 s). The chain of one fluid nuclear reactor: 5.25 hot coolant/s
+-> 105 superheated steam/s -> half a high pressure turbine (14.2 MW) -> 105 steam/s -> a large steam turbine at 58 %
+(6.6 MW): 20.7 MW, twice the basic nuclear reactor on the same rods (GT's turbines are over 100 % efficient and the
+steam is used twice, as in GT).
+
+The output hatch: the turbine output hatch of 136 gets an EV recipe (steel turbine casing, titanium plates, pipes) and is
+unlocked with the large steam turbine as well; the script returns the burnt fluid at a per-fluid ratio (1 for the
+plasmas and superheated steam, 0.0625 distilled water per steam) and divides the energy by the generator's
+effectivity.
+
+### Deviations from GT
+
+* No rotors: the efficiency of the rotor the recipe names (magnalium) or the casing suggests (titanium) is fixed; no
+  loose fit, no overflow penalty, no ramp-up.
+* **No lava recipe** in the heat exchanger and no pahoehoe lava: Gregtorio's lava is endless (the MV drilling rig, 50
+  lava/s for 640 kW); at GT's ratio that would be 800 steam/s (about 40 MW) from one MV machine.
+* **No superheated threshold:** a recipe cannot require a flow (too little input only makes the machine craft less
+  often), so the player picks steam or superheated steam by recipe; the superheated recipe comes with the high pressure
+  turbine. No dry-heating explosion, no efficiency ramp.
+* The fluid reactor has no reactor grid: its heat is the basic reactor's, whatever rod burns in it.
+* The LuV capacitor block takes osmiridium plates and rods instead of GT's frames and screws (Gregtorio has none).
+* The supercapacitor has 27 blocks of one tier and one pair of hatches; no mixed tiers, no glass rule, no wireless, no
+  UV and higher blocks (Gregtorio has no energy cluster; UHV and up are GT's Long.MAX blocks).

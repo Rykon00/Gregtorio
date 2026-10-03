@@ -29,6 +29,8 @@ zips into a folder and pass --mods-from DIR.
     never be obtained, or no reachable machine with enough fluid inputs/outputs
   * an enabled technology cannot be researched and is not in UNRESEARCHABLE_OK (the vanilla
     armor/equipment techs), or one of the issue #29 QoL techs is neither researchable nor hidden
+  * a fluid that is not hidden (the parameter fluids excepted) is not in the Fluids tab: its subgroup is missing or
+    not in the item group "fluids"; fluids in the fallback row gregtorio-fluids-unsorted are a warning
 It also reports how many technologies are researchable and where progression stops.
 """
 import argparse, json, os, re, shutil, subprocess, sys, tarfile, urllib.parse, urllib.request
@@ -151,9 +153,13 @@ def remove_path(p):
         shutil.rmtree(p)
 
 
-def prepare_mods(with_runtime=False, gregtorio_zip=None, with_migrate=False, menusim=None, gregtorio=True):
+def prepare_mods(with_runtime=False, gregtorio_zip=None, with_migrate=False, menusim=None, gregtorio=True,
+                 settings=None):
     """mods/ = dependency zips + the mod (working copy or a zip) + devcheck helper mods.
-    menusim: name of a main menu simulation for the menusim helper mod; gregtorio=False leaves the mod out."""
+    menusim: name of a main menu simulation for the menusim helper mod; gregtorio=False leaves the mod out.
+    settings: {startup setting name: bool} forced for this run (`check --set`); without it every setting has its
+    default, because mod-settings.dat is removed (a value stored by an earlier run would win over the default)."""
+    remove_path(MODS / "mod-settings.dat")
     for p in MODS.iterdir():
         if p.name.startswith(MOD_NAMES + ("zz-gregtorio-devcheck",)) or p.name == "mod-list.json" or (
                 p.name == ME_NETWORK and not p.is_file()):
@@ -193,6 +199,19 @@ def prepare_mods(with_runtime=False, gregtorio_zip=None, with_migrate=False, men
         shutil.copytree(HERE / "menusimmod", MODS / "zz-gregtorio-devcheck-menusim")
         (MODS / "zz-gregtorio-devcheck-menusim" / "config.lua").write_text(f"return {{ name = {json.dumps(menusim)} }}\n")
         enabled.append("zz-gregtorio-devcheck-menusim")
+    if settings:
+        # a generated mod: forces the settings in the settings stage, after the mod defined them
+        d = MODS / "zz-gregtorio-devcheck-settings"
+        d.mkdir()
+        (d / "info.json").write_text(json.dumps({
+            "name": "zz-gregtorio-devcheck-settings", "version": "1.0.0", "title": "Gregtorio devcheck settings",
+            "author": "rykon_", "factorio_version": "2.0", "dependencies": ["? " + n for n in MOD_NAMES]}))
+        (d / "settings-final-fixes.lua").write_text("".join(
+            f"do local s = data.raw['bool-setting'][{json.dumps(n)}] "
+            f"assert(s, 'devcheck --set: no bool setting ' .. {json.dumps(n)}) "
+            f"s.hidden = true s.forced_value = {'true' if v else 'false'} s.default_value = s.forced_value end\n"
+            for n, v in settings.items()))
+        enabled.append("zz-gregtorio-devcheck-settings")
     (MODS / "mod-list.json").write_text(json.dumps({"mods": [{"name": n, "enabled": True} for n in enabled]
                                                     + [{"name": n, "enabled": False} for n in disabled]}))
 
@@ -221,9 +240,10 @@ def load_errors(log):
 
 
 def not_saved(log):
-    """--create runs on_init and then saves; a failed save (e.g. a function in `storage`) keeps the
-    previous map file, so the next run would test an old map"""
-    m = re.search(r"Writing .* failed.*|Error while running event .*on_save.*\n.*", log)
+    """--create runs on_init and then saves; a failed save (e.g. a function in `storage`) or an error in on_init
+    (e.g. a test helper calling a remote function the mod version does not have) keeps the previous map file, so
+    the next run would test an old map and report its results"""
+    m = re.search(r"Writing .* failed.*|Error while running event .*\n.*", log)
     return "the map was not saved: " + m.group(0).strip() if m else None
 
 
@@ -236,6 +256,7 @@ class Model:
         split = lambda s: [x.split(":", 1)[1] for x in s.split(",") if x]
         kinds = lambda s: [x.split(":", 1)[0] for x in s.split(",") if x]
         self.R, self.C, self.CF, self.I, self.T = {}, {}, {}, {}, {}
+        self.burnt, self.burners = [], {}   # (fuel item, burnt result, fuel category); burner entity -> categories
         self.base = {"water", "steam"}
         for p in rows:
             k = p[0]
@@ -257,6 +278,10 @@ class Model:
                 self.base.update(x.split(":", 1)[1] for x in p[3].split(",") if x)
             elif k == "O" and p[2]:
                 self.base.add(p[2])
+            elif k == "B":
+                self.burnt.append((p[1], p[2], p[3]))
+            elif k == "U":
+                self.burners[p[1]] = p[2].split(",")
         self.solve()
 
     def solve(self):
@@ -284,6 +309,13 @@ class Model:
                         if x not in self.avail:
                             self.avail.add(x)
                             changed = True
+            # a fuel burnt in a burner that can be built leaves its burnt result (the depleted fuel rods)
+            fuel_cats = {c for e, cs in self.burners.items() if any(i in self.avail for i in item_of.get(e, []))
+                         for c in cs}
+            for fuel, burnt, cat in self.burnt:
+                if fuel in self.avail and cat in fuel_cats and burnt not in self.avail:
+                    self.avail.add(burnt)
+                    changed = True
             for t, v in T.items():
                 if t in self.researched or not v["en"] or not all(p in self.researched for p in v["pre"]):
                     continue
@@ -384,6 +416,28 @@ def check_crafting_menu(m, sec):
             f"allow-list, {len(problems)} hidden without an allow-list entry",
             "recipes shown per crafting menu tab: " + ", ".join(f"{g} {n}" for g, n in sorted(tabs.items(), key=lambda x: -x[1]))]
     return info, problems + stale
+
+
+FLUID_FALLBACK = "gregtorio-fluids-unsorted"
+
+
+def check_fluids_tab(sec):
+    """Every fluid that is not hidden is in the Fluids tab: its subgroup belongs to the group "fluids" (Factorio puts
+    a fluid without one into "Unsorted"); the base game's parameter fluids are excepted. The check covers every fluid
+    of the devcheck load (vanilla, Gregtorio and its dependencies), so a vanilla fluid that Gregtorio redefines
+    counts too. Returns (info lines, fluids in the fallback row as a warning, problems)."""
+    rows, fallback, problems = {}, [], []
+    for name, sg, group, _sgo, hidden, param, *_ in sec.get("FLUIDS", []):
+        if hidden == "true" or param == "true":
+            continue
+        if group != "fluids":
+            problems.append(f"{name} (subgroup {sg}, group {group})")
+            continue
+        rows[sg] = rows.get(sg, 0) + 1
+        if sg == FLUID_FALLBACK:
+            fallback.append(name)
+    info = [f"{sum(rows.values())} fluids in {len(rows)} rows: " + ", ".join(f"{sg} {n}" for sg, n in rows.items())]
+    return info, sorted(fallback), sorted(problems)
 
 
 def check_files(sec):
@@ -505,8 +559,68 @@ def check_required(m):
     return out
 
 
+def check_locked(m, sec):
+    """Issue #91: every recipe of Gregtorio (created or changed by it: prototypes.get_history, logged by
+    checkmod/control.lua) that is not hidden must be enabled or unlocked by a researchable technology, unless it is in
+    the allow-list FORK_RECIPES_LOCKED (prototypes/142-fork-recipe-unlocks.lua); an allow-list entry must exist and
+    stay locked. Returns (problems, number of Gregtorio recipes checked, allow-list size)."""
+    if "OWNERS" not in sec:
+        return ["no DEVCHECK-OWNERS section in the log (checkmod/control.lua did not run)"], 0, 0
+    allowed = {r[0] for r in sec.get("LOCKEDOK", [])}
+    mod = MOD_NAMES[1]
+    greg = {r[0] for r in sec["OWNERS"]
+            if len(r) > 1 and (r[1] == mod or mod in (r[2] if len(r) > 2 else "").split(","))}
+    out, n = [], 0
+    for r in sorted(greg):
+        v = m.R.get(r)
+        if not v or v["hidden"] or r.endswith("-recycling") or r.startswith("void-") or \
+                v["cat"] in ("recycling", "parameters", "fluid-voiding-recipes"):
+            continue
+        n += 1
+        if r not in m.unlocked and r not in allowed:
+            out.append(f"{r}: no researchable technology unlocks it (unlock it or add it to FORK_RECIPES_LOCKED)")
+    for r in sorted(allowed):
+        if r not in m.R:
+            out.append(f"{r}: in FORK_RECIPES_LOCKED but does not exist (remove the entry)")
+        elif r in m.unlocked:
+            out.append(f"{r}: in FORK_RECIPES_LOCKED but unlocked (remove the entry)")
+    return out, n, len(allowed)
+
+
+ONE_PACK = "gregtorio-continued-one-pack-research"
+
+
+def check_one_pack(sec):
+    """Startup setting gregtorio-continued-one-pack-research (prototypes/fork-one-pack-research.lua): when it is on,
+    every technology with science packs costs one unit of one pack of each kind; when it is off, at least one
+    technology costs more (the setting must not be on by default). Returns (info line, problems)."""
+    value = next((r[1] for r in sec.get("SETTINGS", []) if r[0] == ONE_PACK), "absent")
+    techs = [json.loads("\t".join(r)) for r in sec.get("BALANCE", [])]
+    techs = [t for t in techs if t.get("kind") == "tech" and (t.get("count") or t.get("count_formula"))]
+
+    def cheap(t):
+        return (t.get("count") == 1 or t.get("count_formula") == "1") and all(
+            i.get("amount") == 1 for i in t.get("ingredients") or [])
+    n = sum(1 for t in techs if cheap(t))
+    if value == "true":
+        return (f"on: {n} of {len(techs)} technologies cost one science pack of each kind",
+                [t["name"] for t in techs if not cheap(t)])
+    return (f"{value}: {len(techs) - n} of {len(techs)} technologies cost more than one science pack of each kind",
+            [f"setting is {value} but every technology is cheap"] if techs and n == len(techs) else [])
+
+
+def parse_settings(pairs):
+    out = {}
+    for p in pairs or []:
+        name, _, value = p.partition("=")
+        if value not in ("true", "false"):
+            sys.exit(f"--set {p}: expected <bool startup setting>=true|false")
+        out[name] = value == "true"
+    return out
+
+
 def check(a):
-    prepare_mods()
+    prepare_mods(settings=parse_settings(getattr(a, "set", None)))
     log = factorio("--create", str(WORK / "check-map.zip"))
     err = load_errors(log)
     sec = sections(log)
@@ -550,12 +664,29 @@ def check(a):
     required = check_required(m)
     print(f"\nrequired recipes (issues #35, #36, #39, phases 6a and 6b): {len(REQUIRED_RECIPES) - len(required)} of {len(REQUIRED_RECIPES)} unlocked and craftable")
     report("required recipes not unlocked or not craftable", required)
+    locked, n_greg, n_allowed = check_locked(m, sec)
+    print(f"\nGregtorio recipes (issue #91): {n_greg} not hidden, {n_greg - n_allowed - len(locked)} enabled or unlocked "
+          f"by a researchable technology, {n_allowed} kept locked (FORK_RECIPES_LOCKED)")
+    report("Gregtorio recipes that no researchable technology unlocks", locked)
     report("draft recipes outside DRAFTS_OK (issue #39)", new_drafts)
     menu_info, menu = check_crafting_menu(m, sec)
     print("\ncrafting menu (issue #49):")
     for line in menu_info:
         print("  " + line)
     report("machine recipes hidden from the crafting menu without an allow-list entry", menu)
+    fluid_info, fluid_fallback, fluid_problems = check_fluids_tab(sec)
+    print("\nfluids tab:")
+    for line in fluid_info:
+        print("  " + line)
+    report(f"WARNING: fluids in the fallback row {FLUID_FALLBACK} (sort them in prototypes/196-fork-subgroups.lua)",
+           fluid_fallback)
+    report("fluids outside the Fluids tab (subgroup missing or not in the group fluids)", fluid_problems)
+    one_pack_info, one_pack = check_one_pack(sec)
+    print(f"\ncheap research ({ONE_PACK}): {one_pack_info}")
+    report("technologies that cost more than one science pack of each kind although the setting is on", one_pack)
+    if getattr(a, "fluids_out", None):
+        Path(a.fluids_out).write_text("\n".join("\t".join(r) for r in sec.get("FLUIDS", [])) + "\n", encoding="utf-8")
+        print(f"\nfluid list written to {a.fluids_out} (input for tools/gen_review_sheet.py fluids)")
     if a.locale_out:
         Path(a.locale_out).write_text("\n".join("\t".join(r) for r in sec.get("LOCALE", [])))
         print(f"\nlocale name list written to {a.locale_out} (input for tools/gen_locale.py)")
@@ -564,9 +695,23 @@ def check(a):
         Path(a.balance_out).write_text("[\n" + ",\n".join(rows) + "\n]\n", encoding="utf-8")
         print(f"\nbalance data written to {a.balance_out} (recipes, machines, technologies as JSON)")
     ok = not (files or [s for s in sprites if not s.startswith("(")] or uncraft or menu or required or unresearchable
-              or new_drafts)
+              or new_drafts or fluid_problems or locked or one_pack)
     print("\nRESULT:", "OK" if ok else "PROBLEMS FOUND")
     return 0 if ok else 1
+
+
+def one_pack(a):
+    """Part of `all`: loads the mod with the cheap research setting on and checks every technology."""
+    prepare_mods(settings={ONE_PACK: True})
+    log = factorio("--create", str(WORK / "check-map.zip"))
+    if load_errors(log):
+        print(f"\nload with {ONE_PACK}=true: FAILED\n" + load_errors(log))
+        return 1
+    info, problems = check_one_pack(sections(log))
+    print(f"\ncheap research, loaded with the setting on: {info}")
+    report("technologies that cost more than one science pack of each kind although the setting is on", problems)
+    print("\nRESULT:", "PROBLEMS FOUND" if problems else "OK")
+    return 1 if problems else 0
 
 
 def seed_args(a):
@@ -596,7 +741,7 @@ def runtime(a):
     print(f"benchmark: {ran.group(0) if ran else 'did not run'}")
     # the ME network's runtime tests are in me-network since issue #83 (its tools/devcheck)
     tests = (("MOLD", "mold test"), ("POWER", "power test"), ("FUEL", "fuel check test"), ("COOLED", "cooled fluid test"),
-             ("TIERS", "turbine tier test"), ("RECIPES", "recipe test"), ("VICTORY", "victory test"),
+             ("TIERS", "turbine tier test"), ("RECIPES", "recipe test"), ("STEAM", "steam turbine test"), ("CHAIN", "nuclear chain test"), ("LSC", "supercapacitor test"), ("VICTORY", "victory test"),
              ("POSTVICTORY", "post-victory test"))
     for key, label in tests:
         m = re.search(rf"DEVCHECK-RUNTIME-{key} (.*)", log)
@@ -624,10 +769,61 @@ def zip_from_ref(ref):
     return out
 
 
+def old_me_network(ref):
+    """The me-network release an old Gregtorio shipped with (a git ref of the me-network checkout, e.g. v0.1.0 for
+    Gregtorio 0.5.0), exported to .devcheck/me-network-<ref>: the old save is created with it, the working copy loads
+    it with the current checkout (the old version's ME blocks may be gone from the current me-network)."""
+    src = me_network_dir()
+    if not src:
+        sys.exit("--old-me-network needs a me-network checkout (../me-network or ME_NETWORK_DIR)")
+    out = WORK / f"me-network-{re.sub(r'[^A-Za-z0-9._-]', '_', ref)}"
+    if out.exists():
+        shutil.rmtree(out)
+    out.mkdir(parents=True)
+    tar = subprocess.run(["git", "-C", str(src), "archive", ref], capture_output=True, check=True).stdout
+    import io
+    with tarfile.open(fileobj=io.BytesIO(tar)) as t:
+        t.extractall(out)
+    print(f"old save created with me-network {ref} ({json.loads((out / 'info.json').read_text())['version']})")
+    return out
+
+
+def bumped_working_copy(old_zip):
+    """None (the linked working copy), or, when the working copy has the version of the old save (between releases
+    `info.json` keeps the last released version), a zip of it one patch version up, as the release will be: Factorio
+    runs a mod's on_configuration_changed with its mod_changes only when its version changed, and Gregtorio resets
+    the technology effects there (issue #91)."""
+    import zipfile
+    info = json.loads((ROOT / "info.json").read_text(encoding="utf-8"))
+    m = re.search(r"_(\d+\.\d+\.\d+)\.zip$", str(old_zip))
+    old_version = m and m.group(1)
+    if info["version"] != old_version:
+        return None
+    major, minor, patch = info["version"].split(".")
+    info["version"] = f"{major}.{minor}.{int(patch) + 1}"
+    prefix = f"{info['name']}_{info['version']}/"
+    out = WORK / f"working-copy_{info['version']}.zip"
+    with zipfile.ZipFile(out, "w", zipfile.ZIP_DEFLATED) as z:
+        for p in sorted(ROOT.rglob("*")):
+            rel = p.relative_to(ROOT).as_posix()
+            if p.is_dir() or rel.split("/")[0] in (".git", ".devcheck", ".github", "tools", "docs"):
+                continue
+            z.writestr(prefix + rel, json.dumps(info, indent=2) if rel == "info.json" else p.read_bytes())
+    print(f"working copy has the version of the old save ({old_version}): loaded as {info['version']}, as the release "
+          f"will be (on_configuration_changed with mod changes)")
+    return out
+
+
 def migrate(a):
     """Create a map with an older version (also "Gregtorio" before 0.3.0), then load and run it with the working copy."""
     old = a.from_zip or zip_from_ref(a.from_ref)
+    old_me = old_me_network(a.old_me_network) if getattr(a, "old_me_network", None) else None
+    env_me = os.environ.get("ME_NETWORK_DIR")
+    if old_me:
+        os.environ["ME_NETWORK_DIR"] = str(old_me)
     prepare_mods(gregtorio_zip=old, with_migrate=True)
+    if old_me:
+        os.environ.pop("ME_NETWORK_DIR") if env_me is None else os.environ.update(ME_NETWORK_DIR=env_me)
     log = factorio("--create", str(WORK / "migrate-map.zip"), *seed_args(a))
     print(f"map seed: {'random' if a.seed == 'random' else a.seed}")
     if load_errors(log):
@@ -635,6 +831,9 @@ def migrate(a):
         return 1
     if not_saved(log):
         print(not_saved(log))
+        if not old_me:
+            print("an old version may need the me-network of its time: --old-me-network <ref> "
+                  "(v0.1.0 for --from-ref v0.5.0)")
         return 1
     setup = re.search(r"DEVCHECK-MIGRATE-SETUP (.*)", log)
     print(f"old save with loaded fluid drives: {setup.group(1) if setup else 'no result'}")
@@ -652,7 +851,11 @@ def migrate(a):
     print(f"old save with a logistic ME network (items): {setup.group(1) if setup else 'no result'}")
     setup = re.search(r"DEVCHECK-MIGRATE-SETUP-HANDOVER (.*)", log)
     print(f"old save with a network for the hand-over (issue #83): {setup.group(1) if setup else 'no result'}")
-    prepare_mods(with_migrate=True)
+    setup = re.search(r"DEVCHECK-MIGRATE-SETUP-TECHS (.*)", log)
+    print(f"old save with researched technologies (issue #91): {setup.group(1) if setup else 'no result'}")
+    setup = re.search(r"DEVCHECK-MIGRATE-SETUP-REMOVED (.*)", log)
+    print(f"old save with removed fluids and items (issues #98, #96): {setup.group(1) if setup else 'no result'}")
+    prepare_mods(with_migrate=True, gregtorio_zip=bumped_working_copy(old))
     log = factorio("--benchmark", str(WORK / "migrate-map.zip"), "--benchmark-ticks", str(a.ticks))
     ran = re.search(r"Performed (\d+) updates", log)
     fluids = re.search(r"DEVCHECK-MIGRATE-FLUIDS (.*)", log)
@@ -670,6 +873,10 @@ def migrate(a):
     print(f"ME network of the old save converted (issue #68): {items.group(1) if items else 'no result'}")
     handover = re.search(r"DEVCHECK-MIGRATE-HANDOVER (.*)", log)
     print(f"ME state handed over to me-network (issue #83): {handover.group(1) if handover else 'no result'}")
+    techs = re.search(r"DEVCHECK-MIGRATE-TECHS (.*)", log)
+    print(f"technology effects of the old save (issue #91): {techs.group(1) if techs else 'no result'}")
+    removed = re.search(r"DEVCHECK-MIGRATE-REMOVED (.*)", log)
+    print(f"removed fluids and items of the old save (issues #98, #96): {removed.group(1) if removed else 'no result'}")
     # issue #83: the fingerprints of what gregtorio-continued gave and what me-network got must be equal
     gave = re.findall(r"FORK-ME-HANDOVER: gave (\S+) (\S+)", log)
     took = re.search(r"ME-NETWORK-HANDOVER: (ok|MISMATCH.*|refused.*)", log)
@@ -685,7 +892,9 @@ def migrate(a):
     ok = ran and fluids and not fluids.group(1).startswith("failed") and power and not power.group(1).startswith("failed") \
         and turbine and not turbine.group(1).startswith("failed") \
         and patterns and not patterns.group(1).startswith("failed") and job and not job.group(1).startswith("failed") \
-        and items and not items.group(1).startswith("failed") and handover_ok
+        and items and not items.group(1).startswith("failed") and handover_ok \
+        and techs and not techs.group(1).startswith("failed") \
+        and removed and not removed.group(1).startswith("failed")
     return 0 if ok else 1
 
 
@@ -847,6 +1056,9 @@ def main():
     c.add_argument("--locale-out", help="also write the locale name list for tools/gen_locale.py")
     c.add_argument("--techs", help="regex: list matching technologies and whether they are researchable")
     c.add_argument("--balance-out", help="also write recipes (amounts, times), machine speeds and technology counts as JSON")
+    c.add_argument("--fluids-out", help="also write the fluids with subgroup, order and icon (for gen_review_sheet.py fluids)")
+    c.add_argument("--set", action="append", metavar="SETTING=true|false",
+                   help="force a bool startup setting for this run, e.g. gregtorio-continued-one-pack-research=true")
     r = sub.add_parser("runtime")
     r.add_argument("--ticks", type=int, default=1500)
     r.add_argument("--seed", default=str(DEFAULT_SEED), help=f"map seed or `random` (default {DEFAULT_SEED})")
@@ -855,6 +1067,8 @@ def main():
     src.add_argument("--from-zip", help="older Gregtorio_x.y.z.zip to create the save with")
     src.add_argument("--from-ref", help="git tag or commit of an older version, e.g. 0e935ba (upstream 0.1.9)")
     m.add_argument("--ticks", type=int, default=600)
+    m.add_argument("--old-me-network", help="git ref of the me-network checkout to create the old save with, "
+                   "e.g. v0.1.0 for --from-ref v0.5.0 (default: the current checkout for both)")
     m.add_argument("--seed", default=str(DEFAULT_SEED), help=f"map seed or `random` (default {DEFAULT_SEED})")
     ms = sub.add_parser("menusim", help="run main menu simulations")
     ms.add_argument("--sim", default="nauvis_biter_base_laser_defense", help="simulation name or `all`")
@@ -880,7 +1094,7 @@ def main():
         return menusim(a)
     if a.cmd == "handover":
         return handover(a)
-    return check(a) or runtime(a)
+    return check(a) or one_pack(a) or runtime(a)
 
 
 if __name__ == "__main__":

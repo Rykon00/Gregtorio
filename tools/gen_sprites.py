@@ -19,7 +19,7 @@ multiblocks keep the EV sprite and get a layer with GT energy hatches of their t
 """
 import argparse, re
 from pathlib import Path
-from PIL import Image
+from PIL import Image, ImageOps
 
 ROOT = Path(__file__).resolve().parent.parent
 ICONS = ROOT / "graphics/icons"
@@ -41,8 +41,8 @@ BASIC_GT = {
     "autoclave": "autoclave", "alloy-smelter": "alloy_smelter", "compressor": "compressor",
 }
 
-# tier color GT uses to tint the (gray) machine casings (IV = tungstensteel)
-TIER_TINT = {"IV": (100, 100, 160), "LuV": (255, 205, 225), "ZPM": (140, 225, 245), "UV": (130, 215, 140),
+# tier color GT uses to tint the (gray) machine casings (EV = titanium, IV = tungstensteel)
+TIER_TINT = {"EV": (220, 160, 240), "IV": (100, 100, 160), "LuV": (255, 205, 225), "ZPM": (140, 225, 245), "UV": (130, 215, 140),
              "UHV": (235, 120, 120), "UEV": (240, 200, 90), "UIV": (120, 150, 255),
              "UMV": (190, 120, 235), "UXV": (245, 245, 250), "MAX": (255, 255, 255)}
 
@@ -95,6 +95,13 @@ MULTIBLOCKS = {
     # UV (127-fork-uv.lua)
     "zpm-assembly-line": ((9, 3), "assembler-machine-casing", None,
                           "gregtech:iconsets/OVERLAY_FRONT_ASSEMBLY_LINE", "grate-machine-casing"),
+    # issue #99: the component assembly line (142-fork-recipe-unlocks.lua; GoodGenerator's MTEComponentAssemblyLine):
+    # GT's iridium casing (its casing index 183), GoodGenerator's UV component assembly line casing as the middle
+    # row, the CoAL controller face (idle, active)
+    "component-assembly-line": ((9, 3), "gregtech:iconsets/MACHINE_CASING_IRIDIUM", None,
+                                ("gregtech:iconsets/OVERLAY_FRONT_COMPONENT_ASSEMBLY_LINE",
+                                 "gregtech:iconsets/OVERLAY_FRONT_COMPONENT_ASSEMBLY_LINE_ACTIVE"),
+                                "goodgenerator:compAsslineCasing/7"),
     "fusion-reactor-mk2": ((9, 9), "gregtech:iconsets/MACHINE_CASING_FUSION_2", None,
                            "gregtech:iconsets/OVERLAY_FUSION2", "gregtech:iconsets/MACHINE_CASING_FUSION_COIL"),
     # UHV (128-fork-uhv.lua)
@@ -133,6 +140,14 @@ MULTIBLOCKS = {
                                   ("gregtech:iconsets/NAQUADAH_REACTOR_FLUID_FRONT",
                                    "gregtech:iconsets/NAQUADAH_REACTOR_FLUID_FRONT_ACTIVE"),
                                   "gregtech:iconsets/MACHINE_CASING_RADIATIONPROOF"),
+    # issue #97 (145-fork-power-multiblocks.lua): GT's large heat exchanger (stable titanium casing, titanium pipe
+    # casings in the middle row, its controller face) and the fluid nuclear reactor (GT's radiation proof casing
+    # around the upstream reactor icon; IC2's reactor has no texture in GT)
+    "large-heat-exchanger": ((3, 3), "stable-titanium-machine-casing", None,
+                             "gregtech:iconsets/OVERLAY_FRONT_HEAT_EXCHANGER",
+                             "gregtech:iconsets/MACHINE_CASING_PIPE_TITANIUM"),
+    "fluid-nuclear-reactor": ((3, 3), "gregtech:iconsets/MACHINE_CASING_RADIATIONPROOF", "fluid-nuclear-reactor",
+                              None, None),
 }
 # multiblocks without an upstream item icon: the icon is the controller tile
 CONTROLLER_ICONS = {"neutron-activator", "water-purification-plant", "uv-large-naquadah-reactor"}
@@ -173,16 +188,40 @@ ENERGY_OVERLAY = "gregtech:iconsets/OVERLAY_ENERGY_IN_MULTI_2A_{}"
 # rotor, animated when active); the icon is the middle tile
 PLASMA_TURBINE = "luv-large-plasma-turbine"
 PLASMA_TURBINE_FACE = "gregtech:iconsets/LARGETURBINE_TU"
+# issue #97 (145-fork-power-multiblocks.lua): the steam turbines, GT's large turbine face of their casing (steel,
+# titanium) with the dynamo hatch of their recipe on the corner tiles; the item icons are upstream's
+STEAM_TURBINES = {
+    "large-steam-turbine": ("gregtech:iconsets/LARGETURBINE_ST", "EV"),
+    "high-pressure-steam-turbine": ("gregtech:iconsets/LARGETURBINE_TI", "IV"),
+}
 # items whose icon is a GT block texture (written to graphics/icons/fork/)
 TEXTURE_ICONS = {
     "titanium-reinforced-borosilicate-glass-block": "bartworks:TitaniumReinforcedBoronSilicateGlassBlock",
     "tungstensteel-turbine-casing": "gregtech:iconsets/MACHINE_CASING_TURBINE_TUNGSTENSTEEL",
     "naquadah-reactor-casing": "gregtech:iconsets/NAQUADAH_REACTOR_CASING",
+    # issue #97: kekztech's LuV and ZPM lapotronic capacitor blocks
+    "lapotronic-capacitor-luv": "kekztech:LapotronicEnergyUnit2_side",
+    "lapotronic-capacitor-zpm": "kekztech:LapotronicEnergyUnit3_side",
 }
+# issue #97: the lapotronic supercapacitors (one 5x5 accumulator per capacitor tier): kekztech's LSC casing as the
+# border, the capacitor blocks of the tier inside, the controller in the top middle, GT's energy and dynamo hatch of
+# the tier in the bottom corners; the LuV and ZPM icons are the upstream icon with the tier's dynamo hatch as a badge
+SUPERCAPACITORS = {
+    "lapotronic-supercapacitor": ("IV", "kekztech:LapotronicEnergyUnit1_side"),
+    "luv-lapotronic-supercapacitor": ("LuV", "kekztech:LapotronicEnergyUnit2_side"),
+    "zpm-lapotronic-supercapacitor": ("ZPM", "kekztech:LapotronicEnergyUnit3_side"),
+}
+SUPERCAPACITOR_CASING = "kekztech:LSCBase_side"
 # sprites derived from existing fork graphics (name -> (source name, tint)): the turbine output
 # hatch is the ME fluid interface in orange
 DERIVED = {
     "turbine-output-hatch": ("me-fluid-interface", (255, 170, 80)),
+}
+# issue #99: the ender tanks (name -> GT tier of the air collector they copy, tint of the ender fluid link)
+ENDER_LINK = "gregtech:iconsets/ENDERFLUIDLINK_OVERLAY"
+ENDER_TANKS = {
+    "nether-air-ender-tank": ("HV", ((40, 0, 0), (255, 140, 70))),     # recoloured from dark red to glowing orange
+    "ender-air-ender-tank": ("EV", None),                               # GT's teal as it is
 }
 # IV multiblocks: the casing is read from the recipe in 20-iv-age-entity.lua
 IV_MULTIBLOCK_FACES = {
@@ -347,18 +386,49 @@ def multiblock(gt, name, size, casing, controller, face, middle):
         save(img.crop((cx * TILE, cy * TILE, (cx + 1) * TILE, (cy + 1) * TILE)), OUT_ICON / f"{name}.png")
 
 
-def plasma_turbine(gt, name):
+def turbine_face(gt, face, active):
     """3x3 face of GT's large turbine: tiles 1..9 idle, the ACTIVE strips animated (frame 0 used)."""
-    def build(active):
-        img = Image.new("RGBA", (3 * TILE, 3 * TILE))
-        for i in range(9):
-            spec = PLASMA_TURBINE_FACE + ("_ACTIVE" if active else "") + str(i + 1)
-            tile = frames_of(load(gt_path(gt, spec)))[0].resize((TILE, TILE), Image.NEAREST)
-            img.paste(tile, ((i % 3) * TILE, (i // 3) * TILE))
-        return img
-    save(build(False), OUT_ENTITY / f"{name}-idle.png")
-    save(build(True), OUT_ENTITY / f"{name}-working.png")
-    save(build(False).crop((TILE, TILE, 2 * TILE, 2 * TILE)), OUT_ICON / f"{name}.png")
+    img = Image.new("RGBA", (3 * TILE, 3 * TILE))
+    for i in range(9):
+        spec = face + ("_ACTIVE" if active else "") + str(i + 1)
+        tile = frames_of(load(gt_path(gt, spec)))[0].resize((TILE, TILE), Image.NEAREST)
+        img.paste(tile, ((i % 3) * TILE, (i // 3) * TILE))
+    return img
+
+
+def plasma_turbine(gt, name):
+    save(turbine_face(gt, PLASMA_TURBINE_FACE, False), OUT_ENTITY / f"{name}-idle.png")
+    save(turbine_face(gt, PLASMA_TURBINE_FACE, True), OUT_ENTITY / f"{name}-working.png")
+    save(turbine_face(gt, PLASMA_TURBINE_FACE, False).crop((TILE, TILE, 2 * TILE, 2 * TILE)), OUT_ICON / f"{name}.png")
+
+
+def steam_turbine(gt, name, face, tier):
+    """issue #97: the turbine face with the dynamo hatches of its tier on the corner tiles (like TIER_COPIES)"""
+    hatch = scaled(dynamo_hatch(gt, tier), TILE)
+    for active, suffix in ((False, "-idle.png"), (True, "-working.png")):
+        img = turbine_face(gt, face, active)
+        for x, y in ((0, 0), (2 * TILE, 0), (0, 2 * TILE), (2 * TILE, 2 * TILE)):
+            img.paste(hatch, (x, y))
+        save(img, OUT_ENTITY / f"{name}{suffix}")
+
+
+def supercapacitor(gt, name, tier, unit):
+    """issue #97: 5x5, casing border, capacitor blocks inside, controller top middle, hatches in the bottom corners"""
+    cas, cap = casing_tile(gt, SUPERCAPACITOR_CASING), casing_tile(gt, unit)
+    img = Image.new("RGBA", (5 * TILE, 5 * TILE))
+    for y in range(5):
+        for x in range(5):
+            img.paste(cap if 0 < x < 4 and 0 < y < 4 else cas, (x * TILE, y * TILE))
+    ctrl = scaled(load(ICONS / "lapotronic-supercapacitor-controller.png"), TILE)
+    img.alpha_composite(ctrl, (2 * TILE, 0))
+    img.paste(scaled(energy_hatch(gt, tier), TILE), (0, 4 * TILE))
+    img.paste(scaled(dynamo_hatch(gt, tier), TILE), (4 * TILE, 4 * TILE))
+    save(img, OUT_ENTITY / f"{name}.png")
+    if tier != "IV":
+        icon = load(ICONS / "lapotronic-supercapacitor.png").copy()
+        hatch = dynamo_hatch(gt, tier)
+        icon.alpha_composite(hatch, (TILE - hatch.width, TILE - hatch.height))
+        save(icon, OUT_ICON / f"{name}.png")
 
 
 def dynamo_hatch(gt, tier):
@@ -442,6 +512,25 @@ def derived(name, source, rgb):
             save(tint(load(src), rgb), folder / f"{name}.png")
 
 
+def recolour(img, dark, light):
+    """the image's brightness as a ramp from `dark` to `light` (alpha kept)"""
+    out = ImageOps.colorize(ImageOps.autocontrast(img.convert("L")), dark, light).convert("RGBA")
+    out.putalpha(img.getchannel("A"))
+    return out
+
+
+def ender_tank(gt, name, tier, ramp):
+    """Issue #99: the ender tanks (142-fork-recipe-unlocks.lua, copies of the HV and EV air collector): the GT hull of
+    their tier around GT's ender fluid link (the tank of TecTech's ender fluid link cover, animated: the working
+    strip), recoloured per air (nether red, ender as GT draws it), so they are no longer air collectors on the map."""
+    hull = load(gt_path(gt, f"gregtech:iconsets/MACHINE_{tier}_SIDE"))
+    frames = frames_of(load(gt_path(gt, ENDER_LINK)))
+    if ramp:
+        frames = [recolour(f, *ramp) for f in frames]
+    save(in_hull(hull, frames[0], 3 * TILE), OUT_ENTITY / f"{name}-idle.png")
+    save_strip([in_hull(hull, f, 3 * TILE) for f in frames], OUT_ENTITY / f"{name}-working.png")
+
+
 def icon_machine(name):
     img = scaled(load(ICONS / f"{name}.png"), 3 * TILE)
     save(img, OUT_ENTITY / f"{name}-idle.png")
@@ -485,12 +574,18 @@ def main():
     for name, spec in TEXTURE_ICONS.items():
         save(casing_tile(gt=a.gt, casing=name, override=spec), OUT_ICON / f"{name}.png")
     plasma_turbine(a.gt, PLASMA_TURBINE)
+    for name, (face, tier) in STEAM_TURBINES.items():
+        steam_turbine(a.gt, name, face, tier)
+    for name, (tier, unit) in SUPERCAPACITORS.items():
+        supercapacitor(a.gt, name, tier, unit)
     for base, tiers in TIER_COPIES.items():
         tier_copies(a.gt, base, tiers)
     for base, (sprite, icon) in UPGRADE_MULTIBLOCKS.items():
         upgrade_hatches(a.gt, base, sprite, icon)
     for name, (source, rgb) in DERIVED.items():
         derived(name, source, rgb)
+    for name, (tier, ramp) in ENDER_TANKS.items():
+        ender_tank(a.gt, name, tier, ramp)
     print("Sprites:", len(list(OUT_ENTITY.glob("*.png"))), "Icons:", len(list(OUT_ICON.glob("*.png"))))
 
 

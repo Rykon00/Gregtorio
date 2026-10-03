@@ -101,6 +101,20 @@ MATERIALS = {
     "rhugnor": ("CUSTOM/rhugnor", (190, 0, 255)),
     # GT builds magmatter with a material builder (TextureSet.SET_MAGMATTER, no colour)
     "magmatter": ("CUSTOM/magmatter", (255, 255, 255)),
+    # GT++ (MaterialMisc.java): the glue line of issue #91
+    "sodium-cyanide": ("DULL", (180, 190, 255)), "cyanoacetic-acid": ("DULL", (130, 130, 40)),
+    # issue #99: GT's gasoline (SET_FLUID, orange) for its cell
+    "gasoline": "Gasoline",
+    # issue #98: black plutonium (hot ingot, ingot), the high octane cell, sodium bisulfate
+    "black-plutonium": "BlackPlutonium", "high-octane-gasoline": "HighOctaneGasoline", "sodium-bisulfate": "SodiumBisulfate",
+    # issue #96: bartworks Werkstoffe of the platinum line (WerkstoffLoader.java, their colours; dusts)
+    "platinum-salt": ("DULL", (255, 255, 200)), "refined-platinum-salt": ("DULL", (255, 255, 200)),
+    "reprecipitated-platinum": ("DULL", (255, 255, 200)), "platinum-residue": ("DULL", (100, 99, 46)),
+    "palladium-salt": ("DULL", (177, 177, 177)), "reprecipitated-palladium": ("DULL", (177, 177, 177)),
+    "potassium-disulfate": ("DULL", (251, 187, 102)), "rhodium-filter-cake": ("DULL", (119, 102, 73)),
+    "reprecipitated-rhodium": ("DULL", (119, 102, 73)), "iridium-dioxide": ("DULL", (132, 102, 73)),
+    "sludge-dust-residue": ("DULL", (132, 102, 73)), "iridium-chloride": ("DULL", (132, 102, 73)),
+    "metallic-sludge-dust-residue": ("DULL", (132, 102, 73)),
 }
 
 # fork part name -> GT OrePrefix texture; "{m}" is the material
@@ -539,6 +553,23 @@ def icon_table(c):
     # GT has no iris blade: GT's turbine blade shape in the neutronium of the stargate frame
     T["stargate-iris-blade"] = lambda: c.part("neutronium", "turbineBlade")
 
+    # issue #91: the component assembly line (GoodGenerator: its UV casing, GT's controller face) and the dusts of
+    # the glue line, which the fork names without "-dust"
+    T["component-assembly-line"] = lambda: c.mini(f"{GG}blocks/compAsslineCasing/7", f"{BLK}MACHINE_CASING_ASSEMBLER",
+                                                  f"{BLK}OVERLAY_FRONT_COMPONENT_ASSEMBLY_LINE")
+    # issue #99: the gasoline cell of #94 (GT: Materials.Gasoline's cell, the FLUID icon set in its orange)
+    T["gasoline-cell"] = lambda: c.part("gasoline", "cell")
+    T["sodium-cyanide"] = lambda: c.part("sodium-cyanide", "dust")
+    T["cyanoacetic-acid"] = lambda: c.part("cyanoacetic-acid", "dust")
+    # issue #98: the high octane cell (like the gasoline cell), sodium bisulfate (GT: a dust)
+    T["high-octane-gasoline-cell"] = lambda: c.part("high-octane-gasoline", "cell")
+    T["sodium-bisulfate"] = lambda: c.part("sodium-bisulfate", "dust")
+    # issue #96: the dusts of the platinum line, which the fork names without "-dust"
+    for m in ("platinum-salt", "refined-platinum-salt", "reprecipitated-platinum", "platinum-residue", "palladium-salt",
+              "reprecipitated-palladium", "potassium-disulfate", "rhodium-filter-cake", "reprecipitated-rhodium",
+              "iridium-dioxide", "sludge-dust-residue", "iridium-chloride", "metallic-sludge-dust-residue"):
+        T[m] = lambda m=m: c.part(m, "dust")
+
     # multi-amp wires (upstream: 16x = a block of the metal)
     T["luv-superconductor-wire-16x"] = lambda: bar(c.m.colour("itbtc-alloy"), 2, n=4)
     return T
@@ -557,6 +588,69 @@ def material_items(names):
     return out
 
 
+# issue #99: GT's own molten colour (MaterialBuilder.setMoltenARGB, MaterialsInit.java) and the GT++ alloys GT keeps
+# in gtPlusPlus/core/material/MaterialsAlloy.java ("Material Colour"), which the CamelCase lookup does not find
+MOLTEN = {
+    "enriched-naquadah": ((0x40, 0xFF, 0x40), "GT NaquadahEnriched setMoltenARGB"),
+    "eglin-steel": ((139, 69, 19), "GT++ EGLIN_STEEL"),
+    "tumbaga": ((255, 178, 15), "GT++ TUMBAGA"),
+    "potin": ((201, 151, 129), "GT++ POTIN"),
+    "zirconium-carbide": ((222, 202, 180), "GT++ ZIRCONIUM_CARBIDE"),
+}
+# issue #99: GT draws a melt glowing; a melt whose colour has no channel above this is lifted (hue and saturation
+# kept, brightness v -> 0.45 + 0.55 v), else near-black materials (the ZPM superconductor base, bedrockium) give
+# black melts that cannot be told apart in the Fluids tab and in pipes
+MOLTEN_MIN = 153
+
+
+def glowing(rgb):
+    v = max(rgb) / 255
+    if max(rgb) >= MOLTEN_MIN:
+        return rgb
+    target = 0.45 + 0.55 * v
+    if v == 0:
+        return (round(target * 255),) * 3
+    return tuple(min(255, round(c * target / v)) for c in rgb)
+
+
+def molten_colour(tex, mats, mat):
+    """GT's colour of a material (MOLTEN, MATERIALS, else GT's material of the same name in CamelCase); materials GT
+    does not have take the average colour of the fork's own ingot icon; dark colours are lifted (glowing)"""
+    rgb, src = molten_source(tex, mats, mat)
+    lit = glowing(rgb)
+    return lit, src + ("" if lit == rgb else " (lifted from %d %d %d)" % rgb)
+
+
+def molten_source(tex, mats, mat):
+    if mat in MOLTEN:
+        return MOLTEN[mat]
+    gt_name = "".join(w.capitalize() for w in mat.split("-"))
+    try:
+        if mat in MATERIALS:
+            return mats.colour(mat), "GT " + str(MATERIALS[mat] if isinstance(MATERIALS[mat], str) else mat)
+        if gt_name in mats.gt:
+            iset, rgb = mats.gt[gt_name]
+            if rgb != (255, 255, 255):
+                return rgb, "GT " + gt_name
+    except KeyError:
+        pass
+    px = [p for p in Image.open(ICONS / f"{mat}-ingot.png").convert("RGBA").getdata() if p[3] > 128]
+    return tuple(sum(p[i] for p in px) // len(px) for i in range(3)), "ingot icon"
+
+
+def molten_icons(tex, mats, names):
+    """Issue #91: the molten fluids of the materials that had none, drawn like GT's: its molten fluid texture (first
+    frame) in the material colour. Prints name, colour and its source (for the fluid's base colour in the prototype)."""
+    base = fit(tex.load("gt:gregtech/textures/blocks/fluids/fluid.molten.autogenerated"))
+    for mat in names:
+        rgb, src = molten_colour(tex, mats, mat)
+        img = tint(base, rgb)
+        target = ROOT / "graphics/fluids" / f"molten-{mat}.png"
+        if not (target.exists() and Image.open(target).convert("RGBA").tobytes() == img.tobytes()):
+            img.save(target, optimize=True)
+        print(f"{mat}	{rgb[0]} {rgb[1]} {rgb[2]}	{src}")
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--gt", type=Path, required=True, help="GT5-Unofficial checkout")
@@ -564,9 +658,13 @@ def main():
     ap.add_argument("--only", nargs="*", help="only these items")
     ap.add_argument("--list", type=Path, default=LIST, help="items whose icon this tool makes (default: %(default)s)")
     ap.add_argument("--sources", type=Path, help="write a TSV: item, GT textures it is made of (for the review)")
+    ap.add_argument("--molten", nargs="*", help="issue #91: write graphics/fluids/molten-<material>.png for these materials"
+                    " (GT's molten fluid texture in the material colour) and print the colours")
     a = ap.parse_args()
     tex = Tex(a.gt, a.core)
     mats = Materials(tex)
+    if a.molten:
+        return molten_icons(tex, mats, a.molten)
     c = Composer(tex, mats)
     table = icon_table(c)
     names = [l.split("#")[0].strip() for l in a.list.read_text().splitlines()]

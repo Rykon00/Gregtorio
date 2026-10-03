@@ -11,6 +11,13 @@
 --- their tier and return the cooled fluid of the plasma they burnt.
 --- Recipes of issue #35: grades 7 and 8, FPIC/APIC wafers and chips, complex SMDs and the recipes that
 --- use them are crafted once each (setup_recipe_test).
+--- Steam turbines (issue #97): the large and the high pressure steam turbine make their GT output, burn their GT flow
+--- and give back distilled water and steam through output hatches; the wrong steam stops them; the multiblocks of
+--- issue #97 can be blueprinted and mined.
+--- Nuclear chain (issue #97): fluid nuclear reactor -> large heat exchanger -> high pressure steam turbine -> large
+--- steam turbine makes power from fuel rods; depleted rods come out; the steam recipe of the heat exchanger is exact.
+--- Lapotronic supercapacitor (issue #97): charges and discharges at two amps of its tier, holds its capacity by tier
+--- and loses GT's 1 % per day.
 --- Victory: when the other tests have reported, `victory` is researched by script and must win the game.
 
 local VICTORY_DEADLINE = 1450
@@ -23,6 +30,9 @@ local function tests_running()
 	check(storage.cooled and storage.cooled.done, "cooled fluid")
 	check(storage.tiers and storage.tiers.done, "turbine tiers")
 	check(storage.recipe_test and storage.recipe_test.done, "recipes of issue #35")
+	check(storage.steam and storage.steam.done, "steam turbines")
+	check(storage.chain and storage.chain.done, "nuclear chain")
+	check(storage.lsc and storage.lsc.done, "supercapacitor")
 	return running
 end
 
@@ -661,6 +671,86 @@ local RT = {
 	{ "zpm-assembly-line", "max-motor" },
 	{ "max-assembling-machine", "maximum-voltage-coil" },
 	{ "uxv-assembling-machine", "max-science-pack-from-magmatter" },
+	-- issue #91 (prototypes/142-fork-recipe-unlocks.lua): the producers GT has and Gregtorio lacked, the new machines
+	-- (ender tank, component assembly line), a microminer mission and recipes that were never unlocked
+	{ "lv-alloy-smelter", "signalum-ingot" },
+	{ "ev-electric-blast-furnace", "naquadah-doped-monocrystaline-silicon-boule" },
+	{ "mv-pyrolyse-oven", "charcoal-byproducts" },
+	{ "ev-large-chemical-reactor", "cyanoacetic-acid" },
+	{ "iv-large-chemical-reactor", "super-glue" },
+	{ "nether-air-ender-tank", "nether-air-collection" },
+	{ "component-assembly-line", "lv-motor-coal" },
+	{ "lv-assembling-machine", "microminer-neutronium" },
+	{ "mv-canning-machine", "depleted-uranium-fuel-rod-centrifuging" },
+	{ "lv-compressor", "block-of-copper" },
+	{ "iv-alloy-blast-smelter", "molten-hastelloy-c276" },
+	{ "ev-fluid-solidifier", "solidify-hastelloy-c276-ingot" },
+	-- issue #91 part 2 (prototypes/143-fork-casting.lua): a cast of every form (with the mold) and melts of the
+	-- extractor, a new melt (steel), one whose old melt came at ZPM (titanium) and one at IV (iridium)
+	{ "lv-fluid-solidifier", "solidify-steel-ingot" },
+	{ "lv-fluid-solidifier", "solidify-steel-plate" },
+	{ "lv-fluid-solidifier", "solidify-block-of-steel" },
+	{ "mv-fluid-solidifier", "solidify-hsss-nugget" },
+	{ "lv-fluid-solidifier", "solidify-steel-gear" },
+	{ "lv-fluid-solidifier", "solidify-large-steel-gear" },
+	{ "lv-fluid-solidifier", "solidify-steel-rotor" },
+	{ "lv-fluid-solidifier", "solidify-steel-rod" },
+	{ "lv-fluid-solidifier", "solidify-long-steel-rod" },
+	{ "lv-fluid-solidifier", "solidify-steel-bolt" },
+	{ "lv-fluid-solidifier", "solidify-tin-ring" },
+	{ "lv-fluid-solidifier", "solidify-steel-screw" },
+	{ "ev-fluid-solidifier", "solidify-soularium-round" },
+	{ "lv-extractor", "melt-steel-ingot" },
+	{ "ev-extractor", "melt-titanium-ingot" },
+	{ "iv-extractor", "melt-iridium-ingot" },
+	-- issue #91 part 3 (prototypes/144-fork-dead-fluids.lua): blast furnace recipes with neon, krypton and xenon, nitric
+	-- acid from nitrogen dioxide, raw gasoline, gasoline and its cell
+	{ "ev-electric-blast-furnace", "hot-titanium-ingot-neon" },
+	{ "ev-electric-blast-furnace", "hot-tungsten-ingot-krypton" },
+	{ "iv-electric-blast-furnace", "hot-iridium-ingot-xenon" },
+	{ "hv-large-chemical-reactor", "nitric-acid-from-nitrogen-dioxide" },
+	{ "hv-large-chemical-reactor", "raw-gasoline" },
+	{ "hv-large-chemical-reactor", "gasoline" },
+	{ "lv-canning-machine", "gasoline-cell" },
+	-- issue #98 (prototypes/147-fork-gt-routes.lua): the second printed board and sodium persulfate, black plutonium
+	-- and cosmic neutronium in the blast furnace (without gas and with a gas) and the vacuum freezer, the high octane
+	-- line (its reactor recipe has five fluid inputs), GT's deuterium and PPIC wafer
+	{ "lv-chemical-reactor", "plastic-printed-circuit-board-sodium-persulfate" },
+	{ "lv-electrolyzer", "sodium-persulfate" },
+	{ "zpm-electric-blast-furnace", "hot-black-plutonium-ingot" },
+	{ "zpm-electric-blast-furnace", "hot-cosmic-neutronium-ingot-xenon" },
+	{ "zpm-vacuum-freezer", "black-plutonium-ingot" },
+	{ "zpm-vacuum-freezer", "cosmic-neutronium-ingot-from-hot-ingot" },
+	{ "hv-cracker", "hydrocracked-light-fuel" },
+	{ "hv-tall-distillation-tower", "distilling-hydrocracked-light-fuel" },
+	{ "ev-large-chemical-reactor", "high-octane-gasoline" },
+	{ "lv-canning-machine", "high-octane-gasoline-cell" },
+	{ "lv-centrifuge", "deuterium" },
+	{ "zpm-large-chemical-reactor", "ppic-wafer-sunnarium" },
+	-- issue #96 (prototypes/146-fork-platinum-line.lua): GTNH's platinum line, the sludge to platinum and palladium dust
+	{ "lv-chemical-reactor", "platinum-group-sludge-pentlandite" },
+	{ "lv-centrifuge", "platinum-group-sludge-centrifuging" },
+	{ "lv-chemical-reactor", "platinum-concentrate" },
+	{ "hv-large-chemical-reactor", "platinum-salt" },
+	{ "hv-large-sifter", "refined-platinum-salt" },
+	{ "mv-electric-blast-furnace", "metallic-platinum-powder-from-refined-salt" },
+	{ "lv-chemical-reactor", "reprecipitated-platinum-processing" },
+	{ "lv-chemical-reactor", "palladium-salt" },
+	{ "hv-large-chemical-reactor", "reprecipitated-palladium-processing" },
+	{ "lv-ore-washer", "crushed-platinum-washing" },
+	-- the residue branches (rhodium, ruthenium, osmium, iridium)
+	{ "lv-chemical-reactor", "potassium-disulfate" },
+	{ "mv-electric-blast-furnace", "platinum-group-residue-processing" },
+	{ "hv-large-chemical-reactor", "rhodium-sulfate-processing" },
+	{ "hv-large-sifter", "rhodium-filter-cake" },
+	{ "hv-large-chemical-reactor", "reprecipitated-rhodium-processing" },
+	{ "mv-electric-blast-furnace", "iridium-group-sludge-processing" },
+	{ "hv-tall-distillation-tower", "ruthenium-tetroxide-solution-distillation" },
+	{ "mv-fluid-solidifier", "ruthenium-tetroxide" },
+	{ "iv-tall-distillation-tower", "osmium-solution" },
+	{ "hv-large-chemical-reactor", "iridium-chloride" },
+	{ "ev-large-chemical-reactor", "iridium-dust" },
+	{ "lv-centrifuge", "sludge-dust-residue-centrifuging" },
 }
 
 local function rt_product(recipe)
@@ -681,6 +771,9 @@ function setup_recipe_test(s)
 			s.create_entity{ name = "substation", position = { x + 5, RT_Y + 7 }, force = "player" }
 			e.force.recipes[def[2]].enabled = true
 			e.set_recipe(def[2])
+			-- a recipe that needs a mold (prototypes/150-fork-molds.lua) gets one in the mold slot
+			local molds = prototypes.mod_data["fork-mold-recipes"]
+			if molds and molds.data[def[2]] then e.get_module_inventory().insert{ name = molds.data[def[2]] } end
 			for _, ing in pairs(prototypes.recipe[def[2]].ingredients) do
 				if ing.type == "item" then
 					local n = e.insert{ name = ing.name, count = ing.amount }
@@ -750,8 +843,355 @@ function setup_mold_test(s)
 	return {}
 end
 
+--- Steam turbines (issue #97, prototypes/145-fork-power-multiblocks.lua): a large steam turbine on steam and a high
+--- pressure steam turbine on superheated steam, each overloaded by an electric energy interface and with a turbine
+--- output hatch next to it. At ST_TICK each must make its full output (11.25 MW, 28.35 MW), have burnt about its GT
+--- flow (180 steam/s, 210 superheated steam/s; the fluid counted in the turbine and its pipeline segment), and its
+--- hatch must hold what it gives back: 0.0625 distilled water per steam, one steam per superheated steam (hatch +
+--- owed + the energy of the current step). Fuel check: superheated steam in the large turbine and steam in the high
+--- pressure one make no power and stay. Placement: each multiblock of issue #97 is put into a blueprint (it must be
+--- in it) and mined into an inventory (its item must come back).
+local ST_Y = 310                                        -- between the power test (260) and the cooled fluid test (370)
+local ST_TICK = 240
+local ST = {
+	--  key      entity                          x       fluid               amount  power (W)  fuel x effectivity  back               ratio   flow/s
+	{ "lst",     "large-steam-turbine",          -200.5, "steam",             1000,   11.25e6,   100e3 * 0.625,      "distilled-water", 0.0625, 180 },
+	{ "hp",      "high-pressure-steam-turbine",  -170.5, "superheated-steam", 1000,   28.35e6,   200e3 * 0.675,      "steam",           1,      210 },
+	{ "lst_sh",  "large-steam-turbine",          -140.5, "superheated-steam", 100,    11.25e6 },
+	{ "hp_st",   "high-pressure-steam-turbine",  -110.5, "steam",             100,    28.35e6 },
+}
+--- the multiblocks of issue #97 that exist in this version (the placement test)
+ST_PLACE = { "large-steam-turbine", "high-pressure-steam-turbine", "large-heat-exchanger", "fluid-nuclear-reactor",
+	"lapotronic-supercapacitor" }
+local ST_PLACE_X = -80.5
+
+function setup_steam_test(s)
+	local fails = {}
+	storage.steam = { t = {} }
+	for _, def in ipairs(ST) do
+		local ok, err = pcall(function()
+			local g = s.create_entity{ name = def[2], position = { def[3], ST_Y }, force = "player", raise_built = true }
+			local got = g.insert_fluid{ name = def[4], amount = def[5] }
+			if math.abs(got - def[5]) > 1e-6 then fails[#fails + 1] = "steam test: " .. def[1] .. " took only " .. got .. " " .. def[4] end
+			local eei = s.create_entity{ name = "electric-energy-interface", position = { def[3], ST_Y + 6 }, force = "player" }
+			eei.power_production = 0
+			eei.power_usage = 1.5 * def[6] / 60
+			eei.electric_buffer_size = 1e8
+			s.create_entity{ name = "substation", position = { def[3] + 4, ST_Y + 6 }, force = "player" }
+			local h = def[8] and s.create_entity{ name = "turbine-output-hatch", position = { def[3] + 2, ST_Y }, force = "player", raise_built = true }
+			storage.steam.t[def[1]] = { g = g, h = h }
+		end)
+		if not ok then fails[#fails + 1] = "steam test " .. def[1] .. ": " .. tostring(err) end
+	end
+	--- placement: built 10 tiles apart
+	storage.steam.place = {}
+	for i, name in ipairs(ST_PLACE) do
+		local ok, err = pcall(function()
+			local e = s.create_entity{ name = name, position = { ST_PLACE_X + 10 * (i - 1), ST_Y }, force = "player", raise_built = true }
+			storage.steam.place[name] = e
+		end)
+		if not ok then fails[#fails + 1] = "placement test " .. name .. ": " .. tostring(err) end
+	end
+	return fails
+end
+
+function steam_test()
+	local st = storage.steam
+	if not st or st.done or game.tick < ST_TICK then return end
+	st.done = true
+	local problems = {}
+	local function expect(ok, what) if not ok then problems[#problems + 1] = what end end
+	local seconds = game.tick / 60
+	local parts = {}
+	for _, def in ipairs(ST) do
+		local c = st.t[def[1]]
+		if not (c and c.g.valid and (not def[8] or (c.h and c.h.valid))) then
+			expect(false, def[1] .. " missing")
+		elseif def[8] then
+			local g, h = c.g, c.h
+			local mw = g.energy_generated_last_tick * 60 / 1e6
+			expect(math.abs(mw * 1e6 - def[6]) <= 1e-3 * def[6], def[1] .. " makes " .. mw .. " MW, not " .. def[6] / 1e6)
+			local burnt = def[5] - fc_fluid_in(g, def[4])
+			expect(burnt > 0.9 * def[10] * (seconds - 0.2) and burnt < 1.02 * def[10] * seconds,
+				def[1] .. " burnt " .. burnt .. " " .. def[4] .. " in " .. seconds .. " s (GT flow " .. def[10] .. "/s)")
+			local back = h.get_fluid_count(def[8])
+			local owed = remote.call("gregtorio-power", "debt", g, def[8])
+				+ remote.call("gregtorio-power", "energy", g) / def[7] * def[9]
+			local want = burnt * def[9]
+			expect(back > 0, def[1] .. ": the output hatch got no " .. def[8])
+			expect(math.abs(back + owed - want) <= cooled_tolerance(want),
+				def[1] .. ": hatch holds " .. back .. " " .. def[8] .. " (+ " .. owed .. " owed) for " .. burnt .. " " .. def[4] .. " burnt")
+			expect(h.get_fluid_count(def[4]) == 0, def[1] .. ": " .. def[4] .. " leaked into the output hatch")
+			parts[#parts + 1] = string.format("%s %.2f MW, %.1f %s -> %.3f %s", def[2], mw, burnt, def[4], back + owed, def[8])
+		else
+			local g = c.g
+			local left = fc_fluid_in(g, def[4])
+			expect(g.energy_generated_last_tick == 0, def[1] .. ": runs on " .. def[4])
+			expect(math.abs(left - def[5]) < 1e-6, def[1] .. ": burnt " .. (def[5] - left) .. " " .. def[4])
+			local cs = g.custom_status
+			expect(g.disabled_by_script and cs and cs.label[1] == "entity-status.fork-wrong-fuel",
+				def[1] .. ": not stopped with \"Wrong fuel\"")
+		end
+	end
+	--- placement: blueprint, then mine
+	local inv = game.create_inventory(4)
+	local placed = 0
+	for name, e in pairs(st.place or {}) do
+		if not (e and e.valid) then
+			expect(false, "placement test: " .. name .. " missing")
+		else
+			inv.clear()
+			inv.insert{ name = "blueprint" }
+			local bp = inv[1]
+			local box = e.selection_box
+			bp.create_blueprint{ surface = e.surface, force = e.force, area = { { box.left_top.x - 0.5, box.left_top.y - 0.5 },
+				{ box.right_bottom.x + 0.5, box.right_bottom.y + 0.5 } } }
+			local found = false
+			for _, be in pairs(bp.get_blueprint_entities() or {}) do
+				if be.name == name then found = true end
+			end
+			expect(found, "placement test: " .. name .. " is not in its blueprint")
+			inv.clear()
+			expect(e.mine{ inventory = inv, force = true }, "placement test: " .. name .. " could not be mined")
+			expect(inv.get_item_count(name) == 1, "placement test: mining " .. name .. " gave " .. inv.get_item_count(name) .. " items")
+			placed = placed + 1
+		end
+	end
+	inv.destroy()
+	expect(placed == #ST_PLACE, "placement test: " .. placed .. " of " .. #ST_PLACE .. " multiblocks checked")
+	for _, p in pairs(problems) do log("DEVCHECK-RUNTIME-FAIL steam turbine test: " .. p) end
+	log("DEVCHECK-RUNTIME-STEAM " .. (#problems == 0 and "ok" or "failed") .. " (" .. table.concat(parts, "; ")
+		.. "; wrong fuels stopped; " .. placed .. " placed, blueprinted and mined)")
+end
+
+--- Nuclear chain (issue #97): a fluid nuclear reactor with two uranium rods and coolant, piped into a large heat
+--- exchanger on superheated steam (distilled water put in), a high pressure steam turbine on top of it, its steam
+--- through a turbine output hatch and pipes into a large steam turbine (with its own hatch for the water), both
+--- turbines on one network with a load of twice their output. The first rod is shortened to 2 s, so a depleted rod
+--- must come out while the second one burns. At NC_TICK: every machine has run, both turbines have made power, the
+--- energy of the two turbines since NC_FROM is 3.95 MJ per hot coolant the reactor made in that time (20
+--- superheated steam x 135 kJ + 20 steam x 62.5 kJ) within the pipes' and the 4 s crafts' slack, and the large steam
+--- turbine's hatch holds distilled water. Coolant and distilled water are topped up every tick (a crafting machine's
+--- input box holds twice the recipe's amount). A second heat exchanger on the steam recipe gets 32 hot coolant and 80
+--- distilled water: exactly 1280 steam and 32 coolant, nothing left.
+local NC_Y = 345
+local NC_X = -250.5
+local NC_FROM, NC_TICK = 300, 1380
+local NC_PER_HOT = 20 * 200e3 * 0.675 + 20 * 100e3 * 0.625
+
+function setup_chain_test(s)
+	local fails = {}
+	local x, y = NC_X, NC_Y
+	local nc = {}
+	storage.chain = nc
+	local ok, err = pcall(function()
+		local function make(name, px, py)
+			return s.create_entity{ name = name, position = { px, py }, force = "player", raise_built = true }
+		end
+		nc.reactor = make("fluid-nuclear-reactor", x - 4, y)
+		nc.lhe = make("large-heat-exchanger", x, y)
+		nc.hp = make("high-pressure-steam-turbine", x, y - 3)
+		nc.hatch = make("turbine-output-hatch", x + 2, y - 3)
+		nc.lst = make("large-steam-turbine", x + 2, y - 8)
+		nc.water = make("turbine-output-hatch", x, y - 8)
+		for _, p in pairs({ { x - 4, y - 2 }, { x - 3, y - 2 }, { x - 2, y - 2 }, { x - 2, y - 1 }, { x - 2, y },
+			{ x + 2, y - 4 }, { x + 2, y - 5 }, { x + 2, y - 6 } }) do
+			make("pipe", p[1], p[2])
+		end
+		for _, r in pairs({ "hot-coolant", "large-heat-exchanger-superheated-steam", "large-heat-exchanger-steam" }) do
+			game.forces.player.recipes[r].enabled = true
+		end
+		nc.reactor.set_recipe("hot-coolant")
+		nc.lhe.set_recipe("large-heat-exchanger-superheated-steam")
+		local function put(e, fluid, n)
+			local got = e.insert_fluid{ name = fluid, amount = n }
+			if math.abs(got - n) > 1e-6 then fails[#fails + 1] = "chain test: " .. e.name .. " took only " .. got .. " " .. fluid end
+		end
+		put(nc.reactor, "coolant", 42)
+		put(nc.lhe, "distilled-water", 40)
+		local rods = nc.reactor.get_fuel_inventory().insert{ name = "uranium-fuel-rod", count = 2 }
+		if rods ~= 2 then fails[#fails + 1] = "chain test: the reactor took " .. rods .. " fuel rods" end
+		local eei = s.create_entity{ name = "electric-energy-interface", position = { x + 7, y - 2 }, force = "player" }
+		eei.power_production = 0
+		eei.power_usage = 2 * (28.35e6 + 11.25e6) / 60
+		eei.electric_buffer_size = 1e8
+		s.create_entity{ name = "substation", position = { x + 7, y - 6 }, force = "player" }
+		--- the heat exchanger on steam, alone
+		nc.lhe2 = make("large-heat-exchanger", x + 20, y)
+		nc.lhe2.set_recipe("large-heat-exchanger-steam")
+		put(nc.lhe2, "hot-coolant", 32)
+		put(nc.lhe2, "distilled-water", 80)
+		nc.energy, nc.hp_on, nc.lst_on = 0, false, false
+	end)
+	if not ok then fails[#fails + 1] = "chain test: " .. tostring(err) end
+	return fails
+end
+
+--- every tick: shorten the first rod, add up the turbines' energy
+function chain_tick(tick)
+	local nc = storage.chain
+	if not nc or nc.done or not (nc.hp and nc.hp.valid and nc.lst and nc.lst.valid and nc.reactor.valid) then return end
+	nc.reactor.insert_fluid{ name = "coolant", amount = 100 }
+	nc.lhe.insert_fluid{ name = "distilled-water", amount = 100 }
+	if tick == 30 then
+		local b = nc.reactor.burner
+		if b.currently_burning then b.remaining_burning_fuel = 2 * 10.5e6 end
+	end
+	local hp, lst = nc.hp.energy_generated_last_tick, nc.lst.energy_generated_last_tick
+	if hp > 0 then nc.hp_on = true end
+	if lst > 0 then nc.lst_on = true end
+	if tick == NC_FROM then nc.from = nc.reactor.products_finished end
+	if tick > NC_FROM then nc.energy = nc.energy + hp + lst end
+end
+
+function chain_test()
+	local nc = storage.chain
+	if not nc or nc.done or game.tick < NC_TICK then return end
+	nc.done = true
+	local problems = {}
+	local function expect(ok, what) if not ok then problems[#problems + 1] = what end end
+	local summary = ""
+	for _, k in pairs({ "reactor", "lhe", "hp", "hatch", "lst", "water", "lhe2" }) do
+		expect(nc[k] and nc[k].valid, k .. " missing")
+	end
+	if #problems == 0 then
+		local r = nc.reactor
+		local depleted = r.get_burnt_result_inventory().get_item_count("depleted-uranium-fuel-rod")
+		expect(depleted == 1, "the reactor gave " .. depleted .. " depleted rods (one rod was shortened to 2 s)")
+		expect(r.burner.currently_burning ~= nil, "the reactor does not burn the second rod")
+		expect(r.products_finished >= 4, "the reactor made only " .. r.products_finished .. " crafts of hot coolant")
+		expect(nc.lhe.products_finished >= 4, "the heat exchanger made only " .. nc.lhe.products_finished .. " crafts")
+		expect(nc.hp_on and nc.lst_on, "a turbine never made power (high pressure " .. tostring(nc.hp_on)
+			.. ", large " .. tostring(nc.lst_on) .. ")")
+		local hot = 21 * (r.products_finished - (nc.from or 0))
+		local want = hot * NC_PER_HOT
+		local ratio = want > 0 and nc.energy / want or 0
+		expect(ratio > 0.6 and ratio < 1.25, string.format("the turbines made %.1f MJ for %d hot coolant (%.1f MJ expected)",
+			nc.energy / 1e6, hot, want / 1e6))
+		local water = nc.water.get_fluid_count("distilled-water")
+		expect(water > 0, "no distilled water in the large steam turbine's hatch")
+		local seconds = (NC_TICK - NC_FROM) / 60
+		--- the heat exchanger on steam: two crafts
+		local e2 = nc.lhe2
+		local steam, cool = e2.get_fluid_count("steam"), e2.get_fluid_count("coolant")
+		local wleft, hleft = e2.get_fluid_count("distilled-water"), e2.get_fluid_count("hot-coolant")
+		expect(math.abs(steam - 1280) < 1e-6 and math.abs(cool - 32) < 1e-6 and wleft < 1e-6 and hleft < 1e-6,
+			string.format("heat exchanger on steam: %.3f steam, %.3f coolant, %.3f water and %.3f hot coolant left (1280, 32, 0, 0)",
+				steam, cool, wleft, hleft))
+		summary = string.format(" (%d hot coolant in %.0f s -> %.1f MW from both turbines, %.0f %% of 3.95 MJ per hot coolant;"
+			.. " %d depleted rod; %.2f distilled water back; steam recipe 32 hot coolant -> %.0f steam)",
+			hot, seconds, nc.energy / seconds / 1e6, ratio * 100, depleted, water, steam)
+	end
+	for _, p in pairs(problems) do log("DEVCHECK-RUNTIME-FAIL nuclear chain test: " .. p) end
+	log("DEVCHECK-RUNTIME-CHAIN " .. (#problems == 0 and "ok" or "failed") .. summary)
+end
+
+--- Lapotronic supercapacitor (issue #97): an IV one on a network with a LuV plasma turbine (81.92 MW, secondary
+--- output; an electric energy interface is tertiary like the accumulator and does not charge it), which is removed
+--- at LS_SWITCH; then a UHV air collector (40.96 MW, a recipe without ingredients, its air removed every tick) runs
+--- from it. It must charge from tick LS_FROM to LS_SWITCH and discharge from LS_SWITCH + LS_FROM to LS_TICK at its
+--- 20.48 MW (within 3 %; its own loss is 0.6 % of that). The IV, LuV and ZPM ones must hold 27 blocks of 37.5,
+--- 187.5 and 937.5 GJ. Loss: a ZPM one without a network is set to 1 TJ at tick 100; at LS_TICK it must have lost
+--- exactly 1 % of its capacity per day for the whole steps of 10 ticks since (scripts/fork-power.lua).
+local LS_Y = 345
+local LS_X = -170.5
+local LS_FROM, LS_SWITCH, LS_TICK = 20, 300, 600
+local LS_LOSS_FROM = 100
+local LS_FLOW = 20.48e6
+local LS = {
+	{ "lapotronic-supercapacitor", 27 * 37.5e9 },
+	{ "luv-lapotronic-supercapacitor", 27 * 187.5e9 },
+	{ "zpm-lapotronic-supercapacitor", 27 * 937.5e9 },
+}
+
+function setup_lsc_test(s)
+	local fails = {}
+	local ls = {}
+	storage.lsc = ls
+	local ok, err = pcall(function()
+		ls.iv = s.create_entity{ name = LS[1][1], position = { LS_X, LS_Y }, force = "player", raise_built = true }
+		ls.turbine = s.create_entity{ name = "luv-large-plasma-turbine", position = { LS_X + 6, LS_Y - 1 }, force = "player",
+			raise_built = true }
+		local got = ls.turbine.insert_fluid{ name = "helium-plasma", amount = 100 }
+		if got < 100 then fails[#fails + 1] = "supercapacitor test: the turbine took only " .. got .. " plasma" end
+		ls.load = s.create_entity{ name = "uhv-air-collector", position = { LS_X + 6, LS_Y + 5 }, force = "player" }
+		for name, r in pairs(prototypes.recipe) do
+			if r.category == "lv-air-collector-recipes" and #r.ingredients == 0 then ls.recipe = name break end
+		end
+		if not ls.recipe then fails[#fails + 1] = "supercapacitor test: no air collector recipe" end
+		s.create_entity{ name = "substation", position = { LS_X + 4, LS_Y - 4 }, force = "player" }
+		ls.others = {}
+		for i, def in ipairs(LS) do
+			if i > 1 then
+				ls.others[def[1]] = s.create_entity{ name = def[1], position = { LS_X + 12 * (i - 1), LS_Y + 20 },
+					force = "player", raise_built = true }
+			end
+		end
+	end)
+	if not ok then fails[#fails + 1] = "supercapacitor test: " .. tostring(err) end
+	return fails
+end
+
+function lsc_tick(tick)
+	local ls = storage.lsc
+	if not ls or ls.done or not (ls.iv and ls.iv.valid and ls.load and ls.load.valid) then return end
+	if tick == LS_FROM then ls.e0 = ls.iv.energy end
+	if tick == LS_LOSS_FROM then
+		local z = ls.others[LS[3][1]]
+		if z and z.valid then z.energy = 1e12 end
+	end
+	if tick == LS_SWITCH then
+		ls.e1 = ls.iv.energy
+		if ls.turbine and ls.turbine.valid then ls.turbine.destroy() end
+		ls.load.force.recipes[ls.recipe].enabled = true
+		ls.load.set_recipe(ls.recipe)
+	end
+	if tick == LS_SWITCH + LS_FROM then ls.e2 = ls.iv.energy end
+	if tick > LS_SWITCH then ls.load.clear_fluid_inside() end
+end
+
+function lsc_test()
+	local ls = storage.lsc
+	if not ls or ls.done or game.tick < LS_TICK then return end
+	ls.done = true
+	local problems = {}
+	local function expect(ok, what) if not ok then problems[#problems + 1] = what end end
+	local summary = ""
+	local z = ls.others and ls.others[LS[3][1]]
+	if not (ls.iv and ls.iv.valid and z and z.valid and ls.e0 and ls.e1 and ls.e2) then
+		expect(false, "supercapacitors missing or a phase did not run")
+	else
+		for _, def in ipairs(LS) do
+			local e = def[1] == LS[1][1] and ls.iv or ls.others[def[1]]
+			expect(e and e.valid and math.abs(e.electric_buffer_size - def[2]) <= 1e-9 * def[2],
+				def[1] .. " holds " .. (e and e.valid and e.electric_buffer_size or 0) .. " J, not " .. def[2])
+		end
+		local charged = ls.e1 - ls.e0
+		local want_in = LS_FLOW * (LS_SWITCH - LS_FROM) / 60
+		expect(charged > 0.97 * want_in and charged <= want_in * 1.0001,
+			string.format("charged %.1f MJ in %d ticks (%.1f MJ at 20.48 MW)", charged / 1e6, LS_SWITCH - LS_FROM, want_in / 1e6))
+		local out = ls.e2 - ls.iv.energy
+		local want_out = LS_FLOW * (LS_TICK - LS_SWITCH - LS_FROM) / 60
+		expect(out > 0.97 * want_out and out < 1.03 * want_out,
+			string.format("gave %.1f MJ in %d ticks (%.1f MJ at 20.48 MW)", out / 1e6, LS_TICK - LS_SWITCH - LS_FROM, want_out / 1e6))
+		local steps = 0
+		for t = LS_LOSS_FROM + 1, game.tick do if t % 10 == 0 then steps = steps + 1 end end
+		local loss = LS[3][2] / 100 / 86400 * 10 / 60 * steps
+		local lost = 1e12 - z.energy
+		expect(math.abs(lost - loss) <= 1e-6 * loss + 1,
+			string.format("the ZPM supercapacitor lost %.0f J in %d steps, not %.0f", lost, steps, loss))
+		summary = string.format(" (IV: %.2f MW in, %.2f MW out; capacities %.1f / %.1f / %.1f GJ; ZPM loss %.0f kW)",
+			charged / ((LS_SWITCH - LS_FROM) / 60) / 1e6, out / ((LS_TICK - LS_SWITCH - LS_FROM) / 60) / 1e6,
+			LS[1][2] / 1e9, LS[2][2] / 1e9, LS[3][2] / 1e9, lost / (steps * 10 / 60) / 1e3)
+	end
+	for _, p in pairs(problems) do log("DEVCHECK-RUNTIME-FAIL supercapacitor test: " .. p) end
+	log("DEVCHECK-RUNTIME-LSC " .. (#problems == 0 and "ok" or "failed") .. summary)
+end
+
 script.on_event(defines.events.on_tick, function(event)
 	fuel_window_tick()
+	chain_tick(event.tick)
+	lsc_tick(event.tick)
 	cooled_load_tick(event.tick)
 	local m = storage.mold_machine
 	if storage.mold_done then return end
@@ -799,6 +1239,9 @@ script.on_nth_tick(10, function()
 	if not (storage.cooled and storage.cooled.done) then cooled_test() end
 	if not (storage.tiers and storage.tiers.done) then tier_test() end
 	if not (storage.recipe_test and storage.recipe_test.done) then recipe_test() end
+	steam_test()
+	chain_test()
+	lsc_test()
 	victory_test()
 end)
 
@@ -861,6 +1304,9 @@ script.on_init(function()
 	for _, f in pairs(setup_cooled_test(s)) do fails[#fails + 1] = f end
 	for _, f in pairs(setup_tier_test(s)) do fails[#fails + 1] = f end
 	for _, f in pairs(setup_recipe_test(s)) do fails[#fails + 1] = f end
+	for _, f in pairs(setup_steam_test(s)) do fails[#fails + 1] = f end
+	for _, f in pairs(setup_chain_test(s)) do fails[#fails + 1] = f end
+	for _, f in pairs(setup_lsc_test(s)) do fails[#fails + 1] = f end
 	log("DEVCHECK-RUNTIME placed=" .. placed .. " with_recipe=" .. with_recipe .. " failed=" .. #fails)
 	for _, f in pairs(fails) do log("DEVCHECK-RUNTIME-FAIL " .. f) end
 end)
