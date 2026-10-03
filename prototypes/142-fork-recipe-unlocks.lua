@@ -494,7 +494,12 @@ local UNLOCKS = {
 		"carbon-plate", "raw-carbon-fibers-ptfe", "raw-carbon-mesh",
 	},
 	["nuclear-power"] = { -- EV
-		"large-heat-exchanger", "large-heat-exchanger-controller", "reactor-pressure-vessel",
+		"reactor-pressure-vessel",
+	},
+	["large-steam-turbine"] = { -- EV (issue #97; the magnalium parts and casings are also on industrial-mixer)
+		"blue-steel-frame", "large-steam-turbine", "large-steam-turbine-controller", "long-magnalium-rod",
+		"magnalium-bolt", "magnalium-ingot", "magnalium-plate", "magnalium-rod", "magnalium-screw",
+		"magnalium-turbine-blade", "magnalium-turbine-rotor", "steel-turbine-casing", "turbine-output-hatch",
 	},
 	["nuclear-fuel-rods"] = { -- EV
 		"depleted-thorium-fuel-rod-centrifuging", "depleted-uranium-fuel-rod-centrifuging",
@@ -521,9 +526,15 @@ local UNLOCKS = {
 		"large-talonite-gear",
 	},
 	["industrial-mixer"] = { -- IV
-		"high-pressure-steam-turbine", "high-pressure-steam-turbine-controller", "large-steam-turbine",
-		"large-steam-turbine-controller", "long-magnalium-rod", "magnalium-bolt", "magnalium-rod", "magnalium-screw",
-		"magnalium-turbine-blade", "magnalium-turbine-rotor",
+		"long-magnalium-rod", "magnalium-bolt", "magnalium-rod", "magnalium-screw",
+	},
+	["high-pressure-steam-turbine"] = { -- IV (issue #97)
+		"high-pressure-steam-turbine", "high-pressure-steam-turbine-controller", "titanium-turbine-casing",
+	},
+	["fluid-nuclear-reactor"] = { -- IV (issue #97; the heat exchanger moves here from nuclear-power, the reactor from
+		-- fusion-reactor-mk1, the iridium neutron reflector is also on fusion-reactor-mk1)
+		"coolant", "fluid-nuclear-reactor", "hot-coolant", "iridium-neutron-reflector", "large-heat-exchanger",
+		"large-heat-exchanger-controller", "large-heat-exchanger-steam", "large-heat-exchanger-superheated-steam",
 	},
 	["fluid-shaper"] = { -- IV
 		"inconel-625-bolt", "inconel-625-plate", "inconel-625-rod", "inconel-625-screw", "solidify-inconel-625-ingot",
@@ -556,9 +567,6 @@ local UNLOCKS = {
 	["super-coolant"] = { -- LuV
 		"ledox-plate", "raw-ledox-multismelter", "raw-ledox-smelter",
 	},
-	["fusion-reactor-mk1"] = { -- LuV
-		"fluid-nuclear-reactor",
-	},
 	["nano-power-ics"] = { -- LuV
 		"cpu-wafer-ed", "graphene-ed", "simple-soc-wafer-ed", "soc-wafer-ed",
 	},
@@ -577,6 +585,12 @@ local UNLOCKS = {
 	["lapotronic-energy-orbs"] = { -- ZPM
 		"lapotronic-capacitor-iv", "lapotronic-supercapacitor", "lapotronic-supercapacitor-casing",
 		"lapotronic-supercapacitor-controller",
+	},
+	["luv-lapotronic-supercapacitor"] = { -- ZPM (issue #97)
+		"lapotronic-capacitor-luv", "luv-lapotronic-supercapacitor",
+	},
+	["zpm-lapotronic-supercapacitor"] = { -- ZPM (issue #97; the energy module is also on fusion-coil-ii)
+		"energy-module", "lapotronic-capacitor-zpm", "zpm-lapotronic-supercapacitor",
 	},
 	["uv-multiblocks"] = { -- UV
 		"component-assembly-line", "ev-circuit-wrap", "ev-conveyor-module-coal", "ev-emitter-coal",
@@ -599,7 +613,7 @@ local UNLOCKS = {
 		"microminer-infinity-catalyst",
 	},
 }
---- Issue #98 (prototypes/145-fork-gt-routes.lua): the second printed board with sodium persulfate where the printed
+--- Issue #98 (prototypes/147-fork-gt-routes.lua): the second printed board with sodium persulfate where the printed
 --- board is (microprocessors), black plutonium and cosmic neutronium in the blast furnace with their dusts (the
 --- missions of bedrockium and quantium), the high octane line on its own technology, GT's PPIC wafer with the
 --- other one
