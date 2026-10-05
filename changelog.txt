@@ -1,9 +1,5 @@
 ---------------------------------------------------------------------------------------------------
 Version: 0.5.2
-  Bugfixes:
-    - The Lapotronic Supercapacitor keeps its charge when another tier replaces it (fast replace, upgrade planner): up to the capacity of the new one, so an upgrade no longer empties it and a downgrade loses only what does not fit (issue #124).
-  Balancing:
-    - The technologies with red and green science packs only (80 to 200 units, 56 of them) need a quarter of the units, rounded to 5: 20 to 50 (issue #127). A green pack costs 3 steel, 4.5 iron, 19 copper and 8 tin ingots, so 80 units were 240 steel, 5 hours in one primitive blast furnace. Technologies with other packs are unchanged.
   Changes:
     - One family of ME cards (issue #121): Gregtorio's own Advanced Card is gone, the ME Network's Advanced Card has its GregTech New Horizons recipe (2 platinum, 3 titanium, 1 red alloy, 1 calculation processor) and is unlocked by ME Upgrade Cards with the cards made from it (Fuzzy, Inverter, Equal Distribution), no longer by ME 256k Storage. The Acceleration Card is made from it and unlocked there too; it stays Gregtorio's item until it becomes a real ME Network card with a function of its own. Saves: Advanced Cards become ME Network's Advanced Cards.
     - The firearm magazine, light armor, rail ramp, rail support and Space Age's wood processing (the recipes only the character could make) are made in the assembling machines and the ME Molecular Assembler too, as 769 other recipes are (issue #126). The equipment and the other armors stay as they were: their technologies cannot be researched.
@@ -13,10 +9,14 @@ Version: 0.5.2
     - Microminer tab (issue #120): it starts with a row of the Microverse Projectors (MV to MAX) and their controller, so a search for "micro" finds the machine that runs the missions. Then one row per tier: the microminer, the data it needs, the mission and the ender tank of that tier's projector. Moved: the tier four mission (was alone in a tab of the processing machine recipes), the lunar navigation data (tier four, was in tier one), the nether and end data (tier two and three), the Ender Air Ender Tank (tier three, was in tier two) and the steel plated microminer (tier one, was in the processing machine recipes). The unused rows of the tiers five to twelve are gone.
     - The microminers, the data and the mission items say in their description where they run (a Microverse Projector of which tier, or an assembling machine).
     - The twelve base game and Space Age fluids that nothing in Gregtorio makes or uses (heavy and light oil, petroleum gas, ammoniacal solution, fluoroketone cold and hot, holmium solution, electrolyte, lithium brine, thruster fuel and oxidizer, fusion plasma) are hidden with their void recipes: gone from the fluid choosers and the Fluids tab (issue #119).
-  Graphics:
-    - Molten iron, molten copper and steam have Gregtorio's fluid icons (GregTech's molten texture in the material's colour, GregTech's steam) instead of Space Age's and the base game's, and the two melts are in the molten row of the Fluids tab (issue #119). They are still the same fluids.
   Bugfixes:
+    - The Lapotronic Supercapacitor keeps its charge when another tier replaces it (fast replace, upgrade planner): up to the capacity of the new one, so an upgrade no longer empties it and a downgrade loses only what does not fit (issue #124).
     - Molten metals: one melted ingot gives 14.4 (it showed 14.3), and nine melted ingots fill one block cast (issue #117). The game keeps fluid amounts in steps of 1/16777216 and cut every amount of a recipe off at the step below, so a tenth melt was needed for a block, a fifth for a large gear, and a rest stayed in the tank. Every fluid amount that is off that grid is now set on it: a recipe takes its amount rounded up and gives it rounded up and a little more (below one millionth), so n melts always cover the casts they are worth. Fluid already in tanks is unchanged.
+  Balancing:
+    - The technologies with red and green science packs only (80 to 200 units, 56 of them) need a quarter of the units, rounded to 5: 20 to 50 (issue #127). A green pack costs 3 steel, 4.5 iron, 19 copper and 8 tin ingots, so 80 units were 240 steel, 5 hours in one primitive blast furnace. Technologies with other packs are unchanged.
+  Graphics:
+    - The stone furnace and the iron furnace show a fire in their lower opening while they smelt (and glow at night); the small coal boiler is drawn without fire and shows its fire only while it burns, it was always burning (issue #137).
+    - Molten iron, molten copper and steam have Gregtorio's fluid icons (GregTech's molten texture in the material's colour, GregTech's steam) instead of Space Age's and the base game's, and the two melts are in the molten row of the Fluids tab (issue #119). They are still the same fluids.
 ---------------------------------------------------------------------------------------------------
 Version: 0.5.1
 Date: 2026-10-03
