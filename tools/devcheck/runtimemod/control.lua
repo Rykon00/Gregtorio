@@ -690,6 +690,12 @@ local RT = {
 	{ "mv-alloy-smelter", "anvil-alloy-smelter" },
 	{ "lv-assembling-machine", "firebrick-block-assembling-machine" },
 	{ "lv-chemical-bath", "paper-chemical-bath" },
+	-- issue #126, part B: the vanilla hand-only recipes in the assembling machines
+	{ "lv-assembling-machine", "firearm-magazine" },
+	{ "lv-assembling-machine", "light-armor" },
+	{ "lv-assembling-machine", "rail-ramp" },
+	{ "lv-assembling-machine", "rail-support" },
+	{ "lv-assembling-machine", "wood-processing" },
 	{ "mv-canning-machine", "depleted-uranium-fuel-rod-centrifuging" },
 	{ "lv-compressor", "block-of-copper" },
 	{ "iv-alloy-blast-smelter", "molten-hastelloy-c276" },
