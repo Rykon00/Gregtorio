@@ -15,6 +15,7 @@ Version: 0.5.2
   Balancing:
     - The technologies with red and green science packs only (80 to 200 units, 56 of them) need a quarter of the units, rounded to 5: 20 to 50 (issue #127). A green pack costs 3 steel, 4.5 iron, 19 copper and 8 tin ingots, so 80 units were 240 steel, 5 hours in one primitive blast furnace. Technologies with other packs are unchanged.
   Graphics:
+    - The basic machines from IV to MAX (assembling machine, macerator and the other 21 kinds) look like the machines of ULV to EV: the sprite is a block with depth on the right and at the bottom instead of a flat square, and the item icon is a cube, in the tier's colours (issue #138). The multiblocks are unchanged.
     - The stone furnace and the iron furnace show a fire in their lower opening while they smelt (and glow at night); the small coal boiler is drawn without fire and shows its fire only while it burns, it was always burning (issue #137).
     - Molten iron, molten copper and steam have Gregtorio's fluid icons (GregTech's molten texture in the material's colour, GregTech's steam) instead of Space Age's and the base game's, and the two melts are in the molten row of the Fluids tab (issue #119). They are still the same fluids.
 ---------------------------------------------------------------------------------------------------

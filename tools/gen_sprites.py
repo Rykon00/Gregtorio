@@ -12,6 +12,9 @@ Output:
   graphics/icons/fork/<name>.png                         (32x32)
 A file whose pixels did not change is not rewritten.
 
+The basic machines from IV up are drawn as the blocks of ULV to EV (issue #138): the sprite is the machine top as a front face with the
+depth of a block on the right and at the bottom (block_sprite), the icon a cube with the face on its right side (block_icon).
+
 Tier look (issue #41): basic machines from UHV up show the GT hull texture of their tier as a frame
 around the machine overlay (HULL_TIERS); the large plasma turbines and naquadah reactors show the GT
 dynamo hatches of their tier in the corners (TIER_COPIES) instead of a tinted copy. The IV to MAX upgrade
@@ -294,6 +297,59 @@ def tint(img, rgb):
     return img
 
 
+def shade(p, f):
+    return (min(255, int(p[0] * f)), min(255, int(p[1] * f)), min(255, int(p[2] * f)), p[3])
+
+
+BLOCK_FACE = 86     # the front face of a sprite of the 96 px, the depth is the rest (the ULV to EV sprites: 86 and 10)
+
+
+def block_sprite(flat):
+    """A flat machine top as the block of the ULV to EV sprites: the picture is the front face at the top left, the right and
+    the bottom side are its edge pixels drawn along the diagonal (right side lighter than the bottom)."""
+    size = flat.width
+    face = flat.resize((BLOCK_FACE, BLOCK_FACE), Image.NEAREST)
+    depth = size - BLOCK_FACE
+    out = Image.new("RGBA", (size, size))
+    last = BLOCK_FACE - 1
+    for d in range(depth, 0, -1):
+        for x in range(d, BLOCK_FACE + d):
+            out.putpixel((x, last + d), shade(face.getpixel((x - d, last)), 0.5))
+    for d in range(depth, 0, -1):
+        for y in range(d, BLOCK_FACE + d):
+            out.putpixel((last + d, y), shade(face.getpixel((last, y - d)), 0.72))
+    out.alpha_composite(face)
+    return out
+
+
+def block_icon(flat):
+    """A flat machine icon (32 px) as a cube: the machine face skewed on the right side, the left side and the top in the
+    colour of the edge of the picture (the corners of the ULV to EV icons: top, left, right, bottom, ...)."""
+    n = flat.width
+    k = n / 32.0
+    ring = [flat.getpixel((x, y)) for x in range(n) for y in range(n) if min(x, y, n - 1 - x, n - 1 - y) < max(1, n // 16)]
+    base = tuple(sum(p[i] for p in ring) // len(ring) for i in range(3)) + (255,)
+    out = Image.new("RGBA", (n, n))
+    from PIL import ImageDraw
+    d = ImageDraw.Draw(out)
+    T, L, R, C, B, LB, RB = (15, 1), (2, 8), (29, 8), (15, 15), (15, 31), (2, 24), (29, 24)
+    sc = lambda pts: [(x * k, y * k) for x, y in pts]
+    d.polygon(sc([T, R, C, L]), fill=shade(base, 1.2))
+    d.polygon(sc([L, C, B, LB]), fill=shade(base, 0.6))
+    # the right side: the face skewed, (dx, dy) from C: dx = 14 u / 32, dy = -7 u / 32 + 16 v / 32
+    for y in range(n):
+        for x in range(n):
+            dx, dy = (x + 0.5) / k - C[0], (y + 0.5) / k - C[1]
+            u = dx * 32 / 14
+            v = (dy + 7 * u / 32) * 2
+            if 0 <= u < 32 and 0 <= v < 32:
+                out.putpixel((x, y), flat.getpixel((min(n - 1, int(u * k)), min(n - 1, int(v * k)))))
+    edge = shade(base, 0.35)
+    for a, b in ((L, T), (T, R), (R, RB), (RB, B), (B, LB), (LB, L), (L, C), (C, R), (C, B)):
+        d.line([(a[0] * k, a[1] * k), (b[0] * k, b[1] * k)], fill=edge)
+    return out
+
+
 def casing_tile(gt, casing, override=None):
     spec = override or CASING_TEXTURE.get(casing) or (casing if ":" in casing else None)
     if spec and gt_path(gt, spec).exists():
@@ -330,13 +386,13 @@ def basic_machine(gt, base, tier="IV"):
     name = f"{tier.lower()}-{base}"
     if tier in HULL_TIERS:
         hull = tint(load(gt_path(gt, f"gregtech:iconsets/MACHINE_{tier}_SIDE")), TIER_TINT[tier])
-        save(in_hull(hull, idle, 3 * TILE), OUT_ENTITY / f"{name}-idle.png")
-        save_strip([in_hull(hull, fr, 3 * TILE) for fr in working], OUT_ENTITY / f"{name}-working.png")
-        save(in_hull(hull, idle, TILE), OUT_ICON / f"{name}.png")
+        save(block_sprite(in_hull(hull, idle, 3 * TILE)), OUT_ENTITY / f"{name}-idle.png")
+        save_strip([block_sprite(in_hull(hull, fr, 3 * TILE)) for fr in working], OUT_ENTITY / f"{name}-working.png")
+        save(block_icon(in_hull(hull, idle, TILE)), OUT_ICON / f"{name}.png")
         return
-    save(scaled(idle, 3 * TILE), OUT_ENTITY / f"{name}-idle.png")
-    save_strip([scaled(fr, 3 * TILE) for fr in working], OUT_ENTITY / f"{name}-working.png")
-    save(scaled(idle, TILE), OUT_ICON / f"{name}.png")
+    save(block_sprite(scaled(idle, 3 * TILE)), OUT_ENTITY / f"{name}-idle.png")
+    save_strip([block_sprite(scaled(fr, 3 * TILE)) for fr in working], OUT_ENTITY / f"{name}-working.png")
+    save(block_icon(scaled(idle, TILE)), OUT_ICON / f"{name}.png")
 
 
 def in_hull(hull, top, size):
