@@ -1,5 +1,5 @@
 --------------------------------------------------------------------------------
---- FORK TABLE ITEMS (issue #126, parts A and C)
+--- FORK TABLE ITEMS (issue #126)
 --- Gregtorio follows GregTech New Horizons: an item that only the crafting table (or the hand) can make is only
 --- acceptable where GTNH makes it that way. A crafting table recipe in Gregtorio is automated by the ME Molecular
 --- Assembler only, so for each such item the question is what GTNH does (sources next to each recipe; NHC =
@@ -82,16 +82,24 @@ create_recipe{
 }
 fork_add_unlock("chemical-reactor", "paper-chemical-bath")
 
+--- Issue #126, part B (maintainer's decision): the vanilla recipes that only the character could make and that a player can
+--- reach (firearm magazine, light armor, the elevated rail's ramp and support, Space Age's wood processing) become recipes
+--- of the category `crafting-or-assembling-recipes`: the crafting table, the ME Molecular Assembler, every assembling machine
+--- and the hand make them, as they do for 769 other recipes. GTNH has none of these items (no armor, magazines or elevated
+--- rails of Factorio's), so there is no GTNH recipe to follow; this is the option "also craftable in the assembling machines"
+--- of the issue, the one that automates them without inventing a tier or a recipe. The other 17 vanilla recipes of the issue's
+--- 21 (equipment, modular, power and mech armor, spidertron) are behind technologies nobody can research and stay as they
+--- are; devcheck fails for one of them once it becomes reachable.
+for _, name in pairs({ "firearm-magazine", "light-armor", "rail-ramp", "rail-support", "wood-processing" }) do
+	local r = data.raw.recipe[name]
+	if r then
+		r.category = "crafting-or-assembling-recipes"
+		r.hide_from_player_crafting = nil
+	end
+end
+
 FORK_RECIPES_TABLE_ONLY = {
 	["bucket-of-water"] = "GTNH: filled in the world or in the fluid canner (GT GTPostLoad.java:111); Gregtorio has neither, filling it by hand is the stand-in",
 	["liquid-concrete-bucket"] = "GTNH: crafting table only (NHC GT_CraftingRecipeLoader.java:1226)",
 	["mortar-and-pestle"] = "GTNH: the mortar is a tool made at the crafting table, no machine recipe (GT ProcessingIngot.java:101 uses it as a crafting tool)",
-	--- part B of issue #126 (not decided): vanilla recipes of the category crafting that the character alone can make; GTNH has
-	--- none of these items. The other 17 of the issue's 21 are behind vanilla technologies nobody can research
-	--- (UNRESEARCHABLE_OK of devcheck) and not reachable.
-	["firearm-magazine"] = "vanilla recipe, hand only; GTNH has no such item (issue #126, part B)",
-	["light-armor"] = "vanilla recipe, hand only; GTNH has no such item (issue #126, part B)",
-	["rail-ramp"] = "vanilla recipe, hand only; GTNH has no such item (issue #126, part B)",
-	["rail-support"] = "vanilla recipe, hand only; GTNH has no such item (issue #126, part B)",
-	["wood-processing"] = "Space Age recipe (technology tree-seeding), hand only: the vanilla biochamber and assembling machines cannot be built (issue #126, part B)",
 }
