@@ -214,7 +214,8 @@ local RM_ITEMS = { ["ammonia-hexachloroplatinate"] = "platinum-salt", ["crude-pl
 	["raw-platinum-powder"] = "reprecipitated-platinum", ["crude-palladium-residue"] = "palladium-salt",
 	["raw-palladium-powder"] = "reprecipitated-palladium", ["platinum-group-residue"] = "platinum-residue",
 	["potassium-pyrosulfate"] = "potassium-disulfate", ["iridium-dioxide-residue"] = "iridium-dioxide",
-	["ammonia-hexachloroiridiate"] = "iridium-chloride" }
+	["ammonia-hexachloroiridiate"] = "iridium-chloride",
+	["advanced-card"] = "me-advanced-card" }          -- issue #121
 local RM_MACHINES = {
 	{ "lv-chemical-reactor", "platinum-palladium-leachate-processing", nil },
 	{ "lv-electrolyzer", "chloroplatinic-acid", nil },
