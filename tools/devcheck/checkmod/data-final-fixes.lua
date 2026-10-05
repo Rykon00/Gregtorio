@@ -168,6 +168,31 @@ for n, f in pairs(data.raw.fluid) do
 end
 section("FLUIDS", fl)
 
+--- fluids that keep an icon of another mod on purpose (FORK_FLUID_ICONS_KEPT in prototypes/196-fork-subgroups.lua, issue #119;
+--- absent in older versions)
+local fk = {}
+for name, reason in pairs(FORK_FLUID_ICONS_KEPT or {}) do fk[#fk + 1] = name .. "\t" .. reason end
+section("FLUIDICONSOK", fk)
+
+--- Fluid amounts off the grid of 2^-24 (issue #117, prototypes/197-fork-fluid-steps.lua): recipe, kind, fluid, amount.
+--- The game cuts every amount off at the step below, so a recipe that is not on the grid gives and takes less than it says.
+local off = {}
+for n, r in pairs(data.raw.recipe) do
+	for _, key in pairs({ "ingredients", "results" }) do
+		for _, x in pairs(r[key] or {}) do
+			if x.type == "fluid" then
+				for _, f in pairs({ "amount", "amount_min", "amount_max" }) do
+					local a = x[f]
+					if a and a * 2 ^ 24 ~= math.floor(a * 2 ^ 24) then
+						off[#off + 1] = table.concat({ n, key, x.name, string.format("%.12g", a) }, "\t")
+					end
+				end
+			end
+		end
+	end
+end
+section("FLUIDSTEPS", off)
+
 --- Balance data (`devcheck.py check --balance-out`): recipes with amounts and times, machine speeds,
 --- technology unit counts. One JSON object per line.
 local bal = {}

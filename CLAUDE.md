@@ -54,7 +54,7 @@
   machines), 190 manual-labor
   burner usage (fist icon in the fuel slot), 195 microminer tab (issue #120: the Microverse Projectors as the first row of the Microminer tab, one row per tier t1 to t4 with its microminer, data, mission and ender tank, empty rows deleted; devcheck fails for a projector recipe outside the tab), 196 subgroups (the Fluids tab: every Gregtorio fluid gets a row of the item
   group `fluids` by its explicit table or a name pattern; a new fluid goes into one, the fallback row
-  `gregtorio-fluids-unsorted` is a devcheck warning; loads after every file that creates fluids), 198 crafting menu (shows machine recipes, which upstream
+  `gregtorio-fluids-unsorted` is a devcheck warning; issue #119: Gregtorio icons for molten iron, molten copper and steam, the twelve unused vanilla fluids hidden (`FORK_FLUIDS_HIDDEN`); a fluid that keeps another mod's icon on purpose goes into `FORK_FLUID_ICONS_KEPT`, devcheck warns otherwise; loads after every file that creates fluids), 197 fluid steps (issue #117: every fluid amount of a recipe that is not a multiple of the engine's step 2^-24 is set on the grid, takes up, gives up and nine steps more, so n melted ingots cover every cast they are worth; loads after every file that makes or changes a recipe; devcheck fails for an amount off the grid), 198 crafting menu (shows machine recipes, which upstream
   `create_recipe` hides; a recipe that must stay hidden goes into its allow-list
   `FORK_CRAFTING_MENU_HIDDEN`, devcheck fails otherwise; startup setting in `settings.lua`), 199 finalize.
   The phase plan is in `docs/ROADMAP.md`.

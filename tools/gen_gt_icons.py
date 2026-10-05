@@ -651,6 +651,18 @@ def molten_icons(tex, mats, names):
         print(f"{mat}	{rgb[0]} {rgb[1]} {rgb[2]}	{src}")
 
 
+def fluid_icons(tex, names):
+    """Issue #119: the icon of a fluid that has a texture of its own in GT (name=texture, e.g.
+    steam=fluid.steam): that texture's first frame, GT's colours as they are, scaled to the icon size."""
+    for spec in names:
+        name, texture = spec.split("=", 1)
+        img = fit(tex.load("gt:gregtech/textures/blocks/fluids/" + texture))
+        target = ROOT / "graphics/fluids" / f"{name}.png"
+        if not (target.exists() and Image.open(target).convert("RGBA").tobytes() == img.tobytes()):
+            img.save(target, optimize=True)
+        print(f"{name}	gt:{texture}")
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--gt", type=Path, required=True, help="GT5-Unofficial checkout")
@@ -660,9 +672,13 @@ def main():
     ap.add_argument("--sources", type=Path, help="write a TSV: item, GT textures it is made of (for the review)")
     ap.add_argument("--molten", nargs="*", help="issue #91: write graphics/fluids/molten-<material>.png for these materials"
                     " (GT's molten fluid texture in the material colour) and print the colours")
+    ap.add_argument("--fluid", nargs="*", metavar="NAME=TEXTURE", help="issue #119: write graphics/fluids/<name>.png from"
+                    " GT's fluid texture <texture> (first frame, as GT draws it)")
     a = ap.parse_args()
     tex = Tex(a.gt, a.core)
     mats = Materials(tex)
+    if a.fluid:
+        return fluid_icons(tex, a.fluid)
     if a.molten:
         return molten_icons(tex, mats, a.molten)
     c = Composer(tex, mats)

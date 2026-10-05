@@ -453,6 +453,25 @@ def check_microminer_tab(sec):
             if r[9] != MICROMINER_TAB:
                 out.append(f"{r[1]} ({r[2]}): row {r[8]}, tab {r[9]}")
     return sorted(out)
+def check_fluid_icons(sec):
+    """Issue #119 (a warning): a fluid of the Fluids tab whose icon is not a Gregtorio file shows the base game's or Space
+    Age's icon next to the others. The ones kept on purpose are in FORK_FLUID_ICONS_KEPT (prototypes/196-fork-subgroups.lua,
+    with the reason); an entry that matches nothing is listed too. Hidden and parameter fluids do not count."""
+    kept = {r[0] for r in sec.get("FLUIDICONSOK", [])}
+    seen, out = set(), []
+    for name, sg, group, _sgo, hidden, param, _order, icon, *_ in sec.get("FLUIDS", []):
+        if hidden == "true" or param == "true" or group != "fluids":
+            continue
+        seen.add(name)
+        if not icon.startswith("__gregtorio-continued__/") and name not in kept:
+            out.append(f"{name} ({icon})")
+    out += [f"{n} (in FORK_FLUID_ICONS_KEPT, but not a visible fluid of the Fluids tab)" for n in sorted(kept - seen)]
+    return sorted(out)
+def check_fluid_steps(sec):
+    """Issue #117 (prototypes/197-fork-fluid-steps.lua): every fluid amount of a recipe is a multiple of 2^-24, the
+    step the game keeps amounts in. The game cuts every amount off at the step below, so one that is not on the grid
+    gives and takes less than it says (14.4 becomes 14.399999976, nine melts no longer fill a block cast)."""
+    return [f"{r} ({kind}) {fluid}: {amount}" for r, kind, fluid, amount in sec.get("FLUIDSTEPS", [])]
 
 
 def check_files(sec):
@@ -698,6 +717,11 @@ def check(a):
     report("fluids outside the Fluids tab (subgroup missing or not in the group fluids)", fluid_problems)
     microminer = check_microminer_tab(sec)
     report("Microverse Projector recipes outside the Microminer tab (issue #120)", microminer)
+    report("WARNING: fluids of the Fluids tab with an icon of the base game or Space Age (issue #119; "
+           "FORK_FLUID_ICONS_KEPT in prototypes/196-fork-subgroups.lua keeps one on purpose)", check_fluid_icons(sec))
+    fluid_steps = check_fluid_steps(sec)
+    print(f"\nfluid amounts off the grid of 2^-24 (issue #117): {len(fluid_steps)}")
+    report("fluid amounts of recipes that are not a multiple of 2^-24 (prototypes/197-fork-fluid-steps.lua)", fluid_steps)
     one_pack_info, one_pack = check_one_pack(sec)
     print(f"\ncheap research ({ONE_PACK}): {one_pack_info}")
     report("technologies that cost more than one science pack of each kind although the setting is on", one_pack)
@@ -712,7 +736,7 @@ def check(a):
         Path(a.balance_out).write_text("[\n" + ",\n".join(rows) + "\n]\n", encoding="utf-8")
         print(f"\nbalance data written to {a.balance_out} (recipes, machines, technologies as JSON)")
     ok = not (files or [s for s in sprites if not s.startswith("(")] or uncraft or menu or required or unresearchable
-              or new_drafts or fluid_problems or locked or one_pack or microminer)
+              or new_drafts or fluid_problems or locked or one_pack or fluid_steps or microminer)
     print("\nRESULT:", "OK" if ok else "PROBLEMS FOUND")
     return 0 if ok else 1
 
@@ -758,7 +782,7 @@ def runtime(a):
     print(f"benchmark: {ran.group(0) if ran else 'did not run'}")
     # the ME network's runtime tests are in me-network since issue #83 (its tools/devcheck)
     tests = (("MOLD", "mold test"), ("POWER", "power test"), ("FUEL", "fuel check test"), ("COOLED", "cooled fluid test"),
-             ("TIERS", "turbine tier test"), ("RECIPES", "recipe test"), ("STEAM", "steam turbine test"), ("CHAIN", "nuclear chain test"), ("LSC", "supercapacitor test"), ("VICTORY", "victory test"),
+             ("TIERS", "turbine tier test"), ("RECIPES", "recipe test"), ("STEAM", "steam turbine test"), ("CHAIN", "nuclear chain test"), ("LSC", "supercapacitor test"), ("MELT", "melt and cast test"), ("VICTORY", "victory test"),
              ("POSTVICTORY", "post-victory test"))
     for key, label in tests:
         m = re.search(rf"DEVCHECK-RUNTIME-{key} (.*)", log)

@@ -1,0 +1,32 @@
+# This mod's category on the "Gregtorio & ME Network" Discord server.
+#
+# A fragment for https://github.com/Rykon00/gregtorio-me-network_discord-bot: that repository holds
+# the tool, the server-wide settings and the reference for this file. Changes here are planned on
+# the pull request and applied when it is merged (.github/workflows/discord.yml).
+# Nothing is deleted by removing it from this file; a rename needs previous_names.
+
+categories:
+  - name: Gregtorio
+    position: 20
+    channels:
+      - name: gregtorio-chat
+        topic: >-
+          Everything about Gregtorio Continued.
+          Mod portal: https://mods.factorio.com/mod/gregtorio-continued
+      - name: gregtorio-help
+        type: forum
+        topic: |-
+          Questions about Gregtorio Continued: progression, recipes, machines, multiblocks.
+
+          - Search first; your question may have an answer already.
+          - Say which versions of Gregtorio Continued and Factorio you play and which tier you are at.
+          - Screenshots help.
+          - Found a bug? Confirmed bugs go to https://github.com/Rykon00/Gregtorio/issues with your log file and, if you can, a save.
+        tags: [question, progression, recipes, multiblocks, power, balance, bug, solved]
+        sort: latest_activity
+        layout: list
+      - name: gregtorio-releases
+        type: announcement
+        read_only: true
+        writers: [Maintainer]
+        topic: New versions of Gregtorio Continued. Follow this channel to get them in your own server.

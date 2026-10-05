@@ -3,6 +3,11 @@ Version: 0.5.2
   Changes:
     - Microminer tab (issue #120): it starts with a row of the Microverse Projectors (MV to MAX) and their controller, so a search for "micro" finds the machine that runs the missions. Then one row per tier: the microminer, the data it needs, the mission and the ender tank of that tier's projector. Moved: the tier four mission (was alone in a tab of the processing machine recipes), the lunar navigation data (tier four, was in tier one), the nether and end data (tier two and three), the Ender Air Ender Tank (tier three, was in tier two) and the steel plated microminer (tier one, was in the processing machine recipes). The unused rows of the tiers five to twelve are gone.
     - The microminers, the data and the mission items say in their description where they run (a Microverse Projector of which tier, or an assembling machine).
+    - The twelve base game and Space Age fluids that nothing in Gregtorio makes or uses (heavy and light oil, petroleum gas, ammoniacal solution, fluoroketone cold and hot, holmium solution, electrolyte, lithium brine, thruster fuel and oxidizer, fusion plasma) are hidden with their void recipes: gone from the fluid choosers and the Fluids tab (issue #119).
+  Graphics:
+    - Molten iron, molten copper and steam have Gregtorio's fluid icons (GregTech's molten texture in the material's colour, GregTech's steam) instead of Space Age's and the base game's, and the two melts are in the molten row of the Fluids tab (issue #119). They are still the same fluids.
+  Bugfixes:
+    - Molten metals: one melted ingot gives 14.4 (it showed 14.3), and nine melted ingots fill one block cast (issue #117). The game keeps fluid amounts in steps of 1/16777216 and cut every amount of a recipe off at the step below, so a tenth melt was needed for a block, a fifth for a large gear, and a rest stayed in the tank. Every fluid amount that is off that grid is now set on it: a recipe takes its amount rounded up and gives it rounded up and a little more (below one millionth), so n melts always cover the casts they are worth. Fluid already in tanks is unchanged.
 ---------------------------------------------------------------------------------------------------
 Version: 0.5.1
 Date: 2026-10-03
