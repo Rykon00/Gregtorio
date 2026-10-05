@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 """Generates GUI icons derived from existing Gregtorio item icons.
 
-Currently: the "manual labor" burner usage (see prototypes/190-fork-manual-labor.lua).
+Currently: the "manual labor" burner usage (see prototypes/190-fork-manual-labor.lua) and the tab icon of the item
+group "Material parts" (prototypes/194-fork-material-parts.lua).
 The fist is cut out of graphics/icons/manual-labor.png (flood fill of the dark background
 from the border) and rendered as
 
@@ -10,6 +11,7 @@ from the border) and rendered as
                                                     empty-fuel-slot gas pump)
   graphics/icons/fork/manual-labor-icon-red.png     64x64, red with dark outline, shown as the
                                                     "no manual labor" alert over the entity
+  graphics/item-groups/material-parts-tab.png       128x128, the iron ingot, plate, gear and rod icons in a 2x2 grid
 
     python tools/gen_ui_icons.py
 """
@@ -92,12 +94,23 @@ def red_alert(fist):
     return outline
 
 
+def parts_tab():
+    """Tab icon of the Material parts group: four iron parts, each icon scaled 2x (32 -> 64) pixel-exact."""
+    canvas = Image.new("RGBA", (128, 128))
+    for i, name in enumerate(("iron-ingot", "iron-plate", "iron-gear", "iron-rod")):
+        img = Image.open(ROOT / "graphics/icons" / f"{name}.png").convert("RGBA")
+        img = img.resize((64, 64), Image.NEAREST)
+        canvas.alpha_composite(img, ((i % 2) * 64, (i // 2) * 64))
+    return canvas
+
+
 def main():
     OUT.mkdir(parents=True, exist_ok=True)
+    parts_tab().save(ROOT / "graphics/item-groups/material-parts-tab.png")
     fist = cut_out(Image.open(SRC))
     empty_slot(fist).save(OUT / "empty-manual-labor-slot.png")
     red_alert(fist).save(OUT / "manual-labor-icon-red.png")
-    print("written: empty-manual-labor-slot.png, manual-labor-icon-red.png")
+    print("written: empty-manual-labor-slot.png, manual-labor-icon-red.png, material-parts-tab.png")
 
 
 if __name__ == "__main__":

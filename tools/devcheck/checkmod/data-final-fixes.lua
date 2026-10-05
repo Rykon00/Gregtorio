@@ -94,6 +94,15 @@ local tk = {}
 for name, reason in pairs(FORK_RECIPES_TABLE_ONLY or {}) do tk[#tk + 1] = name .. "\t" .. reason end
 section("TABLEONLYOK", tk)
 
+--- Issue #118 (prototypes/194-fork-material-parts.lua): the material parts in rows by form; the materials without a tier
+--- (absent in older versions)
+local mp = {}
+if FORK_MATERIAL_PARTS then
+	mp[#mp + 1] = "count\t" .. FORK_MATERIAL_PARTS.parts .. "\t" .. FORK_MATERIAL_PARTS.materials
+	for _, m in pairs(FORK_MATERIAL_PARTS.unranked) do mp[#mp + 1] = "unranked\t" .. m end
+end
+section("MATERIALPARTS", mp)
+
 --- Every __gregtorio-continued__/ file referenced anywhere, with its owner prototype
 local paths, seen = {}, {}
 local function scan(t, owner, depth)

@@ -204,9 +204,10 @@ for _, r in pairs(data.raw.recipe) do
 end
 
 --- (recipes: the casts and melts made here; 199's auto-unlock does not count them as producers, see there)
-FORK_CASTING = { casts = 0, melts = 0, fluids = 0, recipes = {} }
+FORK_CASTING = { casts = 0, melts = 0, fluids = 0, recipes = {}, tiers = {} }   -- tiers: material -> its tier (194 orders the material parts by it)
 for mat, def in pairs(MATERIALS) do
 	local tier, tech = def[1], def[2]
+	FORK_CASTING.tiers[mat] = tier
 	local melt = "molten-" .. (ALIAS[mat] or mat)
 	if def.color then
 		F.fluid(melt, "molten-" .. mat, { def.color[1] / 255, def.color[2] / 255, def.color[3] / 255 })
