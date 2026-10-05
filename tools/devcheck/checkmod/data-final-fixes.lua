@@ -168,6 +168,12 @@ for n, f in pairs(data.raw.fluid) do
 end
 section("FLUIDS", fl)
 
+--- fluids that keep an icon of another mod on purpose (FORK_FLUID_ICONS_KEPT in prototypes/196-fork-subgroups.lua, issue #119;
+--- absent in older versions)
+local fk = {}
+for name, reason in pairs(FORK_FLUID_ICONS_KEPT or {}) do fk[#fk + 1] = name .. "	" .. reason end
+section("FLUIDICONSOK", fk)
+
 --- Balance data (`devcheck.py check --balance-out`): recipes with amounts and times, machine speeds,
 --- technology unit counts. One JSON object per line.
 local bal = {}

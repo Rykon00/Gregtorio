@@ -440,6 +440,22 @@ def check_fluids_tab(sec):
     return info, sorted(fallback), sorted(problems)
 
 
+def check_fluid_icons(sec):
+    """Issue #119 (a warning): a fluid of the Fluids tab whose icon is not a Gregtorio file shows the base game's or Space
+    Age's icon next to the others. The ones kept on purpose are in FORK_FLUID_ICONS_KEPT (prototypes/196-fork-subgroups.lua,
+    with the reason); an entry that matches nothing is listed too. Hidden and parameter fluids do not count."""
+    kept = {r[0] for r in sec.get("FLUIDICONSOK", [])}
+    seen, out = set(), []
+    for name, sg, group, _sgo, hidden, param, _order, icon, *_ in sec.get("FLUIDS", []):
+        if hidden == "true" or param == "true" or group != "fluids":
+            continue
+        seen.add(name)
+        if not icon.startswith("__gregtorio-continued__/") and name not in kept:
+            out.append(f"{name} ({icon})")
+    out += [f"{n} (in FORK_FLUID_ICONS_KEPT, but not a visible fluid of the Fluids tab)" for n in sorted(kept - seen)]
+    return sorted(out)
+
+
 def check_files(sec):
     missing = []
     for path, owner in sec.get("PATHS", []):
@@ -681,6 +697,8 @@ def check(a):
     report(f"WARNING: fluids in the fallback row {FLUID_FALLBACK} (sort them in prototypes/196-fork-subgroups.lua)",
            fluid_fallback)
     report("fluids outside the Fluids tab (subgroup missing or not in the group fluids)", fluid_problems)
+    report("WARNING: fluids of the Fluids tab with an icon of the base game or Space Age (issue #119; "
+           "FORK_FLUID_ICONS_KEPT in prototypes/196-fork-subgroups.lua keeps one on purpose)", check_fluid_icons(sec))
     one_pack_info, one_pack = check_one_pack(sec)
     print(f"\ncheap research ({ONE_PACK}): {one_pack_info}")
     report("technologies that cost more than one science pack of each kind although the setting is on", one_pack)
