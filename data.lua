@@ -120,6 +120,8 @@ require("prototypes.143-fork-casting")
 require("prototypes.144-fork-dead-fluids")
 --- issue #126: GTNH's machine recipes for items the crafting table made, and the allow-list of table-only recipes (before the molds)
 require("prototypes.148-fork-gtnh-table-items")
+--- issue #127: the unit counts of the technologies with red and green packs only
+require("prototypes.149-fork-early-research")
 require("prototypes.150-fork-molds")
 require("prototypes.190-fork-manual-labor")
 --- issue #118: the material parts in rows by form (after the casts and the molds)
