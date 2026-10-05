@@ -440,6 +440,20 @@ def check_fluids_tab(sec):
     return info, sorted(fallback), sorted(problems)
 
 
+def check_fluid_icons(sec):
+    """Issue #119 (a warning): a fluid of the Fluids tab whose icon is not a Gregtorio file shows the base game's or Space
+    Age's icon next to the others. The ones kept on purpose are in FORK_FLUID_ICONS_KEPT (prototypes/196-fork-subgroups.lua,
+    with the reason); an entry that matches nothing is listed too. Hidden and parameter fluids do not count."""
+    kept = {r[0] for r in sec.get("FLUIDICONSOK", [])}
+    seen, out = set(), []
+    for name, sg, group, _sgo, hidden, param, _order, icon, *_ in sec.get("FLUIDS", []):
+        if hidden == "true" or param == "true" or group != "fluids":
+            continue
+        seen.add(name)
+        if not icon.startswith("__gregtorio-continued__/") and name not in kept:
+            out.append(f"{name} ({icon})")
+    out += [f"{n} (in FORK_FLUID_ICONS_KEPT, but not a visible fluid of the Fluids tab)" for n in sorted(kept - seen)]
+    return sorted(out)
 def check_fluid_steps(sec):
     """Issue #117 (prototypes/197-fork-fluid-steps.lua): every fluid amount of a recipe is a multiple of 2^-24, the
     step the game keeps amounts in. The game cuts every amount off at the step below, so one that is not on the grid
@@ -688,6 +702,8 @@ def check(a):
     report(f"WARNING: fluids in the fallback row {FLUID_FALLBACK} (sort them in prototypes/196-fork-subgroups.lua)",
            fluid_fallback)
     report("fluids outside the Fluids tab (subgroup missing or not in the group fluids)", fluid_problems)
+    report("WARNING: fluids of the Fluids tab with an icon of the base game or Space Age (issue #119; "
+           "FORK_FLUID_ICONS_KEPT in prototypes/196-fork-subgroups.lua keeps one on purpose)", check_fluid_icons(sec))
     fluid_steps = check_fluid_steps(sec)
     print(f"\nfluid amounts off the grid of 2^-24 (issue #117): {len(fluid_steps)}")
     report("fluid amounts of recipes that are not a multiple of 2^-24 (prototypes/197-fork-fluid-steps.lua)", fluid_steps)
