@@ -88,6 +88,12 @@ local lk = {}
 for name, reason in pairs(FORK_RECIPES_LOCKED or {}) do lk[#lk + 1] = name .. "\t" .. reason end
 section("LOCKEDOK", lk)
 
+--- Issue #126: the recipes of items only the crafting table, the ME Molecular Assembler or the hand can make, on purpose
+--- (FORK_RECIPES_TABLE_ONLY in prototypes/148-fork-gtnh-table-items.lua; absent in older versions)
+local tk = {}
+for name, reason in pairs(FORK_RECIPES_TABLE_ONLY or {}) do tk[#tk + 1] = name .. "\t" .. reason end
+section("TABLEONLYOK", tk)
+
 --- Every __gregtorio-continued__/ file referenced anywhere, with its owner prototype
 local paths, seen = {}, {}
 local function scan(t, owner, depth)

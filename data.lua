@@ -118,6 +118,8 @@ require("prototypes.142-fork-recipe-unlocks")
 require("prototypes.143-fork-casting")
 --- issue #91: GregTech's producers and uses of the fluids nothing made or used
 require("prototypes.144-fork-dead-fluids")
+--- issue #126: GTNH's machine recipes for items the crafting table made, and the allow-list of table-only recipes (before the molds)
+require("prototypes.148-fork-gtnh-table-items")
 require("prototypes.150-fork-molds")
 require("prototypes.190-fork-manual-labor")
 --- subgroups of the Fluids tab (after every file that creates fluids)

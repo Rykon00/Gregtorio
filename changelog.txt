@@ -1,4 +1,9 @@
 ---------------------------------------------------------------------------------------------------
+Version: 0.5.2
+  Changes:
+    - The crafting menu shows the machine recipes of the Manual Inserter, the iron chest, the wooden chest, the iron rod and the pipe next to their crafting table recipes (they were hidden: a player saw only the crafting table recipe); an LV assembling machine offers the Manual Inserter, the chests and the iron rod's lathe and the MV extruder the pipe as soon as their technology is researched (issue #126).
+    - The anvil, the firebrick block and paper have GregTech New Horizons' machine recipes besides their crafting table recipes: the anvil in the LV fluid solidifier (446.4 molten iron, technology Concrete) and the MV alloy smelter (31 iron ingots and the mold, technology MV Machines), the firebrick block in the LV assembling machine (24 firebricks, 8 gypsum, 460.8 liquid concrete -> 4, technology Concrete), paper in the LV chemical bath (1 wood pulp, 10 water; technology Chemical Reactor).
+---------------------------------------------------------------------------------------------------
 Version: 0.5.1
 Date: 2026-10-03
   Features:

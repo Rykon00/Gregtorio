@@ -440,6 +440,44 @@ def check_fluids_tab(sec):
     return info, sorted(fallback), sorted(problems)
 
 
+TABLE_MACHINES = {"crafting-table", "me-molecular-assembler"}
+
+
+def check_table_only(m, sec):
+    """Issue #126 (prototypes/148-fork-gtnh-table-items.lua): an item that can only be made at the crafting table, in the ME
+    Molecular Assembler or by hand cannot be automated (the ME Molecular Assembler apart). GregTech New Horizons decides: a
+    reachable item whose every recipe is such a recipe fails unless the recipes are in the allow-list
+    FORK_RECIPES_TABLE_ONLY with their reason; an entry that is not (or no longer) such a recipe fails too. A recipe is
+    "table or hand only" when no obtainable machine but the crafting table and the ME Molecular Assembler has its category
+    (the character is not a machine). Returns (info line, problems)."""
+    allow = {r[0]: r[1] for r in sec.get("TABLEONLYOK", [])}
+    machines = {}
+    def table_only(r):
+        cat = m.R[r]["cat"]
+        if cat not in machines:
+            machines[cat] = {e for e in m.crafters if e != "character" and cat in m.C.get(e, [])}
+        return not (machines[cat] - TABLE_MACHINES)
+    makers = {}
+    for r in sorted(m.unlocked):
+        v = m.R[r]
+        if v["hidden"] or r.endswith("-recycling") or r.startswith("void-") or v["cat"] in ("recycling", "parameters"):
+            continue
+        for x in v["res"]:
+            if x in m.I:
+                makers.setdefault(x, []).append(r)
+    problems, only_items, flagged = [], 0, set()
+    for item, recipes in sorted(makers.items()):
+        if all(table_only(r) for r in recipes):
+            only_items += 1
+            flagged.update(recipes)
+            open_ = [r for r in recipes if r not in allow]
+            if open_:
+                problems.append(f"{item}: only {', '.join(f'{r} ({m.R[r]['cat']})' for r in open_)}")
+    stale = [f"{r} (allow-list entry: not a recipe of an item that only the crafting table or the hand makes)"
+             for r in sorted(allow) if r not in flagged]
+    return f"{only_items} reachable items with only crafting table or hand recipes, {len(allow)} recipes in the allow-list", problems + stale
+
+
 def check_files(sec):
     missing = []
     for path, owner in sec.get("PATHS", []):
@@ -681,6 +719,9 @@ def check(a):
     report(f"WARNING: fluids in the fallback row {FLUID_FALLBACK} (sort them in prototypes/196-fork-subgroups.lua)",
            fluid_fallback)
     report("fluids outside the Fluids tab (subgroup missing or not in the group fluids)", fluid_problems)
+    table_info, table_only = check_table_only(m, sec)
+    print(f"\ncrafting table and hand only items (issue #126): {table_info}")
+    report("items that only the crafting table or the hand can make, without an entry in FORK_RECIPES_TABLE_ONLY", table_only)
     one_pack_info, one_pack = check_one_pack(sec)
     print(f"\ncheap research ({ONE_PACK}): {one_pack_info}")
     report("technologies that cost more than one science pack of each kind although the setting is on", one_pack)
@@ -695,7 +736,7 @@ def check(a):
         Path(a.balance_out).write_text("[\n" + ",\n".join(rows) + "\n]\n", encoding="utf-8")
         print(f"\nbalance data written to {a.balance_out} (recipes, machines, technologies as JSON)")
     ok = not (files or [s for s in sprites if not s.startswith("(")] or uncraft or menu or required or unresearchable
-              or new_drafts or fluid_problems or locked or one_pack)
+              or new_drafts or fluid_problems or locked or one_pack or table_only)
     print("\nRESULT:", "OK" if ok else "PROBLEMS FOUND")
     return 0 if ok else 1
 
@@ -741,7 +782,7 @@ def runtime(a):
     print(f"benchmark: {ran.group(0) if ran else 'did not run'}")
     # the ME network's runtime tests are in me-network since issue #83 (its tools/devcheck)
     tests = (("MOLD", "mold test"), ("POWER", "power test"), ("FUEL", "fuel check test"), ("COOLED", "cooled fluid test"),
-             ("TIERS", "turbine tier test"), ("RECIPES", "recipe test"), ("STEAM", "steam turbine test"), ("CHAIN", "nuclear chain test"), ("LSC", "supercapacitor test"), ("VICTORY", "victory test"),
+             ("TIERS", "turbine tier test"), ("RECIPES", "recipe test"), ("STEAM", "steam turbine test"), ("CHAIN", "nuclear chain test"), ("LSC", "supercapacitor test"), ("OFFER", "offered recipes test"), ("VICTORY", "victory test"),
              ("POSTVICTORY", "post-victory test"))
     for key, label in tests:
         m = re.search(rf"DEVCHECK-RUNTIME-{key} (.*)", log)
