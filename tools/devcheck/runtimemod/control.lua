@@ -20,6 +20,7 @@
 --- and loses GT's 1 % per day.
 --- Offered recipes (issue #126): the machine recipes that were hidden from the crafting menu are offered by the machines.
 --- Melts and casts (issue #117): nine melted ingots fill one block cast, one fills an ingot cast; n melts cover every cast combination.
+--- Supercapacitor upgrade (issue #124): a replaced supercapacitor keeps its charge (capped at the new capacity).
 --- Victory: when the other tests have reported, `victory` is researched by script and must win the game.
 
 local VICTORY_DEADLINE = 1450
@@ -35,6 +36,7 @@ local function tests_running()
 	check(storage.steam and storage.steam.done, "steam turbines")
 	check(storage.chain and storage.chain.done, "nuclear chain")
 	check(storage.lsc and storage.lsc.done, "supercapacitor")
+	check(storage.lsup and storage.lsup.done, "supercapacitor upgrade")
 	check(storage.offer and storage.offer.done, "recipes offered by machines")
 	check(storage.melt and storage.melt.done, "melts and casts")
 	return running
@@ -1388,6 +1390,76 @@ function melt_test()
 	end
 end
 
+--- Supercapacitor upgrade (issue #124): the game does not carry an accumulator's energy over to its replacement, so
+--- scripts/fork-power.lua does. A charged IV supercapacitor replaced by a LuV one (fast replace, built event raised as for
+--- a player and a robot) holds the same energy; the LuV one filled above the IV capacity and replaced by an IV one is capped
+--- at the IV capacity; one that was mined and a LuV one built over the spot much later starts empty.
+local LU_X, LU_Y = -230.5, 330
+local LU_IV, LU_LUV = "lapotronic-supercapacitor", "luv-lapotronic-supercapacitor"
+
+function setup_lsup_test(s)
+	local fails = {}
+	local ok, err = pcall(function()
+		local st = { phase = 0 }
+		storage.lsup = st
+		st.a = s.create_entity{ name = LU_IV, position = { LU_X, LU_Y }, force = "player", raise_built = true }
+		st.a.energy = 500e9
+		st.c = s.create_entity{ name = LU_IV, position = { LU_X + 12, LU_Y }, force = "player", raise_built = true }
+		st.c.energy = 400e9
+	end)
+	if not ok then fails[#fails + 1] = "supercapacitor upgrade test: " .. tostring(err) end
+	return fails
+end
+
+local function lsup_replace(old, name)
+	local pos, s = old.position, old.surface
+	return s.create_entity{ name = name, position = pos, force = "player", fast_replace = true, spill = false,
+		raise_built = true }
+end
+
+function lsup_test()
+	local st = storage.lsup
+	if not st or st.done then return end
+	local t, problems = game.tick, {}
+	local function expect(ok, what) if not ok then problems[#problems + 1] = what end end
+	local TOL = 5e6                                             -- J: a few steps of the passive loss
+	if st.phase == 0 and t >= 30 then
+		local b = lsup_replace(st.a, LU_LUV)
+		st.b = b
+		expect(b and b.valid, "the LuV supercapacitor was not built")
+		if b and b.valid then
+			st.up = b.energy
+			expect(math.abs(b.energy - 500e9) < TOL, string.format("IV -> LuV: %.3f GJ left of 500 GJ", b.energy / 1e9))
+			b.energy = 3000e9
+		end
+		st.c.destroy()
+		st.phase, st.t1 = 1, t
+	elseif st.phase == 1 and t >= st.t1 + 20 then
+		local a2 = st.b.valid and lsup_replace(st.b, LU_IV)
+		expect(a2 and a2.valid, "the IV supercapacitor was not built")
+		if a2 and a2.valid then
+			st.down = a2.energy
+			expect(math.abs(a2.energy - a2.electric_buffer_size) < TOL,
+				string.format("LuV -> IV: %.3f GJ, not the capacity %.3f GJ", a2.energy / 1e9, a2.electric_buffer_size / 1e9))
+		end
+		st.phase, st.t2 = 2, t
+	elseif st.phase == 2 and t >= st.t2 + 60 then
+		-- the spot of the destroyed one: nothing to carry over after this long
+		local d = game.surfaces[1].create_entity{ name = LU_LUV, position = { LU_X + 12, LU_Y }, force = "player", raise_built = true }
+		expect(d and d.valid and d.energy == 0, "a supercapacitor built on a spot that was empty for a while started with energy")
+		st.phase, st.done = 3, true
+		for _, p in pairs(problems) do log("DEVCHECK-RUNTIME-FAIL supercapacitor upgrade test: " .. p) end
+		log("DEVCHECK-RUNTIME-LSUP " .. (#problems == 0 and "ok" or "failed") .. string.format(" (IV -> LuV kept %.1f of 500 GJ, LuV -> IV capped at %.1f GJ)",
+			(st.up or 0) / 1e9, (st.down or 0) / 1e9))
+		return
+	end
+	if #problems > 0 then
+		st.done = true
+		for _, p in pairs(problems) do log("DEVCHECK-RUNTIME-FAIL supercapacitor upgrade test: " .. p) end
+		log("DEVCHECK-RUNTIME-LSUP failed")
+	end
+end
+
 script.on_event(defines.events.on_tick, function(event)
 	fuel_window_tick()
 	chain_tick(event.tick)
@@ -1442,6 +1514,7 @@ script.on_nth_tick(10, function()
 	steam_test()
 	chain_test()
 	lsc_test()
+	lsup_test()
 	offer_test()
 	melt_test()
 	victory_test()
@@ -1509,6 +1582,7 @@ script.on_init(function()
 	for _, f in pairs(setup_steam_test(s)) do fails[#fails + 1] = f end
 	for _, f in pairs(setup_chain_test(s)) do fails[#fails + 1] = f end
 	for _, f in pairs(setup_lsc_test(s)) do fails[#fails + 1] = f end
+	for _, f in pairs(setup_lsup_test(s)) do fails[#fails + 1] = f end
 	for _, f in pairs(setup_offer_test(s)) do fails[#fails + 1] = f end
 	for _, f in pairs(setup_melt_test(s)) do fails[#fails + 1] = f end
 	log("DEVCHECK-RUNTIME placed=" .. placed .. " with_recipe=" .. with_recipe .. " failed=" .. #fails)

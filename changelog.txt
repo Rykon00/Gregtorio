@@ -1,5 +1,7 @@
 ---------------------------------------------------------------------------------------------------
 Version: 0.5.2
+  Bugfixes:
+    - The Lapotronic Supercapacitor keeps its charge when another tier replaces it (fast replace, upgrade planner): up to the capacity of the new one, so an upgrade no longer empties it and a downgrade loses only what does not fit (issue #124).
   Balancing:
     - The technologies with red and green science packs only (80 to 200 units, 56 of them) need a quarter of the units, rounded to 5: 20 to 50 (issue #127). A green pack costs 3 steel, 4.5 iron, 19 copper and 8 tin ingots, so 80 units were 240 steel, 5 hours in one primitive blast furnace. Technologies with other packs are unchanged.
   Changes:

@@ -42,6 +42,12 @@
 --- accumulators listed in the mod data `capacitors` (name -> loss in W) lose loss x INTERVAL / 60 J every
 --- INTERVAL ticks, down to 0. Work per step: one read and one write per supercapacitor; nothing per tick.
 ---
+--- Upgrade (issue #124). The game does not carry an accumulator's energy over to the entity that replaces it (fast replace,
+--- the upgrade planner), so every step also notes name and energy of each supercapacitor at its spot (`at`); a supercapacitor
+--- built where another tier stood at most one step ago gets that energy, capped at its own capacity (a downgrade loses what
+--- does not fit, as a full accumulator does). The note is up to one step old: the energy of that step, at most 13.6 MJ of the 25
+--- GJ of a ZPM one, is lost. One that was mined and replaced later starts empty.
+---
 --- State (lazy, `storage.fork_power`): `turbines` by unit number with the plasma seen at the last step
 --- (`fluid`, `amount` in the turbine and its segment), `on` (counted this step), the `energy` summed
 --- since the last step and the cooled fluid still `owed` (by fluid name); `generators` by unit number
@@ -77,6 +83,12 @@ local function init()
 			for _, f in pairs(list) do fuels_of[gen][f] = true end
 		end
 	end
+end
+
+--- the place of a supercapacitor: surface and centre
+local function spot(entity)
+	local p = entity.position
+	return entity.surface.index .. ":" .. p.x .. ":" .. p.y
 end
 
 local function state()
@@ -208,7 +220,16 @@ function M.on_built(entity)
 	if not (entity and entity.valid) then return end
 	if turbine_names[entity.name] then register_turbine(state(), entity) end
 	if fuels_of[entity.name] then register_generator(state(), entity) end
-	if loss_of[entity.name] then state().capacitors[entity.unit_number] = entity end
+	if loss_of[entity.name] then
+		local st = state()
+		st.capacitors[entity.unit_number] = entity
+		--- a supercapacitor of another tier that stood here a moment ago: its energy goes on
+		local at = st.at and st.at[spot(entity)]
+		if at and at.name ~= entity.name and game.tick - at.tick <= INTERVAL then
+			entity.energy = math.min(at.energy, entity.electric_buffer_size)
+		end
+		if st.at then st.at[spot(entity)] = nil end
+	end
 end
 
 --- Existing generators after a mod change (state lost, new generators or new fuel lists): register
@@ -258,12 +279,18 @@ end
 --------------------------------------------------------------------------------
 
 local function capacitor_step(st)
+	st.at = st.at or {}                         -- saves from before issue #124
+	local now = game.tick
+	for key, at in pairs(st.at) do
+		if now - at.tick > 2 * INTERVAL then st.at[key] = nil end
+	end
 	for id, e in pairs(st.capacitors) do
 		if e.valid then
 			local loss = loss_of[e.name]
 			if loss then
 				local energy = e.energy - loss * INTERVAL / 60
 				e.energy = energy > 0 and energy or 0
+				st.at[spot(e)] = { name = e.name, energy = e.energy, tick = now }
 			end
 		else
 			st.capacitors[id] = nil
