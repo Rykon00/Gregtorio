@@ -20,7 +20,7 @@
   (plasma fuel values, plasma balance of issue #32, large plasma turbines with turbine output hatches, naquadah fuel line, large
   naquadah reactors, dynamo hatches LuV to UXV; runtime in `scripts/fork-power.lua`: fuel check, turbine output hatch
   with a ratio per fluid and the generator's effectivity from the mod data, used by 145's steam turbines, and the passive
-  loss of 145's supercapacitors, mod data `capacitors`),
+  loss of 145's supercapacitors, mod data `capacitors`, and the carry-over of their energy when another tier replaces them, issue #124),
   137 endgame materials (issues #39 and #36: deletes the drafts removed for good, `FORK-REMOVED` in the log; the
   lapotronic energy orb cluster and high density plutonium drafts; super coolant, the 1080k super coolant cell, fluxed electrum,
   bedrockium and quantium with the stand-ins they replace; must load after 136, whose plutonium fuel and dynamo hatches it changes),
