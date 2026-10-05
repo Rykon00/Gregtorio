@@ -55,7 +55,7 @@ The repository root is the mod itself (`info.json`, `data.lua`, `prototypes/`, `
 | `prototypes/198-fork-crafting-menu.lua` | machine recipes in the crafting menu (issue #49): shows every recipe whose category has a machine (red background, like vanilla), except the allow-list `FORK_CRAFTING_MENU_HIDDEN` (fluid voiding, replaced vanilla recipes, recipes vanilla hides); startup setting `gregtorio-continued-show-machine-recipes` (`settings.lua`, default on) |
 | `prototypes/199-fork-finalize.lua` | draft guard (hides broken draft recipes) and auto-unlock of intermediates |
 | `locale/en/fork.cfg` | generated names for entries without a translation |
-| `.discord/server.yml` | this mod's category on the Discord server (channels, forum tags), applied by `.github/workflows/discord.yml` with the tool of https://github.com/Rykon00/gregtorio-me-network_discord-bot |
+| `.discord/server.yml` | this mod's category on the Discord server (channels, forum tags), applied by `.github/workflows/discord.yml` with the tool of https://github.com/Rykon00/gregtorio-me-network_discord-bot; a pull request that only changes `.discord/` is merged and applied automatically |
 | `tools/dev_link.py` | links the repo into the Factorio mods folder (working copy is loaded directly) |
 | `tools/devcheck/` | headless test harness: load check, progression/craftability analysis, graphics and runtime checks; `handover` runs the prototype of the ME state hand-over of issue #83 (`docs/SPLIT.md`) |
 | `tools/balance_model.py` | full-chain cost model for balance passes: time of a part or a technology in a reference factory per tier, from the balance dump of `devcheck.py check --balance-out`; `--dtpf` compares the plasma forge route with the fusion route |
