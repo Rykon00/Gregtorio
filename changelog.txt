@@ -1,4 +1,8 @@
 ---------------------------------------------------------------------------------------------------
+Version: 0.5.2
+  Bugfixes:
+    - Molten metals: one melted ingot gives 14.4 (it showed 14.3), and nine melted ingots fill one block cast (issue #117). The game keeps fluid amounts in steps of 1/16777216 and cut every amount of a recipe off at the step below, so a tenth melt was needed for a block, a fifth for a large gear, and a rest stayed in the tank. Every fluid amount that is off that grid is now set on it: a recipe takes its amount rounded up and gives it rounded up and a little more (below one millionth), so n melts always cover the casts they are worth. Fluid already in tanks is unchanged.
+---------------------------------------------------------------------------------------------------
 Version: 0.5.1
 Date: 2026-10-03
   Features:

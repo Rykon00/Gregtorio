@@ -168,6 +168,25 @@ for n, f in pairs(data.raw.fluid) do
 end
 section("FLUIDS", fl)
 
+--- Fluid amounts off the grid of 2^-24 (issue #117, prototypes/197-fork-fluid-steps.lua): recipe, kind, fluid, amount.
+--- The game cuts every amount off at the step below, so a recipe that is not on the grid gives and takes less than it says.
+local off = {}
+for n, r in pairs(data.raw.recipe) do
+	for _, key in pairs({ "ingredients", "results" }) do
+		for _, x in pairs(r[key] or {}) do
+			if x.type == "fluid" then
+				for _, f in pairs({ "amount", "amount_min", "amount_max" }) do
+					local a = x[f]
+					if a and a * 2 ^ 24 ~= math.floor(a * 2 ^ 24) then
+						off[#off + 1] = table.concat({ n, key, x.name, string.format("%.12g", a) }, "	")
+					end
+				end
+			end
+		end
+	end
+end
+section("FLUIDSTEPS", off)
+
 --- Balance data (`devcheck.py check --balance-out`): recipes with amounts and times, machine speeds,
 --- technology unit counts. One JSON object per line.
 local bal = {}
