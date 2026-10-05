@@ -1,4 +1,9 @@
 ---------------------------------------------------------------------------------------------------
+Version: 0.5.2
+  Changes:
+    - Microminer tab (issue #120): it starts with a row of the Microverse Projectors (MV to MAX) and their controller, so a search for "micro" finds the machine that runs the missions. Then one row per tier: the microminer, the data it needs, the mission and the ender tank of that tier's projector. Moved: the tier four mission (was alone in a tab of the processing machine recipes), the lunar navigation data (tier four, was in tier one), the nether and end data (tier two and three), the Ender Air Ender Tank (tier three, was in tier two) and the steel plated microminer (tier one, was in the processing machine recipes). The unused rows of the tiers five to twelve are gone.
+    - The microminers, the data and the mission items say in their description where they run (a Microverse Projector of which tier, or an assembling machine).
+---------------------------------------------------------------------------------------------------
 Version: 0.5.1
 Date: 2026-10-03
   Features:

@@ -52,7 +52,7 @@
   producers of fluids nothing made or used; the blast furnace gas variants of `EBF_GASES` are in `FORK_GAS_VARIANTS`,
   which 199's auto-unlock ignores like the casts), 150 molds (mold slot instead of mold ingredient; must load after every file that creates
   machines), 190 manual-labor
-  burner usage (fist icon in the fuel slot), 196 subgroups (the Fluids tab: every Gregtorio fluid gets a row of the item
+  burner usage (fist icon in the fuel slot), 195 microminer tab (issue #120: the Microverse Projectors as the first row of the Microminer tab, one row per tier t1 to t4 with its microminer, data, mission and ender tank, empty rows deleted; devcheck fails for a projector recipe outside the tab), 196 subgroups (the Fluids tab: every Gregtorio fluid gets a row of the item
   group `fluids` by its explicit table or a name pattern; a new fluid goes into one, the fallback row
   `gregtorio-fluids-unsorted` is a devcheck warning; loads after every file that creates fluids), 198 crafting menu (shows machine recipes, which upstream
   `create_recipe` hides; a recipe that must stay hidden goes into its allow-list
