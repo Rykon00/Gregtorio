@@ -18,6 +18,7 @@
 --- steam turbine makes power from fuel rods; depleted rods come out; the steam recipe of the heat exchanger is exact.
 --- Lapotronic supercapacitor (issue #97): charges and discharges at two amps of its tier, holds its capacity by tier
 --- and loses GT's 1 % per day.
+--- Offered recipes (issue #126): the machine recipes that were hidden from the crafting menu are offered by the machines.
 --- Melts and casts (issue #117): nine melted ingots fill one block cast, one fills an ingot cast; n melts cover every cast combination.
 --- Victory: when the other tests have reported, `victory` is researched by script and must win the game.
 
@@ -34,6 +35,7 @@ local function tests_running()
 	check(storage.steam and storage.steam.done, "steam turbines")
 	check(storage.chain and storage.chain.done, "nuclear chain")
 	check(storage.lsc and storage.lsc.done, "supercapacitor")
+	check(storage.offer and storage.offer.done, "recipes offered by machines")
 	check(storage.melt and storage.melt.done, "melts and casts")
 	return running
 end
@@ -683,6 +685,11 @@ local RT = {
 	{ "nether-air-ender-tank", "nether-air-collection" },
 	{ "component-assembly-line", "lv-motor-coal" },
 	{ "lv-assembling-machine", "microminer-neutronium" },
+	-- issue #126 (prototypes/148-fork-gtnh-table-items.lua): GTNH's machine recipes of the items the crafting table made
+	{ "lv-fluid-solidifier", "anvil-fluid-solidifier" },
+	{ "mv-alloy-smelter", "anvil-alloy-smelter" },
+	{ "lv-assembling-machine", "firebrick-block-assembling-machine" },
+	{ "lv-chemical-bath", "paper-chemical-bath" },
 	{ "mv-canning-machine", "depleted-uranium-fuel-rod-centrifuging" },
 	{ "lv-compressor", "block-of-copper" },
 	{ "iv-alloy-blast-smelter", "molten-hastelloy-c276" },
@@ -1190,6 +1197,55 @@ function lsc_test()
 	log("DEVCHECK-RUNTIME-LSC " .. (#problems == 0 and "ok" or "failed") .. summary)
 end
 
+--- Machine recipes of items that also have a crafting table recipe (issue #126, part C): with the technology of the recipe
+--- researched by script the recipe must be enabled, not hidden from the crafting menu, and the lowest machine of its
+--- category must take it (what an LV assembling machine offers a player once automation-2 is researched).
+local OFFER = { "burner-inserter", "iron-chest", "iron-stick", "pipe", "chest" }
+
+function setup_offer_test(s)
+	local fails, offered = {}, {}
+	storage.offer = { offered = offered }
+	local force = game.forces.player
+	for _, name in ipairs(OFFER) do
+		local ok, err = pcall(function()
+			local proto = prototypes.recipe[name]
+			assert(proto, "no such recipe")
+			assert(not proto.hidden, "hidden")
+			assert(not proto.hide_from_player_crafting, "hidden from the crafting menu")
+			local tech
+			for tname, t in pairs(prototypes.technology) do
+				for _, e in pairs(t.effects) do
+					if e.type == "unlock-recipe" and e.recipe == name then tech = tname end
+				end
+			end
+			assert(tech, "no technology unlocks it")
+			force.technologies[tech].researched = true
+			assert(force.recipes[name].enabled, "not enabled after researching " .. tech)
+			local best
+			for mname, m in pairs(prototypes.get_entity_filtered{ { filter = "type", type = "assembling-machine" } }) do
+				if m.crafting_categories[proto.category] and m.items_to_place_this and #m.items_to_place_this > 0
+						and (not best or m.get_crafting_speed() < best.get_crafting_speed()) then
+					best = m
+				end
+			end
+			assert(best, "no machine for " .. proto.category)
+			local e = s.create_entity{ name = best.name, position = { -60 + 8 * #offered, 260 }, force = "player", raise_built = true }
+			e.set_recipe(name)
+			assert(e.get_recipe() and e.get_recipe().name == name, "the machine did not take it")
+			offered[#offered + 1] = name .. " in " .. best.name .. " (" .. tech .. ")"
+		end)
+		if not ok then fails[#fails + 1] = "offer test " .. name .. ": " .. tostring(err) end
+	end
+	return fails
+end
+
+function offer_test()
+	local st = storage.offer
+	if not st or st.done then return end
+	st.done = true
+	log("DEVCHECK-RUNTIME-OFFER " .. (#st.offered == #OFFER and "ok" or "failed") .. " (" .. table.concat(st.offered, "; ") .. ")")
+end
+
 --- Melts and casts (issue #117, prototypes/197-fork-fluid-steps.lua). The game cuts fluid amounts at steps of 2^-24, so n melted
 --- ingots must cover every combination of casts that n ingots are worth, with the amounts the engine holds.
 --- 1) For every melt (an extractor recipe giving 14.4 of a fluid per ingot) and every cast that takes only that fluid (a
@@ -1380,6 +1436,7 @@ script.on_nth_tick(10, function()
 	steam_test()
 	chain_test()
 	lsc_test()
+	offer_test()
 	melt_test()
 	victory_test()
 end)
@@ -1446,6 +1503,7 @@ script.on_init(function()
 	for _, f in pairs(setup_steam_test(s)) do fails[#fails + 1] = f end
 	for _, f in pairs(setup_chain_test(s)) do fails[#fails + 1] = f end
 	for _, f in pairs(setup_lsc_test(s)) do fails[#fails + 1] = f end
+	for _, f in pairs(setup_offer_test(s)) do fails[#fails + 1] = f end
 	for _, f in pairs(setup_melt_test(s)) do fails[#fails + 1] = f end
 	log("DEVCHECK-RUNTIME placed=" .. placed .. " with_recipe=" .. with_recipe .. " failed=" .. #fails)
 	for _, f in pairs(fails) do log("DEVCHECK-RUNTIME-FAIL " .. f) end

@@ -50,7 +50,7 @@
   named in 142's `UNLOCKS`, so it loads after 138 and **before** 142, and before 196 for its fluids; it takes 136's
   generator from the global `FORK_POWER` and adds to its mod data `fork-power`), 144 dead fluids (issue #91: GT's uses and
   producers of fluids nothing made or used; the blast furnace gas variants of `EBF_GASES` are in `FORK_GAS_VARIANTS`,
-  which 199's auto-unlock ignores like the casts), 150 molds (mold slot instead of mold ingredient; must load after every file that creates
+  which 199's auto-unlock ignores like the casts), 148 GTNH table items (issue #126: GTNH's machine recipes for the anvil, the firebrick block and paper, which the crafting table made; the allow-list `FORK_RECIPES_TABLE_ONLY` of recipes of items that only the crafting table, the ME Molecular Assembler or the hand make, each with its reason; devcheck fails for a reachable item whose every recipe is such a recipe and not in it; loads after 144 and before 150), 150 molds (mold slot instead of mold ingredient; must load after every file that creates
   machines), 190 manual-labor
   burner usage (fist icon in the fuel slot), 195 microminer tab (issue #120: the Microverse Projectors as the first row of the Microminer tab, one row per tier t1 to t4 with its microminer, data, mission and ender tank, empty rows deleted; devcheck fails for a projector recipe outside the tab), 196 subgroups (the Fluids tab: every Gregtorio fluid gets a row of the item
   group `fluids` by its explicit table or a name pattern; a new fluid goes into one, the fallback row
