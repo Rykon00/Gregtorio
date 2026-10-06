@@ -701,6 +701,9 @@ local RT = {
 	-- issue #173: the Forming Press presses the printed circuits of the ME processors
 	{ "lv-forming-press", "printed-silicon" },
 	{ "iv-forming-press", "printed-engineering-circuit" },
+	-- issue #174: the Electric Furnace smelts
+	{ "lv-electric-furnace", "iron-dust-smelter" },
+	{ "iv-electric-furnace", "brick-smelter" },
 	-- issue #153 (prototypes/153-fork-compressor-air.lua): air from the compressor
 	{ "lv-compressor", "air-collection" },
 	{ "iv-large-electric-compressor", "air-collection" },

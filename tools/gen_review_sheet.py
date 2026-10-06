@@ -279,7 +279,7 @@ TIER_MACHINES = [
     "wiremill", "bending-machine", "extruder", "rock-crusher", "lathe", "macerator", "centrifuge", "air-collector",
     "extractor", "electrolyzer", "assembling-machine", "cutting-machine", "canning-machine", "mixer", "ore-washer",
     "laser-engraver", "fluid-solidifier", "chemical-bath", "polarizer", "circuit-assembler", "autoclave",
-    "alloy-smelter", "compressor", "fluid-extractor", "forge-hammer", "arc-furnace", "forming-press",
+    "alloy-smelter", "compressor", "fluid-extractor", "forge-hammer", "arc-furnace", "forming-press", "electric-furnace",
 ]
 
 
