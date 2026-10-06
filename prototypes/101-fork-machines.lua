@@ -221,6 +221,66 @@ end
 
 
 --------------------------------------------------------------------------------
+--- 2b) FORGE HAMMER, LV TO EV (issue #170)
+---    GT New Horizons has the Forge Hammer from LV up ("Basic Forge Hammer", LoaderMetaTileEntities.java:5388), on the
+---    recipe map of the Steam Forge Hammer (hammerRecipes); upstream had only the steam one. The electric ones run the
+---    steam hammer's category lv-forge-hammer-recipes (its plates are GT's already: 3 ingots -> 2 plates in the time of
+---    the material's mass), share its fast replace group (one can be placed over the steam hammer) and are built as in GT
+---    (MTERecipeLoader.java registerForgeHammer, "WPW", "CMC", "WAW": 4 cables, a piston, 2 circuits, the hull, an
+---    anvil). LV with the LV piston (technology Bending Machine), MV to EV with the machines of their tier. Sprites:
+---    tools/gen_sprites.py (forge_hammer_lv_mv: the steam hammer's picture in the LV and MV casing); IV to MAX follow
+---    from IV_BASIC_MACHINES below.
+--------------------------------------------------------------------------------
+
+do
+	local HAMMERS = {
+		--  tier  path                 energy    speed  cable             circuit               tech
+		{ "lv", "lv-forge-hammer", EU16_LV, 1, "tin-cable",       "electronic-circuit", "bending-machine" },
+		{ "mv", "mv-forge-hammer", EU16_MV, 2, "copper-cable",    "advanced-circuit",   "mv-machines" },
+		{ "hv", "mv-forge-hammer", EU16_HV, 4, "gold-cable",      "processing-unit",    "hv-machines" },
+		{ "ev", "mv-forge-hammer", EU16_EV, 8, "aluminium-cable", "ev-circuit",         "ev-machines" },
+	}
+	for _, h in ipairs(HAMMERS) do
+		local t, path, energy, speed, cable, circuit, tech = table.unpack(h)
+		local name = t .. "-forge-hammer"
+		make_electric_machine(name, name, path, { "lv-forge-hammer-recipes" }, "fr-forge-hammer", energy, speed, 5, 0.5, 3, 3)
+		create_item{
+			name = name,
+			subgroup = t .. "-age-production-machine",
+			ingredients = {
+				{ type = "item", name = cable, amount = 4 },
+				{ type = "item", name = t .. "-piston", amount = 1 },
+				{ type = "item", name = circuit, amount = 2 },
+				{ type = "item", name = t .. "-machine-hull", amount = 1 },
+				{ type = "item", name = "anvil", amount = 1 },
+			},
+			place_result = name,
+			stack_size = 10,
+		}
+		fork_add_unlock(tech, name)
+	end
+	data.raw["assembling-machine"]["lv-forge-hammer"].next_upgrade = "mv-forge-hammer"
+	data.raw["assembling-machine"]["mv-forge-hammer"].next_upgrade = "hv-forge-hammer"
+	data.raw["assembling-machine"]["hv-forge-hammer"].next_upgrade = "ev-forge-hammer"
+
+	--- GT's hammer recipes of the items Gregtorio has (ForgeHammerRecipes.java: gravel -> sand, glass -> glass dust,
+	--- brick block -> 3 bricks, 10 ticks each); the steam hammer runs them too, as GT's does
+	for _, r in pairs({ { "sand-forge-hammer", "gravel", 1, "sand", 1 }, { "glass-dust-forge-hammer", "glass", 1, "glass-dust", 1 },
+		{ "brick-forge-hammer", "brick-block", 1, "brick", 3 } }) do
+		create_recipe{
+			recipe_name = r[1],
+			category = "lv-forge-hammer-recipes",
+			energy_required = 0.5,
+			ingredients = { { type = "item", name = r[2], amount = r[3] } },
+			results = { { type = "item", name = r[4], amount = r[5] } },
+		}
+		fork_add_unlock("steam-forge-hammer", r[1])
+	end
+end
+
+
+
+--------------------------------------------------------------------------------
 --- 3) IV BASIC MACHINES
 ---    Copy of the EV machine: double speed, double power draw, IV categories added,
 ---    recipe = EV recipe with every tiered component shifted one tier up.
@@ -322,7 +382,7 @@ IV_BASIC_MACHINES = {
 	"wiremill", "bending-machine", "extruder", "rock-crusher", "lathe", "macerator", "centrifuge",
 	"extractor", "electrolyzer", "assembling-machine", "cutting-machine",
 	"canning-machine", "mixer", "ore-washer", "laser-engraver", "fluid-solidifier", "chemical-bath",
-	"polarizer", "circuit-assembler", "autoclave", "alloy-smelter", "compressor",
+	"polarizer", "circuit-assembler", "autoclave", "alloy-smelter", "compressor", "forge-hammer",
 }
 --- Multiblocks that come as an upgrade of the EV version (graphics of the EV version with energy hatches of the tier)
 IV_UPGRADE_MACHINES = {

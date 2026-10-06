@@ -692,6 +692,9 @@ local RT = {
 	{ "mv-alloy-smelter", "anvil-alloy-smelter" },
 	{ "lv-assembling-machine", "firebrick-block-assembling-machine" },
 	{ "lv-chemical-bath", "paper-chemical-bath" },
+	-- issue #170 (prototypes/101-fork-machines.lua): the electric Forge Hammer with a plate and a new hammer recipe
+	{ "lv-forge-hammer", "iron-plate-forge-hammer" },
+	{ "iv-forge-hammer", "sand-forge-hammer" },
 	-- issue #153 (prototypes/153-fork-compressor-air.lua): air from the compressor
 	{ "lv-compressor", "air-collection" },
 	{ "iv-large-electric-compressor", "air-collection" },
