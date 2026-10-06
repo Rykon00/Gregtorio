@@ -39,7 +39,7 @@ BASIC_MACHINES = [
     "wiremill", "bending-machine", "extruder", "rock-crusher", "lathe", "macerator", "centrifuge",
     "extractor", "electrolyzer", "assembling-machine", "cutting-machine", "canning-machine", "mixer", "ore-washer",
     "laser-engraver", "fluid-solidifier", "chemical-bath", "polarizer", "circuit-assembler", "autoclave",
-    "alloy-smelter", "compressor", "forge-hammer",
+    "alloy-smelter", "compressor", "forge-hammer", "arc-furnace",
 ]
 # issue #152: the Fluid Extractors are copies of the Extractor (151); from IV up they are drawn like the other basic
 # machines from their LV and MV sprites (fluid_extractor_lv_ev), with the Extractor's frame count
@@ -48,7 +48,11 @@ EV_FRAMES_OF = {FLUID_EXTRACTOR: "extractor"}
 # issue #170: the electric Forge Hammers LV to EV are made in a loop of 101 (no make_electric_machine("ev-forge-hammer"
 # to read) and play the 5 frames of the Steam Forge Hammer's strip; their LV and MV sprites come from it
 # (forge_hammer_lv_mv)
-EV_FRAMES = {"forge-hammer": 5}
+EV_FRAMES = {"forge-hammer": 5, "arc-furnace": 1}
+# issue #171: the Arc Furnace has no upstream picture either: its LV and MV ones are the compressor's frame with GT's arc
+# furnace overlay in the window (arc_furnace_lv_mv), one frame
+ARC_OVERLAY = "gregtech:basicmachines/arc_furnace/OVERLAY_FRONT"
+ARC_WINDOW = (16, 21, 70, 54)   # the window of the LV and MV compressor (x0, y0, x1, y1)
 # issue #152: the fluid extractor's icons carry a molten fluid in the bottom right corner, so they differ from the
 # extractor's in the inventory; its LV to EV sprites are the extractor's with the liquid in the tubes molten
 FLUID_BADGE_MACHINES = {"fluid-extractor"}
@@ -548,6 +552,33 @@ def forge_hammer_lv_mv():
         save(out, ICONS / f"{t}-forge-hammer.png")
 
 
+def arc_furnace_lv_mv(gt):
+    """Issue #171: upstream has no arc furnace. The LV and MV arc furnace are the LV and MV compressor's frame (the same
+    window, ARC_WINDOW) with GT's arc furnace front in the window at 2x: dark slots at rest, glowing ones (the active
+    overlay and its glow) while it works. The LV to EV icons: the compressor's with the glowing front as a badge."""
+    def front(name):
+        img = frames_of(load(gt_path(gt, ARC_OVERLAY + name)))[0]
+        return img.resize((img.width * 2, img.height * 2), Image.NEAREST)
+    idle_front = front("")
+    work_front = front("_ACTIVE")
+    work_front.alpha_composite(front("_ACTIVE_GLOW"))
+    x0, y0, x1, y1 = ARC_WINDOW
+    at = (x0 + (x1 - x0 - idle_front.width) // 2, y0 + (y1 - y0 - idle_front.height) // 2)
+    for t in ("lv", "mv"):
+        frame = load(ENTITY / f"{t}-compressor" / f"{t}-compressor-idle.png")
+        dst = ENTITY / f"{t}-arc-furnace"
+        dst.mkdir(exist_ok=True)
+        for kind, f in (("idle", idle_front), ("working", work_front)):
+            img = frame.copy()
+            img.alpha_composite(f, at)
+            save(img, dst / f"{t}-arc-furnace-{kind}.png")
+    badge = frames_of(load(gt_path(gt, ARC_OVERLAY + "_ACTIVE")))[0].resize((12, 12), Image.NEAREST)
+    for t in ("lv", "mv", "hv", "ev"):
+        icon = load(ICONS / f"{t}-compressor.png")
+        icon.alpha_composite(badge, (TILE - 12, TILE - 12))
+        save(icon, ICONS / f"{t}-arc-furnace.png")
+
+
 def fluid_extractor_lv_ev():
     """Issue #152: the LV and MV fluid extractor sprites (HV and EV use MV's, like the extractor) are upstream's
     extractor with the liquid in its tubes molten; the idle picture keeps a low melt in the tubes, so the two machines
@@ -810,6 +841,7 @@ def main():
 
     fluid_extractor_lv_ev()      # first: the LV and MV fluid extractor are the source of its tiers
     forge_hammer_lv_mv()         # and the LV and MV forge hammer of the forge hammer's
+    arc_furnace_lv_mv(a.gt)      # and the LV and MV arc furnace of the arc furnace's
     for tier in ("IV", "LuV", "ZPM", "UV", "UHV", "UEV", "UIV", "UMV", "UXV", "MAX"):
         for base in BASIC_MACHINES + [FLUID_EXTRACTOR]:
             basic_machine(a.gt, base, tier)
