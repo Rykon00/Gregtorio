@@ -403,6 +403,50 @@ end
 
 
 --------------------------------------------------------------------------------
+--- 2e) ELECTRIC FURNACE, LV TO EV (issue #174)
+---    GT New Horizons has the Electric Furnace from LV up ("Basic Electric Furnace", LoaderMetaTileEntities.java:4319),
+---    which runs the smelting recipes (furnaceRecipes); upstream smelted only in the burner furnaces (stone, iron and
+---    steel furnace) and the Multi Smelter. The electric furnaces run the category smelting. Machine recipe as GT's
+---    (MTERecipeLoader.java registerElectricFurnace, "ECE", "CMC", "WCW": 2 circuits, 4 double heating wires of the tier
+---    (GTModHandler COIL_HEATING: copper, cupronickel, kanthal, nichrome), the hull, 2 cables; here 8 single wires, as
+---    Gregtorio has no double wires). Power EU8, the lowest class Gregtorio has (GT smelts at 4 EU/t). LV with Wiremill (its copper wire), MV to EV with the machines of their tier.
+---    Sprites: tools/gen_sprites.py (electric_furnace_lv_mv); IV to MAX through IV_BASIC_MACHINES.
+--------------------------------------------------------------------------------
+
+do
+	local FURNACES = {
+		--  tier  path                    energy    speed  cable             circuit               coil                 tech
+		{ "lv", "lv-electric-furnace", EU8_LV, 1, "tin-cable",       "electronic-circuit", "copper-wire",       "wiremill" },
+		{ "mv", "mv-electric-furnace", EU8_MV, 2, "copper-cable",    "advanced-circuit",   "cupronickel-wire",  "mv-machines" },
+		{ "hv", "mv-electric-furnace", EU8_HV, 4, "gold-cable",      "processing-unit",    "kanthal-wire",      "hv-machines" },
+		{ "ev", "mv-electric-furnace", EU8_EV, 8, "aluminium-cable", "ev-circuit",         "nichrome-wire",     "ev-machines" },
+	}
+	for _, a in ipairs(FURNACES) do
+		local t, path, energy, speed, cable, circuit, coil, tech = table.unpack(a)
+		local name = t .. "-electric-furnace"
+		make_electric_machine(name, name, path, { "smelting" }, "fr-electric-furnace", energy, speed, 1, 0.5, 3, 3)
+		create_item{
+			name = name,
+			subgroup = t .. "-age-production-machine",
+			ingredients = {
+				{ type = "item", name = circuit, amount = 2 },
+				{ type = "item", name = coil, amount = 8 },
+				{ type = "item", name = t .. "-machine-hull", amount = 1 },
+				{ type = "item", name = cable, amount = 2 },
+			},
+			place_result = name,
+			stack_size = 10,
+		}
+		fork_add_unlock(tech, name)
+	end
+	data.raw["assembling-machine"]["lv-electric-furnace"].next_upgrade = "mv-electric-furnace"
+	data.raw["assembling-machine"]["mv-electric-furnace"].next_upgrade = "hv-electric-furnace"
+	data.raw["assembling-machine"]["hv-electric-furnace"].next_upgrade = "ev-electric-furnace"
+end
+
+
+
+--------------------------------------------------------------------------------
 --- 3) IV BASIC MACHINES
 ---    Copy of the EV machine: double speed, double power draw, IV categories added,
 ---    recipe = EV recipe with every tiered component shifted one tier up.
@@ -504,7 +548,7 @@ IV_BASIC_MACHINES = {
 	"wiremill", "bending-machine", "extruder", "rock-crusher", "lathe", "macerator", "centrifuge",
 	"extractor", "electrolyzer", "assembling-machine", "cutting-machine",
 	"canning-machine", "mixer", "ore-washer", "laser-engraver", "fluid-solidifier", "chemical-bath",
-	"polarizer", "circuit-assembler", "autoclave", "alloy-smelter", "compressor", "forge-hammer", "arc-furnace", "forming-press",
+	"polarizer", "circuit-assembler", "autoclave", "alloy-smelter", "compressor", "forge-hammer", "arc-furnace", "forming-press", "electric-furnace",
 }
 --- Multiblocks that come as an upgrade of the EV version (graphics of the EV version with energy hatches of the tier)
 IV_UPGRADE_MACHINES = {

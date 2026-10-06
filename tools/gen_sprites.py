@@ -40,6 +40,7 @@ BASIC_MACHINES = [
     "extractor", "electrolyzer", "assembling-machine", "cutting-machine", "canning-machine", "mixer", "ore-washer",
     "laser-engraver", "fluid-solidifier", "chemical-bath", "polarizer", "circuit-assembler", "autoclave",
     "alloy-smelter", "compressor", "forge-hammer", "arc-furnace", "forming-press",
+    "electric-furnace",
 ]
 # issue #152: the Fluid Extractors are copies of the Extractor (151); from IV up they are drawn like the other basic
 # machines from their LV and MV sprites (fluid_extractor_lv_ev), with the Extractor's frame count
@@ -48,7 +49,7 @@ EV_FRAMES_OF = {FLUID_EXTRACTOR: "extractor"}
 # issue #170: the electric Forge Hammers LV to EV are made in a loop of 101 (no make_electric_machine("ev-forge-hammer"
 # to read) and play the 5 frames of the Steam Forge Hammer's strip; their LV and MV sprites come from it
 # (forge_hammer_lv_mv)
-EV_FRAMES = {"forge-hammer": 5, "arc-furnace": 1, "forming-press": 1}
+EV_FRAMES = {"forge-hammer": 5, "arc-furnace": 1, "forming-press": 1, "electric-furnace": 1}
 # issue #171: the Arc Furnace has no upstream picture either: its LV and MV ones are the compressor's frame with GT's arc
 # furnace overlay in the window (arc_furnace_lv_mv), one frame
 ARC_OVERLAY = "gregtech:basicmachines/arc_furnace/OVERLAY_FRONT"
@@ -57,6 +58,9 @@ ARC_WINDOW = (16, 21, 70, 54)   # the window of the LV and MV compressor (x0, y0
 # its content
 PRESS_OVERLAY = "gregtech:basicmachines/press/OVERLAY_FRONT"
 PRESS_WINDOW = (11, 11, 75, 38)  # the upper window of the LV and MV wiremill
+# issue #174: the Electric Furnace: the assembling machine's frame (its plain window) with GT's electric furnace front
+FURNACE_OVERLAY = "gregtech:basicmachines/electric_furnace/OVERLAY_FRONT"
+FURNACE_WINDOW = (17, 21, 71, 54)  # the window of the LV and MV assembling machine
 # issue #152: the fluid extractor's icons carry a molten fluid in the bottom right corner, so they differ from the
 # extractor's in the inventory; its LV to EV sprites are the extractor's with the liquid in the tubes molten
 FLUID_BADGE_MACHINES = {"fluid-extractor"}
@@ -602,6 +606,12 @@ def forming_press_lv_mv(gt):
     framed_overlay_lv_mv(gt, "forming-press", "wiremill", PRESS_WINDOW, PRESS_OVERLAY, crop=True)
 
 
+def electric_furnace_lv_mv(gt):
+    """Issue #174: upstream has no electric furnace: the LV and MV assembling machine's frame with GT's electric furnace
+    front (dark at rest, glowing while it works)"""
+    framed_overlay_lv_mv(gt, "electric-furnace", "assembling-machine", FURNACE_WINDOW, FURNACE_OVERLAY, glow=True, crop=True)
+
+
 def fluid_extractor_lv_ev():
     """Issue #152: the LV and MV fluid extractor sprites (HV and EV use MV's, like the extractor) are upstream's
     extractor with the liquid in its tubes molten; the idle picture keeps a low melt in the tubes, so the two machines
@@ -866,6 +876,7 @@ def main():
     forge_hammer_lv_mv()         # and the LV and MV forge hammer of the forge hammer's
     arc_furnace_lv_mv(a.gt)      # and the LV and MV arc furnace of the arc furnace's
     forming_press_lv_mv(a.gt)    # and the LV and MV forming press of the forming press's
+    electric_furnace_lv_mv(a.gt) # and the LV and MV electric furnace of the electric furnace's
     for tier in ("IV", "LuV", "ZPM", "UV", "UHV", "UEV", "UIV", "UMV", "UXV", "MAX"):
         for base in BASIC_MACHINES + [FLUID_EXTRACTOR]:
             basic_machine(a.gt, base, tier)
