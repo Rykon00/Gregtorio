@@ -122,6 +122,8 @@ require("prototypes.144-fork-dead-fluids")
 require("prototypes.148-fork-gtnh-table-items")
 --- issue #127: the unit counts of the technologies with red and green packs only
 require("prototypes.149-fork-early-research")
+--- issue #152: the Fluid Extractor, the extractor recipes with a fluid result move to it (after every extractor recipe, before the molds)
+require("prototypes.151-fork-fluid-extractor")
 --- issue #153: air from the compressor, the Air Collectors gone (after 142, whose ender tanks copy them; before the molds)
 require("prototypes.153-fork-compressor-air")
 require("prototypes.150-fork-molds")

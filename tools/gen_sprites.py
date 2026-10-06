@@ -42,7 +42,14 @@ BASIC_GT = {
     "laser-engraver": "laser_engraver", "fluid-solidifier": "fluid_solidifier",
     "chemical-bath": "chemical_bath", "polarizer": "polarizer", "circuit-assembler": "circuitassembler",
     "autoclave": "autoclave", "alloy-smelter": "alloy_smelter", "compressor": "compressor",
+    "fluid-extractor": "fluid_extractor",
 }
+# basic machines drawn with GT's front overlay although GT has a top one: the fluid extractor's top is the extractor's
+# (a hole), its front shows the tubes (issue #152)
+FRONT_OVERLAY = {"fluid-extractor"}
+# issue #152: the fluid extractor's icons carry a molten fluid in the bottom right corner, so they differ from the
+# extractor's in the inventory; its LV to EV sprites are the extractor's with the liquid in the tubes molten
+FLUID_BADGE_MACHINES = {"fluid-extractor"}
 
 # tier color GT uses to tint the (gray) machine casings (EV = titanium, IV = tungstensteel)
 TIER_TINT = {"EV": (220, 160, 240), "IV": (100, 100, 160), "LuV": (255, 205, 225), "ZPM": (140, 225, 245), "UV": (130, 215, 140),
@@ -366,7 +373,7 @@ def basic_machine(gt, base, tier="IV"):
         active = front.with_name(front.stem + "_ACTIVE.png")
     else:
         d = gt / "src/main/resources/assets/gregtech/textures/blocks/basicmachines" / src
-        if (d / "OVERLAY_TOP.png").exists():
+        if (d / "OVERLAY_TOP.png").exists() and base not in FRONT_OVERLAY:
             side = tint(load(gt_path(gt, f"gregtech:iconsets/MACHINE_{tier}_TOP")), TIER_TINT[tier])
             front, active = d / "OVERLAY_TOP.png", d / "OVERLAY_TOP_ACTIVE.png"
         else:
@@ -388,11 +395,91 @@ def basic_machine(gt, base, tier="IV"):
         hull = tint(load(gt_path(gt, f"gregtech:iconsets/MACHINE_{tier}_SIDE")), TIER_TINT[tier])
         save(block_sprite(in_hull(hull, idle, 3 * TILE)), OUT_ENTITY / f"{name}-idle.png")
         save_strip([block_sprite(in_hull(hull, fr, 3 * TILE)) for fr in working], OUT_ENTITY / f"{name}-working.png")
-        save(block_icon(in_hull(hull, idle, TILE)), OUT_ICON / f"{name}.png")
+        save(badged(base, block_icon(in_hull(hull, idle, TILE))), OUT_ICON / f"{name}.png")
         return
     save(block_sprite(scaled(idle, 3 * TILE)), OUT_ENTITY / f"{name}-idle.png")
     save_strip([block_sprite(scaled(fr, 3 * TILE)) for fr in working], OUT_ENTITY / f"{name}-working.png")
-    save(block_icon(scaled(idle, TILE)), OUT_ICON / f"{name}.png")
+    save(badged(base, block_icon(scaled(idle, TILE))), OUT_ICON / f"{name}.png")
+
+
+MOLTEN = [(120, 30, 0), (200, 70, 0), (255, 130, 0), (255, 190, 40), (255, 240, 150)]
+# a drop of melt, 9 x 12 pixels: '#' outline, 'a' to 'd' dark to light
+DROP = ["....#....",
+        "...#c#...",
+        "...#c#...",
+        "..#cdb#..",
+        ".#cddbb#.",
+        ".#cdbbb#.",
+        "#cdbbbba#",
+        "#cbbbbba#",
+        "#bbbbbaa#",
+        ".#bbaaa#.",
+        "..#aaa#..",
+        "...###..."]
+
+
+def badged(base, icon):
+    """FLUID_BADGE_MACHINES: the icon with a drop of melt in its bottom right corner"""
+    if base not in FLUID_BADGE_MACHINES:
+        return icon
+    out = icon.copy()
+    col = {"#": (40, 12, 0, 255), "a": MOLTEN[1] + (255,), "b": MOLTEN[2] + (255,), "c": MOLTEN[3] + (255,),
+           "d": MOLTEN[4] + (255,)}
+    x0, y0 = TILE - len(DROP[0]), TILE - len(DROP)
+    for y, row in enumerate(DROP):
+        for x, ch in enumerate(row):
+            if ch in col:
+                out.putpixel((x0 + x, y0 + y), col[ch])
+    return out
+
+
+def molten(p):
+    """a liquid pixel of the extractor's tubes (teal, green) as molten metal of the same brightness"""
+    lum = (p[0] * 299 + p[1] * 587 + p[2] * 114) / 255000
+    i = min(len(MOLTEN) - 1, int(lum * len(MOLTEN)))
+    return MOLTEN[i] + (p[3],)
+
+
+def is_liquid(p):
+    return p[3] and max(p[:3]) - min(p[:3]) > 40
+
+
+def fluid_extractor_lv_ev():
+    """Issue #152: the LV and MV fluid extractor sprites (HV and EV use MV's, like the extractor) are upstream's
+    extractor with the liquid in its tubes molten; the idle picture keeps a low melt in the tubes, so the two machines
+    differ at rest too. The LV to EV icons are the extractor's with the molten badge."""
+    ent = ROOT / "graphics/entity"
+    for t in ("lv", "mv"):
+        src, dst = ent / f"{t}-extractor", ent / f"{t}-fluid-extractor"
+        dst.mkdir(exist_ok=True)
+        idle = load(src / f"{t}-extractor-idle.png")
+        strip = load(src / f"{t}-extractor-working.png")
+        w = strip.width
+        frames = [strip.crop((0, i * w, w, (i + 1) * w)) for i in range(strip.height // w)]
+        ip = idle.load()
+        out = []
+        for f in frames:
+            g = f.copy()
+            px = g.load()
+            for y in range(w):
+                for x in range(w):
+                    # the liquid: coloured and not in the idle picture (the MV casing is coloured too)
+                    if is_liquid(px[x, y]) and px[x, y] != ip[x, y]:
+                        px[x, y] = molten(px[x, y])
+            out.append(g)
+        save_strip(out, dst / f"{t}-fluid-extractor-working.png")
+        # the liquid of the first frame, its lower part (the lowest 35 % of its height) in the idle tubes
+        f0 = frames[0].load()
+        cells = [(x, y) for y in range(w) for x in range(w) if is_liquid(f0[x, y]) and f0[x, y] != ip[x, y]]
+        top, bottom = min(y for _, y in cells), max(y for _, y in cells)
+        level = bottom - (bottom - top) * 0.35
+        img = idle.copy()
+        for x, y in cells:
+            if y >= level:
+                img.putpixel((x, y), molten(f0[x, y]))
+        save(img, dst / f"{t}-fluid-extractor-idle.png")
+    for t in ("lv", "mv", "hv", "ev"):
+        save(badged("fluid-extractor", load(ICONS / f"{t}-extractor.png")), ICONS / f"{t}-fluid-extractor.png")
 
 
 def in_hull(hull, top, size):
@@ -642,6 +729,7 @@ def main():
         derived(name, source, rgb)
     for name, (tier, ramp) in ENDER_TANKS.items():
         ender_tank(a.gt, name, tier, ramp)
+    fluid_extractor_lv_ev()
     print("Sprites:", len(list(OUT_ENTITY.glob("*.png"))), "Icons:", len(list(OUT_ICON.glob("*.png"))))
 
 

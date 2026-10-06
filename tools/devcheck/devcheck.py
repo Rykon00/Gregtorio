@@ -489,6 +489,20 @@ def check_microminer_tab(sec):
             if r[9] != MICROMINER_TAB:
                 out.append(f"{r[1]} ({r[2]}): row {r[8]}, tab {r[9]}")
     return sorted(out)
+def check_extractor_split(m):
+    """Issue #152 (prototypes/151-fork-fluid-extractor.lua): as in GTNH, the Extractor makes items and the Fluid Extractor
+    fluids. A recipe of an extractor category with a fluid result, or of a fluid extractor category without one, is in
+    the wrong machine (hidden recipes do not count)."""
+    out = []
+    for name, r in sorted(m.R.items()):
+        if r["hidden"]:
+            continue
+        if re.fullmatch(r"[a-z]+-fluid-extractor-recipes", r["cat"]):
+            if not r["fout"]:
+                out.append(f"{name} ({r['cat']}): no fluid result, belongs in the Extractor")
+        elif re.fullmatch(r"[a-z]+-extractor-recipes", r["cat"]) and r["fout"]:
+            out.append(f"{name} ({r['cat']}): a fluid result, belongs in the Fluid Extractor")
+    return out
 def check_fluid_icons(sec):
     """Issue #119 (a warning): a fluid of the Fluids tab whose icon is not a Gregtorio file shows the base game's or Space
     Age's icon next to the others. The ones kept on purpose are in FORK_FLUID_ICONS_KEPT (prototypes/196-fork-subgroups.lua,
@@ -770,6 +784,9 @@ def check(a):
     report("WARNING: materials of the material parts without a tier (prototypes/200-fork-material-parts.lua)", parts_unranked)
     microminer = check_microminer_tab(sec)
     report("Microverse Projector recipes outside the Microminer tab (issue #120)", microminer)
+    extractor_split = check_extractor_split(m)
+    report("extractor recipes in the wrong machine (issue #152: items in the Extractor, fluids in the Fluid Extractor)",
+           extractor_split)
     report("WARNING: fluids of the Fluids tab with an icon of the base game or Space Age (issue #119; "
            "FORK_FLUID_ICONS_KEPT in prototypes/196-fork-subgroups.lua keeps one on purpose)", check_fluid_icons(sec))
     fluid_steps = check_fluid_steps(sec)
@@ -789,7 +806,8 @@ def check(a):
         Path(a.balance_out).write_text("[\n" + ",\n".join(rows) + "\n]\n", encoding="utf-8")
         print(f"\nbalance data written to {a.balance_out} (recipes, machines, technologies as JSON)")
     ok = not (files or [s for s in sprites if not s.startswith("(")] or uncraft or menu or required or unresearchable
-              or new_drafts or fluid_problems or locked or one_pack or fluid_steps or microminer or table_only)
+              or new_drafts or fluid_problems or locked or one_pack or fluid_steps or microminer or table_only
+              or extractor_split)
     print("\nRESULT:", "OK" if ok else "PROBLEMS FOUND")
     return 0 if ok else 1
 
