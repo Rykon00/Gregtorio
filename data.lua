@@ -122,6 +122,8 @@ require("prototypes.144-fork-dead-fluids")
 require("prototypes.148-fork-gtnh-table-items")
 --- issue #127: the unit counts of the technologies with red and green packs only
 require("prototypes.149-fork-early-research")
+--- issue #152: the Fluid Extractor, the extractor recipes with a fluid result move to it (after every extractor recipe, before the molds)
+require("prototypes.151-fork-fluid-extractor")
 require("prototypes.150-fork-molds")
 require("prototypes.190-fork-manual-labor")
 --- issue #137: fire animations of the stone furnace, the iron furnace and the small coal boiler (after their entities)

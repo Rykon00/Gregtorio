@@ -224,6 +224,9 @@ local RM_MACHINES = {
 	{ "mv-electric-blast-furnace", "platinum-group-residue-processing", "platinum-group-residue-processing" },
 	{ "lv-chemical-reactor", "ammonia-hexachloroiridiate", nil },
 	{ "lv-chemical-bath", "rhodium-sulfate-processing", nil },    -- the recipe stays, in the chemical reactor
+	-- issue #152: a melt moves to the fluid extractor, the old Extractor loads without it; sticky resin stays
+	{ "lv-extractor", "melt-iron-ingot", nil },
+	{ "lv-extractor", "sticky-resin", "sticky-resin" },
 }
 local RM_AT = { -30.5, Y + 30.5 }
 
