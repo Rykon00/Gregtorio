@@ -1,4 +1,8 @@
 ---------------------------------------------------------------------------------------------------
+Version: 0.5.3
+  Info:
+    - The mod description names the Discord server of Gregtorio Continued and ME Network: https://discord.gg/bfkwAanSD8
+---------------------------------------------------------------------------------------------------
 Version: 0.5.2
 Date: 2026-10-06
   Changes:
