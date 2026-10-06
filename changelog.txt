@@ -1,5 +1,7 @@
 ---------------------------------------------------------------------------------------------------
 Version: 0.5.3
+  Graphics:
+    - The fire of the stone furnace, the iron furnace and the Small Coal Boiler burns slower and smoother (issue #147): 48 pictures in which the flames rise and flicker in small steps, one loop in 2 seconds, instead of 4 unrelated pictures three times a second. The iron furnace's fire no longer runs twice as fast as the stone furnace's.
   Info:
     - The mod description names the Discord server of Gregtorio Continued and ME Network: https://discord.gg/bfkwAanSD8
 ---------------------------------------------------------------------------------------------------
