@@ -447,6 +447,52 @@ end
 
 
 --------------------------------------------------------------------------------
+--- 2f) SIFTING MACHINE, LV TO EV (issue #175)
+---    GT New Horizons has the Sifting Machine from LV up ("Basic Sifting Machine", LoaderMetaTileEntities.java:6841, recipe
+---    map sifterRecipes, otherwise only its Industrial Sifter multiblock); Gregtorio's sifter recipes (coal, diamond and
+---    three steps of the bartworks platinum line, which GTNH runs in the sifter too) ran only in the HV Large Sifter. The
+---    sifting machines run the same category lv-sifter-recipes; the Large Sifter stays. Machine recipe as GT's
+---    (MTERecipeLoader.java registerSifter, "WFW", "PMP", "CFC": 2 cables, 2 item filters, 2 pistons, the hull, 2
+---    circuits). LV with Basic Air Centrifuging (the item filter), which every technology of a sifter recipe leads
+---    through; MV to EV with the machines of their tier. Sprites: tools/gen_sprites.py (sifting_machine_lv_mv); IV to
+---    MAX through IV_BASIC_MACHINES.
+--------------------------------------------------------------------------------
+
+do
+	local SIFTERS = {
+		--  tier  path                   energy    speed  cable             circuit               tech
+		{ "lv", "lv-sifting-machine", EU16_LV, 1, "tin-cable",       "electronic-circuit", "basic-air-centrifuging" },
+		{ "mv", "mv-sifting-machine", EU16_MV, 2, "copper-cable",    "advanced-circuit",   "mv-machines" },
+		{ "hv", "mv-sifting-machine", EU16_HV, 4, "gold-cable",      "processing-unit",    "hv-machines" },
+		{ "ev", "mv-sifting-machine", EU16_EV, 8, "aluminium-cable", "ev-circuit",         "ev-machines" },
+	}
+	for _, a in ipairs(SIFTERS) do
+		local t, path, energy, speed, cable, circuit, tech = table.unpack(a)
+		local name = t .. "-sifting-machine"
+		make_electric_machine(name, name, path, { "lv-sifter-recipes" }, "fr-sifting-machine", energy, speed, 4, 0.5, 3, 3)
+		create_item{
+			name = name,
+			subgroup = t .. "-age-production-machine",
+			ingredients = {
+				{ type = "item", name = cable, amount = 2 },
+				{ type = "item", name = "filter", amount = 2 },
+				{ type = "item", name = t .. "-piston", amount = 2 },
+				{ type = "item", name = t .. "-machine-hull", amount = 1 },
+				{ type = "item", name = circuit, amount = 2 },
+			},
+			place_result = name,
+			stack_size = 10,
+		}
+		fork_add_unlock(tech, name)
+	end
+	data.raw["assembling-machine"]["lv-sifting-machine"].next_upgrade = "mv-sifting-machine"
+	data.raw["assembling-machine"]["mv-sifting-machine"].next_upgrade = "hv-sifting-machine"
+	data.raw["assembling-machine"]["hv-sifting-machine"].next_upgrade = "ev-sifting-machine"
+end
+
+
+
+--------------------------------------------------------------------------------
 --- 3) IV BASIC MACHINES
 ---    Copy of the EV machine: double speed, double power draw, IV categories added,
 ---    recipe = EV recipe with every tiered component shifted one tier up.
@@ -548,7 +594,7 @@ IV_BASIC_MACHINES = {
 	"wiremill", "bending-machine", "extruder", "rock-crusher", "lathe", "macerator", "centrifuge",
 	"extractor", "electrolyzer", "assembling-machine", "cutting-machine",
 	"canning-machine", "mixer", "ore-washer", "laser-engraver", "fluid-solidifier", "chemical-bath",
-	"polarizer", "circuit-assembler", "autoclave", "alloy-smelter", "compressor", "forge-hammer", "arc-furnace", "forming-press", "electric-furnace",
+	"polarizer", "circuit-assembler", "autoclave", "alloy-smelter", "compressor", "forge-hammer", "arc-furnace", "forming-press", "electric-furnace", "sifting-machine",
 }
 --- Multiblocks that come as an upgrade of the EV version (graphics of the EV version with energy hatches of the tier)
 IV_UPGRADE_MACHINES = {
