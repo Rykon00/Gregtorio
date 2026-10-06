@@ -1,0 +1,32 @@
+{
+  "entity": [
+    ["mv-greenhouse", "lv-greenhouse"],
+    ["hv-greenhouse", "lv-greenhouse"],
+    ["ev-greenhouse", "lv-greenhouse"],
+    ["iv-greenhouse", "lv-greenhouse"],
+    ["luv-greenhouse", "lv-greenhouse"],
+    ["zpm-greenhouse", "lv-greenhouse"],
+    ["uv-greenhouse", "lv-greenhouse"],
+    ["uhv-greenhouse", "lv-greenhouse"],
+    ["uev-greenhouse", "lv-greenhouse"],
+    ["uiv-greenhouse", "lv-greenhouse"],
+    ["umv-greenhouse", "lv-greenhouse"],
+    ["uxv-greenhouse", "lv-greenhouse"],
+    ["max-greenhouse", "lv-greenhouse"]
+  ],
+  "item": [
+    ["mv-greenhouse", "lv-greenhouse"],
+    ["hv-greenhouse", "lv-greenhouse"],
+    ["ev-greenhouse", "lv-greenhouse"],
+    ["iv-greenhouse", "lv-greenhouse"],
+    ["luv-greenhouse", "lv-greenhouse"],
+    ["zpm-greenhouse", "lv-greenhouse"],
+    ["uv-greenhouse", "lv-greenhouse"],
+    ["uhv-greenhouse", "lv-greenhouse"],
+    ["uev-greenhouse", "lv-greenhouse"],
+    ["uiv-greenhouse", "lv-greenhouse"],
+    ["umv-greenhouse", "lv-greenhouse"],
+    ["uxv-greenhouse", "lv-greenhouse"],
+    ["max-greenhouse", "lv-greenhouse"]
+  ]
+}
