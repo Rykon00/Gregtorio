@@ -1,7 +1,7 @@
 # Ore processing as GT New Horizons has it (issue #176): the plan
 
 Decision of the maintainer (2026-10-06, #176): **GTNH's full ore chain**, built as a project of its own in phases, the plan
-first. This file is the plan; the phases are issues of their own (listed in #176). No game change comes with this file.
+first. This file is the plan; the phases are the issues #185 (O1), #186 (O2), #187 (O3) and #188 (O4). No game change comes with this file.
 Sources: GT5-Unofficial fa916718 (`src/main/java`, `OP/` = `gregtech/loaders/oreprocessing/`); Gregtorio main 8b112a6
 (`devcheck.py check --balance-out`). The appendices hold GTNH's numbers with file and line.
 
@@ -65,10 +65,10 @@ three byproducts.
 
 | phase | content | new items and machines | depends on |
 |---|---|---|---|
-| O1 | the core chain: purified, centrifuged, impure and pure forms, ore washer to purified, thermal centrifuge, macerator steps, centrifuge of impure and pure dust; the byproduct table; the missing byproducts; saves | 4 forms x 69 ores (about 276 items with GT icons in the material colour, `tools/gen_gt_icons.py`), the **Thermal Centrifuge** LV to MAX (GTNH's recipe, sprites as #171 to #175), the Material Parts rows (200) | - |
-| O2 | chemical bath washing for the tagged ores (mercury: gold, platinum, cooperite, and silver at 99 %; sodium persulfate: cobalt, copper, nickel, zinc, cobaltite, tetrahedrite, as the ore itself or one of its byproducts) | recipes only (the chemical bath, mercury and sodium persulfate exist) | O1 |
-| O3 | the **Electromagnetic Separator** LV to MAX on pure dusts of the tagged ores (gold: vanadium magnetite; iron: tin, ilmenite, nickel, pentlandite, chromite, bornite; neodymium: bastnasite, monazite). GTNH gives a small dust and a nugget; Gregtorio has neither: their worth as a dust chance (40 % x 1/4 + 20 % x 1/9 = 12.2 %) | the machine | O1 |
-| O4 | the **sifter** on purified gem ores (ruby, diamond, emerald with GTNH's precious table; nether quartz, certus quartz, apatite, tricalcium phosphate, lazurite, sodalite, lapis, monazite, firestone with the default one; coal, salt and rock salt are skipped as in GTNH) and the autoclave on impure and pure dusts of the crystallisable ores; the forge hammer's crushing steps (ore -> crushed, crushed forms -> dust, #170) | gem grades Gregtorio lacks (only diamond has them today) | O1 |
+| O1 (#185) | the core chain: purified, centrifuged, impure and pure forms, ore washer to purified, thermal centrifuge, macerator steps, centrifuge of impure and pure dust; the byproduct table; the missing byproducts; saves | 4 forms x 69 ores (about 276 items with GT icons in the material colour, `tools/gen_gt_icons.py`), the **Thermal Centrifuge** LV to MAX (GTNH's recipe, sprites as #171 to #175), the Material Parts rows (200) | - |
+| O2 (#186) | chemical bath washing for the tagged ores (mercury: gold, platinum, cooperite, and silver at 99 %; sodium persulfate: cobalt, copper, nickel, zinc, cobaltite, tetrahedrite, as the ore itself or one of its byproducts) | recipes only (the chemical bath, mercury and sodium persulfate exist) | O1 |
+| O3 (#187) | the **Electromagnetic Separator** LV to MAX on pure dusts of the tagged ores (gold: vanadium magnetite; iron: tin, ilmenite, nickel, pentlandite, chromite, bornite; neodymium: bastnasite, monazite). GTNH gives a small dust and a nugget; Gregtorio has neither: their worth as a dust chance (40 % x 1/4 + 20 % x 1/9 = 12.2 %) | the machine | O1 |
+| O4 (#188) | the **sifter** on purified gem ores (ruby, diamond, emerald with GTNH's precious table; nether quartz, certus quartz, apatite, tricalcium phosphate, lazurite, sodalite, lapis, monazite, firestone with the default one; coal, salt and rock salt are skipped as in GTNH) and the autoclave on impure and pure dusts of the crystallisable ores; the forge hammer's crushing steps (ore -> crushed, crushed forms -> dust, #170) | gem grades Gregtorio lacks (only diamond has them today) | O1 |
 
 Each phase: `devcheck.py all`, `migrate --from-ref <last release>` with a save that runs the old recipes, the unlock diff
 of two balance dumps (the new recipes are producers of 199's auto-unlock), a contact sheet of the new icons, the changelog
