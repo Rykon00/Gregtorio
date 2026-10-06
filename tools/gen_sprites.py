@@ -36,7 +36,7 @@ BASIC_FRAMES = 6   # frames for basic machines (must match 101-fork-machines.lua
 BASIC_GT = {
     "wiremill": "wiremill", "bending-machine": "bender", "extruder": "extruder",
     "rock-crusher": "iconsets:OVERLAY_FRONT_ROCK_BREAKER", "lathe": "lathe", "macerator": "macerator",
-    "centrifuge": "centrifuge", "air-collector": "pump", "extractor": "extractor",
+    "centrifuge": "centrifuge", "extractor": "extractor",
     "electrolyzer": "electrolyzer", "assembling-machine": "assembler", "cutting-machine": "cutter",
     "canning-machine": "canner", "mixer": "mixer", "ore-washer": "ore_washer",
     "laser-engraver": "laser_engraver", "fluid-solidifier": "fluid_solidifier",
