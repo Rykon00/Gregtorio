@@ -40,7 +40,7 @@ BASIC_MACHINES = [
     "extractor", "electrolyzer", "assembling-machine", "cutting-machine", "canning-machine", "mixer", "ore-washer",
     "laser-engraver", "fluid-solidifier", "chemical-bath", "polarizer", "circuit-assembler", "autoclave",
     "alloy-smelter", "compressor", "forge-hammer", "arc-furnace", "forming-press",
-    "electric-furnace",
+    "electric-furnace", "sifting-machine",
 ]
 # issue #152: the Fluid Extractors are copies of the Extractor (151); from IV up they are drawn like the other basic
 # machines from their LV and MV sprites (fluid_extractor_lv_ev), with the Extractor's frame count
@@ -49,7 +49,8 @@ EV_FRAMES_OF = {FLUID_EXTRACTOR: "extractor"}
 # issue #170: the electric Forge Hammers LV to EV are made in a loop of 101 (no make_electric_machine("ev-forge-hammer"
 # to read) and play the 5 frames of the Steam Forge Hammer's strip; their LV and MV sprites come from it
 # (forge_hammer_lv_mv)
-EV_FRAMES = {"forge-hammer": 5, "arc-furnace": 1, "forming-press": 1, "electric-furnace": 1}
+EV_FRAMES = {"forge-hammer": 5, "arc-furnace": 1, "forming-press": 1, "electric-furnace": 1,
+             "sifting-machine": 4}
 # issue #171: the Arc Furnace has no upstream picture either: its LV and MV ones are the compressor's frame with GT's arc
 # furnace overlay in the window (arc_furnace_lv_mv), one frame
 ARC_OVERLAY = "gregtech:basicmachines/arc_furnace/OVERLAY_FRONT"
@@ -61,6 +62,9 @@ PRESS_WINDOW = (11, 11, 75, 38)  # the upper window of the LV and MV wiremill
 # issue #174: the Electric Furnace: the assembling machine's frame (its plain window) with GT's electric furnace front
 FURNACE_OVERLAY = "gregtech:basicmachines/electric_furnace/OVERLAY_FRONT"
 FURNACE_WINDOW = (17, 21, 71, 54)  # the window of the LV and MV assembling machine
+# issue #175: the Sifting Machine: the lathe's frame with GT's sifter front, its 4 active frames as the working strip
+SIFTER_OVERLAY = "gregtech:basicmachines/sifter/OVERLAY_FRONT"
+SIFTER_WINDOW = (17, 17, 71, 55)  # the window of the LV and MV lathe
 # issue #152: the fluid extractor's icons carry a molten fluid in the bottom right corner, so they differ from the
 # extractor's in the inventory; its LV to EV sprites are the extractor's with the liquid in the tubes molten
 FLUID_BADGE_MACHINES = {"fluid-extractor"}
@@ -560,20 +564,23 @@ def forge_hammer_lv_mv():
         save(out, ICONS / f"{t}-forge-hammer.png")
 
 
-def framed_overlay_lv_mv(gt, base, frame, window, overlay, glow=False, crop=False):
+def framed_overlay_lv_mv(gt, base, frame, window, overlay, glow=False, crop=False, animated=False):
     """LV and MV pictures of a machine upstream has no picture of: the LV and MV <frame> machine's idle picture with
     GT's front overlay of the machine at 2x in its window (x0, y0, x1, y1), the plain overlay at rest and the active one
     (with its glow) while it works; with crop the overlay is cut to its content first. The LV to EV icons: the frame
-    machine's with the active overlay as a badge in the bottom right corner."""
-    def front(name):
-        img = frames_of(load(gt_path(gt, overlay + name)))[0]
+    machine's with the active overlay as a badge in the bottom right corner. With animated the working strip has every
+    frame of the active overlay (cut to the box of the plain one)."""
+    def front(name, i=0):
+        img = frames_of(load(gt_path(gt, overlay + name)))[i]
         if crop:
-            img = img.crop(img.getbbox())
+            img = img.crop(frames_of(load(gt_path(gt, overlay)))[0].getbbox() if animated else img.getbbox())
         return img.resize((img.width * 2, img.height * 2), Image.NEAREST)
     idle_front = front("")
     work_front = front("_ACTIVE")
     if glow:
         work_front.alpha_composite(front("_ACTIVE_GLOW"))
+    work_fronts = ([front("_ACTIVE", i) for i in range(len(frames_of(load(gt_path(gt, overlay + "_ACTIVE")))))]
+                   if animated else None)
     x0, y0, x1, y1 = window
     at = (x0 + (x1 - x0 - idle_front.width) // 2, y0 + (y1 - y0 - idle_front.height) // 2)
     for t in ("lv", "mv"):
@@ -583,6 +590,14 @@ def framed_overlay_lv_mv(gt, base, frame, window, overlay, glow=False, crop=Fals
         for kind, f in (("idle", idle_front), ("working", work_front)):
             img = img0.copy()
             img.alpha_composite(f, at)
+            if kind == "working" and work_fronts:
+                frames = []
+                for wf in work_fronts:
+                    fr = img0.copy()
+                    fr.alpha_composite(wf, at)
+                    frames.append(fr)
+                save_strip(frames, dst / f"{t}-{base}-{kind}.png")
+                continue
             save(img, dst / f"{t}-{base}-{kind}.png")
     badge = frames_of(load(gt_path(gt, overlay + "_ACTIVE")))[0]
     if crop:
@@ -610,6 +625,12 @@ def electric_furnace_lv_mv(gt):
     """Issue #174: upstream has no electric furnace: the LV and MV assembling machine's frame with GT's electric furnace
     front (dark at rest, glowing while it works)"""
     framed_overlay_lv_mv(gt, "electric-furnace", "assembling-machine", FURNACE_WINDOW, FURNACE_OVERLAY, glow=True, crop=True)
+
+
+def sifting_machine_lv_mv(gt):
+    """Issue #175: upstream has no basic sifter: the LV and MV lathe's frame with GT's sifter front (its active overlay is
+    animated, 4 frames)"""
+    framed_overlay_lv_mv(gt, "sifting-machine", "lathe", SIFTER_WINDOW, SIFTER_OVERLAY, crop=True, animated=True)
 
 
 def fluid_extractor_lv_ev():
@@ -877,6 +898,7 @@ def main():
     arc_furnace_lv_mv(a.gt)      # and the LV and MV arc furnace of the arc furnace's
     forming_press_lv_mv(a.gt)    # and the LV and MV forming press of the forming press's
     electric_furnace_lv_mv(a.gt) # and the LV and MV electric furnace of the electric furnace's
+    sifting_machine_lv_mv(a.gt)  # and the LV and MV sifting machine of the sifting machine's
     for tier in ("IV", "LuV", "ZPM", "UV", "UHV", "UEV", "UIV", "UMV", "UXV", "MAX"):
         for base in BASIC_MACHINES + [FLUID_EXTRACTOR]:
             basic_machine(a.gt, base, tier)

@@ -704,6 +704,9 @@ local RT = {
 	-- issue #174: the Electric Furnace smelts
 	{ "lv-electric-furnace", "iron-dust-smelter" },
 	{ "iv-electric-furnace", "brick-smelter" },
+	-- issue #175: the Sifting Machine runs the sifter recipes of the Large Sifter
+	{ "lv-sifting-machine", "coal-sifter" },
+	{ "iv-sifting-machine", "refined-platinum-salt" },
 	-- issue #153 (prototypes/153-fork-compressor-air.lua): air from the compressor
 	{ "lv-compressor", "air-collection" },
 	{ "iv-large-electric-compressor", "air-collection" },
