@@ -361,7 +361,21 @@ local function set_tier_hatches(m, name)
 	end
 end
 
+--- Issue #148: a basic machine one tier up keeps the graphics set of its source (size, frame count, animation speed: in
+--- the end the EV machine's, made by make_electric_machine from upstream's asset) with its own files, upstream's asset with
+--- the casing in the tier's colour (tools/gen_sprites.py, basic_machine).
+local function tier_graphics(src, name)
+	local g = src.graphics_set and table.deepcopy(src.graphics_set)
+	if not (g and g.idle_animation and g.animation) then return nil end
+	for key, suffix in pairs({ idle_animation = "-idle.png", animation = "-working.png" }) do
+		for _, layer in pairs(g[key].layers or { g[key] }) do layer.filename = SPRITE_PATH .. name .. suffix end
+	end
+	return g
+end
+
 --- Create a machine one tier up (entity, item, recipe). Global so 110-fork-luv.lua can use it.
+--- sprite_frames: the machine gets the sprites of tools/gen_sprites.py; a basic machine (a graphics set with an idle and
+--- a working animation) keeps its source's frame count, other machines get sprite_frames frames.
 function fork_make_tier_machine(base, from_tier, to_tier, sprite_frames, unlock_tech)
 	local src_name, new_name = from_tier .. "-" .. base, to_tier .. "-" .. base
 	local hatches = not sprite_frames and UPGRADE_HATCHES[base]
@@ -384,6 +398,7 @@ function fork_make_tier_machine(base, from_tier, to_tier, sprite_frames, unlock_
 		icon = icon,
 	}
 	if m and hatches then set_tier_hatches(m, new_name) end
+	if m and sprite_frames then m.graphics_set = tier_graphics(src, new_name) or m.graphics_set end
 
 	--- Item
 	local src_item = data.raw.item[src_name]
