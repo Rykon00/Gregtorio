@@ -660,7 +660,7 @@ local RT = {
 	{ "zpm-alloy-blast-smelter", "molten-fluxed-electrum" },
 	{ "uv-electric-blast-furnace", "hot-bedrockium-ingot" },
 	{ "uhv-electric-blast-furnace", "hot-quantium-ingot" },
-	{ "iv-extractor", "molten-quantium" },
+	{ "iv-fluid-extractor", "molten-quantium" },
 	{ "uhv-mixer", "naquadah-based-fuel-mk2" },
 	{ "water-purification-plant", "grade-5-water" },
 	{ "zpm-assembly-line", "uxv-energy-hatch" },
@@ -717,9 +717,14 @@ local RT = {
 	{ "lv-fluid-solidifier", "solidify-tin-ring" },
 	{ "lv-fluid-solidifier", "solidify-steel-screw" },
 	{ "ev-fluid-solidifier", "solidify-soularium-round" },
-	{ "lv-extractor", "melt-steel-ingot" },
-	{ "ev-extractor", "melt-titanium-ingot" },
-	{ "iv-extractor", "melt-iridium-ingot" },
+	{ "lv-fluid-extractor", "melt-steel-ingot" },
+	{ "ev-fluid-extractor", "melt-titanium-ingot" },
+	{ "iv-fluid-extractor", "melt-iridium-ingot" },
+	-- issue #152 (prototypes/151-fork-fluid-extractor.lua): the item recipes stay in the Extractor, the Large Fluid
+	-- Extractor melts
+	{ "lv-extractor", "sticky-resin" },
+	{ "lv-extractor", "raw-rubber-pulp-extractor" },
+	{ "iv-large-extractor", "melt-copper-ingot" },
 	-- issue #91 part 3 (prototypes/144-fork-dead-fluids.lua): blast furnace recipes with neon, krypton and xenon, nitric
 	-- acid from nitrogen dioxide, raw gasoline, gasoline and its cell
 	{ "ev-electric-blast-furnace", "hot-titanium-ingot-neon" },
@@ -1259,7 +1264,7 @@ end
 --- 1) For every melt (an extractor recipe giving 14.4 of a fluid per ingot) and every cast that takes only that fluid (a
 ---    recipe of the solidifier categories, one fluid in, true amount in tenths): n ingots (n * 14.4 = m * the cast's
 ---    amount) must give at least what m casts take.
---- 2) In machines: ten ingots melted in an LV extractor, the melt of nine of them in an LV fluid solidifier on the block
+--- 2) In machines: ten ingots melted in an LV fluid extractor, the melt of nine of them in an LV fluid solidifier on the block
 ---    cast (it must start with no tenth melt and make the block), the tenth one's on the ingot cast (it must make the
 ---    ingot); ten melts must hold at least 144.
 local CT_X, CT_Y = -60, 200
@@ -1324,7 +1329,7 @@ function setup_melt_test(s)
 			if molds and molds.data[recipe] then e.get_module_inventory().insert{ name = molds.data[recipe] } end
 			return e
 		end
-		st.extractor = machine("lv-extractor", CT_X + 6, "melt-iron-ingot")
+		st.extractor = machine("lv-fluid-extractor", CT_X + 6, "melt-iron-ingot")
 		st.block = machine("lv-fluid-solidifier", CT_X + 12, "solidify-block-of-iron")
 		st.ingot = machine("lv-fluid-solidifier", CT_X + 18, "solidify-iron-ingot")
 		st.extractor.insert{ name = "iron-ingot", count = 10 }

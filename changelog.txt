@@ -1,5 +1,10 @@
 ---------------------------------------------------------------------------------------------------
 Version: 0.5.3
+  Features:
+    - Fluid Extractor, LV to MAX, as in GregTech New Horizons (issue #152): it makes the fluid recipes the Extractor made: the melts of every ingot, molten tin, soldering alloy, wood tar and the other recipes with a fluid result. Same recipe and technology as the Extractor of its tier, same size and pipe ports. The Extractor and the Steam Extractor keep the item recipes (sticky resin, raw rubber pulp, monazite); the Large Fluid Extractor (IV) runs the fluid recipes. A Fluid Extractor can be placed over an Extractor.
+  Changes:
+    - The technologies Concrete, Galena and Invar need the technology Extractor (it brings the LV Fluid Extractor that melts their metals; the Steam Extractor no longer melts).
+    - Saves: an Extractor that melted or made another fluid has no recipe after the update and stops; place a Fluid Extractor of the same tier over it (it takes its place) and choose the recipe again. Extractors with sticky resin, raw rubber pulp or monazite keep running.
   Info:
     - The mod description names the Discord server of Gregtorio Continued and ME Network: https://discord.gg/bfkwAanSD8
 ---------------------------------------------------------------------------------------------------
