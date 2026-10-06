@@ -1,0 +1,18 @@
+{
+  "entity": [
+    ["lv-extractor", "lv-fluid-extractor"],
+    ["mv-extractor", "mv-fluid-extractor"],
+    ["hv-extractor", "hv-fluid-extractor"],
+    ["ev-extractor", "ev-fluid-extractor"],
+    ["iv-extractor", "iv-fluid-extractor"],
+    ["luv-extractor", "luv-fluid-extractor"],
+    ["zpm-extractor", "zpm-fluid-extractor"],
+    ["uv-extractor", "uv-fluid-extractor"],
+    ["uhv-extractor", "uhv-fluid-extractor"],
+    ["uev-extractor", "uev-fluid-extractor"],
+    ["uiv-extractor", "uiv-fluid-extractor"],
+    ["umv-extractor", "umv-fluid-extractor"],
+    ["uxv-extractor", "uxv-fluid-extractor"],
+    ["max-extractor", "max-fluid-extractor"]
+  ]
+}

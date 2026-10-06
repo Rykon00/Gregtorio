@@ -225,9 +225,11 @@ local RM_MACHINES = {
 	{ "mv-electric-blast-furnace", "platinum-group-residue-processing", "platinum-group-residue-processing" },
 	{ "lv-chemical-reactor", "ammonia-hexachloroiridiate", nil },
 	{ "lv-chemical-bath", "rhodium-sulfate-processing", nil },    -- the recipe stays, in the chemical reactor
-	-- issue #152: a melt moves to the fluid extractor, the old Extractor loads without it; sticky resin stays
-	{ "lv-extractor", "melt-iron-ingot", nil },
-	{ "lv-extractor", "sticky-resin", "sticky-resin" },
+	-- issue #152: every Extractor of an old save becomes the Fluid Extractor of its tier (the maintainer's choice): a melt
+	-- keeps running, sticky resin is gone (an item recipe of the Extractor)
+	{ "lv-extractor", "melt-iron-ingot", "melt-iron-ingot", "lv-fluid-extractor" },
+	{ "lv-extractor", "sticky-resin", nil, "lv-fluid-extractor" },
+	{ "ev-extractor", "melt-titanium-ingot", "melt-titanium-ingot", "ev-fluid-extractor" },
 	-- issue #153: an Air Collector becomes the compressor of its tier and keeps making air (checked by the entity's
 	-- name below)
 	{ "lv-air-collector", "air-collection", "air-collection", "lv-compressor" },
