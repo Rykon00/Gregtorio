@@ -328,7 +328,7 @@ IV_BASIC_MACHINES = {
 IV_UPGRADE_MACHINES = {
 	"electric-blast-furnace", "vacuum-freezer", "large-chemical-reactor", "microverse-projector",
 	"tall-distillation-tower", "short-distillation-tower", "implosion-compressor", "cracker",
-	"multismelter", "pyrolyse-oven", "greenhouse", "drilling-rig", "alloy-blast-smelter",
+	"multismelter", "pyrolyse-oven", "drilling-rig", "alloy-blast-smelter",
 }
 
 local UPGRADE_HATCHES = {}

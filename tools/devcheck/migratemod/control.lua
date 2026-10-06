@@ -216,7 +216,8 @@ local RM_ITEMS = { ["ammonia-hexachloroplatinate"] = "platinum-salt", ["crude-pl
 	["potassium-pyrosulfate"] = "potassium-disulfate", ["iridium-dioxide-residue"] = "iridium-dioxide",
 	["ammonia-hexachloroiridiate"] = "iridium-chloride",
 	["advanced-card"] = "me-advanced-card",           -- issue #121
-	["lv-air-collector"] = "lv-compressor", ["ev-air-collector"] = "ev-compressor" }   -- issue #153
+	["lv-air-collector"] = "lv-compressor", ["ev-air-collector"] = "ev-compressor",   -- issue #153
+	["ev-greenhouse"] = "lv-greenhouse" }   -- issue #165
 local RM_MACHINES = {
 	{ "lv-chemical-reactor", "platinum-palladium-leachate-processing", nil },
 	{ "lv-electrolyzer", "chloroplatinic-acid", nil },
@@ -230,6 +231,8 @@ local RM_MACHINES = {
 	{ "lv-extractor", "melt-iron-ingot", "melt-iron-ingot", "lv-fluid-extractor" },
 	{ "lv-extractor", "sticky-resin", nil, "lv-fluid-extractor" },
 	{ "ev-extractor", "melt-titanium-ingot", "melt-titanium-ingot", "ev-fluid-extractor" },
+	-- issue #165: every greenhouse becomes the Extreme Industrial Greenhouse (lv-greenhouse), its recipe kept
+	{ "hv-greenhouse", "growing-trees", "growing-trees", "lv-greenhouse" },
 	-- issue #153: an Air Collector becomes the compressor of its tier and keeps making air (checked by the entity's
 	-- name below)
 	{ "lv-air-collector", "air-collection", "air-collection", "lv-compressor" },

@@ -186,7 +186,6 @@ UPGRADE_MULTIBLOCKS = {
     "cracker": ("cracker/cracker", "cracker"),
     "multismelter": ("mv-multismelter/mv-multismelter", "hv-multismelter"),
     "pyrolyse-oven": ("mv-pyrolyse-oven/mv-pyrolyse-oven", "hv-pyrolyse-oven"),
-    "greenhouse": ("greenhouse/greenhouse", "greenhouse"),
     "drilling-rig": ("mv-drilling-rig/mv-drilling-rig", "mv-drilling-rig"),
     "alloy-blast-smelter": ("fork/ev-alloy-blast-smelter", "alloy-blast-smelter"),
 }
