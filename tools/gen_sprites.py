@@ -39,7 +39,7 @@ BASIC_MACHINES = [
     "wiremill", "bending-machine", "extruder", "rock-crusher", "lathe", "macerator", "centrifuge",
     "extractor", "electrolyzer", "assembling-machine", "cutting-machine", "canning-machine", "mixer", "ore-washer",
     "laser-engraver", "fluid-solidifier", "chemical-bath", "polarizer", "circuit-assembler", "autoclave",
-    "alloy-smelter", "compressor", "forge-hammer", "arc-furnace",
+    "alloy-smelter", "compressor", "forge-hammer", "arc-furnace", "forming-press",
 ]
 # issue #152: the Fluid Extractors are copies of the Extractor (151); from IV up they are drawn like the other basic
 # machines from their LV and MV sprites (fluid_extractor_lv_ev), with the Extractor's frame count
@@ -48,11 +48,15 @@ EV_FRAMES_OF = {FLUID_EXTRACTOR: "extractor"}
 # issue #170: the electric Forge Hammers LV to EV are made in a loop of 101 (no make_electric_machine("ev-forge-hammer"
 # to read) and play the 5 frames of the Steam Forge Hammer's strip; their LV and MV sprites come from it
 # (forge_hammer_lv_mv)
-EV_FRAMES = {"forge-hammer": 5, "arc-furnace": 1}
+EV_FRAMES = {"forge-hammer": 5, "arc-furnace": 1, "forming-press": 1}
 # issue #171: the Arc Furnace has no upstream picture either: its LV and MV ones are the compressor's frame with GT's arc
 # furnace overlay in the window (arc_furnace_lv_mv), one frame
 ARC_OVERLAY = "gregtech:basicmachines/arc_furnace/OVERLAY_FRONT"
 ARC_WINDOW = (16, 21, 70, 54)   # the window of the LV and MV compressor (x0, y0, x1, y1)
+# issue #173: the Forming Press likewise: the wiremill's frame (its wide upper window) with GT's press front, cut to
+# its content
+PRESS_OVERLAY = "gregtech:basicmachines/press/OVERLAY_FRONT"
+PRESS_WINDOW = (11, 11, 75, 38)  # the upper window of the LV and MV wiremill
 # issue #152: the fluid extractor's icons carry a molten fluid in the bottom right corner, so they differ from the
 # extractor's in the inventory; its LV to EV sprites are the extractor's with the liquid in the tubes molten
 FLUID_BADGE_MACHINES = {"fluid-extractor"}
@@ -552,31 +556,50 @@ def forge_hammer_lv_mv():
         save(out, ICONS / f"{t}-forge-hammer.png")
 
 
-def arc_furnace_lv_mv(gt):
-    """Issue #171: upstream has no arc furnace. The LV and MV arc furnace are the LV and MV compressor's frame (the same
-    window, ARC_WINDOW) with GT's arc furnace front in the window at 2x: dark slots at rest, glowing ones (the active
-    overlay and its glow) while it works. The LV to EV icons: the compressor's with the glowing front as a badge."""
+def framed_overlay_lv_mv(gt, base, frame, window, overlay, glow=False, crop=False):
+    """LV and MV pictures of a machine upstream has no picture of: the LV and MV <frame> machine's idle picture with
+    GT's front overlay of the machine at 2x in its window (x0, y0, x1, y1), the plain overlay at rest and the active one
+    (with its glow) while it works; with crop the overlay is cut to its content first. The LV to EV icons: the frame
+    machine's with the active overlay as a badge in the bottom right corner."""
     def front(name):
-        img = frames_of(load(gt_path(gt, ARC_OVERLAY + name)))[0]
+        img = frames_of(load(gt_path(gt, overlay + name)))[0]
+        if crop:
+            img = img.crop(img.getbbox())
         return img.resize((img.width * 2, img.height * 2), Image.NEAREST)
     idle_front = front("")
     work_front = front("_ACTIVE")
-    work_front.alpha_composite(front("_ACTIVE_GLOW"))
-    x0, y0, x1, y1 = ARC_WINDOW
+    if glow:
+        work_front.alpha_composite(front("_ACTIVE_GLOW"))
+    x0, y0, x1, y1 = window
     at = (x0 + (x1 - x0 - idle_front.width) // 2, y0 + (y1 - y0 - idle_front.height) // 2)
     for t in ("lv", "mv"):
-        frame = load(ENTITY / f"{t}-compressor" / f"{t}-compressor-idle.png")
-        dst = ENTITY / f"{t}-arc-furnace"
+        img0 = load(ENTITY / f"{t}-{frame}" / f"{t}-{frame}-idle.png")
+        dst = ENTITY / f"{t}-{base}"
         dst.mkdir(exist_ok=True)
         for kind, f in (("idle", idle_front), ("working", work_front)):
-            img = frame.copy()
+            img = img0.copy()
             img.alpha_composite(f, at)
-            save(img, dst / f"{t}-arc-furnace-{kind}.png")
-    badge = frames_of(load(gt_path(gt, ARC_OVERLAY + "_ACTIVE")))[0].resize((12, 12), Image.NEAREST)
+            save(img, dst / f"{t}-{base}-{kind}.png")
+    badge = frames_of(load(gt_path(gt, overlay + "_ACTIVE")))[0]
+    if crop:
+        badge = badge.crop(badge.getbbox())
+    k = 12 / max(badge.size)
+    badge = badge.resize((max(1, round(badge.width * k)), max(1, round(badge.height * k))), Image.NEAREST)
     for t in ("lv", "mv", "hv", "ev"):
-        icon = load(ICONS / f"{t}-compressor.png")
-        icon.alpha_composite(badge, (TILE - 12, TILE - 12))
-        save(icon, ICONS / f"{t}-arc-furnace.png")
+        icon = load(ICONS / f"{t}-{frame}.png")
+        icon.alpha_composite(badge, (TILE - badge.width, TILE - badge.height))
+        save(icon, ICONS / f"{t}-{base}.png")
+
+
+def arc_furnace_lv_mv(gt):
+    """Issue #171: upstream has no arc furnace: the LV and MV compressor's frame with GT's arc furnace front (dark slots
+    at rest, glowing ones while it works)"""
+    framed_overlay_lv_mv(gt, "arc-furnace", "compressor", ARC_WINDOW, ARC_OVERLAY, glow=True)
+
+
+def forming_press_lv_mv(gt):
+    """Issue #173: upstream has no forming press: the LV and MV wiremill's frame with GT's press front"""
+    framed_overlay_lv_mv(gt, "forming-press", "wiremill", PRESS_WINDOW, PRESS_OVERLAY, crop=True)
 
 
 def fluid_extractor_lv_ev():
@@ -842,6 +865,7 @@ def main():
     fluid_extractor_lv_ev()      # first: the LV and MV fluid extractor are the source of its tiers
     forge_hammer_lv_mv()         # and the LV and MV forge hammer of the forge hammer's
     arc_furnace_lv_mv(a.gt)      # and the LV and MV arc furnace of the arc furnace's
+    forming_press_lv_mv(a.gt)    # and the LV and MV forming press of the forming press's
     for tier in ("IV", "LuV", "ZPM", "UV", "UHV", "UEV", "UIV", "UMV", "UXV", "MAX"):
         for base in BASIC_MACHINES + [FLUID_EXTRACTOR]:
             basic_machine(a.gt, base, tier)

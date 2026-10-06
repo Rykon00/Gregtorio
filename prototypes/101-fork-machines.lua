@@ -335,6 +335,74 @@ end
 
 
 --------------------------------------------------------------------------------
+--- 2d) FORMING PRESS, LV TO EV (issue #173)
+---    GT New Horizons has the Forming Press from LV up ("Basic Forming Press", LoaderMetaTileEntities.java:5229, recipe
+---    map formingPressRecipes, which no other basic machine runs); upstream had none. GTNH presses AE2's printed circuits
+---    in it (FormingPressRecipes.java: a plate or crystal and the inscriber press, which is not used up, 10 s at LV):
+---    Gregtorio's four printed circuit recipes have exactly these inputs and times but ran in the LV circuit assembler;
+---    they move to the forming press, their names and technologies kept (the press goes back to the output as before).
+---    Machine recipe as GT's (MTERecipeLoader.java registerFormingPress, "WPW", "CMC", "WPW": 4 cables, 2 pistons, 2
+---    circuits, the hull). LV with every technology that unlocks a printed circuit, MV to EV with the machines of their
+---    tier. Sprites: tools/gen_sprites.py (forming_press_lv_mv); IV to MAX through IV_BASIC_MACHINES.
+--------------------------------------------------------------------------------
+
+recipe_category_and_subgroup("lv-forming-press-recipes")
+do
+	local PRINTED = { "printed-silicon", "printed-logic-circuit", "printed-calculation-circuit", "printed-engineering-circuit" }
+	local lv_techs = {}
+	for name, tech in pairs(data.raw.technology) do
+		for _, e in pairs(tech.effects or {}) do
+			for _, r in pairs(PRINTED) do
+				if e.type == "unlock-recipe" and e.recipe == r then lv_techs[name] = true end
+			end
+		end
+	end
+	local PRESSES = {
+		--  tier  path                 energy    speed  cable             circuit
+		{ "lv", "lv-forming-press", EU16_LV, 1, "tin-cable",       "electronic-circuit" },
+		{ "mv", "mv-forming-press", EU16_MV, 2, "copper-cable",    "advanced-circuit" },
+		{ "hv", "mv-forming-press", EU16_HV, 4, "gold-cable",      "processing-unit" },
+		{ "ev", "mv-forming-press", EU16_EV, 8, "aluminium-cable", "ev-circuit" },
+	}
+	for _, a in ipairs(PRESSES) do
+		local t, path, energy, speed, cable, circuit = table.unpack(a)
+		local name = t .. "-forming-press"
+		make_electric_machine(name, name, path, { "lv-forming-press-recipes" }, "fr-forming-press", energy, speed, 1, 0.5, 3, 3)
+		create_item{
+			name = name,
+			subgroup = t .. "-age-production-machine",
+			ingredients = {
+				{ type = "item", name = cable, amount = 4 },
+				{ type = "item", name = t .. "-piston", amount = 2 },
+				{ type = "item", name = circuit, amount = 2 },
+				{ type = "item", name = t .. "-machine-hull", amount = 1 },
+			},
+			place_result = name,
+			stack_size = 10,
+		}
+		if t == "lv" then
+			local names = {}
+			for tech, _ in pairs(lv_techs) do names[#names + 1] = tech end
+			table.sort(names)
+			for _, tech in ipairs(names) do fork_add_unlock(tech, name) end
+		else
+			fork_add_unlock(t .. "-machines", name)
+		end
+	end
+	data.raw["assembling-machine"]["lv-forming-press"].next_upgrade = "mv-forming-press"
+	data.raw["assembling-machine"]["mv-forming-press"].next_upgrade = "hv-forming-press"
+	data.raw["assembling-machine"]["hv-forming-press"].next_upgrade = "ev-forming-press"
+
+	for _, n in pairs(PRINTED) do
+		local r = data.raw.recipe[n]
+		r.category = "lv-forming-press-recipes"
+		r.subgroup = "subgroup-lv-forming-press-recipes"
+	end
+end
+
+
+
+--------------------------------------------------------------------------------
 --- 3) IV BASIC MACHINES
 ---    Copy of the EV machine: double speed, double power draw, IV categories added,
 ---    recipe = EV recipe with every tiered component shifted one tier up.
@@ -436,7 +504,7 @@ IV_BASIC_MACHINES = {
 	"wiremill", "bending-machine", "extruder", "rock-crusher", "lathe", "macerator", "centrifuge",
 	"extractor", "electrolyzer", "assembling-machine", "cutting-machine",
 	"canning-machine", "mixer", "ore-washer", "laser-engraver", "fluid-solidifier", "chemical-bath",
-	"polarizer", "circuit-assembler", "autoclave", "alloy-smelter", "compressor", "forge-hammer", "arc-furnace",
+	"polarizer", "circuit-assembler", "autoclave", "alloy-smelter", "compressor", "forge-hammer", "arc-furnace", "forming-press",
 }
 --- Multiblocks that come as an upgrade of the EV version (graphics of the EV version with energy hatches of the tier)
 IV_UPGRADE_MACHINES = {

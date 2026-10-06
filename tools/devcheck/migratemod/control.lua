@@ -235,6 +235,8 @@ local RM_MACHINES = {
 	{ "hv-greenhouse", "growing-trees", "growing-trees", "lv-greenhouse" },
 	-- issue #171: annealed copper moved to the Arc Furnace, the old electric blast furnace loads without it
 	{ "mv-electric-blast-furnace", "annealed-copper-ingot", nil },
+	-- issue #173: the printed circuits moved to the Forming Press, the old circuit assembler loads without them
+	{ "lv-circuit-assembler", "printed-silicon", nil },
 	-- issue #153: an Air Collector becomes the compressor of its tier and keeps making air (checked by the entity's
 	-- name below)
 	{ "lv-air-collector", "air-collection", "air-collection", "lv-compressor" },
