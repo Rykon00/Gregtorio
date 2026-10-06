@@ -233,6 +233,8 @@ local RM_MACHINES = {
 	{ "ev-extractor", "melt-titanium-ingot", "melt-titanium-ingot", "ev-fluid-extractor" },
 	-- issue #165: every greenhouse becomes the Extreme Industrial Greenhouse (lv-greenhouse), its recipe kept
 	{ "hv-greenhouse", "growing-trees", "growing-trees", "lv-greenhouse" },
+	-- issue #171: annealed copper moved to the Arc Furnace, the old electric blast furnace loads without it
+	{ "mv-electric-blast-furnace", "annealed-copper-ingot", nil },
 	-- issue #153: an Air Collector becomes the compressor of its tier and keeps making air (checked by the entity's
 	-- name below)
 	{ "lv-air-collector", "air-collection", "air-collection", "lv-compressor" },

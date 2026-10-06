@@ -695,6 +695,9 @@ local RT = {
 	-- issue #170 (prototypes/101-fork-machines.lua): the electric Forge Hammer with a plate and a new hammer recipe
 	{ "lv-forge-hammer", "iron-plate-forge-hammer" },
 	{ "iv-forge-hammer", "sand-forge-hammer" },
+	-- issue #171: the Arc Furnace makes annealed copper (copper and oxygen)
+	{ "lv-arc-furnace", "annealed-copper-ingot" },
+	{ "iv-arc-furnace", "annealed-copper-ingot" },
 	-- issue #153 (prototypes/153-fork-compressor-air.lua): air from the compressor
 	{ "lv-compressor", "air-collection" },
 	{ "iv-large-electric-compressor", "air-collection" },

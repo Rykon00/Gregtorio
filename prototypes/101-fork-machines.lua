@@ -281,6 +281,60 @@ end
 
 
 --------------------------------------------------------------------------------
+--- 2c) ARC FURNACE, LV TO EV (issue #171)
+---    GT New Horizons has the Arc Furnace from LV up ("Basic Arc Furnace", LoaderMetaTileEntities.java:7293, recipe map
+---    arcFurnaceRecipes, which no other basic machine runs); upstream had none. Its recipe of Gregtorio's materials:
+---    annealed copper, copper arc-smelted with oxygen (MaterialsInit.java: setArcSmeltingIntoWithGas Oxygen ->
+---    AnnealedCopper; GTRecipeRegistrator.registerReverseArcSmelting: max(16, mass) ticks and litres, LV), which upstream
+---    ran in the MV electric blast furnace with exactly these numbers: the recipe moves to the arc furnace, its name and
+---    technology (Integrated Circuits) kept. GT's recycling of every part into ingots is not built (#171). Machine recipe as
+---    GT's (MTERecipeLoader.java registerArcFurnace: "WGW", "CMC", "PPP": two 4x cables, a graphite cell, 2 circuits, the
+---    hull, 3 plates of the tier; here 8 cables, as Gregtorio has no 4x tier cables, and graphite); one oxygen input. LV
+---    with Integrated Circuits (the annealed copper), MV to EV with the machines of their tier. Sprites: tools/gen_sprites.py (arc_furnace_lv_mv); IV to MAX through IV_BASIC_MACHINES.
+--------------------------------------------------------------------------------
+
+recipe_category_and_subgroup("lv-arc-furnace-recipes")
+do
+	local ARCS = {
+		--  tier  path               energy    speed  cable             circuit               plate                    tech
+		{ "lv", "lv-arc-furnace", EU30_LV, 1, "tin-cable",       "electronic-circuit", "steel-plate",           "integrated-circuits" },
+		{ "mv", "mv-arc-furnace", EU30_MV, 2, "copper-cable",    "advanced-circuit",   "aluminium-plate",       "mv-machines" },
+		{ "hv", "mv-arc-furnace", EU30_HV, 4, "gold-cable",      "processing-unit",    "stainless-steel-plate", "hv-machines" },
+		{ "ev", "mv-arc-furnace", EU30_EV, 8, "aluminium-cable", "ev-circuit",         "titanium-plate",        "ev-machines" },
+	}
+	for _, a in ipairs(ARCS) do
+		local t, path, energy, speed, cable, circuit, plate, tech = table.unpack(a)
+		local name = t .. "-arc-furnace"
+		make_electric_machine(name, name, path, { "lv-arc-furnace-recipes" }, "fr-arc-furnace", energy, speed, 1, 0.5, 3, 3, {
+			fluid_port(-1, -1, "input", defines.direction.north),
+		})
+		create_item{
+			name = name,
+			subgroup = t .. "-age-production-machine",
+			ingredients = {
+				{ type = "item", name = cable, amount = 8 },
+				{ type = "item", name = "graphite", amount = 1 },
+				{ type = "item", name = circuit, amount = 2 },
+				{ type = "item", name = t .. "-machine-hull", amount = 1 },
+				{ type = "item", name = plate, amount = 3 },
+			},
+			place_result = name,
+			stack_size = 10,
+		}
+		fork_add_unlock(tech, name)
+	end
+	data.raw["assembling-machine"]["lv-arc-furnace"].next_upgrade = "mv-arc-furnace"
+	data.raw["assembling-machine"]["mv-arc-furnace"].next_upgrade = "hv-arc-furnace"
+	data.raw["assembling-machine"]["hv-arc-furnace"].next_upgrade = "ev-arc-furnace"
+
+	local r = data.raw.recipe["annealed-copper-ingot"]
+	r.category = "lv-arc-furnace-recipes"
+	r.subgroup = "subgroup-lv-arc-furnace-recipes"
+end
+
+
+
+--------------------------------------------------------------------------------
 --- 3) IV BASIC MACHINES
 ---    Copy of the EV machine: double speed, double power draw, IV categories added,
 ---    recipe = EV recipe with every tiered component shifted one tier up.
@@ -382,7 +436,7 @@ IV_BASIC_MACHINES = {
 	"wiremill", "bending-machine", "extruder", "rock-crusher", "lathe", "macerator", "centrifuge",
 	"extractor", "electrolyzer", "assembling-machine", "cutting-machine",
 	"canning-machine", "mixer", "ore-washer", "laser-engraver", "fluid-solidifier", "chemical-bath",
-	"polarizer", "circuit-assembler", "autoclave", "alloy-smelter", "compressor", "forge-hammer",
+	"polarizer", "circuit-assembler", "autoclave", "alloy-smelter", "compressor", "forge-hammer", "arc-furnace",
 }
 --- Multiblocks that come as an upgrade of the EV version (graphics of the EV version with energy hatches of the tier)
 IV_UPGRADE_MACHINES = {
