@@ -679,6 +679,8 @@ local KEEP = {
 	["military-science-pack"] = { "lv-sensor" },
 	["end-steel"] = { "endstone-dust" },
 	["rhodium"] = { "sulfur-dioxide", "sulfur-trioxide" },
+	-- issue #185: the ore chain's new producers would move these to tier-three-microminers
+	["ore-washing"] = { "crushed-bornite", "microminer-platinum" },
 }
 for _, list in pairs({ UNLOCKS, KEEP, UNLOCKS_98, UNLOCKS_96 }) do
 	for tech, recipes in pairs(list) do

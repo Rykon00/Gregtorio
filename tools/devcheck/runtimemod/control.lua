@@ -692,6 +692,14 @@ local RT = {
 	{ "mv-alloy-smelter", "anvil-alloy-smelter" },
 	{ "lv-assembling-machine", "firebrick-block-assembling-machine" },
 	{ "lv-chemical-bath", "paper-chemical-bath" },
+	-- issue #185 (prototypes/155-fork-ore-chain.lua): GTNH's ore chain for iron, the thermal centrifuge, a new byproduct dust
+	{ "lv-ore-washer", "purified-iron" },
+	{ "lv-thermal-centrifuge", "centrifuged-iron" },
+	{ "iv-thermal-centrifuge", "centrifuged-copper-from-crushed" },
+	{ "lv-macerator", "impure-iron-dust" },
+	{ "lv-macerator", "centrifuged-iron-maceration" },
+	{ "lv-centrifuge", "centrifuging-pure-iron-dust" },
+	{ "lv-electrolyzer", "pyrite-dust-decomposition" },
 	-- issue #170 (prototypes/101-fork-machines.lua): the electric Forge Hammer with a plate and a new hammer recipe
 	{ "lv-forge-hammer", "iron-plate-forge-hammer" },
 	{ "iv-forge-hammer", "sand-forge-hammer" },

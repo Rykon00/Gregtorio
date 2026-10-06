@@ -237,6 +237,9 @@ local RM_MACHINES = {
 	{ "mv-electric-blast-furnace", "annealed-copper-ingot", nil },
 	-- issue #173: the printed circuits moved to the Forming Press, the old circuit assembler loads without them
 	{ "lv-circuit-assembler", "printed-silicon", nil },
+	-- issue #185: the ore washer and centrifuge shortcuts are mapped onto the ore chain's recipes
+	{ "lv-ore-washer", "iron-dust", "purified-iron" },
+	{ "lv-centrifuge", "centrifuging-crushed-iron", "centrifuging-impure-iron-dust" },
 	-- issue #153: an Air Collector becomes the compressor of its tier and keeps making air (checked by the entity's
 	-- name below)
 	{ "lv-air-collector", "air-collection", "air-collection", "lv-compressor" },

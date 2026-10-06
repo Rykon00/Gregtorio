@@ -489,6 +489,29 @@ def check_microminer_tab(sec):
             if r[9] != MICROMINER_TAB:
                 out.append(f"{r[1]} ({r[2]}): row {r[8]}, tab {r[9]}")
     return sorted(out)
+ORE_CHAIN_SKIP = {"crushed-platinum", "crushed-palladium", "crushed-firestone"}   # 155-fork-ore-chain.lua's skip list
+def check_ore_chain(m):
+    """Issue #185 (prototypes/155-fork-ore-chain.lua): every ore with a purified form has GTNH's whole chain (washer,
+    thermal centrifuge from crushed and purified ore, the three macerator steps, the centrifuge of impure and pure dust),
+    and no ore washer turns a crushed ore straight into something else (the shortcut of upstream; the platinum line's
+    washing and firestone are skipped)."""
+    out, ores = [], 0
+    for name, r in sorted(m.R.items()):
+        if r["hidden"]:
+            continue
+        if r["cat"] == "lv-ore-washer-recipes":
+            crushed = [i for i in r["ing"] if i.startswith("crushed-")]
+            if crushed and crushed[0] not in ORE_CHAIN_SKIP and not any(x.startswith("purified-") for x in r["res"]):
+                out.append(f"{name}: the ore washer turns {crushed[0]} into {', '.join(r['res'])}, not a purified ore")
+        if r["cat"] == "lv-ore-washer-recipes" and name.startswith("purified-") and not name.endswith("-distilled-water"):
+            ores += 1
+            x = name[len("purified-"):]
+            for need in (f"purified-{x}-distilled-water", f"centrifuged-{x}", f"centrifuged-{x}-from-crushed",
+                         f"impure-{x}-dust", f"pure-{x}-dust", f"centrifuged-{x}-maceration",
+                         f"centrifuging-impure-{x}-dust", f"centrifuging-pure-{x}-dust"):
+                if need not in m.R or m.R[need]["hidden"]:
+                    out.append(f"{x}: the ore chain lacks {need}")
+    return ores, out
 def check_extractor_split(m):
     """Issue #152 (prototypes/151-fork-fluid-extractor.lua): as in GTNH, the Extractor makes items and the Fluid Extractor
     fluids. A recipe of an extractor category with a fluid result, or of a fluid extractor category without one, is in
@@ -784,6 +807,9 @@ def check(a):
     report("WARNING: materials of the material parts without a tier (prototypes/200-fork-material-parts.lua)", parts_unranked)
     microminer = check_microminer_tab(sec)
     report("Microverse Projector recipes outside the Microminer tab (issue #120)", microminer)
+    chain_ores, ore_chain = check_ore_chain(m)
+    print(f"\nore chain (issue #185): {chain_ores} ores with GTNH's chain")
+    report("ore chain gaps and ore washer shortcuts (prototypes/155-fork-ore-chain.lua)", ore_chain)
     extractor_split = check_extractor_split(m)
     report("extractor recipes in the wrong machine (issue #152: items in the Extractor, fluids in the Fluid Extractor)",
            extractor_split)
@@ -807,7 +833,7 @@ def check(a):
         print(f"\nbalance data written to {a.balance_out} (recipes, machines, technologies as JSON)")
     ok = not (files or [s for s in sprites if not s.startswith("(")] or uncraft or menu or required or unresearchable
               or new_drafts or fluid_problems or locked or one_pack or fluid_steps or microminer or table_only
-              or extractor_split)
+              or extractor_split or ore_chain)
     print("\nRESULT:", "OK" if ok else "PROBLEMS FOUND")
     return 0 if ok else 1
 

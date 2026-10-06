@@ -493,6 +493,52 @@ end
 
 
 --------------------------------------------------------------------------------
+--- 2g) THERMAL CENTRIFUGE, LV TO EV (issue #185, ore chain phase O1)
+---    GT New Horizons' Thermal Centrifuge ("Basic Thermal Centrifuge", LoaderMetaTileEntities.java:7000, recipe map
+---    thermalCentrifugeRecipes): crushed and purified crushed ore into centrifuged ore (prototypes/155-fork-ore-chain.lua
+---    makes the recipes). Machine recipe as GT's (MTERecipeLoader.java registerThermalCentrifuge, "CEC", "OMO", "WEW":
+---    2 circuits, 2 motors, two 4x heating wires of the tier (here 8 wires of copper, cupronickel, kanthal or nichrome),
+---    the hull, 2 cables). Power EU32 (GT: 48 EU/t; Gregtorio has no 48 class). LV with Ore Crushing (the LV macerator),
+---    MV to EV with the machines of their tier. Sprites: tools/gen_sprites.py (thermal_centrifuge_lv_mv); IV to MAX
+---    through IV_BASIC_MACHINES.
+--------------------------------------------------------------------------------
+
+recipe_category_and_subgroup("lv-thermal-centrifuge-recipes")
+do
+	local TCS = {
+		--  tier  path                      energy    speed  cable             circuit               coil                tech
+		{ "lv", "lv-thermal-centrifuge", EU32_LV, 1, "tin-cable",       "electronic-circuit", "copper-wire",      "ore-crushing" },
+		{ "mv", "mv-thermal-centrifuge", EU32_MV, 2, "copper-cable",    "advanced-circuit",   "cupronickel-wire", "mv-machines" },
+		{ "hv", "mv-thermal-centrifuge", EU32_HV, 4, "gold-cable",      "processing-unit",    "kanthal-wire",     "hv-machines" },
+		{ "ev", "mv-thermal-centrifuge", EU32_EV, 8, "aluminium-cable", "ev-circuit",         "nichrome-wire",    "ev-machines" },
+	}
+	for _, a in ipairs(TCS) do
+		local t, path, energy, speed, cable, circuit, coil, tech = table.unpack(a)
+		local name = t .. "-thermal-centrifuge"
+		make_electric_machine(name, name, path, { "lv-thermal-centrifuge-recipes" }, "fr-thermal-centrifuge", energy, speed, 1, 0.5, 3, 3)
+		create_item{
+			name = name,
+			subgroup = t .. "-age-production-machine",
+			ingredients = {
+				{ type = "item", name = circuit, amount = 2 },
+				{ type = "item", name = t .. "-motor", amount = 2 },
+				{ type = "item", name = coil, amount = 8 },
+				{ type = "item", name = t .. "-machine-hull", amount = 1 },
+				{ type = "item", name = cable, amount = 2 },
+			},
+			place_result = name,
+			stack_size = 10,
+		}
+		fork_add_unlock(tech, name)
+	end
+	data.raw["assembling-machine"]["lv-thermal-centrifuge"].next_upgrade = "mv-thermal-centrifuge"
+	data.raw["assembling-machine"]["mv-thermal-centrifuge"].next_upgrade = "hv-thermal-centrifuge"
+	data.raw["assembling-machine"]["hv-thermal-centrifuge"].next_upgrade = "ev-thermal-centrifuge"
+end
+
+
+
+--------------------------------------------------------------------------------
 --- 3) IV BASIC MACHINES
 ---    Copy of the EV machine: double speed, double power draw, IV categories added,
 ---    recipe = EV recipe with every tiered component shifted one tier up.
@@ -594,7 +640,7 @@ IV_BASIC_MACHINES = {
 	"wiremill", "bending-machine", "extruder", "rock-crusher", "lathe", "macerator", "centrifuge",
 	"extractor", "electrolyzer", "assembling-machine", "cutting-machine",
 	"canning-machine", "mixer", "ore-washer", "laser-engraver", "fluid-solidifier", "chemical-bath",
-	"polarizer", "circuit-assembler", "autoclave", "alloy-smelter", "compressor", "forge-hammer", "arc-furnace", "forming-press", "electric-furnace", "sifting-machine",
+	"polarizer", "circuit-assembler", "autoclave", "alloy-smelter", "compressor", "forge-hammer", "arc-furnace", "forming-press", "electric-furnace", "sifting-machine", "thermal-centrifuge",
 }
 --- Multiblocks that come as an upgrade of the EV version (graphics of the EV version with energy hatches of the tier)
 IV_UPGRADE_MACHINES = {
