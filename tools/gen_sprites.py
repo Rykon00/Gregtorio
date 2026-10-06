@@ -36,7 +36,7 @@ TILE = 32          # Factorio pixels per tile in Gregtorio
 
 # the basic machines from IV up (101's IV_BASIC_MACHINES), drawn from upstream's LV to EV assets
 BASIC_MACHINES = [
-    "wiremill", "bending-machine", "extruder", "rock-crusher", "lathe", "macerator", "centrifuge", "air-collector",
+    "wiremill", "bending-machine", "extruder", "rock-crusher", "lathe", "macerator", "centrifuge",
     "extractor", "electrolyzer", "assembling-machine", "cutting-machine", "canning-machine", "mixer", "ore-washer",
     "laser-engraver", "fluid-solidifier", "chemical-bath", "polarizer", "circuit-assembler", "autoclave",
     "alloy-smelter", "compressor",

@@ -215,7 +215,8 @@ local RM_ITEMS = { ["ammonia-hexachloroplatinate"] = "platinum-salt", ["crude-pl
 	["raw-palladium-powder"] = "reprecipitated-palladium", ["platinum-group-residue"] = "platinum-residue",
 	["potassium-pyrosulfate"] = "potassium-disulfate", ["iridium-dioxide-residue"] = "iridium-dioxide",
 	["ammonia-hexachloroiridiate"] = "iridium-chloride",
-	["advanced-card"] = "me-advanced-card" }          -- issue #121
+	["advanced-card"] = "me-advanced-card",           -- issue #121
+	["lv-air-collector"] = "lv-compressor", ["ev-air-collector"] = "ev-compressor" }   -- issue #153
 local RM_MACHINES = {
 	{ "lv-chemical-reactor", "platinum-palladium-leachate-processing", nil },
 	{ "lv-electrolyzer", "chloroplatinic-acid", nil },
@@ -227,6 +228,10 @@ local RM_MACHINES = {
 	-- issue #152: a melt moves to the fluid extractor, the old Extractor loads without it; sticky resin stays
 	{ "lv-extractor", "melt-iron-ingot", nil },
 	{ "lv-extractor", "sticky-resin", "sticky-resin" },
+	-- issue #153: an Air Collector becomes the compressor of its tier and keeps making air (checked by the entity's
+	-- name below)
+	{ "lv-air-collector", "air-collection", "air-collection", "lv-compressor" },
+	{ "hv-air-collector", "air-collection", "air-collection", "hv-compressor" },
 }
 local RM_AT = { -30.5, Y + 30.5 }
 
@@ -258,7 +263,7 @@ local function setup_removed()
 			for _, ing in pairs(r.ingredients) do
 				if ing.type == "item" then e.insert{ name = ing.name, count = ing.amount * 2 } end
 			end
-			machines[#machines + 1] = { entity = e, old = m[2], new = m[3] }
+			machines[#machines + 1] = { entity = e, old = m[2], new = m[3], name = m[4] }
 		end
 	end
 	if #list == 0 and #items == 0 and #machines == 0 then
@@ -297,6 +302,8 @@ local function check_removed()
 			problems[#problems + 1] = "the machine with " .. m.old .. " is gone"
 		elseif got ~= m.new then
 			problems[#problems + 1] = "the machine with " .. m.old .. " has " .. tostring(got) .. ", not " .. tostring(m.new)
+		elseif m.name and m.entity.name ~= m.name then
+			problems[#problems + 1] = "the machine with " .. m.old .. " is a " .. m.entity.name .. ", not a " .. m.name
 		end
 	end
 	for _, m in pairs(problems) do log("DEVCHECK-MIGRATE-FAIL removed: " .. m) end

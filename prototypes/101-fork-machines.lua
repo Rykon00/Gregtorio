@@ -320,7 +320,7 @@ end
 --- Machines that get generated sprites (from GT textures)
 IV_BASIC_MACHINES = {
 	"wiremill", "bending-machine", "extruder", "rock-crusher", "lathe", "macerator", "centrifuge",
-	"air-collector", "extractor", "electrolyzer", "assembling-machine", "cutting-machine",
+	"extractor", "electrolyzer", "assembling-machine", "cutting-machine",
 	"canning-machine", "mixer", "ore-washer", "laser-engraver", "fluid-solidifier", "chemical-bath",
 	"polarizer", "circuit-assembler", "autoclave", "alloy-smelter", "compressor",
 }
