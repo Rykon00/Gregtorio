@@ -115,10 +115,32 @@ MATERIALS = {
     "reprecipitated-rhodium": ("DULL", (119, 102, 73)), "iridium-dioxide": ("DULL", (132, 102, 73)),
     "sludge-dust-residue": ("DULL", (132, 102, 73)), "iridium-chloride": ("DULL", (132, 102, 73)),
     "metallic-sludge-dust-residue": ("DULL", (132, 102, 73)),
+    # issue #185: the ores of the ore chain (their purified, centrifuged, impure and pure forms) and the nine byproduct
+    # dusts Gregtorio lacked (GT material of the same ore; bornite: the bartworks Werkstoff colour, WerkstoffLoader.java:336)
+    "iron": "Iron", "vanadium-magnetite": "VanadiumMagnetite", "gold": "Gold", "fullers-earth": "FullersEarth",
+    "copper": "Copper", "tin": "Tin", "realgar": "Realgar", "galena": "Galena", "lead": "Lead", "silver": "Silver",
+    "cryolite": "Cryolite", "tetrahedrite": "Tetrahedrite", "stibnite": "Stibnite", "sphalerite": "Sphalerite",
+    "bauxite": "Bauxite", "aluminium": "Aluminium", "ilmenite": "Ilmenite", "redstone": "Redstone", "ruby": "Ruby",
+    "cinnabar": "Cinnabar", "coal": "Coal", "graphite": "Graphite", "diamond": "Diamond", "salt": "Salt",
+    "rock-salt": "RockSalt", "lepidolite": "Lepidolite", "nether-quartz": "NetherQuartz", "barite": "Barite",
+    "certus-quartz": "CertusQuartz", "apatite": "Apatite", "tricalcium-phosphate": "TricalciumPhosphate",
+    "pyrochlore": "Pyrochlore", "nickel": "Nickel", "pentlandite": "Pentlandite", "cobaltite": "Cobaltite",
+    "lazurite": "Lazurite", "sodalite": "Sodalite", "lapis": "Lapis", "beryllium": "Beryllium", "emerald": "Emerald",
+    "thorium": "Thorium", "bastnasite": "Bastnasite", "monazite": "Monazite", "molybdenite": "Molybdenite",
+    "neodymium": "Neodymium", "grossular": "Grossular", "spessartine": "Spessartine", "pyrolusite": "Pyrolusite",
+    "tantalite": "Tantalite", "bornite": ("DULL", (0x97, 0x66, 0x2B)), "sheldonite": "Cooperite",
+    "scheelite": "Scheelite", "tungstate": "Tungstate", "pitchblende": "Pitchblende", "uraninite": "Uraninite",
+    "chromite": "Chromite", "ledox": "Ledox", "adamantium": "Adamantium", "borax": "Borax",
+    "infinity-catalyst": "InfinityCatalyst", "andradite": "Andradite", "red-garnet": "GarnetRed",
+    "yellow-garnet": "GarnetYellow", "lignite": "Lignite", "magnetite": "Magnetite",
+    "netherrack": "Netherrack", "pyrite": "Pyrite", "quartzite": "Quartzite",
 }
 
 # fork part name -> GT OrePrefix texture; "{m}" is the material
 PARTS = [
+    # issue #185: the forms of the ore chain (before "{m}-dust", which would take pure-<m>-dust as a dust of "pure-<m>")
+    ("impure-{m}-dust", "dustImpure"), ("pure-{m}-dust", "dustPure"), ("purified-{m}", "crushedPurified"),
+    ("centrifuged-{m}", "crushedCentrifuged"),
     ("hot-{m}-ingot", "ingotHot"), ("superdense-{m}-plate", "plateSuperdense"), ("dense-{m}-plate", "plateDense"),
     ("long-{m}-rod", "stickLong"), ("large-{m}-gear", "gearGt"), ("fine-{m}-wire", "wireFine"),
     ("{m}-superconductive-wire", "@superconductor"), ("{m}-wire-4x", "@wire4"), ("{m}-wire", "@wire"),
