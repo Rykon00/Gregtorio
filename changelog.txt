@@ -1,5 +1,6 @@
 ---------------------------------------------------------------------------------------------------
 Version: 0.5.2
+Date: 2026-10-06
   Changes:
     - Material Parts tab: the materials of a row are ordered by the technology that unlocks their ingot (its highest science pack: steam to MAX) and no longer by the tier of the solidifier that can cast them: europium comes with the LuV materials, not between copper and gold, steel and the other steam age metals come first (issue #145). 50 materials move later, 8 earlier, 81 stay.
     - One family of ME cards (issue #121): Gregtorio's own Advanced Card is gone, the ME Network's Advanced Card has its GregTech New Horizons recipe (2 platinum, 3 titanium, 1 red alloy, 1 calculation processor) and is unlocked by ME Upgrade Cards with the cards made from it (Fuzzy, Inverter, Equal Distribution), no longer by ME 256k Storage. The Acceleration Card is made from it and unlocked there too; it stays Gregtorio's item until it becomes a real ME Network card with a function of its own. Saves: Advanced Cards become ME Network's Advanced Cards.
