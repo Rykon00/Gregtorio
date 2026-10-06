@@ -33,6 +33,7 @@ UEV = cryogenic, UIV = promethium, then UMV / UXV / max (the stargate; since pha
 | 6a | Quantum force transformer and dimensionally transcendent plasma forge (issue #37, part 1) | **done** (`prototypes/139-fork-endgame-multiblocks.lua`, see "Phase 6a: QFT and DTPF") |
 | 6b | MAX tier and the godforge (issue #37, part 2) | **done** (`prototypes/140-fork-godforge.lua`, `141-fork-max.lua`, see "Phase 6b: MAX tier and godforge") |
 | side | Balance of the tiers from UHV up in the real game, and a look at the new graphics there | open |
+| side | Ore processing as GT New Horizons has it (issue #176): purified, centrifuged, impure and pure forms, thermal centrifuge, chemical bath washing, electromagnetic separator, gem sifting | planned (`docs/ORE-CHAIN.md`, phases O1 to O4) |
 
 ## Phase 1: LuV (done)
 
