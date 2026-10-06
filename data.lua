@@ -122,6 +122,8 @@ require("prototypes.144-fork-dead-fluids")
 require("prototypes.148-fork-gtnh-table-items")
 --- issue #127: the unit counts of the technologies with red and green packs only
 require("prototypes.149-fork-early-research")
+--- issue #153: air from the compressor, the Air Collectors gone (after 142, whose ender tanks copy them; before the molds)
+require("prototypes.153-fork-compressor-air")
 require("prototypes.150-fork-molds")
 require("prototypes.190-fork-manual-labor")
 --- issue #137: fire animations of the stone furnace, the iron furnace and the small coal boiler (after their entities)

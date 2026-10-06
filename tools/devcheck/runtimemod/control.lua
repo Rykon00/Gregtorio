@@ -692,6 +692,9 @@ local RT = {
 	{ "mv-alloy-smelter", "anvil-alloy-smelter" },
 	{ "lv-assembling-machine", "firebrick-block-assembling-machine" },
 	{ "lv-chemical-bath", "paper-chemical-bath" },
+	-- issue #153 (prototypes/153-fork-compressor-air.lua): air from the compressor
+	{ "lv-compressor", "air-collection" },
+	{ "iv-large-electric-compressor", "air-collection" },
 	-- issue #126, part B: the vanilla hand-only recipes in the assembling machines
 	{ "lv-assembling-machine", "firearm-magazine" },
 	{ "lv-assembling-machine", "light-armor" },
@@ -1105,8 +1108,8 @@ end
 
 --- Lapotronic supercapacitor (issue #97): an IV one on a network with a LuV plasma turbine (81.92 MW, secondary
 --- output; an electric energy interface is tertiary like the accumulator and does not charge it), which is removed
---- at LS_SWITCH; then a UHV air collector (40.96 MW, a recipe without ingredients, its air removed every tick) runs
---- from it. It must charge from tick LS_FROM to LS_SWITCH and discharge from LS_SWITCH + LS_FROM to LS_TICK at its
+--- at LS_SWITCH; then a UIV compressor making air (40.96 MW, a recipe without ingredients, its air removed every tick;
+--- the UHV air collector until issue #153) runs from it. It must charge from tick LS_FROM to LS_SWITCH and discharge from LS_SWITCH + LS_FROM to LS_TICK at its
 --- 20.48 MW (within 3 %; its own loss is 0.6 % of that). The IV, LuV and ZPM ones must hold 27 blocks of 37.5,
 --- 187.5 and 937.5 GJ. Loss: a ZPM one without a network is set to 1 TJ at tick 100; at LS_TICK it must have lost
 --- exactly 1 % of its capacity per day for the whole steps of 10 ticks since (scripts/fork-power.lua).
@@ -1131,11 +1134,11 @@ function setup_lsc_test(s)
 			raise_built = true }
 		local got = ls.turbine.insert_fluid{ name = "helium-plasma", amount = 100 }
 		if got < 100 then fails[#fails + 1] = "supercapacitor test: the turbine took only " .. got .. " plasma" end
-		ls.load = s.create_entity{ name = "uhv-air-collector", position = { LS_X + 6, LS_Y + 5 }, force = "player" }
+		ls.load = s.create_entity{ name = "uiv-compressor", position = { LS_X + 6, LS_Y + 5 }, force = "player" }
 		for name, r in pairs(prototypes.recipe) do
-			if r.category == "lv-air-collector-recipes" and #r.ingredients == 0 then ls.recipe = name break end
+			if r.category == "lv-compressor-recipes" and #r.ingredients == 0 then ls.recipe = name break end
 		end
-		if not ls.recipe then fails[#fails + 1] = "supercapacitor test: no air collector recipe" end
+		if not ls.recipe then fails[#fails + 1] = "supercapacitor test: no compressor recipe without ingredients (air)" end
 		s.create_entity{ name = "substation", position = { LS_X + 4, LS_Y - 4 }, force = "player" }
 		ls.others = {}
 		for i, def in ipairs(LS) do
