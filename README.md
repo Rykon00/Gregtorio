@@ -2,6 +2,9 @@
 
 Continuation of [Gregtorio](https://mods.factorio.com/mod/Gregtorio) by **Damien Reave**, a GregTech-style total overhaul mod for Factorio 2.0. On the mod portal: [Gregtorio Continued](https://mods.factorio.com/mod/gregtorio-continued) (`gregtorio-continued`).
 
+**Discord:** questions, help and release news in the [Gregtorio & ME Network server](https://discord.gg/bfkwAanSD8), shared with the
+[ME Network](https://github.com/Rykon00/me-network) mod.
+
 The upstream repository ([Damien-Reave/Gregtorio](https://github.com/Damien-Reave/Gregtorio)) only contains the LICENSE; the code was only published as zip files. This fork therefore starts from the unmodified **0.1.9** release from the mod portal (tag `v0.1.9-upstream`). Every change after that is a regular git commit.
 
 ## Layout
