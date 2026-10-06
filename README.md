@@ -15,7 +15,7 @@ The repository root is the mod itself (`info.json`, `data.lua`, `prototypes/`, `
 |---|---|
 | `prototypes/NN-*.lua` | upstream items, recipes and machines per tier (09 Steam … 31 UIV; `80-umv-age-item.lua` and `90-uxv-age-item.lua` are not loaded), `98-technology.lua` for the tech tree |
 | `prototypes/100-fork-fixes.lua` | missing unlocks and recipes, chicken-and-egg fixes |
-| `prototypes/101-fork-machines.lua` | tier categories, EV/IV machines and multiblocks, `fork_make_tier_machine` |
+| `prototypes/101-fork-machines.lua` | tier categories, EV/IV machines and multiblocks, `fork_make_tier_machine`; the Forge Hammer LV to EV (issue #170; IV to MAX through `IV_BASIC_MACHINES`) |
 | `prototypes/102-fork-resources.lua` | disables the vanilla resource patches (no spawning, not minable) |
 | `prototypes/103-fork-qol-techs.lua` | issue #29: the vanilla quality-of-life techs (bulk/stack inserter, inserter capacity bonus, express and turbo belts, belt capacity, worker robot speed and cargo size) gated onto Gregtorio techs with Gregtorio science packs, GT recipes for the inserters and belts they unlock |
 | `prototypes/110-fork-luv.lua` | LuV: materials, assembly line, LuV machines, science pack, techs |

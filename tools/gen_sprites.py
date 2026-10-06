@@ -39,12 +39,16 @@ BASIC_MACHINES = [
     "wiremill", "bending-machine", "extruder", "rock-crusher", "lathe", "macerator", "centrifuge",
     "extractor", "electrolyzer", "assembling-machine", "cutting-machine", "canning-machine", "mixer", "ore-washer",
     "laser-engraver", "fluid-solidifier", "chemical-bath", "polarizer", "circuit-assembler", "autoclave",
-    "alloy-smelter", "compressor",
+    "alloy-smelter", "compressor", "forge-hammer",
 ]
 # issue #152: the Fluid Extractors are copies of the Extractor (151); from IV up they are drawn like the other basic
 # machines from their LV and MV sprites (fluid_extractor_lv_ev), with the Extractor's frame count
 FLUID_EXTRACTOR = "fluid-extractor"
 EV_FRAMES_OF = {FLUID_EXTRACTOR: "extractor"}
+# issue #170: the electric Forge Hammers LV to EV are made in a loop of 101 (no make_electric_machine("ev-forge-hammer"
+# to read) and play the 5 frames of the Steam Forge Hammer's strip; their LV and MV sprites come from it
+# (forge_hammer_lv_mv)
+EV_FRAMES = {"forge-hammer": 5}
 # issue #152: the fluid extractor's icons carry a molten fluid in the bottom right corner, so they differ from the
 # extractor's in the inventory; its LV to EV sprites are the extractor's with the liquid in the tubes molten
 FLUID_BADGE_MACHINES = {"fluid-extractor"}
@@ -320,6 +324,8 @@ def ev_frames(base):
     machine copies the EV machine's graphics set (101), so its strip has as many frames (the Fluid Extractor: the
     Extractor's, EV_FRAMES_OF)"""
     base = EV_FRAMES_OF.get(base, base)
+    if base in EV_FRAMES:
+        return EV_FRAMES[base]
     pat = re.compile(r'make_electric_machine\(\s*"ev-%s"\s*,\s*"[^"]*"\s*,\s*"[^"]*"\s*,\s*\{[^}]*\}\s*,\s*"[^"]*"\s*,'
                      r'\s*[\w.]+\s*,\s*[\d.]+\s*,\s*(\d+)' % re.escape(base))
     for f in sorted((ROOT / "prototypes").glob("*.lua")):
@@ -477,6 +483,69 @@ def molten(p):
 
 def is_liquid(p):
     return p[3] and max(p[:3]) - min(p[:3]) > 40
+
+
+def casing_palette(base, tier, kind="idle"):
+    """the colours of the casing of an upstream LV or MV asset (the pixels that differ between its LV and MV picture),
+    sorted dark to light"""
+    a, b = load(upstream(base, "lv", kind)).load(), load(upstream(base, "mv", kind)).load()
+    src = a if tier == "lv" else b
+    cols = {src[x, y] for y in range(3 * TILE) for x in range(3 * TILE) if a[x, y] != b[x, y] and src[x, y][3]}
+    return sorted(cols, key=lum)
+
+
+def quantile_map(colours, palette):
+    """each colour onto the palette colour at the same rank of brightness"""
+    order = sorted(set(colours), key=lum)
+    n, m = max(1, len(order) - 1), len(palette) - 1
+    return {c: palette[round(i * m / n)] for i, c in enumerate(order)}
+
+
+HAMMER_WINDOW = (11, 16, 75, 70)   # the window of the steam forge hammer (its PSD's layers 7 and 8)
+
+
+def forge_hammer_lv_mv():
+    """Issue #170: upstream has no electric forge hammer, only the Steam Forge Hammer's picture (graphics/entity/psds
+    forge-hammer-*.psd are its sources). The LV and MV forge hammer are that picture with the bronze casing (every pixel
+    outside the window) in the casing colours of the LV and the MV extractor, rank for rank of brightness, so the
+    texture stays and the colours are upstream's; the window (anvil, hammer, sparks) stays. The LV to EV icons: the steam
+    hammer's icon with its bronze pixels in the colours of the LV, MV, HV and EV extractor icons."""
+    d = ENTITY / "steam-forge-hammer"
+    idle = load(d / "steam-forge-hammer-idle.png")
+    frames = strip_frames(d / "steam-forge-hammer-working.png")
+    x0, y0, x1, y1 = HAMMER_WINDOW
+    outside = lambda x, y: not (x0 <= x < x1 and y0 <= y < y1)
+    ip = idle.load()
+    casing = [(x, y) for y in range(idle.height) for x in range(idle.width) if ip[x, y][3] and outside(x, y)]
+    for t in ("lv", "mv"):
+        cmap = quantile_map([ip[p] for p in casing], casing_palette("extractor", t))
+        dst = ENTITY / f"{t}-forge-hammer"
+        dst.mkdir(exist_ok=True)
+
+        def recolour(img):
+            out = img.copy()
+            px = out.load()
+            for p in casing:
+                if px[p] in cmap:
+                    c = cmap[px[p]]
+                    px[p] = c[:3] + (px[p][3],)
+            return out
+        save(recolour(idle), dst / f"{t}-forge-hammer-idle.png")
+        save_strip([recolour(f) for f in frames], dst / f"{t}-forge-hammer-working.png")
+    icon = load(ICONS / "steam-forge-hammer.png")
+    ic = icon.load()
+    bronze = [(x, y) for y in range(icon.height) for x in range(icon.width)
+              if ic[x, y][3] and ic[x, y][0] > ic[x, y][2] + 25 and ic[x, y][0] >= ic[x, y][1]]
+    icons = [load(ICONS / f"{t}-extractor.png") for t in ("lv", "mv", "hv", "ev")]
+    ep = [i.load() for i in icons]
+    imask = [(x, y) for y in range(TILE) for x in range(TILE) if ep[0][x, y][3] and len({e[x, y] for e in ep}) > 1]
+    for t, e in zip(("lv", "mv", "hv", "ev"), ep):
+        cmap = quantile_map([ic[p] for p in bronze], sorted({e[p] for p in imask}, key=lum))
+        out = icon.copy()
+        px = out.load()
+        for p in bronze:
+            px[p] = cmap[ic[p]][:3] + (ic[p][3],)
+        save(out, ICONS / f"{t}-forge-hammer.png")
 
 
 def fluid_extractor_lv_ev():
@@ -740,6 +809,7 @@ def main():
     OUT_ICON.mkdir(parents=True, exist_ok=True)
 
     fluid_extractor_lv_ev()      # first: the LV and MV fluid extractor are the source of its tiers
+    forge_hammer_lv_mv()         # and the LV and MV forge hammer of the forge hammer's
     for tier in ("IV", "LuV", "ZPM", "UV", "UHV", "UEV", "UIV", "UMV", "UXV", "MAX"):
         for base in BASIC_MACHINES + [FLUID_EXTRACTOR]:
             basic_machine(a.gt, base, tier)
