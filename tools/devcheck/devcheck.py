@@ -511,7 +511,7 @@ def check_fluid_steps(sec):
 
 
 def check_material_parts(sec):
-    """Issue #118 (prototypes/194-fork-material-parts.lua): the material parts are in the rows of the item group "Material
+    """Issue #118 (prototypes/200-fork-material-parts.lua): the material parts are in the rows of the item group "Material
     parts", one per form, the materials by tier. A material with no tier (no solidifier tier, no recipe that makes one of its
     parts) goes last in its rows: a warning, its place is the table of tiers in 143 or a recipe. Returns (info line,
     materials without a tier)."""
@@ -767,7 +767,7 @@ def check(a):
     report("items that only the crafting table or the hand can make, without an entry in FORK_RECIPES_TABLE_ONLY", table_only)
     parts_info, parts_unranked = check_material_parts(sec)
     print(f"\nmaterial parts (issue #118): {parts_info}")
-    report("WARNING: materials of the material parts without a tier (prototypes/194-fork-material-parts.lua)", parts_unranked)
+    report("WARNING: materials of the material parts without a tier (prototypes/200-fork-material-parts.lua)", parts_unranked)
     microminer = check_microminer_tab(sec)
     report("Microverse Projector recipes outside the Microminer tab (issue #120)", microminer)
     report("WARNING: fluids of the Fluids tab with an icon of the base game or Space Age (issue #119; "

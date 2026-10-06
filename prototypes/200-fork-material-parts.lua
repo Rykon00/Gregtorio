@@ -17,11 +17,15 @@
 ---
 --- A part is an item named after a form of a material (FORMS; the vanilla names iron-stick and iron-gear-wheel are listed in
 --- SPECIAL) where the form is an ingot or a plate, or the material has at least two forms (a lone `red-wire` or
---- `blaze-rod` is no part of a material). The tier of a material (the order inside a row): the tier of the solidifier
---- of 143 where it has one, else the lowest machine tier of any recipe that makes one of its parts, else
---- steam (0); a material with no information at all goes last and is a devcheck warning (FORK_MATERIAL_PARTS.unranked).
---- Dusts, frames, turbine blades and superconductive wires keep their machine rows. Loaded after 143 (casts, tiers) and
---- 150, before 196, 198 and 199.
+--- `blaze-rod` is no part of a material).
+--- The tier of a material (issue #145: the order inside a row) is the tier of the TECHNOLOGY that unlocks its ingot, the
+--- earliest one (the tier of a technology: its highest science pack, see PACK_TIER); a recipe enabled from the start counts as
+--- steam. A material without an ingot item takes the earliest technology of any of its parts. The solidifier tier of 143 is
+--- not used: it says which solidifier can cast a material, not when the player meets it (europium is cast in an LV
+--- solidifier and unlocked by a LuV technology). A material with nothing to go by goes last, or has a place in FIXED_TIER;
+--- the others are a devcheck warning (FORK_MATERIAL_PARTS.unranked).
+--- Dusts, frames, turbine blades and superconductive wires keep their machine rows. Loaded after 199, so the unlocks it
+--- adds and the recipes it removes are in.
 --------------------------------------------------------------------------------
 
 local P = "__gregtorio-continued__/"
@@ -88,18 +92,64 @@ for _, type_ in pairs(item_types()) do
 	end
 end
 
---- the lowest machine tier of a recipe that makes an item (a category without a tier prefix: steam, crafting table, 0)
-local made_at = {}
-for _, r in pairs(data.raw.recipe) do
-	local cat = r.category or "crafting"
-	if cat ~= "recycling" and r.results then
-		local t = TIERS[cat:match("^(%a+)%-")] or 0
-		for _, res in pairs(r.results) do
-			if res.type ~= "fluid" and (made_at[res.name] == nil or t < made_at[res.name]) then made_at[res.name] = t end
+--- The tier of a technology: its highest science pack (one pack more for every tier: automation = steam, logistic = LV,
+--- military = MV, chemical = HV, production = EV, utility = IV, space = LuV, metallurgic = ZPM, agricultural = UV,
+--- electromagnetic = UHV, cryogenic = UEV, promethium = UIV, umv, uxv, max); a technology without science packs (a trigger)
+--- takes its prerequisites' tier. Technologies that are disabled or hidden do not count.
+local PACK_TIER = { automation = 0, logistic = 1, military = 2, chemical = 3, production = 4, utility = 5, space = 6,
+	metallurgic = 7, agricultural = 8, electromagnetic = 9, cryogenic = 10, promethium = 11, umv = 12, uxv = 13, max = 14 }
+local tech_memo = {}
+local function tech_tier(name, seen)
+	if tech_memo[name] ~= nil then return tech_memo[name] end
+	local tech = data.raw.technology[name]
+	local t = 0
+	if tech and tech.unit and tech.unit.ingredients and #tech.unit.ingredients > 0 then
+		for _, i in pairs(tech.unit.ingredients) do
+			local pack = (i[1] or i.name or ""):gsub("%-science%-pack$", "")
+			if (PACK_TIER[pack] or 0) > t then t = PACK_TIER[pack] end
+		end
+	elseif tech then
+		seen = seen or {}
+		if not seen[name] then
+			seen[name] = true
+			for _, pre in pairs(tech.prerequisites or {}) do
+				local pt = tech_tier(pre, seen)
+				if pt > t then t = pt end
+			end
+		end
+	end
+	tech_memo[name] = t
+	return t
+end
+
+--- the earliest technology that unlocks each recipe; a recipe enabled from the start counts as steam (0)
+local unlock_tier = {}
+for name, tech in pairs(data.raw.technology) do
+	if tech.enabled ~= false and not tech.hidden then
+		local t = tech_tier(name)
+		for _, e in pairs(tech.effects or {}) do
+			if e.type == "unlock-recipe" and (unlock_tier[e.recipe] == nil or t < unlock_tier[e.recipe]) then
+				unlock_tier[e.recipe] = t
+			end
 		end
 	end
 end
-local melt_tiers = FORK_CASTING and FORK_CASTING.tiers or {}
+--- the earliest tier of a recipe that makes an item (recycling recipes left out)
+local made_at = {}
+for name, r in pairs(data.raw.recipe) do
+	if r.category ~= "recycling" and not name:find("%-recycling$") and r.results then
+		local t = unlock_tier[name]
+		if r.enabled ~= false then t = 0 end
+		if t ~= nil then
+			for _, res in pairs(r.results) do
+				if res.type ~= "fluid" and (made_at[res.name] == nil or t < made_at[res.name]) then made_at[res.name] = t end
+			end
+		end
+	end
+end
+
+--- Materials whose parts no technology unlocks and no recipe enabled at the start makes: a fixed tier with the reason
+local FIXED_TIER = {}
 
 FORK_MATERIAL_PARTS = { parts = 0, materials = 0, unranked = {} }
 
@@ -117,15 +167,15 @@ end
 for m, forms in pairs(parts) do
 	local count = 0
 	for _ in pairs(forms) do count = count + 1 end
-	local tier = NO_TIER
-	if melt_tiers[m] then
-		tier = TIERS[melt_tiers[m]] or NO_TIER
-	else
+	--- the ingot's technology; a material without an ingot: the earliest of its parts
+	local tier = forms.ingot and made_at[forms.ingot.name] or nil
+	if tier == nil then
 		for _, item in pairs(forms) do
 			local t = made_at[item.name]
-			if t ~= nil and t < tier then tier = t end
+			if t ~= nil and (tier == nil or t < tier) then tier = t end
 		end
 	end
+	tier = tier or FIXED_TIER[m] or NO_TIER
 	local is_material = count >= 2 or forms.ingot or forms.plate
 	if is_material then
 		FORK_MATERIAL_PARTS.materials = FORK_MATERIAL_PARTS.materials + 1
