@@ -87,6 +87,12 @@
   `tools/gen_gt_icons.py` after adding the item to `tools/gt-icon-items.txt`), technology icons from
   `tools/gen_tech_icons.py` (`tools/tech-icons.tsv`), missing names from `tools/gen_locale.py`.
   Check graphics changes with the contact sheets of `tools/gen_review_sheet.py`.
+- **Machine names are GTNH's** (issue #156): a new machine, multiblock or controller takes the name GT New Horizons
+  gives it, from the `en_US.lang` files of GT5-Unofficial (`src/main/resources/assets/*/lang/en_US.lang`, or the name
+  in `gregtech/loaders/preload/LoaderMetaTileEntities.java`), not GregTech CEu's and not the one `tools/gen_locale.py`
+  derives from the ID: overwrite the generated entry. Gregtorio's tier prefix stays ("LV Ore Washing Plant",
+  "Industrial Mixing Machine (IV)"); GTNH's "Basic / Advanced / Elite" prefixes are not used. Prototype names keep
+  the old IDs (`<tier>-ore-washer`, `godforge`): saves find them by name, so a rename changes the locale only.
 - **Test every change** with the headless harness: `python tools/devcheck/devcheck.py setup` once
   (needs network access to factorio.com and FACTORIO_USERNAME/FACTORIO_TOKEN for the dependency
   mods; me-network is taken from a checkout next to this one, `../me-network`, or `ME_NETWORK_DIR`, else its portal zip),
