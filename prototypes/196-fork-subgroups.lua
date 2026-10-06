@@ -13,6 +13,8 @@
 --- line has tiers.
 --- A fluid is Gregtorio's when its icon is a Gregtorio file or it is named in FLUID_SUBGROUP; fluids of other
 --- mods keep what their mod gave them. Loaded after every file that creates fluids.
+--- Issue #119: the base game's and Space Age's fluids that Gregtorio uses get Gregtorio's icons (molten iron and copper
+--- in the style of the other melts, steam), and the twelve that nothing of Gregtorio makes or uses are hidden.
 --------------------------------------------------------------------------------
 
 local P = "__gregtorio-continued__/"
@@ -118,6 +120,8 @@ put("acids", { "ammonium-chloride" })
 put("ore-solutions", { "rhodium-sulfate", "rhodium-salt-solution", "rhodium-filter-cake-solution",
 	"ruthenium-tetroxide-solution", "ruthenium-tetroxide", "osmium-solution", "acidic-iridium-solution" })
 put("molten-elements", { "molten-potassium" })
+--- issue #119: Space Age's melts, restyled below, are rows of the Fluids tab like the other melts
+put("molten-elements", { "molten-iron", "molten-copper" })
 put("molten-alloys", { "molten-potassium-disulfate" })
 --- tiered: the plasma forge catalysts crude < resplendent < stellar, then the godforge fluids
 FLUID_SUBGROUP["excited-dimensionally-transcendent-crude-catalyst"] = { "endgame", 1 }
@@ -170,6 +174,44 @@ local function in_fluids_tab(f)
 	local sg = f.subgroup and data.raw["item-subgroup"][f.subgroup]
 	return sg ~= nil and sg.group == "fluids"
 end
+
+--------------------------------------------------------------------------------
+--- Issue #119: icons of the vanilla fluids Gregtorio uses, and the unused ones
+--------------------------------------------------------------------------------
+
+--- molten iron and copper are Space Age's fluids (saves and its recipes hold them): the same prototypes, with the
+--- icon of the other melts (tools/gen_gt_icons.py --molten: GT's molten texture in GT's colour of the material, printed
+--- by the tool: GT Iron 200 200 200, GT Copper 255 100 0) and the colour of the pipes to match
+local VANILLA_MELTS = { iron = { 200, 200, 200 }, copper = { 255, 100, 0 } }
+for mat, c in pairs(VANILLA_MELTS) do
+	local f = data.raw.fluid["molten-" .. mat]
+	if f then
+		local col = { r = c[1] / 255, g = c[2] / 255, b = c[3] / 255 }
+		f.icon, f.icons, f.icon_size = P .. "graphics/fluids/molten-" .. mat .. ".png", nil, 32
+		f.base_color, f.flow_color = col, table.deepcopy(col)
+	end
+end
+--- steam: GT's steam texture (tools/gen_gt_icons.py --fluid steam=fluid.steam); the prototype stays (boilers, steam
+--- turbines, saves), the colours of the pipes too
+if data.raw.fluid["steam"] then
+	local f = data.raw.fluid["steam"]
+	f.icon, f.icons, f.icon_size = P .. "graphics/fluids/steam.png", nil, 32
+end
+
+--- vanilla and Space Age fluids that no recipe a player can reach makes or uses but their void recipe: hidden
+--- with it (hidden fluids are gone from the choosers and the Fluids tab). What still refers to them is Space Age
+--- content nobody can obtain (fusion reactor and generator, thruster, the Aquilo and oil ocean tiles, the lithium brine
+--- resource); a hidden fluid there is fine. FORK_FLUIDS_HIDDEN: the list, for devcheck.
+FORK_FLUIDS_HIDDEN = { "heavy-oil", "light-oil", "petroleum-gas", "ammoniacal-solution", "fluoroketone-cold",
+	"fluoroketone-hot", "holmium-solution", "electrolyte", "lithium-brine", "thruster-fuel", "thruster-oxidizer",
+	"fusion-plasma" }
+for _, n in pairs(FORK_FLUIDS_HIDDEN) do
+	if data.raw.fluid[n] then data.raw.fluid[n].hidden = true end
+	if data.raw.recipe["void-" .. n] then data.raw.recipe["void-" .. n].hidden = true end
+end
+
+--- fluids that keep an icon of another mod on purpose (allow-list of devcheck's icon warning, with the reason)
+FORK_FLUID_ICONS_KEPT = {}
 
 for name, f in pairs(data.raw.fluid) do
 	if is_gregtorios(f) and (FLUID_SUBGROUP[name] or not in_fluids_tab(f)) then

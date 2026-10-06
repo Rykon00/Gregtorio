@@ -419,6 +419,7 @@ def check_crafting_menu(m, sec):
 
 
 FLUID_FALLBACK = "gregtorio-fluids-unsorted"
+MICROMINER_TAB = "microminer-tab"
 
 
 def check_fluids_tab(sec):
@@ -438,6 +439,86 @@ def check_fluids_tab(sec):
             fallback.append(name)
     info = [f"{sum(rows.values())} fluids in {len(rows)} rows: " + ", ".join(f"{sg} {n}" for sg, n in rows.items())]
     return info, sorted(fallback), sorted(problems)
+
+
+TABLE_MACHINES = {"crafting-table", "me-molecular-assembler"}
+
+
+def check_table_only(m, sec):
+    """Issue #126 (prototypes/148-fork-gtnh-table-items.lua): an item that can only be made at the crafting table, in the ME
+    Molecular Assembler or by hand cannot be automated (the ME Molecular Assembler apart). GregTech New Horizons decides: a
+    reachable item whose every recipe is such a recipe fails unless the recipes are in the allow-list
+    FORK_RECIPES_TABLE_ONLY with their reason; an entry that is not (or no longer) such a recipe fails too. A recipe is
+    "table or hand only" when no obtainable machine but the crafting table and the ME Molecular Assembler has its category
+    (the character is not a machine). Returns (info line, problems)."""
+    allow = {r[0]: r[1] for r in sec.get("TABLEONLYOK", [])}
+    machines = {}
+    def table_only(r):
+        cat = m.R[r]["cat"]
+        if cat not in machines:
+            machines[cat] = {e for e in m.crafters if e != "character" and cat in m.C.get(e, [])}
+        return not (machines[cat] - TABLE_MACHINES)
+    makers = {}
+    for r in sorted(m.unlocked):
+        v = m.R[r]
+        if v["hidden"] or r.endswith("-recycling") or r.startswith("void-") or v["cat"] in ("recycling", "parameters"):
+            continue
+        for x in v["res"]:
+            if x in m.I:
+                makers.setdefault(x, []).append(r)
+    problems, only_items, flagged = [], 0, set()
+    for item, recipes in sorted(makers.items()):
+        if all(table_only(r) for r in recipes):
+            only_items += 1
+            flagged.update(recipes)
+            open_ = [r for r in recipes if r not in allow]
+            if open_:
+                problems.append(f"{item}: only {', '.join(f'{r} ({m.R[r]['cat']})' for r in open_)}")
+    stale = [f"{r} (allow-list entry: not a recipe of an item that only the crafting table or the hand makes)"
+             for r in sorted(allow) if r not in flagged]
+    return f"{only_items} reachable items with only crafting table or hand recipes, {len(allow)} recipes in the allow-list", problems + stale
+def check_microminer_tab(sec):
+    """Issue #120 (prototypes/195-fork-microminer-tab.lua): the missions of every Microverse Projector (the recipes of its
+    categories) and the projectors themselves (and their controller) are recipes of the Microminer tab, so a projector's
+    recipe window has one tab and a search for "micro" finds the machines next to the microminers."""
+    out = []
+    for r in sec.get("DUMP", []):
+        if r[0] == "R" and not r[6] == "true" and (
+                r[2].endswith("-microverse-projector-recipes") or r[1].endswith("microverse-projector")
+                or r[1] == "microverse-projector-controller"):
+            if r[9] != MICROMINER_TAB:
+                out.append(f"{r[1]} ({r[2]}): row {r[8]}, tab {r[9]}")
+    return sorted(out)
+def check_fluid_icons(sec):
+    """Issue #119 (a warning): a fluid of the Fluids tab whose icon is not a Gregtorio file shows the base game's or Space
+    Age's icon next to the others. The ones kept on purpose are in FORK_FLUID_ICONS_KEPT (prototypes/196-fork-subgroups.lua,
+    with the reason); an entry that matches nothing is listed too. Hidden and parameter fluids do not count."""
+    kept = {r[0] for r in sec.get("FLUIDICONSOK", [])}
+    seen, out = set(), []
+    for name, sg, group, _sgo, hidden, param, _order, icon, *_ in sec.get("FLUIDS", []):
+        if hidden == "true" or param == "true" or group != "fluids":
+            continue
+        seen.add(name)
+        if not icon.startswith("__gregtorio-continued__/") and name not in kept:
+            out.append(f"{name} ({icon})")
+    out += [f"{n} (in FORK_FLUID_ICONS_KEPT, but not a visible fluid of the Fluids tab)" for n in sorted(kept - seen)]
+    return sorted(out)
+def check_fluid_steps(sec):
+    """Issue #117 (prototypes/197-fork-fluid-steps.lua): every fluid amount of a recipe is a multiple of 2^-24, the
+    step the game keeps amounts in. The game cuts every amount off at the step below, so one that is not on the grid
+    gives and takes less than it says (14.4 becomes 14.399999976, nine melts no longer fill a block cast)."""
+    return [f"{r} ({kind}) {fluid}: {amount}" for r, kind, fluid, amount in sec.get("FLUIDSTEPS", [])]
+
+
+def check_material_parts(sec):
+    """Issue #118 (prototypes/200-fork-material-parts.lua): the material parts are in the rows of the item group "Material
+    parts", one per form, the materials by tier. A material with no tier (no solidifier tier, no recipe that makes one of its
+    parts) goes last in its rows: a warning, its place is the table of tiers in 143 or a recipe. Returns (info line,
+    materials without a tier)."""
+    rows = sec.get("MATERIALPARTS", [])
+    count = next((r for r in rows if r[0] == "count"), None)
+    info = f"{count[1]} parts of {count[2]} materials in rows by form" if count else "absent (older version)"
+    return info, sorted(r[1] for r in rows if r[0] == "unranked")
 
 
 def check_files(sec):
@@ -681,6 +762,19 @@ def check(a):
     report(f"WARNING: fluids in the fallback row {FLUID_FALLBACK} (sort them in prototypes/196-fork-subgroups.lua)",
            fluid_fallback)
     report("fluids outside the Fluids tab (subgroup missing or not in the group fluids)", fluid_problems)
+    table_info, table_only = check_table_only(m, sec)
+    print(f"\ncrafting table and hand only items (issue #126): {table_info}")
+    report("items that only the crafting table or the hand can make, without an entry in FORK_RECIPES_TABLE_ONLY", table_only)
+    parts_info, parts_unranked = check_material_parts(sec)
+    print(f"\nmaterial parts (issue #118): {parts_info}")
+    report("WARNING: materials of the material parts without a tier (prototypes/200-fork-material-parts.lua)", parts_unranked)
+    microminer = check_microminer_tab(sec)
+    report("Microverse Projector recipes outside the Microminer tab (issue #120)", microminer)
+    report("WARNING: fluids of the Fluids tab with an icon of the base game or Space Age (issue #119; "
+           "FORK_FLUID_ICONS_KEPT in prototypes/196-fork-subgroups.lua keeps one on purpose)", check_fluid_icons(sec))
+    fluid_steps = check_fluid_steps(sec)
+    print(f"\nfluid amounts off the grid of 2^-24 (issue #117): {len(fluid_steps)}")
+    report("fluid amounts of recipes that are not a multiple of 2^-24 (prototypes/197-fork-fluid-steps.lua)", fluid_steps)
     one_pack_info, one_pack = check_one_pack(sec)
     print(f"\ncheap research ({ONE_PACK}): {one_pack_info}")
     report("technologies that cost more than one science pack of each kind although the setting is on", one_pack)
@@ -695,7 +789,7 @@ def check(a):
         Path(a.balance_out).write_text("[\n" + ",\n".join(rows) + "\n]\n", encoding="utf-8")
         print(f"\nbalance data written to {a.balance_out} (recipes, machines, technologies as JSON)")
     ok = not (files or [s for s in sprites if not s.startswith("(")] or uncraft or menu or required or unresearchable
-              or new_drafts or fluid_problems or locked or one_pack)
+              or new_drafts or fluid_problems or locked or one_pack or fluid_steps or microminer or table_only)
     print("\nRESULT:", "OK" if ok else "PROBLEMS FOUND")
     return 0 if ok else 1
 
@@ -741,7 +835,7 @@ def runtime(a):
     print(f"benchmark: {ran.group(0) if ran else 'did not run'}")
     # the ME network's runtime tests are in me-network since issue #83 (its tools/devcheck)
     tests = (("MOLD", "mold test"), ("POWER", "power test"), ("FUEL", "fuel check test"), ("COOLED", "cooled fluid test"),
-             ("TIERS", "turbine tier test"), ("RECIPES", "recipe test"), ("STEAM", "steam turbine test"), ("CHAIN", "nuclear chain test"), ("LSC", "supercapacitor test"), ("VICTORY", "victory test"),
+             ("TIERS", "turbine tier test"), ("RECIPES", "recipe test"), ("STEAM", "steam turbine test"), ("CHAIN", "nuclear chain test"), ("LSC", "supercapacitor test"), ("LSUP", "supercapacitor upgrade test"), ("MELT", "melt and cast test"), ("OFFER", "offered recipes test"), ("VICTORY", "victory test"),
              ("POSTVICTORY", "post-victory test"))
     for key, label in tests:
         m = re.search(rf"DEVCHECK-RUNTIME-{key} (.*)", log)

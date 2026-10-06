@@ -38,7 +38,9 @@ locale entries, commit messages, pull requests, issues, README and other docs.
    step, `main` is not moved: merge `upstream/release` into `main` by hand (`git fetch origin`,
    `git switch main`, `git merge origin/upstream/release`, `git push origin main`).
    Without the secret only the GitHub release is created; the zip can then be uploaded by hand
-   (`python tools/build.py --portal`). A release that needs a newer me-network raises the version in the dependency
+   (`python tools/build.py --portal`). After a release the job `announce`
+   posts a digest of the version's changelog section to the Discord channel `#gregtorio-releases` (repository secret
+   `DISCORD_BOT_TOKEN`; without it the job only warns); if it fails, re-run that job alone. A release that needs a newer me-network raises the version in the dependency
    `me-network >= X.Y.Z` of `info.json`, and that me-network version must be on the mod portal first. Note: `upstream/main` in a local clone is the remote of the
    original repository (Damien Reave), not a branch of this one.
 

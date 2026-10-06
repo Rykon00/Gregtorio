@@ -214,7 +214,8 @@ local RM_ITEMS = { ["ammonia-hexachloroplatinate"] = "platinum-salt", ["crude-pl
 	["raw-platinum-powder"] = "reprecipitated-platinum", ["crude-palladium-residue"] = "palladium-salt",
 	["raw-palladium-powder"] = "reprecipitated-palladium", ["platinum-group-residue"] = "platinum-residue",
 	["potassium-pyrosulfate"] = "potassium-disulfate", ["iridium-dioxide-residue"] = "iridium-dioxide",
-	["ammonia-hexachloroiridiate"] = "iridium-chloride" }
+	["ammonia-hexachloroiridiate"] = "iridium-chloride",
+	["advanced-card"] = "me-advanced-card" }          -- issue #121
 local RM_MACHINES = {
 	{ "lv-chemical-reactor", "platinum-palladium-leachate-processing", nil },
 	{ "lv-electrolyzer", "chloroplatinic-acid", nil },
@@ -397,8 +398,11 @@ local function setup_patterns(place)
 		drive.insert{ name = "iron-stick", count = 50 }
 	end
 	local id, why = remote.call(A, "start", p, "iron-gear-wheel", JOB_GEARS)
-	storage.job = { id = id, provider = p }
-	log("DEVCHECK-MIGRATE-SETUP-JOB " .. (id and "ok" or ("failed (" .. tostring(why) .. ")")))
+	--- crafting CPUs are multiblocks since me-network 0.3.0 (issue #6): a lone ME Crafting CPU is no CPU there, no job
+	local no_cpu = not id and why == "no-free-cpu" and prototypes.entity["me-crafting-unit"]
+	storage.job = { id = id, provider = p, skipped = no_cpu and true or nil }
+	log("DEVCHECK-MIGRATE-SETUP-JOB " .. (id and "ok" or no_cpu and "skipped (crafting CPUs are multiblocks since me-network 0.3.0)"
+		or ("failed (" .. tostring(why) .. ")")))
 	--- a level maintainer keeping a few more gears than the job makes (it waits while the job runs)
 	if R1() and prototypes.entity["me-level-maintainer"] and remote.interfaces["gregtorio-me-circuit"] then
 		local m = place("me-level-maintainer", MAINT_POS[1], MAINT_POS[2])
@@ -412,7 +416,7 @@ end
 local function check_job()
 	local st = storage.job
 	if not (st and st.id) then
-		log("DEVCHECK-MIGRATE-JOB " .. (st and "failed (no job in the old save)" or "skipped"))
+		log("DEVCHECK-MIGRATE-JOB " .. (st and not st.skipped and "failed (no job in the old save)" or "skipped"))
 		return
 	end
 	local problems = {}
@@ -718,6 +722,8 @@ local function handover_version()
 	return R2() and prototypes.entity["me-storage-bus"] and prototypes.entity["me-fluid-storage-bus"]
 		and prototypes.entity["me-underground-cable"] and has(SB, "get_settings") and has(FSB, "get_settings")
 		and has(NET, "drive_settings") and has(NET, "set_partition") and has(IO, "get_interface_config")
+		-- the fluid interface of me-network before 0.2.0; with the unified interface (Gregtorio 0.5.1) there is no hand-over
+		and has(F, "set_interface")
 end
 
 --- what the hand-over network holds: items and fluids of the network (cells, the storage bus chest, the tank of

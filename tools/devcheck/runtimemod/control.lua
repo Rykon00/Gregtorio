@@ -18,6 +18,9 @@
 --- steam turbine makes power from fuel rods; depleted rods come out; the steam recipe of the heat exchanger is exact.
 --- Lapotronic supercapacitor (issue #97): charges and discharges at two amps of its tier, holds its capacity by tier
 --- and loses GT's 1 % per day.
+--- Offered recipes (issue #126): the machine recipes that were hidden from the crafting menu are offered by the machines.
+--- Melts and casts (issue #117): nine melted ingots fill one block cast, one fills an ingot cast; n melts cover every cast combination.
+--- Supercapacitor upgrade (issue #124): a replaced supercapacitor keeps its charge (capped at the new capacity).
 --- Victory: when the other tests have reported, `victory` is researched by script and must win the game.
 
 local VICTORY_DEADLINE = 1450
@@ -33,6 +36,9 @@ local function tests_running()
 	check(storage.steam and storage.steam.done, "steam turbines")
 	check(storage.chain and storage.chain.done, "nuclear chain")
 	check(storage.lsc and storage.lsc.done, "supercapacitor")
+	check(storage.lsup and storage.lsup.done, "supercapacitor upgrade")
+	check(storage.offer and storage.offer.done, "recipes offered by machines")
+	check(storage.melt and storage.melt.done, "melts and casts")
 	return running
 end
 
@@ -681,6 +687,17 @@ local RT = {
 	{ "nether-air-ender-tank", "nether-air-collection" },
 	{ "component-assembly-line", "lv-motor-coal" },
 	{ "lv-assembling-machine", "microminer-neutronium" },
+	-- issue #126 (prototypes/148-fork-gtnh-table-items.lua): GTNH's machine recipes of the items the crafting table made
+	{ "lv-fluid-solidifier", "anvil-fluid-solidifier" },
+	{ "mv-alloy-smelter", "anvil-alloy-smelter" },
+	{ "lv-assembling-machine", "firebrick-block-assembling-machine" },
+	{ "lv-chemical-bath", "paper-chemical-bath" },
+	-- issue #126, part B: the vanilla hand-only recipes in the assembling machines
+	{ "lv-assembling-machine", "firearm-magazine" },
+	{ "lv-assembling-machine", "light-armor" },
+	{ "lv-assembling-machine", "rail-ramp" },
+	{ "lv-assembling-machine", "rail-support" },
+	{ "lv-assembling-machine", "wood-processing" },
 	{ "mv-canning-machine", "depleted-uranium-fuel-rod-centrifuging" },
 	{ "lv-compressor", "block-of-copper" },
 	{ "iv-alloy-blast-smelter", "molten-hastelloy-c276" },
@@ -1188,6 +1205,261 @@ function lsc_test()
 	log("DEVCHECK-RUNTIME-LSC " .. (#problems == 0 and "ok" or "failed") .. summary)
 end
 
+--- Machine recipes of items that also have a crafting table recipe (issue #126, part C): with the technology of the recipe
+--- researched by script the recipe must be enabled, not hidden from the crafting menu, and the lowest machine of its
+--- category must take it (what an LV assembling machine offers a player once automation-2 is researched).
+local OFFER = { "burner-inserter", "iron-chest", "iron-stick", "pipe", "chest" }
+
+function setup_offer_test(s)
+	local fails, offered = {}, {}
+	storage.offer = { offered = offered }
+	local force = game.forces.player
+	for _, name in ipairs(OFFER) do
+		local ok, err = pcall(function()
+			local proto = prototypes.recipe[name]
+			assert(proto, "no such recipe")
+			assert(not proto.hidden, "hidden")
+			assert(not proto.hide_from_player_crafting, "hidden from the crafting menu")
+			local tech
+			for tname, t in pairs(prototypes.technology) do
+				for _, e in pairs(t.effects) do
+					if e.type == "unlock-recipe" and e.recipe == name then tech = tname end
+				end
+			end
+			assert(tech, "no technology unlocks it")
+			force.technologies[tech].researched = true
+			assert(force.recipes[name].enabled, "not enabled after researching " .. tech)
+			local best
+			for mname, m in pairs(prototypes.get_entity_filtered{ { filter = "type", type = "assembling-machine" } }) do
+				if m.crafting_categories[proto.category] and m.items_to_place_this and #m.items_to_place_this > 0
+						and (not best or m.get_crafting_speed() < best.get_crafting_speed()) then
+					best = m
+				end
+			end
+			assert(best, "no machine for " .. proto.category)
+			local e = s.create_entity{ name = best.name, position = { -60 + 8 * #offered, 260 }, force = "player", raise_built = true }
+			e.set_recipe(name)
+			assert(e.get_recipe() and e.get_recipe().name == name, "the machine did not take it")
+			offered[#offered + 1] = name .. " in " .. best.name .. " (" .. tech .. ")"
+		end)
+		if not ok then fails[#fails + 1] = "offer test " .. name .. ": " .. tostring(err) end
+	end
+	return fails
+end
+
+function offer_test()
+	local st = storage.offer
+	if not st or st.done then return end
+	st.done = true
+	log("DEVCHECK-RUNTIME-OFFER " .. (#st.offered == #OFFER and "ok" or "failed") .. " (" .. table.concat(st.offered, "; ") .. ")")
+end
+
+--- Melts and casts (issue #117, prototypes/197-fork-fluid-steps.lua). The game cuts fluid amounts at steps of 2^-24, so n melted
+--- ingots must cover every combination of casts that n ingots are worth, with the amounts the engine holds.
+--- 1) For every melt (an extractor recipe giving 14.4 of a fluid per ingot) and every cast that takes only that fluid (a
+---    recipe of the solidifier categories, one fluid in, true amount in tenths): n ingots (n * 14.4 = m * the cast's
+---    amount) must give at least what m casts take.
+--- 2) In machines: ten ingots melted in an LV extractor, the melt of nine of them in an LV fluid solidifier on the block
+---    cast (it must start with no tenth melt and make the block), the tenth one's on the ingot cast (it must make the
+---    ingot); ten melts must hold at least 144.
+local CT_X, CT_Y = -60, 200
+local CT_DEADLINE = 900
+local CT_INGOT_TENTHS = 144
+
+local function ct_gcd(a, b) while b ~= 0 do a, b = b, a % b end return a end
+
+local function melt_coverage()
+	local melts, casts = {}, {}
+	for name, r in pairs(prototypes.recipe) do
+		local c = r.category
+		if c:find("extractor%-recipes$") and #r.products == 1 and r.products[1].type == "fluid" and #r.ingredients == 1
+				and r.ingredients[1].type == "item" and r.ingredients[1].name:sub(-6) == "-ingot"
+				and math.abs(r.products[1].amount - 14.4) < 1e-3 then
+			melts[#melts + 1] = { name = name, fluid = r.products[1].name, amount = r.products[1].amount }
+		elseif (c:find("fluid%-solidifier%-recipes$") or c:find("vacuum%-freezer%-recipes$")) and #r.ingredients == 1
+				and r.ingredients[1].type == "fluid" then
+			casts[#casts + 1] = { name = name, fluid = r.ingredients[1].name, amount = r.ingredients[1].amount }
+		end
+	end
+	local checked, problems = 0, {}
+	for _, m in pairs(melts) do
+		for _, c in pairs(casts) do
+			if c.fluid == m.fluid then
+				local tenths = math.floor(c.amount * 10 + 0.5)
+				if tenths > 0 and math.abs(c.amount * 10 - tenths) < 1e-3 then
+					local g = ct_gcd(CT_INGOT_TENTHS, tenths)
+					local casts_n, ingots = CT_INGOT_TENTHS / g, tenths / g
+					checked = checked + 1
+					if ingots * m.amount < casts_n * c.amount then
+						problems[#problems + 1] = string.format("%d melts (%s, %.9f each) give %.9f, %d casts (%s, %.9f each) take %.9f",
+							ingots, m.name, m.amount, ingots * m.amount, casts_n, c.name, c.amount, casts_n * c.amount)
+					end
+				end
+			end
+		end
+	end
+	return #melts, checked, problems
+end
+
+function setup_melt_test(s)
+	local fails = {}
+	local nmelts, nchecked, problems = melt_coverage()
+	for i, p in ipairs(problems) do
+		if i <= 10 then fails[#fails + 1] = "melt test: " .. p end
+	end
+	if #problems > 10 then fails[#fails + 1] = "melt test: ... and " .. (#problems - 10) .. " more combinations that do not fit" end
+	storage.melt = { n = 0, total = 0, taken = {}, coverage = nmelts .. " melts, " .. nchecked .. " cast combinations" }
+	local ok, err = pcall(function()
+		local st = storage.melt
+		local eei = s.create_entity{ name = "electric-energy-interface", position = { CT_X, CT_Y }, force = "player" }
+		eei.power_production = 1e6
+		eei.electric_buffer_size = 1e7
+		s.create_entity{ name = "substation", position = { CT_X + 3, CT_Y }, force = "player" }
+		s.create_entity{ name = "substation", position = { CT_X + 15, CT_Y }, force = "player" }
+		local molds = prototypes.mod_data["fork-mold-recipes"]
+		local function machine(name, x, recipe)
+			local e = s.create_entity{ name = name, position = { x, CT_Y + 4 }, force = "player", raise_built = true }
+			e.force.recipes[recipe].enabled = true
+			e.set_recipe(recipe)
+			if molds and molds.data[recipe] then e.get_module_inventory().insert{ name = molds.data[recipe] } end
+			return e
+		end
+		st.extractor = machine("lv-extractor", CT_X + 6, "melt-iron-ingot")
+		st.block = machine("lv-fluid-solidifier", CT_X + 12, "solidify-block-of-iron")
+		st.ingot = machine("lv-fluid-solidifier", CT_X + 18, "solidify-iron-ingot")
+		st.extractor.insert{ name = "iron-ingot", count = 10 }
+	end)
+	if not ok then fails[#fails + 1] = "melt test setup: " .. tostring(err) end
+	return fails
+end
+
+function melt_test()
+	local st = storage.melt
+	if not st or st.done or not st.extractor then return end
+	local ex, problems = st.extractor, {}
+	local function expect(ok, what) if not ok then problems[#problems + 1] = what end end
+	local function finish()
+		st.done = true
+		for _, p in pairs(problems) do log("DEVCHECK-RUNTIME-FAIL melt test: " .. p) end
+		log("DEVCHECK-RUNTIME-MELT " .. (#problems == 0 and "ok" or "failed") .. " (" .. st.coverage .. "; one melt "
+			.. string.format("%.9f", st.taken[1] or 0) .. ", ten " .. string.format("%.9f", st.total) .. ", block cast "
+			.. (st.block_made or 0) .. ", ingot cast " .. (st.ingot_made or 0) .. ", tick " .. game.tick .. ")")
+	end
+	if not (ex.valid and st.block.valid and st.ingot.valid) then
+		expect(false, "a machine is missing")
+		return finish()
+	end
+	if game.tick > CT_DEADLINE then
+		expect(false, "timed out in phase " .. (st.phase or "melting") .. " after " .. st.n .. " melts")
+		return finish()
+	end
+	if not st.phase then
+		-- melting: a craft that is under way finishes at once; what it made is taken out of the box
+		if ex.crafting_progress > 0 and ex.crafting_progress < 0.99 then ex.crafting_progress = 0.99 end
+		if ex.products_finished > st.n then
+			st.n = ex.products_finished
+			local got = ex.remove_fluid{ name = "molten-iron", amount = 1000 }
+			st.taken[st.n] = got
+			st.total = st.total + got
+			if st.n <= 9 then
+				st.block_in = (st.block_in or 0) + st.block.insert_fluid{ name = "molten-iron", amount = got }
+			else
+				expect(st.ingot.insert_fluid{ name = "molten-iron", amount = got } == got, "the ingot cast's box did not take the tenth melt")
+			end
+			if st.n == 10 then
+				expect(st.total >= 144, string.format("ten melts hold %.9f, not 144", st.total))
+				expect(st.block_in >= 9 * st.taken[1] - 1e-9, string.format("the block cast's box took only %.9f of nine melts", st.block_in))
+				st.phase = "casting"
+				st.cast_from = game.tick
+			end
+		end
+	else
+		for _, key in pairs({ "block", "ingot" }) do
+			local m = st[key]
+			if m.crafting_progress > 0 and m.crafting_progress < 0.99 then m.crafting_progress = 0.99 end
+		end
+		st.block_made = st.block.get_output_inventory().get_item_count("block-of-iron")
+		st.ingot_made = st.ingot.get_output_inventory().get_item_count("iron-ingot")
+		if (st.block_made > 0 and st.ingot_made > 0) or game.tick > st.cast_from + 120 then
+			expect(st.block_made > 0, string.format("nine melts (%.9f) did not start the block cast", st.block_in or 0))
+			local status
+			for n, v in pairs(defines.entity_status) do if st.ingot.status == v then status = n end end
+			expect(st.ingot_made > 0, "the tenth melt (" .. st.ingot.get_fluid_count("molten-iron") .. ") did not start the ingot cast (" .. tostring(status) .. ", progress " .. st.ingot.crafting_progress .. ", recipe " .. tostring(st.ingot.get_recipe() and st.ingot.get_recipe().name) .. ")")
+			finish()
+		end
+	end
+end
+
+--- Supercapacitor upgrade (issue #124): the game does not carry an accumulator's energy over to its replacement, so
+--- scripts/fork-power.lua does. A charged IV supercapacitor replaced by a LuV one (fast replace, built event raised as for
+--- a player and a robot) holds the same energy; the LuV one filled above the IV capacity and replaced by an IV one is capped
+--- at the IV capacity; one that was mined and a LuV one built over the spot much later starts empty.
+local LU_X, LU_Y = -230.5, 330
+local LU_IV, LU_LUV = "lapotronic-supercapacitor", "luv-lapotronic-supercapacitor"
+
+function setup_lsup_test(s)
+	local fails = {}
+	local ok, err = pcall(function()
+		local st = { phase = 0 }
+		storage.lsup = st
+		st.a = s.create_entity{ name = LU_IV, position = { LU_X, LU_Y }, force = "player", raise_built = true }
+		st.a.energy = 500e9
+		st.c = s.create_entity{ name = LU_IV, position = { LU_X + 12, LU_Y }, force = "player", raise_built = true }
+		st.c.energy = 400e9
+	end)
+	if not ok then fails[#fails + 1] = "supercapacitor upgrade test: " .. tostring(err) end
+	return fails
+end
+
+local function lsup_replace(old, name)
+	local pos, s = old.position, old.surface
+	return s.create_entity{ name = name, position = pos, force = "player", fast_replace = true, spill = false,
+		raise_built = true }
+end
+
+function lsup_test()
+	local st = storage.lsup
+	if not st or st.done then return end
+	local t, problems = game.tick, {}
+	local function expect(ok, what) if not ok then problems[#problems + 1] = what end end
+	local TOL = 5e6                                             -- J: a few steps of the passive loss
+	if st.phase == 0 and t >= 30 then
+		local b = lsup_replace(st.a, LU_LUV)
+		st.b = b
+		expect(b and b.valid, "the LuV supercapacitor was not built")
+		if b and b.valid then
+			st.up = b.energy
+			expect(math.abs(b.energy - 500e9) < TOL, string.format("IV -> LuV: %.3f GJ left of 500 GJ", b.energy / 1e9))
+			b.energy = 3000e9
+		end
+		st.c.destroy()
+		st.phase, st.t1 = 1, t
+	elseif st.phase == 1 and t >= st.t1 + 20 then
+		local a2 = st.b.valid and lsup_replace(st.b, LU_IV)
+		expect(a2 and a2.valid, "the IV supercapacitor was not built")
+		if a2 and a2.valid then
+			st.down = a2.energy
+			expect(math.abs(a2.energy - a2.electric_buffer_size) < TOL,
+				string.format("LuV -> IV: %.3f GJ, not the capacity %.3f GJ", a2.energy / 1e9, a2.electric_buffer_size / 1e9))
+		end
+		st.phase, st.t2 = 2, t
+	elseif st.phase == 2 and t >= st.t2 + 60 then
+		-- the spot of the destroyed one: nothing to carry over after this long
+		local d = game.surfaces[1].create_entity{ name = LU_LUV, position = { LU_X + 12, LU_Y }, force = "player", raise_built = true }
+		expect(d and d.valid and d.energy == 0, "a supercapacitor built on a spot that was empty for a while started with energy")
+		st.phase, st.done = 3, true
+		for _, p in pairs(problems) do log("DEVCHECK-RUNTIME-FAIL supercapacitor upgrade test: " .. p) end
+		log("DEVCHECK-RUNTIME-LSUP " .. (#problems == 0 and "ok" or "failed") .. string.format(" (IV -> LuV kept %.1f of 500 GJ, LuV -> IV capped at %.1f GJ)",
+			(st.up or 0) / 1e9, (st.down or 0) / 1e9))
+		return
+	end
+	if #problems > 0 then
+		st.done = true
+		for _, p in pairs(problems) do log("DEVCHECK-RUNTIME-FAIL supercapacitor upgrade test: " .. p) end
+		log("DEVCHECK-RUNTIME-LSUP failed")
+	end
+end
+
 script.on_event(defines.events.on_tick, function(event)
 	fuel_window_tick()
 	chain_tick(event.tick)
@@ -1242,6 +1514,9 @@ script.on_nth_tick(10, function()
 	steam_test()
 	chain_test()
 	lsc_test()
+	lsup_test()
+	offer_test()
+	melt_test()
 	victory_test()
 end)
 
@@ -1307,6 +1582,9 @@ script.on_init(function()
 	for _, f in pairs(setup_steam_test(s)) do fails[#fails + 1] = f end
 	for _, f in pairs(setup_chain_test(s)) do fails[#fails + 1] = f end
 	for _, f in pairs(setup_lsc_test(s)) do fails[#fails + 1] = f end
+	for _, f in pairs(setup_lsup_test(s)) do fails[#fails + 1] = f end
+	for _, f in pairs(setup_offer_test(s)) do fails[#fails + 1] = f end
+	for _, f in pairs(setup_melt_test(s)) do fails[#fails + 1] = f end
 	log("DEVCHECK-RUNTIME placed=" .. placed .. " with_recipe=" .. with_recipe .. " failed=" .. #fails)
 	for _, f in pairs(fails) do log("DEVCHECK-RUNTIME-FAIL " .. f) end
 end)

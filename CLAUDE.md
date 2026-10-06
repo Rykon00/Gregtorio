@@ -20,7 +20,7 @@
   (plasma fuel values, plasma balance of issue #32, large plasma turbines with turbine output hatches, naquadah fuel line, large
   naquadah reactors, dynamo hatches LuV to UXV; runtime in `scripts/fork-power.lua`: fuel check, turbine output hatch
   with a ratio per fluid and the generator's effectivity from the mod data, used by 145's steam turbines, and the passive
-  loss of 145's supercapacitors, mod data `capacitors`),
+  loss of 145's supercapacitors, mod data `capacitors`, and the carry-over of their energy when another tier replaces them, issue #124),
   137 endgame materials (issues #39 and #36: deletes the drafts removed for good, `FORK-REMOVED` in the log; the
   lapotronic energy orb cluster and high density plutonium drafts; super coolant, the 1080k super coolant cell, fluxed electrum,
   bedrockium and quantium with the stand-ins they replace; must load after 136, whose plutonium fuel and dynamo hatches it changes),
@@ -50,13 +50,13 @@
   named in 142's `UNLOCKS`, so it loads after 138 and **before** 142, and before 196 for its fluids; it takes 136's
   generator from the global `FORK_POWER` and adds to its mod data `fork-power`), 144 dead fluids (issue #91: GT's uses and
   producers of fluids nothing made or used; the blast furnace gas variants of `EBF_GASES` are in `FORK_GAS_VARIANTS`,
-  which 199's auto-unlock ignores like the casts), 150 molds (mold slot instead of mold ingredient; must load after every file that creates
+  which 199's auto-unlock ignores like the casts), 148 GTNH table items (issue #126: GTNH's machine recipes for the anvil, the firebrick block and paper, which the crafting table made; the reachable hand-only vanilla recipes (firearm magazine, light armor, rail ramp and support, wood processing) moved into `crafting-or-assembling-recipes`; the allow-list `FORK_RECIPES_TABLE_ONLY` of recipes of items that only the crafting table, the ME Molecular Assembler or the hand make, each with its reason; devcheck fails for a reachable item whose every recipe is such a recipe and not in it; loads after 144 and before 150), 149 early research (issue #127: the unit counts of the technologies with red and green packs only, 80 and more, cut to a quarter; the cheap research setting wins), 150 molds (mold slot instead of mold ingredient; must load after every file that creates
   machines), 190 manual-labor
-  burner usage (fist icon in the fuel slot), 196 subgroups (the Fluids tab: every Gregtorio fluid gets a row of the item
+  burner usage (fist icon in the fuel slot), 191 burner fire (issue #137: the fire animations of the stone and iron furnace and the small coal boiler, drawn only while they work; `tools/gen_fire_sprites.py`), 195 microminer tab (issue #120: the Microverse Projectors as the first row of the Microminer tab, one row per tier t1 to t4 with its microminer, data, mission and ender tank, empty rows deleted; devcheck fails for a projector recipe outside the tab), 196 subgroups (the Fluids tab: every Gregtorio fluid gets a row of the item
   group `fluids` by its explicit table or a name pattern; a new fluid goes into one, the fallback row
-  `gregtorio-fluids-unsorted` is a devcheck warning; loads after every file that creates fluids), 198 crafting menu (shows machine recipes, which upstream
+  `gregtorio-fluids-unsorted` is a devcheck warning; issue #119: Gregtorio icons for molten iron, molten copper and steam, the twelve unused vanilla fluids hidden (`FORK_FLUIDS_HIDDEN`); a fluid that keeps another mod's icon on purpose goes into `FORK_FLUID_ICONS_KEPT`, devcheck warns otherwise; loads after every file that creates fluids), 197 fluid steps (issue #117: every fluid amount of a recipe that is not a multiple of the engine's step 2^-24 is set on the grid, takes up, gives up and nine steps more, so n melted ingots cover every cast they are worth; loads after every file that makes or changes a recipe; devcheck fails for an amount off the grid), 198 crafting menu (shows machine recipes, which upstream
   `create_recipe` hides; a recipe that must stay hidden goes into its allow-list
-  `FORK_CRAFTING_MENU_HIDDEN`, devcheck fails otherwise; startup setting in `settings.lua`), 199 finalize.
+  `FORK_CRAFTING_MENU_HIDDEN`, devcheck fails otherwise; startup setting in `settings.lua`), 199 finalize, 200 material parts (issues #118 and #145: the item group "Material parts", one row per form, the materials inside a row by the tier of the technology that unlocks their ingot (its highest science pack), else of any part; items only, the recipes keep their machine rows; devcheck warns for a material with no tier; loads after 199 so the final unlocks count).
   The phase plan is in `docs/ROADMAP.md`.
   Runtime fork code lives in `scripts/` and is required from `control.lua` (`fork-molds.lua`, `fork-victory.lua`,
   `fork-power.lua`, and `fork-me-handover.lua`: the one-time hand-over of the ME state of saves from before issue #83 to
@@ -119,6 +119,19 @@
   "In Progress" if `gh project` works for you (`gh project item-list 1 --owner Rykon00`, then `gh project item-edit`; the
   token needs the scope `project`); if it does not, say so in your report and go on. An issue the maintainer has to do or
   test in the game himself is titled `[Task-Ingame]`, not `[Task]`.
+- **Close what is handled:** an issue is closed as soon as it is handled, never left for later, because an open issue
+  is a card in Todo that says work is waiting. Whoever handles it closes it, with a comment that names the pull request
+  or the reason:
+  - work done by a pull request into `main`: `Closes #N` in its description (the rule above);
+  - a **release**: the release pull request goes into `upstream/release`, where a closing keyword in the description
+    closes nothing. Put `Closes #N` for the release issue into the **message of the release commit** (it reaches `main`
+    through the workflow's fast-forward), and after the release check that the issue is closed; close it by hand if
+    not;
+  - a `[Task-Ingame]` issue: when the maintainer says he tested it (in the chat or in the issue), close it; what he
+    found goes into new issues first;
+  - an issue that was superseded, became pointless or turned out wrong: close it as "not planned" with the reason and
+    the issue that replaces it.
+  Before you report, list the open issues (`gh issue list`) and close or name every one your work touched.
 - **Local sessions on the maintainer's Windows machine:** `C:\00_Repositories\Gregtorio` is linked into the Factorio mods
   folder, so never switch branches or edit files there. Work in **one** worktree next to it
   (`git worktree add ..\Gregtorio-<topic> -b <branch> origin/main`). Do not add more worktrees to compare versions: use

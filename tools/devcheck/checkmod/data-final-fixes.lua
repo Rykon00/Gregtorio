@@ -88,6 +88,21 @@ local lk = {}
 for name, reason in pairs(FORK_RECIPES_LOCKED or {}) do lk[#lk + 1] = name .. "\t" .. reason end
 section("LOCKEDOK", lk)
 
+--- Issue #126: the recipes of items only the crafting table, the ME Molecular Assembler or the hand can make, on purpose
+--- (FORK_RECIPES_TABLE_ONLY in prototypes/148-fork-gtnh-table-items.lua; absent in older versions)
+local tk = {}
+for name, reason in pairs(FORK_RECIPES_TABLE_ONLY or {}) do tk[#tk + 1] = name .. "\t" .. reason end
+section("TABLEONLYOK", tk)
+
+--- Issue #118 (prototypes/200-fork-material-parts.lua): the material parts in rows by form; the materials without a tier
+--- (absent in older versions)
+local mp = {}
+if FORK_MATERIAL_PARTS then
+	mp[#mp + 1] = "count\t" .. FORK_MATERIAL_PARTS.parts .. "\t" .. FORK_MATERIAL_PARTS.materials
+	for _, m in pairs(FORK_MATERIAL_PARTS.unranked) do mp[#mp + 1] = "unranked\t" .. m end
+end
+section("MATERIALPARTS", mp)
+
 --- Every __gregtorio-continued__/ file referenced anywhere, with its owner prototype
 local paths, seen = {}, {}
 local function scan(t, owner, depth)
@@ -167,6 +182,31 @@ for n, f in pairs(data.raw.fluid) do
 		tostring(f.parameter == true), f.order or "", icon, size }, "\t")
 end
 section("FLUIDS", fl)
+
+--- fluids that keep an icon of another mod on purpose (FORK_FLUID_ICONS_KEPT in prototypes/196-fork-subgroups.lua, issue #119;
+--- absent in older versions)
+local fk = {}
+for name, reason in pairs(FORK_FLUID_ICONS_KEPT or {}) do fk[#fk + 1] = name .. "\t" .. reason end
+section("FLUIDICONSOK", fk)
+
+--- Fluid amounts off the grid of 2^-24 (issue #117, prototypes/197-fork-fluid-steps.lua): recipe, kind, fluid, amount.
+--- The game cuts every amount off at the step below, so a recipe that is not on the grid gives and takes less than it says.
+local off = {}
+for n, r in pairs(data.raw.recipe) do
+	for _, key in pairs({ "ingredients", "results" }) do
+		for _, x in pairs(r[key] or {}) do
+			if x.type == "fluid" then
+				for _, f in pairs({ "amount", "amount_min", "amount_max" }) do
+					local a = x[f]
+					if a and a * 2 ^ 24 ~= math.floor(a * 2 ^ 24) then
+						off[#off + 1] = table.concat({ n, key, x.name, string.format("%.12g", a) }, "\t")
+					end
+				end
+			end
+		end
+	end
+end
+section("FLUIDSTEPS", off)
 
 --- Balance data (`devcheck.py check --balance-out`): recipes with amounts and times, machine speeds,
 --- technology unit counts. One JSON object per line.

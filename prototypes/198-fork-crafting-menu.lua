@@ -9,7 +9,9 @@
 --- This pass shows every recipe whose category has a machine again, except the recipes in
 --- FORK_CRAFTING_MENU_HIDDEN below. `hidden` recipes (recycling, parameters, ...) are not
 --- touched. tools/devcheck checks that nothing else stays hidden, so a new hidden recipe
---- needs an entry here.
+--- needs an entry here. (Issue #126: the five replaced vanilla recipes burner-inserter, iron-chest, iron-stick, pipe and
+--- chest left this list: they are the machine recipes of the items whose crafting table recipe the menu shows too; the
+--- two recipes of an item differ in cost and machine, as in GT.)
 ---
 --- Startup setting `gregtorio-continued-show-machine-recipes` (default on) turns it off.
 --------------------------------------------------------------------------------
@@ -24,11 +26,6 @@ FORK_CRAFTING_MENU_HIDDEN = {
 		["empty-barrel"] = "vanilla barrel emptying recipes, hidden in vanilla",
 	},
 	recipes = {
-		["burner-inserter"] = "replaced vanilla recipe (09-steam-age-item.lua); the menu shows the crafting table recipe",
-		["iron-chest"] = "replaced vanilla recipe (09-steam-age-item.lua); the menu shows the crafting table recipe",
-		["iron-stick"] = "replaced vanilla recipe (09-steam-age-item.lua); the menu shows the crafting table recipe",
-		["pipe"] = "replaced vanilla recipe (09-steam-age-item.lua); the menu shows the crafting table recipe",
-		["chest"] = "replaced vanilla wooden chest recipe (09-steam-age-item.lua); the menu shows the crafting table recipe",
 		["rocket-part"] = "vanilla rocket silo recipe, hidden in vanilla",
 		["biter-egg"] = "vanilla captive biter spawner recipe, hidden in vanilla",
 	},
