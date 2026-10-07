@@ -136,6 +136,10 @@ MATERIALS = {
     "netherrack": "Netherrack", "pyrite": "Pyrite", "quartzite": "Quartzite",
     "dark-ash": "DarkAsh",  # issue #193
     "cassiterite": "Cassiterite",  # issue #202: its own crushed ore, dust and ore chain
+    "antimony": "Antimony", "molybdenum": "Molybdenum",  # issue #205: their ingots
+    # issue #205: goodgenerator's Werkstoffe of the naquadah line (GGMaterial.java, their colours; dusts)
+    "naquadria-oxide-mixture": ("METALLIC", (77, 77, 85)), "indium-phosphate": ("DULL", (43, 46, 112)),
+    "low-quality-naquadria-phosphate": ("DULL", (77, 77, 85)),
 }
 
 # fork part name -> GT OrePrefix texture; "{m}" is the material
@@ -607,6 +611,8 @@ def icon_table(c):
     T["gasoline-cell"] = lambda: c.part("gasoline", "cell")
     T["sodium-cyanide"] = lambda: c.part("sodium-cyanide", "dust")
     T["cyanoacetic-acid"] = lambda: c.part("cyanoacetic-acid", "dust")
+    for m in ("naquadria-oxide-mixture", "indium-phosphate", "low-quality-naquadria-phosphate"):   # issue #205
+        T[m] = (lambda m=m: lambda: c.part(m, "dust"))()
     # issue #98: the high octane cell (like the gasoline cell), sodium bisulfate (GT: a dust)
     T["high-octane-gasoline-cell"] = lambda: c.part("high-octane-gasoline", "cell")
     T["sodium-bisulfate"] = lambda: c.part("sodium-bisulfate", "dust")

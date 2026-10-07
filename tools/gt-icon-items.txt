@@ -11,6 +11,7 @@ advanced-smd-inductor-wrap
 advanced-smd-transistor-wrap
 americium-ingot
 americium-plate
+antimony-ingot
 apic-wafer
 atto-power-ic
 bacterial-vat
@@ -18,6 +19,7 @@ bacterial-vat-controller
 bedrockium-cable
 bedrockium-plate
 bedrockium-wire
+beryllium-nugget
 bio-cells
 bio-processing-unit
 bio-processor
@@ -28,6 +30,10 @@ black-plutonium-ingot
 callisto-ice-dust
 cassiterite-dust
 centrifuged-cassiterite
+chipped-lignite
+chipped-quartzite
+chipped-red-garnet
+chipped-yellow-garnet
 chromnorox-dust
 chromnorox-ingot
 chromnorox-superconductive-wire
@@ -39,6 +45,7 @@ complex-smd-inductor
 complex-smd-resistor
 complex-smd-transistor
 component-assembly-line
+copper-nugget
 cosmic-neutronium-foil
 cosmic-neutronium-ingot
 cosmic-neutronium-plate
@@ -71,6 +78,10 @@ exotic-processing-unit
 exotic-processor
 exotic-processor-assembly
 exotic-processor-supercomputer
+exquisite-lignite
+exquisite-quartzite
+exquisite-red-garnet
+exquisite-yellow-garnet
 extended-mega-ultimate-voltage-coil
 extremely-ultimate-voltage-coil
 femto-power-ic
@@ -82,6 +93,14 @@ fine-spacetime-wire
 fine-transcendent-metal-wire
 fine-tritanium-wire
 fine-universium-wire
+flawed-lignite
+flawed-quartzite
+flawed-red-garnet
+flawed-yellow-garnet
+flawless-lignite
+flawless-quartzite
+flawless-red-garnet
+flawless-yellow-garnet
 fluxed-electrum-dust
 fluxed-electrum-plate
 fluxed-electrum-wire
@@ -136,6 +155,7 @@ hypocosmium-ingot
 hypocosmium-superconductive-wire
 hypocosmium-wire
 impure-cassiterite-dust
+indium-phosphate
 infinity-foil
 infinity-frame
 infinity-gear
@@ -162,6 +182,9 @@ large-spacetime-gear
 large-transcendent-metal-gear
 large-tritanium-gear
 large-universium-gear
+lead-nugget
+ledox-nugget
+lignite-gem
 long-hsss-rod
 long-infinity-rod
 long-magmatter-rod
@@ -172,6 +195,7 @@ long-spacetime-rod
 long-transcendent-metal-rod
 long-tritanium-rod
 long-universium-rod
+low-quality-naquadria-phosphate
 ludicrous-voltage-coil
 luv-circuit-assembly-line
 luv-conveyor-module
@@ -216,6 +240,7 @@ max-sensor
 maximum-voltage-coil
 mega-ultimate-voltage-coil
 metallic-sludge-dust-residue
+molybdenum-ingot
 multilayered-fiber-reinforced-circuit-board
 multilayered-fiber-reinforced-printed-circuit-board
 nand-memory-chip-wrap
@@ -235,6 +260,7 @@ naquadah-alloy-wire
 naquadah-cable
 naquadah-coil-block
 naquadah-plate
+naquadria-oxide-mixture
 naquadria-plate
 naquamiridium-dust
 naquamiridium-ingot
@@ -251,6 +277,7 @@ neutronium-rod
 neutronium-rotor
 neutronium-round
 neutronium-screw
+nickel-nugget
 niobium-titanium-foil
 niobium-titanium-wire-4x
 nor-memory-chip-wrap
@@ -289,10 +316,15 @@ quantum-force-transformer-coil-casing
 quantum-force-transformer-controller
 quantum-power-ic
 quark-creation-catalyst
+quartzite-gem
 radioactive-sludge
 ram-chip-wrap
 raw-crystal-chip
 raw-crystal-chip-part
+realgar-ingot
+realgar-nugget
+red-garnet-gem
+red-garnet-lens
 refined-platinum-salt
 remote-graviton-flow-modulator
 reprecipitated-palladium
@@ -304,8 +336,13 @@ rhugnor-ingot
 rhugnor-plate
 ruridit-plate
 samarium-rod
+silver-nugget
 singularity-reinforced-stellar-shielding-casing
 sludge-dust-residue
+small-pile-of-lignite-dust
+small-pile-of-quartzite-dust
+small-pile-of-red-garnet-dust
+small-pile-of-yellow-garnet-dust
 sodium-bisulfate
 sodium-cyanide
 spacetime-cable
@@ -336,6 +373,9 @@ temporal-processing-unit
 temporal-processor
 temporal-processor-assembly
 temporal-processor-supercomputer
+thorium-ingot
+thorium-nugget
+tin-nugget
 transcendent-metal-foil
 transcendent-metal-frame
 transcendent-metal-gear
@@ -452,6 +492,8 @@ wetware-processor
 wetware-processor-assembly
 wetware-processor-supercomputer
 wrapped-plutonium-ingot
+yellow-garnet-gem
+yellow-garnet-lens
 zero-point-module-voltage-coil
 zpm-assembly-line
 zpm-conveyor-module
