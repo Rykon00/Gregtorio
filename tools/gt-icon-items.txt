@@ -796,3 +796,4 @@ small-pile-of-lazurite-dust
 small-pile-of-sodalite-dust
 small-pile-of-lapis-dust
 small-pile-of-monazite-dust
+nether-quartz-plate

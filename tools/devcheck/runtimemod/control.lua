@@ -740,6 +740,11 @@ local RT = {
 	-- issue #153 (prototypes/153-fork-compressor-air.lua): air from the compressor
 	{ "lv-compressor", "air-collection" },
 	{ "iv-large-electric-compressor", "air-collection" },
+	-- issues #159 and #195 (prototypes/120-fork-me-network-compat.lua): the ME Pattern Terminal and its nether quartz
+	-- plate, me-network's Acceleration Card
+	{ "lv-bending-machine", "nether-quartz-plate" },
+	{ "mv-assembling-machine", "me-pattern-terminal" },
+	{ "lv-assembling-machine", "me-acceleration-card" },
 	-- issue #126, part B: the vanilla hand-only recipes in the assembling machines
 	{ "lv-assembling-machine", "firearm-magazine" },
 	{ "lv-assembling-machine", "light-armor" },
