@@ -29,6 +29,7 @@ local ORE_CHAIN = {
 	["fullers-earth"] = { dust = "fullers-earth", byproducts = { "alumina", "silicon-dioxide", "magnesium" }, mass = 16 },   -- GT FullersEarth: Aluminiumoxide, SiliconDioxide, Magnesium
 	["copper"] = { dust = "copper-dust", byproducts = { "cobalt-dust", "gold-dust", "nickel-dust" }, mass = 63 },   -- GT Copper: Cobalt, Gold, Nickel
 	["tin"] = { dust = "tin-dust", byproducts = { "iron-dust", "zinc-dust", "bismuth" }, mass = 118 },   -- GT Tin: Iron, Zinc; 3rd: bismuth, Gregtorio's (its only source, GTNH has a bismuth ore)
+	["cassiterite"] = { dust = "cassiterite-dust", byproducts = { "tin-dust" }, mass = 50 },   -- GT Cassiterite: Tin (issue #202: its own crushed ore since then)
 	["realgar"] = { dust = "realgar-dust", byproducts = {  }, mass = 53 },   -- GT Realgar: no byproducts (itself)
 	["galena"] = { dust = "galena-dust", byproducts = { "sulfur", "silver-dust", "lead-dust" }, mass = 119 },   -- GT Galena: Sulfur, Silver, Lead
 	["lead"] = { dust = "lead-dust", byproducts = { "silver-dust", "sulfur" }, mass = 207 },   -- GT Lead: Silver, Sulfur
@@ -191,6 +192,8 @@ local DECOMPOSE = {
 	{ "netherrack-dust", "lv-centrifuge-recipes", 288, 36,
 		{ item("redstone-dust", 4, 0.5625), item("sulfur", 9, 0.99), item("coal-dust", 4, 0.5625), item("gold-dust", 1, 0.25) } },
 	{ "pyrite-dust", "lv-electrolyzer-recipes", 5.7, 3, { item("iron-dust", 1), item("sulfur", 2) } },
+	--- issue #202: cassiterite (SnO2, protons 22: 3 dusts x 44 ticks)
+	{ "cassiterite-dust", "lv-electrolyzer-recipes", 6.6, 3, { item("tin-dust", 1), fluid("oxygen", 200) } },
 	--- GT has no decomposition of quartzite (a quartz): Gregtorio's, into silicon dioxide
 	{ "quartzite-dust", "lv-centrifuge-recipes", 2, 1, { item("silicon-dioxide", 1) } },
 }
@@ -226,7 +229,16 @@ for x, ore in pairs(ORE_CHAIN) do
 		local old_wash = data.raw.recipe[ore.dust]
 		local wash_ok = old_wash ~= nil and old_wash.category == "lv-ore-washer-recipes"
 		local old_cf = "centrifuging-" .. crushed
-		local t_crush = tech_list(crushed)
+		--- the macerator recipes raw ore -> this crushed ore (issue #202: Raw Tin's is macerating-raw-tin)
+		local t_crush, seen = {}, {}
+		for rname, r in pairs(data.raw.recipe) do
+			if r.category == "lv-macerator-recipes" and r.results and #r.results == 1 and r.results[1].name == crushed then
+				for _, t in pairs(tech_list(rname)) do
+					if not seen[t] then seen[t] = true; t_crush[#t_crush + 1] = t end
+				end
+			end
+		end
+		table.sort(t_crush)
 		if #t_crush == 0 then t_crush = tech_list("centrifuging-" .. crushed) end
 		local t_cf = tech_list(old_cf)
 		local t_wash = wash_ok and tech_list(ore.dust) or t_cf
@@ -798,24 +810,81 @@ log("FORK-ORE-CHAIN: " .. gem_recipes .. " gem recipes (sifter, grades, lenses, 
 --- ProcessingPure.java:163-168, ProcessingCrushedOre.java:37-44): raw ore -> crushed ore (GT's ore multiplier, half
 --- of the macerator's), crushed -> impure dust, purified -> pure dust, centrifuged -> dust, each 10 ticks (0.5 s), in
 --- every forge hammer (the steam one runs the LV category too). No byproducts, as in GT.
+--- Issue #202: GTNH's raw ore recipes for every raw ore with a macerator recipe to a crushed item
+--- (OP/ProcessingRawOre.java registerStandardOreRecipes; bornite: bartworks RawOreLoader.java), the ore multiplier is
+--- GT's (07): the forge hammer gives the multiplier x the crushed ore, or x the gem where GT's material has one
+--- (FORK_ORE_HAMMER_GEM); the macerator 2 x the multiplier crushed ores and the first of GT's byproducts at 5 % x GT's
+--- byproduct multiplier (an ore without byproducts: its own dust), as a gem where GT's byproduct material has one and
+--- Gregtorio the item (lignite, quartzite and the garnets have none here: their dust), platinum group dusts as the
+--- platinum line's powders (#199); GT's stone dust is left out (phase O1). Hammer recipes are named after the raw ore.
+--- FORK_ORE_HAMMER_SKIP: raw ores without them on purpose, with the reason (devcheck fails for any other).
 --------------------------------------------------------------------------------
+FORK_ORE_HAMMER_SKIP = {
+	["raw-firestone-ore"] = "no source of firestone ore: its macerator recipe stays locked (142's FORK_RECIPES_LOCKED)",
+}
+FORK_ORE_HAMMER_GEM = {
+	["raw-coal"] = "coal", ["raw-ruby"] = "ruby", ["raw-emerald"] = "emerald", ["raw-diamond"] = "diamond",
+	["raw-lapis"] = "lapis-lazuli", ["raw-lazurite"] = "lazurite-gem", ["raw-sodalite"] = "sodalite-gem",
+	["raw-apatite"] = "apatite-gem", ["raw-certus-quartz"] = "certus-quartz", ["raw-nether-quartz"] = "nether-quartz",
+	["raw-monazite"] = "monazite-gem", ["raw-tricalcium-phosphate"] = "tricalcium-phosphate-gem",
+}
+--- the first byproduct of the ores ORE_CHAIN leaves out (GT Platinum: Nickel; GT Palladium: none, its own dust)
+local RAW_BYPRODUCT = { ["raw-platinum"] = "nickel-dust", ["raw-palladium"] = "palladium-dust" }
+--- GT's gems of byproduct materials that Gregtorio has
+local BYPRODUCT_GEM = { ["emerald-dust"] = "emerald", ["apatite"] = "apatite-gem",
+	["tricalcium-phosphate"] = "tricalcium-phosphate-gem", ["lazurite-dust"] = "lazurite-gem",
+	["sodalite-dust"] = "sodalite-gem", ["monazite-dust"] = "monazite-gem" }
+--- GT's byproduct multipliers (Materials.java setByProductMultiplier; 1 for every other ore)
+local BYPRODUCT_MULT = { ["raw-apatite"] = 2, ["raw-coal"] = 2, ["raw-cryolite"] = 4, ["raw-lapis"] = 4,
+	["raw-sodalite"] = 4, ["raw-lazurite"] = 4, ["raw-monazite"] = 2 }
 local hammered = 0
-for _, x in pairs(the_ores) do
-	local ore = ORE_CHAIN[x]
-	local raw, crushed = "raw-" .. x, "crushed-" .. x
-	local mult
-	local mac = data.raw.recipe[crushed]
-	if mac and data.raw.item[raw] then
-		for _, res in pairs(mac.results or {}) do
-			if res.name == crushed then mult = math.max(1, math.floor(res.amount / 2)) end
+local macerated = {}
+for rname, r in pairs(data.raw.recipe) do
+	if r.category == "lv-macerator-recipes" and not r.hidden and #(r.ingredients or {}) == 1 then
+		local raw = r.ingredients[1].name or ""
+		if raw:sub(1, 4) == "raw-" and data.raw.item[raw] and r.ingredients[1].amount == 1
+			and not FORK_ORE_HAMMER_SKIP[raw] then
+			for _, res in pairs(r.results or {}) do
+				if (res.name or ""):sub(1, 8) == "crushed-" and data.raw.item[res.name] and res.amount then
+					macerated[#macerated + 1] = { raw, res.name, math.max(1, math.floor(res.amount / 2)), rname }
+				end
+			end
 		end
 	end
+end
+table.sort(macerated, function(a, b) return a[4] < b[4] end)
+local byproducts = 0
+for _, s in pairs(macerated) do
+	local out = FORK_ORE_HAMMER_GEM[s[1]] or s[2]
+	local name = made(recipe{ name = "hammering-" .. s[1], category = "lv-forge-hammer-recipes", time = 0.5, main = out,
+		ingredients = { item(s[1]) }, results = { item(out, s[3]) } })
+	unlock_after(name, { machine_techs("lv-forge-hammer-recipes"), item_techs(s[1]) })
+	hammered = hammered + 1
+	local ore = ORE_CHAIN[s[1]:sub(5)]
+	local byp = RAW_BYPRODUCT[s[1]] or (ore and (ore.byproducts[1] or ore.dust))
+	if byp then
+		byp = BYPRODUCT_GEM[byp] or byp
+		local amount = 1
+		if PGM_OUTPUT[byp] and data.raw.item[PGM_OUTPUT[byp]] then byp, amount = PGM_OUTPUT[byp], 2 end
+		local mac = data.raw.recipe[s[4]]
+		table.insert(mac.results, item(byp, amount, 0.05 * (BYPRODUCT_MULT[s[1]] or 1)))
+		mac.main_product = s[2]
+		byproducts = byproducts + 1
+	else
+		log("FORK-ORE-CHAIN: no byproduct known for the macerator recipe " .. s[4])
+	end
+end
+log("FORK-ORE-CHAIN: " .. byproducts .. " raw ore macerator recipes with GT's byproduct")
+--- issue #202: cassiterite dust, new with its own crushed ore, decomposes in the electrolyzer
+unlock_after(decompose_of["cassiterite-dust"], { machine_techs("lv-electrolyzer-recipes"), item_techs("cassiterite-dust") })
+for _, x in pairs(the_ores) do
+	local ore = ORE_CHAIN[x]
+	local crushed = "crushed-" .. x
 	local steps = {
 		{ crushed, "impure-" .. x .. "-dust", 1 },
 		{ "purified-" .. x, "pure-" .. x .. "-dust", 1 },
 		{ "centrifuged-" .. x, ore.dust, 1 },
 	}
-	if mult then table.insert(steps, 1, { raw, crushed, mult }) end
 	for _, s in pairs(steps) do
 		local name = made(recipe{ name = "hammering-" .. s[1], category = "lv-forge-hammer-recipes", time = 0.5, main = s[2],
 			ingredients = { item(s[1]) }, results = { item(s[2], s[3]) } })

@@ -149,7 +149,7 @@ def remove_path(p):
         os.rmdir(p) if os.name == "nt" and p.is_dir() else p.unlink()
     elif p.is_file():
         p.unlink()
-    else:
+    elif p.exists():   # a run whose load failed leaves no mod-settings.dat
         shutil.rmtree(p)
 
 
@@ -646,6 +646,70 @@ def check_ore_o3_o4(m):
     info = (f"{len(seps)} ores in the electromagnetic separator, {sifts} gem ores sifted, {autos} autoclave recipes, "
             f"{hammers} forge hammer steps, {engraves} laser engraver steps")
     return info, out
+MACERATOR_CAT, HAMMER_CAT = "lv-macerator-recipes", "lv-forge-hammer-recipes"
+def check_ore_hammer(sec):
+    """Issue #202 (prototypes/155-fork-ore-chain.lua, phase O4): GTNH's raw ore recipes (ProcessingRawOre.java). A raw ore
+    with a macerator recipe to a crushed item (2 x the ore multiplier) needs a forge hammer recipe with half the yield, of
+    the same crushed item or of GT's gem (FORK_ORE_HAMMER_GEM, section HAMMERGEM), unless it is in the allow-list
+    FORK_ORE_HAMMER_SKIP with its reason (an entry that has a hammer recipe or no macerator recipe fails too); the
+    macerator recipe has one byproduct at 5 % x GT's byproduct multiplier (1, 2 or 4); a raw ore that the forge hammer or
+    any other recipe crushes needs a macerator recipe. Amounts from the section BALANCE. Returns (info line, problems)."""
+    allow = {r[0]: r[1] for r in sec.get("HAMMERSKIPOK", [])}
+    gems = {r[0]: r[1] for r in sec.get("HAMMERGEM", [])}
+    mac, ham, other = {}, {}, {}   # raw ore -> [(recipe, results)]
+    for row in sec.get("BALANCE", []):
+        o = json.loads("	".join(row))
+        if o.get("kind") != "recipe" or o.get("hidden") or o["name"].startswith("recycling-"):
+            continue
+        ing = o.get("ingredients") or []
+        if len(ing) != 1 or ing[0]["type"] != "item" or not ing[0]["name"].startswith("raw-") or ing[0].get("amount") != 1:
+            continue
+        res = [r for r in o.get("results") or [] if r["type"] == "item"]
+        crushes = any(r["name"].startswith("crushed-") for r in res)
+        if o["category"] == MACERATOR_CAT and crushes:
+            mac.setdefault(ing[0]["name"], []).append((o["name"], res))
+        elif o["category"] == HAMMER_CAT:
+            ham.setdefault(ing[0]["name"], []).append((o["name"], res))
+        elif crushes:
+            other.setdefault(ing[0]["name"], []).append((o["name"], res))
+    out, pairs_ok, byp_ok = [], 0, 0
+    for raw in sorted(set(ham) | set(other)):
+        if raw not in mac:
+            names = sorted(r[0] for r in ham.get(raw, []) + other.get(raw, []))
+            out.append(f"{raw}: crushed by {', '.join(names)} but no macerator recipe (GTNH: every ore is macerated)")
+    for raw, macs in sorted(mac.items()):
+        if raw in allow:
+            if raw in ham:
+                out.append(f"{raw}: in FORK_ORE_HAMMER_SKIP but crushed by {', '.join(h[0] for h in ham[raw])} (remove the entry)")
+            continue
+        for name, res in macs:
+            byp = [r for r in res if not r["name"].startswith("crushed-")]
+            if len(byp) == 1 and round((byp[0].get("probability") or 1) / 0.05, 6) in (1, 2, 4):
+                byp_ok += 1
+            else:
+                out.append(f"{name}: byproducts {[(r['name'], r.get('probability')) for r in byp]} (GTNH: the first "
+                           f"byproduct at 5 % x the byproduct multiplier)")
+        if raw not in ham:
+            out.append(f"{raw}: macerated by {', '.join(m[0] for m in macs)} but no forge hammer recipe (GTNH: every ore, "
+                       f"half the macerator's yield; or add it to FORK_ORE_HAMMER_SKIP with the reason)")
+            continue
+        for hname, hres in ham[raw]:
+            for mname, mres in macs:
+                crushed = next(r for r in mres if r["name"].startswith("crushed-"))
+                want = gems.get(raw, crushed["name"])
+                if len(hres) != 1 or hres[0]["name"] != want or hres[0]["amount"] * 2 != crushed["amount"]:
+                    out.append(f"{hname}: {[(r['name'], r['amount']) for r in hres]}, the macerator's {mname} "
+                               f"{crushed['amount']:g} {crushed['name']} (GTNH: half as many, of {want})")
+                else:
+                    pairs_ok += 1
+    for raw in sorted(allow):
+        if raw not in mac:
+            out.append(f"{raw}: in FORK_ORE_HAMMER_SKIP but no macerator recipe crushes it (remove the entry)")
+    for raw, gem in sorted(gems.items()):
+        if raw not in ham:
+            out.append(f"{raw}: in FORK_ORE_HAMMER_GEM but no forge hammer recipe takes it (remove the entry)")
+    return (f"{len(mac)} raw ores macerated to a crushed ore ({byp_ok} recipes with GT's byproduct), {pairs_ok} with a "
+            f"forge hammer recipe of half the yield ({len(gems)} of them gems), {len(allow)} in FORK_ORE_HAMMER_SKIP"), out
 # Issue #164: the tier circuit items up to UV that the variant recipes (processor, assembly, supercomputer, mainframe)
 # share; above UV each tier item has one recipe (the mainframe of its line)
 CIRCUIT_TIER_ITEMS = {"electronic-circuit", "advanced-circuit", "processing-unit", "ev-circuit", "iv-circuit",
@@ -1020,6 +1084,10 @@ def check(a):
     recycle_info, recycling = check_recycling(m, sec)
     print(f"\nseparator, gems and forge hammer of the ore chain (issues #187, #188): {o34_info}")
     report("separator, gem and forge hammer steps that differ from GTNH (prototypes/155-fork-ore-chain.lua)", ore_o34)
+    hammer_info, ore_hammer = check_ore_hammer(sec)
+    print(f"\nraw ore crushing in the macerator and the forge hammer (issue #202): {hammer_info}")
+    report("raw ores whose macerator and forge hammer crushing differ from GTNH (prototypes/155-fork-ore-chain.lua)",
+           ore_hammer)
     print(f"\ncircuit variant recipes up to UV (issue #164): {circuit_n}")
     report("circuit recipes without their own icon (issue #164)", circuit_icons)
     report("platinum group dusts made outside the platinum line (issue #199)", pgm_dusts)
@@ -1048,7 +1116,7 @@ def check(a):
         print(f"\nbalance data written to {a.balance_out} (recipes, machines, technologies as JSON)")
     ok = not (files or [s for s in sprites if not s.startswith("(")] or uncraft or menu or required or unresearchable
               or new_drafts or fluid_problems or locked or one_pack or fluid_steps or microminer or table_only
-              or extractor_split or ore_chain or ore_baths or ore_o34
+              or extractor_split or ore_chain or ore_baths or ore_o34 or ore_hammer
               or circuit_icons or pgm_dusts or recycling)
     print("\nRESULT:", "OK" if ok else "PROBLEMS FOUND")
     return 0 if ok else 1
@@ -1095,7 +1163,7 @@ def runtime(a):
     print(f"benchmark: {ran.group(0) if ran else 'did not run'}")
     # the ME network's runtime tests are in me-network since issue #83 (its tools/devcheck)
     tests = (("MOLD", "mold test"), ("POWER", "power test"), ("FUEL", "fuel check test"), ("COOLED", "cooled fluid test"),
-             ("TIERS", "turbine tier test"), ("RECIPES", "recipe test"), ("STEAM", "steam turbine test"), ("CHAIN", "nuclear chain test"), ("LSC", "supercapacitor test"), ("LSUP", "supercapacitor upgrade test"), ("MELT", "melt and cast test"), ("OFFER", "offered recipes test"), ("VICTORY", "victory test"),
+             ("TIERS", "turbine tier test"), ("RECIPES", "recipe test"), ("CRUSH", "raw ore crushing test"), ("STEAM", "steam turbine test"), ("CHAIN", "nuclear chain test"), ("LSC", "supercapacitor test"), ("LSUP", "supercapacitor upgrade test"), ("MELT", "melt and cast test"), ("OFFER", "offered recipes test"), ("VICTORY", "victory test"),
              ("POSTVICTORY", "post-victory test"))
     for key, label in tests:
         m = re.search(rf"DEVCHECK-RUNTIME-{key} (.*)", log)

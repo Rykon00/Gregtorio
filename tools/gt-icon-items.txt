@@ -26,6 +26,8 @@ bio-processor-supercomputer
 bioware-printed-circuit-board
 black-plutonium-ingot
 callisto-ice-dust
+cassiterite-dust
+centrifuged-cassiterite
 chromnorox-dust
 chromnorox-ingot
 chromnorox-superconductive-wire
@@ -133,6 +135,7 @@ hypocosmium-dust
 hypocosmium-ingot
 hypocosmium-superconductive-wire
 hypocosmium-wire
+impure-cassiterite-dust
 infinity-foil
 infinity-frame
 infinity-gear
@@ -274,6 +277,8 @@ platinum-residue
 platinum-salt
 potassium-disulfate
 ppic-wafer
+pure-cassiterite-dust
+purified-cassiterite
 qpic-wafer
 quantium-cable
 quantium-dust

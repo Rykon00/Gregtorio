@@ -11,6 +11,8 @@
 --- their tier and return the cooled fluid of the plasma they burnt.
 --- Recipes of issue #35: grades 7 and 8, FPIC/APIC wafers and chips, complex SMDs and the recipes that
 --- use them are crafted once each (setup_recipe_test).
+--- Raw ore crushing (issue #202): with the unlocking technology researched (bedrockium for Raw Borax), the macerator and
+--- the forge hammers (the steam one included) crush Raw Borax, Raw Tin, Raw Cassiterite and Raw Platinum, the hammer half.
 --- Steam turbines (issue #97): the large and the high pressure steam turbine make their GT output, burn their GT flow
 --- and give back distilled water and steam through output hatches; the wrong steam stops them; the multiblocks of
 --- issue #97 can be blueprinted and mined.
@@ -33,6 +35,7 @@ local function tests_running()
 	check(storage.cooled and storage.cooled.done, "cooled fluid")
 	check(storage.tiers and storage.tiers.done, "turbine tiers")
 	check(storage.recipe_test and storage.recipe_test.done, "recipes of issue #35")
+	check(storage.crush and storage.crush.done, "raw ore crushing")
 	check(storage.steam and storage.steam.done, "steam turbines")
 	check(storage.chain and storage.chain.done, "nuclear chain")
 	check(storage.lsc and storage.lsc.done, "supercapacitor")
@@ -904,6 +907,128 @@ function recipe_test()
 	end
 end
 
+--- Raw ore crushing (issue #202, prototypes/155-fork-ore-chain.lua phase O4): with only the technology that unlocks each
+--- recipe researched by script (Raw Borax's: bedrockium, also the technology of its only source), the LV macerator crushes
+--- the raw ore and the forge hammers do through hammering-<raw ore>, with half the macerator's crushed ores. Borax in every
+--- forge hammer (the steam one on steam put into its energy box), tin, cassiterite, platinum and ruby (the hammer gives GT's
+--- gem) in the LV and the steam one.
+--- One raw ore per machine; once a machine crafts, its progress is set close to the end (the macerator takes 20 s).
+local CR_Y, CR_X = -350, -370
+local CR_DEADLINE = 900
+local CR = {
+	--  raw ore            macerator recipe        hammer recipe                 technology   every hammer  hammer gives
+	{ "raw-borax",       "crushed-borax",       "hammering-raw-borax",        "bedrockium", true },
+	{ "raw-tin",         "macerating-raw-tin",  "hammering-raw-tin" },
+	{ "raw-cassiterite", "crushed-cassiterite", "hammering-raw-cassiterite" },
+	{ "raw-platinum",    "crushed-platinum",    "hammering-raw-platinum" },
+	{ "raw-ruby",        "crushed-ruby",        "hammering-raw-ruby",         nil,         nil,          "ruby" },
+}
+
+local function cr_techs(recipe)
+	local out = {}
+	for tname, t in pairs(prototypes.technology) do
+		for _, e in pairs(t.effects) do
+			if e.type == "unlock-recipe" and e.recipe == recipe then out[#out + 1] = tname end
+		end
+	end
+	table.sort(out)
+	return out
+end
+
+function setup_crush_test(s)
+	local fails = {}
+	storage.crush = { m = {}, ok = {}, researched = {} }
+	local st = storage.crush
+	local force = game.forces.player
+	local hammers = {}
+	for name, p in pairs(prototypes.get_entity_filtered{ { filter = "type", type = "assembling-machine" } }) do
+		if p.crafting_categories["lv-forge-hammer-recipes"] and p.items_to_place_this and #p.items_to_place_this > 0 then
+			hammers[#hammers + 1] = name
+		end
+	end
+	table.sort(hammers)
+	local x = CR_X
+	for _, def in ipairs(CR) do
+		local ok, err = pcall(function()
+			local mac, ham = prototypes.recipe[def[2]], prototypes.recipe[def[3]]
+			assert(mac and ham, "no recipe " .. (mac and def[3] or def[2]))
+			local mac_out, ham_out = mac.products[1], ham.products[1]
+			assert(mac.ingredients[1].name == def[1] and ham.ingredients[1].name == def[1], "the recipes do not take " .. def[1])
+			assert(ham_out.name == (def[6] or mac_out.name) and ham_out.amount * 2 == mac_out.amount, def[3] .. " gives " .. ham_out.amount
+				.. " " .. ham_out.name .. ", " .. def[2] .. " " .. mac_out.amount .. " " .. mac_out.name .. " (GTNH: half)")
+			for _, r in pairs({ def[2], def[3] }) do
+				local techs = cr_techs(r)
+				assert(#techs > 0, "no technology unlocks " .. r)
+				if def[4] then
+					assert(#techs == 1 and techs[1] == def[4], r .. " is unlocked by " .. table.concat(techs, ", ") .. ", not " .. def[4])
+				end
+				force.technologies[techs[1]].researched = true
+				st.researched[techs[1]] = true
+				assert(force.recipes[r].enabled, r .. " not enabled after researching " .. techs[1])
+			end
+			local machines = { { "lv-macerator", def[2] } }
+			for _, h in pairs(def[5] and hammers or { "steam-forge-hammer", "lv-forge-hammer" }) do
+				machines[#machines + 1] = { h, def[3] }
+			end
+			for _, m in pairs(machines) do
+				local e = s.create_entity{ name = m[1], position = { x, CR_Y }, force = "player", raise_built = true }
+				if e.prototype.electric_energy_source_prototype then
+					s.create_entity{ name = "electric-energy-interface", position = { x, CR_Y + 7 }, force = "player" }
+					s.create_entity{ name = "substation", position = { x + 3, CR_Y + 7 }, force = "player" }
+				end
+				e.set_recipe(m[2])
+				assert(e.insert{ name = def[1], count = 1 } == 1, m[1] .. " took no " .. def[1])
+				st.m[#st.m + 1] = { e = e, recipe = m[2], machine = m[1], product = prototypes.recipe[m[2]].products[1] }
+				x = x + 9
+			end
+		end)
+		if not ok then fails[#fails + 1] = "crush test " .. def[1] .. ": " .. tostring(err) end
+	end
+	st.hammers = #hammers
+	return fails
+end
+
+function crush_test()
+	local st = storage.crush
+	if not st or st.done then return end
+	local pending = {}
+	for i, c in pairs(st.m) do
+		local e = c.e
+		if not st.ok[i] then
+			if not e.valid then
+				pending[#pending + 1] = c.recipe .. " in " .. c.machine .. " (machine gone)"
+			else
+				local made = e.get_inventory(defines.inventory.crafter_output).get_item_count(c.product.name)
+				if made >= c.product.amount then
+					st.ok[i] = made == c.product.amount or (c.recipe .. " in " .. c.machine .. " made " .. made)
+				else
+					if not e.prototype.electric_energy_source_prototype then
+						pcall(function() e.insert_fluid{ name = "steam", amount = 100 } end)
+					end
+					if e.crafting_progress > 0 and e.crafting_progress < 0.999 then e.crafting_progress = 0.999 end
+					local status
+					for name, v in pairs(defines.entity_status) do if e.status == v then status = name end end
+					pending[#pending + 1] = c.recipe .. " in " .. c.machine .. " (" .. tostring(status) .. ", made " .. made .. ")"
+				end
+			end
+		end
+	end
+	if #pending > 0 and game.tick <= CR_DEADLINE then return end
+	st.done = true
+	local problems, n = {}, 0
+	for _, v in pairs(st.ok) do
+		if v == true then n = n + 1 else problems[#problems + 1] = v end
+	end
+	if #pending > 0 then problems[#problems + 1] = #pending .. " machines made nothing: " .. table.concat(pending, ", ") end
+	if #st.m < 2 + 3 * #CR or st.hammers < 2 then problems[#problems + 1] = "only " .. #st.m .. " machines set up, " .. st.hammers .. " forge hammers" end
+	local techs = {}
+	for t in pairs(st.researched) do techs[#techs + 1] = t end
+	table.sort(techs)
+	for _, p in pairs(problems) do log("DEVCHECK-RUNTIME-FAIL crush test: " .. p) end
+	log("DEVCHECK-RUNTIME-CRUSH " .. (#problems == 0 and "ok" or "failed") .. " (" .. n .. " of " .. #st.m .. " crushed by tick "
+		.. game.tick .. ", " .. st.hammers .. " forge hammers; researched " .. table.concat(techs, ", ") .. ")")
+end
+
 local MOLD_Y = 120
 local MOLD_RECIPE = "glass-alloy-smelter"
 local MOLD_DEADLINE = 900                               -- ticks for the first glass with the mold in (361 needed)
@@ -1575,6 +1700,7 @@ script.on_nth_tick(10, function()
 	if not (storage.cooled and storage.cooled.done) then cooled_test() end
 	if not (storage.tiers and storage.tiers.done) then tier_test() end
 	if not (storage.recipe_test and storage.recipe_test.done) then recipe_test() end
+	crush_test()
 	steam_test()
 	chain_test()
 	lsc_test()
@@ -1643,6 +1769,7 @@ script.on_init(function()
 	for _, f in pairs(setup_cooled_test(s)) do fails[#fails + 1] = f end
 	for _, f in pairs(setup_tier_test(s)) do fails[#fails + 1] = f end
 	for _, f in pairs(setup_recipe_test(s)) do fails[#fails + 1] = f end
+	for _, f in pairs(setup_crush_test(s)) do fails[#fails + 1] = f end
 	for _, f in pairs(setup_steam_test(s)) do fails[#fails + 1] = f end
 	for _, f in pairs(setup_chain_test(s)) do fails[#fails + 1] = f end
 	for _, f in pairs(setup_lsc_test(s)) do fails[#fails + 1] = f end
