@@ -729,6 +729,10 @@ local RT = {
 	{ "iv-forge-hammer", "sand-forge-hammer" },
 	-- issue #171: the Arc Furnace makes annealed copper (copper and oxygen)
 	{ "lv-arc-furnace", "annealed-copper-ingot" },
+	-- issue #190 (prototypes/157-fork-recycling.lua): an item back into its materials in the three machines
+	{ "lv-macerator", "recycling-macerator-lv-motor" },
+	{ "lv-arc-furnace", "recycling-arc-furnace-lv-machine-casing" },
+	{ "lv-fluid-extractor", "recycling-fluid-extractor-lv-machine-casing" },
 	{ "iv-arc-furnace", "annealed-copper-ingot" },
 	-- issue #173: the Forming Press presses the printed circuits of the ME processors
 	{ "lv-forming-press", "printed-silicon" },

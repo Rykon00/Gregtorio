@@ -132,6 +132,8 @@ require("prototypes.154-fork-greenhouse")
 require("prototypes.155-fork-ore-chain")
 --- issue #164: the circuit variant recipes show the icon of their GTNH item (156)
 require("prototypes.156-fork-circuit-icons")
+--- issue #190: GTNH's material recycling (macerator, arc furnace, fluid extractor), after every file that makes recipes
+require("prototypes.157-fork-recycling")
 require("prototypes.150-fork-molds")
 require("prototypes.190-fork-manual-labor")
 --- issue #137: fire animations of the stone furnace, the iron furnace and the small coal boiler (after their entities)
