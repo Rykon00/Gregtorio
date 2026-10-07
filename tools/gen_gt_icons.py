@@ -481,6 +481,23 @@ def icon_table(c):
         T[name] = lambda i=i: c.gt(f"{M3}{i}")
     T["planck-processing-unit"] = lambda: c.badge(c.gt(f"{M3}726"), c.gt(f"{M3}730"))
     T["max-circuit"] = lambda: c.gt(f"{CORE}itemPlanckCircuit")
+    # issue #164: the circuit variant recipes up to UV (prototypes/156-fork-circuit-icons.lua), the texture of their GTNH item
+    for name, src in {
+            "electronic-circuit": (M3, 305), "basic-electronic-circuit": (M3, 305), "basic-integrated-circuit": (M1, 701),
+            "microchip": (M3, 78), "microchip-smd": (M3, 78), "microchip-cheap": (M3, 78),
+            "advanced-circuit": (M1, 702), "good-electronic-circuit": (M1, 702), "good-integrated-circuit": (M3, 79),
+            "microprocessor": (M3, 80), "microprocessor-smd": (M3, 80), "microprocessor-cheap": (M3, 80),
+            "processing-unit": (M3, 306), "microprocessor-assembly": (M1, 703), "microprocessor-assembly-smd": (M1, 703),
+            "nanoprocessor": (M3, 82),
+            "microprocessor-supercomputer": (M1, 704), "microprocessor-supercomputer-smd": (M1, 704),
+            "nanoprocessor-assembly": (M3, 83), "quantum-processor": (M3, 85),
+            "microprocessor-mainframe": (M1, 705), "nanoprocessor-supercomputer": (M3, 84),
+            "quantum-processor-assembly": (M3, 86), "crystal-processor": (M3, 89),
+            "nanoprocessor-mainframe": (M1, 706), "quantum-processor-supercomputer": (M3, 87),
+            "crystal-processor-assembly": (M3, 96),
+            "quantum-processor-mainframe": (M3, 88), "crystal-processor-supercomputer": (M3, 90),
+            "crystal-processor-mainframe": (M3, 91)}.items():
+        T[f"circuit-recipe-{name}"] = lambda s=src: c.gt(f"{s[0]}{s[1]}")
     T["crystal-cpu"] = lambda: c.gt(f"{M3}70")
     T["raw-crystal-chip"] = lambda: c.gt(f"{M3}69")
     T["raw-crystal-chip-part"] = lambda: c.gt(f"{M3}74")

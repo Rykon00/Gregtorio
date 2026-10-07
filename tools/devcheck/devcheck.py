@@ -263,7 +263,8 @@ class Model:
             if k == "R":
                 self.R[p[1]] = dict(cat=p[2], en=p[3] == "true", ing=split(p[4]), res=split(p[5]),
                                     fin=kinds(p[4]).count("fluid"), fout=kinds(p[5]).count("fluid"),
-                                    hidden=p[6] == "true", hide_craft=p[7] == "true", sg=p[8], group=p[9])
+                                    hidden=p[6] == "true", hide_craft=p[7] == "true", sg=p[8], group=p[9],
+                                    icon=p[10] if len(p) > 10 else "")
             elif k == "C":
                 self.C[p[1]] = p[3].split(",") if p[3] else []
                 self.CF[p[1]] = (int(p[4]), int(p[5]))
@@ -643,6 +644,24 @@ def check_ore_o3_o4(m):
     info = (f"{len(seps)} ores in the electromagnetic separator, {sifts} gem ores sifted, {autos} autoclave recipes, "
             f"{hammers} forge hammer steps, {engraves} laser engraver steps")
     return info, out
+# Issue #164: the tier circuit items up to UV that the variant recipes (processor, assembly, supercomputer, mainframe)
+# share; above UV each tier item has one recipe (the mainframe of its line)
+CIRCUIT_TIER_ITEMS = {"electronic-circuit", "advanced-circuit", "processing-unit", "ev-circuit", "iv-circuit",
+                      "luv-circuit", "zpm-circuit", "uv-circuit"}
+def check_circuit_icons(m):
+    """Issue #164 (prototypes/156-fork-circuit-icons.lua): every recipe that makes a tier circuit up to UV shows its own
+    icon (GT's texture of the variant it is in GTNH), since the variants share the tier item; recycling and scrap
+    recipes do not count. Returns (number of variant recipes, recipes without their own icon)."""
+    n, out = 0, []
+    for name, r in sorted(m.R.items()):
+        if r["hidden"] or "recycl" in r["cat"] or "recycling" in name or "scrap" in name:
+            continue
+        if CIRCUIT_TIER_ITEMS & set(r["res"]):
+            n += 1
+            if not r["icon"]:
+                out.append(f"{name} ({r['cat']}): makes {', '.join(sorted(CIRCUIT_TIER_ITEMS & set(r['res'])))} without an "
+                           "icon of its own (prototypes/156-fork-circuit-icons.lua, tools/gen_gt_icons.py)")
+    return n, out
 def check_extractor_split(m):
     """Issue #152 (prototypes/151-fork-fluid-extractor.lua): as in GTNH, the Extractor makes items and the Fluid Extractor
     fluids. A recipe of an extractor category with a fluid result, or of a fluid extractor category without one, is in
@@ -945,8 +964,11 @@ def check(a):
     print(f"\nchemical bath washing (issue #186): {bath_n} recipes")
     report("chemical bath washing that differs from GTNH (prototypes/155-fork-ore-chain.lua)", ore_baths)
     o34_info, ore_o34 = check_ore_o3_o4(m)
+    circuit_n, circuit_icons = check_circuit_icons(m)
     print(f"\nseparator, gems and forge hammer of the ore chain (issues #187, #188): {o34_info}")
     report("separator, gem and forge hammer steps that differ from GTNH (prototypes/155-fork-ore-chain.lua)", ore_o34)
+    print(f"\ncircuit variant recipes up to UV (issue #164): {circuit_n}")
+    report("circuit recipes without their own icon (issue #164)", circuit_icons)
     extractor_split = check_extractor_split(m)
     report("extractor recipes in the wrong machine (issue #152: items in the Extractor, fluids in the Fluid Extractor)",
            extractor_split)
@@ -970,7 +992,8 @@ def check(a):
         print(f"\nbalance data written to {a.balance_out} (recipes, machines, technologies as JSON)")
     ok = not (files or [s for s in sprites if not s.startswith("(")] or uncraft or menu or required or unresearchable
               or new_drafts or fluid_problems or locked or one_pack or fluid_steps or microminer or table_only
-              or extractor_split or ore_chain or ore_baths or ore_o34)
+              or extractor_split or ore_chain or ore_baths or ore_o34
+              or circuit_icons)
     print("\nRESULT:", "OK" if ok else "PROBLEMS FOUND")
     return 0 if ok else 1
 
