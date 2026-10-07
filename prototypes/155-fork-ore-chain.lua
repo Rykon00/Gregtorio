@@ -612,11 +612,22 @@ log("FORK-ORE-CHAIN: " .. separations .. " electromagnetic separator recipes")
 ---   forge hammer        exquisite -> 2 flawless -> 2 gems -> 2 flawed -> 2 chipped (3.2 s)
 ---   implosion           3 chipped -> flawed, 3 flawed -> gem, 3 gems -> flawless, 3 flawless -> exquisite, with an
 ---                       explosive (GT: 8 TNT, Gregtorio's iridium plate takes one explosive for GT's 8) (1 s)
----   lathe               exquisite -> 3 lenses + a dust where Gregtorio has the lens (ruby, diamond) (2 min)
----   macerator           the grades back into dust: chipped 1/4 (a 25 % chance, Gregtorio has no small dust of
----                       them), flawed 1/2 (50 %), flawless 2, exquisite 4; the new gems -> 1 dust. Times scaled from
----                       Gregtorio's diamond (2.8 s per gem)
---- Not made: GT's laser engraver steps (3 grades + a lens of the gem's colour), the tiny dark ash of the implosion.
+---                       and 2 tiny piles of dark ash (issue #193)
+---   lathe               exquisite -> 3 lenses + a dust for GT's gem lenses: ruby, emerald, diamond (2 min; the
+---                       emerald and diamond lens are new, issue #193)
+---   laser engraver      3 chipped -> flawed (30 s, LV), 3 flawed -> gem (30 s, MV), 3 gems -> flawless (60 s, HV),
+---                       3 flawless -> exquisite (2 min, EV), with a lens of the gem's colour that stays (issue #193):
+---                       red the ruby lens (ruby), green the emerald lens (emerald, monazite), white the diamond lens
+---                       (diamond, nether quartz). GT's other colours (certus quartz light gray, apatite and lazurite
+---                       cyan, tricalcium phosphate yellow, sodalite and lapis blue) come from lenses of materials
+---                       Gregtorio lacks (sapphire, topaz ...): no engraver steps for them. Gregtorio's laser engraver
+---                       starts at MV: the LV step is in the MV category with its LV time (an MV engraver runs it
+---                       twice as fast, as GT's overclock)
+---   macerator           the grades back into dust: chipped 1 small pile, flawed 2 small piles of the gem's dust
+---                       (new, issue #193; 4 make a dust at the crafting table), flawless 2, exquisite 4 dusts; the new
+---                       gems -> 1 dust. Times scaled from Gregtorio's diamond (2.8 s per gem)
+--- Dark ash (GT's AshDark, issue #193): 9 tiny piles make a dust at the crafting table, the dust -> carbon in the
+--- electrolyzer (GT's electrolyzer recipe of the material, carbon's 6 protons x 2 ticks).
 --------------------------------------------------------------------------------
 local GEMS = {
 	--  ore                         gem item                    table       crystallisable (autoclave)
@@ -635,8 +646,24 @@ local GEMS = {
 --- GT's sifter tables: exquisite, flawless, gem, flawed, chipped, dust (ProcessingCrushedOre.java:90-120)
 local SIFT = { precious = { 0.03, 0.12, 0.45, 0.14, 0.28, 0.35 }, default = { 0.01, 0.04, 0.15, 0.20, 0.40, 0.50 } }
 local GRADES = { "chipped", "flawed", "gem", "flawless", "exquisite" }
-local MACERATE = { chipped = { 1, 0.25 }, flawed = { 1, 0.5 }, gem = { 1 }, flawless = { 2 }, exquisite = { 4 } }
-local LENS = { ruby = "ruby-lens", diamond = "diamond-lens" }
+--- dusts (count, or small piles for the two lower grades)
+local MACERATE = { chipped = { 1, small = true }, flawed = { 2, small = true }, gem = { 1 }, flawless = { 2 }, exquisite = { 4 } }
+--- the lenses the lathe makes from an exquisite gem (GT: the gems whose material keeps the lens prefix)
+local LENS = { ruby = "ruby-lens", emerald = "emerald-lens", diamond = "diamond-lens" }
+--- the lens of the gem's colour for the laser engraver (MaterialsInit.java setColor; GT takes any lens of the colour)
+local ENGRAVER_LENS = { ruby = "ruby-lens", emerald = "emerald-lens", monazite = "emerald-lens",
+	diamond = "diamond-lens", ["nether-quartz"] = "diamond-lens" }
+--- grade -> the engraver category and time of the step up (GT tier: LV, MV, HV, EV; time x the tier's speed)
+local ENGRAVE = { chipped = { "mv-laser-engraver-recipes", 30 }, flawed = { "mv-laser-engraver-recipes", 60 },
+	gem = { "hv-laser-engraver-recipes", 240 }, flawless = { "ev-laser-engraver-recipes", 960 } }
+
+--- issue #193: GT's dark ash, the implosion's waste
+local DARK_TINY, DARK_DUST = "tiny-pile-of-dark-ash-dust", "dark-ash-dust"
+add_item(DARK_TINY, "subgroup-macerator-dust", "z-dark-ash-a")
+add_item(DARK_DUST, "subgroup-macerator-dust", "z-dark-ash-b")
+for _, lens in pairs({ "emerald-lens", "diamond-lens" }) do
+	if not data.raw.item[lens] then add_item(lens, sub_of("ruby-lens", "subgroup-lv-lathe-recipes"), "z-" .. lens) end
+end
 
 local function macerates(name)
 	for rname, r in pairs(data.raw.recipe) do
@@ -672,6 +699,18 @@ for _, g in pairs(GEMS) do
 		unlock_after(name, { machine_techs("lv-sifter-recipes"), techs_of_recipe[purified] })
 		gem_recipes = gem_recipes + 1
 
+		--- issue #193: the small piles of the gem's dust (from chipped and flawed gems)
+		local small = "small-pile-of-" .. x .. "-dust"
+		add_item(small, sub_of(ore.dust, "subgroup-macerator-dust"), "z-" .. small)
+
+		--- the lens first: the engraver steps below need it
+		if LENS[x] and data.raw.item[LENS[x]] then
+			name = made(recipe{ name = LENS[x] .. "-from-exquisite", category = "lv-lathe-recipes", time = 120, main = LENS[x],
+				ingredients = { item(grade.exquisite) }, results = { item(LENS[x], 3), item(ore.dust) } })
+			unlock_after(name, { machine_techs("lv-lathe-recipes"), item_techs(grade.exquisite) })
+			gem_recipes = gem_recipes + 1
+		end
+
 		--- the grades into each other and back into dust
 		for i, k in pairs(GRADES) do
 			local up, down = GRADES[i + 1], GRADES[i - 1]
@@ -684,30 +723,38 @@ for _, g in pairs(GEMS) do
 			if up then
 				name = made(recipe{ name = "implosion-" .. grade[k] .. "-to-" .. up, category = "lv-implosion-compressor-recipes",
 					time = 1, main = grade[up], ingredients = { item(grade[k], 3), item("explosives") },
-					results = { item(grade[up]) } })
+					results = { item(grade[up]), item(DARK_TINY, 2) } })
 				unlock_after(name, { machine_techs("lv-implosion-compressor-recipes"), item_techs(grade[k]),
 					item_techs("explosives") })
 				gem_recipes = gem_recipes + 1
 			end
+			local lens = ENGRAVER_LENS[x]
+			if up and lens then
+				local e = ENGRAVE[k]
+				name = made(recipe{ name = "engraving-" .. grade[k] .. "-to-" .. up, category = e[1], time = e[2],
+					main = grade[up], ingredients = { item(grade[k], 3), item(lens) }, results = { item(grade[up]), item(lens) } })
+				unlock_after(name, { machine_techs(e[1]), item_techs(grade[k]), item_techs(lens) })
+				gem_recipes = gem_recipes + 1
+			end
 			if not macerates(grade[k]) then
 				local mac = MACERATE[k]
-				name = made(recipe{ name = grade[k] .. "-maceration", category = "lv-macerator-recipes", time = 2.8 * mac[1],
-					main = ore.dust, ingredients = { item(grade[k]) }, results = { item(ore.dust, mac[1], mac[2]) } })
-				if k == "chipped" or k == "flawed" then data.raw.recipe[name].energy_required = 2.8 * mac[2] end
+				local out = mac.small and small or ore.dust
+				name = made(recipe{ name = grade[k] .. "-maceration", category = "lv-macerator-recipes",
+					time = mac.small and 0.7 * mac[1] or 2.8 * mac[1], main = out, ingredients = { item(grade[k]) },
+					results = { item(out, mac[1]) } })
 				unlock_after(name, { machine_techs("lv-macerator-recipes"), item_techs(grade[k]) })
 				gem_recipes = gem_recipes + 1
 			end
 		end
-		if LENS[x] and data.raw.item[LENS[x]] then
-			name = made(recipe{ name = LENS[x] .. "-from-exquisite", category = "lv-lathe-recipes", time = 120, main = LENS[x],
-				ingredients = { item(grade.exquisite) }, results = { item(LENS[x], 3), item(ore.dust) } })
-			unlock_after(name, { machine_techs("lv-lathe-recipes"), item_techs(grade.exquisite) })
-			gem_recipes = gem_recipes + 1
-		end
+		name = made(recipe{ name = ore.dust .. "-from-small-piles", category = "crafting", time = 0.5, main = ore.dust,
+			ingredients = { item(small, 4) }, results = { item(ore.dust) } })
+		unlock_after(name, { item_techs(small) })
+		gem_recipes = gem_recipes + 1
 
 		--- PHASE O4, 2: the autoclave grows the gem from impure and pure dust of the crystallisable ores
 		--- (OP/ProcessingDust.java:450-479): 200 L water (here 20) 90 % / 95 % in 100 s, 100 L distilled water (10)
-		--- 95 % / 100 % in 75 s. GT's third variant with molten Void is not made (Gregtorio has no void metal).
+		--- 95 % / 100 % in 75 s. GT's third variant with molten Void is not made: 137-fork-endgame-materials.lua
+		--- removed void metal (a Thaumcraft material) on purpose (issue #193).
 		if g[4] then
 			for _, d in pairs({ { "impure-" .. x .. "-dust", 0.9, 0.95 }, { "pure-" .. x .. "-dust", 0.95, 1 } }) do
 				for _, w in pairs({ { "water", 20, 100, d[2], "" }, { "distilled-water", 10, 75, d[3], "-distilled-water" } }) do
@@ -721,7 +768,15 @@ for _, g in pairs(GEMS) do
 		end
 	end
 end
-log("FORK-ORE-CHAIN: " .. gem_recipes .. " gem recipes (sifter, grades, lenses, autoclave)")
+do
+	local name = made(recipe{ name = DARK_DUST .. "-from-tiny-piles", category = "crafting", time = 0.5, main = DARK_DUST,
+		ingredients = { item(DARK_TINY, 9) }, results = { item(DARK_DUST) } })
+	unlock_after(name, { item_techs(DARK_TINY) })
+	name = made(recipe{ name = DARK_DUST .. "-electrolysis", category = "lv-electrolyzer-recipes", time = 0.6, main = "carbon",
+		ingredients = { item(DARK_DUST) }, results = { item("carbon") } })
+	unlock_after(name, { machine_techs("lv-electrolyzer-recipes"), item_techs(DARK_DUST) })
+end
+log("FORK-ORE-CHAIN: " .. gem_recipes .. " gem recipes (sifter, grades, lenses, engraver, autoclave)")
 
 --------------------------------------------------------------------------------
 --- PHASE O4, 3: forge hammer crushing (OP/ProcessingRawOre.java:201-212, ProcessingDirty.java:43-49,
