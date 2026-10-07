@@ -94,6 +94,12 @@ local tk = {}
 for name, reason in pairs(FORK_RECIPES_TABLE_ONLY or {}) do tk[#tk + 1] = name .. "\t" .. reason end
 section("TABLEONLYOK", tk)
 
+--- Issue #202: the raw ores without a forge hammer recipe on purpose (FORK_ORE_HAMMER_SKIP in
+--- prototypes/155-fork-ore-chain.lua; absent in older versions)
+local hk = {}
+for name, reason in pairs(FORK_ORE_HAMMER_SKIP or {}) do hk[#hk + 1] = name .. "\t" .. reason end
+section("HAMMERSKIPOK", hk)
+
 --- Issue #118 (prototypes/200-fork-material-parts.lua): the material parts in rows by form; the materials without a tier
 --- (absent in older versions)
 local mp = {}
