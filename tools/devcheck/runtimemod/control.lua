@@ -700,6 +700,21 @@ local RT = {
 	{ "lv-macerator", "centrifuged-iron-maceration" },
 	{ "lv-centrifuge", "centrifuging-pure-iron-dust" },
 	{ "lv-electrolyzer", "pyrite-dust-decomposition" },
+	-- issue #186: chemical bath washing with mercury and sodium persulfate
+	{ "lv-chemical-bath", "purified-gold-mercury" },
+	{ "mv-chemical-bath", "purified-iron-sodium-persulfate" },
+	-- issues #187 and #188: the electromagnetic separator, gem sifting and grades, the autoclave, forge hammer crushing
+	-- (the steam forge hammer runs the same category, but the test gives steam machines no steam)
+	{ "lv-electromagnetic-separator", "separating-pure-tin-dust" },
+	{ "iv-electromagnetic-separator", "separating-pure-bastnasite-dust" },
+	{ "lv-sifting-machine", "sifting-purified-ruby" },
+	{ "lv-forge-hammer", "hammering-exquisite-ruby" },
+	{ "hv-implosion-compressor", "implosion-chipped-emerald-to-flawed" },
+	{ "lv-lathe", "ruby-lens-from-exquisite" },
+	{ "lv-macerator", "flawless-lapis-maceration" },
+	{ "mv-autoclave", "autoclave-pure-lapis-dust-distilled-water" },
+	{ "lv-forge-hammer", "hammering-raw-iron" },
+	{ "lv-forge-hammer", "hammering-centrifuged-copper" },
 	-- issue #170 (prototypes/101-fork-machines.lua): the electric Forge Hammer with a plate and a new hammer recipe
 	{ "lv-forge-hammer", "iron-plate-forge-hammer" },
 	{ "iv-forge-hammer", "sand-forge-hammer" },

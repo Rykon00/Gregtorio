@@ -539,6 +539,55 @@ end
 
 
 --------------------------------------------------------------------------------
+--- 2h) ELECTROMAGNETIC SEPARATOR, LV TO EV (issue #187, ore chain phase O3)
+---    GT New Horizons' Electromagnetic Separator ("Basic Electromagnetic Separator", LoaderMetaTileEntities.java:4626,
+---    recipe map electroMagneticSeparatorRecipes): the pure dusts of the ores tagged gold, iron or neodymium into dust and
+---    a small dust and a nugget of that metal (prototypes/155-fork-ore-chain.lua makes the recipes). Machine recipe as GT's
+---    (MTERecipeLoader.java registerElectromagneticSeparator, "VWZ", "WMS", "CWZ": a conveyor, 4 cables, two electric
+---    coils of the tier (GTModHandler.java:821: 2x tin wire, 2x and 4x copper wire, 8x annealed copper wire, here as
+---    single wires), the hull, an electromagnetic rod (iron, steel, steel, neodymium) and a circuit). Power EU24, as GT's
+---    24 EU/t. LV with Ore Washing (the first pure dusts of tagged ores: tin, iron, vanadium magnetite), MV to EV with the
+---    machines of their tier. Sprites: tools/gen_sprites.py (electromagnetic_separator_lv_mv); IV to MAX through
+---    IV_BASIC_MACHINES.
+--------------------------------------------------------------------------------
+
+recipe_category_and_subgroup("lv-electromagnetic-separator-recipes")
+do
+	local EMS = {
+		--  tier  path                            energy    speed  cable             circuit               coil                        rod              tech
+		{ "lv", "lv-electromagnetic-separator", EU24_LV, 1, "tin-cable",       "electronic-circuit", { "tin-wire", 4 },             "iron-stick",    "ore-washing" },
+		{ "mv", "mv-electromagnetic-separator", EU24_MV, 2, "copper-cable",    "advanced-circuit",   { "copper-wire", 4 },          "steel-rod",     "mv-machines" },
+		{ "hv", "mv-electromagnetic-separator", EU24_HV, 4, "gold-cable",      "processing-unit",    { "copper-wire", 8 },          "steel-rod",     "hv-machines" },
+		{ "ev", "mv-electromagnetic-separator", EU24_EV, 8, "aluminium-cable", "ev-circuit",         { "annealed-copper-wire", 16 }, "neodymium-rod", "ev-machines" },
+	}
+	for _, a in ipairs(EMS) do
+		local t, path, energy, speed, cable, circuit, coil, rod, tech = table.unpack(a)
+		local name = t .. "-electromagnetic-separator"
+		make_electric_machine(name, name, path, { "lv-electromagnetic-separator-recipes" }, "fr-electromagnetic-separator", energy, speed, 4, 0.5, 3, 3)
+		create_item{
+			name = name,
+			subgroup = t .. "-age-production-machine",
+			ingredients = {
+				{ type = "item", name = t .. "-conveyor-module", amount = 1 },
+				{ type = "item", name = cable, amount = 4 },
+				{ type = "item", name = coil[1], amount = coil[2] },
+				{ type = "item", name = t .. "-machine-hull", amount = 1 },
+				{ type = "item", name = rod, amount = 1 },
+				{ type = "item", name = circuit, amount = 1 },
+			},
+			place_result = name,
+			stack_size = 10,
+		}
+		fork_add_unlock(tech, name)
+	end
+	data.raw["assembling-machine"]["lv-electromagnetic-separator"].next_upgrade = "mv-electromagnetic-separator"
+	data.raw["assembling-machine"]["mv-electromagnetic-separator"].next_upgrade = "hv-electromagnetic-separator"
+	data.raw["assembling-machine"]["hv-electromagnetic-separator"].next_upgrade = "ev-electromagnetic-separator"
+end
+
+
+
+--------------------------------------------------------------------------------
 --- 3) IV BASIC MACHINES
 ---    Copy of the EV machine: double speed, double power draw, IV categories added,
 ---    recipe = EV recipe with every tiered component shifted one tier up.
@@ -640,7 +689,7 @@ IV_BASIC_MACHINES = {
 	"wiremill", "bending-machine", "extruder", "rock-crusher", "lathe", "macerator", "centrifuge",
 	"extractor", "electrolyzer", "assembling-machine", "cutting-machine",
 	"canning-machine", "mixer", "ore-washer", "laser-engraver", "fluid-solidifier", "chemical-bath",
-	"polarizer", "circuit-assembler", "autoclave", "alloy-smelter", "compressor", "forge-hammer", "arc-furnace", "forming-press", "electric-furnace", "sifting-machine", "thermal-centrifuge",
+	"polarizer", "circuit-assembler", "autoclave", "alloy-smelter", "compressor", "forge-hammer", "arc-furnace", "forming-press", "electric-furnace", "sifting-machine", "thermal-centrifuge", "electromagnetic-separator",
 }
 --- Multiblocks that come as an upgrade of the EV version (graphics of the EV version with energy hatches of the tier)
 IV_UPGRADE_MACHINES = {

@@ -40,7 +40,7 @@ BASIC_MACHINES = [
     "extractor", "electrolyzer", "assembling-machine", "cutting-machine", "canning-machine", "mixer", "ore-washer",
     "laser-engraver", "fluid-solidifier", "chemical-bath", "polarizer", "circuit-assembler", "autoclave",
     "alloy-smelter", "compressor", "forge-hammer", "arc-furnace", "forming-press",
-    "electric-furnace", "sifting-machine", "thermal-centrifuge",
+    "electric-furnace", "sifting-machine", "thermal-centrifuge", "electromagnetic-separator",
 ]
 # issue #152: the Fluid Extractors are copies of the Extractor (151); from IV up they are drawn like the other basic
 # machines from their LV and MV sprites (fluid_extractor_lv_ev), with the Extractor's frame count
@@ -50,7 +50,7 @@ EV_FRAMES_OF = {FLUID_EXTRACTOR: "extractor"}
 # to read) and play the 5 frames of the Steam Forge Hammer's strip; their LV and MV sprites come from it
 # (forge_hammer_lv_mv)
 EV_FRAMES = {"forge-hammer": 5, "arc-furnace": 1, "forming-press": 1, "electric-furnace": 1,
-             "sifting-machine": 4, "thermal-centrifuge": 1}
+             "sifting-machine": 4, "thermal-centrifuge": 1, "electromagnetic-separator": 4}
 # issue #171: the Arc Furnace has no upstream picture either: its LV and MV ones are the compressor's frame with GT's arc
 # furnace overlay in the window (arc_furnace_lv_mv), one frame
 ARC_OVERLAY = "gregtech:basicmachines/arc_furnace/OVERLAY_FRONT"
@@ -68,6 +68,9 @@ SIFTER_WINDOW = (17, 17, 71, 55)  # the window of the LV and MV lathe
 # issue #185: the Thermal Centrifuge: the fluid solidifier's frame with GT's thermal centrifuge front
 THERMAL_OVERLAY = "gregtech:basicmachines/thermal_centrifuge/OVERLAY_FRONT"
 THERMAL_WINDOW = (16, 22, 71, 66)  # the window of the LV and MV fluid solidifier
+# issue #187: the Electromagnetic Separator: the polarizer's frame (its magnet poles) with GT's separator front between them
+EMS_OVERLAY = "gregtech:basicmachines/electromagnetic_separator/OVERLAY_FRONT"
+EMS_WINDOW = (21, 16, 64, 44)  # the upper window of the LV and MV polarizer, between its poles
 # issue #152: the fluid extractor's icons carry a molten fluid in the bottom right corner, so they differ from the
 # extractor's in the inventory; its LV to EV sprites are the extractor's with the liquid in the tubes molten
 FLUID_BADGE_MACHINES = {"fluid-extractor"}
@@ -642,6 +645,12 @@ def thermal_centrifuge_lv_mv(gt):
     framed_overlay_lv_mv(gt, "thermal-centrifuge", "fluid-solidifier", THERMAL_WINDOW, THERMAL_OVERLAY, glow=True, crop=True)
 
 
+def electromagnetic_separator_lv_mv(gt):
+    """Issue #187: upstream has no electromagnetic separator: the LV and MV polarizer's frame with GT's separator front
+    (4 frames while it works) between the poles"""
+    framed_overlay_lv_mv(gt, "electromagnetic-separator", "polarizer", EMS_WINDOW, EMS_OVERLAY, crop=True, animated=True)
+
+
 def fluid_extractor_lv_ev():
     """Issue #152: the LV and MV fluid extractor sprites (HV and EV use MV's, like the extractor) are upstream's
     extractor with the liquid in its tubes molten; the idle picture keeps a low melt in the tubes, so the two machines
@@ -909,6 +918,7 @@ def main():
     electric_furnace_lv_mv(a.gt) # and the LV and MV electric furnace of the electric furnace's
     sifting_machine_lv_mv(a.gt)  # and the LV and MV sifting machine of the sifting machine's
     thermal_centrifuge_lv_mv(a.gt)  # and the LV and MV thermal centrifuge of the thermal centrifuge's
+    electromagnetic_separator_lv_mv(a.gt)  # and the LV and MV separator of the separator's
     for tier in ("IV", "LuV", "ZPM", "UV", "UHV", "UEV", "UIV", "UMV", "UXV", "MAX"):
         for base in BASIC_MACHINES + [FLUID_EXTRACTOR]:
             basic_machine(a.gt, base, tier)
