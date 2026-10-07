@@ -134,6 +134,7 @@ MATERIALS = {
     "infinity-catalyst": "InfinityCatalyst", "andradite": "Andradite", "red-garnet": "GarnetRed",
     "yellow-garnet": "GarnetYellow", "lignite": "Lignite", "magnetite": "Magnetite",
     "netherrack": "Netherrack", "pyrite": "Pyrite", "quartzite": "Quartzite",
+    "dark-ash": "DarkAsh",  # issue #193
 }
 
 # fork part name -> GT OrePrefix texture; "{m}" is the material
@@ -144,6 +145,8 @@ PARTS = [
     # issues #187 and #188: small dusts of the separator, the gem grades of the sifter, the gems Gregtorio lacked
     ("small-pile-of-{m}-dust", "dustSmall"), ("chipped-{m}", "gemChipped"), ("flawed-{m}", "gemFlawed"),
     ("flawless-{m}", "gemFlawless"), ("exquisite-{m}", "gemExquisite"), ("{m}-gem", "gem"),
+    # issue #193: dark ash, the lenses of the laser engraver
+    ("tiny-pile-of-{m}-dust", "dustTiny"), ("{m}-lens", "lens"),
     ("hot-{m}-ingot", "ingotHot"), ("superdense-{m}-plate", "plateSuperdense"), ("dense-{m}-plate", "plateDense"),
     ("long-{m}-rod", "stickLong"), ("large-{m}-gear", "gearGt"), ("fine-{m}-wire", "wireFine"),
     ("{m}-superconductive-wire", "@superconductor"), ("{m}-wire-4x", "@wire4"), ("{m}-wire", "@wire"),

@@ -555,6 +555,10 @@ ORE_GEMS = {"ruby": ("ruby", False), "emerald": ("emerald", False), "diamond": (
             "apatite": ("apatite-gem", True), "tricalcium-phosphate": ("tricalcium-phosphate-gem", False),
             "lazurite": ("lazurite-gem", True), "sodalite": ("sodalite-gem", True), "lapis": ("lapis-lazuli", True),
             "monazite": ("monazite-gem", True)}
+# Issue #193: the laser engraver steps of the grades, with the lens of the gem's colour (red ruby, green emerald, white
+# diamond; GT's other colours need lenses of materials Gregtorio lacks)
+ORE_GEM_LENS = {"ruby": "ruby-lens", "emerald": "emerald-lens", "monazite": "emerald-lens", "diamond": "diamond-lens",
+                "nether-quartz": "diamond-lens"}
 def check_ore_o3_o4(m):
     """Issues #187 and #188 (prototypes/155-fork-ore-chain.lua, phases O3 and O4): the electromagnetic separator works
     exactly the pure dusts of ORE_SEPARATOR (dust, small dust and nugget of the metal); every ore of ORE_GEMS is sifted
@@ -613,8 +617,31 @@ def check_ore_o3_o4(m):
                 hammers += 1
             else:
                 out.append(f"{x}: the forge hammer does not crush {src}")
+    # issue #193: dark ash from every grade implosion, small piles from chipped and flawed gems, the engraver steps,
+    # the LV autoclave
+    engraves = 0
+    for x, (gem, crystal) in sorted(ORE_GEMS.items()):
+        grades = [f"chipped-{x}", f"flawed-{x}", gem, f"flawless-{x}", f"exquisite-{x}"]
+        for lo, hi in zip(grades, grades[1:]):
+            n = f"implosion-{lo}-to-{'gem' if hi == gem else hi.split('-')[0]}"
+            if live(n) and "tiny-pile-of-dark-ash-dust" not in m.R[n]["res"]:
+                out.append(f"{n}: no dark ash (GT: 2 tiny piles)")
+            lens = ORE_GEM_LENS.get(x)
+            if lens:
+                e = f"engraving-{lo}-to-{'gem' if hi == gem else hi.split('-')[0]}"
+                if live(e) and m.R[e]["cat"].endswith("-laser-engraver-recipes") and lens in m.R[e]["ing"] \
+                        and lens in m.R[e]["res"] and hi in m.R[e]["res"]:
+                    engraves += 1
+                else:
+                    out.append(f"{x}: the laser engraver lacks {e} (3 x {lo} and the {lens}, which stays)")
+        for k, n in (("chipped", 1), ("flawed", 2)):
+            r = m.R.get(f"{k}-{x}-maceration")
+            if r and f"small-pile-of-{x}-dust" not in r["res"]:
+                out.append(f"{k}-{x}-maceration: not into small piles of {x} dust")
+    if "lv-autoclave-recipes" not in m.C.get("lv-autoclave", []):
+        out.append("lv-autoclave: no LV autoclave running the LV autoclave category (GT's Basic Autoclave)")
     info = (f"{len(seps)} ores in the electromagnetic separator, {sifts} gem ores sifted, {autos} autoclave recipes, "
-            f"{hammers} forge hammer steps")
+            f"{hammers} forge hammer steps, {engraves} laser engraver steps")
     return info, out
 def check_extractor_split(m):
     """Issue #152 (prototypes/151-fork-fluid-extractor.lua): as in GTNH, the Extractor makes items and the Fluid Extractor

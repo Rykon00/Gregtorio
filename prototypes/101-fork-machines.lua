@@ -588,6 +588,39 @@ end
 
 
 --------------------------------------------------------------------------------
+--- 2i) LV AUTOCLAVE (issue #193, follow-up of the ore chain's phase O4)
+---    GT New Horizons' Basic Autoclave (LoaderMetaTileEntities.java:3535); upstream's autoclave starts at MV. It runs the
+---    LV autoclave category (the MV autoclave runs it too). Machine recipe as GT's (MTERecipeLoader.java
+---    registerAutoclave, "IGI", "IMI", "CPC": 4 plates of the tier (steel), 2 glass, the hull, 2 circuits, a pump). Power
+---    EU24 as the MV autoclave's class. With Extractor, the technology of the LV pump. Sprites: tools/gen_sprites.py
+---    (autoclave_lv, the MV autoclave in the LV casing colours).
+--------------------------------------------------------------------------------
+
+make_electric_machine("lv-autoclave", "lv-autoclave", "lv-autoclave", { "lv-autoclave-recipes" }, "fr-autoclave", EU24_LV, 1, 1, 0.5, 3, 3, {
+	fluid_port(-1, -1, "input", defines.direction.north),
+	fluid_port( 1, -1, "input", defines.direction.north),
+	fluid_port(-1,  1, "output", defines.direction.south),
+	fluid_port( 1,  1, "output", defines.direction.south)
+})
+create_item{
+	name = "lv-autoclave",
+	subgroup = "lv-age-production-machine",
+	ingredients = {
+		{ type = "item", name = "steel-plate", amount = 4 },
+		{ type = "item", name = "glass", amount = 2 },
+		{ type = "item", name = "lv-machine-hull", amount = 1 },
+		{ type = "item", name = "electronic-circuit", amount = 2 },
+		{ type = "item", name = "lv-pump", amount = 1 },
+	},
+	place_result = "lv-autoclave",
+	stack_size = 10,
+}
+fork_add_unlock("extractor", "lv-autoclave")
+data.raw["assembling-machine"]["lv-autoclave"].next_upgrade = "mv-autoclave"
+
+
+
+--------------------------------------------------------------------------------
 --- 3) IV BASIC MACHINES
 ---    Copy of the EV machine: double speed, double power draw, IV categories added,
 ---    recipe = EV recipe with every tiered component shifted one tier up.

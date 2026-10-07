@@ -715,6 +715,13 @@ local RT = {
 	{ "mv-autoclave", "autoclave-pure-lapis-dust-distilled-water" },
 	{ "lv-forge-hammer", "hammering-raw-iron" },
 	{ "lv-forge-hammer", "hammering-centrifuged-copper" },
+	-- issue #193: the LV autoclave, a laser engraver grade step with its lens, small piles and dark ash
+	{ "lv-autoclave", "autoclave-impure-certus-quartz-dust" },
+	{ "mv-laser-engraver", "engraving-chipped-ruby-to-flawed" },
+	{ "ev-laser-engraver", "engraving-flawless-emerald-to-exquisite" },
+	{ "lv-lathe", "diamond-lens-from-exquisite" },
+	{ "lv-macerator", "flawed-ruby-maceration" },
+	{ "lv-electrolyzer", "dark-ash-dust-electrolysis" },
 	-- issue #170 (prototypes/101-fork-machines.lua): the electric Forge Hammer with a plate and a new hammer recipe
 	{ "lv-forge-hammer", "iron-plate-forge-hammer" },
 	{ "iv-forge-hammer", "sand-forge-hammer" },

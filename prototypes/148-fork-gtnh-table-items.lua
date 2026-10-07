@@ -102,4 +102,6 @@ FORK_RECIPES_TABLE_ONLY = {
 	["bucket-of-water"] = "GTNH: filled in the world or in the fluid canner (GT GTPostLoad.java:111); Gregtorio has neither, filling it by hand is the stand-in",
 	["liquid-concrete-bucket"] = "GTNH: crafting table only (NHC GT_CraftingRecipeLoader.java:1226)",
 	["mortar-and-pestle"] = "GTNH: the mortar is a tool made at the crafting table, no machine recipe (GT ProcessingIngot.java:101 uses it as a crafting tool)",
+	-- issue #193 (prototypes/155-fork-ore-chain.lua): the dark ash of the implosion compressor
+	["dark-ash-dust-from-tiny-piles"] = "GTNH: 9 tiny piles and the dust schematic in the packager (GT ProcessingDust.java:593-600); Gregtorio has no packager, the crafting table is the stand-in",
 }

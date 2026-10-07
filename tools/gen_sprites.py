@@ -651,6 +651,42 @@ def electromagnetic_separator_lv_mv(gt):
     framed_overlay_lv_mv(gt, "electromagnetic-separator", "polarizer", EMS_WINDOW, EMS_OVERLAY, crop=True, animated=True)
 
 
+
+def autoclave_lv():
+    """Issue #193: upstream has no LV autoclave (GT's Basic Autoclave). Its picture is the MV autoclave's with the MV
+    casing colours (mv_casing_palette) in the LV extractor's casing colours, rank for rank of brightness, as the forge
+    hammer's; the icon the MV autoclave's icon with the pixels that differ from the HV and EV icons in the colours of the
+    LV extractor icon's casing."""
+    lv_pal, mv_pal = casing_palette("extractor", "lv"), mv_casing_palette()
+    dst = ENTITY / "lv-autoclave"
+    dst.mkdir(exist_ok=True)
+    for kind in ("idle", "working"):
+        src = ENTITY / "mv-autoclave" / f"mv-autoclave-{kind}.png"
+        frames = strip_frames(src) if kind == "working" else [load(src)]
+        masks = [casing_mask(f, None, mv_pal) for f in frames]
+        cmap = quantile_map([f.getpixel(xy) for f, m in zip(frames, masks) for xy in m], lv_pal)
+        out = []
+        for f, m in zip(frames, masks):
+            g = f.copy()
+            for xy in m:
+                g.putpixel(xy, cmap[f.getpixel(xy)])
+            out.append(g)
+        if kind == "working":
+            save_strip(out, dst / f"lv-autoclave-{kind}.png")
+        else:
+            save(out[0], dst / f"lv-autoclave-{kind}.png")
+    icons = [load(ICONS / f"{t}-autoclave.png") for t in ("mv", "hv", "ev")]
+    ip = [i.load() for i in icons]
+    imask = [(x, y) for y in range(TILE) for x in range(TILE) if ip[0][x, y][3] and len({q[x, y] for q in ip}) > 1]
+    a, b = load(ICONS / "lv-extractor.png").load(), load(ICONS / "mv-extractor.png").load()
+    ext = sorted({a[x, y] for y in range(TILE) for x in range(TILE) if a[x, y] != b[x, y] and a[x, y][3]}, key=lum)
+    cmap = quantile_map([icons[0].getpixel(xy) for xy in imask], ext)
+    icon = icons[0].copy()
+    for xy in imask:
+        icon.putpixel(xy, cmap[icons[0].getpixel(xy)])
+    save(icon, ICONS / "lv-autoclave.png")
+
+
 def fluid_extractor_lv_ev():
     """Issue #152: the LV and MV fluid extractor sprites (HV and EV use MV's, like the extractor) are upstream's
     extractor with the liquid in its tubes molten; the idle picture keeps a low melt in the tubes, so the two machines
@@ -919,6 +955,7 @@ def main():
     sifting_machine_lv_mv(a.gt)  # and the LV and MV sifting machine of the sifting machine's
     thermal_centrifuge_lv_mv(a.gt)  # and the LV and MV thermal centrifuge of the thermal centrifuge's
     electromagnetic_separator_lv_mv(a.gt)  # and the LV and MV separator of the separator's
+    autoclave_lv()               # before the autoclave's tiers (it reads the MV autoclave)
     for tier in ("IV", "LuV", "ZPM", "UV", "UHV", "UEV", "UIV", "UMV", "UXV", "MAX"):
         for base in BASIC_MACHINES + [FLUID_EXTRACTOR]:
             basic_machine(a.gt, base, tier)
