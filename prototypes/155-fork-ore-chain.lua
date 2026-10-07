@@ -676,10 +676,15 @@ local GRADES = { "chipped", "flawed", "gem", "flawless", "exquisite" }
 --- dusts (count, or small piles for the two lower grades)
 local MACERATE = { chipped = { 1, small = true }, flawed = { 2, small = true }, gem = { 1 }, flawless = { 2 }, exquisite = { 4 } }
 --- the lenses the lathe makes from an exquisite gem (GT: the gems whose material keeps the lens prefix)
-local LENS = { ruby = "ruby-lens", emerald = "emerald-lens", diamond = "diamond-lens" }
+--- issue #205: the red and yellow garnet lens (GT's GarnetRed and GarnetYellow keep the lens prefix)
+local LENS = { ruby = "ruby-lens", emerald = "emerald-lens", diamond = "diamond-lens", ["red-garnet"] = "red-garnet-lens",
+	["yellow-garnet"] = "yellow-garnet-lens" }
 --- the lens of the gem's colour for the laser engraver (MaterialsInit.java setColor; GT takes any lens of the colour)
+--- (issue #205: quartzite white, red garnet red, yellow garnet yellow; tricalcium phosphate, yellow, gets the yellow garnet
+--- lens after the byproduct gems below)
 local ENGRAVER_LENS = { ruby = "ruby-lens", emerald = "emerald-lens", monazite = "emerald-lens",
-	diamond = "diamond-lens", ["nether-quartz"] = "diamond-lens" }
+	diamond = "diamond-lens", ["nether-quartz"] = "diamond-lens", quartzite = "diamond-lens", ["red-garnet"] = "ruby-lens",
+	["yellow-garnet"] = "yellow-garnet-lens" }
 --- grade -> the engraver category and time of the step up (GT tier: LV, MV, HV, EV; time x the tier's speed)
 local ENGRAVE = { chipped = { "mv-laser-engraver-recipes", 30 }, flawed = { "mv-laser-engraver-recipes", 60 },
 	gem = { "hv-laser-engraver-recipes", 240 }, flawless = { "ev-laser-engraver-recipes", 960 } }
@@ -688,7 +693,7 @@ local ENGRAVE = { chipped = { "mv-laser-engraver-recipes", 30 }, flawed = { "mv-
 local DARK_TINY, DARK_DUST = "tiny-pile-of-dark-ash-dust", "dark-ash-dust"
 add_item(DARK_TINY, "subgroup-macerator-dust", "z-dark-ash-a")
 add_item(DARK_DUST, "subgroup-macerator-dust", "z-dark-ash-b")
-for _, lens in pairs({ "emerald-lens", "diamond-lens" }) do
+for _, lens in pairs({ "emerald-lens", "diamond-lens", "red-garnet-lens", "yellow-garnet-lens" }) do
 	if not data.raw.item[lens] then add_item(lens, sub_of("ruby-lens", "subgroup-lv-lathe-recipes"), "z-" .. lens) end
 end
 
@@ -697,6 +702,102 @@ local function macerates(name)
 		if r.category and r.category:match("%-macerator%-recipes$") and r.ingredients and #r.ingredients == 1
 			and r.ingredients[1].name == name then return rname end
 	end
+end
+
+--- issue #205: unlock now, or (pending given) later, when every input has a producer (grades that only their own
+--- recipes make)
+local function later(pending, name, groups)
+	if pending then pending[#pending + 1] = { name, groups } else unlock_after(name, groups()) end
+end
+--- unlock the pending recipes in the order their inputs get a producer
+local function unlock_pending(pending)
+	local progress = true
+	while progress and #pending > 0 do
+		progress = false
+		local rest = {}
+		for _, p in pairs(pending) do
+			local ready = true
+			for _, g in pairs(p[2]()) do
+				if g ~= nil and g ~= false and #g == 0 then ready = false end
+			end
+			if ready then
+				unlock_after(p[1], p[2]())
+				progress = true
+			else
+				rest[#rest + 1] = p
+			end
+		end
+		pending = rest
+	end
+	for _, p in pairs(pending) do unlock_after(p[1], p[2]()) end   -- logs what nothing gives
+end
+
+--- the laser engraver steps of a gem's grades with a lens of its colour, which stays; returns the number of recipes
+local function engrave(grade, lens, pending)
+	local n = 0
+	for i, k in pairs(GRADES) do
+		local up = GRADES[i + 1]
+		if up then
+			local e = ENGRAVE[k]
+			local name = made(recipe{ name = "engraving-" .. grade[k] .. "-to-" .. up, category = e[1], time = e[2],
+				main = grade[up], ingredients = { item(grade[k], 3), item(lens) }, results = { item(grade[up]), item(lens) } })
+			later(pending, name, function() return { machine_techs(e[1]), item_techs(grade[k]), item_techs(lens) } end)
+			n = n + 1
+		end
+	end
+	return n
+end
+
+--- the grades of a gem material x (grade: its chipped, flawed, gem, flawless and exquisite items) and its dust: the
+--- small piles, the lathe's lens, forge hammer, implosion, laser engraver and macerator steps; returns the number of recipes
+local function gem_grades(x, grade, dust, pending)
+	local n = 0
+	--- issue #193: the small piles of the gem's dust (from chipped and flawed gems)
+	local small = "small-pile-of-" .. x .. "-dust"
+	if not data.raw.item[small] then add_item(small, sub_of(dust, "subgroup-macerator-dust"), "z-" .. small) end
+
+	local name
+	--- the lens first: the engraver steps below need it
+	if LENS[x] and data.raw.item[LENS[x]] then
+		name = made(recipe{ name = LENS[x] .. "-from-exquisite", category = "lv-lathe-recipes", time = 120, main = LENS[x],
+			ingredients = { item(grade.exquisite) }, results = { item(LENS[x], 3), item(dust) } })
+		later(pending, name, function() return { machine_techs("lv-lathe-recipes"), item_techs(grade.exquisite) } end)
+		n = n + 1
+	end
+
+	--- the grades into each other and back into dust
+	for i, k in pairs(GRADES) do
+		local up, down = GRADES[i + 1], GRADES[i - 1]
+		if down then
+			name = made(recipe{ name = "hammering-" .. grade[k], category = "lv-forge-hammer-recipes", time = 3.2,
+				main = grade[down], ingredients = { item(grade[k]) }, results = { item(grade[down], 2) } })
+			later(pending, name, function() return { machine_techs("lv-forge-hammer-recipes"), item_techs(grade[k]) } end)
+			n = n + 1
+		end
+		if up then
+			name = made(recipe{ name = "implosion-" .. grade[k] .. "-to-" .. up, category = "lv-implosion-compressor-recipes",
+				time = 1, main = grade[up], ingredients = { item(grade[k], 3), item("explosives") },
+				results = { item(grade[up]), item(DARK_TINY, 2) } })
+			later(pending, name, function() return { machine_techs("lv-implosion-compressor-recipes"), item_techs(grade[k]),
+				item_techs("explosives") } end)
+			n = n + 1
+		end
+		if not macerates(grade[k]) then
+			local mac = MACERATE[k]
+			local out = mac.small and small or dust
+			name = made(recipe{ name = grade[k] .. "-maceration", category = "lv-macerator-recipes",
+				time = mac.small and 0.7 * mac[1] or 2.8 * mac[1], main = out, ingredients = { item(grade[k]) },
+				results = { item(out, mac[1]) } })
+			later(pending, name, function() return { machine_techs("lv-macerator-recipes"), item_techs(grade[k]) } end)
+			n = n + 1
+		end
+	end
+	name = made(recipe{ name = dust .. "-from-small-piles", category = "crafting", time = 0.5, main = dust,
+		ingredients = { item(small, 4) }, results = { item(dust) } })
+	later(pending, name, function() return { item_techs(small) } end)
+	n = n + 1
+	if ENGRAVER_LENS[x] then n = n + engrave(grade, ENGRAVER_LENS[x], pending) end
+	return n
 end
 
 local gem_recipes = 0
@@ -726,57 +827,7 @@ for _, g in pairs(GEMS) do
 		unlock_after(name, { machine_techs("lv-sifter-recipes"), techs_of_recipe[purified] })
 		gem_recipes = gem_recipes + 1
 
-		--- issue #193: the small piles of the gem's dust (from chipped and flawed gems)
-		local small = "small-pile-of-" .. x .. "-dust"
-		add_item(small, sub_of(ore.dust, "subgroup-macerator-dust"), "z-" .. small)
-
-		--- the lens first: the engraver steps below need it
-		if LENS[x] and data.raw.item[LENS[x]] then
-			name = made(recipe{ name = LENS[x] .. "-from-exquisite", category = "lv-lathe-recipes", time = 120, main = LENS[x],
-				ingredients = { item(grade.exquisite) }, results = { item(LENS[x], 3), item(ore.dust) } })
-			unlock_after(name, { machine_techs("lv-lathe-recipes"), item_techs(grade.exquisite) })
-			gem_recipes = gem_recipes + 1
-		end
-
-		--- the grades into each other and back into dust
-		for i, k in pairs(GRADES) do
-			local up, down = GRADES[i + 1], GRADES[i - 1]
-			if down then
-				name = made(recipe{ name = "hammering-" .. grade[k], category = "lv-forge-hammer-recipes", time = 3.2,
-					main = grade[down], ingredients = { item(grade[k]) }, results = { item(grade[down], 2) } })
-				unlock_after(name, { machine_techs("lv-forge-hammer-recipes"), item_techs(grade[k]) })
-				gem_recipes = gem_recipes + 1
-			end
-			if up then
-				name = made(recipe{ name = "implosion-" .. grade[k] .. "-to-" .. up, category = "lv-implosion-compressor-recipes",
-					time = 1, main = grade[up], ingredients = { item(grade[k], 3), item("explosives") },
-					results = { item(grade[up]), item(DARK_TINY, 2) } })
-				unlock_after(name, { machine_techs("lv-implosion-compressor-recipes"), item_techs(grade[k]),
-					item_techs("explosives") })
-				gem_recipes = gem_recipes + 1
-			end
-			local lens = ENGRAVER_LENS[x]
-			if up and lens then
-				local e = ENGRAVE[k]
-				name = made(recipe{ name = "engraving-" .. grade[k] .. "-to-" .. up, category = e[1], time = e[2],
-					main = grade[up], ingredients = { item(grade[k], 3), item(lens) }, results = { item(grade[up]), item(lens) } })
-				unlock_after(name, { machine_techs(e[1]), item_techs(grade[k]), item_techs(lens) })
-				gem_recipes = gem_recipes + 1
-			end
-			if not macerates(grade[k]) then
-				local mac = MACERATE[k]
-				local out = mac.small and small or ore.dust
-				name = made(recipe{ name = grade[k] .. "-maceration", category = "lv-macerator-recipes",
-					time = mac.small and 0.7 * mac[1] or 2.8 * mac[1], main = out, ingredients = { item(grade[k]) },
-					results = { item(out, mac[1]) } })
-				unlock_after(name, { machine_techs("lv-macerator-recipes"), item_techs(grade[k]) })
-				gem_recipes = gem_recipes + 1
-			end
-		end
-		name = made(recipe{ name = ore.dust .. "-from-small-piles", category = "crafting", time = 0.5, main = ore.dust,
-			ingredients = { item(small, 4) }, results = { item(ore.dust) } })
-		unlock_after(name, { item_techs(small) })
-		gem_recipes = gem_recipes + 1
+		gem_recipes = gem_recipes + gem_grades(x, grade, ore.dust)
 
 		--- PHASE O4, 2: the autoclave grows the gem from impure and pure dust of the crystallisable ores
 		--- (OP/ProcessingDust.java:450-479): 200 L water (here 20) 90 % / 95 % in 100 s, 100 L distilled water (10)
@@ -804,6 +855,29 @@ do
 	unlock_after(name, { machine_techs("lv-electrolyzer-recipes"), item_techs(DARK_DUST) })
 end
 log("FORK-ORE-CHAIN: " .. gem_recipes .. " gem recipes (sifter, grades, lenses, engraver, autoclave)")
+
+--------------------------------------------------------------------------------
+--- Issue #205, 1: GT's gems of four byproduct materials Gregtorio had as dusts only (MaterialsInit.java addGemItems:
+--- Lignite, Quartzite, GarnetRed, GarnetYellow), with GT's grades: the raw ore macerator gives them (part 3), their
+--- recipes follow it (end of the file). Lignite coal burns like lignite dust (GTProxy.java:380-391: gem and dust 1200
+--- ticks, a small pile 375).
+--------------------------------------------------------------------------------
+local BYPRODUCT_GEMS = {
+	--  material          dust                  gem
+	{ "lignite",       "lignite-dust",       "lignite-gem" },
+	{ "quartzite",     "quartzite-dust",     "quartzite-gem" },
+	{ "red-garnet",    "red-garnet-dust",    "red-garnet-gem" },
+	{ "yellow-garnet", "yellow-garnet-dust", "yellow-garnet-gem" },
+}
+for _, g in pairs(BYPRODUCT_GEMS) do
+	local sub = sub_of(g[2], "subgroup-macerator-dust")
+	local dust = data.raw.item[g[2]]
+	add_item(g[3], sub, "z-" .. g[1] .. "-c", dust.fuel_value and { fuel_category = dust.fuel_category,
+		fuel_value = dust.fuel_value } or nil)
+	for i, k in pairs({ "chipped", "flawed", "flawless", "exquisite" }) do
+		add_item(k .. "-" .. g[1], sub, "z-" .. g[1] .. "-" .. ({ "a", "b", "d", "e" })[i])
+	end
+end
 
 --------------------------------------------------------------------------------
 --- PHASE O4, 3: forge hammer crushing (OP/ProcessingRawOre.java:201-212, ProcessingDirty.java:43-49,
@@ -834,6 +908,7 @@ local RAW_BYPRODUCT = { ["raw-platinum"] = "nickel-dust", ["raw-palladium"] = "p
 local BYPRODUCT_GEM = { ["emerald-dust"] = "emerald", ["apatite"] = "apatite-gem",
 	["tricalcium-phosphate"] = "tricalcium-phosphate-gem", ["lazurite-dust"] = "lazurite-gem",
 	["sodalite-dust"] = "sodalite-gem", ["monazite-dust"] = "monazite-gem" }
+for _, g in pairs(BYPRODUCT_GEMS) do BYPRODUCT_GEM[g[2]] = g[3] end   -- issue #205
 --- GT's byproduct multipliers (Materials.java setByProductMultiplier; 1 for every other ore)
 local BYPRODUCT_MULT = { ["raw-apatite"] = 2, ["raw-coal"] = 2, ["raw-cryolite"] = 4, ["raw-lapis"] = 4,
 	["raw-sodalite"] = 4, ["raw-lazurite"] = 4, ["raw-monazite"] = 2 }
@@ -869,6 +944,7 @@ for _, s in pairs(macerated) do
 		local mac = data.raw.recipe[s[4]]
 		table.insert(mac.results, item(byp, amount, 0.05 * (BYPRODUCT_MULT[s[1]] or 1)))
 		mac.main_product = s[2]
+		made(s[4])
 		byproducts = byproducts + 1
 	else
 		log("FORK-ORE-CHAIN: no byproduct known for the macerator recipe " .. s[4])
@@ -893,3 +969,176 @@ for _, x in pairs(the_ores) do
 	end
 end
 log("FORK-ORE-CHAIN: " .. hammered .. " forge hammer crushing recipes")
+
+--------------------------------------------------------------------------------
+--- Issue #205, 1 (continued): the grades of the four byproduct gems (as the sifted gems' above: hammer, implosion,
+--- lathe lens, engraver with a lens of the colour, macerator into dust and small piles); tricalcium phosphate (yellow)
+--- gets the engraver steps with the new yellow garnet lens. GT's ways from dust to gem (OP/ProcessingDust.java:269-297,
+--- 326-395): the crystallisable gems grow in the autoclave from their dust (200 L water, here 20, 70 % in 100 s; 100 L
+--- distilled water, here 10, 90 % in 75 s; 24 EU/t, LV; upstream's MV autoclave recipe of a gem becomes the distilled
+--- water one; GT's Void variant is not made, see O4 above), ruby, emerald, the garnets and monazite are imploded (4 dusts
+--- -> 3 gems in 1 s, LV, with GT's TNT as explosives, one for GT's 8 TNT: ruby and emerald 24 TNT and 12 tiny piles of
+--- dark ash, the garnets and monazite 16 and 8). Upstream's autoclave recipes of ruby, emerald and diamond have no GT
+--- counterpart and stay.
+--------------------------------------------------------------------------------
+local late_gems = 0
+local pending = {}
+for _, g in pairs(BYPRODUCT_GEMS) do
+	local grade = { gem = g[3] }
+	for _, k in pairs({ "chipped", "flawed", "flawless", "exquisite" }) do grade[k] = k .. "-" .. g[1] end
+	late_gems = late_gems + gem_grades(g[1], grade, g[2], pending)
+end
+do
+	--- a small pile of lignite burns 375 of the dust's 1200 ticks
+	local lig, small = data.raw.item["lignite-dust"], data.raw.item["small-pile-of-lignite-dust"]
+	local num, unit = (lig.fuel_value or ""):match("^([%d%.]+)(%a+)$")
+	if num and small then
+		small.fuel_category = lig.fuel_category
+		small.fuel_value = (tonumber(num) * 375 / 1200) .. unit
+	end
+	local tcp = { gem = "tricalcium-phosphate-gem" }
+	for _, k in pairs({ "chipped", "flawed", "flawless", "exquisite" }) do tcp[k] = k .. "-tricalcium-phosphate" end
+	if data.raw.item[tcp.chipped] then late_gems = late_gems + engrave(tcp, "yellow-garnet-lens", pending) end
+end
+unlock_pending(pending)
+local DUST_GEMS = {
+	--  dust                    gem                         autoclave  implosion: explosives, tiny piles of dark ash
+	{ "nether-quartz-dust",  "nether-quartz",            true },
+	{ "certus-quartz-dust",  "certus-quartz",            true },
+	{ "apatite",             "apatite-gem",              true },
+	{ "lazurite-dust",       "lazurite-gem",             true },
+	{ "sodalite-dust",       "sodalite-gem",             true },
+	{ "lapis-dust",          "lapis-lazuli",             true },
+	{ "monazite-dust",       "monazite-gem",             true,      { 2, 8 } },
+	{ "quartzite-dust",      "quartzite-gem",            true },
+	{ "ruby-dust",           "ruby",                     false,     { 3, 12 } },
+	{ "emerald-dust",        "emerald",                  false,     { 3, 12 } },
+	{ "red-garnet-dust",     "red-garnet-gem",           false,     { 2, 8 } },
+	{ "yellow-garnet-dust",  "yellow-garnet-gem",        false,     { 2, 8 } },
+}
+for _, g in pairs(DUST_GEMS) do
+	local dust, gem = g[1], g[2]
+	if data.raw.item[dust] and data.raw.item[gem] then
+		if g[3] then
+			--- upstream's autoclave recipe of the gem (MV, 5 distilled water) is GT's distilled water one
+			local upstream
+			for rname, r in pairs(data.raw.recipe) do
+				if r.category and r.category:match("%-autoclave%-recipes$") and r.ingredients and #r.ingredients == 2
+					and r.ingredients[1].name == dust and r.results and #r.results == 1 and r.results[1].name == gem then
+					upstream = rname
+				end
+			end
+			local name = recipe{ name = "autoclave-" .. dust, category = "lv-autoclave-recipes", time = 100, main = gem,
+				ingredients = { item(dust), fluid("water", 20) }, results = { item(gem, 1, 0.7) } }
+			unlock_after(made(name), { machine_techs("lv-autoclave-recipes"), item_techs(dust) })
+			local r = upstream and data.raw.recipe[upstream]
+			if r then
+				r.category, r.energy_required = "lv-autoclave-recipes", 75
+				r.ingredients = { item(dust), fluid("distilled-water", 10) }
+				r.results = { item(gem, 1, 0.9) }
+				r.main_product = gem
+			else
+				name = recipe{ name = "autoclave-" .. dust .. "-distilled-water", category = "lv-autoclave-recipes", time = 75,
+					main = gem, ingredients = { item(dust), fluid("distilled-water", 10) }, results = { item(gem, 1, 0.9) } }
+				unlock_after(made(name), { machine_techs("lv-autoclave-recipes"), item_techs(dust) })
+			end
+			late_gems = late_gems + 2
+		end
+		if g[4] then
+			local name = recipe{ name = "implosion-" .. dust .. "-to-gem", category = "lv-implosion-compressor-recipes",
+				time = 1, main = gem, ingredients = { item(dust, 4), item("explosives", g[4][1]) },
+				results = { item(gem, 3), item(DARK_TINY, g[4][2]) } }
+			unlock_after(made(name), { machine_techs("lv-implosion-compressor-recipes"), item_techs(dust),
+				item_techs("explosives") })
+			late_gems = late_gems + 1
+		end
+	end
+end
+log("FORK-ORE-CHAIN: " .. late_gems .. " recipes of the byproduct gems and from dust to gem (issue #205)")
+
+--------------------------------------------------------------------------------
+--- Issue #205, 3: GT's furnace recipes of the ore forms (OP/ProcessingOreSmelting.java; GTNH's config
+--- mixedOreOnlyYieldsTwoThirdsOfPureOre is false): crushed, purified and centrifuged ore of an ore that smelts into
+--- itself -> 10 nuggets, of one that smelts into another metal (setDirectSmelting) -> 1 ingot of it; its dust, impure
+--- and pure dust -> 1 ingot. Nothing for ores that need the blast furnace, NO_SMELTING ores and ores without an ingot
+--- (MaterialsInit.java); a platinum ingot as 2 platinum metallic powder (PlatinumSludgeOutputs.convertSmelting).
+--- Platinum and palladium ore stay the platinum line's (146); bornite is bartworks' and keeps upstream's dust smelting;
+--- a recipe Gregtorio has already stays. 10 s, the furnace only (as the impure and pure dusts of phase O1).
+--- New where Gregtorio lacked them: the nuggets of these metals (9 make an ingot in the alloy smelter with the mold, as
+--- phase O3's) and the ingots of realgar, thorium, antimony and molybdenum (from their dust in the furnace, back into
+--- dust in the macerator in GT mass ticks).
+--------------------------------------------------------------------------------
+local SMELT_SELF = { "iron", "gold", "copper", "tin", "lead", "silver", "nickel", "beryllium", "thorium", "ledox",
+	"realgar" }
+local SMELT_INTO = { cassiterite = "tin", galena = "lead", molybdenite = "molybdenum", pentlandite = "nickel",
+	sphalerite = "zinc", stibnite = "antimony", tetrahedrite = "copper", sheldonite = "platinum" }
+--- the ingots GT has and Gregtorio lacked: their dust and GT mass
+local NEW_INGOTS = { realgar = { "realgar-dust", 53 }, thorium = { "thorium-dust", 230 }, antimony = { "antimony", 122 },
+	molybdenum = { "molybdenum-dust", 96 } }
+local smelt_into = {}
+for _, m in pairs(SMELT_SELF) do smelt_into[m] = m end
+for x, m in pairs(SMELT_INTO) do smelt_into[x] = m end
+local metal_sub = sub_of("tin-ingot", "subgroup-smelting")
+local new_items = 0
+for m, _ in pairs(NEW_INGOTS) do
+	if not data.raw.item[m .. "-ingot"] then
+		add_item(m .. "-ingot", metal_sub, "z-" .. m .. "-ingot")
+		new_items = new_items + 1
+	end
+end
+for _, m in pairs(SMELT_SELF) do
+	if not data.raw.item[m .. "-nugget"] then
+		add_item(m .. "-nugget", metal_sub, "z-" .. m .. "-nugget")
+		new_items = new_items + 1
+	end
+end
+local function smelts(name)
+	for _, r in pairs(data.raw.recipe) do
+		if r.category == "smelting" and r.ingredients and #r.ingredients == 1 and r.ingredients[1].name == name then
+			return true
+		end
+	end
+end
+local smelted = 0
+local function smelt(input, out, amount)
+	if not data.raw.item[input] or smelts(input) then return end
+	if out == "platinum-ingot" then out, amount = "metallic-platinum-powder", amount * 2 end
+	local name = input .. "-smelter"
+	if data.raw.recipe[name] then
+		log("FORK-ORE-CHAIN: " .. name .. " exists and is no furnace recipe of " .. input)
+		return
+	end
+	recipe{ name = name, category = "smelting", subgroup = "subgroup-smelting", time = 10, main = out,
+		ingredients = { item(input) }, results = { item(out, amount) } }
+	unlock_after(made(name), { item_techs(input) })
+	smelted = smelted + 1
+end
+for x, m in pairs(smelt_into) do
+	local ore = ORE_CHAIN[x]
+	if ore then
+		for _, f in pairs({ "crushed-" .. x, "purified-" .. x, "centrifuged-" .. x }) do
+			if m == x then smelt(f, m .. "-nugget", 10) else smelt(f, m .. "-ingot", 1) end
+		end
+		for _, f in pairs({ ore.dust, "impure-" .. x .. "-dust", "pure-" .. x .. "-dust" }) do smelt(f, m .. "-ingot", 1) end
+	end
+end
+for m, d in pairs(NEW_INGOTS) do
+	smelt(d[1], m .. "-ingot", 1)
+	local name = d[1] .. "-macerator"
+	if not data.raw.recipe[name] then
+		recipe{ name = name, category = "lv-macerator-recipes", time = d[2] / 20, main = d[1],
+			ingredients = { item(m .. "-ingot") }, results = { item(d[1]) } }
+		unlock_after(made(name), { machine_techs("lv-macerator-recipes"), item_techs(m .. "-ingot") })
+	end
+end
+for _, m in pairs(SMELT_SELF) do
+	local name = m .. "-ingot-from-nuggets"
+	if not data.raw.recipe[name] and data.raw.item[m .. "-ingot"] then
+		--- in the alloy smelter's row (the ingot's row is in the Material parts tab, which has items only)
+		recipe{ name = name, category = "lv-alloy-smelter-recipes", time = 10, subgroup = "subgroup-lv-alloy-smelter-recipes",
+			main = m .. "-ingot", ingredients = { item(m .. "-nugget", 9), item("mold") },
+			results = { item(m .. "-ingot"), item("mold") } }
+		unlock_after(made(name), { machine_techs("lv-alloy-smelter-recipes"), item_techs(m .. "-nugget") })
+	end
+end
+log("FORK-ORE-CHAIN: " .. smelted .. " furnace recipes of ore forms, " .. new_items .. " new ingots and nuggets (issue #205)")
