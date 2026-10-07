@@ -516,7 +516,8 @@ def check_ore_chain(m):
 # Issue #186: GTNH's chemical bath washing per ore (docs/ORE-CHAIN.md appendix B, columns Hg and Na2S2O8), with
 # Gregtorio's dust of the tagged material (cobaltite's dust is cobalt dust)
 ORE_BATHS = {
-    "mercury": {"gold": "gold-dust", "copper": "gold-dust", "nickel": "platinum-dust", "sheldonite": "sheldonite-dust",
+    # nickel's platinum dust is GTNH's platinum metallic powder (PlatinumSludgeOutputs, issue #199)
+    "mercury": {"gold": "gold-dust", "copper": "gold-dust", "nickel": "metallic-platinum-powder", "sheldonite": "sheldonite-dust",
                 "galena": "silver-dust", "lead": "silver-dust", "silver": "silver-dust", "tungstate": "silver-dust"},
     "sodium-persulfate": {"iron": "nickel-dust", "gold": "copper-dust", "copper": "copper-dust", "tin": "zinc-dust",
                           "tetrahedrite": "tetrahedrite-dust", "sphalerite": "zinc-dust", "nickel": "nickel-dust",
@@ -662,6 +663,23 @@ def check_circuit_icons(m):
                 out.append(f"{name} ({r['cat']}): makes {', '.join(sorted(CIRCUIT_TIER_ITEMS & set(r['res'])))} without an "
                            "icon of its own (prototypes/156-fork-circuit-icons.lua, tools/gen_gt_icons.py)")
     return n, out
+# Issue #199 (and the platinum line, #96): the dusts of the platinum group come only from the platinum line's own steps
+# (reprecipitation, the residue branches) and the quantum force transformer; GTNH turns every ore processing output of
+# them into the line's powders and residues (bartworks PlatinumSludgeOutputs)
+PGM_DUST_SOURCES = {"platinum-dust": {"reprecipitated-platinum-processing"},
+                    "palladium-dust": {"reprecipitated-palladium-processing"},
+                    "iridium-dust": {"iridium-dust"}, "osmium-dust": {"osmium-dust"}}
+def check_pgm_dusts(m):
+    """Issue #199: no recipe but the platinum line's and the quantum force transformer's (`-qft-`) makes a dust of the
+    platinum group; recycling does not count."""
+    out = []
+    for name, r in sorted(m.R.items()):
+        if r["hidden"] or "recycl" in r["cat"] or name.endswith("-recycling") or "-qft-" in name:
+            continue
+        for dust in sorted(PGM_DUST_SOURCES.keys() & set(r["res"])):
+            if name not in PGM_DUST_SOURCES[dust]:
+                out.append(f"{name} ({r['cat']}): makes {dust} outside the platinum line (GTNH: its powder or residue)")
+    return out
 def check_extractor_split(m):
     """Issue #152 (prototypes/151-fork-fluid-extractor.lua): as in GTNH, the Extractor makes items and the Fluid Extractor
     fluids. A recipe of an extractor category with a fluid result, or of a fluid extractor category without one, is in
@@ -965,10 +983,12 @@ def check(a):
     report("chemical bath washing that differs from GTNH (prototypes/155-fork-ore-chain.lua)", ore_baths)
     o34_info, ore_o34 = check_ore_o3_o4(m)
     circuit_n, circuit_icons = check_circuit_icons(m)
+    pgm_dusts = check_pgm_dusts(m)
     print(f"\nseparator, gems and forge hammer of the ore chain (issues #187, #188): {o34_info}")
     report("separator, gem and forge hammer steps that differ from GTNH (prototypes/155-fork-ore-chain.lua)", ore_o34)
     print(f"\ncircuit variant recipes up to UV (issue #164): {circuit_n}")
     report("circuit recipes without their own icon (issue #164)", circuit_icons)
+    report("platinum group dusts made outside the platinum line (issue #199)", pgm_dusts)
     extractor_split = check_extractor_split(m)
     report("extractor recipes in the wrong machine (issue #152: items in the Extractor, fluids in the Fluid Extractor)",
            extractor_split)
@@ -993,7 +1013,7 @@ def check(a):
     ok = not (files or [s for s in sprites if not s.startswith("(")] or uncraft or menu or required or unresearchable
               or new_drafts or fluid_problems or locked or one_pack or fluid_steps or microminer or table_only
               or extractor_split or ore_chain or ore_baths or ore_o34
-              or circuit_icons)
+              or circuit_icons or pgm_dusts)
     print("\nRESULT:", "OK" if ok else "PROBLEMS FOUND")
     return 0 if ok else 1
 
