@@ -703,6 +703,8 @@ local RT = {
 	-- issue #186: chemical bath washing with mercury and sodium persulfate
 	{ "lv-chemical-bath", "purified-gold-mercury" },
 	{ "mv-chemical-bath", "purified-iron-sodium-persulfate" },
+	-- issue #199: nickel's platinum byproduct is the platinum line's metallic powder
+	{ "lv-macerator", "pure-nickel-dust" },
 	-- issues #187 and #188: the electromagnetic separator, gem sifting and grades, the autoclave, forge hammer crushing
 	-- (the steam forge hammer runs the same category, but the test gives steam machines no steam)
 	{ "lv-electromagnetic-separator", "separating-pure-tin-dust" },

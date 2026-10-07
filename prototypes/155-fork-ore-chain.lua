@@ -122,7 +122,22 @@ local function fluid(name, amount)
 	return { type = "fluid", name = name, amount = amount }
 end
 
+--- issue #199: GTNH sends every ore processing output through bartworks' PlatinumSludgeOutputs.convert
+--- (gtenhancement/PlatinumSludgeOutputs.java, called from ProcessingDirty, ProcessingCrushedOre, ProcessingPure and
+--- ProcessingDust): a platinum, palladium or iridium dust becomes two of the platinum line's powder or residue, so the
+--- nickel and sheldonite byproducts go through the platinum line (146) as in GTNH. Osmium, ruthenium and rhodium have no
+--- dust among the byproducts here.
+local PGM_OUTPUT = { ["platinum-dust"] = "metallic-platinum-powder", ["palladium-dust"] = "metallic-palladium-powder",
+	["iridium-dust"] = "iridium-metal-residue" }
+
 local function recipe(def)
+	for _, r in pairs(def.results or {}) do
+		local to = PGM_OUTPUT[r.name]
+		if to and r.name ~= def.main and data.raw.item[to] then
+			r.name = to
+			r.amount = (r.amount or 1) * 2
+		end
+	end
 	data:extend({ {
 		type = "recipe", name = def.name, category = def.category, enabled = false, energy_required = def.time,
 		ingredients = def.ingredients, results = def.results, main_product = def.main, subgroup = def.subgroup,
