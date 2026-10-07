@@ -135,6 +135,7 @@ MATERIALS = {
     "yellow-garnet": "GarnetYellow", "lignite": "Lignite", "magnetite": "Magnetite",
     "netherrack": "Netherrack", "pyrite": "Pyrite", "quartzite": "Quartzite",
     "dark-ash": "DarkAsh",  # issue #193
+    "cassiterite": "Cassiterite",  # issue #202: its own crushed ore, dust and ore chain
 }
 
 # fork part name -> GT OrePrefix texture; "{m}" is the material

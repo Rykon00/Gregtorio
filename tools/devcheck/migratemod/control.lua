@@ -245,6 +245,8 @@ local RM_MACHINES = {
 	-- name below)
 	{ "lv-air-collector", "air-collection", "air-collection", "lv-compressor" },
 	{ "hv-air-collector", "air-collection", "air-collection", "hv-compressor" },
+	-- issue #202: the macerator recipe of Raw Cassiterite (crushed-tin) is crushed-cassiterite since it has its own crushed ore
+	{ "lv-macerator", "crushed-tin", "crushed-cassiterite" },
 }
 local RM_AT = { -30.5, Y + 30.5 }
 

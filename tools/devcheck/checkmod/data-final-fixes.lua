@@ -99,6 +99,10 @@ section("TABLEONLYOK", tk)
 local hk = {}
 for name, reason in pairs(FORK_ORE_HAMMER_SKIP or {}) do hk[#hk + 1] = name .. "\t" .. reason end
 section("HAMMERSKIPOK", hk)
+--- the raw ores whose forge hammer recipe gives GT's gem instead of the crushed ore (FORK_ORE_HAMMER_GEM)
+local hg = {}
+for name, gem in pairs(FORK_ORE_HAMMER_GEM or {}) do hg[#hg + 1] = name .. "\t" .. gem end
+section("HAMMERGEM", hg)
 
 --- Issue #118 (prototypes/200-fork-material-parts.lua): the material parts in rows by form; the materials without a tier
 --- (absent in older versions)

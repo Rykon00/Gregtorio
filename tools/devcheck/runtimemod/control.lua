@@ -910,16 +910,18 @@ end
 --- Raw ore crushing (issue #202, prototypes/155-fork-ore-chain.lua phase O4): with only the technology that unlocks each
 --- recipe researched by script (Raw Borax's: bedrockium, also the technology of its only source), the LV macerator crushes
 --- the raw ore and the forge hammers do through hammering-<raw ore>, with half the macerator's crushed ores. Borax in every
---- forge hammer (the steam one on steam put into its energy box), tin, cassiterite and platinum in the LV and the steam one.
+--- forge hammer (the steam one on steam put into its energy box), tin, cassiterite, platinum and ruby (the hammer gives GT's
+--- gem) in the LV and the steam one.
 --- One raw ore per machine; once a machine crafts, its progress is set close to the end (the macerator takes 20 s).
 local CR_Y, CR_X = -350, -370
 local CR_DEADLINE = 900
 local CR = {
-	--  raw ore            macerator recipe        hammer recipe                 technology   every hammer
+	--  raw ore            macerator recipe        hammer recipe                 technology   every hammer  hammer gives
 	{ "raw-borax",       "crushed-borax",       "hammering-raw-borax",        "bedrockium", true },
 	{ "raw-tin",         "macerating-raw-tin",  "hammering-raw-tin" },
-	{ "raw-cassiterite", "crushed-tin",         "hammering-raw-cassiterite" },
+	{ "raw-cassiterite", "crushed-cassiterite", "hammering-raw-cassiterite" },
 	{ "raw-platinum",    "crushed-platinum",    "hammering-raw-platinum" },
+	{ "raw-ruby",        "crushed-ruby",        "hammering-raw-ruby",         nil,         nil,          "ruby" },
 }
 
 local function cr_techs(recipe)
@@ -952,7 +954,7 @@ function setup_crush_test(s)
 			assert(mac and ham, "no recipe " .. (mac and def[3] or def[2]))
 			local mac_out, ham_out = mac.products[1], ham.products[1]
 			assert(mac.ingredients[1].name == def[1] and ham.ingredients[1].name == def[1], "the recipes do not take " .. def[1])
-			assert(ham_out.name == mac_out.name and ham_out.amount * 2 == mac_out.amount, def[3] .. " gives " .. ham_out.amount
+			assert(ham_out.name == (def[6] or mac_out.name) and ham_out.amount * 2 == mac_out.amount, def[3] .. " gives " .. ham_out.amount
 				.. " " .. ham_out.name .. ", " .. def[2] .. " " .. mac_out.amount .. " " .. mac_out.name .. " (GTNH: half)")
 			for _, r in pairs({ def[2], def[3] }) do
 				local techs = cr_techs(r)

@@ -785,8 +785,8 @@ create_ore("raw-copper", "copper-ingot", "crushed-copper", "copper-dust", "coppe
 create_ore("raw-tin", "tin-ingot", "crushed-tin", "tin-dust", "tin-ingot", "crushed-tin", "tin-dust", "bismuth", 1, true, true, "macerating-raw-tin" )
 
 ---CASSITERITE ORE
---- the washer, centrifuge and dust smelting recipes of crushed tin are Raw Tin's above (issue #202)
-create_ore("raw-cassiterite", "tin-ingot", "crushed-tin", "tin-dust", "tin-ingot", "crushed-tin", nil, "bismuth", 2, false, false )
+--- issue #202: its own crushed ore and dust, as in GT New Horizons (Cassiterite, ore multiplier 2, smelts into tin)
+create_ore("raw-cassiterite", "tin-ingot", "crushed-cassiterite", "cassiterite-dust", "tin-ingot", "crushed-cassiterite", "cassiterite-dust", "tin-dust", 2, false, true )
 
 ---REALGAR ORE
 create_ore("raw-realgar", nil, "crushed-realgar", "realgar-dust", "realgar-dust", "crushed-realgar", "realgar-dust", "antimony", 1, true, false )
@@ -833,7 +833,7 @@ create_ore("raw-lead", "lead-ingot", "crushed-lead", "lead-dust", "lead-ingot", 
 create_ore("raw-silver", "silver-ingot", "crushed-silver", "silver-dust", "silver-ingot", "crushed-silver", "silver-dust", "lead-dust", 1, false, true )
 
 ---CRYOLITE ORE
-create_ore("raw-cryolite", nil, "crushed-cryolite", "cryolite", "cryolite", "crushed-cryolite", "cryolite", "alumina", 1, false, false )
+create_ore("raw-cryolite", nil, "crushed-cryolite", "cryolite", "cryolite", "crushed-cryolite", "cryolite", "alumina", 4, false, false )
 create_recipe{
 	recipe_name = "cryolite-electrolysis",
 	category = "hv-electrolyzer-recipes",
@@ -1210,7 +1210,7 @@ create_recipe{
 create_ore("raw-rock-salt", nil, "crushed-rock-salt", "rock-salt", "rock-salt", "crushed-rock-salt", "rock-salt", "borax", 2, false, false )
 
 ---LEPIDOLITE ORE
-create_ore("raw-lepidolite", nil, "crushed-lepidolite", "lepidolite", "lepidolite", "crushed-lepidolite", "lepidolite", "caesium-dust", 2, true, false )
+create_ore("raw-lepidolite", nil, "crushed-lepidolite", "lepidolite", "lepidolite", "crushed-lepidolite", "lepidolite", "caesium-dust", 1, true, false )
 
 ---NETHER QUARTZ ORE
 create_ore("raw-nether-quartz", "nether-quartz", "crushed-nether-quartz", "nether-quartz-dust", "nether-quartz", "crushed-nether-quartz", "nether-quartz-dust", "certus-quartz-dust", 2, false, false )
@@ -1401,10 +1401,10 @@ create_recipe{
 create_ore("raw-thorium", nil, "crushed-thorium", "thorium-dust", "thorium-dust", "crushed-thorium", "thorium-dust", "uranium-238-dust", 1, false, false )
 
 ---BASTNASITE ORE
-create_ore("raw-bastnasite", nil, "crushed-bastnasite", "bastnasite-dust", "bastnasite-dust", "crushed-bastnasite", "bastnasite-dust", "neodymium-dust", 2, false, false )
+create_ore("raw-bastnasite", nil, "crushed-bastnasite", "bastnasite-dust", "bastnasite-dust", "crushed-bastnasite", "bastnasite-dust", "neodymium-dust", 1, false, false )
 
 ---MONAZITE ORE
-create_ore("raw-monazite", nil, "crushed-monazite", "monazite-dust", "monazite-dust", "crushed-monazite", "monazite-dust", "rare-earth", 4, false, false )
+create_ore("raw-monazite", nil, "crushed-monazite", "monazite-dust", "monazite-dust", "crushed-monazite", "monazite-dust", "rare-earth", 8, false, false )
 
 ---MOLYBDENITE ORE
 create_ore("raw-molybdenite", nil, "crushed-molybdenite", "molybdenite-dust", "molybdenite-dust", "crushed-molybdenite", "molybdenite-dust", "molybdenum-dust", 1, true, false )
@@ -1445,7 +1445,7 @@ create_recipe{
 }
 
 ---GROSSULAR ORE
-create_ore("raw-grossular", nil, "crushed-grossular", "grossular-dust", "grossular-dust", "crushed-grossular", "grossular-dust", "aluminium-dust", 3, false, false )
+create_ore("raw-grossular", nil, "crushed-grossular", "grossular-dust", "grossular-dust", "crushed-grossular", "grossular-dust", "aluminium-dust", 1, false, false )
 create_recipe{
 	recipe_name = "grossular-dust-electrolysis",
 	category = "mv-electrolyzer-recipes",
@@ -1462,7 +1462,7 @@ create_recipe{
 }
 
 ---SPESSARTINE ORE
-create_ore("raw-spessartine", nil, "crushed-spessartine", "spessartine-dust", "spessartine-dust", "crushed-spessartine", "spessartine-dust", "manganese-dust", 3, true, false )
+create_ore("raw-spessartine", nil, "crushed-spessartine", "spessartine-dust", "spessartine-dust", "crushed-spessartine", "spessartine-dust", "manganese-dust", 1, true, false )
 create_recipe{
 	recipe_name = "spessartine-dust-electrolysis",
 	category = "mv-electrolyzer-recipes",
@@ -1530,10 +1530,10 @@ create_ore("raw-platinum", "platinum-ingot", "crushed-platinum", "platinum-dust"
 create_ore("raw-palladium", "palladium-ingot", "crushed-palladium", "palladium-dust", nil, "crushed-palladium", "palladium-dust", "platinum-group-sludge", 1, false, false )
 
 ---SCHEELITE ORE
-create_ore("raw-scheelite", nil, "crushed-scheelite", "scheelite-dust", "scheelite-dust", "crushed-scheelite", "scheelite-dust", "molybdenum-dust", 1, false, false )
+create_ore("raw-scheelite", nil, "crushed-scheelite", "scheelite-dust", "scheelite-dust", "crushed-scheelite", "scheelite-dust", "molybdenum-dust", 2, false, false )
 
 ---TUNGSTATE ORE
-create_ore("raw-tungstate", nil, "crushed-tungstate", "tungstate-dust", "tungstate-dust", "crushed-tungstate", "tungstate-dust", "manganese-dust", 1, false, false )
+create_ore("raw-tungstate", nil, "crushed-tungstate", "tungstate-dust", "tungstate-dust", "crushed-tungstate", "tungstate-dust", "manganese-dust", 2, false, false )
 
 ---PITCHBLENDE ORE
 create_ore("raw-pitchblende", nil, "crushed-pitchblende", "pitchblende-dust", "pitchblende-dust", "crushed-pitchblende", "pitchblende-dust", "thorium-dust", 1, false, false )
@@ -1562,7 +1562,7 @@ create_ore("raw-chromite", nil, "crushed-chromite", "chromium-dust", "chromium-d
 create_ore("raw-ledox", "ledox-ingot", "crushed-ledox", "ledox-dust", "ledox-ingot", "crushed-ledox", "ledox-dust", "ledox-dust", 1, false, false )
 
 ---NAQUADAH ORE
-create_ore("raw-naquadah", nil, "crushed-naquadah", "naquadah-oxide-mixture", nil, "crushed-naquadah", "naquadah-oxide-mixture", "enriched-naquadah-oxide-mixture", 2, true, false )
+create_ore("raw-naquadah", nil, "crushed-naquadah", "naquadah-oxide-mixture", nil, "crushed-naquadah", "naquadah-oxide-mixture", "enriched-naquadah-oxide-mixture", 1, true, false )
 
 
 ---raw_ore, ingot, crushed, dust, raw_smelt_result, crush_result, centrifuge_result, byproduct, ore_multiplier, define_byproduct, smelt_dust
