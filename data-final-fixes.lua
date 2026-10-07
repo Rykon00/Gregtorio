@@ -442,6 +442,12 @@ disable_tech("discharge-defense-equipment")
 disable_tech("explosive-rocketry")
 disable_tech("tank")
 disable_tech("tesla-weapons")
+--- Fork: the technologies whose units were set above are divided like the others (prototypes/149-fork-early-research.lua,
+--- issue #146)
+FORK_EARLY_RESEARCH.rescale()
+--- Fork: the recycling recipes get their technologies now that the vanilla ones are set and disabled
+--- (prototypes/157-fork-recycling.lua, issue #190)
+FORK_RECYCLING.unlock()
 require("prototypes.fork-menu-simulations")
 --- Fork: cheap research (startup setting, default off); after every change to the technologies above
 require("prototypes.fork-one-pack-research")

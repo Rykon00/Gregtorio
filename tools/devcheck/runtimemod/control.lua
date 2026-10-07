@@ -11,6 +11,8 @@
 --- their tier and return the cooled fluid of the plasma they burnt.
 --- Recipes of issue #35: grades 7 and 8, FPIC/APIC wafers and chips, complex SMDs and the recipes that
 --- use them are crafted once each (setup_recipe_test).
+--- Raw ore crushing (issue #202): with the unlocking technology researched (bedrockium for Raw Borax), the macerator and
+--- the forge hammers (the steam one included) crush Raw Borax, Raw Tin, Raw Cassiterite and Raw Platinum, the hammer half.
 --- Steam turbines (issue #97): the large and the high pressure steam turbine make their GT output, burn their GT flow
 --- and give back distilled water and steam through output hatches; the wrong steam stops them; the multiblocks of
 --- issue #97 can be blueprinted and mined.
@@ -33,6 +35,7 @@ local function tests_running()
 	check(storage.cooled and storage.cooled.done, "cooled fluid")
 	check(storage.tiers and storage.tiers.done, "turbine tiers")
 	check(storage.recipe_test and storage.recipe_test.done, "recipes of issue #35")
+	check(storage.crush and storage.crush.done, "raw ore crushing")
 	check(storage.steam and storage.steam.done, "steam turbines")
 	check(storage.chain and storage.chain.done, "nuclear chain")
 	check(storage.lsc and storage.lsc.done, "supercapacitor")
@@ -660,7 +663,7 @@ local RT = {
 	{ "zpm-alloy-blast-smelter", "molten-fluxed-electrum" },
 	{ "uv-electric-blast-furnace", "hot-bedrockium-ingot" },
 	{ "uhv-electric-blast-furnace", "hot-quantium-ingot" },
-	{ "iv-extractor", "molten-quantium" },
+	{ "iv-fluid-extractor", "molten-quantium" },
 	{ "uhv-mixer", "naquadah-based-fuel-mk2" },
 	{ "water-purification-plant", "grade-5-water" },
 	{ "zpm-assembly-line", "uxv-energy-hatch" },
@@ -692,6 +695,65 @@ local RT = {
 	{ "mv-alloy-smelter", "anvil-alloy-smelter" },
 	{ "lv-assembling-machine", "firebrick-block-assembling-machine" },
 	{ "lv-chemical-bath", "paper-chemical-bath" },
+	-- issue #185 (prototypes/155-fork-ore-chain.lua): GTNH's ore chain for iron, the thermal centrifuge, a new byproduct dust
+	{ "lv-ore-washer", "purified-iron" },
+	{ "lv-thermal-centrifuge", "centrifuged-iron" },
+	{ "iv-thermal-centrifuge", "centrifuged-copper-from-crushed" },
+	{ "lv-macerator", "impure-iron-dust" },
+	{ "lv-macerator", "centrifuged-iron-maceration" },
+	{ "lv-centrifuge", "centrifuging-pure-iron-dust" },
+	{ "lv-electrolyzer", "pyrite-dust-decomposition" },
+	-- issue #186: chemical bath washing with mercury and sodium persulfate
+	{ "lv-chemical-bath", "purified-gold-mercury" },
+	{ "mv-chemical-bath", "purified-iron-sodium-persulfate" },
+	-- issue #199: nickel's platinum byproduct is the platinum line's metallic powder
+	{ "lv-macerator", "pure-nickel-dust" },
+	-- issues #187 and #188: the electromagnetic separator, gem sifting and grades, the autoclave, forge hammer crushing
+	-- (the steam forge hammer runs the same category, but the test gives steam machines no steam)
+	{ "lv-electromagnetic-separator", "separating-pure-tin-dust" },
+	{ "iv-electromagnetic-separator", "separating-pure-bastnasite-dust" },
+	{ "lv-sifting-machine", "sifting-purified-ruby" },
+	{ "lv-forge-hammer", "hammering-exquisite-ruby" },
+	{ "hv-implosion-compressor", "implosion-chipped-emerald-to-flawed" },
+	{ "lv-lathe", "ruby-lens-from-exquisite" },
+	{ "lv-macerator", "flawless-lapis-maceration" },
+	{ "mv-autoclave", "autoclave-pure-lapis-dust-distilled-water" },
+	{ "lv-forge-hammer", "hammering-raw-iron" },
+	{ "lv-forge-hammer", "hammering-centrifuged-copper" },
+	-- issue #193: the LV autoclave, a laser engraver grade step with its lens, small piles and dark ash
+	{ "lv-autoclave", "autoclave-impure-certus-quartz-dust" },
+	{ "mv-laser-engraver", "engraving-chipped-ruby-to-flawed" },
+	{ "ev-laser-engraver", "engraving-flawless-emerald-to-exquisite" },
+	{ "lv-lathe", "diamond-lens-from-exquisite" },
+	{ "lv-macerator", "flawed-ruby-maceration" },
+	{ "lv-electrolyzer", "dark-ash-dust-electrolysis" },
+	-- issue #170 (prototypes/101-fork-machines.lua): the electric Forge Hammer with a plate and a new hammer recipe
+	{ "lv-forge-hammer", "iron-plate-forge-hammer" },
+	{ "iv-forge-hammer", "sand-forge-hammer" },
+	-- issue #171: the Arc Furnace makes annealed copper (copper and oxygen)
+	{ "lv-arc-furnace", "annealed-copper-ingot" },
+	-- issue #190 (prototypes/157-fork-recycling.lua): an item back into its materials in the three machines
+	{ "lv-macerator", "recycling-macerator-lv-motor" },
+	{ "lv-arc-furnace", "recycling-arc-furnace-lv-machine-casing" },
+	{ "lv-fluid-extractor", "recycling-fluid-extractor-lv-machine-casing" },
+	{ "iv-arc-furnace", "annealed-copper-ingot" },
+	-- issue #173: the Forming Press presses the printed circuits of the ME processors
+	{ "lv-forming-press", "printed-silicon" },
+	{ "iv-forming-press", "printed-engineering-circuit" },
+	-- issue #174: the Electric Furnace smelts
+	{ "lv-electric-furnace", "iron-dust-smelter" },
+	{ "iv-electric-furnace", "brick-smelter" },
+	-- issue #175: the Sifting Machine runs the sifter recipes of the Large Sifter
+	{ "lv-sifting-machine", "coal-sifter" },
+	{ "iv-sifting-machine", "refined-platinum-salt" },
+	-- issue #153 (prototypes/153-fork-compressor-air.lua): air from the compressor
+	{ "lv-compressor", "air-collection" },
+	{ "iv-large-electric-compressor", "air-collection" },
+	-- issues #159 and #195 (prototypes/120-fork-me-network-compat.lua): the ME Pattern Terminal and its nether quartz
+	-- plate, me-network's Acceleration Card
+	{ "lv-bending-machine", "nether-quartz-plate" },
+	{ "mv-assembling-machine", "me-pattern-terminal" },
+	{ "lv-assembling-machine", "me-acceleration-card" },
 	-- issue #126, part B: the vanilla hand-only recipes in the assembling machines
 	{ "lv-assembling-machine", "firearm-magazine" },
 	{ "lv-assembling-machine", "light-armor" },
@@ -717,9 +779,14 @@ local RT = {
 	{ "lv-fluid-solidifier", "solidify-tin-ring" },
 	{ "lv-fluid-solidifier", "solidify-steel-screw" },
 	{ "ev-fluid-solidifier", "solidify-soularium-round" },
-	{ "lv-extractor", "melt-steel-ingot" },
-	{ "ev-extractor", "melt-titanium-ingot" },
-	{ "iv-extractor", "melt-iridium-ingot" },
+	{ "lv-fluid-extractor", "melt-steel-ingot" },
+	{ "ev-fluid-extractor", "melt-titanium-ingot" },
+	{ "iv-fluid-extractor", "melt-iridium-ingot" },
+	-- issue #152 (prototypes/151-fork-fluid-extractor.lua): the item recipes stay in the Extractor, the Large Fluid
+	-- Extractor melts
+	{ "lv-extractor", "sticky-resin" },
+	{ "lv-extractor", "raw-rubber-pulp-extractor" },
+	{ "iv-large-extractor", "melt-copper-ingot" },
 	-- issue #91 part 3 (prototypes/144-fork-dead-fluids.lua): blast furnace recipes with neon, krypton and xenon, nitric
 	-- acid from nitrogen dioxide, raw gasoline, gasoline and its cell
 	{ "ev-electric-blast-furnace", "hot-titanium-ingot-neon" },
@@ -768,6 +835,20 @@ local RT = {
 	{ "hv-large-chemical-reactor", "iridium-chloride" },
 	{ "ev-large-chemical-reactor", "iridium-dust" },
 	{ "lv-centrifuge", "sludge-dust-residue-centrifuging" },
+	-- issue #205: the byproduct gems and GT's dust-to-gem routes, ore-form smelting's new nuggets and ingots, the
+	-- naquadah line as GT's
+	{ "hv-implosion-compressor", "implosion-ruby-dust-to-gem" },
+	{ "lv-autoclave", "autoclave-quartzite-dust" },
+	{ "lv-lathe", "yellow-garnet-lens-from-exquisite" },
+	{ "mv-laser-engraver", "engraving-chipped-tricalcium-phosphate-to-flawed" },
+	{ "lv-alloy-smelter", "copper-ingot-from-nuggets" },
+	{ "lv-macerator", "thorium-dust-macerator" },
+	{ "lv-chemical-reactor", "gallium-from-gallium-hydroxide" },
+	{ "lv-mixer", "indium-gallium-phosphide-from-indium-phosphate" },
+	{ "iv-electric-blast-furnace", "hot-naquadah-ingot" },
+	{ "hv-autoclave", "concentrated-enriched-naquadah-sludge" },
+	{ "zpm-centrifuge", "naquadria-oxide-mixture-centrifuging" },
+	{ "iv-large-chemical-reactor", "naquadria-rich-solution-from-phosphate" },
 }
 
 local function rt_product(recipe)
@@ -838,6 +919,128 @@ function recipe_test()
 		for _, p in pairs(problems) do log("DEVCHECK-RUNTIME-FAIL " .. p) end
 		log("DEVCHECK-RUNTIME-RECIPES " .. (#problems == 0 and "ok" or "failed") .. " (" .. n .. " of " .. #RT .. " recipes crafted by tick " .. game.tick .. ")")
 	end
+end
+
+--- Raw ore crushing (issue #202, prototypes/155-fork-ore-chain.lua phase O4): with only the technology that unlocks each
+--- recipe researched by script (Raw Borax's: bedrockium, also the technology of its only source), the LV macerator crushes
+--- the raw ore and the forge hammers do through hammering-<raw ore>, with half the macerator's crushed ores. Borax in every
+--- forge hammer (the steam one on steam put into its energy box), tin, cassiterite, platinum and ruby (the hammer gives GT's
+--- gem) in the LV and the steam one.
+--- One raw ore per machine; once a machine crafts, its progress is set close to the end (the macerator takes 20 s).
+local CR_Y, CR_X = -350, -370
+local CR_DEADLINE = 900
+local CR = {
+	--  raw ore            macerator recipe        hammer recipe                 technology   every hammer  hammer gives
+	{ "raw-borax",       "crushed-borax",       "hammering-raw-borax",        "bedrockium", true },
+	{ "raw-tin",         "macerating-raw-tin",  "hammering-raw-tin" },
+	{ "raw-cassiterite", "crushed-cassiterite", "hammering-raw-cassiterite" },
+	{ "raw-platinum",    "crushed-platinum",    "hammering-raw-platinum" },
+	{ "raw-ruby",        "crushed-ruby",        "hammering-raw-ruby",         nil,         nil,          "ruby" },
+}
+
+local function cr_techs(recipe)
+	local out = {}
+	for tname, t in pairs(prototypes.technology) do
+		for _, e in pairs(t.effects) do
+			if e.type == "unlock-recipe" and e.recipe == recipe then out[#out + 1] = tname end
+		end
+	end
+	table.sort(out)
+	return out
+end
+
+function setup_crush_test(s)
+	local fails = {}
+	storage.crush = { m = {}, ok = {}, researched = {} }
+	local st = storage.crush
+	local force = game.forces.player
+	local hammers = {}
+	for name, p in pairs(prototypes.get_entity_filtered{ { filter = "type", type = "assembling-machine" } }) do
+		if p.crafting_categories["lv-forge-hammer-recipes"] and p.items_to_place_this and #p.items_to_place_this > 0 then
+			hammers[#hammers + 1] = name
+		end
+	end
+	table.sort(hammers)
+	local x = CR_X
+	for _, def in ipairs(CR) do
+		local ok, err = pcall(function()
+			local mac, ham = prototypes.recipe[def[2]], prototypes.recipe[def[3]]
+			assert(mac and ham, "no recipe " .. (mac and def[3] or def[2]))
+			local mac_out, ham_out = mac.products[1], ham.products[1]
+			assert(mac.ingredients[1].name == def[1] and ham.ingredients[1].name == def[1], "the recipes do not take " .. def[1])
+			assert(ham_out.name == (def[6] or mac_out.name) and ham_out.amount * 2 == mac_out.amount, def[3] .. " gives " .. ham_out.amount
+				.. " " .. ham_out.name .. ", " .. def[2] .. " " .. mac_out.amount .. " " .. mac_out.name .. " (GTNH: half)")
+			for _, r in pairs({ def[2], def[3] }) do
+				local techs = cr_techs(r)
+				assert(#techs > 0, "no technology unlocks " .. r)
+				if def[4] then
+					assert(#techs == 1 and techs[1] == def[4], r .. " is unlocked by " .. table.concat(techs, ", ") .. ", not " .. def[4])
+				end
+				force.technologies[techs[1]].researched = true
+				st.researched[techs[1]] = true
+				assert(force.recipes[r].enabled, r .. " not enabled after researching " .. techs[1])
+			end
+			local machines = { { "lv-macerator", def[2] } }
+			for _, h in pairs(def[5] and hammers or { "steam-forge-hammer", "lv-forge-hammer" }) do
+				machines[#machines + 1] = { h, def[3] }
+			end
+			for _, m in pairs(machines) do
+				local e = s.create_entity{ name = m[1], position = { x, CR_Y }, force = "player", raise_built = true }
+				if e.prototype.electric_energy_source_prototype then
+					s.create_entity{ name = "electric-energy-interface", position = { x, CR_Y + 7 }, force = "player" }
+					s.create_entity{ name = "substation", position = { x + 3, CR_Y + 7 }, force = "player" }
+				end
+				e.set_recipe(m[2])
+				assert(e.insert{ name = def[1], count = 1 } == 1, m[1] .. " took no " .. def[1])
+				st.m[#st.m + 1] = { e = e, recipe = m[2], machine = m[1], product = prototypes.recipe[m[2]].products[1] }
+				x = x + 9
+			end
+		end)
+		if not ok then fails[#fails + 1] = "crush test " .. def[1] .. ": " .. tostring(err) end
+	end
+	st.hammers = #hammers
+	return fails
+end
+
+function crush_test()
+	local st = storage.crush
+	if not st or st.done then return end
+	local pending = {}
+	for i, c in pairs(st.m) do
+		local e = c.e
+		if not st.ok[i] then
+			if not e.valid then
+				pending[#pending + 1] = c.recipe .. " in " .. c.machine .. " (machine gone)"
+			else
+				local made = e.get_inventory(defines.inventory.crafter_output).get_item_count(c.product.name)
+				if made >= c.product.amount then
+					st.ok[i] = made == c.product.amount or (c.recipe .. " in " .. c.machine .. " made " .. made)
+				else
+					if not e.prototype.electric_energy_source_prototype then
+						pcall(function() e.insert_fluid{ name = "steam", amount = 100 } end)
+					end
+					if e.crafting_progress > 0 and e.crafting_progress < 0.999 then e.crafting_progress = 0.999 end
+					local status
+					for name, v in pairs(defines.entity_status) do if e.status == v then status = name end end
+					pending[#pending + 1] = c.recipe .. " in " .. c.machine .. " (" .. tostring(status) .. ", made " .. made .. ")"
+				end
+			end
+		end
+	end
+	if #pending > 0 and game.tick <= CR_DEADLINE then return end
+	st.done = true
+	local problems, n = {}, 0
+	for _, v in pairs(st.ok) do
+		if v == true then n = n + 1 else problems[#problems + 1] = v end
+	end
+	if #pending > 0 then problems[#problems + 1] = #pending .. " machines made nothing: " .. table.concat(pending, ", ") end
+	if #st.m < 2 + 3 * #CR or st.hammers < 2 then problems[#problems + 1] = "only " .. #st.m .. " machines set up, " .. st.hammers .. " forge hammers" end
+	local techs = {}
+	for t in pairs(st.researched) do techs[#techs + 1] = t end
+	table.sort(techs)
+	for _, p in pairs(problems) do log("DEVCHECK-RUNTIME-FAIL crush test: " .. p) end
+	log("DEVCHECK-RUNTIME-CRUSH " .. (#problems == 0 and "ok" or "failed") .. " (" .. n .. " of " .. #st.m .. " crushed by tick "
+		.. game.tick .. ", " .. st.hammers .. " forge hammers; researched " .. table.concat(techs, ", ") .. ")")
 end
 
 local MOLD_Y = 120
@@ -1105,8 +1308,8 @@ end
 
 --- Lapotronic supercapacitor (issue #97): an IV one on a network with a LuV plasma turbine (81.92 MW, secondary
 --- output; an electric energy interface is tertiary like the accumulator and does not charge it), which is removed
---- at LS_SWITCH; then a UHV air collector (40.96 MW, a recipe without ingredients, its air removed every tick) runs
---- from it. It must charge from tick LS_FROM to LS_SWITCH and discharge from LS_SWITCH + LS_FROM to LS_TICK at its
+--- at LS_SWITCH; then a UIV compressor making air (40.96 MW, a recipe without ingredients, its air removed every tick;
+--- the UHV air collector until issue #153) runs from it. It must charge from tick LS_FROM to LS_SWITCH and discharge from LS_SWITCH + LS_FROM to LS_TICK at its
 --- 20.48 MW (within 3 %; its own loss is 0.6 % of that). The IV, LuV and ZPM ones must hold 27 blocks of 37.5,
 --- 187.5 and 937.5 GJ. Loss: a ZPM one without a network is set to 1 TJ at tick 100; at LS_TICK it must have lost
 --- exactly 1 % of its capacity per day for the whole steps of 10 ticks since (scripts/fork-power.lua).
@@ -1131,11 +1334,11 @@ function setup_lsc_test(s)
 			raise_built = true }
 		local got = ls.turbine.insert_fluid{ name = "helium-plasma", amount = 100 }
 		if got < 100 then fails[#fails + 1] = "supercapacitor test: the turbine took only " .. got .. " plasma" end
-		ls.load = s.create_entity{ name = "uhv-air-collector", position = { LS_X + 6, LS_Y + 5 }, force = "player" }
+		ls.load = s.create_entity{ name = "uiv-compressor", position = { LS_X + 6, LS_Y + 5 }, force = "player" }
 		for name, r in pairs(prototypes.recipe) do
-			if r.category == "lv-air-collector-recipes" and #r.ingredients == 0 then ls.recipe = name break end
+			if r.category == "lv-compressor-recipes" and #r.ingredients == 0 then ls.recipe = name break end
 		end
-		if not ls.recipe then fails[#fails + 1] = "supercapacitor test: no air collector recipe" end
+		if not ls.recipe then fails[#fails + 1] = "supercapacitor test: no compressor recipe without ingredients (air)" end
 		s.create_entity{ name = "substation", position = { LS_X + 4, LS_Y - 4 }, force = "player" }
 		ls.others = {}
 		for i, def in ipairs(LS) do
@@ -1259,7 +1462,7 @@ end
 --- 1) For every melt (an extractor recipe giving 14.4 of a fluid per ingot) and every cast that takes only that fluid (a
 ---    recipe of the solidifier categories, one fluid in, true amount in tenths): n ingots (n * 14.4 = m * the cast's
 ---    amount) must give at least what m casts take.
---- 2) In machines: ten ingots melted in an LV extractor, the melt of nine of them in an LV fluid solidifier on the block
+--- 2) In machines: ten ingots melted in an LV fluid extractor, the melt of nine of them in an LV fluid solidifier on the block
 ---    cast (it must start with no tenth melt and make the block), the tenth one's on the ingot cast (it must make the
 ---    ingot); ten melts must hold at least 144.
 local CT_X, CT_Y = -60, 200
@@ -1324,7 +1527,7 @@ function setup_melt_test(s)
 			if molds and molds.data[recipe] then e.get_module_inventory().insert{ name = molds.data[recipe] } end
 			return e
 		end
-		st.extractor = machine("lv-extractor", CT_X + 6, "melt-iron-ingot")
+		st.extractor = machine("lv-fluid-extractor", CT_X + 6, "melt-iron-ingot")
 		st.block = machine("lv-fluid-solidifier", CT_X + 12, "solidify-block-of-iron")
 		st.ingot = machine("lv-fluid-solidifier", CT_X + 18, "solidify-iron-ingot")
 		st.extractor.insert{ name = "iron-ingot", count = 10 }
@@ -1511,6 +1714,7 @@ script.on_nth_tick(10, function()
 	if not (storage.cooled and storage.cooled.done) then cooled_test() end
 	if not (storage.tiers and storage.tiers.done) then tier_test() end
 	if not (storage.recipe_test and storage.recipe_test.done) then recipe_test() end
+	crush_test()
 	steam_test()
 	chain_test()
 	lsc_test()
@@ -1579,6 +1783,7 @@ script.on_init(function()
 	for _, f in pairs(setup_cooled_test(s)) do fails[#fails + 1] = f end
 	for _, f in pairs(setup_tier_test(s)) do fails[#fails + 1] = f end
 	for _, f in pairs(setup_recipe_test(s)) do fails[#fails + 1] = f end
+	for _, f in pairs(setup_crush_test(s)) do fails[#fails + 1] = f end
 	for _, f in pairs(setup_steam_test(s)) do fails[#fails + 1] = f end
 	for _, f in pairs(setup_chain_test(s)) do fails[#fails + 1] = f end
 	for _, f in pairs(setup_lsc_test(s)) do fails[#fails + 1] = f end

@@ -115,10 +115,43 @@ MATERIALS = {
     "reprecipitated-rhodium": ("DULL", (119, 102, 73)), "iridium-dioxide": ("DULL", (132, 102, 73)),
     "sludge-dust-residue": ("DULL", (132, 102, 73)), "iridium-chloride": ("DULL", (132, 102, 73)),
     "metallic-sludge-dust-residue": ("DULL", (132, 102, 73)),
+    # issue #185: the ores of the ore chain (their purified, centrifuged, impure and pure forms) and the nine byproduct
+    # dusts Gregtorio lacked (GT material of the same ore; bornite: the bartworks Werkstoff colour, WerkstoffLoader.java:336)
+    "iron": "Iron", "vanadium-magnetite": "VanadiumMagnetite", "gold": "Gold", "fullers-earth": "FullersEarth",
+    "copper": "Copper", "tin": "Tin", "realgar": "Realgar", "galena": "Galena", "lead": "Lead", "silver": "Silver",
+    "cryolite": "Cryolite", "tetrahedrite": "Tetrahedrite", "stibnite": "Stibnite", "sphalerite": "Sphalerite",
+    "bauxite": "Bauxite", "aluminium": "Aluminium", "ilmenite": "Ilmenite", "redstone": "Redstone", "ruby": "Ruby",
+    "cinnabar": "Cinnabar", "coal": "Coal", "graphite": "Graphite", "diamond": "Diamond", "salt": "Salt",
+    "rock-salt": "RockSalt", "lepidolite": "Lepidolite", "nether-quartz": "NetherQuartz", "barite": "Barite",
+    "certus-quartz": "CertusQuartz", "apatite": "Apatite", "tricalcium-phosphate": "TricalciumPhosphate",
+    "pyrochlore": "Pyrochlore", "nickel": "Nickel", "pentlandite": "Pentlandite", "cobaltite": "Cobaltite",
+    "lazurite": "Lazurite", "sodalite": "Sodalite", "lapis": "Lapis", "beryllium": "Beryllium", "emerald": "Emerald",
+    "thorium": "Thorium", "bastnasite": "Bastnasite", "monazite": "Monazite", "molybdenite": "Molybdenite",
+    "neodymium": "Neodymium", "grossular": "Grossular", "spessartine": "Spessartine", "pyrolusite": "Pyrolusite",
+    "tantalite": "Tantalite", "bornite": ("DULL", (0x97, 0x66, 0x2B)), "sheldonite": "Cooperite",
+    "scheelite": "Scheelite", "tungstate": "Tungstate", "pitchblende": "Pitchblende", "uraninite": "Uraninite",
+    "chromite": "Chromite", "ledox": "Ledox", "adamantium": "Adamantium", "borax": "Borax",
+    "infinity-catalyst": "InfinityCatalyst", "andradite": "Andradite", "red-garnet": "GarnetRed",
+    "yellow-garnet": "GarnetYellow", "lignite": "Lignite", "magnetite": "Magnetite",
+    "netherrack": "Netherrack", "pyrite": "Pyrite", "quartzite": "Quartzite",
+    "dark-ash": "DarkAsh",  # issue #193
+    "cassiterite": "Cassiterite",  # issue #202: its own crushed ore, dust and ore chain
+    "antimony": "Antimony", "molybdenum": "Molybdenum",  # issue #205: their ingots
+    # issue #205: goodgenerator's Werkstoffe of the naquadah line (GGMaterial.java, their colours; dusts)
+    "naquadria-oxide-mixture": ("METALLIC", (77, 77, 85)), "indium-phosphate": ("DULL", (43, 46, 112)),
+    "low-quality-naquadria-phosphate": ("DULL", (77, 77, 85)),
 }
 
 # fork part name -> GT OrePrefix texture; "{m}" is the material
 PARTS = [
+    # issue #185: the forms of the ore chain (before "{m}-dust", which would take pure-<m>-dust as a dust of "pure-<m>")
+    ("impure-{m}-dust", "dustImpure"), ("pure-{m}-dust", "dustPure"), ("purified-{m}", "crushedPurified"),
+    ("centrifuged-{m}", "crushedCentrifuged"),
+    # issues #187 and #188: small dusts of the separator, the gem grades of the sifter, the gems Gregtorio lacked
+    ("small-pile-of-{m}-dust", "dustSmall"), ("chipped-{m}", "gemChipped"), ("flawed-{m}", "gemFlawed"),
+    ("flawless-{m}", "gemFlawless"), ("exquisite-{m}", "gemExquisite"), ("{m}-gem", "gem"),
+    # issue #193: dark ash, the lenses of the laser engraver
+    ("tiny-pile-of-{m}-dust", "dustTiny"), ("{m}-lens", "lens"),
     ("hot-{m}-ingot", "ingotHot"), ("superdense-{m}-plate", "plateSuperdense"), ("dense-{m}-plate", "plateDense"),
     ("long-{m}-rod", "stickLong"), ("large-{m}-gear", "gearGt"), ("fine-{m}-wire", "wireFine"),
     ("{m}-superconductive-wire", "@superconductor"), ("{m}-wire-4x", "@wire4"), ("{m}-wire", "@wire"),
@@ -453,6 +486,23 @@ def icon_table(c):
         T[name] = lambda i=i: c.gt(f"{M3}{i}")
     T["planck-processing-unit"] = lambda: c.badge(c.gt(f"{M3}726"), c.gt(f"{M3}730"))
     T["max-circuit"] = lambda: c.gt(f"{CORE}itemPlanckCircuit")
+    # issue #164: the circuit variant recipes up to UV (prototypes/156-fork-circuit-icons.lua), the texture of their GTNH item
+    for name, src in {
+            "electronic-circuit": (M3, 305), "basic-electronic-circuit": (M3, 305), "basic-integrated-circuit": (M1, 701),
+            "microchip": (M3, 78), "microchip-smd": (M3, 78), "microchip-cheap": (M3, 78),
+            "advanced-circuit": (M1, 702), "good-electronic-circuit": (M1, 702), "good-integrated-circuit": (M3, 79),
+            "microprocessor": (M3, 80), "microprocessor-smd": (M3, 80), "microprocessor-cheap": (M3, 80),
+            "processing-unit": (M3, 306), "microprocessor-assembly": (M1, 703), "microprocessor-assembly-smd": (M1, 703),
+            "nanoprocessor": (M3, 82),
+            "microprocessor-supercomputer": (M1, 704), "microprocessor-supercomputer-smd": (M1, 704),
+            "nanoprocessor-assembly": (M3, 83), "quantum-processor": (M3, 85),
+            "microprocessor-mainframe": (M1, 705), "nanoprocessor-supercomputer": (M3, 84),
+            "quantum-processor-assembly": (M3, 86), "crystal-processor": (M3, 89),
+            "nanoprocessor-mainframe": (M1, 706), "quantum-processor-supercomputer": (M3, 87),
+            "crystal-processor-assembly": (M3, 96),
+            "quantum-processor-mainframe": (M3, 88), "crystal-processor-supercomputer": (M3, 90),
+            "crystal-processor-mainframe": (M3, 91)}.items():
+        T[f"circuit-recipe-{name}"] = lambda s=src: c.gt(f"{s[0]}{s[1]}")
     T["crystal-cpu"] = lambda: c.gt(f"{M3}70")
     T["raw-crystal-chip"] = lambda: c.gt(f"{M3}69")
     T["raw-crystal-chip-part"] = lambda: c.gt(f"{M3}74")
@@ -561,6 +611,8 @@ def icon_table(c):
     T["gasoline-cell"] = lambda: c.part("gasoline", "cell")
     T["sodium-cyanide"] = lambda: c.part("sodium-cyanide", "dust")
     T["cyanoacetic-acid"] = lambda: c.part("cyanoacetic-acid", "dust")
+    for m in ("naquadria-oxide-mixture", "indium-phosphate", "low-quality-naquadria-phosphate"):   # issue #205
+        T[m] = (lambda m=m: lambda: c.part(m, "dust"))()
     # issue #98: the high octane cell (like the gasoline cell), sodium bisulfate (GT: a dust)
     T["high-octane-gasoline-cell"] = lambda: c.part("high-octane-gasoline", "cell")
     T["sodium-bisulfate"] = lambda: c.part("sodium-bisulfate", "dust")

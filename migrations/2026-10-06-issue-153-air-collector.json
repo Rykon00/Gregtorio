@@ -1,0 +1,34 @@
+{
+  "entity": [
+    ["lv-air-collector", "lv-compressor"],
+    ["mv-air-collector", "mv-compressor"],
+    ["hv-air-collector", "hv-compressor"],
+    ["ev-air-collector", "ev-compressor"],
+    ["iv-air-collector", "iv-compressor"],
+    ["luv-air-collector", "luv-compressor"],
+    ["zpm-air-collector", "zpm-compressor"],
+    ["uv-air-collector", "uv-compressor"],
+    ["uhv-air-collector", "uhv-compressor"],
+    ["uev-air-collector", "uev-compressor"],
+    ["uiv-air-collector", "uiv-compressor"],
+    ["umv-air-collector", "umv-compressor"],
+    ["uxv-air-collector", "uxv-compressor"],
+    ["max-air-collector", "max-compressor"]
+  ],
+  "item": [
+    ["lv-air-collector", "lv-compressor"],
+    ["mv-air-collector", "mv-compressor"],
+    ["hv-air-collector", "hv-compressor"],
+    ["ev-air-collector", "ev-compressor"],
+    ["iv-air-collector", "iv-compressor"],
+    ["luv-air-collector", "luv-compressor"],
+    ["zpm-air-collector", "zpm-compressor"],
+    ["uv-air-collector", "uv-compressor"],
+    ["uhv-air-collector", "uhv-compressor"],
+    ["uev-air-collector", "uev-compressor"],
+    ["uiv-air-collector", "uiv-compressor"],
+    ["umv-air-collector", "umv-compressor"],
+    ["uxv-air-collector", "uxv-compressor"],
+    ["max-air-collector", "max-compressor"]
+  ]
+}

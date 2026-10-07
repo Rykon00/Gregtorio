@@ -12,11 +12,14 @@ Output:
   graphics/icons/fork/<name>.png                         (32x32)
 A file whose pixels did not change is not rewritten.
 
-The basic machines from IV up are drawn as the blocks of ULV to EV (issue #138): the sprite is the machine top as a front face with the
-depth of a block on the right and at the bottom (block_sprite), the icon a cube with the face on its right side (block_icon).
+The basic machines from IV up are upstream's LV to EV assets with the casing in the tier's colour (issue #148, route b of
+docs/graphics-review/machine-tiers-block-routes.png): the sprite, its working strip and the icon of the LV machine (MV's where
+upstream has no LV one), with the casing pixels (the pixels that differ between the LV and the MV asset, frame by frame) as a
+ramp of their brightness through the tier colour; from UHV up the brightness of the GT hull texture of the tier runs through
+it (HULL_TIERS). The silhouette, the contours, the bevelled frame, the window and the depth are upstream's, so a row LV to MAX
+is one family; the strips have the frame count of the EV machine, whose graphics set the IV one copies (101).
 
-Tier look (issue #41): basic machines from UHV up show the GT hull texture of their tier as a frame
-around the machine overlay (HULL_TIERS); the large plasma turbines and naquadah reactors show the GT
+Tier look (issue #41): the large plasma turbines and naquadah reactors show the GT
 dynamo hatches of their tier in the corners (TIER_COPIES) instead of a tinted copy. The IV to MAX upgrade
 multiblocks keep the EV sprite and get a layer with GT energy hatches of their tier (UPGRADE_MULTIBLOCKS).
 """
@@ -30,19 +33,47 @@ OUT_ENTITY = ROOT / "graphics/entity/fork"
 OUT_ICON = ROOT / "graphics/icons/fork"
 
 TILE = 32          # Factorio pixels per tile in Gregtorio
-BASIC_FRAMES = 6   # frames for basic machines (must match 101-fork-machines.lua)
 
-# basic machine -> GT folder under textures/blocks/basicmachines (or an iconsets overlay)
-BASIC_GT = {
-    "wiremill": "wiremill", "bending-machine": "bender", "extruder": "extruder",
-    "rock-crusher": "iconsets:OVERLAY_FRONT_ROCK_BREAKER", "lathe": "lathe", "macerator": "macerator",
-    "centrifuge": "centrifuge", "air-collector": "pump", "extractor": "extractor",
-    "electrolyzer": "electrolyzer", "assembling-machine": "assembler", "cutting-machine": "cutter",
-    "canning-machine": "canner", "mixer": "mixer", "ore-washer": "ore_washer",
-    "laser-engraver": "laser_engraver", "fluid-solidifier": "fluid_solidifier",
-    "chemical-bath": "chemical_bath", "polarizer": "polarizer", "circuit-assembler": "circuitassembler",
-    "autoclave": "autoclave", "alloy-smelter": "alloy_smelter", "compressor": "compressor",
-}
+# the basic machines from IV up (101's IV_BASIC_MACHINES), drawn from upstream's LV to EV assets
+BASIC_MACHINES = [
+    "wiremill", "bending-machine", "extruder", "rock-crusher", "lathe", "macerator", "centrifuge",
+    "extractor", "electrolyzer", "assembling-machine", "cutting-machine", "canning-machine", "mixer", "ore-washer",
+    "laser-engraver", "fluid-solidifier", "chemical-bath", "polarizer", "circuit-assembler", "autoclave",
+    "alloy-smelter", "compressor", "forge-hammer", "arc-furnace", "forming-press",
+    "electric-furnace", "sifting-machine", "thermal-centrifuge", "electromagnetic-separator",
+]
+# issue #152: the Fluid Extractors are copies of the Extractor (151); from IV up they are drawn like the other basic
+# machines from their LV and MV sprites (fluid_extractor_lv_ev), with the Extractor's frame count
+FLUID_EXTRACTOR = "fluid-extractor"
+EV_FRAMES_OF = {FLUID_EXTRACTOR: "extractor"}
+# issue #170: the electric Forge Hammers LV to EV are made in a loop of 101 (no make_electric_machine("ev-forge-hammer"
+# to read) and play the 5 frames of the Steam Forge Hammer's strip; their LV and MV sprites come from it
+# (forge_hammer_lv_mv)
+EV_FRAMES = {"forge-hammer": 5, "arc-furnace": 1, "forming-press": 1, "electric-furnace": 1,
+             "sifting-machine": 4, "thermal-centrifuge": 1, "electromagnetic-separator": 4}
+# issue #171: the Arc Furnace has no upstream picture either: its LV and MV ones are the compressor's frame with GT's arc
+# furnace overlay in the window (arc_furnace_lv_mv), one frame
+ARC_OVERLAY = "gregtech:basicmachines/arc_furnace/OVERLAY_FRONT"
+ARC_WINDOW = (16, 21, 70, 54)   # the window of the LV and MV compressor (x0, y0, x1, y1)
+# issue #173: the Forming Press likewise: the wiremill's frame (its wide upper window) with GT's press front, cut to
+# its content
+PRESS_OVERLAY = "gregtech:basicmachines/press/OVERLAY_FRONT"
+PRESS_WINDOW = (11, 11, 75, 38)  # the upper window of the LV and MV wiremill
+# issue #174: the Electric Furnace: the assembling machine's frame (its plain window) with GT's electric furnace front
+FURNACE_OVERLAY = "gregtech:basicmachines/electric_furnace/OVERLAY_FRONT"
+FURNACE_WINDOW = (17, 21, 71, 54)  # the window of the LV and MV assembling machine
+# issue #175: the Sifting Machine: the lathe's frame with GT's sifter front, its 4 active frames as the working strip
+SIFTER_OVERLAY = "gregtech:basicmachines/sifter/OVERLAY_FRONT"
+SIFTER_WINDOW = (17, 17, 71, 55)  # the window of the LV and MV lathe
+# issue #185: the Thermal Centrifuge: the fluid solidifier's frame with GT's thermal centrifuge front
+THERMAL_OVERLAY = "gregtech:basicmachines/thermal_centrifuge/OVERLAY_FRONT"
+THERMAL_WINDOW = (16, 22, 71, 66)  # the window of the LV and MV fluid solidifier
+# issue #187: the Electromagnetic Separator: the polarizer's frame (its magnet poles) with GT's separator front between them
+EMS_OVERLAY = "gregtech:basicmachines/electromagnetic_separator/OVERLAY_FRONT"
+EMS_WINDOW = (21, 16, 64, 44)  # the upper window of the LV and MV polarizer, between its poles
+# issue #152: the fluid extractor's icons carry a molten fluid in the bottom right corner, so they differ from the
+# extractor's in the inventory; its LV to EV sprites are the extractor's with the liquid in the tubes molten
+FLUID_BADGE_MACHINES = {"fluid-extractor"}
 
 # tier color GT uses to tint the (gray) machine casings (EV = titanium, IV = tungstensteel)
 TIER_TINT = {"EV": (220, 160, 240), "IV": (100, 100, 160), "LuV": (255, 205, 225), "ZPM": (140, 225, 245), "UV": (130, 215, 140),
@@ -181,7 +212,6 @@ UPGRADE_MULTIBLOCKS = {
     "cracker": ("cracker/cracker", "cracker"),
     "multismelter": ("mv-multismelter/mv-multismelter", "hv-multismelter"),
     "pyrolyse-oven": ("mv-pyrolyse-oven/mv-pyrolyse-oven", "hv-pyrolyse-oven"),
-    "greenhouse": ("greenhouse/greenhouse", "greenhouse"),
     "drilling-rig": ("mv-drilling-rig/mv-drilling-rig", "mv-drilling-rig"),
     "alloy-blast-smelter": ("fork/ev-alloy-blast-smelter", "alloy-blast-smelter"),
 }
@@ -301,55 +331,6 @@ def shade(p, f):
     return (min(255, int(p[0] * f)), min(255, int(p[1] * f)), min(255, int(p[2] * f)), p[3])
 
 
-BLOCK_FACE = 86     # the front face of a sprite of the 96 px, the depth is the rest (the ULV to EV sprites: 86 and 10)
-
-
-def block_sprite(flat):
-    """A flat machine top as the block of the ULV to EV sprites: the picture is the front face at the top left, the right and
-    the bottom side are its edge pixels drawn along the diagonal (right side lighter than the bottom)."""
-    size = flat.width
-    face = flat.resize((BLOCK_FACE, BLOCK_FACE), Image.NEAREST)
-    depth = size - BLOCK_FACE
-    out = Image.new("RGBA", (size, size))
-    last = BLOCK_FACE - 1
-    for d in range(depth, 0, -1):
-        for x in range(d, BLOCK_FACE + d):
-            out.putpixel((x, last + d), shade(face.getpixel((x - d, last)), 0.5))
-    for d in range(depth, 0, -1):
-        for y in range(d, BLOCK_FACE + d):
-            out.putpixel((last + d, y), shade(face.getpixel((last, y - d)), 0.72))
-    out.alpha_composite(face)
-    return out
-
-
-def block_icon(flat):
-    """A flat machine icon (32 px) as a cube: the machine face skewed on the right side, the left side and the top in the
-    colour of the edge of the picture (the corners of the ULV to EV icons: top, left, right, bottom, ...)."""
-    n = flat.width
-    k = n / 32.0
-    ring = [flat.getpixel((x, y)) for x in range(n) for y in range(n) if min(x, y, n - 1 - x, n - 1 - y) < max(1, n // 16)]
-    base = tuple(sum(p[i] for p in ring) // len(ring) for i in range(3)) + (255,)
-    out = Image.new("RGBA", (n, n))
-    from PIL import ImageDraw
-    d = ImageDraw.Draw(out)
-    T, L, R, C, B, LB, RB = (15, 1), (2, 8), (29, 8), (15, 15), (15, 31), (2, 24), (29, 24)
-    sc = lambda pts: [(x * k, y * k) for x, y in pts]
-    d.polygon(sc([T, R, C, L]), fill=shade(base, 1.2))
-    d.polygon(sc([L, C, B, LB]), fill=shade(base, 0.6))
-    # the right side: the face skewed, (dx, dy) from C: dx = 14 u / 32, dy = -7 u / 32 + 16 v / 32
-    for y in range(n):
-        for x in range(n):
-            dx, dy = (x + 0.5) / k - C[0], (y + 0.5) / k - C[1]
-            u = dx * 32 / 14
-            v = (dy + 7 * u / 32) * 2
-            if 0 <= u < 32 and 0 <= v < 32:
-                out.putpixel((x, y), flat.getpixel((min(n - 1, int(u * k)), min(n - 1, int(v * k)))))
-    edge = shade(base, 0.35)
-    for a, b in ((L, T), (T, R), (R, RB), (RB, B), (B, LB), (LB, L), (L, C), (C, R), (C, B)):
-        d.line([(a[0] * k, a[1] * k), (b[0] * k, b[1] * k)], fill=edge)
-    return out
-
-
 def casing_tile(gt, casing, override=None):
     spec = override or CASING_TEXTURE.get(casing) or (casing if ":" in casing else None)
     if spec and gt_path(gt, spec).exists():
@@ -357,42 +338,391 @@ def casing_tile(gt, casing, override=None):
     return scaled(load(ICONS / f"{casing}.png"), TILE)
 
 
+ENTITY = ROOT / "graphics/entity"
+
+
+def ev_frames(base):
+    """the frame count of the EV machine's working strip (make_electric_machine in the upstream entity files): the IV
+    machine copies the EV machine's graphics set (101), so its strip has as many frames (the Fluid Extractor: the
+    Extractor's, EV_FRAMES_OF)"""
+    base = EV_FRAMES_OF.get(base, base)
+    if base in EV_FRAMES:
+        return EV_FRAMES[base]
+    pat = re.compile(r'make_electric_machine\(\s*"ev-%s"\s*,\s*"[^"]*"\s*,\s*"[^"]*"\s*,\s*\{[^}]*\}\s*,\s*"[^"]*"\s*,'
+                     r'\s*[\w.]+\s*,\s*[\d.]+\s*,\s*(\d+)' % re.escape(base))
+    for f in sorted((ROOT / "prototypes").glob("*.lua")):
+        m = pat.search(f.read_text(encoding="utf-8"))
+        if m:
+            return int(m.group(1))
+    raise SystemExit(f"no make_electric_machine for ev-{base}")
+
+
+def strip_frames(path, n=None):
+    img = load(path)
+    w = img.width
+    frames = [img.crop((0, i * w, w, (i + 1) * w)) for i in range(img.height // w)]
+    return frames[:n] if n else frames
+
+
+def upstream(base, tier, kind):
+    p = ENTITY / f"{tier}-{base}" / f"{tier}-{base}-{kind}.png"
+    return p if p.exists() else None
+
+
+_MV_PALETTE = None
+
+
+def mv_casing_palette():
+    """the colours of the MV casing: the MV pixels that differ from the LV asset, over every machine that has both"""
+    global _MV_PALETTE
+    if _MV_PALETTE is None:
+        _MV_PALETTE = set()
+        for base in BASIC_MACHINES:
+            lv, mv = upstream(base, "lv", "idle"), upstream(base, "mv", "idle")
+            if lv and mv:
+                a, b = load(lv).load(), load(mv).load()
+                for y in range(3 * TILE):
+                    for x in range(3 * TILE):
+                        if a[x, y] != b[x, y]:
+                            _MV_PALETTE.add(b[x, y])
+    return _MV_PALETTE
+
+
+def casing_mask(base_img, other_img, palette):
+    """the casing: the pixels where the LV and the MV picture differ and the base picture has a casing colour; without an
+    LV picture (other_img None) the pixels of the MV picture in the MV casing colours"""
+    a = base_img.load()
+    b = other_img.load() if other_img is not None else None
+    w, h = base_img.size
+    return [(x, y) for y in range(h) for x in range(w)
+            if a[x, y][3] and a[x, y] in palette and (b is None or a[x, y] != b[x, y])]
+
+
+def lum(p):
+    return (p[0] * 299 + p[1] * 587 + p[2] * 114) / 1000
+
+
+def tier_ramp(tier):
+    c = TIER_TINT[tier]
+    return tuple(int(v * 0.28) for v in c), c, tuple(min(255, int(v * 0.55 + 255 * 0.45)) for v in c)
+
+
+def recolour_casing(img, mask, tier, lo, hi, hull=None):
+    """the casing pixels as a ramp of their brightness (lo..hi of the casing of the idle picture) from a dark tone through
+    the tier colour to a light one; with a hull texture its brightness runs through the casing"""
+    dark, mid, light = tier_ramp(tier)
+    out = img.copy()
+    px = out.load()
+    hp = hull.load() if hull is not None else None
+    for x, y in mask:
+        p = px[x, y]
+        t = min(1.0, max(0.0, (lum(p) - lo) / max(1.0, hi - lo)))
+        a, b, f = (dark, mid, t * 2) if t < 0.5 else (mid, light, t * 2 - 1)
+        q = tuple(int(a[i] + (b[i] - a[i]) * f) for i in range(3)) + (p[3],)
+        if hp is not None:
+            q = shade(q, 0.75 + 0.5 * sum(hp[x % hull.width, y % hull.height][:3]) / 765)
+        px[x, y] = q
+    return out
+
+
 def basic_machine(gt, base, tier="IV"):
-    # Factorio is top-down: use the top face (MACHINE_TOP + OVERLAY_TOP), otherwise the front
-    src = BASIC_GT[base]
-    if src.startswith("iconsets:"):
-        side = tint(load(gt_path(gt, f"gregtech:iconsets/MACHINE_{tier}_SIDE")), TIER_TINT[tier])
-        front = gt_path(gt, "gregtech:iconsets/" + src.split(":", 1)[1])
-        active = front.with_name(front.stem + "_ACTIVE.png")
+    """Issue #148: the upstream asset of the machine (LV's, else MV's) with its casing in the tier's colour: the idle
+    picture, the working strip (the EV machine's frame count, the casing found frame by frame: moving parts cross it)
+    and the icon (the casing: the pixels that differ between the LV, MV, HV and EV icons, those upstream has)."""
+    lv, mv = upstream(base, "lv", "idle"), upstream(base, "mv", "idle")
+    src, other = (lv, mv) if lv else (mv, None)
+    idle_src = load(src)
+    other_idle = load(other) if other else None
+    if other:
+        a, b = idle_src.load(), other_idle.load()
+        palette = {a[x, y] for y in range(idle_src.height) for x in range(idle_src.width) if a[x, y] != b[x, y]}
     else:
-        d = gt / "src/main/resources/assets/gregtech/textures/blocks/basicmachines" / src
-        if (d / "OVERLAY_TOP.png").exists():
-            side = tint(load(gt_path(gt, f"gregtech:iconsets/MACHINE_{tier}_TOP")), TIER_TINT[tier])
-            front, active = d / "OVERLAY_TOP.png", d / "OVERLAY_TOP_ACTIVE.png"
-        else:
-            side = tint(load(gt_path(gt, f"gregtech:iconsets/MACHINE_{tier}_SIDE")), TIER_TINT[tier])
-            front, active = d / "OVERLAY_FRONT.png", d / "OVERLAY_FRONT_ACTIVE.png"
-    idle = side.copy()
-    if front.exists():
-        f = frames_of(load(front))[0]
-        idle.alpha_composite(f.resize(idle.size, Image.NEAREST))
-    act_frames = frames_of(load(active)) if active.exists() else [frames_of(load(front))[0]] if front.exists() else []
-    working = []
-    for i in range(BASIC_FRAMES):
-        fr = side.copy()
-        if act_frames:
-            fr.alpha_composite(act_frames[i % len(act_frames)].resize(fr.size, Image.NEAREST))
-        working.append(fr)
-    name = f"{tier.lower()}-{base}"
+        palette = mv_casing_palette()
+    mask = casing_mask(idle_src, other_idle, palette)
+    lo, hi = min(lum(idle_src.getpixel(p)) for p in mask), max(lum(idle_src.getpixel(p)) for p in mask)
+    hull = None
     if tier in HULL_TIERS:
-        hull = tint(load(gt_path(gt, f"gregtech:iconsets/MACHINE_{tier}_SIDE")), TIER_TINT[tier])
-        save(block_sprite(in_hull(hull, idle, 3 * TILE)), OUT_ENTITY / f"{name}-idle.png")
-        save_strip([block_sprite(in_hull(hull, fr, 3 * TILE)) for fr in working], OUT_ENTITY / f"{name}-working.png")
-        save(block_icon(in_hull(hull, idle, TILE)), OUT_ICON / f"{name}.png")
-        return
-    save(block_sprite(scaled(idle, 3 * TILE)), OUT_ENTITY / f"{name}-idle.png")
-    save_strip([block_sprite(scaled(fr, 3 * TILE)) for fr in working], OUT_ENTITY / f"{name}-working.png")
-    save(block_icon(scaled(idle, TILE)), OUT_ICON / f"{name}.png")
+        hull = scaled(tint(load(gt_path(gt, f"gregtech:iconsets/MACHINE_{tier}_SIDE")), TIER_TINT[tier]), TILE)
+    name = f"{tier.lower()}-{base}"
+    save(recolour_casing(idle_src, mask, tier, lo, hi, hull), OUT_ENTITY / f"{name}-idle.png")
+
+    n = ev_frames(base)
+    kind_src = src.with_name(src.name.replace("-idle.png", "-working.png"))
+    work = strip_frames(kind_src, n)
+    work_other = strip_frames(other.with_name(other.name.replace("-idle.png", "-working.png")), n) if other else None
+    if len(work) < n:
+        raise SystemExit(f"{kind_src} has {len(work)} frames, the EV machine plays {n}")
+    frames = [recolour_casing(f, casing_mask(f, work_other[i] if work_other else None, palette), tier, lo, hi, hull)
+              for i, f in enumerate(work)]
+    save_strip(frames, OUT_ENTITY / f"{name}-working.png")
+
+    icons = [load(ICONS / f"{t}-{base}.png") for t in ("lv", "mv", "hv", "ev") if (ICONS / f"{t}-{base}.png").exists()]
+    ip = [i.load() for i in icons]
+    imask = [(x, y) for y in range(TILE) for x in range(TILE)
+             if ip[0][x, y][3] and len({p[x, y] for p in ip}) > 1]
+    ilo, ihi = min(lum(icons[0].getpixel(p)) for p in imask), max(lum(icons[0].getpixel(p)) for p in imask)
+    save(recolour_casing(icons[0], imask, tier, ilo, ihi, scaled(hull, TILE // 2) if hull else None),
+         OUT_ICON / f"{name}.png")
+
+
+MOLTEN = [(120, 30, 0), (200, 70, 0), (255, 130, 0), (255, 190, 40), (255, 240, 150)]
+# a drop of melt, 9 x 12 pixels: '#' outline, 'a' to 'd' dark to light
+DROP = ["....#....",
+        "...#c#...",
+        "...#c#...",
+        "..#cdb#..",
+        ".#cddbb#.",
+        ".#cdbbb#.",
+        "#cdbbbba#",
+        "#cbbbbba#",
+        "#bbbbbaa#",
+        ".#bbaaa#.",
+        "..#aaa#..",
+        "...###..."]
+
+
+def badged(base, icon):
+    """FLUID_BADGE_MACHINES: the icon with a drop of melt in its bottom right corner"""
+    if base not in FLUID_BADGE_MACHINES:
+        return icon
+    out = icon.copy()
+    col = {"#": (40, 12, 0, 255), "a": MOLTEN[1] + (255,), "b": MOLTEN[2] + (255,), "c": MOLTEN[3] + (255,),
+           "d": MOLTEN[4] + (255,)}
+    x0, y0 = TILE - len(DROP[0]), TILE - len(DROP)
+    for y, row in enumerate(DROP):
+        for x, ch in enumerate(row):
+            if ch in col:
+                out.putpixel((x0 + x, y0 + y), col[ch])
+    return out
+
+
+def molten(p):
+    """a liquid pixel of the extractor's tubes (teal, green) as molten metal of the same brightness"""
+    lum = (p[0] * 299 + p[1] * 587 + p[2] * 114) / 255000
+    i = min(len(MOLTEN) - 1, int(lum * len(MOLTEN)))
+    return MOLTEN[i] + (p[3],)
+
+
+def is_liquid(p):
+    return p[3] and max(p[:3]) - min(p[:3]) > 40
+
+
+def casing_palette(base, tier, kind="idle"):
+    """the colours of the casing of an upstream LV or MV asset (the pixels that differ between its LV and MV picture),
+    sorted dark to light"""
+    a, b = load(upstream(base, "lv", kind)).load(), load(upstream(base, "mv", kind)).load()
+    src = a if tier == "lv" else b
+    cols = {src[x, y] for y in range(3 * TILE) for x in range(3 * TILE) if a[x, y] != b[x, y] and src[x, y][3]}
+    return sorted(cols, key=lum)
+
+
+def quantile_map(colours, palette):
+    """each colour onto the palette colour at the same rank of brightness"""
+    order = sorted(set(colours), key=lum)
+    n, m = max(1, len(order) - 1), len(palette) - 1
+    return {c: palette[round(i * m / n)] for i, c in enumerate(order)}
+
+
+HAMMER_WINDOW = (11, 16, 75, 70)   # the window of the steam forge hammer (its PSD's layers 7 and 8)
+
+
+def forge_hammer_lv_mv():
+    """Issue #170: upstream has no electric forge hammer, only the Steam Forge Hammer's picture (graphics/entity/psds
+    forge-hammer-*.psd are its sources). The LV and MV forge hammer are that picture with the bronze casing (every pixel
+    outside the window) in the casing colours of the LV and the MV extractor, rank for rank of brightness, so the
+    texture stays and the colours are upstream's; the window (anvil, hammer, sparks) stays. The LV to EV icons: the steam
+    hammer's icon with its bronze pixels in the colours of the LV, MV, HV and EV extractor icons."""
+    d = ENTITY / "steam-forge-hammer"
+    idle = load(d / "steam-forge-hammer-idle.png")
+    frames = strip_frames(d / "steam-forge-hammer-working.png")
+    x0, y0, x1, y1 = HAMMER_WINDOW
+    outside = lambda x, y: not (x0 <= x < x1 and y0 <= y < y1)
+    ip = idle.load()
+    casing = [(x, y) for y in range(idle.height) for x in range(idle.width) if ip[x, y][3] and outside(x, y)]
+    for t in ("lv", "mv"):
+        cmap = quantile_map([ip[p] for p in casing], casing_palette("extractor", t))
+        dst = ENTITY / f"{t}-forge-hammer"
+        dst.mkdir(exist_ok=True)
+
+        def recolour(img):
+            out = img.copy()
+            px = out.load()
+            for p in casing:
+                if px[p] in cmap:
+                    c = cmap[px[p]]
+                    px[p] = c[:3] + (px[p][3],)
+            return out
+        save(recolour(idle), dst / f"{t}-forge-hammer-idle.png")
+        save_strip([recolour(f) for f in frames], dst / f"{t}-forge-hammer-working.png")
+    icon = load(ICONS / "steam-forge-hammer.png")
+    ic = icon.load()
+    bronze = [(x, y) for y in range(icon.height) for x in range(icon.width)
+              if ic[x, y][3] and ic[x, y][0] > ic[x, y][2] + 25 and ic[x, y][0] >= ic[x, y][1]]
+    icons = [load(ICONS / f"{t}-extractor.png") for t in ("lv", "mv", "hv", "ev")]
+    ep = [i.load() for i in icons]
+    imask = [(x, y) for y in range(TILE) for x in range(TILE) if ep[0][x, y][3] and len({e[x, y] for e in ep}) > 1]
+    for t, e in zip(("lv", "mv", "hv", "ev"), ep):
+        cmap = quantile_map([ic[p] for p in bronze], sorted({e[p] for p in imask}, key=lum))
+        out = icon.copy()
+        px = out.load()
+        for p in bronze:
+            px[p] = cmap[ic[p]][:3] + (ic[p][3],)
+        save(out, ICONS / f"{t}-forge-hammer.png")
+
+
+def framed_overlay_lv_mv(gt, base, frame, window, overlay, glow=False, crop=False, animated=False):
+    """LV and MV pictures of a machine upstream has no picture of: the LV and MV <frame> machine's idle picture with
+    GT's front overlay of the machine at 2x in its window (x0, y0, x1, y1), the plain overlay at rest and the active one
+    (with its glow) while it works; with crop the overlay is cut to its content first. The LV to EV icons: the frame
+    machine's with the active overlay as a badge in the bottom right corner. With animated the working strip has every
+    frame of the active overlay (cut to the box of the plain one)."""
+    def front(name, i=0):
+        img = frames_of(load(gt_path(gt, overlay + name)))[i]
+        if crop:
+            img = img.crop(frames_of(load(gt_path(gt, overlay)))[0].getbbox() if animated else img.getbbox())
+        return img.resize((img.width * 2, img.height * 2), Image.NEAREST)
+    idle_front = front("")
+    work_front = front("_ACTIVE")
+    if glow:
+        work_front.alpha_composite(front("_ACTIVE_GLOW"))
+    work_fronts = ([front("_ACTIVE", i) for i in range(len(frames_of(load(gt_path(gt, overlay + "_ACTIVE")))))]
+                   if animated else None)
+    x0, y0, x1, y1 = window
+    at = (x0 + (x1 - x0 - idle_front.width) // 2, y0 + (y1 - y0 - idle_front.height) // 2)
+    for t in ("lv", "mv"):
+        img0 = load(ENTITY / f"{t}-{frame}" / f"{t}-{frame}-idle.png")
+        dst = ENTITY / f"{t}-{base}"
+        dst.mkdir(exist_ok=True)
+        for kind, f in (("idle", idle_front), ("working", work_front)):
+            img = img0.copy()
+            img.alpha_composite(f, at)
+            if kind == "working" and work_fronts:
+                frames = []
+                for wf in work_fronts:
+                    fr = img0.copy()
+                    fr.alpha_composite(wf, at)
+                    frames.append(fr)
+                save_strip(frames, dst / f"{t}-{base}-{kind}.png")
+                continue
+            save(img, dst / f"{t}-{base}-{kind}.png")
+    badge = frames_of(load(gt_path(gt, overlay + "_ACTIVE")))[0]
+    if crop:
+        badge = badge.crop(badge.getbbox())
+    k = 12 / max(badge.size)
+    badge = badge.resize((max(1, round(badge.width * k)), max(1, round(badge.height * k))), Image.NEAREST)
+    for t in ("lv", "mv", "hv", "ev"):
+        icon = load(ICONS / f"{t}-{frame}.png")
+        icon.alpha_composite(badge, (TILE - badge.width, TILE - badge.height))
+        save(icon, ICONS / f"{t}-{base}.png")
+
+
+def arc_furnace_lv_mv(gt):
+    """Issue #171: upstream has no arc furnace: the LV and MV compressor's frame with GT's arc furnace front (dark slots
+    at rest, glowing ones while it works)"""
+    framed_overlay_lv_mv(gt, "arc-furnace", "compressor", ARC_WINDOW, ARC_OVERLAY, glow=True)
+
+
+def forming_press_lv_mv(gt):
+    """Issue #173: upstream has no forming press: the LV and MV wiremill's frame with GT's press front"""
+    framed_overlay_lv_mv(gt, "forming-press", "wiremill", PRESS_WINDOW, PRESS_OVERLAY, crop=True)
+
+
+def electric_furnace_lv_mv(gt):
+    """Issue #174: upstream has no electric furnace: the LV and MV assembling machine's frame with GT's electric furnace
+    front (dark at rest, glowing while it works)"""
+    framed_overlay_lv_mv(gt, "electric-furnace", "assembling-machine", FURNACE_WINDOW, FURNACE_OVERLAY, glow=True, crop=True)
+
+
+def sifting_machine_lv_mv(gt):
+    """Issue #175: upstream has no basic sifter: the LV and MV lathe's frame with GT's sifter front (its active overlay is
+    animated, 4 frames)"""
+    framed_overlay_lv_mv(gt, "sifting-machine", "lathe", SIFTER_WINDOW, SIFTER_OVERLAY, crop=True, animated=True)
+
+
+def thermal_centrifuge_lv_mv(gt):
+    """Issue #185: upstream has no thermal centrifuge: the LV and MV fluid solidifier's frame with GT's thermal centrifuge
+    front (its lamps and gauge glow while it works)"""
+    framed_overlay_lv_mv(gt, "thermal-centrifuge", "fluid-solidifier", THERMAL_WINDOW, THERMAL_OVERLAY, glow=True, crop=True)
+
+
+def electromagnetic_separator_lv_mv(gt):
+    """Issue #187: upstream has no electromagnetic separator: the LV and MV polarizer's frame with GT's separator front
+    (4 frames while it works) between the poles"""
+    framed_overlay_lv_mv(gt, "electromagnetic-separator", "polarizer", EMS_WINDOW, EMS_OVERLAY, crop=True, animated=True)
+
+
+
+def autoclave_lv():
+    """Issue #193: upstream has no LV autoclave (GT's Basic Autoclave). Its picture is the MV autoclave's with the MV
+    casing colours (mv_casing_palette) in the LV extractor's casing colours, rank for rank of brightness, as the forge
+    hammer's; the icon the MV autoclave's icon with the pixels that differ from the HV and EV icons in the colours of the
+    LV extractor icon's casing."""
+    lv_pal, mv_pal = casing_palette("extractor", "lv"), mv_casing_palette()
+    dst = ENTITY / "lv-autoclave"
+    dst.mkdir(exist_ok=True)
+    for kind in ("idle", "working"):
+        src = ENTITY / "mv-autoclave" / f"mv-autoclave-{kind}.png"
+        frames = strip_frames(src) if kind == "working" else [load(src)]
+        masks = [casing_mask(f, None, mv_pal) for f in frames]
+        cmap = quantile_map([f.getpixel(xy) for f, m in zip(frames, masks) for xy in m], lv_pal)
+        out = []
+        for f, m in zip(frames, masks):
+            g = f.copy()
+            for xy in m:
+                g.putpixel(xy, cmap[f.getpixel(xy)])
+            out.append(g)
+        if kind == "working":
+            save_strip(out, dst / f"lv-autoclave-{kind}.png")
+        else:
+            save(out[0], dst / f"lv-autoclave-{kind}.png")
+    icons = [load(ICONS / f"{t}-autoclave.png") for t in ("mv", "hv", "ev")]
+    ip = [i.load() for i in icons]
+    imask = [(x, y) for y in range(TILE) for x in range(TILE) if ip[0][x, y][3] and len({q[x, y] for q in ip}) > 1]
+    a, b = load(ICONS / "lv-extractor.png").load(), load(ICONS / "mv-extractor.png").load()
+    ext = sorted({a[x, y] for y in range(TILE) for x in range(TILE) if a[x, y] != b[x, y] and a[x, y][3]}, key=lum)
+    cmap = quantile_map([icons[0].getpixel(xy) for xy in imask], ext)
+    icon = icons[0].copy()
+    for xy in imask:
+        icon.putpixel(xy, cmap[icons[0].getpixel(xy)])
+    save(icon, ICONS / "lv-autoclave.png")
+
+
+def fluid_extractor_lv_ev():
+    """Issue #152: the LV and MV fluid extractor sprites (HV and EV use MV's, like the extractor) are upstream's
+    extractor with the liquid in its tubes molten; the idle picture keeps a low melt in the tubes, so the two machines
+    differ at rest too. The LV to EV icons are the extractor's with the molten badge."""
+    ent = ROOT / "graphics/entity"
+    for t in ("lv", "mv"):
+        src, dst = ent / f"{t}-extractor", ent / f"{t}-fluid-extractor"
+        dst.mkdir(exist_ok=True)
+        idle = load(src / f"{t}-extractor-idle.png")
+        strip = load(src / f"{t}-extractor-working.png")
+        w = strip.width
+        frames = [strip.crop((0, i * w, w, (i + 1) * w)) for i in range(strip.height // w)]
+        ip = idle.load()
+        out = []
+        for f in frames:
+            g = f.copy()
+            px = g.load()
+            for y in range(w):
+                for x in range(w):
+                    # the liquid: coloured and not in the idle picture (the MV casing is coloured too)
+                    if is_liquid(px[x, y]) and px[x, y] != ip[x, y]:
+                        px[x, y] = molten(px[x, y])
+            out.append(g)
+        save_strip(out, dst / f"{t}-fluid-extractor-working.png")
+        # the liquid of the first frame, its lower part (the lowest 35 % of its height) in the idle tubes
+        f0 = frames[0].load()
+        cells = [(x, y) for y in range(w) for x in range(w) if is_liquid(f0[x, y]) and f0[x, y] != ip[x, y]]
+        top, bottom = min(y for _, y in cells), max(y for _, y in cells)
+        level = bottom - (bottom - top) * 0.35
+        img = idle.copy()
+        for x, y in cells:
+            if y >= level:
+                img.putpixel((x, y), molten(f0[x, y]))
+        save(img, dst / f"{t}-fluid-extractor-idle.png")
+    for t in ("lv", "mv", "hv", "ev"):
+        save(badged("fluid-extractor", load(ICONS / f"{t}-extractor.png")), ICONS / f"{t}-fluid-extractor.png")
 
 
 def in_hull(hull, top, size):
@@ -617,8 +947,17 @@ def main():
     OUT_ENTITY.mkdir(parents=True, exist_ok=True)
     OUT_ICON.mkdir(parents=True, exist_ok=True)
 
+    fluid_extractor_lv_ev()      # first: the LV and MV fluid extractor are the source of its tiers
+    forge_hammer_lv_mv()         # and the LV and MV forge hammer of the forge hammer's
+    arc_furnace_lv_mv(a.gt)      # and the LV and MV arc furnace of the arc furnace's
+    forming_press_lv_mv(a.gt)    # and the LV and MV forming press of the forming press's
+    electric_furnace_lv_mv(a.gt) # and the LV and MV electric furnace of the electric furnace's
+    sifting_machine_lv_mv(a.gt)  # and the LV and MV sifting machine of the sifting machine's
+    thermal_centrifuge_lv_mv(a.gt)  # and the LV and MV thermal centrifuge of the thermal centrifuge's
+    electromagnetic_separator_lv_mv(a.gt)  # and the LV and MV separator of the separator's
+    autoclave_lv()               # before the autoclave's tiers (it reads the MV autoclave)
     for tier in ("IV", "LuV", "ZPM", "UV", "UHV", "UEV", "UIV", "UMV", "UXV", "MAX"):
-        for base in BASIC_GT:
+        for base in BASIC_MACHINES + [FLUID_EXTRACTOR]:
             basic_machine(a.gt, base, tier)
     for name, spec in MULTIBLOCKS.items():
         multiblock(a.gt, name, *spec)

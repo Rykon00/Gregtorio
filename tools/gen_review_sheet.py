@@ -9,13 +9,15 @@ sprites at up to 192 pixels.
     python tools/gen_review_sheet.py techs                  # changed technology icons
     python tools/gen_review_sheet.py sprites                # changed entity sprites
     python tools/gen_review_sheet.py upgrades               # IV to MAX upgrade multiblocks: EV look vs tier hatches
+    python tools/gen_review_sheet.py tiers                  # basic machines LV to MAX in a row: idle, a working frame,
+                                                            # icon (issue #148; no before/after)
     python tools/gen_review_sheet.py fluid-icons            # changed fluid icons (graphics/fluids)
     python tools/gen_review_sheet.py fluids --fluids <file> # the Fluids tab, rows per subgroup (no before/after);
                                                             # <file> from `devcheck.py check --fluids-out <file>`
     python tools/gen_review_sheet.py all --ref origin/main --out docs/graphics-review
 
 Output: <out>/icons-<n>-<group>.png, techs.png, sprites-<n>-<group>.png, upgrades-<tier>.png, upgrades-icons.png,
-fluid-icons.png, fluids-tab.png
+fluid-icons.png, fluids-tab.png, machine-tiers-block.png (assembling machine and macerator), machine-tiers-all.png
 """
 import argparse, io, re, subprocess, warnings
 warnings.filterwarnings("ignore", category=DeprecationWarning)
@@ -272,9 +274,79 @@ def fluids(listing, out, data_dir, cols=10):
     print("written", path)
 
 
+TIERS = ["lv", "mv", "hv", "ev", "iv", "luv", "zpm", "uv", "uhv", "uev", "uiv", "umv", "uxv", "max"]
+TIER_MACHINES = [
+    "wiremill", "bending-machine", "extruder", "rock-crusher", "lathe", "macerator", "centrifuge", "air-collector",
+    "extractor", "electrolyzer", "assembling-machine", "cutting-machine", "canning-machine", "mixer", "ore-washer",
+    "laser-engraver", "fluid-solidifier", "chemical-bath", "polarizer", "circuit-assembler", "autoclave",
+    "alloy-smelter", "compressor", "fluid-extractor", "forge-hammer", "arc-furnace", "forming-press", "electric-furnace", "sifting-machine", "thermal-centrifuge", "electromagnetic-separator",
+]
+
+
+def tier_files(base, tier, src):
+    """the idle picture, the working strip and the icon the game uses for <tier>-<base> (LV to EV: the entity path of
+    make_electric_machine, HV and EV mostly MV's pictures; IV up: graphics/entity/fork)"""
+    name = f"{tier}-{base}"
+    if tier in ("lv", "mv", "hv", "ev"):
+        m = re.search(r'make_electric_machine\(\s*"%s"\s*,\s*"[^"]*"\s*,\s*"([^"]*)"' % re.escape(name), src)
+        # without make_electric_machine (the fluid extractor, a copy of the extractor): its own folder, else MV's
+        path = m.group(1) if m else next((f"{t}-{base}" for t in (tier, "mv")
+                                          if (ROOT / "graphics/entity" / f"{t}-{base}").is_dir()), None)
+        if not path:
+            return None
+        d = ROOT / "graphics/entity" / path
+        idle = d / f"{path}-idle.png"
+        work = next(iter(sorted(d.glob("*work*.png"))), None)
+        icon = ROOT / "graphics/icons" / f"{name}.png"
+    else:
+        idle = ROOT / "graphics/entity/fork" / f"{name}-idle.png"
+        work = ROOT / "graphics/entity/fork" / f"{name}-working.png"
+        icon = ROOT / "graphics/icons/fork" / f"{name}.png"
+    return idle, work, icon
+
+
+def tiers(out, machines=("assembling-machine", "macerator"), name="machine-tiers-block.png"):
+    """Issue #148: each machine LV to MAX in a row: the idle picture, the middle frame of the working strip, the icon (2x)"""
+    src = "".join(f.read_text(encoding="utf-8") for f in sorted((ROOT / "prototypes").glob("*.lua")))
+    cw, font_ = 100, font(11)
+    rows = []
+    for base in machines:
+        cells = []
+        for tier in TIERS:
+            files = tier_files(base, tier, src)
+            if not files or not files[0].exists():
+                cells.append(None)
+                continue
+            idle = Image.open(files[0]).convert("RGBA")
+            w = idle.width
+            work = Image.open(files[1]).convert("RGBA") if files[1] and files[1].exists() else idle
+            n = work.height // w
+            mid = work.crop((0, (n // 2) * w, w, (n // 2 + 1) * w))
+            icon = Image.open(files[2]).convert("RGBA").resize((64, 64), Image.NEAREST) if files[2].exists() else None
+            cells.append((idle, mid, icon))
+        rows.append((base, cells))
+    h_row = 16 + 96 + 4 + 96 + 4 + 64 + 12
+    img = Image.new("RGBA", (8 + cw * len(TIERS), 8 + h_row * len(rows)), BG)
+    d = ImageDraw.Draw(img)
+    y = 8
+    for base, cells in rows:
+        d.text((8, y), base, fill=TEXT, font=font_)
+        for i, cell in enumerate(cells):
+            x = 8 + i * cw
+            d.text((x + 40, y), TIERS[i], fill=DIM, font=font_)
+            if cell:
+                img.alpha_composite(cell[0], (x, y + 16))
+                img.alpha_composite(cell[1], (x, y + 16 + 100))
+                if cell[2]:
+                    img.alpha_composite(cell[2], (x + 16, y + 16 + 200))
+        y += h_row
+    img.save(out / name, optimize=True)
+    print("machine tiers:", out / name)
+
+
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("what", choices=["icons", "techs", "sprites", "upgrades", "fluid-icons", "fluids", "all"])
+    ap.add_argument("what", choices=["icons", "techs", "sprites", "upgrades", "fluid-icons", "fluids", "tiers", "all"])
     ap.add_argument("--ref", default="origin/main")
     ap.add_argument("--out", type=Path, default=ROOT / "docs/graphics-review")
     ap.add_argument("--fluids", help="fluids: the list of `devcheck.py check --fluids-out <file>`")
@@ -286,6 +358,9 @@ def main():
                      ("fluid-icons", fluid_icons)):
         if a.what in (what, "all"):
             fn(a.ref, a.out)
+    if a.what in ("tiers", "all"):
+        tiers(a.out)
+        tiers(a.out, TIER_MACHINES, "machine-tiers-all.png")
     if a.what == "fluids" or (a.what == "all" and a.fluids):
         if not a.fluids:
             ap.error("fluids needs --fluids <file> (devcheck.py check --fluids-out <file>)")

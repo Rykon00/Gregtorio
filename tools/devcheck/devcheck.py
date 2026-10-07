@@ -149,7 +149,7 @@ def remove_path(p):
         os.rmdir(p) if os.name == "nt" and p.is_dir() else p.unlink()
     elif p.is_file():
         p.unlink()
-    else:
+    elif p.exists():   # a run whose load failed leaves no mod-settings.dat
         shutil.rmtree(p)
 
 
@@ -263,7 +263,8 @@ class Model:
             if k == "R":
                 self.R[p[1]] = dict(cat=p[2], en=p[3] == "true", ing=split(p[4]), res=split(p[5]),
                                     fin=kinds(p[4]).count("fluid"), fout=kinds(p[5]).count("fluid"),
-                                    hidden=p[6] == "true", hide_craft=p[7] == "true", sg=p[8], group=p[9])
+                                    hidden=p[6] == "true", hide_craft=p[7] == "true", sg=p[8], group=p[9],
+                                    icon=p[10] if len(p) > 10 else "")
             elif k == "C":
                 self.C[p[1]] = p[3].split(",") if p[3] else []
                 self.CF[p[1]] = (int(p[4]), int(p[5]))
@@ -480,15 +481,316 @@ def check_table_only(m, sec):
 def check_microminer_tab(sec):
     """Issue #120 (prototypes/195-fork-microminer-tab.lua): the missions of every Microverse Projector (the recipes of its
     categories) and the projectors themselves (and their controller) are recipes of the Microminer tab, so a projector's
-    recipe window has one tab and a search for "micro" finds the machines next to the microminers."""
+    recipe window has one tab and a search for "micro" finds the machines next to the microminers. The recycling recipes
+    of a projector (issue #190) are recycling, in the rows of their machine."""
     out = []
     for r in sec.get("DUMP", []):
-        if r[0] == "R" and not r[6] == "true" and (
+        if r[0] == "R" and not r[6] == "true" and not r[1].startswith("recycling-") and (
                 r[2].endswith("-microverse-projector-recipes") or r[1].endswith("microverse-projector")
                 or r[1] == "microverse-projector-controller"):
             if r[9] != MICROMINER_TAB:
                 out.append(f"{r[1]} ({r[2]}): row {r[8]}, tab {r[9]}")
     return sorted(out)
+ORE_CHAIN_SKIP = {"crushed-platinum", "crushed-palladium", "crushed-firestone"}   # 155-fork-ore-chain.lua's skip list
+def check_ore_chain(m):
+    """Issue #185 (prototypes/155-fork-ore-chain.lua): every ore with a purified form has GTNH's whole chain (washer,
+    thermal centrifuge from crushed and purified ore, the three macerator steps, the centrifuge of impure and pure dust),
+    and no ore washer turns a crushed ore straight into something else (the shortcut of upstream; the platinum line's
+    washing and firestone are skipped)."""
+    out, ores = [], 0
+    for name, r in sorted(m.R.items()):
+        if r["hidden"]:
+            continue
+        if r["cat"] == "lv-ore-washer-recipes":
+            crushed = [i for i in r["ing"] if i.startswith("crushed-")]
+            if crushed and crushed[0] not in ORE_CHAIN_SKIP and not any(x.startswith("purified-") for x in r["res"]):
+                out.append(f"{name}: the ore washer turns {crushed[0]} into {', '.join(r['res'])}, not a purified ore")
+        if r["cat"] == "lv-ore-washer-recipes" and name.startswith("purified-") and not name.endswith("-distilled-water"):
+            ores += 1
+            x = name[len("purified-"):]
+            for need in (f"purified-{x}-distilled-water", f"centrifuged-{x}", f"centrifuged-{x}-from-crushed",
+                         f"impure-{x}-dust", f"pure-{x}-dust", f"centrifuged-{x}-maceration",
+                         f"centrifuging-impure-{x}-dust", f"centrifuging-pure-{x}-dust"):
+                if need not in m.R or m.R[need]["hidden"]:
+                    out.append(f"{x}: the ore chain lacks {need}")
+    return ores, out
+# Issue #186: GTNH's chemical bath washing per ore (docs/ORE-CHAIN.md appendix B, columns Hg and Na2S2O8), with
+# Gregtorio's dust of the tagged material (cobaltite's dust is cobalt dust)
+ORE_BATHS = {
+    # nickel's platinum dust is GTNH's platinum metallic powder (PlatinumSludgeOutputs, issue #199)
+    "mercury": {"gold": "gold-dust", "copper": "gold-dust", "nickel": "metallic-platinum-powder", "sheldonite": "sheldonite-dust",
+                "galena": "silver-dust", "lead": "silver-dust", "silver": "silver-dust", "tungstate": "silver-dust"},
+    "sodium-persulfate": {"iron": "nickel-dust", "gold": "copper-dust", "copper": "copper-dust", "tin": "zinc-dust",
+                          "tetrahedrite": "tetrahedrite-dust", "sphalerite": "zinc-dust", "nickel": "nickel-dust",
+                          "pentlandite": "cobalt-dust", "cobaltite": "cobalt-dust", "sheldonite": "nickel-dust"},
+}
+def check_ore_baths(m):
+    """Issue #186 (prototypes/155-fork-ore-chain.lua, phase O2): the chemical bath washes exactly the ores of ORE_BATHS
+    with mercury or sodium persulfate into purified ore and the tagged material's dust, as in GTNH. Returns (number of
+    bath recipes, problems)."""
+    out, n, seen = [], 0, set()
+    for name, r in sorted(m.R.items()):
+        if r["hidden"] or not r["cat"].endswith("-chemical-bath-recipes"):
+            continue
+        crushed = [i for i in r["ing"] if i.startswith("crushed-")]
+        if not crushed:
+            continue
+        x = crushed[0][len("crushed-"):]
+        for fl, ores in ORE_BATHS.items():
+            if fl in r["ing"]:
+                n += 1
+                seen.add((fl, x))
+                if x not in ores:
+                    out.append(f"{name}: GTNH has no {fl} washing of {x}")
+                elif f"purified-{x}" not in r["res"] or ores[x] not in r["res"]:
+                    out.append(f"{name}: gives {', '.join(r['res'])}, GTNH purified-{x} and {ores[x]}")
+    for fl, ores in ORE_BATHS.items():
+        for x in sorted(ores):
+            if (fl, x) not in seen:
+                out.append(f"{x}: the chemical bath lacks the {fl} washing (purified-{x}-{fl})")
+    return n, out
+# Issue #187: GTNH's electromagnetic separator per ore (docs/ORE-CHAIN.md appendix B, column EM separator)
+ORE_SEPARATOR = {"vanadium-magnetite": "gold", "tin": "iron", "ilmenite": "iron", "nickel": "iron", "pentlandite": "iron",
+                 "chromite": "iron", "bornite": "iron", "bastnasite": "neodymium", "monazite": "neodymium"}
+# Issue #188: the gem ores of GTNH's sifter (table, crystallisable for the autoclave) and their gem items
+ORE_GEMS = {"ruby": ("ruby", False), "emerald": ("emerald", False), "diamond": ("diamond", False),
+            "nether-quartz": ("nether-quartz", True), "certus-quartz": ("certus-quartz", True),
+            "apatite": ("apatite-gem", True), "tricalcium-phosphate": ("tricalcium-phosphate-gem", False),
+            "lazurite": ("lazurite-gem", True), "sodalite": ("sodalite-gem", True), "lapis": ("lapis-lazuli", True),
+            "monazite": ("monazite-gem", True)}
+# Issue #193: the laser engraver steps of the grades, with the lens of the gem's colour (red ruby, green emerald, white
+# diamond; GT's other colours need lenses of materials Gregtorio lacks)
+ORE_GEM_LENS = {"ruby": "ruby-lens", "emerald": "emerald-lens", "monazite": "emerald-lens", "diamond": "diamond-lens",
+                "nether-quartz": "diamond-lens"}
+def check_ore_o3_o4(m):
+    """Issues #187 and #188 (prototypes/155-fork-ore-chain.lua, phases O3 and O4): the electromagnetic separator works
+    exactly the pure dusts of ORE_SEPARATOR (dust, small dust and nugget of the metal); every ore of ORE_GEMS is sifted
+    from its purified ore into the five grades and the dust, the crystallisable ones grow their gem in the autoclave
+    from impure and pure dust (water and distilled water); every ore with a purified form is crushed in the forge
+    hammer at each step. Returns (info line, problems)."""
+    out, seps, sifts, autos, hammers = [], set(), 0, 0, 0
+    def live(n):
+        return n in m.R and not m.R[n]["hidden"]
+    for name, r in sorted(m.R.items()):
+        if r["hidden"]:
+            continue
+        if r["cat"] == "lv-electromagnetic-separator-recipes":
+            pure = [i for i in r["ing"] if i.startswith("pure-") and i.endswith("-dust")]
+            x = pure[0][len("pure-"):-len("-dust")] if pure else None
+            if x not in ORE_SEPARATOR:
+                out.append(f"{name}: GTNH's separator has no recipe for {', '.join(r['ing'])}")
+                continue
+            seps.add(x)
+            metal = ORE_SEPARATOR[x]
+            for need in (f"small-pile-of-{metal}-dust", f"{metal}-nugget"):
+                if need not in r["res"]:
+                    out.append(f"{name}: no {need} (GTNH: small dust 40 %, nugget 20 %)")
+    for x in sorted(set(ORE_SEPARATOR) - seps):
+        if live(f"pure-{x}-dust"):
+            out.append(f"{x}: the electromagnetic separator lacks separating-pure-{x}-dust")
+    for x, (gem, crystal) in sorted(ORE_GEMS.items()):
+        if not live(f"purified-{x}"):
+            out.append(f"{x}: no purified ore to sift")
+            continue
+        sift = [n for n, r in m.R.items() if not r["hidden"] and r["cat"] == "lv-sifter-recipes"
+                and r["ing"] == [f"purified-{x}"]]
+        if not sift:
+            out.append(f"{x}: the sifter does not sift purified-{x}")
+        else:
+            sifts += 1
+            res = m.R[sift[0]]["res"]
+            for need in (f"exquisite-{x}", f"flawless-{x}", gem, f"flawed-{x}", f"chipped-{x}"):
+                if need not in res:
+                    out.append(f"{sift[0]}: no {need}")
+        if crystal:
+            for d in ("impure", "pure"):
+                for w in ("", "-distilled-water"):
+                    n = f"autoclave-{d}-{x}-dust{w}"
+                    if live(n) and m.R[n]["cat"].endswith("-autoclave-recipes") and gem in m.R[n]["res"]:
+                        autos += 1
+                    else:
+                        out.append(f"{x}: the autoclave lacks {n} ({gem})")
+    for name, r in sorted(m.R.items()):
+        if r["hidden"] or r["cat"] != "lv-ore-washer-recipes" or not name.startswith("purified-") \
+                or name.endswith("-distilled-water"):
+            continue
+        x = name[len("purified-"):]
+        for src in (f"crushed-{x}", f"purified-{x}", f"centrifuged-{x}"):
+            if live(f"hammering-{src}") and m.R[f"hammering-{src}"]["cat"] == "lv-forge-hammer-recipes":
+                hammers += 1
+            else:
+                out.append(f"{x}: the forge hammer does not crush {src}")
+    # issue #193: dark ash from every grade implosion, small piles from chipped and flawed gems, the engraver steps,
+    # the LV autoclave
+    engraves = 0
+    for x, (gem, crystal) in sorted(ORE_GEMS.items()):
+        grades = [f"chipped-{x}", f"flawed-{x}", gem, f"flawless-{x}", f"exquisite-{x}"]
+        for lo, hi in zip(grades, grades[1:]):
+            n = f"implosion-{lo}-to-{'gem' if hi == gem else hi.split('-')[0]}"
+            if live(n) and "tiny-pile-of-dark-ash-dust" not in m.R[n]["res"]:
+                out.append(f"{n}: no dark ash (GT: 2 tiny piles)")
+            lens = ORE_GEM_LENS.get(x)
+            if lens:
+                e = f"engraving-{lo}-to-{'gem' if hi == gem else hi.split('-')[0]}"
+                if live(e) and m.R[e]["cat"].endswith("-laser-engraver-recipes") and lens in m.R[e]["ing"] \
+                        and lens in m.R[e]["res"] and hi in m.R[e]["res"]:
+                    engraves += 1
+                else:
+                    out.append(f"{x}: the laser engraver lacks {e} (3 x {lo} and the {lens}, which stays)")
+        for k, n in (("chipped", 1), ("flawed", 2)):
+            r = m.R.get(f"{k}-{x}-maceration")
+            if r and f"small-pile-of-{x}-dust" not in r["res"]:
+                out.append(f"{k}-{x}-maceration: not into small piles of {x} dust")
+    if "lv-autoclave-recipes" not in m.C.get("lv-autoclave", []):
+        out.append("lv-autoclave: no LV autoclave running the LV autoclave category (GT's Basic Autoclave)")
+    info = (f"{len(seps)} ores in the electromagnetic separator, {sifts} gem ores sifted, {autos} autoclave recipes, "
+            f"{hammers} forge hammer steps, {engraves} laser engraver steps")
+    return info, out
+MACERATOR_CAT, HAMMER_CAT = "lv-macerator-recipes", "lv-forge-hammer-recipes"
+def check_ore_hammer(sec):
+    """Issue #202 (prototypes/155-fork-ore-chain.lua, phase O4): GTNH's raw ore recipes (ProcessingRawOre.java). A raw ore
+    with a macerator recipe to a crushed item (2 x the ore multiplier) needs a forge hammer recipe with half the yield, of
+    the same crushed item or of GT's gem (FORK_ORE_HAMMER_GEM, section HAMMERGEM), unless it is in the allow-list
+    FORK_ORE_HAMMER_SKIP with its reason (an entry that has a hammer recipe or no macerator recipe fails too); the
+    macerator recipe has one byproduct at 5 % x GT's byproduct multiplier (1, 2 or 4); a raw ore that the forge hammer or
+    any other recipe crushes needs a macerator recipe. Amounts from the section BALANCE. Returns (info line, problems)."""
+    allow = {r[0]: r[1] for r in sec.get("HAMMERSKIPOK", [])}
+    gems = {r[0]: r[1] for r in sec.get("HAMMERGEM", [])}
+    mac, ham, other = {}, {}, {}   # raw ore -> [(recipe, results)]
+    for row in sec.get("BALANCE", []):
+        o = json.loads("	".join(row))
+        if o.get("kind") != "recipe" or o.get("hidden") or o["name"].startswith("recycling-"):
+            continue
+        ing = o.get("ingredients") or []
+        if len(ing) != 1 or ing[0]["type"] != "item" or not ing[0]["name"].startswith("raw-") or ing[0].get("amount") != 1:
+            continue
+        res = [r for r in o.get("results") or [] if r["type"] == "item"]
+        crushes = any(r["name"].startswith("crushed-") for r in res)
+        if o["category"] == MACERATOR_CAT and crushes:
+            mac.setdefault(ing[0]["name"], []).append((o["name"], res))
+        elif o["category"] == HAMMER_CAT:
+            ham.setdefault(ing[0]["name"], []).append((o["name"], res))
+        elif crushes:
+            other.setdefault(ing[0]["name"], []).append((o["name"], res))
+    out, pairs_ok, byp_ok = [], 0, 0
+    for raw in sorted(set(ham) | set(other)):
+        if raw not in mac:
+            names = sorted(r[0] for r in ham.get(raw, []) + other.get(raw, []))
+            out.append(f"{raw}: crushed by {', '.join(names)} but no macerator recipe (GTNH: every ore is macerated)")
+    for raw, macs in sorted(mac.items()):
+        if raw in allow:
+            if raw in ham:
+                out.append(f"{raw}: in FORK_ORE_HAMMER_SKIP but crushed by {', '.join(h[0] for h in ham[raw])} (remove the entry)")
+            continue
+        for name, res in macs:
+            byp = [r for r in res if not r["name"].startswith("crushed-")]
+            if len(byp) == 1 and round((byp[0].get("probability") or 1) / 0.05, 6) in (1, 2, 4):
+                byp_ok += 1
+            else:
+                out.append(f"{name}: byproducts {[(r['name'], r.get('probability')) for r in byp]} (GTNH: the first "
+                           f"byproduct at 5 % x the byproduct multiplier)")
+        if raw not in ham:
+            out.append(f"{raw}: macerated by {', '.join(m[0] for m in macs)} but no forge hammer recipe (GTNH: every ore, "
+                       f"half the macerator's yield; or add it to FORK_ORE_HAMMER_SKIP with the reason)")
+            continue
+        for hname, hres in ham[raw]:
+            for mname, mres in macs:
+                crushed = next(r for r in mres if r["name"].startswith("crushed-"))
+                want = gems.get(raw, crushed["name"])
+                if len(hres) != 1 or hres[0]["name"] != want or hres[0]["amount"] * 2 != crushed["amount"]:
+                    out.append(f"{hname}: {[(r['name'], r['amount']) for r in hres]}, the macerator's {mname} "
+                               f"{crushed['amount']:g} {crushed['name']} (GTNH: half as many, of {want})")
+                else:
+                    pairs_ok += 1
+    for raw in sorted(allow):
+        if raw not in mac:
+            out.append(f"{raw}: in FORK_ORE_HAMMER_SKIP but no macerator recipe crushes it (remove the entry)")
+    for raw, gem in sorted(gems.items()):
+        if raw not in ham:
+            out.append(f"{raw}: in FORK_ORE_HAMMER_GEM but no forge hammer recipe takes it (remove the entry)")
+    return (f"{len(mac)} raw ores macerated to a crushed ore ({byp_ok} recipes with GT's byproduct), {pairs_ok} with a "
+            f"forge hammer recipe of half the yield ({len(gems)} of them gems), {len(allow)} in FORK_ORE_HAMMER_SKIP"), out
+# Issue #164: the tier circuit items up to UV that the variant recipes (processor, assembly, supercomputer, mainframe)
+# share; above UV each tier item has one recipe (the mainframe of its line)
+CIRCUIT_TIER_ITEMS = {"electronic-circuit", "advanced-circuit", "processing-unit", "ev-circuit", "iv-circuit",
+                      "luv-circuit", "zpm-circuit", "uv-circuit"}
+def check_circuit_icons(m):
+    """Issue #164 (prototypes/156-fork-circuit-icons.lua): every recipe that makes a tier circuit up to UV shows its own
+    icon (GT's texture of the variant it is in GTNH), since the variants share the tier item; recycling and scrap
+    recipes do not count. Returns (number of variant recipes, recipes without their own icon)."""
+    n, out = 0, []
+    for name, r in sorted(m.R.items()):
+        if r["hidden"] or "recycl" in r["cat"] or "recycling" in name or "scrap" in name:
+            continue
+        if CIRCUIT_TIER_ITEMS & set(r["res"]):
+            n += 1
+            if not r["icon"]:
+                out.append(f"{name} ({r['cat']}): makes {', '.join(sorted(CIRCUIT_TIER_ITEMS & set(r['res'])))} without an "
+                           "icon of its own (prototypes/156-fork-circuit-icons.lua, tools/gen_gt_icons.py)")
+    return n, out
+# Issue #199 (and the platinum line, #96): the dusts of the platinum group come only from the platinum line's own steps
+# (reprecipitation, the residue branches) and the quantum force transformer; GTNH turns every ore processing output of
+# them into the line's powders and residues (bartworks PlatinumSludgeOutputs)
+PGM_DUST_SOURCES = {"platinum-dust": {"reprecipitated-platinum-processing"},
+                    "palladium-dust": {"reprecipitated-palladium-processing"},
+                    "iridium-dust": {"iridium-dust"}, "osmium-dust": {"osmium-dust"}}
+def check_pgm_dusts(m):
+    """Issue #199: no recipe but the platinum line's and the quantum force transformer's (`-qft-`) makes a dust of the
+    platinum group; recycling does not count."""
+    out = []
+    for name, r in sorted(m.R.items()):
+        if r["hidden"] or "recycl" in r["cat"] or name.endswith("-recycling") or "-qft-" in name:
+            continue
+        for dust in sorted(PGM_DUST_SOURCES.keys() & set(r["res"])):
+            if name not in PGM_DUST_SOURCES[dust]:
+                out.append(f"{name} ({r['cat']}): makes {dust} outside the platinum line (GTNH: its powder or residue)")
+    return out
+# Issue #190: what a recycling recipe may give (prototypes/157-fork-recycling.lua)
+RECYCLE_PGM = {"metallic-platinum-powder", "metallic-palladium-powder", "iridium-metal-residue", "rarest-metal-mixture"}
+def check_recycling(m, sec):
+    """Issue #190 (prototypes/157-fork-recycling.lua): GTNH recycles an item into its materials, never into its parts. Every
+    recipe recycling-<machine>-<item> takes the one item (and oxygen in the arc furnace) and gives whole dusts, ingots, a
+    melt or the platinum line's powders; every entry of FORK_RECYCLING_BLACKLIST names an item and says why. Returns
+    (info line, problems)."""
+    out, kinds = [], {"macerator": 0, "arc-furnace": 0, "fluid-extractor": 0}
+    for name, r in sorted(m.R.items()):
+        if not name.startswith("recycling-"):
+            continue
+        kind = next((k for k in ("macerator", "arc-furnace", "fluid-extractor") if name.startswith(f"recycling-{k}-")), None)
+        if kind is None:
+            out.append(f"{name}: not a macerator, arc furnace or fluid extractor recycling recipe")
+            continue
+        kinds[kind] += 1
+        item = name[len(f"recycling-{kind}-"):]
+        extra = [i for i in r["ing"] if i != item and not (kind == "arc-furnace" and i == "oxygen")]
+        if item not in r["ing"] or extra:
+            out.append(f"{name}: takes {', '.join(r['ing'])}, not {item}" + (" and oxygen" if kind == "arc-furnace" else ""))
+        for x in r["res"]:
+            ok = (x.endswith("-dust") or x.endswith("-ingot") or x.startswith("molten-") or x in RECYCLE_PGM)
+            if not ok:
+                out.append(f"{name}: gives {x}, not a material (GTNH recycles into materials, not parts)")
+    for item, why, exists in sec.get("RECYCLEBLACK", []):
+        if not why:
+            out.append(f"FORK_RECYCLING_BLACKLIST[{item}]: no reason")
+        if exists != "true":
+            out.append(f"FORK_RECYCLING_BLACKLIST[{item}]: no such item")
+    info = (f"{sum(kinds.values())} recipes: {kinds['macerator']} macerator, {kinds['arc-furnace']} arc furnace, "
+            f"{kinds['fluid-extractor']} fluid extractor; blacklist {len(sec.get('RECYCLEBLACK', []))}")
+    return info, out
+def check_extractor_split(m):
+    """Issue #152 (prototypes/151-fork-fluid-extractor.lua): as in GTNH, the Extractor makes items and the Fluid Extractor
+    fluids. A recipe of an extractor category with a fluid result, or of a fluid extractor category without one, is in
+    the wrong machine (hidden recipes do not count)."""
+    out = []
+    for name, r in sorted(m.R.items()):
+        if r["hidden"]:
+            continue
+        if re.fullmatch(r"[a-z]+-fluid-extractor-recipes", r["cat"]):
+            if not r["fout"]:
+                out.append(f"{name} ({r['cat']}): no fluid result, belongs in the Extractor")
+        elif re.fullmatch(r"[a-z]+-extractor-recipes", r["cat"]) and r["fout"]:
+            out.append(f"{name} ({r['cat']}): a fluid result, belongs in the Fluid Extractor")
+    return out
 def check_fluid_icons(sec):
     """Issue #119 (a warning): a fluid of the Fluids tab whose icon is not a Gregtorio file shows the base game's or Space
     Age's icon next to the others. The ones kept on purpose are in FORK_FLUID_ICONS_KEPT (prototypes/196-fork-subgroups.lua,
@@ -770,6 +1072,30 @@ def check(a):
     report("WARNING: materials of the material parts without a tier (prototypes/200-fork-material-parts.lua)", parts_unranked)
     microminer = check_microminer_tab(sec)
     report("Microverse Projector recipes outside the Microminer tab (issue #120)", microminer)
+    chain_ores, ore_chain = check_ore_chain(m)
+    print(f"\nore chain (issue #185): {chain_ores} ores with GTNH's chain")
+    report("ore chain gaps and ore washer shortcuts (prototypes/155-fork-ore-chain.lua)", ore_chain)
+    bath_n, ore_baths = check_ore_baths(m)
+    print(f"\nchemical bath washing (issue #186): {bath_n} recipes")
+    report("chemical bath washing that differs from GTNH (prototypes/155-fork-ore-chain.lua)", ore_baths)
+    o34_info, ore_o34 = check_ore_o3_o4(m)
+    circuit_n, circuit_icons = check_circuit_icons(m)
+    pgm_dusts = check_pgm_dusts(m)
+    recycle_info, recycling = check_recycling(m, sec)
+    print(f"\nseparator, gems and forge hammer of the ore chain (issues #187, #188): {o34_info}")
+    report("separator, gem and forge hammer steps that differ from GTNH (prototypes/155-fork-ore-chain.lua)", ore_o34)
+    hammer_info, ore_hammer = check_ore_hammer(sec)
+    print(f"\nraw ore crushing in the macerator and the forge hammer (issue #202): {hammer_info}")
+    report("raw ores whose macerator and forge hammer crushing differ from GTNH (prototypes/155-fork-ore-chain.lua)",
+           ore_hammer)
+    print(f"\ncircuit variant recipes up to UV (issue #164): {circuit_n}")
+    report("circuit recipes without their own icon (issue #164)", circuit_icons)
+    report("platinum group dusts made outside the platinum line (issue #199)", pgm_dusts)
+    print(f"\nrecycling (issue #190): {recycle_info}")
+    report("recycling recipes that differ from GTNH's rule (prototypes/157-fork-recycling.lua)", recycling)
+    extractor_split = check_extractor_split(m)
+    report("extractor recipes in the wrong machine (issue #152: items in the Extractor, fluids in the Fluid Extractor)",
+           extractor_split)
     report("WARNING: fluids of the Fluids tab with an icon of the base game or Space Age (issue #119; "
            "FORK_FLUID_ICONS_KEPT in prototypes/196-fork-subgroups.lua keeps one on purpose)", check_fluid_icons(sec))
     fluid_steps = check_fluid_steps(sec)
@@ -789,7 +1115,9 @@ def check(a):
         Path(a.balance_out).write_text("[\n" + ",\n".join(rows) + "\n]\n", encoding="utf-8")
         print(f"\nbalance data written to {a.balance_out} (recipes, machines, technologies as JSON)")
     ok = not (files or [s for s in sprites if not s.startswith("(")] or uncraft or menu or required or unresearchable
-              or new_drafts or fluid_problems or locked or one_pack or fluid_steps or microminer or table_only)
+              or new_drafts or fluid_problems or locked or one_pack or fluid_steps or microminer or table_only
+              or extractor_split or ore_chain or ore_baths or ore_o34 or ore_hammer
+              or circuit_icons or pgm_dusts or recycling)
     print("\nRESULT:", "OK" if ok else "PROBLEMS FOUND")
     return 0 if ok else 1
 
@@ -835,7 +1163,7 @@ def runtime(a):
     print(f"benchmark: {ran.group(0) if ran else 'did not run'}")
     # the ME network's runtime tests are in me-network since issue #83 (its tools/devcheck)
     tests = (("MOLD", "mold test"), ("POWER", "power test"), ("FUEL", "fuel check test"), ("COOLED", "cooled fluid test"),
-             ("TIERS", "turbine tier test"), ("RECIPES", "recipe test"), ("STEAM", "steam turbine test"), ("CHAIN", "nuclear chain test"), ("LSC", "supercapacitor test"), ("LSUP", "supercapacitor upgrade test"), ("MELT", "melt and cast test"), ("OFFER", "offered recipes test"), ("VICTORY", "victory test"),
+             ("TIERS", "turbine tier test"), ("RECIPES", "recipe test"), ("CRUSH", "raw ore crushing test"), ("STEAM", "steam turbine test"), ("CHAIN", "nuclear chain test"), ("LSC", "supercapacitor test"), ("LSUP", "supercapacitor upgrade test"), ("MELT", "melt and cast test"), ("OFFER", "offered recipes test"), ("VICTORY", "victory test"),
              ("POSTVICTORY", "post-victory test"))
     for key, label in tests:
         m = re.search(rf"DEVCHECK-RUNTIME-{key} (.*)", log)

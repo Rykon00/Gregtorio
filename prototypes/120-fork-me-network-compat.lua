@@ -338,6 +338,27 @@ recipe_of{
 	},
 }
 
+--- issue #159 (me-network 0.5.0, its issue #130): the ME Pattern Terminal, GTNH's recipe (NewHorizonsCoreMod
+--- scripts/ScriptAppliedEnergistics2.java, "ME Pattern Terminal"): an ME Terminal, 2 certus quartz screws, a blank
+--- pattern, 2 nether quartz plates and an engineering processor in the MV assembler, 10 s. Gregtorio had no nether
+--- quartz plate: GT's bender recipe of a gem (OP/ProcessingGem.java:117-125: 1 gem -> 1 plate, mass x 2 ticks, nether
+--- quartz 98 -> 9.8 s, 24 EU/t)
+create_item{
+	name = "nether-quartz-plate",
+	category = "lv-bending-machine-recipes",
+	energy_required = 9.8 * LV_SPEED,
+	ingredients = { { type = "item", name = "nether-quartz", amount = 1 } },
+}
+recipe_of{
+	name = "me-pattern-terminal",
+	category = "mv-assembling-machine-recipes",
+	subgroup = "fork-me-network",
+	order = "e0",
+	energy_required = 10 * MV_SPEED,
+	ingredients = I{ "me-terminal", 1, "certus-quartz-screw", 2, "me-blank-pattern", 1, "nether-quartz-plate", 2,
+		"engineering-processor", 1 },
+}
+
 recipe_of{
 	name = "me-molecular-assembler",
 	category = "hv-assembling-machine-recipes",
@@ -480,10 +501,11 @@ end
 --- upstream advanced-card (13-mv-age-item.lua) is GTNH's Advanced Card already (2 platinum, 3 titanium, 1 red alloy,
 --- 1 calculation processor). Issue #121: there is one family of cards, all of them me-network's: me-advanced-card gets
 --- that recipe (on me-upgrade-cards with the cards made from it), and Gregtorio's own advanced-card is deleted (saves:
---- `migrations/`). The acceleration card is still Gregtorio's item, made from the Advanced Card and unlocked with it;
---- it becomes a real me-network card with its own function later (maintainer's decision, me-network issue).
---- Guarded by the item: with me-network 0.2.0 there are no cards (the release of 0.5.1 raised the dependency to >= 0.3.0,
---- issue #101, and the guard can go).
+--- `migrations/`). Issue #195: me-network 0.5.0 made the Acceleration Card a real card (its issue #110, a module of the
+--- ME Molecular Assembler): me-acceleration-card gets GTNH's recipe (shapeless: advanced card, engineering and logic
+--- processor, fluix crystal; the recipe of Gregtorio's own card), and Gregtorio's acceleration-card is deleted (saves:
+--- `migrations/2026-10-07-issue-195-acceleration-card.json`). Guarded by the item: with me-network 0.2.0 there are no
+--- cards (the dependency is >= 0.5.0 since issue #195, and the guard can go).
 --------------------------------------------------------------------------------
 
 local HAS_CARDS = data.raw.item["me-basic-card"] ~= nil
@@ -494,13 +516,14 @@ if HAS_CARDS then
 
 	--- GTNH: 2 platinum, 3 titanium, 1 red alloy, 1 calculation processor (one card, as GTNH's recipe)
 	card("me-advanced-card", "b", I{ "platinum-plate", 2, "titanium-plate", 3, "red-alloy-plate", 1, "calculation-processor", 1 })
-	--- Gregtorio's own Advanced Card is gone; the Acceleration Card is made from me-network's
+	--- Gregtorio's own Advanced Card and Acceleration Card are gone (issues #121, #195)
 	data.raw.item["advanced-card"] = nil
 	data.raw.recipe["advanced-card"] = nil
-	for _, i in pairs(data.raw.recipe["acceleration-card"].ingredients) do
-		if i.name == "advanced-card" then i.name = "me-advanced-card" end
-	end
-	move_to("fork-me-cards", "acceleration-card", "h")
+	data.raw.item["acceleration-card"] = nil
+	data.raw.recipe["acceleration-card"] = nil
+	--- GTNH: advanced card, engineering processor, logic processor, fluix crystal
+	card("me-acceleration-card", "h",
+		I{ "me-advanced-card", 1, "engineering-processor", 1, "logic-processor", 1, "fluix-crystal", 1 })
 
 	--- GTNH: gold, aluminium, red alloy, calculation processor (the Advanced Card's pattern with gold and aluminium)
 	card("me-basic-card", "a", I{ "gold-plate", 2, "aluminium-plate", 3, "red-alloy-plate", 1, "calculation-processor", 1 })
@@ -584,7 +607,7 @@ end
 
 --- EV: autocrafting and the first crafting CPU (a crafting unit, 1k and 4k crafting storage, the monitor)
 tech("me-autocrafting", { "me-storage-64k" }, 5, 600, with_blocks(
-	{ "me-pattern-provider", "me-blank-pattern", "me-molecular-assembler" },
+	{ "me-pattern-provider", "me-pattern-terminal", "nether-quartz-plate", "me-blank-pattern", "me-molecular-assembler" },
 	{ "me-crafting-unit", "me-1k-crafting-storage", "me-4k-crafting-storage", "me-crafting-monitor" }), SEVEN)
 --- issue #38: level maintainer and circuit interface (EV); issue #111: the 16k and 64k crafting storage and the
 --- co-processing unit at IV, the 256k crafting storage at LuV
@@ -606,7 +629,7 @@ tech("me-fluid-storage-256k", { "me-fluid-storage", "me-storage-256k" }, 6, 800,
 --- Equal Distribution Card a turbo splitter; the Acceleration Card is made from the Advanced Card
 if HAS_CARDS then
 	tech("me-upgrade-cards", { "me-storage-256k", "circuit-network", "turbo-transport-belt" }, 6, 1000, {
-		"me-basic-card", "me-advanced-card", "acceleration-card", "me-capacity-card", "me-overflow-destruction-card", "me-fuzzy-card", "me-inverter-card",
+		"me-basic-card", "me-advanced-card", "me-acceleration-card", "me-capacity-card", "me-overflow-destruction-card", "me-fuzzy-card", "me-inverter-card",
 		"me-equal-distribution-card", "me-cell-workbench",
 	})
 end

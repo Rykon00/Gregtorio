@@ -668,6 +668,17 @@ local UNLOCKS_96 = {
 		"osmium-solution",
 	},
 }
+--- Issue #205 (prototypes/125-fork-luv-endgame.lua): GT's recipes of the naquadah line that upstream lacked, on the
+--- technology of their input: gallium from the line's gallium hydroxide, zinc from the zinc sulfate of the enriched
+--- naquadah ingot, the naquadria oxide mixture branch with the naquadria ingot
+local UNLOCKS_205 = {
+	["naquadah-processing"] = { "gallium-from-gallium-hydroxide" }, -- LuV
+	["enriched-naquadah"] = { "zinc-from-zinc-sulfate" }, -- LuV
+	["uv-materials"] = { -- UV
+		"naquadah-dust-centrifuging", "enriched-naquadah-dust-centrifuging", "naquadria-oxide-mixture-centrifuging",
+		"naquadria-rich-solution-from-phosphate", "indium-from-indium-phosphate", "indium-gallium-phosphide-from-indium-phosphate",
+	},
+}
 --- The auto-unlock of 199 visits the technologies in its own order and pulls the producers of what their recipes
 --- need into the first one that needs them. With the recipes above some of its earlier choices would move to
 --- another technology or (where an unlocked recipe now makes the item as a byproduct) to none: they stay where
@@ -679,8 +690,12 @@ local KEEP = {
 	["military-science-pack"] = { "lv-sensor" },
 	["end-steel"] = { "endstone-dust" },
 	["rhodium"] = { "sulfur-dioxide", "sulfur-trioxide" },
+	-- issue #185: the ore chain's new producers would move these to tier-three-microminers
+	["ore-washing"] = { "crushed-bornite", "microminer-platinum" },
+	-- issue #188: the forge hammer crushes raw sheldonite too, so the auto-unlock no longer places the macerator recipe
+	["platinum-ore-processing"] = { "crushed-sheldonite" },
 }
-for _, list in pairs({ UNLOCKS, KEEP, UNLOCKS_98, UNLOCKS_96 }) do
+for _, list in pairs({ UNLOCKS, KEEP, UNLOCKS_98, UNLOCKS_96, UNLOCKS_205 }) do
 	for tech, recipes in pairs(list) do
 		for _, r in pairs(recipes) do
 			if data.raw.recipe[r] then fork_add_unlock(tech, r) else log("FORK-UNLOCK: missing recipe: " .. r) end

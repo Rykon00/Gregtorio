@@ -221,6 +221,406 @@ end
 
 
 --------------------------------------------------------------------------------
+--- 2b) FORGE HAMMER, LV TO EV (issue #170)
+---    GT New Horizons has the Forge Hammer from LV up ("Basic Forge Hammer", LoaderMetaTileEntities.java:5388), on the
+---    recipe map of the Steam Forge Hammer (hammerRecipes); upstream had only the steam one. The electric ones run the
+---    steam hammer's category lv-forge-hammer-recipes (its plates are GT's already: 3 ingots -> 2 plates in the time of
+---    the material's mass), share its fast replace group (one can be placed over the steam hammer) and are built as in GT
+---    (MTERecipeLoader.java registerForgeHammer, "WPW", "CMC", "WAW": 4 cables, a piston, 2 circuits, the hull, an
+---    anvil). LV with the LV piston (technology Bending Machine), MV to EV with the machines of their tier. Sprites:
+---    tools/gen_sprites.py (forge_hammer_lv_mv: the steam hammer's picture in the LV and MV casing); IV to MAX follow
+---    from IV_BASIC_MACHINES below.
+--------------------------------------------------------------------------------
+
+do
+	local HAMMERS = {
+		--  tier  path                 energy    speed  cable             circuit               tech
+		{ "lv", "lv-forge-hammer", EU16_LV, 1, "tin-cable",       "electronic-circuit", "bending-machine" },
+		{ "mv", "mv-forge-hammer", EU16_MV, 2, "copper-cable",    "advanced-circuit",   "mv-machines" },
+		{ "hv", "mv-forge-hammer", EU16_HV, 4, "gold-cable",      "processing-unit",    "hv-machines" },
+		{ "ev", "mv-forge-hammer", EU16_EV, 8, "aluminium-cable", "ev-circuit",         "ev-machines" },
+	}
+	for _, h in ipairs(HAMMERS) do
+		local t, path, energy, speed, cable, circuit, tech = table.unpack(h)
+		local name = t .. "-forge-hammer"
+		make_electric_machine(name, name, path, { "lv-forge-hammer-recipes" }, "fr-forge-hammer", energy, speed, 5, 0.5, 3, 3)
+		create_item{
+			name = name,
+			subgroup = t .. "-age-production-machine",
+			ingredients = {
+				{ type = "item", name = cable, amount = 4 },
+				{ type = "item", name = t .. "-piston", amount = 1 },
+				{ type = "item", name = circuit, amount = 2 },
+				{ type = "item", name = t .. "-machine-hull", amount = 1 },
+				{ type = "item", name = "anvil", amount = 1 },
+			},
+			place_result = name,
+			stack_size = 10,
+		}
+		fork_add_unlock(tech, name)
+	end
+	data.raw["assembling-machine"]["lv-forge-hammer"].next_upgrade = "mv-forge-hammer"
+	data.raw["assembling-machine"]["mv-forge-hammer"].next_upgrade = "hv-forge-hammer"
+	data.raw["assembling-machine"]["hv-forge-hammer"].next_upgrade = "ev-forge-hammer"
+
+	--- GT's hammer recipes of the items Gregtorio has (ForgeHammerRecipes.java: gravel -> sand, glass -> glass dust,
+	--- brick block -> 3 bricks, 10 ticks each); the steam hammer runs them too, as GT's does
+	for _, r in pairs({ { "sand-forge-hammer", "gravel", 1, "sand", 1 }, { "glass-dust-forge-hammer", "glass", 1, "glass-dust", 1 },
+		{ "brick-forge-hammer", "brick-block", 1, "brick", 3 } }) do
+		create_recipe{
+			recipe_name = r[1],
+			category = "lv-forge-hammer-recipes",
+			energy_required = 0.5,
+			ingredients = { { type = "item", name = r[2], amount = r[3] } },
+			results = { { type = "item", name = r[4], amount = r[5] } },
+		}
+		fork_add_unlock("steam-forge-hammer", r[1])
+	end
+end
+
+
+
+--------------------------------------------------------------------------------
+--- 2c) ARC FURNACE, LV TO EV (issue #171)
+---    GT New Horizons has the Arc Furnace from LV up ("Basic Arc Furnace", LoaderMetaTileEntities.java:7293, recipe map
+---    arcFurnaceRecipes, which no other basic machine runs); upstream had none. Its recipe of Gregtorio's materials:
+---    annealed copper, copper arc-smelted with oxygen (MaterialsInit.java: setArcSmeltingIntoWithGas Oxygen ->
+---    AnnealedCopper; GTRecipeRegistrator.registerReverseArcSmelting: max(16, mass) ticks and litres, LV), which upstream
+---    ran in the MV electric blast furnace with exactly these numbers: the recipe moves to the arc furnace, its name and
+---    technology (Integrated Circuits) kept. GT's recycling of every part into ingots is not built (#171). Machine recipe as
+---    GT's (MTERecipeLoader.java registerArcFurnace: "WGW", "CMC", "PPP": two 4x cables, a graphite cell, 2 circuits, the
+---    hull, 3 plates of the tier; here 8 cables, as Gregtorio has no 4x tier cables, and graphite); one oxygen input. LV
+---    with Integrated Circuits (the annealed copper), MV to EV with the machines of their tier. Sprites: tools/gen_sprites.py (arc_furnace_lv_mv); IV to MAX through IV_BASIC_MACHINES.
+--------------------------------------------------------------------------------
+
+recipe_category_and_subgroup("lv-arc-furnace-recipes")
+do
+	local ARCS = {
+		--  tier  path               energy    speed  cable             circuit               plate                    tech
+		{ "lv", "lv-arc-furnace", EU30_LV, 1, "tin-cable",       "electronic-circuit", "steel-plate",           "integrated-circuits" },
+		{ "mv", "mv-arc-furnace", EU30_MV, 2, "copper-cable",    "advanced-circuit",   "aluminium-plate",       "mv-machines" },
+		{ "hv", "mv-arc-furnace", EU30_HV, 4, "gold-cable",      "processing-unit",    "stainless-steel-plate", "hv-machines" },
+		{ "ev", "mv-arc-furnace", EU30_EV, 8, "aluminium-cable", "ev-circuit",         "titanium-plate",        "ev-machines" },
+	}
+	for _, a in ipairs(ARCS) do
+		local t, path, energy, speed, cable, circuit, plate, tech = table.unpack(a)
+		local name = t .. "-arc-furnace"
+		make_electric_machine(name, name, path, { "lv-arc-furnace-recipes" }, "fr-arc-furnace", energy, speed, 1, 0.5, 3, 3, {
+			fluid_port(-1, -1, "input", defines.direction.north),
+		})
+		create_item{
+			name = name,
+			subgroup = t .. "-age-production-machine",
+			ingredients = {
+				{ type = "item", name = cable, amount = 8 },
+				{ type = "item", name = "graphite", amount = 1 },
+				{ type = "item", name = circuit, amount = 2 },
+				{ type = "item", name = t .. "-machine-hull", amount = 1 },
+				{ type = "item", name = plate, amount = 3 },
+			},
+			place_result = name,
+			stack_size = 10,
+		}
+		fork_add_unlock(tech, name)
+	end
+	data.raw["assembling-machine"]["lv-arc-furnace"].next_upgrade = "mv-arc-furnace"
+	data.raw["assembling-machine"]["mv-arc-furnace"].next_upgrade = "hv-arc-furnace"
+	data.raw["assembling-machine"]["hv-arc-furnace"].next_upgrade = "ev-arc-furnace"
+
+	local r = data.raw.recipe["annealed-copper-ingot"]
+	r.category = "lv-arc-furnace-recipes"
+	r.subgroup = "subgroup-lv-arc-furnace-recipes"
+end
+
+
+
+--------------------------------------------------------------------------------
+--- 2d) FORMING PRESS, LV TO EV (issue #173)
+---    GT New Horizons has the Forming Press from LV up ("Basic Forming Press", LoaderMetaTileEntities.java:5229, recipe
+---    map formingPressRecipes, which no other basic machine runs); upstream had none. GTNH presses AE2's printed circuits
+---    in it (FormingPressRecipes.java: a plate or crystal and the inscriber press, which is not used up, 10 s at LV):
+---    Gregtorio's four printed circuit recipes have exactly these inputs and times but ran in the LV circuit assembler;
+---    they move to the forming press, their names and technologies kept (the press goes back to the output as before).
+---    Machine recipe as GT's (MTERecipeLoader.java registerFormingPress, "WPW", "CMC", "WPW": 4 cables, 2 pistons, 2
+---    circuits, the hull). LV with every technology that unlocks a printed circuit, MV to EV with the machines of their
+---    tier. Sprites: tools/gen_sprites.py (forming_press_lv_mv); IV to MAX through IV_BASIC_MACHINES.
+--------------------------------------------------------------------------------
+
+recipe_category_and_subgroup("lv-forming-press-recipes")
+do
+	local PRINTED = { "printed-silicon", "printed-logic-circuit", "printed-calculation-circuit", "printed-engineering-circuit" }
+	local lv_techs = {}
+	for name, tech in pairs(data.raw.technology) do
+		for _, e in pairs(tech.effects or {}) do
+			for _, r in pairs(PRINTED) do
+				if e.type == "unlock-recipe" and e.recipe == r then lv_techs[name] = true end
+			end
+		end
+	end
+	local PRESSES = {
+		--  tier  path                 energy    speed  cable             circuit
+		{ "lv", "lv-forming-press", EU16_LV, 1, "tin-cable",       "electronic-circuit" },
+		{ "mv", "mv-forming-press", EU16_MV, 2, "copper-cable",    "advanced-circuit" },
+		{ "hv", "mv-forming-press", EU16_HV, 4, "gold-cable",      "processing-unit" },
+		{ "ev", "mv-forming-press", EU16_EV, 8, "aluminium-cable", "ev-circuit" },
+	}
+	for _, a in ipairs(PRESSES) do
+		local t, path, energy, speed, cable, circuit = table.unpack(a)
+		local name = t .. "-forming-press"
+		make_electric_machine(name, name, path, { "lv-forming-press-recipes" }, "fr-forming-press", energy, speed, 1, 0.5, 3, 3)
+		create_item{
+			name = name,
+			subgroup = t .. "-age-production-machine",
+			ingredients = {
+				{ type = "item", name = cable, amount = 4 },
+				{ type = "item", name = t .. "-piston", amount = 2 },
+				{ type = "item", name = circuit, amount = 2 },
+				{ type = "item", name = t .. "-machine-hull", amount = 1 },
+			},
+			place_result = name,
+			stack_size = 10,
+		}
+		if t == "lv" then
+			local names = {}
+			for tech, _ in pairs(lv_techs) do names[#names + 1] = tech end
+			table.sort(names)
+			for _, tech in ipairs(names) do fork_add_unlock(tech, name) end
+		else
+			fork_add_unlock(t .. "-machines", name)
+		end
+	end
+	data.raw["assembling-machine"]["lv-forming-press"].next_upgrade = "mv-forming-press"
+	data.raw["assembling-machine"]["mv-forming-press"].next_upgrade = "hv-forming-press"
+	data.raw["assembling-machine"]["hv-forming-press"].next_upgrade = "ev-forming-press"
+
+	for _, n in pairs(PRINTED) do
+		local r = data.raw.recipe[n]
+		r.category = "lv-forming-press-recipes"
+		r.subgroup = "subgroup-lv-forming-press-recipes"
+	end
+end
+
+
+
+--------------------------------------------------------------------------------
+--- 2e) ELECTRIC FURNACE, LV TO EV (issue #174)
+---    GT New Horizons has the Electric Furnace from LV up ("Basic Electric Furnace", LoaderMetaTileEntities.java:4319),
+---    which runs the smelting recipes (furnaceRecipes); upstream smelted only in the burner furnaces (stone, iron and
+---    steel furnace) and the Multi Smelter. The electric furnaces run the category smelting. Machine recipe as GT's
+---    (MTERecipeLoader.java registerElectricFurnace, "ECE", "CMC", "WCW": 2 circuits, 4 double heating wires of the tier
+---    (GTModHandler COIL_HEATING: copper, cupronickel, kanthal, nichrome), the hull, 2 cables; here 8 single wires, as
+---    Gregtorio has no double wires). Power EU8, the lowest class Gregtorio has (GT smelts at 4 EU/t). LV with Wiremill (its copper wire), MV to EV with the machines of their tier.
+---    Sprites: tools/gen_sprites.py (electric_furnace_lv_mv); IV to MAX through IV_BASIC_MACHINES.
+--------------------------------------------------------------------------------
+
+do
+	local FURNACES = {
+		--  tier  path                    energy    speed  cable             circuit               coil                 tech
+		{ "lv", "lv-electric-furnace", EU8_LV, 1, "tin-cable",       "electronic-circuit", "copper-wire",       "wiremill" },
+		{ "mv", "mv-electric-furnace", EU8_MV, 2, "copper-cable",    "advanced-circuit",   "cupronickel-wire",  "mv-machines" },
+		{ "hv", "mv-electric-furnace", EU8_HV, 4, "gold-cable",      "processing-unit",    "kanthal-wire",      "hv-machines" },
+		{ "ev", "mv-electric-furnace", EU8_EV, 8, "aluminium-cable", "ev-circuit",         "nichrome-wire",     "ev-machines" },
+	}
+	for _, a in ipairs(FURNACES) do
+		local t, path, energy, speed, cable, circuit, coil, tech = table.unpack(a)
+		local name = t .. "-electric-furnace"
+		make_electric_machine(name, name, path, { "smelting" }, "fr-electric-furnace", energy, speed, 1, 0.5, 3, 3)
+		create_item{
+			name = name,
+			subgroup = t .. "-age-production-machine",
+			ingredients = {
+				{ type = "item", name = circuit, amount = 2 },
+				{ type = "item", name = coil, amount = 8 },
+				{ type = "item", name = t .. "-machine-hull", amount = 1 },
+				{ type = "item", name = cable, amount = 2 },
+			},
+			place_result = name,
+			stack_size = 10,
+		}
+		fork_add_unlock(tech, name)
+	end
+	data.raw["assembling-machine"]["lv-electric-furnace"].next_upgrade = "mv-electric-furnace"
+	data.raw["assembling-machine"]["mv-electric-furnace"].next_upgrade = "hv-electric-furnace"
+	data.raw["assembling-machine"]["hv-electric-furnace"].next_upgrade = "ev-electric-furnace"
+end
+
+
+
+--------------------------------------------------------------------------------
+--- 2f) SIFTING MACHINE, LV TO EV (issue #175)
+---    GT New Horizons has the Sifting Machine from LV up ("Basic Sifting Machine", LoaderMetaTileEntities.java:6841, recipe
+---    map sifterRecipes, otherwise only its Industrial Sifter multiblock); Gregtorio's sifter recipes (coal, diamond and
+---    three steps of the bartworks platinum line, which GTNH runs in the sifter too) ran only in the HV Large Sifter. The
+---    sifting machines run the same category lv-sifter-recipes; the Large Sifter stays. Machine recipe as GT's
+---    (MTERecipeLoader.java registerSifter, "WFW", "PMP", "CFC": 2 cables, 2 item filters, 2 pistons, the hull, 2
+---    circuits). LV with Basic Air Centrifuging (the item filter), which every technology of a sifter recipe leads
+---    through; MV to EV with the machines of their tier. Sprites: tools/gen_sprites.py (sifting_machine_lv_mv); IV to
+---    MAX through IV_BASIC_MACHINES.
+--------------------------------------------------------------------------------
+
+do
+	local SIFTERS = {
+		--  tier  path                   energy    speed  cable             circuit               tech
+		{ "lv", "lv-sifting-machine", EU16_LV, 1, "tin-cable",       "electronic-circuit", "basic-air-centrifuging" },
+		{ "mv", "mv-sifting-machine", EU16_MV, 2, "copper-cable",    "advanced-circuit",   "mv-machines" },
+		{ "hv", "mv-sifting-machine", EU16_HV, 4, "gold-cable",      "processing-unit",    "hv-machines" },
+		{ "ev", "mv-sifting-machine", EU16_EV, 8, "aluminium-cable", "ev-circuit",         "ev-machines" },
+	}
+	for _, a in ipairs(SIFTERS) do
+		local t, path, energy, speed, cable, circuit, tech = table.unpack(a)
+		local name = t .. "-sifting-machine"
+		make_electric_machine(name, name, path, { "lv-sifter-recipes" }, "fr-sifting-machine", energy, speed, 4, 0.5, 3, 3)
+		create_item{
+			name = name,
+			subgroup = t .. "-age-production-machine",
+			ingredients = {
+				{ type = "item", name = cable, amount = 2 },
+				{ type = "item", name = "filter", amount = 2 },
+				{ type = "item", name = t .. "-piston", amount = 2 },
+				{ type = "item", name = t .. "-machine-hull", amount = 1 },
+				{ type = "item", name = circuit, amount = 2 },
+			},
+			place_result = name,
+			stack_size = 10,
+		}
+		fork_add_unlock(tech, name)
+	end
+	data.raw["assembling-machine"]["lv-sifting-machine"].next_upgrade = "mv-sifting-machine"
+	data.raw["assembling-machine"]["mv-sifting-machine"].next_upgrade = "hv-sifting-machine"
+	data.raw["assembling-machine"]["hv-sifting-machine"].next_upgrade = "ev-sifting-machine"
+end
+
+
+
+--------------------------------------------------------------------------------
+--- 2g) THERMAL CENTRIFUGE, LV TO EV (issue #185, ore chain phase O1)
+---    GT New Horizons' Thermal Centrifuge ("Basic Thermal Centrifuge", LoaderMetaTileEntities.java:7000, recipe map
+---    thermalCentrifugeRecipes): crushed and purified crushed ore into centrifuged ore (prototypes/155-fork-ore-chain.lua
+---    makes the recipes). Machine recipe as GT's (MTERecipeLoader.java registerThermalCentrifuge, "CEC", "OMO", "WEW":
+---    2 circuits, 2 motors, two 4x heating wires of the tier (here 8 wires of copper, cupronickel, kanthal or nichrome),
+---    the hull, 2 cables). Power EU32 (GT: 48 EU/t; Gregtorio has no 48 class). LV with Ore Crushing (the LV macerator),
+---    MV to EV with the machines of their tier. Sprites: tools/gen_sprites.py (thermal_centrifuge_lv_mv); IV to MAX
+---    through IV_BASIC_MACHINES.
+--------------------------------------------------------------------------------
+
+recipe_category_and_subgroup("lv-thermal-centrifuge-recipes")
+do
+	local TCS = {
+		--  tier  path                      energy    speed  cable             circuit               coil                tech
+		{ "lv", "lv-thermal-centrifuge", EU32_LV, 1, "tin-cable",       "electronic-circuit", "copper-wire",      "ore-crushing" },
+		{ "mv", "mv-thermal-centrifuge", EU32_MV, 2, "copper-cable",    "advanced-circuit",   "cupronickel-wire", "mv-machines" },
+		{ "hv", "mv-thermal-centrifuge", EU32_HV, 4, "gold-cable",      "processing-unit",    "kanthal-wire",     "hv-machines" },
+		{ "ev", "mv-thermal-centrifuge", EU32_EV, 8, "aluminium-cable", "ev-circuit",         "nichrome-wire",    "ev-machines" },
+	}
+	for _, a in ipairs(TCS) do
+		local t, path, energy, speed, cable, circuit, coil, tech = table.unpack(a)
+		local name = t .. "-thermal-centrifuge"
+		make_electric_machine(name, name, path, { "lv-thermal-centrifuge-recipes" }, "fr-thermal-centrifuge", energy, speed, 1, 0.5, 3, 3)
+		create_item{
+			name = name,
+			subgroup = t .. "-age-production-machine",
+			ingredients = {
+				{ type = "item", name = circuit, amount = 2 },
+				{ type = "item", name = t .. "-motor", amount = 2 },
+				{ type = "item", name = coil, amount = 8 },
+				{ type = "item", name = t .. "-machine-hull", amount = 1 },
+				{ type = "item", name = cable, amount = 2 },
+			},
+			place_result = name,
+			stack_size = 10,
+		}
+		fork_add_unlock(tech, name)
+	end
+	data.raw["assembling-machine"]["lv-thermal-centrifuge"].next_upgrade = "mv-thermal-centrifuge"
+	data.raw["assembling-machine"]["mv-thermal-centrifuge"].next_upgrade = "hv-thermal-centrifuge"
+	data.raw["assembling-machine"]["hv-thermal-centrifuge"].next_upgrade = "ev-thermal-centrifuge"
+end
+
+
+
+--------------------------------------------------------------------------------
+--- 2h) ELECTROMAGNETIC SEPARATOR, LV TO EV (issue #187, ore chain phase O3)
+---    GT New Horizons' Electromagnetic Separator ("Basic Electromagnetic Separator", LoaderMetaTileEntities.java:4626,
+---    recipe map electroMagneticSeparatorRecipes): the pure dusts of the ores tagged gold, iron or neodymium into dust and
+---    a small dust and a nugget of that metal (prototypes/155-fork-ore-chain.lua makes the recipes). Machine recipe as GT's
+---    (MTERecipeLoader.java registerElectromagneticSeparator, "VWZ", "WMS", "CWZ": a conveyor, 4 cables, two electric
+---    coils of the tier (GTModHandler.java:821: 2x tin wire, 2x and 4x copper wire, 8x annealed copper wire, here as
+---    single wires), the hull, an electromagnetic rod (iron, steel, steel, neodymium) and a circuit). Power EU24, as GT's
+---    24 EU/t. LV with Ore Washing (the first pure dusts of tagged ores: tin, iron, vanadium magnetite), MV to EV with the
+---    machines of their tier. Sprites: tools/gen_sprites.py (electromagnetic_separator_lv_mv); IV to MAX through
+---    IV_BASIC_MACHINES.
+--------------------------------------------------------------------------------
+
+recipe_category_and_subgroup("lv-electromagnetic-separator-recipes")
+do
+	local EMS = {
+		--  tier  path                            energy    speed  cable             circuit               coil                        rod              tech
+		{ "lv", "lv-electromagnetic-separator", EU24_LV, 1, "tin-cable",       "electronic-circuit", { "tin-wire", 4 },             "iron-stick",    "ore-washing" },
+		{ "mv", "mv-electromagnetic-separator", EU24_MV, 2, "copper-cable",    "advanced-circuit",   { "copper-wire", 4 },          "steel-rod",     "mv-machines" },
+		{ "hv", "mv-electromagnetic-separator", EU24_HV, 4, "gold-cable",      "processing-unit",    { "copper-wire", 8 },          "steel-rod",     "hv-machines" },
+		{ "ev", "mv-electromagnetic-separator", EU24_EV, 8, "aluminium-cable", "ev-circuit",         { "annealed-copper-wire", 16 }, "neodymium-rod", "ev-machines" },
+	}
+	for _, a in ipairs(EMS) do
+		local t, path, energy, speed, cable, circuit, coil, rod, tech = table.unpack(a)
+		local name = t .. "-electromagnetic-separator"
+		make_electric_machine(name, name, path, { "lv-electromagnetic-separator-recipes" }, "fr-electromagnetic-separator", energy, speed, 4, 0.5, 3, 3)
+		create_item{
+			name = name,
+			subgroup = t .. "-age-production-machine",
+			ingredients = {
+				{ type = "item", name = t .. "-conveyor-module", amount = 1 },
+				{ type = "item", name = cable, amount = 4 },
+				{ type = "item", name = coil[1], amount = coil[2] },
+				{ type = "item", name = t .. "-machine-hull", amount = 1 },
+				{ type = "item", name = rod, amount = 1 },
+				{ type = "item", name = circuit, amount = 1 },
+			},
+			place_result = name,
+			stack_size = 10,
+		}
+		fork_add_unlock(tech, name)
+	end
+	data.raw["assembling-machine"]["lv-electromagnetic-separator"].next_upgrade = "mv-electromagnetic-separator"
+	data.raw["assembling-machine"]["mv-electromagnetic-separator"].next_upgrade = "hv-electromagnetic-separator"
+	data.raw["assembling-machine"]["hv-electromagnetic-separator"].next_upgrade = "ev-electromagnetic-separator"
+end
+
+
+
+--------------------------------------------------------------------------------
+--- 2i) LV AUTOCLAVE (issue #193, follow-up of the ore chain's phase O4)
+---    GT New Horizons' Basic Autoclave (LoaderMetaTileEntities.java:3535); upstream's autoclave starts at MV. It runs the
+---    LV autoclave category (the MV autoclave runs it too). Machine recipe as GT's (MTERecipeLoader.java
+---    registerAutoclave, "IGI", "IMI", "CPC": 4 plates of the tier (steel), 2 glass, the hull, 2 circuits, a pump). Power
+---    EU24 as the MV autoclave's class. With Extractor, the technology of the LV pump. Sprites: tools/gen_sprites.py
+---    (autoclave_lv, the MV autoclave in the LV casing colours).
+--------------------------------------------------------------------------------
+
+make_electric_machine("lv-autoclave", "lv-autoclave", "lv-autoclave", { "lv-autoclave-recipes" }, "fr-autoclave", EU24_LV, 1, 1, 0.5, 3, 3, {
+	fluid_port(-1, -1, "input", defines.direction.north),
+	fluid_port( 1, -1, "input", defines.direction.north),
+	fluid_port(-1,  1, "output", defines.direction.south),
+	fluid_port( 1,  1, "output", defines.direction.south)
+})
+create_item{
+	name = "lv-autoclave",
+	subgroup = "lv-age-production-machine",
+	ingredients = {
+		{ type = "item", name = "steel-plate", amount = 4 },
+		{ type = "item", name = "glass", amount = 2 },
+		{ type = "item", name = "lv-machine-hull", amount = 1 },
+		{ type = "item", name = "electronic-circuit", amount = 2 },
+		{ type = "item", name = "lv-pump", amount = 1 },
+	},
+	place_result = "lv-autoclave",
+	stack_size = 10,
+}
+fork_add_unlock("extractor", "lv-autoclave")
+data.raw["assembling-machine"]["lv-autoclave"].next_upgrade = "mv-autoclave"
+
+
+
+--------------------------------------------------------------------------------
 --- 3) IV BASIC MACHINES
 ---    Copy of the EV machine: double speed, double power draw, IV categories added,
 ---    recipe = EV recipe with every tiered component shifted one tier up.
@@ -320,15 +720,15 @@ end
 --- Machines that get generated sprites (from GT textures)
 IV_BASIC_MACHINES = {
 	"wiremill", "bending-machine", "extruder", "rock-crusher", "lathe", "macerator", "centrifuge",
-	"air-collector", "extractor", "electrolyzer", "assembling-machine", "cutting-machine",
+	"extractor", "electrolyzer", "assembling-machine", "cutting-machine",
 	"canning-machine", "mixer", "ore-washer", "laser-engraver", "fluid-solidifier", "chemical-bath",
-	"polarizer", "circuit-assembler", "autoclave", "alloy-smelter", "compressor",
+	"polarizer", "circuit-assembler", "autoclave", "alloy-smelter", "compressor", "forge-hammer", "arc-furnace", "forming-press", "electric-furnace", "sifting-machine", "thermal-centrifuge", "electromagnetic-separator",
 }
 --- Multiblocks that come as an upgrade of the EV version (graphics of the EV version with energy hatches of the tier)
 IV_UPGRADE_MACHINES = {
 	"electric-blast-furnace", "vacuum-freezer", "large-chemical-reactor", "microverse-projector",
 	"tall-distillation-tower", "short-distillation-tower", "implosion-compressor", "cracker",
-	"multismelter", "pyrolyse-oven", "greenhouse", "drilling-rig", "alloy-blast-smelter",
+	"multismelter", "pyrolyse-oven", "drilling-rig", "alloy-blast-smelter",
 }
 
 local UPGRADE_HATCHES = {}
@@ -361,7 +761,21 @@ local function set_tier_hatches(m, name)
 	end
 end
 
+--- Issue #148: a basic machine one tier up keeps the graphics set of its source (size, frame count, animation speed: in
+--- the end the EV machine's, made by make_electric_machine from upstream's asset) with its own files, upstream's asset with
+--- the casing in the tier's colour (tools/gen_sprites.py, basic_machine).
+local function tier_graphics(src, name)
+	local g = src.graphics_set and table.deepcopy(src.graphics_set)
+	if not (g and g.idle_animation and g.animation) then return nil end
+	for key, suffix in pairs({ idle_animation = "-idle.png", animation = "-working.png" }) do
+		for _, layer in pairs(g[key].layers or { g[key] }) do layer.filename = SPRITE_PATH .. name .. suffix end
+	end
+	return g
+end
+
 --- Create a machine one tier up (entity, item, recipe). Global so 110-fork-luv.lua can use it.
+--- sprite_frames: the machine gets the sprites of tools/gen_sprites.py; a basic machine (a graphics set with an idle and
+--- a working animation) keeps its source's frame count, other machines get sprite_frames frames.
 function fork_make_tier_machine(base, from_tier, to_tier, sprite_frames, unlock_tech)
 	local src_name, new_name = from_tier .. "-" .. base, to_tier .. "-" .. base
 	local hatches = not sprite_frames and UPGRADE_HATCHES[base]
@@ -384,6 +798,7 @@ function fork_make_tier_machine(base, from_tier, to_tier, sprite_frames, unlock_
 		icon = icon,
 	}
 	if m and hatches then set_tier_hatches(m, new_name) end
+	if m and sprite_frames then m.graphics_set = tier_graphics(src, new_name) or m.graphics_set end
 
 	--- Item
 	local src_item = data.raw.item[src_name]
