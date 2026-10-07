@@ -481,10 +481,11 @@ def check_table_only(m, sec):
 def check_microminer_tab(sec):
     """Issue #120 (prototypes/195-fork-microminer-tab.lua): the missions of every Microverse Projector (the recipes of its
     categories) and the projectors themselves (and their controller) are recipes of the Microminer tab, so a projector's
-    recipe window has one tab and a search for "micro" finds the machines next to the microminers."""
+    recipe window has one tab and a search for "micro" finds the machines next to the microminers. The recycling recipes
+    of a projector (issue #190) are recycling, in the rows of their machine."""
     out = []
     for r in sec.get("DUMP", []):
-        if r[0] == "R" and not r[6] == "true" and (
+        if r[0] == "R" and not r[6] == "true" and not r[1].startswith("recycling-") and (
                 r[2].endswith("-microverse-projector-recipes") or r[1].endswith("microverse-projector")
                 or r[1] == "microverse-projector-controller"):
             if r[9] != MICROMINER_TAB:
@@ -680,6 +681,38 @@ def check_pgm_dusts(m):
             if name not in PGM_DUST_SOURCES[dust]:
                 out.append(f"{name} ({r['cat']}): makes {dust} outside the platinum line (GTNH: its powder or residue)")
     return out
+# Issue #190: what a recycling recipe may give (prototypes/157-fork-recycling.lua)
+RECYCLE_PGM = {"metallic-platinum-powder", "metallic-palladium-powder", "iridium-metal-residue", "rarest-metal-mixture"}
+def check_recycling(m, sec):
+    """Issue #190 (prototypes/157-fork-recycling.lua): GTNH recycles an item into its materials, never into its parts. Every
+    recipe recycling-<machine>-<item> takes the one item (and oxygen in the arc furnace) and gives whole dusts, ingots, a
+    melt or the platinum line's powders; every entry of FORK_RECYCLING_BLACKLIST names an item and says why. Returns
+    (info line, problems)."""
+    out, kinds = [], {"macerator": 0, "arc-furnace": 0, "fluid-extractor": 0}
+    for name, r in sorted(m.R.items()):
+        if not name.startswith("recycling-"):
+            continue
+        kind = next((k for k in ("macerator", "arc-furnace", "fluid-extractor") if name.startswith(f"recycling-{k}-")), None)
+        if kind is None:
+            out.append(f"{name}: not a macerator, arc furnace or fluid extractor recycling recipe")
+            continue
+        kinds[kind] += 1
+        item = name[len(f"recycling-{kind}-"):]
+        extra = [i for i in r["ing"] if i != item and not (kind == "arc-furnace" and i == "oxygen")]
+        if item not in r["ing"] or extra:
+            out.append(f"{name}: takes {', '.join(r['ing'])}, not {item}" + (" and oxygen" if kind == "arc-furnace" else ""))
+        for x in r["res"]:
+            ok = (x.endswith("-dust") or x.endswith("-ingot") or x.startswith("molten-") or x in RECYCLE_PGM)
+            if not ok:
+                out.append(f"{name}: gives {x}, not a material (GTNH recycles into materials, not parts)")
+    for item, why, exists in sec.get("RECYCLEBLACK", []):
+        if not why:
+            out.append(f"FORK_RECYCLING_BLACKLIST[{item}]: no reason")
+        if exists != "true":
+            out.append(f"FORK_RECYCLING_BLACKLIST[{item}]: no such item")
+    info = (f"{sum(kinds.values())} recipes: {kinds['macerator']} macerator, {kinds['arc-furnace']} arc furnace, "
+            f"{kinds['fluid-extractor']} fluid extractor; blacklist {len(sec.get('RECYCLEBLACK', []))}")
+    return info, out
 def check_extractor_split(m):
     """Issue #152 (prototypes/151-fork-fluid-extractor.lua): as in GTNH, the Extractor makes items and the Fluid Extractor
     fluids. A recipe of an extractor category with a fluid result, or of a fluid extractor category without one, is in
@@ -984,11 +1017,14 @@ def check(a):
     o34_info, ore_o34 = check_ore_o3_o4(m)
     circuit_n, circuit_icons = check_circuit_icons(m)
     pgm_dusts = check_pgm_dusts(m)
+    recycle_info, recycling = check_recycling(m, sec)
     print(f"\nseparator, gems and forge hammer of the ore chain (issues #187, #188): {o34_info}")
     report("separator, gem and forge hammer steps that differ from GTNH (prototypes/155-fork-ore-chain.lua)", ore_o34)
     print(f"\ncircuit variant recipes up to UV (issue #164): {circuit_n}")
     report("circuit recipes without their own icon (issue #164)", circuit_icons)
     report("platinum group dusts made outside the platinum line (issue #199)", pgm_dusts)
+    print(f"\nrecycling (issue #190): {recycle_info}")
+    report("recycling recipes that differ from GTNH's rule (prototypes/157-fork-recycling.lua)", recycling)
     extractor_split = check_extractor_split(m)
     report("extractor recipes in the wrong machine (issue #152: items in the Extractor, fluids in the Fluid Extractor)",
            extractor_split)
@@ -1013,7 +1049,7 @@ def check(a):
     ok = not (files or [s for s in sprites if not s.startswith("(")] or uncraft or menu or required or unresearchable
               or new_drafts or fluid_problems or locked or one_pack or fluid_steps or microminer or table_only
               or extractor_split or ore_chain or ore_baths or ore_o34
-              or circuit_icons or pgm_dusts)
+              or circuit_icons or pgm_dusts or recycling)
     print("\nRESULT:", "OK" if ok else "PROBLEMS FOUND")
     return 0 if ok else 1
 

@@ -103,6 +103,13 @@ if FORK_MATERIAL_PARTS then
 end
 section("MATERIALPARTS", mp)
 
+--- Issue #190 (prototypes/157-fork-recycling.lua): the recycling blacklist with its reasons (absent in older versions)
+local rb = {}
+for item, why in pairs(FORK_RECYCLING_BLACKLIST or {}) do
+	rb[#rb + 1] = item .. "\t" .. tostring(why or "") .. "\t" .. tostring(data.raw.item[item] ~= nil or data.raw.tool[item] ~= nil)
+end
+section("RECYCLEBLACK", rb)
+
 --- Every __gregtorio-continued__/ file referenced anywhere, with its owner prototype
 local paths, seen = {}, {}
 local function scan(t, owner, depth)
