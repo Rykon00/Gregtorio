@@ -216,6 +216,7 @@ local RM_ITEMS = { ["ammonia-hexachloroplatinate"] = "platinum-salt", ["crude-pl
 	["potassium-pyrosulfate"] = "potassium-disulfate", ["iridium-dioxide-residue"] = "iridium-dioxide",
 	["ammonia-hexachloroiridiate"] = "iridium-chloride",
 	["advanced-card"] = "me-advanced-card",           -- issue #121
+	["acceleration-card"] = "me-acceleration-card",   -- issue #195 (an item becomes me-network's module)
 	["lv-air-collector"] = "lv-compressor", ["ev-air-collector"] = "ev-compressor",   -- issue #153
 	["ev-greenhouse"] = "lv-greenhouse" }   -- issue #165
 local RM_MACHINES = {
@@ -326,6 +327,10 @@ end
 local A = "gregtorio-me-autocraft"
 local PT_ASSEMBLER, PT_FURNACE = { 14.5, Y + 8.5 }, { 19, Y + 13 }
 local PT_PROVIDER_A, PT_PROVIDER_F = { 16.5, Y + 8.5 }, { 17.5, Y + 12.5 }
+--- issue #157 (me-network #131, 0.5.0): the assembler is one tile; it stands next to its provider, where the 3x3 one of
+--- older versions had its edge (its centre two tiles away)
+local PT_ASSEMBLER_1 = { 15.5, Y + 8.5 }
+local function one_tile_assembler() return prototypes.entity["me-molecular-assembler"].tile_width == 1 end
 local PT_RECIPE, PT_FURNACE_RECIPE = "iron-gear-crafting-table", "iron-dust-smelter"
 local JOB_GEARS = 5
 local MAINT_POS, MAINT_KEEP = { 5.5, Y + 16.5 }, JOB_GEARS + 3        -- a level maintainer of the old save (issue #38)
@@ -345,7 +350,8 @@ local function setup_patterns(place)
 		log("DEVCHECK-MIGRATE-SETUP-PATTERNS skipped (no pattern providers in this version)")
 		return
 	end
-	local m = place("me-molecular-assembler", PT_ASSEMBLER[1], PT_ASSEMBLER[2])
+	local at = one_tile_assembler() and PT_ASSEMBLER_1 or PT_ASSEMBLER
+	local m = place("me-molecular-assembler", at[1], at[2])
 	m.force.recipes[PT_RECIPE].enabled = true
 	m.set_recipe(PT_RECIPE)
 	place("me-pattern-provider", PT_PROVIDER_A[1], PT_PROVIDER_A[2])
@@ -445,6 +451,7 @@ local function check_job()
 	local function expect(ok, what) if not ok then problems[#problems + 1] = what end end
 	local j = remote.call(A, "job", st.id)
 	local m = game.surfaces[1].find_entity("me-molecular-assembler", PT_ASSEMBLER)
+		or game.surfaces[1].find_entity("me-molecular-assembler", PT_ASSEMBLER_1)
 	local status = "gone"
 	if m then for k, v in pairs(defines.entity_status) do if v == m.status then status = k end end end
 	expect(j and j.status == "done", "the job of the old save: " .. serpent.line(j) .. ", assembler " .. status
@@ -494,6 +501,21 @@ local function check_patterns()
 	expect(p.valid and st.assembler_provider and st.assembler_provider.valid, "an old provider is gone")
 	local note = ""
 	if p.valid and st.assembler_provider and st.assembler_provider.valid then
+		--- issue #157: a 3x3 assembler of an older version is one tile after the update, its centre where it was: its
+		--- provider has no machine (as me-network's own migrate test checks); the player moves it next to the provider
+		local old = game.surfaces[1].find_entity("me-molecular-assembler", PT_ASSEMBLER)
+		if old and one_tile_assembler() then
+			local slot = (remote.call(A, "provider_info", st.assembler_provider) or { slots = {} }).slots[1]
+			expect(slot and not slot.ok and slot.machines == 0,
+				"the provider still points at the one-tile assembler two tiles away: " .. serpent.line(slot))
+			local recipe = old.get_recipe()
+			old.destroy{ raise_destroy = true }
+			local moved = game.surfaces[1].create_entity{ name = "me-molecular-assembler", position = PT_ASSEMBLER_1,
+				force = "player", raise_built = true }
+			if moved and recipe then moved.set_recipe(recipe) end
+			expect(moved ~= nil, "the assembler could not be moved next to its provider")
+			note = " (the one-tile assembler moved next to its provider)"
+		end
 		--- issue #80: the providers hold encoded patterns for what they provided
 		p.force.recipes[PT_FURNACE_RECIPE].enabled = true
 		local ia = remote.call(A, "provider_info", st.assembler_provider)
@@ -510,10 +532,10 @@ local function check_patterns()
 			local plan = remote.call(A, "plan", p, "iron-ingot", 1)
 			expect(plan and not plan.no_pattern and plan.pids and plan.pids[1] and plan.pids[1]:sub(1, 2) == "p/",
 				"plan of an ingot on the migrated furnace pattern: " .. serpent.line(plan))
-			note = " (crafting pattern " .. PT_RECIPE .. ", processing pattern " .. PT_FURNACE_RECIPE .. ")"
+			note = " (crafting pattern " .. PT_RECIPE .. ", processing pattern " .. PT_FURNACE_RECIPE .. ")" .. note
 		else
 			expect(not f1, "a fresh furnace without a choice got a pattern: " .. serpent.line(fi and fi.slots))
-			note = " (crafting pattern " .. PT_RECIPE .. ", the furnace had no recipe)"
+			note = " (crafting pattern " .. PT_RECIPE .. ", the furnace had no recipe)" .. note
 		end
 	end
 	for _, m in pairs(problems) do log("DEVCHECK-MIGRATE-FAIL patterns: " .. m) end
