@@ -36,7 +36,7 @@ for n, r in pairs(data.raw.recipe) do
 	local sg = recipe_subgroup(r)
 	local g = data.raw["item-subgroup"][sg] and data.raw["item-subgroup"][sg].group or "other"
 	D("R", n, r.category or "crafting", tostring(r.enabled ~= false), names(r.ingredients), names(r.results),
-		tostring(r.hidden == true), tostring(r.hide_from_player_crafting == true), sg, g)
+		tostring(r.hidden == true), tostring(r.hide_from_player_crafting == true), sg, g, r.icon or "")
 end
 for _, t in pairs({ "assembling-machine", "furnace", "rocket-silo", "character" }) do
 	for n, e in pairs(data.raw[t] or {}) do
