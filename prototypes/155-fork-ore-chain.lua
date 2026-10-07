@@ -353,7 +353,12 @@ local function ancestors(tech)
 	return seen
 end
 
---- the first technology (by name) of the groups that has one of every group at or before it
+--- the earliest technology (fewest ancestors, then by name) of the groups that has one of every group at or before it
+local function size(set)
+	local n = 0
+	for _ in pairs(set) do n = n + 1 end
+	return n
+end
 local function after_all(groups)
 	local cand = {}
 	for _, g in pairs(groups) do
@@ -362,6 +367,7 @@ local function after_all(groups)
 	local names = {}
 	for t in pairs(cand) do names[#names + 1] = t end
 	table.sort(names)
+	local found, found_n
 	for _, c in pairs(names) do
 		local a, ok = ancestors(c), true
 		for _, g in pairs(groups) do
@@ -371,8 +377,9 @@ local function after_all(groups)
 			end
 			if not hit then ok = false break end
 		end
-		if ok then return c end
+		if ok and (not found or size(a) < found_n) then found, found_n = c, size(a) end
 	end
+	if found then return found end
 	--- none of them comes after the others (the chemical bath and the mercury of the centrifuge are on parallel
 	--- branches): the technology with the fewest ancestors that has one of every group before it
 	local best, best_n
@@ -393,7 +400,7 @@ local function after_all(groups)
 			end
 		end
 	end
-	if best then log("FORK-ORE-CHAIN: chemical bath washing after parallel technologies goes to " .. best) end
+	if best then log("FORK-ORE-CHAIN: a recipe after parallel technologies goes to " .. best) end
 	return best
 end
 
@@ -442,3 +449,308 @@ for x, ore in pairs(ORE_CHAIN) do
 	end
 end
 log("FORK-ORE-CHAIN: " .. baths .. " chemical bath washing recipes")
+
+--------------------------------------------------------------------------------
+--- PHASES O3 AND O4 (issues #187 and #188): unlocks. A recipe goes to the first technology after a machine of its
+--- category and the recipe that makes its input (after_all); an input made from the start counts as given, and a
+--- recipe whose machine and input are both there from the start is enabled.
+--------------------------------------------------------------------------------
+local techs_of_recipe = {}
+for tname, tech in pairs(data.raw.technology) do
+	for _, e in pairs(tech.effects or {}) do
+		if e.type == "unlock-recipe" then
+			techs_of_recipe[e.recipe] = techs_of_recipe[e.recipe] or {}
+			table.insert(techs_of_recipe[e.recipe], tname)
+		end
+	end
+end
+local makers = {}   -- item -> recipes that make it
+for rname, r in pairs(data.raw.recipe) do
+	for _, res in pairs(r.results or {}) do
+		makers[res.name] = makers[res.name] or {}
+		table.insert(makers[res.name], rname)
+	end
+end
+--- the technologies that give an item (nil: it is there from the start)
+local function item_techs(name)
+	local out = {}
+	for _, rname in pairs(makers[name] or {}) do
+		local r = data.raw.recipe[rname]
+		if r.enabled ~= false and not r.hidden then return nil end
+		for _, t in pairs(techs_of_recipe[rname] or {}) do out[#out + 1] = t end
+	end
+	return out
+end
+local machine_techs_cache = {}
+--- the technologies that give a machine of a category (nil: one is there from the start)
+local function machine_techs(category)
+	if machine_techs_cache[category] ~= nil then return machine_techs_cache[category] or nil end
+	local out = {}
+	for _, kind in pairs({ "assembling-machine", "furnace" }) do
+		for ename, e in pairs(data.raw[kind] or {}) do
+			for _, c in pairs(e.crafting_categories or {}) do
+				if c == category then
+					for iname, it in pairs(data.raw.item) do
+						if it.place_result == ename then
+							local t = item_techs(iname)
+							if t == nil then
+								machine_techs_cache[category] = false
+								return nil
+							end
+							for _, x in pairs(t) do out[#out + 1] = x end
+						end
+					end
+				end
+			end
+		end
+	end
+	machine_techs_cache[category] = out
+	return out
+end
+--- unlock a recipe after its machine and its inputs (each a list of technologies, nil = there from the start)
+local function unlock_after(name, groups)
+	local g = {}
+	for _, x in pairs(groups) do
+		if x ~= nil and x ~= false then
+			if #x == 0 then
+				log("FORK-ORE-CHAIN: nothing gives an input of " .. name)
+				return
+			end
+			g[#g + 1] = x
+		end
+	end
+	local r = data.raw.recipe[name]
+	if #g == 0 then
+		r.enabled = true
+		return
+	end
+	local tech = after_all(g)
+	if tech then
+		fork_add_unlock(tech, name)
+		techs_of_recipe[name] = { tech }
+	else
+		log("FORK-ORE-CHAIN: no technology for " .. name)
+	end
+end
+local function add_item(name, sub, order, extra)
+	local it = { type = "item", name = name, icon = P .. name .. ".png", icon_size = 32, subgroup = sub,
+		order = order, stack_size = 64 }
+	for k, v in pairs(extra or {}) do it[k] = v end
+	data:extend({ it })
+	makers[name] = makers[name] or {}
+end
+local function made(rname)
+	local r = data.raw.recipe[rname]
+	for _, res in pairs(r.results or {}) do
+		makers[res.name] = makers[res.name] or {}
+		table.insert(makers[res.name], rname)
+	end
+	return rname
+end
+local function sub_of(name, default)
+	local it = data.raw.item[name]
+	return it and it.subgroup or default
+end
+local the_ores = {}
+for x in pairs(ORE_CHAIN) do
+	if data.raw.recipe["purified-" .. x] then the_ores[#the_ores + 1] = x end
+end
+table.sort(the_ores)
+
+--------------------------------------------------------------------------------
+--- PHASE O3 (issue #187): GTNH's Electromagnetic Separator (OP/ProcessingDust.java:406-449). The pure dust of an ore
+--- tagged GOLD, IRON or NEODYMIUM (MaterialsInit.java; appendix B, column EM separator) -> its dust, a small dust of the
+--- metal at 40 % and a nugget of it at 20 %, 20 s (GT 400 ticks, 24 EU/t). The small dusts and nuggets are new (decision
+--- on #187): 4 small dusts make a dust at the crafting table (GT's shapeless recipe; GT's packager recipe needs a machine
+--- Gregtorio lacks), 9 nuggets an ingot in the alloy smelter with the mold (GT ProcessingNugget.java:47-55, 10 s).
+--------------------------------------------------------------------------------
+local EMS_TAG = {
+	["vanadium-magnetite"] = "gold",
+	tin = "iron", ilmenite = "iron", nickel = "iron", pentlandite = "iron", chromite = "iron", bornite = "iron",
+	bastnasite = "neodymium", monazite = "neodymium",
+}
+local EMS_CAT = "lv-electromagnetic-separator-recipes"
+for _, m in pairs({ "gold", "iron", "neodymium" }) do
+	local dust, ingot = m .. "-dust", m .. "-ingot"
+	local small, nugget = "small-pile-of-" .. m .. "-dust", m .. "-nugget"
+	add_item(small, sub_of(dust, "subgroup-macerator-dust"), "z-" .. small)
+	add_item(nugget, sub_of(ingot, "subgroup-smelting"), "z-" .. nugget)
+end
+local separations = 0
+for _, x in pairs(the_ores) do
+	local m = EMS_TAG[x]
+	if m then
+		local ore, pure = ORE_CHAIN[x], "pure-" .. x .. "-dust"
+		local name = made(recipe{ name = "separating-" .. pure, category = EMS_CAT, time = 20, main = ore.dust,
+			ingredients = { item(pure) },
+			results = { item(ore.dust), item("small-pile-of-" .. m .. "-dust", 1, 0.4), item(m .. "-nugget", 1, 0.2) } })
+		unlock_after(name, { machine_techs(EMS_CAT), techs_of_recipe[pure] })
+		separations = separations + 1
+	end
+end
+for _, m in pairs({ "gold", "iron", "neodymium" }) do
+	local small, nugget = "small-pile-of-" .. m .. "-dust", m .. "-nugget"
+	local name = made(recipe{ name = m .. "-dust-from-small-piles", category = "crafting", time = 0.5, main = m .. "-dust",
+		ingredients = { item(small, 4) }, results = { item(m .. "-dust") } })
+	unlock_after(name, { item_techs(small) })
+	if data.raw.item[m .. "-ingot"] then
+		--- in the alloy smelter's row (the ingot's row is in the Material parts tab, which has items only)
+		name = made(recipe{ name = m .. "-ingot-from-nuggets", category = "lv-alloy-smelter-recipes", time = 10,
+			subgroup = "subgroup-lv-alloy-smelter-recipes", main = m .. "-ingot", ingredients = { item(nugget, 9), item("mold") },
+			results = { item(m .. "-ingot"), item("mold") } })
+		unlock_after(name, { machine_techs("lv-alloy-smelter-recipes"), item_techs(nugget) })
+	end
+end
+log("FORK-ORE-CHAIN: " .. separations .. " electromagnetic separator recipes")
+
+--------------------------------------------------------------------------------
+--- PHASE O4 (issue #188), 1: the gems. GT's grades (chipped, flawed, gem, flawless, exquisite) for the gem ores of the
+--- sifter (OP/ProcessingCrushedOre.java:80-122), new items where Gregtorio had none (decision on #188; diamond had
+--- them), and the gems Gregtorio lacked (apatite, tricalcium phosphate, lazurite, sodalite, monazite: their "gem" was
+--- the dust; named <x>-gem, an item "monazite" is in a draft recipe of the monazite line). Uses as GT's
+--- (OP/ProcessingGem.java, ProcessingLens.java):
+---   forge hammer        exquisite -> 2 flawless -> 2 gems -> 2 flawed -> 2 chipped (3.2 s)
+---   implosion           3 chipped -> flawed, 3 flawed -> gem, 3 gems -> flawless, 3 flawless -> exquisite, with an
+---                       explosive (GT: 8 TNT, Gregtorio's iridium plate takes one explosive for GT's 8) (1 s)
+---   lathe               exquisite -> 3 lenses + a dust where Gregtorio has the lens (ruby, diamond) (2 min)
+---   macerator           the grades back into dust: chipped 1/4 (a 25 % chance, Gregtorio has no small dust of
+---                       them), flawed 1/2 (50 %), flawless 2, exquisite 4; the new gems -> 1 dust. Times scaled from
+---                       Gregtorio's diamond (2.8 s per gem)
+--- Not made: GT's laser engraver steps (3 grades + a lens of the gem's colour), the tiny dark ash of the implosion.
+--------------------------------------------------------------------------------
+local GEMS = {
+	--  ore                         gem item                    table       crystallisable (autoclave)
+	{ "ruby",                 "ruby",                     "precious", false },
+	{ "emerald",              "emerald",                  "precious", false },
+	{ "diamond",              "diamond",                  "precious", false },
+	{ "nether-quartz",        "nether-quartz",            "default",  true },
+	{ "certus-quartz",        "certus-quartz",            "default",  true },
+	{ "apatite",              "apatite-gem",              "default",  true },
+	{ "tricalcium-phosphate", "tricalcium-phosphate-gem", "default",  false },
+	{ "lazurite",             "lazurite-gem",             "default",  true },
+	{ "sodalite",             "sodalite-gem",             "default",  true },
+	{ "lapis",                "lapis-lazuli",             "default",  true },
+	{ "monazite",             "monazite-gem",             "default",  true },
+}
+--- GT's sifter tables: exquisite, flawless, gem, flawed, chipped, dust (ProcessingCrushedOre.java:90-120)
+local SIFT = { precious = { 0.03, 0.12, 0.45, 0.14, 0.28, 0.35 }, default = { 0.01, 0.04, 0.15, 0.20, 0.40, 0.50 } }
+local GRADES = { "chipped", "flawed", "gem", "flawless", "exquisite" }
+local MACERATE = { chipped = { 1, 0.25 }, flawed = { 1, 0.5 }, gem = { 1 }, flawless = { 2 }, exquisite = { 4 } }
+local LENS = { ruby = "ruby-lens", diamond = "diamond-lens" }
+
+local function macerates(name)
+	for rname, r in pairs(data.raw.recipe) do
+		if r.category and r.category:match("%-macerator%-recipes$") and r.ingredients and #r.ingredients == 1
+			and r.ingredients[1].name == name then return rname end
+	end
+end
+
+local gem_recipes = 0
+for _, g in pairs(GEMS) do
+	local x, gem, tbl = g[1], g[2], g[3]
+	local ore = ORE_CHAIN[x]
+	local purified = "purified-" .. x
+	if ore and data.raw.recipe[purified] then
+		local grade = { gem = gem }
+		for _, k in pairs({ "chipped", "flawed", "flawless", "exquisite" }) do grade[k] = k .. "-" .. x end
+		local sub = sub_of(gem, sub_of(ore.dust, "subgroup-macerator-dust"))
+		if not data.raw.item[gem] then
+			add_item(gem, sub, "z-" .. x .. "-c")
+		end
+		for i, k in pairs({ "chipped", "flawed", "flawless", "exquisite" }) do
+			if not data.raw.item[grade[k]] then add_item(grade[k], sub, "z-" .. x .. "-" .. ({ "a", "b", "d", "e" })[i]) end
+		end
+
+		--- the sifter (diamond's recipe of upstream sifts crushed diamond: GT sifts the purified ore)
+		local chances = SIFT[tbl]
+		local name = (x == "diamond" and data.raw.recipe["diamond-sifter"]) and "diamond-sifter" or ("sifting-" .. purified)
+		if name == "diamond-sifter" then data.raw.recipe[name] = nil end
+		recipe{ name = name, category = "lv-sifter-recipes", time = 40, main = gem, ingredients = { item(purified) },
+			results = { item(grade.exquisite, 1, chances[1]), item(grade.flawless, 1, chances[2]), item(gem, 1, chances[3]),
+				item(grade.flawed, 1, chances[4]), item(grade.chipped, 1, chances[5]), item(ore.dust, 1, chances[6]) } }
+		made(name)
+		unlock_after(name, { machine_techs("lv-sifter-recipes"), techs_of_recipe[purified] })
+		gem_recipes = gem_recipes + 1
+
+		--- the grades into each other and back into dust
+		for i, k in pairs(GRADES) do
+			local up, down = GRADES[i + 1], GRADES[i - 1]
+			if down then
+				name = made(recipe{ name = "hammering-" .. grade[k], category = "lv-forge-hammer-recipes", time = 3.2,
+					main = grade[down], ingredients = { item(grade[k]) }, results = { item(grade[down], 2) } })
+				unlock_after(name, { machine_techs("lv-forge-hammer-recipes"), item_techs(grade[k]) })
+				gem_recipes = gem_recipes + 1
+			end
+			if up then
+				name = made(recipe{ name = "implosion-" .. grade[k] .. "-to-" .. up, category = "lv-implosion-compressor-recipes",
+					time = 1, main = grade[up], ingredients = { item(grade[k], 3), item("explosives") },
+					results = { item(grade[up]) } })
+				unlock_after(name, { machine_techs("lv-implosion-compressor-recipes"), item_techs(grade[k]),
+					item_techs("explosives") })
+				gem_recipes = gem_recipes + 1
+			end
+			if not macerates(grade[k]) then
+				local mac = MACERATE[k]
+				name = made(recipe{ name = grade[k] .. "-maceration", category = "lv-macerator-recipes", time = 2.8 * mac[1],
+					main = ore.dust, ingredients = { item(grade[k]) }, results = { item(ore.dust, mac[1], mac[2]) } })
+				if k == "chipped" or k == "flawed" then data.raw.recipe[name].energy_required = 2.8 * mac[2] end
+				unlock_after(name, { machine_techs("lv-macerator-recipes"), item_techs(grade[k]) })
+				gem_recipes = gem_recipes + 1
+			end
+		end
+		if LENS[x] and data.raw.item[LENS[x]] then
+			name = made(recipe{ name = LENS[x] .. "-from-exquisite", category = "lv-lathe-recipes", time = 120, main = LENS[x],
+				ingredients = { item(grade.exquisite) }, results = { item(LENS[x], 3), item(ore.dust) } })
+			unlock_after(name, { machine_techs("lv-lathe-recipes"), item_techs(grade.exquisite) })
+			gem_recipes = gem_recipes + 1
+		end
+
+		--- PHASE O4, 2: the autoclave grows the gem from impure and pure dust of the crystallisable ores
+		--- (OP/ProcessingDust.java:450-479): 200 L water (here 20) 90 % / 95 % in 100 s, 100 L distilled water (10)
+		--- 95 % / 100 % in 75 s. GT's third variant with molten Void is not made (Gregtorio has no void metal).
+		if g[4] then
+			for _, d in pairs({ { "impure-" .. x .. "-dust", 0.9, 0.95 }, { "pure-" .. x .. "-dust", 0.95, 1 } }) do
+				for _, w in pairs({ { "water", 20, 100, d[2], "" }, { "distilled-water", 10, 75, d[3], "-distilled-water" } }) do
+					name = made(recipe{ name = "autoclave-" .. d[1] .. w[5], category = "lv-autoclave-recipes", time = w[3],
+						main = gem, ingredients = { item(d[1]), fluid(w[1], w[2]) },
+						results = { item(gem, 1, w[4] < 1 and w[4] or nil) } })
+					unlock_after(name, { machine_techs("lv-autoclave-recipes"), item_techs(d[1]) })
+					gem_recipes = gem_recipes + 1
+				end
+			end
+		end
+	end
+end
+log("FORK-ORE-CHAIN: " .. gem_recipes .. " gem recipes (sifter, grades, lenses, autoclave)")
+
+--------------------------------------------------------------------------------
+--- PHASE O4, 3: forge hammer crushing (OP/ProcessingRawOre.java:201-212, ProcessingDirty.java:43-49,
+--- ProcessingPure.java:163-168, ProcessingCrushedOre.java:37-44): raw ore -> crushed ore (GT's ore multiplier, half
+--- of the macerator's), crushed -> impure dust, purified -> pure dust, centrifuged -> dust, each 10 ticks (0.5 s), in
+--- every forge hammer (the steam one runs the LV category too). No byproducts, as in GT.
+--------------------------------------------------------------------------------
+local hammered = 0
+for _, x in pairs(the_ores) do
+	local ore = ORE_CHAIN[x]
+	local raw, crushed = "raw-" .. x, "crushed-" .. x
+	local mult
+	local mac = data.raw.recipe[crushed]
+	if mac and data.raw.item[raw] then
+		for _, res in pairs(mac.results or {}) do
+			if res.name == crushed then mult = math.max(1, math.floor(res.amount / 2)) end
+		end
+	end
+	local steps = {
+		{ crushed, "impure-" .. x .. "-dust", 1 },
+		{ "purified-" .. x, "pure-" .. x .. "-dust", 1 },
+		{ "centrifuged-" .. x, ore.dust, 1 },
+	}
+	if mult then table.insert(steps, 1, { raw, crushed, mult }) end
+	for _, s in pairs(steps) do
+		local name = made(recipe{ name = "hammering-" .. s[1], category = "lv-forge-hammer-recipes", time = 0.5, main = s[2],
+			ingredients = { item(s[1]) }, results = { item(s[2], s[3]) } })
+		unlock_after(name, { machine_techs("lv-forge-hammer-recipes"), item_techs(s[1]) })
+		hammered = hammered + 1
+	end
+end
+log("FORK-ORE-CHAIN: " .. hammered .. " forge hammer crushing recipes")

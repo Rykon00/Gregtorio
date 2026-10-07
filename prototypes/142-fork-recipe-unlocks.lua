@@ -681,6 +681,8 @@ local KEEP = {
 	["rhodium"] = { "sulfur-dioxide", "sulfur-trioxide" },
 	-- issue #185: the ore chain's new producers would move these to tier-three-microminers
 	["ore-washing"] = { "crushed-bornite", "microminer-platinum" },
+	-- issue #188: the forge hammer crushes raw sheldonite too, so the auto-unlock no longer places the macerator recipe
+	["platinum-ore-processing"] = { "crushed-sheldonite" },
 }
 for _, list in pairs({ UNLOCKS, KEEP, UNLOCKS_98, UNLOCKS_96 }) do
 	for tech, recipes in pairs(list) do

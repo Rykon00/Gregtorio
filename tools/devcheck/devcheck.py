@@ -546,6 +546,76 @@ def check_ore_baths(m):
             if (fl, x) not in seen:
                 out.append(f"{x}: the chemical bath lacks the {fl} washing (purified-{x}-{fl})")
     return n, out
+# Issue #187: GTNH's electromagnetic separator per ore (docs/ORE-CHAIN.md appendix B, column EM separator)
+ORE_SEPARATOR = {"vanadium-magnetite": "gold", "tin": "iron", "ilmenite": "iron", "nickel": "iron", "pentlandite": "iron",
+                 "chromite": "iron", "bornite": "iron", "bastnasite": "neodymium", "monazite": "neodymium"}
+# Issue #188: the gem ores of GTNH's sifter (table, crystallisable for the autoclave) and their gem items
+ORE_GEMS = {"ruby": ("ruby", False), "emerald": ("emerald", False), "diamond": ("diamond", False),
+            "nether-quartz": ("nether-quartz", True), "certus-quartz": ("certus-quartz", True),
+            "apatite": ("apatite-gem", True), "tricalcium-phosphate": ("tricalcium-phosphate-gem", False),
+            "lazurite": ("lazurite-gem", True), "sodalite": ("sodalite-gem", True), "lapis": ("lapis-lazuli", True),
+            "monazite": ("monazite-gem", True)}
+def check_ore_o3_o4(m):
+    """Issues #187 and #188 (prototypes/155-fork-ore-chain.lua, phases O3 and O4): the electromagnetic separator works
+    exactly the pure dusts of ORE_SEPARATOR (dust, small dust and nugget of the metal); every ore of ORE_GEMS is sifted
+    from its purified ore into the five grades and the dust, the crystallisable ones grow their gem in the autoclave
+    from impure and pure dust (water and distilled water); every ore with a purified form is crushed in the forge
+    hammer at each step. Returns (info line, problems)."""
+    out, seps, sifts, autos, hammers = [], set(), 0, 0, 0
+    def live(n):
+        return n in m.R and not m.R[n]["hidden"]
+    for name, r in sorted(m.R.items()):
+        if r["hidden"]:
+            continue
+        if r["cat"] == "lv-electromagnetic-separator-recipes":
+            pure = [i for i in r["ing"] if i.startswith("pure-") and i.endswith("-dust")]
+            x = pure[0][len("pure-"):-len("-dust")] if pure else None
+            if x not in ORE_SEPARATOR:
+                out.append(f"{name}: GTNH's separator has no recipe for {', '.join(r['ing'])}")
+                continue
+            seps.add(x)
+            metal = ORE_SEPARATOR[x]
+            for need in (f"small-pile-of-{metal}-dust", f"{metal}-nugget"):
+                if need not in r["res"]:
+                    out.append(f"{name}: no {need} (GTNH: small dust 40 %, nugget 20 %)")
+    for x in sorted(set(ORE_SEPARATOR) - seps):
+        if live(f"pure-{x}-dust"):
+            out.append(f"{x}: the electromagnetic separator lacks separating-pure-{x}-dust")
+    for x, (gem, crystal) in sorted(ORE_GEMS.items()):
+        if not live(f"purified-{x}"):
+            out.append(f"{x}: no purified ore to sift")
+            continue
+        sift = [n for n, r in m.R.items() if not r["hidden"] and r["cat"] == "lv-sifter-recipes"
+                and r["ing"] == [f"purified-{x}"]]
+        if not sift:
+            out.append(f"{x}: the sifter does not sift purified-{x}")
+        else:
+            sifts += 1
+            res = m.R[sift[0]]["res"]
+            for need in (f"exquisite-{x}", f"flawless-{x}", gem, f"flawed-{x}", f"chipped-{x}"):
+                if need not in res:
+                    out.append(f"{sift[0]}: no {need}")
+        if crystal:
+            for d in ("impure", "pure"):
+                for w in ("", "-distilled-water"):
+                    n = f"autoclave-{d}-{x}-dust{w}"
+                    if live(n) and m.R[n]["cat"].endswith("-autoclave-recipes") and gem in m.R[n]["res"]:
+                        autos += 1
+                    else:
+                        out.append(f"{x}: the autoclave lacks {n} ({gem})")
+    for name, r in sorted(m.R.items()):
+        if r["hidden"] or r["cat"] != "lv-ore-washer-recipes" or not name.startswith("purified-") \
+                or name.endswith("-distilled-water"):
+            continue
+        x = name[len("purified-"):]
+        for src in (f"crushed-{x}", f"purified-{x}", f"centrifuged-{x}"):
+            if live(f"hammering-{src}") and m.R[f"hammering-{src}"]["cat"] == "lv-forge-hammer-recipes":
+                hammers += 1
+            else:
+                out.append(f"{x}: the forge hammer does not crush {src}")
+    info = (f"{len(seps)} ores in the electromagnetic separator, {sifts} gem ores sifted, {autos} autoclave recipes, "
+            f"{hammers} forge hammer steps")
+    return info, out
 def check_extractor_split(m):
     """Issue #152 (prototypes/151-fork-fluid-extractor.lua): as in GTNH, the Extractor makes items and the Fluid Extractor
     fluids. A recipe of an extractor category with a fluid result, or of a fluid extractor category without one, is in
@@ -847,6 +917,9 @@ def check(a):
     bath_n, ore_baths = check_ore_baths(m)
     print(f"\nchemical bath washing (issue #186): {bath_n} recipes")
     report("chemical bath washing that differs from GTNH (prototypes/155-fork-ore-chain.lua)", ore_baths)
+    o34_info, ore_o34 = check_ore_o3_o4(m)
+    print(f"\nseparator, gems and forge hammer of the ore chain (issues #187, #188): {o34_info}")
+    report("separator, gem and forge hammer steps that differ from GTNH (prototypes/155-fork-ore-chain.lua)", ore_o34)
     extractor_split = check_extractor_split(m)
     report("extractor recipes in the wrong machine (issue #152: items in the Extractor, fluids in the Fluid Extractor)",
            extractor_split)
@@ -870,7 +943,7 @@ def check(a):
         print(f"\nbalance data written to {a.balance_out} (recipes, machines, technologies as JSON)")
     ok = not (files or [s for s in sprites if not s.startswith("(")] or uncraft or menu or required or unresearchable
               or new_drafts or fluid_problems or locked or one_pack or fluid_steps or microminer or table_only
-              or extractor_split or ore_chain or ore_baths)
+              or extractor_split or ore_chain or ore_baths or ore_o34)
     print("\nRESULT:", "OK" if ok else "PROBLEMS FOUND")
     return 0 if ok else 1
 
