@@ -300,3 +300,145 @@ end
 --- andradite comes from the decomposition of yellow garnet: unlocked with it
 unlock(decompose_of["andradite-dust"], tech_list(decompose_of["yellow-garnet-dust"]))
 log("FORK-ORE-CHAIN: " .. made .. " ores with GTNH's chain")
+
+--------------------------------------------------------------------------------
+--- PHASE O2 (issue #186): GTNH's chemical bath washing (OP/ProcessingDirty.java:128-193). The ore itself and then its
+--- byproducts are checked in order; the first one tagged WASHING_MERCURY gives crushed + 100 mercury (GT 1000 L) ->
+--- purified + that material's dust at 70 %, else the first tagged WASHING_MERCURY_99_PERCENT the same at 99 %; the first
+--- tagged WASHING_SODIUMPERSULFATE gives crushed + 10 sodium persulfate (GT 100 L) -> purified + its dust at 70 %. 40 s.
+--- The tags (MaterialsInit.java) by Gregtorio ore name and by dust; GT's stone dust (40 %) is left out as in O1. Bornite
+--- is bartworks' and only checks its own tags (none). Unlocked with the first technology that comes after the chemical
+--- bath, a source of the fluid and the ore washer recipe of the ore (or, if none of them comes after the others, with the
+--- technology with the fewest ancestors that has all three before it).
+--------------------------------------------------------------------------------
+local BATH_TAGS = {
+	mercury = { ore = { gold = true, platinum = true, sheldonite = true },
+		dust = { ["gold-dust"] = true, ["platinum-dust"] = true, ["sheldonite-dust"] = true, ["osmium-dust"] = true } },
+	mercury99 = { ore = { silver = true }, dust = { ["silver-dust"] = true } },
+	persulfate = { ore = { copper = true, nickel = true, cobaltite = true, tetrahedrite = true },
+		dust = { ["cobalt-dust"] = true, ["copper-dust"] = true, ["nickel-dust"] = true, ["zinc-dust"] = true,
+			["tetrahedrite-dust"] = true } },
+}
+local BATH_SKIP = { bornite = true }
+
+--- the technologies that unlock a recipe making the fluid (an enabled one: none needed)
+local function producer_techs(fluid_name)
+	local out, free = {}, false
+	for name, r in pairs(data.raw.recipe) do
+		for _, res in pairs(r.results or {}) do
+			if res.type == "fluid" and res.name == fluid_name then
+				if r.enabled ~= false then free = true end
+				for _, t in pairs(tech_list(name)) do out[#out + 1] = t end
+			end
+		end
+	end
+	return out, free
+end
+
+local ancestors_cache = {}
+local function ancestors(tech)
+	if ancestors_cache[tech] then return ancestors_cache[tech] end
+	local seen = {}
+	local function walk(n)
+		local t = data.raw.technology[n]
+		for _, pre in pairs(t and t.prerequisites or {}) do
+			if not seen[pre] then
+				seen[pre] = true
+				walk(pre)
+			end
+		end
+	end
+	walk(tech)
+	ancestors_cache[tech] = seen
+	return seen
+end
+
+--- the first technology (by name) of the groups that has one of every group at or before it
+local function after_all(groups)
+	local cand = {}
+	for _, g in pairs(groups) do
+		for _, t in pairs(g) do cand[t] = true end
+	end
+	local names = {}
+	for t in pairs(cand) do names[#names + 1] = t end
+	table.sort(names)
+	for _, c in pairs(names) do
+		local a, ok = ancestors(c), true
+		for _, g in pairs(groups) do
+			local hit = false
+			for _, t in pairs(g) do
+				if t == c or a[t] then hit = true break end
+			end
+			if not hit then ok = false break end
+		end
+		if ok then return c end
+	end
+	--- none of them comes after the others (the chemical bath and the mercury of the centrifuge are on parallel
+	--- branches): the technology with the fewest ancestors that has one of every group before it
+	local best, best_n
+	for name, tech in pairs(data.raw.technology) do
+		if not tech.hidden and tech.enabled ~= false then
+			local a, ok = ancestors(name), true
+			for _, g in pairs(groups) do
+				local hit = false
+				for _, t in pairs(g) do
+					if a[t] then hit = true break end
+				end
+				if not hit then ok = false break end
+			end
+			if ok then
+				local n = 0
+				for _ in pairs(a) do n = n + 1 end
+				if not best or n < best_n or (n == best_n and name < best) then best, best_n = name, n end
+			end
+		end
+	end
+	if best then log("FORK-ORE-CHAIN: chemical bath washing after parallel technologies goes to " .. best) end
+	return best
+end
+
+local bath_techs = tech_list("lv-chemical-bath")
+local fluid_techs = {}
+for _, f in pairs({ "mercury", "sodium-persulfate" }) do
+	local techs, free = producer_techs(f)
+	fluid_techs[f] = (not free) and techs or nil
+end
+
+local baths = 0
+for x, ore in pairs(ORE_CHAIN) do
+	local purified, crushed = "purified-" .. x, "crushed-" .. x
+	if data.raw.recipe[purified] and not BATH_SKIP[x] then
+		local found = {}
+		local list = { { name = ore.dust, self = true } }
+		for _, b in pairs(ore.byproducts) do list[#list + 1] = { name = b } end
+		for _, e in pairs(list) do
+			local function tagged(tag)
+				return (e.self and BATH_TAGS[tag].ore[x]) or ((not e.self) and BATH_TAGS[tag].dust[e.name])
+			end
+			if not found.mercury and tagged("mercury") then
+				found.mercury = { e.name, 0.7 }
+			elseif not found.mercury and tagged("mercury99") then
+				found.mercury = { e.name, 0.99 }
+			end
+			if not found.persulfate and tagged("persulfate") then found.persulfate = { e.name, 0.7 } end
+		end
+		for _, k in pairs({ { "mercury", "mercury", 100 }, { "persulfate", "sodium-persulfate", 10 } }) do
+			local f = found[k[1]]
+			if f then
+				local groups = { bath_techs, tech_list(purified) }
+				if fluid_techs[k[2]] then groups[#groups + 1] = fluid_techs[k[2]] end
+				local tech = after_all(groups)
+				local name = purified .. "-" .. k[2]
+				recipe{ name = name, category = "lv-chemical-bath-recipes", time = 40, main = purified,
+					ingredients = { item(crushed), fluid(k[2], k[3]) }, results = { item(purified), item(f[1], 1, f[2]) } }
+				if tech then
+					fork_add_unlock(tech, name)
+				else
+					log("FORK-ORE-CHAIN: no technology after the chemical bath, " .. k[2] .. " and " .. purified .. " for " .. name)
+				end
+				baths = baths + 1
+			end
+		end
+	end
+end
+log("FORK-ORE-CHAIN: " .. baths .. " chemical bath washing recipes")

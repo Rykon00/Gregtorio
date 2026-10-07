@@ -700,6 +700,9 @@ local RT = {
 	{ "lv-macerator", "centrifuged-iron-maceration" },
 	{ "lv-centrifuge", "centrifuging-pure-iron-dust" },
 	{ "lv-electrolyzer", "pyrite-dust-decomposition" },
+	-- issue #186: chemical bath washing with mercury and sodium persulfate
+	{ "lv-chemical-bath", "purified-gold-mercury" },
+	{ "mv-chemical-bath", "purified-iron-sodium-persulfate" },
 	-- issue #170 (prototypes/101-fork-machines.lua): the electric Forge Hammer with a plate and a new hammer recipe
 	{ "lv-forge-hammer", "iron-plate-forge-hammer" },
 	{ "iv-forge-hammer", "sand-forge-hammer" },

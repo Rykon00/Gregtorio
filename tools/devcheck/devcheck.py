@@ -512,6 +512,40 @@ def check_ore_chain(m):
                 if need not in m.R or m.R[need]["hidden"]:
                     out.append(f"{x}: the ore chain lacks {need}")
     return ores, out
+# Issue #186: GTNH's chemical bath washing per ore (docs/ORE-CHAIN.md appendix B, columns Hg and Na2S2O8), with
+# Gregtorio's dust of the tagged material (cobaltite's dust is cobalt dust)
+ORE_BATHS = {
+    "mercury": {"gold": "gold-dust", "copper": "gold-dust", "nickel": "platinum-dust", "sheldonite": "sheldonite-dust",
+                "galena": "silver-dust", "lead": "silver-dust", "silver": "silver-dust", "tungstate": "silver-dust"},
+    "sodium-persulfate": {"iron": "nickel-dust", "gold": "copper-dust", "copper": "copper-dust", "tin": "zinc-dust",
+                          "tetrahedrite": "tetrahedrite-dust", "sphalerite": "zinc-dust", "nickel": "nickel-dust",
+                          "pentlandite": "cobalt-dust", "cobaltite": "cobalt-dust", "sheldonite": "nickel-dust"},
+}
+def check_ore_baths(m):
+    """Issue #186 (prototypes/155-fork-ore-chain.lua, phase O2): the chemical bath washes exactly the ores of ORE_BATHS
+    with mercury or sodium persulfate into purified ore and the tagged material's dust, as in GTNH. Returns (number of
+    bath recipes, problems)."""
+    out, n, seen = [], 0, set()
+    for name, r in sorted(m.R.items()):
+        if r["hidden"] or not r["cat"].endswith("-chemical-bath-recipes"):
+            continue
+        crushed = [i for i in r["ing"] if i.startswith("crushed-")]
+        if not crushed:
+            continue
+        x = crushed[0][len("crushed-"):]
+        for fl, ores in ORE_BATHS.items():
+            if fl in r["ing"]:
+                n += 1
+                seen.add((fl, x))
+                if x not in ores:
+                    out.append(f"{name}: GTNH has no {fl} washing of {x}")
+                elif f"purified-{x}" not in r["res"] or ores[x] not in r["res"]:
+                    out.append(f"{name}: gives {', '.join(r['res'])}, GTNH purified-{x} and {ores[x]}")
+    for fl, ores in ORE_BATHS.items():
+        for x in sorted(ores):
+            if (fl, x) not in seen:
+                out.append(f"{x}: the chemical bath lacks the {fl} washing (purified-{x}-{fl})")
+    return n, out
 def check_extractor_split(m):
     """Issue #152 (prototypes/151-fork-fluid-extractor.lua): as in GTNH, the Extractor makes items and the Fluid Extractor
     fluids. A recipe of an extractor category with a fluid result, or of a fluid extractor category without one, is in
@@ -810,6 +844,9 @@ def check(a):
     chain_ores, ore_chain = check_ore_chain(m)
     print(f"\nore chain (issue #185): {chain_ores} ores with GTNH's chain")
     report("ore chain gaps and ore washer shortcuts (prototypes/155-fork-ore-chain.lua)", ore_chain)
+    bath_n, ore_baths = check_ore_baths(m)
+    print(f"\nchemical bath washing (issue #186): {bath_n} recipes")
+    report("chemical bath washing that differs from GTNH (prototypes/155-fork-ore-chain.lua)", ore_baths)
     extractor_split = check_extractor_split(m)
     report("extractor recipes in the wrong machine (issue #152: items in the Extractor, fluids in the Fluid Extractor)",
            extractor_split)
@@ -833,7 +870,7 @@ def check(a):
         print(f"\nbalance data written to {a.balance_out} (recipes, machines, technologies as JSON)")
     ok = not (files or [s for s in sprites if not s.startswith("(")] or uncraft or menu or required or unresearchable
               or new_drafts or fluid_problems or locked or one_pack or fluid_steps or microminer or table_only
-              or extractor_split or ore_chain)
+              or extractor_split or ore_chain or ore_baths)
     print("\nRESULT:", "OK" if ok else "PROBLEMS FOUND")
     return 0 if ok else 1
 
