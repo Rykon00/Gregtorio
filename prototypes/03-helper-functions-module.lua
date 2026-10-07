@@ -178,7 +178,24 @@ end
 ---     CREATE ORE     ---
 --------------------------
 
-function create_ore(raw_ore, ingot, crushed, dust, raw_smelt_result, crush_result, centrifuge_result, byproduct, ore_multiplier, define_byproduct, smelt_dust)
+--- crush_recipe: name of the macerator recipe raw ore -> crush_result (default: crush_result). Two ores with one crushed
+--- form need their own names (issue #202: Raw Tin and Raw Cassiterite); a recipe name that create_ore defines twice is an
+--- error (replacing a recipe of the base game, such as sulfur, is not), unless ORE_RECIPES_SHARED names it with the reason.
+local ore_recipes = {}
+local ORE_RECIPES_SHARED = {
+	--- Raw Bornite's ore washer recipe crushed -> copper dust replaces Raw Copper's; prototypes/155-fork-ore-chain.lua
+	--- removes both shortcuts (phase O1) and migrations/2026-10-06-issue-185-ore-chain.json maps the name onto purified-bornite
+	["copper-dust"] = "raw-bornite",
+}
+function create_ore(raw_ore, ingot, crushed, dust, raw_smelt_result, crush_result, centrifuge_result, byproduct, ore_multiplier, define_byproduct, smelt_dust, crush_recipe)
+	local create_recipe = function(def)
+		if ore_recipes[def.recipe_name] and ORE_RECIPES_SHARED[def.recipe_name] ~= raw_ore then
+			error("create_ore(" .. raw_ore .. "): recipe " .. def.recipe_name .. " is defined already by create_ore("
+				.. ore_recipes[def.recipe_name] .. ")")
+		end
+		ore_recipes[def.recipe_name] = raw_ore
+		_G.create_recipe(def)
+	end
 	local multiplier = ore_multiplier or 1
 	local crush_output = 2 * multiplier
 	local smelt_output = 1 * multiplier
@@ -234,7 +251,7 @@ function create_ore(raw_ore, ingot, crushed, dust, raw_smelt_result, crush_resul
 
 	if crush_result then
 		create_recipe{
-			recipe_name = crush_result,
+			recipe_name = crush_recipe or crush_result,
 			category = "lv-macerator-recipes",
 			subgroup = "subgroup-macerator-crushed",
 			order = "a",

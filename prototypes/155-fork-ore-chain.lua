@@ -798,24 +798,43 @@ log("FORK-ORE-CHAIN: " .. gem_recipes .. " gem recipes (sifter, grades, lenses, 
 --- ProcessingPure.java:163-168, ProcessingCrushedOre.java:37-44): raw ore -> crushed ore (GT's ore multiplier, half
 --- of the macerator's), crushed -> impure dust, purified -> pure dust, centrifuged -> dust, each 10 ticks (0.5 s), in
 --- every forge hammer (the steam one runs the LV category too). No byproducts, as in GT.
+--- Issue #202: the step raw -> crushed for every raw ore with a macerator recipe to a crushed item (GTNH gives every
+--- ore both), named after the raw ore (Raw Tin and Raw Cassiterite share crushed tin); the later steps for the ores of
+--- the_ores. FORK_ORE_HAMMER_SKIP: raw ores without the step on purpose, with the reason (devcheck fails for any other).
 --------------------------------------------------------------------------------
+FORK_ORE_HAMMER_SKIP = {
+	["raw-firestone-ore"] = "no source of firestone ore: its macerator recipe stays locked (142's FORK_RECIPES_LOCKED)",
+}
 local hammered = 0
-for _, x in pairs(the_ores) do
-	local ore = ORE_CHAIN[x]
-	local raw, crushed = "raw-" .. x, "crushed-" .. x
-	local mult
-	local mac = data.raw.recipe[crushed]
-	if mac and data.raw.item[raw] then
-		for _, res in pairs(mac.results or {}) do
-			if res.name == crushed then mult = math.max(1, math.floor(res.amount / 2)) end
+local macerated = {}
+for rname, r in pairs(data.raw.recipe) do
+	if r.category == "lv-macerator-recipes" and not r.hidden and #(r.ingredients or {}) == 1 then
+		local raw = r.ingredients[1].name or ""
+		if raw:sub(1, 4) == "raw-" and data.raw.item[raw] and r.ingredients[1].amount == 1
+			and not FORK_ORE_HAMMER_SKIP[raw] then
+			for _, res in pairs(r.results or {}) do
+				if (res.name or ""):sub(1, 8) == "crushed-" and data.raw.item[res.name] and res.amount then
+					macerated[#macerated + 1] = { raw, res.name, math.max(1, math.floor(res.amount / 2)), rname }
+				end
+			end
 		end
 	end
+end
+table.sort(macerated, function(a, b) return a[4] < b[4] end)
+for _, s in pairs(macerated) do
+	local name = made(recipe{ name = "hammering-" .. s[1], category = "lv-forge-hammer-recipes", time = 0.5, main = s[2],
+		ingredients = { item(s[1]) }, results = { item(s[2], s[3]) } })
+	unlock_after(name, { machine_techs("lv-forge-hammer-recipes"), item_techs(s[1]) })
+	hammered = hammered + 1
+end
+for _, x in pairs(the_ores) do
+	local ore = ORE_CHAIN[x]
+	local crushed = "crushed-" .. x
 	local steps = {
 		{ crushed, "impure-" .. x .. "-dust", 1 },
 		{ "purified-" .. x, "pure-" .. x .. "-dust", 1 },
 		{ "centrifuged-" .. x, ore.dust, 1 },
 	}
-	if mult then table.insert(steps, 1, { raw, crushed, mult }) end
 	for _, s in pairs(steps) do
 		local name = made(recipe{ name = "hammering-" .. s[1], category = "lv-forge-hammer-recipes", time = 0.5, main = s[2],
 			ingredients = { item(s[1]) }, results = { item(s[2], s[3]) } })

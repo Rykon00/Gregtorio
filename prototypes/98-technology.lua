@@ -931,6 +931,7 @@ data:extend({
       { type = "unlock-recipe", recipe = "crushed-fullers-earth" },
       { type = "unlock-recipe", recipe = "crushed-copper" },
       { type = "unlock-recipe", recipe = "crushed-tin" },
+      { type = "unlock-recipe", recipe = "macerating-raw-tin" },
       { type = "unlock-recipe", recipe = "crushed-sphalerite" },
       { type = "unlock-recipe", recipe = "crushed-redstone" },
       { type = "unlock-recipe", recipe = "crushed-ruby" },

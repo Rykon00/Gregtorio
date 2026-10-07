@@ -781,10 +781,12 @@ create_recipe{
 create_ore("raw-copper", "copper-ingot", "crushed-copper", "copper-dust", "copper-ingot", "crushed-copper", "copper-dust", "cadmium", 1, true, true )
 
 ---TIN ORE
-create_ore("raw-tin", "tin-ingot", "crushed-tin", "tin-dust", "tin-ingot", "crushed-tin", "tin-dust", "bismuth", 1, true, true )
+--- issue #202: Raw Tin's macerator recipe has its own name, crushed-tin is Raw Cassiterite's (as before)
+create_ore("raw-tin", "tin-ingot", "crushed-tin", "tin-dust", "tin-ingot", "crushed-tin", "tin-dust", "bismuth", 1, true, true, "macerating-raw-tin" )
 
 ---CASSITERITE ORE
-create_ore("raw-cassiterite", "tin-ingot", "crushed-tin", "tin-dust", "tin-ingot", "crushed-tin", "tin-dust", "bismuth", 2, false, true )
+--- the washer, centrifuge and dust smelting recipes of crushed tin are Raw Tin's above (issue #202)
+create_ore("raw-cassiterite", "tin-ingot", "crushed-tin", "tin-dust", "tin-ingot", "crushed-tin", nil, "bismuth", 2, false, false )
 
 ---REALGAR ORE
 create_ore("raw-realgar", nil, "crushed-realgar", "realgar-dust", "realgar-dust", "crushed-realgar", "realgar-dust", "antimony", 1, true, false )
