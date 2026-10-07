@@ -83,7 +83,7 @@ local ORE_CHAIN = {
 	["uraninite"] = { dust = "uraninite-dust", byproducts = { "uranium-238-dust", "thorium-dust", "uranium-235-dust" }, mass = 90 },   -- GT Uraninite: Uranium, Thorium, Uranium235
 	["chromite"] = { dust = "chromium-dust", byproducts = { "iron-dust", "magnesium" }, mass = 32 },   -- GT Chromite: Iron, Magnesium
 	["ledox"] = { dust = "ledox-dust", byproducts = {  }, mass = 98 },   -- GT Ledox: no byproducts (itself)
-	["naquadah"] = { dust = "naquadah-oxide-mixture", byproducts = { "enriched-naquadah-dust" }, mass = 330 },   -- GT Naquadah: NaquadahEnriched
+	["naquadah"] = { dust = "naquadah-oxide-mixture", byproducts = { "enriched-naquadah-oxide-mixture" }, mass = 330 },   -- GT Naquadah: NaquadahEnriched   -- issue #205: goodgenerator's earths
 	["firestone"] = { dust = "firestone-dust", byproducts = {  }, mass = 98 },   -- GT Firestone: no byproducts (itself)
 	["infused-gold"] = { dust = "infused-gold-dust", byproducts = { "gold-dust" }, mass = 98 },   -- GT InfusedGold: Gold
 	["neutronium"] = { dust = "neutronium-dust", byproducts = { "neutronium-dust" }, mass = 100 },   -- GT Neutronium: Neutronium
@@ -131,8 +131,14 @@ end
 local PGM_OUTPUT = { ["platinum-dust"] = "metallic-platinum-powder", ["palladium-dust"] = "metallic-palladium-powder",
 	["iridium-dust"] = "iridium-metal-residue" }
 
+--- issue #205: GT New Horizons' goodgenerator turns every naquadah dust of ore processing into two of its earth
+--- (NaquadahRecipeOutputs.convert, x2): Gregtorio's naquadah oxide mixtures (125-fork-luv-endgame.lua)
+local NQ_EARTH = { ["naquadah-oxide-mixture"] = true, ["enriched-naquadah-oxide-mixture"] = true,
+	["naquadria-oxide-mixture"] = true }
+
 local function recipe(def)
 	for _, r in pairs(def.results or {}) do
+		if NQ_EARTH[r.name] then r.amount = (r.amount or 1) * 2 end
 		local to = PGM_OUTPUT[r.name]
 		if to and r.name ~= def.main and data.raw.item[to] then
 			r.name = to
@@ -941,6 +947,7 @@ for _, s in pairs(macerated) do
 		byp = BYPRODUCT_GEM[byp] or byp
 		local amount = 1
 		if PGM_OUTPUT[byp] and data.raw.item[PGM_OUTPUT[byp]] then byp, amount = PGM_OUTPUT[byp], 2 end
+		if NQ_EARTH[byp] then amount = 2 end
 		local mac = data.raw.recipe[s[4]]
 		table.insert(mac.results, item(byp, amount, 0.05 * (BYPRODUCT_MULT[s[1]] or 1)))
 		mac.main_product = s[2]

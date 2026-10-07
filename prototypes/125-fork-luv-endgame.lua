@@ -196,21 +196,94 @@ create_recipe{
 	main_product = "p507",
 }
 
---- Ether for the antimony pentachloride step, also recycled
+--- Ether for the antimony pentachloride step, also recycled (issue #205: GT's, goodgenerator RecipeLoader.java:488-494,
+--- 510 ticks at MV)
 create_recipe{
 	name = "diethyl-ether",
-	category = "lv-chemical-reactor-recipes",
-	energy_required = 10,
+	category = "mv-chemical-reactor-recipes",
+	energy_required = 25.5 * MV_SPEED,
 	ingredients = {
-		{ type = "fluid", name = "ethanol", amount = 1000 },
+		{ type = "fluid", name = "ethanol", amount = 100 },
 		{ type = "fluid", name = "sulfuric-acid", amount = 100 },
 	},
 	results = {
-		{ type = "fluid", name = "ether", amount = 500 },
-		{ type = "fluid", name = "diluted-sulfuric-acid", amount = 100 },
+		{ type = "fluid", name = "ether", amount = 50 },
+		{ type = "fluid", name = "diluted-sulfuric-acid", amount = 150 },
 	},
 	main_product = "ether",
 }
+
+--- Issue #205: GT New Horizons' goodgenerator line (goodgenerator/loader/NaquadahRecipeLoader.java, RecipeLoader.java)
+--- is upstream's; Gregtorio's naquadah oxide mixtures are its naquadah earths (GGMaterial naquadahEarth "Naquadah Oxide
+--- Mixture", enrichedNaquadahEarth "Enriched-Naquadah Oxide Mixture"). Fluids a tenth of GT's, time GT seconds x the
+--- tier's speed. Where upstream's numbers differ from GT's:
+---   * hot naquadah ingot: 3 naquadahine and a carbon dust give 1 hot ingot (upstream 30)
+---   * the gallium hydroxide of the emulsion centrifuge: 64 + 48 at 62.5 % (112)
+---   * the low quality naquadria sulphate distillation gives 2 enriched naquadah oxide mixture (GT's distillation, 1)
+---   * the enriched naquadah sludge autoclave: 60 sodium hydroxide and 1000 enriched naquadah rich solution -> 8 sludge
+---     and 250 P-507, 50 s at HV
+---   * ether (above): 100 ethanol and 100 sulfuric acid -> 50 ether and 150 diluted sulfuric acid, 25.5 s at MV
+--- and the recipes upstream lacked: gallium from gallium hydroxide, zinc from zinc sulfate, GT's centrifuge of naquadah
+--- and enriched naquadah dust into the oxide mixtures (CentrifugeRecipes.java:484-502), and the naquadria oxide mixture
+--- branch (indium phosphate, low quality naquadria phosphate, naquadria rich solution; indium and indium gallium
+--- phosphide from the indium phosphate). Their technologies are in 142's UNLOCKS_205. The ore chain gives the oxide
+--- mixtures as GT converts the ore's dusts (NaquadahRecipeOutputs.convert: 2 per dust; 155-fork-ore-chain.lua).
+--- Not taken over: GT's P-507 recipe (2-ethyl-1-hexanol needs seed oil, which Gregtorio lacks), the quantum force
+--- transformer's inert naquadah recipes (139 keeps its own), the goo and mass items (CropsNH) and the 2 oxide mixture ->
+--- naquadah nugget blast furnace recipe.
+do
+	local function patch(name, f)
+		local r = data.raw.recipe[name]
+		if r then f(r) else log("FORK-LUV2: missing recipe: " .. name) end
+	end
+	local function amount(list, name, a)
+		for _, x in pairs(list) do if x.name == name then x.amount = a end end
+	end
+	patch("hot-naquadah-ingot", function(r) amount(r.results, "hot-naquadah-ingot", 1) end)
+	patch("low-quality-naquadah-solution", function(r) amount(r.results, "gallium-hydroxide", 112) end)
+	patch("low-quality-naquadria-sulphate-distillation", function(r) amount(r.results, "enriched-naquadah-oxide-mixture", 2) end)
+	patch("concentrated-enriched-naquadah-sludge", function(r)
+		amount(r.ingredients, "sodium-hydroxide", 60)
+		amount(r.ingredients, "enriched-naquadah-rich-solution", 1000)
+		amount(r.results, "concentrated-enriched-naquadah-sludge", 8)
+		amount(r.results, "p507", 250)
+		r.energy_required = 50 * HV_SPEED
+	end)
+end
+for _, it in pairs({ "naquadria-oxide-mixture", "indium-phosphate", "low-quality-naquadria-phosphate" }) do
+	create_item{ name = it, subgroup = data.raw.item["naquadah-oxide-mixture"].subgroup, skip_recipe = true }
+end
+local NQ_RECIPES = {
+	{ "gallium-from-gallium-hydroxide", "lv-chemical-reactor-recipes", 2,
+		{ { "item", "gallium-hydroxide", 7 }, { "item", "sodium", 3 } }, { { "item", "gallium", 1 }, { "item", "sodium-hydroxide", 9 } } },
+	{ "zinc-from-zinc-sulfate", "lv-chemical-reactor-recipes", 1.5,
+		{ { "item", "zinc-sulfate", 6 }, { "fluid", "hydrogen", 200 } }, { { "item", "zinc-dust", 1 }, { "fluid", "sulfuric-acid", 100 } } },
+	{ "naquadah-dust-centrifuging", "hv-centrifuge-recipes", 1440 * HV_SPEED,
+		{ { "item", "naquadah-dust", 9 } },
+		{ { "item", "enriched-naquadah-oxide-mixture", 2, 0.5 }, { "item", "naquadria-oxide-mixture", 2, 0.1 } } },
+	{ "enriched-naquadah-dust-centrifuging", "ev-centrifuge-recipes", 1280 * EV_SPEED,
+		{ { "item", "enriched-naquadah-dust", 4 } },
+		{ { "item", "naquadria-oxide-mixture", 2, 0.2 }, { "item", "naquadah-oxide-mixture", 2, 0.3 } } },
+	{ "naquadria-oxide-mixture-centrifuging", "zpm-centrifuge-recipes", 20 * ZPM_SPEED,
+		{ { "item", "naquadria-oxide-mixture", 4 }, { "fluid", "phosphoric-acid", 400 } },
+		{ { "item", "indium-phosphate", 6, 0.2 }, { "item", "low-quality-naquadria-phosphate", 4 } } },
+	{ "naquadria-rich-solution-from-phosphate", "iv-chemical-reactor-recipes", 50 * IV_SPEED,
+		{ { "item", "low-quality-naquadria-phosphate", 10 }, { "fluid", "sulfuric-acid", 3000 } },
+		{ { "fluid", "naquadria-rich-solution", 900 }, { "item", "barite", 1 } } },
+	{ "indium-from-indium-phosphate", "lv-chemical-reactor-recipes", 1,
+		{ { "item", "indium-phosphate", 12 }, { "item", "calcium", 3 } }, { { "item", "indium", 2 }, { "item", "tricalcium-phosphate", 5 } } },
+	{ "indium-gallium-phosphide-from-indium-phosphate", "lv-mixer-recipes", 0.75,
+		{ { "item", "indium-phosphate", 6 }, { "item", "gallium-hydroxide", 7 } }, { { "item", "indium-gallium-phosphide", 3 } } },
+}
+for _, d in pairs(NQ_RECIPES) do
+	local function stacks(list)
+		local out = {}
+		for _, x in pairs(list) do out[#out + 1] = { type = x[1], name = x[2], amount = x[3], probability = x[4] } end
+		return out
+	end
+	create_recipe{ name = d[1], category = d[2], energy_required = d[3], ingredients = stacks(d[4]), results = stacks(d[5]),
+		main_product = d[5][1][2] }
+end
 
 --- Trinium, naquadah alloy and osmiridium (their upstream definitions are commented out)
 create_ingot("naquadah-alloy", nil, nil, {

@@ -835,6 +835,20 @@ local RT = {
 	{ "hv-large-chemical-reactor", "iridium-chloride" },
 	{ "ev-large-chemical-reactor", "iridium-dust" },
 	{ "lv-centrifuge", "sludge-dust-residue-centrifuging" },
+	-- issue #205: the byproduct gems and GT's dust-to-gem routes, ore-form smelting's new nuggets and ingots, the
+	-- naquadah line as GT's
+	{ "hv-implosion-compressor", "implosion-ruby-dust-to-gem" },
+	{ "lv-autoclave", "autoclave-quartzite-dust" },
+	{ "lv-lathe", "yellow-garnet-lens-from-exquisite" },
+	{ "mv-laser-engraver", "engraving-chipped-tricalcium-phosphate-to-flawed" },
+	{ "lv-alloy-smelter", "copper-ingot-from-nuggets" },
+	{ "lv-macerator", "thorium-dust-macerator" },
+	{ "lv-chemical-reactor", "gallium-from-gallium-hydroxide" },
+	{ "lv-mixer", "indium-gallium-phosphide-from-indium-phosphate" },
+	{ "iv-electric-blast-furnace", "hot-naquadah-ingot" },
+	{ "hv-autoclave", "concentrated-enriched-naquadah-sludge" },
+	{ "zpm-centrifuge", "naquadria-oxide-mixture-centrifuging" },
+	{ "iv-large-chemical-reactor", "naquadria-rich-solution-from-phosphate" },
 }
 
 local function rt_product(recipe)

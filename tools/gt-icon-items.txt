@@ -155,6 +155,7 @@ hypocosmium-ingot
 hypocosmium-superconductive-wire
 hypocosmium-wire
 impure-cassiterite-dust
+indium-phosphate
 infinity-foil
 infinity-frame
 infinity-gear
@@ -194,6 +195,7 @@ long-spacetime-rod
 long-transcendent-metal-rod
 long-tritanium-rod
 long-universium-rod
+low-quality-naquadria-phosphate
 ludicrous-voltage-coil
 luv-circuit-assembly-line
 luv-conveyor-module
@@ -258,6 +260,7 @@ naquadah-alloy-wire
 naquadah-cable
 naquadah-coil-block
 naquadah-plate
+naquadria-oxide-mixture
 naquadria-plate
 naquamiridium-dust
 naquamiridium-ingot
