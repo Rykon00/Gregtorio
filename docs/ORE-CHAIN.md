@@ -125,6 +125,17 @@ Decisions of the maintainer (2026-10-09): #222 "all of them", #223 "as GTNH has 
   recipe (the file's header lists them) and 143's casts (the item casing cast is new in 143). Not made: the tool heads
   and turbine blades of GT's TOOL bit and GT's cells. The Material parts tab (200) has rows for double plates, item
   casings, small springs and springs.
+- **Every metal (#227, decision after #222):** the rule "a part only where a recipe uses it" is gone. `tools/gen_gt_parts.py`
+  reads GT's sources and writes `prototypes/gt-parts-data.lua` (per material: GT or GT++ source, GT mass, dust,
+  processing or melting point voltage, blast furnace temperature, the forms GT generates); 158 makes the forms
+  Gregtorio lacked: 1824 items for 117 metals (93 GT materials, 24 GT++ alloys with GT++'s forms and RecipeGen
+  numbers), 2101 recipes, 982 more casts. GT's processing voltage (`setProcessingMaterialTierEU`) sets the tier of all
+  of a material's recipes, else each recipe's own EU/t; GT++ alloys take the voltage of their melting point. Tiny and
+  small piles of the platinum group are not made (their dust comes only from the platinum line, #199). 199's
+  auto-unlock does not count 158's recipes as producers (`FORK_GT_PARTS.recipes`, like 143's casts). Without a GT or
+  GT++ source (no parts): bartworks' and goodgenerator's Werkstoffe ruridit, rhodium-plated palladium and Incoloy-903
+  and GT++'s element rhugnor (#228), and Gregtorio's own crystaltine, indovanadium, microversium, mixed metal, iridium
+  alloy, RTM alloy and wrapped plutonium.
 - **Nuggets (#223 B5):** GT's ingot -> 9 nuggets (alloy smelter with the mold) and nugget -> tiny pile of the dust
   (macerator) for 15 metals, with 9 tiny piles -> the dust at the crafting table.
 - **Raw ore smelting (#223 B1, `ProcessingRawOre.java:118-198`):** the ingot of the direct smelting metal (if it needs
