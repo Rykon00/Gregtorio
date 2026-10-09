@@ -672,7 +672,10 @@ local UNLOCKS_96 = {
 --- technology of their input: gallium from the line's gallium hydroxide, zinc from the zinc sulfate of the enriched
 --- naquadah ingot, the naquadria oxide mixture branch with the naquadria ingot
 local UNLOCKS_205 = {
-	["naquadah-processing"] = { "gallium-from-gallium-hydroxide" }, -- LuV
+	["naquadah-processing"] = { "gallium-from-gallium-hydroxide", -- LuV
+		--- issue #207: goodgenerator's naquadah nugget (125) and its ingot
+		"naquadah-nugget", "naquadah-nugget-helium", "naquadah-nugget-argon", "naquadah-nugget-radon", "naquadah-nugget-neon",
+		"naquadah-nugget-krypton", "naquadah-nugget-xenon", "naquadah-ingot-from-nuggets" },
 	["enriched-naquadah"] = { "zinc-from-zinc-sulfate" }, -- LuV
 	["uv-materials"] = { -- UV
 		"naquadah-dust-centrifuging", "enriched-naquadah-dust-centrifuging", "naquadria-oxide-mixture-centrifuging",
