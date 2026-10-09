@@ -583,7 +583,7 @@ local function unlock_after(name, groups)
 	local r = data.raw.recipe[name]
 	if #g == 0 then
 		r.enabled = true
-		return
+		return true
 	end
 	local tech = after_all(g)
 	if tech then
@@ -592,6 +592,7 @@ local function unlock_after(name, groups)
 	else
 		log("FORK-ORE-CHAIN: no technology for " .. name)
 	end
+	return tech   -- issue #227: nil when nothing unlocks it (158 falls back to the latest of the groups)
 end
 local function add_item(name, sub, order, extra)
 	local it = { type = "item", name = name, icon = P .. name .. ".png", icon_size = 32, subgroup = sub,

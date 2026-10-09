@@ -145,6 +145,75 @@ MATERIALS = {
     "naquadria-oxide-mixture": ("METALLIC", (77, 77, 85)), "indium-phosphate": ("DULL", (43, 46, 112)),
     "low-quality-naquadria-phosphate": ("DULL", (77, 77, 85)),
     "ash": "Ash",  # issue #223: GT's Ashes (bricked blast furnace with coke, malachite's blast furnace recipe)
+    # issue #227: the metals whose GT parts are new (GT materials; GT++ alloys: set and colour of MaterialsAlloy.java)
+    "annealed-copper": "AnnealedCopper",
+    "battery-alloy": "BatteryAlloy",
+    "black-steel": "BlackSteel",
+    "blue-steel": "BlueSteel",
+    "brass": "Brass",
+    "bronze": "Bronze",
+    "chromium": "Chrome",
+    "cobalt-brass": "CobaltBrass",
+    "conductive-iron": "ConductiveIron",
+    "cupronickel": "Cupronickel",
+    "dark-steel": "DarkSteel",
+    "eglin-steel": ("METALLIC", (139, 69, 19)),  # GT++ EGLIN_STEEL
+    "electrical-steel": "ElectricalSteel",
+    "electrum": "Electrum",
+    "end-steel": "EndSteel",
+    "energetic-alloy": "EnergeticAlloy",
+    "enriched-naquadah": "NaquadahEnriched",
+    "gallium": "Gallium",
+    "grisium": ("METALLIC", (53, 93, 106)),  # GT++ LEAGRISIUM
+    "hastelloy-c276": ("METALLIC", (90, 74, 88)),  # GT++ HASTELLOY_C276 (GT++ mixes the colour of its parts: here the ingot icon's)
+    "hastelloy-w": ("METALLIC", (97, 94, 122)),  # GT++ HASTELLOY_W (GT++ mixes the colour of its parts: here the ingot icon's)
+    "hastelloy-x": ("METALLIC", (100, 98, 109)),  # GT++ HASTELLOY_X (GT++ mixes the colour of its parts: here the ingot icon's)
+    "hsse": "HSSE",
+    "hssg": "HSSG",
+    "incoloy-020": ("METALLIC", (120, 96, 90)),  # GT++ INCOLOY_020 (GT++ mixes the colour of its parts: here the ingot icon's)
+    "incoloy-ds": ("METALLIC", (97, 93, 123)),  # GT++ INCOLOY_DS (GT++ mixes the colour of its parts: here the ingot icon's)
+    "incoloy-ma956": ("METALLIC", (35, 101, 70)),  # GT++ INCOLOY_MA956 (GT++ mixes the colour of its parts: here the ingot icon's)
+    "inconel-625": ("METALLIC", (128, 200, 128)),  # GT++ INCONEL_625
+    "inconel-690": ("METALLIC", (118, 220, 138)),  # GT++ INCONEL_690
+    "inconel-792": ("METALLIC", (108, 240, 118)),  # GT++ INCONEL_792
+    "invar": "Invar",
+    "iridium": "Iridium",
+    "kanthal": "Kanthal",
+    "magnalium": "Magnalium",
+    "maraging-steel-250": ("SHINY", (104, 97, 141)),  # GT++ MARAGING250 (GT++ mixes the colour of its parts: here the ingot icon's)
+    "maraging-steel-300": ("SHINY", (98, 99, 143)),  # GT++ MARAGING300 (GT++ mixes the colour of its parts: here the ingot icon's)
+    "nichrome": "Nichrome",
+    "nickel-zinc-ferrite": "NickelZincFerrite",
+    "nitinol-60": ("SHINY", (136, 117, 159)),  # GT++ NITINOL_60 (GT++ mixes the colour of its parts: here the ingot icon's)
+    "osmium": "Osmium",
+    "palladium": "Palladium",
+    "platinum": "Platinum",
+    "potin": ("METALLIC", (201, 151, 129)),  # GT++ POTIN
+    "pulsating-iron": "PulsatingIron",
+    "red-alloy": "RedAlloy",
+    "signalum": "Signalum",
+    "silicon": "Silicon",
+    "soularium": "Soularium",
+    "staballoy": ("SHINY", (68, 75, 66)),  # GT++ STABALLOY
+    "stainless-steel": "StainlessSteel",
+    "steel": "Steel",
+    "stellite": ("SHINY", (130, 117, 157)),  # GT++ STELLITE (GT++ mixes the colour of its parts: here the ingot icon's)
+    "talonite": ("METALLIC", (124, 121, 113)),  # GT++ TALONITE (GT++ mixes the colour of its parts: here the ingot icon's)
+    "tantalloy-60": ("SHINY", (213, 231, 237)),  # GT++ TANTALLOY_60
+    "tantalum": "Tantalum",
+    "tantalum-carbide": ("SHINY", (139, 136, 120)),  # GT++ TANTALUM_CARBIDE
+    "titanium": "Titanium",
+    "tumbaga": ("SHINY", (255, 178, 15)),  # GT++ TUMBAGA
+    "tungsten": "Tungsten",
+    "tungsten-carbide": "TungstenCarbide",
+    "ultimet": "Ultimet",
+    "vanadium-steel": "VanadiumSteel",
+    "vibrant-alloy": "VibrantAlloy",
+    "watertight-steel": ("METALLIC", (120, 120, 180)),  # GT++ AQUATIC_STEEL
+    "yttrium-barium-cuprate": "YttriumBariumCuprate",
+    "zeron-100": ("METALLIC", (180, 180, 20)),  # GT++ ZERON_100
+    "zinc": "Zinc",
+    "zirconium-carbide": ("SHINY", (222, 202, 180)),  # GT++ ZIRCONIUM_CARBIDE
 }
 
 # fork part name -> GT OrePrefix texture; "{m}" is the material
@@ -167,6 +236,8 @@ PARTS = [
     # issue #222: GT's other parts of the metals of #205 (the item casing is GT's casingSmall texture)
     ("double-{m}-plate", "plateDouble"), ("small-{m}-spring", "springSmall"), ("{m}-spring", "spring"),
     ("{m}-item-casing", "casingSmall"), ("block-of-{m}", "@block"),
+    # issue #227: GT's multi plates
+    ("triple-{m}-plate", "plateTriple"), ("quadruple-{m}-plate", "plateQuadruple"), ("quintuple-{m}-plate", "plateQuintuple"),
 ]
 
 
@@ -358,7 +429,11 @@ class Composer:
         if prefix == "@frame":
             return self.m.icon(mat, "frameGt", kind="blocks")
         if prefix == "@block":   # issue #222: GT's storage block texture of the material
-            return fit(self.t.load(f"{BLK}BLOCK_{name.upper()}"))
+            spec = f"{BLK}BLOCK_{name.upper()}"
+            if self.t.exists(spec):
+                return fit(self.t.load(spec))
+            # issue #227: GT++'s blocks (BlockBaseModular.java) are the material icon set's block1 (block5 above tier 4)
+            return self.m.icon(mat, "block1", kind="blocks")
         return self.m.icon(mat, prefix)
 
     # machines ------------------------------------------------------------------------------------

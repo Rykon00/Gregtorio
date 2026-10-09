@@ -709,6 +709,10 @@ local RT = {
 	{ "lv-alloy-smelter", "iron-nugget-from-ingot" },
 	{ "lv-macerator", "copper-nugget-maceration" },
 	{ "primitive-blast-furnace", "galena-dust-pbf-coke" },
+	-- issue #227: GT's parts of every metal (158)
+	{ "mv-bending-machine", "double-steel-plate" },
+	{ "lv-alloy-smelter", "steel-item-casing" },
+	{ "hv-extruder", "staballoy-ring" },
 	-- issue #186: chemical bath washing with mercury and sodium persulfate
 	{ "lv-chemical-bath", "purified-gold-mercury" },
 	{ "mv-chemical-bath", "purified-iron-sodium-persulfate" },

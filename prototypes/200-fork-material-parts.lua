@@ -37,6 +37,9 @@ local FORMS = {
 	{ "nugget", "", "-nugget" },
 	{ "plate", "", "-plate" },
 	{ "double-plate", "double-", "-plate" },   -- issue #222
+	{ "triple-plate", "triple-", "-plate" },   -- issue #227
+	{ "quadruple-plate", "quadruple-", "-plate" },
+	{ "quintuple-plate", "quintuple-", "-plate" },
 	{ "dense-plate", "dense-", "-plate" },
 	{ "superdense-plate", "superdense-", "-plate" },
 	{ "foil", "", "-foil" },
@@ -58,7 +61,8 @@ local FORMS = {
 	{ "cable", "", "-cable" },
 }
 --- the most specific pattern first (hot-iron-ingot before iron-ingot, long-steel-rod before steel-rod)
-local MATCH = { "hot-ingot", "superdense-plate", "dense-plate", "double-plate", "long-rod", "large-gear", "fine-wire",
+local MATCH = { "hot-ingot", "superdense-plate", "dense-plate", "double-plate", "triple-plate", "quadruple-plate",
+	"quintuple-plate", "long-rod", "large-gear", "fine-wire",
 	"small-spring", "item-casing", "ingot", "nugget", "plate", "foil", "block", "rod", "round", "bolt", "screw", "ring", "gear",
 	"rotor", "spring", "wire", "cable" }
 local SPECIAL = { ["iron-stick"] = { "iron", "rod" }, ["iron-gear-wheel"] = { "iron", "gear" } }
