@@ -105,13 +105,45 @@ stays, without a stand-in; upstream recipes without a GTNH counterpart stay unti
 | 2. Quantum force transformer naquadah recipes | naquadah, enriched naquadah and naquadria earth -> inert naquadah dusts at UEV, UIV and UMV with GT's naquadah catalysts and focus tiers; the neutron activator turns 96 inert dusts with nickel, titanium or americium plasma, inside a window of neutron kinetic energy, into the melt (`NaquadahRecipeLoader.java:51-137`) | **stays**: Gregtorio's own phase 6a recipes (`139-fork-endgame-multiblocks.lua`, devcheck's REQUIRED_RECIPES) | they do not fit the QFT as built: it has no catalysts and no focus tiers and runs at UMV only; Gregtorio has no nickel and no americium plasma, its neutron activator has no neutron kinetic energy, and the naquadria recipe gives naquadria supersolid, which Gregtorio lacks |
 | 3. Naquadah nugget | 2 naquadah earth -> 1 naquadah nugget in the blast furnace with a gas (IV, 5000 K, 2 min, 1000 L; `NaquadahRecipeLoader.java:512-520`) | **done** (`125-fork-luv-endgame.lua`): `naquadah-nugget` with nitrogen and the six other blast furnace gases (147's time and gas factors), the new naquadah nugget (9 -> an ingot in the alloy smelter, cast by 143), with Naquadah Processing | |
 | 3. Goo and mass items | naquadah, enriched naquadah and naquadria goo from CropsNH's crop leaves in the chemical reactor (`NaquadahRecipePatches.java`), solidified into masses, macerated into earths | **stays**: not made | Gregtorio has no crops (CropsNH); no stand-in |
-| 4. Upstream extras | none | **stay**: the autoclave recipes ruby, emerald and diamond from dust; the electrolyzer recipes of enriched naquadah and naquadria dust from their sulphates; the cryogenic helium of the naquadah, enriched naquadah and naquadria vacuum freezer steps | removing them can hit old saves and cut sources (naquadria dust has no other); listed with the effect of removing each in #223 for the maintainer's decision |
+| 4. Upstream extras | none | **removed in #223** (maintainer's decision): the autoclave recipes ruby, emerald and diamond from dust; the electrolyzer recipes of enriched naquadah and naquadria dust from their sulphates (GT's ingot -> dust maceration instead); the cryogenic helium of the naquadah, enriched naquadah and naquadria vacuum freezer steps (GTNH cools all three without coolant at IV: goodgenerator for naquadah, NewHorizonsCoreMod `VacuumFreezerRecipes.java:134-142` for the other two; #207 had missed them) | |
 | 5. Smelting in the multi smelter | GT's multi smelter runs every furnace recipe | **done** (155): every furnace recipe of the ore chain (O1's impure and pure dusts, #205's ore forms, malachite) has a multi smelter recipe, 64 -> 64 x the output in the furnace recipe's time, named `<input>-multismelter` like create_ore's | |
 | 5. Crushed platinum and palladium, bornite | platinum: 10 nuggets, which `PlatinumSludgeOutputs.convertSmelting` turns into 20 tiny piles of platinum metallic powder; palladium: none (blast furnace, 1828 K); bornite: none (a bartworks material without an ingot, `CrushedLoader.java`) | **done**: crushed platinum -> 20 new tiny piles of metallic platinum powder (9 make the powder at the crafting table: GT's packager is not in Gregtorio); palladium and bornite: nothing, as in GTNH | |
-| 5. Vanadium magnetite dust -> iron | none | **stays** (upstream), with the raw ore smelting into iron | an upstream extra like point 4: #223 |
+| 5. Vanadium magnetite dust -> iron | none | **removed in #223**, the dust and the raw ore smelting (below) | |
 | 6. New ingots: melts | a molten fluid for every material with metal items (SMELTING_TO_FLUID) | **done**: molten realgar, thorium, antimony, molybdenum; the fluid extractor melts the ingot, the solidifier casts the ingot and the nugget; 143 runs again after 155 (`FORK_CASTING.run`) and also casts the nuggets of #187 and #205 | |
-| 6. New ingots: other parts | plates, foil, rods, bolts, screws, rings, springs, fine wire (realgar also gears and rotor) | **not made** | Gregtorio makes a part of a metal where a recipe uses it, none uses these; decision in #222 |
+| 6. New ingots: other parts | plates, foil, rods, bolts, screws, rings, springs, fine wire (realgar also gears and rotor) | **made in #222** (`158-fork-gt-parts.lua`, below) | |
 | 7. Garnet decomposition | red garnet -> 3 pyrope, 5 almandine, 8 spessartine; yellow garnet -> 5 andradite, 8 grossular, 3 uvarovite (`addCentrifugeRecipe`) | **done** (155): pyrope, almandine and uvarovite dust; uvarovite's electrolysis (20 -> 3 calcium, 2 chrome, 3 silicon, 1200 oxygen, MV, 24 s); GT's use of the six garnet minerals in `BauxiteRefineChain.java` (dust + 1 nitric acid -> 1 sluice juice and six dusts by chance, MV, 2.25 s), the only GT use of pyrope and almandine | |
+
+## GT's parts and the GTNH alignment of #222 and #223
+
+Decisions of the maintainer (2026-10-09): #222 "all of them", #223 "as GTNH has it", the raw ore smelting completely.
+
+- **Parts (#222, `prototypes/158-fork-gt-parts.lua`):** every item GT generates for realgar, thorium, antimony and
+  molybdenum (`addMetalItems`, realgar `addGearItems`; `OrePrefixes.java` conditions, frame boxes for every metal,
+  storage blocks of `LoaderGTBlockFluid.java`: not realgar): plate, double, dense and superdense plate, foil, rod, long
+  rod, bolt, screw, round, ring, fine wire, small spring, spring, item casing, frame, block, realgar's gear, large gear
+  and rotor, the nuggets of antimony and molybdenum and the small piles of their dust. Each with GT's main machine
+  recipe (the file's header lists them) and 143's casts (the item casing cast is new in 143). Not made: the tool heads
+  and turbine blades of GT's TOOL bit and GT's cells. The Material parts tab (200) has rows for double plates, item
+  casings, small springs and springs.
+- **Nuggets (#223 B5):** GT's ingot -> 9 nuggets (alloy smelter with the mold) and nugget -> tiny pile of the dust
+  (macerator) for 15 metals, with 9 tiny piles -> the dust at the crafting table.
+- **Raw ore smelting (#223 B1, `ProcessingRawOre.java:118-198`):** the ingot of the direct smelting metal (if it needs
+  no blast furnace), else the gem of the material, one per ore, never a dust; platinum as 2 metallic powder. 26 raw
+  ores lost their furnace and multi smelter recipes, 15 smelt into GT's item and count, raw platinum and sheldonite
+  got one. Kept against GT's rule: raw redstone, gypsum and calcite -> their dust: Gregtorio needs them before its first
+  macerator (red alloy for the steam machines' pistons; firebricks and concrete of the Bricked Blast Furnace); without
+  them devcheck finds no way to the logistic science pack. Raw ruby, emerald and diamond smelting into the gem is GT's
+  (#223 had listed it wrongly). GT's blast furnace recipe of BLASTFURNACE_CALCITE_TRIPLE ores: raw iron + calcite or
+  quicklime -> 3 iron ingots and dark ashes.
+- **Bricked blast furnace (#223 B2, `ProcessingOreSmelting.java:84-99`, `RecipeMaps.java:902-990`):** 2 dusts of an
+  ore that smelts into another metal -> 3 ingots with 2 coal, coal dust or charcoal (2 min, dark ashes at 2/9) or 1
+  coke (80 s, GT's new Ashes at 1/9): cassiterite, galena, pentlandite, sphalerite, malachite, tetrahedrite (GT's
+  special recipe with 9 antimony nuggets). Molybdenite and sheldonite have GT's DONT_ADD_DEFAULT_BBF_RECIPE.
+- **Malachite (#223 B3):** GT's blast furnace recipe 2 dust + carbon -> 3 copper ingots, ashes, carbon dioxide. GT's
+  ash centrifuge needs potash and banded iron, which Gregtorio lacks: the ashes have no use yet (#225).
+- **Upstream extras (#223 A):** removed as listed in the table above; diamond dust gets GT's implosion (4 dusts, 32
+  TNT -> 3 diamonds and 16 tiny piles of dark ash).
+- **Electrolyzer tiers (#223 B4):** andradite and pyrite decompose at MV, as GT's 30 EU/t per output puts them.
 
 ## Appendix A: GTNH's numbers per step
 

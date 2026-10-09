@@ -317,6 +317,29 @@ do
 	}
 end
 
+--- Issue #223: the vacuum freezer steps as GT New Horizons' (goodgenerator NaquadahRecipeLoader.java:540-545: naquadah,
+--- 16 s; NewHorizonsCoreMod VacuumFreezerRecipes.java:134-142: enriched naquadah and naquadria, 14.7 s; IV, without
+--- coolant; upstream's took cryogenic helium); GT has no electrolysis of the enriched naquadah and naquadria sulphates
+--- (upstream's: gone), its dusts come from the ingots (GTRecipeRegistrator.registerReverseMacerating: mass ticks, GT's
+--- default mass 98)
+for _, f in pairs({ { "naquadah", 16 }, { "enriched-naquadah", 14.7 }, { "naquadria", 14.7 } }) do
+	local r = data.raw.recipe[f[1] .. "-ingot"]
+	if r then
+		r.category, r.energy_required = "iv-vacuum-freezer-recipes", f[2] * IV_SPEED
+		r.ingredients = { { type = "item", name = "hot-" .. f[1] .. "-ingot", amount = 1 } }
+		r.results = { { type = "item", name = f[1] .. "-ingot", amount = 1 } }
+		r.main_product = f[1] .. "-ingot"
+	else
+		log("FORK-LUV2: missing recipe: " .. f[1] .. "-ingot")
+	end
+end
+for _, m in pairs({ "enriched-naquadah", "naquadria" }) do
+	data.raw.recipe[m .. "-dust"] = nil
+	create_recipe{ name = m .. "-dust-macerator", category = "lv-macerator-recipes", energy_required = 4.9,
+		ingredients = { { type = "item", name = m .. "-ingot", amount = 1 } },
+		results = { { type = "item", name = m .. "-dust", amount = 1 } }, main_product = m .. "-dust" }
+end
+
 --- Trinium, naquadah alloy and osmiridium (their upstream definitions are commented out)
 create_ingot("naquadah-alloy", nil, nil, {
 		{ type = "item", name = "naquadah-dust", amount = 2 },
@@ -638,10 +661,10 @@ tech{
 	name = "enriched-naquadah", prerequisites = { "naquadah-processing" }, count = 1500,
 	recipes = {
 		"concentrated-enriched-naquadah-sludge", "enriched-naquadah-sulphate", "sodium-sulfate-electrolysis",
-		"hot-enriched-naquadah-ingot", "enriched-naquadah-ingot", "enriched-naquadah-dust",
+		"hot-enriched-naquadah-ingot", "enriched-naquadah-ingot", "enriched-naquadah-dust-macerator",
 		"low-quality-naquadria-sulphate", "trinium-dust", "hot-trinium-ingot", "trinium-ingot", "trinium-plate",
 		"low-quality-naquadria-sulphate-solution", "low-quality-naquadria-sulphate-distillation",
-		"naquadria-sulphate", "naquadria-dust",
+		"naquadria-sulphate",
 	},
 }
 tech{

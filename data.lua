@@ -130,6 +130,8 @@ require("prototypes.153-fork-compressor-air")
 require("prototypes.154-fork-greenhouse")
 --- issue #185: GTNH's ore chain, phase O1 (purified, centrifuged, impure and pure forms; after every ore, before the molds)
 require("prototypes.155-fork-ore-chain")
+--- issues #222 and #223: GT's parts of the new ingots and GT's nugget recipes (after 155, before the molds)
+require("prototypes.158-fork-gt-parts")
 --- issue #164: the circuit variant recipes show the icon of their GTNH item (156)
 require("prototypes.156-fork-circuit-icons")
 --- issue #190: GTNH's material recycling (macerator, arc furnace, fluid extractor), after every file that makes recipes
