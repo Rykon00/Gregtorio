@@ -10,7 +10,10 @@
   **me-network**, https://github.com/Rykon00/me-network, a dependency; `prototypes/120-fork-me-network-compat.lua` gives
   its items Gregtorio's GT recipes and its nine technologies Gregtorio's tiers through me-network's data-stage API
   `ME_NETWORK`, and builds the molecular assembler from the HV assembler; the ME items of the upstream file 13 are
-  me-network's, their recipes are in the compat file; plan and record: `docs/SPLIT.md`), 125 LuV endgame (naquadah: upstream's goodgenerator line with GTNH's numbers and missing recipes, issue #205; bacterial vat, crystal processors, fusion MK1), 126 ZPM, 127 UV
+  me-network's, their recipes are in the compat file; plan and record: `docs/SPLIT.md`; issue #214: every recipe of
+  `ME_NETWORK.recipes` gets a GT recipe there, as in GTNH's AE2 where it has one, registered in `FORK_ME_RECIPES`, and
+  devcheck fails for one that keeps me-network's standalone recipe unless it is in the allow-list
+  `FORK_ME_RECIPES_STANDALONE` with its reason), 125 LuV endgame (naquadah: upstream's goodgenerator line with GTNH's numbers and missing recipes, issue #205; bacterial vat, crystal processors, fusion MK1), 126 ZPM, 127 UV
   (UV circuit, ZPM assembly line, UV components, fusion MK2), 128 UHV (wetware line, tritanium,
   UHV components, fusion MK3), 129 water purification (grades 1-8, NPIC/PPIC/QPIC/FPIC/APIC chips, complex SMDs; the FPIC/APIC users in 131-134 list its techs as prerequisites),
   131 UEV (bio line, UEV components, fusion MK4), 132 UIV (optical line, UIV components),

@@ -94,6 +94,22 @@ local tk = {}
 for name, reason in pairs(FORK_RECIPES_TABLE_ONLY or {}) do tk[#tk + 1] = name .. "\t" .. reason end
 section("TABLEONLYOK", tk)
 
+--- Issue #214: the recipes of me-network (ME_NETWORK.recipes) and which of them prototypes/120-fork-me-network-compat.lua
+--- gives a Gregtorio recipe (FORK_ME_RECIPES) or keeps standalone on purpose (FORK_ME_RECIPES_STANDALONE); one row per
+--- name: name, "me" (a recipe of me-network) or "-", "gregtorio" or "-", the allow-list reason (absent in older versions)
+local mr, mr_seen = {}, {}
+local function me_row(name)
+	if mr_seen[name] then return end
+	mr_seen[name] = true
+	local listed = false
+	for _, n in pairs(ME_NETWORK and ME_NETWORK.recipes or {}) do if n == name then listed = true end end
+	mr[#mr + 1] = table.concat({ name, listed and "me" or "-", (FORK_ME_RECIPES or {})[name] and "gregtorio" or "-",
+		(FORK_ME_RECIPES_STANDALONE or {})[name] or "" }, "\t")
+end
+for _, name in pairs(ME_NETWORK and ME_NETWORK.recipes or {}) do me_row(name) end
+for name in pairs(FORK_ME_RECIPES_STANDALONE or {}) do me_row(name) end
+section("MERECIPES", mr)
+
 --- Issue #202: the raw ores without a forge hammer recipe on purpose (FORK_ORE_HAMMER_SKIP in
 --- prototypes/155-fork-ore-chain.lua; absent in older versions)
 local hk = {}
