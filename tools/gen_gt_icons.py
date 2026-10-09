@@ -137,6 +137,10 @@ MATERIALS = {
     "dark-ash": "DarkAsh",  # issue #193
     "cassiterite": "Cassiterite",  # issue #202: its own crushed ore, dust and ore chain
     "antimony": "Antimony", "molybdenum": "Molybdenum",  # issue #205: their ingots
+    # issue #203: the crushed ores and chains of gypsum, sulfur and calcite, calcite's byproduct malachite; issue #207:
+    # the garnet minerals, bartworks' platinum metallic powder (WerkstoffLoader.java:811, platinum's colour)
+    "gypsum": "Gypsum", "sulfur": "Sulfur", "calcite": "Calcite", "malachite": "Malachite", "pyrope": "Pyrope",
+    "almandine": "Almandine", "uvarovite": "Uvarovite", "metallic-platinum-powder": ("METALLIC", (255, 255, 200)),
     # issue #205: goodgenerator's Werkstoffe of the naquadah line (GGMaterial.java, their colours; dusts)
     "naquadria-oxide-mixture": ("METALLIC", (77, 77, 85)), "indium-phosphate": ("DULL", (43, 46, 112)),
     "low-quality-naquadria-phosphate": ("DULL", (77, 77, 85)),
@@ -146,7 +150,7 @@ MATERIALS = {
 PARTS = [
     # issue #185: the forms of the ore chain (before "{m}-dust", which would take pure-<m>-dust as a dust of "pure-<m>")
     ("impure-{m}-dust", "dustImpure"), ("pure-{m}-dust", "dustPure"), ("purified-{m}", "crushedPurified"),
-    ("centrifuged-{m}", "crushedCentrifuged"),
+    ("centrifuged-{m}", "crushedCentrifuged"), ("crushed-{m}", "crushed"),  # issue #203: crushed sulfur
     # issues #187 and #188: small dusts of the separator, the gem grades of the sifter, the gems Gregtorio lacked
     ("small-pile-of-{m}-dust", "dustSmall"), ("chipped-{m}", "gemChipped"), ("flawed-{m}", "gemFlawed"),
     ("flawless-{m}", "gemFlawless"), ("exquisite-{m}", "gemExquisite"), ("{m}-gem", "gem"),
@@ -613,6 +617,8 @@ def icon_table(c):
     T["cyanoacetic-acid"] = lambda: c.part("cyanoacetic-acid", "dust")
     for m in ("naquadria-oxide-mixture", "indium-phosphate", "low-quality-naquadria-phosphate"):   # issue #205
         T[m] = (lambda m=m: lambda: c.part(m, "dust"))()
+    # issue #207: the tiny pile of the platinum metallic powder (crushed platinum in the furnace)
+    T["tiny-pile-of-metallic-platinum-powder"] = lambda: c.part("metallic-platinum-powder", "dustTiny")
     # issue #98: the high octane cell (like the gasoline cell), sodium bisulfate (GT: a dust)
     T["high-octane-gasoline-cell"] = lambda: c.part("high-octane-gasoline", "cell")
     T["sodium-bisulfate"] = lambda: c.part("sodium-bisulfate", "dust")

@@ -183,69 +183,80 @@ local function item_exists(n)
 	end
 	return false
 end
---- what is cast from a melt and which melts can be made from an ingot already
-local cast, melted = {}, {}
-for _, r in pairs(data.raw.recipe) do
-	local c = r.category or "crafting"
-	local melt
-	for _, i in pairs(r.ingredients or {}) do
-		if i.type == "fluid" and i.name:sub(1, 7) == "molten-" then melt = i.name end
-	end
-	if melt and (c:find("fluid%-solidifier") or c:find("vacuum%-freezer")) then
-		for _, res in pairs(r.results or {}) do cast[melt .. "|" .. res.name] = true end
-	end
-	if c:find("extractor") then
-		for _, res in pairs(r.results or {}) do
-			for _, i in pairs(r.ingredients or {}) do
-				if res.type == "fluid" and i.name:sub(-6) == "-ingot" then melted[res.name .. "|" .. i.name] = true end
+--- (recipes: the casts and melts made here; 199's auto-unlock does not count them as producers, see there)
+FORK_CASTING = { casts = 0, melts = 0, fluids = 0, recipes = {}, tiers = {}, materials = MATERIALS }   -- tiers: material -> its tier (194 orders the material parts by it)
+local made_fluid = {}
+--- Casts and melts of every material of MATERIALS. Run here and once more by 155-fork-ore-chain.lua (issue #207), which
+--- adds the ingots and nuggets it makes to MATERIALS (FORK_CASTING.materials) after this file: the second run makes only
+--- what is new. 151 has moved every extractor recipe with a fluid result to the fluid extractor by then, so a melt of
+--- that run goes there.
+function FORK_CASTING.run()
+	--- what is cast from a melt and which melts can be made from an ingot already
+	local cast, melted = {}, {}
+	for _, r in pairs(data.raw.recipe) do
+		local c = r.category or "crafting"
+		local melt
+		for _, i in pairs(r.ingredients or {}) do
+			if i.type == "fluid" and i.name:sub(1, 7) == "molten-" then melt = i.name end
+		end
+		if melt and (c:find("fluid%-solidifier") or c:find("vacuum%-freezer")) then
+			for _, res in pairs(r.results or {}) do cast[melt .. "|" .. res.name] = true end
+		end
+		if c:find("extractor") then
+			for _, res in pairs(r.results or {}) do
+				for _, i in pairs(r.ingredients or {}) do
+					if res.type == "fluid" and i.name:sub(-6) == "-ingot" then melted[res.name .. "|" .. i.name] = true end
+				end
 			end
 		end
 	end
-end
 
---- (recipes: the casts and melts made here; 199's auto-unlock does not count them as producers, see there)
-FORK_CASTING = { casts = 0, melts = 0, fluids = 0, recipes = {}, tiers = {} }   -- tiers: material -> its tier (194 orders the material parts by it)
-for mat, def in pairs(MATERIALS) do
-	local tier, tech = def[1], def[2]
-	FORK_CASTING.tiers[mat] = tier
-	local melt = "molten-" .. (ALIAS[mat] or mat)
-	if def.color then
-		F.fluid(melt, "molten-" .. mat, { def.color[1] / 255, def.color[2] / 255, def.color[3] / 255 })
-		FORK_CASTING.fluids = FORK_CASTING.fluids + 1
-	end
-	for _, f in pairs(FORMS) do
-		local item = string.format(f[2], mat)
-		if item_exists(item) and not cast[melt .. "|" .. item] then
-			local name = "solidify-" .. item
-			if data.raw.recipe[name] then name = "solidify-" .. item .. "-from-melt" end
+	for mat, def in pairs(MATERIALS) do
+		local tier, tech = def[1], def[2]
+		FORK_CASTING.tiers[mat] = tier
+		local melt = "molten-" .. (ALIAS[mat] or mat)
+		if def.color and not made_fluid[melt] then
+			F.fluid(melt, "molten-" .. mat, { def.color[1] / 255, def.color[2] / 255, def.color[3] / 255 })
+			made_fluid[melt] = true
+			FORK_CASTING.fluids = FORK_CASTING.fluids + 1
+		end
+		for _, f in pairs(FORMS) do
+			local item = string.format(f[2], mat)
+			if item_exists(item) and not cast[melt .. "|" .. item] then
+				local name = "solidify-" .. item
+				if data.raw.recipe[name] then name = "solidify-" .. item .. "-from-melt" end
+				create_recipe{
+					name = name,
+					category = tier .. "-fluid-solidifier-recipes",
+					energy_required = f[4] * SPEED[tier],
+					ingredients = { { type = "fluid", name = melt, amount = f[3] } },
+					results = { { type = "item", name = item, amount = 1 } },
+					main_product = item,
+				}
+				fork_add_unlock(tech, name)
+				FORK_CASTING.recipes[name] = true
+				FORK_CASTING.casts = FORK_CASTING.casts + 1
+			end
+		end
+		local ingot = mat .. "-ingot"
+		local name = "melt-" .. ingot
+		if item_exists(ingot) and not FORK_CASTING.recipes[name] and (def.melt or not melted[melt .. "|" .. ingot]) then
+			local category = tier .. "-extractor-recipes"
+			if data.raw["recipe-category"][tier .. "-fluid-extractor-recipes"] then category = tier .. "-fluid-extractor-recipes" end
 			create_recipe{
 				name = name,
-				category = tier .. "-fluid-solidifier-recipes",
-				energy_required = f[4] * SPEED[tier],
-				ingredients = { { type = "fluid", name = melt, amount = f[3] } },
-				results = { { type = "item", name = item, amount = 1 } },
-				main_product = item,
+				category = category,
+				energy_required = 1.2 * SPEED[tier],
+				ingredients = { { type = "item", name = ingot, amount = 1 } },
+				results = { { type = "fluid", name = melt, amount = 14.4 } },
+				main_product = melt,
 			}
 			fork_add_unlock(tech, name)
 			FORK_CASTING.recipes[name] = true
-			FORK_CASTING.casts = FORK_CASTING.casts + 1
+			FORK_CASTING.melts = FORK_CASTING.melts + 1
 		end
 	end
-	local ingot = mat .. "-ingot"
-	if item_exists(ingot) and (def.melt or not melted[melt .. "|" .. ingot]) then
-		local name = "melt-" .. ingot
-		create_recipe{
-			name = name,
-			category = tier .. "-extractor-recipes",
-			energy_required = 1.2 * SPEED[tier],
-			ingredients = { { type = "item", name = ingot, amount = 1 } },
-			results = { { type = "fluid", name = melt, amount = 14.4 } },
-			main_product = melt,
-		}
-		fork_add_unlock(tech, name)
-		FORK_CASTING.recipes[name] = true
-		FORK_CASTING.melts = FORK_CASTING.melts + 1
-	end
 end
+FORK_CASTING.run()
 log("FORK-CASTING: " .. FORK_CASTING.casts .. " casts, " .. FORK_CASTING.melts .. " melt recipes, "
 	.. FORK_CASTING.fluids .. " new melts")

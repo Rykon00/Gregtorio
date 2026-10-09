@@ -228,9 +228,11 @@ create_recipe{
 --- branch (indium phosphate, low quality naquadria phosphate, naquadria rich solution; indium and indium gallium
 --- phosphide from the indium phosphate). Their technologies are in 142's UNLOCKS_205. The ore chain gives the oxide
 --- mixtures as GT converts the ore's dusts (NaquadahRecipeOutputs.convert: 2 per dust; 155-fork-ore-chain.lua).
+--- Issue #207: goodgenerator's naquadah nugget, 2 naquadah oxide mixtures (its naquadah earth) -> 1 nugget in the blast
+--- furnace with a gas (NaquadahRecipeLoader.java:512-520: IV, 5000 K, 2 min, 1000 L of any blast furnace gas, GT's time
+--- and gas factor per gas as 147's), 9 nuggets -> an ingot in the alloy smelter with the mold (GT ProcessingNugget.java).
 --- Not taken over: GT's P-507 recipe (2-ethyl-1-hexanol needs seed oil, which Gregtorio lacks), the quantum force
---- transformer's inert naquadah recipes (139 keeps its own), the goo and mass items (CropsNH) and the 2 oxide mixture ->
---- naquadah nugget blast furnace recipe.
+--- transformer's inert naquadah recipes (139 keeps its own) and the goo and mass items (CropsNH); docs/ORE-CHAIN.md.
 do
 	local function patch(name, f)
 		local r = data.raw.recipe[name]
@@ -283,6 +285,36 @@ for _, d in pairs(NQ_RECIPES) do
 	end
 	create_recipe{ name = d[1], category = d[2], energy_required = d[3], ingredients = stacks(d[4]), results = stacks(d[5]),
 		main_product = d[5][1][2] }
+end
+do
+	create_item{ name = "naquadah-nugget", subgroup = data.raw.item["naquadah-ingot"].subgroup, skip_recipe = true }
+	--- gas, time factor, gas factor (BlastFurnaceGasStat.java); the nitrogen recipe has the nugget's name
+	for _, g in pairs({ { "nitrogen", 1.0, 1.0 }, { "helium", 0.9, 1.0 }, { "argon", 0.8, 0.85 }, { "radon", 0.7, 0.7 },
+		{ "neon", 0.6, 0.55 }, { "krypton", 0.5, 0.4 }, { "xenon", 0.4, 0.25 } }) do
+		local name = g[1] == "nitrogen" and "naquadah-nugget" or ("naquadah-nugget-" .. g[1])
+		create_recipe{
+			name = name,
+			category = "iv-electric-blast-furnace-recipes",
+			energy_required = 120 * g[2] * IV_SPEED,
+			ingredients = {
+				{ type = "item", name = "naquadah-oxide-mixture", amount = 2 },
+				{ type = "fluid", name = g[1], amount = 100 * g[3] },
+			},
+			results = { { type = "item", name = "naquadah-nugget", amount = 1 } },
+			main_product = "naquadah-nugget",
+		}
+		data.raw.recipe[name].localised_name = { "recipe-name.fork-with-gas", { "item-name.naquadah-nugget" },
+			{ "fluid-name." .. g[1] } }
+	end
+	create_recipe{
+		name = "naquadah-ingot-from-nuggets",
+		category = "lv-alloy-smelter-recipes",
+		subgroup = "subgroup-lv-alloy-smelter-recipes",
+		energy_required = 10,
+		ingredients = { { type = "item", name = "naquadah-nugget", amount = 9 }, { type = "item", name = "mold", amount = 1 } },
+		results = { { type = "item", name = "naquadah-ingot", amount = 1 }, { type = "item", name = "mold", amount = 1 } },
+		main_product = "naquadah-ingot",
+	}
 end
 
 --- Trinium, naquadah alloy and osmiridium (their upstream definitions are commented out)

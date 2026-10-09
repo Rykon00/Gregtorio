@@ -749,7 +749,8 @@ create_recipe{
 create_ore("raw-gold", "gold-ingot", "crushed-gold", "gold-dust", "gold-ingot", "crushed-gold", "gold-dust", "silver-dust", 1, false, true )
 
 --- GYPSUM
-create_ore("raw-gypsum", nil, nil, "gypsum", "gypsum", "gypsum", nil, nil, 1, false, false )
+--- issue #203: GTNH's crushed ore and ore chain (155); the macerator recipe keeps its name "gypsum"
+create_ore("raw-gypsum", nil, "crushed-gypsum", "gypsum", "gypsum", "crushed-gypsum", nil, nil, 1, false, false, "gypsum" )
 
 --- FULLERS EARTH
 create_ore("raw-fullers-earth", nil, "crushed-fullers-earth", "fullers-earth", "fullers-earth", "crushed-fullers-earth", "fullers-earth", "alumina", 1, true, false )
@@ -893,7 +894,8 @@ create_recipe{
 create_ore("raw-stibnite", nil, "crushed-stibnite", nil, "antimony", "crushed-stibnite", "antimony", "antimony", 1, true, false )
 
 ---SULFUR ORE
-create_ore("raw-sulfur", nil, nil, "sulfur", "sulfur", "sulfur", nil, nil, 1, false, false )
+--- issue #203: GTNH's crushed ore and ore chain (155); the macerator recipe keeps its name "sulfur"
+create_ore("raw-sulfur", nil, "crushed-sulfur", "sulfur", "sulfur", "crushed-sulfur", nil, nil, 1, false, false, "sulfur" )
 
 ---SPHALERITE ORE
 create_ore("raw-sphalerite", "zinc-ingot", "crushed-sphalerite", "sphalerite-dust", "zinc-ingot", "crushed-sphalerite", "sphalerite-dust", "gallium", 1, true, false )
@@ -1276,7 +1278,8 @@ create_recipe{
 create_ore("raw-pyrochlore", nil, "crushed-pyrochlore", "pyrochlore", "pyrochlore", "crushed-pyrochlore", "pyrochlore", "niobium-dust", 1, true, false )
 
 ---CALCITE ORE
-create_ore("raw-calcite", nil, nil, "calcite", "calcite", "calcite", nil, nil, 1, false, false )
+--- issue #203: GTNH's crushed ore and ore chain (155); the macerator recipe keeps its name "calcite"
+create_ore("raw-calcite", nil, "crushed-calcite", "calcite", "calcite", "crushed-calcite", nil, nil, 1, false, false, "calcite" )
 create_item{
 	name = "calcium",
 	subgroup = "subgroup-mv-electrolyzer-recipes"
