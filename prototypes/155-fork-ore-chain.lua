@@ -1303,6 +1303,13 @@ for raw, out in pairs(RAW_SMELT) do
 		log("FORK-ORE-CHAIN: no raw ore smelting for " .. raw)
 	end
 end
+--- vanadium magnetite has no ingot and no direct smelting in GT: its dust smelts into nothing either (upstream: iron)
+for _, n in pairs({ "vanadium-magnetite-dust-smelter", "vanadium-magnetite-dust-multismelter" }) do
+	if data.raw.recipe[n] then
+		remove_recipe(n)
+		raw_removed = raw_removed + 1
+	end
+end
 for _, add in pairs({ "calcite", "quicklime" }) do
 	local name = made(recipe{ name = "raw-iron-with-" .. add, category = "mv-electric-blast-furnace-recipes",
 		subgroup = "subgroup-mv-electric-blast-furnace-recipes",
@@ -1322,8 +1329,7 @@ log("FORK-ORE-CHAIN: raw ore smelting as GT's (issue #223): " .. raw_changed .. 
 --- stibnite's dust is antimony here and bornite is bartworks'.
 --- Issue #223, B3: malachite's blast furnace recipe (BlastFurnaceRecipes.java:132-141): 2 dusts + carbon -> 3 copper
 --- ingots, ashes (22.22 %) and 300 carbon dioxide, 12 s at MV (1200 K). GT's Ashes (Materials.Ash) are new; their
---- centrifuge (CentrifugeRecipes.java:662-673) needs potash and banded iron, which Gregtorio lacks (issue #223's
---- follow-up).
+--- centrifuge (CentrifugeRecipes.java:662-673) needs potash and banded iron, which Gregtorio lacks (issue #225).
 --------------------------------------------------------------------------------
 add_item("ash-dust", "subgroup-macerator-dust", "z-ash-dust")
 --- the new nuggets of #222's metals (their recipes: 158-fork-gt-parts.lua); tetrahedrite needs antimony's
