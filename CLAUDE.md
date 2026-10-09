@@ -102,7 +102,8 @@
   then `python tools/devcheck/devcheck.py all`. It must end with `RESULT: OK`. For changes
   that could affect existing saves also run `migrate --from-ref 0e935ba` (upstream 0.1.9) or `--from-ref <previous release tag>`
   (`--from-ref v0.5.0` needs `--old-me-network v0.1.0`: the old save is made with the me-network of its time, with a later
-  one the helper mod's `on_init` fails and devcheck stops with `the map was not saved`). See
+  one the helper mod's `on_init` fails and devcheck stops with `the map was not saved`; a save from before me-network 0.5.0
+  is first loaded once with Gregtorio v0.5.2 and me-network v0.5.0, because me-network 0.5.1 refuses it, issue #209). See
   `tools/devcheck/README.md`. Runtime maps use a fixed seed and a cleared test area, so a red run is
   reproducible (`--seed <printed seed>`) and never bad luck; `--seed random` checks other terrain.
 - Every referenced `__gregtorio-continued__/...` file must exist (headless Factorio does not check

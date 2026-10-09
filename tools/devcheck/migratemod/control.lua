@@ -19,7 +19,9 @@
 --- drive with plates and sticks, and a gear job started with the old version on the assembler above. After
 --- the update the job must finish with the gears in storage and the CPU must count as one job slot
 --- (DEVCHECK-MIGRATE-JOB). A level maintainer of the old save (versions with it) keeps a few more gears: after
---- the job it must start a job of its own on the migrated pattern and reach its amount.
+--- the job it must start a job of its own on the migrated pattern and reach its amount. Issue #206: me-network 0.5.1
+--- removes the legacy CPU on load and queues its job; on the first tick a 2x2 multiblock CPU is built where it stood,
+--- the job must be queued right after the load and then go on there.
 --- Issue #68 (the ME rework): the old save's ME network is a logistic network. It gets an old 1k drive with
 --- items (also of another quality and a blueprint, which the new network cannot store), an old requester
 --- interface with items in its inventory and its trash, an old terminal, a second old controller in the same
@@ -206,6 +208,7 @@ end
 --- must hold the counterpart (the same amount) and the chest the counterpart items. Versions without them: skipped.
 --- Issue #96: the old save also runs the GTCEu platinum line: machines with its recipes and their item inputs; after
 --- the update a machine whose recipe is gone has none (`nil`), the others keep theirs (renamed: the new name).
+--- A 5th field names an entity the change brought: an old version that has it already is past the change (row skipped).
 local RM_FLUIDS = { ["exhausted-water"] = "water",
 	["platinum-palladium-leachate"] = "platinum-concentrate", ["chloroplatinic-acid"] = "platinum-concentrate",
 	["palladium-rich-ammonia"] = "palladium-enriched-ammonia",
@@ -228,10 +231,10 @@ local RM_MACHINES = {
 	{ "lv-chemical-reactor", "ammonia-hexachloroiridiate", nil },
 	{ "lv-chemical-bath", "rhodium-sulfate-processing", nil },    -- the recipe stays, in the chemical reactor
 	-- issue #152: every Extractor of an old save becomes the Fluid Extractor of its tier (the maintainer's choice): a melt
-	-- keeps running, sticky resin is gone (an item recipe of the Extractor)
-	{ "lv-extractor", "melt-iron-ingot", "melt-iron-ingot", "lv-fluid-extractor" },
-	{ "lv-extractor", "sticky-resin", nil, "lv-fluid-extractor" },
-	{ "ev-extractor", "melt-titanium-ingot", "melt-titanium-ingot", "ev-fluid-extractor" },
+	-- keeps running, sticky resin is gone (an item recipe of the Extractor); a save made after the split keeps its Extractors
+	{ "lv-extractor", "melt-iron-ingot", "melt-iron-ingot", "lv-fluid-extractor", "lv-fluid-extractor" },
+	{ "lv-extractor", "sticky-resin", nil, "lv-fluid-extractor", "lv-fluid-extractor" },
+	{ "ev-extractor", "melt-titanium-ingot", "melt-titanium-ingot", "ev-fluid-extractor", "lv-fluid-extractor" },
 	-- issue #165: every greenhouse becomes the Extreme Industrial Greenhouse (lv-greenhouse), its recipe kept
 	{ "hv-greenhouse", "growing-trees", "growing-trees", "lv-greenhouse" },
 	-- issue #171: annealed copper moved to the Arc Furnace, the old electric blast furnace loads without it
@@ -270,7 +273,7 @@ local function setup_removed()
 	local machines = {}
 	for i, m in pairs(RM_MACHINES) do
 		local r = prototypes.recipe[m[2]]
-		if prototypes.entity[m[1]] and r then
+		if prototypes.entity[m[1]] and r and not (m[5] and prototypes.entity[m[5]]) then
 			local e = s.create_entity{ name = m[1], position = { RM_AT[1] + 8 * (i - 1), RM_AT[2] + 12 }, force = "player",
 				raise_built = true }
 			game.forces.player.recipes[m[2]].enabled = true
@@ -334,9 +337,14 @@ local PT_PROVIDER_A, PT_PROVIDER_F = { 16.5, Y + 8.5 }, { 17.5, Y + 12.5 }
 local PT_ASSEMBLER_1 = { 15.5, Y + 8.5 }
 local function one_tile_assembler() return prototypes.entity["me-molecular-assembler"].tile_width == 1 end
 local PT_RECIPE, PT_FURNACE_RECIPE = "iron-gear-crafting-table", "iron-dust-smelter"
+--- me-network 0.5.0 moved the encoding of a pattern given as data to the ME Pattern Terminal
+local PATTERN_TERMINAL = "gregtorio-me-pattern-terminal"
 local JOB_GEARS = 5
 local MAINT_POS, MAINT_KEEP = { 5.5, Y + 16.5 }, JOB_GEARS + 3        -- a level maintainer of the old save (issue #38)
 local CHECK_TICK = 570                                                  -- the job and the maintainer are checked here
+--- issue #206 (me-network #145): me-network 0.5.1 has no legacy Crafting CPU; the 2x2 multiblock CPU built where it stood
+local CPU_BLOCKS = { { "me-1k-crafting-storage", 8.5, Y + 8.5 }, { "me-crafting-unit", 9.5, Y + 8.5 },
+	{ "me-crafting-unit", 8.5, Y + 9.5 }, { "me-crafting-unit", 9.5, Y + 9.5 } }
 
 --- the version of the old save has the cable network of issue #68 step R1 (and still the old fluid drives)
 function R1() return prototypes.entity["me-network-controller"] ~= nil end
@@ -381,7 +389,11 @@ local function setup_patterns(place)
 			{ p, { kind = "processing", inputs = rows(fr.ingredients), outputs = rows(fr.products), recipe = PT_FURNACE_RECIPE } },
 		}) do
 			inv.insert{ name = "me-blank-pattern", count = 1 }
-			remote.call("gregtorio-me-terminal", "encode_def", false, inv, false, give[2])
+			if remote.interfaces[PATTERN_TERMINAL] and remote.interfaces[PATTERN_TERMINAL].encode_def then
+				remote.call(PATTERN_TERMINAL, "encode_def", inv, nil, give[2])   -- me-network 0.5.0 and later (issue #206)
+			else
+				remote.call("gregtorio-me-terminal", "encode_def", false, inv, false, give[2])
+			end
 			local stack = inv.find_item_stack("me-encoded-pattern")
 			choice = (stack and remote.call(A, "insert_pattern", give[1], stack)) and true or false
 			inv.clear()
@@ -452,6 +464,10 @@ local function check_job()
 	local problems = {}
 	local function expect(ok, what) if not ok then problems[#problems + 1] = what end end
 	local j = remote.call(A, "job", st.id)
+	--- issue #206: the legacy CPU is gone; the job was queued with what it held and went on on the multiblock CPU
+	if st.after then
+		expect(st.after == "queued", "the job of the old save right after the load (its legacy CPU is gone): " .. st.after)
+	end
 	local m = game.surfaces[1].find_entity("me-molecular-assembler", PT_ASSEMBLER)
 		or game.surfaces[1].find_entity("me-molecular-assembler", PT_ASSEMBLER_1)
 	local status = "gone"
@@ -469,7 +485,7 @@ local function check_job()
 		end
 		expect(gears >= JOB_GEARS, "gears in storage after the job: " .. gears)
 		local n, free, _, slots = remote.call(A, "cpus", p)
-		expect(n == 1 and slots == 1 and free == 1, "the old CPU: " .. n .. " CPUs, " .. tostring(slots) .. " slots, " .. free .. " free")
+		expect(n == 1 and slots == 1 and free == 1, "the CPU: " .. n .. " CPUs, " .. tostring(slots) .. " slots, " .. free .. " free")
 		--- the maintainer of the old save: a job of its own on the migrated pattern after the old job, its amount reached
 		local m = st.maintainer
 		if m then
@@ -482,7 +498,8 @@ local function check_job()
 		end
 	end
 	for _, m in pairs(problems) do log("DEVCHECK-MIGRATE-FAIL job: " .. m) end
-	log("DEVCHECK-MIGRATE-JOB " .. (#problems == 0 and "ok" or "failed") .. (st.maintainer and " (and the level maintainer's job)" or ""))
+	log("DEVCHECK-MIGRATE-JOB " .. (#problems == 0 and "ok" or "failed") .. (st.maintainer and " (and the level maintainer's job)" or "")
+		.. (st.after and " (legacy CPU gone: the job was queued and went on on a multiblock CPU)" or ""))
 end
 
 local function check_patterns()
@@ -544,6 +561,22 @@ local function check_patterns()
 	log("DEVCHECK-MIGRATE-PATTERNS " .. (#problems == 0 and "ok" or "failed") .. note)
 end
 
+--- the reports of me-network's conversion of an old ME network (issue #68), from its interface or, when me-network 0.5.1
+--- dropped them after the intermediate load (issue #209), from the copy taken in on_configuration_changed
+local MIGRATE = "gregtorio-me-migrate"
+function migrate_report(name)
+	local mig = remote.interfaces[MIGRATE]
+	if mig and mig[name] then return remote.call(MIGRATE, name) end
+	return storage.me_reports and storage.me_reports[name]
+end
+
+--- how many old entities (or ghosts) of a filter are left after the update; none when the working copies no longer have
+--- the prototype (me-network 0.5.1 removed the old blocks, issue #209), where searching by its name would be an error
+function old_left(s, filter)
+	if not prototypes.entity[filter.name or filter.ghost_name] then return 0 end
+	return #s.find_entities_filtered(filter)
+end
+
 --- issue #68: the old item network (see the top of the file); only for versions with the logistic ME network
 local IT_DRIVE, IT_IFACE, IT_CTRL2 = { 12.5, Y + 3.5 }, { 14.5, Y + 3.5 }, { 22, Y }
 local IT_TERMINAL, IT_CELLS, IT_GHOST = { 3.5, Y + 5.5 }, { 30.5, Y + 20.5 }, { 24.5, Y + 3.5 }
@@ -601,10 +634,10 @@ function check_items()
 	expect(st.one_network, "test setup: the two old controllers were not in one logistic network")
 	--- every old entity is replaced
 	for _, name in pairs({ "me-drive-1k", "me-drive-4k", "me-drive-16k", "me-drive-64k", "me-drive-256k" }) do
-		expect(#s.find_entities_filtered{ name = name, type = "logistic-container" } == 0, "an old " .. name .. " is left")
+		expect(old_left(s, { name = name, type = "logistic-container" }) == 0, "an old " .. name .. " is left")
 	end
-	expect(#s.find_entities_filtered{ name = "me-controller", type = "roboport" } == 0, "an old controller is left")
-	expect(#s.find_entities_filtered{ name = "me-interface", type = "logistic-container" } == 0, "an old interface is left")
+	expect(old_left(s, { name = "me-controller", type = "roboport" }) == 0, "an old controller is left")
+	expect(old_left(s, { name = "me-interface", type = "logistic-container" }) == 0, "an old interface is left")
 	local ctrl = s.find_entity("me-network-controller", { 6, Y })
 	local drive = s.find_entity("me-drive", IT_DRIVE)
 	local iface = s.find_entity("me-network-interface", IT_IFACE)
@@ -615,7 +648,9 @@ function check_items()
 		local n = remote.call(NET, "network", ctrl)
 		expect(n and n.ok and n.controllers == 1, "the new network " .. serpent.line(n))
 		for _, e in pairs({ drive, iface, terminal, s.find_entity("me-drive", FL_D1), s.find_entity("me-drive", FL_D2),
-			s.find_entity("me-crafting-cpu", { 9, Y + 9 }), storage.patterns.provider, s.find_entity("me-drive", { 8.5, Y + 12.5 }) }) do
+			prototypes.entity["me-crafting-cpu"] and s.find_entity("me-crafting-cpu", { 9, Y + 9 })
+				or s.find_entity(CPU_BLOCKS[1][1], { CPU_BLOCKS[1][2], CPU_BLOCKS[1][3] }),
+			storage.patterns.provider, s.find_entity("me-drive", { 8.5, Y + 12.5 }) }) do
 			expect(e and e.valid and remote.call(NET, "same_network", ctrl, e), (e and e.valid and e.name or "?") .. " is not connected to the controller")
 		end
 		--- the drive has four 1k cells, the 16k drive four 16k cells
@@ -624,7 +659,7 @@ function check_items()
 		local big = remote.call(NET, "drive", s.find_entity("me-drive", { 8.5, Y + 12.5 }))
 		expect(big[4] and big[4].name == "me-16k-storage-cell", "new 16k drive " .. serpent.line(big))
 		--- item totals: what the old chests held (+ the second controller) is in the network, the blueprint in a chest
-		local report = remote.call("gregtorio-me-migrate", "report")
+		local report = migrate_report("report")
 		expect(report and report.diff == 0 and report.groups >= 1, "migration report " .. serpent.line(report and { report.groups, report.diff }))
 		local want = {}
 		for k, v in pairs(st.totals) do want[k] = v end
@@ -657,8 +692,7 @@ function check_items()
 		--- the ghost of an old drive: the game removes it when the save is loaded (no item builds the old prototype
 		--- any more), before any script runs; if one is left, the migration makes it an ME Drive ghost
 		local ghosts = s.find_entities_filtered{ ghost_name = "me-drive", position = IT_GHOST, radius = 0.5 }
-		local old = s.find_entities_filtered{ ghost_name = "me-drive-4k", position = IT_GHOST, radius = 0.5 }
-		expect(#old == 0, "the ghost of an old drive is left")
+		expect(old_left(s, { ghost_name = "me-drive-4k", position = IT_GHOST, radius = 0.5 }) == 0, "the ghost of an old drive is left")
 		st.ghost_note = #ghosts == 1 and "old ghost became an ME Drive ghost" or "old ghost removed by the game on load"
 		local total = 0
 		for _, v in pairs(st.totals) do total = total + v end
@@ -692,7 +726,7 @@ function check_fluids()
 		return out, n
 	end
 	for _, name in pairs({ "me-fluid-drive-1k", "me-fluid-drive-4k", "me-fluid-drive-16k", "me-fluid-drive-64k", "me-fluid-drive-256k" }) do
-		expect(#s.find_entities_filtered{ name = name } == 0, "an old " .. name .. " is left")
+		expect(old_left(s, { name = name }) == 0, "an old " .. name .. " is left")
 	end
 	local d1, d2, lone = s.find_entity("me-drive", FL_D1), s.find_entity("me-drive", FL_D2), s.find_entity("me-drive", FL_LONE)
 	expect(d1 and d2 and lone, "the old fluid drives are no ME Drives")
@@ -732,7 +766,7 @@ function check_fluids()
 		end
 		expect(items == 2 and near(water, 2 * FL_ITEM_WATER), "chest after the update: " .. items .. " old items, " .. water .. " water in cells")
 		--- the migration report: the same before and after, every source counted
-		local rep = remote.call("gregtorio-me-migrate", "fluid_report")
+		local rep = migrate_report("fluid_report")
 		local before = 0
 		for _, v in pairs(rep and rep.before or {}) do before = before + v end
 		local expected = 0
@@ -1027,9 +1061,28 @@ script.on_init(function()
 end)
 
 --- runs after every mod or prototype change: tells the check which path ran
-script.on_configuration_changed(function() storage.config_changed = true end)
+script.on_configuration_changed(function()
+	storage.config_changed = true
+	--- issue #209: a save from before me-network 0.5.0 is converted in the intermediate load with me-network 0.5.0; me-network
+	--- 0.5.1 drops the conversion's reports (and their interface) on the next load, so the checks keep a copy
+	local mig = remote.interfaces[MIGRATE]
+	if mig then
+		storage.me_reports = { report = mig.report and remote.call(MIGRATE, "report"),
+			fluid_report = mig.fluid_report and remote.call(MIGRATE, "fluid_report") }
+	end
+end)
 
 script.on_nth_tick(30, function(event)
+	--- issue #206 (me-network #145): in a version without the legacy Crafting CPU (gone on load) the job of the old save is
+	--- noted right after the load (queued, with what it held) and a multiblock CPU is built where the old CPU stood
+	local job = storage.job
+	if job and job.id and not job.after and not prototypes.entity["me-crafting-cpu"] then
+		local j = remote.call(A, "job", job.id)
+		job.after = j and j.status or "gone"
+		for _, b in pairs(CPU_BLOCKS) do
+			game.surfaces[1].create_entity{ name = b[1], position = { b[2], b[3] }, force = "player", raise_built = true }
+		end
+	end
 	--- the turbine has to run first (this handler also fires at tick 0)
 	if not storage.turbine_checked and event.tick >= 120 then
 		storage.turbine_checked = true
