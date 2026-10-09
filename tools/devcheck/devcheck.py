@@ -478,6 +478,27 @@ def check_table_only(m, sec):
     stale = [f"{r} (allow-list entry: not a recipe of an item that only the crafting table or the hand makes)"
              for r in sorted(allow) if r not in flagged]
     return f"{only_items} reachable items with only crafting table or hand recipes, {len(allow)} recipes in the allow-list", problems + stale
+
+
+def check_me_recipes(sec):
+    """Issue #214 (prototypes/120-fork-me-network-compat.lua): every recipe me-network defines (ME_NETWORK.recipes) has a
+    Gregtorio recipe in the compat file (FORK_ME_RECIPES), so a new me-network item cannot keep its standalone vanilla
+    ingredients unnoticed; a recipe kept standalone on purpose is in the allow-list FORK_ME_RECIPES_STANDALONE with its
+    reason. An allow-list entry that is no me-network recipe or has a Gregtorio recipe fails too. Returns (info line,
+    problems)."""
+    rows = [r + [""] * (4 - len(r)) for r in sec.get("MERECIPES", [])]
+    me = [r for r in rows if r[1] == "me"]
+    greg = sum(1 for r in me if r[2] == "gregtorio")
+    allowed = sum(1 for r in me if r[2] != "gregtorio" and r[3])
+    problems = [f"{r[0]}: me-network's standalone recipe (give it a GT recipe in the compat file or add it to "
+                "FORK_ME_RECIPES_STANDALONE)" for r in me if r[2] != "gregtorio" and not r[3]]
+    problems += [f"{r[0]}: in FORK_ME_RECIPES_STANDALONE but " +
+                 ("not a recipe of me-network" if r[1] != "me" else "it has a Gregtorio recipe") + " (remove the entry)"
+                 for r in rows if r[3] and (r[1] != "me" or r[2] == "gregtorio")]
+    return (f"{len(me)} recipes of me-network, {greg} with a Gregtorio recipe, {allowed} standalone in the allow-list",
+            sorted(problems))
+
+
 def check_microminer_tab(sec):
     """Issue #120 (prototypes/195-fork-microminer-tab.lua): the missions of every Microverse Projector (the recipes of its
     categories) and the projectors themselves (and their controller) are recipes of the Microminer tab, so a projector's
@@ -1067,6 +1088,9 @@ def check(a):
     table_info, table_only = check_table_only(m, sec)
     print(f"\ncrafting table and hand only items (issue #126): {table_info}")
     report("items that only the crafting table or the hand can make, without an entry in FORK_RECIPES_TABLE_ONLY", table_only)
+    me_info, me_recipes = check_me_recipes(sec)
+    print(f"\nME recipes (issue #214): {me_info}")
+    report("me-network recipes without a Gregtorio recipe (prototypes/120-fork-me-network-compat.lua)", me_recipes)
     parts_info, parts_unranked = check_material_parts(sec)
     print(f"\nmaterial parts (issue #118): {parts_info}")
     report("WARNING: materials of the material parts without a tier (prototypes/200-fork-material-parts.lua)", parts_unranked)
@@ -1115,7 +1139,7 @@ def check(a):
         Path(a.balance_out).write_text("[\n" + ",\n".join(rows) + "\n]\n", encoding="utf-8")
         print(f"\nbalance data written to {a.balance_out} (recipes, machines, technologies as JSON)")
     ok = not (files or [s for s in sprites if not s.startswith("(")] or uncraft or menu or required or unresearchable
-              or new_drafts or fluid_problems or locked or one_pack or fluid_steps or microminer or table_only
+              or new_drafts or fluid_problems or locked or one_pack or fluid_steps or microminer or table_only or me_recipes
               or extractor_split or ore_chain or ore_baths or ore_o34 or ore_hammer
               or circuit_icons or pgm_dusts or recycling)
     print("\nRESULT:", "OK" if ok else "PROBLEMS FOUND")
