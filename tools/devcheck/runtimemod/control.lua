@@ -702,7 +702,13 @@ local RT = {
 	{ "lv-macerator", "impure-iron-dust" },
 	{ "lv-macerator", "centrifuged-iron-maceration" },
 	{ "lv-centrifuge", "centrifuging-pure-iron-dust" },
-	{ "lv-electrolyzer", "pyrite-dust-decomposition" },
+	{ "mv-electrolyzer", "pyrite-dust-decomposition" },   -- issue #223: MV as GT's
+	-- issues #222 and #223: GT's parts of the new ingots, nugget recipes, bricked blast furnace and raw ore smelting
+	{ "mv-bending-machine", "double-thorium-plate" },
+	{ "lv-lathe", "antimony-rod" },
+	{ "lv-alloy-smelter", "iron-nugget-from-ingot" },
+	{ "lv-macerator", "copper-nugget-maceration" },
+	{ "primitive-blast-furnace", "galena-dust-pbf-coke" },
 	-- issue #186: chemical bath washing with mercury and sodium persulfate
 	{ "lv-chemical-bath", "purified-gold-mercury" },
 	{ "mv-chemical-bath", "purified-iron-sodium-persulfate" },

@@ -36,6 +36,7 @@ local FORMS = {
 	{ "hot-ingot", "hot-", "-ingot" },
 	{ "nugget", "", "-nugget" },
 	{ "plate", "", "-plate" },
+	{ "double-plate", "double-", "-plate" },   -- issue #222
 	{ "dense-plate", "dense-", "-plate" },
 	{ "superdense-plate", "superdense-", "-plate" },
 	{ "foil", "", "-foil" },
@@ -49,13 +50,17 @@ local FORMS = {
 	{ "gear", "", "-gear" },
 	{ "large-gear", "large-", "-gear" },
 	{ "rotor", "", "-rotor" },
+	{ "item-casing", "", "-item-casing" },   -- issue #222
+	{ "small-spring", "small-", "-spring" },
+	{ "spring", "", "-spring" },
 	{ "wire", "", "-wire" },
 	{ "fine-wire", "fine-", "-wire" },
 	{ "cable", "", "-cable" },
 }
 --- the most specific pattern first (hot-iron-ingot before iron-ingot, long-steel-rod before steel-rod)
-local MATCH = { "hot-ingot", "superdense-plate", "dense-plate", "long-rod", "large-gear", "fine-wire", "ingot", "nugget",
-	"plate", "foil", "block", "rod", "round", "bolt", "screw", "ring", "gear", "rotor", "wire", "cable" }
+local MATCH = { "hot-ingot", "superdense-plate", "dense-plate", "double-plate", "long-rod", "large-gear", "fine-wire",
+	"small-spring", "item-casing", "ingot", "nugget", "plate", "foil", "block", "rod", "round", "bolt", "screw", "ring", "gear",
+	"rotor", "spring", "wire", "cable" }
 local SPECIAL = { ["iron-stick"] = { "iron", "rod" }, ["iron-gear-wheel"] = { "iron", "gear" } }
 local TIERS = { lv = 1, mv = 2, hv = 3, ev = 4, iv = 5, luv = 6, zpm = 7, uv = 8, uhv = 9, uev = 10, uiv = 11, umv = 12,
 	uxv = 13, max = 14 }

@@ -144,6 +144,7 @@ MATERIALS = {
     # issue #205: goodgenerator's Werkstoffe of the naquadah line (GGMaterial.java, their colours; dusts)
     "naquadria-oxide-mixture": ("METALLIC", (77, 77, 85)), "indium-phosphate": ("DULL", (43, 46, 112)),
     "low-quality-naquadria-phosphate": ("DULL", (77, 77, 85)),
+    "ash": "Ash",  # issue #223: GT's Ashes (bricked blast furnace with coke, malachite's blast furnace recipe)
 }
 
 # fork part name -> GT OrePrefix texture; "{m}" is the material
@@ -163,6 +164,9 @@ PARTS = [
     ("{m}-rod", "stick"), ("{m}-gear", "gearGtSmall"), ("{m}-ring", "ring"), ("{m}-bolt", "bolt"),
     ("{m}-screw", "screw"), ("{m}-rotor", "rotor"), ("{m}-round", "round"), ("{m}-nugget", "nugget"),
     ("{m}-dust", "dust"), ("{m}-frame", "@frame"), ("{m}-turbine-blade", "turbineBlade"),
+    # issue #222: GT's other parts of the metals of #205 (the item casing is GT's casingSmall texture)
+    ("double-{m}-plate", "plateDouble"), ("small-{m}-spring", "springSmall"), ("{m}-spring", "spring"),
+    ("{m}-item-casing", "casingSmall"), ("block-of-{m}", "@block"),
 ]
 
 
@@ -353,6 +357,8 @@ class Composer:
             return img
         if prefix == "@frame":
             return self.m.icon(mat, "frameGt", kind="blocks")
+        if prefix == "@block":   # issue #222: GT's storage block texture of the material
+            return fit(self.t.load(f"{BLK}BLOCK_{name.upper()}"))
         return self.m.icon(mat, prefix)
 
     # machines ------------------------------------------------------------------------------------

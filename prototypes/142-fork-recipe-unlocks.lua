@@ -678,6 +678,7 @@ local UNLOCKS_205 = {
 		"naquadah-nugget-krypton", "naquadah-nugget-xenon", "naquadah-ingot-from-nuggets" },
 	["enriched-naquadah"] = { "zinc-from-zinc-sulfate" }, -- LuV
 	["uv-materials"] = { -- UV
+		"naquadria-dust-macerator",   -- issue #223: GT's naquadria dust from the ingot (125)
 		"naquadah-dust-centrifuging", "enriched-naquadah-dust-centrifuging", "naquadria-oxide-mixture-centrifuging",
 		"naquadria-rich-solution-from-phosphate", "indium-from-indium-phosphate", "indium-gallium-phosphide-from-indium-phosphate",
 	},

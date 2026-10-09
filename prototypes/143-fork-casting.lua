@@ -11,7 +11,7 @@
 ---   ingot 144 1.6 s, plate 144 1.6 s, block 1296 (GT: mass x 9 ticks; here 9 ingots of 1.6 s), nugget 16 0.8 s,
 ---   gear (GT's small gear) 144 0.8 s, large gear (GT's gear) 576 6.4 s, rotor 612 (GT: mass ticks; here the 4.9 s
 ---   of the upstream endgame casts), rod 72 7.5 s, long rod 144 15 s, bolt 18 2.5 s, ring 36 5 s, screw 18 2.5 s,
----   round 16 2.5 s
+---   round 16 2.5 s, item casing (issue #222) 72 0.8 s
 --- GT's fluid extractor melts an ingot into 144 in 24 ticks (GTRecipeRegistrator.registerReverseFluidSmelting).
 ---
 --- MATERIALS: per material the solidifier tier and the technology. The tier is the one of the material's ingot cast
@@ -50,6 +50,7 @@ local FORMS = {
 	{ "ring", "%s-ring", 3.6, 5 },
 	{ "screw", "%s-screw", 1.8, 2.5 },
 	{ "round", "%s-round", 1.6, 2.5 },
+	{ "item-casing", "%s-item-casing", 7.2, 0.8 },   -- issue #222: GT's casing mold, half an ingot in 16 ticks
 }
 
 local MATERIALS = {
