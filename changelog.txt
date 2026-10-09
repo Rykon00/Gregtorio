@@ -1,4 +1,8 @@
 ---------------------------------------------------------------------------------------------------
+Version: 0.5.4
+  Info:
+    - Saves of Gregtorio Continued 0.4.x and older (and of 0.5.0 to 0.5.2 with a me-network older than 0.5.0): load the save once with Gregtorio Continued 0.5.2 and me-network 0.5.0 and save it before updating. Since 0.5.1 me-network no longer converts saves from before me-network 0.5.0 and refuses to load them (the save file is not changed) (issue #209).
+---------------------------------------------------------------------------------------------------
 Version: 0.5.3
 Date: 2026-10-07
   Features:

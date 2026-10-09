@@ -134,6 +134,13 @@ def needs_me_network(info):
     return any(re.split(r"\s*[<>=]", dep.strip())[0].strip() == ME_NETWORK for dep in info.get("dependencies", []))
 
 
+def zip_info(path):
+    """info.json of a mod zip"""
+    import zipfile
+    with zipfile.ZipFile(path) as z:
+        return json.loads(z.read(next(n for n in z.namelist() if n.endswith("/info.json") and n.count("/") == 1)))
+
+
 def link_dir(link, target):
     """Directory link; on Windows without symlink rights a junction (never follow it when deleting)."""
     try:
@@ -167,9 +174,7 @@ def prepare_mods(with_runtime=False, gregtorio_zip=None, with_migrate=False, men
     if not gregtorio:
         info = None
     elif gregtorio_zip:
-        import zipfile
-        with zipfile.ZipFile(gregtorio_zip) as z:
-            info = json.loads(z.read(next(n for n in z.namelist() if n.endswith("/info.json") and n.count("/") == 1)))
+        info = zip_info(gregtorio_zip)
         # Factorio insists on <name>_<version>.zip
         shutil.copy2(gregtorio_zip, MODS / f"{info['name']}_{info['version']}.zip")
     else:
@@ -237,6 +242,13 @@ def load_errors(log):
         return None
     m = re.search(r"(Error.*?)(\n\s*\d+\.\d+ |\Z)", log, re.S)
     return m.group(1).strip() if m else "unknown error (see .devcheck/last-run.log)"
+
+
+def script_error(log):
+    """the first error of a mod's event handler (e.g. me-network refusing an old save in on_configuration_changed),
+    which load_errors misses because the map itself was read"""
+    m = re.search(r"Error while running event (\S+)\n(.*?)(?=\nstack traceback|\n-{5}|\Z)", log, re.S)
+    return (m.group(1) + ": " + " ".join(l.strip() for l in m.group(2).splitlines() if l.strip())) if m else None
 
 
 def not_saved(log):
@@ -1191,10 +1203,11 @@ def zip_from_ref(ref):
     return out
 
 
-def old_me_network(ref):
+def old_me_network(ref, use="old save created with"):
     """The me-network release an old Gregtorio shipped with (a git ref of the me-network checkout, e.g. v0.1.0 for
     Gregtorio 0.5.0), exported to .devcheck/me-network-<ref>: the old save is created with it, the working copy loads
-    it with the current checkout (the old version's ME blocks may be gone from the current me-network)."""
+    it with the current checkout (the old version's ME blocks may be gone from the current me-network). Also the
+    me-network of the intermediate load (issue #209)."""
     src = me_network_dir()
     if not src:
         sys.exit("--old-me-network needs a me-network checkout (../me-network or ME_NETWORK_DIR)")
@@ -1206,8 +1219,137 @@ def old_me_network(ref):
     import io
     with tarfile.open(fileobj=io.BytesIO(tar)) as t:
         t.extractall(out)
-    print(f"old save created with me-network {ref} ({json.loads((out / 'info.json').read_text())['version']})")
+    print(f"{use} me-network {ref} ({json.loads((out / 'info.json').read_text())['version']})")
     return out
+
+
+class me_network_from:
+    """with me_network_from(dir): prepare_mods links that me-network export (None: the usual checkout or zip)"""
+    def __init__(self, d):
+        self.d, self.env = d, os.environ.get("ME_NETWORK_DIR")
+
+    def __enter__(self):
+        if self.d:
+            os.environ["ME_NETWORK_DIR"] = str(self.d)
+
+    def __exit__(self, *exc):
+        if self.d:
+            os.environ.pop("ME_NETWORK_DIR") if self.env is None else os.environ.update(ME_NETWORK_DIR=self.env)
+
+
+# issue #209: me-network 0.5.1 refuses a save from before me-network 0.5.0 (its issue #146: "Load the save once with
+# me-network 0.5.0"), and a Gregtorio Continued 0.4.x save whose ME state waits for the hand-over. `migrate` takes the
+# player's way for such a save: it is loaded once with me-network 0.5.0 and the last Gregtorio release that works with
+# it, saved, and that save is loaded with the working copies.
+STEP_GREGTORIO, STEP_ME_NETWORK = "v0.5.2", "v0.5.0"
+ME_CUT_OFF = (0, 5, 0)
+
+
+def version_tuple(v):
+    return tuple(int(n) for n in re.findall(r"\d+", v)[:3])
+
+
+def save_me_network(old_zip, old_me):
+    """the me-network version the old save is created with, or None for a version of the mod from before issue #83
+    (the ME network inside the mod, no me-network)"""
+    if not needs_me_network(zip_info(old_zip)):
+        return None
+    d = old_me or me_network_dir()
+    if d:
+        return json.loads((d / "info.json").read_text(encoding="utf-8"))["version"]
+    z = sorted(MODS.glob(f"{ME_NETWORK}_*.zip"), key=lambda p: version_tuple(p.stem.rsplit("_", 1)[1]))
+    return z[-1].stem.rsplit("_", 1)[1] if z else None
+
+
+def rcon(sock, kind, body, req_id):
+    """one Source RCON request (kind 3: auth, 2: command) and its response body (as in me-network's devcheck)"""
+    import struct
+    data = body.encode("utf-8")
+    sock.sendall(struct.pack("<iii", 4 + 4 + len(data) + 2, req_id, kind) + data + b"\x00\x00")
+
+    def read(n):
+        out = b""
+        while len(out) < n:
+            chunk = sock.recv(n - len(out))
+            if not chunk:
+                raise OSError("rcon: connection closed")
+            out += chunk
+        return out
+    rest = read(struct.unpack("<i", read(4))[0])
+    rid, _ = struct.unpack("<ii", rest[:8])
+    if kind == 3 and rid == -1:
+        raise OSError("rcon: authentication refused")
+    return rest[8:-2].decode("utf-8", errors="replace")
+
+
+def load_and_save(mapfile, log_path):
+    """Loads `mapfile` in a headless server with nobody connected and `auto_pause`, so no tick runs: only the load with
+    the mods' on_init / on_configuration_changed and the migrations. Quits through RCON at once (a Lua command would run
+    a tick, and the helper mod's checks with it): the server saves the map when it quits (`--benchmark` cannot save),
+    the save is copied over `mapfile`. Returns the server log and None, or the log and a reason. The ports are free
+    ones (another devcheck may run a server at the same time)."""
+    import socket, time
+
+    def free_port(kind):
+        with socket.socket(socket.AF_INET, kind) as s:
+            s.bind(("127.0.0.1", 0))
+            return s.getsockname()[1]
+    rcon_port, game_port = free_port(socket.SOCK_STREAM), free_port(socket.SOCK_DGRAM)
+    binary = FACTORIO / ("bin/x64/factorio.exe" if os.name == "nt" else "bin/x64/factorio")
+    settings = WORK / "server-settings.json"
+    settings.write_text(json.dumps({"name": "devcheck", "description": "devcheck migrate: the intermediate load",
+                                    "visibility": {"public": False, "lan": False}, "auto_pause": True,
+                                    "require_user_verification": False, "max_players": 1}), encoding="utf-8")
+    step = WORK / "migrate-step.zip"                   # the server saves the map back into this file when it quits
+    shutil.copy2(mapfile, step)
+    reason = None
+    with open(log_path, "w", encoding="utf-8") as out:
+        proc = subprocess.Popen([str(binary), "--mod-directory", str(MODS), "--start-server", str(step),
+                                 "--server-settings", str(settings), "--bind", f"127.0.0.1:{game_port}",
+                                 "--rcon-bind", f"127.0.0.1:{rcon_port}", "--rcon-password", "devcheck"],
+                                stdout=out, stderr=subprocess.STDOUT)
+        sock = None
+        deadline = time.time() + 300
+        try:
+            while time.time() < deadline and proc.poll() is None:
+                try:
+                    sock = socket.create_connection(("127.0.0.1", rcon_port), timeout=5)
+                    rcon(sock, 3, "devcheck", 1)
+                    break
+                except OSError:
+                    sock = None
+                    time.sleep(0.5)
+            if not sock:
+                reason = "the server did not load the save or answer RCON"
+            else:
+                try:
+                    rcon(sock, 2, "/quit", 2)
+                except OSError:
+                    pass
+        finally:
+            if sock:
+                sock.close()
+            # (on Windows the server can hang after closing the game, its map saved: stopped a few seconds later)
+            closed = None
+            while proc.poll() is None and time.time() < deadline + 60:
+                if closed is None and "to(Closed)" in log_path.read_text(encoding="utf-8", errors="replace"):
+                    closed = time.time()
+                if closed is not None and time.time() > closed + 5:
+                    break
+                time.sleep(0.5)
+            if proc.poll() is None:
+                proc.kill()
+                proc.wait()
+    log = log_path.read_text(encoding="utf-8", errors="replace")
+    if not reason and not re.search(r"Saving map as .*\n(?:.*\n)*?.*Saving progress: 100", log):
+        reason = "the server did not save the map when it quit"
+    if not reason and re.search(r"DEVCHECK-MIGRATE-(?!SETUP)[A-Z]+ ", log):
+        reason = "a tick ran in the intermediate load (the helper mod's checks ran there)"
+    ticks = re.findall(r"updateTick\((\d+)\) changing state from\(InGame\)", log)
+    if not reason:
+        shutil.copy2(step, mapfile)
+        print(f"  saved when the server quit (tick {ticks[-1] if ticks else '?'}, no tick run)")
+    return log, reason
 
 
 def bumped_working_copy(old_zip):
@@ -1240,12 +1382,8 @@ def migrate(a):
     """Create a map with an older version (also "Gregtorio" before 0.3.0), then load and run it with the working copy."""
     old = a.from_zip or zip_from_ref(a.from_ref)
     old_me = old_me_network(a.old_me_network) if getattr(a, "old_me_network", None) else None
-    env_me = os.environ.get("ME_NETWORK_DIR")
-    if old_me:
-        os.environ["ME_NETWORK_DIR"] = str(old_me)
-    prepare_mods(gregtorio_zip=old, with_migrate=True)
-    if old_me:
-        os.environ.pop("ME_NETWORK_DIR") if env_me is None else os.environ.update(ME_NETWORK_DIR=env_me)
+    with me_network_from(old_me):
+        prepare_mods(gregtorio_zip=old, with_migrate=True)
     log = factorio("--create", str(WORK / "migrate-map.zip"), *seed_args(a))
     print(f"map seed: {'random' if a.seed == 'random' else a.seed}")
     if load_errors(log):
@@ -1277,6 +1415,26 @@ def migrate(a):
     print(f"old save with researched technologies (issue #91): {setup.group(1) if setup else 'no result'}")
     setup = re.search(r"DEVCHECK-MIGRATE-SETUP-REMOVED (.*)", log)
     print(f"old save with removed fluids and items (issues #98, #96): {setup.group(1) if setup else 'no result'}")
+    # issue #209: a save from before me-network 0.5.0 goes through the intermediate load first (--direct: not)
+    save_me = save_me_network(old, old_me)
+    step_log = ""
+    if (save_me is None or version_tuple(save_me) < ME_CUT_OFF) and not a.direct:
+        print(f"old save made {'without me-network' if save_me is None else 'with me-network ' + save_me}, before "
+              f"me-network {'.'.join(map(str, ME_CUT_OFF))}: loaded once with Gregtorio {STEP_GREGTORIO} and me-network "
+              f"{STEP_ME_NETWORK} and saved (issue #209), as a player has to before updating")
+        step_me = old_me_network(STEP_ME_NETWORK, "intermediate load with")
+        old = zip_from_ref(STEP_GREGTORIO)
+        with me_network_from(step_me):
+            prepare_mods(gregtorio_zip=old, with_migrate=True)
+        step_log, why = load_and_save(WORK / "migrate-map.zip", WORK / "migrate-step.log")
+        if why:
+            print(f"intermediate load: FAILED, {why}: "
+                  f"{script_error(step_log) or load_errors(step_log) or ''} (see .devcheck/migrate-step.log)")
+            return 1
+        print("intermediate load: ok")
+    elif save_me is not None and version_tuple(save_me) < ME_CUT_OFF:
+        print(f"--direct: the old save of me-network {save_me} is loaded with the working copies (me-network 0.5.1 and "
+              f"later refuse it)")
     prepare_mods(with_migrate=True, gregtorio_zip=bumped_working_copy(old))
     log = factorio("--benchmark", str(WORK / "migrate-map.zip"), "--benchmark-ticks", str(a.ticks))
     ran = re.search(r"Performed (\d+) updates", log)
@@ -1299,18 +1457,20 @@ def migrate(a):
     print(f"technology effects of the old save (issue #91): {techs.group(1) if techs else 'no result'}")
     removed = re.search(r"DEVCHECK-MIGRATE-REMOVED (.*)", log)
     print(f"removed fluids and items of the old save (issues #98, #96): {removed.group(1) if removed else 'no result'}")
-    # issue #83: the fingerprints of what gregtorio-continued gave and what me-network got must be equal
-    gave = re.findall(r"FORK-ME-HANDOVER: gave (\S+) (\S+)", log)
-    took = re.search(r"ME-NETWORK-HANDOVER: (ok|MISMATCH.*|refused.*)", log)
+    # issue #83: the fingerprints of what gregtorio-continued gave and what me-network got must be equal (issue #209:
+    # the hand-over and the conversions of me-network 0.5.0 happen in the intermediate load)
+    both = step_log + log
+    gave = re.findall(r"FORK-ME-HANDOVER: gave (\S+) (\S+)", both)
+    took = re.search(r"ME-NETWORK-HANDOVER: (ok|MISMATCH.*|refused.*)", both)
     print(f"hand-over fingerprints: {(took.group(1) if took else 'no hand-over') if gave else 'nothing to hand over'}"
           + (f" ({sum(1 for _, f in gave if f != 'nil')} of {len(gave)} tables with state)" if gave else ""))
     handover_ok = (not gave or (took and took.group(1) == "ok")) and not (handover and handover.group(1).startswith("failed"))
-    for line in re.findall(r"FORK-ME-MIGRATE: (.*)", log):
+    for line in re.findall(r"FORK-ME-MIGRATE: (.*)", both):
         print("  migration: " + line)
     for f in re.findall(r"DEVCHECK-MIGRATE-FAIL (.*)", log):
         print("  - " + f)
     if not ran:
-        print(load_errors(log) or "")
+        print(load_errors(log) or script_error(log) or "")
     ok = ran and fluids and not fluids.group(1).startswith("failed") and power and not power.group(1).startswith("failed") \
         and turbine and not turbine.group(1).startswith("failed") \
         and patterns and not patterns.group(1).startswith("failed") and job and not job.group(1).startswith("failed") \
@@ -1491,6 +1651,10 @@ def main():
     m.add_argument("--ticks", type=int, default=600)
     m.add_argument("--old-me-network", help="git ref of the me-network checkout to create the old save with, "
                    "e.g. v0.1.0 for --from-ref v0.5.0 (default: the current checkout for both)")
+    m.add_argument("--direct", action="store_true",
+                   help=f"issue #209: load a save from before me-network {'.'.join(map(str, ME_CUT_OFF))} with the "
+                   f"working copies directly, without the intermediate load with Gregtorio {STEP_GREGTORIO} and "
+                   f"me-network {STEP_ME_NETWORK} (me-network 0.5.1 and later refuse it)")
     m.add_argument("--seed", default=str(DEFAULT_SEED), help=f"map seed or `random` (default {DEFAULT_SEED})")
     ms = sub.add_parser("menusim", help="run main menu simulations")
     ms.add_argument("--sim", default="nauvis_biter_base_laser_defense", help="simulation name or `all`")
