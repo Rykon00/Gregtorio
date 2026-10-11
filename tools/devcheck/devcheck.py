@@ -1202,8 +1202,10 @@ SCIENCE_ORDER = ["automation", "logistic", "military", "chemical", "production",
 def check_unlock_gaps(m, sec):
     """Issue #237: a Gregtorio recipe that a technology unlocks must be makeable with the technologies of that science:
     every ingredient obtainable and a machine for its category buildable with the recipes of every researchable
-    technology whose highest science pack is not above the technology's (Gregtorio's tree is not closed under
-    prerequisites: siblings of the same science are researched anyway, so ancestors alone would flag thousands). A
+    technology whose highest science pack is not above the technology's effective science: the highest of its own
+    and its prerequisites' (issue #239: a technology that needs an IV prerequisite is researched with IV science at hand).
+    Gregtorio's tree is not closed under prerequisites: siblings of the same science are researched anyway, so ancestors
+    alone would flag thousands. A
     recipe whose products are all obtainable anyway is an alternative that waits for its input (water / distilled water)
     and passes. For a failing recipe the check names the causes (the first missing link: an item whose recipes all come
     with higher science, or a category without a buildable machine; recycling never counts as a source), one row per
@@ -1226,12 +1228,20 @@ def check_unlock_gaps(m, sec):
         if not v["hidden"] and "recycling" not in r:
             for x in v["res"]:
                 makers.setdefault(x, []).append(r)
-    solved, techs_at = {}, {}
-    for t in m.researched:
-        k = tier(t)
+    eff_memo, solved, techs_at = {}, {}, {}
+
+    def effective(t):
+        """the highest science of t and its prerequisites"""
+        if t not in eff_memo:
+            eff_memo[t] = max([tier(t)] + [effective(p) for p in T[t]["pre"] if p in T])
+        return eff_memo[t]
+
+    def key_of(t):
+        k = effective(t)
         if k not in solved:
             techs_at[k] = {x for x in m.researched if tier(x) <= k}
             solved[k] = m.obtainable(techs_at[k])
+        return k
 
     def causes(x, k, seen):
         if x in seen:
@@ -1254,7 +1264,7 @@ def check_unlock_gaps(m, sec):
         return out
     found, n_recipes = {}, 0
     for t in sorted(m.researched):
-        k = tier(t)
+        k = key_of(t)
         avail, cats = solved[k]
         for r in T[t]["eff"]:
             v = R.get(r)
@@ -1274,7 +1284,7 @@ def check_unlock_gaps(m, sec):
                 got.add((r, "its inputs only come from each other at this science"))
             for x, why in got:
                 found.setdefault(f"{t}:{x}", (why, r))
-    sci = lambda t: SCIENCE_ORDER[tier(t)] if 0 <= tier(t) < len(SCIENCE_ORDER) else "-"
+    sci = lambda t: SCIENCE_ORDER[effective(t)] if 0 <= effective(t) < len(SCIENCE_ORDER) else "-"
     problems = [f"{k} ({sci(k.split(':')[0])} science): {why}, needed by {r}"
                 for k, (why, r) in sorted(found.items()) if k not in allowed]
     problems += [f"{k}: in FORK_UNLOCK_GAPS but no such gap (remove the entry)" for k in sorted(allowed) if k not in found]
