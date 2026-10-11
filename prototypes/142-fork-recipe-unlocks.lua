@@ -392,7 +392,7 @@ local UNLOCKS = {
 		"block-of-energetic-alloy", "energetic-alloy-wire-16x",
 	},
 	["polyethylene"] = { -- MV
-		"ether", "plascrete",
+		"ether",
 	},
 	["kanthal"] = { -- MV
 		"kanthal-wire-16x",

@@ -24,7 +24,7 @@ UEV = cryogenic, UIV = promethium, then UMV / UXV / max (the stargate; since pha
 | 4 | UHV: wetware processors (UHV circuit), UHV components, fusion reactor MK3, UHV science pack, energy hatch and machines | **done** (`prototypes/128-fork-uhv.lua`) |
 | 5a | UEV and UIV: bio and optical lines, cosmic neutronium / draconium / infinity / transcendent metal, UEV and UIV components, fusion MK4, science packs, energy hatches and machines | **done** (`prototypes/131-fork-uev.lua`, `132-fork-uiv.lua`) |
 | 5b | UMV, UXV, MAX and the endgame (stargate, victory), fusion MK5 | **done** (`prototypes/133-fork-umv.lua`, `134-fork-uxv.lua`, `135-fork-endgame.lua`, `scripts/fork-victory.lua`) |
-| side | Water purification line: grades 1-8, the NPIC to APIC chips and complex SMDs | **done** (`prototypes/129-fork-water-purification.lua`, see "Side quest: water purification grades 7 and 8") |
+| side | Water purification line: grades 1-8, the NPIC to APIC chips and complex SMDs (Gregtorio's stand-in for GT's optical SMDs, #259) | **done** (`prototypes/129-fork-water-purification.lua`, see "Side quest: water purification grades 7 and 8") |
 | side | AE2 autocrafting (patterns, molecular assembler on top of the ME network from `120-fork-ae2.lua`) and fluids in the ME network (fluid drives, fluid interface, fluid recipes as patterns) | **done** (`prototypes/121-fork-ae2-autocrafting.lua`, `122-fork-ae2-fluids.lua`, `scripts/fork-me-autocraft.lua`, `scripts/fork-me-fluids.lua`, `docs/AE2.md`) |
 | side | AE2 extras (issue #38): level maintainer, crafting CPU tiers, circuit interface, fluid interface settings in blueprints | **done** (`prototypes/121-fork-ae2-autocrafting.lua`, `scripts/fork-me-circuit.lua`, see "AE2 extras" below) |
 | side | Endgame power: plasma turbines (LuV to UXV, the UHV to UXV ones from issue #34), naquadah fuel line and large naquadah reactors, dynamo hatches LuV to UXV | **done** (`prototypes/136-fork-power.lua`, `scripts/fork-power.lua`, see "Side quest: endgame power") |
@@ -417,7 +417,8 @@ Choices and deviations from GT:
   tech. Grades 7 and 8 and the FPIC/APIC chips are open.
 - **Power ICs.** ZPM hatch NPIC, UV hatch PPIC, UHV hatch QPIC as in GT; the UEV hatch uses 4 QPICs and the UIV hatch 8 (GT: FPIC and APIC).
   The MK2 controller uses NPIC wafers: GT's PPIC wafer needs americium, which only the MK2 makes. The MK3 and MK4 controllers use QPIC wafers.
-  The wetware mainframe still uses advanced SMDs (complex SMDs come from GT's nanochip complex, which is not in the mod).
+  The wetware mainframe still uses advanced SMDs (the complex SMDs came later with the water purification line; they are
+  Gregtorio's own stand-in for GT's optical SMDs, #259).
 - **UEV metals are fusion products.** GT mines cosmic neutronium and gets draconium from Draconic Evolution; infinity comes from the infinity
   catalyst chain. Here: draconium = americium + iron plasma (MK3), cosmic neutronium = neutronium + tritanium, infinity = cosmic
   neutronium + draconium. The UEV hatches (and so the MK4) need all of them, so the MK3 has slow bootstrap recipes (2 melt for 1, 4 times
@@ -1248,7 +1249,8 @@ Where the chips go (GT: 2 chips of the tier per hatch; the fork has used 4 since
 Unchanged on purpose: the MK2 controller keeps NPIC wafers (GT: PPIC; the americium they need comes from the MK2 itself), the MK3 controller
 QPIC wafers and the ZPM/UV/UHV hatches NPIC/PPIC/QPIC are GT's, the energy module keeps UHPIC wafers (GT: ASOC wafers, not a power IC).
 
-Complex SMDs replace advanced SMDs in the recipes GT builds with them (GT takes 4 complex SMDs instead of 16 advanced ones, so the counts are
+Complex SMDs replace advanced SMDs in the recipes GT builds with optical SMDs (#259: GT has no complex SMDs; its XSMD variant of a
+recipe takes 4 optical SMDs instead of 16 advanced ones, so the counts are
 a quarter): wetware mainframe (32 inductors, 64 capacitors instead of 8 inductor and 16 capacitor wraps), bio supercomputer and mainframe,
 optical assembly, supercomputer and mainframe. The exotic and temporal lines (133 and 134, no GT recipe with SMDs) follow the optical line.
 The processors and the wetware and bio assemblies keep advanced SMDs, as in GT.
@@ -1269,7 +1271,8 @@ Choices and deviations from GT:
 - **Tier placement.** Grade 7 needs triamerotronium (`uhv-energy-hatches`) and the FPIC an infinity foil (`uev-materials`), both UHV science.
   Grade 8's catalyst needs a UEV field generator, which takes UIV circuits since phase 5a, so `atto-power-ics` comes after the optical mainframe
   (UEV science). The UIV hatch techs need the UIV circuit anyway.
-- **Complex SMDs** come from the UV assembling machine (GT: nanochip assembly complex with its own circuit components, not in the mod), shaped
+- **Complex SMDs** come from the UV assembling machine (Gregtorio's own stand-in for GT's optical SMDs, which GT makes in the assembler;
+  issue #259 corrected the earlier note that GT makes them in the nanochip assembly complex), shaped
   like the advanced SMD recipes one tier of materials up. They are UV science so the UHV circuit (wetware mainframe) can use them.
 
 Existing saves:
