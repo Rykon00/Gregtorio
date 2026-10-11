@@ -1,6 +1,5 @@
 --- LV 1	MV 2	HV 4	EV 8	IV 16	LUV 32	ZPM 64	UV 128	UHV 256	UEV	512	UIV 1024	UMV 2048	UXV 4096
 
----TODO: Make a rare earth vein at mm t9 or t10 (cadmium, caesium, lanthanum, cerium)
 
 microverse_resources = {
 	  { type = "unlock-recipe", recipe = "microminer-magnetite" },
