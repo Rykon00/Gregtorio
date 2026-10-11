@@ -10,17 +10,17 @@ create_item{
 		{type = "item", name = "processing-unit", amount = 2},
 		{type = "item", name = "hv-machine-hull", amount = 1},
 	},
-	place_result = "mv-steam-turbine",
+	place_result = "hv-steam-turbine",
 	stack_size = 10
 }
 data:extend({
   {
     type = "generator",
-    name = "mv-steam-turbine",
-    icon = "__gregtorio-continued__/graphics/icons/mv-steam-turbine.png",
+    name = "hv-steam-turbine",
+    icon = "__gregtorio-continued__/graphics/icons/hv-steam-turbine.png",
     icon_size = 32,
     flags = {"placeable-neutral", "player-creation"},
-    minable = { mining_time = 0.3, result = "mv-steam-turbine" },
+    minable = { mining_time = 0.3, result = "hv-steam-turbine" },
     max_health = 300,
     corpse = "medium-remnants",
     dying_explosion = "medium-explosion",
@@ -31,7 +31,10 @@ data:extend({
     collision_box = {{-1.3, -1.3}, {1.3, 1.3}},
     selection_box = {{-1.5, -1.5}, {1.5, 1.5}},
 	fast_replaceable_group = "fr-steam-turbine",
-    fluid_usage_per_tick = 0.6361,
+    --- issue #258: its own entity (it was a second definition of the MV turbine, which it overrode); one HV amp
+    --- (EU32_HV, 2.56 MW) like the HV gas turbine and combustion generator, at the upstream series LV 0.475, MV 0.45,
+    --- HV 0.425: 2.56 MW / (100 kJ x 0.425 x 60) = 1.0039 steam per tick
+    fluid_usage_per_tick = 1.0039,
     effectivity = 0.425,
     burns_fluid = true,
     maximum_temperature = 165,
