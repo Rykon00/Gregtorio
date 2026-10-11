@@ -21,7 +21,8 @@
 --- (DEVCHECK-MIGRATE-JOB). A level maintainer of the old save (versions with it) keeps a few more gears: after
 --- the job it must start a job of its own on the migrated pattern and reach its amount. Issue #206: me-network 0.5.1
 --- removes the legacy CPU on load and queues its job; on the first tick a 2x2 multiblock CPU is built where it stood,
---- the job must be queued right after the load and then go on there.
+--- the job must be queued right after the load and then go on there. Issue #220: a save of me-network 0.5.1 or later
+--- (no legacy blocks) gets the network of today's blocks, its job on a multiblock CPU built in the old save.
 --- Issue #68 (the ME rework): the old save's ME network is a logistic network. It gets an old 1k drive with
 --- items (also of another quality and a blueprint, which the new network cannot store), an old requester
 --- interface with items in its inventory and its trash, an old terminal, a second old controller in the same
@@ -356,6 +357,10 @@ function R1() return prototypes.entity["me-network-controller"] ~= nil end
 --- module has no `unpack_drive` any more): there are no fluid drives to convert, the network of the pattern, job and
 --- maintainer checks is built without them
 function R2() return remote.interfaces[F] ~= nil and not remote.interfaces[F].unpack_drive end
+--- issue #220: me-network 0.5.1 and later (me-network #146) have no legacy blocks (no ME fluid drives, no old controller,
+--- no legacy Crafting CPU): the network of the pattern, job and maintainer checks is built of today's blocks, the job of the
+--- old save runs on a multiblock CPU (a 1k crafting storage and three crafting units)
+function UNIFIED() return prototypes.entity["me-network-controller"] ~= nil and prototypes.entity["me-controller"] == nil end
 
 --- after the ME network of the fluid drives exists (its controller)
 local function setup_patterns(place)
@@ -419,7 +424,12 @@ local function setup_patterns(place)
 	eei.power_production = 1e6
 	eei.electric_buffer_size = 1e7
 	place("substation", 12, Y + 12)
-	local cpu = place("me-crafting-cpu", 9, Y + 9)
+	local cpus = {}
+	if prototypes.entity["me-crafting-cpu"] then
+		cpus[1] = place("me-crafting-cpu", 9, Y + 9)
+	else
+		for _, blk in pairs(CPU_BLOCKS) do cpus[#cpus + 1] = place(blk[1], blk[2], blk[3]) end
+	end
 	local drive
 	if R1() then                                       -- the cable network of issue #68 (R1): a drive with cells
 		drive = place("me-drive", 8.5, Y + 12.5)
@@ -432,7 +442,8 @@ local function setup_patterns(place)
 		remote.call(NET, "store_in_drive", drive, "iron-plate", 50)
 		remote.call(NET, "store_in_drive", drive, "iron-stick", 50)
 		local ctrl = game.surfaces[1].find_entity("me-network-controller", { 6, Y })
-		local members = { ctrl, cpu, drive, p, game.surfaces[1].find_entity("me-pattern-provider", PT_PROVIDER_A) }
+		local members = { ctrl, drive, p, game.surfaces[1].find_entity("me-pattern-provider", PT_PROVIDER_A) }
+		for _, c in pairs(cpus) do members[#members + 1] = c end
 		if storage.fluid_old then
 			members[#members + 1] = storage.fluid_old.e1
 			members[#members + 1] = storage.fluid_old.e2
@@ -445,8 +456,10 @@ local function setup_patterns(place)
 	end
 	local id, why = remote.call(A, "start", p, "iron-gear-wheel", JOB_GEARS)
 	--- crafting CPUs are multiblocks since me-network 0.3.0 (issue #6): a lone ME Crafting CPU is no CPU there, no job
-	local no_cpu = not id and why == "no-free-cpu" and prototypes.entity["me-crafting-unit"]
-	storage.job = { id = id, provider = p, skipped = no_cpu and true or nil }
+	--- (a version without the legacy CPU has the multiblock one built above: a job that does not start there fails)
+	local no_cpu = not id and why == "no-free-cpu" and prototypes.entity["me-crafting-unit"] and prototypes.entity["me-crafting-cpu"]
+	storage.job = { id = id, provider = p, skipped = no_cpu and true or nil,
+		multiblock = not prototypes.entity["me-crafting-cpu"] or nil }
 	log("DEVCHECK-MIGRATE-SETUP-JOB " .. (id and "ok" or no_cpu and "skipped (crafting CPUs are multiblocks since me-network 0.3.0)"
 		or ("failed (" .. tostring(why) .. ")")))
 	--- a level maintainer keeping a few more gears than the job makes (it waits while the job runs)
@@ -997,7 +1010,7 @@ script.on_init(function()
 	storage.items = "skipped"
 	storage.patterns = "skipped"
 	storage.state = "skipped"
-	if not (remote.interfaces[F] and prototypes.entity[DRIVE] and prototypes.entity["me-controller"]) then
+	if not ((remote.interfaces[F] and prototypes.entity[DRIVE] and prototypes.entity["me-controller"]) or UNIFIED()) then
 		log("DEVCHECK-MIGRATE-SETUP skipped (no ME fluid drives in this version)")
 		log("DEVCHECK-MIGRATE-SETUP-PATTERNS skipped (no ME fluid drives in this version)")
 		return
@@ -1080,7 +1093,7 @@ script.on_nth_tick(30, function(event)
 	--- issue #206 (me-network #145): in a version without the legacy Crafting CPU (gone on load) the job of the old save is
 	--- noted right after the load (queued, with what it held) and a multiblock CPU is built where the old CPU stood
 	local job = storage.job
-	if job and job.id and not job.after and not prototypes.entity["me-crafting-cpu"] then
+	if job and job.id and not job.after and not job.multiblock and not prototypes.entity["me-crafting-cpu"] then
 		local j = remote.call(A, "job", job.id)
 		job.after = j and j.status or "gone"
 		for _, b in pairs(CPU_BLOCKS) do
