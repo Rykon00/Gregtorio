@@ -416,7 +416,10 @@ local function setup_patterns(place)
 		p.force.recipes[PT_FURNACE_RECIPE].enabled = true
 		choice = remote.call(A, "set_recipe", p, PT_FURNACE_RECIPE) == true
 	end
+	--- encoded: the old version keeps encoded patterns in its providers (issue #80); before it, the provider of a 3x3
+	--- assembler loses its pattern on the way through me-network 0.5.0 (issue #219)
 	storage.patterns = { provider = p, ok = set["iron-gear-wheel"] == true, choice = choice,
+		encoded = remote.interfaces[A].insert_pattern ~= nil,
 		assembler_provider = game.surfaces[1].find_entity("me-pattern-provider", PT_PROVIDER_A) }
 	log("DEVCHECK-MIGRATE-SETUP-PATTERNS " .. (set["iron-gear-wheel"] and "ok" or "failed") .. (choice and " (furnace recipe chosen)" or ""))
 	--- a job of the old version on a crafting CPU (own power for the CPU and the assembler)
@@ -542,8 +545,16 @@ local function check_patterns()
 		local old = game.surfaces[1].find_entity("me-molecular-assembler", PT_ASSEMBLER)
 		if old and one_tile_assembler() then
 			local slot = (remote.call(A, "provider_info", st.assembler_provider) or { slots = {} }).slots[1]
-			expect(slot and not slot.ok and slot.machines == 0,
-				"the provider still points at the one-tile assembler two tiles away: " .. serpent.line(slot))
+			if st.encoded then
+				expect(slot and not slot.ok and slot.machines == 0,
+					"the provider still points at the one-tile assembler two tiles away: " .. serpent.line(slot))
+			else
+				--- issue #219: a save from before the encoded patterns (issue #80) goes through me-network 0.5.0, which makes
+				--- the assembler one tile before it turns the providers' recipes into patterns: the assembler's centre is
+				--- two tiles from its provider, so the provider gets no pattern at all (a player's provider is empty too)
+				expect(slot == nil, "the provider of the 3x3 assembler got a pattern through the intermediate load: "
+					.. serpent.line(slot))
+			end
 			local recipe = old.get_recipe()
 			old.destroy{ raise_destroy = true }
 			local moved = game.surfaces[1].create_entity{ name = "me-molecular-assembler", position = PT_ASSEMBLER_1,
@@ -551,6 +562,17 @@ local function check_patterns()
 			if moved and recipe then moved.set_recipe(recipe) end
 			expect(moved ~= nil, "the assembler could not be moved next to its provider")
 			note = " (the one-tile assembler moved next to its provider)"
+			if not st.encoded and moved then
+				--- as a player: encode the crafting pattern again in the ME Pattern Terminal and put it into the provider
+				local inv = game.create_inventory(2)
+				inv.insert{ name = "me-blank-pattern", count = 1 }
+				remote.call(PATTERN_TERMINAL, "encode_def", inv, nil, { kind = "crafting", recipe = PT_RECIPE })
+				local stack = inv.find_item_stack("me-encoded-pattern")
+				expect(stack and remote.call(A, "insert_pattern", st.assembler_provider, stack),
+					"the crafting pattern could not be encoded again and put into the provider")
+				inv.destroy()
+				note = note .. " (its pattern encoded again, as before issue #80 the provider is empty after the update)"
+			end
 		end
 		--- issue #80: the providers hold encoded patterns for what they provided
 		p.force.recipes[PT_FURNACE_RECIPE].enabled = true

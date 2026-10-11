@@ -22,6 +22,7 @@ Version: 0.5.4
     - Recipes no longer show "Unknown key: recipe-name..." (issue #230): 3,054 recipes whose name differs from their product's (the ore chain's washing, centrifuge and maceration steps, the casts, nugget and pile recipes, the multi smelter recipes and many more) are named after their main product unless they have a name of their own; the fluid voiding recipes are named "<fluid> (voiding)"; the 90 recycling recipes of the inserters, belts, poles, chests and other placeable items show the item's name. The rows of the item tabs (machine rows, fluid rows, recycling rows) have names.
   Info:
     - Saves of Gregtorio Continued 0.4.x and older (and of 0.5.0 to 0.5.2 with a me-network older than 0.5.0): load the save once with Gregtorio Continued 0.5.2 and me-network 0.5.0 and save it before updating. Since 0.5.1 me-network no longer converts saves from before me-network 0.5.0 and refuses to load them (the save file is not changed) (issue #209).
+    - Saves of Gregtorio Continued 0.4.x and older with ME Molecular Assemblers: the load with me-network 0.5.0 makes each assembler one tile, its centre where the 3x3 one stood, so the Pattern Provider next to it is empty afterwards. Move the assembler next to its provider and encode its crafting pattern again in the ME Pattern Terminal; a crafting job of the save that waits for it then goes on (issue #219).
 ---------------------------------------------------------------------------------------------------
 Version: 0.5.3
 Date: 2026-10-07
