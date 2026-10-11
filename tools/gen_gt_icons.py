@@ -97,6 +97,8 @@ MATERIALS = {
     # bartworks Werkstoffe (WerkstoffLoader.java)
     "ruridit": ("METALLIC", (0xA4, 0xA4, 0xA4)),
     "rhodium-plated-palladium": ("SHINY", (0xDC, 0xDC, 0xF0)),      # Materials.Chrome colour, like bartworks
+    # goodgenerator Werkstoff (GGMaterial.java, issue #228)
+    "incoloy-903": ("METALLIC", (0xA4, 0x8F, 0x8B)),
     # GT++ (MaterialsElements.java)
     "rhugnor": ("CUSTOM/rhugnor", (190, 0, 255)),
     # GT builds magmatter with a material builder (TextureSet.SET_MAGMATTER, no colour)

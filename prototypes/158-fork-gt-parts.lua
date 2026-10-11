@@ -25,7 +25,15 @@
 ---   2 x mass, at least MV; rod lathe 1 ingot -> rod + 2 small piles, mass / 8; long rod forge hammer 2 rods, mass, LV;
 ---   bolt cutter rod -> 4, 2 x mass; screw lathe bolt, mass / 8, LV; ring extruder 1 ingot -> 4, 2 x mass; large gear
 ---   extruder 4 ingots, 5 x mass; rotor extruder 5 ingots, 5 x mass; block compressor 9 ingots, 15 s; frame assembler
----   4 rods, 3 s; nugget alloy smelter ingot + mold -> 9, 2 x mass.
+---   4 rods, 3 s; nugget alloy smelter ingot + mold -> 9, 2 x mass. Issue #228, GT++ elements (rhugnor: no rod):
+---   superdense plate compressor 64 plates, 4 x mass; bolt extruder 1 ingot -> 8, 2 x mass (RecipeGenExtruder); foil
+---   bender 1 ingot -> 4, 2 x mass; fine wire wiremill 1 ingot -> 8, 5 s, LV (GregtechConduits.generateWireRecipes).
+--- Werkstoffe (issue #228: bartworks' ruridit and rhodium-plated palladium, goodgenerator's Incoloy-903; the loaders of
+--- bartworks/system/material/werkstoff_loaders/recipe/, EU/t through BWUtil.calculateRecipeEU: the processing voltage
+--- where the Werkstoff sets one, else the recipe's own): as GT, but bolt cutter rod -> 4, 2 x mass, no water; fine
+--- wire wiremill 1 ingot -> 8, mass, 8 x 15 (x60 from a melting point of 2800); block extruder 9 ingots, 9 x mass,
+--- 120 (480 from 2800). Their dense plate, springs and frame come from GT's processing of the Werkstoff's bridge
+--- material (OP/ProcessingIngot, ProcessingStick*, ProcessingFrame), so they take GT's numbers.
 --- Not made: GT's tool heads and turbine blades (the TOOL bit: GT's tools and per-material turbine rotors, which
 --- Gregtorio does not have) and GT's cells. Machines above UXV take the UXV category; the forge hammer has the LV one.
 --- Issue #223, B5: GT's nugget recipes (ProcessingNugget.java) for every metal with a nugget: ingot -> 9 nuggets in the
@@ -255,7 +263,7 @@ for _, m in pairs(metals) do
 		for _, f in pairs(d.forms) do wanted[f] = true end
 		local ingot = m .. "-ingot"
 		local sub = sub_of(ingot, "subgroup-smelting")
-		local gtpp = d.source == "gtpp"
+		local gtpp, bw = d.source == "gtpp", d.source == "bw"
 		local M = d.mass
 		local small = piles(d, m)
 		--- GT: the material's processing voltage, else the recipe's own; GT++: the alloy's voltage (at least "low")
@@ -292,7 +300,7 @@ for _, m in pairs(metals) do
 		if n then recipe{ name = n, machine = "bending-machine", tier = tier(96, "mv"), ticks = gtpp and 2 * M or 9 * M,
 			ingredients = { item(ingot, 9) }, results = { item(n) } } end
 		n = part("superdense-plate")
-		if n then recipe{ name = n, machine = "compressor", tier = tier(96), ticks = 32 * M,
+		if n then recipe{ name = n, machine = "compressor", tier = tier(96), ticks = gtpp and 4 * M or 32 * M,
 			ingredients = { item(form("plate"), 64) }, results = { item(n) } } end
 		n = part("foil")
 		if n then recipe{ name = n, machine = "bending-machine", tier = tier(24), ticks = 2 * M,
@@ -315,7 +323,11 @@ for _, m in pairs(metals) do
 			ingredients = { item(form("rod"), 2) }, results = { item(n) } } end
 		n = part("bolt")
 		if n then
-			if gtpp then
+			if gtpp and not wanted["rod"] and not data.raw.item[form("rod")] then
+				--- a GT++ element without a rod (rhugnor): the extruder's bolt recipe
+				recipe{ name = n, machine = "extruder", tier = tier(0), ticks = 2 * M,
+					ingredients = { item(ingot) }, results = { item(n, 8) } }
+			elseif gtpp or bw then
 				recipe{ name = n, machine = "cutting-machine", tier = tier(4), ticks = 2 * M,
 					ingredients = { item(form("rod")) }, results = { item(n, 4) } }
 			else
@@ -333,8 +345,18 @@ for _, m in pairs(metals) do
 		if n then recipe{ name = n, machine = "extruder", tier = tier(6 * vm), ticks = 2 * M,
 			ingredients = { item(ingot) }, results = { item(n, 4) } } end
 		n = part("fine-wire")
-		if n then recipe{ name = n, machine = "wiremill", tier = "lv", ticks = 100,
-			ingredients = { item(ingot) }, results = { item(n, 4) } } end
+		if n then
+			if bw then
+				recipe{ name = n, machine = "wiremill", tier = tier(8 * vm), ticks = M,
+					ingredients = { item(ingot) }, results = { item(n, 8) } }
+			elseif gtpp then
+				recipe{ name = n, machine = "wiremill", tier = "lv", seconds = 5,
+					ingredients = { item(ingot) }, results = { item(n, 8) } }
+			else
+				recipe{ name = n, machine = "wiremill", tier = "lv", ticks = 100,
+					ingredients = { item(ingot) }, results = { item(n, 4) } }
+			end
+		end
 		n = part("small-spring")
 		if n then recipe{ name = n, machine = "bending-machine", tier = tier(8), seconds = 5,
 			ingredients = { item(form("rod")) }, results = { item(n, 2) } } end
@@ -349,8 +371,15 @@ for _, m in pairs(metals) do
 		if n then recipe{ name = n, machine = "assembling-machine", tier = tier(7), seconds = gtpp and 3 or 3.2,
 			ingredients = { item(form("rod"), 4) }, results = { item(n) } } end
 		n = part("block")
-		if n then recipe{ name = n, machine = "compressor", tier = tier(2), seconds = 15,
-			ingredients = { item(ingot, 9) }, results = { item(n) } } end
+		if n then
+			if bw then
+				recipe{ name = n, machine = "extruder", tier = tier(8 * vm), ticks = 9 * M,
+					ingredients = { item(ingot, 9) }, results = { item(n) } }
+			else
+				recipe{ name = n, machine = "compressor", tier = tier(2), seconds = 15,
+					ingredients = { item(ingot, 9) }, results = { item(n) } }
+			end
+		end
 		n = part("gear")
 		if n then recipe{ name = n, machine = "extruder", tier = tier(8 * vm), ticks = M,
 			ingredients = { item(ingot) }, results = { item(n) } } end

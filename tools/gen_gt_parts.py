@@ -3,13 +3,14 @@
 prototypes/158-fork-gt-parts.lua.
 
 Reads GT5-Unofficial (MaterialsInit.java: the material builders; Element.java: element protons and neutrons;
-LoaderGTBlockFluid.java: the storage blocks; gtPlusPlus MaterialsAlloy.java / MaterialsElements.java: the GT++ alloys)
-and the item names of a devcheck locale dump (the items Gregtorio has), and writes prototypes/gt-parts-data.lua: per
-Gregtorio material its source (GT or GT++), GT mass, dust item, recipe tier, blast furnace temperature and the forms GT
-generates that Gregtorio lacks.
+LoaderGTBlockFluid.java: the storage blocks; gtPlusPlus MaterialsAlloy.java / MaterialsElements.java: the GT++ alloys
+and elements; bartworks WerkstoffLoader.java and goodgenerator GGMaterial.java: the Werkstoffe) and the items of a
+devcheck run (the I rows of the DUMP section of .devcheck/last-run.log: the items Gregtorio has), and writes
+prototypes/gt-parts-data.lua: per Gregtorio material its source (GT, GT++ or a Werkstoff), GT mass, dust item, recipe
+tier, blast furnace temperature and the forms GT generates that Gregtorio lacks.
 
-    python tools/devcheck/devcheck.py check --locale-out loc.txt
-    python tools/gen_gt_parts.py --gt C:/00_Repositories/GT5-Unofficial --locale loc.txt
+    python tools/devcheck/devcheck.py check
+    python tools/gen_gt_parts.py --gt C:/00_Repositories/GT5-Unofficial
 
 GT materials (MaterialBuilder.addMetalItems and the OrePrefixes conditions): nugget, plate, double plate, dense and
 superdense plate (not NO_SMASHING), triple to quintuple plate (MULTI_PLATE), foil, rod, long rod, bolt, screw, round,
@@ -17,6 +18,15 @@ ring, fine wire, small spring and spring (not NO_SMASHING), item casing, frame b
 metal), the storage block (LoaderGTBlockFluid.java), small gear, gear and rotor (addGearItems; rotor not CRYSTAL).
 GT++ alloys (MaterialGenerator.generate, generateEverything): block, frame, nugget, plate, double plate, dense plate,
 bolt, rod, long rod, ring, screw, rotor, gear (GT++'s gear is GT's gearGt). Not made: tool heads, turbine blades, cells.
+GT++ elements of MaterialsElements.STANDALONE (issue #228, rhugnor): MaterialGenerator.generate(x, false, ...) in
+ModItems.java gives block, nugget, plate and double plate, generateComponentAndAssignToAMaterial the components named
+there (fine wire, foil, superdense plate, gear, bolt, ...).
+Werkstoffe (issue #228: bartworks' ruridit and rhodium-plated palladium, goodgenerator's Incoloy-903): the prefixes of
+Werkstoff.GenerationFeatures (initPrefixLogic): METALS nugget and block; SIMPLE_METALWORKING plate, foil, rod, long
+rod; CRAFTING_METALWORKING screw, bolt, ring, small gear, gear, rotor, fine wire, small spring, spring, frame;
+DOUBLE_DENSE_PLATES double, dense and superdense plate; MULTI_PLATES triple to quintuple plate (no round, no item
+casing). Their mass is the amount-weighted average of their components' (Werkstoff constructor), their tier the
+processing tier they set, their temperature the melting point.
 """
 import argparse, ast, re
 from pathlib import Path
@@ -44,6 +54,23 @@ GT_FORMS = ["nugget", "plate", "double-plate", "triple-plate", "quadruple-plate"
             "spring", "item-casing", "frame", "block", "gear", "large-gear", "rotor"]
 GTPP_FORMS = ["nugget", "plate", "double-plate", "dense-plate", "rod", "long-rod", "bolt", "screw", "ring", "frame",
               "block", "large-gear", "rotor"]
+#: GT++ elements: MaterialGenerator.generate(x, false, ...) and the ComponentTypes of generateComponentAndAssignToAMaterial
+GTPP_SIMPLE_FORMS = ["block", "nugget", "plate", "double-plate"]
+GTPP_COMPONENT = {"FINEWIRE": "fine-wire", "FOIL": "foil", "PLATESUPERDENSE": "superdense-plate", "GEAR": "large-gear",
+                  "SMALLGEAR": "gear", "BOLT": "bolt", "ROD": "rod", "RODLONG": "long-rod", "RING": "ring",
+                  "SCREW": "screw", "ROTOR": "rotor", "PLATEDENSE": "dense-plate", "PLATEDOUBLE": "double-plate",
+                  "SPRING": "spring", "SMALLSPRING": "small-spring", "FRAMEBOX": "frame"}
+#: Werkstoff feature bits -> Gregtorio forms (Werkstoff.GenerationFeatures.initPrefixLogic)
+BW_BITS = {"METALS": ["nugget", "block"], "SIMPLE": ["plate", "foil", "rod", "long-rod"],
+           "CRAFTING": ["screw", "large-gear", "gear", "bolt", "ring", "spring", "small-spring", "rotor", "fine-wire",
+                        "frame"],
+           "DOUBLE_DENSE": ["double-plate", "dense-plate", "superdense-plate"],
+           "MULTI": ["triple-plate", "quadruple-plate", "quintuple-plate"]}
+#: GenerationFeatures methods -> the bits they set
+BW_METHODS = {"addMetalItems": {"METALS", "SIMPLE"}, "addSimpleMetalWorkingItems": {"SIMPLE"},
+              "addCraftingMetalWorkingItems": {"CRAFTING"}, "addDoubleAndDensePlates": {"DOUBLE_DENSE"},
+              "addCasings": {"SIMPLE", "CRAFTING", "DOUBLE_DENSE", "METALS"}, "addMultiPlates": {"MULTI"},
+              "addGems": {"SIMPLE"}}
 #: form -> item name pattern
 PATTERN = {"nugget": "%s-nugget", "plate": "%s-plate", "double-plate": "double-%s-plate",
            "triple-plate": "triple-%s-plate", "quadruple-plate": "quadruple-%s-plate",
@@ -153,16 +180,114 @@ def gtpp_alloys(gt, gtmats):
     return out
 
 
+def java_calls(src, head):
+    """the argument text of every `<head>(...)` in src (balanced parentheses), with the name before it"""
+    out = []
+    for m in re.finditer(head, src):
+        i, depth = m.end(), 1
+        while depth and i < len(src):
+            depth += {"(": 1, ")": -1}.get(src[i], 0)
+            i += 1
+        out.append((m.group(1), src[m.end():i - 1]))
+    return out
+
+
+def werkstoffe(gt, gtmats):
+    """bartworks and goodgenerator Werkstoffe: Gregtorio name (the display name, lower case, spaces as dashes) ->
+    {name, forms, mass, tier, temp}"""
+    elem = {}
+    for m in re.finditer(r"^    (\w+)\((-?\d+), (-?\d+), ", (gt / "src/main/java/gregtech/api/enums/Element.java")
+                         .read_text(encoding="utf-8"), re.M):
+        elem[m.group(1)] = int(m.group(2)) + int(m.group(3))
+    defs = {}
+    for f in ["bartworks/system/material/WerkstoffLoader.java", "goodgenerator/items/GGMaterial.java"]:
+        src = re.sub(r"//[^\n]*", "", (gt / "src/main/java" / f).read_text(encoding="utf-8"))
+        for var, body in java_calls(src, r"public static final Werkstoff (\w+) = new Werkstoff\("):
+            name = re.search(r'"([^"]+)"', body)
+            if not name:
+                continue
+            bits = set()
+            feats = re.search(r"new Werkstoff\.GenerationFeatures\(\)(.*?)(?:,\s*(?:OffsetID|\d))", body, re.S)
+            for meth in re.findall(r"\.(\w+)\(", feats.group(1) if feats else ""):
+                if meth == "disable":
+                    bits = set()
+                bits |= BW_METHODS.get(meth, set())
+            x = re.search(r"setMeltingPoint\((\d+)\)", body)
+            melt = int(x.group(1)) if x else 0
+            x = re.search(r"setProcessingMaterialTierEU\(TierEU\.RECIPE_(\w+)\)", body)
+            tier = GT_TIER.get(x.group(1)) if x else None
+            x = re.search(r"setMass\(Element\.(\w+)\.getMass\(\)\)", body)
+            mass = elem.get(x.group(1)) if x else None
+            comps = [(re.sub(r"^(Materials|WerkstoffLoader|GGMaterial)\.", "", a), int(n))
+                     for a, n in re.findall(r"Pair\.of\(\s*([\w.]+),\s*(\d+)\)", body)]
+            defs[var] = {"name": name.group(1), "bits": bits, "melt": melt, "tier": tier, "mass": mass, "comps": comps}
+
+    def mass_of(var, depth=0):
+        d = defs[var]
+        if d["mass"] is None:
+            total, count = 0, 0
+            for c, n in d["comps"]:
+                cm = gtmats[c]["mass"] if c in gtmats else (mass_of(c, depth + 1) if c in defs and depth < 10 else None)
+                if cm is None:
+                    continue
+                total, count = total + cm * n, count + n
+            d["mass"] = total // count if count else 0
+        return d["mass"]
+    out = {}
+    for var, d in defs.items():
+        forms = [f for b in ("METALS", "SIMPLE", "CRAFTING", "DOUBLE_DENSE", "MULTI") if b in d["bits"]
+                 for f in BW_BITS[b]]
+        key = re.sub(r"\s+", "-", d["name"].lower())
+        out[key] = {"name": d["name"], "forms": forms, "mass": mass_of(var), "tier": d["tier"], "temp": d["melt"]}
+    return out
+
+
+def gtpp_elements(gt):
+    """GT++ elements of MaterialsElements.STANDALONE that ModItems.java generates as metals: constant ->
+    (melting point C, mass, forms)"""
+    el = (gt / "src/main/java/gtPlusPlus/core/material/MaterialsElements.java").read_text(encoding="utf-8")
+    items = re.sub(r"//[^\n]*", "", (gt / "src/main/java/gtPlusPlus/core/item/ModItems.java").read_text(encoding="utf-8"))
+    out = {}
+    for const, body in java_calls(el, r"public static final Material (\w+) = new Material\("):
+        if "MaterialState.SOLID" not in body:
+            continue
+        nums = [int(x) for x in re.findall(r"(?<![\w.])(-?\d+)\s*,", re.sub(r"new short\[\] \{[^}]*\}", "", body))]
+        g = re.search(r"MaterialGenerator\.generate\(\s*MaterialsElements\.STANDALONE\." + const + r"\s*(?:,\s*(\w+))?",
+                      items)
+        if not g or len(nums) < 4:
+            continue
+        forms = list(GTPP_SIMPLE_FORMS) if g.group(1) == "false" else list(GTPP_FORMS)
+        for comp in re.findall(r"generateComponentAndAssignToAMaterial\(\s*(\w+),\s*MaterialsElements\.STANDALONE\."
+                               + const + r"\s*\)", items):
+            f = GTPP_COMPONENT.get(comp)
+            if f and f not in forms:
+                forms.append(f)
+        # numbers after the colour: melting point, boiling point, protons, neutrons
+        out[const] = (nums[0], nums[2] + nums[3], forms)
+    return out
+
+
+def dump_items(log):
+    """the items of a devcheck run: the I rows of the DUMP section"""
+    text = log.read_text(encoding="utf-8", errors="replace")
+    m = re.search(r"DEVCHECK-DUMP-BEGIN\n(.*?)\nDEVCHECK-DUMP-END", text, re.S)
+    if not m:
+        raise SystemExit(f"no DEVCHECK-DUMP section in {log}: run `python tools/devcheck/devcheck.py check` first")
+    return {l.split("\t")[1] for l in m.group(1).splitlines() if l.startswith("I\t")}
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--gt", required=True, type=Path)
-    ap.add_argument("--locale", required=True, type=Path, help="devcheck check --locale-out file (the items)")
+    ap.add_argument("--log", type=Path, default=ROOT / ".devcheck/last-run.log",
+                    help="log of a `devcheck.py check` run (its DUMP section has the items; default: the last run)")
     a = ap.parse_args()
-    items = {l.split("\t")[1] for l in a.locale.read_text(encoding="utf-8").splitlines() if l.startswith("item-name\t")}
+    items = dump_items(a.log)
     icons = (ROOT / "tools/gen_gt_icons.py").read_text(encoding="utf-8")
     icon_mats = ast.literal_eval(re.search(r"^MATERIALS = (\{.*?^\})", icons, re.S | re.M).group(1))
     mats = gt_materials(a.gt)
     blocks, alloys = gt_blocks(a.gt), gtpp_alloys(a.gt, mats)
+    elements, works = gtpp_elements(a.gt), werkstoffe(a.gt, mats)
     metals = sorted({n[:-6] for n in items if n.endswith("-ingot") and not n.startswith("hot-")})
     rows, skipped = [], []
     for m in metals:
@@ -190,16 +315,25 @@ def main():
             melt, mass = alloys[pp]
             t = 0 if melt < 1000 else int(melt / 1000 + 0.5)   # MaterialUtils.getTierOfMaterial
             forms, source, tier, temp, label = list(GTPP_FORMS), "gtpp", TIERS[max(0, t - 1)], 0, "GT++ " + pp
+        elif pp in elements:
+            melt, mass, forms = elements[pp]
+            t = 0 if melt < 1000 else int(melt / 1000 + 0.5)   # MaterialUtils.getTierOfMaterial
+            source, tier, temp, label = "gtpp", TIERS[max(0, t - 1)], 0, "GT++ element " + pp
+        elif m in works and works[m]["forms"]:
+            w = works[m]
+            forms = [f for f in GT_FORMS if f in w["forms"]]
+            source, mass, tier, temp, label = "bw", w["mass"], w["tier"], w["temp"], "Werkstoff " + w["name"]
         else:
             skipped.append((m, src_name))
             continue
         missing = [f for f in forms if (PATTERN[f] % m) not in items]   # for the count only: 158 skips what exists
         dust = DUST.get(m, m + "-dust")
         rows.append((m, source, label, mass, dust if dust in items else None, tier, forms, temp, missing))
-    lines = ["--- Generated by tools/gen_gt_parts.py (issue #227) from GT5-Unofficial: do not edit by hand.",
-             "--- material -> { source (gt: a GT material, gtpp: a GT++ alloy), GT mass, dust item, tier (gt: GT's processing",
-             "--- voltage, nil: each recipe's own; gtpp: the voltage of the melting point), GT's blast furnace temperature,",
-             "--- the forms GT generates (158 makes those Gregtorio lacks) }",
+    lines = ["--- Generated by tools/gen_gt_parts.py (issues #227, #228) from GT5-Unofficial: do not edit by hand.",
+             "--- material -> { source (gt: a GT material, gtpp: a GT++ alloy or element, bw: a bartworks or goodgenerator",
+             "--- Werkstoff), GT mass, dust item, tier (gt and bw: the processing voltage, nil: each recipe's own; gtpp: the",
+             "--- voltage of the melting point), blast furnace temperature (bw: the melting point), the forms GT generates",
+             "--- (158 makes those Gregtorio lacks) }",
              "return {"]
     for m, source, label, mass, dust, tier, forms, temp, _ in rows:
         fl = ", ".join('"%s"' % f for f in forms)
