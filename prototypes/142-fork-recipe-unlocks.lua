@@ -699,7 +699,15 @@ local KEEP = {
 	-- issue #188: the forge hammer crushes raw sheldonite too, so the auto-unlock no longer places the macerator recipe
 	["platinum-ore-processing"] = { "crushed-sheldonite" },
 }
-for _, list in pairs({ UNLOCKS, KEEP, UNLOCKS_98, UNLOCKS_96, UNLOCKS_205 }) do
+--- issue #237: the EV Alloy Blast Smelter needs a heat vent block, which takes a staballoy frame; the frame came only with
+--- industrial-extrusion-machine (IV), the staballoy rods it is made from are there at EV, so the Alloy Blast Smelter
+--- technology could not build its own machine; the Zyngen controller needs a large tantalum carbide gear, but molten
+--- tantalum carbide (Alloy Blast Smelter) and its ingot cast came only with max-machines
+local UNLOCKS_237 = {
+	["alloy-blast-smelter"] = { "staballoy-frame" },
+	["zyngen"] = { "molten-tantalum-carbide", "solidify-tantalum-carbide-ingot" },
+}
+for _, list in pairs({ UNLOCKS, KEEP, UNLOCKS_98, UNLOCKS_96, UNLOCKS_205, UNLOCKS_237 }) do
 	for tech, recipes in pairs(list) do
 		for _, r in pairs(recipes) do
 			if data.raw.recipe[r] then fork_add_unlock(tech, r) else log("FORK-UNLOCK: missing recipe: " .. r) end
