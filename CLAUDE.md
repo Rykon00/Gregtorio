@@ -24,7 +24,8 @@
   - 126 ZPM
   - 127 UV (UV circuit, ZPM assembly line, UV components, fusion MK2)
   - 128 UHV (wetware line, tritanium, UHV components, fusion MK3)
-  - 129 water purification (grades 1-8, NPIC/PPIC/QPIC/FPIC/APIC chips, complex SMDs; the FPIC/APIC users in 131-134
+  - 129 water purification (grades 1-8, NPIC/PPIC/QPIC/FPIC/APIC chips, complex SMDs (Gregtorio's stand-in for GT's
+    optical SMDs, #259); the FPIC/APIC users in 131-134
     list its techs as prerequisites)
   - 131 UEV (bio line, UEV components, fusion MK4)
   - 132 UIV (optical line, UIV components)

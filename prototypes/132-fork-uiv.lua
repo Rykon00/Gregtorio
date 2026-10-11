@@ -178,7 +178,7 @@ create_item{
 --- processor (takes bio processors) -> assembly -> supercomputer -> mainframe.
 --- Changes against GT: the optical fiber is a borosilicate glass part (GT: lumiium and chromatic glass),
 --- no optical SMDs (the processor keeps advanced ones; assembly, supercomputer and mainframe take
---- complex SMDs like GT), the mainframe uses the UEV superconductor.
+--- complex SMDs, Gregtorio's stand-in for GT's optical SMDs, issue #259), the mainframe uses the UEV superconductor.
 --------------------------------------------------------------------------------
 
 create_item{

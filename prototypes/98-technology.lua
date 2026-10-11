@@ -2838,30 +2838,6 @@ data:extend({
 	}
   },  
   
---[[
-
----CLEANROOM
-  {
-    type = "technology",
-    name = "cleanroom",
-    icon = "__gregtorio-continued__/graphics/technology/cleanroom.png",
-    icon_size = 256,
-    effects = { 
-      { type = "unlock-recipe", recipe = "steel-frame" },  
-      { type = "unlock-recipe", recipe = "plascrete" },   
-      { type = "unlock-recipe", recipe = "filter-casing" },  
-      { type = "unlock-recipe", recipe = "cleanroom-tile" }  
-    },
-	prerequisites = { "concrete", "stainless-steel" },
-	unit =
-	{
-      count = 360,
-      ingredients = { {"automation-science-pack", SP03}, {"logistic-science-pack", SP02}, {"military-science-pack", SP01} },
-      time = 30
-	}
-  },  
-
---]]
 
 ---ENERGETIC ALLOY
   {

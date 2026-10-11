@@ -12,9 +12,9 @@
 ---   * NPIC, PPIC, QPIC, FPIC and APIC wafers and chips. They replace the UHPIC workarounds of
 ---     phases 2 to 4 and the QPIC stand-ins of phases 5a and 5b: the ZPM to UXV energy (and dynamo)
 ---     hatches, the MK2 to MK5 fusion controllers
----   * complex SMDs (GT: nanochip assembly complex, not in the mod): UV assembling machine recipes
----     from tritanium and neutronium parts; the wetware, bio, optical, exotic and temporal lines
----     use them where GT uses complex SMDs
+---   * complex SMDs (Gregtorio's own, issue #259: GT has no "complex SMD"; they stand in for GT's optical
+---     SMDs, XSMD): UV assembling machine recipes from tritanium and neutronium parts; the wetware, bio,
+---     optical, exotic and temporal lines use them where GT offers the XSMD variant of a recipe
 --- Deviations from GT: no linkage blocks and no separate units, no plant casings (chemically inert,
 --- filter and PTFE pipe casings instead), the flocculation waste, the lenses, the degasifier's
 --- control signals and the catalyst alignment are left out, super coolant is replaced by
@@ -393,12 +393,14 @@ pic_chip("atto-power-ic", "uev-assembling-machine-recipes", 45 * UEV_SPEED, "api
 
 --------------------------------------------------------------------------------
 --- 5) COMPLEX SMDs
---- GT makes them in the nanochip assembly complex (a multiblock with modules and its own circuit
---- components), which the mod does not have. Here they are UV assembling machine recipes shaped
---- like the advanced SMDs of 19-iv-age-item.lua, one tier of materials up: tritanium foil and
---- fine wire, neutronium screws and rings, polybenzimidazole. GT lets 4 complex SMDs replace 16
---- advanced ones, so a craft gives 16 (the advanced recipes give 64) and the circuit recipes that
---- switch take a quarter of the count.
+--- Gregtorio's own SMD tier (issue #259). GT has advanced SMDs (ASMD) and optical SMDs (XSMD,
+--- GT5-Unofficial ItemList.java; made in the assembler of the GTNH core mod, gthandler/recipes/
+--- AssemblerRecipes.java), and its wetware to optical circuit recipes come twice, with ASMDs or a
+--- quarter as many XSMDs (e.g. the wetware supercomputer: 48 ASMD diodes or 12 XSMD diodes, core mod
+--- CircuitAssemblerRecipes.java). The complex SMDs stand in for the XSMDs: UV assembling machine
+--- recipes shaped like the advanced SMDs of 19-iv-age-item.lua, one tier of materials up: tritanium
+--- foil and fine wire, neutronium screws and rings, polybenzimidazole. A craft gives 16 (the advanced
+--- recipes give 64) and the circuit recipes that take them take a quarter of the count.
 --------------------------------------------------------------------------------
 
 local function complex_smd(kind, ingredients)

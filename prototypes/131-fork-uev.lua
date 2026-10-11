@@ -312,7 +312,8 @@ create_item{
 --- unit -> bio processor (takes wetware processors) -> assembly -> supercomputer -> mainframe.
 --- Changes against GT: bio cells are made from stem cells, mutagen and growth medium (GT: cosmic
 --- neutronium dust), no PCB factory (the boards come from the wetware board), the mainframe uses the
---- UHV superconductor. Supercomputer and mainframe take complex SMDs like GT (129-fork-water-purification.lua).
+--- UHV superconductor. Supercomputer and mainframe take complex SMDs where GT takes optical SMDs (XSMD; issue #259,
+--- 129-fork-water-purification.lua).
 --------------------------------------------------------------------------------
 
 create_item{

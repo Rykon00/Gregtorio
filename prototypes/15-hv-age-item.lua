@@ -746,20 +746,6 @@ create_item{
 
 
    
----PLASCRETE
-create_item{
-	name = "plascrete",
-	category = "mv-assembling-machine-recipes",
-	energy_required = 20,
-	ingredients = {
-		{ type = "item", name = "steel-frame", amount = 1 },
-		{ type = "item", name = "polyethylene-sheet", amount = 6 },
-		{ type = "fluid", name = "liquid-concrete", amount = 14.4 },
-	},
-	results = {
-		{ type = "item", name = "plascrete", amount = 2 },
-	}
-}
    
    
    
@@ -831,28 +817,6 @@ create_recipe{
 	main_product = "argon"
 }    
    
---[[   
-   
- ---CLEANROOM TILES
-create_item{
-	name = "cleanroom-tile",
-	category = "lv-assembling-machine-recipes",
-	energy_required = 16,
-	ingredients = {
-			{ type = "item", name = "filter", amount = 1 },
-			{ type = "item", name = "stainless-steel-rotor", amount = 1 },
-			{ type = "item", name = "hv-motor", amount = 2 },
-			{ type = "item", name = "processing-unit", amount = 1 },
-			{ type = "item", name = "hv-machine-hull", amount = 6 },
-			{ type = "item", name = "filter-casing", amount = 8 },
-			{ type = "item", name = "plascrete", amount = 75 },
-		},
-	results = {
-			{ type = "item", name = "cleanroom-tile", amount = 64 },
-		}
-}
-
-]]--
 
 ---CARBON MONOXIDE
 create_recipe{

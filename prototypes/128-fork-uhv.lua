@@ -225,7 +225,8 @@ create_item{
 ---   stem cells -> wetware circuit board + neuro processing unit
 ---   -> wetware processor (uses the crystal CPU) -> assembly -> supercomputer -> mainframe
 --- Changes against GT: no ytterbium wire (niobium-titanium instead), the mainframe uses the UV
---- superconductor. The mainframe takes complex SMDs like GT (issue #35, 129-fork-water-purification.lua).
+--- superconductor. The mainframe takes complex SMDs where GT takes optical SMDs (XSMD; issues #35 and #259,
+--- 129-fork-water-purification.lua).
 --------------------------------------------------------------------------------
 
 create_item{

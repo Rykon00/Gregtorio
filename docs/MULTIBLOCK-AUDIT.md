@@ -218,5 +218,5 @@ Each verdict is a proposal until the maintainer accepts it.
 Follow-ups of this audit:
 - #257: the multiblocks the list missed (audited above);
 - #258: the HV steam turbine;
-- #259: the complex SMDs;
-- #260: the cleanroom leftovers and plascrete.
+- #259: the complex SMDs (done: the comments and docs call them Gregtorio's stand-in for GT's optical SMDs);
+- #260: the cleanroom leftovers and plascrete (done: both removed).
