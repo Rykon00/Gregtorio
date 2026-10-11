@@ -93,6 +93,7 @@ FORK_TECH_ICONS = {
 	["max-materials"] = true,
 	["max-multiblocks"] = true,
 	["max-plasma-turbine"] = true,
+	["monazite-rare-earth-processing"] = true,
 	["multismelter"] = true,
 	["nano-power-ics"] = true,
 	["nanoprocessors"] = true,

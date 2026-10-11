@@ -705,6 +705,9 @@ local KEEP = {
 	["ore-washing"] = { "crushed-bornite", "microminer-platinum" },
 	-- issue #188: the forge hammer crushes raw sheldonite too, so the auto-unlock no longer places the macerator recipe
 	["platinum-ore-processing"] = { "crushed-sheldonite" },
+	-- issue #262: the dissolution tank of the monazite line makes thorianite too, so the auto-unlock no longer places the
+	-- blast furnace recipe of the thorium-yttrium glass
+	["fluid-shaper"] = { "thorianite" },
 }
 --- issue #237: the EV Alloy Blast Smelter needs a heat vent block, which takes a staballoy frame; the frame came only with
 --- industrial-extrusion-machine (IV), the staballoy rods it is made from are there at EV, so the Alloy Blast Smelter
