@@ -148,6 +148,25 @@ MATERIALS = {
     "low-quality-naquadria-phosphate": ("DULL", (77, 77, 85)),
     "ash": "Ash",  # issue #223: GT's Ashes (bricked blast furnace with coke, malachite's blast furnace recipe)
     "potash": "Potash", "banded-iron": "BandedIron",  # issue #225: GT's dusts of the ash centrifuge
+    # issue #262: gtnhlanth's Werkstoffe of the monazite line (WerkstoffMaterialPool.java, SET_DULL and their colours);
+    # gadolinium is GT's element
+    "monazite-sulfate": ("DULL", (152, 118, 84)),
+    "acidic-monazite-powder": ("DULL", (50, 23, 77)),
+    "monazite-rare-earth-filtrate": ("DULL", (72, 60, 50)),
+    "thorium-phosphate-cake": ("DULL", (188, 143, 143)),
+    "thorium-phosphate-concentrate": ("DULL", (217, 144, 88)),
+    "neutralized-monazite-rare-earth-filtrate": ("DULL", (50, 23, 77)),
+    "monazite-rare-earth-hydroxide-concentrate": ("DULL", (193, 154, 107)),
+    "uranium-filtrate": ("DULL", (190, 240, 94)),
+    "neutralized-uranium-filtrate": ("DULL", (217, 120, 88)),
+    "dried-monazite-rare-earth-concentrate": ("DULL", (250, 214, 165)),
+    "cerium-dioxide": ("DULL", (255, 255, 255)),
+    "cooled-monazite-rare-earth-concentrate": ("DULL", (250, 214, 165)),
+    "monazite-rarer-earth-sediment": ("DULL", (250, 214, 165)),
+    "heterogenous-halogenic-monazite-rare-earth-mixture": ("DULL", (250, 214, 165)),
+    "saturated-monazite-rare-earth": ("DULL", (250, 214, 165)),
+    "samaric-residue": ("DULL", (248, 243, 231)),
+    "gadolinium": "Gadolinium",
     # issue #227: the metals whose GT parts are new (GT materials; GT++ alloys: set and colour of MaterialsAlloy.java)
     "annealed-copper": "AnnealedCopper",
     "battery-alloy": "BatteryAlloy",
@@ -710,6 +729,10 @@ def icon_table(c):
     for m in ("platinum-salt", "refined-platinum-salt", "reprecipitated-platinum", "platinum-residue", "palladium-salt",
               "reprecipitated-palladium", "potassium-disulfate", "rhodium-filter-cake", "reprecipitated-rhodium",
               "iridium-dioxide", "sludge-dust-residue", "iridium-chloride", "metallic-sludge-dust-residue"):
+        T[m] = lambda m=m: c.part(m, "dust")
+
+    # issue #262: the dusts of the monazite line, which the fork names without "-dust"
+    for m in ("monazite-sulfate", "acidic-monazite-powder", "monazite-rare-earth-filtrate", "thorium-phosphate-cake", "thorium-phosphate-concentrate", "neutralized-monazite-rare-earth-filtrate", "monazite-rare-earth-hydroxide-concentrate", "uranium-filtrate", "neutralized-uranium-filtrate", "dried-monazite-rare-earth-concentrate", "cerium-dioxide", "cooled-monazite-rare-earth-concentrate", "monazite-rarer-earth-sediment", "heterogenous-halogenic-monazite-rare-earth-mixture", "saturated-monazite-rare-earth", "samaric-residue"):
         T[m] = lambda m=m: c.part(m, "dust")
 
     # multi-amp wires (upstream: 16x = a block of the metal)

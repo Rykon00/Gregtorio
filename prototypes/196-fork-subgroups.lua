@@ -120,6 +120,10 @@ put("acids", { "ammonium-chloride" })
 put("ore-solutions", { "rhodium-sulfate", "rhodium-salt-solution", "rhodium-filter-cake-solution",
 	"ruthenium-tetroxide-solution", "ruthenium-tetroxide", "osmium-solution", "acidic-iridium-solution" })
 put("molten-elements", { "molten-potassium" })
+--- issue #262: the monazite rare earth line (159)
+put("ore-solutions", { "muddy-monazite-rare-earth-solution", "diluted-monazite-rare-earth-mud", "diluted-monazite-sulfate",
+	"nitrogenated-monazite-rare-earth-concentrate", "nitric-leached-monazite-mixture", "nitric-monazite-leached-concentrate" })
+put("acids", { "ammonium-nitrate-solution" })
 --- issue #119: Space Age's melts, restyled below, are rows of the Fluids tab like the other melts
 put("molten-elements", { "molten-iron", "molten-copper" })
 put("molten-alloys", { "molten-potassium-disulfate" })

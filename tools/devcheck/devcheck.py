@@ -687,6 +687,8 @@ def check_ore_baths(m):
 # Issue #187: GTNH's electromagnetic separator per ore (docs/ORE-CHAIN.md appendix B, column EM separator)
 ORE_SEPARATOR = {"vanadium-magnetite": "gold", "tin": "iron", "ilmenite": "iron", "nickel": "iron", "pentlandite": "iron",
                  "chromite": "iron", "bornite": "iron", "bastnasite": "neodymium", "monazite": "neodymium"}
+# Issue #262: the other separator recipes of GTNH (gtnhlanth's monazite line, prototypes/159-fork-lanthanides.lua)
+SEPARATOR_OTHER = {"monazite-rarer-earth-sediment"}
 # Issue #188: the gem ores of GTNH's sifter (table, crystallisable for the autoclave) and their gem items
 ORE_GEMS = {"ruby": ("ruby", False), "emerald": ("emerald", False), "diamond": ("diamond", False),
             "nether-quartz": ("nether-quartz", True), "certus-quartz": ("certus-quartz", True),
@@ -712,6 +714,8 @@ def check_ore_o3_o4(m):
         if r["cat"] == "lv-electromagnetic-separator-recipes":
             pure = [i for i in r["ing"] if i.startswith("pure-") and i.endswith("-dust")]
             x = pure[0][len("pure-"):-len("-dust")] if pure else None
+            if x is None and name in SEPARATOR_OTHER:
+                continue
             if x not in ORE_SEPARATOR:
                 out.append(f"{name}: GTNH's separator has no recipe for {', '.join(r['ing'])}")
                 continue

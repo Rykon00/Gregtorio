@@ -213,7 +213,7 @@ Each verdict is a proposal until the maintainer accepts it.
 - #254 Large Titanium Boiler (EV): a fuel-fired source of superheated steam for the High Pressure Steam Turbine. Done.
 - #255 Large Combustion Engine (EV): the liquid fuel line above HV. Done.
 - #256 Large Gas Turbine (EV): the gas fuel line above HV. Done.
-- #262 Digester and Dissolution Tank (EV, IV): the lanthanide chain, samarium from ore instead of the stone placeholder (#257).
+- #262 Digester and Dissolution Tank (EV, IV): the lanthanide chain, samarium from ore instead of the stone placeholder (#257). Done: the monazite line (159); bastnasite, the cerium line and GTNH's samarium chain were left out by decision.
 
 Follow-ups of this audit:
 - #257: the multiblocks the list missed (audited above);

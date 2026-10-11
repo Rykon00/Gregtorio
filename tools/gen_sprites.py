@@ -189,6 +189,16 @@ MULTIBLOCKS = {
                               ("gregtech:iconsets/OVERLAY_FRONT_LARGE_BOILER",
                                "gregtech:iconsets/OVERLAY_FRONT_LARGE_BOILER_ACTIVE"),
                               "gregtech:iconsets/MACHINE_CASING_FIREBOX_TITANIUM"),
+    # issue #262 (159-fork-lanthanides.lua): gtnhlanth's digester (robust tungstensteel casing, heat proof casings in
+    # the middle row) and dissolution tank (clean stainless steel casing, glass in the middle row), both with the oil
+    # cracker front gtnhlanth gives them
+    "digester": ((3, 3), "gregtech:iconsets/MACHINE_CASING_ROBUST_TUNGSTENSTEEL", None,
+                 ("gregtech:iconsets/OVERLAY_FRONT_OIL_CRACKER", "gregtech:iconsets/OVERLAY_FRONT_OIL_CRACKER_ACTIVE"),
+                 "gregtech:iconsets/MACHINE_HEATPROOFCASING"),
+    "dissolution-tank": ((3, 3), "gregtech:iconsets/MACHINE_CASING_CLEAN_STAINLESSSTEEL", None,
+                         ("gregtech:iconsets/OVERLAY_FRONT_OIL_CRACKER",
+                          "gregtech:iconsets/OVERLAY_FRONT_OIL_CRACKER_ACTIVE"),
+                         "reinforced-glass"),
     "large-combustion-engine": ((3, 3), "gregtech:iconsets/MACHINE_CASING_STABLE_TITANIUM", None,
                                 ("gregtech:iconsets/OVERLAY_FRONT_DIESEL_ENGINE",
                                  "gregtech:iconsets/OVERLAY_FRONT_DIESEL_ENGINE_ACTIVE"),
@@ -198,7 +208,7 @@ MULTIBLOCKS = {
 CONTROLLER_ICONS = {"neutron-activator", "water-purification-plant", "uv-large-naquadah-reactor"}
 # multiblocks whose icon is the whole idle sprite, scaled down (issues #254, #255: their GT controller fronts look alike,
 # the middle row tells them apart)
-WHOLE_ICONS = {"large-titanium-boiler", "large-combustion-engine"}
+WHOLE_ICONS = {"large-titanium-boiler", "large-combustion-engine", "digester", "dissolution-tank"}
 # tier versions of a generator (136-fork-power.lua): the base sprite with dynamo hatches of the tier
 # (GT hull of the tier + GT's dynamo hatch overlay) on the corner tiles; the base itself gets its own
 # tier's hatches too. The icon gets the hatch as a badge.
