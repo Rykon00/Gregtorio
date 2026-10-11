@@ -75,6 +75,13 @@
   `research_all_technologies()` get the bonuses of those techs from `prototypes/fork-menu-simulations.lua` (PR #65: the
   laser defense simulation's character died without them and its script stopped the menu); after changing the disabled
   techs or the character, run `python tools/devcheck/devcheck.py menusim --sim all --compare`.
+- Names (issue #230): the engine names a recipe after its product only when the recipe has the product's name; every
+  other recipe shows `recipe-name.<recipe>`, a main product does not change that. `prototypes/fork-locale.lua` (required
+  first from `data.lua`, `FORK_LOCALE.name_recipes()` at the end of `data-final-fixes.lua`) gives every Gregtorio recipe
+  without a name of its own its product's name as the fallback; a recipe with several results and no main product needs a
+  `main_product` or a `[recipe-name]` entry, a new subgroup an `[item-subgroup-name]` entry. `devcheck.py check` fails for
+  every shown prototype of this mod without a name (runtime names of `checkmod/control.lua`, keys of every loaded
+  `locale/en`), except the allow-list `FORK_LOCALE_MISSING`; `--locale-out` writes the missing keys for `tools/gen_locale.py`.
 - Cheap research: the startup setting `gregtorio-continued-one-pack-research` (default off) makes every technology with
   science packs cost one research unit with one pack of each kind (`prototypes/fork-one-pack-research.lua`, required last
   in `data-final-fixes.lua`, after everything that sets unit counts). `devcheck.py all` loads the mod a second time with

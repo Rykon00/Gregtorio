@@ -3,6 +3,9 @@ ICON_PATH = "__gregtorio-continued__/graphics/icons/"
 
 YAFC_MODE = false
 
+--- Fork: names (issue #230): the recipes that exist before this mod, and FORK_LOCALE.name_of
+require("prototypes.fork-locale")
+
 require("prototypes.03-helper-functions-module")
 require("prototypes.04-item-groups-module")
 require("prototypes.05-definitions-module")
@@ -79,6 +82,8 @@ for _, fluid in pairs(data.raw["fluid"]) do
 			hide_from_player_crafting = true,
 			enabled = true
 		}
+		--- Fork (issue #230): a recipe without results has no product to take its name from
+		data.raw.recipe["void-" .. fluid.name].localised_name = { "recipe-name.fork-void", FORK_LOCALE.name_of("fluid", fluid.name) }
 	end
 end
 
