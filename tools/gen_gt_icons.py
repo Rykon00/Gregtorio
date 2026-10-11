@@ -167,6 +167,22 @@ MATERIALS = {
     "saturated-monazite-rare-earth": ("DULL", (250, 214, 165)),
     "samaric-residue": ("DULL", (248, 243, 231)),
     "gadolinium": "Gadolinium",
+    # issue #269: the Werkstoffe of the bastnasite and cerium lines (gtnhlanth WerkstoffMaterialPool.java, SET_DULL;
+    # vanadium pentoxide is GoodGenerator's GGMaterial.java, SET_SHINY); cerium and lanthanum are GT's elements
+    "bastnasite-rare-earth-oxides": ("DULL", (205, 133, 63)),
+    "acid-leached-bastnasite-rare-earth-oxides": ("DULL", (205, 133, 63)),
+    "roasted-rare-earth-oxides": ("DULL", (160, 82, 45)),
+    "wet-rare-earth-oxides": ("DULL", (160, 82, 49)),
+    "cerium-oxidised-rare-earth-oxides": ("DULL", (160, 82, 49)),
+    "bastnasite-rarer-earth-oxides": ("DULL", (160, 82, 49)),
+    "neodymium-rare-earth-concentrate": ("DULL", (170, 90, 60)),
+    "lanthanum-chloride": ("DULL", (82, 112, 102)),
+    "neodymium-oxide": ("DULL", (82, 112, 102)),
+    "cerium-chloride": ("DULL", (255, 255, 255)),
+    "cerium-oxalate": ("DULL", (255, 255, 224)),
+    "cerium-iii-oxide": ("DULL", (255, 255, 102)),
+    "vanadium-pentoxide": ("SHINY", (0xDE, 0x8D, 0x12)),
+    "cerium": "Cerium", "lanthanum": "Lanthanum",
     # issue #227: the metals whose GT parts are new (GT materials; GT++ alloys: set and colour of MaterialsAlloy.java)
     "annealed-copper": "AnnealedCopper",
     "battery-alloy": "BatteryAlloy",
@@ -733,6 +749,10 @@ def icon_table(c):
 
     # issue #262: the dusts of the monazite line, which the fork names without "-dust"
     for m in ("monazite-sulfate", "acidic-monazite-powder", "monazite-rare-earth-filtrate", "thorium-phosphate-cake", "thorium-phosphate-concentrate", "neutralized-monazite-rare-earth-filtrate", "monazite-rare-earth-hydroxide-concentrate", "uranium-filtrate", "neutralized-uranium-filtrate", "dried-monazite-rare-earth-concentrate", "cerium-dioxide", "cooled-monazite-rare-earth-concentrate", "monazite-rarer-earth-sediment", "heterogenous-halogenic-monazite-rare-earth-mixture", "saturated-monazite-rare-earth", "samaric-residue"):
+        T[m] = lambda m=m: c.part(m, "dust")
+
+    # issue #269: the dusts of the bastnasite and cerium lines, which the fork names without "-dust"
+    for m in ("bastnasite-rare-earth-oxides", "acid-leached-bastnasite-rare-earth-oxides", "roasted-rare-earth-oxides", "wet-rare-earth-oxides", "cerium-oxidised-rare-earth-oxides", "bastnasite-rarer-earth-oxides", "neodymium-rare-earth-concentrate", "lanthanum-chloride", "neodymium-oxide", "cerium-chloride", "cerium-oxalate", "cerium-iii-oxide", "vanadium-pentoxide"):
         T[m] = lambda m=m: c.part(m, "dust")
 
     # multi-amp wires (upstream: 16x = a block of the metal)

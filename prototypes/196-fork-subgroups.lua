@@ -124,6 +124,11 @@ put("molten-elements", { "molten-potassium" })
 put("ore-solutions", { "muddy-monazite-rare-earth-solution", "diluted-monazite-rare-earth-mud", "diluted-monazite-sulfate",
 	"nitrogenated-monazite-rare-earth-concentrate", "nitric-leached-monazite-mixture", "nitric-monazite-leached-concentrate" })
 put("acids", { "ammonium-nitrate-solution" })
+--- issue #269: the bastnasite and cerium lines (159)
+put("ore-solutions", { "muddy-bastnasite-rare-earth-solution", "steam-cracked-bastnasite-mud",
+	"conditioned-bastnasite-mud", "diluted-bastnasite-mud", "filtered-bastnasite-mud",
+	"nitrogenated-bastnasite-rarer-earth-oxides", "bastnasite-rarer-earth-oxide-suspension" })
+put("acids", { "hexafluorosilicic-acid", "sodium-fluorosilicate", "oxalic-acid" })
 --- issue #119: Space Age's melts, restyled below, are rows of the Fluids tab like the other melts
 put("molten-elements", { "molten-iron", "molten-copper" })
 put("molten-alloys", { "molten-potassium-disulfate" })

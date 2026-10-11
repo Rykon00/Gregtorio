@@ -133,8 +133,9 @@
     game)
   - 159 lanthanides (issue #262: gtnhlanth's monazite rare earth line with the Digester and the Dissolution Tank, from
     crushed monazite to samarium and gadolinium dust; the samarium dust placeholder of 19 is removed, the sifting
-    machines get a fluid input and output, technology `monazite-rare-earth-processing` before LuV Components; loads
-    after 158 and before 156)
+    machines get a fluid input and output, technology `monazite-rare-earth-processing` before LuV Components; issue
+    #269: the bastnasite line to neodymium and lanthanum and the cerium line, technologies
+    `bastnasite-rare-earth-processing` and `cerium-processing`; loads after 158 and before 156)
   - 156 circuit icons (issue #164: the circuit variant recipes up to UV keep the shared tier item and show GT's texture
     of their GTNH item as recipe icon; devcheck fails for a tier circuit recipe without its own icon)
   - 157 recycling (issue #190: GTNH's material recycling into dusts, ingots and melts for the items of crafting table
