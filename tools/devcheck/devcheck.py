@@ -845,6 +845,123 @@ def check_fluid_steps(sec):
     return [f"{r} ({kind}) {fluid}: {amount}" for r, kind, fluid, amount in sec.get("FLUIDSTEPS", [])]
 
 
+NAME_CLASSES = ("item", "fluid", "recipe", "technology", "entity", "equipment", "tile", "item-group", "item-subgroup")
+
+
+def locale_keys():
+    """{"<section>.<key>": file} of every English locale file the game loads in a devcheck run: this mod's
+    (locale/en/*.cfg), the base game's and Space Age's (factorio/data/*/locale/en) and the dependencies' (zips and the
+    me-network checkout). A key of this mod wins, so a missing name points at this mod's files."""
+    import zipfile
+    keys = {}
+
+    def read(text, where):
+        section = None
+        for line in text.splitlines():
+            line = line.strip()
+            if line.startswith("[") and line.endswith("]"):
+                section = line[1:-1]
+            elif "=" in line and section and not line.startswith((";", "#")):
+                keys.setdefault(f"{section}.{line.split('=', 1)[0].strip()}", where)
+
+    for f in sorted((ROOT / "locale/en").glob("*.cfg")):
+        read(f.read_text(encoding="utf-8"), f"locale/en/{f.name}")
+    for f in sorted((FACTORIO / "data").glob("*/locale/en/*.cfg")):
+        read(f.read_text(encoding="utf-8"), f.parent.parent.parent.name)
+    for z in sorted(MODS.glob("*.zip")):
+        if z.name.startswith(MOD_NAMES):
+            continue
+        with zipfile.ZipFile(z) as zf:
+            for n in zf.namelist():
+                if re.search(r"^[^/]+/locale/en/[^/]+\.cfg$", n):
+                    read(zf.read(n).decode("utf-8-sig"), z.name)
+    if me_network_dir():
+        for f in sorted(me_network_dir().glob("locale/en/*.cfg")):
+            read(f.read_text(encoding="utf-8"), ME_NETWORK)
+    return keys
+
+
+def missing_keys(ls, keys):
+    """the keys of a localised string that no locale file has; [] if the game shows a name. A string is literal text,
+    {"", ...} joins its parameters, {"?", ...} shows the first one that resolves, {"<key>", ...} needs the key and its
+    parameters (__1__ ...)."""
+    if not isinstance(ls, list):
+        return []
+    if not ls:
+        return ["(empty localised string)"]
+    head, params = ls[0], ls[1:]
+    if head == "?":
+        alts = [missing_keys(p, keys) for p in params]
+        return [] if any(not a for a in alts) else [k for a in alts for k in a]
+    out = [] if head == "" or head in keys else [head]
+    for p in params:
+        out += missing_keys(p, keys)
+    return out
+
+
+def defining_files():
+    """{quoted string: first file of this mod that has it}, to name where a prototype is defined"""
+    out = {}
+    for f in [ROOT / "data.lua", ROOT / "data-final-fixes.lua"] + sorted((ROOT / "prototypes").glob("*.lua")):
+        for s in re.findall(r'"([A-Za-z0-9_.-]+)"', f.read_text(encoding="utf-8")):
+            out.setdefault(s, f.relative_to(ROOT).as_posix())
+    return out
+
+
+def check_names(sec):
+    """Issue #230: every prototype this mod creates that a player can see (item, fluid, recipe, technology, entity,
+    equipment, tile, item group and subgroup; section NAMES of checkmod/control.lua: the runtime prototypes, so the name
+    is the one the engine resolves from the final data stage) must have a name: every key of its localised name must be
+    in a locale file. The engine names a recipe after its product only when the recipe has the product's name;
+    any other recipe shows `recipe-name.<recipe>`, with a main product or not (prototypes/fork-locale.lua gives
+    Gregtorio's recipes their product's name as the fallback). Shown: not hidden (an item or fluid also when a recipe
+    that is not hidden takes or makes it), a technology that is enabled, an entity placed by an item, minable or a
+    resource, a group or subgroup with a shown prototype. Allow-list FORK_LOCALE_MISSING (section LOCALEOK, "class:name"
+    -> reason). Returns (info lines, problems, missing default keys as "section\\tname" rows for tools/gen_locale.py)."""
+    if "NAMES" not in sec:
+        return [], ["no DEVCHECK-NAMES section in the log (checkmod/control.lua did not run)"], []
+    keys, files = locale_keys(), defining_files()
+    allowed = {r[0]: r[1] if len(r) > 1 else "" for r in sec.get("LOCALEOK", [])}
+    seen, counts, problems, gen = set(), {}, [], []
+    for r in sec["NAMES"]:
+        cls, typ, name, created, shown = r[0], r[1], r[2], r[3], r[5]
+        ls = json.loads(r[7]).get("n")
+        extra = r[8] if len(r) > 8 else ""
+        if created not in MOD_NAMES:
+            continue
+        seen.add(f"{cls}:{name}")
+        if not shown:
+            continue
+        c = counts.setdefault(cls, [0, 0])
+        c[0] += 1
+        miss = missing_keys(ls, keys)
+        if not miss or f"{cls}:{name}" in allowed:
+            continue
+        c[1] += 1
+        why = ""
+        if cls == "recipe":
+            main, n = extra.split(" ")
+            why = (", no results" if main == "-" and n == "0" else
+                   f", {n} results and no main product" if main == "-" else
+                   f", its name differs from its main product {main}" if main.split(":", 1)[1] != name else "")
+        where = files.get(name, "built in a loop, no literal name")
+        problems.append(f"{cls} {name} ({typ}, {where}): unknown key {', '.join(miss)}{why}")
+        for k in miss:
+            s, _, n = k.partition(".")
+            if n and s.endswith("-name"):
+                gen.append(f"{s}\t{n}")
+    for k, why in sorted(allowed.items()):
+        cls, _, name = k.partition(":")
+        row = next((r for r in sec["NAMES"] if r[0] == cls and r[2] == name), None)
+        if k not in seen:
+            problems.append(f"{k}: in FORK_LOCALE_MISSING but no prototype of this mod (remove the entry)")
+        elif row and not missing_keys(json.loads(row[7]).get("n"), keys):
+            problems.append(f"{k}: in FORK_LOCALE_MISSING but has a name (remove the entry)")
+    info = [f"{cls}: {counts[cls][0]} shown, {counts[cls][1]} without a name" for cls in NAME_CLASSES if cls in counts]
+    info.append(f"{len(allowed)} kept without a name (FORK_LOCALE_MISSING)")
+    return info, sorted(problems), sorted(set(gen))
+
+
 def check_material_parts(sec):
     """Issue #118 (prototypes/200-fork-material-parts.lua): the material parts are in the rows of the item group "Material
     parts", one per form, the materials by tier. A material with no tier (no solidifier tier, no recipe that makes one of its
@@ -1140,12 +1257,18 @@ def check(a):
     one_pack_info, one_pack = check_one_pack(sec)
     print(f"\ncheap research ({ONE_PACK}): {one_pack_info}")
     report("technologies that cost more than one science pack of each kind although the setting is on", one_pack)
+    names_info, names, names_gen = check_names(sec)
+    print("\nnames of the shown prototypes of this mod (issue #230):")
+    for line in names_info:
+        print("  " + line)
+    report("prototypes without a name (\"Unknown key\" in the game; add the locale entry, a main product or the "
+           "allow-list FORK_LOCALE_MISSING of prototypes/fork-locale.lua)", names, limit=60)
     if getattr(a, "fluids_out", None):
         Path(a.fluids_out).write_text("\n".join("\t".join(r) for r in sec.get("FLUIDS", [])) + "\n", encoding="utf-8")
         print(f"\nfluid list written to {a.fluids_out} (input for tools/gen_review_sheet.py fluids)")
     if a.locale_out:
-        Path(a.locale_out).write_text("\n".join("\t".join(r) for r in sec.get("LOCALE", [])))
-        print(f"\nlocale name list written to {a.locale_out} (input for tools/gen_locale.py)")
+        Path(a.locale_out).write_text("".join(r + "\n" for r in names_gen), encoding="utf-8")
+        print(f"\nmissing names written to {a.locale_out} ({len(names_gen)} keys, input for tools/gen_locale.py)")
     if getattr(a, "balance_out", None):
         rows = ["\t".join(r) for r in sec.get("BALANCE", [])]
         Path(a.balance_out).write_text("[\n" + ",\n".join(rows) + "\n]\n", encoding="utf-8")
@@ -1153,7 +1276,7 @@ def check(a):
     ok = not (files or [s for s in sprites if not s.startswith("(")] or uncraft or menu or required or unresearchable
               or new_drafts or fluid_problems or locked or one_pack or fluid_steps or microminer or table_only or me_recipes
               or extractor_split or ore_chain or ore_baths or ore_o34 or ore_hammer
-              or circuit_icons or pgm_dusts or recycling)
+              or circuit_icons or pgm_dusts or recycling or names)
     print("\nRESULT:", "OK" if ok else "PROBLEMS FOUND")
     return 0 if ok else 1
 

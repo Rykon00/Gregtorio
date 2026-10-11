@@ -189,7 +189,7 @@ local function recipe(kind, category, item, time, ingredients, results)
 		type = "recipe", name = name, category = category, enabled = false, energy_required = time,
 		ingredients = ingredients, results = results, subgroup = "fork-recycling-" .. kind,
 		icons = icons_of(item),
-		localised_name = { "recipe-name.fork-recycling-" .. kind, { "item-name." .. item } },
+		localised_name = { "recipe-name.fork-recycling-" .. kind, FORK_LOCALE.name_of("item", item) },
 		hide_from_player_crafting = true, allow_productivity = false, auto_recycle = false,
 	} })
 	FORK_RECYCLING.recipes[name] = true

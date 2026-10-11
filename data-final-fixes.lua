@@ -448,6 +448,8 @@ FORK_EARLY_RESEARCH.rescale()
 --- Fork: the recycling recipes get their technologies now that the vanilla ones are set and disabled
 --- (prototypes/157-fork-recycling.lua, issue #190)
 FORK_RECYCLING.unlock()
+--- Fork: every Gregtorio recipe named after its product unless it has its own name (prototypes/fork-locale.lua, issue #230)
+FORK_LOCALE.name_recipes()
 require("prototypes.fork-menu-simulations")
 --- Fork: cheap research (startup setting, default off); after every change to the technologies above
 require("prototypes.fork-one-pack-research")
