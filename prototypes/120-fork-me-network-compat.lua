@@ -660,9 +660,9 @@ end
 
 --- issue #212: IV, after the cards (the Wireless Booster goes into the access point's card slots), which come after the
 --- battery, the EV electrolyzer of the charger and the ender pearl of the booster (me-network: after me-upgrade-cards and
---- battery, 500 units of 3 packs)
+--- battery, 500 units of 3 packs); issue #215: the ME Wireless Terminal Module stays locked (FORK_RECIPES_LOCKED)
 if HAS_WIRELESS then
 	tech("me-wireless", { "me-upgrade-cards" }, 6, 1200, {
-		"me-wireless-access-point", "me-wireless-booster", "me-wireless-terminal", "me-charger", "me-wireless-module",
+		"me-wireless-access-point", "me-wireless-booster", "me-wireless-terminal", "me-charger",
 	})
 end
