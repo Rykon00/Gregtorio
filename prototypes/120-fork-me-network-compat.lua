@@ -185,6 +185,19 @@ upstream_item(component{
 	ingredients = I{ "fiber-reinforced-printed-circuit-board", 1, "processing-unit", 16, "ev-circuit", 4,
 		"engineering-processor", 1 },
 })
+--- issue #216: upstream unlocks the 4k component with logistic-system and nether-data and the 16k one with logistic-system
+--- and the-end-data (the data technologies' recipes take them). Every technology that unlocks one has the technologies of
+--- its ingredients before it: logistic-system gets nand-chips (the 4k one's NAND chips), the-end-data gets
+--- applied-energistics-crystals (the 16k one's engineering processor); both are earlier technologies of the same science
+for tech, pre in pairs({ ["logistic-system"] = "nand-chips", ["the-end-data"] = "applied-energistics-crystals" }) do
+	local t = data.raw.technology[tech]
+	local has = false
+	for _, x in pairs(t and t.prerequisites or {}) do if x == pre then has = true end end
+	if t and not has then
+		t.prerequisites = t.prerequisites or {}
+		table.insert(t.prerequisites, pre)
+	end
+end
 
 move_to("fork-me-network", "fluix-cable", "a0")
 move_to("fork-me-network", "me-controller", "a")
