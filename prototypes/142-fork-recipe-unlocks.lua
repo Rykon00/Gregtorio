@@ -528,7 +528,14 @@ local UNLOCKS = {
 		"long-magnalium-rod", "magnalium-bolt", "magnalium-rod", "magnalium-screw",
 	},
 	["high-pressure-steam-turbine"] = { -- IV (issue #97)
+		"large-titanium-boiler", "titanium-firebox-casing",   -- issue #254: superheated steam from fuel
 		"high-pressure-steam-turbine", "high-pressure-steam-turbine-controller", "titanium-turbine-casing",
+	},
+	["large-combustion-engine"] = { -- EV (issue #255; the gear box casing also comes with alloy-blast-smelter)
+		"large-combustion-engine", "engine-intake-casing", "titanium-gear-box-casing",
+	},
+	["large-gas-turbine"] = { -- EV (issue #256)
+		"large-gas-turbine", "stainless-steel-turbine-casing",
 	},
 	["fluid-nuclear-reactor"] = { -- IV (issue #97; the heat exchanger moves here from nuclear-power, the reactor from
 		-- fusion-reactor-mk1, the iridium neutron reflector is also on fusion-reactor-mk1)

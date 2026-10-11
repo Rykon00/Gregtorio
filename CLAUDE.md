@@ -81,7 +81,9 @@
   - 145 power multiblocks (issue #97: the large steam turbine and the high pressure steam turbine as generators of 136
     with superheated steam, the fluid nuclear reactor (burner recipe machine for the fuel rods) and the large heat
     exchanger with coolant and hot coolant, the lapotronic supercapacitor as an accumulator per capacitor tier (IV, LuV
-    and ZPM upgrades); their technologies are named in 142's `UNLOCKS`, so it loads after 138 and **before** 142, and
+    and ZPM upgrades); issues #254 to #256: the large titanium boiler (a `boiler` in `output-to-separate-pipe` mode,
+    water to superheated steam), the large combustion engine and the large gas turbine (EV burner generators on the fuel
+    cells); their technologies are named in 142's `UNLOCKS`, so it loads after 138 and **before** 142, and
     before 196 for its fluids; it takes 136's generator from the global `FORK_POWER` and adds to its mod data
     `fork-power`)
   - 144 dead fluids (issue #91: GT's uses and producers of fluids nothing made or used; the blast furnace gas variants

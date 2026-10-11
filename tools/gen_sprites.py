@@ -182,9 +182,23 @@ MULTIBLOCKS = {
                              "gregtech:iconsets/MACHINE_CASING_PIPE_TITANIUM"),
     "fluid-nuclear-reactor": ((3, 3), "gregtech:iconsets/MACHINE_CASING_RADIATIONPROOF", "fluid-nuclear-reactor",
                               None, None),
+    # issues #254 and #255 (145-fork-power-multiblocks.lua): GT's large titanium boiler (stable titanium casing, the
+    # titanium firebox as the middle row, the large boiler front) and large combustion engine (stable titanium casing,
+    # titanium gearboxes in the middle row, the diesel engine front)
+    "large-titanium-boiler": ((3, 3), "gregtech:iconsets/MACHINE_CASING_STABLE_TITANIUM", None,
+                              ("gregtech:iconsets/OVERLAY_FRONT_LARGE_BOILER",
+                               "gregtech:iconsets/OVERLAY_FRONT_LARGE_BOILER_ACTIVE"),
+                              "gregtech:iconsets/MACHINE_CASING_FIREBOX_TITANIUM"),
+    "large-combustion-engine": ((3, 3), "gregtech:iconsets/MACHINE_CASING_STABLE_TITANIUM", None,
+                                ("gregtech:iconsets/OVERLAY_FRONT_DIESEL_ENGINE",
+                                 "gregtech:iconsets/OVERLAY_FRONT_DIESEL_ENGINE_ACTIVE"),
+                                "gregtech:iconsets/MACHINE_CASING_GEARBOX_TITANIUM"),
 }
 # multiblocks without an upstream item icon: the icon is the controller tile
 CONTROLLER_ICONS = {"neutron-activator", "water-purification-plant", "uv-large-naquadah-reactor"}
+# multiblocks whose icon is the whole idle sprite, scaled down (issues #254, #255: their GT controller fronts look alike,
+# the middle row tells them apart)
+WHOLE_ICONS = {"large-titanium-boiler", "large-combustion-engine"}
 # tier versions of a generator (136-fork-power.lua): the base sprite with dynamo hatches of the tier
 # (GT hull of the tier + GT's dynamo hatch overlay) on the corner tiles; the base itself gets its own
 # tier's hatches too. The icon gets the hatch as a badge.
@@ -226,7 +240,11 @@ PLASMA_TURBINE_FACE = "gregtech:iconsets/LARGETURBINE_TU"
 STEAM_TURBINES = {
     "large-steam-turbine": ("gregtech:iconsets/LARGETURBINE_ST", "EV"),
     "high-pressure-steam-turbine": ("gregtech:iconsets/LARGETURBINE_TI", "IV"),
+    # issue #256 (145): the large gas turbine, GT's stainless steel turbine face; no upstream item icon, so the icon is
+    # the face's middle tile (STEAM_TURBINE_ICONS)
+    "large-gas-turbine": ("gregtech:iconsets/LARGETURBINE_SS", "EV"),
 }
+STEAM_TURBINE_ICONS = {"large-gas-turbine"}
 # items whose icon is a GT block texture (written to graphics/icons/fork/)
 TEXTURE_ICONS = {
     "titanium-reinforced-borosilicate-glass-block": "bartworks:TitaniumReinforcedBoronSilicateGlassBlock",
@@ -235,6 +253,10 @@ TEXTURE_ICONS = {
     # issue #97: kekztech's LuV and ZPM lapotronic capacitor blocks
     "lapotronic-capacitor-luv": "kekztech:LapotronicEnergyUnit2_side",
     "lapotronic-capacitor-zpm": "kekztech:LapotronicEnergyUnit3_side",
+    # issues #254 to #256: the casings of the new power multiblocks
+    "titanium-firebox-casing": "gregtech:iconsets/MACHINE_CASING_FIREBOX_TITANIUM",
+    "engine-intake-casing": "gregtech:iconsets/MACHINE_CASING_ENGINE_INTAKE",
+    "stainless-steel-turbine-casing": "gregtech:iconsets/MACHINE_CASING_TURBINE_STAINLESSSTEEL",
 }
 # issue #97: the lapotronic supercapacitors (one 5x5 accumulator per capacitor tier): kekztech's LSC casing as the
 # border, the capacitor blocks of the tier inside, the controller in the top middle, GT's energy and dynamo hatch of
@@ -770,6 +792,8 @@ def multiblock(gt, name, size, casing, controller, face, middle):
         img = build(False)
         cx, cy = w // 2, h - 1 if h > 3 else h // 2
         save(img.crop((cx * TILE, cy * TILE, (cx + 1) * TILE, (cy + 1) * TILE)), OUT_ICON / f"{name}.png")
+    if name in WHOLE_ICONS:
+        save(scaled(build(False), TILE), OUT_ICON / f"{name}.png")
 
 
 def turbine_face(gt, face, active):
@@ -796,6 +820,8 @@ def steam_turbine(gt, name, face, tier):
         for x, y in ((0, 0), (2 * TILE, 0), (0, 2 * TILE), (2 * TILE, 2 * TILE)):
             img.paste(hatch, (x, y))
         save(img, OUT_ENTITY / f"{name}{suffix}")
+    if name in STEAM_TURBINE_ICONS:
+        save(turbine_face(gt, face, False).crop((TILE, TILE, 2 * TILE, 2 * TILE)), OUT_ICON / f"{name}.png")
 
 
 def supercapacitor(gt, name, tier, unit):
