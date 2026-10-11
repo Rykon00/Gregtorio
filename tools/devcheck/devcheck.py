@@ -389,6 +389,72 @@ class Model:
                 out.append((r, f"needs {v['fin']} fluid in / {v['fout']} out, no reachable machine has that"))
         return out
 
+    def obtainable(self, techs):
+        """Issue #237: what can be obtained with the recipes enabled from the start or unlocked by `techs` (as solve,
+        without research; a worklist instead of the fixed point loop). Returns (items and fluids, recipe categories
+        with a buildable machine)."""
+        R, C = self.R, self.C
+        if not hasattr(self, "_ob"):
+            uses, by_cat, entity_of, burner_of = {}, {}, {}, {}
+            for r, v in R.items():
+                for i in set(v["ing"]):
+                    uses.setdefault(i, []).append(r)
+                by_cat.setdefault(v["cat"], []).append(r)
+            for it, pr in self.I.items():
+                if pr in C:
+                    entity_of.setdefault(it, []).append(pr)
+                if pr in self.burners:
+                    burner_of.setdefault(it, []).extend(self.burners[pr])
+            unl = {}
+            for t, v in self.T.items():
+                for r in v["eff"]:
+                    unl.setdefault(r, []).append(t)
+            self._ob = uses, by_cat, entity_of, burner_of, unl
+        uses, by_cat, entity_of, burner_of, unl = self._ob
+        ok = {r for r, v in R.items() if not v["hidden"] and (v["en"] or any(t in techs for t in unl.get(r, [])))}
+        need = {r: len(set(R[r]["ing"])) for r in ok}
+        avail, cats, crafters, fuel_cats = set(), set(), set(), set()
+        queue, ready = [], [r for r in ok if need[r] == 0]
+
+        def add(x):
+            if x not in avail:
+                avail.add(x)
+                queue.append(x)
+
+        def crafter(e):
+            if e in crafters:
+                return
+            crafters.add(e)
+            for c in C.get(e, []):
+                if c not in cats:
+                    cats.add(c)
+                    ready.extend(r for r in by_cat.get(c, []) if r in ok and need[r] == 0)
+        crafter("character")
+        for x in self.base:
+            add(x)
+        while queue or ready:
+            while ready:
+                r = ready.pop()
+                if R[r]["cat"] in cats:
+                    for x in R[r]["res"]:
+                        add(x)
+            if not queue:
+                break
+            x = queue.pop()
+            for e in entity_of.get(x, []):
+                crafter(e)
+            fuel_cats.update(burner_of.get(x, []))
+            # a fuel burnt in a burner that can be built leaves its burnt result
+            for fuel, burnt, cat in self.burnt:
+                if fuel in avail and cat in fuel_cats:
+                    add(burnt)
+            for r in uses.get(x, []):
+                if r in need:
+                    need[r] -= 1
+                    if need[r] == 0:
+                        ready.append(r)
+        return avail, cats
+
 
 def check_crafting_menu(m, sec):
     """Issue #49: every recipe that is enabled or unlocked by a technology and whose category has a
@@ -1092,6 +1158,95 @@ def check_required(m):
     return out
 
 
+#: the science packs in Gregtorio's tier order (103's PACKS, then the endgame packs of 127 to 141)
+SCIENCE_ORDER = ["automation", "logistic", "military", "chemical", "production", "utility", "space", "metallurgic",
+                 "agricultural", "electromagnetic", "cryogenic", "promethium", "umv", "uxv", "max"]
+
+
+def check_unlock_gaps(m, sec):
+    """Issue #237: a Gregtorio recipe that a technology unlocks must be makeable with the technologies of that science:
+    every ingredient obtainable and a machine for its category buildable with the recipes of every researchable
+    technology whose highest science pack is not above the technology's (Gregtorio's tree is not closed under
+    prerequisites: siblings of the same science are researched anyway, so ancestors alone would flag thousands). A
+    recipe whose products are all obtainable anyway is an alternative that waits for its input (water / distilled water)
+    and passes. For a failing recipe the check names the causes (the first missing link: an item whose recipes all come
+    with higher science, or a category without a buildable machine; recycling never counts as a source), one row per
+    technology and cause; allow-list FORK_UNLOCK_GAPS ("<technology>:<cause>" -> reason, section UNLOCKGAPOK; an entry
+    that matches no cause fails). Returns (info line, problems)."""
+    rank = {p + "-science-pack": i for i, p in enumerate(SCIENCE_ORDER)}
+    T, R = m.T, m.R
+
+    def tier(t):
+        return max((rank.get(p, len(SCIENCE_ORDER)) for p in T[t]["sci"]), default=-1)
+    mod = MOD_NAMES[1]
+    greg = {r[0] for r in sec.get("OWNERS", [])
+            if len(r) > 1 and (r[1] == mod or mod in (r[2] if len(r) > 2 else "").split(","))}
+    allowed = {r[0]: r[1] if len(r) > 1 else "" for r in sec.get("UNLOCKGAPOK", [])}
+    unl, makers = {}, {}
+    for t, v in T.items():
+        for r in v["eff"]:
+            unl.setdefault(r, []).append(t)
+    for r, v in R.items():
+        if not v["hidden"] and "recycling" not in r:
+            for x in v["res"]:
+                makers.setdefault(x, []).append(r)
+    solved, techs_at = {}, {}
+    for t in m.researched:
+        k = tier(t)
+        if k not in solved:
+            techs_at[k] = {x for x in m.researched if tier(x) <= k}
+            solved[k] = m.obtainable(techs_at[k])
+
+    def causes(x, k, seen):
+        if x in seen:
+            return set()
+        seen.add(x)
+        avail, cats = solved[k]
+        cands = [p for p in makers.get(x, []) if p in m.unlocked]
+        here = [p for p in cands if R[p]["en"] or any(t in techs_at[k] for t in unl.get(p, []))]
+        if not here:
+            later = sorted({t for p in cands for t in unl.get(p, []) if t in m.researched}, key=tier)
+            return {(x, f"comes with {later[0] if later else 'no researchable technology'}")}
+        out = set()
+        for p in here:
+            if R[p]["cat"] not in cats:
+                out.add((x, f"no machine for {R[p]['cat']}"))
+                continue
+            for i in R[p]["ing"]:
+                if i not in avail:
+                    out |= causes(i, k, seen)
+        return out
+    found, n_recipes = {}, 0
+    for t in sorted(m.researched):
+        k = tier(t)
+        avail, cats = solved[k]
+        for r in T[t]["eff"]:
+            v = R.get(r)
+            if not v or v["hidden"] or r not in greg or r not in m.unlocked or "recycling" in r or r.startswith("void-") \
+                    or v["cat"] in ("recycling", "parameters"):
+                continue
+            miss = [i for i in v["ing"] if i not in avail and i in m.avail]
+            if not (miss or v["cat"] not in cats) or all(x in avail for x in v["res"]):
+                continue
+            n_recipes += 1
+            got = set()
+            for i in miss:
+                got |= causes(i, k, set())
+            if v["cat"] not in cats:
+                got.add((r, f"no machine for {v['cat']}"))
+            if not got:
+                got.add((r, "its inputs only come from each other at this science"))
+            for x, why in got:
+                found.setdefault(f"{t}:{x}", (why, r))
+    sci = lambda t: SCIENCE_ORDER[tier(t)] if 0 <= tier(t) < len(SCIENCE_ORDER) else "-"
+    problems = [f"{k} ({sci(k.split(':')[0])} science): {why}, needed by {r}"
+                for k, (why, r) in sorted(found.items()) if k not in allowed]
+    problems += [f"{k}: in FORK_UNLOCK_GAPS but no such gap (remove the entry)" for k in sorted(allowed) if k not in found]
+    info = (f"{n_recipes} recipes not makeable with the science of the technology that unlocks them, {len(found)} causes, "
+            f"{sum(1 for k in found if k in allowed)} kept on purpose (FORK_UNLOCK_GAPS)")
+    return info, problems
+
+
 def check_locked(m, sec):
     """Issue #91: every recipe of Gregtorio (created or changed by it: prototypes.get_history, logged by
     checkmod/control.lua) that is not hidden must be enabled or unlocked by a researchable technology, unless it is in
@@ -1201,6 +1356,10 @@ def check(a):
     print(f"\nGregtorio recipes (issue #91): {n_greg} not hidden, {n_greg - n_allowed - len(locked)} enabled or unlocked "
           f"by a researchable technology, {n_allowed} kept locked (FORK_RECIPES_LOCKED)")
     report("Gregtorio recipes that no researchable technology unlocks", locked)
+    gaps_info, gaps = check_unlock_gaps(m, sec)
+    print(f"\nrecipes unlocked before what they need (issue #237): {gaps_info}")
+    report("recipes a technology unlocks before its science can make them (the cause, the recipe that needs it; fix the "
+           "unlock or a prerequisite, or add the cause to FORK_UNLOCK_GAPS of prototypes/142-fork-recipe-unlocks.lua)", gaps)
     report("draft recipes outside DRAFTS_OK (issue #39)", new_drafts)
     menu_info, menu = check_crafting_menu(m, sec)
     print("\ncrafting menu (issue #49):")
@@ -1276,7 +1435,7 @@ def check(a):
     ok = not (files or [s for s in sprites if not s.startswith("(")] or uncraft or menu or required or unresearchable
               or new_drafts or fluid_problems or locked or one_pack or fluid_steps or microminer or table_only or me_recipes
               or extractor_split or ore_chain or ore_baths or ore_o34 or ore_hammer
-              or circuit_icons or pgm_dusts or recycling or names)
+              or circuit_icons or pgm_dusts or recycling or names or gaps)
     print("\nRESULT:", "OK" if ok else "PROBLEMS FOUND")
     return 0 if ok else 1
 
