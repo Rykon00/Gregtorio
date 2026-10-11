@@ -121,6 +121,8 @@ def setup(a):
 
 MOD_NAMES = ("Gregtorio", "gregtorio-continued")   # the mod before and since 0.3.0
 ME_NETWORK = "me-network"                           # the ME network since issue #83 (docs/SPLIT.md), a dependency
+TEXTURES = "me-network-ae2-textures"                # me-network's texture mod, required since me-network #325
+STAND_IN = "stand-in of the texture mod (Gregtorio devcheck, issue #231)"
 
 
 def me_network_dir():
@@ -132,6 +134,30 @@ def me_network_dir():
 
 def needs_me_network(info):
     return any(re.split(r"\s*[<>=]", dep.strip())[0].strip() == ME_NETWORK for dep in info.get("dependencies", []))
+
+
+def texture_stand_in(me_info, me_dir):
+    """Issue #231: me-network 0.5.3 and later require its texture mod (me-network #325, `~ me-network-ae2-textures`).
+    A Gregtorio run never loads the texture mod's graphics (CC BY-NC-SA, me-network #239; me-network's own harness does
+    the same), so the mods folder gets an empty stand-in of its name: an info.json only, with the version of the
+    checkout's ae2-textures/info.json (else the lowest version the dependency allows). Nothing for a me-network that
+    does not require it (the older ones of `migrate`). Returns True when the stand-in was made."""
+    dep = next((d.strip() for d in me_info.get("dependencies", [])
+                if re.split(r"\s*[<>=]", d.strip().lstrip("~").strip())[0].strip() == TEXTURES), None)
+    if not dep or dep.startswith(("!", "?", "(?)")):
+        return False
+    real = me_dir / "ae2-textures" / "info.json" if me_dir else None
+    if real and real.exists():
+        version = json.loads(real.read_text(encoding="utf-8"))["version"]
+    else:
+        m = re.search(r">=?\s*([\d.]+)", dep)
+        version = m.group(1) if m else "0.0.1"
+    stub = MODS / TEXTURES
+    stub.mkdir()
+    (stub / "info.json").write_text(json.dumps({"name": TEXTURES, "version": version, "title": STAND_IN,
+                                                "author": "devcheck", "factorio_version": "2.0",
+                                                "dependencies": ["base >= 2.0"]}), encoding="utf-8")
+    return True
 
 
 def zip_info(path):
@@ -169,8 +195,11 @@ def prepare_mods(with_runtime=False, gregtorio_zip=None, with_migrate=False, men
     remove_path(MODS / "mod-settings.dat")
     for p in MODS.iterdir():
         if p.name.startswith(MOD_NAMES + ("zz-gregtorio-devcheck",)) or p.name == "mod-list.json" or (
-                p.name == ME_NETWORK and not p.is_file()):
+                p.name in (ME_NETWORK, TEXTURES) and not p.is_file()):
             remove_path(p)
+    if list(MODS.glob(f"{TEXTURES}_*.zip")):
+        sys.exit(f"{MODS}: remove {TEXTURES}_*.zip; a Gregtorio run loads the empty stand-in of the texture mod "
+                 "(issue #231), never its graphics")
     if not gregtorio:
         info = None
     elif gregtorio_zip:
@@ -187,9 +216,16 @@ def prepare_mods(with_runtime=False, gregtorio_zip=None, with_migrate=False, men
     disabled = []
     if info and needs_me_network(info):
         # issue #83: a me-network checkout (ME_NETWORK_DIR or ../me-network) wins over the portal zip
-        if me_network_dir():
-            link_dir(MODS / ME_NETWORK, me_network_dir())
+        me_dir = me_network_dir()
+        if me_dir:
+            link_dir(MODS / ME_NETWORK, me_dir)
+            me_info = json.loads((me_dir / "info.json").read_text(encoding="utf-8"))
+        else:
+            me_zips = sorted(MODS.glob(f"{ME_NETWORK}_*.zip"), key=lambda p: version_tuple(p.stem.rsplit("_", 1)[1]))
+            me_info = zip_info(me_zips[-1]) if me_zips else {}
         enabled.append(ME_NETWORK)
+        if texture_stand_in(me_info, me_dir):
+            enabled.append(TEXTURES)
     elif ME_NETWORK in zips:
         # older versions of the mod (migrate) contain the ME network themselves and refuse to load next to it
         disabled.append(ME_NETWORK)

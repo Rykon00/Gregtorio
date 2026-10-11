@@ -105,7 +105,8 @@
   the old IDs (`<tier>-ore-washer`, `godforge`): saves find them by name, so a rename changes the locale only.
 - **Test every change** with the headless harness: `python tools/devcheck/devcheck.py setup` once
   (needs network access to factorio.com and FACTORIO_USERNAME/FACTORIO_TOKEN for the dependency
-  mods; me-network is taken from a checkout next to this one, `../me-network`, or `ME_NETWORK_DIR`, else its portal zip),
+  mods; me-network is taken from a checkout next to this one, `../me-network`, or `ME_NETWORK_DIR`, else its portal zip;
+  its texture mod is an empty stand-in that devcheck makes, never the graphics, issue #231),
   then `python tools/devcheck/devcheck.py all`. It must end with `RESULT: OK`. For changes
   that could affect existing saves also run `migrate --from-ref 0e935ba` (upstream 0.1.9) or `--from-ref <previous release tag>`
   (`--from-ref v0.5.0` needs `--old-me-network v0.1.0`: the old save is made with the me-network of its time, with a later

@@ -21,6 +21,14 @@ python tools/devcheck/devcheck.py setup --version 2.0.77
 Everything lands in `.devcheck/` in the repository root (git-ignored). The working copy is
 linked in, so every run tests the current files.
 
+me-network comes from a checkout next to this one (`../me-network`, or `ME_NETWORK_DIR`), else from its portal zip.
+Since me-network 0.5.3 it requires its texture mod `me-network-ae2-textures` (me-network #325). A Gregtorio run never
+loads the texture mod's graphics (CC BY-NC-SA, me-network #239): every run whose me-network requires it gets an empty
+stand-in of that name in `.devcheck/mods` (an `info.json` only, the version of the checkout's `ae2-textures/info.json`,
+title "stand-in of the texture mod"), made and removed with the other helper mods (issue #231). A real
+`me-network-ae2-textures_*.zip` in `.devcheck/mods` stops the run; remove it. The older me-network of `migrate` runs
+(`--old-me-network`) does not require it and gets no stand-in.
+
 ## Commands
 
 | Command | What it does |
