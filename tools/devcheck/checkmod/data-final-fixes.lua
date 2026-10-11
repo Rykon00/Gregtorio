@@ -94,6 +94,12 @@ local ug = {}
 for key, reason in pairs(FORK_UNLOCK_GAPS or {}) do ug[#ug + 1] = key .. "\t" .. reason end
 section("UNLOCKGAPOK", ug)
 
+--- Issue #252: items a technology's recipes take that its prerequisites do not make yet, kept on purpose
+--- (FORK_UNLOCK_TREE_GAPS in prototypes/142-fork-recipe-unlocks.lua, "<technology>:<item>" -> reason; absent in older versions)
+local ut = {}
+for key, reason in pairs(FORK_UNLOCK_TREE_GAPS or {}) do ut[#ut + 1] = key .. "\t" .. reason end
+section("UNLOCKTREEOK", ut)
+
 --- Issue #126: the recipes of items only the crafting table, the ME Molecular Assembler or the hand can make, on purpose
 --- (FORK_RECIPES_TABLE_ONLY in prototypes/148-fork-gtnh-table-items.lua; absent in older versions)
 local tk = {}
