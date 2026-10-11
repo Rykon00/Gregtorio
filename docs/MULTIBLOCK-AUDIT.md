@@ -86,39 +86,105 @@ Two premises of the issue did not hold:
 | Miniature Wormhole Generator (`.../multi/MTEWormholeGenerator.java`, LMTE:631) | none | moves EU between two linked generators | Factorio's electric network | **n/a** |
 | Decay Warehouse (`.../multi/MTEDecayWarehouse.java`, LMTE:696) | `isotopeDecay` (`gtPlusPlus/core/handler/Recipes/DecayableRecipe.java`) | speeds up GT++ isotope decay | no decaying isotopes (only in the unloaded `51-nuclear-module.lua`) | **n/a** |
 
-## GTNH multiblocks the issue's list missed
+## GTNH multiblocks the issue's list missed (issue #257)
 
-A compare of all `MTEMultiBlockBase` subclasses of GT5-Unofficial and the `gt.blockmachines.multimachine.*` names with
-Gregtorio's machines found more multiblocks without a counterpart. They are not audited here (follow-up #257).
-First sorting, by name and recipe map only:
+A comparison with Gregtorio's machines found about 70 more GTNH multiblocks without a counterpart. It took all
+`MTEMultiBlockBase` subclasses of GT5-Unofficial and the `gt.blockmachines.multimachine.*` names. #257 audits them
+here, against Gregtorio main 2299e45.
 
-- **Own recipes or a role in a line:**
-  - gregtech: Electric Implosion Compressor (`MTEElectricImplosionCompressor`), Nano Forge (`MTENanoForge`), Froth
-    Flotation Cell (`MTEFrothFlotationCell`), Integrated Ore Factory, Molecular Transformer, the advanced compressors
-    (Hot Isostatic Pressurization Unit, Neutronium Compressor, Pseudostable Black Hole Containment Field), Transcendent
-    Plasma Mixer (left out on purpose: `139-fork-endgame-multiblocks.lua:13-15`).
-  - GT++: ExxonMobil Chemical Plant, COMET Cyclotron, IsaMill, Sparge Tower, Nuclear Salt Processing Plant, Reactor Fuel
-    Processing Plant and LFTR (only in the unloaded `51-nuclear-module.lua`), Utupu-Tanuri, Mega Alloy Blast Smelter.
-  - Other mods: the gtnhlanth lanthanide and photolithography machines (Digester, Dissolution Tank, Source Chamber, LINAC,
-    Synchrotron, Target Chamber; the first two are item stubs without an entity or recipe in `19-iv-age-item.lua`),
-    tectech's Bose-Einstein condensate machines, the Eye of Harmony (left out on purpose: `140-fork-godforge.lua`),
-    goodgenerator's Precise Auto-Assembler, Naquadah Fuel Refinery and the antimatter machines, and kubatech's Draconic
-    Evolution Fusion Crafter.
-- **Generators:** Thermal Boiler, Universal Chemical Fuel Engine, Large Supercritical Steam Turbine, GT++ Large Rocket
-  Engine, Large Semifluid Burner and Solar Tower, bartworks' Thorium High Temperature Reactor and Deep Earth Heating Pump,
-  kubatech's HTGR, kekztech's solid-oxide fuel cells, goodgenerator's Compact Fusion Computers, the Dyson Swarm.
-- **Parallel versions of machines Gregtorio has:** Density^2, Industrial Autoclave, Industrial Bending Machine, Industrial
-  Forming Press, Industrial Sledgehammer, Large Thermal Refinery, Ore Washing Plant, Industrial Coke Oven, Boldarnator,
-  Volcanus, Dangote Distillus, Whakawhiti Wera XL, the bartworks Mega Blast Furnace and Mega Vacuum Freezer, kubatech's
-  Industrial Arc Furnace, the Advanced Assembly Line, the steam multiblocks (grinder, squasher, presser, hearth, fuser,
-  separator, blender, purifier).
-- **Utilities and Minecraft machines** (n/a at first sight):
-  - storage and logistics: Large Molecular Assembler, Large Scale Auto-Assembler, Elemental Duplicator, Matter
-    Fabrication CPU, Power Station Control Node, the Space Elevator and its modules, Planetary Gas Siphon, Windmill;
-  - farming: Algae Farm, Drone Centre, Industrial Fishing Pond, Tree Growth Simulator, Mega Apiary;
-  - TecTech computation and power: Research Station, Quantum Computer, Data Bank, network switches, Tesla Tower,
-    Active Transformer;
-  - other: TFFT, YOTTank, L.E.S.U., Amazon Warehousing Depot, Large Essentia Smeltery.
+Result: **one add**, the lanthanide chain (#262). Every other multiblock is one of these:
+- a parallel version of a machine Gregtorio has;
+- a side chain whose metals Gregtorio already makes;
+- a generator for a fuel Gregtorio does not have;
+- a utility.
+
+### Own recipes: gregtech
+
+| GTNH multiblock (name, tier, class) | GT recipe map and loader | What GTNH uses it for | In Gregtorio today | Verdict |
+|---|---|---|---|---|
+| Electric Implosion Compressor (UV; `.../multi/MTEElectricImplosionCompressor.java`, LMTE:1063) | bartworks `electricImplosionCompressorRecipes` (`bartworks/common/loaders/ElectricImplosionCompressorRecipes.java:37-167`, about 31 recipes) | only here: MHDCSM and its parts (UXV/MAX), amalgatite, ancient debris; high-density plutonium also from goodgenerator's compressor | `high-density-plutonium` from 9 nuggets in the compressor (GT's goodgenerator route, `21-luv-age-item.lua:2389`); the EIC draft recipe was removed (`docs/ROADMAP.md`, decision (b)); no MHDCSM | **leave** (its exclusive products are MAX tier or other mods' items) |
+| Nano Forge (ZPM; `.../multi/MTENanoForge.java`, LMTE:604) | `nanoForgeRecipes` (`gregtech/loaders/postload/chains/NaniteChain.java:79-275`, 12) | nanites for the BEC, phonon crystal, nano-resins, photonic wafers | no nanite and no live consumer (draft only in the unloaded `25-uv-age-item.lua`) | **leave** (it would need its consumers first) |
+| Froth Flotation Cell (LuV; `.../multi/MTEFrothFlotationCell.java`, LMTE:953) | `flotationCellRecipes` (`gtPlusPlus/core/item/chemistry/RecipeLoaderMilling.java:235-401`, 12) | froths of milled ores, turned into bonus dusts (In, Cd, Co, Te, Pt, rare earths) in the vacuum furnace | no milled ores, xanthate or pine oil; those metals have Gregtorio lines (lutetium is a stand-in kept on purpose, `docs/ROADMAP.md`) | **leave** (a GT++ yield side chain with IsaMill and Utupu-Tanuri, below) |
+| Integrated Ore Factory (UV; `.../multi/MTEIntegratedOreFactory.java`, LMTE:1055) | none of its own: the macerator, washer, thermal centrifuge, centrifuge, sifter, hammer and bath maps in one go | all ore steps in one machine | the same steps in Gregtorio's single machines (`155-fork-ore-chain.lua`) | **leave** (parallel version) |
+| Molecular Transformer (LuV; `.../multi/MTEIndustrialMolecularTransformer.java`, LMTE:1006) | `molecularTransformerRecipes` (`gtPlusPlus/xmod/gregtech/loaders/recipe/RecipeLoaderMolecularTransformer.java:25-143`, 18) | dust swaps (tin to silver, gold to platinum, carbon to graphene); sunnarium and cheese from other mods | every target has an ore or chemistry route; sunnarium from MK1 fusion | **leave** (nothing Gregtorio needs is made only there) |
+| Hot Isostatic Pressurization Unit (ZPM; `.../multi/compressor/MTEHIPCompressor.java`, LMTE:659) and Pseudostable Black Hole Containment Field (UIV; `MTEBlackHoleCompressor.java`, LMTE:669) | `compressorRecipes` with a compression tier (`gregtech/loaders/oreprocessing/ProcessingPlate.java:377-391`) | every superdense plate; the black hole also pseudo stars and protohalkonite | 96 superdense plates in the tiered compressors (77 of them MV), consumed only by ZPM and later recipes | **leave** (all consumers are ZPM+; see "Found along the way") |
+| Neutronium Compressor (UHV; `.../multi/compressor/MTENeutroniumCompressor.java`, LMTE:664) | `neutroniumCompressorRecipes` (core `gthandler/recipes/NeutroniumCompressorRecipes.java`, 78) | Avaritia singularities, the infinity catalyst | none of these items | **n/a** (other mods' items) |
+| Transcendent Plasma Mixer (UIV; `.../multi/MTETranscendentPlasmaMixer.java`, LMTE:501) | `transcendentPlasmaMixerRecipes` (`gregtech/loaders/postload/recipes/TranscendentPlasmaMixerRecipes.java:35-195`, 9) | the DTPF catalysts | left out on purpose: the plasma forge makes its catalysts (`139-fork-endgame-multiblocks.lua:14-17`) | **leave** (decided) |
+
+### Own recipes: GT++
+
+| GTNH multiblock (name, tier, class) | GT recipe map and loader | What GTNH uses it for | In Gregtorio today | Verdict |
+|---|---|---|---|---|
+| ExxonMobil Chemical Plant (MV; `gtPlusPlus/.../multi/production/chemplant/MTEChemicalPlant.java`) | `chemicalPlantRecipes` (91 sites: agrichem, generic chemistry, rocket fuels, glue line) | catalyst chemistry, GT++ rocket fuels, the cyanoacrylate glue line, mutated living solder | none of its products; the glue line runs in chemical reactors without catalysts (`142-fork-recipe-unlocks.lua:93-165`), living solder is replaced by indalloy 140. Gregtorio's `chemical-plant` is Space Age's machine | **leave** (no Gregtorio line needs its products) |
+| COMET Cyclotron (`.../multi/production/MTECyclotron.java`) | `cyclotronRecipes` (`gtPlusPlus/core/recipe/RecipesGregTech.java:1754-2068`) | RTG pellets, particles; deprecated in GTNH, no controller recipe | no RTG or particle content | **n/a** |
+| IsaMill (LuV; `.../multi/processing/MTEIsaMill.java`) and Utupu-Tanuri (UHV; `.../multi/processing/MTEIndustrialDehydrator.java`) | `millingRecipes` (`gtPlusPlus/core/item/base/ore/BaseItemMilledOre.java:49-118`); `vacuumFurnaceRecipes` and the dehydrator map | milled ores for the flotation cell; froth to dusts; the dehydrator in bulk | none (see the Froth Flotation Cell) | **leave** (the same side chain) |
+| Reactor Fuel Processing Plant (IV; `.../multi/production/MTERefinery.java`), Thorium Reactor LFTR (IV; `MTENuclearReactor.java`), Sparge Tower (LuV; `MTESpargeTower.java`), Nuclear Salt Processing Plant (`MTENuclearSaltProcessingPlant.java`) | `fissionFuelProcessingRecipes` (5), `liquidFluorineThoriumReactorRecipes` (3), `spargeTowerRecipes` (3), `nuclearSaltProcessingPlantRecipes` (8) | the GT++ fluoride salt reactor loop | only in the unloaded draft `51-nuclear-module.lua` (inside a comment block); IV and LuV power comes from the fluid nuclear reactor and fusion | **leave** (one package with a whole salt chain; not a gap) |
+| Mega Alloy Blast Smelter (UHV; `.../multi/production/mega/MTEMegaAlloyBlastSmelter.java`) | `alloyBlastSmelterRecipes` | the ABS in bulk | the Alloy Blast Smelter EV to MAX | **leave** (parallel version) |
+
+### Own recipes: other mods
+
+| GTNH multiblock (name, tier, class) | GT recipe map and loader | What GTNH uses it for | In Gregtorio today | Verdict |
+|---|---|---|---|---|
+| Digester (IV) and Dissolution Tank (EV) (gtnhlanth: `gtnhlanth/common/tileentity/MTEDigester.java`, `MTEDissolutionTank.java`) | `digesterRecipes` (34), `dissolutionTankRecipes` (7), `gtnhlanth/loader/RecipeLoader.java` `loadLanthanideRecipes()` | the monazite, bastnasite and samarium rare earth chains; samaric residue to samarium and gadolinium | `samarium-dust` is a placeholder from stone and oxygen (`19-iv-age-item.lua:1363-1377`); `cerium-rich-mixture` has makers but no consumer; the two machines and draft recipes are inside the comment block of `19-iv-age-item.lua` (2846-4213) | **add** (#262: samarium from ore, a use for the cerium mixture; without the 30 UV nano-resin recipes) |
+| Source Chamber, LINAC, Synchrotron, Target Chamber (ZPM, gtnhlanth) | `sourceChamberRecipes`, `targetChamberRecipes` (`gtnhlanth/common/tileentity/recipe/beamline/BeamlineRecipeLoader.java`) | wafer engraving with masks | every wafer also has a laser engraver or chemical reactor route in GT; Gregtorio's NPIC to APIC wafers come from laser engravers | **leave** (an optional route with a particle mechanic) |
+| Bose-Einstein condensate machines (UMV, tectech `tectech/thing/metaTileEntity/multi/bec/`) | `condensateGeneratorRecipes`, `condensateAssemblingRecipes` (`gregtech/loaders/postload/recipes/BECRecipes.java`) | the godforge and Eye of Harmony casings | Gregtorio's godforge makes its casings in the UXV assembler and the ZPM assembly line (`140-fork-godforge.lua`) | **leave** (every product it needs has a stand-in) |
+| Precise Auto-Assembler MT-3662 (IV, goodgenerator `MTEPreciseAssembler.java`) | `preciseAssemblerRecipes` (goodgenerator `RecipeLoader.java`, `RecipeLoader2.java`, core) | compact fusion coils, computation stations, the Neutron Activator controller | none of those; the neutron activator comes from the IV assembler (`125-fork-luv-endgame.lua:147-162`) | **leave** |
+| Naquadah Fuel Refinery (UHV; `gregtech/.../multi/MTENaquadahFuelRefinery.java`, LMTE:873) | `naquadahFuelRefineFactoryRecipes` (goodgenerator `FuelRecipeLoader.java:56-194`, 9) | naquadah fuel MK3 to MK6 | MK3 from the UEV mixer, a documented stand-in (`136-fork-power.lua:407, 520-535`); no MK4 to MK6 | **leave** |
+| Antimatter Forge and Antimatter Generator (UMV, goodgenerator) | no map | antimatter and its power | no antimatter | **n/a** |
+| Draconic Evolution Fusion Crafter (UEV, kubatech `MTEDEFusionCrafter.java`) | `fusionCraftingRecipes` (`kubatech/loaders/DEFCRecipes.java`) | Draconic Evolution cores | only in unloaded drafts | **n/a** |
+| Eye of Harmony (UMV, tectech `MTEEyeOfHarmony.java`) | `eyeOfHarmonyRecipes` | ores per dimension, raw star matter, universium | left out on purpose (`140-fork-godforge.lua`); question #249 | **n/a** (decided; #249 open) |
+
+### Generators
+
+Gregtorio has no fuel value for lava or `rocket-fuel`. It also has no supercritical steam, solar salt, combustion
+promoter or TRISO pebbles.
+
+| GTNH multiblock (name, tier, class) | GT fuel map and loader | What GTNH uses it for | In Gregtorio today | Verdict |
+|---|---|---|---|---|
+| Thermal Boiler (IV; `.../multi/MTEThermalBoiler.java`, LMTE:1011) | `thermalBoilerRecipes` (`gtPlusPlus/core/recipe/RecipesGregTech.java:1484-1537`) | lava to steam, hot coolant or solar salt to superheated steam | lava is endless from the drilling rig. The rig spends 12.8 kJ per unit, and GT's boiler would give 8 kJ back. Hot coolant already goes to the Large Heat Exchanger | **leave** (a net loss; the coolant role is taken) |
+| Universal Chemical Fuel Engine (LuV; `.../multi/MTEUniversalChemicalFuelEngine.java`, LMTE:1035) | diesel, gas and rocket fuel maps | any fuel, up to 150 % with a promoter | the combustion and gas lines up to HV; EV is #255/#256 | **leave** (a later upgrade of #255/#256) |
+| Large Supercritical Steam Turbine (IV; `.../multi/turbines/MTELargeTurbineSCSteam.java`, LMTE:938) | supercritical steam from goodgenerator's Extreme Heat Exchanger | a third steam stage | the steam line ends at the HP steam turbine | **leave** (a new fluid and exchanger) |
+| Large Rocket Engine (LuV, GT++ `MTELargeRocketEngine.java`) | `rocketFuels` (`gtPlusPlus/core/item/chemistry/RecipeLoaderRocketFuels.java:179-184`) | rocket fuel power | `rocket-fuel` is made but has no fuel value (a microverse ingredient) | **leave** (a new fuel line; GT++'s single-block rocket engines would come first) |
+| Large Semifluid Burner (EV, GT++ `MTELargeSemifluidGenerator.java`) | `semiFluidFuels` | creosote and heavy oils at 2048 EU/t | LV to HV semifluid generators; heavy fuel also goes into diesel for #255 | **leave** |
+| Solar Tower (EV, GT++ `MTESolarTower.java`) | solar salt heating | hot salt for steam | solar power is disabled (`data-final-fixes.lua:196, 210`) | **leave** (a design decision, not a gap) |
+| Thorium High Temperature Reactor (bartworks `MTEThoriumHighTempReactor.java`), HTGR (kubatech `MTEHighTempGasCooledReactor.java`) | no map: TRISO pebbles heat coolant | hot coolant; the HTGR also gives lutetium | the thorium fuel rod in the fluid nuclear reactor heats coolant; lutetium has its stand-in | **leave** |
+| Deep Earth Heating Pump (IV, bartworks `MTEDeepEarthHeatingPump.java`) | no map | superheated steam for 480 EU/t | the heat exchanger and #254 | **leave** (power from almost nothing breaks the fuel balance) |
+| Solid-Oxide Fuel Cell Mk I/II (HV/LuV, kekztech `MTESOFuelCellMK1/2.java`) | `gasTurbineFuels` + oxygen | gas power with steam on the side | gas turbines LV to HV, EV in #256 | **leave** |
+| Compact Fusion Computer MK-I to MK-V (goodgenerator `MTELargeFusionComputer1-5.java`) | GT's `fusionRecipes`, 64 parallels | the fusion reactor in bulk | fusion MK1 to MK5 | **leave** (parallel version, not a generator) |
+| Dyson Swarm (UIV, gtnhintergalactic `TileEntityDysonSwarm.java`) | no map | power from space modules | no dimensions or space elevator | **n/a** |
+
+### Parallel versions
+
+Each runs the recipe map of a machine Gregtorio has: **leave**.
+
+| Multiblock (class) | Map | Gregtorio machine |
+|---|---|---|
+| Density^2 (`.../multi/MTEAdvImplosionCompressor.java`) | implosion | implosion compressor HV to MAX |
+| Industrial Autoclave (`MTEMultiAutoclave.java`) | autoclave | autoclave LV to MAX |
+| Industrial Bending Machine, Industrial Forming Press, Industrial Sledgehammer (`MTEIndustrialBendingMachine`, `MTEIndustrialFormingPress`, `MTEIndustrialForgeHammer`) | bender, forming press, hammer | bending machine (and the IV Industrial Material Press), forming press, forge hammer |
+| Large Thermal Refinery, Ore Washing Plant (`MTEIndustrialThermalCentrifuge`, `MTEOreWashingPlant`) | thermal centrifuge, ore washer | thermal centrifuge, ore washer LV to MAX |
+| Industrial Coke Oven (`MTEIndustrialCokeOven`) | pyrolyse oven, plus its own coal gas, selenium and wood pellet recipes | pyrolyse oven, coke oven (the chains of its own recipes are not in Gregtorio) |
+| Boldarnator (`MTEIndustrialRockBreaker`) | its own map, a copy of the rock breaker's | rock crusher |
+| Volcanus, Dangote Distillus, Whakawhiti Wera XL (GT++ `MTEAdvEBF`, `MTEAdvDistillationTower`, `MTEAdvHeatExchanger`); bartworks Mega Blast Furnace and Mega Vacuum Freezer | EBF, distillation, heat exchanger, vacuum freezer | EBF, distillation towers, Large Heat Exchanger, vacuum freezer |
+| Industrial Arc Furnace (kubatech) | arc furnace, EBF, furnace | arc furnace, EBF, furnaces |
+| Advanced Assembly Line (ggfab `MTEAdvAssLine`) | assembly line | assembly line |
+| Large Scale Auto-Assembler (GT++ `MTEAutoCrafter`), Windmill (bartworks), Amazon Warehousing Depot (`MTEIndustrialPackager`) | assembler, macerator, packager | assembling machine, macerator; no packager (`docs/MACHINE-AUDIT.md`: nothing to pack) |
+| the steam multiblocks: Steam Grinder, Squasher, Presser, Fuser, Hearth, Separator, Blender, Purifier, Water Pump (`.../multi/steam/`) | macerator, compressor, hammer, alloy smelter, furnace, centrifuge, mixer, washer | the steam machines and furnaces; centrifuge, mixer and ore washer start at LV in Gregtorio (a design choice) |
+
+### Utilities
+
+| Multiblock | Verdict and reason |
+|---|---|
+| Large Molecular Assembler | leave: me-network's ME Molecular Assembler |
+| Elemental Duplicator, Matter Fabrication CPU | leave: the UU matter decision of `docs/MACHINE-AUDIT.md` |
+| Power Station Control Node, L.E.S.U. | leave: the Lapotronic Supercapacitor (145) |
+| Tree Growth Simulator | leave: the Extreme Industrial Greenhouse grows the trees (154) |
+| Algae Farm | n/a: its algae feed GT++ agrichemistry and the netherite chain, neither in Gregtorio |
+| Space Elevator and modules, Planetary Gas Siphon | n/a: no planets or asteroid ores |
+| Drone Centre, Industrial Fishing Pond, Mega Apiary, Large Essentia Smeltery | n/a: Minecraft and other mods' content |
+| Research Station, Quantum Computer, Data Bank, network switches | n/a: research is the technology tree, the assembly line needs no data |
+| Tesla Tower, Active Transformer | n/a: Factorio's poles; no voltages |
+| TFFT, YOTTank | n/a: Factorio's tanks and the ME fluid cells |
 
 ## Found along the way
 
@@ -131,6 +197,14 @@ First sorting, by name and recipe map only:
   `131-fork-uev.lua:315`, and `docs/ROADMAP.md` (the water purification row and the UHV/UEV notes).
 - **Cleanroom leftovers.** The `cleanroom-tile` and the `cleanroom` technology are commented out, but their locale
   entries and graphics stay. `plascrete` is unlocked (Polyethylene) and has no consumer left except its recycling.
+- **Superdense plates before their time** (#257): GT makes them only in the ZPM Hot Isostatic Pressurization Unit or the
+  UIV black hole compressor. Gregtorio makes 77 of its 96 in the MV compressor. Every consumer is ZPM or later (the fusion
+  controllers, the plasma forge, the godforge, the stargate parts), so nothing changes in play. If GT's gate is wanted,
+  raise the compressor category of those recipes; no multiblock is needed.
+- **`rocket-fuel` has no burner** (#257): it is made (dimethylhydrazine and dinitrogen tetroxide) and only used by the
+  microverse missions, without a fuel value.
+- **`docs/MACHINE-AUDIT.md` is partly out of date** (#257): its thermal centrifuge, sifting and electromagnetic separator
+  rows still say "none". The ore chain of #185 to #188 added those machines. This belongs to the docs drift of #250.
 
 ## Issues opened for "add" verdicts
 
@@ -139,9 +213,10 @@ Each verdict is a proposal until the maintainer accepts it.
 - #254 Large Titanium Boiler (EV): a fuel-fired source of superheated steam for the High Pressure Steam Turbine.
 - #255 Large Combustion Engine (EV): the liquid fuel line above HV.
 - #256 Large Gas Turbine (EV): the gas fuel line above HV.
+- #262 Digester and Dissolution Tank (EV, IV): the lanthanide chain, samarium from ore instead of the stone placeholder (#257).
 
 Follow-ups of this audit:
-- #257: the multiblocks the list missed;
+- #257: the multiblocks the list missed (audited above);
 - #258: the HV steam turbine;
 - #259: the complex SMDs;
 - #260: the cleanroom leftovers and plascrete.
