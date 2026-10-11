@@ -210,9 +210,9 @@ Each runs the recipe map of a machine Gregtorio has: **leave**.
 
 Each verdict is a proposal until the maintainer accepts it.
 
-- #254 Large Titanium Boiler (EV): a fuel-fired source of superheated steam for the High Pressure Steam Turbine.
-- #255 Large Combustion Engine (EV): the liquid fuel line above HV.
-- #256 Large Gas Turbine (EV): the gas fuel line above HV.
+- #254 Large Titanium Boiler (EV): a fuel-fired source of superheated steam for the High Pressure Steam Turbine. Done.
+- #255 Large Combustion Engine (EV): the liquid fuel line above HV. Done.
+- #256 Large Gas Turbine (EV): the gas fuel line above HV. Done.
 - #262 Digester and Dissolution Tank (EV, IV): the lanthanide chain, samarium from ore instead of the stone placeholder (#257).
 
 Follow-ups of this audit:
