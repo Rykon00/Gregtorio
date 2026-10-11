@@ -42,7 +42,7 @@
   the removed intermediates with the JSON migrations of `migrations/`),
   142 recipe unlocks (issue #91: every Gregtorio recipe gets a technology from its explicit table `UNLOCKS`, the
   producers GT has and Gregtorio lacked, the component assembly line and the ender tanks; a recipe that must stay
-  locked goes into the allow-list `FORK_RECIPES_LOCKED` with its reason, devcheck fails otherwise; issue #237: a recipe a technology unlocks must be makeable with the technologies of that science (the highest pack in `SCIENCE_ORDER` of devcheck.py), devcheck names the cause and fails unless it is in the allow-list `FORK_UNLOCK_GAPS` (`<technology>:<cause>`, the open ones point at #239); `KEEP` pins what
+  locked goes into the allow-list `FORK_RECIPES_LOCKED` with its reason, devcheck fails otherwise; issue #237: a recipe a technology unlocks must be makeable with the technologies of that science (the highest pack in `SCIENCE_ORDER` of devcheck.py), devcheck names the cause and fails unless it is in the allow-list `FORK_UNLOCK_GAPS` (`<technology>:<cause>`); a technology's science is the highest of its own and its prerequisites' packs (#239); `KEEP` pins what
   the auto-unlock of 199 placed before, so new unlocks do not move it), 143 casting (issue #91: solidifier casts of every
   form and extractor melts of every ingot from its table `MATERIALS` (tier, technology, the colour of a new melt);
   199's auto-unlock ignores these recipes (`FORK_CASTING.recipes`), else an ingot would count as its own producer;

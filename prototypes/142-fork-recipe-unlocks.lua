@@ -431,7 +431,7 @@ local UNLOCKS = {
 		"coal-sifter", "large-tumbaga-gear",
 	},
 	["smd-components"] = { -- HV
-		"block-of-nickel-zinc-ferrite", "block-of-platinum", "long-platinum-rod", "platinum-foil",
+		"block-of-nickel-zinc-ferrite",
 	},
 	["oil-processing"] = { -- HV
 		"charcoal-byproducts", "charcoal-byproducts-distillation", "toluene-from-wood-tar", "wood-gas-distillation",
@@ -645,7 +645,7 @@ local UNLOCKS_96 = {
 	}, FORK_PLATINUM_LINE.feeds),
 	["platinum"] = { -- EV
 		"platinum-salt", "refined-platinum-salt", "metallic-platinum-powder-from-refined-salt",
-		"reprecipitated-platinum-processing",
+		"reprecipitated-platinum-processing", "block-of-platinum", "long-platinum-rod", "platinum-foil",
 	},
 	["palladium"] = { -- EV
 		"palladium-enriched-ammonia", "palladium-salt", "palladium-salt-from-ammonia", "metallic-palladium-powder-from-salt",
@@ -715,6 +715,47 @@ for _, list in pairs({ UNLOCKS, KEEP, UNLOCKS_98, UNLOCKS_96, UNLOCKS_205, UNLOC
 	end
 end
 
+--- issue #239: the gaps the check of #237 found, as the maintainer decided them (2026-10-11)
+local function move_unlock(recipe, from, to)
+	local t = data.raw.technology[from]
+	local keep, found = {}, false
+	for _, e in pairs(t and t.effects or {}) do
+		if e.type == "unlock-recipe" and e.recipe == recipe then found = true else keep[#keep + 1] = e end
+	end
+	if not found then error("142-fork-recipe-unlocks: " .. from .. " does not unlock " .. recipe) end
+	t.effects = keep
+	fork_add_unlock(to, recipe)
+end
+local function add_prerequisite(tech, pre)
+	local t = data.raw.technology[tech]
+	for _, p in pairs(t.prerequisites or {}) do if p == pre then return end end
+	t.prerequisites = t.prerequisites or {}
+	table.insert(t.prerequisites, pre)
+end
+--- the logistic chests are HV assembler recipes: they come with HV Machines (Logistic System and the ME network stay MV)
+for _, r in pairs({ "requester-chest", "active-provider-chest", "passive-provider-chest", "storage-chest", "buffer-chest" }) do
+	move_unlock(r, "logistic-system", "hv-machines")
+end
+--- the advanced SMDs are IV/LuV parts, as in GTNH: their materials' technologies and the IV Large Chemical Reactor first
+for _, pre in pairs({ "graphene", "qubit-cpus", "vanadium-gallium", "luv-components", "iv-machines" }) do
+	add_prerequisite("advanced-smds", pre)
+end
+--- the osmium solution of the platinum line needs the IV Tall Distillation Tower; HSS-S takes osmium dust, so it follows
+--- Osmium
+add_prerequisite("osmium", "iv-machines")
+add_prerequisite("hsss", "osmium")
+--- the Fluid Nuclear Reactor's iridium neutron reflector takes LuV parts
+add_prerequisite("fluid-nuclear-reactor", "fusion-reactor-mk1")
+add_prerequisite("fluid-nuclear-reactor", "naquadah-processing")
+--- the inductor takes the nickel zinc ferrite ring of SMD Components; the microprocessor assembly, its only user, goes along
+move_unlock("inductor", "microprocessors", "smd-components")
+move_unlock("microprocessor-assembly", "microprocessors", "smd-components")
+--- the SMD diode takes fine platinum wire: with the platinum smelting, Platinum (the SMD variant of the microprocessor
+--- supercomputer waits for it; its plain recipe stays with Microprocessors)
+for _, r in pairs({ "platinum-dust-smelter", "platinum-dust-multismelter", "fine-platinum-wire", "smd-diode" }) do
+	move_unlock(r, "smd-components", "platinum")
+end
+
 
 
 --------------------------------------------------------------------------------
@@ -732,26 +773,6 @@ FORK_UNLOCK_GAPS = {
 	["uev-components:uiv-circuit"] = "GT's field generator takes the next tier's circuit; kept with the components on purpose (128, phase 3 note): craftable once that circuit is",
 	["uiv-components:umv-circuit"] = "GT's field generator takes the next tier's circuit; kept with the components on purpose (128, phase 3 note): craftable once that circuit is",
 	["umv-components:uxv-circuit"] = "GT's field generator takes the next tier's circuit; kept with the components on purpose (128, phase 3 note): craftable once that circuit is",
-	["logistic-system:requester-chest"] = "open gap, decision in #239",
-	["logistic-system:active-provider-chest"] = "open gap, decision in #239",
-	["logistic-system:passive-provider-chest"] = "open gap, decision in #239",
-	["logistic-system:storage-chest"] = "open gap, decision in #239",
-	["advanced-smds:graphene"] = "open gap, decision in #239",
-	["advanced-smds:indium-gallium-phosphide"] = "open gap, decision in #239",
-	["advanced-smds:samarium-ingot"] = "open gap, decision in #239",
-	["advanced-smds:vanadium-gallium-foil"] = "open gap, decision in #239",
-	["advanced-smds:polybenzimidazole"] = "open gap, decision in #239",
-	["advanced-smds:diaminobenzidine"] = "open gap, decision in #239",
-	["advanced-smds:diphenyl-isophthalate"] = "open gap, decision in #239",
-	["advanced-smds:osmium-solution"] = "open gap, decision in #239",
-	["osmium:osmium-solution"] = "open gap, decision in #239",
-	["hsss:osmium-solution"] = "open gap, decision in #239",
-	["fluid-nuclear-reactor:iridium-reinforced-plate"] = "open gap, decision in #239",
-	["fluid-nuclear-reactor:thick-neutron-reflector"] = "open gap, decision in #239",
-	["fluid-nuclear-reactor:hot-coolant"] = "open gap, decision in #239",
-	["microprocessors:nickel-zinc-ferrite-ring"] = "open gap, decision in #239",
-	["smd-components:platinum-dust"] = "open gap, decision in #239",
-	["tier-three-microminers:titanium-plate"] = "open gap, decision in #239",
 }
 
 FORK_RECIPES_LOCKED = {
