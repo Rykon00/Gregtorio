@@ -171,20 +171,12 @@ for n, e in pairs(data.raw["assembling-machine"]) do
 end
 section("SPRITES", sprites)
 
---- Prototypes with a Gregtorio icon, for locale checks (tools/gen_locale.py input format)
-local loc = {}
-local function greg(p) return type(p.icon) == "string" and p.icon:sub(1, 24) == "__gregtorio-continued__/" end
-for t, _ in pairs(defines.prototypes.item) do
-	for n, p in pairs(data.raw[t] or {}) do if greg(p) then loc[#loc + 1] = "item-name\t" .. n end end
-end
-for n, p in pairs(data.raw.fluid) do if greg(p) then loc[#loc + 1] = "fluid-name\t" .. n end end
-for n, p in pairs(data.raw.technology) do
-	if greg(p) and p.enabled ~= false then loc[#loc + 1] = "technology-name\t" .. n end
-end
-for t, _ in pairs(defines.prototypes.entity) do
-	for n, p in pairs(data.raw[t] or {}) do if greg(p) and p.minable then loc[#loc + 1] = "entity-name\t" .. n end end
-end
-section("LOCALE", loc)
+--- Issue #230: the prototypes that stay without a name on purpose (FORK_LOCALE_MISSING in prototypes/fork-locale.lua,
+--- "<class>:<name>" -> reason; absent in older versions). The names themselves are checked on the runtime prototypes
+--- (section NAMES of control.lua): only the engine knows the name it resolves and the mod that created a prototype.
+local lo = {}
+for key, reason in pairs(FORK_LOCALE_MISSING or {}) do lo[#lo + 1] = key .. "\t" .. reason end
+section("LOCALEOK", lo)
 
 --- Technology icons
 local ti = {}
