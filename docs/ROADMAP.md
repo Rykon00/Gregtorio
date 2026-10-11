@@ -32,8 +32,8 @@ UEV = cryogenic, UIV = promethium, then UMV / UXV / max (the stargate; since pha
 | side | Graphics: item and technology icons from GT textures instead of placeholders, own sprites for fusion MK4/MK5, a tier look for the UHV to UXV machines, plasma turbines and naquadah reactors (issues #40, #41) | **done** (`tools/gen_gt_icons.py`, `tools/gen_sprites.py`, review sheets and inventory in `docs/graphics-review/`) |
 | 6a | Quantum force transformer and dimensionally transcendent plasma forge (issue #37, part 1) | **done** (`prototypes/139-fork-endgame-multiblocks.lua`, see "Phase 6a: QFT and DTPF") |
 | 6b | MAX tier and the godforge (issue #37, part 2) | **done** (`prototypes/140-fork-godforge.lua`, `141-fork-max.lua`, see "Phase 6b: MAX tier and godforge") |
-| side | Balance of the tiers from UHV up in the real game, and a look at the new graphics there | open |
-| side | Ore processing as GT New Horizons has it (issue #176): purified, centrifuged, impure and pure forms, thermal centrifuge, chemical bath washing, electromagnetic separator, gem sifting | planned (`docs/ORE-CHAIN.md`, phases O1 to O4: #185 to #188) |
+| side | Balance of the tiers from UHV up in the real game, and a look at the new graphics there | open (in-game checks #247 balance, #248 graphics; question #249) |
+| side | Ore processing as GT New Horizons has it (issue #176): purified, centrifuged, impure and pure forms, thermal centrifuge, chemical bath washing, electromagnetic separator, gem sifting | **done** (`prototypes/155-fork-ore-chain.lua`, `docs/ORE-CHAIN.md`, phases O1 to O4: #185 to #188) |
 
 ## Phase 1: LuV (done)
 
@@ -59,21 +59,17 @@ New technologies (all LuV science):
 
 ### Open points from phase 1
 
-- Still drafts, need later tiers: crystal processor mainframe (UV circuit, ITBTC/enderium
-  superconductor wire), ~~force plasma (arcanite)~~ (removed, issue #39), all MK2+ fusion recipes, ~~lapotronic energy orb
-  cluster (qubit processing unit, naquadah alloy foil)~~ (issue #39, see "Drafts and endgame materials"), ~~the naquadah fuel line
-  (`acid-naquadah-emulsion`, naquadah fuels for the naquadah generator)~~ (done in "Side quest: endgame power").
-- ~~Plasmas are only ingredients so far; there is no plasma generator (GT plasma turbine).~~ Done in "Side quest: endgame power".
-- Fusion in GT needs a start-up energy buffer per recipe; here it is a normal machine with a
-  high power draw (40.96 MW).
-- Balance: the assembly line now runs at IV speed (16) instead of 1, so assembly line recipes take
-  GT time (a LuV motor took 8 minutes before); the circuit assembly line runs at 2x LuV speed.
-- Graphics of the new multiblocks are generated placeholders from GT textures
-  (`tools/gen_sprites.py`); they need a look in the real game.
+- **Done since:** the crystal processor mainframe and every MK2+ fusion recipe (phases 3 to 5b); the lapotronic energy orb
+  cluster and the triage of every draft (issue #39, "Drafts and endgame materials"; force plasma removed); the naquadah fuel
+  line and the plasma turbines ("Side quest: endgame power"); multiblock sprites and icons from GT textures (issues #40, #41).
+- **Kept on purpose:** fusion has no start-up energy buffer per recipe, it is a machine with a high power draw (40.96 MW
+  for the MK1); the assembly line runs at IV speed (16) and the circuit assembly line at 2x LuV speed (64), so assembly
+  line recipes take GT's time.
+- **Open:** the graphics and the balance in the real game (#248, #247).
 
-Outside the phases: some vanilla technologies (armor equipment, inserter capacity bonus,
-`bulk-inserter`, `explosives`, ...) are not researchable in `devcheck`; that was already the case
-before phase 1 (listed and sorted in the final pass of phase 5b; the quality-of-life ones are researchable since issue #29).
+Outside the phases: some vanilla technologies (armor equipment, inserter capacity bonus, `bulk-inserter`, `explosives`,
+...) were not researchable in `devcheck` before phase 1. They are listed and sorted in the final pass of phase 5b: the
+quality-of-life ones are researchable since issue #29, the rest is in `UNRESEARCHABLE_OK` of devcheck.
 
 ### Suggested next step (done in phase 2)
 
@@ -117,23 +113,17 @@ first.
 
 ### Open points from phase 2
 
-- Deviations from GT that later tiers can undo: the ZPM field generator uses 8 ZPM circuits
-  instead of 4 UV circuits (none before phase 3); the ZPM pump uses osmiridium plates instead of
-  the enderium pipe (no enderium line); the ZPM energy hatch uses UHPICs instead of NPICs, naquadah
-  cable instead of the ZPM superconductor (`palladium-naqindium-superconductive-wire`, a draft) and
-  cryogenic helium instead of coolant cells.
-- No ZPM assembly line yet: the ZPM components and the energy hatch are LuV assembly line
-  recipes (the assembly line runs at IV speed, so one component takes 60 s). The drafts that use
-  `zpm-assembly-line-recipes` (energy module, hot isostatic pressurization unit, draconic fusion
-  crafter) need one.
-- Still unused from `23-zpm-age-item.lua`: ZPM dynamo hatch, trinium coil (UV), crystal matrix,
-  energy module, black plutonium / bedrockium / neutronium microminers, hot isostatic
-  pressurization unit, wetware processors, fusion MK2, draconic fusion crafter.
-- Graphics: the ZPM basic machine sprites are generated from GT textures (tinted aqua); the
-  multiblock upgrades keep the graphics of the LuV version; item icons were recolored placeholders
-  (`tools/gen_icons.py`), since issue #40 they come from GT textures (`tools/gen_gt_icons.py`).
-- Upgrade multiblocks return the replaced parts. In phase 3 the UV upgrades will return naquadah
-  coils, so check the auto-unlock of the naquadah coil again.
+- **Done since:**
+  - The ZPM field generator takes 4 UV circuits.
+  - The ZPM pump takes enderium plates.
+  - The ZPM energy hatch takes the palladium-naqindium superconductor and NPICs (phase 3, "Side quest: water purification
+    grades 7 and 8").
+  - The ZPM assembly line exists (phase 3).
+  - The drafts of `23-zpm-age-item.lua` were made real or removed (issue #39).
+  - Item icons come from GT textures (issue #40).
+- **Kept on purpose:** the ZPM energy hatch is cooled with cryogenic helium (GT: IC2 coolant cells, see phase 4); upgrade
+  multiblocks return the replaced parts.
+- **Open:** the graphics and the balance in the real game (#248, #247).
 
 ### Suggested next step (done in phase 3)
 
@@ -221,21 +211,17 @@ Existing saves that already researched `zpm-components` lose the ZPM field gener
 
 ### Open points from phase 3
 
-- Wetware processors (UHV circuit) and the UHV field generator: phase 4. The UV field generator stays on 8 UV
-  circuits until then.
-- PPIC and NPIC chips need the water purification line; the MK2 controller and the ZPM/UV hatches use UHPICs.
-- Still drafts: ~~force plasma (arcanite), astral titanium and runite plasma~~ (removed, issue #39), ~~the liquid fuels and the naquadah
-  fuel (`excited-*-liquid-fuel`, `naquadah-based-fuel-mk1`)~~ (done in "Side quest: endgame power"), `advanced-fusion-coil` (needs the UHV emitter).
-- `fusion-machine-casing-mk2` is a real recipe now (americium plate) but no tech unlocks it: it belongs to the MK3.
-- ~~Plasmas are still only ingredients; there is no plasma generator.~~ Done in "Side quest: endgame power".
-- ~~Balance: the lutetium yield (4 rare earth dust -> 1 lutetium) and the 384 fine americium wires per UV motor make
-  the UV motor the bottleneck (48 americium ingots = 4 minutes of one MK2 reactor).~~ Issue #31, see "Balance pass: endgame": 64 fine
-  americium wires, the large neutronium gear 4 ingots, the lutetium yield kept on purpose.
-- Still unused from `25-uv-age-item.lua`: research station, draconic fusion crafter tiers, nano forge, bio
-  processors, cosmic neutronium, component assembly line, ~~UV dynamo hatch~~ (done in "Side quest: endgame power").
-- Graphics: the UV basic machine sprites are generated from GT textures (tinted green), the MK2 reactor uses the
-  GT fusion casing MK2 texture, item and technology icons were recolored placeholders (`tools/gen_icons.py`); since
-  issue #40 they come from GT textures (`tools/gen_gt_icons.py`).
+- **Done since:**
+  - The wetware line and the UHV circuit came in phase 4.
+  - The UV field generator takes 4 UHV circuits, as in GT. It stays with the UV components on purpose (`FORK_UNLOCK_GAPS`).
+  - PPIC and NPIC chips come from the water purification line.
+  - `fusion-machine-casing-mk2` and the advanced fusion coil come with Fusion Reactor MK3.
+  - The naquadah fuels and the plasma turbines were added ("Side quest: endgame power").
+  - The lutetium and americium balance was done in issue #31 ("Balance pass: endgame"); the lutetium yield is kept on
+    purpose.
+  - The drafts of `25-uv-age-item.lua` were triaged in issue #39.
+  - Icons come from GT textures (issue #40).
+- **Open:** the graphics and the balance in the real game (#248, #247).
 
 ### Suggested next step (done in phase 4)
 
@@ -353,25 +339,18 @@ in game.
 
 ### Open points from phase 4
 
-- Still drafts: ~~force plasma (arcanite), astral titanium and runite plasma~~ (removed, issue #39), ~~the liquid fuels and the naquadah fuel~~ (done in "Side quest: endgame power"),
-  the MK4 and MK5 reactors (`fusion-reactor-mk4-controller` needs UEV circuits, `fusion-machine-casing-mk3` a category
-  typo `uvh-...`, `advanced-fusion-coil-ii` the energy module), the UEV, UIV and UMV superconductor coil blocks,
-  bio cells.
-- ~~PPIC, NPIC and QPIC chips (water purification line) and complex SMDs: the MK3 controller, the ZPM to UHV hatches and
-  the wetware mainframe use UHPICs and advanced SMDs.~~ Done in phase 5a and "Side quest: water purification grades 7 and 8".
-- ~~Plasmas (also iron plasma) are still only ingredients; there is no plasma generator.~~ Done in "Side quest: endgame power".
-- No ~~fluxed electrum~~, draconium, cosmic neutronium or ~~bedrockium~~: tritanium and triamerotronium stand in for them (fluxed electrum
-  and bedrockium since issue #36; draconium and cosmic neutronium came in phase 5a).
-- ~~The UV energy hatch cooling and the UHV one use cryogenic helium; there are no super coolant cells (draft
-  `super-coolant` needs callisto ice).~~ Issue #36: super coolant and the 1080k super coolant cell exist; GT cools the UV and UHV hatches
-  with IC2 coolant, so they keep cryogenic helium.
-- Still unused from `27-uhv-age-item.lua`: ~~UHV dynamo hatch~~ (done in "Side quest: endgame power"), awakened draconium coil block (UEV), attuned tengam
-  microminer, integrated ore factory, neutronium compressor, singularities.
-- Graphics: the UHV basic machine sprites are generated from GT textures (tinted red), the MK3 reactor uses the GT
-  fusion casing MK2 texture and the MK3 overlay, item and technology icons were recolored placeholders
-  (`tools/gen_icons.py`) and the wetware items and stem cells reused unrelated neighbor icons. Since issues #40 and #41
-  the icons come from GT textures and the UHV machines show the GT hull of their tier around the machine.
-- Balance is untested in game (see the table above).
+- **Done since:**
+  - The MK4 and MK5 reactors were built in phases 5a and 5b.
+  - The PPIC to QPIC chips and the complex SMDs (Gregtorio's own, #259) came in phase 5a and with the water purification
+    line.
+  - The plasma turbines and the UHV dynamo hatch came with the "Side quest: endgame power".
+  - Fluxed electrum, bedrockium and super coolant came with issue #36; draconium and cosmic neutronium came in phase 5a.
+  - The drafts of `27-uhv-age-item.lua` were triaged in issue #39; the superconductor coil blocks and the bio cells are
+    gone.
+  - `docs/MULTIBLOCK-AUDIT.md` gives the integrated ore factory and the neutronium compressor leave and n/a.
+  - Icons and machine hulls come from GT textures (issues #40, #41).
+- **Kept on purpose:** the UV and UHV energy hatches are cooled with cryogenic helium (GT uses IC2 coolant).
+- **Open:** the graphics and the balance in the real game (#248, #247).
 
 ### Suggested next step (done in phase 5a)
 
@@ -491,16 +470,16 @@ The cosmic neutronium of a UEV part includes the 18 ingots of melt in its fluids
 
 ### Open points from phase 5a
 
-- Fusion MK5: needs `advanced-fusion-coil-ii` (energy module, compact fusion coil, rhugnor plate), `fusion-machine-casing-mk4` (naquadah alloy block, chromatic
-  glass) and molten rhugnor (infinity + molten quantum), which no line makes. The MK4 drafts `molten-rhugnor` and `molten-flerovium` (plutonium-241) stay drafts.
-- ~~Water purification grades 7 and 8, FPIC/APIC chips, complex SMDs.~~ Done, see "Side quest: water purification grades 7 and 8".
-- ~~Most plasmas (sulfur, nitrogen, zinc, niobium, tin, titanium, oxygen, neon, boron, calcium) are still only ingredients or unused; there is no plasma generator.~~ Done in "Side quest: endgame power".
-- No ~~bedrockium, fluxed electrum~~, UU matter, ~~quantium~~, attuned tengam, ~~super coolant~~ (issue #36; UU matter is not built, see "Drafts and endgame materials"). The ~~quantum force transformer, dimensional plasma forge~~ (phase 6a), godforge
-  and the rest of `29-uev-age-item.lua` / `31-uiv-age-item.lua` are for later.
-- Graphics: the UEV/UIV basic machine sprites are generated from GT textures (tinted gold and blue, since issue #41 inside the GT hull of
-  their tier), the MK4 reactor reused the MK3 art (own art since issue #41), the new items and technologies had recolored placeholder
-  icons (`tools/gen_icons.py`, `tools/gen_tech_icons.py`; GT textures since issue #40).
-- Balance is untested in game (see the table above).
+- **Done since:**
+  - Fusion MK5 came in phase 5b, with the advanced fusion coil II, fusion casing MK4, and molten rhugnor and flerovium from
+    the MK4 reactor.
+  - Water purification grades 7 and 8 and the FPIC and APIC chips were added.
+  - The plasma turbines were added.
+  - Bedrockium, fluxed electrum, quantium and super coolant came with issue #36.
+  - The QFT and the plasma forge came in phase 6a, the godforge in phase 6b.
+  - The MK4 reactor has its own art, and the icons come from GT textures (issues #40, #41).
+- **Not built:** UU matter (decided in issue #36, "Drafts and endgame materials") and attuned tengam.
+- **Open:** the graphics and the balance in the real game (#248, #247).
 
 ### Suggested next step (done in phase 5b)
 
@@ -684,18 +663,17 @@ The inserter capacity bonuses start at MV instead of LV: level 1 only raises the
 
 ### Open points from phase 5b
 
-- The MK5 reused the MK3 art, the UMV/UXV basic machine sprites were tinted GT textures (violet and white), the new item icons were recolored placeholders
-  (`tools/gen_icons.py`; the stargate parts and the exotic/temporal items reused unrelated neighbor icons), the new technologies have icons of their main item.
-  Since issues #40 and #41: own MK5 art, the UMV/UXV machines inside the GT hull of their tier, item icons from GT textures (the stargate parts from
-  the GTNH core mod).
-- ~~Balance is untested in game: the pack counts of the last techs (see above), the stargate (20 500 universium ingots), the QPIC counts of the hatches.~~
-  Issues #30, #31, #33: see "Balance pass: endgame" (the hatches use APICs since #52); still to be played.
-- Not built: the GT ~~quantum force transformer, dimensional plasma forge~~ (phase 6a), godforge, magmatter, dark matter, mellion, shirabon, six-phased copper, the eye of harmony and the
-  UXV/MAX-only items of `90-uxv-age-item.lua` (mega ultimate battery, ridiculously large capacitor, artificial universe cell, ...). There is no MAX tier: no MAX circuit,
-  hatch or machines.
-- Still drafts (29, 21 since the endgame power side quest): ~~force plasma (arcanite), astral titanium and runite plasma~~ (removed), ~~the liquid fuels and naquadah fuel~~, ~~plutonium/high-density plutonium~~ (made real), ~~super coolant~~ (made real), ~~UU
-  matter (magic essence, void/shadow metal, ichorium)~~ (removed), ~~1080k space cell~~ (made real), ~~the naquadah cracking chains, orundum~~ (removed), ~~the lapotronic energy orb cluster draft~~ (made real), ~~bio cells for
-  microminers~~ (the tier five infused gold microminer, removed). Issues #39 and #36, see "Drafts and endgame materials".
+- **Done since:**
+  - Graphics: own MK5 art, the UMV and UXV machines in the GT hull of their tier, item icons from GT textures (issues #40,
+    #41).
+  - The balance pass of the last techs, the stargate and the hatch ICs (issues #30, #31, #33, "Balance pass: endgame").
+  - The QFT and the plasma forge (phase 6a).
+  - The godforge, magmatter and the MAX tier (phase 6b).
+  - Every draft of 29 and 21 made real or removed (issues #39, #36).
+- **Open:**
+  - The balance in the real game (#247).
+  - The eye of harmony, dark matter, mellion, shirabon and six-phased copper (the open points of phase 6b, question #249).
+  - The graphics in the real game (#248).
 
 ### Suggested next step
 
@@ -711,8 +689,8 @@ Side quests, in the order that helps the endgame most:
 4. ~~AE2 autocrafting~~ (done, see "Side quest: AE2 autocrafting").
 5. ~~The technologies of the final pass list: decide for each "open" one whether it gets a Gregtorio gate or is hidden.~~ (done, issue #29: all 23 are
    researchable, see "Final pass" above).
-6. A MAX tier (MAX circuit, hatch, machines, and the GT items the stargate could take) if the endgame should go on after `victory`
-   (issue #37: phase 6a, the QFT and the DTPF, is done; phase 6b is the MAX tier and the godforge).
+6. ~~A MAX tier (MAX circuit, hatch, machines, and the GT items the stargate could take) if the endgame should go on after `victory`~~
+   (done: issue #37, phase 6a the QFT and the DTPF, phase 6b the MAX tier and the godforge).
 
 ## Drafts and endgame materials (issues #39 and #36)
 
