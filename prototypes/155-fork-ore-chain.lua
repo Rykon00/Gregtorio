@@ -1372,6 +1372,39 @@ do
 		results = { item("copper-ingot", 3), item("ash-dust", 1, 0.2222), fluid("carbon-dioxide", 300) } })
 	unlock_after(name, { machine_techs("mv-electric-blast-furnace-recipes"), item_techs("malachite-dust") })
 end
+--- Issue #225: GT's potash (K2O) and banded iron (Fe2O3; MaterialsInit.java: dust items with an electrolyzer recipe,
+--- banded iron smelts into iron) and the use of GT's ashes: the LV centrifuge (CentrifugeRecipes.java:662-673) turns 36
+--- ashes into 18 quicklime (64 %), 9 potash (60 %), a magnesia (45 %), 2 phosphorus pentoxide, a soda ash (sodium
+--- carbonate) and 4 banded iron in 5 min. Their decomposition (ProcessingDust.java:240-241): 2 ticks per proton and input
+--- dust, 30 EU/t per item output (the oxygen is a fluid): potash 3 dusts (15 protons) -> 2 potassium + 100 oxygen in
+--- 4.5 s, banded iron 5 dusts (15 protons) -> 2 iron dust + 300 oxygen in 7.5 s, both LV. Banded iron smelts into an iron
+--- ingot and in the MV blast furnace (BlastFurnaceRecipes.java:142-150): 2 dusts + carbon -> 3 iron ingots, ashes
+--- 22.22 % and 100 carbon dioxide, 12 s, 1200 K.
+add_item("potash-dust", "subgroup-macerator-dust", "z-potash-dust")
+add_item("banded-iron-dust", "subgroup-macerator-dust", "z-banded-iron-dust")
+do
+	local name = made(recipe{ name = "ash-dust-centrifuging", category = "lv-centrifuge-recipes", time = 300 * LV_SPEED,
+		subgroup = "subgroup-lv-centrifuge-recipes",
+		main = "quicklime", ingredients = { item("ash-dust", 36) },
+		results = { item("quicklime", 18, 0.64), item("potash-dust", 9, 0.6), item("magnesia", 1, 0.45),
+			item("phosphorus-pentoxide", 2), item("sodium-carbonate", 1), item("banded-iron-dust", 4) } })
+	unlock_after(name, { machine_techs("lv-centrifuge-recipes"), item_techs("ash-dust") })
+	for _, d in pairs({
+		{ "potash-dust", 4.5, 3, { item("potassium", 2), fluid("oxygen", 100) } },
+		{ "banded-iron-dust", 7.5, 5, { item("iron-dust", 2), fluid("oxygen", 300) } },
+	}) do
+		local e = made(recipe{ name = d[1] .. "-decomposition", category = "lv-electrolyzer-recipes", time = d[2] * LV_SPEED,
+			subgroup = "subgroup-lv-electrolyzer-recipes",
+			ingredients = { item(d[1], d[3]) }, results = d[4], main = d[4][1].name })
+		unlock_after(e, { machine_techs("lv-electrolyzer-recipes"), item_techs(d[1]) })
+	end
+	smelt("banded-iron-dust", "iron-ingot", 1)
+	local ebf = made(recipe{ name = "banded-iron-dust-blast-furnace", category = "mv-electric-blast-furnace-recipes",
+		subgroup = "subgroup-mv-electric-blast-furnace-recipes",
+		time = 12 * MV_SPEED, main = "iron-ingot", ingredients = { item("banded-iron-dust", 2), item("carbon") },
+		results = { item("iron-ingot", 3), item("ash-dust", 1, 0.2222), fluid("carbon-dioxide", 100) } })
+	unlock_after(ebf, { machine_techs("mv-electric-blast-furnace-recipes"), item_techs("banded-iron-dust") })
+end
 log("FORK-ORE-CHAIN: " .. pbf .. " bricked blast furnace recipes of ore dusts (issue #223)")
 
 --------------------------------------------------------------------------------

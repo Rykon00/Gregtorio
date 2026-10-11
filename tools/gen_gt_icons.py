@@ -147,6 +147,7 @@ MATERIALS = {
     "naquadria-oxide-mixture": ("METALLIC", (77, 77, 85)), "indium-phosphate": ("DULL", (43, 46, 112)),
     "low-quality-naquadria-phosphate": ("DULL", (77, 77, 85)),
     "ash": "Ash",  # issue #223: GT's Ashes (bricked blast furnace with coke, malachite's blast furnace recipe)
+    "potash": "Potash", "banded-iron": "BandedIron",  # issue #225: GT's dusts of the ash centrifuge
     # issue #227: the metals whose GT parts are new (GT materials; GT++ alloys: set and colour of MaterialsAlloy.java)
     "annealed-copper": "AnnealedCopper",
     "battery-alloy": "BatteryAlloy",
