@@ -721,6 +721,39 @@ end
 --- 4) RECIPES THAT STAY LOCKED (devcheck's allow-list, read from the dump of checkmod)
 --------------------------------------------------------------------------------
 
+--- issue #237: recipes a technology unlocks before the technologies of its science can make them, kept on purpose:
+--- "<technology>:<cause>" -> reason (the cause as `devcheck.py check` names it: the first missing item, or the recipe
+--- whose machine is missing); devcheck fails for any other such recipe and for an entry that matches nothing
+FORK_UNLOCK_GAPS = {
+	["ore-washing:tier-three-microminer-output"] = "ore processing of an ore that only the tier three microminer missions bring; the recipes wait for the ore",
+	["multismelter:tier-three-microminer-output"] = "ore processing of an ore that only the tier three microminer missions bring; the recipes wait for the ore",
+	["uv-components:uhv-circuit"] = "GT's field generator takes the next tier's circuit; kept with the components on purpose (128, phase 3 note): craftable once that circuit is",
+	["uhv-components:uev-circuit"] = "GT's field generator takes the next tier's circuit; kept with the components on purpose (128, phase 3 note): craftable once that circuit is",
+	["uev-components:uiv-circuit"] = "GT's field generator takes the next tier's circuit; kept with the components on purpose (128, phase 3 note): craftable once that circuit is",
+	["uiv-components:umv-circuit"] = "GT's field generator takes the next tier's circuit; kept with the components on purpose (128, phase 3 note): craftable once that circuit is",
+	["umv-components:uxv-circuit"] = "GT's field generator takes the next tier's circuit; kept with the components on purpose (128, phase 3 note): craftable once that circuit is",
+	["logistic-system:requester-chest"] = "open gap, decision in #239",
+	["logistic-system:active-provider-chest"] = "open gap, decision in #239",
+	["logistic-system:passive-provider-chest"] = "open gap, decision in #239",
+	["logistic-system:storage-chest"] = "open gap, decision in #239",
+	["advanced-smds:graphene"] = "open gap, decision in #239",
+	["advanced-smds:indium-gallium-phosphide"] = "open gap, decision in #239",
+	["advanced-smds:samarium-ingot"] = "open gap, decision in #239",
+	["advanced-smds:vanadium-gallium-foil"] = "open gap, decision in #239",
+	["advanced-smds:polybenzimidazole"] = "open gap, decision in #239",
+	["advanced-smds:diaminobenzidine"] = "open gap, decision in #239",
+	["advanced-smds:diphenyl-isophthalate"] = "open gap, decision in #239",
+	["advanced-smds:osmium-solution"] = "open gap, decision in #239",
+	["osmium:osmium-solution"] = "open gap, decision in #239",
+	["hsss:osmium-solution"] = "open gap, decision in #239",
+	["fluid-nuclear-reactor:iridium-reinforced-plate"] = "open gap, decision in #239",
+	["fluid-nuclear-reactor:thick-neutron-reflector"] = "open gap, decision in #239",
+	["fluid-nuclear-reactor:hot-coolant"] = "open gap, decision in #239",
+	["microprocessors:nickel-zinc-ferrite-ring"] = "open gap, decision in #239",
+	["smd-components:platinum-dust"] = "open gap, decision in #239",
+	["tier-three-microminers:titanium-plate"] = "open gap, decision in #239",
+}
+
 FORK_RECIPES_LOCKED = {
 	["calcium"] = "upstream placeholder without ingredients (an item from nothing); calcium comes from fluorspar",
 	["cerium-rich-mixture"] = "upstream placeholder without ingredients; the mixture comes from bastnasite",

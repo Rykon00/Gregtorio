@@ -88,6 +88,12 @@ local lk = {}
 for name, reason in pairs(FORK_RECIPES_LOCKED or {}) do lk[#lk + 1] = name .. "\t" .. reason end
 section("LOCKEDOK", lk)
 
+--- Issue #237: the causes of recipes unlocked before their technology's science can make them, kept on purpose
+--- (FORK_UNLOCK_GAPS in prototypes/142-fork-recipe-unlocks.lua, "<technology>:<cause>" -> reason; absent in older versions)
+local ug = {}
+for key, reason in pairs(FORK_UNLOCK_GAPS or {}) do ug[#ug + 1] = key .. "\t" .. reason end
+section("UNLOCKGAPOK", ug)
+
 --- Issue #126: the recipes of items only the crafting table, the ME Molecular Assembler or the hand can make, on purpose
 --- (FORK_RECIPES_TABLE_ONLY in prototypes/148-fork-gtnh-table-items.lua; absent in older versions)
 local tk = {}
