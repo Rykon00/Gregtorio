@@ -787,4 +787,7 @@ FORK_RECIPES_LOCKED = {
 	["centrifuging-crushed-firestone"] = "needs crushed firestone",
 	["raw-firestone-ore-smelter"] = "no source of firestone ore",
 	["raw-firestone-ore-multismelter"] = "no source of firestone ore",
+	--- issue #215 (the maintainer's decision): armour equipment that needs an armour with an equipment grid and a power
+	--- source in it, which Gregtorio does not have (the vanilla armour and equipment technologies are disabled)
+	["me-wireless-module"] = "armour equipment; Gregtorio has no armour with an equipment grid (the Wireless ME Terminal item does the same)",
 }
