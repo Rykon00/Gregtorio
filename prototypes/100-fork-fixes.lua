@@ -192,3 +192,13 @@ if data.raw.recipe["lv-science-pack"] then
 	r.results = { { type = "item", name = "logistic-science-pack", amount = 2 } }
 	r.main_product = "logistic-science-pack"
 end
+
+--- Issue #239: the tier three microminer parts take stainless steel plates instead of titanium plates. Titanium is EV
+--- (production packs), Tier Three Microminers HV, and the Production Science Pack technology needs Tier Three Microminers:
+--- titanium as its prerequisite would deadlock, so the reinforced mining laser and the titanium heavy plating take the
+--- HV plate (same amounts)
+for _, name in pairs({ "reinforced-mining-laser", "titanium-heavy-plating" }) do
+	for _, i in pairs(data.raw.recipe[name].ingredients) do
+		if i.name == "titanium-plate" then i.name = "stainless-steel-plate" end
+	end
+end

@@ -113,7 +113,7 @@ local MATERIALS = {
 	["indovanadium"] = { "hv", "space-science-pack" },
 	["neodymium"] = { "hv", "hv-machines", melt = true },
 	["nichrome"] = { "hv", "nichrome-coils" },
-	["platinum"] = { "hv", "smd-components", color = { 255, 255, 200 } },
+	["platinum"] = { "hv", "platinum", color = { 255, 255, 200 } },   -- issue #239: platinum comes with Platinum (EV)
 	["rtm-alloy"] = { "hv", "alloy-blast-smelting-older-materials" },
 	["staballoy"] = { "hv", "staballoy" },
 	["talonite"] = { "hv", "industrial-cutting-factory" },
