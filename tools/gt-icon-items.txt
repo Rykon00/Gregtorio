@@ -1318,7 +1318,6 @@ dense-pulsating-iron-plate
 dense-quantium-plate
 dense-red-alloy-plate
 dense-samarium-plate
-dense-signalum-plate
 dense-silicon-plate
 dense-silver-plate
 dense-soularium-plate
@@ -1427,7 +1426,6 @@ double-pulsating-iron-plate
 double-quantium-plate
 double-red-alloy-plate
 double-samarium-plate
-double-signalum-plate
 double-silicon-plate
 double-silver-plate
 double-soularium-plate
@@ -1613,7 +1611,6 @@ fine-palladium-naqindium-wire
 fine-pulsating-iron-wire
 fine-quantium-wire
 fine-samarium-wire
-fine-signalum-wire
 fine-silicon-wire
 fine-silver-wire
 fine-soularium-wire
@@ -1945,7 +1942,6 @@ long-palladium-rod
 long-pulsating-iron-rod
 long-quantium-rod
 long-red-alloy-rod
-long-signalum-rod
 long-silicon-rod
 long-silver-rod
 long-soularium-rod
@@ -2257,15 +2253,6 @@ samarium-plate
 samarium-round
 samarium-screw
 samarium-spring
-signalum-bolt
-signalum-foil
-signalum-frame
-signalum-item-casing
-signalum-nugget
-signalum-ring
-signalum-round
-signalum-screw
-signalum-spring
 silicon-bolt
 silicon-foil
 silicon-frame
@@ -2378,7 +2365,6 @@ small-pulsating-iron-spring
 small-quantium-spring
 small-red-alloy-spring
 small-samarium-spring
-small-signalum-spring
 small-silicon-spring
 small-silver-spring
 small-soularium-spring
@@ -2497,7 +2483,6 @@ superdense-pulsating-iron-plate
 superdense-quantium-plate
 superdense-red-alloy-plate
 superdense-samarium-plate
-superdense-signalum-plate
 superdense-silicon-plate
 superdense-silver-plate
 superdense-soularium-plate

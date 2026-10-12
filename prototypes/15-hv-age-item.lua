@@ -493,23 +493,6 @@ create_recipe{
 
   
   
----RADON 
-create_recipe{
-	recipe_name = "radon-salt-electrolysis",
-	category = "hv-electrolyzer-recipes",
-	energy_required = 80,
-	ingredients = {
-		{ type = "item", name = "radon-salt", amount = 1 }
-	},
-	results = {
-		{ type = "fluid", name = "radon", amount = 100 },
-		{ type = "item", name = "rock-salt", amount = 1 },
-	},
-	main_product = "radon"
-}
-   
-
-
 ---QUANTUM EYE
 create_item{
 	name = "quantum-eye",
@@ -1572,54 +1555,13 @@ create_recipe{
    
    
    
----ENDER TANK
+---ENDER PEARL BLOCK
 create_item{
 	name = "ender-pearl-block",
 	category = "lv-compressor-recipes",
 	energy_required = 15,
 	ingredients = {
 		{ type = "item", name = "ender-pearl", amount = 9 },
-	}
-}
-create_item{
-	name = "ender-tank",
-	category = "hv-assembling-machine-recipes",
-	energy_required = 16,
-	ingredients = {
-		{ type = "item", name = "blaze-rod", amount = 8 },
-		{ type = "item", name = "obsidian", amount = 3 },
-		{ type = "item", name = "storage-tank", amount = 1 },
-		{ type = "item", name = "ender-pearl-block", amount = 1 },
-	},
-}
-
-
-
----NETHER AIR ENDER TANK
-create_item{
-	name = "nether-air-ender-tank",
-	category = "hv-microverse-projector-recipes",
-	energy_required = HV_SPEED * 120,
-	subgroup = "subgroup-microminer-t2",
---	place_result = "nether-air-ender-tank",
-	stack_size = 10,
-	ingredients = {
-      {type = "item", name = "stainless-steel-plated-microminer", amount = 1},
-      {type = "item", name = "nether-data", amount = 1},
-      {type = "item", name = "hv-air-collector", amount = 1},
-      {type = "item", name = "ender-tank", amount = 2},
-      {type = "fluid", name = "diesel", amount = 600},
-
-    }
-}
-create_recipe{
-	recipe_name = "nether-air-collection",
-	category = "nether-air-ender-tank-recipes",
-	subgroup = "subgroup-microminer-t2",
-	energy_required = 10,
-	ingredients = { },
-	results = {
-		{ type = "fluid", name = "nether-air", amount = 1000 },
 	}
 }
 
@@ -1658,35 +1600,6 @@ create_recipe{
 		{ type = "item", name = "gold-dust", amount = 1 },
 	},
 	main_product = "carbon-monoxide"
-}
-
-
-
----ENDER AIR ENDER TANK
-create_item{
-	name = "ender-air-ender-tank",
-	category = "ev-microverse-projector-recipes",
-	energy_required = EV_SPEED * 150,
-	subgroup = "subgroup-microminer-t2",
---	place_result = "ender-air-ender-tank",
-	stack_size = 10,
-	ingredients = {
-      {type = "item", name = "titanium-plated-microminer", amount = 1 },
-      {type = "item", name = "the-end-data", amount = 1 },
-      {type = "item", name = "ev-air-collector", amount = 1},
-      {type = "item", name = "ender-tank", amount = 2},
-      {type = "fluid", name = "rocket-fuel", amount = 800 },
-    }
-}
-create_recipe{
-	recipe_name = "ender-air-collection",
-	category = "ender-air-ender-tank-recipes",
-	subgroup = "subgroup-microminer-t2",
-	energy_required = 10,
-	ingredients = { },
-	results = {
-		{ type = "fluid", name = "ender-air", amount = 1000 },
-	}
 }
 
 

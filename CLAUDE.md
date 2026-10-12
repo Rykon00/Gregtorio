@@ -59,8 +59,14 @@
     the rhodium, ruthenium, osmium and iridium branches, the direct platinum and palladium dust recipes turned into
     metallic powder; loads after 147 and before 142, block `UNLOCKS_96`; old saves map the removed intermediates with
     the JSON migrations of `migrations/`)
+  - 160 dimension mines (issue #283, decision of #154: Reach the Nether/End technologies, hunting blazes, Endermen
+    and (issue #287) zombies, molybdenum vein, soul sand, end stone, nether/ender air intakes; radon from ender air at
+    HV; issue #284: Reach the Moon / Reach Mars with their veins and the moon turf dig site; issue #285: Reach the
+    Asteroid Belt, the Jovian Moons and Venus; issue #286: Void Miners I-III, `VOID_POOLS` from GT's veins and small
+    ores (tools: none, generated once from OreMixes/SmallOres); loads after 146 and **before** 142 (issue #287: the
+    unlock table of 142 and the ore chains of 155 see the mines; the rules are in 161))
   - 142 recipe unlocks (issue #91: every Gregtorio recipe gets a technology from its explicit table `UNLOCKS`, the
-    producers GT has and Gregtorio lacked, the component assembly line and the ender tanks; a recipe that must stay
+    producers GT has and Gregtorio lacked and the component assembly line; a recipe that must stay
     locked goes into the allow-list `FORK_RECIPES_LOCKED` with its reason, devcheck fails otherwise; issue #237: a
     recipe a technology unlocks must be makeable with the technologies of that science (the highest pack in
     `SCIENCE_ORDER` of devcheck.py), devcheck names the cause and fails unless it is in the allow-list
@@ -107,7 +113,7 @@
   - 153 compressor air (issue #153: GTNH has no air collector; the recipe `air-collection` (name kept) is a compressor
     recipe, every electric compressor has the old air collector's two output ports, the air collectors LV to MAX are
     gone and old saves map them onto the compressor of their tier with
-    `migrations/2026-10-06-issue-153-air-collector.json`; the ender tanks of 142 take the HV and EV compressor; loads
+    `migrations/2026-10-06-issue-153-air-collector.json`; loads
     after 142 and 149 and before 150)
   - 154 greenhouse (issue #165: `lv-greenhouse` (name kept) is GTNH's Extreme Industrial Greenhouse, the only
     greenhouse; the MV to MAX greenhouses are gone and old saves map them onto it with
@@ -142,11 +148,9 @@
     #274: hafnium from GT++'s ilmenite sifter, the EV-ZPM Chemical Dehydrators with their coils (technologies
     `<tier>-chemical-dehydrator`), lanthanum hexaboride's gem forms, chloromethane, gangue and the roasting's fluorine;
     loads after 158 and before 156)
-  - 160 dimension mines (issue #283, decision of #154: Reach the Nether/End technologies, hunting blazes and
-    Endermen, molybdenum vein, soul sand, end stone, nether/ender air intakes; radon from ender air at HV; issue #284:
-    Reach the Moon / Reach Mars with their veins, `ore_dimension` moves or gates the ore chains; issue #285: Reach the
-    Asteroid Belt, the Jovian Moons and Venus; issue #286: Void Miners I-III, `VOID_POOLS` from GT's veins and small
-    ores (tools: none, generated once from OreMixes/SmallOres); loads after 159 and before 156)
+  - 161 dimension unlocks (issue #287: the unlock rules of 160, `ore_dimension` moves or gates the ore chains of the
+    dimensions' ores, the ender air with Radon, black plutonium with the Void Miner II, the bornite chain locked until
+    Ross128 (issue #293); loads after 159 and before 156)
   - 156 circuit icons (issue #164: the circuit variant recipes up to UV keep the shared tier item and show GT's texture
     of their GTNH item as recipe icon; devcheck fails for a tier circuit recipe without its own icon)
   - 157 recycling (issue #190: GTNH's material recycling into dusts, ingots and melts for the items of crafting table
@@ -157,9 +161,6 @@
   - 190 manual-labor burner usage (fist icon in the fuel slot)
   - 191 burner fire (issue #137: the fire animations of the stone and iron furnace and the small coal boiler, drawn only
     while they work; `tools/gen_fire_sprites.py`)
-  - 195 microminer tab (issue #120: the Microverse Projectors as the first row of the Microminer tab, one row per tier
-    t1 to t4 with its microminer, data, mission and ender tank, empty rows deleted; devcheck fails for a projector
-    recipe outside the tab)
   - 196 subgroups (the Fluids tab: every Gregtorio fluid gets a row of the item group `fluids` by its explicit table or
     a name pattern; a new fluid goes into one, the fallback row `gregtorio-fluids-unsorted` is a devcheck warning; issue
     #119: Gregtorio icons for molten iron, molten copper and steam, the twelve unused vanilla fluids hidden

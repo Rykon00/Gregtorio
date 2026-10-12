@@ -2,7 +2,7 @@
 --- FORK GT ROUTES (issue #98): the leftovers of the recipe audit (#91), as GregTech New Horizons has them
 ---   1) the PECA board deleted (GT has no polyethylcyanoacrylate; its plastic boards stop at polybenzimidazole, 8
 ---      boards), the printed board at GT's 40 s and GT's second printed board with sodium persulfate
----   2) black plutonium and cosmic neutronium dust (microminer missions) through GT's blast furnace and vacuum
+---   2) black plutonium and cosmic neutronium dust (Void Miner ores, 160) through GT's blast furnace and vacuum
 ---      freezer; the black plutonium melt and casts are made by 143 (MATERIALS), the cosmic neutronium ingot exists
 ---   3) the high octane gasoline line (hydrocracked light fuel, octane, nitrous oxide, anti-knock agent) with its cell
 ---   4) GT's deuterium from hydrogen instead of upstream's water recipe; exhausted water, butyraldehyde and imaginary
@@ -272,7 +272,7 @@ F.tech{
 --- 4) THE FLUIDS LEFT OVER
 --- Deuterium: GT centrifuges it from hydrogen, 160 L -> 40 L, LV, 8 s (GT CentrifugeRecipes.java:504-509); upstream's
 --- recipe of the same name (13-mv-age-item.lua: water -> deuterium and exhausted water, a fluid GT does not have)
---- becomes GT's, so its technology (microversium) and the machines that run it keep it.
+--- becomes GT's, so its technology and the machines that run it keep it.
 --- Butyraldehyde (GT: from propene with an organorhodium catalyst, used only for butanol, ChemicalRecipes.java:
 --- 3780-3789, 4795-4817, 5889-5896) and imaginary time (not in GT) had no producer and no use here: deleted.
 --- Molten sunnarium (fusion MK1): GT's PPIC wafer, NPIC wafer + 64 indium gallium phosphide + 1440 L molten

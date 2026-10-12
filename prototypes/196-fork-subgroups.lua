@@ -102,11 +102,11 @@ put("molten-superalloys", { "molten-hastelloy-c276", "molten-hastelloy-w", "molt
 put("molten-exotic", { "molten-naquadah", "molten-naquadah-alloy", "molten-naquadria", "molten-trinium",
 	"molten-tritanium", "molten-duranium", "molten-neutronium", "molten-cosmic-neutronium", "molten-draconium",
 	"molten-infinity", "molten-transcendent-metal", "molten-spacetime", "molten-universium", "molten-magmatter",
-	"molten-rhugnor", "molten-quantium", "molten-sunnarium", "molten-microversium", "molten-enderium",
+	"molten-rhugnor", "molten-quantium", "molten-sunnarium", "molten-enderium",
 	"molten-glowstone", "molten-vibrant-alloy", "molten-grisium", "molten-indovanadium", "molten-ruridit",
 	"liquid-blaze",
 	-- issue #91: the new melts of the endgame materials and the superconductor bases
-	"molten-bedrockium", "molten-eternity", "molten-crystaltine", "molten-enriched-naquadah", "molten-ledox",
+	"molten-bedrockium", "molten-eternity", "molten-enriched-naquadah", "molten-ledox",
 	"molten-itbtc-alloy", "molten-palladium-naqindium", "molten-naquamiridium", "molten-triamerotronium",
 	"molten-dracofinium", "molten-chromnorox", "molten-hypocosmium", "molten-yttrium-barium-cuprate" })
 --- issue #98 (147-fork-gt-routes.lua): the high octane line, sodium persulfate, the black plutonium melt

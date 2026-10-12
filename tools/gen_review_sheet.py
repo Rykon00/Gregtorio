@@ -167,7 +167,6 @@ def sprites(ref, out):
              "Plasma forge and quantum force transformer" if n.startswith(("dimensional", "quantum-force")) else
              "Godforge" if n.startswith("godforge") else
              "Component assembly line" if n.startswith("component-assembly-line") else
-             "Ender tanks" if "ender-tank" in n else
              # issue #97
              "Steam turbines" if "steam-turbine" in n else
              "Heat exchanger and fluid nuclear reactor" if n.startswith(("large-heat-exchanger", "fluid-nuclear")) else

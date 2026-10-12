@@ -15,17 +15,6 @@ create_ingot("nickel-zinc-ferrite", "mv", MV_SPEED * 10, {
 	"lv", 0.8, false, true, true, nil, false, true )
 
 
----MICROVERSIUM INGOT (Dust, EBF and Freezer, ABS and Freezer)
-create_ingot("microversium", "lv", LV_SPEED * 30, {
-	  {type = "item", name = "steel-dust", amount = 2},
-      {type = "item", name = "glowstone-dust", amount = 1},
-      {type = "item", name = "redstone-dust", amount = 1},	
-      {type = "fluid", name = "deuterium", amount = 100}
-    },
-	5, "mv", MV_SPEED * 30, nil,
-	"mv", MV_SPEED * 6.5, false, true, true, nil, true, false )
-	
-	
 ---BLACK STEEL INGOT (Dust, EBF and Freezer, ABS and Freezer)
 create_ingot("black-steel", "lv", LV_SPEED * 25, {
 			{ type = "item", name = "steel-dust", amount = 3 },
@@ -1142,24 +1131,6 @@ create_metal_parts{
 	material = "gallium",
 	speed = GALLIUM_SPEED,
 	make_foil = true
-}
-
-
-
----MICROVERSIUM
-create_metal_parts{
-	material = "microversium",
-	speed = MICROVERSIUM_SPEED,
-	make_plate = true
-}
-
-
----SIGNALUM
-create_metal_parts{
-	material = "signalum",
-	speed = SIGNALUM_SPEED,
-	make_plate = true,
-	make_rod = true
 }
 
 

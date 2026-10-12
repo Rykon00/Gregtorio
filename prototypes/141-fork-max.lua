@@ -32,7 +32,7 @@ for _, rest in pairs({ "wiremill", "bending-machine", "lathe", "alloy-smelter", 
 	"cutting-machine", "laser-engraver", "chemical-reactor", "circuit-assembler", "electric-blast-furnace",
 	"distillation", "tall-distillation", "mixer", "implosion-compressor", "chemical-bath", "extractor",
 	"assembly-line", "centrifuge", "assembling-machine", "vacuum-freezer", "cracker", "alloy-blast-smelter",
-	"microverse-projector", "dehydrator", "extreme-entity-crusher" }) do
+	"dehydrator", "extreme-entity-crusher" }) do
 	F.category("max-" .. rest .. "-recipes")
 end
 for _, sg in pairs({

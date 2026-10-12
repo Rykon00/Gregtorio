@@ -45,7 +45,7 @@ FORK_RECYCLING_MASS = {
 	["magnalium"] = 25, ["naquadah"] = 330, ["naquadah-alloy"] = 98, ["naquadria"] = 98, ["neodymium"] = 144,
 	["nether-quartz"] = 98, ["neutronium"] = 100, ["nichrome"] = 56, ["nickel"] = 58, ["nickel-zinc-ferrite"] = 33,
 	["niobium-titanium"] = 71, ["osmiridium"] = 191, ["osmium"] = 190, ["palladium"] = 106, ["platinum"] = 195,
-	["pulsating-iron"] = 61, ["quantium"] = 98, ["red-alloy"] = 403, ["samarium"] = 150, ["signalum"] = 98,
+	["pulsating-iron"] = 61, ["quantium"] = 98, ["red-alloy"] = 403, ["samarium"] = 150,
 	["silicon"] = 28, ["silver"] = 107, ["soularium"] = 102, ["spacetime"] = 98, ["stainless-steel"] = 55,
 	["steel"] = 56, ["tantalum"] = 180, ["tin"] = 118, ["titanium"] = 48, ["transcendent-metal"] = 98, ["trinium"] = 98,
 	["tritanium"] = 323, ["tungsten"] = 183, ["tungsten-carbide"] = 97, ["tungstensteel"] = 119, ["ultimet"] = 61,

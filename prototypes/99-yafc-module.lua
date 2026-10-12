@@ -81,12 +81,14 @@ data:extend({
 
 
 
+--- the raw ores from nothing for YAFC (issue #287: they took the microminer mission outputs, removed with the
+--- microverse)
 create_recipe{
     name = "yafc-magnetite",
     category = "lv-assembling-machine-recipes",	
     energy_required = 2,
-    subgroup = "subgroup-microminer-t1",	
-	ingredients = { {type = "item", name = "tier-one-microminer-output", amount = 1}},
+    subgroup = "subgroup-mining",	
+	ingredients = {},
     results = {
       {type = "item", name = "raw-iron", amount = 64 },
     },
@@ -96,8 +98,8 @@ create_recipe{
     name = "yafc-vanadium-magnetite",
     category = "lv-assembling-machine-recipes",	
     energy_required = 2,
-    subgroup = "subgroup-microminer-t1",	
-	ingredients = { {type = "item", name = "tier-one-microminer-output", amount = 1}},
+    subgroup = "subgroup-mining",	
+	ingredients = {},
     results = {
       {type = "item", name = "raw-vanadium-magnetite", amount = 64 },
     }
@@ -106,8 +108,8 @@ create_recipe{
     name = "yafc-gold",
     category = "lv-assembling-machine-recipes",	
     energy_required = 2,
-    subgroup = "subgroup-microminer-t1",	
-	ingredients = { {type = "item", name = "tier-one-microminer-output", amount = 1}},
+    subgroup = "subgroup-mining",	
+	ingredients = {},
     results = {
       {type = "item", name = "raw-gold", amount = 64 },
     }
@@ -116,8 +118,8 @@ create_recipe{
     name = "yafc-coal",
     category = "lv-assembling-machine-recipes",	
     energy_required = 2,
-    subgroup = "subgroup-microminer-t1",	
-	ingredients = { {type = "item", name = "tier-one-microminer-output", amount = 1}},
+    subgroup = "subgroup-mining",	
+	ingredients = {},
     results = {
       {type = "item", name = "raw-coal", amount = 64 },
     }
@@ -126,8 +128,8 @@ create_recipe{
     name = "yafc-salt",
     category = "lv-assembling-machine-recipes",	
     energy_required = 2,
-    subgroup = "subgroup-microminer-t1",	
-	ingredients = { {type = "item", name = "tier-one-microminer-output", amount = 1}},
+    subgroup = "subgroup-mining",	
+	ingredients = {},
     results = {
       {type = "item", name = "raw-salt", amount = 64 },
     },
@@ -137,8 +139,8 @@ create_recipe{
     name = "yafc-rock-salt",
     category = "lv-assembling-machine-recipes",	
     energy_required = 2,
-    subgroup = "subgroup-microminer-t1",	
-	ingredients = { {type = "item", name = "tier-one-microminer-output", amount = 1}},
+    subgroup = "subgroup-mining",	
+	ingredients = {},
     results = {
       {type = "item", name = "raw-rock-salt", amount = 64 },
     }
@@ -147,8 +149,8 @@ create_recipe{
     name = "yafc-lepidolite",
     category = "lv-assembling-machine-recipes",	
     energy_required = 2,
-    subgroup = "subgroup-microminer-t1",	
-	ingredients = { {type = "item", name = "tier-one-microminer-output", amount = 1}},
+    subgroup = "subgroup-mining",	
+	ingredients = {},
     results = {
       {type = "item", name = "raw-lepidolite", amount = 64 },
     }
@@ -157,8 +159,8 @@ create_recipe{
     name = "yafc-tin",
     category = "lv-assembling-machine-recipes",	
     energy_required = 2,
-    subgroup = "subgroup-microminer-t1",	
-	ingredients = { {type = "item", name = "tier-one-microminer-output", amount = 1}},
+    subgroup = "subgroup-mining",	
+	ingredients = {},
     results = {
 		{ type = "item", name = "raw-tin", amount = 64 },
     }
@@ -166,8 +168,8 @@ create_recipe{
 create_recipe{
     name = "yafc-cassiterite",
     energy_required = 2,
-    subgroup = "subgroup-microminer-t1",	
-	ingredients = { {type = "item", name = "tier-one-microminer-output", amount = 1}},
+    subgroup = "subgroup-mining",	
+	ingredients = {},
 	ingredients = { },
     results = {
 		{ type = "item", name = "raw-cassiterite", amount = 64 },
@@ -176,8 +178,8 @@ create_recipe{
 create_recipe{
     name = "yafc-realgar",
     energy_required = 2,
-    subgroup = "subgroup-microminer-t1",	
-	ingredients = { {type = "item", name = "tier-one-microminer-output", amount = 1}},
+    subgroup = "subgroup-mining",	
+	ingredients = {},
 	ingredients = { },
     results = {
       {type = "item", name = "raw-realgar", amount = 64 },
@@ -186,8 +188,8 @@ create_recipe{
 create_recipe{
     name = "yafc-redstone",
     energy_required = 2,
-    subgroup = "subgroup-microminer-t1",	
-	ingredients = { {type = "item", name = "tier-one-microminer-output", amount = 1}},
+    subgroup = "subgroup-mining",	
+	ingredients = {},
 	ingredients = { },
     results = {
       {type = "item", name = "raw-redstone", amount = 64 },
@@ -197,8 +199,8 @@ create_recipe{
 create_recipe{
     name = "yafc-ruby",
     energy_required = 2,
-    subgroup = "subgroup-microminer-t1",	
-	ingredients = { {type = "item", name = "tier-one-microminer-output", amount = 1}},	
+    subgroup = "subgroup-mining",	
+	ingredients = {},	
 	ingredients = { },
     results = {
       {type = "item", name = "raw-ruby", amount = 64 },
@@ -208,8 +210,8 @@ create_recipe{
     name = "yafc-cinnabar",
     category = "lv-assembling-machine-recipes",	
     energy_required = 2,
-    subgroup = "subgroup-microminer-t1",	
-	ingredients = { {type = "item", name = "tier-one-microminer-output", amount = 1}},
+    subgroup = "subgroup-mining",	
+	ingredients = {},
     results = {
       {type = "item", name = "raw-cinnabar", amount = 64 },
     }
@@ -218,8 +220,8 @@ create_recipe{
     name = "yafc-fullers-earth",
     category = "lv-assembling-machine-recipes",	
     energy_required = 2,
-    subgroup = "subgroup-microminer-t1",	
-	ingredients = { {type = "item", name = "tier-one-microminer-output", amount = 1}},
+    subgroup = "subgroup-mining",	
+	ingredients = {},
     results = {
       {type = "item", name = "raw-fullers-earth", amount = 16 },
     }
@@ -228,8 +230,8 @@ create_recipe{
     name = "yafc-gypsum",
     category = "lv-assembling-machine-recipes",	
     energy_required = 2,
-    subgroup = "subgroup-microminer-t1",	
-	ingredients = { {type = "item", name = "tier-one-microminer-output", amount = 1}},
+    subgroup = "subgroup-mining",	
+	ingredients = {},
     results = {
       {type = "item", name = "raw-gypsum", amount = 64 },
     }
@@ -238,8 +240,8 @@ create_recipe{
     name = "yafc-apatite",
     category = "lv-assembling-machine-recipes",	
     energy_required = 2,
-    subgroup = "subgroup-microminer-t1",	
-	ingredients = { {type = "item", name = "tier-one-microminer-output", amount = 1}},
+    subgroup = "subgroup-mining",	
+	ingredients = {},
     results = {
       {type = "item", name = "raw-apatite", amount = 64 },
     },
@@ -249,8 +251,8 @@ create_recipe{
     name = "yafc-tricalcium-phosphate",
     category = "lv-assembling-machine-recipes",	
     energy_required = 2,
-    subgroup = "subgroup-microminer-t1",	
-	ingredients = { {type = "item", name = "tier-one-microminer-output", amount = 1}},
+    subgroup = "subgroup-mining",	
+	ingredients = {},
     results = {
       {type = "item", name = "raw-tricalcium-phosphate", amount = 64 },
     }
@@ -259,8 +261,8 @@ create_recipe{
     name = "yafc-pyrochlore",
     category = "lv-assembling-machine-recipes",	
     energy_required = 2,
-    subgroup = "subgroup-microminer-t1",	
-	ingredients = { {type = "item", name = "tier-one-microminer-output", amount = 1}},
+    subgroup = "subgroup-mining",	
+	ingredients = {},
     results = {
       {type = "item", name = "raw-pyrochlore", amount = 64 },
     }
@@ -269,8 +271,8 @@ create_recipe{
     name = "yafc-clay",
     category = "lv-assembling-machine-recipes",	
     energy_required = 2,
-    subgroup = "subgroup-microminer-t1",	
-	ingredients = { {type = "item", name = "tier-one-microminer-output", amount = 1}},
+    subgroup = "subgroup-mining",	
+	ingredients = {},
     results = {
       {type = "item", name = "clay-ball", amount = 64 },
     },
@@ -280,8 +282,8 @@ create_recipe{
     name = "yafc-nickel",
     category = "lv-assembling-machine-recipes",	
     energy_required = 2,
-    subgroup = "subgroup-microminer-t1",	
-	ingredients = { {type = "item", name = "tier-one-microminer-output", amount = 1}},
+    subgroup = "subgroup-mining",	
+	ingredients = {},
     results = {
       {type = "item", name = "raw-nickel", amount = 64 },
     },
@@ -291,8 +293,8 @@ create_recipe{
     name = "yafc-pentlandite",
     category = "lv-assembling-machine-recipes",	
     energy_required = 2,
-    subgroup = "subgroup-microminer-t1",	
-	ingredients = { {type = "item", name = "tier-one-microminer-output", amount = 1}},
+    subgroup = "subgroup-mining",	
+	ingredients = {},
     results = {
       {type = "item", name = "raw-pentlandite", amount = 64 },
     }
@@ -301,8 +303,8 @@ create_recipe{
     name = "yafc-cobaltite",
     category = "lv-assembling-machine-recipes",	
     energy_required = 2,
-    subgroup = "subgroup-microminer-t1",	
-	ingredients = { {type = "item", name = "tier-one-microminer-output", amount = 1}},
+    subgroup = "subgroup-mining",	
+	ingredients = {},
     results = {
       {type = "item", name = "raw-cobaltite", amount = 64 },
     }
@@ -311,8 +313,8 @@ create_recipe{
     name = "yafc-tetrahedrite",
     category = "lv-assembling-machine-recipes",	
     energy_required = 2,
-    subgroup = "subgroup-microminer-t1",	
-	ingredients = { {type = "item", name = "tier-one-microminer-output", amount = 1}},
+    subgroup = "subgroup-mining",	
+	ingredients = {},
     results = {
       {type = "item", name = "raw-tetrahedrite", amount = 64 },
     }
@@ -321,8 +323,8 @@ create_recipe{
     name = "yafc-copper",
     category = "lv-assembling-machine-recipes",	
     energy_required = 2,
-    subgroup = "subgroup-microminer-t1",	
-	ingredients = { {type = "item", name = "tier-one-microminer-output", amount = 1}},
+    subgroup = "subgroup-mining",	
+	ingredients = {},
     results = {
       {type = "item", name = "raw-copper", amount = 64 },
     }
@@ -331,8 +333,8 @@ create_recipe{
     name = "yafc-stibnite",
     category = "lv-assembling-machine-recipes",	
     energy_required = 2,
-    subgroup = "subgroup-microminer-t1",	
-	ingredients = { {type = "item", name = "tier-one-microminer-output", amount = 1}},
+    subgroup = "subgroup-mining",	
+	ingredients = {},
     results = {
       {type = "item", name = "raw-stibnite", amount = 64 },
     }
@@ -341,8 +343,8 @@ create_recipe{
     name = "yafc-lazurite",
     category = "lv-assembling-machine-recipes",	
     energy_required = 2,
-    subgroup = "subgroup-microminer-t1",	
-	ingredients = { {type = "item", name = "tier-one-microminer-output", amount = 1}},
+    subgroup = "subgroup-mining",	
+	ingredients = {},
     results = {
       {type = "item", name = "raw-lazurite", amount = 64 },
     }
@@ -351,8 +353,8 @@ create_recipe{
     name = "yafc-sodalite",
     category = "lv-assembling-machine-recipes",	
     energy_required = 2,
-    subgroup = "subgroup-microminer-t1",	
-	ingredients = { {type = "item", name = "tier-one-microminer-output", amount = 1}},
+    subgroup = "subgroup-mining",	
+	ingredients = {},
     results = {
       {type = "item", name = "raw-sodalite", amount = 64 },
     }
@@ -361,8 +363,8 @@ create_recipe{
     name = "yafc-lapis",
     category = "lv-assembling-machine-recipes",	
     energy_required = 2,
-    subgroup = "subgroup-microminer-t1",	
-	ingredients = { {type = "item", name = "tier-one-microminer-output", amount = 1}},
+    subgroup = "subgroup-mining",	
+	ingredients = {},
     results = {
       {type = "item", name = "raw-lapis", amount = 64 },
     }
@@ -371,8 +373,8 @@ create_recipe{
     name = "yafc-calcite",
     category = "lv-assembling-machine-recipes",	
     energy_required = 2,
-    subgroup = "subgroup-microminer-t1",	
-	ingredients = { {type = "item", name = "tier-one-microminer-output", amount = 1}},
+    subgroup = "subgroup-mining",	
+	ingredients = {},
     results = {
       {type = "item", name = "raw-calcite", amount = 64 },
     }
@@ -381,8 +383,8 @@ create_recipe{
     name = "yafc-galena",
     category = "lv-assembling-machine-recipes",	
     energy_required = 2,
-    subgroup = "subgroup-microminer-t1",	
-	ingredients = { {type = "item", name = "tier-one-microminer-output", amount = 1}},
+    subgroup = "subgroup-mining",	
+	ingredients = {},
     results = {
       {type = "item", name = "raw-galena", amount = 64 },
     }
@@ -391,8 +393,8 @@ create_recipe{
     name = "yafc-lead",
     category = "lv-assembling-machine-recipes",	
     energy_required = 2,
-    subgroup = "subgroup-microminer-t1",	
-	ingredients = { {type = "item", name = "tier-one-microminer-output", amount = 1}},
+    subgroup = "subgroup-mining",	
+	ingredients = {},
     results = {
       {type = "item", name = "raw-lead", amount = 64 },
     }
@@ -401,8 +403,8 @@ create_recipe{
     name = "yafc-silver",
     category = "lv-assembling-machine-recipes",	
     energy_required = 2,
-    subgroup = "subgroup-microminer-t1",	
-	ingredients = { {type = "item", name = "tier-one-microminer-output", amount = 1}},
+    subgroup = "subgroup-mining",	
+	ingredients = {},
     results = {
       {type = "item", name = "raw-silver", amount = 64 },
     }
@@ -411,8 +413,8 @@ create_recipe{
     name = "yafc-cryolite",
     category = "lv-assembling-machine-recipes",	
     energy_required = 2,
-    subgroup = "subgroup-microminer-t1",	
-	ingredients = { {type = "item", name = "tier-one-microminer-output", amount = 1}},
+    subgroup = "subgroup-mining",	
+	ingredients = {},
     results = {
       {type = "item", name = "raw-cryolite", amount = 64 },
     }
@@ -421,8 +423,8 @@ create_recipe{
     name = "yafc-graphite",
     category = "lv-assembling-machine-recipes",	
     energy_required = 2,
-    subgroup = "subgroup-microminer-t1",	
-	ingredients = { {type = "item", name = "tier-one-microminer-output", amount = 1}},
+    subgroup = "subgroup-mining",	
+	ingredients = {},
     results = {
       {type = "item", name = "raw-graphite", amount = 64 },
     }
@@ -431,8 +433,8 @@ create_recipe{
     name = "yafc-diamond",
     category = "lv-assembling-machine-recipes",	
     energy_required = 2,
-    subgroup = "subgroup-microminer-t1",	
-	ingredients = { {type = "item", name = "tier-one-microminer-output", amount = 1}},
+    subgroup = "subgroup-mining",	
+	ingredients = {},
     results = {
       {type = "item", name = "raw-diamond", amount = 64 },
     }
@@ -442,8 +444,8 @@ create_recipe{
     name = "yafc-grossular",
     category = "lv-assembling-machine-recipes",	
     energy_required = 2,
-    subgroup = "subgroup-microminer-t1",	
-	ingredients = { {type = "item", name = "tier-one-microminer-output", amount = 1}},
+    subgroup = "subgroup-mining",	
+	ingredients = {},
     results = {
       {type = "item", name = "raw-grossular", amount = 64 },
     }
@@ -452,8 +454,8 @@ create_recipe{
     name = "yafc-spessartine",
     category = "lv-assembling-machine-recipes",	
     energy_required = 2,
-    subgroup = "subgroup-microminer-t1",	
-	ingredients = { {type = "item", name = "tier-one-microminer-output", amount = 1}},
+    subgroup = "subgroup-mining",	
+	ingredients = {},
     results = {
       {type = "item", name = "raw-spessartine", amount = 64 },
     }
@@ -462,8 +464,8 @@ create_recipe{
     name = "yafc-pyrolusite",
     category = "lv-assembling-machine-recipes",	
     energy_required = 2,
-    subgroup = "subgroup-microminer-t1",	
-	ingredients = { {type = "item", name = "tier-one-microminer-output", amount = 1}},
+    subgroup = "subgroup-mining",	
+	ingredients = {},
     results = {
       {type = "item", name = "raw-pyrolusite", amount = 64 },
     }
@@ -472,8 +474,8 @@ create_recipe{
     name = "yafc-tantalite",
     category = "lv-assembling-machine-recipes",	
     energy_required = 2,
-    subgroup = "subgroup-microminer-t1",	
-	ingredients = { {type = "item", name = "tier-one-microminer-output", amount = 1}},
+    subgroup = "subgroup-mining",	
+	ingredients = {},
     results = {
       {type = "item", name = "raw-tantalite", amount = 64 },
     }
@@ -482,8 +484,8 @@ create_recipe{
     name = "yafc-sulfur",
     category = "lv-assembling-machine-recipes",	
     energy_required = 4,
-    subgroup = "subgroup-microminer-t1",	
-	ingredients = { {type = "item", name = "tier-two-microminer-output", amount = 1}},
+    subgroup = "subgroup-mining",	
+	ingredients = {},
     results = {
       {type = "item", name = "raw-sulfur", amount = 64 },
     }
@@ -492,8 +494,8 @@ create_recipe{
     name = "yafc-sphalerite",
     category = "lv-assembling-machine-recipes",	
     energy_required = 4,
-    subgroup = "subgroup-microminer-t1",	
-	ingredients = { {type = "item", name = "tier-two-microminer-output", amount = 1}},
+    subgroup = "subgroup-mining",	
+	ingredients = {},
     results = {
       {type = "item", name = "raw-sphalerite", amount = 64 },
     },
@@ -503,8 +505,8 @@ create_recipe{
     name = "yafc-nether-quartz",
     category = "lv-assembling-machine-recipes",	
     energy_required = 4,
-    subgroup = "subgroup-microminer-t1",	
-	ingredients = { {type = "item", name = "tier-two-microminer-output", amount = 1}},
+    subgroup = "subgroup-mining",	
+	ingredients = {},
     results = {
       {type = "item", name = "raw-nether-quartz", amount = 64 },
     },
@@ -514,8 +516,8 @@ create_recipe{
     name = "yafc-beryllium",
     category = "lv-assembling-machine-recipes",	
     energy_required = 4,
-    subgroup = "subgroup-microminer-t1",	
-	ingredients = { {type = "item", name = "tier-two-microminer-output", amount = 1}},
+    subgroup = "subgroup-mining",	
+	ingredients = {},
     results = {
       {type = "item", name = "raw-beryllium", amount = 64 },
     }
@@ -524,8 +526,8 @@ create_recipe{
     name = "yafc-emerald",
     category = "lv-assembling-machine-recipes",	
     energy_required = 4,
-    subgroup = "subgroup-microminer-t1",	
-	ingredients = { {type = "item", name = "tier-two-microminer-output", amount = 1}},
+    subgroup = "subgroup-mining",	
+	ingredients = {},
     results = {
       {type = "item", name = "raw-emerald", amount = 64 }
     },
@@ -535,8 +537,8 @@ create_recipe{
     name = "yafc-certus-quartz",
     category = "lv-assembling-machine-recipes",	
     energy_required = 4,
-    subgroup = "subgroup-microminer-t1",	
-	ingredients = { {type = "item", name = "tier-two-microminer-output", amount = 1}},
+    subgroup = "subgroup-mining",	
+	ingredients = {},
     results = {
       {type = "item", name = "raw-certus-quartz", amount = 64 },
     },
@@ -546,8 +548,8 @@ create_recipe{
     name = "yafc-barite",
     category = "lv-assembling-machine-recipes",	
     energy_required = 4,
-    subgroup = "subgroup-microminer-t1",	
-	ingredients = { {type = "item", name = "tier-two-microminer-output", amount = 1}},
+    subgroup = "subgroup-mining",	
+	ingredients = {},
     results = {
       {type = "item", name = "raw-barite", amount = 64 },
     }
@@ -556,8 +558,8 @@ create_recipe{
     name = "yafc-bauxite",
     category = "lv-assembling-machine-recipes",	
     energy_required = 4,
-    subgroup = "subgroup-microminer-t1",	
-	ingredients = { {type = "item", name = "tier-two-microminer-output", amount = 1}},
+    subgroup = "subgroup-mining",	
+	ingredients = {},
     results = {
       {type = "item", name = "raw-bauxite", amount = 64 },
     }
@@ -566,8 +568,8 @@ create_recipe{
     name = "yafc-aluminium",
     category = "lv-assembling-machine-recipes",	
     energy_required = 4,
-    subgroup = "subgroup-microminer-t1",	
-	ingredients = { {type = "item", name = "tier-two-microminer-output", amount = 1}},
+    subgroup = "subgroup-mining",	
+	ingredients = {},
     results = {
       {type = "item", name = "raw-aluminium", amount = 64 },
     }
@@ -576,8 +578,8 @@ create_recipe{
     name = "yafc-ilmenite",
     category = "lv-assembling-machine-recipes",	
     energy_required = 4,
-    subgroup = "subgroup-microminer-t1",	
-	ingredients = { {type = "item", name = "tier-two-microminer-output", amount = 1}},
+    subgroup = "subgroup-mining",	
+	ingredients = {},
     results = {
       {type = "item", name = "raw-ilmenite", amount = 64 },
     },
@@ -587,8 +589,8 @@ create_recipe{
     name = "yafc-bastnasite",
     category = "lv-assembling-machine-recipes",	
     energy_required = 4,
-    subgroup = "subgroup-microminer-t1",	
-	ingredients = { {type = "item", name = "tier-two-microminer-output", amount = 1}},
+    subgroup = "subgroup-mining",	
+	ingredients = {},
     results = {
       {type = "item", name = "raw-bastnasite", amount = 64 },
     }
@@ -597,8 +599,8 @@ create_recipe{
     name = "yafc-monazite",
     category = "lv-assembling-machine-recipes",	
     energy_required = 4,
-    subgroup = "subgroup-microminer-t1",	
-	ingredients = { {type = "item", name = "tier-two-microminer-output", amount = 1}},
+    subgroup = "subgroup-mining",	
+	ingredients = {},
     results = {
       {type = "item", name = "raw-monazite", amount = 64 },
     }
@@ -607,8 +609,8 @@ create_recipe{
     name = "yafc-molybdenite",
     category = "lv-assembling-machine-recipes",	
     energy_required = 4,
-    subgroup = "subgroup-microminer-t1",	
-	ingredients = { {type = "item", name = "tier-two-microminer-output", amount = 1}},
+    subgroup = "subgroup-mining",	
+	ingredients = {},
     results = {
       {type = "item", name = "raw-molybdenite", amount = 64 },
     }
@@ -617,8 +619,8 @@ create_recipe{
     name = "yafc-neodymium",
     category = "lv-assembling-machine-recipes",	
     energy_required = 4,
-    subgroup = "subgroup-microminer-t1",	
-	ingredients = { {type = "item", name = "tier-two-microminer-output", amount = 1}},
+    subgroup = "subgroup-mining",	
+	ingredients = {},
     results = {
       {type = "item", name = "raw-neodymium", amount = 64 },
     }
@@ -627,8 +629,8 @@ create_recipe{
     name = "yafc-tungstate",
     category = "lv-assembling-machine-recipes",	
     energy_required = 8,
-    subgroup = "subgroup-microminer-t1",	
-	ingredients = { {type = "item", name = "tier-three-microminer-output", amount = 1}},
+    subgroup = "subgroup-mining",	
+	ingredients = {},
     results = {
       {type = "item", name = "raw-tungstate", amount = 64 },
     }
@@ -637,8 +639,8 @@ create_recipe{
     name = "yafc-scheelite",
     category = "lv-assembling-machine-recipes",	
     energy_required = 8,
-    subgroup = "subgroup-microminer-t1",	
-	ingredients = { {type = "item", name = "tier-three-microminer-output", amount = 1}},
+    subgroup = "subgroup-mining",	
+	ingredients = {},
     results = {
       {type = "item", name = "raw-scheelite", amount = 64 },
     }
@@ -647,8 +649,8 @@ create_recipe{
     name = "yafc-bornite",
     category = "lv-assembling-machine-recipes",	
     energy_required = 8,
-    subgroup = "subgroup-microminer-t1",	
-	ingredients = { {type = "item", name = "tier-three-microminer-output", amount = 1}},
+    subgroup = "subgroup-mining",	
+	ingredients = {},
     results = {
       {type = "item", name = "raw-bornite", amount = 64 },
     }
@@ -657,8 +659,8 @@ create_recipe{
     name = "yafc-sheldonite",
     category = "lv-assembling-machine-recipes",	
     energy_required = 8,
-    subgroup = "subgroup-microminer-t1",	
-	ingredients = { {type = "item", name = "tier-three-microminer-output", amount = 1}},
+    subgroup = "subgroup-mining",	
+	ingredients = {},
     results = {
       {type = "item", name = "raw-sheldonite", amount = 64 },
     }
@@ -667,8 +669,8 @@ create_recipe{
     name = "yafc-platinum",
     category = "lv-assembling-machine-recipes",	
     energy_required = 8,
-    subgroup = "subgroup-microminer-t1",	
-	ingredients = { {type = "item", name = "tier-three-microminer-output", amount = 1}},
+    subgroup = "subgroup-mining",	
+	ingredients = {},
     results = {
       {type = "item", name = "raw-platinum", amount = 64 },
     }
@@ -677,8 +679,8 @@ create_recipe{
     name = "yafc-palladium",
     category = "lv-assembling-machine-recipes",	
     energy_required = 8,
-    subgroup = "subgroup-microminer-t1",	
-	ingredients = { {type = "item", name = "tier-three-microminer-output", amount = 1}},
+    subgroup = "subgroup-mining",	
+	ingredients = {},
     results = {
       {type = "item", name = "raw-palladium", amount = 64 },
     }
@@ -687,8 +689,8 @@ create_recipe{
     name = "yafc-pitchblende",
     category = "lv-assembling-machine-recipes",	
     energy_required = 8,
-    subgroup = "subgroup-microminer-t1",	
-	ingredients = { {type = "item", name = "tier-three-microminer-output", amount = 1}},
+    subgroup = "subgroup-mining",	
+	ingredients = {},
     results = {
       {type = "item", name = "raw-pitchblende", amount = 64 },
     }
@@ -697,8 +699,8 @@ create_recipe{
     name = "yafc-uranium",
     category = "lv-assembling-machine-recipes",	
     energy_required = 8,
-    subgroup = "subgroup-microminer-t1",	
-	ingredients = { {type = "item", name = "tier-three-microminer-output", amount = 1}},
+    subgroup = "subgroup-mining",	
+	ingredients = {},
     results = {
       {type = "item", name = "raw-uraninite", amount = 64 },
     },

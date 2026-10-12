@@ -1,12 +1,14 @@
 --------------------------------------------------------------------------------
 --- FORK DIMENSION MINES (issue #154's decision, part 1: issue #283): the materials of the microverse get a source of
 --- their own, a mine per GT New Horizons dimension, gated by a technology that stands for reaching it at the voltage of
---- GTNH's rocket tier (gtneioreplugin DimensionHelper.java: the Nether and the End are T0). The microminer missions
---- keep working until the microverse goes (issue #287). Veins from GT5-Unofficial af993ca6a9 OreMixes.java.
+--- GTNH's rocket tier (gtneioreplugin DimensionHelper.java: the Nether and the End are T0). Issue #287 removed the
+--- microverse. Veins from GT5-Unofficial af993ca6a9 OreMixes.java.
 ---
 --- Overworld (MV, with Eyes of Ender, the first consumer): ender pearls are a mob drop of Endermen in GTNH; Gregtorio
 ---   has no mobs before the EV entity crusher, so a manual hunting recipe like the manual mines gives them, and the
----   crusher crushes Endermen like the other mobs (the maintainer's decision).
+---   crusher crushes Endermen like the other mobs (the maintainer's decision). Zombie heads (EnderIO's powered spawner,
+---   soul binder and Z-logic controller, Ender IO) the same way (issue #287: the tier one microminer gave them; the
+---   crusher's zombies come after the powered spawner they need).
 --- The Nether (MV, technology Reach the Nether, before Eyes of Ender, which takes blaze rods):
 ---   * blaze rods: a mob drop (hunting, like the Endermen);
 ---   * the Molybdenum vein (Nether, End, Twilight Forest: wulfenite, molybdenite, molybdenum, powellite): molybdenite,
@@ -21,7 +23,9 @@
 ---     ingots, tiny uranium and air, is left out: the mod has neither plutonium ingots nor tiny uranium piles).
 --- GTNH's End asteroids (naquadah, platinum, tungstate veins) come with the T3 dimensions (issue #285).
 --- Issues #284 and #285 add the Moon and Mars, the asteroid belt, Jupiter's moons and Venus (sections below).
---- Loads after 159 and before 156 (data.lua).
+--- Loads before 142 (data.lua, issue #287): the unlock table of 142 and the ore chains of 155 (which unlock a chain step
+--- after the technology of its raw ore) see the mines. The rules that move unlocks and add prerequisites for them are in
+--- 161-fork-dimension-unlocks.lua, after 159.
 --------------------------------------------------------------------------------
 
 local F = FORK5B
@@ -43,7 +47,7 @@ local function item(name, amount) return { type = "item", name = name, amount = 
 local function fluid(name, amount) return { type = "fluid", name = name, amount = amount } end
 local PICKAXE, LABOR = item("iron-pickaxe-usage", 1), function(n) return item("manual-labor", n) end
 
---- the unlocks of an existing technology, and a prerequisite
+--- the unlocks of an existing technology
 local function unlock_in(tech, names)
 	local t = data.raw.technology[tech]
 	for _, n in pairs(names) do
@@ -51,32 +55,13 @@ local function unlock_in(tech, names)
 		t.effects[#t.effects + 1] = { type = "unlock-recipe", recipe = n }
 	end
 end
-local function require_tech(tech, prerequisite)
-	local t = data.raw.technology[tech]
-	t.prerequisites = t.prerequisites or {}
-	t.prerequisites[#t.prerequisites + 1] = prerequisite
-end
---- move recipes from whatever technology unlocks them to `tech`
-local function move_unlocks(names, tech)
-	local set = {}
-	for _, n in pairs(names) do set[n] = true end
-	for _, t in pairs(data.raw.technology) do
-		if t.effects then
-			local keep = {}
-			for _, e in pairs(t.effects) do
-				if not (e.type == "unlock-recipe" and set[e.recipe]) then keep[#keep + 1] = e end
-			end
-			t.effects = keep
-		end
-	end
-	unlock_in(tech, names)
-end
 
 --------------------------------------------------------------------------------
 --- OVERWORLD: Endermen
 --------------------------------------------------------------------------------
 
 local enderman = manual("hunting-endermen", "manual-mine-recipes", { LABOR(24) }, { item("ender-pearl", 4) })
+local zombie = manual("hunting-zombies", "manual-mine-recipes", { LABOR(24) }, { item("zombie-head", 1) })
 create_recipe{
 	name = "crushing-endermen",
 	category = "ev-extreme-entity-crusher-recipes",
@@ -131,29 +116,13 @@ create_recipe{
 F.tech{ name = NETHER, prerequisites = { "mv-machines", "extruder" }, packs = 3, count = 40, time = 30, recipes = nether }
 F.tech{ name = END, prerequisites = { "eyes-of-ender", "hv-energy-hatches" }, packs = 4, count = 40, time = 30,
 	recipes = the_end }
---- Endermen with the first use of their pearls; blaze rods come before it
+--- Endermen with the first use of their pearls; blaze rods come before it (161)
 unlock_in("eyes-of-ender", { enderman })
-require_tech("eyes-of-ender", NETHER)
 unlock_in("extreme-entity-crushers", { "crushing-endermen" })
---- the airs with their first consumers
+--- zombies with the first use of their heads (Ender IO's powered spawner)
+unlock_in("ender-io", { zombie })
+--- the nether air with its first consumer
 unlock_in("end-steel", { "nether-air-intake" })
-require_tech("end-steel", NETHER)
-require_tech("end-steel", END)
-move_unlocks({ "ender-air-intake", "liquid-ender-air", "ender-air-distillation" }, "radon")
-require_tech("radon", END)
-require_tech("radon", "oil-processing")   -- the tall distillation tower of the ender air
---- the other first consumers of the Nether's materials
-require_tech("ender-io", NETHER)
-require_tech("tungstate-processing", NETHER)
---- the molybdenite chain (the ore chain of 155, the parts of 158) came with the microminer that gave the ore; now it
---- comes with the mine
-do
-	local moved = {}
-	for _, e in pairs(data.raw.technology["tier-two-microminers"].effects or {}) do
-		if e.type == "unlock-recipe" and e.recipe:find("molybden", 1, true) then moved[#moved + 1] = e.recipe end
-	end
-	move_unlocks(moved, NETHER)
-end
 
 
 
@@ -185,74 +154,52 @@ local mars = {
 }
 F.tech{ name = MOON, prerequisites = { END, "implosion-compressor" }, packs = 4, count = 40, time = 30, recipes = moon }
 F.tech{ name = MARS, prerequisites = { MOON, "ev-components" }, packs = 5, count = 30, time = 45, recipes = mars }
---- the monazite, neodymium and bastnasite chains (155, 158) came with the microminer that gave the ores; now with the
---- mine
-do
-	local moved = {}
-	for _, e in pairs(data.raw.technology["tier-two-microminers"].effects or {}) do
-		local r = e.type == "unlock-recipe" and e.recipe
-		if r and not r:find("microminer", 1, true) and (r:find("monazite", 1, true) or r:find("neodymium", 1, true)
-			or r:find("bastnasite", 1, true)) then
-			moved[#moved + 1] = r
-		end
-	end
-	move_unlocks(moved, MOON)
-end
---- The ore chains of these ores (155: crushed, purified, centrifuged, impure and pure dust, their hammer, sifter and
---- separator steps; the lines that take them) were unlocked where the microminer made the raw ore, partly at MV. Now
---- the raw ore comes with the dimension: a chain step unlocked at a lower science tier than the dimension, or by one of
---- its prerequisites (a prerequisite there would close a loop), moves to it; any other technology that takes the ore
---- gets the dimension as a prerequisite (#252's tree rule). The gem grades of monazite (155) count as its forms.
-local function packs(tech) return #(data.raw.technology[tech].unit.ingredients or {}) end
-local function ancestors(tech, seen)
-	seen = seen or {}
-	for _, p in pairs(data.raw.technology[tech].prerequisites or {}) do
-		if not seen[p] then seen[p] = true; ancestors(p, seen) end
-	end
-	return seen
-end
-local function ore_dimension(reach, ores, items)
-	local forms = {}
-	for _, i in pairs(items or {}) do forms[i] = true end   -- (items the mine gives directly, without an ore chain)
-	for _, x in pairs(ores) do
-		for _, f in pairs({ "raw-%s", "crushed-%s", "purified-%s", "centrifuged-%s", "impure-%s-dust", "pure-%s-dust",
-			"chipped-%s", "flawed-%s", "%s-gem", "flawless-%s", "exquisite-%s" }) do
-			forms[f:format(x)] = true
-		end
-	end
-	local takes = {}
-	for name, r in pairs(data.raw.recipe) do
-		if not name:find("microminer", 1, true) and not name:find("recycling", 1, true) then
-			for _, i in pairs(r.ingredients or {}) do
-				if forms[i.name] then takes[name] = true end
-			end
-		end
-	end
-	local move, needs = {}, {}
-	local before = ancestors(reach)
-	for tname, t in pairs(data.raw.technology) do
-		if tname ~= reach then
-			for _, e in pairs(t.effects or {}) do
-				if e.type == "unlock-recipe" and takes[e.recipe] then
-					if packs(tname) < packs(reach) or before[tname] then move[#move + 1] = e.recipe else needs[tname] = true end
-				end
-			end
-		end
-	end
-	move_unlocks(move, reach)
-	for tname in pairs(needs) do require_tech(tname, reach) end
-end
-ore_dimension(MOON, { "ilmenite", "chromite", "bauxite", "aluminium", "bastnasite", "monazite", "neodymium" })
-ore_dimension(MARS, { "scheelite", "tungstate", "pitchblende", "uraninite" })
---- bauxite dust's electrolysis was aluminium's MV route; aluminium has its others (fuller's earth, lazurite, cryolite)
-move_unlocks({ "bauxite-dust-electrolysis" }, MOON)
---- the implosion of monazite dust into gems belongs to the gem grades of the monazite from the Moon
-move_unlocks({ "implosion-monazite-dust-to-gem" }, MOON)
---- the Bayer steps of bauxite slurry (Bauxite Slurry Process, an HV technology that Reach the End needs); the process's
---- lazurite and sodalite route stays there
-move_unlocks({ "heated-bauxite-slurry", "heated-bauxite-slurry-reaction", "centrifuge-bauxite-slag" }, MOON)
---- End Steel melts neodymium ingots (in a blast furnace with neon, krypton, xenon): the dust comes from the Moon's ore
-require_tech("end-steel", "neodymium")
+--- moon turf (issue #287: it came from the tier four microminer mission): a dig site like the Nether's soul sand; the
+--- macerator and centrifuge steps are upstream's (its 52-microverse-module.lua), the metal mixture's centrifuge takes
+--- the mixture (upstream: moon dust, a slip)
+create_item{ skip_recipe = true, name = "compressed-moon-turf", subgroup = "subgroup-mining" }
+create_item{ skip_recipe = true, name = "extraterrestrial-metal-mixture", subgroup = "subgroup-hv-centrifuge-recipes" }
+create_item{ skip_recipe = true, name = "mysterious-crystal-dust", subgroup = "subgroup-hv-centrifuge-recipes" }
+create_item{
+	name = "moon-dust",
+	category = "hv-macerator-recipes",
+	energy_required = HV_SPEED * 4,
+	ingredients = { item("compressed-moon-turf", 1) },
+	results = { item("moon-dust", 9) },
+}
+create_recipe{
+	recipe_name = "moon-dust-centrifuging",
+	category = "hv-centrifuge-recipes",
+	energy_required = HV_SPEED * 5,
+	ingredients = { item("moon-dust", 1) },
+	results = {
+		{ type = "item", name = "stone-dust", amount = 1, probability = 0.25 },
+		{ type = "item", name = "bauxite-dust", amount = 1, probability = 0.23 },
+		{ type = "item", name = "silicon-dioxide", amount = 1, probability = 0.2 },
+		{ type = "item", name = "quicklime", amount = 1, probability = 0.14 },
+		{ type = "item", name = "molybdenum-dust", amount = 1, probability = 0.1 },
+		{ type = "item", name = "extraterrestrial-metal-mixture", amount = 1, probability = 0.08 },
+		fluid("deuterium", 10),
+	},
+	main_product = "deuterium",
+}
+create_recipe{
+	recipe_name = "extraterrestrial-metal-mixture-centrifuging",
+	category = "hv-centrifuge-recipes",
+	energy_required = HV_SPEED * 50,
+	ingredients = { item("extraterrestrial-metal-mixture", 1) },
+	results = {
+		{ type = "item", name = "ilmenite-dust", amount = 1, probability = 0.6 },
+		{ type = "item", name = "chromium-dust", amount = 1, probability = 0.4 },
+		{ type = "item", name = "pyrolusite-dust", amount = 1, probability = 0.35 },
+		{ type = "item", name = "molybdenum-dust", amount = 1, probability = 0.22 },
+		{ type = "item", name = "tungstate-dust", amount = 1, probability = 0.17 },
+		{ type = "item", name = "mysterious-crystal-dust", amount = 1, probability = 0.1 },
+	},
+	main_product = "mysterious-crystal-dust",
+}
+unlock_in(MOON, { manual("digging-moon-turf", "manual-digsite-recipes", { item("iron-shovel-usage", 1), LABOR(2) },
+	{ item("compressed-moon-turf", 7) }), "moon-dust", "moon-dust-centrifuging", "extraterrestrial-metal-mixture-centrifuging" })
 
 
 
@@ -284,12 +231,6 @@ local venus = {
 F.tech{ name = ASTEROIDS, prerequisites = { MARS, "iv-machines" }, packs = 6, count = 50, time = 60, recipes = asteroids }
 F.tech{ name = JOVIAN, prerequisites = { ASTEROIDS }, packs = 6, count = 50, time = 60, recipes = jovian }
 F.tech{ name = VENUS, prerequisites = { JOVIAN, "luv-machines" }, packs = 7, count = 50, time = 60, recipes = venus }
---- (sheldonite dust and the tiny piles of metallic platinum powder that crushed platinum smelts into come only from
---- these ores)
-ore_dimension(ASTEROIDS, { "sheldonite", "palladium", "platinum", "naquadah" },
-	{ "sheldonite-dust", "tiny-pile-of-metallic-platinum-powder" })
-ore_dimension(JOVIAN, { "ledox" }, { "callisto-ice-dust" })
-ore_dimension(VENUS, {}, { "quantium-dust" })
 
 
 
@@ -443,7 +384,9 @@ local vm1 = void_miner(1, EU16_LuV, { "luv-assembly-line-recipes", 120 * LUV_SPE
 local vm2 = void_miner(2, EU16_ZPM, { "zpm-assembly-line-recipes", 120 * ZPM_SPEED, parts{
 	vm1, 1, "black-plutonium-frame", 9, "black-plutonium-plate", 3, "zpm-motor", 9, "zpm-sensor", 9,
 	"zpm-field-generator", 9, "black-plutonium-screw", 36, "molten-indalloy-140", 144, "krypton", 2000 } })
-local vm3 = void_miner(3, EU16_UV, { "uv-assembly-line-recipes", 120 * UV_SPEED, parts{
+--- (the UV recipes of the assembly line run in the ZPM one, 127: there is no UV assembly line; issue #287 found the
+--- category without a machine once the microminer missions no longer gave the Void Miner III's ores)
+local vm3 = void_miner(3, EU16_UV, { "zpm-assembly-line-recipes", 120 * UV_SPEED, parts{
 	vm2, 1, "neutronium-frame", 9, "neutronium-plate", 3, "uv-motor", 9, "uv-sensor", 9,
 	"uv-field-generator", 9, "neutronium-screw", 36, "molten-indalloy-140", 144, "xenon", 2000 } })
 
@@ -453,7 +396,3 @@ F.tech{ name = VM_TECHS[2], prerequisites = { VM_TECHS[1], "zpm-assembly-line", 
 	"crystal-processor-mainframes" }, packs = 8, count = 50, time = 60, recipes = F.join({ vm2 }, vm_recipes[2]) }
 F.tech{ name = VM_TECHS[3], prerequisites = { VM_TECHS[2], "uv-components" }, packs = 9, count = 50, time = 60,
 	recipes = F.join({ vm3 }, vm_recipes[3]) }
---- the late ores' chains (155) and their first consumers (Bedrockium at UV, Quantium at UEV)
-ore_dimension(VM_TECHS[1], { "black-plutonium", "neutronium", "adamantium" })
-ore_dimension(VM_TECHS[2], { "bedrockium" })
-ore_dimension(VM_TECHS[3], { "cosmic-neutronium", "infinity-catalyst" })

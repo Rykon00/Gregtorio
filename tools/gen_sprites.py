@@ -25,7 +25,7 @@ multiblocks keep the EV sprite and get a layer with GT energy hatches of their t
 """
 import argparse, re
 from pathlib import Path
-from PIL import Image, ImageOps
+from PIL import Image
 
 ROOT = Path(__file__).resolve().parent.parent
 ICONS = ROOT / "graphics/icons"
@@ -268,7 +268,6 @@ UPGRADE_MULTIBLOCKS = {
     "electric-blast-furnace": ("mv-electric-blast-furnace/mv-electric-blast-furnace", "hv-electric-blast-furnace"),
     "vacuum-freezer": ("vacuum-freezer/vacuum-freezer", "vacuum-freezer"),
     "large-chemical-reactor": ("large-chemical-reactor/large-chemical-reactor", "large-chemical-reactor"),
-    "microverse-projector": ("small-microverse-projector/small-microverse-projector", "small-microverse-projector"),
     "tall-distillation-tower": ("tall-distillation-tower/tall-distillation-tower", "tall-distillation-tower"),
     "short-distillation-tower": ("short-distillation-tower/short-distillation-tower", "short-distillation-tower"),
     "implosion-compressor": ("implosion-compressor/implosion-compressor", "implosion-compressor"),
@@ -331,12 +330,6 @@ SUPERCAPACITOR_CASING = "kekztech:LSCBase_side"
 # hatch is the ME fluid interface in orange
 DERIVED = {
     "turbine-output-hatch": ("me-fluid-interface", (255, 170, 80)),
-}
-# issue #99: the ender tanks (name -> GT tier of the air collector they copy, tint of the ender fluid link)
-ENDER_LINK = "gregtech:iconsets/ENDERFLUIDLINK_OVERLAY"
-ENDER_TANKS = {
-    "nether-air-ender-tank": ("HV", ((40, 0, 0), (255, 140, 70))),     # recoloured from dark red to glowing orange
-    "ender-air-ender-tank": ("EV", None),                               # GT's teal as it is
 }
 # IV multiblocks: the casing is read from the recipe in 20-iv-age-entity.lua
 IV_MULTIBLOCK_FACES = {
@@ -807,19 +800,6 @@ def fluid_extractor_lv_ev():
         save(badged("fluid-extractor", load(ICONS / f"{t}-extractor.png")), ICONS / f"{t}-fluid-extractor.png")
 
 
-def in_hull(hull, top, size):
-    """the machine top (16 px) on the middle of a frame of the tier's hull: 3x3 hull tiles and the top on
-    the middle 2x2 for a sprite, the hull at 2x and the top at 1x for an icon"""
-    img = Image.new("RGBA", (size, size))
-    step = size // 3 if size > TILE else size
-    for y in range(0, size, step):
-        for x in range(0, size, step):
-            img.paste(scaled(hull, step), (x, y))
-    inner = size * 2 // 3 if size > TILE else size // 2
-    img.alpha_composite(scaled(top, inner), ((size - inner) // 2, (size - inner) // 2))
-    return img
-
-
 def multiblock(gt, name, size, casing, controller, face, middle):
     w, h = size
     cas = casing_tile(gt, casing, CASING_OVERRIDE.get(name))
@@ -984,25 +964,6 @@ def derived(name, source, rgb):
             save(tint(load(src), rgb), folder / f"{name}.png")
 
 
-def recolour(img, dark, light):
-    """the image's brightness as a ramp from `dark` to `light` (alpha kept)"""
-    out = ImageOps.colorize(ImageOps.autocontrast(img.convert("L")), dark, light).convert("RGBA")
-    out.putalpha(img.getchannel("A"))
-    return out
-
-
-def ender_tank(gt, name, tier, ramp):
-    """Issue #99: the ender tanks (142-fork-recipe-unlocks.lua, copies of the HV and EV air collector): the GT hull of
-    their tier around GT's ender fluid link (the tank of TecTech's ender fluid link cover, animated: the working
-    strip), recoloured per air (nether red, ender as GT draws it), so they are no longer air collectors on the map."""
-    hull = load(gt_path(gt, f"gregtech:iconsets/MACHINE_{tier}_SIDE"))
-    frames = frames_of(load(gt_path(gt, ENDER_LINK)))
-    if ramp:
-        frames = [recolour(f, *ramp) for f in frames]
-    save(in_hull(hull, frames[0], 3 * TILE), OUT_ENTITY / f"{name}-idle.png")
-    save_strip([in_hull(hull, f, 3 * TILE) for f in frames], OUT_ENTITY / f"{name}-working.png")
-
-
 def icon_machine(name):
     img = scaled(load(ICONS / f"{name}.png"), 3 * TILE)
     save(img, OUT_ENTITY / f"{name}-idle.png")
@@ -1065,8 +1026,6 @@ def main():
         upgrade_hatches(a.gt, base, sprite, icon)
     for name, (source, rgb) in DERIVED.items():
         derived(name, source, rgb)
-    for name, (tier, ramp) in ENDER_TANKS.items():
-        ender_tank(a.gt, name, tier, ramp)
     print("Sprites:", len(list(OUT_ENTITY.glob("*.png"))), "Icons:", len(list(OUT_ICON.glob("*.png"))))
 
 

@@ -623,30 +623,6 @@ create_item{
 
 
 
----EV MICROVERSE PROJECTOR
-make_electric_machine("ev-microverse-projector", "small-microverse-projector", "small-microverse-projector", { "mv-microverse-projector-recipes", "hv-microverse-projector-recipes", "ev-microverse-projector-recipes" },
-	"fr-small-microverse-projector", EU30_EV, 8, 1, 0.5, 3, 3, {
-    fluid_port(-1, -1, "input", defines.direction.north),
-    fluid_port( 1, -1, "input", defines.direction.north)  
-})
-create_item{
-	name = "ev-microverse-projector",
-	icon = ICON_PATH .. "small-microverse-projector.png",
-	ingredients = {
-      {type = "item", name = "hv-microverse-projector", amount = 1},
-      {type = "item", name = "hv-energy-hatch", amount = 2},
-    },
-	results = {
-		{ type = "item", name = "ev-microverse-projector", amount = 1 },
-		{ type = "item", name = "mv-energy-hatch", amount = 2 },
-	},
-	main_product = "ev-microverse-projector",
-	place_result = "ev-microverse-projector",
-    stack_size = 10
-}
-
-
-
 ---EV PUMPJACK
 make_electric_machine("ev-drilling-rig", "mv-drilling-rig", "mv-drilling-rig", { "drilling-rig-recipes" }, "fr-drilling-rig", EU16_EV, 8, 1, 0.5, 3, 6.25, { 
     fluid_port(-1,  1, "output", defines.direction.south),

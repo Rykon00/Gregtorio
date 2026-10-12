@@ -7,7 +7,7 @@
 --- parts in a row of their own.
 ---
 --- Rule A (maintainer's decision): BY FORM. The material parts are in the item group "Material parts" (tab, after the
---- Microminer tab), one row (subgroup) per form, the materials by tier inside it. Rows wrap after ten. That is
+--- Microminer tab, which issue #287 removed), one row (subgroup) per form, the materials by tier inside it. Rows wrap after ten. That is
 --- GregTech's order too: its material item is one item whose damage value is `prefix index x 1000 + material id`
 --- (GT5-Unofficial MetaGeneratedItem01.java:3957, the prefix list in its constructor), so NEI and the creative tab list every
 --- ingot, then every plate ... The forms follow GT's prefix order (ingot, hot ingot, nugget, plates up to dense, foil, rod,

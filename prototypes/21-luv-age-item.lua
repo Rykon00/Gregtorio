@@ -2433,22 +2433,6 @@ create_recipe{
 ---   MAGICAL INGOTS  ---
 -------------------------
 
-create_recipe{
-    recipe_name = "microminer-infused-gold",
-    category = "lv-assembling-machine-recipes",	
-    energy_required = LUV_SPEED * 2,
-    subgroup = "subgroup-microminer-t5",
-	ingredients = {
-		{type = "item", name = "tier-five-microminer-output", amount = 1 }
-    },
-    results = {
-		{type = "item", name = "raw-gold", amount = 32 },
-		{type = "item", name = "raw-infused-gold", amount = 16 },
-		{type = "item", name = "raw-platinum", amount = 8 },
-		{type = "item", name = "raw-iridium", amount = 8 },
-    },
-	main_product = "raw-infused-gold"
-}
 create_item{
     name = "salis-mundis",
     category = "mv-centrifuge-recipes",	

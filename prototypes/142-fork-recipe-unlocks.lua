@@ -7,14 +7,14 @@
 --- looks for it: the technology of its material or its machine, the line it belongs to. devcheck fails on a
 --- Gregtorio recipe that no researchable technology unlocks, unless it is in FORK_RECIPES_LOCKED below.
 ---
----   1) producers GregTech has and Gregtorio lacked, so that the unlocked recipes can be made: signalum ingot,
----      naquadah doped boule, charcoal byproducts, super glue (GT++'s glue line, condensed), the ender tanks of
----      the nether and ender air, the component assembly line, microminer missions for the ores of GT's space veins
----   2) two technologies: tier four microminers (the lunar mission) and super glue
+---   1) producers GregTech has and Gregtorio lacked, so that the unlocked recipes can be made: naquadah doped boule,
+---      charcoal byproducts, super glue (GT++'s glue line, condensed), the component assembly line (issue #287 removed
+---      the signalum ingot, the ender tanks and the microminer missions with the microverse)
+---   2) a technology: super glue
 ---   3) the unlock table
 ---   4) the recipes that stay locked, with the reason
 --- Amounts: fluids at Gregtorio's scale, a tenth of GregTech's (144 per ingot in GT, 14.4 here), items and times
---- as in GregTech. Loaded after 138 (no unit counts from UV up are set for the new technologies, both are IV) and
+--- as in GregTech. Loaded after 138 (no unit counts from UV up are set for the new technology, it is IV) and
 --- before 150 (molds) and 199 (the auto-unlock sees these recipes as unlocked and leaves them alone).
 --------------------------------------------------------------------------------
 
@@ -38,21 +38,6 @@ end
 --------------------------------------------------------------------------------
 --- 1) PRODUCERS
 --------------------------------------------------------------------------------
-
---- Signalum (upstream: the ingot without a recipe, its plate, rod and the signalum microminer engine). GTNH makes it
---- in EnderIO's alloy smelter (config/enderio/AlloySmelterRecipes_Core.xml): 3 copper, 1 silver and 10 redstone ->
---- 4 ingots for 32000 RF; energetic alloy there costs 10000 RF and takes 20 s in Gregtorio's LV alloy smelter.
-create_recipe{
-	name = "signalum-ingot",
-	category = "lv-alloy-smelter-recipes",
-	energy_required = 64,
-	ingredients = {
-		{ type = "item", name = "copper-ingot", amount = 3 },
-		{ type = "item", name = "silver-ingot", amount = 1 },
-		{ type = "item", name = "redstone-dust", amount = 10 },
-	},
-	results = { { type = "item", name = "signalum-ingot", amount = 4 } },
-}
 
 --- Naquadah doped boule (upstream: the item without a recipe, its wafer and the -nd wafer variants). GT: EBF, EV,
 --- 4484 K, 16 silicon blocks, a gallium arsenide crystal and a naquadah ingot, 12.5 minutes: half the europium boule
@@ -161,28 +146,6 @@ glue_step("super-glue", "iv-chemical-reactor-recipes", 55, {
 	{ type = "fluid", name = "water", amount = 100 },
 })
 
---- The ender tanks (upstream 15-hv-age-item.lua: the items come from the microverse projector, their entities were
---- commented out, so the nether and ender air collection had no machine). GT collects nether and ender air with the
---- air collector in the Nether and the End; here the tank filled on the other side stands in for it: the HV and the
---- EV air collector with the ender tank's recipes. Graphics (issue #99): the GT hull of the tier around GT's animated
---- ender fluid link, red for nether air (tools/gen_sprites.py, ENDER_TANKS).
-local function ender_tank(name, source, category)
-	local m = table.deepcopy(data.raw["assembling-machine"][source])
-	m.name = name
-	m.icon = ICON_PATH .. name .. ".png"
-	m.icon_size = 32
-	m.icons = nil
-	m.graphics_set = fork_sprites(name, 3, 3, 8, 8)
-	m.minable = { mining_time = 0.5, result = name }
-	m.crafting_categories = { category }
-	m.fast_replaceable_group = nil
-	m.next_upgrade = nil
-	data:extend({ m })
-	data.raw.item[name].place_result = name
-end
-ender_tank("nether-air-ender-tank", "hv-air-collector", "nether-air-ender-tank-recipes")
-ender_tank("ender-air-ender-tank", "ev-air-collector", "ender-air-ender-tank-recipes")
-
 --- Component assembly line (GoodGenerator's CoAL, ComponentAssemblyLineMiscRecipes.java). Upstream has its drafts
 --- in 25-uv-age-item.lua (a controller and a structure of 1300 casings, never loaded, removed in issue #249) and 32 recipes in
 --- 11/13/15/17-*-age-item.lua that make 64 LV to EV components at once from long rods, 16x wires and cables and
@@ -234,55 +197,6 @@ do
 	}
 end
 
---- Microminer missions for the ores of GT's space veins (OreMixes.java). Upstream has the ore lines (crushed ore,
---- washing, centrifuge, smelting; 07-ore-processing-module.lua) and drafts of the missions in the tier seven and
---- eight microminers (23-zpm-age-item.lua, 27-uhv-age-item.lua, never loaded, removed in issue #249), which do not exist; like the
---- bedrockium and quantium missions of 137-fork-endgame-materials.lua they are missions of the tier three
---- microminer (the end), unlocked with those technologies (UV and UHV). The vein decides the outputs, the drafts the
---- amounts; GT's sporadic titanium and the garnets have no raw ore item here and are left out.
-local function mission(name, tier_output, count, subgroup, results, main)
-	create_recipe{
-		name = name,
-		category = "lv-assembling-machine-recipes",
-		energy_required = 8,
-		subgroup = subgroup,
-		ingredients = { { type = "item", name = tier_output, amount = count } },
-		results = results,
-		main_product = main,
-	}
-end
---- GT's neutronium vein (Pluto, Makemake, Haumea, the Kuiper belt ...): neutronium, adamantium, naquadah, titanium
-mission("microminer-neutronium", "tier-three-microminer-output", 2, "subgroup-microminer-t3", {
-	{ type = "item", name = "raw-neutronium", amount = 32 },
-	{ type = "item", name = "raw-adamantium", amount = 16 },
-	{ type = "item", name = "raw-naquadah", amount = 8 },
-}, "raw-neutronium")
---- GT's black plutonium vein (Horus, Barnard C, Centauri Bb, Makemake, Pluto, T Ceti E): black plutonium, red and
---- yellow garnet, borax
-mission("microminer-black-plutonium", "tier-three-microminer-output", 2, "subgroup-microminer-t3", {
-	{ type = "item", name = "raw-black-plutonium", amount = 32 },
-	{ type = "item", name = "raw-borax", amount = 8 },
-}, "raw-black-plutonium")
---- GT's infinity catalyst vein (Anubis): neutronium, adamantium, infinity catalyst, bedrockium
-mission("microminer-infinity-catalyst", "tier-three-microminer-output", 2, "subgroup-microminer-t3", {
-	{ type = "item", name = "raw-infinity-catalyst", amount = 16 },
-	{ type = "item", name = "raw-neutronium", amount = 32 },
-	{ type = "item", name = "raw-adamantium", amount = 8 },
-	{ type = "item", name = "raw-bedrockium", amount = 8 },
-}, "raw-infinity-catalyst")
---- GT's cosmic neutronium vein (Horus): neutronium, cosmic neutronium, black plutonium, bedrockium
-mission("microminer-cosmic-neutronium", "tier-three-microminer-output", 2, "subgroup-microminer-t3", {
-	{ type = "item", name = "raw-cosmic-neutronium", amount = 16 },
-	{ type = "item", name = "raw-neutronium", amount = 32 },
-	{ type = "item", name = "raw-black-plutonium", amount = 8 },
-	{ type = "item", name = "raw-bedrockium", amount = 8 },
-}, "raw-cosmic-neutronium")
---- GT's titanium-chrome vein (the Moon, asteroids, Callisto ...): ilmenite, chromite, uvarovite, perlite. A mission of
---- the tier two microminer, like the ilmenite one (07-ore-processing-module.lua), and with its technology
-mission("microminer-chromite", "tier-two-microminer-output", 1, "subgroup-microminer-t2", {
-	{ type = "item", name = "raw-ilmenite", amount = 24 },
-	{ type = "item", name = "raw-chromite", amount = 16 },
-}, "raw-chromite")
 
 
 
@@ -290,14 +204,6 @@ mission("microminer-chromite", "tier-two-microminer-output", 1, "subgroup-microm
 --- 2) TECHNOLOGIES
 --------------------------------------------------------------------------------
 
---- The tier four microminer (upstream 52-microverse-module.lua: the lunar mission, its engine and plating, the
---- moon turf and moon dust) had no technology; IV like its microverse projector. Recipes: the table below.
-F.tech{
-	name = "tier-four-microminers",
-	prerequisites = { "tier-three-microminers", "iv-machines", "tungsten-carbide", "nuclear-power", "me-storage-64k" },
-	packs = 6, count = 800,
-	recipes = {},
-}
 --- GT++'s glue line is IV (6000 EU/t in the chemical plant)
 F.tech{
 	name = "super-glue",
@@ -313,8 +219,6 @@ F.tech{
 --- Technology -> recipes, by tier. Most recipes go to the technology of their material (the blocks, 16x wires,
 --- long rods and plates of a metal to the technology that makes its ingot) or of their machine; the rest by line:
 ---   * the 32 component assembly line recipes, its circuit wraps and the machine: uv-multiblocks
----   * the lunar mission, signalum, moon dust and the crystaltine parts of the extended crafting tables (they need
----     the nether star and HSS-G plates of IV): tier-four-microminers
 ---   * the naquadah doped boule, its wafer, the -nd wafer variants, graphene from them, the system on chip and the
 ---     cheap circuits from it: naquadah-processing (where the naquadah ingot comes); the europium (-ed) and
 ---     americium (-ad) variants already sit with their wafers (nano-power-ics, pico-quantum-power-ics)
@@ -325,9 +229,9 @@ F.tech{
 ---   * the power multiblocks (large heat exchanger, large and high pressure steam turbine, lapotronic
 ---     supercapacitor): with nuclear power, the magnalium of the industrial mixer (both steam turbines) and the
 ---     lapotronic energy orbs. Upstream has no entity for them yet (items only).
----   * nether and ender air (the ender tanks, collection, liquefaction, distillation): end-steel
----   * the ore lines of the exotic ores: with the missions (bedrockium for UV, quantium for UHV); chromite with the
----     titanium technology, which has the ilmenite mission (the chromite mission brings ilmenite too)
+---   * nether air (liquefaction, distillation): end-steel
+---   * the ore lines of the exotic ores: with their first consumers (bedrockium for UV, quantium for UHV); chromite
+---     with the titanium technology
 ---   * ore lines whose product main makes later by another route go to that route's technology, so nothing comes
 ---     earlier than before: bastnasite (neodymium) to neodymium, molybdenite (molybdenum) to tungstate-processing,
 ---     carbon fibres from PTFE, the carbon mesh and plate to nanoprocessors
@@ -336,7 +240,7 @@ F.tech{
 
 local UNLOCKS = {
 	["steam-compressor"] = { -- steam
-		"block-of-bronze", "block-of-copper", "block-of-red-alloy", "block-of-tin", "brick-block",
+		"block-of-bronze", "block-of-copper", "block-of-red-alloy", "block-of-redstone", "block-of-tin", "brick-block",
 	},
 	["steel-processing"] = { -- steam
 		"block-of-steel", "lapis-lazuli-block",
@@ -374,7 +278,7 @@ local UNLOCKS = {
 	["circuit-assembler"] = { -- LV
 		"block-of-brass",
 	},
-	["basic-extended-crafting"] = { -- MV
+	["black-steel"] = { -- MV (issue #287: was basic-extended-crafting)
 		"block-of-black-steel",
 	},
 	["aluminium"] = { -- MV
@@ -410,12 +314,8 @@ local UNLOCKS = {
 	["stainless-steel"] = { -- MV
 		"dense-stainless-steel-plate", "long-stainless-steel-rod",
 	},
-	["tier-two-microminers"] = { -- MV
-		"centrifuging-crushed-monazite", "ender-pearl-block", "monazite-dust", "monazite-dust-extraction",
-		"raw-monazite-multismelter", "raw-monazite-smelter",
-	},
 	["eyes-of-ender"] = { -- MV
-		"block-of-pulsating-iron", "pulsating-iron-wire-16x",
+		"block-of-pulsating-iron", "ender-pearl-block", "pulsating-iron-wire-16x",
 	},
 	["neodymium"] = { -- HV
 		"bastnasite-dust", "bastnasite-dust-electrolysis", "centrifuging-crushed-bastnasite", "crushed-bastnasite",
@@ -443,20 +343,19 @@ local UNLOCKS = {
 	["rocket-fuel"] = { -- HV
 		"hydrochloric-acid-concentration",
 	},
-	["tier-three-microminers"] = { -- HV
-		"block-of-vibrant-alloy", "centrifuging-crushed-bornite", "raw-bornite-multismelter", "raw-bornite-smelter",
-		"vibrant-alloy-plate", "vibrant-alloy-wire-16x",
+	["reach-the-moon"] = { -- HV (issue #287: the monazite of the Moon's mine, 160; was tier-two-microminers)
+		"centrifuging-crushed-monazite", "monazite-dust", "monazite-dust-extraction", "raw-monazite-multismelter",
+		"raw-monazite-smelter",
 	},
 	["titanium"] = { -- EV
 		"block-of-titanium", "centrifuging-crushed-chromite", "chromium-dust", "crushed-chromite", "ilmenite-processing",
-		"ilmenite-slag-processing", "long-titanium-rod", "microminer-chromite", "raw-chromite-multismelter",
+		"ilmenite-slag-processing", "long-titanium-rod", "raw-chromite-multismelter",
 		"raw-chromite-smelter", "raw-ilmenite-multismelter", "raw-ilmenite-smelter", "sulfuric-iron-solution-electrolysis",
 		"titanium-pipe-casing",
 	},
 	["end-steel"] = { -- EV
-		"block-of-dark-steel", "block-of-electrical-steel", "end-steel-wire-16x", "ender-air-collection",
-		"ender-air-distillation", "ender-air-ender-tank", "ender-tank", "endstone-dust-centrifuging", "liquid-ender-air",
-		"liquid-nether-air", "nether-air-collection", "nether-air-distillation", "nether-air-ender-tank",
+		"block-of-dark-steel", "block-of-electrical-steel", "end-steel-wire-16x", "ender-air-distillation",
+		"endstone-dust-centrifuging", "liquid-ender-air", "liquid-nether-air", "nether-air-distillation",
 	},
 	["tungstate-processing"] = { -- EV
 		"centrifuging-crushed-molybdenite", "crushed-molybdenite", "molybdenite-dust", "molybdenum-dust",
@@ -474,7 +373,8 @@ local UNLOCKS = {
 		"solidify-incoloy-ma956-ingot", "solidify-ultimet-ingot", "solidify-zeron-100-ingot", "zeron-100-plate",
 	},
 	["ender-io"] = { -- EV
-		"block-of-soularium", "hv-field-generator",
+		"block-of-soularium", "block-of-vibrant-alloy", "hv-field-generator", "vibrant-alloy-plate",
+		"vibrant-alloy-wire-16x",
 	},
 	["platinum-ore-processing"] = { -- EV
 		"centrifuging-crushed-palladium", "centrifuging-crushed-platinum", "centrifuging-crushed-sheldonite",
@@ -558,13 +458,6 @@ local UNLOCKS = {
 		"chloroacetic-acid", "cyanoacetic-acid", "ethyl-cyanoacetate", "formaldehyde", "hydrogen-cyanide",
 		"sodium-cyanide", "super-glue",
 	},
-	["tier-four-microminers"] = { -- IV
-		"crystaltine-extended-crafting-catalyst", "crystaltine-extended-crafting-component", "crystaltine-ingot",
-		"extraterrestrial-metal-mixture-centrifuging", "lunar-navigation-data", "microminer-compressed-moon-turf",
-		"moon-dust", "moon-dust-centrifuging", "signalum-ingot", "signalum-microminer-engine-core",
-		"signalum-microminer-engine-frame", "signalum-plate", "signalum-rod", "tier-four-microminer-output",
-		"tungsten-carbide-heavy-plating", "tungsten-carbide-plated-microminer", "vibrant-thruster",
-	},
 	["naquadah-processing"] = { -- LuV
 		"cpu-wafer-nd", "fluorspar-electrolysis", "graphene-nd", "ilc-wafer-nd", "microchip-cheap", "microprocessor-cheap",
 		"mpic-wafer-nd", "nand-memory-nd", "naquadah-doped-monocrystaline-silicon-boule", "naquadah-doped-wafer",
@@ -611,17 +504,16 @@ local UNLOCKS = {
 	["bedrockium"] = { -- UV
 		"black-plutonium-dust", "borax", "centrifuging-crushed-adamantium", "centrifuging-crushed-black-plutonium",
 		"centrifuging-crushed-borax", "centrifuging-crushed-neutronium", "crushed-adamantium", "crushed-black-plutonium",
-		"crushed-borax", "crushed-neutronium", "microminer-black-plutonium", "microminer-neutronium", "neutronium-dust",
+		"crushed-borax", "crushed-neutronium", "neutronium-dust",
 	},
 	["quantium"] = { -- UHV
 		"centrifuging-crushed-cosmic-neutronium", "centrifuging-crushed-infinity-catalyst", "cosmic-neutronium-dust",
-		"crushed-cosmic-neutronium", "crushed-infinity-catalyst", "infinity-catalyst-dust", "microminer-cosmic-neutronium",
-		"microminer-infinity-catalyst",
+		"crushed-cosmic-neutronium", "crushed-infinity-catalyst", "infinity-catalyst-dust",
 	},
 }
 --- Issue #98 (prototypes/147-fork-gt-routes.lua): the second printed board with sodium persulfate where the printed
 --- board is (microprocessors), black plutonium and cosmic neutronium in the blast furnace with their dusts (the
---- missions of bedrockium and quantium), the high octane line on its own technology, GT's PPIC wafer with the
+--- technologies of bedrockium and quantium), the high octane line on its own technology, GT's PPIC wafer with the
 --- other one
 local UNLOCKS_98 = {
 	["microprocessors"] = { -- MV
@@ -701,8 +593,6 @@ local KEEP = {
 	["military-science-pack"] = { "lv-sensor" },
 	["end-steel"] = { "endstone-dust" },
 	["rhodium"] = { "sulfur-dioxide", "sulfur-trioxide" },
-	-- issue #185: the ore chain's new producers would move these to tier-three-microminers
-	["ore-washing"] = { "crushed-bornite", "microminer-platinum" },
 	-- issue #188: the forge hammer crushes raw sheldonite too, so the auto-unlock no longer places the macerator recipe
 	["platinum-ore-processing"] = { "crushed-sheldonite" },
 	-- issue #262: the dissolution tank of the monazite line makes thorianite too, so the auto-unlock no longer places the
@@ -807,9 +697,7 @@ end
 for _, m in pairs({
 	{ "long-aluminium-rod", "aluminium", "extruder" },                          -- MV extruder (MV hull, MV piston)
 	{ "aluminium-spring", "aluminium", "extruder" },                            -- its long aluminium rod
-	{ "ender-air-ender-tank", "end-steel", "ev-machines" },                     -- EV compressor
-	{ "ender-air-collection", "end-steel", "ev-machines" },                     -- the ender air of that tank
-	{ "liquid-ender-air", "end-steel", "ev-machines" },
+	{ "liquid-ender-air", "end-steel", "ev-machines" },                         -- (the EV compressor's ender air)
 	{ "ender-air-distillation", "end-steel", "ev-machines" },
 	{ "ev-field-generator", "ev-components", "extreme-entity-crushers" },       -- nether star (the wither)
 	{ "ev-circuit-assembler", "ev-machines", "advanced-ev-machines" },          -- EV emitter (platinum rod)
@@ -841,8 +729,7 @@ FORK_UNLOCK_TREE = { prerequisites = {
 	["alloy-blast-smelter"] = { "nuclear-power" },   -- platinum-cable
 	["aluminium"] = { "cutting-machine" },   -- machine lv-cutting-machine
 	["assembly-line"] = { "industrial-precision-lathe" },   -- grate-machine-casing
-	["basic-extended-crafting"] = { "electric-blast-furnace", "galena", "rare-earth-processing" },   -- machine mv-electric-blast-furnace; silver-ingot; nether-quartz
-	["battery"] = { "tier-two-microminers" },   -- raw-monazite
+	["black-steel"] = { "electric-blast-furnace", "galena", "rare-earth-processing" },   -- machine mv-electric-blast-furnace; silver-ingot; nether-quartz
 	["bio-processors"] = { "qubit-cpus" },   -- qubit-cpu-chip
 	["cetane-boosted-diesel"] = { "implosion-compressor" },   -- nitric-acid
 	["concrete"] = { "automation-2" },   -- machine lv-assembling-machine
@@ -874,7 +761,6 @@ FORK_UNLOCK_TREE = { prerequisites = {
 	["magnetic-flux-exhibiter"] = { "space-science-pack" },   -- indovanadium-superconductive-wire
 	["max-machines"] = { "hyper-intensity-laser-engraver" },   -- nitinol-60-rod
 	["microprocessors"] = { "kanthal-coils" },   -- aluminium-foil
-	["microversium"] = { "basic-extended-crafting" },   -- lapis-coolant
 	["military-science-pack"] = { "circuit-assembler" },   -- lv-emitter
 	["nanoprocessors"] = { "ev-energy-hatches" },   -- machine ev-chemical-reactor
 	["naquadah-fuels"] = { "uv-materials" },   -- neutronium-ingot
@@ -902,7 +788,6 @@ FORK_UNLOCK_TREE = { prerequisites = {
 	["smd-components"] = { "polyvinyl-chloride" },   -- thin-pvc-sheet
 	["staballoy"] = { "titanium" },   -- titanium-ingot
 	["super-glue"] = { "iv-energy-hatches" },   -- machine iv-chemical-reactor
-	["tier-four-microminers"] = { "hssg" },   -- hssg-plate
 	["tungstate-processing"] = { "ev-machines" },   -- machine ev-autoclave
 	["tungsten"] = { "ev-energy-hatches" },   -- machine ev-chemical-reactor
 	["utility-science-pack"] = { "ev-machines" },   -- machine ev-assembling-machine
@@ -951,7 +836,6 @@ FORK_UNLOCK_TREE.apply()
 --- "<technology>:<cause>" -> reason (the cause as `devcheck.py check` names it: the first missing item, or the recipe
 --- whose machine is missing); devcheck fails for any other such recipe and for an entry that matches nothing
 FORK_UNLOCK_GAPS = {
-	["ore-washing:tier-three-microminer-output"] = "ore processing of an ore that only the tier three microminer missions bring; the recipes wait for the ore",
 	["uv-components:uhv-circuit"] = "GT's field generator takes the next tier's circuit; kept with the components on purpose (128, phase 3 note): craftable once that circuit is",
 	["uhv-components:uev-circuit"] = "GT's field generator takes the next tier's circuit; kept with the components on purpose (128, phase 3 note): craftable once that circuit is",
 	["uev-components:uiv-circuit"] = "GT's field generator takes the next tier's circuit; kept with the components on purpose (128, phase 3 note): craftable once that circuit is",
@@ -964,7 +848,6 @@ FORK_UNLOCK_GAPS = {
 --- that matches nothing
 local FIELD_GENERATOR = "GT's field generator takes the next tier's circuit; kept with the components on purpose (128, phase 3 note; #237): craftable once that circuit is"
 FORK_UNLOCK_TREE_GAPS = {
-	["ore-washing:tier-three-microminer-output"] = "ore processing of an ore that only the tier three microminer missions bring; the recipes wait for the ore (#237)",
 	["luv-components:zpm-circuit"] = FIELD_GENERATOR,
 	["uv-components:uhv-circuit"] = FIELD_GENERATOR,
 	["uhv-components:uev-circuit"] = FIELD_GENERATOR,
