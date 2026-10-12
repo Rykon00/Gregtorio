@@ -212,6 +212,17 @@ MULTIBLOCKS = {
     "hv-dehydrator": ((3, 3), "gregtech:iconsets/MACHINE_HV_SIDE", None,
                       ("gregtech:basicmachines/dehydrator/OVERLAY_FRONT",
                        "gregtech:basicmachines/dehydrator/OVERLAY_FRONT_ACTIVE"), None),
+    # issue #286 (160-fork-dimension-mines.lua): bartworks' Void Miners I to III, their mining casings and the ore drill
+    # front
+    "void-miner-i": ((3, 3), "gregtech:iconsets/MACHINE_CASING_MINING_OSMIRIDIUM", None,
+                      ("gregtech:iconsets/OVERLAY_FRONT_ORE_DRILL", "gregtech:iconsets/OVERLAY_FRONT_ORE_DRILL_ACTIVE"),
+                      None),
+    "void-miner-ii": ((3, 3), "gregtech:iconsets/MACHINE_CASING_MINING_BLACKPLUTONIUM", None,
+                      ("gregtech:iconsets/OVERLAY_FRONT_ORE_DRILL", "gregtech:iconsets/OVERLAY_FRONT_ORE_DRILL_ACTIVE"),
+                      None),
+    "void-miner-iii": ((3, 3), "gregtech:iconsets/MACHINE_CASING_MINING_NEUTRONIUM", None,
+                      ("gregtech:iconsets/OVERLAY_FRONT_ORE_DRILL", "gregtech:iconsets/OVERLAY_FRONT_ORE_DRILL_ACTIVE"),
+                      None),
     # issue #274: the Chemical Dehydrators I to IV, like the MV and HV ones
     "ev-dehydrator": ((3, 3), "gregtech:iconsets/MACHINE_EV_SIDE", None,
                       ("gregtech:basicmachines/dehydrator/OVERLAY_FRONT",
@@ -236,7 +247,7 @@ CONTROLLER_ICONS = {"neutron-activator", "water-purification-plant", "uv-large-n
 # the middle row tells them apart)
 WHOLE_ICONS = {"large-titanium-boiler", "large-combustion-engine", "digester", "dissolution-tank",
                "exxonmobil-chemical-plant", "mv-dehydrator", "hv-dehydrator", "ev-dehydrator", "iv-dehydrator",
-               "luv-dehydrator", "zpm-dehydrator"}
+               "luv-dehydrator", "zpm-dehydrator", "void-miner-i", "void-miner-ii", "void-miner-iii"}
 # tier versions of a generator (136-fork-power.lua): the base sprite with dynamo hatches of the tier
 # (GT hull of the tier + GT's dynamo hatch overlay) on the corner tiles; the base itself gets its own
 # tier's hatches too. The icon gets the hatch as a badge.
