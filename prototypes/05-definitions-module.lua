@@ -632,21 +632,6 @@ recipe_category_and_subgroup( "uxv-alloy-blast-smelter-recipes" )
 
 
 
-recipe_category_and_subgroup( "mv-microverse-projector-recipes" )
-recipe_category_and_subgroup( "hv-microverse-projector-recipes" )
-recipe_category_and_subgroup( "ev-microverse-projector-recipes" )
-recipe_category_and_subgroup( "iv-microverse-projector-recipes" )
-recipe_category_and_subgroup( "luv-microverse-projector-recipes" )
-recipe_category_and_subgroup( "zpm-microverse-projector-recipes" )
-recipe_category_and_subgroup( "uv-microverse-projector-recipes" )
-recipe_category_and_subgroup( "uhv-microverse-projector-recipes" )
-recipe_category_and_subgroup( "uev-microverse-projector-recipes" )
-recipe_category_and_subgroup( "uiv-microverse-projector-recipes" )
-recipe_category_and_subgroup( "umv-microverse-projector-recipes" )
-recipe_category_and_subgroup( "uxv-microverse-projector-recipes" )
-  
-  
-  
 recipe_category_and_subgroup( "lv-dehydrator-recipes" )  
 recipe_category_and_subgroup( "mv-dehydrator-recipes" )  
 recipe_category_and_subgroup( "hv-dehydrator-recipes" )  
@@ -698,19 +683,7 @@ recipe_category_and_subgroup( "uxv-coal-recipes" )
   
   
   
-recipe_category_and_subgroup( "basic-extended-crafting-recipes" )
-recipe_category_and_subgroup( "advanced-extended-crafting-recipes" )
-recipe_category_and_subgroup( "elite-extended-crafting-recipes" )
-
-
-
----ENDER TANKS
-recipe_category_and_subgroup( "nether-air-ender-tank-recipes" )
-recipe_category_and_subgroup( "ender-air-ender-tank-recipes" )
-
-
-
----WERIDO MACHINESnether-air-ender-tank-recipes
+---WEIRDO MACHINES
 recipe_category_and_subgroup( "digester-recipes" )
 recipe_category_and_subgroup( "dissolution-tank-recipes" )
 recipe_category_and_subgroup( "neutron-activator-recipes" )
@@ -794,7 +767,6 @@ COBALT_BRASS_SPEED = 2.9
 CUPRONICKEL_SPEED = 3
 HSLA_STEEL_SPEED = 3.05
 ULTIMET_SPEED = 3.05
-MICROVERSIUM_SPEED = 3.1
 COPPER_SPEED = 3.15
 ANNEALED_COPPER_SPEED = 3.15
 BRASS_SPEED = 3.15
@@ -849,7 +821,6 @@ ENERGETIC_ALLOY_SPEED = 7.35
 SAMARIUM_SPEED = 7.5
 ELECTRUM_SPEED = 7.55
 EUROPIUM_SPEED = 7.55
-SIGNALUM_SPEED = 7.8
 HOLMIUM_SPEED = 8.2
 LUTETIUM_SPEED = 8.7
 TANTALUM_SPEED = 9

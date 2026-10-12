@@ -230,7 +230,6 @@ local fluids = {
   make_fluid("molten-kanthal", fluid_icon_path .. "spackled-gray-fluid.png"),
   make_fluid("molten-maraging-steel-250", fluid_icon_path .. "purple-fluid.png"),
   make_fluid("molten-maraging-steel-300", fluid_icon_path .. "purple-fluid.png"),
-  make_fluid("molten-microversium", fluid_icon_path .. "purple-fluid.png"),
   make_fluid("molten-naquadah-alloy", fluid_icon_path .. "black-fluid.png"),
   make_fluid("molten-nichrome", fluid_icon_path .. "spackled-purple-fluid.png"),
   make_fluid("molten-nickel-zinc-ferrite", fluid_icon_path .. "phenol.png"),

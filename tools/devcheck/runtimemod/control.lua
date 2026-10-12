@@ -681,15 +681,12 @@ local RT = {
 	{ "max-assembling-machine", "maximum-voltage-coil" },
 	{ "uxv-assembling-machine", "max-science-pack-from-magmatter" },
 	-- issue #91 (prototypes/142-fork-recipe-unlocks.lua): the producers GT has and Gregtorio lacked, the new machines
-	-- (ender tank, component assembly line), a microminer mission and recipes that were never unlocked
-	{ "lv-alloy-smelter", "signalum-ingot" },
+	-- (component assembly line) and recipes that were never unlocked
 	{ "ev-electric-blast-furnace", "naquadah-doped-monocrystaline-silicon-boule" },
 	{ "mv-pyrolyse-oven", "charcoal-byproducts" },
 	{ "ev-large-chemical-reactor", "cyanoacetic-acid" },
 	{ "iv-large-chemical-reactor", "super-glue" },
-	{ "nether-air-ender-tank", "nether-air-collection" },
 	{ "component-assembly-line", "lv-motor-coal" },
-	{ "lv-assembling-machine", "microminer-neutronium" },
 	-- issue #126 (prototypes/148-fork-gtnh-table-items.lua): GTNH's machine recipes of the items the crafting table made
 	{ "lv-fluid-solidifier", "anvil-fluid-solidifier" },
 	{ "mv-alloy-smelter", "anvil-alloy-smelter" },

@@ -10,6 +10,7 @@ bacterial-vat	__gregtorio-continued__/graphics/icons/bacterial-vat.png
 bedrockium	__gregtorio-continued__/graphics/icons/bedrockium-ingot.png
 bio-processor-mainframes	__gregtorio-continued__/graphics/icons/uev-circuit.png
 bio-processors	__gregtorio-continued__/graphics/icons/bio-processor.png
+black-steel	__gregtorio-continued__/graphics/icons/black-steel-ingot.png
 chemical-bath-plant	__gregtorio-continued__/graphics/icons/chemical-bath-plant.png
 circuit-assembly-line	__gregtorio-continued__/graphics/icons/luv-circuit-assembly-line.png
 coke-oven	__gregtorio-continued__/graphics/icons/coke-oven.png
@@ -94,7 +95,6 @@ nanoprocessors	__gregtorio-continued__/graphics/icons/hv-circuit.png
 naquadah-alloy	__gregtorio-continued__/graphics/icons/naquadah-alloy-ingot.png
 naquadah-fuels	__gregtorio-continued__/graphics/fluids/spackled-forest-green-fluid.png
 naquadah-processing	__gregtorio-continued__/graphics/icons/naquadah-ingot.png
-nether-data	__gregtorio-continued__/graphics/icons/nether-data.png
 niobium-and-tantalum-extraction	__gregtorio-continued__/graphics/icons/niobium-pentoxide.png
 niobium-titanium	__gregtorio-continued__/graphics/icons/niobium-titanium-ingot.png
 nuclear-fuel-rods	__gregtorio-continued__/graphics/icons/thorium-dust.png
@@ -128,8 +128,6 @@ super-coolant	__gregtorio-continued__/graphics/fluids/spackled-light-blue-fluid.
 super-glue	__gregtorio-continued__/graphics/fluids/ethane.png
 temporal-processor-mainframes	__gregtorio-continued__/graphics/icons/uxv-circuit.png
 temporal-processors	__gregtorio-continued__/graphics/icons/temporal-processor.png
-the-end-data	__gregtorio-continued__/graphics/icons/the-end-data.png
-tier-four-microminers	__gregtorio-continued__/graphics/icons/tungsten-carbide-plated-microminer.png
 titanium	__gregtorio-continued__/graphics/icons/titanium-ingot.png
 tungstate-processing	__gregtorio-continued__/graphics/icons/raw-tungstate.png
 tungsten-carbide	__gregtorio-continued__/graphics/icons/tungsten-carbide-ingot.png

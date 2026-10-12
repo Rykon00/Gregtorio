@@ -9,11 +9,11 @@
 ---   * every electric compressor gets the Air Collector's two output ports (south, left and right), shown only with a
 ---     fluid recipe, so pipes laid to an Air Collector fit the compressor that replaces it;
 ---   * the Air Collectors are gone: the LV to EV ones (upstream) with their items, recipes and category here, the IV to
----     MAX ones are no longer made (101's IV_BASIC_MACHINES). The ender tanks of 142, copies of the HV and EV Air
----     Collector, take the HV and EV compressor in their recipes instead.
+---     MAX ones are no longer made (101's IV_BASIC_MACHINES). (The ender tanks of 142 were copies of the HV and EV Air
+---     Collector; issue #287 removed them with the microverse.)
 --- Old saves: migrations/2026-10-06-issue-153-air-collector.json turns every Air Collector (entity and item) into the
 --- compressor of its tier; its recipe air-collection stays valid there, so it goes on making air.
---- Loads after 142 (the ender tanks copy the HV and EV Air Collector) and before 150, 196, 198 and 199.
+--- Loads after 142 and before 150, 196, 198 and 199.
 --------------------------------------------------------------------------------
 
 local TIERS = { "lv", "mv", "hv", "ev", "iv", "luv", "zpm", "uv", "uhv", "uev", "uiv", "umv", "uxv", "max" }
@@ -45,14 +45,6 @@ if ports then
 	end
 else
 	log("FORK-COMPRESSOR-AIR: no lv-air-collector to take the ports from")
-end
-
---- the ender tanks: the compressor of the tier instead of the Air Collector
-for _, def in pairs({ { "nether-air-ender-tank", "hv" }, { "ender-air-ender-tank", "ev" } }) do
-	local r = data.raw.recipe[def[1]]
-	for _, i in pairs(r and r.ingredients or {}) do
-		if i.name == def[2] .. "-air-collector" then i.name = def[2] .. "-compressor" end
-	end
 end
 
 --- the Air Collectors with their items, recipes, category and unlocks

@@ -4,24 +4,6 @@
 ---   ALUMINIUM  ---
 --------------------  
 
----MICROMINER BAUXITE 
-create_recipe{
-    name = "microminer-bauxite",
-    category = "lv-assembling-machine-recipes",	
-    energy_required = 2,
-    subgroup = "subgroup-microminer-t1",	
-	ingredients = {
-      {type = "item", name = "tier-one-microminer-output", amount = 3}
-    },
-    results = {
-      {type = "item", name = "raw-bauxite", amount = 48 },
-      {type = "item", name = "raw-aluminium", amount = 16 },
-    },
-	main_product = "raw-bauxite"
-}
-
-
-
 ---ELECTROLYZE BRICK DUST  
 create_recipe{
 	recipe_name = "brick-dust-electrolysis",
@@ -1527,9 +1509,9 @@ create_recipe{
 
 
 
------------------------------------
----   BASIC EXTENDED CRAFTING   ---
------------------------------------
+-----------------------
+---   BLACK STEEL   ---
+-----------------------
 
 ---DISTILLED WATER
 create_recipe{
@@ -1630,31 +1612,9 @@ create_recipe {
 
 
 
----LUMINESSENCE
-create_item{
-	name = "luminessence",
-	category = "lv-chemical-reactor-recipes",
-	energy_required = 8,
-	ingredients = {
-		{ type = "item", name = "redstone-dust", amount = 1 },
-		{ type = "item", name = "glowstone-dust", amount = 1 },
-		{ type = "item", name = "aluminium-dust", amount = 2 },
-		{ type = "fluid", name = "phosphoric-acid", amount = 200 },
-	},
-	results = {
-		{ type = "item", name = "luminessence", amount = 8 }
-	}
-}
 
 
 
-
-
-
-
----------------------------
----   MICROVERSE STUFF  ---
----------------------------
 
 ---DEUTERIUM
 create_recipe{
@@ -1673,32 +1633,6 @@ create_recipe{
 
   
   
----MICROVERSIUM INGOT COOLING
-create_recipe{
-	recipe_name = "microversium-ingot-chemical-bath",
-	category = "lv-chemical-bath-recipes",
-	energy_required = 30,
-	ingredients = {
-      {type = "item", name = "hot-microversium-ingot", amount = 1},
-      {type = "fluid", name = "lapis-coolant", amount = 100},
-    },
-	results = {
-		{type = "item", name = "microversium-ingot", amount = 1}
-    }
-}
-   
-  
-  
----MICROVERSIUM CASING
-create_item{
-	name = "microversium-casing",
-	ingredients = {
-      {type = "item", name = "microversium-plate", amount = 8}
-    }
-}
-
-
-
 ---BLOCK OF DIAMOND
 create_item{
 	name = "block-of-diamond",
@@ -1723,34 +1657,11 @@ create_item{
    
    
    
----BASIC EXTENDED CRAFTING COMPONENT
-create_item{
-	name = "basic-extended-crafting-component",
-	ingredients = {
-		{ type = "item", name = "black-steel-plate", amount = 1 },
-		{ type = "item", name = "iron-plate", amount = 1 },
-		{ type = "item", name = "nether-quartz", amount = 1 },
-		{ type = "item", name = "luminessence", amount = 1 }
-	}
-}
-   
-   
-
----BASIC EXTENDED CRAFTING CATALYST
-create_item{
-	name = "basic-extended-crafting-catalyst",
-	ingredients = {
-		{ type = "item", name = "black-steel-plate", amount = 1 },
-		{ type = "item", name = "basic-extended-crafting-component", amount = 4 }
-	},
-}    
-  
-
-
 ---BASIC GUIDANCE SYSTEM
 create_item{
 	name = "basic-guidance-system",
-    category = "basic-extended-crafting-recipes",
+	category = "mv-assembling-machine-recipes",   -- issue #287: was the basic extended crafting table's
+	energy_required = MV_SPEED * 10,
 	ingredients = {
       {type = "item", name = "steel-plate", amount = 4},
       {type = "item", name = "glass", amount = 1},
@@ -1760,19 +1671,6 @@ create_item{
 }
   
   
-  
----BASIC MINING LASER
-create_item{
-	name = "basic-mining-laser",
-    category = "basic-extended-crafting-recipes",
-	ingredients = {
-      {type = "item", name = "ruby-lens", amount = 1},
-      {type = "item", name = "glass-tube", amount = 1},
-      {type = "item", name = "electronic-circuit", amount = 1},
-      {type = "item", name = "nether-quartz", amount = 4}
-    }
-}
-
   
 ---CONDUCTIVE IRON INGOT	
 create_item{
@@ -1786,11 +1684,50 @@ create_item{
 }
 
 
+
+---BLOCK OF REDSTONE
+create_item{
+	name = "block-of-redstone",
+	category = "lv-compressor-recipes",
+	energy_required = 15,
+	ingredients = {
+		{type = "item", name = "redstone-dust", amount = 9}
+	}
+}
+
+
+
+---PULSATING IRON INGOT
+create_item{
+	name = "pulsating-iron-ingot",
+	category = "lv-alloy-smelter-recipes",
+	energy_required = 10,
+	ingredients = {
+		{type = "item", name = "iron-ingot", amount = 1},
+		{type = "item", name = "ender-pearl", amount = 1}
+	}
+}
+
+
+
+---VIBRANT ALLOY INGOT
+create_item{
+	name = "vibrant-alloy-ingot",
+	category = "lv-alloy-smelter-recipes",
+	energy_required = 40,
+	ingredients = {
+		{type = "item", name = "energetic-alloy-ingot", amount = 1},
+		{type = "item", name = "ender-pearl", amount = 1},
+	}
+}
+
+
  
 ---CONDUCTIVE IRON THRUSTER
 create_item{
 	name = "conductive-iron-thruster",
-    category = "basic-extended-crafting-recipes",
+	category = "mv-assembling-machine-recipes",   -- issue #287: was the basic extended crafting table's
+	energy_required = MV_SPEED * 10,
 	ingredients = {
 		{type = "item", name = "conductive-iron-plate", amount = 5},
 		{type = "item", name = "red-alloy-plate", amount = 3},
@@ -1800,99 +1737,13 @@ create_item{
 
 
 
----STEEL HEAVY PLATING
-create_item{
-	name = "steel-heavy-plating",
-	category = "lv-bending-machine-recipes",
-	energy_required = 4,
-	subgroup = "subgroup-microminer-t1",
-	ingredients = {
-		{type = "item", name = "steel-plate", amount = 4}
-    }
-}
-  
-  
-  
----STEEL PLATED MICRO MINER
-create_item{
-	name = "steel-plated-microminer",
-	category = "basic-extended-crafting-recipes",
-	ingredients = {
-		{type = "item", name = "basic-guidance-system", amount = 1},
-		{type = "item", name = "basic-mining-laser", amount = 2},
-		{type = "item", name = "steel-heavy-plating", amount = 2},
-		{type = "item", name = "iron-chest", amount = 1},
-		{type = "item", name = "lv-gas-turbine", amount = 1},
-		{type = "item", name = "conductive-iron-thruster", amount = 2}
-    }
-}
-  
-  
-  
 ---BASIC STORAGE HOUSING: item in me-network, recipe in 120-fork-me-network-compat.lua (issue #83)
 
----OVERWORLD DATA
-create_item{
-	name = "overworld-data",
-	category = "lv-assembling-machine-recipes",
-	energy_required = 4,
-	icon_size = 64,
-	subgroup = "subgroup-microminer-t1",
-	ingredients = {
-		{type = "item", name = "me-1k-storage-component", amount = 1},
-		{type = "item", name = "basic-storage-housing", amount = 1},
-    },
-	results = {
-		{type = "item", name = "overworld-data", amount = 1}
-    }
-}
-  
-
-
----TIER ONE OUTPUT
-create_item{
-	name = "tier-one-microminer-output",
-	category = "mv-microverse-projector-recipes",
-	energy_required = MV_SPEED * 100,
-	subgroup = "subgroup-microminer-t1",
-	ingredients = {
-		{type = "item", name = "steel-plated-microminer", amount = 1},
-		{type = "item", name = "overworld-data", amount = 1},
-		{type = "fluid", name = "benzene", amount = 400}
-    },
-	results = {
-		{type = "item", name = "tier-one-microminer-output", amount = 64}
-    }
-}
-
-
-
-create_item{
-	name = "ender-pearl",
-	recipe_name = "microminer-ender-pearls",
-	category = "lv-assembling-machine-recipes",
-	energy_required = 2,
-	subgroup = "subgroup-microminer-t1",
-	ingredients = {
-      {type = "item", name = "tier-one-microminer-output", amount = 2 }
-    },
-	results = {
-      {type = "item", name = "ender-pearl", amount = 32 }
-    }
-}
-create_item{
-	name = "zombie-head",
-	recipe_name = "microminer-zombie-heads",
-	category = "lv-assembling-machine-recipes",
-	energy_required = 2,
-	subgroup = "subgroup-microminer-t1",
-	ingredients = {
-      {type = "item", name = "tier-one-microminer-output", amount = 1 }
-    },
-	results = {
-      {type = "item", name = "zombie-head", amount = 8 }
-    }
-}
+---MOB DROPS AND BLOCKS OF OTHER DIMENSIONS (items only: hunted, mined, dug or crushed, 160-fork-dimension-mines.lua
+--- and the extreme entity crusher; issue #287 removed the microminer missions that gave them)
+for _, name in pairs({ "ender-pearl", "zombie-head", "blaze-rod", "wither-skull", "soul-sand", "compressed-end-stone" }) do
+	create_item{ skip_recipe = true, name = name, subgroup = "subgroup-mining" }
+end
   
   
   

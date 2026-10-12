@@ -2,7 +2,7 @@
 --- FORK LuV ENDGAME (roadmap phase 1)
 --- Finishes the LuV tier on top of 110-fork-luv.lua. Everything here is researched with
 --- LuV science (space science pack) and leads to the ZPM science pack:
----   * naquadah ore line (ore from the end microminer, neutron activator, naquadah, trinium,
+---   * naquadah ore line (ore from the asteroid belt of 160; neutron activator, naquadah, trinium,
 ---     naquadah alloy, osmiridium)
 ---   * bacterial vat and mutagen
 ---   * circuit assembly line and crystal processors
@@ -124,22 +124,6 @@ end
 ---   * two recipes share a name ("naquadah-rich-solution"), so the neutron activator step
 ---     that makes naquadah-rich-solution was overwritten -> re-added under its own name
 --------------------------------------------------------------------------------
-
---- The end (tier three microminer) has a naquadah vein (see 52-microverse-module.lua)
-create_recipe{
-	name = "microminer-naquadah",
-	category = "lv-assembling-machine-recipes",
-	energy_required = 8,
-	subgroup = "subgroup-microminer-t3",
-	ingredients = {
-		{ type = "item", name = "tier-three-microminer-output", amount = 1 },
-	},
-	results = {
-		{ type = "item", name = "raw-naquadah", amount = 24 },
-		{ type = "item", name = "compressed-end-stone", amount = 8 },
-	},
-	main_product = "raw-naquadah",
-}
 
 --- Neutron activator (GoodGenerator): the machine for the naquadah line
 category("neutron-activator-recipes")
@@ -642,13 +626,11 @@ move_unlock("luv-energy-hatches", "superconducting-coil-block")
 --- ZPM circuits (quantum mainframe) were only unlocked by the auto-unlock in 199-fork-finalize.lua,
 --- which skips them as soon as any other recipe (the crystal supercomputer) makes them
 fork_add_unlock("luv-components", "quantum-processor-mainframe")
---- Same for the end stone microminer (the naquadah microminer also yields end stone)
-fork_add_unlock("end-steel", "microminer-end-stone")
 
 tech{
 	name = "naquadah-processing", prerequisites = { "luv-machines" }, count = 1500,
 	recipes = {
-		"microminer-naquadah", "crushed-naquadah", "naquadah-oxide-mixture", "centrifuging-crushed-naquadah",
+		"crushed-naquadah", "naquadah-oxide-mixture", "centrifuging-crushed-naquadah",
 		"diethyl-ether", "antimony-trichloride-solution", "antimony-pentachloride-solution", "antimony-pentachloride",
 		"antimony-pentafluoride", "fluoroantimonic-acid",
 		"low-quality-naquadah-emulsion", "titanium-trifluoride-processing", "low-quality-naquadah-solution",

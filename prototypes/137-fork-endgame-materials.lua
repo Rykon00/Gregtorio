@@ -26,7 +26,7 @@ end
 --- Nothing in the fork needs them, and their parts belong to mods or systems the fork does not
 --- have. Every recipe that makes or uses one of these items is deleted with it, then every
 --- technology effect that pointed at a deleted recipe.
----   * Thaumcraft: the tier five microminer (infused gold), infused gold ore, salis mundis,
+---   * Thaumcraft: infused gold ore, salis mundis,
 ---     thaumium, magic essence, void metal, shadow metal, ichorium (their UU matter as well)
 ---   * GT++ RuneScape materials: force plasma (arcanite), astral titanium and runite plasma
 ---     (titansteel); the three plasmas were only ingredients of each other
@@ -47,7 +47,7 @@ local REMOVED_ITEMS = {
 }
 --- Drafts whose missing parts are fluids or items that never existed (nothing to delete but them)
 local REMOVED_RECIPES = {
-	"microminer-infused-gold", "force-plasma", "astral-titanium-plasma", "runite-plasma",
+	"force-plasma", "astral-titanium-plasma", "runite-plasma",
 	"naquadah-solution-cracking", "naquadah-heavy-fuel-cracking", "naquadah-asphalt-cracking",
 	"high-density-plutonium-eic",
 }
@@ -139,31 +139,15 @@ F.redo("plutonium-based-liquid-fuel", {
 
 --------------------------------------------------------------------------------
 --- 4) ENDGAME MATERIALS (issue #36)
---- The end (tier three microminer) gets three more veins, like the naquadah one of phase 1: GT
---- mines ledox, callisto ice, bedrockium and quantium on moons, planets and asteroids of
---- GalaxySpace, which the microverse projector stands in for.
+--- GT mines ledox, callisto ice, bedrockium and quantium on moons, planets and asteroids of
+--- GalaxySpace; the mines and Void Miners of 160-fork-dimension-mines.lua give them (issue #287
+--- removed the microminer missions of the end that stood in for them).
 --------------------------------------------------------------------------------
-
-local function microminer(name, count, results, main)
-	create_recipe{
-		name = name,
-		category = "lv-assembling-machine-recipes",
-		energy_required = 8,
-		subgroup = "subgroup-microminer-t3",
-		ingredients = { { type = "item", name = "tier-three-microminer-output", amount = count } },
-		results = results,
-		main_product = main,
-	}
-end
 
 --- 4a) SUPER COOLANT (LuV). The draft: ledox dust, callisto ice dust and lapis coolant in the HV
 --- mixer (GT5-Unofficial has no recipe of its own; GT uses it from grade 5 water on). Ledox has
 --- its ore line already (07-ore-processing-module.lua); callisto ice comes out as dust.
-create_item{ skip_recipe = true, name = "callisto-ice-dust", subgroup = "subgroup-microminer-t3" }
-microminer("microminer-ledox", 1, {
-	{ type = "item", name = "raw-ledox", amount = 24 },
-	{ type = "item", name = "callisto-ice-dust", amount = 16 },
-}, "raw-ledox")
+create_item{ skip_recipe = true, name = "callisto-ice-dust", subgroup = "subgroup-mining" }
 F.fluid("super-coolant", "spackled-light-blue-fluid", { 0.45, 0.80, 1.00 })
 
 --- 4b) 1080K SUPER COOLANT CELL (UHV). The drafts: 3 x 180k -> 540k, 2 x 540k + a dense fluxed
@@ -185,26 +169,18 @@ create_metal_parts{ material = "fluxed-electrum", speed = 10, make_plate = true,
 	make_foil = true, make_wire = true, make_fine_wire = true }
 F.fluid("molten-fluxed-electrum", "spackled-silvery-gold-fluid", { 0.95, 0.85, 0.40 })
 
---- 4d) BEDROCKIUM (UV). GT: 9900 K, the UHV cable. The upstream draft microminer-bedrockium
---- (23-zpm-age-item.lua, tier seven) on the end; the ore line exists; ingot from the UV blast
---- furnace and vacuum freezer; plate, wire and cable (like the other endgame cables).
-microminer("microminer-bedrockium", 2, {
-	{ type = "item", name = "raw-bedrockium", amount = 32 },
-	{ type = "item", name = "compressed-end-stone", amount = 8 },
-}, "raw-bedrockium")
+--- 4d) BEDROCKIUM (UV). GT: 9900 K, the UHV cable. The ore from the Void Miner II (160); the ore
+--- line exists; ingot from the UV blast furnace and vacuum freezer; plate, wire and cable (like the
+--- other endgame cables).
 create_ingot("bedrockium", nil, nil, nil, 1, "uv", UV_SPEED * 99, F.argon(),
 	"uv", UV_SPEED * 30, false, true, false, nil, true, false)
 create_metal_parts{ material = "bedrockium", speed = 10, make_plate = true, make_wire = true }
 F.cable("bedrockium")
 
 --- 4e) QUANTIUM (UHV). GT: 9900 K ore (Venus, Horus; niobium asteroids), the UEV component melt
---- and the UMV cable. Dust from the end, ingot from the UHV blast furnace and vacuum freezer, melt
---- from the extractor, wire and cable.
-create_item{ skip_recipe = true, name = "quantium-dust", subgroup = "subgroup-microminer-t3" }
-microminer("microminer-quantium", 2, {
-	{ type = "item", name = "quantium-dust", amount = 24 },
-	{ type = "item", name = "compressed-end-stone", amount = 8 },
-}, "quantium-dust")
+--- and the UMV cable. Dust from Venus (160), ingot from the UHV blast furnace and vacuum freezer,
+--- melt from the extractor, wire and cable.
+create_item{ skip_recipe = true, name = "quantium-dust", subgroup = "subgroup-mining" }
 create_ingot("quantium", nil, nil, nil, 1, "uhv", UHV_SPEED * 99, F.argon(),
 	"uhv", UHV_SPEED * 30, false, true, false, nil, true, false)
 create_metal_parts{ material = "quantium", speed = 10, make_wire = true }
@@ -314,8 +290,8 @@ end
 
 --- Issue #36: one technology per material, at the tier that needs it first
 F.tech{
-	name = "super-coolant", prerequisites = { "tier-three-microminers", "luv-machines" }, packs = 7, count = 2000,
-	recipes = { "microminer-ledox", "crushed-ledox", "ledox-dust", "centrifuging-crushed-ledox", "super-coolant" },
+	name = "super-coolant", prerequisites = { "luv-machines" }, packs = 7, count = 2000,
+	recipes = { "crushed-ledox", "ledox-dust", "centrifuging-crushed-ledox", "super-coolant" },
 }
 F.tech{
 	name = "fluxed-electrum", prerequisites = { "zpm-multiblocks", "naquadah-processing" }, packs = 8, count = 3000,
@@ -324,8 +300,8 @@ F.tech{
 		"fluxed-electrum-wire", "fine-fluxed-electrum-wire" },
 }
 F.tech{
-	name = "bedrockium", prerequisites = { "uv-multiblocks", "tier-three-microminers" }, packs = 9, count = 4000,
-	recipes = { "microminer-bedrockium", "crushed-bedrockium", "bedrockium-dust", "centrifuging-crushed-bedrockium",
+	name = "bedrockium", prerequisites = { "uv-multiblocks" }, packs = 9, count = 4000,
+	recipes = { "crushed-bedrockium", "bedrockium-dust", "centrifuging-crushed-bedrockium",
 		"hot-bedrockium-ingot", "bedrockium-ingot", "bedrockium-plate", "bedrockium-wire", "bedrockium-cable" },
 }
 F.tech{
@@ -334,8 +310,8 @@ F.tech{
 	recipes = { "180k-space-cell", "540k-space-cell", "1080k-space-cell", "1080k-super-coolant-cell" },
 }
 F.tech{
-	name = "quantium", prerequisites = { "uhv-multiblocks", "tier-three-microminers" }, packs = 10, count = 3000,
-	recipes = { "microminer-quantium", "hot-quantium-ingot", "quantium-ingot", "molten-quantium", "quantium-wire",
+	name = "quantium", prerequisites = { "uhv-multiblocks" }, packs = 10, count = 3000,
+	recipes = { "hot-quantium-ingot", "quantium-ingot", "molten-quantium", "quantium-wire",
 		"quantium-cable" },
 }
 --- The first users of each material need it

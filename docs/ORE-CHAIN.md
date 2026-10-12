@@ -134,7 +134,7 @@ Decisions of the maintainer (2026-10-09): #222 "all of them", #223 "as GTNH has 
   small piles of the platinum group are not made (their dust comes only from the platinum line, #199). 199's
   auto-unlock does not count 158's recipes as producers (`FORK_GT_PARTS.recipes`, like 143's casts). Without a GT or
   GT++ source (no parts): bartworks' and goodgenerator's Werkstoffe ruridit, rhodium-plated palladium and Incoloy-903
-  and GT++'s element rhugnor (#228), and Gregtorio's own crystaltine, indovanadium, microversium, mixed metal, iridium
+  and GT++'s element rhugnor (#228), and Gregtorio's own indovanadium, mixed metal, iridium
   alloy, RTM alloy and wrapped plutonium.
 - **Nuggets (#223 B5):** GT's ingot -> 9 nuggets (alloy smelter with the mold) and nugget -> tiny pile of the dust
   (macerator) for 15 metals, with 9 tiny piles -> the dust at the crafting table.

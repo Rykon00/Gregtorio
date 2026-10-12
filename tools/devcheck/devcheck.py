@@ -534,7 +534,6 @@ def check_crafting_menu(m, sec):
 
 
 FLUID_FALLBACK = "gregtorio-fluids-unsorted"
-MICROMINER_TAB = "microminer-tab"
 
 
 def check_fluids_tab(sec):
@@ -613,19 +612,6 @@ def check_me_recipes(sec):
             sorted(problems))
 
 
-def check_microminer_tab(sec):
-    """Issue #120 (prototypes/195-fork-microminer-tab.lua): the missions of every Microverse Projector (the recipes of its
-    categories) and the projectors themselves (and their controller) are recipes of the Microminer tab, so a projector's
-    recipe window has one tab and a search for "micro" finds the machines next to the microminers. The recycling recipes
-    of a projector (issue #190) are recycling, in the rows of their machine."""
-    out = []
-    for r in sec.get("DUMP", []):
-        if r[0] == "R" and not r[6] == "true" and not r[1].startswith("recycling-") and (
-                r[2].endswith("-microverse-projector-recipes") or r[1].endswith("microverse-projector")
-                or r[1] == "microverse-projector-controller"):
-            if r[9] != MICROMINER_TAB:
-                out.append(f"{r[1]} ({r[2]}): row {r[8]}, tab {r[9]}")
-    return sorted(out)
 ORE_CHAIN_SKIP = {"crushed-platinum", "crushed-palladium", "crushed-firestone"}   # 155-fork-ore-chain.lua's skip list
 def check_ore_chain(m):
     """Issue #185 (prototypes/155-fork-ore-chain.lua): every ore with a purified form has GTNH's whole chain (washer,
@@ -1549,8 +1535,6 @@ def check(a):
     parts_info, parts_unranked = check_material_parts(sec)
     print(f"\nmaterial parts (issue #118): {parts_info}")
     report("WARNING: materials of the material parts without a tier (prototypes/200-fork-material-parts.lua)", parts_unranked)
-    microminer = check_microminer_tab(sec)
-    report("Microverse Projector recipes outside the Microminer tab (issue #120)", microminer)
     chain_ores, ore_chain = check_ore_chain(m)
     print(f"\nore chain (issue #185): {chain_ores} ores with GTNH's chain")
     report("ore chain gaps and ore washer shortcuts (prototypes/155-fork-ore-chain.lua)", ore_chain)
@@ -1600,7 +1584,7 @@ def check(a):
         Path(a.balance_out).write_text("[\n" + ",\n".join(rows) + "\n]\n", encoding="utf-8")
         print(f"\nbalance data written to {a.balance_out} (recipes, machines, technologies as JSON)")
     ok = not (files or [s for s in sprites if not s.startswith("(")] or uncraft or menu or required or unresearchable
-              or new_drafts or fluid_problems or locked or one_pack or fluid_steps or microminer or table_only or me_recipes
+              or new_drafts or fluid_problems or locked or one_pack or fluid_steps or table_only or me_recipes
               or extractor_split or ore_chain or ore_baths or ore_o34 or ore_hammer
               or circuit_icons or pgm_dusts or recycling or names or gaps or tree)
     print("\nRESULT:", "OK" if ok else "PROBLEMS FOUND")

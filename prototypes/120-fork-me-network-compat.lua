@@ -76,8 +76,8 @@ end
 ME.remove_recipe("me-1k-storage-component")
 
 --- GTNH's housing (ASM:4569-4577: a glass pane, a certus quartz plate, an aluminium plate, 2 stainless steel plates) is
---- not used: upstream's microverse data items (Overworld Data and the others, 16 housings in a microverse module) need
---- the housing with Overworld Data, before aluminium and stainless steel. Upstream's recipe
+--- not used: upstream's microverse data items needed the housing with Overworld Data, before aluminium and stainless
+--- steel (issue #287 removed them; GTNH's housing is issue #294). Upstream's recipe
 upstream_item{
 	name = "basic-storage-housing",
 	category = "lv-assembling-machine-recipes",
@@ -185,11 +185,10 @@ upstream_item(component{
 	ingredients = I{ "fiber-reinforced-printed-circuit-board", 1, "processing-unit", 16, "ev-circuit", 4,
 		"engineering-processor", 1 },
 })
---- issue #216: upstream unlocks the 4k component with logistic-system and nether-data and the 16k one with logistic-system
---- and the-end-data (the data technologies' recipes take them). Every technology that unlocks one has the technologies of
---- its ingredients before it: logistic-system gets nand-chips (the 4k one's NAND chips), the-end-data gets
---- applied-energistics-crystals (the 16k one's engineering processor); both are earlier technologies of the same science
-for tech, pre in pairs({ ["logistic-system"] = "nand-chips", ["the-end-data"] = "applied-energistics-crystals" }) do
+--- issue #216: upstream unlocks the 4k and the 16k component with logistic-system (and with the data technologies of
+--- the microverse, removed in issue #287). The technology that unlocks them has the technologies of their ingredients
+--- before it: logistic-system gets nand-chips (the 4k one's NAND chips), an earlier technology of the same science
+for tech, pre in pairs({ ["logistic-system"] = "nand-chips" }) do
 	local t = data.raw.technology[tech]
 	local has = false
 	for _, x in pairs(t and t.prerequisites or {}) do if x == pre then has = true end end

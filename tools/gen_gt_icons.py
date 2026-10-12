@@ -254,7 +254,6 @@ MATERIALS = {
     "potin": ("METALLIC", (201, 151, 129)),  # GT++ POTIN
     "pulsating-iron": "PulsatingIron",
     "red-alloy": "RedAlloy",
-    "signalum": "Signalum",
     "silicon": "Silicon",
     "soularium": "Soularium",
     "staballoy": ("SHINY", (68, 75, 66)),  # GT++ STABALLOY

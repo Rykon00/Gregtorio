@@ -1,7 +1,7 @@
 --------------------------------------------------------------------------------
 --- FORK RESOURCES
 --- Gregtorio does not use the vanilla/Space Age resource patches: all raw materials
---- come from Gregtorio's own mines, dig sites and microminers. Upstream only hides the
+--- come from Gregtorio's own mines and dig sites. Upstream only hides the
 --- patches in the "Gregtorio" map preset, so maps made with other presets (and existing
 --- saves) still have iron, copper, stone and coal patches that can be mined by hand,
 --- which skips a large part of the early game (stone and coal are real Gregtorio items).
