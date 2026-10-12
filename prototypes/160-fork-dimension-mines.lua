@@ -20,6 +20,7 @@
 ---     quantum eye of the EV pack) comes from the End at HV (the maintainer's decision; GT's chemistry route, 8 plutonium
 ---     ingots, tiny uranium and air, is left out: the mod has neither plutonium ingots nor tiny uranium piles).
 --- GTNH's End asteroids (naquadah, platinum, tungstate veins) come with the T3 dimensions (issue #285).
+--- Issues #284 and #285 add the Moon and Mars, the asteroid belt, Jupiter's moons and Venus (sections below).
 --- Loads after 159 and before 156 (data.lua).
 --------------------------------------------------------------------------------
 
@@ -210,8 +211,9 @@ local function ancestors(tech, seen)
 	end
 	return seen
 end
-local function ore_dimension(reach, ores)
+local function ore_dimension(reach, ores, items)
 	local forms = {}
+	for _, i in pairs(items or {}) do forms[i] = true end   -- (items the mine gives directly, without an ore chain)
 	for _, x in pairs(ores) do
 		for _, f in pairs({ "raw-%s", "crushed-%s", "purified-%s", "centrifuged-%s", "impure-%s-dust", "pure-%s-dust",
 			"chipped-%s", "flawed-%s", "%s-gem", "flawless-%s", "exquisite-%s" }) do
@@ -251,3 +253,40 @@ move_unlocks({ "implosion-monazite-dust-to-gem" }, MOON)
 move_unlocks({ "heated-bauxite-slurry", "heated-bauxite-slurry-reaction", "centrifuge-bauxite-slag" }, MOON)
 --- End Steel melts neodymium ingots (in a blast furnace with neon, krypton, xenon): the dust comes from the Moon's ore
 require_tech("end-steel", "neodymium")
+
+
+
+--------------------------------------------------------------------------------
+--- T3 AND T4 (issue #285): the asteroid belt and Jupiter's moons (GTNH's T3, here IV) and Venus (T4, here LuV).
+--- GTNH's End asteroids (T0 there) hold the same naquadah, platinum and tungstate veins; they come here with the
+--- asteroids. T5 (Titan, Enceladus, Oberon, Miranda) holds nothing the mod still needs from the microverse.
+---   Asteroids: Platinum (cooperite = sheldonite, palladium, platinum; iridium left out), Naquadah (naquadah; enriched
+---              naquadah left out)
+---   Callisto:  CallistoIce (callisto ice; topaz, blue topaz, alduorite left out)
+---   Europa:    Ledox (ledox; opal, orichalcum, rubracium left out)
+---   Venus:     Quantium (quantium; amethyst, rutile, ardite left out)
+--- Callisto ice and quantium come as dust, as the microminer gave them.
+--------------------------------------------------------------------------------
+
+local ASTEROIDS, JOVIAN, VENUS = "reach-the-asteroid-belt", "reach-the-jovian-moons", "reach-venus"
+local asteroids = {
+	manual("mining-platinum-vein", "manual-mine-recipes", { PICKAXE, LABOR(24) },
+		{ item("raw-sheldonite", 32), item("raw-palladium", 24), item("raw-platinum", 16) }),
+	manual("mining-naquadah-vein", "manual-mine-recipes", { PICKAXE, LABOR(24) }, { item("raw-naquadah", 32) }),
+}
+local jovian = {
+	manual("mining-callisto-ice-vein", "manual-mine-recipes", { PICKAXE, LABOR(24) }, { item("callisto-ice-dust", 32) }),
+	manual("mining-ledox-vein", "manual-mine-recipes", { PICKAXE, LABOR(24) }, { item("raw-ledox", 32) }),
+}
+local venus = {
+	manual("mining-quantium-vein", "manual-mine-recipes", { PICKAXE, LABOR(24) }, { item("quantium-dust", 32) }),
+}
+F.tech{ name = ASTEROIDS, prerequisites = { MARS, "iv-machines" }, packs = 6, count = 50, time = 60, recipes = asteroids }
+F.tech{ name = JOVIAN, prerequisites = { ASTEROIDS }, packs = 6, count = 50, time = 60, recipes = jovian }
+F.tech{ name = VENUS, prerequisites = { JOVIAN, "luv-machines" }, packs = 7, count = 50, time = 60, recipes = venus }
+--- (sheldonite dust and the tiny piles of metallic platinum powder that crushed platinum smelts into come only from
+--- these ores)
+ore_dimension(ASTEROIDS, { "sheldonite", "palladium", "platinum", "naquadah" },
+	{ "sheldonite-dust", "tiny-pile-of-metallic-platinum-powder" })
+ore_dimension(JOVIAN, { "ledox" }, { "callisto-ice-dust" })
+ore_dimension(VENUS, {}, { "quantium-dust" })

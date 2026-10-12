@@ -952,7 +952,6 @@ FORK_UNLOCK_TREE.apply()
 --- whose machine is missing); devcheck fails for any other such recipe and for an entry that matches nothing
 FORK_UNLOCK_GAPS = {
 	["ore-washing:tier-three-microminer-output"] = "ore processing of an ore that only the tier three microminer missions bring; the recipes wait for the ore",
-	["multismelter:tier-three-microminer-output"] = "ore processing of an ore that only the tier three microminer missions bring; the recipes wait for the ore",
 	["uv-components:uhv-circuit"] = "GT's field generator takes the next tier's circuit; kept with the components on purpose (128, phase 3 note): craftable once that circuit is",
 	["uhv-components:uev-circuit"] = "GT's field generator takes the next tier's circuit; kept with the components on purpose (128, phase 3 note): craftable once that circuit is",
 	["uev-components:uiv-circuit"] = "GT's field generator takes the next tier's circuit; kept with the components on purpose (128, phase 3 note): craftable once that circuit is",
