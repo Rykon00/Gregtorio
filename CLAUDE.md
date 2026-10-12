@@ -143,8 +143,9 @@
     `<tier>-chemical-dehydrator`), lanthanum hexaboride's gem forms, chloromethane, gangue and the roasting's fluorine;
     loads after 158 and before 156)
   - 160 dimension mines (issue #283, decision of #154: Reach the Nether/End technologies, hunting blazes and
-    Endermen, molybdenum vein, soul sand, end stone, nether/ender air intakes; radon from ender air at HV; loads after
-    159 and before 156)
+    Endermen, molybdenum vein, soul sand, end stone, nether/ender air intakes; radon from ender air at HV; issue #284:
+    Reach the Moon / Reach Mars with their veins, `ore_dimension` moves or gates the ore chains; loads after 159 and
+    before 156)
   - 156 circuit icons (issue #164: the circuit variant recipes up to UV keep the shared tier item and show GT's texture
     of their GTNH item as recipe icon; devcheck fails for a tier circuit recipe without its own icon)
   - 157 recycling (issue #190: GTNH's material recycling into dusts, ingots and melts for the items of crafting table

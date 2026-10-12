@@ -153,3 +153,101 @@ do
 	end
 	move_unlocks(moved, NETHER)
 end
+
+
+
+--------------------------------------------------------------------------------
+--- THE MOON AND MARS (issue #284): GTNH's T1 and T2 dimensions (rocket tiers of DimensionHelper.java), here HV and EV.
+--- A mine per vein that holds a material the microverse gave, its GT ores in the mod's raw items (primary 32, the
+--- others less, like the Overworld mines); GT's ores the mod lacks are left out:
+---   Moon: TitaniumChrome (ilmenite, chromite; uvarovite, perlite left out), Bauxite (bauxite, ilmenite, aluminium),
+---         Monazite (Moon, Deimos: bastnasite, monazite, neodymium)
+---   Mars: Tungstate (Mars, Deimos: scheelite, tungstate; lithium left out), Pitchblende (Mars, Phobos: pitchblende,
+---         uraninite), Uranium (Deimos, Phobos: uraninite)
+--------------------------------------------------------------------------------
+
+local MOON, MARS = "reach-the-moon", "reach-mars"
+local moon = {
+	manual("mining-titanium-chrome-vein", "manual-mine-recipes", { PICKAXE, LABOR(24) },
+		{ item("raw-ilmenite", 32), item("raw-chromite", 24) }),
+	manual("mining-bauxite-vein", "manual-mine-recipes", { PICKAXE, LABOR(24) },
+		{ item("raw-bauxite", 32), item("raw-ilmenite", 16), item("raw-aluminium", 8) }),
+	manual("mining-monazite-vein", "manual-mine-recipes", { PICKAXE, LABOR(24) },
+		{ item("raw-bastnasite", 32), item("raw-monazite", 16), item("raw-neodymium", 8) }),
+}
+local mars = {
+	manual("mining-tungstate-vein", "manual-mine-recipes", { PICKAXE, LABOR(24) },
+		{ item("raw-scheelite", 32), item("raw-tungstate", 16) }),
+	manual("mining-pitchblende-vein", "manual-mine-recipes", { PICKAXE, LABOR(24) },
+		{ item("raw-pitchblende", 32), item("raw-uraninite", 16) }),
+	manual("mining-uranium-vein", "manual-mine-recipes", { PICKAXE, LABOR(24) }, { item("raw-uraninite", 32) }),
+}
+F.tech{ name = MOON, prerequisites = { END, "implosion-compressor" }, packs = 4, count = 40, time = 30, recipes = moon }
+F.tech{ name = MARS, prerequisites = { MOON, "ev-components" }, packs = 5, count = 30, time = 45, recipes = mars }
+--- the monazite, neodymium and bastnasite chains (155, 158) came with the microminer that gave the ores; now with the
+--- mine
+do
+	local moved = {}
+	for _, e in pairs(data.raw.technology["tier-two-microminers"].effects or {}) do
+		local r = e.type == "unlock-recipe" and e.recipe
+		if r and not r:find("microminer", 1, true) and (r:find("monazite", 1, true) or r:find("neodymium", 1, true)
+			or r:find("bastnasite", 1, true)) then
+			moved[#moved + 1] = r
+		end
+	end
+	move_unlocks(moved, MOON)
+end
+--- The ore chains of these ores (155: crushed, purified, centrifuged, impure and pure dust, their hammer, sifter and
+--- separator steps; the lines that take them) were unlocked where the microminer made the raw ore, partly at MV. Now
+--- the raw ore comes with the dimension: a chain step unlocked at a lower science tier than the dimension, or by one of
+--- its prerequisites (a prerequisite there would close a loop), moves to it; any other technology that takes the ore
+--- gets the dimension as a prerequisite (#252's tree rule). The gem grades of monazite (155) count as its forms.
+local function packs(tech) return #(data.raw.technology[tech].unit.ingredients or {}) end
+local function ancestors(tech, seen)
+	seen = seen or {}
+	for _, p in pairs(data.raw.technology[tech].prerequisites or {}) do
+		if not seen[p] then seen[p] = true; ancestors(p, seen) end
+	end
+	return seen
+end
+local function ore_dimension(reach, ores)
+	local forms = {}
+	for _, x in pairs(ores) do
+		for _, f in pairs({ "raw-%s", "crushed-%s", "purified-%s", "centrifuged-%s", "impure-%s-dust", "pure-%s-dust",
+			"chipped-%s", "flawed-%s", "%s-gem", "flawless-%s", "exquisite-%s" }) do
+			forms[f:format(x)] = true
+		end
+	end
+	local takes = {}
+	for name, r in pairs(data.raw.recipe) do
+		if not name:find("microminer", 1, true) and not name:find("recycling", 1, true) then
+			for _, i in pairs(r.ingredients or {}) do
+				if forms[i.name] then takes[name] = true end
+			end
+		end
+	end
+	local move, needs = {}, {}
+	local before = ancestors(reach)
+	for tname, t in pairs(data.raw.technology) do
+		if tname ~= reach then
+			for _, e in pairs(t.effects or {}) do
+				if e.type == "unlock-recipe" and takes[e.recipe] then
+					if packs(tname) < packs(reach) or before[tname] then move[#move + 1] = e.recipe else needs[tname] = true end
+				end
+			end
+		end
+	end
+	move_unlocks(move, reach)
+	for tname in pairs(needs) do require_tech(tname, reach) end
+end
+ore_dimension(MOON, { "ilmenite", "chromite", "bauxite", "aluminium", "bastnasite", "monazite", "neodymium" })
+ore_dimension(MARS, { "scheelite", "tungstate", "pitchblende", "uraninite" })
+--- bauxite dust's electrolysis was aluminium's MV route; aluminium has its others (fuller's earth, lazurite, cryolite)
+move_unlocks({ "bauxite-dust-electrolysis" }, MOON)
+--- the implosion of monazite dust into gems belongs to the gem grades of the monazite from the Moon
+move_unlocks({ "implosion-monazite-dust-to-gem" }, MOON)
+--- the Bayer steps of bauxite slurry (Bauxite Slurry Process, an HV technology that Reach the End needs); the process's
+--- lazurite and sodalite route stays there
+move_unlocks({ "heated-bauxite-slurry", "heated-bauxite-slurry-reaction", "centrifuge-bauxite-slag" }, MOON)
+--- End Steel melts neodymium ingots (in a blast furnace with neon, krypton, xenon): the dust comes from the Moon's ore
+require_tech("end-steel", "neodymium")
