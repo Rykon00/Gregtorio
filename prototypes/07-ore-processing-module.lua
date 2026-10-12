@@ -281,6 +281,24 @@ create_recipe{
 	main_product = "raw-nether-quartz"
 }  
 
+---MINING GLOWSTONE VEIN (issue #278): GTNH's glowstone is vanilla's from the Nether (no GT ore vein holds it); Gregtorio
+---has no Nether, so a manual mine like the Nether quartz one gives the dust directly (glowstone is no ore here: no raw
+---item, no ore chain). The redstone and cinnabar byproduct of 155-fork-ore-chain.lua stays GT's second, late source.
+create_recipe{
+	name = "mining-glowstone-vein",
+	category = "manual-mine-recipes",
+	energy_required = 10,
+	subgroup = "subgroup-mining",
+	ingredients = {
+		{ type = "item", name = "iron-pickaxe-usage", amount = 1 },
+		{ type = "item", name = "manual-labor", amount = 24 }
+	},
+	results = {
+		{ type = "item", name = "glowstone-dust", amount = 32 }
+	},
+	main_product = "glowstone-dust"
+}
+
 ---MINING APATITE VEIN
 create_recipe{
 	name = "mining-apatite-vein",

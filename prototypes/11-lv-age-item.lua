@@ -579,18 +579,13 @@ create_recipe{
 
 
 
----GLOWSTONE DUST
+---GLOWSTONE DUST: the item only (issue #278: upstream's mixer recipe from gold dust and tricalcium phosphate is not in
+---GT New Horizons; the dust comes from the manual mine of 07-ore-processing-module.lua and the redstone and cinnabar
+---ore byproduct)
 create_item{
 	name = "glowstone-dust",
 	category = "lv-mixer-recipes",
-	energy_required = 4,
-	ingredients = {
-		{type = "item", name = "gold-dust", amount = 1},
-		{type = "item", name = "tricalcium-phosphate", amount = 1}
-    },
-	results = {
-		{type = "item", name = "glowstone-dust", amount = 2}
-    }
+	skip_recipe = true,
 }
 
 

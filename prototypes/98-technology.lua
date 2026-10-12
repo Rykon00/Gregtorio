@@ -1712,6 +1712,7 @@ data:extend({
     icon_size = 256,
     effects = {
       { type = "unlock-recipe", recipe = "brick-dust-electrolysis" },
+      { type = "unlock-recipe", recipe = "mining-glowstone-vein" },   -- issue #278: glowstone's first consumer, luminessence
       { type = "unlock-recipe", recipe = "luminessence" },
       { type = "unlock-recipe", recipe = "distilled-water" },
       { type = "unlock-recipe", recipe = "lapis-coolant" },
@@ -1817,7 +1818,6 @@ data:extend({
     icon = "__gregtorio-continued__/graphics/technology/microversium.png",
     icon_size = 256,
     effects = {
-      { type = "unlock-recipe", recipe = "glowstone-dust" },
       { type = "unlock-recipe", recipe = "deuterium" },
       { type = "unlock-recipe", recipe = "microversium-dust" },
       { type = "unlock-recipe", recipe = "hot-microversium-ingot" },
