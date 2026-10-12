@@ -2150,8 +2150,8 @@ turbines and large naquadah reactors; the audit counted only recipe uses), GregT
 No GT counterpart or no GT use Gregtorio could take, proposals in the pull request: high octane gasoline (GT: gasoline,
 octane, nitrous oxide, toluene and anti-knock; octane comes from the distillation of hydrocracked light fuel, a cracking
 line Gregtorio does not have), butyraldehyde (GT: hydroformylation of propene; its only use is butanol, whose uses are
-GT++ chains Gregtorio does not have), imaginary time (not in GT; only the unloaded upstream drafts of
-51-nuclear-module.lua use it), molten sunnarium (correction, issue #98: GT uses it, in the PPIC wafer, NH
+GT++ chains Gregtorio does not have), imaginary time (not in GT; only the never loaded upstream drafts of
+51-nuclear-module.lua used it, removed in issue #279), molten sunnarium (correction, issue #98: GT uses it, in the PPIC wafer, NH
 `ChemicalReactorRecipes.java:251-257`, the PrNPIC mask of gtnhlanth, the DEFC draconic core of kubatech and the research
 assembly line; Gregtorio's upstream draconic core was in the never loaded 23-zpm-age-item.lua, removed in issue #249) and
 exhausted water (not in GT; a byproduct of upstream's deuterium recipe).
