@@ -627,47 +627,6 @@ create_item{
    
    
    
----ULTIMATE EXTENDED CRAFTING COMPONENT
-create_item{
-	name = "ultimate-extended-crafting-component",
-	category = "basic-extended-crafting-recipes",
-	ingredients = {
-		{ type = "item", name = "black-steel-plate", amount = 1 },
-		{ type = "item", name = "ultimate-extended-crafting-component", amount = 4 }
-	}
-}
-
-   
-   
----ULTIMATE EXTENDED CRAFTING CATALYST
-create_item{
-	name = "ultimate-extended-crafting-catalyst",
-	category = "basic-extended-crafting-recipes",
-	ingredients = {
-		{ type = "item", name = "ultimate-extended-crafting-component", amount = 1 },
-		{ type = "item", name = "basic-extended-crafting-catalyst", amount = 1 },
-		{ type = "item", name = "advanced-extended-crafting-catalyst", amount = 1 },
-		{ type = "item", name = "elite-extended-crafting-catalyst", amount = 1 },
-		{ type = "item", name = "crystaltine-extended-crafting-catalyst", amount = 1 }
-	}
-}  
-
-
-
----ULTIMATE EXTENDED CRAFTING TABLE
-create_item{
-	name = "ultimate-extended-crafting-table",
-	category = "elite-extended-crafting-recipes",
-	ingredients = {
-		{ type = "item", name = "block-of-emerald", amount = 5 },
-		{ type = "item", name = "ultimate-extended-crafting-catalyst", amount = 4 },
-		{ type = "item", name = "ultimate-extended-crafting-component", amount = 12 },
-		{ type = "item", name = "black-steel-plate", amount = 16 },
-		{ type = "item", name = "crystaltine-extended-crafting-component", amount = 4 },
-		{ type = "item", name = "crystaltine-extended-crafting-catalyst", amount = 4 },
-		{ type = "item", name = "elite-extended-crafting-table", amount = 4 }
-	}
-} 
 
 
 
@@ -739,44 +698,6 @@ data:extend({
         layers = {
           {
             filename = "__gregtorio-continued__/graphics/entity/elite-extended-crafting-table.png",
-            width = 180,
-            height = 180,
-            frame_count = 1,
-            line_length = 1,
-            shift = {0, 0},
-            scale = 0.5
-          }
-        }
-      }
-    }
-  },
-  {
-    type = "assembling-machine",
-    name = "ultimate-extended-crafting-table",
-    icon = "__gregtorio-continued__/graphics/icons/ultimate-extended-crafting-table.png",
-    icon_size = 32,
-    flags = {"placeable-neutral", "placeable-player", "player-creation"},
-    minable = {mining_time = 0.2, result = "ultimate-extended-crafting-table"},
-    max_health = 200,
-    corpse = "small-remnants",
-    dying_explosion = "medium-explosion",
-    resistances = {
-      { type = "fire", percent = 70 }
-    },
-    collision_box = {{-1.3, -1.3}, {1.3, 1.3}},
-    selection_box = {{-1.5, -1.5}, {1.5, 1.5}},
-    fast_replaceable_group = "fr-extended-crafting-table",
-    crafting_categories = { "ultimate-extended-crafting-recipes" },
-    crafting_speed = 1,
-    energy_source = { type = "void" },
-    energy_usage = "1W",
-    emissions_per_minute = { pollution = 0 },
-    allowed_effects = {},
-    graphics_set = {
-      animation = {
-        layers = {
-          {
-            filename = "__gregtorio-continued__/graphics/entity/ultimate-extended-crafting-table.png",
             width = 180,
             height = 180,
             frame_count = 1,

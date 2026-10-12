@@ -102,6 +102,9 @@ local FORK_RESEARCH_COUNTS = {
 	["max-energy-hatches"] = 55,
 	["max-multiblocks"] = 55,
 	["max-plasma-turbine"] = 55,
+	-- issue #249: the MAX recipes of the plasma forge and the QFT (141)
+	["dtpf-max-recipes"] = 55,
+	["qft-temporal-harmony"] = 55,
 }
 for name, count in pairs(FORK_RESEARCH_COUNTS) do
 	local tech = data.raw.technology[name]

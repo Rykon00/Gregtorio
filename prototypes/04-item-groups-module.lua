@@ -285,12 +285,6 @@ data:extend({
     group = "microminer-tab",
     order = "y"
   },
-  {
-    type = "item-subgroup",
-    name = "subgroup-ultimate-extended-crafting",
-    group = "microminer-tab",
-    order = "z"
-  },  
   
   
 

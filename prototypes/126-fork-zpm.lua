@@ -9,8 +9,8 @@
 ---   * ZPM voltage coil and energy hatch
 ---   * ZPM machines: the LuV machines one tier up (fork_make_tier_machine)
 ---   * the ZPM technologies
---- The drafts in 23-zpm-age-item.lua are not loaded by data.lua (the file is not valid Lua
---- and mostly holds later tiers), so the ZPM parts of it are rebuilt here. Everything else
+--- The drafts in 23-zpm-age-item.lua (removed in issue #249) were never loaded by data.lua (the file was not
+--- valid Lua and mostly held later tiers), so the ZPM parts of it are rebuilt here. Everything else
 --- in it (crystal matrix, energy module, wetware, fusion MK2, neutronium, draconic fusion)
 --- waits for later phases.
 --------------------------------------------------------------------------------

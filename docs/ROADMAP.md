@@ -85,8 +85,8 @@ yet), draft recipes hidden by the draft guard 65 -> 65, auto-unlocked recipes 67
 unlocked explicitly, see below), machines placed by `devcheck runtime` 251 -> 287. Progression now
 stops at the UV science pack (`agricultural-science-pack`).
 
-`23-zpm-age-item.lua` is still not loaded by `data.lua`: it is not valid Lua (missing commas, bare
-table literals) and most of it belongs to later tiers. Its ZPM parts are rebuilt in
+`23-zpm-age-item.lua` was never loaded by `data.lua`: it was not valid Lua (missing commas, bare
+table literals) and most of it belongs to later tiers; issue #249 removed it. Its ZPM parts are rebuilt in
 `126-fork-zpm.lua` after the GT5-Unofficial recipes.
 
 New technologies:
@@ -140,7 +140,7 @@ Numbers: researchable technologies 252 -> 264 of 303 -> 313 (the 10 new ones, pl
 placed by `devcheck runtime` 287 -> 325. Progression now stops at the UHV science pack
 (`electromagnetic-science-pack` is researchable but the pack has no recipe yet).
 
-`25-uv-age-item.lua` is still not loaded by `data.lua` (not valid Lua, mostly later tiers); the UV parts
+`25-uv-age-item.lua` was never loaded by `data.lua` (not valid Lua, mostly later tiers; removed in issue #249); the UV parts
 are rebuilt in `127-fork-uv.lua` after the GT5-Unofficial recipes.
 
 New technologies:
@@ -238,7 +238,7 @@ UEV science tech, which is now reachable but whose pack has no recipe yet), draf
 guard 46 -> 41 (5 became real recipes), auto-unlocked recipes 53 -> 53 (nothing moved, see below), machines placed
 by `devcheck runtime` 325 -> 362. Progression now stops at the UEV science pack (`cryogenic-science-pack`).
 
-`27-uhv-age-item.lua` is still not loaded by `data.lua` (not valid Lua, mostly later tiers); the UHV parts are
+`27-uhv-age-item.lua` was never loaded by `data.lua` (not valid Lua, mostly later tiers; removed in issue #249); the UHV parts are
 rebuilt in `128-fork-uhv.lua` after the GT5-Unofficial recipes.
 
 New technologies:
@@ -364,8 +364,8 @@ by the draft guard 41 -> 36, auto-unlocked recipes 54 -> 54 (nothing moved, see 
 362 -> 436, unlocked but uncraftable recipes 0. Progression now stops at the UMV science pack (`umv-science-pack` is researchable
 but the pack has no recipe yet).
 
-`29-uev-age-item.lua` and `31-uiv-age-item.lua` are still not loaded (not valid Lua, mostly the quantum force transformer, the
-dimensional plasma forge and the godforge); the parts of them that phase 5a needs are rebuilt in `131-fork-uev.lua` and
+`29-uev-age-item.lua` and `31-uiv-age-item.lua` were never loaded (not valid Lua, mostly the quantum force transformer, the
+dimensional plasma forge and the godforge; removed in issue #249); the parts of them that phase 5a needs are rebuilt in `131-fork-uev.lua` and
 `132-fork-uiv.lua`. The molds file moved to `150-fork-molds.lua` to make room (it must load after every file that creates machines).
 
 New technologies:
@@ -495,8 +495,8 @@ recipes 54 -> 54 (the `FORK-AUTOUNLOCK` lines are identical), machines placed by
 recipes 0. Progression no longer stops anywhere: every tier technology from LV to `victory` is researchable, and the runtime test wins the
 game by researching `victory`.
 
-`80-umv-age-item.lua` and `90-uxv-age-item.lua` are still not loaded (not valid Lua; they hold the GTNH chains for spacetime, magmatter,
-dark matter, shirabon, mellion, the eye of harmony and coal recipes). What phase 5b needs is rebuilt in `133-fork-umv.lua`,
+`80-umv-age-item.lua` and `90-uxv-age-item.lua` were never loaded (not valid Lua; they held the GTNH chains for spacetime, magmatter,
+dark matter, shirabon, mellion, the eye of harmony and coal recipes; removed in issue #249). What phase 5b needs is rebuilt in `133-fork-umv.lua`,
 `134-fork-uxv.lua` and `135-fork-endgame.lua`. `133-fork-umv.lua` also defines the helpers of the three files (the global table
 `FORK5B`: `metal`, `cable`, `circuit_line`, `components`, `tech`, ...), because a UXV part is a UMV part with the next metal.
 
@@ -1682,7 +1682,7 @@ GT's two big endgame processing multiblocks, on top of the UMV tier: the **dimen
 GT's `MTEPlasmaForge`) and the **quantum force transformer** (QFT, GT++'s `MTEQuantumForceTransformer`). Everything is in
 `prototypes/139-fork-endgame-multiblocks.lua`; it loads after 137 and before 138, which sets the unit counts of its technologies.
 The MAX tier and the godforge are phase 6b; the spots it has to revisit are listed under "Hooks for 6b" below. Sources: the drafts
-in `29-uev-age-item.lua`, `31-uiv-age-item.lua`, `80-umv-age-item.lua`, `90-uxv-age-item.lua` (not loaded) and GT5-Unofficial
+in `29-uev-age-item.lua`, `31-uiv-age-item.lua`, `80-umv-age-item.lua`, `90-uxv-age-item.lua` (never loaded, removed in issue #249) and GT5-Unofficial
 (`MTEPlasmaForge`, `PlasmaForgeRecipes`, `TranscendentPlasmaMixerRecipes`, the core mod's `DTPFRecipes`/`DTPFCalculator`,
 `MTEQuantumForceTransformer`, `RecipeLoaderChemicalSkips`, GoodGenerator's `NaquadahRecipeLoader`).
 
@@ -1756,9 +1756,12 @@ others 1/2N (GT's neptunium focus with N outputs: 58 % and 8 % with six outputs)
 Not built, because the mod lacks an input or output (the missing GT part in brackets): early plastics (polystyrene), rubbers
 (styrene butadiene rubber, rubber), glues (stable adhesive), the two titanium/tungsten/indium recipes (tungsten carbide, rhenium and
 hafnium dust), radioactives (thorium 232, uranium 233, plutonium 238 and 241), the monazite and bastnasite lines and the cerium-rich
-mixture (monazite and bastnasite cannot be obtained; holmium, cerium, gadolinium, lanthanum dust), naquadria (naquadria earth,
+mixture (monazite and bastnasite cannot be obtained; holmium, cerium, gadolinium, lanthanum dust; issue #249 built them once
+the lanthanide lines of #262, #269 and #272 had made those dusts), naquadria (naquadria earth,
 naquadria supersolid), netherite, prismarine, stem cells, late plastics, Kevlar, biocells, seaweed and the temporal harmony recipe.
-So the QFT has no rare earth recipe: none of GT's fits the mod's rare earth line (rare earth (I) dust).
+So the QFT had no rare earth recipe; since issue #249 it has GT's bastline (bastnasite or cerium-rich mixture) and monaline
+(without hafnia and the superconductor composite). The mod's rare earth (I) line has none (GT's rare earth dust has no QFT
+recipe).
 
 What the QFT saves, per focused output against the mod's own line (input per output): platinum metallic powder 0.86 per dust (the
 platinum line: 6 per rhodium, 96 per iridium, 144 per ruthenium, 240 per osmium dust); iridium group sludge 0.67 per iridium dust (4
@@ -1839,9 +1842,9 @@ or the MAX tier (marked `6b hook` in `139-fork-endgame-multiblocks.lua` where th
    The resplendent catalyst is the top tier here; 6b can add the stellar one and a third recipe tier. *(6b: done, `dtpf-stellar-catalyst`.)*
 3. **MAX recipes of the DTPF and the QFT**, not built: timepiece, time and space conversion, chipped amalgatite (DTPF, MAX), the
    temporal harmony recipe (QFT: shirabon and eternity from a universium nanite and a timepiece). *(6b: still not built, their
-   materials do not exist.)*
+   materials do not exist. Issue #249: built with substitutes, see "Phase 6b".)*
 4. **The eye of harmony** takes four plasma forges (and four godforges) in GT: the item `dimensionally-transcendent-plasma-forge`
-   is ready for that recipe. *(6b: the eye of harmony is not built, see "Phase 6b".)*
+   is ready for that recipe. *(6b: the eye of harmony is not built, see "Phase 6b"; issue #249 decided to keep it so.)*
 
 ### Numbers
 
@@ -1877,7 +1880,7 @@ after 139 and before 138 (which sets their unit counts): `prototypes/140-fork-go
 Sources: GT5-Unofficial (TecTech `godforge/`, `Godforge.java`, `ResearchStationAssemblyLine.java`, `BECRecipes.java`,
 `MTEExoticModule`, `MTEEyeOfHarmony`, `MixerRecipes`/`LaserEngraverRecipes` for the stellar catalyst), the core mod
 (`DTPFRecipes`, `ScriptNanochipRecipes` for the Planck circuit, `ScriptGregtechPlusPlus` for the QFT's temporal harmony) and the
-drafts `80-umv-age-item.lua` and `90-uxv-age-item.lua` (not loaded).
+drafts `80-umv-age-item.lua` and `90-uxv-age-item.lua` (never loaded, removed in issue #249).
 
 ### Post-victory and the long-term sink
 
@@ -1966,8 +1969,10 @@ and the godforge, the 36 MAX machines and the MAX turbine.
 - **Exotic module.** GT draws a random challenge every cycle (QGP mode: up to seven random plasmas; magmatter mode: a random metal's
   plasma and random amounts of temporal and spatial fluid). Here one magmatter recipe per metal, with the metal's melt instead of its
   plasma (the mod has no plasmas of these metals) at GT's average ratio (12.5 litres per litre of magmatter), and equal amounts of the
-  two fluids so the spacetime split feeds it exactly. The player picks the metal (neutronium is the cheapest). Quark gluon plasma is not
-  built: GT uses it only for nanites.
+  two fluids so the spacetime split feeds it exactly. The player picks the metal (neutronium is the cheapest). Quark gluon plasma (issue #249):
+  one fixed recipe of the exotic module (iron, calcium, niobium, titanium and helium plasma at GT's average amounts), used by GT's
+  rhugnor MK5 recipe (72 QGP and 576 quantum -> 576 rhugnor; quantum is transcendent metal here, as in the MK4 recipe). GT's
+  other uses (nanites, the LHC, BEC) are not built.
 - **Universium** comes from the eye of harmony in GT (rocket tiers 7 to 9), never from the plasma forge. Here the godforge's molten
   module makes it from the MK5 inputs at half per ingot. The plasma forge recipes (6a) stay: universium is needed for the stargate, before
   the godforge, so they are the faster pre-victory route (6a hook 1: the godforge takes over after victory, nothing is removed).
@@ -1983,10 +1988,16 @@ and the godforge, the 36 MAX machines and the MAX turbine.
 - **UXV field generator** keeps 8 UXV circuits (GT: 4 MAX circuits): the stargate needs it, and the MAX circuit comes after the stargate.
 - **MAX turbine.** GT has none (its dynamo hatches stop at UXV); here it continues the turbine table of issue #34 so the MAX machines
   (twice the UXV draw) have a generator of their tier.
-- **6a hook 3, MAX recipes of the plasma forge and the QFT**, still not built: the timepiece, the time/space conversions and chipped
-  amalgatite need tesseracts, quantum anomalies, dilithium, dark iron, nanites, gems and the stargate crystal slurry; the QFT's temporal
-  harmony needs eternal singularities, energised tesseracts, primordial matter and shirabon. None exists in the mod. With equal amounts of
-  time and space in the magmatter recipe the conversions have no job.
+- **6a hook 3, MAX recipes of the plasma forge and the QFT** (issue #249, the maintainer's decision: built with substitutes, section 8
+  of `141-fork-max.lua`, technologies `dtpf-max-recipes` and `qft-temporal-harmony`): the timepiece, the time/space conversions and
+  chipped amalgatite need tesseracts, quantum anomalies, dilithium, dark iron, nanites, gems and the stargate crystal slurry; the
+  QFT's temporal harmony needs eternal singularities, energised tesseracts, primordial matter and shirabon. None exists in the mod:
+  the QFT coil casing stands in for the space-time bending core and continuum ripper (returned), dense dark steel for dark iron,
+  diamonds for dilithium, superdense universium and magmatter plates for the nanites, MAX field generators for energised
+  tesseracts, gravi-stars for quantum anomalies, the universium round for hexanite, red garnet, sodalite and lapis for jasper,
+  sapphire and opal, raw star matter for the slurry and primordial matter, a block of universium for the chronic singularity. GT's
+  returned tesseract and the shirabon are left out. Nothing takes the timepiece and chipped amalgatite but these recipes, and with
+  equal amounts of time and space in the magmatter recipe the conversions have no job.
 
 ### Balance
 
@@ -2048,7 +2059,9 @@ replaced: none removed (the DTPF universium recipes stay next to the godforge's)
   (`MAGMATTER_RATIO` and `MAGMATTER_METALS` in 140; GT's random challenges do not let the player pick the cheapest metal), so the MAX
   parts take only a third to 0.6 of the UXV parts' time in the factory of their tier; the star fuel (`STAR_FUEL`) and the MAX pack from
   MAX parts.
-- The eye of harmony, quark gluon plasma, the MAX recipes of the plasma forge and the QFT (see above).
+- Issue #249 (the maintainer's decisions): the eye of harmony stays out (the godforge's stand-ins make raw star matter and
+  universium); quark gluon plasma and the MAX recipes of the plasma forge and the QFT are built (see above); dark matter, mellion,
+  shirabon, six-phased copper and UU matter stay out (their GT sources need many more missing materials, dark matter has none).
 - The godforge sprite is a plain field of GT's godforge casings with the controller; GT's star and rings are not drawn.
 
 ## Recipe audit (issue #91)
@@ -2088,10 +2101,10 @@ counts burnt results now. The tier four microminer (the lunar mission, its signa
 `tier-four-microminers` (IV).
 
 Stay locked (`FORK_RECIPES_LOCKED`, devcheck fails on any other locked Gregtorio recipe): calcium, cerium-rich mixture and
-phosphorus (placeholders without ingredients: items from nothing), the ultimate extended crafting component, catalyst and
-table (the component needs four of itself; Extended Crafting is not in GTNH), the five firestone recipes (no firestone ore:
+phosphorus (placeholders without ingredients: items from nothing), the five firestone recipes (no firestone ore:
 GT has no firestone vein) and `plastic-circuit-board-peca` (its polyethylcyanoacrylate sheet is commented out upstream:
-16 boards from copper foil and acid).
+16 boards from copper foil and acid). The ultimate extended crafting component, catalyst and table (the component needed
+four of itself, the table had no recipes; Extended Crafting is not in GTNH) were removed in issue #249.
 
 Not done: the large heat exchanger, large and high pressure steam turbine, fluid nuclear reactor and lapotronic
 supercapacitor are unlocked but are items without an entity (upstream has none); the dusts of neutronium, black plutonium,
@@ -2140,7 +2153,7 @@ line Gregtorio does not have), butyraldehyde (GT: hydroformylation of propene; i
 GT++ chains Gregtorio does not have), imaginary time (not in GT; only the unloaded upstream drafts of
 51-nuclear-module.lua use it), molten sunnarium (correction, issue #98: GT uses it, in the PPIC wafer, NH
 `ChemicalReactorRecipes.java:251-257`, the PrNPIC mask of gtnhlanth, the DEFC draconic core of kubatech and the research
-assembly line; Gregtorio's upstream draconic core is in the unloaded 23-zpm-age-item.lua) and
+assembly line; Gregtorio's upstream draconic core was in the never loaded 23-zpm-age-item.lua, removed in issue #249) and
 exhausted water (not in GT; a byproduct of upstream's deuterium recipe).
 
 Issue #98 (`prototypes/147-fork-gt-routes.lua`) did the rest: the PECA board deleted (GT has no polyethylcyanoacrylate),

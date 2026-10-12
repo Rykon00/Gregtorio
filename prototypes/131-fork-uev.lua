@@ -12,7 +12,7 @@
 ---   * UEV machines: the UHV machines one tier up (fork_make_tier_machine)
 ---   * the UEV technologies, and the phase 4 workaround that is not needed any more (UHV field
 ---     generator)
---- 29-uev-age-item.lua is not loaded by data.lua (it is not valid Lua and mostly holds the
+--- 29-uev-age-item.lua (removed in issue #249) was never loaded by data.lua (it was not valid Lua and mostly held the
 --- quantum force transformer and the dimensional plasma forge), so the UEV parts of it are
 --- rebuilt here after the GT5-Unofficial recipes.
 --------------------------------------------------------------------------------

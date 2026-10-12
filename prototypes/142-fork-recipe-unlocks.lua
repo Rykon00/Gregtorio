@@ -184,7 +184,7 @@ ender_tank("nether-air-ender-tank", "hv-air-collector", "nether-air-ender-tank-r
 ender_tank("ender-air-ender-tank", "ev-air-collector", "ender-air-ender-tank-recipes")
 
 --- Component assembly line (GoodGenerator's CoAL, ComponentAssemblyLineMiscRecipes.java). Upstream has its drafts
---- in 25-uv-age-item.lua (a controller and a structure of 1300 casings, not loaded) and 32 recipes in
+--- in 25-uv-age-item.lua (a controller and a structure of 1300 casings, never loaded, removed in issue #249) and 32 recipes in
 --- 11/13/15/17-*-age-item.lua that make 64 LV to EV components at once from long rods, 16x wires and cables and
 --- circuit wraps (uv-coal-recipes), with no machine. Here: one UV multiblock from the ZPM assembly line, with GT's
 --- controller recipe (UHV/2, 30 s in the assembly line; GT's 4 superdense iridium plates, 256 ingots, are 28
@@ -236,7 +236,7 @@ end
 
 --- Microminer missions for the ores of GT's space veins (OreMixes.java). Upstream has the ore lines (crushed ore,
 --- washing, centrifuge, smelting; 07-ore-processing-module.lua) and drafts of the missions in the tier seven and
---- eight microminers (23-zpm-age-item.lua, 27-uhv-age-item.lua, not loaded), which do not exist; like the
+--- eight microminers (23-zpm-age-item.lua, 27-uhv-age-item.lua, never loaded, removed in issue #249), which do not exist; like the
 --- bedrockium and quantium missions of 137-fork-endgame-materials.lua they are missions of the tier three
 --- microminer (the end), unlocked with those technologies (UV and UHV). The vein decides the outputs, the drafts the
 --- amounts; GT's sporadic titanium and the garnets have no raw ore item here and are left out.
@@ -978,9 +978,6 @@ FORK_RECIPES_LOCKED = {
 	["calcium"] = "upstream placeholder without ingredients (an item from nothing); calcium comes from fluorspar",
 	["cerium-rich-mixture"] = "upstream placeholder without ingredients; the mixture comes from bastnasite",
 	["phosphorus"] = "upstream placeholder without ingredients; phosphorus comes from the phosphorus line",
-	["ultimate-extended-crafting-component"] = "upstream recipe needs four of its own product (copy error); no GT recipe",
-	["ultimate-extended-crafting-catalyst"] = "needs the ultimate extended crafting component",
-	["ultimate-extended-crafting-table"] = "needs the ultimate component and catalyst; the table has no entity",
 	["crushed-firestone"] = "no source of firestone ore: GT has no firestone vein (Railcraft's nether ore)",
 	["firestone-dust"] = "needs crushed firestone",
 	["centrifuging-crushed-firestone"] = "needs crushed firestone",

@@ -10,7 +10,7 @@
 ---   * UIV machines: the UEV machines one tier up (fork_make_tier_machine)
 ---   * the UIV technologies, and the phase 5a workaround that is not needed any more (UEV field
 ---     generator)
---- 31-uiv-age-item.lua is not loaded by data.lua (it is not valid Lua and mostly holds the raw
+--- 31-uiv-age-item.lua (removed in issue #249) was never loaded by data.lua (it was not valid Lua and mostly held the raw
 --- tesseract chain, the dimensionally transcendent plasma forge and the godforge), so the UIV parts
 --- of it are rebuilt here after the GT5-Unofficial recipes.
 --- Fusion reactor MK5 (advanced fusion coil II, energy module, rhugnor) is built in 133-fork-umv.lua.

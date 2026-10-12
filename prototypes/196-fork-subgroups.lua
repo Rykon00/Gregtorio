@@ -141,7 +141,7 @@ put("molten-alloys", { "molten-potassium-disulfate" })
 FLUID_SUBGROUP["excited-dimensionally-transcendent-crude-catalyst"] = { "endgame", 1 }
 FLUID_SUBGROUP["excited-dimensionally-transcendent-resplendent-catalyst"] = { "endgame", 2 }
 FLUID_SUBGROUP["excited-dimensionally-transcendent-stellar-catalyst"] = { "endgame", 3 }
-put("endgame", { "raw-star-matter", "spatially-enlarged-fluid", "tachyon-rich-temporal-fluid" })
+put("endgame", { "raw-star-matter", "spatially-enlarged-fluid", "tachyon-rich-temporal-fluid", "quark-gluon-plasma" })
 
 --- patterns for whole lines (and for new fluids of a known kind); rank = a capture that orders the line by tier
 local FLUID_PATTERNS = {

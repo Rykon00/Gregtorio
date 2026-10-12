@@ -10,7 +10,7 @@
 ---   * UXV machines: the UMV machines one tier up (fork_make_tier_machine)
 ---   * the UXV technologies, and the workaround of 133-fork-umv.lua that is not needed any more
 ---     (UMV field generator)
---- 90-uxv-age-item.lua is not loaded by data.lua (it is not valid Lua and holds the GTNH
+--- 90-uxv-age-item.lua (removed in issue #249) was never loaded by data.lua (it was not valid Lua and held the GTNH
 --- endgame chains: magmatter, dark matter, shirabon, mellion, the stargate parts), so the parts of
 --- it that phase 5b needs are rebuilt here and in 135-fork-endgame.lua.
 --- The shared helpers (F.components, F.circuit_line, ...) are defined in 133-fork-umv.lua.

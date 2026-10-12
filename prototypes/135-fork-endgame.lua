@@ -6,7 +6,7 @@
 ---     each other as ingredients (dead ends). They are rebuilt here from UXV parts.
 ---   * the MAX science pack recipe of 11-lv-age-item.lua (1 stargate -> 1000 packs) is kept
 ---   * researching the technology `victory` wins the game (scripts/fork-victory.lua)
---- 90-uxv-age-item.lua (not loaded) has the GTNH version: block of magmatter, dark matter, mellion,
+--- 90-uxv-age-item.lua (never loaded, removed in issue #249) had the GTNH version: block of magmatter, dark matter, mellion,
 --- shirabon, the eye of harmony and the space assembler modules, hundreds of thousands of mB of
 --- catalysts. Here every part is made of the metals of the last tiers (infinity, transcendent metal,
 --- spacetime, universium), UXV components and fusion parts: depth without new chains.

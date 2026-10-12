@@ -6,7 +6,7 @@
 ---     reactors (the MK3 to MK5 recipes stay as the entry route), and the catalysts it burns
 ---   * the quantum force transformer (QFT): GT++'s MTEQuantumForceTransformer. A UMV multiblock that
 ---     runs GT's QFT recipes whose materials exist in the mod: the platinum line and the naquadah line
---- The drafts are in 29-uev-age-item.lua and 31-uiv-age-item.lua (not loaded, not valid Lua); the
+--- The drafts are in 29-uev-age-item.lua and 31-uiv-age-item.lua (never loaded, not valid Lua; removed in issue #249); the
 --- numbers follow GT5-Unofficial (PlasmaForgeRecipes, DTPFRecipes of the core mod, RecipeLoaderChemicalSkips,
 --- NaquadahRecipeLoader), see "Phase 6a: QFT and DTPF" in docs/ROADMAP.md.
 ---
@@ -325,6 +325,17 @@ local QFT_RECIPES = {
 			fluid("sulfuric-acid", 1000), fluid("oxygen", 100) }, time = 10,
 		outputs = { { "enriched-naquadah-sulphate", 16 }, { "trinium-dust", 64 } },
 		extra = { fluid("waste-liquid", 1000) } },
+	--- issue #249: GT's rare earth recipes (RecipeLoaderChemicalSkips.java 233-275, rare earth group catalyst, focus tier
+	--- 2), possible since the lanthanide lines of 159: bastline from bastnasite or cerium-rich mixture, monaline from
+	--- monazite (GT's hafnia and superconductor composite are left out: Gregtorio has neither)
+	{ input = { item("bastnasite-dust", 32) }, time = 20,
+		outputs = { { "holmium-dust", 64 }, { "cerium-dust", 64 }, { "samarium-dust", 64 }, { "gadolinium-dust", 64 },
+			{ "lanthanum-dust", 64 } } },
+	{ input = { item("cerium-rich-mixture", 16) }, time = 20,
+		outputs = { { "holmium-dust", 64 }, { "cerium-dust", 64 }, { "samarium-dust", 64 }, { "gadolinium-dust", 64 },
+			{ "lanthanum-dust", 64 } } },
+	{ input = { item("monazite-dust", 32) }, time = 20,
+		outputs = { { "cerium-dust", 64 }, { "gadolinium-dust", 64 }, { "samarium-dust", 64 }, { "zirconium-dust", 64 } } },
 }
 local qft_recipes = {}
 for _, def in pairs(QFT_RECIPES) do
