@@ -1,5 +1,5 @@
 --------------------------------------------------------------------------------
---- FORK LANTHANIDES (issues #262, #269 and #272, from the audit of #257): GT New Horizons' monazite rare earth line (gtnhlanth,
+--- FORK LANTHANIDES (issues #262, #269, #272 and #274, from the audit of #257): GT New Horizons' monazite rare earth line (gtnhlanth,
 --- GT5-Unofficial af993ca6a9 `gtnhlanth/loader/RecipeLoader.java`, loadLanthanideRecipes from line 1238), so samarium
 --- and gadolinium come from ore. Until now samarium dust was a placeholder (stone and oxygen in the MV chemical
 --- reactor, 19-iv-age-item.lua), which goes; the cerium-rich mixture of the bastnasite and lanthanite electrolysis gets
@@ -34,7 +34,7 @@
 ---   centrifuge: 4 saturated -> 3 samaric residue (EV, 157.5 s)
 ---   sifter: 3 samaric residue -> 2 samarium dust, gadolinium dust (EV, 6.65 s)
 ---   ammonium nitrate solution: 100 nitric acid + 100 ammonia -> 100 (chemical reactor, HV, 1.5 s)
---- Left out: chloromethane (GT's byproduct of the samaric residue centrifuge). Section 5 adds the bastnasite line and
+--- Section 7 adds GT's chloromethane of the samaric residue centrifuge (issue #274). Section 5 adds the bastnasite line and
 --- the cerium line, which takes the cerium dioxide (issue #269); section 6 the byproducts hafnia-zirconia blend, red
 --- zircon and europium(III) oxide with their lines (issue #272).
 --- Loads after 158 and before 156 (data.lua).
@@ -91,6 +91,8 @@ F.fluid("ammonium-nitrate-solution", "nearly-white-fluid", { 1.00, 1.00, 1.00 })
 F.fluid("nitrogenated-monazite-rare-earth-concentrate", "light-orange-fluid", { 0.98, 0.87, 0.68 })
 F.fluid("nitric-leached-monazite-mixture", "deep-pink-fluid", { 0.49, 0.20, 0.54 })
 F.fluid("nitric-monazite-leached-concentrate", "dark-muted-yellow-fluid", { 0.96, 0.79, 0.09 })
+--- issue #274: GT's chloromethane of the samaric residue centrifuge (Materials.Chloromethane, a gas)
+F.fluid("chloromethane", "deep-pink-fluid", { 0.78, 0.17, 0.63 })
 
 --------------------------------------------------------------------------------
 --- 2) MACHINES: the Digester and the Dissolution Tank (3x3 copies of the chemical reactor with their own ports and
@@ -239,7 +241,7 @@ step("saturated-monazite-rare-earth", MIX, 10, HV_SPEED,
 	{ { "heterogenous-halogenic-monazite-rare-earth-mixture", 1 }, { "salt", 1 }, { "acetone", 100 } },
 	{ { "saturated-monazite-rare-earth", 1 } })
 step("samaric-residue", "ev-centrifuge-recipes", 157.5, EV_SPEED, { { "saturated-monazite-rare-earth", 4 } },
-	{ { "samaric-residue", 3 } })
+	{ { "samaric-residue", 3 }, { "chloromethane", 40 } })
 step("samaric-residue-sifting", SIFT, 6.65, EV_SPEED, { { "samaric-residue", 3 } },
 	{ { "samarium-dust", 2 }, { "gadolinium-dust", 1 } })
 
@@ -303,8 +305,8 @@ table.insert(data.raw.technology["luv-components"].prerequisites, TECH)
 ---   blast furnace: 2 vanadium dust + 500 oxygen -> 7 vanadium pentoxide (MV, 10 s)
 ---   chemical reactor: silicon dust + 600 hydrofluoric acid -> 100 hexafluorosilicic acid, 400 hydrogen (MV, 20 s); 4
 ---     salt + 100 hexafluorosilicic acid -> 100 sodium fluorosilicate, 200 hydrochloric acid (HV, 30 s)
---- Left out: gangue (GT's byproduct of the dissolution tank, only for its gangue singularities) and the 1.3 fluorine
---- of the roasting. Section 6 adds the samaric branch, the red zircon of the sifter (issue #272).
+--- Section 6 adds the samaric branch and the red zircon of the sifter (issue #272), section 7 the gangue of the
+--- dissolution tank and the 1.3 fluorine of the roasting (issue #274).
 --------------------------------------------------------------------------------
 
 local BASTNASITE, CERIUM = "bastnasite-rare-earth-processing", "cerium-processing"
@@ -340,7 +342,8 @@ step("steam-cracked-bastnasite-mud", "hv-cracker-recipes", 30, HV_SPEED,
 step("conditioned-bastnasite-mud", "mv-mixer-recipes", 40, MV_SPEED,
 	{ { "steam-cracked-bastnasite-mud", 100 }, { "sodium-fluorosilicate", 32 } }, { { "conditioned-bastnasite-mud", 132 } })
 step("diluted-bastnasite-mud", "dissolution-tank-recipes", 50, EV_SPEED,
-	{ { "saltpeter", 1 }, { "water", 1000 }, { "conditioned-bastnasite-mud", 100 } }, { { "diluted-bastnasite-mud", 1100 } })
+	{ { "saltpeter", 1 }, { "water", 1000 }, { "conditioned-bastnasite-mud", 100 } },
+	{ { "diluted-bastnasite-mud", 1100 }, { "gangue-dust", 1 } })
 step("filtered-bastnasite-mud", SIFT, 20, HV_SPEED, { { "diluted-bastnasite-mud", 100 } },
 	{ { "filtered-bastnasite-mud", 40 }, { "silicon-dioxide", 1, 0.9 }, { "rutile-dust", 1, 0.75 },
 	  { "red-zircon-dust", 1, 0.1 }, { "ilmenite-dust", 1, 0.05 } })
@@ -349,7 +352,8 @@ step("bastnasite-rare-earth-oxides", "hv-electric-blast-furnace-recipes", 25, HV
 step("acid-leached-bastnasite-rare-earth-oxides", "lv-chemical-bath-recipes", 10, LV_SPEED,
 	{ { "bastnasite-rare-earth-oxides", 1 }, { "hydrochloric-acid", 50 } }, { { "acid-leached-bastnasite-rare-earth-oxides", 1 } })
 step("roasted-rare-earth-oxides", "mv-electric-blast-furnace-recipes", 30, MV_SPEED,
-	{ { "acid-leached-bastnasite-rare-earth-oxides", 1 }, { "oxygen", 100 } }, { { "roasted-rare-earth-oxides", 1 } })
+	{ { "acid-leached-bastnasite-rare-earth-oxides", 1 }, { "oxygen", 100 } },
+	{ { "roasted-rare-earth-oxides", 1 }, { "fluorine", 1.3 } })
 step("wet-rare-earth-oxides", "lv-mixer-recipes", 5, LV_SPEED, { { "roasted-rare-earth-oxides", 1 }, { "water", 20 } },
 	{ { "wet-rare-earth-oxides", 1 } })
 step("cerium-oxidised-rare-earth-oxides", CR, 15, HV_SPEED, { { "wet-rare-earth-oxides", 1 }, { "fluorine", 400 } },
@@ -444,9 +448,9 @@ F.tech{
 --- controller recipe RecipesMachinesCustom.java 339: MV casings, aluminium gears, annealed copper plates, black steel; the
 --- 4 large polyethylene pipes are 24 polyethylene sheets and the 4 black metal frames black steel frames, Gregtorio has
 --- neither) and the MV and HV Dehydrators (GregtechDehydrator.java 171-185: hull, robot arm, circuit, fine wire, 2x 4x
---- cables, gears; 3x3 copies of the chemical bath of their tier). The EV to ZPM Dehydrators need GT++'s dehydrator coils
---- and wait for a later issue, as do hafnium (its purification needs iodine, which Gregtorio has no source for) and
---- GTNH's samarium chain (it needs samarium ore).
+--- cables, gears; 3x3 copies of the chemical bath of their tier). Section 7 adds the EV to ZPM Dehydrators and
+--- hafnium from GT++'s ilmenite sifter (issue #274); GT's hafnia route needs iodine, which Gregtorio has no source
+--- for, and GTNH's samarium chain samarium ore (#154).
 --------------------------------------------------------------------------------
 
 local EUROPIUM, ZIRCONIUM, HEXABORIDE, SAMARIC = "europium-processing", "zirconium-processing", "lanthanum-hexaboride",
@@ -605,3 +609,159 @@ F.tech{
 	name = HEXABORIDE, prerequisites = { BASTNASITE, "iv-machines" }, packs = 6, count = 800, time = 45,
 	recipes = RECIPES,
 }
+
+--------------------------------------------------------------------------------
+--- 7) HAFNIUM, THE EV TO ZPM DEHYDRATORS, LANTHANUM HEXABORIDE'S FORMS AND SMALL BYPRODUCTS (issue #274)
+---
+--- Hafnium without iodine: GT++'s sifter of purified ilmenite (gtPlusPlus/xmod/gregtech/loaders/recipe/
+--- RecipeLoaderNuclear.java 551-565): iron 50 %, zirconium 2 x 10 %, hafnium 2 x 3 % (HV, 30 s; GT's cast iron dust,
+--- 2.78 %, is left out: Gregtorio has no cast iron). Hafnium is bartworks' Werkstoff without a blast furnace: its dust
+--- smelts into the ingot in the furnace, the macerator grinds the ingot (5 s). GT's hafnia route (hafnium tetrachloride,
+--- low-purity hafnium, hafnium iodide) waits for an iodine source.
+---
+--- The Chemical Dehydrators I to IV (EV to ZPM, GT++'s GregtechDehydrator.java 68-209): hull, robot arm, circuit, a
+--- dehydrator coil, 2x 4x cables (8 cables) and 2 gears of the tier, like the MV and HV ones of section 6. The coil
+--- (assembler, 8 s) is 4 coil wires on a medium pipe (GT's bronze, steel, stainless steel and titanium; Gregtorio has no
+--- GT pipes: 3 plates, a medium pipe's metal); the coil wire comes from GT++'s laser engraver recipes
+--- (RecipesLaserEngraver.java 49-110): a 2x wire (2 wires) of aluminium or nichrome (HV, 10 s), platinum (EV, 20 s;
+--- GT's osmium wire is not in Gregtorio), vanadium-gallium or niobium-titanium (IV, 30 s; no YBCO wire) or naquadah (LuV,
+--- 40 s), with a lime lens, which stays (Gregtorio has none: the green emerald lens). Substitutes for parts Gregtorio
+--- lacks: the LuV Dehydrator's Hastelloy-N gears are Hastelloy-X gears, the ZPM one's osmium cables naquadah cables (the
+--- ZPM chemical bath's cable). Each tier has its own technology after the one of its chemical bath.
+---
+--- Lanthanum hexaboride's forms (bartworks' GemLoader.java and SimpleMetalLoader.java for its Werkstoff, GT's
+--- LatheRecipes.java 31), as 155 makes them for the gem ores:
+---   forge hammer        exquisite -> 2 flawless -> 2 gems -> 2 flawed -> 2 chipped -> a tiny pile (3.2 s); 2 rods -> a
+---                       long rod (10 s)
+---   implosion           3 chipped -> flawed, 3 flawed -> gem, 3 gems -> flawless, 3 flawless -> exquisite, with an
+---                       explosive for GT's 8 TNT, and 2 tiny piles of dark ash; 4 dusts -> 3 gems with 3 explosives
+---                       and 8 tiny piles (1 s)
+---   lathe               exquisite -> lens + 2 dusts (2 min); gem -> rod + 2 small piles (50 s); flawless -> long rod +
+---                       dust (GT, 100 s)
+---   laser engraver      3 chipped -> flawed, 3 flawed -> gem, 3 gems -> flawless, 3 flawless -> exquisite with a red
+---                       lens (bartworks' dye of its colour 140, 110, 120 is red: the ruby lens), LV to EV as 155's
+--- Small byproducts (sections 3 and 5): GT's 400 L chloromethane of the samaric residue centrifuge (40), the gangue of the
+--- bastnasite dissolution tank and the 13 L fluorine of the roasting (1.3).
+--------------------------------------------------------------------------------
+
+local function unlock_in(tech, names)
+	local t = data.raw.technology[tech]
+	for _, n in pairs(names) do
+		data.raw.recipe[n].enabled = false
+		t.effects[#t.effects + 1] = { type = "unlock-recipe", recipe = n }
+	end
+end
+
+for _, name in pairs({ "hafnium-dust", "hafnium-ingot", "gangue-dust" }) do
+	if not data.raw.item[name] then create_item{ skip_recipe = true, name = name, subgroup = "subgroup-digester-recipes" } end
+end
+
+--- hafnium (and zirconium) from purified ilmenite
+RECIPES = {}
+step("sifting-purified-ilmenite", SIFT, 30, HV_SPEED, { { "purified-ilmenite", 1 } },
+	{ { "iron-dust", 1, 0.5 }, { "zirconium-dust", 1, 0.1 }, { "zirconium-dust", 1, 0.1 }, { "hafnium-dust", 1, 0.03 },
+	  { "hafnium-dust", 1, 0.03 } })
+step("hafnium-ingot", "smelting", 10, 1, { { "hafnium-dust", 1 } }, { { "hafnium-ingot", 1 } })
+step("hafnium-dust-from-ingot", "lv-macerator-recipes", 5, LV_SPEED, { { "hafnium-ingot", 1 } }, { { "hafnium-dust", 1 } })
+unlock_in(ZIRCONIUM, RECIPES)
+
+--- the Chemical Dehydrators I to IV
+for _, t in pairs({ "ev", "iv", "luv", "zpm" }) do F.category(t .. "-dehydrator-recipes") end
+local DEHYDRATOR_TIERS = {
+	--  tier   speed       engraver (s)  wires                                          coil pipe (3 plates)  assembler   cable                            gear                       circuit
+	{ "ev",  EV_SPEED,  10, HV_SPEED,  { "aluminium-wire", "nichrome-wire" },                 "bronze-plate",           MV_SPEED, "aluminium-cable",               "large-tumbaga-gear",      "ev-circuit", { "large-sifter" } },
+	{ "iv",  IV_SPEED,  20, EV_SPEED,  { "platinum-wire" },                                    "steel-plate",            HV_SPEED, "tungsten-cable",                "large-inconel-690-gear",  "iv-circuit", { "industrial-extrusion-machine" } },
+	{ "luv", LUV_SPEED, 30, IV_SPEED,  { "vanadium-gallium-wire", "niobium-titanium-wire" },  "stainless-steel-plate",  HV_SPEED, "naquadah-cable",                "large-hastelloy-x-gear",  "luv-circuit", { "hyper-intensity-laser-engraver", "zpm-materials" } },
+	{ "zpm", ZPM_SPEED, 40, LUV_SPEED, { "naquadah-wire" },                                    "titanium-plate",         EV_SPEED, "naquadah-cable",                "large-zeron-100-gear",    "zpm-circuit", {} },
+}
+local ENGRAVER_OF = { [HV_SPEED] = "hv", [EV_SPEED] = "ev", [IV_SPEED] = "iv", [LUV_SPEED] = "luv" }
+local TIER_ORDER = { "lv", "mv", "hv", "ev", "iv", "luv", "zpm" }
+local previous = "hv-dehydrator"
+for i, d in ipairs(DEHYDRATOR_TIERS) do
+	local t = d[1]
+	local wire, coil = t .. "-dehydrator-coil-wire", t .. "-dehydrator-coil"
+	for _, name in pairs({ wire, coil }) do
+		create_item{ skip_recipe = true, name = name, subgroup = "subgroup-digester-recipes",
+			icon = "__gregtorio-continued__/graphics/icons/fork/" .. name .. ".png" }
+	end
+	RECIPES = {}
+	for _, w in pairs(d[5]) do
+		step(wire .. "-from-" .. w, ENGRAVER_OF[d[4]] .. "-laser-engraver-recipes", d[3], d[4],
+			{ { w, 2 }, { "emerald-lens", 1 } }, { { wire, 1 }, { "emerald-lens", 1 } }, wire)
+	end
+	step(coil, (t == "ev" and "mv" or t == "iv" and "hv" or t == "luv" and "hv" or "ev") .. "-assembling-machine-recipes", 8,
+		d[7], { { wire, 4 }, { d[6], 3 } }, { { coil, 1 } })
+	local categories = {}
+	for k = 1, 3 + i do categories[#categories + 1] = TIER_ORDER[k] .. "-dehydrator-recipes" end
+	local src = data.raw["assembling-machine"][t .. "-chemical-bath"]
+	machine{
+		name = t .. "-dehydrator", source = t .. "-chemical-bath", category = categories[#categories], speed = d[2],
+		energy = src.energy_usage, subgroup = data.raw.item[t .. "-chemical-bath"].subgroup,
+		ports = { port("input", N, { 0, -1 }), port("output", S, { 0, 1 }) },
+		recipe = { "crafting-or-assembling-recipes", 1, {
+			{ type = "item", name = coil, amount = 2 },
+			{ type = "item", name = d[10], amount = 1 },
+			{ type = "item", name = d[8], amount = 8 },
+			{ type = "item", name = t .. "-machine-hull", amount = 1 },
+			{ type = "item", name = d[9], amount = 2 },
+			{ type = "item", name = t .. "-robot-arm", amount = 1 },
+		} },
+	}
+	local m = data.raw["assembling-machine"][t .. "-dehydrator"]
+	m.crafting_categories = categories
+	m.fast_replaceable_group = "fr-dehydrator"
+	data.raw["assembling-machine"][previous].next_upgrade = m.name
+	previous = m.name
+	--- its own technology after the one of the tier's chemical bath and the ones that make its gears and cables (#252)
+	local bath_tech
+	for tname, tech in pairs(data.raw.technology) do
+		for _, e in pairs(tech.effects or {}) do
+			if e.type == "unlock-recipe" and e.recipe == t .. "-chemical-bath" then bath_tech = tname end
+		end
+	end
+	local prereqs = { bath_tech }
+	for _, p in pairs(d[11]) do prereqs[#prereqs + 1] = p end
+	F.tech{
+		name = t .. "-chemical-dehydrator", prerequisites = prereqs,
+		packs = #data.raw.technology[bath_tech].unit.ingredients, count = 500, time = 45, recipes = RECIPES,
+	}
+end
+
+--- lanthanum hexaboride's forms
+local LAB6 = "lanthanum-hexaboride"
+local G = { chipped = "chipped-" .. LAB6, flawed = "flawed-" .. LAB6, gem = LAB6, flawless = "flawless-" .. LAB6,
+	exquisite = "exquisite-" .. LAB6 }
+local DUST, SMALL, TINY = LAB6 .. "-dust", "small-pile-of-" .. LAB6 .. "-dust", "tiny-pile-of-" .. LAB6 .. "-dust"
+local LENS, ROD, LONG = LAB6 .. "-lens", LAB6 .. "-rod", "long-" .. LAB6 .. "-rod"
+for _, name in pairs({ G.chipped, G.flawed, G.gem, G.exquisite, DUST, SMALL, TINY, LENS, ROD, LONG }) do
+	create_item{ skip_recipe = true, name = name, subgroup = "subgroup-digester-recipes" }
+end
+RECIPES = {}
+local GRADES = { "chipped", "flawed", "gem", "flawless", "exquisite" }
+local ENGRAVE = { chipped = { "mv", 30 }, flawed = { "mv", 60 }, gem = { "hv", 240 }, flawless = { "ev", 960 } }
+for i, k in ipairs(GRADES) do
+	local up, down = GRADES[i + 1], GRADES[i - 1]
+	if down then
+		step("hammering-" .. G[k], "lv-forge-hammer-recipes", 3.2, LV_SPEED, { { G[k], 1 } }, { { G[down], 2 } })
+	end
+	if up then
+		step("implosion-" .. G[k] .. "-to-" .. up, "lv-implosion-compressor-recipes", 1, LV_SPEED,
+			{ { G[k], 3 }, { "explosives", 1 } }, { { G[up], 1 }, { "tiny-pile-of-dark-ash-dust", 2 } })
+		step("engraving-" .. G[k] .. "-to-" .. up, ENGRAVE[k][1] .. "-laser-engraver-recipes", ENGRAVE[k][2], 1,
+			{ { G[k], 3 }, { "ruby-lens", 1 } }, { { G[up], 1 }, { "ruby-lens", 1 } })
+	end
+end
+step("hammering-" .. G.chipped, "lv-forge-hammer-recipes", 3.2, LV_SPEED, { { G.chipped, 1 } }, { { TINY, 1 } })
+step("implosion-" .. DUST .. "-to-gem", "lv-implosion-compressor-recipes", 1, LV_SPEED, { { DUST, 4 }, { "explosives", 3 } },
+	{ { G.gem, 3 }, { "tiny-pile-of-dark-ash-dust", 8 } })
+step(LENS, "lv-lathe-recipes", 120, LV_SPEED, { { G.exquisite, 1 } }, { { LENS, 1 }, { DUST, 2 } })
+step(ROD, "lv-lathe-recipes", 50, LV_SPEED, { { G.gem, 1 } }, { { ROD, 1 }, { SMALL, 2 } })
+step(LONG, "lv-forge-hammer-recipes", 10, LV_SPEED, { { ROD, 2 } }, { { LONG, 1 } })
+step(LONG .. "-from-flawless", "lv-lathe-recipes", 100, LV_SPEED, { { G.flawless, 1 } }, { { LONG, 1 }, { DUST, 1 } })
+step(DUST .. "-from-small-piles", "crafting", 0.5, 1, { { SMALL, 4 } }, { { DUST, 1 } })
+step(DUST .. "-from-tiny-piles", "crafting", 0.5, 1, { { TINY, 9 } }, { { DUST, 1 } })
+--- (the crafting table's rows: next to the line's items, not a subgroup of their own)
+for _, n in pairs({ DUST .. "-from-small-piles", DUST .. "-from-tiny-piles" }) do
+	data.raw.recipe[n].subgroup = "subgroup-digester-recipes"
+end
+unlock_in(HEXABORIDE, RECIPES)

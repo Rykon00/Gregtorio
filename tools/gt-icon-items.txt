@@ -2902,3 +2902,16 @@ flawless-lanthanum-hexaboride
 terbium-dust
 holmium-dust
 ammonium-nitrate-dust
+hafnium-dust
+hafnium-ingot
+gangue-dust
+chipped-lanthanum-hexaboride
+flawed-lanthanum-hexaboride
+lanthanum-hexaboride
+exquisite-lanthanum-hexaboride
+lanthanum-hexaboride-dust
+small-pile-of-lanthanum-hexaboride-dust
+tiny-pile-of-lanthanum-hexaboride-dust
+lanthanum-hexaboride-lens
+lanthanum-hexaboride-rod
+long-lanthanum-hexaboride-rod
