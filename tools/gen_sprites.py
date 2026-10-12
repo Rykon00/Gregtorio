@@ -212,6 +212,19 @@ MULTIBLOCKS = {
     "hv-dehydrator": ((3, 3), "gregtech:iconsets/MACHINE_HV_SIDE", None,
                       ("gregtech:basicmachines/dehydrator/OVERLAY_FRONT",
                        "gregtech:basicmachines/dehydrator/OVERLAY_FRONT_ACTIVE"), None),
+    # issue #274: the Chemical Dehydrators I to IV, like the MV and HV ones
+    "ev-dehydrator": ((3, 3), "gregtech:iconsets/MACHINE_EV_SIDE", None,
+                      ("gregtech:basicmachines/dehydrator/OVERLAY_FRONT",
+                       "gregtech:basicmachines/dehydrator/OVERLAY_FRONT_ACTIVE"), None),
+    "iv-dehydrator": ((3, 3), "gregtech:iconsets/MACHINE_IV_SIDE", None,
+                      ("gregtech:basicmachines/dehydrator/OVERLAY_FRONT",
+                       "gregtech:basicmachines/dehydrator/OVERLAY_FRONT_ACTIVE"), None),
+    "luv-dehydrator": ((3, 3), "gregtech:iconsets/MACHINE_LuV_SIDE", None,
+                      ("gregtech:basicmachines/dehydrator/OVERLAY_FRONT",
+                       "gregtech:basicmachines/dehydrator/OVERLAY_FRONT_ACTIVE"), None),
+    "zpm-dehydrator": ((3, 3), "gregtech:iconsets/MACHINE_ZPM_SIDE", None,
+                      ("gregtech:basicmachines/dehydrator/OVERLAY_FRONT",
+                       "gregtech:basicmachines/dehydrator/OVERLAY_FRONT_ACTIVE"), None),
     "large-combustion-engine": ((3, 3), "gregtech:iconsets/MACHINE_CASING_STABLE_TITANIUM", None,
                                 ("gregtech:iconsets/OVERLAY_FRONT_DIESEL_ENGINE",
                                  "gregtech:iconsets/OVERLAY_FRONT_DIESEL_ENGINE_ACTIVE"),
@@ -222,7 +235,8 @@ CONTROLLER_ICONS = {"neutron-activator", "water-purification-plant", "uv-large-n
 # multiblocks whose icon is the whole idle sprite, scaled down (issues #254, #255: their GT controller fronts look alike,
 # the middle row tells them apart)
 WHOLE_ICONS = {"large-titanium-boiler", "large-combustion-engine", "digester", "dissolution-tank",
-               "exxonmobil-chemical-plant", "mv-dehydrator", "hv-dehydrator"}
+               "exxonmobil-chemical-plant", "mv-dehydrator", "hv-dehydrator", "ev-dehydrator", "iv-dehydrator",
+               "luv-dehydrator", "zpm-dehydrator"}
 # tier versions of a generator (136-fork-power.lua): the base sprite with dynamo hatches of the tier
 # (GT hull of the tier + GT's dynamo hatch overlay) on the corner tiles; the base itself gets its own
 # tier's hatches too. The icon gets the hatch as a badge.
@@ -281,6 +295,15 @@ TEXTURE_ICONS = {
     "titanium-firebox-casing": "gregtech:iconsets/MACHINE_CASING_FIREBOX_TITANIUM",
     "engine-intake-casing": "gregtech:iconsets/MACHINE_CASING_ENGINE_INTAKE",
     "stainless-steel-turbine-casing": "gregtech:iconsets/MACHINE_CASING_TURBINE_STAINLESSSTEEL",
+    # issue #274: GT++'s dehydrator coil wires and coils (item textures)
+    "ev-dehydrator-coil-wire": "miscutils:../items/itemDehydratorCoilWire_0",
+    "ev-dehydrator-coil": "miscutils:../items/itemDehydratorCoil_0",
+    "iv-dehydrator-coil-wire": "miscutils:../items/itemDehydratorCoilWire_1",
+    "iv-dehydrator-coil": "miscutils:../items/itemDehydratorCoil_1",
+    "luv-dehydrator-coil-wire": "miscutils:../items/itemDehydratorCoilWire_2",
+    "luv-dehydrator-coil": "miscutils:../items/itemDehydratorCoil_2",
+    "zpm-dehydrator-coil-wire": "miscutils:../items/itemDehydratorCoilWire_3",
+    "zpm-dehydrator-coil": "miscutils:../items/itemDehydratorCoil_3",
 }
 # issue #97: the lapotronic supercapacitors (one 5x5 accumulator per capacitor tier): kekztech's LSC casing as the
 # border, the capacitor blocks of the tier inside, the controller in the top middle, GT's energy and dynamo hatch of

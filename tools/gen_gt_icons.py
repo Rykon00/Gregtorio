@@ -203,6 +203,9 @@ MATERIALS = {
     "terbium-nitrate": ("DULL", (167, 252, 0)),
     "ammonium-nitrate": ("DULL", (150, 75, 150)),
     "holmium": "Holmium", "terbium": "Terbium",
+    # issue #274: bartworks' hafnium (gtnhlanth WerkstoffMaterialPool.java) and gangue
+    "hafnium": ("METALLIC", (232, 224, 219)),
+    "gangue": ("DULL", (0, 0, 0)),
     # issue #227: the metals whose GT parts are new (GT materials; GT++ alloys: set and colour of MaterialsAlloy.java)
     "annealed-copper": "AnnealedCopper",
     "battery-alloy": "BatteryAlloy",
@@ -770,6 +773,9 @@ def icon_table(c):
     # issue #262: the dusts of the monazite line, which the fork names without "-dust"
     for m in ("monazite-sulfate", "acidic-monazite-powder", "monazite-rare-earth-filtrate", "thorium-phosphate-cake", "thorium-phosphate-concentrate", "neutralized-monazite-rare-earth-filtrate", "monazite-rare-earth-hydroxide-concentrate", "uranium-filtrate", "neutralized-uranium-filtrate", "dried-monazite-rare-earth-concentrate", "cerium-dioxide", "cooled-monazite-rare-earth-concentrate", "monazite-rarer-earth-sediment", "heterogenous-halogenic-monazite-rare-earth-mixture", "saturated-monazite-rare-earth", "samaric-residue"):
         T[m] = lambda m=m: c.part(m, "dust")
+
+    # issue #274: lanthanum hexaboride's gem, which the fork names without "-gem" (its dust is "-dust")
+    T["lanthanum-hexaboride"] = lambda: c.part("lanthanum-hexaboride", "gem")
 
     # issue #272: the dusts of section 6 of 159, which the fork names without "-dust"
     for m in ("europium-iii-oxide", "europium-oxide", "hafnia-zirconia-blend", "zirconia", "zirconium-tetrachloride", "lanthanum-oxide", "boron-trioxide", "samaric-rare-earth-concentrate", "fluorinated-samaric-concentrate", "samarium-terbium-mixture", "nitrogenated-samarium-terbium-mixture", "terbium-nitrate"):

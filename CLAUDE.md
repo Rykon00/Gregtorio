@@ -137,8 +137,10 @@
     #269: the bastnasite line to neodymium and lanthanum and the cerium line, technologies
     `bastnasite-rare-earth-processing` and `cerium-processing`; issue #272: europium, zirconium, lanthanum
     hexaboride and the samaric branch with GT++'s ExxonMobil Chemical Plant and the MV/HV Dehydrators, technologies
-    `europium-processing`, `zirconium-processing`, `lanthanum-hexaboride`, `samaric-rare-earth-processing`; loads
-    after 158 and before 156)
+    `europium-processing`, `zirconium-processing`, `lanthanum-hexaboride`, `samaric-rare-earth-processing`; issue
+    #274: hafnium from GT++'s ilmenite sifter, the EV-ZPM Chemical Dehydrators with their coils (technologies
+    `<tier>-chemical-dehydrator`), lanthanum hexaboride's gem forms, chloromethane, gangue and the roasting's fluorine;
+    loads after 158 and before 156)
   - 156 circuit icons (issue #164: the circuit variant recipes up to UV keep the shared tier item and show GT's texture
     of their GTNH item as recipe icon; devcheck fails for a tier circuit recipe without its own icon)
   - 157 recycling (issue #190: GTNH's material recycling into dusts, ingots and melts for the items of crafting table
