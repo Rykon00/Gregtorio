@@ -139,6 +139,8 @@ require("prototypes.155-fork-ore-chain")
 require("prototypes.158-fork-gt-parts")
 --- issue #262: the monazite rare earth line (lanthanides), after 158 and before 156
 require("prototypes.159-fork-lanthanides")
+--- issue #283: the dimension mines of the Nether and the End (decision of #154), after 159 and before 156
+require("prototypes.160-fork-dimension-mines")
 --- issue #164: the circuit variant recipes show the icon of their GTNH item (156)
 require("prototypes.156-fork-circuit-icons")
 --- issue #190: GTNH's material recycling (macerator, arc furnace, fluid extractor), after every file that makes recipes
