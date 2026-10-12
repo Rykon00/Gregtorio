@@ -11,7 +11,7 @@
 ---   * UV science pack (agricultural-science-pack), UV voltage coil, trinium coil, UV energy hatch
 ---   * UV machines: the ZPM machines one tier up (fork_make_tier_machine)
 ---   * the UV technologies, and the Phase 2 workarounds that are no longer needed
---- 25-uv-age-item.lua is not loaded by data.lua (it is not valid Lua and mostly holds later
+--- 25-uv-age-item.lua (removed in issue #249) was never loaded by data.lua (it was not valid Lua and mostly held later
 --- tiers), so the UV parts of it are rebuilt here after the GT5-Unofficial recipes.
 --- Everything else in it (research station, draconic fusion, nano forge, bio processors)
 --- waits for later phases.

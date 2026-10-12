@@ -295,6 +295,8 @@ TEXTURE_ICONS = {
     "titanium-firebox-casing": "gregtech:iconsets/MACHINE_CASING_FIREBOX_TITANIUM",
     "engine-intake-casing": "gregtech:iconsets/MACHINE_CASING_ENGINE_INTAKE",
     "stainless-steel-turbine-casing": "gregtech:iconsets/MACHINE_CASING_TURBINE_STAINLESSSTEEL",
+    # issue #249: GT's timepiece (MetaGeneratedItem03, meta 757)
+    "timepiece": "gregtech:../items/gt.metaitem.03/757",
     # issue #274: GT++'s dehydrator coil wires and coils (item textures)
     "ev-dehydrator-coil-wire": "miscutils:../items/itemDehydratorCoilWire_0",
     "ev-dehydrator-coil": "miscutils:../items/itemDehydratorCoil_0",

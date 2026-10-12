@@ -12,7 +12,7 @@
 ---   * UMV machines: the UIV machines one tier up (fork_make_tier_machine)
 ---   * the UMV technologies, and the phase 5a workaround that is not needed any more (UIV field
 ---     generator)
---- 80-umv-age-item.lua is not loaded by data.lua (it is not valid Lua and holds the space-time
+--- 80-umv-age-item.lua (removed in issue #249) was never loaded by data.lua (it was not valid Lua and held the space-time
 --- chain, the dimensionally transcendent plasma forge and coal recipes of GTNH), so the parts of
 --- it that phase 5b needs are rebuilt here.
 ---
@@ -423,7 +423,7 @@ end
 ---   * molten rhugnor: infinity + molten transcendent metal (the draft: molten quantum, which no
 ---     line makes); molten flerovium: americium + calcium plasma (the draft: plutonium-241);
 ---     both are MK4 recipes, so nothing the MK5 makes is needed to build it
----   * energy module: the ZPM assembly line recipe of 23-zpm-age-item.lua (not loaded), with UHPIC
+---   * energy module: the ZPM assembly line recipe of 23-zpm-age-item.lua (never loaded, removed in issue #249), with UHPIC
 ---     wafers instead of the ASOC wafers (not built)
 ---   * advanced fusion coil II: UEV emitter and sensor (a UIV field generator or emitter would need
 ---     UMV circuits, which need spacetime, which the MK5 makes), the compact fusion coil of the

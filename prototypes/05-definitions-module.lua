@@ -701,7 +701,6 @@ recipe_category_and_subgroup( "uxv-coal-recipes" )
 recipe_category_and_subgroup( "basic-extended-crafting-recipes" )
 recipe_category_and_subgroup( "advanced-extended-crafting-recipes" )
 recipe_category_and_subgroup( "elite-extended-crafting-recipes" )
-recipe_category_and_subgroup( "ultimate-extended-crafting-recipes" )
 
 
 

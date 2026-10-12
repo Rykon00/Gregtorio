@@ -205,6 +205,8 @@ MATERIALS = {
     "holmium": "Holmium", "terbium": "Terbium",
     # issue #274: bartworks' hafnium (gtnhlanth WerkstoffMaterialPool.java) and gangue
     "hafnium": ("METALLIC", (232, 224, 219)),
+    # issue #249: GT's amalgatite (MaterialsInit.java loadAmalgatite, the stargate crystal texture set)
+    "amalgatite": "Amalgatite",
     "gangue": ("DULL", (0, 0, 0)),
     # issue #227: the metals whose GT parts are new (GT materials; GT++ alloys: set and colour of MaterialsAlloy.java)
     "annealed-copper": "AnnealedCopper",

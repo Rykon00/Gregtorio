@@ -277,3 +277,72 @@ F.tech{
 	name = "max-plasma-turbine", prerequisites = { "max-energy-hatches", "uxv-plasma-turbine" }, packs = 15, count = 1,
 	recipes = { "max-dynamo-hatch", "max-large-plasma-turbine" },
 }
+
+
+
+--------------------------------------------------------------------------------
+--- 8) MAX RECIPES OF THE PLASMA FORGE AND THE QFT (issue #249, the maintainer's decision: with substitutes)
+--- GT's timepiece, time and space conversions (core mod DTPFRecipes.java 1124-1161), chipped amalgatite
+--- (PlasmaForgeRecipes.java 160-177) and the QFT's temporal harmony (core mod ScriptGregtechPlusPlus.java 80-89). GT's
+--- times on the forge's and the QFT's speed (UMV), fluids a tenth of GT's litres, GT's dimensionally transcendent residue
+--- left out (139: the forge has none). Their materials do not exist in the mod; the substitutes:
+---   space-time bending core, continuum ripper (kept)   the QFT coil casing, which the recipe returns
+---   dense dark iron plate                               dense dark steel plate
+---   32 dilithium                                        32 diamonds
+---   universium nanite / magmatter nanite (kept)         superdense universium / magmatter plate
+---   hexanite round                                      universium round
+---   exquisite jasper, sapphire, opal                    exquisite red garnet, sodalite, lapis
+---   stargate crystal slurry, primordial matter          raw star matter
+---   energised tesseract, quantum anomaly                MAX field generator, gravi-star
+---   chronic singularity                                 block of universium
+--- GT's tesseract of the conversions and the shirabon of temporal harmony are left out (decided: no shirabon). The
+--- timepiece and chipped amalgatite are new; nothing in the mod takes them but these recipes (GT: nanites, the stargate
+--- crystal, the temporal harmony catalyst).
+--------------------------------------------------------------------------------
+
+local DTPF_CAT, QFT_CAT = "dimensionally-transcendent-plasma-forge-recipes", "quantum-force-transformer-recipes"
+local TIME, SPACE = "tachyon-rich-temporal-fluid", "spatially-enlarged-fluid"
+local STELLAR = "excited-dimensionally-transcendent-stellar-catalyst"
+local CORE = "quantum-force-transformer-coil-casing"
+create_item{ skip_recipe = true, name = "timepiece", subgroup = "subgroup-" .. DTPF_CAT,
+	icon = "__gregtorio-continued__/graphics/icons/fork/timepiece.png" }
+create_item{ skip_recipe = true, name = "chipped-amalgatite", subgroup = "subgroup-" .. DTPF_CAT }
+local function max_recipe(name, category, seconds, ingredients, results)
+	create_recipe{
+		name = name, category = category, energy_required = seconds * UMV_SPEED, subgroup = "subgroup-" .. category,
+		ingredients = ingredients, results = results, main_product = results[1].name,
+	}
+	return name
+end
+local dtpf_max = {
+	max_recipe("timepiece", DTPF_CAT, 80,
+		{ item(CORE, 1), item("dense-dark-steel-plate", 1), item("diamond", 32), item("superdense-universium-plate", 1),
+		  fluid(TIME, 14745.6), fluid(STELLAR, 10000) },
+		{ item("timepiece", 3), item(CORE, 1), fluid(SPACE, 14745.6) }),
+	max_recipe("time-to-space-conversion", DTPF_CAT, 10,
+		{ item(CORE, 1), item("max-field-generator", 2), item("gravi-star", 16), fluid(TIME, 58982.4),
+		  fluid("molten-spacetime", 14745.6), fluid(STELLAR, 100) },
+		{ fluid(SPACE, 58982.4), item(CORE, 1) }),
+	max_recipe("space-to-time-conversion", DTPF_CAT, 10,
+		{ item(CORE, 1), item("max-field-generator", 2), item("timepiece", 16), fluid(SPACE, 58982.4),
+		  fluid("molten-spacetime", 14745.6), fluid(STELLAR, 100) },
+		{ fluid(TIME, 58982.4), item(CORE, 1) }),
+	max_recipe("chipped-amalgatite", DTPF_CAT, 420,
+		{ item("superdense-magmatter-plate", 1), item("eternity-round", 64), item("magmatter-round", 64),
+		  item("universium-round", 64), item("exquisite-ruby", 64), item("exquisite-red-garnet", 64),
+		  item("exquisite-sodalite", 64), item("exquisite-lapis", 64), fluid("raw-star-matter", 500), fluid(STELLAR, 7200) },
+		{ item("chipped-amalgatite", 64), item("superdense-magmatter-plate", 1) }),
+}
+local harmony = max_recipe("temporal-harmony", QFT_CAT, 20,
+	{ item("block-of-universium", 1), item("max-field-generator", 1), fluid("raw-star-matter", 115.2),
+	  fluid("nitrogen-plasma", 100) },
+	{ item("timepiece", 1), fluid("molten-eternity", 921.6), fluid(TIME, 1843.2) })
+
+F.tech{
+	name = "dtpf-max-recipes", prerequisites = { "dtpf-stellar-catalyst", "max-components" }, packs = 15, count = 1,
+	recipes = dtpf_max,
+}
+F.tech{
+	name = "qft-temporal-harmony", prerequisites = { "quantum-force-transformer", "max-components" }, packs = 15, count = 1,
+	recipes = { harmony },
+}
