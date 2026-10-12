@@ -183,6 +183,26 @@ MATERIALS = {
     "cerium-iii-oxide": ("DULL", (255, 255, 102)),
     "vanadium-pentoxide": ("SHINY", (0xDE, 0x8D, 0x12)),
     "cerium": "Cerium", "lanthanum": "Lanthanum",
+    # issue #272: europium, zirconium, lanthanum hexaboride and the samaric branch (gtnhlanth WerkstoffMaterialPool.java;
+    # zirconium and red zircon are bartworks' WerkstoffLoader.java, ammonium nitrate GT++'s dust, ModItems.java);
+    # europium, holmium and terbium are GT's elements
+    "europium-iii-oxide": ("DULL", (255, 230, 255)),
+    "europium-oxide": ("DULL", (255, 255, 255)),
+    "hafnia-zirconia-blend": ("DULL", (247, 223, 203)),
+    "zirconia": ("SHINY", (177, 152, 101)),
+    "zirconium-tetrachloride": ("DULL", (179, 164, 151)),
+    "zirconium": ("METALLIC", (175, 175, 175)),
+    "red-zircon": ("GEM_VERTICAL", (195, 19, 19)),
+    "lanthanum-oxide": ("DULL", (105, 209, 180)),
+    "boron-trioxide": ("DULL", (238, 222, 209)),
+    "lanthanum-hexaboride": ("GEM_HORIZONTAL", (140, 110, 120)),
+    "samaric-rare-earth-concentrate": ("DULL", (170, 90, 60)),
+    "fluorinated-samaric-concentrate": ("DULL", (255, 182, 193)),
+    "samarium-terbium-mixture": ("DULL", (223, 182, 193)),
+    "nitrogenated-samarium-terbium-mixture": ("DULL", (223, 182, 193)),
+    "terbium-nitrate": ("DULL", (167, 252, 0)),
+    "ammonium-nitrate": ("DULL", (150, 75, 150)),
+    "holmium": "Holmium", "terbium": "Terbium",
     # issue #227: the metals whose GT parts are new (GT materials; GT++ alloys: set and colour of MaterialsAlloy.java)
     "annealed-copper": "AnnealedCopper",
     "battery-alloy": "BatteryAlloy",
@@ -749,6 +769,10 @@ def icon_table(c):
 
     # issue #262: the dusts of the monazite line, which the fork names without "-dust"
     for m in ("monazite-sulfate", "acidic-monazite-powder", "monazite-rare-earth-filtrate", "thorium-phosphate-cake", "thorium-phosphate-concentrate", "neutralized-monazite-rare-earth-filtrate", "monazite-rare-earth-hydroxide-concentrate", "uranium-filtrate", "neutralized-uranium-filtrate", "dried-monazite-rare-earth-concentrate", "cerium-dioxide", "cooled-monazite-rare-earth-concentrate", "monazite-rarer-earth-sediment", "heterogenous-halogenic-monazite-rare-earth-mixture", "saturated-monazite-rare-earth", "samaric-residue"):
+        T[m] = lambda m=m: c.part(m, "dust")
+
+    # issue #272: the dusts of section 6 of 159, which the fork names without "-dust"
+    for m in ("europium-iii-oxide", "europium-oxide", "hafnia-zirconia-blend", "zirconia", "zirconium-tetrachloride", "lanthanum-oxide", "boron-trioxide", "samaric-rare-earth-concentrate", "fluorinated-samaric-concentrate", "samarium-terbium-mixture", "nitrogenated-samarium-terbium-mixture", "terbium-nitrate"):
         T[m] = lambda m=m: c.part(m, "dust")
 
     # issue #269: the dusts of the bastnasite and cerium lines, which the fork names without "-dust"

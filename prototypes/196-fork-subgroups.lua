@@ -129,6 +129,11 @@ put("ore-solutions", { "muddy-bastnasite-rare-earth-solution", "steam-cracked-ba
 	"conditioned-bastnasite-mud", "diluted-bastnasite-mud", "filtered-bastnasite-mud",
 	"nitrogenated-bastnasite-rarer-earth-oxides", "bastnasite-rarer-earth-oxide-suspension" })
 put("acids", { "hexafluorosilicic-acid", "sodium-fluorosilicate", "oxalic-acid" })
+--- issue #272: section 6 of 159
+put("ore-solutions", { "zirconium-tetrachloride-solution", "hydrated-ammonium-nitrate-slurry" })
+put("acids", { "boric-acid" })
+put("gases", { "phosgene", "boron-trichloride" })
+put("molten-elements", { "calcium-fluoride" })
 --- issue #119: Space Age's melts, restyled below, are rows of the Fluids tab like the other melts
 put("molten-elements", { "molten-iron", "molten-copper" })
 put("molten-alloys", { "molten-potassium-disulfate" })

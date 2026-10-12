@@ -1,5 +1,5 @@
 --------------------------------------------------------------------------------
---- FORK LANTHANIDES (issues #262 and #269, from the audit of #257): GT New Horizons' monazite rare earth line (gtnhlanth,
+--- FORK LANTHANIDES (issues #262, #269 and #272, from the audit of #257): GT New Horizons' monazite rare earth line (gtnhlanth,
 --- GT5-Unofficial af993ca6a9 `gtnhlanth/loader/RecipeLoader.java`, loadLanthanideRecipes from line 1238), so samarium
 --- and gadolinium come from ore. Until now samarium dust was a placeholder (stone and oxygen in the MV chemical
 --- reactor, 19-iv-age-item.lua), which goes; the cerium-rich mixture of the bastnasite and lanthanite electrolysis gets
@@ -34,8 +34,9 @@
 ---   centrifuge: 4 saturated -> 3 samaric residue (EV, 157.5 s)
 ---   sifter: 3 samaric residue -> 2 samarium dust, gadolinium dust (EV, 6.65 s)
 ---   ammonium nitrate solution: 100 nitric acid + 100 ammonia -> 100 (chemical reactor, HV, 1.5 s)
---- Left out: GT's byproducts that Gregtorio has no material for (hafnia-zirconia blend, red zircon, europium(III) oxide,
---- chloromethane). Section 5 adds the bastnasite line and the cerium line, which takes the cerium dioxide (issue #269).
+--- Left out: chloromethane (GT's byproduct of the samaric residue centrifuge). Section 5 adds the bastnasite line and
+--- the cerium line, which takes the cerium dioxide (issue #269); section 6 the byproducts hafnia-zirconia blend, red
+--- zircon and europium(III) oxide with their lines (issue #272).
 --- Loads after 158 and before 156 (data.lua).
 --------------------------------------------------------------------------------
 
@@ -187,10 +188,11 @@ step("muddy-monazite-rare-earth-solution", "digester-recipes", 20, EV_SPEED,
 	{ { "muddy-monazite-rare-earth-solution", 40 }, { "silicon-dioxide", 1 } })
 step("diluted-monazite-rare-earth-mud", "dissolution-tank-recipes", 45, HV_SPEED,
 	{ { "saltpeter", 1 }, { "water", 1000 }, { "muddy-monazite-rare-earth-solution", 100 } },
-	{ { "diluted-monazite-rare-earth-mud", 1100 }, { "thorianite", 1 }, { "monazite-dust", 1, 2 / 9 } })
+	{ { "diluted-monazite-rare-earth-mud", 1100 }, { "hafnia-zirconia-blend", 1, 4 / 9 }, { "thorianite", 1 },
+	  { "monazite-dust", 1, 2 / 9 } })
 step("monazite-sulfate", SIFT, 20, HV_SPEED, { { "diluted-monazite-rare-earth-mud", 100 } },
 	{ { "monazite-sulfate", 1, 0.9 }, { "silicon-dioxide", 1, 0.75 }, { "rutile-dust", 1, 0.2 },
-	  { "ilmenite-dust", 1, 0.2 } })
+	  { "red-zircon-dust", 1, 0.05 }, { "ilmenite-dust", 1, 0.2 } })
 step("diluted-monazite-sulfate", MIX, 24, HV_SPEED, { { "monazite-sulfate", 1 }, { "water", 600 } },
 	{ { "diluted-monazite-sulfate", 700 } })
 step("acidic-monazite-powder", CR, 216, HV_SPEED,
@@ -228,7 +230,8 @@ step("nitric-monazite-leached-concentrate", SIFT, 20, HV_SPEED, { { "nitric-leac
 step("cooled-monazite-rare-earth-concentrate", "hv-vacuum-freezer-recipes", 5, HV_SPEED,
 	{ { "nitric-monazite-leached-concentrate", 100 } }, { { "cooled-monazite-rare-earth-concentrate", 1 } })
 step("monazite-rarer-earth-sediment", "lv-electromagnetic-separator-recipes", 30, EV_SPEED,
-	{ { "cooled-monazite-rare-earth-concentrate", 1 } }, { { "monazite-rarer-earth-sediment", 1, 0.9 } })
+	{ { "cooled-monazite-rare-earth-concentrate", 1 } },
+	{ { "monazite-rarer-earth-sediment", 1, 0.9 }, { "europium-iii-oxide", 5, 0.05 } })
 step("heterogenous-halogenic-monazite-rare-earth-mixture", "hv-electric-blast-furnace-recipes", 25, HV_SPEED,
 	{ { "monazite-rarer-earth-sediment", 1 }, { "chlorine", 100 } },
 	{ { "heterogenous-halogenic-monazite-rare-earth-mixture", 1 } })
@@ -300,10 +303,8 @@ table.insert(data.raw.technology["luv-components"].prerequisites, TECH)
 ---   blast furnace: 2 vanadium dust + 500 oxygen -> 7 vanadium pentoxide (MV, 10 s)
 ---   chemical reactor: silicon dust + 600 hydrofluoric acid -> 100 hexafluorosilicic acid, 400 hydrogen (MV, 20 s); 4
 ---     salt + 100 hexafluorosilicic acid -> 100 sodium fluorosilicate, 200 hydrochloric acid (HV, 30 s)
---- Left out: the samaric branch of the bastnasite line (samaric rare earth concentrate, 50 % in GT's suspension
---- centrifuge, and its steps to samaric residue need GT++'s ammonium nitrate dust from the chemical plant and the
---- dehydrator, and give holmium, terbium nitrate and calcium fluoride), GT's byproducts without a Gregtorio material
---- (gangue from the dissolution tank, red zircon 10 % from the sifter) and the 1.3 fluorine of the roasting.
+--- Left out: gangue (GT's byproduct of the dissolution tank, only for its gangue singularities) and the 1.3 fluorine
+--- of the roasting. Section 6 adds the samaric branch, the red zircon of the sifter (issue #272).
 --------------------------------------------------------------------------------
 
 local BASTNASITE, CERIUM = "bastnasite-rare-earth-processing", "cerium-processing"
@@ -342,7 +343,7 @@ step("diluted-bastnasite-mud", "dissolution-tank-recipes", 50, EV_SPEED,
 	{ { "saltpeter", 1 }, { "water", 1000 }, { "conditioned-bastnasite-mud", 100 } }, { { "diluted-bastnasite-mud", 1100 } })
 step("filtered-bastnasite-mud", SIFT, 20, HV_SPEED, { { "diluted-bastnasite-mud", 100 } },
 	{ { "filtered-bastnasite-mud", 40 }, { "silicon-dioxide", 1, 0.9 }, { "rutile-dust", 1, 0.75 },
-	  { "ilmenite-dust", 1, 0.05 } })
+	  { "red-zircon-dust", 1, 0.1 }, { "ilmenite-dust", 1, 0.05 } })
 step("bastnasite-rare-earth-oxides", "hv-electric-blast-furnace-recipes", 25, HV_SPEED, { { "filtered-bastnasite-mud", 100 } },
 	{ { "bastnasite-rare-earth-oxides", 1 } })
 step("acid-leached-bastnasite-rare-earth-oxides", "lv-chemical-bath-recipes", 10, LV_SPEED,
@@ -362,7 +363,7 @@ step("bastnasite-rarer-earth-oxide-suspension", CR, 35, HV_SPEED,
 	{ { "bastnasite-rarer-earth-oxide-suspension", 100 } })
 step("neodymium-rare-earth-concentrate", "hv-centrifuge-recipes", 45, HV_SPEED,
 	{ { "bastnasite-rarer-earth-oxide-suspension", 100 } },
-	{ { "neodymium-rare-earth-concentrate", 1, 0.8 }, { "acetone", 45 } })
+	{ { "neodymium-rare-earth-concentrate", 1, 0.8 }, { "samaric-rare-earth-concentrate", 1, 0.5 }, { "acetone", 45 } })
 step("neodymium-rare-earth-concentrate-reaction", CR, 45, HV_SPEED,
 	{ { "neodymium-rare-earth-concentrate", 2 }, { "hydrochloric-acid", 200 } },
 	{ { "lanthanum-chloride", 1 }, { "neodymium-oxide", 1 } })
@@ -396,5 +397,211 @@ step("cerium-iii-oxide-electrolysis", "mv-electrolyzer-recipes", 1.6, MV_SPEED, 
 	{ { "cerium-dust", 2 }, { "oxygen", 300 } })
 F.tech{
 	name = CERIUM, prerequisites = { TECH }, packs = 6, count = 600, time = 45,
+	recipes = RECIPES,
+}
+
+--------------------------------------------------------------------------------
+--- 6) EUROPIUM, ZIRCONIUM, LANTHANUM HEXABORIDE AND THE SAMARIC BRANCH (issue #272): the byproducts that sections 3 and
+--- 5 left out, with GT's lines for them (GT5-Unofficial af993ca6a9; RL = gtnhlanth/loader/RecipeLoader.java)
+---
+--- Europium (RL 1469-1494): the monazite separator gives 5 europium(III) oxide at 5 %;
+---   chemical reactor: 5 europium(III) oxide + europium dust -> 6 europium oxide (LuV, 15 s)
+---   electrolyzer: 2 europium oxide -> europium dust + 100 oxygen (ZPM, 15 s)
+---   europium ingot <-> dust: GT's generated macerator recipe (LV, 7.55 s) and blast furnace recipe (MV, 164.85 s;
+---   ProcessingDust.java: mass / 40 x 1099 K ticks)
+--- Zirconium (RL 866-900, 993-1002; bartworks Electrolyzer.java and its generated Zirconium recipes):
+---   the monazite dissolution tank gives 4/9 hafnia-zirconia blend (GT's 4 tiny piles), the monazite sifter 5 % and the
+---   bastnasite sifter 10 % red zircon dust;
+---   centrifuge: hafnia-zirconia blend -> 3 zirconia (EV, 30 s; GT's 3 hafnia are left out, see below)
+---   chemical reactor: 3 zirconia + 400 hydrochloric acid -> 5 zirconium tetrachloride, 200 water (LV, 15 s);
+---     5 zirconium tetrachloride + 100 water -> 100 zirconium tetrachloride solution (LV, 10 s)
+---   blast furnace: 2 magnesium + 100 solution -> hot zirconium ingot, 6 magnesium chloride (EV, 30 s); zirconium dust
+---     -> hot zirconium ingot (HV, 213 s); vacuum freezer: hot -> zirconium ingot (MV, 13.65 s); macerator: ingot ->
+---     dust (LV, 5 s)
+---   electrolyzer: 6 red zircon dust -> zirconium dust, silicon dioxide, 200 oxygen (MV, 12.5 s)
+--- Lanthanum hexaboride (RL 1117-1176; phosgene gtnhlanth/loader/BotRecipes.java 158; boric acid GT's
+--- ChemicalRecipes.java 6082; electrolysis generated by bartworks):
+---   chemical reactor: 200 chlorine + 100 carbon monoxide -> 100 phosgene (HV, 2.5 s); 23 borax + 200 hydrochloric
+---     acid -> 4 salt, 400 boric acid, 500 water (HV, 40 s); 200 boric acid -> boron trioxide, 300 water (EV, 15 s);
+---     2 boron + 300 oxygen -> boron trioxide (IV, 30 s); boron trioxide + 300 phosgene -> 200 boron trichloride, 300
+---     carbon monoxide (HV, 10 s); 8 lanthanum chloride + 300 water -> lanthanum oxide, 600 hydrochloric acid (HV,
+---     10 s); lanthanum dust + 300 hydrochloric acid -> 4 lanthanum chloride, 300 hydrogen (HV, 10 s)
+---   autoclave: lanthanum oxide + 800 boron trichloride -> flawless lanthanum hexaboride, 100 boric acid (IV, 60 s)
+---   electrolyzer: 5 boron trioxide -> 2 boron + 300 oxygen (MV, 0.3 s); 100 boron trichloride -> boron + 300 chlorine
+---     (MV, 5.6 s)
+--- Samaric branch (RL 1700-1752): the bastnasite suspension centrifuge gives samaric rare earth concentrate at 50 %;
+---   chemical reactor: samaric concentrate + 200 hydrofluoric acid -> fluorinated samaric concentrate (HV, 15 s)
+---   blast furnace: 8 fluorinated + 4 calcium -> holmium dust, 4 samarium-terbium mixture, 1200 calcium fluoride (EV,
+---     61 s)
+---   chemical reactor: mixture + 9 ammonium nitrate dust -> nitrogenated samarium-terbium mixture (HV, 30 s); 4
+---     nitrogenated + copper dust -> 2 terbium nitrate, 2 samaric residue (EV, 160 s)
+---   electrolyzer: 5 terbium nitrate -> terbium dust, 100 nitrogen, 300 oxygen (MV, 0.7 s, bartworks' generated
+---     recipe); 300 calcium fluoride -> calcium, 200 fluorine (MV, 2 s, ElectrolyzerRecipes.java 872)
+---   ammonium nitrate dust is GT++'s (gtPlusPlus/core/item/chemistry/RecipeLoaderRocketFuels.java 116-137):
+---     chemical plant: 400 ammonia + 400 nitric acid -> 518.4 hydrated ammonium nitrate slurry (MV, 60 s)
+---     dehydrator: 115.2 slurry -> 8 ammonium nitrate dust, 200 water (HV, 90 s)
+--- The two GT++ machines: the ExxonMobil Chemical Plant (a 3x3 copy of the chemical reactor like the digester; GT's
+--- controller recipe RecipesMachinesCustom.java 339: MV casings, aluminium gears, annealed copper plates, black steel; the
+--- 4 large polyethylene pipes are 24 polyethylene sheets and the 4 black metal frames black steel frames, Gregtorio has
+--- neither) and the MV and HV Dehydrators (GregtechDehydrator.java 171-185: hull, robot arm, circuit, fine wire, 2x 4x
+--- cables, gears; 3x3 copies of the chemical bath of their tier). The EV to ZPM Dehydrators need GT++'s dehydrator coils
+--- and wait for a later issue, as do hafnium (its purification needs iodine, which Gregtorio has no source for) and
+--- GTNH's samarium chain (it needs samarium ore).
+--------------------------------------------------------------------------------
+
+local EUROPIUM, ZIRCONIUM, HEXABORIDE, SAMARIC = "europium-processing", "zirconium-processing", "lanthanum-hexaboride",
+	"samaric-rare-earth-processing"
+for _, name in pairs({
+	"europium-iii-oxide", "europium-oxide", "europium-dust",
+	"hafnia-zirconia-blend", "zirconia", "zirconium-tetrachloride", "hot-zirconium-ingot", "zirconium-ingot", "red-zircon-dust",
+	"lanthanum-oxide", "boron-trioxide", "flawless-lanthanum-hexaboride",
+	"samaric-rare-earth-concentrate", "fluorinated-samaric-concentrate", "samarium-terbium-mixture",
+	"nitrogenated-samarium-terbium-mixture", "terbium-nitrate", "terbium-dust", "holmium-dust", "ammonium-nitrate-dust",
+}) do
+	if not data.raw.item[name] then
+		create_item{ skip_recipe = true, name = name, subgroup = "subgroup-digester-recipes" }
+	end
+end
+F.fluid("zirconium-tetrachloride-solution", "nearly-white-fluid", { 0.70, 0.64, 0.59 })
+F.fluid("phosgene", "forest-green-fluid", { 0.08, 0.63, 0.10 })
+F.fluid("boric-acid", "purple-fluid", { 0.35, 0.12, 0.47 })
+F.fluid("boron-trichloride", "purple-fluid", { 0.60, 0.38, 0.82 })
+F.fluid("calcium-fluoride", "nearly-white-fluid", { 1.00, 0.98, 0.98 })
+F.fluid("hydrated-ammonium-nitrate-slurry", "purple-fluid", { 0.59, 0.29, 0.59 })
+
+--- the GT++ machines (the Chemical Plant like the digester above; the Dehydrators keep their chemical bath's size and power)
+for _, t in pairs({ "lv", "mv", "hv" }) do F.category(t .. "-dehydrator-recipes") end
+F.category("chemical-plant-recipes")
+RECIPES = {}
+machine{
+	name = "exxonmobil-chemical-plant", source = "hv-chemical-reactor", category = "chemical-plant-recipes", speed = MV_SPEED,
+	energy = EU16_MV, subgroup = "subgroup-mv-age-multiblocks",
+	ports = { port("input", N, { -1, -1 }), port("input", N, { 1, -1 }), port("output", S, { 0, 1 }) },
+	recipe = { "mv-assembling-machine-recipes", 120 * MV_SPEED, {
+		{ type = "item", name = "mv-machine-casing", amount = 4 },
+		{ type = "item", name = "large-aluminium-gear", amount = 4 },
+		{ type = "item", name = "annealed-copper-plate", amount = 16 },
+		{ type = "item", name = "polyethylene-sheet", amount = 24 },
+		{ type = "item", name = "black-steel-frame", amount = 4 },
+		{ type = "fluid", name = "molten-black-steel", amount = 115.2 },
+	} },
+}
+local DEHYDRATORS = {
+	{ "mv", "mv-chemical-bath", { "lv-dehydrator-recipes", "mv-dehydrator-recipes" }, MV_SPEED, "mv-age-production-machine", {
+		{ type = "item", name = "fine-red-alloy-wire", amount = 2 },
+		{ type = "item", name = "advanced-circuit", amount = 1 },
+		{ type = "item", name = "copper-cable", amount = 8 },
+		{ type = "item", name = "mv-machine-hull", amount = 1 },
+		{ type = "item", name = "large-steel-gear", amount = 2 },
+		{ type = "item", name = "mv-robot-arm", amount = 1 },
+	} },
+	{ "hv", "hv-chemical-bath", { "lv-dehydrator-recipes", "mv-dehydrator-recipes", "hv-dehydrator-recipes" }, HV_SPEED,
+	  "hv-age-production-machine", {
+		{ type = "item", name = "fine-electrum-wire", amount = 2 },
+		{ type = "item", name = "processing-unit", amount = 1 },
+		{ type = "item", name = "silver-cable", amount = 8 },
+		{ type = "item", name = "hv-machine-hull", amount = 1 },
+		{ type = "item", name = "large-potin-gear", amount = 2 },
+		{ type = "item", name = "hv-robot-arm", amount = 1 },
+	} },
+}
+for _, d in pairs(DEHYDRATORS) do
+	local src = data.raw["assembling-machine"][d[2]]
+	machine{
+		name = d[1] .. "-dehydrator", source = d[2], category = d[3][1], speed = d[4], energy = src.energy_usage,
+		subgroup = d[5], ports = { port("input", N, { 0, -1 }), port("output", S, { 0, 1 }) },
+		recipe = { "crafting-or-assembling-recipes", 1, d[6] },
+	}
+	local m = data.raw["assembling-machine"][d[1] .. "-dehydrator"]
+	m.crafting_categories = d[3]
+	m.fast_replaceable_group = "fr-dehydrator"
+end
+data.raw["assembling-machine"]["mv-dehydrator"].next_upgrade = "hv-dehydrator"
+
+--- the samaric branch
+step("hydrated-ammonium-nitrate-slurry", "chemical-plant-recipes", 60, MV_SPEED,
+	{ { "ammonia", 400 }, { "nitric-acid", 400 } }, { { "hydrated-ammonium-nitrate-slurry", 518.4 } })
+step("ammonium-nitrate-dust", "hv-dehydrator-recipes", 90, HV_SPEED, { { "hydrated-ammonium-nitrate-slurry", 115.2 } },
+	{ { "ammonium-nitrate-dust", 8 }, { "water", 200 } })
+step("fluorinated-samaric-concentrate", CR, 15, HV_SPEED,
+	{ { "samaric-rare-earth-concentrate", 1 }, { "hydrofluoric-acid", 200 } }, { { "fluorinated-samaric-concentrate", 1 } })
+step("samarium-terbium-mixture", "ev-electric-blast-furnace-recipes", 61, EV_SPEED,
+	{ { "fluorinated-samaric-concentrate", 8 }, { "calcium", 4 } },
+	{ { "samarium-terbium-mixture", 4 }, { "holmium-dust", 1 }, { "calcium-fluoride", 1200 } })
+step("nitrogenated-samarium-terbium-mixture", CR, 30, HV_SPEED,
+	{ { "samarium-terbium-mixture", 1 }, { "ammonium-nitrate-dust", 9 } }, { { "nitrogenated-samarium-terbium-mixture", 1 } })
+step("terbium-nitrate", "ev-chemical-reactor-recipes", 160, EV_SPEED,
+	{ { "nitrogenated-samarium-terbium-mixture", 4 }, { "copper-dust", 1 } },
+	{ { "terbium-nitrate", 2 }, { "samaric-residue", 2 } })
+step("terbium-nitrate-electrolysis", "mv-electrolyzer-recipes", 0.7, MV_SPEED, { { "terbium-nitrate", 5 } },
+	{ { "terbium-dust", 1 }, { "nitrogen", 100 }, { "oxygen", 300 } })
+step("calcium-fluoride-electrolysis", "mv-electrolyzer-recipes", 2, MV_SPEED, { { "calcium-fluoride", 300 } },
+	{ { "calcium", 1 }, { "fluorine", 200 } })
+F.tech{
+	-- (large-extractor and industrial-electrolyzer make the black steel frame and the potin gear of the machines, #252)
+	name = SAMARIC, prerequisites = { BASTNASITE, "large-extractor", "industrial-electrolyzer" }, packs = 6, count = 800, time = 45,
+	recipes = RECIPES,
+}
+
+--- europium
+RECIPES = {}
+step("europium-dust", "lv-macerator-recipes", 7.55, LV_SPEED, { { "europium-ingot", 1 } }, { { "europium-dust", 1 } })
+step("europium-ingot-from-dust", "mv-electric-blast-furnace-recipes", 164.85, MV_SPEED, { { "europium-dust", 1 } },
+	{ { "europium-ingot", 1 } })
+step("europium-oxide", "luv-chemical-reactor-recipes", 15, LUV_SPEED,
+	{ { "europium-iii-oxide", 5 }, { "europium-dust", 1 } }, { { "europium-oxide", 6 } })
+step("europium-oxide-electrolysis", "zpm-electrolyzer-recipes", 15, ZPM_SPEED, { { "europium-oxide", 2 } },
+	{ { "europium-dust", 1 }, { "oxygen", 100 } })
+F.tech{
+	name = EUROPIUM, prerequisites = { TECH, "zpm-machines" }, packs = 8, count = 1000, time = 45,
+	recipes = RECIPES,
+}
+
+--- zirconium
+RECIPES = {}
+step("zirconia", "ev-centrifuge-recipes", 30, EV_SPEED, { { "hafnia-zirconia-blend", 1 } }, { { "zirconia", 3 } })
+step("zirconium-tetrachloride", "lv-chemical-reactor-recipes", 15, LV_SPEED,
+	{ { "zirconia", 3 }, { "hydrochloric-acid", 400 } }, { { "zirconium-tetrachloride", 5 }, { "water", 200 } })
+step("zirconium-tetrachloride-solution", "lv-chemical-reactor-recipes", 10, LV_SPEED,
+	{ { "zirconium-tetrachloride", 5 }, { "water", 100 } }, { { "zirconium-tetrachloride-solution", 100 } })
+step("hot-zirconium-ingot", "ev-electric-blast-furnace-recipes", 30, EV_SPEED,
+	{ { "magnesium", 2 }, { "zirconium-tetrachloride-solution", 100 } },
+	{ { "hot-zirconium-ingot", 1 }, { "magnesium-chloride", 6 } })
+step("hot-zirconium-ingot-from-dust", "hv-electric-blast-furnace-recipes", 213, HV_SPEED, { { "zirconium-dust", 1 } },
+	{ { "hot-zirconium-ingot", 1 } })
+step("zirconium-ingot", "mv-vacuum-freezer-recipes", 13.65, MV_SPEED, { { "hot-zirconium-ingot", 1 } },
+	{ { "zirconium-ingot", 1 } })
+step("zirconium-dust-from-ingot", "lv-macerator-recipes", 5, LV_SPEED, { { "zirconium-ingot", 1 } }, { { "zirconium-dust", 1 } })
+step("red-zircon-dust-electrolysis", "mv-electrolyzer-recipes", 12.5, MV_SPEED, { { "red-zircon-dust", 6 } },
+	{ { "zirconium-dust", 1 }, { "silicon-dioxide", 1 }, { "oxygen", 200 } })
+F.tech{
+	name = ZIRCONIUM, prerequisites = { TECH }, packs = 6, count = 600, time = 45,
+	recipes = RECIPES,
+}
+
+--- lanthanum hexaboride
+RECIPES = {}
+step("phosgene", CR, 2.5, HV_SPEED, { { "chlorine", 200 }, { "carbon-monoxide", 100 } }, { { "phosgene", 100 } })
+step("boric-acid", CR, 40, HV_SPEED, { { "borax", 23 }, { "hydrochloric-acid", 200 } },
+	{ { "boric-acid", 400 }, { "salt", 4 }, { "water", 500 } })
+step("boron-trioxide", "ev-chemical-reactor-recipes", 15, EV_SPEED, { { "boric-acid", 200 } },
+	{ { "boron-trioxide", 1 }, { "water", 300 } })
+step("boron-trioxide-from-boron", "iv-chemical-reactor-recipes", 30, IV_SPEED, { { "boron", 2 }, { "oxygen", 300 } },
+	{ { "boron-trioxide", 1 } })
+step("boron-trichloride", CR, 10, HV_SPEED, { { "boron-trioxide", 1 }, { "phosgene", 300 } },
+	{ { "boron-trichloride", 200 }, { "carbon-monoxide", 300 } })
+step("lanthanum-oxide", CR, 10, HV_SPEED, { { "lanthanum-chloride", 8 }, { "water", 300 } },
+	{ { "lanthanum-oxide", 1 }, { "hydrochloric-acid", 600 } })
+step("lanthanum-chloride-from-lanthanum", CR, 10, HV_SPEED, { { "lanthanum-dust", 1 }, { "hydrochloric-acid", 300 } },
+	{ { "lanthanum-chloride", 4 }, { "hydrogen", 300 } })
+step("flawless-lanthanum-hexaboride", "iv-autoclave-recipes", 60, IV_SPEED,
+	{ { "lanthanum-oxide", 1 }, { "boron-trichloride", 800 } },
+	{ { "flawless-lanthanum-hexaboride", 1 }, { "boric-acid", 100 } })
+step("boron-trioxide-electrolysis", "mv-electrolyzer-recipes", 0.3, MV_SPEED, { { "boron-trioxide", 5 } },
+	{ { "boron", 2 }, { "oxygen", 300 } })
+step("boron-trichloride-electrolysis", "mv-electrolyzer-recipes", 5.6, MV_SPEED, { { "boron-trichloride", 100 } },
+	{ { "boron", 1 }, { "chlorine", 300 } })
+F.tech{
+	name = HEXABORIDE, prerequisites = { BASTNASITE, "iv-machines" }, packs = 6, count = 800, time = 45,
 	recipes = RECIPES,
 }
