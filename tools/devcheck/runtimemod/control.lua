@@ -40,6 +40,7 @@ local function tests_running()
 	check(storage.chain and storage.chain.done, "nuclear chain")
 	check(storage.lsc and storage.lsc.done, "supercapacitor")
 	check(storage.lsup and storage.lsup.done, "supercapacitor upgrade")
+	check(storage.elevator and storage.elevator.done, "space elevator")
 	check(storage.offer and storage.offer.done, "recipes offered by machines")
 	check(storage.melt and storage.melt.done, "melts and casts")
 	return running
@@ -1670,6 +1671,77 @@ function lsup_test()
 	end
 end
 
+--- Space Elevator modules (issues #301, #302, scripts/fork-space-elevator.lua): a mining module without an elevator next to
+--- it stops; next to a Mk-I elevator the first six Mk-I modules run, the seventh stops (its six slots are taken), a Mk-II
+--- module stops (motors too weak); the elevator replaced by a Mk-II one runs the Mk-II module too; the elevator removed
+--- stops them all.
+local SE_X, SE_Y = 320, 300
+local SE_MODS = { { 316, 292 }, { 320, 292 }, { 324, 292 }, { 316, 308 }, { 320, 308 }, { 324, 308 }, { 312, 300 } }
+
+function setup_elevator_test(s)
+	local fails = {}
+	local ok, err = pcall(function()
+		local st = { phase = 0, mods = {} }
+		storage.elevator = st
+		st.mods[1] = s.create_entity{ name = "space-elevator-mining-module-mk1", position = SE_MODS[1], force = "player",
+			raise_built = true }
+	end)
+	if not ok then fails[#fails + 1] = "space elevator test: " .. tostring(err) end
+	return fails
+end
+
+local function se_status(m)
+	if not m.disabled_by_script then return "on" end
+	local cs = m.custom_status
+	return cs and type(cs.label) == "table" and cs.label[1]:gsub("^entity%-status%.fork%-space%-elevator%-", "") or "off"
+end
+
+function elevator_test()
+	local st = storage.elevator
+	if not st or st.done then return end
+	local t, s, problems = game.tick, game.surfaces[1], {}
+	local function expect(ok, what) if not ok then problems[#problems + 1] = what end end
+	if st.phase == 0 and t >= 20 then
+		expect(se_status(st.mods[1]) == "missing", "a module without an elevator: " .. se_status(st.mods[1]))
+		st.el = s.create_entity{ name = "space-elevator-mk1", position = { SE_X, SE_Y }, force = "player", raise_built = true }
+		for i = 2, #SE_MODS do
+			st.mods[i] = s.create_entity{ name = "space-elevator-mining-module-mk1", position = SE_MODS[i], force = "player",
+				raise_built = true }
+		end
+		st.mk2 = s.create_entity{ name = "space-elevator-mining-module-mk2", position = { 328, 300 }, force = "player",
+			raise_built = true }
+		st.phase = 1
+	elseif st.phase == 1 then
+		local on = 0
+		for i = 1, 6 do if se_status(st.mods[i]) == "on" then on = on + 1 end end
+		st.on = on
+		expect(on == 6, "Mk-I elevator: " .. on .. " of the first 6 modules run")
+		expect(se_status(st.mods[7]) == "full", "the seventh module: " .. se_status(st.mods[7]))
+		expect(se_status(st.mk2) == "motors", "a Mk-II module at a Mk-I elevator: " .. se_status(st.mk2))
+		st.el = s.create_entity{ name = "space-elevator-mk2", position = { SE_X, SE_Y }, force = "player", fast_replace = true,
+			spill = false, raise_built = true }
+		st.phase = 2
+	elseif st.phase == 2 then
+		expect(st.el and st.el.valid and st.el.name == "space-elevator-mk2", "the Mk-II elevator was not built")
+		expect(se_status(st.mk2) == "on", "a Mk-II module at a Mk-II elevator: " .. se_status(st.mk2))
+		expect(se_status(st.mods[7]) == "on", "the seventh module at 12 slots: " .. se_status(st.mods[7]))
+		st.el.destroy()
+		st.phase, st.t3 = 3, t
+	elseif st.phase == 3 and t >= st.t3 + 10 then
+		local off = 0
+		for _, m in pairs(st.mods) do if se_status(m) == "missing" then off = off + 1 end end
+		expect(off == #SE_MODS and se_status(st.mk2) == "missing", "after the elevator went: " .. off .. " of "
+			.. #SE_MODS .. " modules stopped, the Mk-II one " .. se_status(st.mk2))
+		st.done = true
+	end
+	if st.done or #problems > 0 then
+		st.done = true
+		for _, p in pairs(problems) do log("DEVCHECK-RUNTIME-FAIL space elevator test: " .. p) end
+		log("DEVCHECK-RUNTIME-ELEVATOR " .. (#problems == 0 and "ok" or "failed")
+			.. " (Mk-I elevator ran " .. tostring(st.on) .. " of 7 Mk-I modules)")
+	end
+end
+
 script.on_event(defines.events.on_tick, function(event)
 	fuel_window_tick()
 	chain_tick(event.tick)
@@ -1726,6 +1798,7 @@ script.on_nth_tick(10, function()
 	chain_test()
 	lsc_test()
 	lsup_test()
+	elevator_test()
 	offer_test()
 	melt_test()
 	victory_test()
@@ -1795,6 +1868,7 @@ script.on_init(function()
 	for _, f in pairs(setup_chain_test(s)) do fails[#fails + 1] = f end
 	for _, f in pairs(setup_lsc_test(s)) do fails[#fails + 1] = f end
 	for _, f in pairs(setup_lsup_test(s)) do fails[#fails + 1] = f end
+	for _, f in pairs(setup_elevator_test(s)) do fails[#fails + 1] = f end
 	for _, f in pairs(setup_offer_test(s)) do fails[#fails + 1] = f end
 	for _, f in pairs(setup_melt_test(s)) do fails[#fails + 1] = f end
 	log("DEVCHECK-RUNTIME placed=" .. placed .. " with_recipe=" .. with_recipe .. " failed=" .. #fails)
