@@ -89,6 +89,7 @@ FORK_TECH_ICONS = {
 	["large-extractor"] = true,
 	["large-gas-turbine"] = true,
 	["large-naquadah-reactor"] = true,
+	["large-rocket-engine"] = true,
 	["large-steam-turbine"] = true,
 	["luv-chemical-dehydrator"] = true,
 	["luv-components"] = true,
