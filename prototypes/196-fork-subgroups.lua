@@ -249,3 +249,47 @@ local gear = data.raw.item["iron-gear-wheel"]
 if gear and not gear.subgroup and data.raw["item-subgroup"]["subgroup-mv-extruder-recipes"] then
 	gear.subgroup, gear.order = "subgroup-mv-extruder-recipes", "j[gear]-a[iron]"
 end
+
+--------------------------------------------------------------------------------
+--- Issue #315: the production tab in tier order. Every tier has a row of machines (<tier>-age-production-machine) and a
+--- row of multiblocks (subgroup-<tier>-age-multiblocks); LV to EV are ordered "c" to "i", the machine row of a tier and
+--- then its multiblocks. The rows from IV up were "i-z-<tier>" (alphabetical: IV, LuV, MAX, UEV, UHV ...) and their
+--- multiblock rows "j" to "q-max", after all of them. They get the order of their tier now, the multiblocks right after
+--- the machines. Three EV items of upstream (18-ev-age-entity.lua) sat in the HV rows, and the recipes of the machines
+--- made one tier up (fork_make_tier_machine, 101) kept the row of the machine they were copied from: a recipe in a tier
+--- row goes into the row of its product.
+--------------------------------------------------------------------------------
+local TIER_ROWS = { "iv", "luv", "zpm", "uv", "uhv", "uev", "uiv", "umv", "uxv", "max" }
+for i, t in ipairs(TIER_ROWS) do
+	local key = string.format("i-z-%02d", i)
+	local machines = data.raw["item-subgroup"][t .. "-age-production-machine"]
+	if machines then machines.order = key .. "-a" end
+	local multiblocks = data.raw["item-subgroup"]["subgroup-" .. t .. "-age-multiblocks"]
+	if multiblocks then multiblocks.order = key .. "-b" end
+end
+for name, sg in pairs({ ["ev-autoclave"] = "ev-age-production-machine", ["ev-compressor"] = "ev-age-production-machine",
+	["ev-tall-distillation-tower"] = "subgroup-ev-age-multiblocks" }) do
+	local it = data.raw.item[name]
+	if it and data.raw["item-subgroup"][sg] then it.subgroup = sg end
+end
+local function tier_row(sg)
+	return sg and (sg:match("^[a-z]+%-age%-production%-machine$") or sg:match("^subgroup%-[a-z]+%-age%-multiblocks$"))
+end
+local function item_of(name)
+	for t in pairs(defines.prototypes.item) do
+		if data.raw[t] and data.raw[t][name] then return data.raw[t][name] end
+	end
+end
+local moved = 0
+for _, r in pairs(data.raw.recipe) do
+	if tier_row(r.subgroup) then
+		local main = r.main_product
+		if (not main or main == "") and r.results and #r.results == 1 then main = r.results[1].name end
+		local it = main and main ~= "" and item_of(main)
+		if it and tier_row(it.subgroup) and it.subgroup ~= r.subgroup then
+			r.subgroup = it.subgroup
+			moved = moved + 1
+		end
+	end
+end
+log("FORK-SUBGROUPS: " .. moved .. " machine recipes moved into the tier row of their product (issue #315)")
