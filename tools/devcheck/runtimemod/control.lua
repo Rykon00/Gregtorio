@@ -1674,7 +1674,8 @@ end
 --- Space Elevator modules (issues #301, #302, scripts/fork-space-elevator.lua): a mining module without an elevator next to
 --- it stops; next to a Mk-I elevator the first six Mk-I modules run, the seventh stops (its six slots are taken), a Mk-II
 --- module stops (motors too weak); the elevator replaced by a Mk-II one runs the Mk-II module too; the elevator removed
---- stops them all.
+--- stops them all. Issue #303: a Mk-I pump module (motors Mk-II) stops at the Mk-I elevator and runs at the Mk-II one, and
+--- takes a pumping recipe; a Planetary Gas Siphon takes a siphon recipe.
 local SE_X, SE_Y = 320, 300
 local SE_MODS = { { 316, 292 }, { 320, 292 }, { 324, 292 }, { 316, 308 }, { 320, 308 }, { 324, 308 }, { 312, 300 } }
 
@@ -1710,6 +1711,13 @@ function elevator_test()
 		end
 		st.mk2 = s.create_entity{ name = "space-elevator-mining-module-mk2", position = { 328, 300 }, force = "player",
 			raise_built = true }
+		st.pump = s.create_entity{ name = "space-elevator-pump-module-mk1", position = { 312, 292 }, force = "player",
+			raise_built = true }
+		local ok = pcall(function() st.pump.set_recipe("space-pump-lava") end)
+		expect(ok and st.pump.get_recipe() and st.pump.get_recipe().name == "space-pump-lava", "the pump module takes no pumping recipe")
+		local siphon = s.create_entity{ name = "planetary-gas-siphon", position = { 300, 280 }, force = "player", raise_built = true }
+		ok = pcall(function() siphon.set_recipe("gas-siphon-jupiter-1") end)
+		expect(ok and siphon.get_recipe() and siphon.get_recipe().name == "gas-siphon-jupiter-1", "the gas siphon takes no siphon recipe")
 		st.phase = 1
 	elseif st.phase == 1 then
 		local on = 0
@@ -1718,6 +1726,7 @@ function elevator_test()
 		expect(on == 6, "Mk-I elevator: " .. on .. " of the first 6 modules run")
 		expect(se_status(st.mods[7]) == "full", "the seventh module: " .. se_status(st.mods[7]))
 		expect(se_status(st.mk2) == "motors", "a Mk-II module at a Mk-I elevator: " .. se_status(st.mk2))
+		expect(se_status(st.pump) == "motors", "a Mk-I pump module at a Mk-I elevator: " .. se_status(st.pump))
 		st.el = s.create_entity{ name = "space-elevator-mk2", position = { SE_X, SE_Y }, force = "player", fast_replace = true,
 			spill = false, raise_built = true }
 		st.phase = 2
@@ -1725,13 +1734,15 @@ function elevator_test()
 		expect(st.el and st.el.valid and st.el.name == "space-elevator-mk2", "the Mk-II elevator was not built")
 		expect(se_status(st.mk2) == "on", "a Mk-II module at a Mk-II elevator: " .. se_status(st.mk2))
 		expect(se_status(st.mods[7]) == "on", "the seventh module at 12 slots: " .. se_status(st.mods[7]))
+		expect(se_status(st.pump) == "on", "a Mk-I pump module at a Mk-II elevator: " .. se_status(st.pump))
 		st.el.destroy()
 		st.phase, st.t3 = 3, t
 	elseif st.phase == 3 and t >= st.t3 + 10 then
 		local off = 0
 		for _, m in pairs(st.mods) do if se_status(m) == "missing" then off = off + 1 end end
-		expect(off == #SE_MODS and se_status(st.mk2) == "missing", "after the elevator went: " .. off .. " of "
-			.. #SE_MODS .. " modules stopped, the Mk-II one " .. se_status(st.mk2))
+		expect(off == #SE_MODS and se_status(st.mk2) == "missing" and se_status(st.pump) == "missing", "after the elevator went: "
+			.. off .. " of " .. #SE_MODS .. " modules stopped, the Mk-II one " .. se_status(st.mk2) .. ", the pump module "
+			.. se_status(st.pump))
 		st.done = true
 	end
 	if st.done or #problems > 0 then
