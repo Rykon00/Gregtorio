@@ -1529,7 +1529,7 @@ plate_lens("ender-pearl", "ender-pearl")
 plate_lens("ender-eye", "eye-of-ender")
 plate_lens("yellow-garnet")
 plate_lens("emerald", "emerald")   -- the ULPIC wafer (MV Energy Hatches) comes before the emerald sifter
-plate_lens("amber", "amber-gem")   -- issue #332: the simple SoC wafer (NAND Chips) at the Twilight Forest's tier
+plate_lens("amber", "amber-gem")   -- issue #332: the lens with the simple SoC wafer (NAND Chips, the MV lathe)
 
 --- recipe -> its lens (the GT recipe: file, line of the output). Gregtorio's wafers: sw silicon (GT's Wafer), pd phosphorus
 --- (Wafer2), nd/qd naquadah (Wafer3), ed europium (Wafer4), ad americium (Wafer5)
