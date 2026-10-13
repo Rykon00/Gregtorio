@@ -244,6 +244,11 @@ MULTIBLOCKS = {
     **{f"space-elevator-mk{t}": ((11, 11), "gtnhintergalactic:spaceElevator/BaseCasing", None,
                                  f"gtnhintergalactic:spaceElevator/MotorT{t}_Side",
                                  "gtnhintergalactic:spaceElevator/SupportStructure_Side") for t in range(1, 6)},
+    # issue #302: the Space Elevator Mining Modules (the elevator's base casing, GT's ore drill front)
+    **{f"space-elevator-mining-module-mk{t}": ((3, 3), "gtnhintergalactic:spaceElevator/BaseCasing", None,
+                                               ("gregtech:iconsets/OVERLAY_FRONT_ORE_DRILL",
+                                                "gregtech:iconsets/OVERLAY_FRONT_ORE_DRILL_ACTIVE"),
+                                               f"gtnhintergalactic:spaceElevator/MotorT{t}_Side") for t in range(1, 4)},
 }
 # multiblocks without an upstream item icon: the icon is the controller tile
 CONTROLLER_ICONS = {"neutron-activator", "water-purification-plant", "uv-large-naquadah-reactor"}
@@ -252,7 +257,8 @@ CONTROLLER_ICONS = {"neutron-activator", "water-purification-plant", "uv-large-n
 WHOLE_ICONS = {"large-titanium-boiler", "large-combustion-engine", "digester", "dissolution-tank",
                "exxonmobil-chemical-plant", "mv-dehydrator", "hv-dehydrator", "ev-dehydrator", "iv-dehydrator",
                "luv-dehydrator", "zpm-dehydrator", "void-miner-i", "void-miner-ii", "void-miner-iii",
-               *(f"space-elevator-mk{t}" for t in range(1, 6))}
+               *(f"space-elevator-mk{t}" for t in range(1, 6)),
+               *(f"space-elevator-mining-module-mk{t}" for t in range(1, 4))}
 # tier versions of a generator (136-fork-power.lua): the base sprite with dynamo hatches of the tier
 # (GT hull of the tier + GT's dynamo hatch overlay) on the corner tiles; the base itself gets its own
 # tier's hatches too. The icon gets the hatch as a badge.
@@ -318,6 +324,9 @@ TEXTURE_ICONS = {
     "space-elevator-controller": "gtnhintergalactic:spaceElevator/MotorT1_Side",
     "nanotube-spool": "gtnhintergalactic:../items/nanotubeSpool",
     **{f"space-elevator-motor-mk{t}": f"gtnhintergalactic:spaceElevator/MotorT{t}_Side" for t in range(1, 6)},
+    # issue #302: the mining drones (gtnhintergalactic's item textures)
+    **{f"mining-drone-{t.lower()}": f"gtnhintergalactic:../items/drones/MiningDrone{t}"
+       for t in ("LV", "MV", "HV", "EV", "IV", "LuV", "ZPM", "UV", "UHV", "UEV", "UIV", "UMV", "UXV")},
     # issue #249: GT's timepiece (MetaGeneratedItem03, meta 757)
     "timepiece": "gregtech:../items/gt.metaitem.03/757",
     # issue #274: GT++'s dehydrator coil wires and coils (item textures)
