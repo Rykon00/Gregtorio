@@ -75,14 +75,33 @@ end
 
 ME.remove_recipe("me-1k-storage-component")
 
---- GTNH's housing (ASM:4569-4577: a glass pane, a certus quartz plate, an aluminium plate, 2 stainless steel plates) is
---- not used: upstream's microverse data items needed the housing with Overworld Data, before aluminium and stainless
---- steel (issue #287 removed them; GTNH's housing is issue #294). Upstream's recipe
+--- Issue #294: GTNH's housing (ASM:4569-4577: a glass pane, a certus quartz plate, an aluminium plate, 2 stainless steel
+--- plates, 5 s at LV / 2); Gregtorio has no glass pane, its glass takes the place. Upstream kept steel (4 plates, 4
+--- screws, a glass) for its microverse data items, which needed the housing with Overworld Data, before aluminium and
+--- stainless steel; issue #287 removed them, so the housing comes with its first consumer now, the cells of the ME
+--- Network technology (below). The certus quartz plate is GT's bender recipe of a gem (OP/ProcessingGem.java:117-125:
+--- 1 gem -> 1 plate, mass x 2 ticks; certus quartz has no material list, so Technetium's mass 98 -> 9.8 s, 24 EU/t),
+--- as the nether quartz plate below
 upstream_item{
 	name = "basic-storage-housing",
 	category = "lv-assembling-machine-recipes",
-	ingredients = I{ "steel-plate", 4, "steel-screw", 4, "glass", 1 },
+	energy_required = 5 * LV_SPEED,
+	ingredients = I{ "glass", 1, "certus-quartz-plate", 1, "aluminium-plate", 1, "stainless-steel-plate", 2 },
 }
+create_item{
+	name = "certus-quartz-plate",
+	category = "lv-bending-machine-recipes",
+	energy_required = 9.8 * LV_SPEED,
+	ingredients = { { type = "item", name = "certus-quartz", amount = 1 } },
+}
+do
+	local t = data.raw.technology["overworld-data"]
+	local keep = {}
+	for _, e in pairs(t.effects) do
+		if not (e.type == "unlock-recipe" and e.recipe == "basic-storage-housing") then keep[#keep + 1] = e end
+	end
+	t.effects = keep
+end
 
 --- GTNH (SAE2:2225-2230): 3 quartz fiber, 2 fluix dust -> 3, MV, 5 s
 upstream_item{
@@ -325,6 +344,23 @@ recipe_of{
 	ingredients = I{ "me-terminal", 1, "certus-quartz-screw", 2, "me-blank-pattern", 1, "nether-quartz-plate", 2,
 		"engineering-processor", 1 },
 }
+
+--- issue #297 (me-network 0.5.4, its issue #336): the ME Interface Terminal, GTNH's recipe (NewHorizonsCoreMod
+--- scripts/ScriptAppliedEnergistics2.java:2302-2311, "ME Interface Terminal"): an ME Terminal, 2 certus quartz screws,
+--- an ME Interface, 2 nether quartz plates and an engineering processor in the MV assembler, 10 s; the Pattern
+--- Terminal's recipe with the interface for the blank pattern. me-network before 0.5.4 has no such block
+local HAS_INTERFACE_TERMINAL = data.raw.item["me-interface-terminal"] ~= nil
+if HAS_INTERFACE_TERMINAL then
+	recipe_of{
+		name = "me-interface-terminal",
+		category = "mv-assembling-machine-recipes",
+		subgroup = "fork-me-network",
+		order = "e0b",
+		energy_required = 10 * MV_SPEED,
+		ingredients = I{ "me-terminal", 1, "certus-quartz-screw", 2, "me-interface", 1, "nether-quartz-plate", 2,
+			"engineering-processor", 1 },
+	}
+end
 
 --- GTNH (ASM:4800-4809): the EV assembler, 4 titanium plates, a formation and an annihilation core, 288 molten glass
 --- (2 glass here: the HV assembler has no fluid input), HV, 5 s
@@ -602,11 +638,12 @@ end
 --- MV: basic cells, terminal, buses (cable, controller and interface come with Applied Energistics Components); issue
 --- #213: the ME Chest (a block of its own since me-network 0.5.3) and the ME Drive made from it come with the terminal
 --- (logistic-system unlocked them before; the chest needs stainless steel); the nether quartz plate of the buses (GTNH's
---- recipe, issue #214)
+--- recipe, issue #214); issue #294: GTNH's storage housing of the cells and its certus quartz plate (Overworld Data
+--- unlocked upstream's)
 tech("me-network", { "logistic-system", "stainless-steel" }, 3, 400, {
 	"me-terminal", "computer-monitor", "certus-quartz-bolt", "certus-quartz-screw", "me-chest", "me-drive",
-	"me-1k-storage-cell", "me-4k-storage-cell", "me-16k-storage-cell", "nether-quartz-plate", "me-import-bus",
-	"me-export-bus", "me-underground-cable", "me-storage-bus",
+	"basic-storage-housing", "certus-quartz-plate", "me-1k-storage-cell", "me-4k-storage-cell", "me-16k-storage-cell",
+	"nether-quartz-plate", "me-import-bus", "me-export-bus", "me-underground-cable", "me-storage-bus",
 })
 --- EV: 64k (the component needs epoxy boards)
 tech("me-storage-64k", { "me-network", "nanoprocessors", "advanced-hv-machines" }, 5, 800,
@@ -626,9 +663,11 @@ local function with_blocks(recipes, blocks)
 	return recipes
 end
 
---- EV: autocrafting and the first crafting CPU (a crafting unit, 1k and 4k crafting storage, the monitor)
-tech("me-autocrafting", { "me-storage-64k" }, 5, 600, with_blocks(
-	{ "me-pattern-provider", "me-pattern-terminal", "me-blank-pattern", "me-molecular-assembler" },
+--- EV: autocrafting and the first crafting CPU (a crafting unit, 1k and 4k crafting storage, the monitor); issue #297:
+--- the ME Interface Terminal (me-network 0.5.4) with the Pattern Terminal, as me-network unlocks it
+local autocrafting = { "me-pattern-provider", "me-pattern-terminal", "me-blank-pattern", "me-molecular-assembler" }
+if HAS_INTERFACE_TERMINAL then autocrafting[#autocrafting + 1] = "me-interface-terminal" end
+tech("me-autocrafting", { "me-storage-64k" }, 5, 600, with_blocks(autocrafting,
 	{ "me-crafting-unit", "me-1k-crafting-storage", "me-4k-crafting-storage", "me-crafting-monitor" }), SEVEN)
 --- issue #38: level maintainer and circuit interface (EV); issue #111: the 16k and 64k crafting storage and the
 --- co-processing unit at IV, the 256k crafting storage at LuV
