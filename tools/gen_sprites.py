@@ -259,6 +259,15 @@ MULTIBLOCKS = {
                                                ("gregtech:iconsets/OVERLAY_FRONT_ORE_DRILL",
                                                 "gregtech:iconsets/OVERLAY_FRONT_ORE_DRILL_ACTIVE"),
                                                f"gtnhintergalactic:spaceElevator/MotorT{t}_Side") for t in range(1, 4)},
+    # issue #303: the Planetary Gas Siphon (its siphon casing and front) and the Space Elevator Pump Modules (the elevator's
+    # base casing, GT's oil drill front, the motor they need: Mk-II to Mk-IV)
+    "planetary-gas-siphon": ((3, 3), "gtnhintergalactic:gasSiphon/SiphonCasing", None,
+                             ("gregtech:iconsets/OVERLAY_FRONT_PLANETARYSIPHON",
+                              "gregtech:iconsets/OVERLAY_FRONT_PLANETARYSIPHON"), None),   # (GT has no active front, only its glow)
+    **{f"space-elevator-pump-module-mk{t}": ((3, 3), "gtnhintergalactic:spaceElevator/BaseCasing", None,
+                                             ("gregtech:iconsets/OVERLAY_FRONT_OIL_DRILL",
+                                              "gregtech:iconsets/OVERLAY_FRONT_OIL_DRILL_ACTIVE"),
+                                             f"gtnhintergalactic:spaceElevator/MotorT{t + 1}_Side") for t in range(1, 4)},
 }
 # multiblocks without an upstream item icon: the icon is the controller tile
 CONTROLLER_ICONS = {"neutron-activator", "water-purification-plant", "uv-large-naquadah-reactor"}
@@ -269,7 +278,8 @@ WHOLE_ICONS = {"large-titanium-boiler", "large-combustion-engine", "digester", "
                "luv-dehydrator", "zpm-dehydrator", "void-miner-i", "void-miner-ii", "void-miner-iii",
                "ev-rocket-engine", "iv-rocket-engine", "luv-rocket-engine",
                *(f"space-elevator-mk{t}" for t in range(1, 6)),
-               *(f"space-elevator-mining-module-mk{t}" for t in range(1, 4))}
+               *(f"space-elevator-mining-module-mk{t}" for t in range(1, 4)),
+               "planetary-gas-siphon", *(f"space-elevator-pump-module-mk{t}" for t in range(1, 4))}
 # tier versions of a generator (136-fork-power.lua): the base sprite with dynamo hatches of the tier
 # (GT hull of the tier + GT's dynamo hatch overlay) on the corner tiles; the base itself gets its own
 # tier's hatches too. The icon gets the hatch as a badge.

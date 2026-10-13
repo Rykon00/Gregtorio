@@ -452,3 +452,188 @@ for i, name in ipairs(MTECH) do
 	for _, p in ipairs(MPRE[i]) do pre[#pre + 1] = p end
 	F.tech{ name = name, prerequisites = pre, packs = MPACKS[i], count = 50, time = 60, recipes = unlocks[i] }
 end
+
+
+--------------------------------------------------------------------------------
+--- PUMP MODULES AND THE PLANETARY GAS SIPHON (issue #303, part 3 of #292's decision). gtnhintergalactic again:
+---   * the Planetary Gas Siphon (tile/multi/MTEPlanetaryGasSiphon.java, recipe/GasSiphonRecipes.java:119-144; controller
+---     recipe recipe/MachineRecipes.java:61-67): on a space station around Jupiter, Saturn, Uranus or Neptune, the depth (1
+---     to 4) picks the gas; an operation takes 20 ticks (less with better coils) and gives the table's amount;
+---   * the Pump Modules Mk-I to Mk-III (MachineRecipes.java:264-352, tile/multi/elevatormodules/TileEntityModulePump.java,
+---     recipe/SpacePumpingRecipes.java:28-86): no inputs; per recipe slot a planet type and gas type give a fluid, each
+---     parallel the table's amount every 20 ticks at UHV's power; Mk-I 4 parallels in 1 slot (motors Mk-II), Mk-II 4 in 4
+---     slots (motors Mk-III), Mk-III 64 in 4 slots (motors Mk-IV); module voltage UHV, UEV, UXV.
+---   * left out: the Assembler and Research Modules (their recipe maps are empty in GTNH: no recipe adds to them) and the
+---     Space Project Manager (the space projects are left out, as in #302).
+--- The maintainer's decision on #303: GTNH's amounts scaled down by a fixed factor, so one module matches a reasonable
+--- number of pipes. Here each machine's largest regular result becomes about 1 800 L/s: the pump modules' amounts / 1000
+--- (lava 1 800 000 -> 1 800 per parallel; distilled water, GTNH's outlier, 17 920), the siphon's / 10 (hydrogen 18 000 ->
+--- 1 800). A recipe per fluid (the player picks it, as the Void Miners' dimensions and the mining modules' asteroids); the
+--- module's speed is its parallels times its slots (4, 16, 256: GT's slots on one fluid), its power its voltage. The siphon
+--- stands for the orbit (Gregtorio has no space stations): a recipe per planet and depth, one operation a second (GT's base
+--- time, without the coil bonus), at the IV power of its controller.
+--- Fluids the mod lacks are left out, not replaced: GT's ender goo, extra heavy oil, natural gas, medium oil, liquid oxygen
+--- and Galacticraft's unknown water. The closest analogue where the mod lacks a part: the Infinite Fluid Drilling Rig ->
+--- the IV drilling rig (the mod's fluid drilling rigs); the Ender Fluid Link Cover -> an eye of ender; the medium tungstensteel pipe -> 3 tungstensteel
+--- plates (GT's pipe recipe); mutated living solder -> molten indalloy 140; metastable oganesson screws -> spacetime screws,
+--- proto-halkonite -> osmiridium (as the motors of #301), black and white dwarf matter -> universium (the materials come a
+--- tier later here).
+--------------------------------------------------------------------------------
+
+local PUMP_SCALE, SIPHON_SCALE = 1000, 10
+
+F.category("planetary-gas-siphon-recipes")
+F.category("space-pump-recipes")
+--- a 3 x 3 machine with one fluid output on its south side
+local function fluid_machine(name, base, categories, speed, energy, volume)
+	local e = table.deepcopy(data.raw["assembling-machine"][base])
+	e.name = name
+	e.icons = nil
+	e.icon = FORK_ICON .. name .. ".png"
+	e.icon_size = 32
+	e.minable = { mining_time = 1, result = name }
+	e.crafting_categories = categories
+	e.crafting_speed = speed
+	e.energy_usage = energy
+	e.next_upgrade = nil
+	e.collision_box = { { -1.3, -1.3 }, { 1.3, 1.3 } }
+	e.selection_box = { { -1.5, -1.5 }, { 1.5, 1.5 } }
+	e.fluid_boxes = { {
+		production_type = "output", volume = volume, pipe_covers = pipecoverspictures(), pipe_picture = assembler2pipepictures(),
+		pipe_connections = { { flow_direction = "output", direction = defines.direction.south, position = { 0, 1 } } },
+	} }
+	e.fluid_boxes_off_when_no_fluid_recipe = false
+	e.graphics_set = {
+		idle_animation = { layers = { { filename = SPRITE_PATH .. name .. "-idle.png", width = 96, height = 96,
+			frame_count = 1, shift = { 0, 0 } } } },
+		animation = { layers = { { filename = SPRITE_PATH .. name .. "-working.png", width = 96, height = 96,
+			frame_count = 1, shift = { 0, 0 } } } },
+	}
+	data:extend({ e })
+	return e
+end
+
+--- the siphon
+local siphon = fluid_machine("planetary-gas-siphon", "hv-chemical-reactor", { "planetary-gas-siphon-recipes" }, 1, EU16_IV,
+	2000)
+siphon.fast_replaceable_group = nil
+siphon.localised_description = { "entity-description.planetary-gas-siphon", tostring(SIPHON_SCALE) }
+create_item{
+	name = "planetary-gas-siphon", icon = siphon.icon, place_result = "planetary-gas-siphon", subgroup = SUBGROUP,
+	stack_size = 10, category = "crafting-or-assembling-recipes", energy_required = 10,
+	ingredients = { item("iv-motor", 2), item("iv-pump", 1), item("iv-circuit", 2), item("tungstensteel-plate", 6),
+		item("iv-machine-hull", 2) },
+}
+--- planet, display name, { depth -> fluid, amount } (GasSiphonRecipes.java; Saturn's liquid oxygen, which the mod lacks, left out)
+local PLANETS = {
+	{ "jupiter", "Jupiter", { { "hydrogen", 15000 }, { "helium", 500 }, { "nitrogen", 300 }, { "oxygen", 200 } } },
+	{ "saturn", "Saturn", { { "hydrogen", 18000 }, { "helium", 800 }, { "oxygen", 500 }, { "liquid-oxygen", 150 } } },
+	{ "uranus", "Uranus", { { "deuterium", 5000 }, { "neon", 450 }, { "argon", 250 }, { "krypton", 100 } } },
+	{ "neptune", "Neptune", { { "tritium", 3000 }, { "helium-3", 500 }, { "ammonia", 400 }, { "xenon", 350 } } },
+}
+local siphon_recipes = { "planetary-gas-siphon" }
+for _, pl in ipairs(PLANETS) do
+	for depth, f in ipairs(pl[3]) do
+		if data.raw.fluid[f[1]] then
+			local name = "gas-siphon-" .. pl[1] .. "-" .. depth
+			create_recipe{
+				name = name,
+				category = "planetary-gas-siphon-recipes",
+				energy_required = 1,
+				subgroup = "subgroup-planetary-gas-siphon-recipes",
+				ingredients = {},
+				results = { fluid(f[1], f[2] / SIPHON_SCALE) },
+				icon = FORK_ICON .. "planetary-gas-siphon.png",
+			}
+			local r = data.raw.recipe[name]
+			r.main_product = nil
+			r.allow_productivity = false
+			r.localised_name = { "recipe-name.fork-gas-siphon", pl[2], tostring(depth),
+				data.raw.fluid[f[1]].localised_name or { "fluid-name." .. f[1] } }
+			siphon_recipes[#siphon_recipes + 1] = name
+		end
+	end
+end
+
+--- the pump modules: name, speed (parallels x slots), power, motor tier, recipe speed, ingredients
+local PUMPS = {
+	{ "space-elevator-pump-module-mk1", 4, EU16_UHV, 2, UEV_SPEED, {
+		item("iv-drilling-rig", 1), item("planetary-gas-siphon", 1), item("eye-of-ender", 2),
+		item("infinity-frame", 4), item("uev-circuit", 4), item("uev-pump", 2), item("infinity-gear", 4),
+		item("cosmic-neutronium-screw", 32), fluid("molten-indalloy-140", 1296), fluid("molten-infinity", 576) } },
+	{ "space-elevator-pump-module-mk2", 16, EU16_UEV, 3, UIV_SPEED, {
+		item("iv-drilling-rig", 4), item("planetary-gas-siphon", 4), item("eye-of-ender", 8),
+		item("spacetime-frame", 4), item("uiv-circuit", 16), item("uiv-pump", 8), item("spacetime-gear", 4),
+		item("spacetime-screw", 64), fluid("molten-indalloy-140", 4608), fluid("molten-osmiridium", 2304) } },
+	{ "space-elevator-pump-module-mk3", 256, EU16_UXV, 4, UMV_SPEED, {
+		item("iv-drilling-rig", 16), item("planetary-gas-siphon", 16), item("eye-of-ender", 32),
+		item("universium-frame", 4), item("umv-circuit", 16), item("umv-pump", 8), item("universium-gear", 4),
+		item("universium-screw", 64), fluid("molten-indalloy-140", 9216), fluid("molten-eternity", 2304) } },
+}
+local pumps = {}
+for k, m in ipairs(PUMPS) do
+	local name = m[1]
+	local e = fluid_machine(name, "hv-chemical-reactor", { "space-pump-recipes" }, m[2], m[3], 20000)
+	e.fast_replaceable_group = "fr-space-elevator-pump-module"
+	e.localised_description = { "entity-description.space-elevator-pump-module", tostring(m[2]), tostring(m[4]),
+		tostring(PUMP_SCALE) }
+	create_item{
+		name = name, icon = e.icon, place_result = name, subgroup = SUBGROUP, stack_size = 10,
+		category = AL, energy_required = 120 * m[5], ingredients = m[6],
+	}
+	MODDATA.modules[name] = { motor = m[4] }
+	pumps[k] = name
+end
+
+--- the pumping recipes (SpacePumpingRecipes.java): planet type, gas type, fluid, GT's amount (fluids the mod lacks left out)
+local PUMPED = {
+	{ 2, 1, "chlorobenzene", 896000 }, { 3, 3, "lava", 1800000 }, { 4, 1, "sulfuric-acid", 784000 },
+	{ 4, 2, "molten-iron", 896000 }, { 4, 3, "crude-oil", 1400000 }, { 4, 4, "heavy-oil", 1792000 },
+	{ 4, 5, "molten-lead", 896000 }, { 4, 7, "light-oil", 780000 }, { 4, 8, "carbon-dioxide", 1680000 },
+	{ 5, 1, "carbon-monoxide", 4480000 }, { 5, 2, "helium-3", 2800000 }, { 5, 3, "salt-water", 2800000 },
+	{ 5, 4, "helium", 1400000 }, { 5, 6, "neon", 32000 }, { 5, 7, "argon", 32000 }, { 5, 8, "krypton", 8000 },
+	{ 5, 9, "methane", 1792000 }, { 5, 10, "hydrogen-sulfide", 392000 }, { 5, 11, "ethane", 1194000 },
+	{ 6, 1, "deuterium", 1568000 }, { 6, 2, "tritium", 240000 }, { 6, 3, "ammonia", 240000 }, { 6, 4, "xenon", 16000 },
+	{ 6, 5, "ethylene", 1792000 }, { 7, 1, "hydrofluoric-acid", 672000 }, { 7, 2, "fluorine", 1792000 },
+	{ 7, 3, "nitrogen", 1792000 }, { 7, 4, "oxygen", 1792000 }, { 8, 1, "hydrogen", 1568000 }, { 8, 2, "liquid-air", 875000 },
+	{ 8, 3, "molten-copper", 672000 }, { 8, 5, "distilled-water", 17920000 }, { 8, 6, "radon", 64000 },
+	{ 8, 7, "molten-tin", 672000 },
+}
+local pump_recipes = {}
+for _, pr in ipairs(PUMPED) do
+	if data.raw.fluid[pr[3]] then
+		local name = "space-pump-" .. pr[3]
+		create_recipe{
+			name = name,
+			category = "space-pump-recipes",
+			energy_required = 1,
+			subgroup = "subgroup-space-pump-recipes",
+			ingredients = {},
+			results = { fluid(pr[3], pr[4] / PUMP_SCALE) },
+			icon = FORK_ICON .. pumps[1] .. ".png",
+		}
+		local r = data.raw.recipe[name]
+		r.main_product = nil
+		r.allow_productivity = false
+		r.localised_name = { "recipe-name.fork-space-pump", data.raw.fluid[pr[3]].localised_name or { "fluid-name." .. pr[3] },
+			tostring(pr[1]), tostring(pr[2]) }
+		pump_recipes[#pump_recipes + 1] = name
+	end
+end
+
+--- Technologies: the siphon with the Jovian moons (GT: a space station around the gas giants); the pump modules after the
+--- elevator motors their modules need and the materials they take (#252's rule)
+F.tech{ name = "planetary-gas-siphon", prerequisites = { "reach-the-jovian-moons" }, packs = 7, count = 50, time = 60,
+	recipes = siphon_recipes }
+local PPRE = { { "space-elevator-motor-mk2", "planetary-gas-siphon", "uev-components" },
+	{ "space-elevator-motor-mk3", "uiv-components", "exotic-processor-mainframes" },
+	{ "space-elevator-motor-mk4", "umv-components", "temporal-processor-mainframes", "uxv-materials",
+		"uxv-energy-hatches" } }   -- (molten eternity, as the UXV drone of #302)
+local PPACKS = { 10, 11, 13 }
+for k, name in ipairs(pumps) do
+	local pre = {}
+	if k > 1 then pre[1] = pumps[k - 1] end
+	for _, x in ipairs(PPRE[k]) do pre[#pre + 1] = x end
+	F.tech{ name = name, prerequisites = pre, packs = PPACKS[k], count = 50, time = 60,
+		recipes = k == 1 and F.join({ name }, pump_recipes) or { name } }
+end
