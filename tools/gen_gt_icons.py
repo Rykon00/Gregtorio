@@ -109,6 +109,8 @@ MATERIALS = {
     "gasoline": "Gasoline",
     # issue #98: black plutonium (hot ingot, ingot), the high octane cell, sodium bisulfate
     "black-plutonium": "BlackPlutonium", "high-octane-gasoline": "HighOctaneGasoline", "sodium-bisulfate": "SodiumBisulfate",
+    # issue #295: GT++'s H8N4C2O4 Rocket Fuel (GTPPFluids.java:371-377: a fluid, RGB 50, 220, 50) for its cell
+    "rocket-fuel": ("FLUID", (50, 220, 50)),
     # issue #96: bartworks Werkstoffe of the platinum line (WerkstoffLoader.java, their colours; dusts)
     "platinum-salt": ("DULL", (255, 255, 200)), "refined-platinum-salt": ("DULL", (255, 255, 200)),
     "reprecipitated-platinum": ("DULL", (255, 255, 200)), "platinum-residue": ("DULL", (100, 99, 46)),
@@ -764,7 +766,12 @@ def icon_table(c):
     T["tiny-pile-of-metallic-platinum-powder"] = lambda: c.part("metallic-platinum-powder", "dustTiny")
     # issue #98: the high octane cell (like the gasoline cell), sodium bisulfate (GT: a dust)
     T["high-octane-gasoline-cell"] = lambda: c.part("high-octane-gasoline", "cell")
+    T["rocket-fuel-cell"] = lambda: c.part("rocket-fuel", "cell")   # issue #295
     T["sodium-bisulfate"] = lambda: c.part("sodium-bisulfate", "dust")
+    # issue #302: the drill heads of the Space Elevator's mining drones (GT's toolHeadDrill of the material)
+    for m in ("steel", "titanium", "tungstensteel", "iridium", "trinium", "naquadah", "naquadah-alloy", "naquadria",
+              "neutronium", "cosmic-neutronium", "infinity", "transcendent-metal", "spacetime", "eternity"):
+        T[m + "-drill-head"] = (lambda m=m: lambda: c.part(m, "toolHeadDrill"))()
     # issue #96: the dusts of the platinum line, which the fork names without "-dust"
     for m in ("platinum-salt", "refined-platinum-salt", "reprecipitated-platinum", "platinum-residue", "palladium-salt",
               "reprecipitated-palladium", "potassium-disulfate", "rhodium-filter-cake", "reprecipitated-rhodium",

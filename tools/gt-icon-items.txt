@@ -126,6 +126,7 @@ godforge-controller
 high-density-plutonium
 high-density-plutonium-nugget
 high-octane-gasoline-cell
+rocket-fuel-cell
 highly-ultimate-voltage-coil
 hot-bedrockium-ingot
 hot-black-plutonium-ingot
@@ -2902,3 +2903,17 @@ lanthanum-hexaboride-lens
 lanthanum-hexaboride-rod
 long-lanthanum-hexaboride-rod
 chipped-amalgatite
+steel-drill-head
+titanium-drill-head
+tungstensteel-drill-head
+iridium-drill-head
+trinium-drill-head
+naquadah-drill-head
+naquadah-alloy-drill-head
+naquadria-drill-head
+neutronium-drill-head
+cosmic-neutronium-drill-head
+infinity-drill-head
+transcendent-metal-drill-head
+spacetime-drill-head
+eternity-drill-head
