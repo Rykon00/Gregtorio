@@ -431,6 +431,29 @@ recipe_of{
 	},
 }
 
+--- me-network 0.5.4 (its issue #355): the ME Level Emitter, the ME Toggle Bus and the ME Inverted Toggle Bus, GTNH's recipes
+--- (NewHorizonsCoreMod scripts/ScriptAppliedEnergistics2.java): the level emitter from a redstone torch and a calculation
+--- processor (:2201-2206; the torch is a decider combinator here, as the inverter card's redstone parts), the toggle bus from a
+--- level emitter and 2 fluix cables (:2213-2218), both LV assembler, 10 s; the inverted one from a toggle bus (:2222-2224, 5 s;
+--- GTNH also turns it back with circuit 1: left out, a recipe loop, as in me-network). me-network before 0.5.4 has none
+local HAS_TOGGLE = data.raw.item["me-toggle-bus"] ~= nil
+if HAS_TOGGLE then
+	for _, r in ipairs({
+		{ "me-level-emitter", "g7", 10, I{ "decider-combinator", 1, "calculation-processor", 1 } },
+		{ "me-toggle-bus", "g61", 10, I{ "me-level-emitter", 1, "fluix-cable", 2 } },
+		{ "me-inverted-toggle-bus", "g62", 5, I{ "me-toggle-bus", 1 } },
+	}) do
+		recipe_of{
+			name = r[1],
+			category = "lv-assembling-machine-recipes",
+			subgroup = "fork-me-network",
+			order = r[2],
+			energy_required = r[3] * LV_SPEED,
+			ingredients = r[4],
+		}
+	end
+end
+
 --- item recipes only (no fluid boxes), crafts like an EV assembler
 ME.make_molecular_assembler{
 	base = "hv-assembling-machine",
@@ -720,10 +743,14 @@ local autocrafting = { "me-pattern-provider", "me-pattern-terminal", "me-blank-p
 if HAS_INTERFACE_TERMINAL then autocrafting[#autocrafting + 1] = "me-interface-terminal" end
 tech("me-autocrafting", { "me-storage-64k" }, 5, 600, with_blocks(autocrafting,
 	{ "me-crafting-unit", "me-1k-crafting-storage", "me-4k-crafting-storage", "me-crafting-monitor" }), SEVEN)
---- issue #38: level maintainer and circuit interface (EV); issue #111: the 16k and 64k crafting storage and the
---- co-processing unit at IV, the 256k crafting storage at LuV
-tech("me-automation", { "me-autocrafting", "circuit-network" }, 5, 800,
-	{ "me-level-maintainer", "me-circuit-interface" }, SEVEN)
+--- issue #38: level maintainer and circuit interface (EV); the level emitter and the toggle buses (me-network 0.5.4, its
+--- issue #355), where me-network puts them; issue #111: the 16k and 64k crafting storage and the co-processing unit at IV,
+--- the 256k crafting storage at LuV
+local automation = { "me-level-maintainer", "me-circuit-interface" }
+if HAS_TOGGLE then
+	for _, name in ipairs({ "me-level-emitter", "me-toggle-bus", "me-inverted-toggle-bus" }) do automation[#automation + 1] = name end
+end
+tech("me-automation", { "me-autocrafting", "circuit-network" }, 5, 800, automation, SEVEN)
 tech("me-co-processing", { "me-autocrafting", "me-storage-256k", "iv-components" }, 6, 1200, with_blocks({},
 	{ "me-16k-crafting-storage", "me-64k-crafting-storage", "me-crafting-co-processing-unit" }), SEVEN)
 tech("me-quantum-crafting", { "me-co-processing", "luv-machines" }, 7, 1500,
