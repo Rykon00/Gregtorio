@@ -861,6 +861,12 @@ FORK_UNLOCK_TREE_GAPS = {
 	["uev-components:uiv-circuit"] = FIELD_GENERATOR,
 	["uiv-components:umv-circuit"] = FIELD_GENERATOR,
 	["umv-components:uxv-circuit"] = FIELD_GENERATOR,
+	--- issue #316: devcheck counts the mold of 150's mold slot since then; the mold comes with glassmaking, which these
+	--- technologies do not have as a prerequisite (an old gap, fixed in issue #320)
+	["steam-alloy-smelter:mold"] = "the mold comes with glassmaking, not a prerequisite; issue #320",
+	["steam-compressor:mold"] = "the mold comes with glassmaking, not a prerequisite; issue #320",
+	["steam-forge-hammer:mold"] = "the mold comes with glassmaking, not a prerequisite; issue #320",
+	["steel-processing:mold"] = "the mold comes with glassmaking, not a prerequisite; issue #320",
 }
 
 FORK_RECIPES_LOCKED = {

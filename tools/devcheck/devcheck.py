@@ -305,6 +305,7 @@ class Model:
         kinds = lambda s: [x.split(":", 1)[0] for x in s.split(",") if x]
         self.R, self.C, self.CF, self.I, self.T = {}, {}, {}, {}, {}
         self.burnt, self.burners = [], {}   # (fuel item, burnt result, fuel category); burner entity -> categories
+        self.tools = {}                     # recipe -> the mold or lens it needs in the module slot (issue #316)
         self.base = {"water", "steam"}
         for p in rows:
             k = p[0]
@@ -331,6 +332,12 @@ class Model:
                 self.burnt.append((p[1], p[2], p[3]))
             elif k == "U":
                 self.burners[p[1]] = p[2].split(",")
+            elif k == "K":
+                self.tools[p[1]] = p[2]
+        # issue #316: a recipe needs its mold or lens (150, in the module slot) as if it were an ingredient
+        for r, item in self.tools.items():
+            if r in self.R and item not in self.R[r]["ing"]:
+                self.R[r]["ing"].append(item)
         self.solve()
 
     def solve(self):
@@ -757,11 +764,12 @@ def check_ore_o3_o4(m):
             lens = ORE_GEM_LENS.get(x)
             if lens:
                 e = f"engraving-{lo}-to-{'gem' if hi == gem else hi.split('-')[0]}"
-                if live(e) and m.R[e]["cat"].endswith("-laser-engraver-recipes") and lens in m.R[e]["ing"] \
-                        and lens in m.R[e]["res"] and hi in m.R[e]["res"]:
+                # issue #316: the lens stays in the engraver's lens slot (150), it is neither used up nor a result
+                if live(e) and m.R[e]["cat"].endswith("-laser-engraver-recipes") and m.tools.get(e) == lens \
+                        and lens not in m.R[e]["res"] and hi in m.R[e]["res"]:
                     engraves += 1
                 else:
-                    out.append(f"{x}: the laser engraver lacks {e} (3 x {lo} and the {lens}, which stays)")
+                    out.append(f"{x}: the laser engraver lacks {e} (3 x {lo}, the {lens} in its lens slot)")
         for k, n in (("chipped", 1), ("flawed", 2)):
             r = m.R.get(f"{k}-{x}-maceration")
             if r and f"small-pile-of-{x}-dust" not in r["res"]:
@@ -1631,7 +1639,7 @@ def runtime(a):
     fails += re.findall(r"DEVCHECK-RUNTIME-FAIL (.*)", log)
     print(f"benchmark: {ran.group(0) if ran else 'did not run'}")
     # the ME network's runtime tests are in me-network since issue #83 (its tools/devcheck)
-    tests = (("MOLD", "mold test"), ("POWER", "power test"), ("FUEL", "fuel check test"), ("COOLED", "cooled fluid test"),
+    tests = (("MOLD", "mold test"), ("LENS", "lens test"), ("POWER", "power test"), ("FUEL", "fuel check test"), ("COOLED", "cooled fluid test"),
              ("TIERS", "turbine tier test"), ("RECIPES", "recipe test"), ("CRUSH", "raw ore crushing test"), ("STEAM", "steam turbine test"), ("CHAIN", "nuclear chain test"), ("LSC", "supercapacitor test"), ("LSUP", "supercapacitor upgrade test"), ("ELEVATOR", "space elevator test"), ("MELT", "melt and cast test"), ("OFFER", "offered recipes test"), ("VICTORY", "victory test"),
              ("POSTVICTORY", "post-victory test"))
     for key, label in tests:

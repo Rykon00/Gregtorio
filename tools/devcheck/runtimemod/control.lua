@@ -3,7 +3,8 @@
 --- the run. Results are logged as DEVCHECK-RUNTIME lines.
 --- The ME network's runtime tests are in the mod me-network since issue #83 (its tools/devcheck).
 --- Molds (prototypes/150-fork-molds.lua): an LV alloy smelter with a mold recipe must stop
---- without a mold, run with a mold in its mold slot and keep the mold there.
+--- without a mold, run with a mold in its mold slot and keep the mold there; issue #316: the same for an EV laser
+--- engraver with a gem step and its lens ("Missing lens").
 --- Endgame power (prototypes/136-fork-power.lua): a plasma turbine and a naquadah reactor under load
 --- must burn their fuel and make power; the turbine's output hatch gets the cooled fluid.
 --- Fuel check (issue #25): steam and the other generator's fuel stop a generator; the right fuel runs it.
@@ -1051,24 +1052,86 @@ function crush_test()
 		.. game.tick .. ", " .. st.hammers .. " forge hammers; researched " .. table.concat(techs, ", ") .. ")")
 end
 
+--- Molds and lenses (prototypes/150-fork-molds.lua, issue #316): a machine with a recipe that needs one stops without it
+--- (status: the missing mold or lens), runs with it in its module slot and keeps it there (nothing in the output)
 local MOLD_Y = 120
-local MOLD_RECIPE = "glass-alloy-smelter"
-local MOLD_DEADLINE = 900                               -- ticks for the first glass with the mold in (361 needed)
+local MOLD_DEADLINE = 900                               -- ticks for the first product with the tool in (361 needed)
+local TOOL_TESTS = {
+	{ key = "MOLD", x = 6, machine = "lv-alloy-smelter", recipe = "glass-alloy-smelter", input = { "glass-dust", 20 },
+		tool = "mold", product = "glass", status = "entity-status.fork-missing-mold" },
+	{ key = "LENS", x = 20, machine = "ev-laser-engraver", recipe = "engraving-chipped-ruby-to-flawed",
+		input = { "chipped-ruby", 12 }, tool = "ruby-lens", product = "flawed-ruby", status = "entity-status.fork-missing-lens" },
+}
 
 function setup_mold_test(s)
-	local ok, err = pcall(function()
-		local eei = s.create_entity{ name = "electric-energy-interface", position = { 0, MOLD_Y }, force = "player" }
-		eei.power_production = 1e6
-		eei.electric_buffer_size = 1e7
-		s.create_entity{ name = "substation", position = { 3, MOLD_Y }, force = "player" }
-		local m = s.create_entity{ name = "lv-alloy-smelter", position = { 6, MOLD_Y }, force = "player", raise_built = true }
-		m.force.recipes[MOLD_RECIPE].enabled = true
-		m.set_recipe(MOLD_RECIPE)
-		m.insert{ name = "glass-dust", count = 20 }
-		storage.mold_machine = m
-	end)
-	if not ok then return { "mold test setup: " .. tostring(err) } end
-	return {}
+	local fails = {}
+	storage.mold_tests = {}
+	for i, t in pairs(TOOL_TESTS) do
+		local ok, err = pcall(function()
+			local eei = s.create_entity{ name = "electric-energy-interface", position = { t.x - 6, MOLD_Y }, force = "player" }
+			eei.power_production = 1e8
+			eei.electric_buffer_size = 1e9
+			s.create_entity{ name = "substation", position = { t.x - 3, MOLD_Y }, force = "player" }
+			local m = s.create_entity{ name = t.machine, position = { t.x, MOLD_Y }, force = "player", raise_built = true }
+			m.force.recipes[t.recipe].enabled = true
+			m.set_recipe(t.recipe)
+			m.insert{ name = t.input[1], count = t.input[2] }
+			storage.mold_tests[i] = { machine = m }
+		end)
+		if not ok then
+			fails[#fails + 1] = t.key:lower() .. " test setup: " .. tostring(err)
+			storage.mold_tests[i] = { done = true }
+			log("DEVCHECK-RUNTIME-" .. t.key .. " failed (setup)")
+		end
+	end
+	return fails
+end
+
+--- phase 1 at tick 60: stopped, nothing made, the status names the tool; the tool goes in. Phase 2 as soon as the first
+--- product is out, at the latest MOLD_DEADLINE ticks later: running, the tool still in the slot and nowhere else
+local function tool_test_tick(t, st, tick)
+	local m = st.machine
+	local function made()
+		return m and m.valid and m.get_inventory(defines.inventory.crafter_output or defines.inventory.assembling_machine_output).get_item_count(t.product) or 0
+	end
+	local phase
+	if not st.phase1 and tick >= 60 then
+		phase = 1
+		st.phase1 = tick
+	elseif st.phase1 and (made() > 0 or tick >= st.phase1 + MOLD_DEADLINE) then
+		phase = 2
+		st.done = true
+	else
+		return
+	end
+	local what = t.key:lower() .. " test"
+	local problems = {}
+	local function expect(ok, text) if not ok then problems[#problems + 1] = what .. ": " .. text end end
+	expect(m and m.valid, "machine missing")
+	if #problems == 0 then
+		local n = made()
+		local inv = m.get_module_inventory()
+		if phase == 1 then
+			local status = m.custom_status
+			expect(m.disabled_by_script, "machine without " .. t.tool .. " is not stopped")
+			expect(n == 0, "made " .. n .. " " .. t.product .. " without " .. t.tool)
+			expect(status and status.label and status.label[1] == t.status,
+				"status is " .. serpent.line(status and status.label) .. ", not " .. t.status)
+			expect(inv and inv.insert{ name = t.tool, count = 1 } == 1, t.tool .. " does not fit into the module slot")
+		else
+			expect(not m.disabled_by_script, "machine with " .. t.tool .. " is still stopped")
+			expect(n > 0, "no " .. t.product .. " made with " .. t.tool .. " inserted")
+			expect(inv.get_item_count(t.tool) == 1, t.tool .. " left the module slot")
+			expect(m.get_item_count(t.tool) == 1, t.tool .. " was duplicated or moved")
+			log("DEVCHECK-RUNTIME-" .. t.key .. " " .. (#problems == 0 and "ok" or "failed") .. " (" .. t.product .. " " .. n
+				.. " after " .. (tick - st.phase1) .. " ticks)")
+		end
+	end
+	for _, p in pairs(problems) do log("DEVCHECK-RUNTIME-FAIL " .. p) end
+	if #problems > 0 and phase == 1 then
+		st.done = true
+		log("DEVCHECK-RUNTIME-" .. t.key .. " failed")
+	end
 end
 
 --- Steam turbines (issue #97, prototypes/145-fork-power-multiblocks.lua): a large steam turbine on steam and a high
@@ -1758,45 +1821,16 @@ script.on_event(defines.events.on_tick, function(event)
 	chain_tick(event.tick)
 	lsc_tick(event.tick)
 	cooled_load_tick(event.tick)
-	local m = storage.mold_machine
 	if storage.mold_done then return end
-	local function glass_made()
-		return m and m.valid and m.get_inventory(defines.inventory.crafter_output or defines.inventory.assembling_machine_output).get_item_count("glass") or 0
-	end
-	--- phase 2 as soon as the first glass is out, at the latest MOLD_DEADLINE ticks after the mold went in
-	local phase
-	if not storage.mold_phase1 and event.tick >= 60 then
-		phase = 1
-		storage.mold_phase1 = event.tick
-	elseif storage.mold_phase1 and (glass_made() > 0 or event.tick >= storage.mold_phase1 + MOLD_DEADLINE) then
-		phase = 2
-		storage.mold_done = true
-	else
-		return
-	end
-	local problems = {}
-	local function expect(ok, what) if not ok then problems[#problems + 1] = what end end
-	expect(m and m.valid, "mold test machine missing")
-	if #problems == 0 then
-		local glass = glass_made()
-		local inv = m.get_module_inventory()
-		if phase == 1 then
-			expect(m.disabled_by_script, "mold test: machine without mold is not stopped")
-			expect(glass == 0, "mold test: crafted " .. glass .. " glass without a mold")
-			expect(inv and inv.insert{ name = "mold", count = 1 } == 1, "mold test: mold does not fit into the mold slot")
-		else
-			expect(not m.disabled_by_script, "mold test: machine with mold is still stopped")
-			expect(glass > 0, "mold test: no glass crafted with the mold inserted")
-			expect(inv.get_item_count("mold") == 1, "mold test: mold left the mold slot")
-			expect(m.get_item_count("mold") == 1, "mold test: mold was duplicated or moved")
-			log("DEVCHECK-RUNTIME-MOLD " .. (#problems == 0 and "ok" or "failed") .. " (glass " .. glass .. " after " .. (event.tick - storage.mold_phase1) .. " ticks)")
+	local running = false
+	for i, t in pairs(TOOL_TESTS) do
+		local st = (storage.mold_tests or {})[i]
+		if st and not st.done then
+			running = true
+			tool_test_tick(t, st, event.tick)
 		end
 	end
-	for _, p in pairs(problems) do log("DEVCHECK-RUNTIME-FAIL " .. p) end
-	if #problems > 0 and phase == 1 then
-		storage.mold_done = true
-		log("DEVCHECK-RUNTIME-MOLD failed")
-	end
+	if not running then storage.mold_done = true end
 end)
 
 script.on_nth_tick(10, function()

@@ -805,7 +805,8 @@ local function unlock_pending(pending)
 	for _, p in pairs(pending) do unlock_after(p[1], p[2]()) end   -- logs what nothing gives
 end
 
---- the laser engraver steps of a gem's grades with a lens of its colour, which stays; returns the number of recipes
+--- the laser engraver steps of a gem's grades with a lens of its colour, which stays (150 moves it from ingredient and
+--- result into the engraver's lens slot, issue #316); returns the number of recipes
 local function engrave(grade, lens, pending)
 	local n = 0
 	for i, k in pairs(GRADES) do
