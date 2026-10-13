@@ -23,6 +23,74 @@ data.raw["furnace"]["electric-furnace"] = nil
 data.raw["recipe"]["electric-furnace"] = nil
 data.raw["item"]["electric-furnace"] = nil
 
+---VANILLA RECIPES OF GREGTORIO'S ITEMS (issue #317)
+--- Vanilla and Space Age recipes that no technology unlocks, of items Gregtorio makes with recipes of its own. They
+--- still showed in Factoriopedia (the vanilla battery as the first recipe of the battery) and counted as producers for
+--- every tool that reads the recipes. None of their machines (chemical plant, foundry, biochamber, cryogenic plant,
+--- electromagnetic plant) has a technology in Gregtorio. Deleted with the technology effects and tips that name them
+--- (FORK-REMOVED in the log); the items stay, and so do their recycling recipes.
+--- Left for issue #318: the vanilla oil recipes (heavy-oil-cracking, simple-coal-liquefaction and the rest of the oil
+--- refinery's), which wait for a decision on the space pump's heavy and light oil.
+local VANILLA_RECIPES_REMOVED = {
+	-- the item's own recipe, replaced by Gregtorio's
+	["battery"] = "GTNH fills a battery hull in the canning machine (filling-assorted-batteries)",
+	["small-lamp"] = "the technology lamp unlocks Gregtorio's recipe torch of the item",
+	["chemical-science-pack"] = "Gregtorio's recipe hv-science-pack",
+	["space-science-pack"] = "Gregtorio's recipe luv-science-pack",
+	["metallurgic-science-pack"] = "Gregtorio's recipe zpm-science-pack",
+	["agricultural-science-pack"] = "Gregtorio's recipe uv-science-pack",
+	["electromagnetic-science-pack"] = "Gregtorio's recipe uhv-science-pack",
+	["cryogenic-science-pack"] = "Gregtorio's recipe uev-science-pack",
+	["promethium-science-pack"] = "Gregtorio's recipe uiv-science-pack",
+	["lithium"] = "Aquilo; Gregtorio's lithium dust comes from lepidolite and the other ores",
+	["lithium-plate"] = "Aquilo; Gregtorio casts the plate from molten lithium (solidify-lithium-plate)",
+	["tungsten-plate"] = "Vulcanus foundry; Gregtorio casts the plate from molten tungsten (solidify-tungsten-plate)",
+	["molten-iron"] = "Vulcanus foundry; Gregtorio melts iron in the fluid extractor",
+	["molten-copper"] = "Vulcanus foundry; Gregtorio melts copper in the fluid extractor",
+	["carbon"] = "Space Age chemical plant; Gregtorio's carbon dust comes from electrolysis and the centrifuge",
+	-- alternative recipes of items Gregtorio makes
+	["molten-iron-from-lava"] = "Vulcanus foundry, from lava",
+	["molten-copper-from-lava"] = "Vulcanus foundry, from lava",
+	["casting-iron"] = "Vulcanus foundry; iron plates from Gregtorio's recipes",
+	["casting-copper"] = "Vulcanus foundry; copper plates from Gregtorio's recipes",
+	["casting-steel"] = "Vulcanus foundry; steel plates from Gregtorio's recipes",
+	["casting-iron-gear-wheel"] = "Vulcanus foundry; gears from Gregtorio's recipes",
+	["casting-iron-stick"] = "Vulcanus foundry; iron rods from Gregtorio's recipes",
+	["casting-pipe"] = "Vulcanus foundry; pipes from Gregtorio's recipes",
+	["casting-pipe-to-ground"] = "Vulcanus foundry; Gregtorio's recipe pipe-to-ground",
+	["casting-copper-cable"] = "Vulcanus foundry; copper cables from Gregtorio's recipes",
+	["concrete-from-molten-iron"] = "Vulcanus foundry; Gregtorio's recipe concrete",
+	["coal-synthesis"] = "Space Age chemical plant; Gregtorio's coal comes from raw coal",
+	["acid-neutralisation"] = "Vulcanus chemical plant; steam from Gregtorio's boilers and recipes",
+	["steam-condensation"] = "Space Age chemical plant; water from Gregtorio's recipes",
+	["ice-melting"] = "Space Age chemical plant; ice has no producer in Gregtorio",
+	["ammonia-rocket-fuel"] = "Aquilo; Gregtorio's recipe rocket-fuel",
+	["rocket-fuel-from-jelly"] = "Gleba biochamber; Gregtorio's recipe rocket-fuel",
+	["biolubricant"] = "Gleba biochamber; Gregtorio's recipe lubricant",
+	["biosulfur"] = "Gleba biochamber; sulfur from Gregtorio's recipes",
+	["burnt-spoilage"] = "Gleba biochamber; carbon from Gregtorio's recipes",
+}
+for name, _ in pairs(VANILLA_RECIPES_REMOVED) do
+	if data.raw.recipe[name] then
+		data.raw.recipe[name] = nil
+		log("FORK-REMOVED: recipe " .. name)
+	end
+end
+for _, tech in pairs(data.raw.technology) do
+	if tech.effects then
+		local keep = {}
+		for _, e in pairs(tech.effects) do
+			if not (e.recipe and VANILLA_RECIPES_REMOVED[e.recipe]) then keep[#keep + 1] = e end
+		end
+		tech.effects = keep
+	end
+end
+for _, tip in pairs(data.raw["tips-and-tricks-item"] or {}) do
+	for _, key in pairs({ "trigger", "skip_trigger" }) do
+		if tip[key] and tip[key].recipe and VANILLA_RECIPES_REMOVED[tip[key].recipe] then tip[key] = nil end
+	end
+end
+
 
 
 
