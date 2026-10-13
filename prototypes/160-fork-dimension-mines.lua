@@ -235,6 +235,24 @@ F.tech{ name = VENUS, prerequisites = { JOVIAN, "luv-machines" }, packs = 7, cou
 
 
 --------------------------------------------------------------------------------
+--- ROSS128 (issue #293): bartworks' Ross128b, GTNH's T3 (DimensionHelper.java:118; Ross128ba, T5 at :130, holds the
+--- same vein), here IV like the asteroid belt. Bornite's only source in GTNH:
+---   CopperSulfits (OreMixes.java:1417-1426, Ross128ba :1516-1526): djurleite (primary), bornite (secondary),
+---              wittichenite (in between), tetrahedrite (sporadic); djurleite and wittichenite left out
+--- Ross128b's other veins hold no ore the mod lacks a source for (thorianite, carbon, bismuth, tungstate, turmaline,
+--- roquesite, forsterite, hedenbergite, red zircon: their ores the mod has are uraninite, lepidolite, graphite, diamond,
+--- coal, stibnite and scheelite, mined elsewhere), so they get no mine, as in #284/#285.
+--------------------------------------------------------------------------------
+
+local ROSS = "reach-ross128"
+F.tech{ name = ROSS, prerequisites = { MARS, "iv-machines" }, packs = 6, count = 50, time = 60, recipes = {
+	manual("mining-copper-sulfide-vein", "manual-mine-recipes", { PICKAXE, LABOR(24) },
+		{ item("raw-bornite", 32), item("raw-tetrahedrite", 8) }),
+} }
+
+
+
+--------------------------------------------------------------------------------
 --- THE VOID MINERS (issue #286, the decision of #154: the late ores come from GTNH's late ore machines; the
 --- maintainer chose the Void Miner only, with its full ore pools). bartworks' Void Miner I, II and III
 --- (bwcrossmod/galacticgreg/MTEVoidMinerBase.java, MTEVoidMiners.java, VoidMinerUtility.java):
