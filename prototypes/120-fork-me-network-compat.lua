@@ -326,6 +326,23 @@ recipe_of{
 		"engineering-processor", 1 },
 }
 
+--- issue #297 (me-network 0.5.4, its issue #336): the ME Interface Terminal, GTNH's recipe (NewHorizonsCoreMod
+--- scripts/ScriptAppliedEnergistics2.java:2302-2311, "ME Interface Terminal"): an ME Terminal, 2 certus quartz screws,
+--- an ME Interface, 2 nether quartz plates and an engineering processor in the MV assembler, 10 s; the Pattern
+--- Terminal's recipe with the interface for the blank pattern. me-network before 0.5.4 has no such block
+local HAS_INTERFACE_TERMINAL = data.raw.item["me-interface-terminal"] ~= nil
+if HAS_INTERFACE_TERMINAL then
+	recipe_of{
+		name = "me-interface-terminal",
+		category = "mv-assembling-machine-recipes",
+		subgroup = "fork-me-network",
+		order = "e0b",
+		energy_required = 10 * MV_SPEED,
+		ingredients = I{ "me-terminal", 1, "certus-quartz-screw", 2, "me-interface", 1, "nether-quartz-plate", 2,
+			"engineering-processor", 1 },
+	}
+end
+
 --- GTNH (ASM:4800-4809): the EV assembler, 4 titanium plates, a formation and an annihilation core, 288 molten glass
 --- (2 glass here: the HV assembler has no fluid input), HV, 5 s
 recipe_of{
@@ -626,9 +643,11 @@ local function with_blocks(recipes, blocks)
 	return recipes
 end
 
---- EV: autocrafting and the first crafting CPU (a crafting unit, 1k and 4k crafting storage, the monitor)
-tech("me-autocrafting", { "me-storage-64k" }, 5, 600, with_blocks(
-	{ "me-pattern-provider", "me-pattern-terminal", "me-blank-pattern", "me-molecular-assembler" },
+--- EV: autocrafting and the first crafting CPU (a crafting unit, 1k and 4k crafting storage, the monitor); issue #297:
+--- the ME Interface Terminal (me-network 0.5.4) with the Pattern Terminal, as me-network unlocks it
+local autocrafting = { "me-pattern-provider", "me-pattern-terminal", "me-blank-pattern", "me-molecular-assembler" }
+if HAS_INTERFACE_TERMINAL then autocrafting[#autocrafting + 1] = "me-interface-terminal" end
+tech("me-autocrafting", { "me-storage-64k" }, 5, 600, with_blocks(autocrafting,
 	{ "me-crafting-unit", "me-1k-crafting-storage", "me-4k-crafting-storage", "me-crafting-monitor" }), SEVEN)
 --- issue #38: level maintainer and circuit interface (EV); issue #111: the 16k and 64k crafting storage and the
 --- co-processing unit at IV, the 256k crafting storage at LuV
