@@ -136,7 +136,8 @@ Result: **one add**, the lanthanide chain (#262). Every other multiblock is one 
 
 ### Generators
 
-Gregtorio has no fuel value for lava or `rocket-fuel`. It also has no supercritical steam, solar salt, combustion
+Gregtorio has no fuel value for lava; `rocket-fuel` has one since #295 (its cell, burnt by GT++'s single-block rocket
+engines). It also has no supercritical steam, solar salt, combustion
 promoter or TRISO pebbles.
 
 | GTNH multiblock (name, tier, class) | GT fuel map and loader | What GTNH uses it for | In Gregtorio today | Verdict |
@@ -144,7 +145,7 @@ promoter or TRISO pebbles.
 | Thermal Boiler (IV; `.../multi/MTEThermalBoiler.java`, LMTE:1011) | `thermalBoilerRecipes` (`gtPlusPlus/core/recipe/RecipesGregTech.java:1484-1537`) | lava to steam, hot coolant or solar salt to superheated steam | lava is endless from the drilling rig. The rig spends 12.8 kJ per unit, and GT's boiler would give 8 kJ back. Hot coolant already goes to the Large Heat Exchanger | **leave** (a net loss; the coolant role is taken) |
 | Universal Chemical Fuel Engine (LuV; `.../multi/MTEUniversalChemicalFuelEngine.java`, LMTE:1035) | diesel, gas and rocket fuel maps | any fuel, up to 150 % with a promoter | the combustion and gas lines up to HV; EV is #255/#256 | **leave** (a later upgrade of #255/#256) |
 | Large Supercritical Steam Turbine (IV; `.../multi/turbines/MTELargeTurbineSCSteam.java`, LMTE:938) | supercritical steam from goodgenerator's Extreme Heat Exchanger | a third steam stage | the steam line ends at the HP steam turbine | **leave** (a new fluid and exchanger) |
-| Large Rocket Engine (LuV, GT++ `MTELargeRocketEngine.java`) | `rocketFuels` (`gtPlusPlus/core/item/chemistry/RecipeLoaderRocketFuels.java:179-184`) | rocket fuel power | `rocket-fuel` is made but has no fuel value and, since the microverse went (#287), no use (#295) | **leave** (a new fuel line; GT++'s single-block rocket engines would come first) |
+| Large Rocket Engine (LuV, GT++ `MTELargeRocketEngine.java`) | `rocketFuels` (`gtPlusPlus/core/item/chemistry/RecipeLoaderRocketFuels.java:179-184`) | rocket fuel power | #295: `rocket-fuel` is GT++'s H8N4C2O4 rocket fuel with GTNH's recipe in the Chemical Plant; its cell (1678.4 MJ) burns in GT++'s EV, IV and LuV Rocket Engines | **leave** for now: its air intakes, carbon dioxide, liquid hydrogen boost and fixed 2 A of IV need a decision (#304) |
 | Large Semifluid Burner (EV, GT++ `MTELargeSemifluidGenerator.java`) | `semiFluidFuels` | creosote and heavy oils at 2048 EU/t | LV to HV semifluid generators; heavy fuel also goes into diesel for #255 | **leave** |
 | Solar Tower (EV, GT++ `MTESolarTower.java`) | solar salt heating | hot salt for steam | solar power is disabled (`data-final-fixes.lua:196, 210`) | **leave** (a design decision, not a gap) |
 | Thorium High Temperature Reactor (bartworks `MTEThoriumHighTempReactor.java`), HTGR (kubatech `MTEHighTempGasCooledReactor.java`) | no map: TRISO pebbles heat coolant | hot coolant; the HTGR also gives lutetium | the thorium fuel rod in the fluid nuclear reactor heats coolant; lutetium has its stand-in | **leave** |
@@ -201,8 +202,9 @@ Each runs the recipe map of a machine Gregtorio has: **leave**.
   UIV black hole compressor. Gregtorio makes 77 of its 96 in the MV compressor. Every consumer is ZPM or later (the fusion
   controllers, the plasma forge, the godforge, the stargate parts), so nothing changes in play. If GT's gate is wanted,
   raise the compressor category of those recipes; no multiblock is needed.
-- **`rocket-fuel` has no burner** (#257): it is made (dimethylhydrazine and dinitrogen tetroxide) and was only used by the
-  microverse missions, without a fuel value; since #287 it has no use at all (#295).
+- **`rocket-fuel` had no burner** (#257): it was only used by the microverse missions, without a fuel value. #295 made it
+  GT++'s H8N4C2O4 rocket fuel (GTNH's recipe) with a fuel cell for GT++'s single-block rocket engines; the Large Rocket
+  Engine is #304.
 - **`docs/MACHINE-AUDIT.md` is partly out of date** (#257): its thermal centrifuge, sifting and electromagnetic separator
   rows still say "none". The ore chain of #185 to #188 added those machines. This belongs to the docs drift of #250.
 

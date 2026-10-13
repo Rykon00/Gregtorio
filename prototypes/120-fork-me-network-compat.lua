@@ -349,6 +349,30 @@ recipe_of{
 --- scripts/ScriptAppliedEnergistics2.java:2302-2311, "ME Interface Terminal"): an ME Terminal, 2 certus quartz screws,
 --- an ME Interface, 2 nether quartz plates and an engineering processor in the MV assembler, 10 s; the Pattern
 --- Terminal's recipe with the interface for the blank pattern. me-network before 0.5.4 has no such block
+--- me-network 0.5.4 (its issue #353): the ME Storage, Conversion and Throughput Monitor, GTNH's recipes (NewHorizonsCoreMod
+--- scripts/ScriptAppliedEnergistics2.java:2359-2367 storage, :2368-2376 throughput, :2312-2320 conversion), MV assembler:
+---   storage: an illuminated panel, 2 certus quartz screws, a level emitter, 3 nether quartz plates, 10 s;
+---   throughput: a storage monitor, 2 certus quartz screws, a level emitter, 3 nether quartz plates, 10 s;
+---   conversion: a storage monitor, 2 certus quartz screws, a formation core, 2 nether quartz plates, an annihilation core, 20 s.
+--- Gregtorio has no illuminated panel and no level emitter: the computer monitor (the ME Terminal's screen) and an MV sensor
+--- stand in. me-network before 0.5.4 has no monitors.
+local MONITORS = data.raw.item["me-storage-monitor"] and {
+	{ "me-storage-monitor", 10, I{ "computer-monitor", 1, "certus-quartz-screw", 2, "mv-sensor", 1, "nether-quartz-plate", 3 } },
+	{ "me-throughput-monitor", 10, I{ "me-storage-monitor", 1, "certus-quartz-screw", 2, "mv-sensor", 1, "nether-quartz-plate", 3 } },
+	{ "me-conversion-monitor", 20, I{ "me-storage-monitor", 1, "certus-quartz-screw", 2, "formation-core", 1,
+		"nether-quartz-plate", 2, "annihilation-core", 1 } },
+} or {}
+for i, m in ipairs(MONITORS) do
+	recipe_of{
+		name = m[1],
+		category = "mv-assembling-machine-recipes",
+		subgroup = "fork-me-network",
+		order = "c" .. i,
+		energy_required = m[2] * MV_SPEED,
+		ingredients = m[3],
+	}
+end
+
 local HAS_INTERFACE_TERMINAL = data.raw.item["me-interface-terminal"] ~= nil
 if HAS_INTERFACE_TERMINAL then
 	recipe_of{
@@ -667,11 +691,11 @@ end
 --- (logistic-system unlocked them before; the chest needs stainless steel); the nether quartz plate of the buses (GTNH's
 --- recipe, issue #214); issue #294: GTNH's storage housing of the cells and its certus quartz plate (Overworld Data
 --- unlocked upstream's)
-tech("me-network", { "logistic-system", "stainless-steel" }, 3, 400, {
-	"me-terminal", "computer-monitor", "certus-quartz-bolt", "certus-quartz-screw", "me-chest", "me-drive",
+local me_network = { "me-terminal", "computer-monitor", "certus-quartz-bolt", "certus-quartz-screw", "me-chest", "me-drive",
 	"basic-storage-housing", "certus-quartz-plate", "me-1k-storage-cell", "me-4k-storage-cell", "me-16k-storage-cell",
-	"nether-quartz-plate", "me-import-bus", "me-export-bus", "me-underground-cable", "me-storage-bus",
-})
+	"nether-quartz-plate", "me-import-bus", "me-export-bus", "me-underground-cable", "me-storage-bus" }
+for _, m in ipairs(MONITORS) do me_network[#me_network + 1] = m[1] end      -- (me-network 0.5.4: the monitors)
+tech("me-network", { "logistic-system", "stainless-steel" }, 3, 400, me_network)
 --- EV: 64k (the component needs epoxy boards)
 tech("me-storage-64k", { "me-network", "nanoprocessors", "advanced-hv-machines" }, 5, 800,
 	{ "me-64k-storage-component", "me-64k-storage-cell" })

@@ -543,9 +543,35 @@ step("calcium-fluoride-electrolysis", "mv-electrolyzer-recipes", 2, MV_SPEED, { 
 	{ { "calcium", 1 }, { "fluorine", 200 } })
 F.tech{
 	-- (large-extractor and industrial-electrolyzer make the black steel frame and the potin gear of the machines, #252)
-	name = SAMARIC, prerequisites = { BASTNASITE, "large-extractor", "industrial-electrolyzer" }, packs = 6, count = 800, time = 45,
-	recipes = RECIPES,
+	name = SAMARIC, prerequisites = { BASTNASITE, "large-extractor", "industrial-electrolyzer", "rocket-fuel" },
+	packs = 6, count = 800, time = 45, recipes = RECIPES,
 }
+--- issue #295: GTNH's rocket fuel (GT++'s H8N4C2O4 Rocket Fuel, RecipeLoaderRocketFuels.java:234-244: 2000 L
+--- 1,1-dimethylhydrazine + 2000 L nitrogen tetroxide -> 5000 L, chemical plant, HV, 60 s; GT's casing tier 6 has no
+--- counterpart in the one Chemical Plant here) instead of upstream's LV mixer recipe (100 + 100 -> 600, 3 s). The
+--- Chemical Plant comes with its first consumer, Rocket Fuel (HV), and with it its black steel frame (#252's rule: the
+--- producer moves up to its first consumer; the frame's black steel is MV)
+do
+	local rf = data.raw.recipe["rocket-fuel"]
+	rf.category = "chemical-plant-recipes"
+	rf.energy_required = 60 * HV_SPEED
+	rf.ingredients = { { type = "fluid", name = "dimethylhydrazine", amount = 2000 },
+		{ type = "fluid", name = "dinitrogen-tetroxide", amount = 2000 } }
+	rf.results = { { type = "fluid", name = "rocket-fuel", amount = 5000 } }
+	rf.subgroup = data.raw.recipe["hydrated-ammonium-nitrate-slurry"].subgroup
+	for _, t in pairs(data.raw.technology) do
+		local keep = {}
+		for _, e in pairs(t.effects or {}) do
+			if not (e.type == "unlock-recipe" and (e.recipe == "exxonmobil-chemical-plant" or e.recipe == "black-steel-frame")) then
+				keep[#keep + 1] = e
+			end
+		end
+		t.effects = keep
+	end
+	local rft = data.raw.technology["rocket-fuel"].effects
+	rft[#rft + 1] = { type = "unlock-recipe", recipe = "exxonmobil-chemical-plant" }
+	rft[#rft + 1] = { type = "unlock-recipe", recipe = "black-steel-frame" }
+end
 
 --- europium
 RECIPES = {}
