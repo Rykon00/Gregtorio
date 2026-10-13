@@ -178,7 +178,8 @@
     a name pattern; a new fluid goes into one, the fallback row `gregtorio-fluids-unsorted` is a devcheck warning; issue
     #119: Gregtorio icons for molten iron, molten copper and steam, the twelve unused vanilla fluids hidden
     (`FORK_FLUIDS_HIDDEN`); a fluid that keeps another mod's icon on purpose goes into `FORK_FLUID_ICONS_KEPT`, devcheck
-    warns otherwise; loads after every file that creates fluids)
+    warns otherwise; issue #315: the tier rows of the production tab in tier order, each tier's multiblocks after its
+    machines, and a machine recipe in the tier row of its product; loads after every file that creates fluids)
   - 197 fluid steps (issue #117: every fluid amount of a recipe that is not a multiple of the engine's step 2^-24 is set
     on the grid, takes up, gives up and nine steps more, so n melted ingots cover every cast they are worth; loads after
     every file that makes or changes a recipe; devcheck fails for an amount off the grid)
