@@ -740,9 +740,10 @@ ORE_GEMS = {"ruby": ("ruby", False), "emerald": ("emerald", False), "diamond": (
             "lazurite": ("lazurite-gem", True), "sodalite": ("sodalite-gem", True), "lapis": ("lapis-lazuli", True),
             "monazite": ("monazite-gem", True)}
 # Issue #193: the laser engraver steps of the grades, with the lens of the gem's colour (red ruby, green emerald, white
-# diamond; GT's other colours need lenses of materials Gregtorio lacks)
+# diamond; issue #328: cyan apatite and blue lapis, #325's substitutes; certus quartz's light gray has no lens)
 ORE_GEM_LENS = {"ruby": "ruby-lens", "emerald": "emerald-lens", "monazite": "emerald-lens", "diamond": "diamond-lens",
-                "nether-quartz": "diamond-lens"}
+                "nether-quartz": "diamond-lens", "apatite": "apatite-lens", "lazurite": "apatite-lens",
+                "sodalite": "lapis-lens", "lapis": "lapis-lens"}
 def check_ore_o3_o4(m):
     """Issues #187 and #188 (prototypes/155-fork-ore-chain.lua, phases O3 and O4): the electromagnetic separator works
     exactly the pure dusts of ORE_SEPARATOR (dust, small dust and nugget of the metal); every ore of ORE_GEMS is sifted

@@ -718,9 +718,10 @@ log("FORK-ORE-CHAIN: " .. separations .. " electromagnetic separator recipes")
 ---   laser engraver      3 chipped -> flawed (30 s, LV), 3 flawed -> gem (30 s, MV), 3 gems -> flawless (60 s, HV),
 ---                       3 flawless -> exquisite (2 min, EV), with a lens of the gem's colour that stays (issue #193):
 ---                       red the ruby lens (ruby), green the emerald lens (emerald, monazite), white the diamond lens
----                       (diamond, nether quartz). GT's other colours (certus quartz light gray, apatite and lazurite
----                       cyan, tricalcium phosphate yellow, sodalite and lapis blue) come from lenses of materials
----                       Gregtorio lacks (sapphire, topaz ...): no engraver steps for them. Gregtorio's laser engraver
+---                       (diamond, nether quartz); issue #328: cyan the apatite lens (apatite, lazurite) and blue the
+---                       lapis lens (sodalite, lapis), the maintainer's substitutes of #325 for GT's green sapphire and
+---                       sapphire lens. Certus quartz (GT: light gray) has no lens of its colour in Gregtorio: no
+---                       engraver steps for it. Gregtorio's laser engraver
 ---                       starts at MV: the LV step is in the MV category with its LV time (an MV engraver runs it
 ---                       twice as fast, as GT's overclock)
 ---   macerator           the grades back into dust: chipped 1 small pile, flawed 2 small piles of the gem's dust
@@ -739,8 +740,8 @@ local GEMS = {
 	{ "apatite",              "apatite-gem",              "default",  true },
 	{ "tricalcium-phosphate", "tricalcium-phosphate-gem", "default",  false },
 	{ "lazurite",             "lazurite-gem",             "default",  true },
+	{ "lapis",                "lapis-lazuli",             "default",  true },   -- before sodalite: its engraver steps take the lapis lens (issue #328)
 	{ "sodalite",             "sodalite-gem",             "default",  true },
-	{ "lapis",                "lapis-lazuli",             "default",  true },
 	{ "monazite",             "monazite-gem",             "default",  true },
 }
 --- GT's sifter tables: exquisite, flawless, gem, flawed, chipped, dust (ProcessingCrushedOre.java:90-120)
@@ -759,7 +760,8 @@ local LENS = { ruby = "ruby-lens", emerald = "emerald-lens", diamond = "diamond-
 --- lens after the byproduct gems below)
 local ENGRAVER_LENS = { ruby = "ruby-lens", emerald = "emerald-lens", monazite = "emerald-lens",
 	diamond = "diamond-lens", ["nether-quartz"] = "diamond-lens", quartzite = "diamond-lens", ["red-garnet"] = "ruby-lens",
-	["yellow-garnet"] = "yellow-garnet-lens" }
+	["yellow-garnet"] = "yellow-garnet-lens",
+	apatite = "apatite-lens", lazurite = "apatite-lens", sodalite = "lapis-lens", lapis = "lapis-lens" }   -- issue #328
 --- grade -> the engraver category and time of the step up (GT tier: LV, MV, HV, EV; time x the tier's speed)
 local ENGRAVE = { chipped = { "mv-laser-engraver-recipes", 30 }, flawed = { "mv-laser-engraver-recipes", 60 },
 	gem = { "hv-laser-engraver-recipes", 240 }, flawless = { "ev-laser-engraver-recipes", 960 } }
