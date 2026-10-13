@@ -347,6 +347,9 @@ local UNLOCKS = {
 		"centrifuging-crushed-monazite", "monazite-dust", "monazite-dust-extraction", "raw-monazite-multismelter",
 		"raw-monazite-smelter",
 	},
+	["reach-ross128"] = { -- IV (issue #293: the bornite of Ross128's mine, 160; was tier-three-microminers)
+		"crushed-bornite",
+	},
 	["titanium"] = { -- EV
 		"block-of-titanium", "centrifuging-crushed-chromite", "chromium-dust", "crushed-chromite", "ilmenite-processing",
 		"ilmenite-slag-processing", "long-titanium-rod", "raw-chromite-multismelter",

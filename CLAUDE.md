@@ -63,7 +63,8 @@
     and (issue #287) zombies, molybdenum vein, soul sand, end stone, nether/ender air intakes; radon from ender air at
     HV; issue #284: Reach the Moon / Reach Mars with their veins and the moon turf dig site; issue #285: Reach the
     Asteroid Belt, the Jovian Moons and Venus; issue #286: Void Miners I-III, `VOID_POOLS` from GT's veins and small
-    ores (tools: none, generated once from OreMixes/SmallOres); loads after 146 and **before** 142 (issue #287: the
+    ores (tools: none, generated once from OreMixes/SmallOres); issue #293: Reach Ross128 with the copper sulfide vein
+    (bornite); loads after 146 and **before** 142 (issue #287: the
     unlock table of 142 and the ore chains of 155 see the mines; the rules are in 161))
   - 142 recipe unlocks (issue #91: every Gregtorio recipe gets a technology from its explicit table `UNLOCKS`, the
     producers GT has and Gregtorio lacked and the component assembly line; a recipe that must stay
@@ -149,8 +150,8 @@
     `<tier>-chemical-dehydrator`), lanthanum hexaboride's gem forms, chloromethane, gangue and the roasting's fluorine;
     loads after 158 and before 156)
   - 161 dimension unlocks (issue #287: the unlock rules of 160, `ore_dimension` moves or gates the ore chains of the
-    dimensions' ores, the ender air with Radon, black plutonium with the Void Miner II, the bornite chain locked until
-    Ross128 (issue #293); loads after 159 and before 156)
+    dimensions' ores, the ender air with Radon, black plutonium with the Void Miner II, the bornite chain with
+    Reach Ross128 (issue #293); loads after 159 and before 156)
   - 156 circuit icons (issue #164: the circuit variant recipes up to UV keep the shared tier item and show GT's texture
     of their GTNH item as recipe icon; devcheck fails for a tier circuit recipe without its own icon)
   - 157 recycling (issue #190: GTNH's material recycling into dusts, ingots and melts for the items of crafting table

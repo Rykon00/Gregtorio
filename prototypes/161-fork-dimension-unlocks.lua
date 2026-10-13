@@ -9,6 +9,7 @@ local NETHER, END = "reach-the-nether", "reach-the-end"
 local MOON, MARS = "reach-the-moon", "reach-mars"
 local ASTEROIDS, JOVIAN, VENUS = "reach-the-asteroid-belt", "reach-the-jovian-moons", "reach-venus"
 local VM_TECHS = { "void-miner-i", "void-miner-ii", "void-miner-iii" }
+local ROSS = "reach-ross128"
 
 local function packs(tech) return #(data.raw.technology[tech].unit.ingredients or {}) end
 local function ancestors(tech, seen)
@@ -173,27 +174,9 @@ ore_dimension(VM_TECHS[3], { "cosmic-neutronium", "infinity-catalyst" })
 
 
 --------------------------------------------------------------------------------
---- BORNITE (issue #287): GTNH mines it on Ross128b and Ross128ba only, which Gregtorio does not have yet (issue #293);
---- the tier three microminer mission was its source. Its ore chain and the platinum concentrate from it wait for the
---- ore: locked (devcheck's allow-list FORK_RECIPES_LOCKED of 142).
+--- ROSS128 (issue #293): bornite's ore chain and the platinum line's steps from it (the sludge of Platinum Ore
+--- Processing, the concentrate of Platinum Line Initialization) come with the mine or need it; tetrahedrite has its
+--- Overworld mine
 --------------------------------------------------------------------------------
 
-do
-	local locked = {}
-	for name in pairs(data.raw.recipe) do
-		if name:find("bornite", 1, true) and not name:find("recycling", 1, true) then
-			locked[name] = true
-			data.raw.recipe[name].enabled = false
-			FORK_RECIPES_LOCKED[name] = "no source of bornite ore: GTNH mines it on Ross128b/ba only, not in Gregtorio yet (issue #293)"
-		end
-	end
-	for _, t in pairs(data.raw.technology) do
-		if t.effects then
-			local keep = {}
-			for _, e in pairs(t.effects) do
-				if not (e.type == "unlock-recipe" and locked[e.recipe]) then keep[#keep + 1] = e end
-			end
-			t.effects = keep
-		end
-	end
-end
+ore_dimension(ROSS, { "bornite" })

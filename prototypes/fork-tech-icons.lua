@@ -133,6 +133,7 @@ FORK_TECH_ICONS = {
 	["quantum-force-transformer"] = true,
 	["qubit-cpus"] = true,
 	["reach-mars"] = true,
+	["reach-ross128"] = true,
 	["reach-the-asteroid-belt"] = true,
 	["reach-the-end"] = true,
 	["reach-the-jovian-moons"] = true,
