@@ -513,6 +513,27 @@ end
 --- cards (the dependency is >= 0.5.0 since issue #195, and the guard can go).
 --------------------------------------------------------------------------------
 
+--- me-network 0.5.4 (its issue #354): the Void ME Storage Cell, GTNH's recipe (NewHorizonsCoreMod
+--- gthandler/recipes/AssemblerRecipes.java:4660-4668, "Void Cell"): 2 certus quartz screws, a certus quartz plate, 3 tungsten
+--- plates and a singularity in the HV assembler, 5 s. Gregtorio has no singularity (GTNH compresses 512 000 cobblestone into
+--- one in the IV neutronium compressor, SAE2:903-906): it is left out. AE2-Unofficial's void cell takes items and fluids,
+--- me-network has one of each: the fluid one gets the same recipe. me-network before 0.5.4 has none.
+local HAS_VOID_CELLS = data.raw["item-with-tags"]["me-void-storage-cell"] ~= nil   -- (cells are items with tags)
+if HAS_VOID_CELLS then
+	for i, name in ipairs({ "me-void-storage-cell", "me-void-fluid-storage-cell" }) do
+		if data.raw["item-with-tags"][name] then
+			recipe_of{
+				name = name,
+				category = "hv-assembling-machine-recipes",
+				subgroup = i == 1 and "fork-me-cells" or "fork-me-fluid-cells",
+				order = "z" .. i,
+				energy_required = 5 * HV_SPEED,
+				ingredients = I{ "certus-quartz-screw", 2, "certus-quartz-plate", 1, "tungsten-plate", 3 },
+			}
+		end
+	end
+end
+
 local HAS_CARDS = data.raw.item["me-basic-card"] ~= nil
 if HAS_CARDS then
 	--- (a card of a later me-network than the one loaded is skipped)
@@ -537,10 +558,10 @@ if HAS_CARDS then
 	--- GTNH: basic card, two 1k storage components, charged certus quartz
 	card("me-capacity-card", "c",
 		I{ "me-basic-card", 1, "me-1k-storage-component", 2, "charged-certus-quartz", 1 })
-	--- GTNH: basic card, two calculation processors, an ME Void Storage Cell (a cell without a storage component;
-	--- me-network has none, so its shell, the storage housing)
+	--- GTNH: basic card, two calculation processors, an ME Void Storage Cell (me-network before 0.5.4 has none: its shell,
+	--- the storage housing)
 	card("me-overflow-destruction-card", "d",
-		I{ "me-basic-card", 1, "calculation-processor", 2, "basic-storage-housing", 1 })
+		I{ "me-basic-card", 1, "calculation-processor", 2, HAS_VOID_CELLS and "me-void-storage-cell" or "basic-storage-housing", 1 })
 	--- GTNH: advanced card, engineering, logic and calculation processor
 	card("me-fuzzy-card", "e",
 		I{ "me-advanced-card", 1, "engineering-processor", 1, "logic-processor", 1, "calculation-processor", 1 })
@@ -561,6 +582,12 @@ if HAS_CARDS then
 	--- issue #211: GTNH's Sticky Card (SAE2:1290-1296): basic card, two 1k storage components, a slimeball (Gregtorio
 	--- has no slimeball: sticky resin, GT's other sticky ball)
 	card("me-sticky-card", "e4", I{ "me-basic-card", 1, "me-1k-storage-component", 2, "sticky-resin", 1 })
+	--- me-network 0.5.4 (its issue #354): the Group Filter Card is AE2-Unofficial's Ore Dictionary Filter Card, GTNH's recipe
+	--- (SAE2:1332-1338, shapeless): an advanced card, 2 engineering processors and an IV Type Filter. Gregtorio has no Type
+	--- Filter: its parts (GT5-Unofficial MTERecipeLoader.java:4182-4187: the IV hull, an IV conveyor module, a chest, an item
+	--- filter, an LV circuit)
+	card("me-group-filter-card", "e5", I{ "me-advanced-card", 1, "engineering-processor", 2, "iv-machine-hull", 1,
+		"iv-conveyor-module", 1, "wooden-chest", 1, "filter", 1, "electronic-circuit", 1 })
 
 	--- GTNH: computer screen cover, two titanium screws (stainless steel here: Gregtorio has no titanium screw),
 	--- crafting table, two titanium plates, calculation processor
@@ -687,12 +714,14 @@ tech("me-fluid-storage-256k", { "me-fluid-storage", "me-storage-256k" }, 6, 800,
 
 --- IV: the Advanced Card (platinum) and the cards and the workbench; the Inverter Card needs decider combinators, the
 --- Equal Distribution Card a turbo splitter; the Acceleration Card is made from the Advanced Card; issue #211: the
---- Pattern Capacity, Interface Capacity and Sticky Card (me-network 0.5.3; skipped when the loaded one lacks them)
+--- Pattern Capacity, Interface Capacity and Sticky Card (me-network 0.5.3; skipped when the loaded one lacks them); the Group
+--- Filter Card and the void cells (me-network 0.5.4): the Overflow Destruction Card is made from the item one
 if HAS_CARDS then
 	tech("me-upgrade-cards", { "me-storage-256k", "circuit-network", "turbo-transport-belt" }, 6, 1000, {
 		"me-basic-card", "me-advanced-card", "me-acceleration-card", "me-capacity-card", "me-overflow-destruction-card",
 		"me-fuzzy-card", "me-pattern-capacity-card", "me-interface-capacity-card", "me-sticky-card", "me-inverter-card",
-		"me-equal-distribution-card", "me-cell-workbench",
+		"me-equal-distribution-card", "me-cell-workbench", "me-group-filter-card", "me-void-storage-cell",
+		"me-void-fluid-storage-cell",
 	})
 end
 
