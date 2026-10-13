@@ -768,6 +768,10 @@ def icon_table(c):
     T["high-octane-gasoline-cell"] = lambda: c.part("high-octane-gasoline", "cell")
     T["rocket-fuel-cell"] = lambda: c.part("rocket-fuel", "cell")   # issue #295
     T["sodium-bisulfate"] = lambda: c.part("sodium-bisulfate", "dust")
+    # issue #302: the drill heads of the Space Elevator's mining drones (GT's toolHeadDrill of the material)
+    for m in ("steel", "titanium", "tungstensteel", "iridium", "trinium", "naquadah", "naquadah-alloy", "naquadria",
+              "neutronium", "cosmic-neutronium", "infinity", "transcendent-metal", "spacetime", "eternity"):
+        T[m + "-drill-head"] = (lambda m=m: lambda: c.part(m, "toolHeadDrill"))()
     # issue #96: the dusts of the platinum line, which the fork names without "-dust"
     for m in ("platinum-salt", "refined-platinum-salt", "reprecipitated-platinum", "platinum-residue", "palladium-salt",
               "reprecipitated-palladium", "potassium-disulfate", "rhodium-filter-cake", "reprecipitated-rhodium",

@@ -7,6 +7,8 @@ local fork_molds = require("scripts.fork-molds")
 local fork_victory = require("scripts.fork-victory")
 --- Fork: fuel check of the endgame generators, cooled fluid of the plasma turbines (see prototypes/136-fork-power.lua)
 local fork_power = require("scripts.fork-power")
+--- Fork: Space Elevator modules run only next to a Space Elevator with free slots (see prototypes/162-fork-space-elevator.lua)
+local fork_space_elevator = require("scripts.fork-space-elevator")
 
 local function on_built(event)
   local entity = event.entity
@@ -15,6 +17,7 @@ local function on_built(event)
   end
   fork_molds.on_built(entity)
   fork_power.on_built(entity)
+  fork_space_elevator.on_built(entity)
 end
 script.on_event({ defines.events.on_built_entity, defines.events.on_robot_built_entity }, on_built)
 
@@ -23,10 +26,14 @@ script.on_event({ defines.events.script_raised_built, defines.events.script_rais
   defines.events.on_space_platform_built_entity }, function(event)
   fork_molds.on_built(event.entity)
   fork_power.on_built(event.entity)
+  fork_space_elevator.on_built(event.entity)
 end)
 script.on_event(defines.events.on_entity_cloned, function(event)
   fork_power.on_built(event.destination)
+  fork_space_elevator.on_built(event.destination)
 end)
+--- Fork: a Space Elevator or a module removed (any way): its surface is assigned again
+script.on_event(defines.events.on_object_destroyed, fork_space_elevator.on_object_destroyed)
 
 -- Raise a custom event when the cutscene ends
 script.on_event(defines.events.on_cutscene_cancelled, function(event)
@@ -103,6 +110,7 @@ script.on_configuration_changed(function(data)
 	fork_handover.on_configuration_changed()
 	fork_molds.on_configuration_changed()
 	fork_power.on_configuration_changed()
+	fork_space_elevator.on_configuration_changed()
 end)
 
 

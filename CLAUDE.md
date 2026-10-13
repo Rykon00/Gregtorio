@@ -69,7 +69,11 @@
   - 162 space elevator (issue #301, part 1 of #292's decision: gtnhintergalactic's Space Elevator in GTNH's full scope:
     controller, casings, nanotube spool, cable, motors Mk-I to Mk-V; one 11 x 11 entity per motor tier
     (`space-elevator-mk1` to `-mk5`), the mod data `fork-space-elevator` with each tier's motor tier and module slots for
-    the modules of #302 and #303; loads after 160 and **before** 142)
+    the modules of #302 and #303; issue #302: the Mining Modules Mk-I to Mk-III, the mining drones LV to UXV, their drill
+    heads and a recipe per asteroid and drone tier (`ASTEROIDS` from gtnhintergalactic's SpaceMiningRecipes, the ores the
+    mod has, expected amounts of one operation; helium plasma only); `scripts/fork-space-elevator.lua` runs a module only
+    next to an elevator with motors of its tier and a free slot (event-driven, `on_object_destroyed`, no tick handler,
+    `storage.fork_space_elevator`); loads after 160 and **before** 142)
   - 142 recipe unlocks (issue #91: every Gregtorio recipe gets a technology from its explicit table `UNLOCKS`, the
     producers GT has and Gregtorio lacked and the component assembly line; a recipe that must stay
     locked goes into the allow-list `FORK_RECIPES_LOCKED` with its reason, devcheck fails otherwise; issue #237: a
@@ -183,7 +187,7 @@
     the recipes keep their machine rows; devcheck warns for a material with no tier; loads after 199 so the final
     unlocks count).
   The phase plan is in `docs/ROADMAP.md`. Runtime fork code lives in `scripts/` and is required from `control.lua`
-  (`fork-molds.lua`, `fork-victory.lua`, `fork-power.lua`, and `fork-me-handover.lua`: the one-time hand-over of the ME
+  (`fork-molds.lua`, `fork-victory.lua`, `fork-power.lua`, `fork-space-elevator.lua` (#302), and `fork-me-handover.lua`: the one-time hand-over of the ME
   state of saves from before issue #83 to me-network through the remote interface `gregtorio-me-handover`, which
   me-network calls in its `on_init`; keep its table list and fingerprint function equal to me-network's
   `scripts/fork-me-handover.lua`). Everything else of the ME network (runtime, graphics, locale, its tests,
