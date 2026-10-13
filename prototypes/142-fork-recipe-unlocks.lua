@@ -658,6 +658,10 @@ add_prerequisite("fluid-nuclear-reactor", "naquadah-processing")
 for _, r in pairs({ "nickel-zinc-ferrite-dust", "nickel-zinc-ferrite-ingot", "nickel-zinc-ferrite-ring" }) do
 	move_unlock(r, "smd-components", "microprocessors")
 end
+--- issue #295: Tantalloy-60 (the gear of the EV Rocket Engine, 145) comes with Rocket Engines, its first consumer now (its
+--- tantalum and tungsten dusts and the alloy blast smelter are EV); the Industrial Wire Factory follows it
+move_unlock("molten-tantalloy-60", "industrial-wire-factory", "rocket-engines")
+add_prerequisite("industrial-wire-factory", "rocket-engines")
 --- the SMD diode takes fine platinum wire: with the platinum smelting, Platinum (the SMD variant of the microprocessor
 --- supercomputer waits for it; its plain recipe stays with Microprocessors)
 for _, r in pairs({ "platinum-dust-smelter", "platinum-dust-multismelter", "fine-platinum-wire", "smd-diode" }) do
