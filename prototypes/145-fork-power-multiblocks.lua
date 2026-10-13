@@ -547,3 +547,81 @@ F.tech{
 		"crystal-processor-mainframes" },
 	packs = 8, count = 2000, recipes = {},
 }
+
+
+
+--------------------------------------------------------------------------------
+--- 7) ROCKET ENGINES (issue #295, the maintainer's decision: rocket fuel as in GTNH). Gregtorio's rocket fuel
+--- (dimethylhydrazine and dinitrogen tetroxide) is GT++'s H8N4C2O4 Rocket Fuel; GTNH burns it in GT++'s rocket
+--- engines (gtPlusPlus/xmod/gregtech/registration/gregtech/GregtechRocketFuelGenerator.java, GT5-Unofficial
+--- af993ca6a9): the Basic, Advanced and Turbo Rocket Engine (EV, IV, LuV; here by their tier, issue #156), single
+--- blocks of GT's rocketFuels map (RecipeLoaderRocketFuels.java:179-184: 4196 EU per L) at 80, 70 and 60 %
+--- (MTERocketFuelGenerator.java:27-29: 80 - 10 x (tier - 4)), one amp of their tier (MTEBasicGenerator.maxEUOutput).
+--- Like the combustion lines a burner generator on a fuel cell of 800 L (Gregtorio's diesel cell: 500 J per GT EU):
+--- 4196 x 800 x 500 J = 1678.4 MJ, in a fuel category of its own (GT's rocketFuels map: only rocket engines burn it).
+--- Their recipes are GT++'s ("PCP", "EME", "GWG": 2 pistons, a circuit of the next tier, 2 motors, the hull, 2 gears, a
+--- double cable): Tantalloy-61, which the mod lacks, becomes Tantalloy-60; a double cable 2 cables. The fuel's recipe
+--- is GTNH's in the ExxonMobil Chemical Plant (159). GT++'s Large Rocket Engine (air intakes, carbon dioxide, liquid
+--- hydrogen boost, 90 % of its hatch burnt each second for a fixed 2 A of IV) has no Factorio counterpart: issue #304.
+--------------------------------------------------------------------------------
+
+data:extend({ { type = "fuel-category", name = "rocket-engine-fuel" } })
+create_item{
+	name = "rocket-fuel-cell",
+	category = "lv-canning-machine-recipes",
+	energy_required = 4,
+	fuel_category = "rocket-engine-fuel",
+	fuel_value = "1678.4MJ",
+	burnt_result = "empty-large-steel-fluid-cell",
+	subgroup = data.raw.item["diesel-cell"] and data.raw.item["diesel-cell"].subgroup or nil,
+	ingredients = {
+		{ type = "item", name = "empty-large-steel-fluid-cell", amount = 1 },
+		{ type = "fluid", name = "rocket-fuel", amount = 800 },
+	},
+}
+local ROCKET_ENGINES = {
+	--  tier   efficiency  power      next circuit   cable             gear (GT++)                    technology
+	{ "ev",  0.8, EU32_EV,  "iv-circuit",  "aluminium-cable", "large-tantalloy-60-gear", "rocket-engines" },
+	{ "iv",  0.7, EU32_IV,  "luv-circuit", "platinum-cable",  "large-stellite-gear",     "advanced-rocket-engine" },
+	{ "luv", 0.6, EU32_LuV, "zpm-circuit", "tungsten-cable",  "large-zeron-100-gear",    "turbo-rocket-engine" },
+}
+for _, e in pairs(ROCKET_ENGINES) do
+	local name = e[1] .. "-rocket-engine"
+	create_item{
+		name = name,
+		icon = FORK_ICON .. name .. ".png",
+		place_result = name,
+		subgroup = "subgroup-" .. e[1] .. "-age-multiblocks",
+		stack_size = 10,
+		ingredients = {
+			{ type = "item", name = e[1] .. "-machine-hull", amount = 1 },
+			{ type = "item", name = e[1] .. "-piston", amount = 2 },
+			{ type = "item", name = e[1] .. "-motor", amount = 2 },
+			{ type = "item", name = e[4], amount = 1 },
+			{ type = "item", name = e[5], amount = 2 },
+			{ type = "item", name = e[6], amount = 2 },
+		},
+	}
+	create_burner_generator{
+		name = name,
+		icon = FORK_ICON .. name .. ".png",
+		efficiency = e[2],
+		fuel_categories = { "rocket-engine-fuel" },
+		max_power = e[3],
+		working_animation = SPRITE_PATH .. name .. "-working.png",
+		idle_animation = SPRITE_PATH .. name .. "-idle.png",
+		frame_count = 1,
+	}
+end
+F.tech{
+	name = "rocket-engines", prerequisites = { "rocket-fuel", "ev-components", "alloy-blast-smelter" }, packs = 5,
+	count = 600, time = 45, recipes = { "ev-rocket-engine", "rocket-fuel-cell" },
+}
+F.tech{
+	name = "advanced-rocket-engine", prerequisites = { "rocket-engines", "iv-components", "industrial-electrolyzer" },
+	packs = 6, count = 800, recipes = { "iv-rocket-engine" },
+}
+F.tech{
+	name = "turbo-rocket-engine", prerequisites = { "advanced-rocket-engine", "luv-components", "luv-machines", "advanced-smds" },
+	packs = 7, count = 1000, recipes = { "luv-rocket-engine" },
+}

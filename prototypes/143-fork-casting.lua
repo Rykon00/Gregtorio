@@ -116,7 +116,7 @@ local MATERIALS = {
 	["rtm-alloy"] = { "hv", "alloy-blast-smelting-older-materials" },
 	["staballoy"] = { "hv", "staballoy" },
 	["talonite"] = { "hv", "industrial-cutting-factory" },
-	["tantalloy-60"] = { "hv", "industrial-wire-factory" },
+	["tantalloy-60"] = { "hv", "rocket-engines" },   -- issue #295: with the EV Rocket Engine's gear
 	["tantalum"] = { "hv", "niobium-and-tantalum-extraction" },
 	["tantalum-carbide"] = { "hv", "zyngen" },
 	["tumbaga"] = { "hv", "large-sifter", color = { 255, 178, 15 } },

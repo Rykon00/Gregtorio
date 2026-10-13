@@ -240,6 +240,16 @@ MULTIBLOCKS = {
                                 ("gregtech:iconsets/OVERLAY_FRONT_DIESEL_ENGINE",
                                  "gregtech:iconsets/OVERLAY_FRONT_DIESEL_ENGINE_ACTIVE"),
                                 "gregtech:iconsets/MACHINE_CASING_GEARBOX_TITANIUM"),
+    # issue #295: GT++'s rocket engines (MTERocketFuelGenerator: the casing of its tier, the diesel motor overlay)
+    "ev-rocket-engine": ((3, 3), "miscutils:TileEntities/machine_top", None,
+                         ("miscutils:TileEntities/machine_top_dieselmotor2",
+                          "miscutils:TileEntities/machine_top_dieselmotor2_active"), None),
+    "iv-rocket-engine": ((3, 3), "miscutils:TileEntities/high_adv_machine", None,
+                         ("miscutils:TileEntities/machine_top_dieselmotor2",
+                          "miscutils:TileEntities/machine_top_dieselmotor2_active"), None),
+    "luv-rocket-engine": ((3, 3), "miscutils:TileEntities/adv_machine_lesu", None,
+                          ("miscutils:TileEntities/machine_top_dieselmotor2",
+                           "miscutils:TileEntities/machine_top_dieselmotor2_active"), None),
 }
 # multiblocks without an upstream item icon: the icon is the controller tile
 CONTROLLER_ICONS = {"neutron-activator", "water-purification-plant", "uv-large-naquadah-reactor"}
@@ -247,7 +257,8 @@ CONTROLLER_ICONS = {"neutron-activator", "water-purification-plant", "uv-large-n
 # the middle row tells them apart)
 WHOLE_ICONS = {"large-titanium-boiler", "large-combustion-engine", "digester", "dissolution-tank",
                "exxonmobil-chemical-plant", "mv-dehydrator", "hv-dehydrator", "ev-dehydrator", "iv-dehydrator",
-               "luv-dehydrator", "zpm-dehydrator", "void-miner-i", "void-miner-ii", "void-miner-iii"}
+               "luv-dehydrator", "zpm-dehydrator", "void-miner-i", "void-miner-ii", "void-miner-iii",
+               "ev-rocket-engine", "iv-rocket-engine", "luv-rocket-engine"}
 # tier versions of a generator (136-fork-power.lua): the base sprite with dynamo hatches of the tier
 # (GT hull of the tier + GT's dynamo hatch overlay) on the corner tiles; the base itself gets its own
 # tier's hatches too. The icon gets the hatch as a badge.
