@@ -561,6 +561,13 @@ if HAS_CARDS then
 	--- issue #211: GTNH's Sticky Card (SAE2:1290-1296): basic card, two 1k storage components, a slimeball (Gregtorio
 	--- has no slimeball: sticky resin, GT's other sticky ball)
 	card("me-sticky-card", "e4", I{ "me-basic-card", 1, "me-1k-storage-component", 2, "sticky-resin", 1 })
+	--- me-network 0.5.4 (its issue #356): the Super Speed and Superluminal Speed Cards with AE2-Unofficial's ingredients, as
+	--- me-network has them (an Acceleration Card and a 16k storage component; a Super Speed Card and 4 256k storage components,
+	--- for AE2-U's 1024k), made like the other cards. GTNH's (scripts/ScriptAppliedEnergistics2.java:196-202 and :2076-2082:
+	--- an advanced card, an engineering processor, a mysterious crystal and an LuV world accelerator; a dilithium gem and a UV
+	--- world accelerator) need items Gregtorio does not have: which stand-ins they get is open (the maintainer's decision)
+	card("me-super-speed-card", "h2", I{ "me-acceleration-card", 1, "me-16k-storage-component", 1 })
+	card("me-superluminal-speed-card", "h3", I{ "me-super-speed-card", 1, "me-256k-storage-component", 4 })
 
 	--- GTNH: computer screen cover, two titanium screws (stainless steel here: Gregtorio has no titanium screw),
 	--- crafting table, two titanium plates, calculation processor
@@ -692,7 +699,7 @@ if HAS_CARDS then
 	tech("me-upgrade-cards", { "me-storage-256k", "circuit-network", "turbo-transport-belt" }, 6, 1000, {
 		"me-basic-card", "me-advanced-card", "me-acceleration-card", "me-capacity-card", "me-overflow-destruction-card",
 		"me-fuzzy-card", "me-pattern-capacity-card", "me-interface-capacity-card", "me-sticky-card", "me-inverter-card",
-		"me-equal-distribution-card", "me-cell-workbench",
+		"me-equal-distribution-card", "me-cell-workbench", "me-super-speed-card", "me-superluminal-speed-card",
 	})
 end
 
