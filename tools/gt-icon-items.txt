@@ -844,6 +844,7 @@ small-pile-of-sodalite-dust
 small-pile-of-lapis-dust
 small-pile-of-monazite-dust
 nether-quartz-plate
+certus-quartz-plate
 circuit-recipe-electronic-circuit
 circuit-recipe-basic-electronic-circuit
 circuit-recipe-basic-integrated-circuit

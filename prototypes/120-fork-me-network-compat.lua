@@ -75,14 +75,33 @@ end
 
 ME.remove_recipe("me-1k-storage-component")
 
---- GTNH's housing (ASM:4569-4577: a glass pane, a certus quartz plate, an aluminium plate, 2 stainless steel plates) is
---- not used: upstream's microverse data items needed the housing with Overworld Data, before aluminium and stainless
---- steel (issue #287 removed them; GTNH's housing is issue #294). Upstream's recipe
+--- Issue #294: GTNH's housing (ASM:4569-4577: a glass pane, a certus quartz plate, an aluminium plate, 2 stainless steel
+--- plates, 5 s at LV / 2); Gregtorio has no glass pane, its glass takes the place. Upstream kept steel (4 plates, 4
+--- screws, a glass) for its microverse data items, which needed the housing with Overworld Data, before aluminium and
+--- stainless steel; issue #287 removed them, so the housing comes with its first consumer now, the cells of the ME
+--- Network technology (below). The certus quartz plate is GT's bender recipe of a gem (OP/ProcessingGem.java:117-125:
+--- 1 gem -> 1 plate, mass x 2 ticks; certus quartz has no material list, so Technetium's mass 98 -> 9.8 s, 24 EU/t),
+--- as the nether quartz plate below
 upstream_item{
 	name = "basic-storage-housing",
 	category = "lv-assembling-machine-recipes",
-	ingredients = I{ "steel-plate", 4, "steel-screw", 4, "glass", 1 },
+	energy_required = 5 * LV_SPEED,
+	ingredients = I{ "glass", 1, "certus-quartz-plate", 1, "aluminium-plate", 1, "stainless-steel-plate", 2 },
 }
+create_item{
+	name = "certus-quartz-plate",
+	category = "lv-bending-machine-recipes",
+	energy_required = 9.8 * LV_SPEED,
+	ingredients = { { type = "item", name = "certus-quartz", amount = 1 } },
+}
+do
+	local t = data.raw.technology["overworld-data"]
+	local keep = {}
+	for _, e in pairs(t.effects) do
+		if not (e.type == "unlock-recipe" and e.recipe == "basic-storage-housing") then keep[#keep + 1] = e end
+	end
+	t.effects = keep
+end
 
 --- GTNH (SAE2:2225-2230): 3 quartz fiber, 2 fluix dust -> 3, MV, 5 s
 upstream_item{
@@ -602,11 +621,12 @@ end
 --- MV: basic cells, terminal, buses (cable, controller and interface come with Applied Energistics Components); issue
 --- #213: the ME Chest (a block of its own since me-network 0.5.3) and the ME Drive made from it come with the terminal
 --- (logistic-system unlocked them before; the chest needs stainless steel); the nether quartz plate of the buses (GTNH's
---- recipe, issue #214)
+--- recipe, issue #214); issue #294: GTNH's storage housing of the cells and its certus quartz plate (Overworld Data
+--- unlocked upstream's)
 tech("me-network", { "logistic-system", "stainless-steel" }, 3, 400, {
 	"me-terminal", "computer-monitor", "certus-quartz-bolt", "certus-quartz-screw", "me-chest", "me-drive",
-	"me-1k-storage-cell", "me-4k-storage-cell", "me-16k-storage-cell", "nether-quartz-plate", "me-import-bus",
-	"me-export-bus", "me-underground-cable", "me-storage-bus",
+	"basic-storage-housing", "certus-quartz-plate", "me-1k-storage-cell", "me-4k-storage-cell", "me-16k-storage-cell",
+	"nether-quartz-plate", "me-import-bus", "me-export-bus", "me-underground-cable", "me-storage-bus",
 })
 --- EV: 64k (the component needs epoxy boards)
 tech("me-storage-64k", { "me-network", "nanoprocessors", "advanced-hv-machines" }, 5, 800,
