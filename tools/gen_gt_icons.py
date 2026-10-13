@@ -278,6 +278,7 @@ MATERIALS = {
     "yttrium-barium-cuprate": "YttriumBariumCuprate",
     "zeron-100": ("METALLIC", (180, 180, 20)),  # GT++ ZERON_100
     "zinc": "Zinc",
+    "amber": "Amber", "topaz": "Topaz",  # issue #332: the Twilight Forest's ores
     "zirconium-carbide": ("SHINY", (222, 202, 180)),  # GT++ ZIRCONIUM_CARBIDE
 }
 
@@ -286,6 +287,7 @@ PARTS = [
     # issue #185: the forms of the ore chain (before "{m}-dust", which would take pure-<m>-dust as a dust of "pure-<m>")
     ("impure-{m}-dust", "dustImpure"), ("pure-{m}-dust", "dustPure"), ("purified-{m}", "crushedPurified"),
     ("centrifuged-{m}", "crushedCentrifuged"), ("crushed-{m}", "crushed"),  # issue #203: crushed sulfur
+    ("raw-{m}", "oreRaw"),  # issue #332: the raw ores of new ores (upstream drew the others)
     # issues #187 and #188: small dusts of the separator, the gem grades of the sifter, the gems Gregtorio lacked
     ("small-pile-of-{m}-dust", "dustSmall"), ("chipped-{m}", "gemChipped"), ("flawed-{m}", "gemFlawed"),
     ("flawless-{m}", "gemFlawless"), ("exquisite-{m}", "gemExquisite"), ("{m}-gem", "gem"),

@@ -263,6 +263,9 @@ local RM_MACHINES = {
 	{ "ev-laser-engraver", "engraving-chipped-ruby-to-flawed", "engraving-chipped-ruby-to-flawed" },
 	-- issue #325: a wafer engraving recipe that took no lens before gets its lens (the ruby lens) in the lens slot
 	{ "mv-laser-engraver", "ilc-wafer-sw", "ilc-wafer-sw" },
+	-- issue #332: the simple SoC wafer took no lens before (also after #325); it gets the amber lens in the slot, or, in a
+	-- save that had the slot already, stops with "Missing lens"
+	{ "mv-laser-engraver", "simple-soc-wafer-sw", "simple-soc-wafer-sw" },
 }
 --- Issue #317: a character of the old save has a hand craft of a deleted vanilla recipe in its queue; after the update the
 --- save loads, the character is there and its queue is empty. The game drops the craft with its ingredients (they are
@@ -305,8 +308,12 @@ local function setup_removed()
 			--- a version with the slot: the recipe's mold or lens goes into it, as a player's would
 			local md = prototypes.mod_data["fork-mold-recipes"]
 			local tool = md and md.data[m[2]]
-			if tool and e.get_module_inventory() then e.get_module_inventory().insert{ name = tool } end
-			machines[#machines + 1] = { entity = e, old = m[2], new = m[3], name = m[4], items = items }
+			local inv = e.get_module_inventory()
+			if tool and inv then inv.insert{ name = tool } end
+			--- issue #332: a slot that this version leaves empty (its recipe needs no tool here)
+			local empty_slot = md ~= nil and tool == nil and inv ~= nil and #inv > 0
+			machines[#machines + 1] = { entity = e, old = m[2], new = m[3], name = m[4], items = items,
+				empty_slot = empty_slot }
 		end
 	end
 	local queue
@@ -359,12 +366,25 @@ local function check_removed()
 		end
 	end
 	--- issues #316 and #325: a machine whose recipe needs a mold or lens in its slot has it there after the update and
-	--- runs (the old recipe took it as an ingredient, or none; fork-molds gives a machine new to the slot its tool once)
+	--- runs (the old recipe took it as an ingredient, or none; fork-molds gives a machine new to the slot its tool once);
+	--- issue #332: a machine that had the slot already, empty for its recipe, stops instead until a player puts the tool in
 	local md = prototypes.mod_data["fork-mold-recipes"]
 	local tools = md and md.data or {}
+	local stopped = 0
 	for _, m in pairs(p.machines or {}) do
 		local tool = m.new and tools[m.new]
-		if tool and m.entity.valid then
+		if tool and m.entity.valid and m.empty_slot then
+			local inv = m.entity.get_module_inventory()
+			if inv and inv.get_item_count(tool) > 0 then
+				problems[#problems + 1] = "the machine with " .. m.new .. " got a " .. tool .. " although it had the slot"
+			elseif not m.entity.disabled_by_script then
+				problems[#problems + 1] = "the machine with " .. m.new .. " runs without its " .. tool
+			else
+				stopped = stopped + 1
+				log("DEVCHECK-MIGRATE removed: the machine with " .. m.new .. " stops: "
+					.. serpent.line(m.entity.custom_status and m.entity.custom_status.label))
+			end
+		elseif tool and m.entity.valid then
 			local inv = m.entity.get_module_inventory()
 			if not (inv and inv.get_item_count(tool) == 1) then
 				problems[#problems + 1] = "the machine with " .. m.new .. " has no " .. tool .. " in its slot"
@@ -384,7 +404,7 @@ local function check_removed()
 	end
 	for _, m in pairs(problems) do log("DEVCHECK-MIGRATE-FAIL removed: " .. m) end
 	log("DEVCHECK-MIGRATE-REMOVED " .. (#problems == 0 and "ok" or "failed") .. " (" .. #p.tanks .. " fluids, "
-		.. #p.items .. " items mapped, " .. #(p.machines or {}) .. " machines checked"
+		.. #p.items .. " items mapped, " .. #(p.machines or {}) .. " machines checked, " .. stopped .. " stopped for their tool"
 		.. (q and (", queued " .. RM_QUEUED.recipe .. " dropped") or "") .. ")")
 end
 

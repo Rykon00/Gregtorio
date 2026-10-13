@@ -106,6 +106,17 @@ ore_dimension(NETHER, { "molybdenite" })
 
 
 --------------------------------------------------------------------------------
+--- THE TWILIGHT FOREST (issue #332)
+--------------------------------------------------------------------------------
+
+--- topaz and amber with their dusts and the amber lens: the simple SoC wafers' technologies (NAND Chips and later)
+--- get the Twilight Forest as a prerequisite
+ore_dimension("reach-the-twilight-forest", { "topaz", "amber" }, { "topaz-dust", "amber-dust", "small-pile-of-topaz-dust",
+	"small-pile-of-amber-dust", "amber-plate", "amber-lens" })
+
+
+
+--------------------------------------------------------------------------------
 --- THE MOON AND MARS (issue #284)
 --------------------------------------------------------------------------------
 

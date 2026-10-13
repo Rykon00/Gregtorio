@@ -142,6 +142,7 @@ FORK_TECH_ICONS = {
 	["reach-the-jovian-moons"] = true,
 	["reach-the-moon"] = true,
 	["reach-the-nether"] = true,
+	["reach-the-twilight-forest"] = true,
 	["reach-venus"] = true,
 	["reinforced-glass"] = true,
 	["rhodium"] = true,
