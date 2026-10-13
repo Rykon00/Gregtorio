@@ -790,6 +790,7 @@ FORK_UNLOCK_TREE = { prerequisites = {
 	["production-science-pack"] = { "radon" },   -- quantum-eye
 	["qubit-cpus"] = { "iv-energy-hatches" },   -- indium-gallium-phosphide
 	["radar"] = { "circuit-assembler" },   -- brass-rod
+	["reach-the-moon"] = { "ore-drilling-plant-mk1" },   -- machine ore-drilling-plant-mk1 (issue #335: the Moon's twins)
 	["rare-earth-processing"] = { "ore-washing" },   -- rare-earth
 	["rhodium-plated-palladium"] = { "iv-machines" },   -- machine iv-fluid-extractor
 	["rocket-fuel"] = { "implosion-compressor" },   -- ammonia
@@ -811,6 +812,10 @@ FORK_UNLOCK_TREE.keep = {
 	["large-nickel-zinc-ferrite-gear"] = "smd-components",
 	["purified-copper-mercury"] = "primitive-electronic-circuit-assemblies",   -- mercury and the chemical bath
 	["purified-gold-mercury"] = "primitive-electronic-circuit-assemblies",
+	-- issue #335: Reach the Moon's new prerequisite (the Ore Drilling Plant Mk I) gives it more ancestors at 155's time,
+	-- so the hammering of the Moon's crushed ores would go to Titanium (EV); the Moon's hammer makes them
+	["hammering-crushed-chromite"] = "reach-the-moon",
+	["hammering-crushed-ilmenite"] = "reach-the-moon",
 }
 function FORK_UNLOCK_TREE.apply(final)
 	for tech, pres in pairs(FORK_UNLOCK_TREE.prerequisites) do

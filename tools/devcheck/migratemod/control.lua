@@ -266,6 +266,9 @@ local RM_MACHINES = {
 	-- issue #332: the simple SoC wafer took no lens before (also after #325); it gets the amber lens in the slot, or, in a
 	-- save that had the slot already, stops with "Missing lens"
 	{ "mv-laser-engraver", "simple-soc-wafer-sw", "simple-soc-wafer-sw" },
+	-- issue #335: the Manual Mine got a fast replace group and the Ore Drilling Plant as its next upgrade; a Manual Mine of
+	-- an old save stays one and keeps its vein recipe
+	{ "manual-mine", "mining-iron-vein", "mining-iron-vein", "manual-mine" },
 }
 --- Issue #317: a character of the old save has a hand craft of a deleted vanilla recipe in its queue; after the update the
 --- save loads, the character is there and its queue is empty. The game drops the craft with its ingredients (they are

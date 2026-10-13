@@ -620,6 +620,31 @@ def check_engraver_lenses(m, sec):
            f"{len(kept)} without one on purpose (FORK_ENGRAVER_NO_LENS)", problems
 
 
+def check_electric_mine(m, sec):
+    """Issue #335 (prototypes/163-fork-electric-mine.lua): every recipe of the Manual Mine and the Dig Site has an electric
+    twin for the Ore Drilling Plants (the same results, Drilling Fluid as its only ingredient, category
+    electric-mine-recipes), unless it is in the allow-list FORK_ELECTRIC_MINE_EXCLUDED with its reason (section
+    ELECTRICMINE); an entry that is no such recipe or has a twin fails too. Returns (info line, problems)."""
+    rows = [r + [""] * (4 - len(r)) for r in sec.get("ELECTRICMINE", [])]
+    manual = [r for r in rows if r[1] == "manual"]
+    problems = [f"{r[0]}: a Manual Mine or Dig Site recipe without an electric twin (163 makes one for a mining-<vein> "
+                "recipe it sees, or add it to FORK_ELECTRIC_MINE_EXCLUDED with its reason)"
+                for r in manual if r[2] == "-" and not r[3]]
+    problems += [f"FORK_ELECTRIC_MINE_EXCLUDED: {r[0]} " + ("is not a Manual Mine or Dig Site recipe" if r[1] != "manual"
+                 else f"has the twin {r[2]}") + " (remove the entry)" for r in rows if r[3] and (r[1] != "manual" or r[2] != "-")]
+    for r in manual:
+        twin = m.R.get(r[2])
+        if r[2] == "-" or twin is None or r[0] not in m.R:
+            continue
+        if twin["cat"] != "electric-mine-recipes" or twin["ing"] != ["drilling-fluid"] \
+                or sorted(twin["res"]) != sorted(m.R[r[0]]["res"]):
+            problems.append(f"{r[2]}: not the twin of {r[0]} (category {twin['cat']}, ingredients {twin['ing']}, "
+                            f"results {twin['res']} against {m.R[r[0]]['res']})")
+    twins = sum(1 for r in manual if r[2] != "-")
+    return (f"{len(manual)} Manual Mine and Dig Site recipes, {twins} with an electric twin, "
+            f"{sum(1 for r in manual if r[3])} without one on purpose (FORK_ELECTRIC_MINE_EXCLUDED)", sorted(problems))
+
+
 def check_vanilla_recipes(m, sec):
     """Issues #317 and #318: a vanilla recipe that no technology unlocks (and that is not enabled), whose every product
     a reachable recipe of another kind makes, and that is not hidden, is an alternative in Factoriopedia that nobody can
@@ -1594,6 +1619,10 @@ def check(a):
     lens_info, lenses = check_engraver_lenses(m, sec)
     print(f"\nlaser engraver lenses (issue #325): {lens_info}")
     report("laser engraver recipes without a lens (prototypes/155-fork-ore-chain.lua)", lenses)
+    mine_info, mine_twins = check_electric_mine(m, sec)
+    print(f"\nelectric mine (issue #335): {mine_info}")
+    report("Manual Mine recipes without an electric twin of the Ore Drilling Plants (prototypes/163-fork-electric-mine.lua)",
+           mine_twins)
     vanilla_info, vanilla = check_vanilla_recipes(m, sec)
     print(f"\nvanilla recipes of Gregtorio's items (issues #317, #318): {vanilla_info}")
     report("vanilla recipes without a technology whose products Gregtorio makes another way (delete them in "
@@ -1702,7 +1731,7 @@ def runtime(a):
     print(f"benchmark: {ran.group(0) if ran else 'did not run'}")
     # the ME network's runtime tests are in me-network since issue #83 (its tools/devcheck)
     tests = (("MOLD", "mold test"), ("LENS", "lens test"), ("POWER", "power test"), ("FUEL", "fuel check test"), ("COOLED", "cooled fluid test"),
-             ("TIERS", "turbine tier test"), ("RECIPES", "recipe test"), ("CRUSH", "raw ore crushing test"), ("STEAM", "steam turbine test"), ("CHAIN", "nuclear chain test"), ("LSC", "supercapacitor test"), ("LSUP", "supercapacitor upgrade test"), ("ELEVATOR", "space elevator test"), ("MELT", "melt and cast test"), ("OFFER", "offered recipes test"), ("VICTORY", "victory test"),
+             ("TIERS", "turbine tier test"), ("RECIPES", "recipe test"), ("CRUSH", "raw ore crushing test"), ("STEAM", "steam turbine test"), ("CHAIN", "nuclear chain test"), ("LSC", "supercapacitor test"), ("LSUP", "supercapacitor upgrade test"), ("ELEVATOR", "space elevator test"), ("MELT", "melt and cast test"), ("OFFER", "offered recipes test"), ("EMINE", "electric mine test"), ("VICTORY", "victory test"),
              ("POSTVICTORY", "post-victory test"))
     for key, label in tests:
         m = re.search(rf"DEVCHECK-RUNTIME-{key} (.*)", log)
