@@ -561,8 +561,7 @@ F.tech{
 --- 4196 x 800 x 500 J = 1678.4 MJ, in a fuel category of its own (GT's rocketFuels map: only rocket engines burn it).
 --- Their recipes are GT++'s ("PCP", "EME", "GWG": 2 pistons, a circuit of the next tier, 2 motors, the hull, 2 gears, a
 --- double cable): Tantalloy-61, which the mod lacks, becomes Tantalloy-60; a double cable 2 cables. The fuel's recipe
---- is GTNH's in the ExxonMobil Chemical Plant (159). GT++'s Large Rocket Engine (air intakes, carbon dioxide, liquid
---- hydrogen boost, 90 % of its hatch burnt each second for a fixed 2 A of IV) has no Factorio counterpart: issue #304.
+--- is GTNH's in the ExxonMobil Chemical Plant (159). GT++'s Large Rocket Engine: below (issue #304).
 --------------------------------------------------------------------------------
 
 data:extend({ { type = "fuel-category", name = "rocket-engine-fuel" } })
@@ -624,4 +623,66 @@ F.tech{
 F.tech{
 	name = "turbo-rocket-engine", prerequisites = { "advanced-rocket-engine", "luv-components", "luv-machines", "advanced-smds" },
 	packs = 7, count = 1000, recipes = { "luv-rocket-engine" },
+}
+--- issue #304 (the maintainer's decision: build it, simplified): GT++'s Large Rocket Engine, the "Rocketdyne F-1A Engine"
+--- (gtPlusPlus/xmod/gregtech/common/tileentities/machines/multi/production/MTELargeRocketEngine.java). GT++ burns 90 %
+--- of the rocket fuel in its hatch each second (consumeFuel, :360-375) for an energy of 3 x the fuel's value (setEUProduction,
+--- :377-395; the cube roots above 30 000 EU/t are not reached at its output), and gives a fixed 2 amps of IV once its
+--- efficiency is up (:330-345): fed just what it burns, 3 x the fuel's value goes into a fixed 2 A of IV. Here a burner
+--- generator on rocket fuel cells with that: efficiency 3, 2 amps of IV. Left out, as the large combustion engine of #255
+--- leaves its extras out: the 8 air intake hatches and the air they take, the carbon dioxide (consumeCO2, :399), the
+--- lubricant (:126) and the liquid hydrogen boost (consumeLOH, :403-407; Gregtorio has no liquid hydrogen).
+--- Its item is the controller and the structure's minimum (checkCasingMin 16 Turbodyne Casings, the 8 gear boxes of its
+--- shape), 2 IV dynamo hatches for its 2 amps and 3 hulls for the input, maintenance and muffler hatches (as #255).
+--- Recipes: GT++'s (GregtechRocketFuelGenerator.java:34-46): the controller from a large combustion engine, 2 IV pistons,
+--- 2 EV field generators, a LuV circuit, 2 8x platinum cables (16 cables) and 2 Maraging Steel 350 gears; the Turbodyne
+--- Casing from 4 Nitinol 60 gears, 2 medium tungstensteel pipes, a robust tungstensteel casing and a long tungstensteel
+--- rod. The mod lacks Maraging Steel 350 (Maraging Steel 300, the closest), gears of both alloys and the pipe: a gear is 4
+--- plates and a medium pipe 3 plates (GT's recipes). The gear box (GT++'s Inconel Reinforced Casing) is the mod's.
+create_item{
+	name = "turbodyne-casing",
+	icon = FORK_ICON .. "turbodyne-casing.png",
+	category = "crafting-or-assembling-recipes",
+	energy_required = 5,
+	ingredients = {
+		{ type = "item", name = "nitinol-60-plate", amount = 16 },
+		{ type = "item", name = "tungstensteel-plate", amount = 6 },
+		{ type = "item", name = "robust-tungstensteel-machine-casing", amount = 1 },
+		{ type = "item", name = "long-tungstensteel-rod", amount = 1 },
+	},
+}
+create_item{
+	name = "large-rocket-engine",
+	icon = FORK_ICON .. "large-rocket-engine.png",
+	place_result = "large-rocket-engine",
+	subgroup = "subgroup-iv-age-multiblocks",
+	stack_size = 10,
+	ingredients = {
+		{ type = "item", name = "large-combustion-engine", amount = 1 },
+		{ type = "item", name = "iv-piston", amount = 2 },
+		{ type = "item", name = "ev-field-generator", amount = 2 },
+		{ type = "item", name = "luv-circuit", amount = 1 },
+		{ type = "item", name = "platinum-cable", amount = 16 },
+		{ type = "item", name = "maraging-steel-300-plate", amount = 8 },
+		{ type = "item", name = "turbodyne-casing", amount = 16 },
+		{ type = "item", name = "inconel-reinforced-casing", amount = 8 },
+		{ type = "item", name = "iv-dynamo-hatch", amount = 2 },
+		{ type = "item", name = "lv-machine-hull", amount = 3 },
+	},
+}
+create_burner_generator{
+	name = "large-rocket-engine",
+	icon = FORK_ICON .. "large-rocket-engine.png",
+	efficiency = 3,
+	fuel_categories = { "rocket-engine-fuel" },
+	max_power = "20.48MW",   -- (2 x EU32_IV: 2 amps of IV)
+	working_animation = SPRITE_PATH .. "large-rocket-engine-working.png",
+	idle_animation = SPRITE_PATH .. "large-rocket-engine-idle.png",
+	frame_count = 1,
+}
+data.raw["burner-generator"]["large-rocket-engine"].localised_description = { "entity-description.large-rocket-engine" }
+F.tech{
+	name = "large-rocket-engine", prerequisites = { "advanced-rocket-engine", "large-combustion-engine", "luv-components",
+		"industrial-extrusion-machine", "industrial-cutting-factory", "hyper-intensity-laser-engraver", "space-science-pack" },   -- (#252: its casings' parts)
+	packs = 7, count = 1000, recipes = { "large-rocket-engine", "turbodyne-casing" },
 }

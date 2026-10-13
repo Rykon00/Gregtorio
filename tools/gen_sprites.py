@@ -250,6 +250,10 @@ MULTIBLOCKS = {
     "luv-rocket-engine": ((3, 3), "miscutils:TileEntities/adv_machine_lesu", None,
                           ("miscutils:TileEntities/machine_top_dieselmotor2",
                            "miscutils:TileEntities/machine_top_dieselmotor2_active"), None),
+    # issue #304: GT++'s Large Rocket Engine (its Turbodyne Casing, the controller face, the Inconel gear boxes in the middle row)
+    "large-rocket-engine": ((3, 3), "miscutils:TileEntities/MACHINE_CASING_ROCKETDYNE", None,
+                            "miscutils:iconsets/controllerFaces/largeRocketEngine",
+                            "miscutils:TileEntities/MACHINE_CASING_STABLE_HASTELLOY_X"),
     # issue #301: the Space Elevator per motor tier (gtnhintergalactic's base casing, support structure and the motor)
     **{f"space-elevator-mk{t}": ((11, 11), "gtnhintergalactic:spaceElevator/BaseCasing", None,
                                  f"gtnhintergalactic:spaceElevator/MotorT{t}_Side",
@@ -276,7 +280,7 @@ CONTROLLER_ICONS = {"neutron-activator", "water-purification-plant", "uv-large-n
 WHOLE_ICONS = {"large-titanium-boiler", "large-combustion-engine", "digester", "dissolution-tank",
                "exxonmobil-chemical-plant", "mv-dehydrator", "hv-dehydrator", "ev-dehydrator", "iv-dehydrator",
                "luv-dehydrator", "zpm-dehydrator", "void-miner-i", "void-miner-ii", "void-miner-iii",
-               "ev-rocket-engine", "iv-rocket-engine", "luv-rocket-engine",
+               "ev-rocket-engine", "iv-rocket-engine", "luv-rocket-engine", "large-rocket-engine",
                *(f"space-elevator-mk{t}" for t in range(1, 6)),
                *(f"space-elevator-mining-module-mk{t}" for t in range(1, 4)),
                "planetary-gas-siphon", *(f"space-elevator-pump-module-mk{t}" for t in range(1, 4))}
@@ -327,6 +331,7 @@ STEAM_TURBINES = {
 STEAM_TURBINE_ICONS = {"large-gas-turbine"}
 # items whose icon is a GT block texture (written to graphics/icons/fork/)
 TEXTURE_ICONS = {
+    "turbodyne-casing": "miscutils:TileEntities/MACHINE_CASING_ROCKETDYNE",   # issue #304
     "titanium-reinforced-borosilicate-glass-block": "bartworks:TitaniumReinforcedBoronSilicateGlassBlock",
     "tungstensteel-turbine-casing": "gregtech:iconsets/MACHINE_CASING_TURBINE_TUNGSTENSTEEL",
     "naquadah-reactor-casing": "gregtech:iconsets/NAQUADAH_REACTOR_CASING",
