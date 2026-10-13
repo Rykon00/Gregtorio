@@ -159,8 +159,9 @@ local function recipe(def)
 	OC.made(name)
 	FORK_GT_PARTS.recipes[name] = true
 	local groups = { category ~= "crafting" and OC.machine_techs(category) or nil }
+	--- the mold too (issue #320): it stays in the machine's mold slot (150), but the recipe needs it there
 	for _, i in pairs(def.ingredients) do
-		if i.type == "item" and i.name ~= "mold" then groups[#groups + 1] = item_techs(i.name) end
+		if i.type == "item" then groups[#groups + 1] = item_techs(i.name) end
 	end
 	if not OC.unlock_after(name, groups) then
 		--- the machine and the input on branches without a common later technology: the latest of them

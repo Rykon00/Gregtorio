@@ -698,7 +698,7 @@ for _, m in pairs({ "gold", "iron", "neodymium" }) do
 		name = made(recipe{ name = m .. "-ingot-from-nuggets", category = "lv-alloy-smelter-recipes", time = 10,
 			subgroup = "subgroup-lv-alloy-smelter-recipes", main = m .. "-ingot", ingredients = { item(nugget, 9), item("mold") },
 			results = { item(m .. "-ingot"), item("mold") } })
-		unlock_after(name, { machine_techs("lv-alloy-smelter-recipes"), item_techs(nugget) })
+		unlock_after(name, { machine_techs("lv-alloy-smelter-recipes"), item_techs(nugget), item_techs("mold") })
 	end
 end
 log("FORK-ORE-CHAIN: " .. separations .. " electromagnetic separator recipes")
@@ -1232,7 +1232,7 @@ for _, m in pairs(SMELT_SELF) do
 		recipe{ name = name, category = "lv-alloy-smelter-recipes", time = 10, subgroup = "subgroup-lv-alloy-smelter-recipes",
 			main = m .. "-ingot", ingredients = { item(m .. "-nugget", 9), item("mold") },
 			results = { item(m .. "-ingot"), item("mold") } }
-		unlock_after(made(name), { machine_techs("lv-alloy-smelter-recipes"), item_techs(m .. "-nugget") })
+		unlock_after(made(name), { machine_techs("lv-alloy-smelter-recipes"), item_techs(m .. "-nugget"), item_techs("mold") })
 	end
 end
 log("FORK-ORE-CHAIN: " .. smelted .. " furnace recipes of ore forms, " .. new_items .. " new ingots and nuggets (issue #205)")
