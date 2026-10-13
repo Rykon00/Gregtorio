@@ -259,6 +259,8 @@ local RM_MACHINES = {
 	-- machine of an old save loads without its recipe
 	{ "chemical-plant", "battery", nil },
 	{ "foundry", "casting-iron", nil },
+	-- issue #316: a laser engraver's gem step keeps its recipe; the lens it took as an ingredient goes into its lens slot
+	{ "ev-laser-engraver", "engraving-chipped-ruby-to-flawed", "engraving-chipped-ruby-to-flawed" },
 }
 --- Issue #317: a character of the old save has a hand craft of a deleted vanilla recipe in its queue; after the update the
 --- save loads, the character is there and its queue is empty. The game drops the craft with its ingredients (they are
@@ -291,10 +293,14 @@ local function setup_removed()
 				raise_built = true }
 			game.forces.player.recipes[m[2]].enabled = true
 			e.set_recipe(m[2])
+			local items = {}
 			for _, ing in pairs(r.ingredients) do
-				if ing.type == "item" then e.insert{ name = ing.name, count = ing.amount * 2 } end
+				if ing.type == "item" then
+					e.insert{ name = ing.name, count = ing.amount * 2 }
+					items[ing.name] = true
+				end
 			end
-			machines[#machines + 1] = { entity = e, old = m[2], new = m[3], name = m[4] }
+			machines[#machines + 1] = { entity = e, old = m[2], new = m[3], name = m[4], items = items }
 		end
 	end
 	local queue
@@ -344,6 +350,20 @@ local function check_removed()
 			problems[#problems + 1] = "the machine with " .. m.old .. " has " .. tostring(got) .. ", not " .. tostring(m.new)
 		elseif m.name and m.entity.name ~= m.name then
 			problems[#problems + 1] = "the machine with " .. m.old .. " is a " .. m.entity.name .. ", not a " .. m.name
+		end
+	end
+	--- issue #316: a machine whose old recipe took the mold or lens it now keeps in its slot has it there and runs
+	local md = prototypes.mod_data["fork-mold-recipes"]
+	local tools = md and md.data or {}
+	for _, m in pairs(p.machines or {}) do
+		local tool = m.new and tools[m.new]
+		if tool and m.entity.valid and m.items and m.items[tool] then
+			local inv = m.entity.get_module_inventory()
+			if not (inv and inv.get_item_count(tool) == 1) then
+				problems[#problems + 1] = "the machine with " .. m.new .. " has no " .. tool .. " in its slot"
+			elseif m.entity.disabled_by_script then
+				problems[#problems + 1] = "the machine with " .. m.new .. " is stopped with its " .. tool .. " in the slot"
+			end
 		end
 	end
 	local q = p.queue

@@ -167,7 +167,8 @@
     recipes and the hulls, recipes `recycling-<machine>-<item>` in `FORK_RECYCLING.recipes`, unlocked late by
     `FORK_RECYCLING.unlock()` in data-final-fixes.lua because that file replaces and disables vanilla technologies;
     devcheck checks the recipe shape and the blacklist)
-  - 150 molds (mold slot instead of mold ingredient; must load after every file that creates machines)
+  - 150 molds (mold slot instead of mold ingredient; issue #316: the laser engravers' lens slot the same way, every
+    `<material>-lens` item a module of the category `lens`; must load after every file that creates machines)
   - 190 manual-labor burner usage (fist icon in the fuel slot)
   - 191 burner fire (issue #137: the fire animations of the stone and iron furnace and the small coal boiler, drawn only
     while they work; `tools/gen_fire_sprites.py`)

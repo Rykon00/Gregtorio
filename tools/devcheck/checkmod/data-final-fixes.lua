@@ -80,6 +80,10 @@ for t, _ in pairs(defines.prototypes.entity) do
 		end
 	end
 end
+--- K recipe item: the mold or lens a recipe needs in the machine's module slot, not as an ingredient
+--- (prototypes/150-fork-molds.lua, issue #316; absent in older versions)
+local md = data.raw["mod-data"] and data.raw["mod-data"]["fork-mold-recipes"]
+for n, item in pairs(md and md.data or {}) do D("K", n, item) end
 section("DUMP", dump)
 
 --- Issue #91: the Gregtorio recipes that stay locked on purpose (FORK_RECIPES_LOCKED in
