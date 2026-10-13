@@ -1531,8 +1531,13 @@ local ENGRAVER_RECIPE_LENS = {
 	["nand-memory-wafer-ed"] = "ender-pearl-lens", ["nand-memory-wafer-ad"] = "ender-pearl-lens",     -- NHC 103-124
 	["nor-memory-wafer-pd"] = "ender-eye-lens", ["nor-memory-wafer-nd"] = "ender-eye-lens",           -- NHC 131-138
 }
---- laser engraver recipes that keep no lens, with the reason (devcheck fails for any other engraver recipe without one)
-local ORANGE = "GT's orange lens (LE 203-224: topaz, amber) has no Gregtorio gem of that colour (maintainer's decision on #325)"
+--- laser engraver recipes that keep no lens, with the reason (devcheck fails for any other engraver recipe without one).
+--- Orange (issue #332): GT registers craftingLensOrange for the lens of every transparent dyeOrange material, that is topaz
+--- and amber only (no bartworks gem maps to orange). Gregtorio has neither; GTNH's sources are the Twilight Forest
+--- (topaz and amber small ores, amber veins), Horus (topaz small ores), the Callisto ice vein (topaz), the space elevator's
+--- gem asteroid, Thaumcraft and bees (amber). The earliest the mod has is the Callisto ice vein at Reach the Jovian Moons
+--- (IV), the recipes are MV to LuV: which way to go is the maintainer's decision on #332.
+local ORANGE = "GT's orange lens (LE 200-224) is cut from topaz or amber, which the mod lacks before IV (open decision #332)"
 local CHEMICAL = "GTNH makes this wafer in the chemical reactor, not in the laser engraver, so there is no lens to follow"
 FORK_ENGRAVER_NO_LENS = {
 	["simple-soc-wafer-sw"] = ORANGE, ["simple-soc-wafer-pd"] = ORANGE, ["simple-soc-wafer-nd"] = ORANGE,
