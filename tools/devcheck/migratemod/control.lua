@@ -255,7 +255,15 @@ local RM_MACHINES = {
 	{ "lv-macerator", "gypsum", "gypsum" },
 	{ "lv-macerator", "sulfur", "sulfur" },
 	{ "lv-macerator", "calcite", "calcite" },
+	-- issue #317: vanilla recipes deleted for good (no technology unlocked them, the old save enables them by script); a
+	-- machine of an old save loads without its recipe
+	{ "chemical-plant", "battery", nil },
+	{ "foundry", "casting-iron", nil },
 }
+--- Issue #317: a character of the old save has a hand craft of a deleted vanilla recipe in its queue; after the update the
+--- save loads, the character is there and its queue is empty. The game drops the craft with its ingredients (they are
+--- neither in the inventory nor on the ground), which only a script could cause: no technology ever unlocked the recipe.
+local RM_QUEUED = { recipe = "small-lamp", count = 3 }
 local RM_AT = { -30.5, Y + 30.5 }
 
 local function setup_removed()
@@ -289,14 +297,23 @@ local function setup_removed()
 			machines[#machines + 1] = { entity = e, old = m[2], new = m[3], name = m[4] }
 		end
 	end
-	if #list == 0 and #items == 0 and #machines == 0 then
+	local queue
+	local qr = prototypes.recipe[RM_QUEUED.recipe]
+	if qr then
+		local c = s.create_entity{ name = "character", position = { RM_AT[1], RM_AT[2] + 20 }, force = "player" }
+		game.forces.player.recipes[RM_QUEUED.recipe].enabled = true
+		for _, ing in pairs(qr.ingredients) do c.insert{ name = ing.name, count = ing.amount * RM_QUEUED.count } end
+		queue = { character = c, queued = c.begin_crafting{ recipe = RM_QUEUED.recipe, count = RM_QUEUED.count } }
+	end
+	if #list == 0 and #items == 0 and #machines == 0 and not queue then
 		storage.removed = "skipped"
 		log("DEVCHECK-MIGRATE-SETUP-REMOVED skipped (none of the removed fluids or items in this version)")
 		return
 	end
-	storage.removed = { tanks = list, chest = chest, items = items, machines = machines }
+	storage.removed = { tanks = list, chest = chest, items = items, machines = machines, queue = queue }
 	log("DEVCHECK-MIGRATE-SETUP-REMOVED ok (" .. #list .. " fluids in tanks, " .. #items .. " items in a chest, "
-		.. #machines .. " machines with recipes of the old line)")
+		.. #machines .. " machines with recipes of the old line"
+		.. (queue and (", " .. queue.queued .. " hand crafts of " .. RM_QUEUED.recipe .. " queued") or "") .. ")")
 end
 
 local function check_removed()
@@ -329,9 +346,19 @@ local function check_removed()
 			problems[#problems + 1] = "the machine with " .. m.old .. " is a " .. m.entity.name .. ", not a " .. m.name
 		end
 	end
+	local q = p.queue
+	if q then
+		local c = q.character
+		if not c.valid then
+			problems[#problems + 1] = "the character with the queued " .. RM_QUEUED.recipe .. " is gone"
+		elseif c.crafting_queue_size ~= 0 then
+			problems[#problems + 1] = "the crafting queue still holds " .. c.crafting_queue_size .. " entries"
+		end
+	end
 	for _, m in pairs(problems) do log("DEVCHECK-MIGRATE-FAIL removed: " .. m) end
 	log("DEVCHECK-MIGRATE-REMOVED " .. (#problems == 0 and "ok" or "failed") .. " (" .. #p.tanks .. " fluids, "
-		.. #p.items .. " items mapped, " .. #(p.machines or {}) .. " machines checked)")
+		.. #p.items .. " items mapped, " .. #(p.machines or {}) .. " machines checked"
+		.. (q and (", queued " .. RM_QUEUED.recipe .. " dropped") or "") .. ")")
 end
 
 local A = "gregtorio-me-autocraft"

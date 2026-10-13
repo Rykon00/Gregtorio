@@ -199,7 +199,10 @@
 - `data-final-fixes.lua` disables vanilla techs (`disable_tech`: hidden, no effects). The main menu simulations that call
   `research_all_technologies()` get the bonuses of those techs from `prototypes/fork-menu-simulations.lua` (PR #65: the
   laser defense simulation's character died without them and its script stopped the menu); after changing the disabled
-  techs or the character, run `python tools/devcheck/devcheck.py menusim --sim all --compare`.
+  techs or the character, run `python tools/devcheck/devcheck.py menusim --sim all --compare`. Its section "VANILLA ITEM
+  REMOVAL" deletes vanilla prototypes for good; issue #317's `VANILLA_RECIPES_REMOVED` there holds the vanilla and Space
+  Age recipes that no technology unlocks, of items Gregtorio makes its own way. They are deleted with the technology effects
+  and tips-and-tricks triggers that name them (a tip's trigger naming a missing recipe fails the load), and logged as `FORK-REMOVED`.
 - Names (issue #230): the engine names a recipe after its product only when the recipe has the product's name; every
   other recipe shows `recipe-name.<recipe>`, a main product does not change that. `prototypes/fork-locale.lua` (required
   first from `data.lua`, `FORK_LOCALE.name_recipes()` at the end of `data-final-fixes.lua`) gives every Gregtorio recipe
