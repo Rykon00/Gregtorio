@@ -14,11 +14,12 @@
 ---   * the Molybdenum vein (Nether, End, Twilight Forest: wulfenite, molybdenite, molybdenum, powellite): molybdenite,
 ---     the one of them the mod has;
 ---   * soul sand (a Nether block): the dig site;
----   * nether air: GT++'s air intake hatch gives it in the Nether (MTEHatchAirIntake.java 41-53); here the compressor
----     next to the air collection, unlocked with the nether air distillation (End Steel).
+---   * nether air: GT++'s air intake hatch gives it in the Nether (MTEHatchAirIntake.java 41-53); here the HV compressor
+---     (issue #314: not the LV one of the air collection), unlocked with the nether air distillation (End Steel).
 --- The End (HV, technology Reach the End, after Eyes of Ender; before Radon, the first consumer of ender air):
 ---   * end stone (an End block) as compressed end stone;
----   * ender air in the compressor; its liquefaction and distillation move from EV Machines to Radon, so radon (the
+---   * ender air in the HV compressor (issue #314: the EV one would lock the EV pack's radon); its liquefaction and
+---     distillation move from EV Machines to Radon, so radon (the
 ---     quantum eye of the EV pack) comes from the End at HV (the maintainer's decision; GT's chemistry route, 8 plutonium
 ---     ingots, tiny uranium and air, is left out: the mod has neither plutonium ingots nor tiny uranium piles).
 --- GTNH's End asteroids (naquadah, platinum, tungstate veins) come with the T3 dimensions (issue #285).
@@ -84,9 +85,9 @@ local nether = {
 }
 create_recipe{
 	name = "nether-air-intake",
-	category = "lv-compressor-recipes",
+	category = "hv-compressor-recipes",   -- issue #314: an HV compressor (the maintainer's decision; EV would lock radon)
 	energy_required = 10,
-	subgroup = "subgroup-lv-compressor-recipes",
+	subgroup = "subgroup-hv-compressor-recipes",
 	ingredients = {},
 	results = { fluid("nether-air", 1000) },
 	main_product = "nether-air",
@@ -101,9 +102,9 @@ local the_end = {
 }
 create_recipe{
 	name = "ender-air-intake",
-	category = "lv-compressor-recipes",
+	category = "hv-compressor-recipes",   -- issue #314: an HV compressor (the maintainer's decision; EV would lock radon)
 	energy_required = 10,
-	subgroup = "subgroup-lv-compressor-recipes",
+	subgroup = "subgroup-hv-compressor-recipes",
 	ingredients = {},
 	results = { fluid("ender-air", 1000) },
 	main_product = "ender-air",
