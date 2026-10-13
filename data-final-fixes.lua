@@ -29,8 +29,8 @@ data.raw["item"]["electric-furnace"] = nil
 --- every tool that reads the recipes. None of their machines (chemical plant, foundry, biochamber, cryogenic plant,
 --- electromagnetic plant) has a technology in Gregtorio. Deleted with the technology effects and tips that name them
 --- (FORK-REMOVED in the log); the items stay, and so do their recycling recipes.
---- Left for issue #318: the vanilla oil recipes (heavy-oil-cracking, simple-coal-liquefaction and the rest of the oil
---- refinery's), which wait for a decision on the space pump's heavy and light oil.
+--- Issue #318 (maintainer's decision): the vanilla oil recipes too, though petroleum gas and solid fuel have no Gregtorio
+--- producer; heavy and light oil have GTNH's uses instead (162).
 local VANILLA_RECIPES_REMOVED = {
 	-- the item's own recipe, replaced by Gregtorio's
 	["battery"] = "GTNH fills a battery hull in the canning machine (filling-assorted-batteries)",
@@ -69,7 +69,27 @@ local VANILLA_RECIPES_REMOVED = {
 	["biolubricant"] = "Gleba biochamber; Gregtorio's recipe lubricant",
 	["biosulfur"] = "Gleba biochamber; sulfur from Gregtorio's recipes",
 	["burnt-spoilage"] = "Gleba biochamber; carbon from Gregtorio's recipes",
+	-- issue #318: the oil refinery's and the chemical plant's oil recipes and the oil barrels (no barrel has a recipe)
+	["basic-oil-processing"] = "oil refinery; Gregtorio distils crude oil in the distillation towers (oil-distillation)",
+	["advanced-oil-processing"] = "oil refinery; oil-distillation",
+	["coal-liquefaction"] = "oil refinery",
+	["simple-coal-liquefaction"] = "Vulcanus oil refinery",
+	["heavy-oil-cracking"] = "chemical plant; heavy oil goes into the distillation tower (162)",
+	["light-oil-cracking"] = "chemical plant; light oil goes into the distillation tower (162)",
+	["solid-fuel-from-heavy-oil"] = "chemical plant",
+	["solid-fuel-from-light-oil"] = "chemical plant",
+	["solid-fuel-from-petroleum-gas"] = "chemical plant",
+	["solid-fuel-from-ammonia"] = "Aquilo chemical plant",
+	["heavy-oil-barrel"] = "filling a barrel, which no recipe makes",
+	["light-oil-barrel"] = "filling a barrel, which no recipe makes",
+	["petroleum-gas-barrel"] = "filling a barrel, which no recipe makes",
+	["empty-heavy-oil-barrel"] = "emptying a barrel, which no recipe fills",
+	["empty-light-oil-barrel"] = "emptying a barrel, which no recipe fills",
+	["empty-petroleum-gas-barrel"] = "emptying a barrel, which no recipe fills",
 }
+--- Issue #318: devcheck fails for a recipe of this class (a vanilla recipe without a technology, every product of which
+--- Gregtorio makes another way, not hidden) that is neither deleted here nor kept in this allow-list with its reason
+FORK_VANILLA_RECIPES_KEPT = {}
 for name, _ in pairs(VANILLA_RECIPES_REMOVED) do
 	if data.raw.recipe[name] then
 		data.raw.recipe[name] = nil
