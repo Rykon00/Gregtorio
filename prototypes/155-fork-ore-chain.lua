@@ -750,8 +750,10 @@ local GRADES = { "chipped", "flawed", "gem", "flawless", "exquisite" }
 local MACERATE = { chipped = { 1, small = true }, flawed = { 2, small = true }, gem = { 1 }, flawless = { 2 }, exquisite = { 4 } }
 --- the lenses the lathe makes from an exquisite gem (GT: the gems whose material keeps the lens prefix)
 --- issue #205: the red and yellow garnet lens (GT's GarnetRed and GarnetYellow keep the lens prefix)
+--- issue #325 (maintainer's decision): the cyan and blue lens of GTNH's wafer engraving (GT: green sapphire, sapphire,
+--- blue topaz, which Gregtorio lacks) from the Gregtorio gems of that colour, apatite and lapis (GT's dyeCyan, dyeBlue)
 local LENS = { ruby = "ruby-lens", emerald = "emerald-lens", diamond = "diamond-lens", ["red-garnet"] = "red-garnet-lens",
-	["yellow-garnet"] = "yellow-garnet-lens" }
+	["yellow-garnet"] = "yellow-garnet-lens", apatite = "apatite-lens", lapis = "lapis-lens" }
 --- the lens of the gem's colour for the laser engraver (MaterialsInit.java setColor; GT takes any lens of the colour)
 --- (issue #205: quartzite white, red garnet red, yellow garnet yellow; tricalcium phosphate, yellow, gets the yellow garnet
 --- lens after the byproduct gems below)
@@ -766,7 +768,7 @@ local ENGRAVE = { chipped = { "mv-laser-engraver-recipes", 30 }, flawed = { "mv-
 local DARK_TINY, DARK_DUST = "tiny-pile-of-dark-ash-dust", "dark-ash-dust"
 add_item(DARK_TINY, "subgroup-macerator-dust", "z-dark-ash-a")
 add_item(DARK_DUST, "subgroup-macerator-dust", "z-dark-ash-b")
-for _, lens in pairs({ "emerald-lens", "diamond-lens", "red-garnet-lens", "yellow-garnet-lens" }) do
+for _, lens in pairs({ "emerald-lens", "diamond-lens", "red-garnet-lens", "yellow-garnet-lens", "apatite-lens", "lapis-lens" }) do
 	if not data.raw.item[lens] then add_item(lens, sub_of("ruby-lens", "subgroup-lv-lathe-recipes"), "z-" .. lens) end
 end
 
@@ -1468,6 +1470,88 @@ do
 	log("FORK-ORE-CHAIN: casting run for the ingots and nuggets of this file: " .. FORK_CASTING.casts .. " casts, "
 		.. FORK_CASTING.melts .. " melt recipes in all (issue #207)")
 end
+
+--------------------------------------------------------------------------------
+--- Issue #325: GTNH's lens for the other laser engraver recipes. GT engraves with a lens that stays (stack size 0); a
+--- recipe here takes its lens as ingredient and result, and 150 turns it into the engraver's lens slot. GT takes any lens
+--- of the colour (OreDictRegistrationHandler.java:303-308: a transparent material's lens is craftingLens<its dye>);
+--- Gregtorio names one: red the ruby lens, white the diamond lens, green the emerald lens, yellow the yellow garnet lens,
+--- cyan the apatite lens and blue the lapis lens (the maintainer's substitutes for GT's green sapphire and sapphire,
+--- above). Sources: gregtech LaserEngraverRecipes.java (LE) and NewHorizonsCoreMod's LaserEngraverRecipes.java (NHC).
+--- The NAND and NOR wafers take GT's ender pearl and ender eye lens (NHC 99-152). GT's lens from a plate (ProcessingLens.java:
+--- 1 min, MV, with a small pile of the dust where Gregtorio has one), the plate of a gem that cannot be hammered from its
+--- dust (ProcessingDust.java: compressor, 15 s), the dust from the gem in the macerator (2.8 s, as Gregtorio's diamond). The
+--- yellow garnet and the emerald lens get this route too: the exquisite yellow garnet comes only from the implosion
+--- compressor, after the LPIC wafer, the exquisite emerald from the sifter, after the ULPIC wafer.
+--------------------------------------------------------------------------------
+local function plate_lens(m, gem)
+	local dust, plate, lens, small = m .. "-dust", m .. "-plate", m .. "-lens", "small-pile-of-" .. m .. "-dust"
+	local sub = sub_of("ruby-lens", "subgroup-lv-lathe-recipes")
+	if not data.raw.item[dust] then
+		add_item(dust, "subgroup-macerator-dust", "z-" .. dust)
+		local name = made(recipe{ name = dust .. "-maceration", category = "lv-macerator-recipes", time = 2.8, main = dust,
+			ingredients = { item(gem) }, results = { item(dust) } })
+		unlock_after(name, { machine_techs("lv-macerator-recipes"), item_techs(gem) })
+	end
+	if not data.raw.item[plate] then add_item(plate, sub, "z-" .. plate) end
+	if not data.raw.item[lens] then add_item(lens, sub, "z-" .. lens) end
+	local name = made(recipe{ name = plate .. "-compressor", category = "lv-compressor-recipes", time = 15, main = plate,
+		ingredients = { item(dust) }, results = { item(plate) } })
+	unlock_after(name, { machine_techs("lv-compressor-recipes"), item_techs(dust) })
+	local out = { item(lens) }
+	if data.raw.item[small] then out[2] = item(small) end
+	name = made(recipe{ name = lens .. "-from-plate", category = "mv-lathe-recipes", time = 60 * MV_SPEED, main = lens,
+		ingredients = { item(plate) }, results = out })
+	unlock_after(name, { machine_techs("mv-lathe-recipes"), item_techs(plate) })
+end
+plate_lens("ender-pearl", "ender-pearl")
+plate_lens("ender-eye", "eye-of-ender")
+plate_lens("yellow-garnet")
+plate_lens("emerald", "emerald")   -- the ULPIC wafer (MV Energy Hatches) comes before the emerald sifter
+
+--- recipe -> its lens (the GT recipe: file, line of the output). Gregtorio's wafers: sw silicon (GT's Wafer), pd phosphorus
+--- (Wafer2), nd/qd naquadah (Wafer3), ed europium (Wafer4), ad americium (Wafer5)
+local ENGRAVER_RECIPE_LENS = {
+	["ilc-wafer-sw"] = "ruby-lens", ["ilc-wafer-pd"] = "ruby-lens", ["ilc-wafer-nd"] = "ruby-lens",   -- LE 308-323, red
+	["npic-wafer"] = "ruby-lens",                                                                     -- LE 331-339, red
+	["cpu-wafer-sw"] = "diamond-lens", ["cpu-wafer-pd"] = "diamond-lens", ["cpu-wafer-nd"] = "diamond-lens",
+	["cpu-wafer-ed"] = "diamond-lens", ["cpu-wafer-ad"] = "diamond-lens",                             -- LE 457-489, white
+	["ulpic-wafer-sw"] = "emerald-lens", ["ulpic-wafer-pd"] = "emerald-lens",                         -- LE 364-371, green
+	["crystal-cpu"] = "emerald-lens",                                                                 -- LE 348, green
+	["lpic-wafer-sw"] = "yellow-garnet-lens", ["lpic-wafer-pd"] = "yellow-garnet-lens",               -- LE 163-170, yellow
+	["soc-wafer-nd"] = "yellow-garnet-lens", ["soc-wafer-ed"] = "yellow-garnet-lens",
+	["soc-wafer-ad"] = "yellow-garnet-lens",                                                          -- LE 178-194, yellow
+	["ram-wafer-sw"] = "apatite-lens", ["ram-wafer-pd"] = "apatite-lens", ["ram-wafer-qd"] = "apatite-lens",   -- LE 250-281, cyan
+	["mpic-wafer-pd"] = "lapis-lens", ["mpic-wafer-nd"] = "lapis-lens",                               -- LE 120-128 (PIC), blue
+	["qpic-wafer"] = "lapis-lens",                                                                    -- LE 136, blue
+	["engraved-lapotron-chip"] = "lapis-lens",                                                        -- LE 104 (master chip), blue
+	["nand-memory-wafer-pd"] = "ender-pearl-lens", ["nand-memory-nd"] = "ender-pearl-lens",
+	["nand-memory-wafer-ed"] = "ender-pearl-lens", ["nand-memory-wafer-ad"] = "ender-pearl-lens",     -- NHC 103-124
+	["nor-memory-wafer-pd"] = "ender-eye-lens", ["nor-memory-wafer-nd"] = "ender-eye-lens",           -- NHC 131-138
+}
+--- laser engraver recipes that keep no lens, with the reason (devcheck fails for any other engraver recipe without one)
+local ORANGE = "GT's orange lens (LE 203-224: topaz, amber) has no Gregtorio gem of that colour (maintainer's decision on #325)"
+local CHEMICAL = "GTNH makes this wafer in the chemical reactor, not in the laser engraver, so there is no lens to follow"
+FORK_ENGRAVER_NO_LENS = {
+	["simple-soc-wafer-sw"] = ORANGE, ["simple-soc-wafer-pd"] = ORANGE, ["simple-soc-wafer-nd"] = ORANGE,
+	["simple-soc-wafer-ed"] = ORANGE,
+	["ppic-wafer"] = CHEMICAL .. " (NHC ChemicalReactorRecipes.java:257)",
+	["fpic-wafer"] = CHEMICAL .. " (NHC ChemicalReactorRecipes.java:261)",
+	["apic-wafer"] = CHEMICAL .. " (NHC ChemicalReactorRecipes.java:528)",
+}
+local given = 0
+for name, lens in pairs(ENGRAVER_RECIPE_LENS) do
+	local r = data.raw.recipe[name]
+	if r and data.raw.item[lens] then
+		r.ingredients, r.results = table.deepcopy(r.ingredients), table.deepcopy(r.results)   -- (tables may be shared)
+		table.insert(r.ingredients, item(lens))
+		table.insert(r.results, item(lens))
+		given = given + 1
+	else
+		log("FORK-ORE-CHAIN: no engraver recipe " .. name .. " or no item " .. lens .. " (issue #325)")
+	end
+end
+log("FORK-ORE-CHAIN: " .. given .. " laser engraver recipes take GTNH's lens (issue #325)")
 
 --- issue #222: the helpers for 158-fork-gt-parts.lua (the parts of the new ingots and GT's nugget recipes)
 FORK_ORE_CHAIN.unlock_after, FORK_ORE_CHAIN.machine_techs, FORK_ORE_CHAIN.item_techs, FORK_ORE_CHAIN.made =

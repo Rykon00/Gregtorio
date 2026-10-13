@@ -603,6 +603,23 @@ def check_table_only(m, sec):
 VANILLA_MODS = {"base", "space-age", "quality", "elevated-rails"}
 
 
+def check_engraver_lenses(m, sec):
+    """Issue #325: GT engraves with a lens that stays (prototypes/150-fork-molds.lua puts it into the engraver's lens slot,
+    `K` rows of the dump). Every laser engraver recipe needs one, except the allow-list FORK_ENGRAVER_NO_LENS of
+    prototypes/155-fork-ore-chain.lua with its reason (section ENGRAVERNOLENS); an entry that is not a laser engraver
+    recipe without a lens fails too. Returns (info line, problems)."""
+    kept = {r[0]: (r[1] if len(r) > 1 else "") for r in sec.get("ENGRAVERNOLENS", [])}
+    engraver = [r for r, v in m.R.items() if "laser-engraver" in v["cat"] and not v["hidden"]]
+    without = sorted(r for r in engraver if r not in m.tools)
+    problems = [f"{r}: a laser engraver recipe without a lens (GTNH's lens of the recipe, or FORK_ENGRAVER_NO_LENS)"
+                for r in without if r not in kept]
+    problems += [f"FORK_ENGRAVER_NO_LENS: {r} has no reason" for r, why in sorted(kept.items()) if not why]
+    problems += [f"FORK_ENGRAVER_NO_LENS: {r} is not a laser engraver recipe without a lens" for r in sorted(kept)
+                 if r not in without]
+    return f"{len(engraver)} laser engraver recipes, {len(engraver) - len(without)} with a lens in the lens slot, " \
+           f"{len(kept)} without one on purpose (FORK_ENGRAVER_NO_LENS)", problems
+
+
 def check_vanilla_recipes(m, sec):
     """Issues #317 and #318: a vanilla recipe that no technology unlocks (and that is not enabled), whose every product
     a reachable recipe of another kind makes, and that is not hidden, is an alternative in Factoriopedia that nobody can
@@ -1571,6 +1588,9 @@ def check(a):
     table_info, table_only = check_table_only(m, sec)
     print(f"\ncrafting table and hand only items (issue #126): {table_info}")
     report("items that only the crafting table or the hand can make, without an entry in FORK_RECIPES_TABLE_ONLY", table_only)
+    lens_info, lenses = check_engraver_lenses(m, sec)
+    print(f"\nlaser engraver lenses (issue #325): {lens_info}")
+    report("laser engraver recipes without a lens (prototypes/155-fork-ore-chain.lua)", lenses)
     vanilla_info, vanilla = check_vanilla_recipes(m, sec)
     print(f"\nvanilla recipes of Gregtorio's items (issues #317, #318): {vanilla_info}")
     report("vanilla recipes without a technology whose products Gregtorio makes another way (delete them in "
@@ -1633,7 +1653,7 @@ def check(a):
     ok = not (files or [s for s in sprites if not s.startswith("(")] or uncraft or menu or required or unresearchable
               or new_drafts or fluid_problems or locked or one_pack or fluid_steps or table_only or me_recipes
               or extractor_split or ore_chain or ore_baths or ore_o34 or ore_hammer
-              or circuit_icons or pgm_dusts or recycling or names or gaps or tree or vanilla)
+              or circuit_icons or pgm_dusts or recycling or names or gaps or tree or vanilla or lenses)
     print("\nRESULT:", "OK" if ok else "PROBLEMS FOUND")
     return 0 if ok else 1
 

@@ -261,6 +261,8 @@ local RM_MACHINES = {
 	{ "foundry", "casting-iron", nil },
 	-- issue #316: a laser engraver's gem step keeps its recipe; the lens it took as an ingredient goes into its lens slot
 	{ "ev-laser-engraver", "engraving-chipped-ruby-to-flawed", "engraving-chipped-ruby-to-flawed" },
+	-- issue #325: a wafer engraving recipe that took no lens before gets its lens (the ruby lens) in the lens slot
+	{ "mv-laser-engraver", "ilc-wafer-sw", "ilc-wafer-sw" },
 }
 --- Issue #317: a character of the old save has a hand craft of a deleted vanilla recipe in its queue; after the update the
 --- save loads, the character is there and its queue is empty. The game drops the craft with its ingredients (they are
@@ -300,6 +302,10 @@ local function setup_removed()
 					items[ing.name] = true
 				end
 			end
+			--- a version with the slot: the recipe's mold or lens goes into it, as a player's would
+			local md = prototypes.mod_data["fork-mold-recipes"]
+			local tool = md and md.data[m[2]]
+			if tool and e.get_module_inventory() then e.get_module_inventory().insert{ name = tool } end
 			machines[#machines + 1] = { entity = e, old = m[2], new = m[3], name = m[4], items = items }
 		end
 	end
@@ -352,12 +358,13 @@ local function check_removed()
 			problems[#problems + 1] = "the machine with " .. m.old .. " is a " .. m.entity.name .. ", not a " .. m.name
 		end
 	end
-	--- issue #316: a machine whose old recipe took the mold or lens it now keeps in its slot has it there and runs
+	--- issues #316 and #325: a machine whose recipe needs a mold or lens in its slot has it there after the update and
+	--- runs (the old recipe took it as an ingredient, or none; fork-molds gives a machine new to the slot its tool once)
 	local md = prototypes.mod_data["fork-mold-recipes"]
 	local tools = md and md.data or {}
 	for _, m in pairs(p.machines or {}) do
 		local tool = m.new and tools[m.new]
-		if tool and m.entity.valid and m.items and m.items[tool] then
+		if tool and m.entity.valid then
 			local inv = m.entity.get_module_inventory()
 			if not (inv and inv.get_item_count(tool) == 1) then
 				problems[#problems + 1] = "the machine with " .. m.new .. " has no " .. tool .. " in its slot"

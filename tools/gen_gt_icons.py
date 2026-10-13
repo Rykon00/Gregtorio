@@ -140,6 +140,7 @@ MATERIALS = {
     "netherrack": "Netherrack", "pyrite": "Pyrite", "quartzite": "Quartzite",
     "dark-ash": "DarkAsh",  # issue #193
     "cassiterite": "Cassiterite",  # issue #202: its own crushed ore, dust and ore chain
+    "ender-pearl": "EnderPearl", "ender-eye": "EnderEye",  # issue #325: dust, plate and lens of the NAND/NOR lenses
     "antimony": "Antimony", "molybdenum": "Molybdenum",  # issue #205: their ingots
     # issue #203: the crushed ores and chains of gypsum, sulfur and calcite, calcite's byproduct malachite; issue #207:
     # the garnet minerals, bartworks' platinum metallic powder (WerkstoffLoader.java:811, platinum's colour)
