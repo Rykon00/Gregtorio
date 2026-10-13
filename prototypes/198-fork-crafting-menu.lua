@@ -23,11 +23,10 @@ FORK_CRAFTING_MENU_HIDDEN = {
 	},
 	subgroups = {
 		["fill-barrel"] = "vanilla barrel filling recipes, hidden in vanilla",
-		["empty-barrel"] = "vanilla barrel emptying recipes, hidden in vanilla",
+		-- (issue #323: the vanilla barrel emptying recipes, subgroup empty-barrel, are deleted in data-final-fixes.lua)
 	},
 	recipes = {
-		["rocket-part"] = "vanilla rocket silo recipe, hidden in vanilla",
-		["biter-egg"] = "vanilla captive biter spawner recipe, hidden in vanilla",
+		-- (issue #323: rocket-part and biter-egg, which vanilla hides from the menu, are deleted in data-final-fixes.lua)
 	},
 }
 
