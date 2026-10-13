@@ -23,7 +23,8 @@
 ---     quantum eye of the EV pack) comes from the End at HV (the maintainer's decision; GT's chemistry route, 8 plutonium
 ---     ingots, tiny uranium and air, is left out: the mod has neither plutonium ingots nor tiny uranium piles).
 --- GTNH's End asteroids (naquadah, platinum, tungstate veins) come with the T3 dimensions (issue #285).
---- Issues #284 and #285 add the Moon and Mars, the asteroid belt, Jupiter's moons and Venus (sections below).
+--- Issues #284 and #285 add the Moon and Mars, the asteroid belt, Jupiter's moons and Venus, issue #332 the Twilight
+--- Forest (sections below).
 --- Loads before 142 (data.lua, issue #287): the unlock table of 142 and the ore chains of 155 (which unlock a chain step
 --- after the technology of its raw ore) see the mines. The rules that move unlocks and add prerequisites for them are in
 --- 161-fork-dimension-unlocks.lua, after 159.
@@ -124,6 +125,34 @@ unlock_in("extreme-entity-crushers", { "crushing-endermen" })
 unlock_in("ender-io", { zombie })
 --- the nether air with its first consumer
 unlock_in("end-steel", { "nether-air-intake" })
+
+
+
+--------------------------------------------------------------------------------
+--- THE TWILIGHT FOREST (issue #332, the maintainer's decision): GTNH's T0 dimension (DimensionHelper.java:99), here MV
+--- like the Nether. Its ores the mod lacked are topaz and amber, the two materials of GT's orange lens
+--- (craftingLensOrange: the lens of every transparent dyeOrange material), which the simple SoC wafers need:
+---   * the Aqua Ignis, Terra Aer and Perditio Ordo veins (OreMixes.java:534-570, Twilight Forest and Neper): Thaumcraft's
+---     infused shards (primary, secondary; left out, the mod has no Thaumcraft), amber (in between), cinnabar
+---     (sporadic); the three differ only by their shards: one mine, amber 32 as the first ore the mod has (as bornite
+---     of Ross128), cinnabar 8;
+---   * the small ores (SmallOres.java:214, 256, two of each per chunk): topaz (Twilight Forest and Horus) and amber,
+---     8 of each, a quarter of a vein's first ore; the Twilight Forest's other small ores and veins hold ores the mod
+---     mines elsewhere, so they get no mine (as #284/#285).
+--- The raw ores are GT's (create_ore, 07): amber with GT's ore multiplier 2, both NO_SMELTING (no furnace recipe);
+--- 155 gives them GTNH's ore chain, gem grades and the amber lens.
+--------------------------------------------------------------------------------
+
+local TWILIGHT = "reach-the-twilight-forest"
+create_ore("raw-topaz", nil, "crushed-topaz", "topaz-dust", nil, "crushed-topaz", nil, nil, 1, false, false)
+create_ore("raw-amber", nil, "crushed-amber", "amber-dust", nil, "crushed-amber", nil, nil, 2, false, false)
+F.tech{ name = TWILIGHT, prerequisites = { "mv-machines" }, packs = 3, count = 40, time = 30, recipes = {
+	manual("mining-amber-vein", "manual-mine-recipes", { PICKAXE, LABOR(24) },
+		{ item("raw-amber", 32), item("raw-cinnabar", 8) }),
+	manual("mining-twilight-forest-small-ores", "manual-mine-recipes", { PICKAXE, LABOR(24) },
+		{ item("raw-topaz", 8), item("raw-amber", 8) }),
+	"crushed-topaz", "crushed-amber",
+} }
 
 
 

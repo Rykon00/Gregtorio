@@ -774,6 +774,7 @@ FORK_UNLOCK_TREE = { prerequisites = {
 	["microprocessors"] = { "kanthal-coils" },   -- aluminium-foil
 	["military-science-pack"] = { "circuit-assembler" },   -- lv-emitter
 	["nanoprocessors"] = { "ev-energy-hatches" },   -- machine ev-chemical-reactor
+	["nand-chips"] = { "reach-the-twilight-forest" },   -- amber-lens (issue #332)
 	["naquadah-fuels"] = { "uv-materials" },   -- neutronium-ingot
 	["neodymium"] = { "hv-machines" },   -- machine hv-polarizer
 	["niobium-and-tantalum-extraction"] = { "ptfe" },   -- hydrofluoric-acid

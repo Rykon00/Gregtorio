@@ -100,6 +100,9 @@ local ORE_CHAIN = {
 	["bedrockium"] = { dust = "bedrockium-dust", byproducts = {  }, mass = 20 },   -- GT Bedrockium: no byproducts (itself)
 	["infinity-catalyst"] = { dust = "infinity-catalyst-dust", byproducts = {  }, mass = 98 },   -- GT InfinityCatalyst: no byproducts (itself)
 	["cosmic-neutronium"] = { dust = "cosmic-neutronium-dust", byproducts = {  }, mass = 98 },   -- GT CosmicNeutronium: no byproducts (itself)
+	--- issue #332: the Twilight Forest's ores (160)
+	["amber"] = { dust = "amber-dust", byproducts = { "amber-dust" }, mass = 10 },   -- GT Amber: Amber
+	["topaz"] = { dust = "topaz-dust", byproducts = {  }, mass = 16 },   -- GT Topaz: BlueTopaz, which the mod lacks (GT has no decomposition of it, so no new dust): itself
 }
 --- skipped: platinum and palladium (their washing is the platinum line's, 146) and firestone (no source of its ore: its
 --- recipes stay locked in 142's FORK_RECIPES_LOCKED)
@@ -221,6 +224,10 @@ local DECOMPOSE = {
 		{ item("calcium", 3), item("chromium-dust", 2), item("raw-silicon", 3), fluid("oxygen", 1200) } },
 	--- GT has no decomposition of quartzite (a quartz): Gregtorio's, into silicon dioxide
 	{ "quartzite-dust", "lv-centrifuge-recipes", 2, 1, { item("silicon-dioxide", 1) } },
+	--- issue #332: amber, C10H10O16 (protons 5: 36 dusts x 10 ticks; GT's 60 EU/t: the hydrogen as fluid, the oxygen in
+	--- cells, here a fluid too), new with the Twilight Forest's ore (160); GT has no decomposition of topaz
+	{ "amber-dust", "mv-electrolyzer-recipes", 18 * MV_SPEED, 36,
+		{ item("carbon", 10), fluid("hydrogen", 1000), fluid("oxygen", 1600) } },
 }
 local decompose_of = {}
 for _, d in pairs(DECOMPOSE) do
@@ -720,7 +727,8 @@ log("FORK-ORE-CHAIN: " .. separations .. " electromagnetic separator recipes")
 ---                       red the ruby lens (ruby), green the emerald lens (emerald, monazite), white the diamond lens
 ---                       (diamond, nether quartz); issue #328: cyan the apatite lens (apatite, lazurite) and blue the
 ---                       lapis lens (sodalite, lapis), the maintainer's substitutes of #325 for GT's green sapphire and
----                       sapphire lens. Certus quartz (GT: light gray) has no lens of its colour in Gregtorio: no
+---                       sapphire lens; issue #332: orange the amber lens (amber, topaz, the Twilight Forest's gems).
+---                       Certus quartz (GT: light gray) has no lens of its colour in Gregtorio: no
 ---                       engraver steps for it. Gregtorio's laser engraver
 ---                       starts at MV: the LV step is in the MV category with its LV time (an MV engraver runs it
 ---                       twice as fast, as GT's overclock)
@@ -743,6 +751,10 @@ local GEMS = {
 	{ "lapis",                "lapis-lazuli",             "default",  true },   -- before sodalite: its engraver steps take the lapis lens (issue #328)
 	{ "sodalite",             "sodalite-gem",             "default",  true },
 	{ "monazite",             "monazite-gem",             "default",  true },
+	--- issue #332: the Twilight Forest's gems (160), GT's precious table (ProcessingCrushedOre.java:91); amber before
+	--- topaz, whose engraver steps take the amber lens
+	{ "amber",                "amber-gem",                "precious", false },
+	{ "topaz",                "topaz-gem",                "precious", false },
 }
 --- GT's sifter tables: exquisite, flawless, gem, flawed, chipped, dust (ProcessingCrushedOre.java:90-120)
 local SIFT = { precious = { 0.03, 0.12, 0.45, 0.14, 0.28, 0.35 }, default = { 0.01, 0.04, 0.15, 0.20, 0.40, 0.50 } }
@@ -753,15 +765,17 @@ local MACERATE = { chipped = { 1, small = true }, flawed = { 2, small = true }, 
 --- issue #205: the red and yellow garnet lens (GT's GarnetRed and GarnetYellow keep the lens prefix)
 --- issue #325 (maintainer's decision): the cyan and blue lens of GTNH's wafer engraving (GT: green sapphire, sapphire,
 --- blue topaz, which Gregtorio lacks) from the Gregtorio gems of that colour, apatite and lapis (GT's dyeCyan, dyeBlue)
+--- issue #332: the orange lens from amber (GT cuts it from amber or topaz; the amber vein is the larger source)
 local LENS = { ruby = "ruby-lens", emerald = "emerald-lens", diamond = "diamond-lens", ["red-garnet"] = "red-garnet-lens",
-	["yellow-garnet"] = "yellow-garnet-lens", apatite = "apatite-lens", lapis = "lapis-lens" }
+	["yellow-garnet"] = "yellow-garnet-lens", apatite = "apatite-lens", lapis = "lapis-lens", amber = "amber-lens" }
 --- the lens of the gem's colour for the laser engraver (MaterialsInit.java setColor; GT takes any lens of the colour)
 --- (issue #205: quartzite white, red garnet red, yellow garnet yellow; tricalcium phosphate, yellow, gets the yellow garnet
 --- lens after the byproduct gems below)
 local ENGRAVER_LENS = { ruby = "ruby-lens", emerald = "emerald-lens", monazite = "emerald-lens",
 	diamond = "diamond-lens", ["nether-quartz"] = "diamond-lens", quartzite = "diamond-lens", ["red-garnet"] = "ruby-lens",
 	["yellow-garnet"] = "yellow-garnet-lens",
-	apatite = "apatite-lens", lazurite = "apatite-lens", sodalite = "lapis-lens", lapis = "lapis-lens" }   -- issue #328
+	apatite = "apatite-lens", lazurite = "apatite-lens", sodalite = "lapis-lens", lapis = "lapis-lens",   -- issue #328
+	amber = "amber-lens", topaz = "amber-lens" }   -- issue #332: orange
 --- grade -> the engraver category and time of the step up (GT tier: LV, MV, HV, EV; time x the tier's speed)
 local ENGRAVE = { chipped = { "mv-laser-engraver-recipes", 30 }, flawed = { "mv-laser-engraver-recipes", 60 },
 	gem = { "hv-laser-engraver-recipes", 240 }, flawless = { "ev-laser-engraver-recipes", 960 } }
@@ -770,7 +784,8 @@ local ENGRAVE = { chipped = { "mv-laser-engraver-recipes", 30 }, flawed = { "mv-
 local DARK_TINY, DARK_DUST = "tiny-pile-of-dark-ash-dust", "dark-ash-dust"
 add_item(DARK_TINY, "subgroup-macerator-dust", "z-dark-ash-a")
 add_item(DARK_DUST, "subgroup-macerator-dust", "z-dark-ash-b")
-for _, lens in pairs({ "emerald-lens", "diamond-lens", "red-garnet-lens", "yellow-garnet-lens", "apatite-lens", "lapis-lens" }) do
+for _, lens in pairs({ "emerald-lens", "diamond-lens", "red-garnet-lens", "yellow-garnet-lens", "apatite-lens", "lapis-lens",
+	"amber-lens" }) do
 	if not data.raw.item[lens] then add_item(lens, sub_of("ruby-lens", "subgroup-lv-lathe-recipes"), "z-" .. lens) end
 end
 
@@ -979,13 +994,15 @@ FORK_ORE_HAMMER_GEM = {
 	["raw-lapis"] = "lapis-lazuli", ["raw-lazurite"] = "lazurite-gem", ["raw-sodalite"] = "sodalite-gem",
 	["raw-apatite"] = "apatite-gem", ["raw-certus-quartz"] = "certus-quartz", ["raw-nether-quartz"] = "nether-quartz",
 	["raw-monazite"] = "monazite-gem", ["raw-tricalcium-phosphate"] = "tricalcium-phosphate-gem",
+	["raw-amber"] = "amber-gem", ["raw-topaz"] = "topaz-gem",   -- issue #332
 }
 --- the first byproduct of the ores ORE_CHAIN leaves out (GT Platinum: Nickel; GT Palladium: none, its own dust)
 local RAW_BYPRODUCT = { ["raw-platinum"] = "nickel-dust", ["raw-palladium"] = "palladium-dust" }
 --- GT's gems of byproduct materials that Gregtorio has
 local BYPRODUCT_GEM = { ["emerald-dust"] = "emerald", ["apatite"] = "apatite-gem",
 	["tricalcium-phosphate"] = "tricalcium-phosphate-gem", ["lazurite-dust"] = "lazurite-gem",
-	["sodalite-dust"] = "sodalite-gem", ["monazite-dust"] = "monazite-gem" }
+	["sodalite-dust"] = "sodalite-gem", ["monazite-dust"] = "monazite-gem", ["amber-dust"] = "amber-gem",
+	["topaz-dust"] = "topaz-gem" }   -- issue #332
 for _, g in pairs(BYPRODUCT_GEMS) do BYPRODUCT_GEM[g[2]] = g[3] end   -- issue #205
 --- GT's byproduct multipliers (Materials.java setByProductMultiplier; 1 for every other ore)
 local BYPRODUCT_MULT = { ["raw-apatite"] = 2, ["raw-coal"] = 2, ["raw-cryolite"] = 4, ["raw-lapis"] = 4,
@@ -1096,6 +1113,8 @@ local DUST_GEMS = {
 	{ "diamond-dust",        "diamond",                  false,     { 4, 16 } },   -- issue #223
 	{ "red-garnet-dust",     "red-garnet-gem",           false,     { 2, 8 } },
 	{ "yellow-garnet-dust",  "yellow-garnet-gem",        false,     { 2, 8 } },
+	{ "topaz-dust",          "topaz-gem",                false,     { 3, 12 } },   -- issue #332
+	{ "amber-dust",          "amber-gem",                false,     { 2, 8 } },    -- issue #332
 }
 for _, g in pairs(DUST_GEMS) do
 	local dust, gem = g[1], g[2]
@@ -1479,7 +1498,7 @@ end
 --- of the colour (OreDictRegistrationHandler.java:303-308: a transparent material's lens is craftingLens<its dye>);
 --- Gregtorio names one: red the ruby lens, white the diamond lens, green the emerald lens, yellow the yellow garnet lens,
 --- cyan the apatite lens and blue the lapis lens (the maintainer's substitutes for GT's green sapphire and sapphire,
---- above). Sources: gregtech LaserEngraverRecipes.java (LE) and NewHorizonsCoreMod's LaserEngraverRecipes.java (NHC).
+--- above), orange the amber lens (issue #332). Sources: gregtech LaserEngraverRecipes.java (LE) and NewHorizonsCoreMod's LaserEngraverRecipes.java (NHC).
 --- The NAND and NOR wafers take GT's ender pearl and ender eye lens (NHC 99-152). GT's lens from a plate (ProcessingLens.java:
 --- 1 min, MV, with a small pile of the dust where Gregtorio has one), the plate of a gem that cannot be hammered from its
 --- dust (ProcessingDust.java: compressor, 15 s), the dust from the gem in the macerator (2.8 s, as Gregtorio's diamond). The
@@ -1510,6 +1529,7 @@ plate_lens("ender-pearl", "ender-pearl")
 plate_lens("ender-eye", "eye-of-ender")
 plate_lens("yellow-garnet")
 plate_lens("emerald", "emerald")   -- the ULPIC wafer (MV Energy Hatches) comes before the emerald sifter
+plate_lens("amber", "amber-gem")   -- issue #332: the simple SoC wafer (NAND Chips) at the Twilight Forest's tier
 
 --- recipe -> its lens (the GT recipe: file, line of the output). Gregtorio's wafers: sw silicon (GT's Wafer), pd phosphorus
 --- (Wafer2), nd/qd naquadah (Wafer3), ed europium (Wafer4), ad americium (Wafer5)
@@ -1530,18 +1550,14 @@ local ENGRAVER_RECIPE_LENS = {
 	["nand-memory-wafer-pd"] = "ender-pearl-lens", ["nand-memory-nd"] = "ender-pearl-lens",
 	["nand-memory-wafer-ed"] = "ender-pearl-lens", ["nand-memory-wafer-ad"] = "ender-pearl-lens",     -- NHC 103-124
 	["nor-memory-wafer-pd"] = "ender-eye-lens", ["nor-memory-wafer-nd"] = "ender-eye-lens",           -- NHC 131-138
+	--- issue #332: orange, GT's lens of topaz or amber (craftingLensOrange: the lens of every transparent dyeOrange
+	--- material), here the amber lens of the Twilight Forest's amber (160)
+	["simple-soc-wafer-sw"] = "amber-lens", ["simple-soc-wafer-pd"] = "amber-lens",
+	["simple-soc-wafer-nd"] = "amber-lens", ["simple-soc-wafer-ed"] = "amber-lens",                   -- LE 200-224, orange
 }
---- laser engraver recipes that keep no lens, with the reason (devcheck fails for any other engraver recipe without one).
---- Orange (issue #332): GT registers craftingLensOrange for the lens of every transparent dyeOrange material, that is topaz
---- and amber only (no bartworks gem maps to orange). Gregtorio has neither; GTNH's sources are the Twilight Forest
---- (topaz and amber small ores, amber veins), Horus (topaz small ores), the Callisto ice vein (topaz), the space elevator's
---- gem asteroid, Thaumcraft and bees (amber). The earliest the mod has is the Callisto ice vein at Reach the Jovian Moons
---- (IV), the recipes are MV to LuV: which way to go is the maintainer's decision on #332.
-local ORANGE = "GT's orange lens (LE 200-224) is cut from topaz or amber, which the mod lacks before IV (open decision #332)"
+--- laser engraver recipes that keep no lens, with the reason (devcheck fails for any other engraver recipe without one)
 local CHEMICAL = "GTNH makes this wafer in the chemical reactor, not in the laser engraver, so there is no lens to follow"
 FORK_ENGRAVER_NO_LENS = {
-	["simple-soc-wafer-sw"] = ORANGE, ["simple-soc-wafer-pd"] = ORANGE, ["simple-soc-wafer-nd"] = ORANGE,
-	["simple-soc-wafer-ed"] = ORANGE,
 	["ppic-wafer"] = CHEMICAL .. " (NHC ChemicalReactorRecipes.java:257)",
 	["fpic-wafer"] = CHEMICAL .. " (NHC ChemicalReactorRecipes.java:261)",
 	["apic-wafer"] = CHEMICAL .. " (NHC ChemicalReactorRecipes.java:528)",

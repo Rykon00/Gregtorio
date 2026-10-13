@@ -64,7 +64,8 @@
     HV; issue #284: Reach the Moon / Reach Mars with their veins and the moon turf dig site; issue #285: Reach the
     Asteroid Belt, the Jovian Moons and Venus; issue #286: Void Miners I-III, `VOID_POOLS` from GT's veins and small
     ores (tools: none, generated once from OreMixes/SmallOres); issue #293: Reach Ross128 with the copper sulfide vein
-    (bornite); loads after 146 and **before** 142 (issue #287: the
+    (bornite); issue #332: Reach the Twilight Forest (MV, a prerequisite of NAND Chips) with the amber vein and the
+    topaz and amber small ores, the raw ores of GT's orange lens (155 makes the amber lens); loads after 146 and **before** 142 (issue #287: the
     unlock table of 142 and the ore chains of 155 see the mines; the rules are in 161))
   - 162 space elevator (issue #301, part 1 of #292's decision: gtnhintergalactic's Space Elevator in GTNH's full scope:
     controller, casings, nanotube spool, cable, motors Mk-I to Mk-V; one 11 x 11 entity per motor tier
