@@ -206,7 +206,9 @@
   Age recipes that no technology unlocks, of items Gregtorio makes its own way. They are deleted with the technology effects
   and tips-and-tricks triggers that name them (a tip's trigger naming a missing recipe fails the load), and logged as `FORK-REMOVED`;
   issue #318 added the vanilla oil recipes. devcheck fails for a new recipe of that class that is neither there nor in the
-  allow-list `FORK_VANILLA_RECIPES_KEPT` with its reason.
+  allow-list `FORK_VANILLA_RECIPES_KEPT` with its reason. Issue #323 added every other vanilla recipe without a
+  technology (`VANILLA_RECIPES_UNUSED`, by group); the nested tips-and-tricks triggers lose the branches that need a
+  deleted recipe (`FORK-TIP` in the log), and machines lose a deleted fixed recipe (captive biter spawner, rocket silo).
 - Names (issue #230): the engine names a recipe after its product only when the recipe has the product's name; every
   other recipe shows `recipe-name.<recipe>`, a main product does not change that. `prototypes/fork-locale.lua` (required
   first from `data.lua`, `FORK_LOCALE.name_recipes()` at the end of `data-final-fixes.lua`) gives every Gregtorio recipe
