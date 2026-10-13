@@ -126,6 +126,7 @@ godforge-controller
 high-density-plutonium
 high-density-plutonium-nugget
 high-octane-gasoline-cell
+rocket-fuel-cell
 highly-ultimate-voltage-coil
 hot-bedrockium-ingot
 hot-black-plutonium-ingot

@@ -240,6 +240,16 @@ MULTIBLOCKS = {
                                 ("gregtech:iconsets/OVERLAY_FRONT_DIESEL_ENGINE",
                                  "gregtech:iconsets/OVERLAY_FRONT_DIESEL_ENGINE_ACTIVE"),
                                 "gregtech:iconsets/MACHINE_CASING_GEARBOX_TITANIUM"),
+    # issue #295: GT++'s rocket engines (MTERocketFuelGenerator: the casing of its tier, the diesel motor overlay)
+    "ev-rocket-engine": ((3, 3), "miscutils:TileEntities/machine_top", None,
+                         ("miscutils:TileEntities/machine_top_dieselmotor2",
+                          "miscutils:TileEntities/machine_top_dieselmotor2_active"), None),
+    "iv-rocket-engine": ((3, 3), "miscutils:TileEntities/high_adv_machine", None,
+                         ("miscutils:TileEntities/machine_top_dieselmotor2",
+                          "miscutils:TileEntities/machine_top_dieselmotor2_active"), None),
+    "luv-rocket-engine": ((3, 3), "miscutils:TileEntities/adv_machine_lesu", None,
+                          ("miscutils:TileEntities/machine_top_dieselmotor2",
+                           "miscutils:TileEntities/machine_top_dieselmotor2_active"), None),
     # issue #301: the Space Elevator per motor tier (gtnhintergalactic's base casing, support structure and the motor)
     **{f"space-elevator-mk{t}": ((11, 11), "gtnhintergalactic:spaceElevator/BaseCasing", None,
                                  f"gtnhintergalactic:spaceElevator/MotorT{t}_Side",
@@ -252,6 +262,7 @@ CONTROLLER_ICONS = {"neutron-activator", "water-purification-plant", "uv-large-n
 WHOLE_ICONS = {"large-titanium-boiler", "large-combustion-engine", "digester", "dissolution-tank",
                "exxonmobil-chemical-plant", "mv-dehydrator", "hv-dehydrator", "ev-dehydrator", "iv-dehydrator",
                "luv-dehydrator", "zpm-dehydrator", "void-miner-i", "void-miner-ii", "void-miner-iii",
+               "ev-rocket-engine", "iv-rocket-engine", "luv-rocket-engine",
                *(f"space-elevator-mk{t}" for t in range(1, 6))}
 # tier versions of a generator (136-fork-power.lua): the base sprite with dynamo hatches of the tier
 # (GT hull of the tier + GT's dynamo hatch overlay) on the corner tiles; the base itself gets its own
