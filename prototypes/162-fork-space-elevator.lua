@@ -621,6 +621,39 @@ for _, pr in ipairs(PUMPED) do
 	end
 end
 
+--- Issue #318 (maintainer's decision): GTNH's uses of the pumped heavy and light oil (gregtech DistilleryRecipes.java), which
+--- nothing used before. As GT distils its four oils alike, they are distilled like Gregtorio's crude oil
+--- (`oil-distillation`, `oil-distillation-light`, `oil-distillation-heavy`: half of GT's 100 L universal distillation, the
+--- time in GT's ratio to crude oil): the tall distillation tower into sulfuric heavy fuel, light fuel, naphtha and gas
+--- (GT per 100: heavy oil 100, 45, 15, 60 in 40 ticks; light oil 7, 13, 20, 160 in 10 ticks; crude 30, 100, 40, 120 in 30;
+--- GT's naphthenic acid of the tower is left out, the mod has none), the distillery into one of the fuels, and the distillery
+--- into lubricant (GT: 12 L of heavy oil into 9, of light oil into 3, 16 ticks). They come with the pump module, the only
+--- producer of these oils (#252's rule).
+local CRUDE_TIME = 20   -- oil-distillation (crude oil, GT's 30 ticks)
+local OILS = {
+	--  fluid        GT ticks  heavy fuel  light fuel  naphtha  gas   lubricant per 40
+	{ "heavy-oil", 40,       50,         22.5,       7.5,     30,   30 },
+	{ "light-oil", 10,       3.5,        6.5,        10,      80,   10 },
+}
+local oil_recipes = {}
+for _, o in ipairs(OILS) do
+	local time = CRUDE_TIME * o[2] / 30
+	local function add(name, category, seconds, ingredients, results, main)
+		create_recipe{ name = name, category = category, energy_required = seconds, ingredients = ingredients,
+			results = results, main_product = main }
+		oil_recipes[#oil_recipes + 1] = name
+	end
+	add(o[1] .. "-distillation", "mv-tall-distillation-recipes", time, { fluid(o[1], 50) }, {
+		fluid("sulfuric-gas", o[6]), fluid("sulfuric-heavy-fuel", o[3]), fluid("sulfuric-light-fuel", o[4]),
+		fluid("sulfuric-naphtha", o[5]) }, o[1] == "heavy-oil" and "sulfuric-heavy-fuel" or "sulfuric-gas")
+	add(o[1] .. "-distillation-light", "mv-distillation-recipes", time, { fluid(o[1], 50) },
+		{ fluid("sulfuric-light-fuel", o[4]) })
+	add(o[1] .. "-distillation-heavy", "mv-distillation-recipes", time, { fluid(o[1], 50) },
+		{ fluid("sulfuric-heavy-fuel", o[3]) })
+	add(o[1] .. "-lubricant", "mv-distillation-recipes", 16 / 20 * 40 / 12, { fluid(o[1], 40) },
+		{ fluid("lubricant", o[7]) })
+end
+
 --- Technologies: the siphon with the Jovian moons (GT: a space station around the gas giants); the pump modules after the
 --- elevator motors their modules need and the materials they take (#252's rule)
 F.tech{ name = "planetary-gas-siphon", prerequisites = { "reach-the-jovian-moons" }, packs = 7, count = 50, time = 60,
@@ -635,5 +668,5 @@ for k, name in ipairs(pumps) do
 	if k > 1 then pre[1] = pumps[k - 1] end
 	for _, x in ipairs(PPRE[k]) do pre[#pre + 1] = x end
 	F.tech{ name = name, prerequisites = pre, packs = PPACKS[k], count = 50, time = 60,
-		recipes = k == 1 and F.join({ name }, pump_recipes) or { name } }
+		recipes = k == 1 and F.join(F.join({ name }, pump_recipes), oil_recipes) or { name } }
 end

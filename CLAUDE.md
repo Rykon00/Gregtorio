@@ -73,7 +73,8 @@
     heads and a recipe per asteroid and drone tier (`ASTEROIDS` from gtnhintergalactic's SpaceMiningRecipes, the ores the
     mod has, expected amounts of one operation; helium plasma only); `scripts/fork-space-elevator.lua` runs a module only
     next to an elevator with motors of its tier and a free slot (event-driven, `on_object_destroyed`, no tick handler,
-    `storage.fork_space_elevator`); loads after 160 and **before** 142)
+    `storage.fork_space_elevator`); issue #318: GTNH's distillation of the pump modules' heavy and light oil (tall
+    distillation, distillery, lubricant), with the pump module's technology; loads after 160 and **before** 142)
   - 142 recipe unlocks (issue #91: every Gregtorio recipe gets a technology from its explicit table `UNLOCKS`, the
     producers GT has and Gregtorio lacked and the component assembly line; a recipe that must stay
     locked goes into the allow-list `FORK_RECIPES_LOCKED` with its reason, devcheck fails otherwise; issue #237: a
@@ -203,7 +204,9 @@
   techs or the character, run `python tools/devcheck/devcheck.py menusim --sim all --compare`. Its section "VANILLA ITEM
   REMOVAL" deletes vanilla prototypes for good; issue #317's `VANILLA_RECIPES_REMOVED` there holds the vanilla and Space
   Age recipes that no technology unlocks, of items Gregtorio makes its own way. They are deleted with the technology effects
-  and tips-and-tricks triggers that name them (a tip's trigger naming a missing recipe fails the load), and logged as `FORK-REMOVED`.
+  and tips-and-tricks triggers that name them (a tip's trigger naming a missing recipe fails the load), and logged as `FORK-REMOVED`;
+  issue #318 added the vanilla oil recipes. devcheck fails for a new recipe of that class that is neither there nor in the
+  allow-list `FORK_VANILLA_RECIPES_KEPT` with its reason.
 - Names (issue #230): the engine names a recipe after its product only when the recipe has the product's name; every
   other recipe shows `recipe-name.<recipe>`, a main product does not change that. `prototypes/fork-locale.lua` (required
   first from `data.lua`, `FORK_LOCALE.name_recipes()` at the end of `data-final-fixes.lua`) gives every Gregtorio recipe

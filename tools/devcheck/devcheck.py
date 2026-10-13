@@ -600,6 +600,40 @@ def check_table_only(m, sec):
     return f"{only_items} reachable items with only crafting table or hand recipes, {len(allow)} recipes in the allow-list", problems + stale
 
 
+VANILLA_MODS = {"base", "space-age", "quality", "elevated-rails"}
+
+
+def check_vanilla_recipes(m, sec):
+    """Issues #317 and #318: a vanilla recipe that no technology unlocks (and that is not enabled), whose every product
+    a reachable recipe of another kind makes, and that is not hidden, is an alternative in Factoriopedia that nobody can
+    use (the vanilla battery next to GTNH's filled battery hulls). data-final-fixes.lua deletes such recipes
+    (VANILLA_RECIPES_REMOVED); one that stays on purpose goes into FORK_VANILLA_RECIPES_KEPT with its reason. Returns
+    (info line, problems)."""
+    owner = {r[0]: r[1] for r in sec.get("OWNERS", []) if len(r) > 1}
+    kept = {r[0]: (r[1] if len(r) > 1 else "") for r in sec.get("VANILLAKEPT", [])}
+    unlocked_by_tech = {r for v in m.T.values() if v["en"] for r in v["eff"]}
+    makers = {}
+    for r, v in m.R.items():
+        if v["hidden"] or v["cat"] in ("recycling", "parameters") or r.endswith("-recycling"):
+            continue
+        for x in v["res"]:
+            makers.setdefault(x, []).append(r)
+    found = []
+    for r, v in sorted(m.R.items()):
+        if owner.get(r) not in VANILLA_MODS or v["hidden"] or v["en"] or r in unlocked_by_tech or not v["res"]:
+            continue
+        if r.endswith("-recycling") or r.startswith("void-") or v["cat"] in ("recycling", "parameters"):
+            continue
+        if all(any(o != r and o in m.unlocked for o in makers.get(x, [])) for x in v["res"]):
+            found.append(r)
+    problems = [f"{r} ({owner[r]}): makes {', '.join(m.R[r]['res'])}, which Gregtorio makes another way; no technology "
+                f"unlocks it" for r in found if r not in kept]
+    problems += [f"FORK_VANILLA_RECIPES_KEPT: {r} has no reason" for r, why in sorted(kept.items()) if not why]
+    problems += [f"FORK_VANILLA_RECIPES_KEPT: {r} is not such a recipe (any more)" for r in sorted(kept) if r not in found]
+    return f"{len(found)} vanilla recipes without a technology of items Gregtorio makes, {len(kept)} kept on purpose " \
+           f"(FORK_VANILLA_RECIPES_KEPT)", problems
+
+
 def check_me_recipes(sec):
     """Issue #214 (prototypes/120-fork-me-network-compat.lua): every recipe me-network defines (ME_NETWORK.recipes) has a
     Gregtorio recipe in the compat file (FORK_ME_RECIPES), so a new me-network item cannot keep its standalone vanilla
@@ -1537,6 +1571,11 @@ def check(a):
     table_info, table_only = check_table_only(m, sec)
     print(f"\ncrafting table and hand only items (issue #126): {table_info}")
     report("items that only the crafting table or the hand can make, without an entry in FORK_RECIPES_TABLE_ONLY", table_only)
+    vanilla_info, vanilla = check_vanilla_recipes(m, sec)
+    print(f"\nvanilla recipes of Gregtorio's items (issues #317, #318): {vanilla_info}")
+    report("vanilla recipes without a technology whose products Gregtorio makes another way (delete them in "
+           "VANILLA_RECIPES_REMOVED of data-final-fixes.lua, or keep one in FORK_VANILLA_RECIPES_KEPT with its reason)",
+           vanilla)
     me_info, me_recipes = check_me_recipes(sec)
     print(f"\nME recipes (issue #214): {me_info}")
     report("me-network recipes without a Gregtorio recipe (prototypes/120-fork-me-network-compat.lua)", me_recipes)
@@ -1594,7 +1633,7 @@ def check(a):
     ok = not (files or [s for s in sprites if not s.startswith("(")] or uncraft or menu or required or unresearchable
               or new_drafts or fluid_problems or locked or one_pack or fluid_steps or table_only or me_recipes
               or extractor_split or ore_chain or ore_baths or ore_o34 or ore_hammer
-              or circuit_icons or pgm_dusts or recycling or names or gaps or tree)
+              or circuit_icons or pgm_dusts or recycling or names or gaps or tree or vanilla)
     print("\nRESULT:", "OK" if ok else "PROBLEMS FOUND")
     return 0 if ok else 1
 

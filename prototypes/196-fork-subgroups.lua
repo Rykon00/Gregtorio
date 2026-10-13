@@ -215,8 +215,9 @@ end
 --- vanilla and Space Age fluids that no recipe a player can reach makes or uses but their void recipe: hidden
 --- with it (hidden fluids are gone from the choosers and the Fluids tab). What still refers to them is Space Age
 --- content nobody can obtain (fusion reactor and generator, thruster, the Aquilo and oil ocean tiles, the lithium brine
---- resource); a hidden fluid there is fine. FORK_FLUIDS_HIDDEN: the list, for devcheck.
-FORK_FLUIDS_HIDDEN = { "heavy-oil", "light-oil", "petroleum-gas", "ammoniacal-solution", "fluoroketone-cold",
+--- resource); a hidden fluid there is fine. FORK_FLUIDS_HIDDEN: the list, for devcheck. (Issue #318: heavy and light oil
+--- are shown again: the Space Elevator's pump module makes them, 162 distils them.)
+FORK_FLUIDS_HIDDEN = { "petroleum-gas", "ammoniacal-solution", "fluoroketone-cold",
 	"fluoroketone-hot", "holmium-solution", "electrolyte", "lithium-brine", "thruster-fuel", "thruster-oxidizer",
 	"fusion-plasma" }
 for _, n in pairs(FORK_FLUIDS_HIDDEN) do
@@ -225,7 +226,12 @@ for _, n in pairs(FORK_FLUIDS_HIDDEN) do
 end
 
 --- fluids that keep an icon of another mod on purpose (allow-list of devcheck's icon warning, with the reason)
-FORK_FLUID_ICONS_KEPT = {}
+local GT_OIL_BLACK = "GT's oil textures are plain black in every frame (fluid.liquid_heavy_oil, fluid.liquid_light_oil); "
+	.. "the base game's icons tell the oils apart (issue #318)"
+FORK_FLUID_ICONS_KEPT = {
+	["heavy-oil"] = GT_OIL_BLACK,
+	["light-oil"] = GT_OIL_BLACK,
+}
 
 for name, f in pairs(data.raw.fluid) do
 	if is_gregtorios(f) and (FLUID_SUBGROUP[name] or not in_fluids_tab(f)) then

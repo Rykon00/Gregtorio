@@ -110,6 +110,12 @@ local tk = {}
 for name, reason in pairs(FORK_RECIPES_TABLE_ONLY or {}) do tk[#tk + 1] = name .. "\t" .. reason end
 section("TABLEONLYOK", tk)
 
+--- Issue #318: the vanilla recipes without a technology, of items Gregtorio makes, that stay on purpose
+--- (FORK_VANILLA_RECIPES_KEPT in data-final-fixes.lua; absent in older versions)
+local vk = {}
+for name, reason in pairs(FORK_VANILLA_RECIPES_KEPT or {}) do vk[#vk + 1] = name .. "\t" .. reason end
+section("VANILLAKEPT", vk)
+
 --- Issue #214: the recipes of me-network (ME_NETWORK.recipes) and which of them prototypes/120-fork-me-network-compat.lua
 --- gives a Gregtorio recipe (FORK_ME_RECIPES) or keeps standalone on purpose (FORK_ME_RECIPES_STANDALONE); one row per
 --- name: name, "me" (a recipe of me-network) or "-", "gregtorio" or "-", the allow-list reason (absent in older versions)
