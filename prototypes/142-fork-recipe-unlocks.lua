@@ -675,8 +675,11 @@ end
 --- advanced SMDs) the consumer goes to the producer's technology.
 --- the producers that move up: recipe, from, to (the comment: what takes it there)
 for _, m in pairs({
-	{ "glass-alloy-smelter", "glassmaking", "steam-forge-hammer" },              -- glass dust from glass (forge hammer)
-	{ "lv-centrifuge", "ore-centrifuging", "ore-washing" },                      -- the garnet decompositions (#207)
+	-- issue #320: the mold (4 steel plates) comes with the steel, where its first users are (the steel nuggets and
+	-- casings); the steam technologies before it have no steel, so the mold recipes of 158 wait for it (unlock_after counts
+	-- the mold) and the glass of the alloy smelter stays with Glassmaking, the forge hammer's glass dust with it (below)
+	{ "mold", "glassmaking", "steel-processing" },
+	{ "lv-centrifuge", "ore-centrifuging", "ore-washing" },                    -- the garnet decompositions (#207)
 	{ "molten-tin", "electric-blast-furnace", "concrete" },                    -- the tin and red alloy casts
 	{ "molten-red-alloy", "improved-electronic-parts", "concrete" },
 	{ "mv-emitter", "advanced-mv-machines", "laser-engraver" },                -- MV Laser Engraver (ILC, RAM, NAND wafers)
@@ -702,6 +705,7 @@ end
 --- the consumers whose producer's chain is late go to the producer's technology: recipe, from, to (the comment: the late
 --- producer)
 for _, m in pairs({
+	{ "glass-dust-forge-hammer", "steam-forge-hammer", "glassmaking" },         -- glass (the alloy smelter's, with the mold)
 	{ "long-aluminium-rod", "aluminium", "extruder" },                          -- MV extruder (MV hull, MV piston)
 	{ "aluminium-spring", "aluminium", "extruder" },                            -- its long aluminium rod
 	{ "liquid-ender-air", "end-steel", "ev-machines" },                         -- (the EV compressor's ender air)
@@ -861,12 +865,6 @@ FORK_UNLOCK_TREE_GAPS = {
 	["uev-components:uiv-circuit"] = FIELD_GENERATOR,
 	["uiv-components:umv-circuit"] = FIELD_GENERATOR,
 	["umv-components:uxv-circuit"] = FIELD_GENERATOR,
-	--- issue #316: devcheck counts the mold of 150's mold slot since then; the mold comes with glassmaking, which these
-	--- technologies do not have as a prerequisite (an old gap, fixed in issue #320)
-	["steam-alloy-smelter:mold"] = "the mold comes with glassmaking, not a prerequisite; issue #320",
-	["steam-compressor:mold"] = "the mold comes with glassmaking, not a prerequisite; issue #320",
-	["steam-forge-hammer:mold"] = "the mold comes with glassmaking, not a prerequisite; issue #320",
-	["steel-processing:mold"] = "the mold comes with glassmaking, not a prerequisite; issue #320",
 }
 
 FORK_RECIPES_LOCKED = {
