@@ -240,6 +240,10 @@ MULTIBLOCKS = {
                                 ("gregtech:iconsets/OVERLAY_FRONT_DIESEL_ENGINE",
                                  "gregtech:iconsets/OVERLAY_FRONT_DIESEL_ENGINE_ACTIVE"),
                                 "gregtech:iconsets/MACHINE_CASING_GEARBOX_TITANIUM"),
+    # issue #301: the Space Elevator per motor tier (gtnhintergalactic's base casing, support structure and the motor)
+    **{f"space-elevator-mk{t}": ((11, 11), "gtnhintergalactic:spaceElevator/BaseCasing", None,
+                                 f"gtnhintergalactic:spaceElevator/MotorT{t}_Side",
+                                 "gtnhintergalactic:spaceElevator/SupportStructure_Side") for t in range(1, 6)},
 }
 # multiblocks without an upstream item icon: the icon is the controller tile
 CONTROLLER_ICONS = {"neutron-activator", "water-purification-plant", "uv-large-naquadah-reactor"}
@@ -247,7 +251,8 @@ CONTROLLER_ICONS = {"neutron-activator", "water-purification-plant", "uv-large-n
 # the middle row tells them apart)
 WHOLE_ICONS = {"large-titanium-boiler", "large-combustion-engine", "digester", "dissolution-tank",
                "exxonmobil-chemical-plant", "mv-dehydrator", "hv-dehydrator", "ev-dehydrator", "iv-dehydrator",
-               "luv-dehydrator", "zpm-dehydrator", "void-miner-i", "void-miner-ii", "void-miner-iii"}
+               "luv-dehydrator", "zpm-dehydrator", "void-miner-i", "void-miner-ii", "void-miner-iii",
+               *(f"space-elevator-mk{t}" for t in range(1, 6))}
 # tier versions of a generator (136-fork-power.lua): the base sprite with dynamo hatches of the tier
 # (GT hull of the tier + GT's dynamo hatch overlay) on the corner tiles; the base itself gets its own
 # tier's hatches too. The icon gets the hatch as a badge.
@@ -305,6 +310,14 @@ TEXTURE_ICONS = {
     "titanium-firebox-casing": "gregtech:iconsets/MACHINE_CASING_FIREBOX_TITANIUM",
     "engine-intake-casing": "gregtech:iconsets/MACHINE_CASING_ENGINE_INTAKE",
     "stainless-steel-turbine-casing": "gregtech:iconsets/MACHINE_CASING_TURBINE_STAINLESSSTEEL",
+    # issue #301: the Space Elevator's parts (gtnhintergalactic's block and item textures)
+    "space-elevator-base-casing": "gtnhintergalactic:spaceElevator/BaseCasing",
+    "space-elevator-support-structure": "gtnhintergalactic:spaceElevator/SupportStructure_Side",
+    "space-elevator-internal-structure": "gtnhintergalactic:spaceElevator/InternalStructure_Side",
+    "space-elevator-cable": "gtnhintergalactic:spaceElevator/CablePart",
+    "space-elevator-controller": "gtnhintergalactic:spaceElevator/MotorT1_Side",
+    "nanotube-spool": "gtnhintergalactic:../items/nanotubeSpool",
+    **{f"space-elevator-motor-mk{t}": f"gtnhintergalactic:spaceElevator/MotorT{t}_Side" for t in range(1, 6)},
     # issue #249: GT's timepiece (MetaGeneratedItem03, meta 757)
     "timepiece": "gregtech:../items/gt.metaitem.03/757",
     # issue #274: GT++'s dehydrator coil wires and coils (item textures)

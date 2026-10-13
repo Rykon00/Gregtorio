@@ -66,6 +66,10 @@
     ores (tools: none, generated once from OreMixes/SmallOres); issue #293: Reach Ross128 with the copper sulfide vein
     (bornite); loads after 146 and **before** 142 (issue #287: the
     unlock table of 142 and the ore chains of 155 see the mines; the rules are in 161))
+  - 162 space elevator (issue #301, part 1 of #292's decision: gtnhintergalactic's Space Elevator in GTNH's full scope:
+    controller, casings, nanotube spool, cable, motors Mk-I to Mk-V; one 11 x 11 entity per motor tier
+    (`space-elevator-mk1` to `-mk5`), the mod data `fork-space-elevator` with each tier's motor tier and module slots for
+    the modules of #302 and #303; loads after 160 and **before** 142)
   - 142 recipe unlocks (issue #91: every Gregtorio recipe gets a technology from its explicit table `UNLOCKS`, the
     producers GT has and Gregtorio lacked and the component assembly line; a recipe that must stay
     locked goes into the allow-list `FORK_RECIPES_LOCKED` with its reason, devcheck fails otherwise; issue #237: a
