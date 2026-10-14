@@ -1827,7 +1827,7 @@ end
 --- robots of a T1 roboport (issue #336: the roboport must take them, and the T1 logistic robots) with the plant in a
 --- storage chest (the robots bring the old machine and its items back). The
 --- neighbours must stay, the items come back (on the ground, in the storage chest), and plant A drills the iron vein's
---- twin with Drilling Fluid: 64 raw iron in 12 s. Issue #337: the Manual Mine's upgrade chain goes through the LV, MV and
+--- twin with Drilling Fluid and 9 mining pipes (issue #341), which come back: 64 raw iron in 12 s. Issue #337: the Manual Mine's upgrade chain goes through the LV, MV and
 --- HV Miner to the plant; a third Manual Mine is replaced by fast replace with the HV Miner, which mines the iron vein's
 --- Miner twin: 64 raw iron in 6 s, and the 9 mining pipes come back.
 local EM_X, EM_Y = 260.5, -120.5
@@ -1954,6 +1954,9 @@ function emine_test()
 			expect(plant.get_recipe() == nil, "fast replace: the Mk I kept a recipe")
 			plant.set_recipe("drilling-iron-vein")
 			expect(plant.insert_fluid{ name = "drilling-fluid", amount = 400 } == 400, "the Mk I took no drilling fluid")
+			--- issue #341: the plant takes mining pipes like the miners and gives them back
+			expect(plant.get_inventory(defines.inventory.assembling_machine_input).insert{ name = "mining-pipe", count = 9 } == 9,
+				"the Mk I took no mining pipes")
 		end
 		--- B: the upgrade planner
 		local inv = game.create_inventory(1)
@@ -1987,6 +1990,9 @@ function emine_test()
 			st.drilled, st.ticks = drilled, t - st.t1
 			expect(drilled >= 64, "the Mk I drilled " .. drilled .. " raw iron (64 in 12 s with drilling fluid; status "
 				.. tostring(st.plant and st.plant.valid and st.plant.status) .. ")")
+			local back_pipes = st.plant and st.plant.valid and st.plant.get_inventory(defines.inventory.assembling_machine_output)
+				.get_item_count("mining-pipe") or 0
+			expect(back_pipes == 9, "the Mk I gave back " .. back_pipes .. " of its 9 mining pipes")
 			st.done = true
 		end
 	end

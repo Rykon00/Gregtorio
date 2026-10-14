@@ -622,8 +622,8 @@ def check_engraver_lenses(m, sec):
 
 def check_electric_mine(m, sec):
     """Issue #335 (prototypes/163-fork-electric-mine.lua): every recipe of the Manual Mine and the Dig Site has an electric
-    twin for the Ore Drilling Plants (the same results, Drilling Fluid as its only ingredient, category
-    electric-mine-recipes) and (issue #337) one for the Miners (category miner-recipes, the same results and the mining
+    twin for the Ore Drilling Plants (the same results and, issue #341, the mining pipes it takes back with the Drilling
+    Fluid, category electric-mine-recipes) and (issue #337) one for the Miners (category miner-recipes, the same results and the mining
     pipes it takes back), unless it is in the allow-list FORK_ELECTRIC_MINE_EXCLUDED with its reason (section
     ELECTRICMINE); an entry that is no such recipe or has a twin fails too. Returns (info line, problems)."""
     rows = [r + [""] * (5 - len(r)) for r in sec.get("ELECTRICMINE", [])]
@@ -640,8 +640,9 @@ def check_electric_mine(m, sec):
             continue
         res = sorted(m.R[r[0]]["res"])
         twin = m.R.get(r[2])
-        if twin is not None and (twin["cat"] != "electric-mine-recipes" or twin["ing"] != ["drilling-fluid"]
-                                 or sorted(twin["res"]) != res):
+        if twin is not None and (twin["cat"] != "electric-mine-recipes"
+                                 or sorted(twin["ing"]) != ["drilling-fluid", "mining-pipe"]
+                                 or sorted(twin["res"]) != sorted(res + ["mining-pipe"])):
             problems.append(f"{r[2]}: not the twin of {r[0]} (category {twin['cat']}, ingredients {twin['ing']}, "
                             f"results {twin['res']} against {m.R[r[0]]['res']})")
         miner = m.R.get(r[4])

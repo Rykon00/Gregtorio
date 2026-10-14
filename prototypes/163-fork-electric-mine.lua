@@ -6,7 +6,9 @@
 ---   * one machine per Mk, `ore-drilling-plant-mk1` to `-mk4`, at GTNH's minimum energy hatch: MV, HV, EV, IV;
 ---   * GTNH mines one ore block per operation and drinks 2000 L Drilling Fluid for it (tryConsumeDrillingFluid); here an
 ---     operation is one vein recipe of the Manual Mine with the same results, 200 Drilling Fluid (Gregtorio's tenth of
----     GT's litres) instead of the pickaxe and the manual labor;
+---     GT's litres) instead of the pickaxe and the manual labor; issue #341: like the Miners below it lowers mining pipes
+---     and pulls them up again (MTEDrillerBase tryLowerPipeState, workingUpward), so a vein takes 9 Mining Pipes too and
+---     gives them back;
 ---   * the Mk changes the speed and the energy only, never the yield of an operation (GTNH's Mk gives radius and fortune
 ---     on small ores, which the vein recipes do not model): GT's operation takes base / 2^tier ticks at the energy tier
 ---     (calculateMaxProgressTime; base 960, 800, 640, 480), so 240 ticks (12 s) for the Mk I at MV, 100 for the Mk II at HV,
@@ -288,8 +290,8 @@ for _, name in ipairs(twins) do
 		category = CATEGORY,
 		energy_required = OP_TIME,
 		subgroup = "subgroup-" .. CATEGORY,
-		ingredients = { fluid(FLUID, FLUID_PER_OP) },
-		results = table.deepcopy(r.results),
+		ingredients = { fluid(FLUID, FLUID_PER_OP), item(PIPE, PIPES_PER_VEIN) },   -- issue #341: the pipes come back
+		results = F.join(table.deepcopy(r.results), { item(PIPE, PIPES_PER_VEIN) }),
 		main_product = r.main_product or r.results[1].name,
 	}
 	FORK_ELECTRIC_MINE.twins[name] = twin
