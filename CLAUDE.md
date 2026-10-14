@@ -82,7 +82,10 @@
     (category `electric-mine-recipes`, the same results, Drilling Fluid instead of the pickaxe and manual labor); GTNH's
     Drilling Fluid from the mixer with the Mk I's technology; the twins of veins before the Mk I come with its technology,
     the later ones with their vein's technology; devcheck fails for a Manual Mine or Dig Site recipe without a twin unless
-    it is in the allow-list `FORK_ELECTRIC_MINE_EXCLUDED` with its reason; loads after 162 and **before** 142)
+    it is in the allow-list `FORK_ELECTRIC_MINE_EXCLUDED` with its reason; issue #337: GT's Miners LV to HV (`lv-miner` to
+    `hv-miner`, upgrade chain Manual Mine -> LV -> MV -> HV Miner -> Mk I) with their twins `miner-<vein>` that take 9
+    mining pipes and give them back, technology `lv-miner` (its later twins are unlocked by
+    `FORK_ELECTRIC_MINE.unlock_miner_twins()`, which 142 calls after its moves); loads after 162 and **before** 142)
   - 142 recipe unlocks (issue #91: every Gregtorio recipe gets a technology from its explicit table `UNLOCKS`, the
     producers GT has and Gregtorio lacked and the component assembly line; a recipe that must stay
     locked goes into the allow-list `FORK_RECIPES_LOCKED` with its reason, devcheck fails otherwise; issue #237: a

@@ -96,6 +96,7 @@ FORK_TECH_ICONS = {
 	["luv-energy-hatches"] = true,
 	["luv-lapotronic-supercapacitor"] = true,
 	["luv-machines"] = true,
+	["lv-miner"] = true,
 	["magnetic-flux-exhibiter"] = true,
 	["mainframes"] = true,
 	["max-components"] = true,

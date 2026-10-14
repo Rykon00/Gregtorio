@@ -37,6 +37,28 @@
 --- the Nether, NAND Chips and Manganese Processing are prerequisites of it, see below); the twin of a later vein comes
 --- with the vein's technology, which gets the Mk I's technology as a prerequisite (142's FORK_UNLOCK_TREE: Reach the
 --- Moon, the reach technologies after it inherit it; the End has no twin).
+---
+--- The Miners (issue #337, the maintainer's decision): GT's Basic, Good and Advanced Miner (MTEMiner.java,
+--- `basicmachine.miner.tier.01-03`), here LV, MV and HV Miner (CLAUDE.md: no Basic/Good/Advanced prefixes), on the same
+--- footprint and in the same upgrade chain: Manual Mine -> LV -> MV -> HV Miner -> Ore Drilling Plant Mk I -> ... -> IV.
+---   * they mine the same veins (their own twins `miner-<vein>`, category `miner-recipes`, the same exclusions: GT's Miner
+---     mines ore blocks only, GTUtility.isOre);
+---   * a vein takes 24 s in the LV Miner (the maintainer's choice: half the Mk I's speed), GT halves it per tier
+---     (SPEED 160, 80, 40 ticks): 12 s and 6 s, the tier speeds 1, 2, 4;
+---   * GT's energy 8, 32, 128 EU/t is a quarter amp of the tier, class EU8;
+---   * mining pipes as in GTNH (DrillingLogicDelegate: one pipe per block of depth, pushed back out when the miner
+---     retracts): a vein recipe takes 9 mining pipes (a GT ore vein is 9 layers high, WorldgenGTOreLayer layers -1 to 7)
+---     and gives them back with the ores, so the miner needs pipes and keeps none;
+---   * the Mining Pipe: GT's wiremill recipe (WiremillRecipes.java: 1 tiny steel pipe -> 1 mining pipe, 10 s, LV/2);
+---     Gregtorio has no tiny pipes, a steel rod holds the same half ingot of steel;
+---   * machine recipes as GT's (MTERecipeLoader.java: LV "EEE/WMW/CSC" 3 motors, 2 tin cables, the hull, 2 circuits, a
+---     sensor; MV "PEP" 2 pistons and a motor, 2 double copper cables; HV "RPR" 2 robot arms and a piston, 2 quadruple
+---     gold cables; Gregtorio has single cables only: 4 copper, 8 gold);
+---   * the LV Miner's technology unlocks it, the pipe and the twins of the veins before it; a later vein's twin comes
+---     with its vein's technology (142 calls FORK_ELECTRIC_MINE.unlock_miner_twins after its moves, so the beryllium vein
+---     counts with Laser Engraver); every later vein's technology follows Phosphorus Processing, which gets the LV
+---     Miner's technology as a prerequisite (142's FORK_UNLOCK_TREE). The MV Miner comes with Advanced MV Machines
+---     (its MV sensor), the HV Miner with HV Machines.
 --- Loads after 160 (the dimension veins) and before 142 (the unlock table) and 155 (the ore chains: unlock_after).
 --------------------------------------------------------------------------------
 
@@ -48,7 +70,8 @@ local FLUID, FLUID_PER_OP = "drilling-fluid", 200
 local function item(name, amount) return { type = "item", name = name, amount = amount } end
 local function fluid(name, amount) return { type = "fluid", name = name, amount = amount } end
 
---- the Manual Mine and Dig Site recipes that get no electric twin: recipe -> reason (devcheck reads it)
+--- the Manual Mine and Dig Site recipes that get no electric twin: recipe -> reason (devcheck reads it; GT's Miner mines
+--- ore blocks only as well, MTEMiner.java)
 FORK_ELECTRIC_MINE_EXCLUDED = {
 	["hunting-blazes"] = "a mob drop (blaze rods), no ore: the Ore Drilling Plant mines ore blocks only (GTUtility.isOre)",
 	["hunting-endermen"] = "a mob drop (ender pearls), no ore: the Ore Drilling Plant mines ore blocks only",
@@ -67,8 +90,10 @@ FORK_ELECTRIC_MINE_EXCLUDED = {
 	["digging-moon-turf"] = "ground work at the Dig Site (the Moon's turf), no ore",
 }
 
---- manual recipe -> electric recipe (devcheck reads it)
-FORK_ELECTRIC_MINE = { twins = {} }
+--- manual recipe -> electric recipe of the plants and of the miners (devcheck reads both)
+FORK_ELECTRIC_MINE = { twins = {}, miner_twins = {} }
+local MINER_CATEGORY, PIPE, PIPES_PER_VEIN = "miner-recipes", "mining-pipe", 9
+local MINER_TECH = "lv-miner"
 
 --------------------------------------------------------------------------------
 --- DRILLING FLUID
@@ -91,7 +116,7 @@ create_recipe{
 F.category(CATEGORY)
 local manual_mine = data.raw["assembling-machine"]["manual-mine"]
 manual_mine.fast_replaceable_group = "manual-mine"
-manual_mine.next_upgrade = P1
+manual_mine.next_upgrade = "lv-miner"   -- issue #337: the miners, then the plants
 
 --- a pipe connection for the Drilling Fluid in the middle of each side
 local function fluid_input()
@@ -174,6 +199,71 @@ for _, p in ipairs(PLANTS) do
 end
 
 --------------------------------------------------------------------------------
+--- THE MINERS (issue #337)
+--------------------------------------------------------------------------------
+
+F.category(MINER_CATEGORY)
+create_item{
+	name = PIPE,
+	category = "lv-wiremill-recipes",
+	energy_required = 10 * LV_SPEED,
+	ingredients = { item("steel-rod", 1) },
+}
+--- tier, speed, energy, next upgrade, the machine recipe
+local MINERS = {
+	{ "lv", LV_SPEED, EU8_LV, "mv-miner", { item("lv-motor", 3), item("tin-cable", 2), item("lv-machine-hull", 1),
+		item("electronic-circuit", 2), item("lv-sensor", 1) } },
+	{ "mv", MV_SPEED, EU8_MV, "hv-miner", { item("mv-piston", 2), item("mv-motor", 1), item("copper-cable", 4),
+		item("mv-machine-hull", 1), item("advanced-circuit", 2), item("mv-sensor", 1) } },
+	{ "hv", HV_SPEED, EU8_HV, P1, { item("hv-robot-arm", 2), item("hv-piston", 1), item("gold-cable", 8),
+		item("hv-machine-hull", 1), item("processing-unit", 2), item("hv-sensor", 1) } },
+}
+--- one vein: 24 s in the LV Miner (the maintainer's choice), as a recipe of the LV tier
+local MINER_TIME = 24 * LV_SPEED
+
+for _, p in ipairs(MINERS) do
+	local tier, speed, energy, upgrade, ingredients = p[1], p[2], p[3], p[4], p[5]
+	local name = tier .. "-miner"
+	local m = table.deepcopy(manual_mine)
+	m.name = name
+	m.icon = "__gregtorio-continued__/graphics/icons/fork/" .. name .. ".png"
+	m.icon_size = 32
+	m.minable = { mining_time = 0.5, result = name }
+	m.max_health = 300
+	m.crafting_categories = { MINER_CATEGORY }
+	m.crafting_speed = speed
+	m.energy_source = { type = "electric", usage_priority = "secondary-input", emissions_per_minute = { pollution = 1 },
+		drain = "0W" }
+	m.energy_usage = energy
+	m.fast_replaceable_group = "manual-mine"
+	m.next_upgrade = upgrade
+	m.graphics_set = {
+		idle_animation = { layers = { { filename = "__gregtorio-continued__/graphics/entity/fork/" .. name .. "-idle.png",
+			width = 160, height = 160, frame_count = 1, shift = { 0, 0 } } } },
+		animation = { layers = { { filename = "__gregtorio-continued__/graphics/entity/fork/" .. name .. "-working.png",
+			width = 160, height = 160, frame_count = 1, shift = { 0, 0 } } } },
+	}
+	m.working_sound = {
+		sound = { filename = "__base__/sound/assembling-machine-t1-1.ogg", volume = 0.5 },
+		idle_sound = { filename = "__base__/sound/idle1.ogg", volume = 0.3 },
+		apparent_volume = 1.5,
+	}
+	m.circuit_wire_connection_points = circuit_connector_definitions["assembling-machine"].points
+	m.circuit_connector_sprites = circuit_connector_definitions["assembling-machine"].sprites
+	m.circuit_wire_max_distance = default_circuit_wire_max_distance
+	m.localised_description = { "entity-description." .. name }
+	data:extend({ m })
+	create_item{
+		name = name,
+		icon = m.icon,
+		place_result = name,
+		subgroup = tier .. "-age-production-machine",
+		stack_size = 10,
+		ingredients = ingredients,
+	}
+end
+
+--------------------------------------------------------------------------------
 --- THE ELECTRIC RECIPES
 --------------------------------------------------------------------------------
 
@@ -204,6 +294,20 @@ for _, name in ipairs(twins) do
 	}
 	FORK_ELECTRIC_MINE.twins[name] = twin
 	twin_of[name] = twin
+	--- issue #337: the miners' twin, with the 9 mining pipes that come back
+	local results = table.deepcopy(r.results)
+	results[#results + 1] = item(PIPE, PIPES_PER_VEIN)
+	local miner_twin = name:gsub("^mining%-", "miner-")
+	create_recipe{
+		name = miner_twin,
+		category = MINER_CATEGORY,
+		energy_required = MINER_TIME,
+		subgroup = "subgroup-" .. MINER_CATEGORY,
+		ingredients = { item(PIPE, PIPES_PER_VEIN) },
+		results = results,
+		main_product = r.main_product or r.results[1].name,
+	}
+	FORK_ELECTRIC_MINE.miner_twins[name] = miner_twin
 end
 
 --------------------------------------------------------------------------------
@@ -245,3 +349,26 @@ F.tech{ name = P2, prerequisites = { P1, "hv-machines", "hv-energy-hatches" }, p
 	recipes = { P2 } }
 F.tech{ name = P3, prerequisites = { P2, "ev-machines" }, packs = 5, count = 30, time = 45, recipes = { P3 } }
 F.tech{ name = P4, prerequisites = { P3, "iv-machines" }, packs = 6, count = 50, time = 60, recipes = { P4 } }
+
+--- issue #337: the LV Miner after the Wiremill (its mining pipe) and the LV sensor (Military Science Pack); the MV Miner
+--- with its MV sensor (Advanced MV Machines), the HV Miner with HV Machines
+F.tech{ name = MINER_TECH, prerequisites = { "wiremill", "military-science-pack" }, packs = 2, count = 40, time = 30,
+	recipes = { MINER_TECH, PIPE } }
+fork_add_unlock("advanced-mv-machines", "mv-miner")
+fork_add_unlock("hv-machines", "hv-miner")
+
+--- the miners' twins, called by 142 after it moved the unlocks of the veins: a vein whose technology is the LV Miner's
+--- or one of its prerequisites comes with the LV Miner, a later one with its own technology
+function FORK_ELECTRIC_MINE.unlock_miner_twins()
+	local before = {}
+	local function walk(t)
+		if before[t] then return end
+		before[t] = true
+		for _, pre in pairs(data.raw.technology[t].prerequisites or {}) do walk(pre) end
+	end
+	walk(MINER_TECH)
+	for manual, twin in pairs(FORK_ELECTRIC_MINE.miner_twins) do
+		local t = tech_of(manual)
+		fork_add_unlock(t and not before[t] and t or MINER_TECH, twin)
+	end
+end

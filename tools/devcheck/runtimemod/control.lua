@@ -1827,8 +1827,12 @@ end
 --- robots of a T1 roboport (issue #336: the roboport must take them, and the T1 logistic robots) with the plant in a
 --- storage chest (the robots bring the old machine and its items back). The
 --- neighbours must stay, the items come back (on the ground, in the storage chest), and plant A drills the iron vein's
---- twin with Drilling Fluid: 64 raw iron in 12 s.
+--- twin with Drilling Fluid: 64 raw iron in 12 s. Issue #337: the Manual Mine's upgrade chain goes through the LV, MV and
+--- HV Miner to the plant; a third Manual Mine is replaced by fast replace with the HV Miner, which mines the iron vein's
+--- Miner twin: 64 raw iron in 6 s, and the 9 mining pipes come back.
 local EM_X, EM_Y = 260.5, -120.5
+local EM_C = 60                                          -- mine C (the HV Miner): x offset
+local EM_CHAIN = { "manual-mine", "lv-miner", "mv-miner", "hv-miner", "ore-drilling-plant-mk1" }
 local EM_B = 30                                          -- mine B: x offset
 local EM_ITEMS = { ["iron-pickaxe-usage"] = 1, ["manual-labor"] = 2, ["raw-iron"] = 10 }
 local EM_PLANT = "ore-drilling-plant-mk1"
@@ -1873,10 +1877,13 @@ function setup_emine_test(s)
 	local ok, err = pcall(function()
 		local st = { phase = 0 }
 		storage.emine = st
-		for _, r in pairs({ "mining-iron-vein", "drilling-iron-vein" }) do game.forces.player.recipes[r].enabled = true end
+		for _, r in pairs({ "mining-iron-vein", "drilling-iron-vein", "miner-iron-vein" }) do
+			game.forces.player.recipes[r].enabled = true
+		end
 		st.a, st.a_around = em_site(s, EM_X, EM_Y)
 		st.b, st.b_around = em_site(s, EM_X + EM_B, EM_Y)
-		for _, x in pairs({ EM_X, EM_X + EM_B }) do
+		st.c = em_site(s, EM_X + EM_C, EM_Y)
+		for _, x in pairs({ EM_X, EM_X + EM_B, EM_X + EM_C }) do
 			s.create_entity{ name = "substation", position = { x + 5.5, EM_Y - 4.5 }, force = "player" }
 			s.create_entity{ name = "electric-energy-interface", position = { x + 8.5, EM_Y - 4.5 }, force = "player" }
 		end
@@ -1912,9 +1919,25 @@ function emine_test()
 	end
 	if st.phase == 0 and t >= 20 then
 		local mm = prototypes.entity["manual-mine"]
-		expect(mm.next_upgrade and mm.next_upgrade.name == EM_PLANT, "the manual mine's next upgrade is not the Mk I")
-		expect(mm.fast_replaceable_group == prototypes.entity[EM_PLANT].fast_replaceable_group,
-			"the manual mine and the Mk I are in different fast replace groups")
+		for i = 1, #EM_CHAIN - 1 do
+			local e = prototypes.entity[EM_CHAIN[i]]
+			expect(e.next_upgrade and e.next_upgrade.name == EM_CHAIN[i + 1], EM_CHAIN[i] .. "'s next upgrade is "
+				.. tostring(e.next_upgrade and e.next_upgrade.name) .. ", not " .. EM_CHAIN[i + 1])
+			expect(e.fast_replaceable_group == mm.fast_replaceable_group, EM_CHAIN[i + 1] .. " is not in the manual mine's"
+				.. " fast replace group")
+		end
+		--- C (issue #337): fast replace with the HV Miner, the iron vein's Miner twin with its 9 mining pipes
+		local okc, miner = pcall(function()
+			return s.create_entity{ name = "hv-miner", position = st.c.position, force = "player", fast_replace = true,
+				spill = true, raise_built = true }
+		end)
+		expect(okc and miner and miner.valid and miner.name == "hv-miner", "fast replace: no HV Miner built (" .. tostring(miner) .. ")")
+		if okc and miner and miner.valid then
+			st.miner = miner
+			miner.set_recipe("miner-iron-vein")
+			expect(miner.get_inventory(defines.inventory.assembling_machine_input).insert{ name = "mining-pipe", count = 9 } == 9,
+				"the HV Miner took no mining pipes")
+		end
 		--- A: fast replace
 		local pos = st.a.position
 		local ok, plant = pcall(function()
@@ -1951,7 +1974,12 @@ function emine_test()
 		for name, n in pairs(EM_ITEMS) do all_back = all_back and (back[name] or 0) == n end
 		local drilled = st.plant and st.plant.valid and st.plant.get_inventory(defines.inventory.assembling_machine_output)
 			.get_item_count("raw-iron") or 0
-		if (all_back and drilled >= 64) or t >= st.t1 + 1200 then
+		local mout = st.miner and st.miner.valid and st.miner.get_inventory(defines.inventory.assembling_machine_output)
+		local mined, pipes = mout and mout.get_item_count("raw-iron") or 0, mout and mout.get_item_count("mining-pipe") or 0
+		if (all_back and drilled >= 64 and mined >= 64) or t >= st.t1 + 1200 then
+			expect(mined == 64 and pipes == 9, "the HV Miner mined " .. mined .. " raw iron and gave back " .. pipes
+				.. " mining pipes (64 and 9 in 6 s; status " .. tostring(st.miner and st.miner.valid and st.miner.status) .. ")")
+			st.mined = mined
 			expect(b ~= nil, "upgrade planner: no Mk I at the manual mine's place after " .. (t - st.t1) .. " ticks")
 			expect((back["manual-mine"] or 0) == 1, "upgrade planner: the manual mine did not come back to the storage chest")
 			items_back(back, "upgrade planner")
@@ -1966,7 +1994,8 @@ function emine_test()
 		st.done = true
 		for _, p in pairs(problems) do log("DEVCHECK-RUNTIME-FAIL electric mine test: " .. p) end
 		log("DEVCHECK-RUNTIME-EMINE " .. (#problems == 0 and "ok" or "failed") .. " (fast replace and upgrade planner, "
-			.. tostring(st.drilled) .. " raw iron drilled, " .. tostring(st.ticks) .. " ticks)")
+			.. tostring(st.drilled) .. " raw iron drilled, " .. tostring(st.mined) .. " mined by the HV Miner, "
+			.. tostring(st.ticks) .. " ticks)")
 	end
 end
 

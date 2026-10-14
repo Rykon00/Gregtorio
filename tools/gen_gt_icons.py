@@ -796,6 +796,11 @@ def icon_table(c):
     for m in ("bastnasite-rare-earth-oxides", "acid-leached-bastnasite-rare-earth-oxides", "roasted-rare-earth-oxides", "wet-rare-earth-oxides", "cerium-oxidised-rare-earth-oxides", "bastnasite-rarer-earth-oxides", "neodymium-rare-earth-concentrate", "lanthanum-chloride", "neodymium-oxide", "cerium-chloride", "cerium-oxalate", "cerium-iii-oxide", "vanadium-pentoxide"):
         T[m] = lambda m=m: c.part(m, "dust")
 
+    # issue #337: the miners' mining pipe (IC2's item, whose texture is not in GT): GT's mining pipe slot overlay in
+    # steel's colour
+    T["mining-pipe"] = lambda: c.readable(tint(c.gt("gt:gregtech/textures/gui/overlay_slot/mining_pipe").convert("RGBA"),
+                                               c.m.colour("steel")))
+
     # multi-amp wires (upstream: 16x = a block of the metal)
     T["luv-superconductor-wire-16x"] = lambda: bar(c.m.colour("itbtc-alloy"), 2, n=4)
     return T
