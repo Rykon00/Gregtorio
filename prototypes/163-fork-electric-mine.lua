@@ -7,8 +7,7 @@
 ---   * GTNH mines one ore block per operation and drinks 2000 L Drilling Fluid for it (tryConsumeDrillingFluid); here an
 ---     operation is one vein recipe of the Manual Mine with the same results, 200 Drilling Fluid (Gregtorio's tenth of
 ---     GT's litres) instead of the pickaxe and the manual labor; issue #341: like the Miners below it lowers mining pipes
----     and pulls them up again (MTEDrillerBase tryLowerPipeState, workingUpward), so a vein takes 9 Mining Pipes too and
----     gives them back;
+---     (MTEDrillerBase tryLowerPipeState), so a vein takes 9 Mining Pipes too (issue #346: consumed, see the Miners);
 ---   * the Mk changes the speed and the energy only, never the yield of an operation (GTNH's Mk gives radius and fortune
 ---     on small ores, which the vein recipes do not model): GT's operation takes base / 2^tier ticks at the energy tier
 ---     (calculateMaxProgressTime; base 960, 800, 640, 480), so 240 ticks (12 s) for the Mk I at MV, 100 for the Mk II at HV,
@@ -49,9 +48,10 @@
 ---   * a vein takes 24 s in the LV Miner (the maintainer's choice: half the Mk I's speed), GT halves it per tier
 ---     (SPEED 160, 80, 40 ticks): 12 s and 6 s, the tier speeds 1, 2, 4;
 ---   * GT's energy 8, 32, 128 EU/t is a quarter amp of the tier, class EU8;
----   * mining pipes as in GTNH (DrillingLogicDelegate: one pipe per block of depth, pushed back out when the miner
----     retracts): a vein recipe takes 9 mining pipes (a GT ore vein is 9 layers high, WorldgenGTOreLayer layers -1 to 7)
----     and gives them back with the ores, so the miner needs pipes and keeps none;
+---   * mining pipes (DrillingLogicDelegate: one pipe per block of depth): a vein recipe takes 9 mining pipes (a GT ore
+---     vein is 9 layers high, WorldgenGTOreLayer layers -1 to 7). GTNH keeps them in the ground and pulls them up at the
+---     end; a recipe cannot keep a stock, and giving them back every vein needed an inserter loop, so (issue #346, the
+---     maintainer's decision) they are consumed;
 ---   * the Mining Pipe: GT's wiremill recipe (WiremillRecipes.java: 1 tiny steel pipe -> 1 mining pipe, 10 s, LV/2);
 ---     Gregtorio has no tiny pipes, a steel rod holds the same half ingot of steel;
 ---   * machine recipes as GT's (MTERecipeLoader.java: LV "EEE/WMW/CSC" 3 motors, 2 tin cables, the hull, 2 circuits, a
@@ -291,15 +291,14 @@ for _, name in ipairs(twins) do
 		category = CATEGORY,
 		energy_required = OP_TIME,
 		subgroup = "subgroup-" .. CATEGORY,
-		ingredients = { fluid(FLUID, FLUID_PER_OP), item(PIPE, PIPES_PER_VEIN) },   -- issue #341: the pipes come back
-		results = F.join(table.deepcopy(r.results), { item(PIPE, PIPES_PER_VEIN) }),
+		ingredients = { fluid(FLUID, FLUID_PER_OP), item(PIPE, PIPES_PER_VEIN) },   -- issues #341, #346: consumed
+		results = table.deepcopy(r.results),
 		main_product = r.main_product or r.results[1].name,
 	}
 	FORK_ELECTRIC_MINE.twins[name] = twin
 	twin_of[name] = twin
-	--- issue #337: the miners' twin, with the 9 mining pipes that come back
+	--- issue #337: the miners' twin, with its 9 mining pipes (consumed, issue #346)
 	local results = table.deepcopy(r.results)
-	results[#results + 1] = item(PIPE, PIPES_PER_VEIN)
 	local miner_twin = name:gsub("^mining%-", "miner-")
 	create_recipe{
 		name = miner_twin,
