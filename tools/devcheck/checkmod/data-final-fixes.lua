@@ -122,6 +122,24 @@ local nl = {}
 for name, reason in pairs(FORK_ENGRAVER_NO_LENS or {}) do nl[#nl + 1] = name .. "\t" .. reason end
 section("ENGRAVERNOLENS", nl)
 
+--- Issue #335: the Manual Mine and Dig Site recipes, their electric twins (FORK_ELECTRIC_MINE.twins in
+--- prototypes/163-fork-electric-mine.lua) and the ones without a twin on purpose (FORK_ELECTRIC_MINE_EXCLUDED); one row
+--- per name: name, "manual" or "-", the twin or "-", the allow-list reason (absent in older versions)
+local em, em_seen = {}, {}
+local function em_row(name)
+	if em_seen[name] then return end
+	em_seen[name] = true
+	local r, twin = data.raw.recipe[name], FORK_ELECTRIC_MINE and FORK_ELECTRIC_MINE.twins[name]
+	local manual = r and (r.category == "manual-mine-recipes" or r.category == "manual-digsite-recipes")
+	em[#em + 1] = table.concat({ name, manual and "manual" or "-", (twin and data.raw.recipe[twin]) and twin or "-",
+		(FORK_ELECTRIC_MINE_EXCLUDED or {})[name] or "" }, "\t")
+end
+for name, r in pairs(data.raw.recipe) do
+	if r.category == "manual-mine-recipes" or r.category == "manual-digsite-recipes" then em_row(name) end
+end
+for name in pairs(FORK_ELECTRIC_MINE_EXCLUDED or {}) do em_row(name) end
+section("ELECTRICMINE", em)
+
 --- Issue #214: the recipes of me-network (ME_NETWORK.recipes) and which of them prototypes/120-fork-me-network-compat.lua
 --- gives a Gregtorio recipe (FORK_ME_RECIPES) or keeps standalone on purpose (FORK_ME_RECIPES_STANDALONE); one row per
 --- name: name, "me" (a recipe of me-network) or "-", "gregtorio" or "-", the allow-list reason (absent in older versions)

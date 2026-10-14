@@ -223,6 +223,13 @@ MULTIBLOCKS = {
     "void-miner-iii": ((3, 3), "gregtech:iconsets/MACHINE_CASING_MINING_NEUTRONIUM", None,
                       ("gregtech:iconsets/OVERLAY_FRONT_ORE_DRILL", "gregtech:iconsets/OVERLAY_FRONT_ORE_DRILL_ACTIVE"),
                       None),
+    # issue #335 (163-fork-electric-mine.lua): GT's Ore Drilling Plants I to IV on the Manual Mine's 5x5 footprint, the
+    # casing of each Mk (MTEOreDrillingPlant1-4 getCasingBlockItem) and the ore drill front
+    **{f"ore-drilling-plant-mk{t}": ((5, 5), f"gregtech:iconsets/{casing}", None,
+                                     ("gregtech:iconsets/OVERLAY_FRONT_ORE_DRILL",
+                                      "gregtech:iconsets/OVERLAY_FRONT_ORE_DRILL_ACTIVE"), None)
+       for t, casing in enumerate(("MACHINE_CASING_SOLID_STEEL", "MACHINE_CASING_STABLE_TITANIUM",
+                                   "MACHINE_CASING_ROBUST_TUNGSTENSTEEL", "MACHINE_CASING_MINING_OSMIRIDIUM"), 1)},
     # issue #274: the Chemical Dehydrators I to IV, like the MV and HV ones
     "ev-dehydrator": ((3, 3), "gregtech:iconsets/MACHINE_EV_SIDE", None,
                       ("gregtech:basicmachines/dehydrator/OVERLAY_FRONT",
@@ -283,7 +290,8 @@ WHOLE_ICONS = {"large-titanium-boiler", "large-combustion-engine", "digester", "
                "ev-rocket-engine", "iv-rocket-engine", "luv-rocket-engine", "large-rocket-engine",
                *(f"space-elevator-mk{t}" for t in range(1, 6)),
                *(f"space-elevator-mining-module-mk{t}" for t in range(1, 4)),
-               "planetary-gas-siphon", *(f"space-elevator-pump-module-mk{t}" for t in range(1, 4))}
+               "planetary-gas-siphon", *(f"space-elevator-pump-module-mk{t}" for t in range(1, 4)),
+               *(f"ore-drilling-plant-mk{t}" for t in range(1, 5))}
 # tier versions of a generator (136-fork-power.lua): the base sprite with dynamo hatches of the tier
 # (GT hull of the tier + GT's dynamo hatch overlay) on the corner tiles; the base itself gets its own
 # tier's hatches too. The icon gets the hatch as a badge.

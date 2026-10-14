@@ -134,6 +134,8 @@ put("ore-solutions", { "zirconium-tetrachloride-solution", "hydrated-ammonium-ni
 put("acids", { "boric-acid" })
 put("gases", { "phosgene", "boron-trichloride", "chloromethane" })
 put("molten-elements", { "calcium-fluoride" })
+--- issue #335: the Drilling Fluid of the Ore Drilling Plants (163), water with stone dust and lubricant
+put("basic", { "drilling-fluid" })
 --- issue #119: Space Age's melts, restyled below, are rows of the Fluids tab like the other melts
 put("molten-elements", { "molten-iron", "molten-copper" })
 put("molten-alloys", { "molten-potassium-disulfate" })

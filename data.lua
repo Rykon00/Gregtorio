@@ -121,6 +121,9 @@ require("prototypes.146-fork-platinum-line")
 require("prototypes.160-fork-dimension-mines")
 --- issue #301: the Space Elevator (part 1 of #292's decision), before 142
 require("prototypes.162-fork-space-elevator")
+--- issue #335: the Ore Drilling Plants and an electric twin of every vein recipe of the Manual Mine (after the veins
+--- of 160, before 142 and 155)
+require("prototypes.163-fork-electric-mine")
 --- issue #91: every Gregtorio recipe gets a technology (after every file that makes recipes and technologies)
 require("prototypes.142-fork-recipe-unlocks")
 --- issue #91: casts of every form, melts of every ingot, the missing melts (before the molds and the Fluids tab)
