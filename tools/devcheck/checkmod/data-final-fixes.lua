@@ -123,16 +123,18 @@ for name, reason in pairs(FORK_ENGRAVER_NO_LENS or {}) do nl[#nl + 1] = name .. 
 section("ENGRAVERNOLENS", nl)
 
 --- Issue #335: the Manual Mine and Dig Site recipes, their electric twins (FORK_ELECTRIC_MINE.twins in
---- prototypes/163-fork-electric-mine.lua) and the ones without a twin on purpose (FORK_ELECTRIC_MINE_EXCLUDED); one row
---- per name: name, "manual" or "-", the twin or "-", the allow-list reason (absent in older versions)
+--- prototypes/163-fork-electric-mine.lua; issue #337: FORK_ELECTRIC_MINE.miner_twins of the miners) and the ones without
+--- a twin on purpose (FORK_ELECTRIC_MINE_EXCLUDED); one row per name: name, "manual" or "-", the twin or "-", the
+--- allow-list reason, the miners' twin or "-" (absent in older versions)
 local em, em_seen = {}, {}
 local function em_row(name)
 	if em_seen[name] then return end
 	em_seen[name] = true
-	local r, twin = data.raw.recipe[name], FORK_ELECTRIC_MINE and FORK_ELECTRIC_MINE.twins[name]
+	local fem = FORK_ELECTRIC_MINE or {}
+	local r, twin, miner = data.raw.recipe[name], (fem.twins or {})[name], (fem.miner_twins or {})[name]
 	local manual = r and (r.category == "manual-mine-recipes" or r.category == "manual-digsite-recipes")
 	em[#em + 1] = table.concat({ name, manual and "manual" or "-", (twin and data.raw.recipe[twin]) and twin or "-",
-		(FORK_ELECTRIC_MINE_EXCLUDED or {})[name] or "" }, "\t")
+		(FORK_ELECTRIC_MINE_EXCLUDED or {})[name] or "", (miner and data.raw.recipe[miner]) and miner or "-" }, "\t")
 end
 for name, r in pairs(data.raw.recipe) do
 	if r.category == "manual-mine-recipes" or r.category == "manual-digsite-recipes" then em_row(name) end

@@ -2954,3 +2954,4 @@ chipped-topaz
 flawed-topaz
 flawless-topaz
 exquisite-topaz
+mining-pipe

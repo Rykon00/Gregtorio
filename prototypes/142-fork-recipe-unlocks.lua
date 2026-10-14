@@ -784,7 +784,8 @@ FORK_UNLOCK_TREE = { prerequisites = {
 	["ore-crushing"] = { "electrolyzer" },   -- raw-vanadium-magnetite
 	["ore-washing"] = { "automation-2" },   -- lv-conveyor-module
 	["osmium"] = { "iv-energy-hatches" },   -- machine iv-tall-distillation
-	["phosphorus-processing"] = { "sulfuric-acid" },   -- sulfuric-acid
+	["phosphorus-processing"] = { "sulfuric-acid", "lv-miner" },   -- sulfuric-acid; machine lv-miner (issue #337: the twins of
+	-- every later vein, whose technologies all follow Phosphorus Processing)
 	["plasma-turbine"] = { "industrial-mixer" },   -- titanium-turbine-casing
 	["polybenzimidazole"] = { "alloy-blast-smelter" },   -- machine hv-alloy-blast-smelter
 	["production-science-pack"] = { "radon" },   -- quantum-eye
@@ -841,6 +842,9 @@ function FORK_UNLOCK_TREE.apply(final)
 	end
 end
 FORK_UNLOCK_TREE.apply()
+--- issue #337 (163): the miners' twins of the veins, after the moves above and the prerequisites (a vein before the LV
+--- Miner comes with it, a later one with its own technology)
+FORK_ELECTRIC_MINE.unlock_miner_twins()
 
 
 
