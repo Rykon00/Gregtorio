@@ -79,7 +79,8 @@
   - 163 electric mine (issue #335: GTNH's Ore Drilling Plants Mk I to IV (`ore-drilling-plant-mk1` to `-mk4`, MV to IV,
     the Mk changes speed and energy only) on the Manual Mine's footprint and fast replace group, the Manual Mine's
     `next_upgrade` is the Mk I; one electric twin `drilling-<vein>` of every `mining-<vein>` recipe of the Manual Mine
-    (category `electric-mine-recipes`, the same results, Drilling Fluid instead of the pickaxe and manual labor); GTNH's
+    (category `electric-mine-recipes`, the same results, Drilling Fluid and (issue #341) 9 mining pipes that come back
+    instead of the pickaxe and manual labor); GTNH's
     Drilling Fluid from the mixer with the Mk I's technology; the twins of veins before the Mk I come with its technology,
     the later ones with their vein's technology; devcheck fails for a Manual Mine or Dig Site recipe without a twin unless
     it is in the allow-list `FORK_ELECTRIC_MINE_EXCLUDED` with its reason; issue #337: GT's Miners LV to HV (`lv-miner` to
