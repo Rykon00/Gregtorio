@@ -269,6 +269,8 @@ local RM_MACHINES = {
 	-- issue #335: the Manual Mine got a fast replace group and the Ore Drilling Plant as its next upgrade; a Manual Mine of
 	-- an old save stays one and keeps its vein recipe
 	{ "manual-mine", "mining-iron-vein", "mining-iron-vein", "manual-mine" },
+	-- issue #348: upstream's Ruby Lens from a plain ruby is deleted; a lathe of an old save loads without the recipe
+	{ "lv-lathe", "ruby-lens", nil },
 }
 --- Issue #317: a character of the old save has a hand craft of a deleted vanilla recipe in its queue; after the update the
 --- save loads, the character is there and its queue is empty. The game drops the craft with its ingredients (they are
