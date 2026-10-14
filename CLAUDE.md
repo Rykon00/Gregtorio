@@ -86,7 +86,8 @@
     it is in the allow-list `FORK_ELECTRIC_MINE_EXCLUDED` with its reason; issue #337: GT's Miners LV to HV (`lv-miner` to
     `hv-miner`, upgrade chain Manual Mine -> LV -> MV -> HV Miner -> Mk I) with their twins `miner-<vein>` that take 9
     mining pipes and give them back, technology `lv-miner` (its later twins are unlocked by
-    `FORK_ELECTRIC_MINE.unlock_miner_twins()`, which 142 calls after its moves); loads after 162 and **before** 142)
+    `FORK_ELECTRIC_MINE.unlock_miner_twins()`, which 142 calls after its moves); issue #342: the mod data `fork-electric-mine`
+    (recipe -> vein, vein -> recipe per category) for `scripts/fork-electric-mine.lua`; loads after 162 and **before** 142)
   - 142 recipe unlocks (issue #91: every Gregtorio recipe gets a technology from its explicit table `UNLOCKS`, the
     producers GT has and Gregtorio lacked and the component assembly line; a recipe that must stay
     locked goes into the allow-list `FORK_RECIPES_LOCKED` with its reason, devcheck fails otherwise; issue #237: a
@@ -203,7 +204,8 @@
     the recipes keep their machine rows; devcheck warns for a material with no tier; loads after 199 so the final
     unlocks count).
   The phase plan is in `docs/ROADMAP.md`. Runtime fork code lives in `scripts/` and is required from `control.lua`
-  (`fork-molds.lua`, `fork-victory.lua`, `fork-power.lua`, `fork-space-elevator.lua` (#302), and `fork-me-handover.lua`: the one-time hand-over of the ME
+  (`fork-molds.lua`, `fork-victory.lua`, `fork-power.lua`, `fork-space-elevator.lua` (#302), `fork-electric-mine.lua` (#342: a Miner or Ore Drilling Plant that replaces a mine
+  keeps its vein, from 163's mod data `fork-electric-mine`; event driven, `storage.fork_electric_mine`), and `fork-me-handover.lua`: the one-time hand-over of the ME
   state of saves from before issue #83 to me-network through the remote interface `gregtorio-me-handover`, which
   me-network calls in its `on_init`; keep its table list and fingerprint function equal to me-network's
   `scripts/fork-me-handover.lua`). Everything else of the ME network (runtime, graphics, locale, its tests,

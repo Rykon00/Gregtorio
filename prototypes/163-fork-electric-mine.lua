@@ -24,7 +24,8 @@
 --- Placing it onto a Manual Mine: the plant has the Manual Mine's footprint (5x5, collision box +-2.3) and fast replace
 --- group, and the Manual Mine's next upgrade is the Mk I (then Mk II to IV), so a Manual Mine with its inserters, belts and
 --- poles is replaced in place by fast replace or the upgrade planner. Its Drilling Fluid input has a pipe connection in
---- the middle of each side, for whichever side is free. The recipe is reset (the electric recipes are other prototypes).
+--- the middle of each side, for whichever side is free. The engine resets the recipe (the electric recipes are other
+--- prototypes); issue #342: scripts/fork-electric-mine.lua gives the new machine the same vein's recipe of its category.
 ---
 --- The electric recipes: one per recipe of the Manual Mine (07 and 160), `mining-<vein>` -> `drilling-<vein>`, except the
 --- allow-list FORK_ELECTRIC_MINE_EXCLUDED below (mobs, plain blocks and the dig site's ground work, each with its reason);
@@ -310,6 +311,22 @@ for _, name in ipairs(twins) do
 		main_product = r.main_product or r.results[1].name,
 	}
 	FORK_ELECTRIC_MINE.miner_twins[name] = miner_twin
+end
+
+--- issue #342: a replaced mine keeps its vein (scripts/fork-electric-mine.lua). The mod data names, for every recipe of a
+--- vein (the Manual Mine's, the Miners', the plants'), the vein (its Manual Mine recipe) and, per vein, its recipe of each
+--- category; `machines` are the mines that keep their vein when one of them replaces another.
+do
+	local veins, recipes, machines = {}, {}, { ["manual-mine"] = true }
+	for manual, drilling in pairs(FORK_ELECTRIC_MINE.twins) do
+		local miner = FORK_ELECTRIC_MINE.miner_twins[manual]
+		veins[manual], veins[drilling], veins[miner] = manual, manual, manual
+		recipes[manual] = { ["manual-mine-recipes"] = manual, [CATEGORY] = drilling, [MINER_CATEGORY] = miner }
+	end
+	for _, p in ipairs(MINERS) do machines[p[1] .. "-miner"] = true end
+	for _, p in ipairs(PLANTS) do machines[p[1]] = true end
+	data:extend({ { type = "mod-data", name = "fork-electric-mine",
+		data = { veins = veins, recipes = recipes, machines = machines } } })
 end
 
 --------------------------------------------------------------------------------
