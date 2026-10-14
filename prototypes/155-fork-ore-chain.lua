@@ -521,6 +521,18 @@ log("FORK-ORE-CHAIN: " .. baths .. " chemical bath washing recipes")
 --- category and the recipe that makes its input (after_all); an input made from the start counts as given, and a
 --- recipe whose machine and input are both there from the start is enabled.
 --------------------------------------------------------------------------------
+--- issue #348: upstream's Ruby Lens from a plain ruby (11-lv-age-item.lua: LV lathe, 1 ruby -> 1 lens) is no GT recipe;
+--- GT cuts a lens from a plate or an exquisite gem (ProcessingLens.java, both below). It goes before the unlocks are read.
+for _, tech in pairs(data.raw.technology) do
+	local keep = {}
+	for _, e in pairs(tech.effects or {}) do
+		if not (e.type == "unlock-recipe" and e.recipe == "ruby-lens") then keep[#keep + 1] = e end
+	end
+	if tech.effects and #keep < #tech.effects then tech.effects = keep end
+end
+data.raw.recipe["ruby-lens"] = nil
+log("FORK-REMOVED: recipe ruby-lens")
+
 local techs_of_recipe = {}
 for tname, tech in pairs(data.raw.technology) do
 	for _, e in pairs(tech.effects or {}) do
@@ -850,10 +862,12 @@ local function gem_grades(x, grade, dust, pending)
 	if not data.raw.item[small] then add_item(small, sub_of(dust, "subgroup-macerator-dust"), "z-" .. small) end
 
 	local name
-	--- the lens first: the engraver steps below need it
+	--- the lens first: the engraver steps below need it (issue #348: GT's ProcessingLens.java, 1 lens and 2 dusts; only
+	--- the diamond gives 3 lenses and 1 dust)
 	if LENS[x] and data.raw.item[LENS[x]] then
+		local lens_out = x == "diamond" and { item(LENS[x], 3), item(dust) } or { item(LENS[x], 1), item(dust, 2) }
 		name = made(recipe{ name = LENS[x] .. "-from-exquisite", category = "lv-lathe-recipes", time = 120, main = LENS[x],
-			ingredients = { item(grade.exquisite) }, results = { item(LENS[x], 3), item(dust) } })
+			ingredients = { item(grade.exquisite) }, results = lens_out })
 		later(pending, name, function() return { machine_techs("lv-lathe-recipes"), item_techs(grade.exquisite) } end)
 		n = n + 1
 	end
@@ -1503,7 +1517,8 @@ end
 --- 1 min, MV, with a small pile of the dust where Gregtorio has one), the plate of a gem that cannot be hammered from its
 --- dust (ProcessingDust.java: compressor, 15 s), the dust from the gem in the macerator (2.8 s, as Gregtorio's diamond). The
 --- yellow garnet and the emerald lens get this route too: the exquisite yellow garnet comes only from the implosion
---- compressor, after the LPIC wafer, the exquisite emerald from the sifter, after the ULPIC wafer.
+--- compressor, after the LPIC wafer, the exquisite emerald from the sifter, after the ULPIC wafer. Issue #348: the ruby lens
+--- too, instead of upstream's lens from a plain ruby.
 --------------------------------------------------------------------------------
 local function plate_lens(m, gem)
 	local dust, plate, lens, small = m .. "-dust", m .. "-plate", m .. "-lens", "small-pile-of-" .. m .. "-dust"
@@ -1530,6 +1545,7 @@ plate_lens("ender-eye", "eye-of-ender")
 plate_lens("yellow-garnet")
 plate_lens("emerald", "emerald")   -- the ULPIC wafer (MV Energy Hatches) comes before the emerald sifter
 plate_lens("amber", "amber-gem")   -- issue #332: the lens with the simple SoC wafer (NAND Chips, the MV lathe)
+plate_lens("ruby", "ruby")         -- issue #348: instead of upstream's lens from a plain ruby (removed above)
 
 --- recipe -> its lens (the GT recipe: file, line of the output). Gregtorio's wafers: sw silicon (GT's Wafer), pd phosphorus
 --- (Wafer2), nd/qd naquadah (Wafer3), ed europium (Wafer4), ad americium (Wafer5)
