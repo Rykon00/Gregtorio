@@ -192,3 +192,15 @@ if data.raw.recipe["lv-science-pack"] then
 	r.results = { { type = "item", name = "logistic-science-pack", amount = 2 } }
 	r.main_product = "logistic-science-pack"
 end
+
+
+
+--------------------------------------------------------------------------------
+--- T1 ROBOTS (issue #336): 14-mv-age-entity.lua makes their items with create_item, which gives no place_result, so a
+--- roboport took none of them and the cursor could not place them. Vanilla's robot items are plain items with their
+--- robot as place_result; the items keep their type, so saves need no migration.
+--------------------------------------------------------------------------------
+
+for _, name in pairs({ "t1-construction-robot", "t1-logistic-robot" }) do
+	data.raw.item[name].place_result = name
+end
