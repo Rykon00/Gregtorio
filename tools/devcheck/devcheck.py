@@ -622,9 +622,9 @@ def check_engraver_lenses(m, sec):
 
 def check_electric_mine(m, sec):
     """Issue #335 (prototypes/163-fork-electric-mine.lua): every recipe of the Manual Mine and the Dig Site has an electric
-    twin for the Ore Drilling Plants (the same results and, issue #341, the mining pipes it takes back with the Drilling
-    Fluid, category electric-mine-recipes) and (issue #337) one for the Miners (category miner-recipes, the same results and the mining
-    pipes it takes back), unless it is in the allow-list FORK_ELECTRIC_MINE_EXCLUDED with its reason (section
+    twin for the Ore Drilling Plants (the same results, Drilling Fluid and, issues #341 and #346, mining pipes as
+    ingredients, category electric-mine-recipes) and (issue #337) one for the Miners (category miner-recipes, the same
+    results, mining pipes as the ingredient), unless it is in the allow-list FORK_ELECTRIC_MINE_EXCLUDED with its reason (section
     ELECTRICMINE); an entry that is no such recipe or has a twin fails too. Returns (info line, problems)."""
     rows = [r + [""] * (5 - len(r)) for r in sec.get("ELECTRICMINE", [])]
     manual = [r for r in rows if r[1] == "manual"]
@@ -642,14 +642,14 @@ def check_electric_mine(m, sec):
         twin = m.R.get(r[2])
         if twin is not None and (twin["cat"] != "electric-mine-recipes"
                                  or sorted(twin["ing"]) != ["drilling-fluid", "mining-pipe"]
-                                 or sorted(twin["res"]) != sorted(res + ["mining-pipe"])):
+                                 or sorted(twin["res"]) != res):
             problems.append(f"{r[2]}: not the twin of {r[0]} (category {twin['cat']}, ingredients {twin['ing']}, "
                             f"results {twin['res']} against {m.R[r[0]]['res']})")
         miner = m.R.get(r[4])
         if miner is not None and (miner["cat"] != "miner-recipes" or miner["ing"] != ["mining-pipe"]
-                                  or sorted(miner["res"]) != sorted(res + ["mining-pipe"])):
+                                  or sorted(miner["res"]) != res):
             problems.append(f"{r[4]}: not the Miner twin of {r[0]} (category {miner['cat']}, ingredients {miner['ing']}, "
-                            f"results {miner['res']} against {m.R[r[0]]['res']} and the mining pipes)")
+                            f"results {miner['res']} against {m.R[r[0]]['res']})")
     twins = sum(1 for r in manual if r[2] != "-")
     miners = sum(1 for r in manual if r[4] not in ("", "-"))
     return (f"{len(manual)} Manual Mine and Dig Site recipes, {twins} with an electric twin, {miners} with a Miner twin, "
