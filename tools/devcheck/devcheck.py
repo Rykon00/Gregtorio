@@ -1087,6 +1087,21 @@ def defining_files():
     return out
 
 
+def check_placeable(sec):
+    """Issue #336: a player-built entity of this mod that gives items when mined must be placeable again by one of them
+    (section PLACEABLE of checkmod/control.lua: the runtime prototypes, the mined items and items_to_place_this); the T1
+    robots' items had no place_result, so no roboport took them. Returns (info line, problems)."""
+    rows = [r + [""] * (4 - len(r)) for r in sec.get("PLACEABLE", [])]
+    problems = []
+    for etype, name, mined, placers in rows:
+        mined_set, placer_set = set(filter(None, mined.split(","))), set(filter(None, placers.split(",")))
+        if not mined_set & placer_set:
+            problems.append(f"{etype} {name}: mined it gives {', '.join(sorted(mined_set))}, which "
+                            + (f"does not place it (placed by {', '.join(sorted(placer_set))})" if placer_set
+                               else "has no place_result for it (no item places it)"))
+    return f"{len(rows)} player-built entities that give items when mined", sorted(problems)
+
+
 def check_names(sec):
     """Issue #230: every prototype this mod creates that a player can see (item, fluid, recipe, technology, entity,
     equipment, tile, item group and subgroup; section NAMES of checkmod/control.lua: the runtime prototypes, so the name
@@ -1623,6 +1638,9 @@ def check(a):
     print(f"\nelectric mine (issue #335): {mine_info}")
     report("Manual Mine recipes without an electric twin of the Ore Drilling Plants (prototypes/163-fork-electric-mine.lua)",
            mine_twins)
+    place_info, unplaceable = check_placeable(sec)
+    print(f"\nplaceable entities (issue #336): {place_info}")
+    report("entities whose mined item does not place them again (place_result missing or wrong)", unplaceable)
     vanilla_info, vanilla = check_vanilla_recipes(m, sec)
     print(f"\nvanilla recipes of Gregtorio's items (issues #317, #318): {vanilla_info}")
     report("vanilla recipes without a technology whose products Gregtorio makes another way (delete them in "
@@ -1685,7 +1703,8 @@ def check(a):
     ok = not (files or [s for s in sprites if not s.startswith("(")] or uncraft or menu or required or unresearchable
               or new_drafts or fluid_problems or locked or one_pack or fluid_steps or table_only or me_recipes
               or extractor_split or ore_chain or ore_baths or ore_o34 or ore_hammer
-              or circuit_icons or pgm_dusts or recycling or names or gaps or tree or vanilla or lenses)
+              or circuit_icons or pgm_dusts or recycling or names or gaps or tree or vanilla or lenses or mine_twins
+              or unplaceable)
     print("\nRESULT:", "OK" if ok else "PROBLEMS FOUND")
     return 0 if ok else 1
 

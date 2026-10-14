@@ -80,7 +80,28 @@ local function names_rows()
 	log("DEVCHECK-NAMES-BEGIN\n" .. table.concat(rows, "\n") .. "\nDEVCHECK-NAMES-END")
 end
 
+--- Issue #336: the player-built entities of this mod (flag player-creation) that give an item when mined, with the items
+--- they give and the items that place them; devcheck.py fails for one that no item it gives can place again
+--- type, name, mined items, items that place it
+local function placeable_rows()
+	local rows = {}
+	for _, p in pairs(prototypes.entity) do
+		local h = prototypes.get_history(p.type, p.name) or {}
+		local mp = p.mineable_properties
+		if h.created == "gregtorio-continued" and p.flags and p.flags["player-creation"] and mp and mp.minable then
+			local mined, placers = {}, {}
+			for _, x in pairs(mp.products or {}) do if x.type == "item" then mined[#mined + 1] = x.name end end
+			for _, it in pairs(p.items_to_place_this or {}) do placers[#placers + 1] = it.name end
+			if #mined > 0 then
+				rows[#rows + 1] = table.concat({ p.type, p.name, table.concat(mined, ","), table.concat(placers, ",") }, "\t")
+			end
+		end
+	end
+	log("DEVCHECK-PLACEABLE-BEGIN\n" .. table.concat(rows, "\n") .. "\nDEVCHECK-PLACEABLE-END")
+end
+
 script.on_init(function()
 	owners()
 	names_rows()
+	placeable_rows()
 end)

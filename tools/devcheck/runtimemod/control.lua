@@ -1823,8 +1823,9 @@ end
 --- Electric mine (issue #335, prototypes/163-fork-electric-mine.lua): two Manual Mines with the iron vein recipe, a
 --- pickaxe and manual labor in their input slots and raw iron in their output slot (stopped by script, so the slots stay
 --- as they are), each with an inserter and a belt on two sides. Mine A is replaced by fast replace (no player: what the
---- plant cannot take is spilled), mine B by the upgrade planner's mapping Manual Mine -> Mk I and construction robots
---- of a roboport with the plant in a storage chest (the robots bring the old machine and its items back). The
+--- plant cannot take is spilled), mine B by the upgrade planner's mapping Manual Mine -> Mk I and the T1 construction
+--- robots of a T1 roboport (issue #336: the roboport must take them, and the T1 logistic robots) with the plant in a
+--- storage chest (the robots bring the old machine and its items back). The
 --- neighbours must stay, the items come back (on the ground, in the storage chest), and plant A drills the iron vein's
 --- twin with Drilling Fluid: 64 raw iron in 12 s.
 local EM_X, EM_Y = 260.5, -120.5
@@ -1881,8 +1882,10 @@ function setup_emine_test(s)
 		end
 		local port = s.create_entity{ name = "roboport-mk1", position = { EM_X + EM_B + 7.5, EM_Y + 1.5 }, force = "player",
 			raise_built = true }
-		--- (vanilla's robot: the T1 robot's item has no place_result, a roboport takes none of it, issue #336)
-		port.get_inventory(defines.inventory.roboport_robot).insert{ name = "construction-robot", count = 10 }
+		--- issue #336: the T1 robots' items place their robots, so the T1 roboport takes them
+		local robots = port.get_inventory(defines.inventory.roboport_robot)
+		assert(robots.insert{ name = "t1-construction-robot", count = 10 } == 10, "the T1 roboport took no T1 construction robots")
+		assert(robots.insert{ name = "t1-logistic-robot", count = 10 } == 10, "the T1 roboport took no T1 logistic robots")
 		port.energy = 300e6                                -- (it works from 60 MJ on, recharge_minimum)
 		st.chest = s.create_entity{ name = "storage-chest", position = { EM_X + EM_B + 11.5, EM_Y + 1.5 }, force = "player",
 			raise_built = true }
