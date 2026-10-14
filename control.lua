@@ -9,21 +9,30 @@ local fork_victory = require("scripts.fork-victory")
 local fork_power = require("scripts.fork-power")
 --- Fork: Space Elevator modules run only next to a Space Elevator with free slots (see prototypes/162-fork-space-elevator.lua)
 local fork_space_elevator = require("scripts.fork-space-elevator")
+--- Fork: a Miner or Ore Drilling Plant that replaces a mine keeps its vein (issue #342, see prototypes/163-fork-electric-mine.lua)
+local fork_electric_mine = require("scripts.fork-electric-mine")
 
 local function on_built(event)
   local entity = event.entity
   if entity.name == "trash-can" then
     entity.remove_unfiltered_items = true
   end
+  fork_electric_mine.on_built(entity)
   fork_molds.on_built(entity)
   fork_power.on_built(entity)
   fork_space_elevator.on_built(entity)
 end
 script.on_event({ defines.events.on_built_entity, defines.events.on_robot_built_entity }, on_built)
+--- Fork: the vein of a mine about to be replaced (issue #342)
+script.on_event(defines.events.on_pre_build, fork_electric_mine.on_pre_build)
+script.on_event(defines.events.on_marked_for_upgrade, fork_electric_mine.on_marked_for_upgrade)
+script.on_event(defines.events.on_cancelled_upgrade, fork_electric_mine.on_cancelled_upgrade)
+script.on_event({ defines.events.on_pre_player_mined_item, defines.events.on_robot_pre_mined }, fork_electric_mine.on_pre_mined)
 
 --- Fork: entities built by other scripts or on space platforms, and cloned ones
 script.on_event({ defines.events.script_raised_built, defines.events.script_raised_revive,
   defines.events.on_space_platform_built_entity }, function(event)
+  fork_electric_mine.on_built(event.entity)
   fork_molds.on_built(event.entity)
   fork_power.on_built(event.entity)
   fork_space_elevator.on_built(event.entity)

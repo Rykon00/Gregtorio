@@ -1833,6 +1833,29 @@ end
 local EM_X, EM_Y = 260.5, -120.5
 local EM_C = 60                                          -- mine C (the HV Miner): x offset
 local EM_CHAIN = { "manual-mine", "lv-miner", "mv-miner", "hv-miner", "ore-drilling-plant-mk1" }
+--- Issue #342: a replaced mine keeps its vein (scripts/fork-electric-mine.lua). E: replaced by script after the remote
+--- note_replace (what on_pre_build does for a player): Manual Mine -> LV Miner -> MV Miner -> Mk I must give
+--- miner-iron-vein, miner-iron-vein, drilling-iron-vein; a Manual Mine hunting blazes replaced by a Mk I has no recipe and
+--- spills its manual labor. D: the same by order_upgrade and the T1 robots of a second network (each step on its own
+--- mine); B (the upgrade planner above) must give drilling-iron-vein too.
+local EM_E_Y, EM_D_Y = -105.5, -122.5
+local EM_D = { { 352.5, "manual-mine", "mining-iron-vein", "lv-miner", "miner-iron-vein" },
+	{ 360.5, "lv-miner", "miner-iron-vein", "mv-miner", "miner-iron-vein" },
+	{ 368.5, "mv-miner", "miner-iron-vein", "ore-drilling-plant-mk1", "drilling-iron-vein" },
+	{ 376.5, "manual-mine", "hunting-blazes", "ore-drilling-plant-mk1", nil } }
+local EM_LABOR = 10
+
+local function em_mine(s, name, x, y, recipe)
+	local e = s.create_entity{ name = name, position = { x, y }, force = "player", raise_built = true }
+	e.set_recipe(recipe)
+	e.disabled_by_script = true
+	if recipe == "hunting-blazes" then
+		assert(e.get_inventory(defines.inventory.assembling_machine_input).insert{ name = "manual-labor", count = EM_LABOR }
+			== EM_LABOR, "the hunting manual mine took no manual labor")
+	end
+	return e
+end
+local function em_recipe(e) return e and e.valid and e.get_recipe() and e.get_recipe().name or nil end
 local EM_B = 30                                          -- mine B: x offset
 local EM_ITEMS = { ["iron-pickaxe-usage"] = 1, ["manual-labor"] = 2, ["raw-iron"] = 10 }
 local EM_PLANT = "ore-drilling-plant-mk1"
@@ -1877,7 +1900,7 @@ function setup_emine_test(s)
 	local ok, err = pcall(function()
 		local st = { phase = 0 }
 		storage.emine = st
-		for _, r in pairs({ "mining-iron-vein", "drilling-iron-vein", "miner-iron-vein" }) do
+		for _, r in pairs({ "mining-iron-vein", "drilling-iron-vein", "miner-iron-vein", "hunting-blazes" }) do
 			game.forces.player.recipes[r].enabled = true
 		end
 		st.a, st.a_around = em_site(s, EM_X, EM_Y)
@@ -1897,6 +1920,16 @@ function setup_emine_test(s)
 		st.chest = s.create_entity{ name = "storage-chest", position = { EM_X + EM_B + 11.5, EM_Y + 1.5 }, force = "player",
 			raise_built = true }
 		st.chest.insert{ name = EM_PLANT, count = 1 }
+		--- issue #342: D, a second robot network (its logistic area apart from B's)
+		st.d = {}
+		for i, m in pairs(EM_D) do st.d[i] = em_mine(s, m[2], m[1], EM_D_Y, m[3]) end
+		local dport = s.create_entity{ name = "roboport-mk1", position = { 368, -110 }, force = "player", raise_built = true }
+		dport.get_inventory(defines.inventory.roboport_robot).insert{ name = "t1-construction-robot", count = 10 }
+		dport.energy = 300e6
+		s.create_entity{ name = "substation", position = { 372, -114 }, force = "player" }
+		s.create_entity{ name = "electric-energy-interface", position = { 375, -114 }, force = "player" }
+		st.dchest = s.create_entity{ name = "storage-chest", position = { 372.5, -109.5 }, force = "player", raise_built = true }
+		for _, n in pairs({ "lv-miner", "mv-miner", EM_PLANT, EM_PLANT }) do st.dchest.insert{ name = n, count = 1 } end
 	end)
 	if not ok then fails[#fails + 1] = "electric mine test: " .. tostring(err) end
 	return fails
@@ -1958,6 +1991,27 @@ function emine_test()
 			expect(plant.get_inventory(defines.inventory.assembling_machine_input).insert{ name = "mining-pipe", count = 9 } == 9,
 				"the Mk I took no mining pipes")
 		end
+		--- issue #342, E: the chain by script, each step noted first as on_pre_build does for a player
+		local e = em_mine(s, "manual-mine", EM_X, EM_E_Y, "mining-iron-vein")
+		st.e_chain = {}
+		for _, name in pairs({ "lv-miner", "mv-miner", EM_PLANT }) do
+			remote.call("fork-electric-mine", "note_replace", e)
+			e = s.create_entity{ name = name, position = { EM_X, EM_E_Y }, force = "player", fast_replace = true, spill = true,
+				raise_built = true }
+			st.e_chain[#st.e_chain + 1] = tostring(em_recipe(e))
+		end
+		expect(table.concat(st.e_chain, ",") == "miner-iron-vein,miner-iron-vein,drilling-iron-vein",
+			"replaced by script: the recipes were " .. table.concat(st.e_chain, ", "))
+		local h = em_mine(s, "manual-mine", EM_X + 10, EM_E_Y, "hunting-blazes")
+		remote.call("fork-electric-mine", "note_replace", h)
+		h = s.create_entity{ name = EM_PLANT, position = { EM_X + 10, EM_E_Y }, force = "player", fast_replace = true,
+			spill = true, raise_built = true }
+		expect(h and h.valid and em_recipe(h) == nil, "hunting blazes replaced by a Mk I: recipe " .. tostring(em_recipe(h)))
+		local labor = em_items_in(s.find_entities_filtered{ area = { { EM_X + 6, EM_E_Y - 4 }, { EM_X + 14, EM_E_Y + 4 } },
+			type = "item-entity" })["manual-labor"] or 0
+		expect(labor == EM_LABOR, "hunting blazes replaced by a Mk I: " .. labor .. " of " .. EM_LABOR .. " manual labor came back")
+		--- issue #342, D: order_upgrade (on_marked_for_upgrade) and the robots
+		for i, m in pairs(EM_D) do st.d[i].order_upgrade{ target = m[4], force = "player" } end
 		--- B: the upgrade planner
 		local inv = game.create_inventory(1)
 		inv.insert{ name = "upgrade-planner" }
@@ -1979,7 +2033,18 @@ function emine_test()
 			.get_item_count("raw-iron") or 0
 		local mout = st.miner and st.miner.valid and st.miner.get_inventory(defines.inventory.assembling_machine_output)
 		local mined, pipes = mout and mout.get_item_count("raw-iron") or 0, mout and mout.get_item_count("mining-pipe") or 0
-		if (all_back and drilled >= 64 and mined >= 64) or t >= st.t1 + 1200 then
+		local d_done = true
+		for _, m in pairs(EM_D) do if not s.find_entity(m[4], { m[1], EM_D_Y }) then d_done = false end end
+		if (all_back and drilled >= 64 and mined >= 64 and d_done) or t >= st.t1 + 1200 then
+			--- issue #342: the recipes after the robots' upgrades
+			expect(em_recipe(b) == "drilling-iron-vein", "upgrade planner: the Mk I's recipe is " .. tostring(em_recipe(b)))
+			for _, m in pairs(EM_D) do
+				local new = s.find_entity(m[4], { m[1], EM_D_Y })
+				expect(new ~= nil and em_recipe(new) == m[5], "robots: " .. m[2] .. " with " .. m[3] .. " -> " .. m[4] .. ": "
+					.. (new and ("recipe " .. tostring(em_recipe(new))) or "not built") .. ", not " .. tostring(m[5]))
+			end
+			local dback = em_items_in({ st.dchest })["manual-labor"] or 0
+			expect(dback == EM_LABOR, "robots: " .. dback .. " of " .. EM_LABOR .. " manual labor of the hunting mine came back")
 			expect(mined == 64 and pipes == 9, "the HV Miner mined " .. mined .. " raw iron and gave back " .. pipes
 				.. " mining pipes (64 and 9 in 6 s; status " .. tostring(st.miner and st.miner.valid and st.miner.status) .. ")")
 			st.mined = mined
