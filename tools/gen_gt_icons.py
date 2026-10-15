@@ -283,6 +283,11 @@ MATERIALS = {
     "zinc": "Zinc",
     "amber": "Amber", "topaz": "Topaz",  # issue #332: the Twilight Forest's ores
     "sapphire": "Sapphire", "green-sapphire": "GreenSapphire",  # issue #364: the sapphire vein
+    # issue #363, part 2: the Twilight Forest's and the Nether's ores
+    "olivine": "Olivine", "bentonite": "Bentonite", "magnesite": "Magnesite", "garnierite": "Garnierite",
+    "wulfenite": "Wulfenite", "powellite": "Powellite", "saltpeter": "Saltpeter", "tanzanite": "Tanzanite",
+    "amethyst": "Amethyst", "opal": "Opal", "jasper": "Jasper", "blue-topaz": "BlueTopaz", "spinel": "FoolsRuby",
+    "jade": "Jade",
     # issue #363: the ores of GTNH's Overworld veins
     "brown-limonite": "BrownLimonite", "yellow-limonite": "YellowLimonite", "chalcopyrite": "Chalcopyrite",
     "spodumene": "Spodumene", "soapstone": "Soapstone", "talc": "Talc", "glauconite": "Glauconite",
