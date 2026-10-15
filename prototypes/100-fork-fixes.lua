@@ -178,6 +178,8 @@ fork_add_unlock("iv-machines", "iv-turbocan-pro")
 --- in the style of the MV pack (LV components -> 4 packs). Everything is available when
 --- the LV science tech is researched: LV motor and tin cable (steam-turbine), LV piston
 --- (bending-machine), primitive electronic circuit (primitive-electronics).
+--- Issue #350 (the maintainer's decision): 4 packs per craft, like the MV pack; with 2 a pack took 2.5 to 4.5 steel (the
+--- piston's plates, rods and gear), about 20 h of primitive blast furnace steel for the 1105 packs of the LV technologies.
 --------------------------------------------------------------------------------
 
 if data.raw.recipe["lv-science-pack"] then
@@ -189,7 +191,7 @@ if data.raw.recipe["lv-science-pack"] then
 		{ type = "item", name = "electronic-circuit", amount = 1 },
 		{ type = "item", name = "tin-cable", amount = 2 },
 	}
-	r.results = { { type = "item", name = "logistic-science-pack", amount = 2 } }
+	r.results = { { type = "item", name = "logistic-science-pack", amount = 4 } }
 	r.main_product = "logistic-science-pack"
 end
 
