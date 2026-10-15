@@ -291,7 +291,7 @@ F.tech{
 ---   32 dilithium                                        32 diamonds
 ---   universium nanite / magmatter nanite (kept)         superdense universium / magmatter plate
 ---   hexanite round                                      universium round
----   exquisite jasper, sapphire, opal                    exquisite red garnet, sodalite, lapis
+---   (issue #365: GT's exquisite jasper, sapphire and opal since #363 and #364; before, red garnet, sodalite, lapis)
 ---   stargate crystal slurry, primordial matter          raw star matter
 ---   energised tesseract, quantum anomaly                MAX field generator, gravi-star
 ---   chronic singularity                                 block of universium
@@ -329,8 +329,8 @@ local dtpf_max = {
 		{ fluid(TIME, 58982.4), item(CORE, 1) }),
 	max_recipe("chipped-amalgatite", DTPF_CAT, 420,
 		{ item("superdense-magmatter-plate", 1), item("eternity-round", 64), item("magmatter-round", 64),
-		  item("universium-round", 64), item("exquisite-ruby", 64), item("exquisite-red-garnet", 64),
-		  item("exquisite-sodalite", 64), item("exquisite-lapis", 64), fluid("raw-star-matter", 500), fluid(STELLAR, 7200) },
+		  item("universium-round", 64), item("exquisite-ruby", 64), item("exquisite-jasper", 64),
+		  item("exquisite-sapphire", 64), item("exquisite-opal", 64), fluid("raw-star-matter", 500), fluid(STELLAR, 7200) },
 		{ item("chipped-amalgatite", 64), item("superdense-magmatter-plate", 1) }),
 }
 local harmony = max_recipe("temporal-harmony", QFT_CAT, 20,
