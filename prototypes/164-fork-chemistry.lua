@@ -862,3 +862,104 @@ end
 for _, i in pairs(data.raw.recipe["energy-module"].ingredients) do
 	if i.name == "uhpic-wafer" then i.name, i.amount = "asoc-wafer", 128 end
 end
+
+--------------------------------------------------------------------------------
+--- 9) DUAL AND QUAD FUEL RODS AND MOX (issue #359, part 1; gregtech/loaders/load/FissionFuelLoader.java, the rods'
+--- values gregtech/loaders/preload/LoaderGTBlockFluid.java:265-380)
+--- An IC2 rod of n cells gives energy x n x (1 + n / 2) pulses per tick over its lifetime (ItemRadioactiveCellIC.java:
+--- 42-66): a dual rod 4 times and a quad rod 12 times a single rod of its fuel. Gregtorio's reactors burn rods as fuel,
+--- so the dual and quad rods hold 4 and 12 times the single rod's value (uranium 6000 MJ, thorium 5000 MJ, the mod's).
+--- GT's MOX rod gives the uranium rod's energy per pulse for half its lifetime (10 000 against 20 000): 3000 MJ. IC2
+--- raises MOX with the reactor's heat (up to 2.5 times); the mod's reactors have no hull heat, so the cold value.
+--- Recipes: GT's: 2 rods and 4 steel rods into a dual rod (LV assembler, 10 s), 4 rods and 6 long steel rods (15 s) or 2
+--- duals and 4 steel rods (10 s) into a quad rod; IC2's MOX fuel from 6 uranium 238, 3 plutonium and 1000 coolant (HV
+--- assembler, 20 s), canned into an empty fuel rod (1.5 s). The depleted rods go into GT's thermal centrifuge (25 s, LV):
+--- the dual and quad rods give 2 and 4 times the single rod's outputs and 3 and 6 iron dust; IC2's small piles are a ninth
+--- of a dust, as the mod's single rods have them (a small plutonium pile: 11 % of a plutonium 239 dust). GT's IV
+--- centrifuge of 8 depleted rods (the isotopes plutonium 238 and 241, uranium 232 and 233, thorium 232, krypton) is left
+--- out: nothing in the mod takes the isotopes before the LFTR (issue #359's later steps). They come with Nuclear Fuel Rods,
+--- and the coolant with them (MOX takes it).
+--------------------------------------------------------------------------------
+
+local ROD_GROUP = data.raw.item["uranium-fuel-rod"].subgroup
+local function rod(name, fuel, depleted, ingredients, category, seconds)
+	create_item{
+		name = name,
+		category = category,
+		energy_required = seconds,
+		ingredients = ingredients,
+		results = { { type = "item", name = name, amount = 1 } },
+		fuel_category = "nuclear-fuel-rod",
+		fuel_value = fuel .. "MJ",
+		burnt_result = depleted,
+		subgroup = ROD_GROUP,
+	}
+	create_item{ skip_recipe = true, name = depleted, subgroup = ROD_GROUP }
+	return name
+end
+local function centrifuge(depleted, results)
+	local name = depleted .. "-thermal-centrifuging"
+	local res = {}
+	for _, r in pairs(results) do res[#res + 1] = { type = "item", name = r[1], amount = r[2], probability = r[3] } end
+	create_recipe{
+		name = name,
+		category = "lv-thermal-centrifuge-recipes",
+		energy_required = 25,
+		ingredients = { { type = "item", name = depleted, amount = 1 } },
+		results = res,
+		main_product = res[1].name,
+	}
+	return name
+end
+local function ladder(single, value, list)
+	local dual, quad = "dual-" .. single, "quad-" .. single
+	list[#list + 1] = rod(dual, 4 * value, "depleted-" .. dual,
+		{ { type = "item", name = single, amount = 2 }, { type = "item", name = "steel-rod", amount = 4 } },
+		"lv-assembling-machine-recipes", 10)
+	list[#list + 1] = rod(quad, 12 * value, "depleted-" .. quad,
+		{ { type = "item", name = single, amount = 4 }, { type = "item", name = "long-steel-rod", amount = 6 } },
+		"lv-assembling-machine-recipes", 15)
+	create_recipe{
+		name = quad .. "-from-dual",
+		category = "lv-assembling-machine-recipes",
+		energy_required = 10,
+		ingredients = { { type = "item", name = dual, amount = 2 }, { type = "item", name = "steel-rod", amount = 4 } },
+		results = { { type = "item", name = quad, amount = 1 } },
+	}
+	list[#list + 1] = quad .. "-from-dual"
+	return dual, quad
+end
+
+RECIPES = {}
+local UD, UQ = ladder("uranium-fuel-rod", 6000, RECIPES)
+RECIPES[#RECIPES + 1] = centrifuge("depleted-" .. UD,
+	{ { "uranium-238-dust", 8 }, { "iron-dust", 3 }, { "plutonium-239-dust", 1, 0.22 } })
+RECIPES[#RECIPES + 1] = centrifuge("depleted-" .. UQ,
+	{ { "uranium-238-dust", 16 }, { "iron-dust", 6 }, { "plutonium-239-dust", 1, 0.44 } })
+local TD, TQ = ladder("thorium-fuel-rod", 5000, RECIPES)
+RECIPES[#RECIPES + 1] = centrifuge("depleted-" .. TD, { { "thorium-dust", 2 }, { "iron-dust", 3 }, { "lutetium-dust", 1 } })
+RECIPES[#RECIPES + 1] = centrifuge("depleted-" .. TQ, { { "thorium-dust", 4 }, { "iron-dust", 6 }, { "lutetium-dust", 2 } })
+create_item{
+	name = "mox-fuel",
+	category = "hv-assembling-machine-recipes",
+	energy_required = 20 * HV_SPEED,
+	ingredients = {
+		{ type = "item", name = "uranium-238-dust", amount = 6 },
+		{ type = "item", name = "plutonium-239-dust", amount = 3 },
+		{ type = "fluid", name = "coolant", amount = 100 },
+	},
+	subgroup = ROD_GROUP,
+}
+RECIPES[#RECIPES + 1] = "mox-fuel"
+RECIPES[#RECIPES + 1] = rod("mox-fuel-rod", 3000, "depleted-mox-fuel-rod",
+	{ { type = "item", name = "empty-fuel-rod", amount = 1 }, { type = "item", name = "mox-fuel", amount = 1 } },
+	"lv-canning-machine-recipes", 1.5)
+local MD, MQ = ladder("mox-fuel-rod", 3000, RECIPES)
+RECIPES[#RECIPES + 1] = centrifuge("depleted-mox-fuel-rod",
+	{ { "plutonium-239-dust", 3 }, { "iron-dust", 1 }, { "plutonium-239-dust", 1, 0.11 } })
+RECIPES[#RECIPES + 1] = centrifuge("depleted-" .. MD,
+	{ { "plutonium-239-dust", 6 }, { "iron-dust", 3 }, { "plutonium-239-dust", 1, 0.22 } })
+RECIPES[#RECIPES + 1] = centrifuge("depleted-" .. MQ,
+	{ { "plutonium-239-dust", 12 }, { "iron-dust", 6 }, { "plutonium-239-dust", 1, 0.44 } })
+RECIPES[#RECIPES + 1] = "coolant"
+for _, r in pairs(RECIPES) do fork_add_unlock("nuclear-fuel-rods", r) end

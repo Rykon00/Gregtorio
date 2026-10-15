@@ -3408,3 +3408,17 @@ asoc-wafer
 advanced-system-on-chip
 circuit-recipe-nanoprocessor-asoc
 circuit-recipe-quantum-processor-asoc
+dual-uranium-fuel-rod
+depleted-dual-uranium-fuel-rod
+quad-uranium-fuel-rod
+depleted-quad-uranium-fuel-rod
+dual-thorium-fuel-rod
+depleted-dual-thorium-fuel-rod
+quad-thorium-fuel-rod
+depleted-quad-thorium-fuel-rod
+mox-fuel-rod
+depleted-mox-fuel-rod
+dual-mox-fuel-rod
+depleted-dual-mox-fuel-rod
+quad-mox-fuel-rod
+depleted-quad-mox-fuel-rod

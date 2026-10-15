@@ -2366,6 +2366,22 @@ condensate wafer, GT's Wafer8, with 1500 L quark gluon plasma); the mod has no b
 Wafer6 to Wafer8. The UMV and UXV energy and dynamo hatches keep 133's and 134's doubled APICs. Issue #355 stays open for
 them.
 
+### Naquadah fuel MK IV to VI and the refinery (issue #356)
+
+Not built: every recipe of the Naquadah Fuel Refinery, and the refinery and its casing, take an input the mod lacks
+(awakened draconium, orundum, praseodymium, tiberium or chronomatic glass, the atomic separation catalyst, heavy radox,
+astral titanium, shirabon; the full list is on #356). MK I to III stay as 136 builds them. Issue #356 stays open.
+
+### Nuclear depth (issue #359)
+
+Decision (the issue's step 1, the smallest one): GT's dual and quad rods of uranium and thorium and the MOX rods (164).
+A rod of n cells gives n x (1 + n / 2) pulses (IC2), so a dual rod holds 4 and a quad rod 12 times the single rod's
+value; MOX is half a uranium rod (GT's lifetime), without IC2's heat bonus (no hull heat in the mod's reactors). The
+depleted rods go into GT's thermal centrifuge. Left for later: GT's IV centrifuge of 8 depleted rods with the isotopes
+(plutonium 238 and 241, uranium 232 and 233, thorium 232; nothing takes them before the LFTR), the naquadah rods (GT
+cans them into a large tungstensteel fluid cell, which the mod lacks), the LFTR with its salt loop, the Cold Trap and the
+Reactor Processing Unit, and the Reactor Fuel Processing Plant (issue #386).
+
 ### GoodGenerator's fuels (issue #357)
 
 Part 1 (164): the liquid fuels with GoodGenerator's recipes and fuel values. Ether and naquadah gas already existed
