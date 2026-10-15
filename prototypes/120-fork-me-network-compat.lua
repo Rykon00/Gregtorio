@@ -696,6 +696,38 @@ end
 
 
 --------------------------------------------------------------------------------
+--- THE IO PORT, THE QUANTUM BRIDGE AND THE WIRELESS LINK (me-network 0.5.4, its issues #384 to #386; issue #352)
+--- GTNH's AE2 recipes (ASM), each guarded by its item (an older me-network has none). Stand-ins as above: the HV sensor
+--- for the Wireless Receiver, a battery for AE2's Energy Cell (4 for the Dense one); and for the parts Gregtorio lacks:
+--- an ender pearl and a fluix crystal for a Fluix Pearl (AE2 makes it from an ender pearl, fluix dust and fluix
+--- crystals), glass for Quartz Glass (AE2's is glass and quartz dust)
+--------------------------------------------------------------------------------
+
+--- with me-network's subgroup and order of the item
+local function block_recipe(name, category, energy_required, ingredients)
+	local item = data.raw.item[name]
+	if not item then return end
+	recipe_of{ name = name, category = category, energy_required = energy_required, subgroup = item.subgroup,
+		order = item.order, ingredients = ingredients }
+end
+
+--- GTNH (ASM:4752-4760): 3 titanium plates, 3 fluix cables, a logic processor, 2 ME Drives, HV, 5 s; here aluminium
+--- and the drive's category, since it comes with ME Network (MV here)
+block_recipe("me-io-port", nil, 5, I{ "aluminium-plate", 3, "fluix-cable", 3, "logic-processor", 1, "me-drive", 2 })
+--- GTNH (ASM:4696-4713): the Quantum Ring (an Energy Cell, 4 titanium plates, an engineering processor, 2 logic
+--- processors, a fluix cable) and the Quantum Link Chamber (4 titanium plates, 4 Fluix Pearls, a Quartz Glass), HV, 5 s
+--- each. me-network's bridge is AE2's 8 rings and a chamber in one 3x3 block: their sum, 9 times the time
+block_recipe("me-quantum-bridge", "hv-assembling-machine-recipes", 45 * HV_SPEED,
+	I{ "battery", 8, "titanium-plate", 36, "engineering-processor", 8, "logic-processor", 16, "fluix-cable", 8,
+		"ender-pearl", 4, "fluix-crystal", 4, "glass", 1 })
+--- GTNH (ASM:5036-5044), AE2 Stuff's Wireless Connector: 2 titanium plates, 4 pure fluix crystals, 2 engineering
+--- processors, a Wireless Receiver, HV, 5 s
+block_recipe("me-wireless-link", "hv-assembling-machine-recipes", 5 * HV_SPEED,
+	I{ "titanium-plate", 2, "pure-fluix-crystal", 4, "engineering-processor", 2, "hv-sensor", 1 })
+
+
+
+--------------------------------------------------------------------------------
 --- TECHNOLOGIES (Gregtorio's tiers and science packs)
 --------------------------------------------------------------------------------
 
@@ -725,6 +757,7 @@ local me_network = { "me-terminal", "computer-monitor", "certus-quartz-bolt", "c
 	"basic-storage-housing", "certus-quartz-plate", "me-1k-storage-cell", "me-4k-storage-cell", "me-16k-storage-cell",
 	"nether-quartz-plate", "me-import-bus", "me-export-bus", "me-underground-cable", "me-storage-bus" }
 for _, m in ipairs(MONITORS) do me_network[#me_network + 1] = m[1] end      -- (me-network 0.5.4: the monitors)
+if data.raw.item["me-io-port"] then me_network[#me_network + 1] = "me-io-port" end   -- (0.5.4, issue #352)
 tech("me-network", { "logistic-system", "stainless-steel" }, 3, 400, me_network)
 --- EV: 64k (the component needs epoxy boards)
 tech("me-storage-64k", { "me-network", "nanoprocessors", "advanced-hv-machines" }, 5, 800,
@@ -790,4 +823,13 @@ if HAS_WIRELESS then
 	tech("me-wireless", { "me-upgrade-cards" }, 6, 1200, {
 		"me-wireless-access-point", "me-wireless-booster", "me-wireless-terminal", "me-charger",
 	})
+	--- issue #352: the Wireless Link (me-network 0.5.4) after the wireless terminal, as me-network puts it
+	if data.raw.technology["me-wireless-link"] then
+		tech("me-wireless-link", { "me-wireless" }, 6, 800, { "me-wireless-link" })
+	end
+end
+--- issue #352: the Quantum Bridge (me-network 0.5.4) after 256k storage, as me-network puts it (its own technology
+--- needs utility science, the sixth pack here)
+if data.raw.technology["me-quantum-bridge"] then
+	tech("me-quantum-bridge", { "me-storage-256k" }, 6, 1500, { "me-quantum-bridge" })
 end
