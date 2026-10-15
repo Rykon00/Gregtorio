@@ -183,7 +183,8 @@
     Hydrazine Fuel Mixture and CN3H7O3 Rocket Fuel with their cells for 145's rocket engines, the coal tar line and the
     anthraquinone process to hydrogen peroxide and hydrazine, the ExxonMobil Chemical Plant's extra fluid boxes; issue #360:
     the recipes of 101's Brewery and Fermenter (technology Fermentation), fermented biomass, seed oil from the
-    greenhouse's wheat seeds, bio diesel, glycerol and its epichlorohydrin; loads after 159 and before 161)
+    greenhouse's wheat seeds, bio diesel, glycerol and its epichlorohydrin; issue #358: the bisphenol A route to epoxy,
+    polystyrene, styrene-butadiene rubber (with its cable recipes) and polycaprolactam; loads after 159 and before 161)
   - 161 dimension unlocks (issue #287: the unlock rules of 160, `ore_dimension` moves or gates the ore chains of the
     dimensions' ores, the ender air with Radon, black plutonium with the Void Miner II, the bornite chain with
     Reach Ross128 (issue #293); loads after 159 and before 156)
