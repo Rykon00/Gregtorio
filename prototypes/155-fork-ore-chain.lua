@@ -103,6 +103,9 @@ local ORE_CHAIN = {
 	--- issue #332: the Twilight Forest's ores (160)
 	["amber"] = { dust = "amber-dust", byproducts = { "amber-dust" }, mass = 10 },   -- GT Amber: Amber
 	["topaz"] = { dust = "topaz-dust", byproducts = {  }, mass = 16 },   -- GT Topaz: BlueTopaz, which the mod lacks (GT has no decomposition of it, so no new dust): itself
+	--- issue #364: the Twilight Forest's sapphire vein (160); GT mass of Al2O3: (2 x 27 + 3 x 16) / 5
+	["sapphire"] = { dust = "sapphire-dust", byproducts = { "alumina", "green-sapphire-dust" }, mass = 20 },   -- GT Sapphire: Aluminiumoxide, GreenSapphire
+	["green-sapphire"] = { dust = "green-sapphire-dust", byproducts = { "alumina", "sapphire-dust" }, mass = 20 },   -- GT GreenSapphire: Aluminiumoxide, Sapphire
 }
 --- skipped: platinum and palladium (their washing is the platinum line's, 146) and firestone (no source of its ore: its
 --- recipes stay locked in 142's FORK_RECIPES_LOCKED)
@@ -767,6 +770,9 @@ local GEMS = {
 	--- topaz, whose engraver steps take the amber lens
 	{ "amber",                "amber-gem",                "precious", false },
 	{ "topaz",                "topaz-gem",                "precious", false },
+	--- issue #364: the sapphire vein's gems (160), GT's precious table
+	{ "sapphire",             "sapphire-gem",             "precious", false },
+	{ "green-sapphire",       "green-sapphire-gem",       "precious", false },
 }
 --- GT's sifter tables: exquisite, flawless, gem, flawed, chipped, dust (ProcessingCrushedOre.java:90-120)
 local SIFT = { precious = { 0.03, 0.12, 0.45, 0.14, 0.28, 0.35 }, default = { 0.01, 0.04, 0.15, 0.20, 0.40, 0.50 } }
@@ -787,7 +793,10 @@ local ENGRAVER_LENS = { ruby = "ruby-lens", emerald = "emerald-lens", monazite =
 	diamond = "diamond-lens", ["nether-quartz"] = "diamond-lens", quartzite = "diamond-lens", ["red-garnet"] = "ruby-lens",
 	["yellow-garnet"] = "yellow-garnet-lens",
 	apatite = "apatite-lens", lazurite = "apatite-lens", sodalite = "lapis-lens", lapis = "lapis-lens",   -- issue #328
-	amber = "amber-lens", topaz = "amber-lens" }   -- issue #332: orange
+	amber = "amber-lens", topaz = "amber-lens",   -- issue #332: orange
+	--- issue #364: sapphire (GT dyeBlue) and green sapphire (dyeCyan) take #325's blue and cyan lens; whether their own
+	--- lenses replace those is the open question #370
+	sapphire = "lapis-lens", ["green-sapphire"] = "apatite-lens" }
 --- grade -> the engraver category and time of the step up (GT tier: LV, MV, HV, EV; time x the tier's speed)
 local ENGRAVE = { chipped = { "mv-laser-engraver-recipes", 30 }, flawed = { "mv-laser-engraver-recipes", 60 },
 	gem = { "hv-laser-engraver-recipes", 240 }, flawless = { "ev-laser-engraver-recipes", 960 } }
@@ -1009,6 +1018,7 @@ FORK_ORE_HAMMER_GEM = {
 	["raw-apatite"] = "apatite-gem", ["raw-certus-quartz"] = "certus-quartz", ["raw-nether-quartz"] = "nether-quartz",
 	["raw-monazite"] = "monazite-gem", ["raw-tricalcium-phosphate"] = "tricalcium-phosphate-gem",
 	["raw-amber"] = "amber-gem", ["raw-topaz"] = "topaz-gem",   -- issue #332
+	["raw-sapphire"] = "sapphire-gem", ["raw-green-sapphire"] = "green-sapphire-gem",   -- issue #364
 }
 --- the first byproduct of the ores ORE_CHAIN leaves out (GT Platinum: Nickel; GT Palladium: none, its own dust)
 local RAW_BYPRODUCT = { ["raw-platinum"] = "nickel-dust", ["raw-palladium"] = "palladium-dust" }
@@ -1016,7 +1026,8 @@ local RAW_BYPRODUCT = { ["raw-platinum"] = "nickel-dust", ["raw-palladium"] = "p
 local BYPRODUCT_GEM = { ["emerald-dust"] = "emerald", ["apatite"] = "apatite-gem",
 	["tricalcium-phosphate"] = "tricalcium-phosphate-gem", ["lazurite-dust"] = "lazurite-gem",
 	["sodalite-dust"] = "sodalite-gem", ["monazite-dust"] = "monazite-gem", ["amber-dust"] = "amber-gem",
-	["topaz-dust"] = "topaz-gem" }   -- issue #332
+	["topaz-dust"] = "topaz-gem",   -- issue #332
+	["sapphire-dust"] = "sapphire-gem", ["green-sapphire-dust"] = "green-sapphire-gem" }   -- issue #364
 for _, g in pairs(BYPRODUCT_GEMS) do BYPRODUCT_GEM[g[2]] = g[3] end   -- issue #205
 --- GT's byproduct multipliers (Materials.java setByProductMultiplier; 1 for every other ore)
 local BYPRODUCT_MULT = { ["raw-apatite"] = 2, ["raw-coal"] = 2, ["raw-cryolite"] = 4, ["raw-lapis"] = 4,
@@ -1129,6 +1140,8 @@ local DUST_GEMS = {
 	{ "yellow-garnet-dust",  "yellow-garnet-gem",        false,     { 2, 8 } },
 	{ "topaz-dust",          "topaz-gem",                false,     { 3, 12 } },   -- issue #332
 	{ "amber-dust",          "amber-gem",                false,     { 2, 8 } },    -- issue #332
+	{ "sapphire-dust",       "sapphire-gem",             false,     { 3, 12 } },   -- issue #364 (GT: as ruby)
+	{ "green-sapphire-dust", "green-sapphire-gem",       false,     { 3, 12 } },   -- issue #364
 }
 for _, g in pairs(DUST_GEMS) do
 	local dust, gem = g[1], g[2]
@@ -1170,6 +1183,35 @@ for _, g in pairs(DUST_GEMS) do
 end
 for _, r in pairs({ "ruby-autoclave", "emerald-autoclave", "diamond-autoclave" }) do remove_recipe(r) end   -- issue #223
 log("FORK-ORE-CHAIN: " .. late_gems .. " recipes of the byproduct gems and from dust to gem (issue #205)")
+
+--------------------------------------------------------------------------------
+--- Issue #364: GTNH's sapphire and green sapphire juice (gregtech/loaders/postload/chains/BauxiteRefineChain.java:115-213),
+--- next to upstream's ruby juice (13): the mixer dissolves 9 crushed, purified, impure or pure ores with a sodium hydroxide
+--- dust in 9000 L hydrochloric acid (here 900) into 900 juice (HV, 3 s; GT's x1 recipe takes a tiny pile of sodium
+--- hydroxide, which Gregtorio lacks), the centrifuge turns 100 juice into 2 aluminium hydroxide, GT's chance byproducts and
+--- the hydrochloric acid back (100 EU/t: MV, 2.25 s)
+--------------------------------------------------------------------------------
+FORK5B.fluid("sapphire-juice", "spackled-medium-blue-fluid", { 0.39, 0.39, 0.78 })
+FORK5B.fluid("green-sapphire-juice", "pale-green-fluid", { 0.39, 0.78, 0.51 })
+for _, j in pairs({
+	{ "sapphire", { item("iron-dust", 1, 0.03), item("vanadium-dust", 1, 0.02), item("magnesium", 1, 0.02) } },
+	{ "green-sapphire", { item("iron-dust", 1, 0.03), item("vanadium-dust", 1, 0.02), item("manganese-dust", 1, 0.02),
+		item("beryllium-dust", 1, 0.02) } },
+}) do
+	local juice = j[1] .. "-juice"
+	for _, form in pairs({ "crushed-" .. j[1], "purified-" .. j[1], "impure-" .. j[1] .. "-dust", "pure-" .. j[1] .. "-dust" }) do
+		local name = made(recipe{ name = juice .. "-from-" .. form, category = "hv-mixer-recipes", time = 3 * HV_SPEED,
+			main = juice, ingredients = { item(form, 9), item("sodium-hydroxide"), fluid("hydrochloric-acid", 900) },
+			results = { fluid(juice, 900) } })
+		unlock_after(name, { machine_techs("hv-mixer-recipes"), item_techs(form), item_techs("sodium-hydroxide") })
+	end
+	local results = { item("aluminium-hydroxide", 2) }
+	for _, r in pairs(j[2]) do results[#results + 1] = r end
+	results[#results + 1] = fluid("hydrochloric-acid", 100)
+	local name = made(recipe{ name = juice .. "-centrifuging", category = "mv-centrifuge-recipes", time = 2.25 * MV_SPEED,
+		main = "aluminium-hydroxide", ingredients = { fluid(juice, 100) }, results = results })
+	unlock_after(name, { machine_techs("mv-centrifuge-recipes"), item_techs(juice) })
+end
 
 --------------------------------------------------------------------------------
 --- Issue #205, 3: GT's furnace recipes of the ore forms (OP/ProcessingOreSmelting.java; GTNH's config

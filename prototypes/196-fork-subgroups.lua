@@ -143,6 +143,8 @@ put("organic", { "naphthalene", "ethylbenzene", "anthracene", "2-ethylanthraquin
 	"monomethylhydrazine" })
 put("acids", { "hydrogen-peroxide" })
 put("coolants", { "liquid-oxygen" })
+--- issue #364: GTNH's sapphire and green sapphire juice (155)
+put("ore-solutions", { "sapphire-juice", "green-sapphire-juice" })
 --- issue #119: Space Age's melts, restyled below, are rows of the Fluids tab like the other melts
 put("molten-elements", { "molten-iron", "molten-copper" })
 put("molten-alloys", { "molten-potassium-disulfate" })
