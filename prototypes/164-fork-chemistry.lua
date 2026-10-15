@@ -557,3 +557,107 @@ step(RECIPES, "poly-si-dust-from-trichlorosilane", "lv-chemical-reactor-recipes"
 for _, r in pairs(RECIPES) do
 	for _, t in pairs(techs_of("poly-si-dust")) do fork_add_unlock(t, r) end
 end
+
+--------------------------------------------------------------------------------
+--- 6) GOODGENERATOR'S LIQUID FUELS (issue #357, part 1; goodgenerator/loader/RecipeLoader.java and RecipeLoader2.java,
+--- fuel values RecipeLoader.java:505-534, 620-623: diesel fuels burn in the combustion generators, gas fuels in the gas
+--- turbines; cells of 800 at 500 J per EU as Gregtorio's other cells):
+---   ether (Gregtorio's, 537 EU/L, both kinds: a combustion cell), ethanol gasoline (9 raw gasoline + 1 ethanol -> 10,
+---     RecipeLoader.java:496-501, 0.75 s, MV; 1100 EU/L), cyclopentadiene (coal tar oil 20 -> 6 or wood tar 100 -> 4 in the
+---     distillery, RecipeLoader2.java:794-809, 1 s, MV; 70 EU/L gas), naquadah gas (Gregtorio's, 1024 EU/L gas)
+---   the jet fuels on ferrocene (RecipeLoader2.java:811-901): iron II chloride from iron III chloride and hydrogen (4 s,
+---     MV); diethylamine from ammonia and 2 ethanol (10 s, MV); the impure ferrocene mixture from cyclopentadiene, iron II
+---     chloride, diethylamine and ice (2 min, MV, GT's large chemical reactor); with ether in the mixer the ferrocene
+---     solution and the ferrocene waste (40 s); the waste distilled back into water, diethylamine and hydrochloric acid,
+---     the solution into ether and ferrocene (the distillation tower; GT's times); Jet Fuel No.3 (GT's ironed kerosene,
+---     1824 EU/L) from ferrocene, sodium hydroxide, kerosene, naphtha and diethylamine (2 min, EV); Jet Fuel A (GT's ironed
+---     fuel, 2248 EU/L) from ferrocene, the combustion promoter, naphtha, light fuel, LPG and tetranitromethane (2 min, IV)
+---   the combustion promoter (RecipeLoader.java:907-943): saltpeter or sodium nitrate with liquid oxygen (-> 50) or
+---     hydrogen peroxide (-> 200) and nitrogen dioxide (10 s, MV)
+---   ice for the ferrocene mixture: GT's vacuum freezer recipe of water (VacuumFreezerRecipes.java:207-212, 2.5 s, MV) into
+---     the base game's ice
+--- GT's large chemical reactor recipes run in Gregtorio's chemical reactors of their tier.
+--------------------------------------------------------------------------------
+
+for _, f in pairs({ { "ethanol-gasoline", "orange-fluid", { 1.00, 0.55, 0.20 } },
+	{ "cyclopentadiene", "nearly-white-fluid", { 1.00, 0.97, 0.86 } },
+	{ "iron-ii-chloride", "pale-green-fluid", { 0.68, 0.95, 0.68 } },
+	{ "diethylamine", "light-pink-fluid", { 0.93, 0.80, 0.80 } },
+	{ "impure-ferrocene-mixture", "rust-brown-fluid", { 0.48, 0.28, 0.08 } },
+	{ "ferrocene-solution", "orange-fluid", { 0.88, 0.47, 0.20 } },
+	{ "ferrocene-waste", "olive-fluid", { 0.40, 0.33, 0.13 } },
+	{ "jet-fuel-no-3", "spackled-yellow-fluid", { 0.84, 0.68, 0.30 } },
+	{ "jet-fuel-a", "light-orange-fluid", { 0.95, 0.69, 0.36 } },
+	{ "combustion-promoter", "deep-pink-fluid", { 0.60, 0.20, 0.40 } } }) do
+	F.fluid(f[1], f[2], f[3])
+end
+create_item{ skip_recipe = true, name = "ferrocene-dust", subgroup = data.raw.item["phthalic-anhydride"].subgroup }
+local function fuel_cell(fluid, eu, category, like)
+	create_item{
+		name = fluid .. "-cell",
+		category = "lv-canning-machine-recipes",
+		energy_required = 4,
+		fuel_category = category,
+		fuel_value = string.format("%.1fMJ", eu * 800 * 500 / 1e6),
+		burnt_result = "empty-large-steel-fluid-cell",
+		subgroup = data.raw.item[like].subgroup,
+		ingredients = {
+			{ type = "item", name = "empty-large-steel-fluid-cell", amount = 1 },
+			{ type = "fluid", name = fluid, amount = 800 },
+		},
+	}
+	return fluid .. "-cell"
+end
+local COMB, GAS = "combustion-generator-fuel", "gas-turbine-fuel"
+--- the simple fuels with the technologies of their fluids
+fork_add_unlock("polyethylene", fuel_cell("ether", 537, COMB, "diesel-cell"))
+fork_add_unlock("uhv-naquadah-reactor", fuel_cell("naquadah-gas", 1024, GAS, "propane-cell"))
+RECIPES = {}
+step(RECIPES, "ethanol-gasoline", "mv-chemical-reactor-recipes", 0.75, MV_SPEED, { { "raw-gasoline", 90 }, { "ethanol", 10 } },
+	{ { "ethanol-gasoline", 100 } })
+RECIPES[#RECIPES + 1] = fuel_cell("ethanol-gasoline", 1100, COMB, "diesel-cell")
+for _, r in pairs(RECIPES) do fork_add_unlock("cetane-boosted-diesel", r) end
+RECIPES = {}
+step(RECIPES, "cyclopentadiene-from-coal-tar-oil", "mv-distillation-recipes", 1, MV_SPEED, { { "coal-tar-oil", 2 } },
+	{ { "cyclopentadiene", 0.6 } })
+step(RECIPES, "cyclopentadiene-from-wood-tar", "mv-distillation-recipes", 1, MV_SPEED, { { "wood-tar", 10 } },
+	{ { "cyclopentadiene", 0.4 } })
+RECIPES[#RECIPES + 1] = fuel_cell("cyclopentadiene", 70, GAS, "propane-cell")
+step(RECIPES, "ice-from-water", "mv-vacuum-freezer-recipes", 2.5, MV_SPEED, { { "water", 100 } }, { { "ice", 1 } })
+step(RECIPES, "iron-ii-chloride", "mv-chemical-reactor-recipes", 4, MV_SPEED,
+	{ { "iron-iii-chloride", 100 }, { "hydrogen", 100 } }, { { "iron-ii-chloride", 100 }, { "hydrochloric-acid", 100 } })
+step(RECIPES, "diethylamine", "mv-chemical-reactor-recipes", 10, MV_SPEED, { { "ammonia", 100 }, { "ethanol", 200 } },
+	{ { "diethylamine", 100 }, { "water", 200 } })
+step(RECIPES, "impure-ferrocene-mixture", "mv-chemical-reactor-recipes", 120, MV_SPEED,
+	{ { "ice", 4 }, { "cyclopentadiene", 200 }, { "iron-ii-chloride", 100 }, { "diethylamine", 800 } },
+	{ { "impure-ferrocene-mixture", 1500 } })
+step(RECIPES, "ferrocene-solution", "mv-mixer-recipes", 40, MV_SPEED,
+	{ { "ether", 100 }, { "impure-ferrocene-mixture", 750 } }, { { "ferrocene-solution", 100 }, { "ferrocene-waste", 500 } })
+step(RECIPES, "ferrocene-waste-distillation", "mv-tall-distillation-recipes", 30, MV_SPEED, { { "ferrocene-waste", 100 } },
+	{ { "water", 40 }, { "diethylamine", 80 }, { "hydrochloric-acid", 20 } }, "diethylamine")
+step(RECIPES, "ferrocene-solution-distillation", "mv-tall-distillation-recipes", 40, MV_SPEED,
+	{ { "ferrocene-solution", 200 } }, { { "ether", 200 }, { "ferrocene-dust", 1 } }, "ferrocene-dust")
+step(RECIPES, "combustion-promoter", "mv-chemical-reactor-recipes", 10, MV_SPEED,
+	{ { "saltpeter", 2 }, { "liquid-oxygen", 100 }, { "nitrogen-dioxide", 100 } }, { { "combustion-promoter", 50 } })
+step(RECIPES, "combustion-promoter-from-sodium-nitrate", "mv-chemical-reactor-recipes", 10, MV_SPEED,
+	{ { "sodium-nitrate", 2 }, { "liquid-oxygen", 100 }, { "nitrogen-dioxide", 100 } }, { { "combustion-promoter", 50 } })
+step(RECIPES, "combustion-promoter-from-hydrogen-peroxide", "mv-chemical-reactor-recipes", 10, MV_SPEED,
+	{ { "saltpeter", 2 }, { "hydrogen-peroxide", 100 }, { "nitrogen-dioxide", 100 } }, { { "combustion-promoter", 200 } })
+step(RECIPES, "jet-fuel-no-3", "ev-chemical-reactor-recipes", 120, EV_SPEED,
+	{ { "ferrocene-dust", 4 }, { "sodium-hydroxide", 8 }, { "kerosene", 4000 }, { "naphtha", 300 }, { "diethylamine", 100 } },
+	{ { "jet-fuel-no-3", 4400 } })
+RECIPES[#RECIPES + 1] = fuel_cell("jet-fuel-no-3", 1824, COMB, "diesel-cell")
+F.tech{
+	name = "jet-fuel", prerequisites = { "hydrazine-rocket-fuels", "cetane-boosted-diesel", "more-gas-turbine-fuels" },
+	packs = 5, count = 400, time = 45, recipes = RECIPES,
+}
+RECIPES = {}
+step(RECIPES, "jet-fuel-a", "iv-chemical-reactor-recipes", 120, IV_SPEED,
+	{ { "ferrocene-dust", 4 }, { "combustion-promoter", 400 }, { "naphtha", 4000 }, { "light-fuel", 300 }, { "lpg", 100 },
+		{ "tetranitromethane", 200 } }, { { "jet-fuel-a", 5000 } })
+RECIPES[#RECIPES + 1] = fuel_cell("jet-fuel-a", 2248, COMB, "diesel-cell")
+--- (Jet Fuel A has five fluids: the IV large chemical reactor, with IV Energy Hatches)
+F.tech{
+	name = "jet-fuel-a", prerequisites = { "jet-fuel", "iv-energy-hatches" }, packs = 6, count = 600, time = 45,
+	recipes = RECIPES,
+}

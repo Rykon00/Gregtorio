@@ -186,7 +186,9 @@
     greenhouse's wheat seeds, bio diesel, glycerol and its epichlorohydrin; issue #358: the bisphenol A route to epoxy,
     polystyrene, styrene-butadiene rubber (with its cable recipes) and polycaprolactam; issue #361: the drilling rigs'
     Overworld fluids of GTNH (light, raw and heavy oil, natural gas), raw oil's distillation, natural gas, LPG and the MTBE
-    route; issue #366: trichlorosilane, GTNH's second route to poly-si; loads after 159 and before 161)
+    route; issue #366: trichlorosilane, GTNH's second route to poly-si; issue #357: GoodGenerator's liquid fuels (ether,
+    ethanol gasoline, cyclopentadiene and naquadah gas cells, the ferrocene line to Jet Fuel No.3 and Jet Fuel A, the
+    combustion promoter); loads after 159 and before 161)
   - 161 dimension unlocks (issue #287: the unlock rules of 160, `ore_dimension` moves or gates the ore chains of the
     dimensions' ores, the ender air with Radon, black plutonium with the Void Miner II, the bornite chain with
     Reach Ross128 (issue #293); loads after 159 and before 156)

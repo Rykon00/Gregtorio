@@ -2351,3 +2351,11 @@ boules): built (164). The rest of the issue's list belongs to lines the mod does
 ethylene oxide and glycol, the methylamines, nickel tetracarbonyl and aniline to the Kevlar chain (question #378),
 nitrobenzene and aniline to GT's netherite chain, chlorosulfonic acid and the phosphorus chlorides to GT's toxic slurry
 chain and bartworks' acid generator (#367: leave).
+
+### GoodGenerator's fuels (issue #357)
+
+Part 1 (164): the liquid fuels with GoodGenerator's recipes and fuel values. Ether and naquadah gas already existed
+without a cell; ethanol gasoline, cyclopentadiene, the ferrocene line, Jet Fuel No.3 and Jet Fuel A are new. GT's large
+chemical reactor recipes run in Gregtorio's chemical reactor of their tier (Jet Fuel A, five fluids, in the IV large
+chemical reactor). The combustion promoter is made; its use, the Universal Chemical Fuel Engine's efficiency, follows
+in part 2 with the engine and the thorium-based liquid fuel.
