@@ -297,6 +297,7 @@ MATERIALS = {
     "jet-fuel-no-3": ("FLUID", (215, 175, 77)),
     "jet-fuel-a": ("FLUID", (242, 177, 92)),
     "ferrocene": ("DULL", (249, 166, 71)),
+    "uranium-carbide-thorium-mixture": ("DULL", (22, 50, 7)),   # issue #357, part 2: the thorium fuel's mixture
     # issue #363, part 2: the Twilight Forest's and the Nether's ores
     "olivine": "Olivine", "bentonite": "Bentonite", "magnesite": "Magnesite", "garnierite": "Garnierite",
     "wulfenite": "Wulfenite", "powellite": "Powellite", "saltpeter": "Saltpeter", "tanzanite": "Tanzanite",
@@ -812,6 +813,11 @@ def icon_table(c):
               "jet-fuel-a"):   # issues #361, #357
         T[m + "-cell"] = (lambda m=m: lambda: c.part(m, "cell"))()
     T["ferrocene-dust"] = lambda: c.part("ferrocene", "dust")   # issue #357
+    # issue #357, part 2: goodgenerator's thorium fuel line (its items as the plutonium line's above)
+    T["uranium-carbide-thorium-mixture"] = lambda: c.part("uranium-carbide-thorium-mixture", "dust")
+    T["wrapped-thorium-ingot"] = lambda: c.gt(f"{GG}items/wrappedThoriumIngot")
+    T["high-density-thorium-nugget"] = lambda: c.gt(f"{GG}items/highDensityThoriumNugget")
+    T["high-density-thorium"] = lambda: c.gt(f"{GG}items/highDensityThorium")
     T["phthalic-anhydride"] = lambda: c.part("phthalic-anhydride", "dust")
     T["sodium-bisulfate"] = lambda: c.part("sodium-bisulfate", "dust")
     # issue #302: the drill heads of the Space Elevator's mining drones (GT's toolHeadDrill of the material)

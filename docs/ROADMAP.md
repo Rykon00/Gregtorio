@@ -2357,5 +2357,16 @@ chain and bartworks' acid generator (#367: leave).
 Part 1 (164): the liquid fuels with GoodGenerator's recipes and fuel values. Ether and naquadah gas already existed
 without a cell; ethanol gasoline, cyclopentadiene, the ferrocene line, Jet Fuel No.3 and Jet Fuel A are new. GT's large
 chemical reactor recipes run in Gregtorio's chemical reactor of their tier (Jet Fuel A, five fluids, in the IV large
-chemical reactor). The combustion promoter is made; its use, the Universal Chemical Fuel Engine's efficiency, follows
-in part 2 with the engine and the thorium-based liquid fuel.
+chemical reactor). The combustion promoter is made; it goes into Jet Fuel A.
+
+Part 2 (164): the Universal Chemical Fuel Engine and the thorium based liquid fuel. Decisions:
+- The engine is a burner generator on the combustion and gas turbine fuel cells at GT's ceiling of 150 %, one LuV amp
+  (the one dynamo hatch of its structure). GT's efficiency exp(-c x fuel / promoter) x 150 % needs the combustion
+  promoter beside the fuel, which a burner cannot take: left out, as #255 and #304 leave their engines' extras out.
+  Rocket fuel cells are left out too (one efficiency per burner; the Large Rocket Engine burns them at 3 times).
+- GT's Extreme Combustion Engine, an ingredient of the controller, stays "leave" (multiblock audit); a second large
+  combustion engine stands in. The structure's 72 PTFE frames are 144 PTFE sheets (no PTFE frame in the mod).
+- The thorium fuel follows GoodGenerator's chain with 12 thorium dust for GT's 11 thorium and 1 thorium-232 (no thorium
+  isotopes) and draconium ingots for the dust. Gregtorio's draconium comes with UEV Materials, so the fuel does too,
+  later than in GT New Horizons. As 136's uranium and plutonium fuels it leaves no depleted fuel: the depleted fuel's
+  centrifuge (thorium-232, praseodymium, boron, indium) is not built, and praseodymium waits for #356.

@@ -271,6 +271,12 @@ MULTIBLOCKS = {
     "large-rocket-engine": ((3, 3), "miscutils:TileEntities/MACHINE_CASING_ROCKETDYNE", None,
                             "miscutils:iconsets/controllerFaces/largeRocketEngine",
                             "miscutils:TileEntities/MACHINE_CASING_STABLE_HASTELLOY_X"),
+    # issue #357: goodgenerator's Universal Chemical Fuel Engine (its stable titanium casing, the diesel engine front, the
+    # chemically inert casings of its middle row)
+    "universal-chemical-fuel-engine": ((3, 3), "gregtech:iconsets/MACHINE_CASING_STABLE_TITANIUM", None,
+                                       ("gregtech:iconsets/OVERLAY_FRONT_DIESEL_ENGINE",
+                                        "gregtech:iconsets/OVERLAY_FRONT_DIESEL_ENGINE_ACTIVE"),
+                                       "gregtech:iconsets/MACHINE_CASING_CHEMICALLY_INERT"),
     # issue #301: the Space Elevator per motor tier (gtnhintergalactic's base casing, support structure and the motor)
     **{f"space-elevator-mk{t}": ((11, 11), "gtnhintergalactic:spaceElevator/BaseCasing", None,
                                  f"gtnhintergalactic:spaceElevator/MotorT{t}_Side",
@@ -298,6 +304,7 @@ WHOLE_ICONS = {"large-titanium-boiler", "large-combustion-engine", "digester", "
                "exxonmobil-chemical-plant", "mv-dehydrator", "hv-dehydrator", "ev-dehydrator", "iv-dehydrator",
                "luv-dehydrator", "zpm-dehydrator", "void-miner-i", "void-miner-ii", "void-miner-iii",
                "ev-rocket-engine", "iv-rocket-engine", "luv-rocket-engine", "large-rocket-engine",
+               "universal-chemical-fuel-engine",
                *(f"space-elevator-mk{t}" for t in range(1, 6)),
                *(f"space-elevator-mining-module-mk{t}" for t in range(1, 4)),
                "planetary-gas-siphon", *(f"space-elevator-pump-module-mk{t}" for t in range(1, 4)),
