@@ -142,8 +142,8 @@ unlock_in("end-steel", { "nether-air-intake" })
 ---     mines elsewhere, so they get no mine (as #284/#285);
 ---   * issue #364: the Sapphire vein (OreMixes.java:375-386, Twilight Forest and Horus): almandine (primary) and pyrope
 ---     (secondary), which the mod has as dusts but not as ores (left out, as above), sapphire (in between) and green
----     sapphire (sporadic): sapphire 32 as the first ore the mod has, green sapphire 8; and the sapphire small ore
----     (SmallOres.java, Twilight Forest and Horus), 8 more in the small ores' mine.
+---     sapphire (sporadic): sapphire 32 as the first ore the mod has, green sapphire 8; and the sapphire and green sapphire
+---     small ores (SmallOres.java, Twilight Forest and Horus), 8 of each in the small ores' mine.
 --- The raw ores are GT's (create_ore, 07): amber with GT's ore multiplier 2, all NO_SMELTING (no furnace recipe);
 --- 155 gives them GTNH's ore chain, gem grades and the amber lens (issue #364: sapphire and green sapphire their chain,
 --- grades and juice).
@@ -158,7 +158,8 @@ unlock_in("nand-chips", {
 	manual("mining-amber-vein", "manual-mine-recipes", { PICKAXE, LABOR(24) },
 		{ item("raw-amber", 32), item("raw-cinnabar", 8) }),
 	manual("mining-twilight-forest-small-ores", "manual-mine-recipes", { PICKAXE, LABOR(24) },
-		{ item("raw-topaz", 8), item("raw-amber", 8), item("raw-sapphire", 8) }),
+		{ item("raw-topaz", 8), item("raw-amber", 8), item("raw-sapphire", 8),
+			item("raw-green-sapphire", 8) }),
 	manual("mining-sapphire-vein", "manual-mine-recipes", { PICKAXE, LABOR(24) },   -- issue #364
 		{ item("raw-sapphire", 32), item("raw-green-sapphire", 8) }),
 	"crushed-topaz", "crushed-amber", "crushed-sapphire", "crushed-green-sapphire",
