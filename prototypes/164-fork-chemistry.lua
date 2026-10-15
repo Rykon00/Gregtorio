@@ -190,3 +190,105 @@ F.tech{
 	count = 600, time = 45, recipes = RECIPES,
 }
 move_unlock("mv-dehydrator", ROCKET_HYDRAZINE)
+
+--------------------------------------------------------------------------------
+--- 2) BIO FUELS, THE BREWERY AND THE FERMENTER (issue #360; the machines are 101's, LV to EV, IV to MAX through
+--- IV_BASIC_MACHINES). GTNH's recipes, GT's numbers (fluids a tenth of GT's litres):
+---   brewery (gregtech/loaders/postload/recipes/BreweryRecipes.java:29-90): a talc, soapstone or redstone dust and 75
+---     creosote, seed oil or crude oil -> 75 lubricant (6.4 s, 4 EU/t); GT's light, medium and heavy oil variants are left
+---     out (the pump modules' oils of 162 come at IV and have their own lubricant, #318; medium oil is #361's);
+---     (:458-476) 1 bio chaff + 100 water -> 100 biomass (8.5 s), or + 50 distilled water (0.5 s); GT's potions are n/a
+---   fermenter (FermenterRecipes.java:20-33): 10 biomass -> 10 fermented biomass (7.5 s, 2 EU/t)
+---   distillery (DistilleryRecipes.java:175-245, ULV, 75 s): 100 fermented biomass -> 2.5 acetic acid, 37.5 water, 15
+---     ethanol, 15 methanol, 10 ammonia, 40 carbon dioxide or 60 methane; distillation tower (:588-604, MV, 3.75 s): all
+---     seven at once (GT's CropsNH fertilizer and IC2's biogas are left out)
+---   the Extreme Industrial Greenhouse's wheat gives its seeds too (64, a seed per wheat; GTNH's crops drop at least one
+---     seed past the replanted one), the fluid extractor 1 seed oil from a seed (FluidExtractorRecipes.java:449-452,
+---     1.6 s)
+---   chemical reactor (ChemicalRecipes.java:3474-3500, GT's x9 recipe: GT's x1 takes a tiny pile of sodium hydroxide,
+---     which Gregtorio lacks): a sodium hydroxide dust + 540 seed oil + 90 methanol or ethanol -> 540 bio diesel + 90
+---     glycerol (270 s, LV); glycerol + hydrochloric acid -> epichlorohydrin + 2 water (ChemicalRecipes.java:1866-1893,
+---     24 s, LV), GTNH's second route next to Gregtorio's from propene
+---   bio diesel burns at 320 EU/L (MaterialsInit.java loadBioDiesel), a cell of 800 at 500 J per EU as Gregtorio's diesel
+---     cell (128 MJ) in the combustion generators, glycerol at 164 EU/L in the semi-fluid generators (65.6 MJ); GT's large chemical reactor turns 1000 of it and 40 tetranitromethane
+---     into 900 cetane-boosted diesel (GT's nitro fuel, ChemicalRecipes.java:5738-5744, HV, 6 s)
+--------------------------------------------------------------------------------
+
+local FERMENTATION = "fermentation"
+F.fluid("seed-oil", "medium-green-fluid", { 0.77, 1.00, 0.00 })
+F.fluid("bio-diesel", "orange-fluid", { 1.00, 0.50, 0.00 })
+F.fluid("glycerol", "pale-green-fluid", { 0.53, 0.87, 0.53 })
+F.fluid("fermented-biomass", "olive-fluid", { 0.27, 0.33, 0.00 })
+create_item{ skip_recipe = true, name = "wheat-seeds", subgroup = data.raw.item["wheat"].subgroup }
+do
+	local r = data.raw.recipe["growing-wheat"]
+	if not (r.icon or r.icons or r.main_product) then r.main_product = "wheat" end
+	r.results[#r.results + 1] = { type = "item", name = "wheat-seeds", amount = 64 }
+end
+
+RECIPES = { "lv-brewery", "lv-fermenter" }
+for _, dust in pairs({ "talc-dust", "soapstone-dust", "redstone-dust" }) do
+	for _, oil in pairs({ "creosote", "seed-oil", "crude-oil" }) do
+		step(RECIPES, "lubricant-from-" .. oil .. "-and-" .. dust, "lv-brewery-recipes", 6.4, LV_SPEED,
+			{ { dust, 1 }, { oil, 75 } }, { { "lubricant", 75 } })
+	end
+end
+step(RECIPES, "biomass-from-bio-chaff", "lv-brewery-recipes", 8.5, LV_SPEED, { { "bio-chaff", 1 }, { "water", 100 } },
+	{ { "biomass", 100 } })
+step(RECIPES, "biomass-from-bio-chaff-distilled-water", "lv-brewery-recipes", 0.5, LV_SPEED,
+	{ { "bio-chaff", 1 }, { "distilled-water", 50 } }, { { "biomass", 100 } })
+step(RECIPES, "fermented-biomass", "lv-fermenter-recipes", 7.5, LV_SPEED, { { "biomass", 10 } }, { { "fermented-biomass", 10 } })
+for _, o in pairs({ { "acetic-acid", 2.5 }, { "water", 37.5 }, { "ethanol", 15 }, { "methanol", 15 }, { "ammonia", 10 },
+	{ "carbon-dioxide", 40 }, { "methane", 60 } }) do
+	step(RECIPES, o[1] .. "-from-fermented-biomass", "lv-distillation-recipes", 75, LV_SPEED, { { "fermented-biomass", 100 } },
+		{ o })
+end
+step(RECIPES, "fermented-biomass-distillation", "mv-tall-distillation-recipes", 3.75, MV_SPEED,
+	{ { "fermented-biomass", 100 } }, { { "acetic-acid", 2.5 }, { "water", 37.5 }, { "ethanol", 15 }, { "methanol", 15 },
+		{ "ammonia", 10 }, { "carbon-dioxide", 40 }, { "methane", 60 } }, "ethanol")
+step(RECIPES, "seed-oil", "lv-fluid-extractor-recipes", 1.6, LV_SPEED, { { "wheat-seeds", 1 } }, { { "seed-oil", 1 } })
+for _, alc in pairs({ "methanol", "ethanol" }) do
+	step(RECIPES, "bio-diesel-with-" .. alc, "lv-chemical-reactor-recipes", 270, LV_SPEED,
+		{ { "sodium-hydroxide", 1 }, { "seed-oil", 540 }, { alc, 90 } }, { { "bio-diesel", 540 }, { "glycerol", 90 } })
+end
+step(RECIPES, "epichlorohydrin-from-glycerol", "lv-chemical-reactor-recipes", 24, LV_SPEED,
+	{ { "glycerol", 100 }, { "hydrochloric-acid", 100 } }, { { "epichlorohydrin", 100 }, { "water", 200 } })
+create_item{
+	name = "bio-diesel-cell",
+	category = "lv-canning-machine-recipes",
+	energy_required = 4,
+	fuel_category = "combustion-generator-fuel",
+	fuel_value = "128MJ",
+	burnt_result = "empty-large-steel-fluid-cell",
+	subgroup = data.raw.item["diesel-cell"].subgroup,
+	ingredients = {
+		{ type = "item", name = "empty-large-steel-fluid-cell", amount = 1 },
+		{ type = "fluid", name = "bio-diesel", amount = 800 },
+	},
+}
+RECIPES[#RECIPES + 1] = "bio-diesel-cell"
+--- glycerol is GT's semi-fluid fuel (164 EU per L): a cell for the semi-fluid generators like the creosote cell (65.6 MJ)
+create_item{
+	name = "glycerol-cell",
+	category = "lv-canning-machine-recipes",
+	energy_required = 4,
+	fuel_category = "semifluid-generator-fuel",
+	fuel_value = "65.6MJ",
+	burnt_result = "empty-large-steel-fluid-cell",
+	subgroup = data.raw.item["creosote-cell"].subgroup,
+	ingredients = {
+		{ type = "item", name = "empty-large-steel-fluid-cell", amount = 1 },
+		{ type = "fluid", name = "glycerol", amount = 800 },
+	},
+}
+RECIPES[#RECIPES + 1] = "glycerol-cell"
+F.tech{
+	name = FERMENTATION, prerequisites = { "polyethylene", "hydrochloric-acid", "extractor" }, packs = 2, count = 60,
+	time = 30, recipes = RECIPES,
+}
+--- the nitro fuel with GT's other cetane-boosted diesel (its technology gets Fermentation as a prerequisite)
+RECIPES = {}
+step(RECIPES, "cetane-boosted-diesel-from-bio-diesel", "hv-chemical-reactor-recipes", 6, HV_SPEED,
+	{ { "bio-diesel", 1000 }, { "tetranitromethane", 40 } }, { { "cetane-boosted-diesel", 900 } })
+for _, r in pairs(RECIPES) do fork_add_unlock("cetane-boosted-diesel", r) end
+table.insert(data.raw.technology["cetane-boosted-diesel"].prerequisites, FERMENTATION)
