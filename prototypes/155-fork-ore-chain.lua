@@ -19,6 +19,10 @@
 --- New recipes are unlocked with the technologies of the recipes they replace (the washer's, else the centrifuge's) or of
 --- the crushed ore (macerator and furnace steps). The nine byproducts Gregtorio lacked are new dusts with GT's
 --- decomposition (ProcessingDust.java) as their use. Masses: GT's Materials.getMass (bornite, a bartworks material: copper's).
+--- Issue #203: gypsum, sulfur and calcite (upstream's macerator made their dust from the raw ore) have GTNH's crushed ore
+--- (07; the macerator recipes keep their names gypsum, sulfur and calcite) and this chain. Their recipes replace none,
+--- so they are unlocked after their machine and their input like those of O3 and O4 (o1_late, below); calcite's second
+--- byproduct, malachite, is a new dust with GT's decomposition and smelting.
 --- Loads after 149 (every ore exists, 137 removed infused gold) and before 150, 196, 198, 199 and 200.
 --------------------------------------------------------------------------------
 
@@ -26,6 +30,7 @@ local ORE_CHAIN = {
 	["iron"] = { dust = "iron-dust", byproducts = { "nickel-dust", "tin-dust" }, mass = 56 },   -- GT Iron: Nickel, Tin
 	["vanadium-magnetite"] = { dust = "vanadium-magnetite-dust", byproducts = { "magnetite-dust", "vanadium-dust" }, mass = 42 },   -- GT VanadiumMagnetite: Magnetite, Vanadium
 	["gold"] = { dust = "gold-dust", byproducts = { "copper-dust", "nickel-dust" }, mass = 196 },   -- GT Gold: Copper, Nickel
+	["gypsum"] = { dust = "gypsum", byproducts = {  }, mass = 18 },   -- GT Gypsum: no byproducts (itself)   -- issue #203
 	["fullers-earth"] = { dust = "fullers-earth", byproducts = { "alumina", "silicon-dioxide", "magnesium" }, mass = 16 },   -- GT FullersEarth: Aluminiumoxide, SiliconDioxide, Magnesium
 	["copper"] = { dust = "copper-dust", byproducts = { "cobalt-dust", "gold-dust", "nickel-dust" }, mass = 63 },   -- GT Copper: Cobalt, Gold, Nickel
 	["tin"] = { dust = "tin-dust", byproducts = { "iron-dust", "zinc-dust", "bismuth" }, mass = 118 },   -- GT Tin: Iron, Zinc; 3rd: bismuth, Gregtorio's (its only source, GTNH has a bismuth ore)
@@ -37,6 +42,7 @@ local ORE_CHAIN = {
 	["cryolite"] = { dust = "cryolite", byproducts = { "alumina", "sodium" }, mass = 20 },   -- GT Cryolite: Aluminiumoxide, Sodium
 	["tetrahedrite"] = { dust = "tetrahedrite-dust", byproducts = { "antimony", "zinc-dust" }, mass = 57 },   -- GT Tetrahedrite: Antimony, Zinc
 	["stibnite"] = { dust = "antimony", byproducts = { "antimony" }, mass = 67 },   -- GT Stibnite: Antimony
+	["sulfur"] = { dust = "sulfur", byproducts = { "sulfur" }, mass = 32 },   -- GT Sulfur: Sulfur   -- issue #203
 	["sphalerite"] = { dust = "sphalerite-dust", byproducts = { "yellow-garnet-dust", "cadmium", "gallium", "zinc-dust" }, mass = 48 },   -- GT Sphalerite: GarnetYellow, Cadmium, Gallium, Zinc
 	["bauxite"] = { dust = "bauxite-dust", byproducts = { "grossular-dust", "rutile-dust", "gallium" }, mass = 18 },   -- GT Bauxite: Grossular, Rutile, Gallium
 	["aluminium"] = { dust = "aluminium-dust", byproducts = { "bauxite-dust" }, mass = 26 },   -- GT Aluminium: Bauxite
@@ -56,6 +62,7 @@ local ORE_CHAIN = {
 	["apatite"] = { dust = "apatite", byproducts = { "tricalcium-phosphate", "phosphate", "pyrochlore" }, mass = 32 },   -- GT Apatite: TricalciumPhosphate, Phosphate, Pyrochlore
 	["tricalcium-phosphate"] = { dust = "tricalcium-phosphate", byproducts = { "apatite", "phosphate", "pyrochlore" }, mass = 31 },   -- GT TricalciumPhosphate: Apatite, Phosphate, Pyrochlore
 	["pyrochlore"] = { dust = "pyrochlore", byproducts = { "apatite", "calcite", "niobium-dust" }, mass = 34 },   -- GT Pyrochlore: Apatite, Calcite, Niobium
+	["calcite"] = { dust = "calcite", byproducts = { "andradite-dust", "malachite-dust" }, mass = 20 },   -- GT Calcite: Andradite, Malachite   -- issue #203
 	["nickel"] = { dust = "nickel-dust", byproducts = { "cobalt-dust", "platinum-dust", "iron-dust" }, mass = 58 },   -- GT Nickel: Cobalt, Platinum, Iron
 	["pentlandite"] = { dust = "pentlandite-dust", byproducts = { "iron-dust", "sulfur", "cobalt-dust" }, mass = 45 },   -- GT Pentlandite: Iron, Sulfur, Cobalt
 	["cobaltite"] = { dust = "cobalt-dust", byproducts = { "cobalt-dust" }, mass = 55 },   -- GT Cobaltite: Cobalt
@@ -93,6 +100,9 @@ local ORE_CHAIN = {
 	["bedrockium"] = { dust = "bedrockium-dust", byproducts = {  }, mass = 20 },   -- GT Bedrockium: no byproducts (itself)
 	["infinity-catalyst"] = { dust = "infinity-catalyst-dust", byproducts = {  }, mass = 98 },   -- GT InfinityCatalyst: no byproducts (itself)
 	["cosmic-neutronium"] = { dust = "cosmic-neutronium-dust", byproducts = {  }, mass = 98 },   -- GT CosmicNeutronium: no byproducts (itself)
+	--- issue #332: the Twilight Forest's ores (160)
+	["amber"] = { dust = "amber-dust", byproducts = { "amber-dust" }, mass = 10 },   -- GT Amber: Amber
+	["topaz"] = { dust = "topaz-dust", byproducts = {  }, mass = 16 },   -- GT Topaz: BlueTopaz, which the mod lacks (GT has no decomposition of it, so no new dust): itself
 }
 --- skipped: platinum and palladium (their washing is the platinum line's, 146) and firestone (no source of its ore: its
 --- recipes stay locked in 142's FORK_RECIPES_LOCKED)
@@ -169,9 +179,10 @@ end
 
 --- the nine byproducts of GTNH's lists that Gregtorio lacked, with GT's decomposition (ProcessingDust.java:165-266:
 --- electrolyzer protons x 2 ticks, centrifuge mass x 4 ticks, per input dust; netherrack: CentrifugeRecipes.java:546)
---- (malachite, the tenth, is GTNH's byproduct of calcite only, which has no crushed form here: not made)
+--- (malachite, the tenth, is GTNH's byproduct of calcite only, which has its crushed form since issue #203; issue #207:
+--- pyrope, almandine and uvarovite, the rest of GT's red and yellow garnet)
 for _, n in pairs({ "andradite-dust", "red-garnet-dust", "yellow-garnet-dust", "lignite-dust", "magnetite-dust",
-	"netherrack-dust", "pyrite-dust", "quartzite-dust" }) do
+	"netherrack-dust", "pyrite-dust", "quartzite-dust", "malachite-dust", "pyrope-dust", "almandine-dust", "uvarovite-dust" }) do
 	data:extend({ { type = "item", name = n, icon = P .. n .. ".png", icon_size = 32,
 		subgroup = "subgroup-macerator-dust", order = "z-" .. n, stack_size = 100 } })
 end
@@ -187,21 +198,36 @@ do
 		end
 	end
 end
---- GT's red garnet also gives pyrope and almandine, its yellow garnet uvarovite: Gregtorio has none of them, left out
+--- (issue #207: GT's red garnet gives pyrope, almandine and spessartine, its yellow garnet andradite, grossular and
+--- uvarovite; GT's electrolyzer runs at 30 EU/t per output item, up to 4: andradite, pyrite (issue #223), malachite and
+--- uvarovite in the MV electrolyzer)
 local DECOMPOSE = {
-	{ "andradite-dust", "lv-electrolyzer-recipes", 24, 20,
+	{ "andradite-dust", "mv-electrolyzer-recipes", 24 * MV_SPEED, 20,   -- issue #223: GT's 90 EU/t (was LV)
 		{ item("calcium", 3), item("iron-dust", 2), item("raw-silicon", 3), fluid("oxygen", 1200) } },
-	{ "red-garnet-dust", "lv-centrifuge-recipes", 73.6, 16, { item("spessartine-dust", 8) } },
-	{ "yellow-garnet-dust", "lv-centrifuge-recipes", 73.6, 16, { item("andradite-dust", 5), item("grossular-dust", 8) } },
+	{ "red-garnet-dust", "lv-centrifuge-recipes", 73.6, 16,
+		{ item("pyrope-dust", 3), item("almandine-dust", 5), item("spessartine-dust", 8) } },
+	{ "yellow-garnet-dust", "lv-centrifuge-recipes", 73.6, 16,
+		{ item("andradite-dust", 5), item("grossular-dust", 8), item("uvarovite-dust", 3) } },
 	{ "lignite-dust", "lv-electrolyzer-recipes", 2, 4, { item("carbon", 3), fluid("water", 100) } },
 	{ "magnetite-dust", "lv-electrolyzer-recipes", 10.5, 7, { item("iron-dust", 3), fluid("oxygen", 400) } },
 	{ "netherrack-dust", "lv-centrifuge-recipes", 288, 36,
 		{ item("redstone-dust", 4, 0.5625), item("sulfur", 9, 0.99), item("coal-dust", 4, 0.5625), item("gold-dust", 1, 0.25) } },
-	{ "pyrite-dust", "lv-electrolyzer-recipes", 5.7, 3, { item("iron-dust", 1), item("sulfur", 2) } },
+	{ "pyrite-dust", "mv-electrolyzer-recipes", 5.7 * MV_SPEED, 3, { item("iron-dust", 1), item("sulfur", 2) } },   -- issue #223: GT's 60 EU/t
 	--- issue #202: cassiterite (SnO2, protons 22: 3 dusts x 44 ticks)
 	{ "cassiterite-dust", "lv-electrolyzer-recipes", 6.6, 3, { item("tin-dust", 1), fluid("oxygen", 200) } },
+	--- issue #203: malachite, Cu2CO3(OH)2 (protons 10: 10 dusts x 20 ticks; GT gives the oxygen in cells)
+	{ "malachite-dust", "mv-electrolyzer-recipes", 10 * MV_SPEED, 10,
+		{ item("copper-dust", 2), item("carbon", 1), fluid("hydrogen", 200), fluid("oxygen", 500) } },
+	--- issue #207: uvarovite, Ca3Cr2Si3O12 (protons 12: 20 dusts x 24 ticks); GT has no decomposition of pyrope and
+	--- almandine (their use is the nitric acid centrifuge below)
+	{ "uvarovite-dust", "mv-electrolyzer-recipes", 24 * MV_SPEED, 20,
+		{ item("calcium", 3), item("chromium-dust", 2), item("raw-silicon", 3), fluid("oxygen", 1200) } },
 	--- GT has no decomposition of quartzite (a quartz): Gregtorio's, into silicon dioxide
 	{ "quartzite-dust", "lv-centrifuge-recipes", 2, 1, { item("silicon-dioxide", 1) } },
+	--- issue #332: amber, C10H10O16 (protons 5: 36 dusts x 10 ticks; GT's 60 EU/t: the hydrogen as fluid, the oxygen in
+	--- cells, here a fluid too), new with the Twilight Forest's ore (160); GT has no decomposition of topaz
+	{ "amber-dust", "mv-electrolyzer-recipes", 18 * MV_SPEED, 36,
+		{ item("carbon", 10), fluid("hydrogen", 1000), fluid("oxygen", 1600) } },
 }
 local decompose_of = {}
 for _, d in pairs(DECOMPOSE) do
@@ -212,6 +238,8 @@ for _, d in pairs(DECOMPOSE) do
 end
 
 local made = 0
+local furnace_made = {}   -- issue #207: the furnace recipes of this file, for the multi smelter (end of the file)
+local o1_late = {}   -- issue #203: recipes unlocked after their machine and input (below)
 for x, ore in pairs(ORE_CHAIN) do
 	local crushed = "crushed-" .. x
 	if data.raw.item[crushed] and data.raw.item[ore.dust] and not FORK_ORE_CHAIN.skip[x] then
@@ -251,26 +279,32 @@ for x, ore in pairs(ORE_CHAIN) do
 		if #t_wash == 0 then t_wash = #t_cf > 0 and t_cf or t_crush end
 		if #t_cf == 0 then t_cf = t_wash end
 
-		unlock(recipe{ name = purified, category = "lv-ore-washer-recipes", time = 25, main = purified,
+		--- issue #203: an ore whose chain replaces no recipe (no washer recipe, no centrifuge recipe) has nothing to take
+		--- the technologies from: its recipes are unlocked after their machine and input (o1_late)
+		local late = not wash_ok and #tech_list(old_cf) == 0
+		local function u(name, techs)
+			if late then o1_late[#o1_late + 1] = name else unlock(name, techs) end
+		end
+		u(recipe{ name = purified, category = "lv-ore-washer-recipes", time = 25, main = purified,
 			ingredients = { item(crushed), fluid("water", 100) },
 			results = { item(purified), item(byp(1), 1, 0.1111) } }, t_wash)
-		unlock(recipe{ name = purified .. "-distilled-water", category = "lv-ore-washer-recipes", time = 15, main = purified,
+		u(recipe{ name = purified .. "-distilled-water", category = "lv-ore-washer-recipes", time = 15, main = purified,
 			ingredients = { item(crushed), fluid("distilled-water", 20) },
 			results = { item(purified), item(byp(1), 1, 0.1111) } }, t_wash)
-		unlock(recipe{ name = centrifuged, category = "lv-thermal-centrifuge-recipes", time = 25, main = centrifuged,
+		u(recipe{ name = centrifuged, category = "lv-thermal-centrifuge-recipes", time = 25, main = centrifuged,
 			ingredients = { item(purified) }, results = { item(centrifuged), item(byp(2), 1, 0.1111) } }, t_cf)
-		unlock(recipe{ name = centrifuged .. "-from-crushed", category = "lv-thermal-centrifuge-recipes", time = 25,
+		u(recipe{ name = centrifuged .. "-from-crushed", category = "lv-thermal-centrifuge-recipes", time = 25,
 			main = centrifuged, ingredients = { item(crushed) }, results = { item(centrifuged), item(byp(2), 1, 0.1111) } }, t_cf)
-		unlock(recipe{ name = impure, category = "lv-macerator-recipes", time = 20, main = impure,
+		u(recipe{ name = impure, category = "lv-macerator-recipes", time = 20, main = impure,
 			ingredients = { item(crushed) }, results = { item(impure), item(byp(1), 1, 0.1) } }, t_crush)
-		unlock(recipe{ name = pure, category = "lv-macerator-recipes", time = 20, main = pure,
+		u(recipe{ name = pure, category = "lv-macerator-recipes", time = 20, main = pure,
 			ingredients = { item(purified) }, results = { item(pure), item(byp(2), 1, 0.1) } }, t_wash)
-		unlock(recipe{ name = centrifuged .. "-maceration", category = "lv-macerator-recipes", time = 20, main = ore.dust,
+		u(recipe{ name = centrifuged .. "-maceration", category = "lv-macerator-recipes", time = 20, main = ore.dust,
 			ingredients = { item(centrifuged) }, results = { item(ore.dust), item(byp(3), 1, 0.1) } }, t_cf)
 		local cf_time = math.max(0.05, ore.mass * 8 / 20)
-		unlock(recipe{ name = "centrifuging-" .. impure, category = "lv-centrifuge-recipes", time = cf_time, main = ore.dust,
+		u(recipe{ name = "centrifuging-" .. impure, category = "lv-centrifuge-recipes", time = cf_time, main = ore.dust,
 			ingredients = { item(impure) }, results = { item(ore.dust), item(byp(1), 1, 0.1111) } }, t_cf)
-		unlock(recipe{ name = "centrifuging-" .. pure, category = "lv-centrifuge-recipes", time = cf_time, main = ore.dust,
+		u(recipe{ name = "centrifuging-" .. pure, category = "lv-centrifuge-recipes", time = cf_time, main = ore.dust,
 			ingredients = { item(pure) }, results = { item(ore.dust), item(byp(2), 1, 0.1111) } }, t_cf)
 		local smelt = data.raw.recipe[ore.dust .. "-smelter"]
 		if smelt and smelt.category == "smelting" then
@@ -280,13 +314,14 @@ for x, ore in pairs(ORE_CHAIN) do
 				r.ingredients = { item(f[1]) }
 				r.enabled = false
 				data:extend({ r })
-				unlock(r.name, f[2])
+				furnace_made[#furnace_made + 1] = r.name
+				u(r.name, f[2])
 			end
 		end
 		--- the byproducts Gregtorio lacked come with the recipe that uses them
 		for i = 1, 3 do
 			local d = decompose_of[byp(i)]
-			if d then unlock(d, t_wash) end
+			if d and data.raw.recipe[d].category:sub(1, 3) == "lv-" then u(d, t_wash) end   -- MV ones: below
 		end
 
 		--- the shortcuts go; their names are mapped by the JSON migration
@@ -330,8 +365,6 @@ do
 	end
 end
 
---- andradite comes from the decomposition of yellow garnet: unlocked with it
-unlock(decompose_of["andradite-dust"], tech_list(decompose_of["yellow-garnet-dust"]))
 log("FORK-ORE-CHAIN: " .. made .. " ores with GTNH's chain")
 
 --------------------------------------------------------------------------------
@@ -488,6 +521,18 @@ log("FORK-ORE-CHAIN: " .. baths .. " chemical bath washing recipes")
 --- category and the recipe that makes its input (after_all); an input made from the start counts as given, and a
 --- recipe whose machine and input are both there from the start is enabled.
 --------------------------------------------------------------------------------
+--- issue #348: upstream's Ruby Lens from a plain ruby (11-lv-age-item.lua: LV lathe, 1 ruby -> 1 lens) is no GT recipe;
+--- GT cuts a lens from a plate or an exquisite gem (ProcessingLens.java, both below). It goes before the unlocks are read.
+for _, tech in pairs(data.raw.technology) do
+	local keep = {}
+	for _, e in pairs(tech.effects or {}) do
+		if not (e.type == "unlock-recipe" and e.recipe == "ruby-lens") then keep[#keep + 1] = e end
+	end
+	if tech.effects and #keep < #tech.effects then tech.effects = keep end
+end
+data.raw.recipe["ruby-lens"] = nil
+log("FORK-REMOVED: recipe ruby-lens")
+
 local techs_of_recipe = {}
 for tname, tech in pairs(data.raw.technology) do
 	for _, e in pairs(tech.effects or {}) do
@@ -508,9 +553,11 @@ end
 local function item_techs(name)
 	local out = {}
 	for _, rname in pairs(makers[name] or {}) do
-		local r = data.raw.recipe[rname]
-		if r.enabled ~= false and not r.hidden then return nil end
-		for _, t in pairs(techs_of_recipe[rname] or {}) do out[#out + 1] = t end
+		local r = data.raw.recipe[rname]   -- nil: removed since (issue #223's raw ore smelting)
+		if r and r.enabled ~= false and not r.hidden then return nil end
+		if r then
+			for _, t in pairs(techs_of_recipe[rname] or {}) do out[#out + 1] = t end
+		end
 	end
 	return out
 end
@@ -555,7 +602,7 @@ local function unlock_after(name, groups)
 	local r = data.raw.recipe[name]
 	if #g == 0 then
 		r.enabled = true
-		return
+		return true
 	end
 	local tech = after_all(g)
 	if tech then
@@ -564,6 +611,7 @@ local function unlock_after(name, groups)
 	else
 		log("FORK-ORE-CHAIN: no technology for " .. name)
 	end
+	return tech   -- issue #227: nil when nothing unlocks it (158 falls back to the latest of the groups)
 end
 local function add_item(name, sub, order, extra)
 	local it = { type = "item", name = name, icon = P .. name .. ".png", icon_size = 32, subgroup = sub,
@@ -584,6 +632,44 @@ local function sub_of(name, default)
 	local it = data.raw.item[name]
 	return it and it.subgroup or default
 end
+--- issue #203: the O1 recipes of the ores whose chain replaces no recipe, in the order of the chain's steps
+for _, name in pairs(o1_late) do
+	local r = data.raw.recipe[name]
+	unlock_after(name, { machine_techs(r.category), item_techs(r.ingredients[1].name) })
+end
+--- the decompositions GT runs at MV (andradite, pyrite, malachite, uvarovite; issues #207, #223): after the MV
+--- electrolyzer and their dust
+for d, name in pairs(decompose_of) do
+	if data.raw.recipe[name].category:sub(1, 3) ~= "lv-" then
+		unlock_after(name, { machine_techs(data.raw.recipe[name].category), item_techs(d) })
+	end
+end
+
+--- issue #207: GT's use of the garnet minerals (BauxiteRefineChain.java:230-324): a dust and 1 nitric acid (GT 10 L) ->
+--- 1 sluice juice and six dusts by chance, 2.25 s at MV. For pyrope and almandine it is GT's only use.
+local GARNET_SLUICE = {
+	{ "pyrope-dust", { { "alumina", 0.5 }, { "magnesia", 0.4 }, { "silver-dust", 0.03 }, { "iron-dust", 0.03 },
+		{ "calcite", 0.03 }, { "vanadium-dust", 0.02 } } },
+	{ "almandine-dust", { { "alumina", 0.5 }, { "iron-dust", 0.4 }, { "gold-dust", 0.03 }, { "calcite", 0.03 },
+		{ "chromium-dust", 0.02 }, { "vanadium-dust", 0.02 } } },
+	{ "spessartine-dust", { { "alumina", 0.5 }, { "pyrolusite-dust", 0.4 }, { "iron-dust", 0.03 }, { "calcite", 0.03 },
+		{ "magnesium", 0.03 }, { "tantalum-dust", 0.02 } } },
+	{ "andradite-dust", { { "quicklime", 0.5 }, { "iron-dust", 0.4 }, { "alumina", 0.03 }, { "gold-dust", 0.03 },
+		{ "vanadium-dust", 0.02 }, { "rutile-dust", 0.06 } } },
+	{ "uvarovite-dust", { { "quicklime", 0.5 }, { "chromium-dust", 0.1 }, { "iron-dust", 0.03 }, { "silver-dust", 0.03 },
+		{ "alumina", 0.02 }, { "manganese-dust", 0.02 } } },
+	{ "grossular-dust", { { "quicklime", 0.5 }, { "alumina", 0.4 }, { "iron-dust", 0.03 }, { "gold-dust", 0.03 },
+		{ "calcite", 0.03 }, { "vanadium-dust", 0.02 } } },
+}
+for _, g in pairs(GARNET_SLUICE) do
+	local results = {}
+	for _, o in pairs(g[2]) do results[#results + 1] = item(o[1], 1, o[2]) end
+	results[#results + 1] = fluid("sluice-juice", 1)
+	local name = made(recipe{ name = g[1] .. "-with-nitric-acid", category = "mv-centrifuge-recipes", time = 2.25 * MV_SPEED,
+		main = g[2][1][1], ingredients = { item(g[1]), fluid("nitric-acid", 1) }, results = results })
+	unlock_after(name, { machine_techs("mv-centrifuge-recipes"), item_techs(g[1]), item_techs("nitric-acid") })
+end
+
 local the_ores = {}
 for x in pairs(ORE_CHAIN) do
 	if data.raw.recipe["purified-" .. x] then the_ores[#the_ores + 1] = x end
@@ -631,7 +717,7 @@ for _, m in pairs({ "gold", "iron", "neodymium" }) do
 		name = made(recipe{ name = m .. "-ingot-from-nuggets", category = "lv-alloy-smelter-recipes", time = 10,
 			subgroup = "subgroup-lv-alloy-smelter-recipes", main = m .. "-ingot", ingredients = { item(nugget, 9), item("mold") },
 			results = { item(m .. "-ingot"), item("mold") } })
-		unlock_after(name, { machine_techs("lv-alloy-smelter-recipes"), item_techs(nugget) })
+		unlock_after(name, { machine_techs("lv-alloy-smelter-recipes"), item_techs(nugget), item_techs("mold") })
 	end
 end
 log("FORK-ORE-CHAIN: " .. separations .. " electromagnetic separator recipes")
@@ -651,9 +737,11 @@ log("FORK-ORE-CHAIN: " .. separations .. " electromagnetic separator recipes")
 ---   laser engraver      3 chipped -> flawed (30 s, LV), 3 flawed -> gem (30 s, MV), 3 gems -> flawless (60 s, HV),
 ---                       3 flawless -> exquisite (2 min, EV), with a lens of the gem's colour that stays (issue #193):
 ---                       red the ruby lens (ruby), green the emerald lens (emerald, monazite), white the diamond lens
----                       (diamond, nether quartz). GT's other colours (certus quartz light gray, apatite and lazurite
----                       cyan, tricalcium phosphate yellow, sodalite and lapis blue) come from lenses of materials
----                       Gregtorio lacks (sapphire, topaz ...): no engraver steps for them. Gregtorio's laser engraver
+---                       (diamond, nether quartz); issue #328: cyan the apatite lens (apatite, lazurite) and blue the
+---                       lapis lens (sodalite, lapis), the maintainer's substitutes of #325 for GT's green sapphire and
+---                       sapphire lens; issue #332: orange the amber lens (amber, topaz, the Twilight Forest's gems).
+---                       Certus quartz (GT: light gray) has no lens of its colour in Gregtorio: no
+---                       engraver steps for it. Gregtorio's laser engraver
 ---                       starts at MV: the LV step is in the MV category with its LV time (an MV engraver runs it
 ---                       twice as fast, as GT's overclock)
 ---   macerator           the grades back into dust: chipped 1 small pile, flawed 2 small piles of the gem's dust
@@ -672,9 +760,13 @@ local GEMS = {
 	{ "apatite",              "apatite-gem",              "default",  true },
 	{ "tricalcium-phosphate", "tricalcium-phosphate-gem", "default",  false },
 	{ "lazurite",             "lazurite-gem",             "default",  true },
+	{ "lapis",                "lapis-lazuli",             "default",  true },   -- before sodalite: its engraver steps take the lapis lens (issue #328)
 	{ "sodalite",             "sodalite-gem",             "default",  true },
-	{ "lapis",                "lapis-lazuli",             "default",  true },
 	{ "monazite",             "monazite-gem",             "default",  true },
+	--- issue #332: the Twilight Forest's gems (160), GT's precious table (ProcessingCrushedOre.java:91); amber before
+	--- topaz, whose engraver steps take the amber lens
+	{ "amber",                "amber-gem",                "precious", false },
+	{ "topaz",                "topaz-gem",                "precious", false },
 }
 --- GT's sifter tables: exquisite, flawless, gem, flawed, chipped, dust (ProcessingCrushedOre.java:90-120)
 local SIFT = { precious = { 0.03, 0.12, 0.45, 0.14, 0.28, 0.35 }, default = { 0.01, 0.04, 0.15, 0.20, 0.40, 0.50 } }
@@ -683,14 +775,19 @@ local GRADES = { "chipped", "flawed", "gem", "flawless", "exquisite" }
 local MACERATE = { chipped = { 1, small = true }, flawed = { 2, small = true }, gem = { 1 }, flawless = { 2 }, exquisite = { 4 } }
 --- the lenses the lathe makes from an exquisite gem (GT: the gems whose material keeps the lens prefix)
 --- issue #205: the red and yellow garnet lens (GT's GarnetRed and GarnetYellow keep the lens prefix)
+--- issue #325 (maintainer's decision): the cyan and blue lens of GTNH's wafer engraving (GT: green sapphire, sapphire,
+--- blue topaz, which Gregtorio lacks) from the Gregtorio gems of that colour, apatite and lapis (GT's dyeCyan, dyeBlue)
+--- issue #332: the orange lens from amber (GT cuts it from amber or topaz; the amber vein is the larger source)
 local LENS = { ruby = "ruby-lens", emerald = "emerald-lens", diamond = "diamond-lens", ["red-garnet"] = "red-garnet-lens",
-	["yellow-garnet"] = "yellow-garnet-lens" }
+	["yellow-garnet"] = "yellow-garnet-lens", apatite = "apatite-lens", lapis = "lapis-lens", amber = "amber-lens" }
 --- the lens of the gem's colour for the laser engraver (MaterialsInit.java setColor; GT takes any lens of the colour)
 --- (issue #205: quartzite white, red garnet red, yellow garnet yellow; tricalcium phosphate, yellow, gets the yellow garnet
 --- lens after the byproduct gems below)
 local ENGRAVER_LENS = { ruby = "ruby-lens", emerald = "emerald-lens", monazite = "emerald-lens",
 	diamond = "diamond-lens", ["nether-quartz"] = "diamond-lens", quartzite = "diamond-lens", ["red-garnet"] = "ruby-lens",
-	["yellow-garnet"] = "yellow-garnet-lens" }
+	["yellow-garnet"] = "yellow-garnet-lens",
+	apatite = "apatite-lens", lazurite = "apatite-lens", sodalite = "lapis-lens", lapis = "lapis-lens",   -- issue #328
+	amber = "amber-lens", topaz = "amber-lens" }   -- issue #332: orange
 --- grade -> the engraver category and time of the step up (GT tier: LV, MV, HV, EV; time x the tier's speed)
 local ENGRAVE = { chipped = { "mv-laser-engraver-recipes", 30 }, flawed = { "mv-laser-engraver-recipes", 60 },
 	gem = { "hv-laser-engraver-recipes", 240 }, flawless = { "ev-laser-engraver-recipes", 960 } }
@@ -699,7 +796,8 @@ local ENGRAVE = { chipped = { "mv-laser-engraver-recipes", 30 }, flawed = { "mv-
 local DARK_TINY, DARK_DUST = "tiny-pile-of-dark-ash-dust", "dark-ash-dust"
 add_item(DARK_TINY, "subgroup-macerator-dust", "z-dark-ash-a")
 add_item(DARK_DUST, "subgroup-macerator-dust", "z-dark-ash-b")
-for _, lens in pairs({ "emerald-lens", "diamond-lens", "red-garnet-lens", "yellow-garnet-lens" }) do
+for _, lens in pairs({ "emerald-lens", "diamond-lens", "red-garnet-lens", "yellow-garnet-lens", "apatite-lens", "lapis-lens",
+	"amber-lens" }) do
 	if not data.raw.item[lens] then add_item(lens, sub_of("ruby-lens", "subgroup-lv-lathe-recipes"), "z-" .. lens) end
 end
 
@@ -738,7 +836,8 @@ local function unlock_pending(pending)
 	for _, p in pairs(pending) do unlock_after(p[1], p[2]()) end   -- logs what nothing gives
 end
 
---- the laser engraver steps of a gem's grades with a lens of its colour, which stays; returns the number of recipes
+--- the laser engraver steps of a gem's grades with a lens of its colour, which stays (150 moves it from ingredient and
+--- result into the engraver's lens slot, issue #316); returns the number of recipes
 local function engrave(grade, lens, pending)
 	local n = 0
 	for i, k in pairs(GRADES) do
@@ -763,10 +862,12 @@ local function gem_grades(x, grade, dust, pending)
 	if not data.raw.item[small] then add_item(small, sub_of(dust, "subgroup-macerator-dust"), "z-" .. small) end
 
 	local name
-	--- the lens first: the engraver steps below need it
+	--- the lens first: the engraver steps below need it (issue #348: GT's ProcessingLens.java, 1 lens and 2 dusts; only
+	--- the diamond gives 3 lenses and 1 dust)
 	if LENS[x] and data.raw.item[LENS[x]] then
+		local lens_out = x == "diamond" and { item(LENS[x], 3), item(dust) } or { item(LENS[x], 1), item(dust, 2) }
 		name = made(recipe{ name = LENS[x] .. "-from-exquisite", category = "lv-lathe-recipes", time = 120, main = LENS[x],
-			ingredients = { item(grade.exquisite) }, results = { item(LENS[x], 3), item(dust) } })
+			ingredients = { item(grade.exquisite) }, results = lens_out })
 		later(pending, name, function() return { machine_techs("lv-lathe-recipes"), item_techs(grade.exquisite) } end)
 		n = n + 1
 	end
@@ -907,13 +1008,15 @@ FORK_ORE_HAMMER_GEM = {
 	["raw-lapis"] = "lapis-lazuli", ["raw-lazurite"] = "lazurite-gem", ["raw-sodalite"] = "sodalite-gem",
 	["raw-apatite"] = "apatite-gem", ["raw-certus-quartz"] = "certus-quartz", ["raw-nether-quartz"] = "nether-quartz",
 	["raw-monazite"] = "monazite-gem", ["raw-tricalcium-phosphate"] = "tricalcium-phosphate-gem",
+	["raw-amber"] = "amber-gem", ["raw-topaz"] = "topaz-gem",   -- issue #332
 }
 --- the first byproduct of the ores ORE_CHAIN leaves out (GT Platinum: Nickel; GT Palladium: none, its own dust)
 local RAW_BYPRODUCT = { ["raw-platinum"] = "nickel-dust", ["raw-palladium"] = "palladium-dust" }
 --- GT's gems of byproduct materials that Gregtorio has
 local BYPRODUCT_GEM = { ["emerald-dust"] = "emerald", ["apatite"] = "apatite-gem",
 	["tricalcium-phosphate"] = "tricalcium-phosphate-gem", ["lazurite-dust"] = "lazurite-gem",
-	["sodalite-dust"] = "sodalite-gem", ["monazite-dust"] = "monazite-gem" }
+	["sodalite-dust"] = "sodalite-gem", ["monazite-dust"] = "monazite-gem", ["amber-dust"] = "amber-gem",
+	["topaz-dust"] = "topaz-gem" }   -- issue #332
 for _, g in pairs(BYPRODUCT_GEMS) do BYPRODUCT_GEM[g[2]] = g[3] end   -- issue #205
 --- GT's byproduct multipliers (Materials.java setByProductMultiplier; 1 for every other ore)
 local BYPRODUCT_MULT = { ["raw-apatite"] = 2, ["raw-coal"] = 2, ["raw-cryolite"] = 4, ["raw-lapis"] = 4,
@@ -985,8 +1088,9 @@ log("FORK-ORE-CHAIN: " .. hammered .. " forge hammer crushing recipes")
 --- distilled water, here 10, 90 % in 75 s; 24 EU/t, LV; upstream's MV autoclave recipe of a gem becomes the distilled
 --- water one; GT's Void variant is not made, see O4 above), ruby, emerald, the garnets and monazite are imploded (4 dusts
 --- -> 3 gems in 1 s, LV, with GT's TNT as explosives, one for GT's 8 TNT: ruby and emerald 24 TNT and 12 tiny piles of
---- dark ash, the garnets and monazite 16 and 8). Upstream's autoclave recipes of ruby, emerald and diamond have no GT
---- counterpart and stay.
+--- dark ash, the garnets and monazite 16 and 8). Issue #223: diamond as GT's (ProcessingDust.java:330-339): 4 dusts + 32 TNT
+--- (4 explosives) -> 3 diamonds (GT: IC2's industrial diamond, a diamond) and 16 tiny piles of dark ash; upstream's
+--- autoclave recipes of ruby, emerald and diamond (MV, 5 distilled water, no GT counterpart) are removed.
 --------------------------------------------------------------------------------
 local late_gems = 0
 local pending = {}
@@ -1020,8 +1124,11 @@ local DUST_GEMS = {
 	{ "quartzite-dust",      "quartzite-gem",            true },
 	{ "ruby-dust",           "ruby",                     false,     { 3, 12 } },
 	{ "emerald-dust",        "emerald",                  false,     { 3, 12 } },
+	{ "diamond-dust",        "diamond",                  false,     { 4, 16 } },   -- issue #223
 	{ "red-garnet-dust",     "red-garnet-gem",           false,     { 2, 8 } },
 	{ "yellow-garnet-dust",  "yellow-garnet-gem",        false,     { 2, 8 } },
+	{ "topaz-dust",          "topaz-gem",                false,     { 3, 12 } },   -- issue #332
+	{ "amber-dust",          "amber-gem",                false,     { 2, 8 } },    -- issue #332
 }
 for _, g in pairs(DUST_GEMS) do
 	local dust, gem = g[1], g[2]
@@ -1061,6 +1168,7 @@ for _, g in pairs(DUST_GEMS) do
 		end
 	end
 end
+for _, r in pairs({ "ruby-autoclave", "emerald-autoclave", "diamond-autoclave" }) do remove_recipe(r) end   -- issue #223
 log("FORK-ORE-CHAIN: " .. late_gems .. " recipes of the byproduct gems and from dust to gem (issue #205)")
 
 --------------------------------------------------------------------------------
@@ -1118,6 +1226,7 @@ local function smelt(input, out, amount)
 	recipe{ name = name, category = "smelting", subgroup = "subgroup-smelting", time = 10, main = out,
 		ingredients = { item(input) }, results = { item(out, amount) } }
 	unlock_after(made(name), { item_techs(input) })
+	furnace_made[#furnace_made + 1] = name
 	smelted = smelted + 1
 end
 for x, m in pairs(smelt_into) do
@@ -1128,6 +1237,21 @@ for x, m in pairs(smelt_into) do
 		end
 		for _, f in pairs({ ore.dust, "impure-" .. x .. "-dust", "pure-" .. x .. "-dust" }) do smelt(f, m .. "-ingot", 1) end
 	end
+end
+--- issue #203: malachite dust (calcite's byproduct) smelts into copper (GT: setDirectSmelting Copper)
+smelt("malachite-dust", "copper-ingot", 1)
+--- issue #207: crushed platinum (the platinum line's ore, 146) smelts into 10 platinum nuggets in GT, which
+--- PlatinumSludgeOutputs.convertSmelting turns into 20 tiny piles of platinum metallic powder (9 make the powder at the
+--- crafting table, as GT's packager is not in Gregtorio). Palladium needs GT's blast furnace (1828 K: no furnace
+--- recipe of its ore forms); bornite is a bartworks material without an ingot (CrushedLoader.java: none).
+do
+	local tiny = "tiny-pile-of-metallic-platinum-powder"
+	add_item(tiny, sub_of("metallic-platinum-powder", "subgroup-macerator-dust"), "z-" .. tiny)
+	new_items = new_items + 1
+	smelt("crushed-platinum", tiny, 20)
+	local name = made(recipe{ name = "metallic-platinum-powder-from-tiny-piles", category = "crafting", time = 0.5,
+		main = "metallic-platinum-powder", ingredients = { item(tiny, 9) }, results = { item("metallic-platinum-powder") } })
+	unlock_after(name, { item_techs(tiny) })
 end
 for m, d in pairs(NEW_INGOTS) do
 	smelt(d[1], m .. "-ingot", 1)
@@ -1145,7 +1269,329 @@ for _, m in pairs(SMELT_SELF) do
 		recipe{ name = name, category = "lv-alloy-smelter-recipes", time = 10, subgroup = "subgroup-lv-alloy-smelter-recipes",
 			main = m .. "-ingot", ingredients = { item(m .. "-nugget", 9), item("mold") },
 			results = { item(m .. "-ingot"), item("mold") } }
-		unlock_after(made(name), { machine_techs("lv-alloy-smelter-recipes"), item_techs(m .. "-nugget") })
+		unlock_after(made(name), { machine_techs("lv-alloy-smelter-recipes"), item_techs(m .. "-nugget"), item_techs("mold") })
 	end
 end
 log("FORK-ORE-CHAIN: " .. smelted .. " furnace recipes of ore forms, " .. new_items .. " new ingots and nuggets (issue #205)")
+
+--------------------------------------------------------------------------------
+--- Issue #223, B1: GT's raw ore smelting (OP/ProcessingRawOre.java:118-198; bornite: bartworks RawOreLoader.java:44). A
+--- raw ore smelts into the ingot of its direct smelting metal (setDirectSmelting) x GT's smelting multiplier, unless
+--- that metal needs the blast furnace; else into the gem of its material (ruby, emerald, diamond, coal, the quartzes,
+--- lapis ...), one per ore; never into a dust (upstream's furnace turned most raw ores into their dust, and some into
+--- the ore multiplier's count). Platinum ingots come as 2 platinum metallic powder (PlatinumSludgeOutputs). The
+--- multi smelter recipes follow (64 x the output). GT's blast furnace recipes of BLASTFURNACE_CALCITE_TRIPLE ores (of
+--- Gregtorio's: iron): raw ore + calcite or quicklime -> 3 ingots + dark ashes (25 %), 25 s at MV.
+--- RAW_SMELT: raw ore -> { item, amount } (false: none in GT). Ores without an entry keep their recipe (it matches GT),
+--- except three dusts GT does not smelt that stay on purpose: raw redstone -> 5 redstone dust (the red alloy of the
+--- pistons of the steam machines) and raw gypsum and calcite -> their dust (the firebricks and concrete of the Bricked
+--- Blast Furnace) come before Gregtorio's first machine that makes a dust; without them the game cannot be started
+--- (devcheck: no logistic science pack).
+--------------------------------------------------------------------------------
+local RAW_SMELT = {
+	["raw-aluminium"] = false, ["raw-barite"] = false, ["raw-bastnasite"] = false, ["raw-bauxite"] = false,
+	["raw-bornite"] = false, ["raw-chromite"] = false, ["raw-cinnabar"] = false,
+	["raw-cobaltite"] = false, ["raw-cryolite"] = false, ["raw-fullers-earth"] = false, ["raw-graphite"] = false,
+	["raw-grossular"] = false, ["raw-ilmenite"] = false, ["raw-lepidolite"] = false,
+	["raw-pitchblende"] = false, ["raw-pyrochlore"] = false, ["raw-pyrolusite"] = false, 
+	["raw-rock-salt"] = false, ["raw-salt"] = false, ["raw-scheelite"] = false, ["raw-spessartine"] = false,
+	["raw-sulfur"] = false, ["raw-tantalite"] = false, ["raw-tungstate"] = false, ["raw-uraninite"] = false,
+	["raw-vanadium-magnetite"] = false,
+	--- the gem, one per ore
+	["raw-apatite"] = { "apatite-gem", 1 }, ["raw-certus-quartz"] = { "certus-quartz", 1 }, ["raw-coal"] = { "coal", 1 },
+	["raw-lapis"] = { "lapis-lazuli", 1 }, ["raw-lazurite"] = { "lazurite-gem", 1 }, ["raw-monazite"] = { "monazite-gem", 1 },
+	["raw-nether-quartz"] = { "nether-quartz", 1 }, ["raw-sodalite"] = { "sodalite-gem", 1 },
+	["raw-tricalcium-phosphate"] = { "tricalcium-phosphate-gem", 1 },
+	--- the ingot of the direct smelting metal
+	["raw-cassiterite"] = { "tin-ingot", 1 }, ["raw-galena"] = { "lead-ingot", 1 },
+	["raw-molybdenite"] = { "molybdenum-ingot", 1 }, ["raw-realgar"] = { "realgar-ingot", 1 },
+	["raw-stibnite"] = { "antimony-ingot", 1 }, ["raw-thorium"] = { "thorium-ingot", 1 },
+	["raw-platinum"] = { "metallic-platinum-powder", 2 }, ["raw-sheldonite"] = { "metallic-platinum-powder", 2 },
+}
+local raw_changed, raw_removed = 0, 0
+for raw, out in pairs(RAW_SMELT) do
+	local name, multi = raw .. "-smelter", raw .. "-multismelter"
+	if out == false then
+		for _, n in pairs({ name, multi }) do
+			if data.raw.recipe[n] then
+				remove_recipe(n)
+				raw_removed = raw_removed + 1
+			end
+		end
+	elseif data.raw.item[raw] and data.raw.item[out[1]] then
+		local r = data.raw.recipe[name]
+		if r then
+			r.results = { item(out[1], out[2]) }
+			r.main_product = out[1]
+		else
+			recipe{ name = name, category = "smelting", subgroup = "subgroup-smelting", time = 10, main = out[1],
+				ingredients = { item(raw) }, results = { item(out[1], out[2]) } }
+			unlock_after(made(name), { item_techs(raw) })
+		end
+		local m = data.raw.recipe[multi]
+		if m then
+			m.results = { item(out[1], out[2] * 64) }
+			m.main_product = out[1]
+		else
+			recipe{ name = multi, category = "multismelter-recipes", subgroup = "subgroup-multismelter-recipes", time = 10,
+				main = out[1], ingredients = { item(raw, 64) }, results = { item(out[1], out[2] * 64) } }
+			unlock_after(made(multi), { machine_techs("multismelter-recipes"), item_techs(raw) })
+		end
+		raw_changed = raw_changed + 1
+	else
+		log("FORK-ORE-CHAIN: no raw ore smelting for " .. raw)
+	end
+end
+--- vanadium magnetite has no ingot and no direct smelting in GT: its dust smelts into nothing either (upstream: iron)
+for _, n in pairs({ "vanadium-magnetite-dust-smelter", "vanadium-magnetite-dust-multismelter" }) do
+	if data.raw.recipe[n] then
+		remove_recipe(n)
+		raw_removed = raw_removed + 1
+	end
+end
+for _, add in pairs({ "calcite", "quicklime" }) do
+	local name = made(recipe{ name = "raw-iron-with-" .. add, category = "mv-electric-blast-furnace-recipes",
+		subgroup = "subgroup-mv-electric-blast-furnace-recipes",
+		time = 25 * MV_SPEED, main = "iron-ingot", ingredients = { item("raw-iron"), item(add) },
+		results = { item("iron-ingot", 3), item("dark-ash-dust", 1, 0.25) } })
+	unlock_after(name, { machine_techs("mv-electric-blast-furnace-recipes"), item_techs("raw-iron"), item_techs(add) })
+end
+log("FORK-ORE-CHAIN: raw ore smelting as GT's (issue #223): " .. raw_changed .. " ores smelt into GT's ingot or gem, "
+	.. raw_removed .. " recipes removed")
+
+--------------------------------------------------------------------------------
+--- Issue #223, B2: GT's bricked blast furnace recipes of the dusts that smelt into another metal
+--- (OP/ProcessingOreSmelting.java:84-99, 115-175): 2 dusts -> 3 ingots, 2 min, with 2 coal or charcoal (gem or coal
+--- dust; GT's dust of charcoal is not in Gregtorio) and dark ashes at 2/9, or 1 coke in two thirds of the time and ashes
+--- at 1/9 (RecipeMaps.java:902-990, primitiveBlastRecipes: ADDITIVE_AMOUNT 2). Tetrahedrite (DONT_ADD_DEFAULT_BBF_RECIPE)
+--- has GT's special recipe with 9 antimony nuggets; molybdenite and sheldonite (DONT_ADD_DEFAULT_BBF_RECIPE) have none,
+--- stibnite's dust is antimony here and bornite is bartworks'.
+--- Issue #223, B3: malachite's blast furnace recipe (BlastFurnaceRecipes.java:132-141): 2 dusts + carbon -> 3 copper
+--- ingots, ashes (22.22 %) and 300 carbon dioxide, 12 s at MV (1200 K). GT's Ashes (Materials.Ash) are new; their
+--- centrifuge (CentrifugeRecipes.java:662-673) needs potash and banded iron, which Gregtorio lacks (issue #225).
+--------------------------------------------------------------------------------
+add_item("ash-dust", "subgroup-macerator-dust", "z-ash-dust")
+--- the new nuggets of #222's metals (their recipes: 158-fork-gt-parts.lua); tetrahedrite needs antimony's
+for _, m in pairs({ "antimony", "molybdenum" }) do
+	if not data.raw.item[m .. "-nugget"] then add_item(m .. "-nugget", metal_sub, "z-" .. m .. "-nugget") end
+end
+local PBF = {
+	{ "cassiterite-dust", { item("tin-ingot", 3) } },
+	{ "galena-dust", { item("lead-ingot", 3) } },
+	{ "pentlandite-dust", { item("nickel-ingot", 3) } },
+	{ "sphalerite-dust", { item("zinc-ingot", 3) } },
+	{ "malachite-dust", { item("copper-ingot", 3) } },
+	{ "tetrahedrite-dust", { item("copper-ingot", 3), item("antimony-nugget", 9) } },
+}
+local PBF_FUEL = {   -- fuel, amount, time factor, ash, its chance
+	{ "coal", 2, 1, "dark-ash-dust", 2 / 9 }, { "coal-dust", 2, 1, "dark-ash-dust", 2 / 9 },
+	{ "charcoal", 2, 1, "dark-ash-dust", 2 / 9 }, { "coke", 1, 2 / 3, "ash-dust", 1 / 9 },
+}
+local pbf = 0
+for _, p in pairs(PBF) do
+	if data.raw.item[p[1]] then
+		for _, f in pairs(PBF_FUEL) do
+			if data.raw.item[f[1]] then
+				local results = table.deepcopy(p[2])
+				results[#results + 1] = item(f[4], 1, f[5])
+				local name = made(recipe{ name = p[1] .. "-pbf-" .. f[1], category = "pbf-recipes",
+					subgroup = "subgroup-pbf-recipes", time = 120 * f[3], main = p[2][1].name,
+					ingredients = { item(p[1], 2), item(f[1], f[2]) }, results = results })
+				unlock_after(name, { machine_techs("pbf-recipes"), item_techs(p[1]), item_techs(f[1]) })
+				pbf = pbf + 1
+			end
+		end
+	end
+end
+do
+	local name = made(recipe{ name = "malachite-dust-blast-furnace", category = "mv-electric-blast-furnace-recipes",
+		subgroup = "subgroup-mv-electric-blast-furnace-recipes",
+		time = 12 * MV_SPEED, main = "copper-ingot", ingredients = { item("malachite-dust", 2), item("carbon") },
+		results = { item("copper-ingot", 3), item("ash-dust", 1, 0.2222), fluid("carbon-dioxide", 300) } })
+	unlock_after(name, { machine_techs("mv-electric-blast-furnace-recipes"), item_techs("malachite-dust") })
+end
+--- Issue #225: GT's potash (K2O) and banded iron (Fe2O3; MaterialsInit.java: dust items with an electrolyzer recipe,
+--- banded iron smelts into iron) and the use of GT's ashes: the LV centrifuge (CentrifugeRecipes.java:662-673) turns 36
+--- ashes into 18 quicklime (64 %), 9 potash (60 %), a magnesia (45 %), 2 phosphorus pentoxide, a soda ash (sodium
+--- carbonate) and 4 banded iron in 5 min. Their decomposition (ProcessingDust.java:240-241): 2 ticks per proton and input
+--- dust, 30 EU/t per item output (the oxygen is a fluid): potash 3 dusts (15 protons) -> 2 potassium + 100 oxygen in
+--- 4.5 s, banded iron 5 dusts (15 protons) -> 2 iron dust + 300 oxygen in 7.5 s, both LV. Banded iron smelts into an iron
+--- ingot and in the MV blast furnace (BlastFurnaceRecipes.java:142-150): 2 dusts + carbon -> 3 iron ingots, ashes
+--- 22.22 % and 100 carbon dioxide, 12 s, 1200 K.
+add_item("potash-dust", "subgroup-macerator-dust", "z-potash-dust")
+add_item("banded-iron-dust", "subgroup-macerator-dust", "z-banded-iron-dust")
+do
+	local name = made(recipe{ name = "ash-dust-centrifuging", category = "lv-centrifuge-recipes", time = 300 * LV_SPEED,
+		subgroup = "subgroup-lv-centrifuge-recipes",
+		main = "quicklime", ingredients = { item("ash-dust", 36) },
+		results = { item("quicklime", 18, 0.64), item("potash-dust", 9, 0.6), item("magnesia", 1, 0.45),
+			item("phosphorus-pentoxide", 2), item("sodium-carbonate", 1), item("banded-iron-dust", 4) } })
+	unlock_after(name, { machine_techs("lv-centrifuge-recipes"), item_techs("ash-dust") })
+	for _, d in pairs({
+		{ "potash-dust", 4.5, 3, { item("potassium", 2), fluid("oxygen", 100) } },
+		{ "banded-iron-dust", 7.5, 5, { item("iron-dust", 2), fluid("oxygen", 300) } },
+	}) do
+		local e = made(recipe{ name = d[1] .. "-decomposition", category = "lv-electrolyzer-recipes", time = d[2] * LV_SPEED,
+			subgroup = "subgroup-lv-electrolyzer-recipes",
+			ingredients = { item(d[1], d[3]) }, results = d[4], main = d[4][1].name })
+		unlock_after(e, { machine_techs("lv-electrolyzer-recipes"), item_techs(d[1]) })
+	end
+	smelt("banded-iron-dust", "iron-ingot", 1)
+	local ebf = made(recipe{ name = "banded-iron-dust-blast-furnace", category = "mv-electric-blast-furnace-recipes",
+		subgroup = "subgroup-mv-electric-blast-furnace-recipes",
+		time = 12 * MV_SPEED, main = "iron-ingot", ingredients = { item("banded-iron-dust", 2), item("carbon") },
+		results = { item("iron-ingot", 3), item("ash-dust", 1, 0.2222), fluid("carbon-dioxide", 100) } })
+	unlock_after(ebf, { machine_techs("mv-electric-blast-furnace-recipes"), item_techs("banded-iron-dust") })
+end
+log("FORK-ORE-CHAIN: " .. pbf .. " bricked blast furnace recipes of ore dusts (issue #223)")
+
+--------------------------------------------------------------------------------
+--- Issue #207, 5: GT's multi smelter runs every furnace recipe. Gregtorio's multi smelter has its own recipes, 64 inputs
+--- -> 64 x the outputs in the time of the furnace recipe (create_ore's <input>-multismelter): every furnace recipe of
+--- this file gets one, named after its input like create_ore's.
+--------------------------------------------------------------------------------
+local multismelted = 0
+for _, fname in pairs(furnace_made) do
+	local f = data.raw.recipe[fname]
+	local input = f and f.ingredients and f.ingredients[1] and f.ingredients[1].name
+	local name = input and (input .. "-multismelter")
+	if not input then
+		log("FORK-ORE-CHAIN: no furnace recipe " .. fname)
+	elseif data.raw.recipe[name] then
+		log("FORK-ORE-CHAIN: " .. name .. " exists already")
+	else
+		local results = {}
+		for _, res in pairs(f.results or {}) do results[#results + 1] = item(res.name, (res.amount or 1) * 64, res.probability) end
+		recipe{ name = name, category = "multismelter-recipes", subgroup = "subgroup-multismelter-recipes",
+			time = f.energy_required or 10, main = f.main_product or results[1].name, ingredients = { item(input, 64) },
+			results = results }
+		unlock_after(made(name), { machine_techs("multismelter-recipes"), item_techs(input) })
+		multismelted = multismelted + 1
+	end
+end
+log("FORK-ORE-CHAIN: " .. multismelted .. " multi smelter recipes of the furnace recipes above (issue #207)")
+
+--------------------------------------------------------------------------------
+--- Issue #207, 6: GT's melts of the new ingots (GT makes a molten fluid for every material with metal items:
+--- SMELTING_TO_FLUID, Materials.java) and the casts of the ingots and nuggets this file makes: they go into 143's
+--- MATERIALS and 143 runs once more (FORK_CASTING.run). The solidifier tier as 143's rule: the tier of the technology
+--- that unlocks the ingot (the furnace is no machine tier). The technology: the ingot's, or the one of the tier's
+--- solidifier or fluid extractor where that comes after it (on parallel branches the ingot's, as 143's neighbours).
+--- Colours: GT's material colours (tools/gen_gt_icons.py --molten; realgar and thorium lifted, issue #99). GT's other
+--- parts of these metals are not made (Gregtorio makes a part where a recipe uses it; issue #222).
+--------------------------------------------------------------------------------
+do
+	local NEW_MELTS = {
+		realgar = { "lv", color = { 192, 137, 137 } },
+		thorium = { "lv", color = { 0, 131, 0 } },
+		antimony = { "lv", color = { 220, 220, 240 } },
+		molybdenum = { "ev", color = { 180, 180, 220 } },
+	}
+	for m, def in pairs(NEW_MELTS) do
+		local tier = def[1]
+		local tech = tech_list(NEW_INGOTS[m][1] .. "-smelter")[1]   -- the ingot's furnace recipe of issue #205
+		for _, machine in pairs({ tier .. "-fluid-solidifier", tier .. "-fluid-extractor" }) do
+			for _, t in pairs(tech_list(machine)) do
+				if tech and ancestors(t)[tech] then tech = t end
+			end
+		end
+		if tech and not FORK_CASTING.materials[m] then
+			FORK_CASTING.materials[m] = { tier, tech, color = def.color }
+		else
+			log("FORK-ORE-CHAIN: no technology for the melt of " .. m)
+		end
+	end
+	FORK_CASTING.run()
+	log("FORK-ORE-CHAIN: casting run for the ingots and nuggets of this file: " .. FORK_CASTING.casts .. " casts, "
+		.. FORK_CASTING.melts .. " melt recipes in all (issue #207)")
+end
+
+--------------------------------------------------------------------------------
+--- Issue #325: GTNH's lens for the other laser engraver recipes. GT engraves with a lens that stays (stack size 0); a
+--- recipe here takes its lens as ingredient and result, and 150 turns it into the engraver's lens slot. GT takes any lens
+--- of the colour (OreDictRegistrationHandler.java:303-308: a transparent material's lens is craftingLens<its dye>);
+--- Gregtorio names one: red the ruby lens, white the diamond lens, green the emerald lens, yellow the yellow garnet lens,
+--- cyan the apatite lens and blue the lapis lens (the maintainer's substitutes for GT's green sapphire and sapphire,
+--- above), orange the amber lens (issue #332). Sources: gregtech LaserEngraverRecipes.java (LE) and NewHorizonsCoreMod's LaserEngraverRecipes.java (NHC).
+--- The NAND and NOR wafers take GT's ender pearl and ender eye lens (NHC 99-152). GT's lens from a plate (ProcessingLens.java:
+--- 1 min, MV, with a small pile of the dust where Gregtorio has one), the plate of a gem that cannot be hammered from its
+--- dust (ProcessingDust.java: compressor, 15 s), the dust from the gem in the macerator (2.8 s, as Gregtorio's diamond). The
+--- yellow garnet and the emerald lens get this route too: the exquisite yellow garnet comes only from the implosion
+--- compressor, after the LPIC wafer, the exquisite emerald from the sifter, after the ULPIC wafer. Issue #348: the ruby lens
+--- too, instead of upstream's lens from a plain ruby.
+--------------------------------------------------------------------------------
+local function plate_lens(m, gem)
+	local dust, plate, lens, small = m .. "-dust", m .. "-plate", m .. "-lens", "small-pile-of-" .. m .. "-dust"
+	local sub = sub_of("ruby-lens", "subgroup-lv-lathe-recipes")
+	if not data.raw.item[dust] then
+		add_item(dust, "subgroup-macerator-dust", "z-" .. dust)
+		local name = made(recipe{ name = dust .. "-maceration", category = "lv-macerator-recipes", time = 2.8, main = dust,
+			ingredients = { item(gem) }, results = { item(dust) } })
+		unlock_after(name, { machine_techs("lv-macerator-recipes"), item_techs(gem) })
+	end
+	if not data.raw.item[plate] then add_item(plate, sub, "z-" .. plate) end
+	if not data.raw.item[lens] then add_item(lens, sub, "z-" .. lens) end
+	local name = made(recipe{ name = plate .. "-compressor", category = "lv-compressor-recipes", time = 15, main = plate,
+		ingredients = { item(dust) }, results = { item(plate) } })
+	unlock_after(name, { machine_techs("lv-compressor-recipes"), item_techs(dust) })
+	local out = { item(lens) }
+	if data.raw.item[small] then out[2] = item(small) end
+	name = made(recipe{ name = lens .. "-from-plate", category = "mv-lathe-recipes", time = 60 * MV_SPEED, main = lens,
+		ingredients = { item(plate) }, results = out })
+	unlock_after(name, { machine_techs("mv-lathe-recipes"), item_techs(plate) })
+end
+plate_lens("ender-pearl", "ender-pearl")
+plate_lens("ender-eye", "eye-of-ender")
+plate_lens("yellow-garnet")
+plate_lens("emerald", "emerald")   -- the ULPIC wafer (MV Energy Hatches) comes before the emerald sifter
+plate_lens("amber", "amber-gem")   -- issue #332: the lens with the simple SoC wafer (NAND Chips, the MV lathe)
+plate_lens("ruby", "ruby")         -- issue #348: instead of upstream's lens from a plain ruby (removed above)
+
+--- recipe -> its lens (the GT recipe: file, line of the output). Gregtorio's wafers: sw silicon (GT's Wafer), pd phosphorus
+--- (Wafer2), nd/qd naquadah (Wafer3), ed europium (Wafer4), ad americium (Wafer5)
+local ENGRAVER_RECIPE_LENS = {
+	["ilc-wafer-sw"] = "ruby-lens", ["ilc-wafer-pd"] = "ruby-lens", ["ilc-wafer-nd"] = "ruby-lens",   -- LE 308-323, red
+	["npic-wafer"] = "ruby-lens",                                                                     -- LE 331-339, red
+	["cpu-wafer-sw"] = "diamond-lens", ["cpu-wafer-pd"] = "diamond-lens", ["cpu-wafer-nd"] = "diamond-lens",
+	["cpu-wafer-ed"] = "diamond-lens", ["cpu-wafer-ad"] = "diamond-lens",                             -- LE 457-489, white
+	["ulpic-wafer-sw"] = "emerald-lens", ["ulpic-wafer-pd"] = "emerald-lens",                         -- LE 364-371, green
+	["crystal-cpu"] = "emerald-lens",                                                                 -- LE 348, green
+	["lpic-wafer-sw"] = "yellow-garnet-lens", ["lpic-wafer-pd"] = "yellow-garnet-lens",               -- LE 163-170, yellow
+	["soc-wafer-nd"] = "yellow-garnet-lens", ["soc-wafer-ed"] = "yellow-garnet-lens",
+	["soc-wafer-ad"] = "yellow-garnet-lens",                                                          -- LE 178-194, yellow
+	["ram-wafer-sw"] = "apatite-lens", ["ram-wafer-pd"] = "apatite-lens", ["ram-wafer-qd"] = "apatite-lens",   -- LE 250-281, cyan
+	["mpic-wafer-pd"] = "lapis-lens", ["mpic-wafer-nd"] = "lapis-lens",                               -- LE 120-128 (PIC), blue
+	["qpic-wafer"] = "lapis-lens",                                                                    -- LE 136, blue
+	["engraved-lapotron-chip"] = "lapis-lens",                                                        -- LE 104 (master chip), blue
+	["nand-memory-wafer-pd"] = "ender-pearl-lens", ["nand-memory-nd"] = "ender-pearl-lens",
+	["nand-memory-wafer-ed"] = "ender-pearl-lens", ["nand-memory-wafer-ad"] = "ender-pearl-lens",     -- NHC 103-124
+	["nor-memory-wafer-pd"] = "ender-eye-lens", ["nor-memory-wafer-nd"] = "ender-eye-lens",           -- NHC 131-138
+	--- issue #332: orange, GT's lens of topaz or amber (craftingLensOrange: the lens of every transparent dyeOrange
+	--- material), here the amber lens of the Twilight Forest's amber (160)
+	["simple-soc-wafer-sw"] = "amber-lens", ["simple-soc-wafer-pd"] = "amber-lens",
+	["simple-soc-wafer-nd"] = "amber-lens", ["simple-soc-wafer-ed"] = "amber-lens",                   -- LE 200-224, orange
+}
+--- laser engraver recipes that keep no lens, with the reason (devcheck fails for any other engraver recipe without one)
+local CHEMICAL = "GTNH makes this wafer in the chemical reactor, not in the laser engraver, so there is no lens to follow"
+FORK_ENGRAVER_NO_LENS = {
+	["ppic-wafer"] = CHEMICAL .. " (NHC ChemicalReactorRecipes.java:257)",
+	["fpic-wafer"] = CHEMICAL .. " (NHC ChemicalReactorRecipes.java:261)",
+	["apic-wafer"] = CHEMICAL .. " (NHC ChemicalReactorRecipes.java:528)",
+}
+local given = 0
+for name, lens in pairs(ENGRAVER_RECIPE_LENS) do
+	local r = data.raw.recipe[name]
+	if r and data.raw.item[lens] then
+		r.ingredients, r.results = table.deepcopy(r.ingredients), table.deepcopy(r.results)   -- (tables may be shared)
+		table.insert(r.ingredients, item(lens))
+		table.insert(r.results, item(lens))
+		given = given + 1
+	else
+		log("FORK-ORE-CHAIN: no engraver recipe " .. name .. " or no item " .. lens .. " (issue #325)")
+	end
+end
+log("FORK-ORE-CHAIN: " .. given .. " laser engraver recipes take GTNH's lens (issue #325)")
+
+--- issue #222: the helpers for 158-fork-gt-parts.lua (the parts of the new ingots and GT's nugget recipes)
+FORK_ORE_CHAIN.unlock_after, FORK_ORE_CHAIN.machine_techs, FORK_ORE_CHAIN.item_techs, FORK_ORE_CHAIN.made =
+	unlock_after, machine_techs, item_techs, made

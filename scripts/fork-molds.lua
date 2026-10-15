@@ -5,6 +5,7 @@
 --- machine is stopped (disabled_by_script) with the status "Missing mold"; as soon as the
 --- mold is there (or the recipe changes) it runs again. Only machines stopped by this
 --- script are switched back on.
+--- Issue #316: the laser engravers' lens slot works the same way, with the status "Missing <lens>".
 --------------------------------------------------------------------------------
 
 local M = {}
@@ -16,9 +17,24 @@ local function mold_recipes()
 	return md and md.data or {}
 end
 
+--- the module categories of 150's items that stay in the machine
+local TOOL_CATEGORIES = { "mold", "lens" }
+
 local function has_mold_slot(proto)
 	local c = proto.allowed_module_categories
-	return c ~= nil and c["mold"] == true and (proto.module_inventory_size or 0) > 0
+	if c == nil or (proto.module_inventory_size or 0) == 0 then return false end
+	for _, category in pairs(TOOL_CATEGORIES) do
+		if c[category] then return true end
+	end
+	return false
+end
+
+local function missing_label(item)
+	local p = prototypes.item[item]
+	if p and p.type == "module" and p.category == "lens" then
+		return { "entity-status.fork-missing-lens", p.localised_name }
+	end
+	return { "entity-status.fork-missing-mold" }
 end
 
 --- names of all machines that currently have a mold slot
@@ -42,15 +58,16 @@ local function state()
 	return storage.fork_molds
 end
 
+--- stop: the missing mold or lens, or nil; st.stopped[id] keeps the item the status names (true in older saves)
 local function set_stopped(st, entity, stop)
 	local id = entity.unit_number
-	if stop and not st.stopped[id] then
+	if stop and st.stopped[id] ~= stop then
 		entity.disabled_by_script = true
 		entity.custom_status = {
 			diode = defines.entity_status_diode.red,
-			label = { "entity-status.fork-missing-mold" },
+			label = missing_label(stop),
 		}
-		st.stopped[id] = true
+		st.stopped[id] = stop
 	elseif not stop and st.stopped[id] then
 		entity.disabled_by_script = false
 		entity.custom_status = nil
@@ -61,10 +78,10 @@ end
 local function check(st, entity, recipes)
 	local recipe = entity.get_recipe()
 	local mold = recipe and recipes[recipe.name]
-	local stop = false
+	local stop = nil
 	if mold then
 		local inv = entity.get_module_inventory()
-		stop = not (inv and inv.get_item_count(mold) > 0)
+		if not (inv and inv.get_item_count(mold) > 0) then stop = mold end
 	end
 	set_stopped(st, entity, stop)
 end
@@ -78,7 +95,8 @@ end
 
 --- Saves from before a machine had its mold slot: the mold was either built into the
 --- machine or lay in its input/output (Factorio deletes it there when the recipe changes).
---- Every such machine with a mold recipe gets a mold into its slot once.
+--- Every such machine with a mold recipe gets a mold into its slot once. Issue #316: the same for the laser engravers
+--- of saves from before their lens slot, whose lens lay in the input or output; they get the lens of their recipe.
 local function give_back_mold(entity, recipes)
 	local recipe = entity.get_recipe()
 	local mold = recipe and recipes[recipe.name]

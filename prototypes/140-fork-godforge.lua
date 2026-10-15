@@ -275,6 +275,30 @@ for _, metal in pairs(MAGMATTER_METALS) do
 		main_product = "molten-magmatter",
 	})
 end
+--- Quark gluon plasma (issue #249). GT's exoticizer in QGP mode takes 7 random plasmas (an item plasma 1 to 7 x 1296 L,
+--- a gas plasma 1000 to 64 000 L; MTEExoticModule.java 204-237, Godforge.java 474-633) and gives 1000 L per parallel
+--- in 10 s at MAX. Here one fixed recipe from plasmas of GT's list that the mod has, at GT's averages (an item
+--- plasma 4 x 1296 L, the gas plasma 32 000 L, a tenth here): iron, calcium, niobium and titanium, helium. Its use is
+--- GT's rhugnor MK5 recipe below.
+F.fluid("quark-gluon-plasma", "quark-gluon-plasma", { 0.85, 0.40, 0.95 })
+godforge_recipe("exotic", {
+	name = "quark-gluon-plasma", time = 10,
+	ingredients = { fluid("iron-plasma", 518.4), fluid("calcium-plasma", 518.4), fluid("niobium-plasma", 518.4),
+		fluid("titanium-plasma", 518.4), fluid("helium-plasma", 3200) },
+	results = { fluid("quark-gluon-plasma", 100) },
+	main_product = "quark-gluon-plasma",
+})
+--- GT's rhugnor MK5 (gtPlusPlus/core/recipe/RecipesGregTech.java 323-331): 72 L QGP + 576 L quantum -> 576 L rhugnor in
+--- 2.5 s (UEV). Quantum is molten transcendent metal here, as in the MK4 recipe (133-fork-umv.lua).
+create_recipe{
+	name = "molten-rhugnor-from-quark-gluon-plasma",
+	category = "mk5-fusion-reactor-recipes",
+	energy_required = 2.5 * UEV_SPEED,
+	subgroup = "subgroup-mk5-fusion-reactor-recipes",
+	ingredients = { fluid("quark-gluon-plasma", 7.2), fluid("molten-transcendent-metal", 57.6) },
+	results = { fluid("molten-rhugnor", 57.6) },
+	main_product = "molten-rhugnor",
+}
 
 
 
@@ -355,7 +379,7 @@ F.tech{
 }
 F.tech{
 	name = "godforge-exotic-module", prerequisites = { "godforge-molten-module" }, packs = 15, count = 1,
-	recipes = godforge_recipes.exotic,
+	recipes = F.join(F.join({}, godforge_recipes.exotic), { "molten-rhugnor-from-quark-gluon-plasma" }),
 }
 F.tech{
 	name = "dtpf-stellar-catalyst", prerequisites = { GODFORGE }, packs = 15, count = 1,

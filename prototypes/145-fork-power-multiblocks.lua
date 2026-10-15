@@ -9,6 +9,8 @@
 ---     steam
 ---   * the lapotronic supercapacitor (IV, LuV and ZPM capacitor blocks): an accumulator per capacitor tier with
 ---     GT's passive loss (scripts/fork-power.lua)
+---   * issues #254 to #256 (docs/MULTIBLOCK-AUDIT.md): the large titanium boiler (superheated steam from fuel), the large
+---     combustion engine and the large gas turbine (the fuel cell lines above HV), section 6
 --- Units and the GT numbers: docs/ROADMAP.md, "Steam, nuclear and storage multiblocks (issue #97)".
 --- Steam is on the scale of the LV steam turbine (one unit = 100 L of GT steam, 100 kJ); GT's 2 L steam
 --- = 1 EU is the effectivity 0.5 x rotor efficiency, superheated steam (GT: 1 L = 1 EU) has twice the
@@ -325,6 +327,185 @@ end
 
 
 --------------------------------------------------------------------------------
+--- 6) LARGE TITANIUM BOILER, LARGE COMBUSTION ENGINE, LARGE GAS TURBINE (issues #254 to #256)
+--- GT's EV power multiblocks:
+---   * large titanium boiler (MTELargeBoilerTitanium: 4800 EU/t of steam equivalent as superheated steam, a third
+---     of it, 3200 L/t): water and chemical fuel to 640 superheated steam/s, on the scale of the steam turbines (GT's
+---     1050 L/t of the HP turbine are 210/s, 5 L/t = 1/s), so it feeds three high pressure steam turbines as in GT.
+---     One unit costs three steam equivalents of fuel: Gregtorio's boilers heat one steam for 30 kJ (165 C), this one
+---     heats to 465 C (90 kJ) and burns 57.6 MW. It comes with High Pressure Steam Turbine, which had no fuel before
+---     Fluid Nuclear Reactor.
+---   * large combustion engine (MTELargeCombustionEngine: 2048 EU/t at 100 %): the combustion generator fuel cells at
+---     100 %, up to four EV amps (20.48 MW, the cap of 136's generators); GT's oxygen boost and lubricant upkeep are
+---     left out.
+---   * large gas turbine (MTELargeTurbineGas, output by its rotor): the gas turbine fuel cells with a fixed large
+---     magnalium rotor (125 %, as the large steam turbine), up to four EV amps.
+--- The recipes are GT's controllers (MTERecipeLoader.java) with the casings and hatches of the structure, as the
+--- upstream large boilers and turbines are made. GT's fluid pipes are Factorio pipes (Gregtorio has none of GT's) and
+--- the engine's tungstensteel cable is the aluminium cable of Gregtorio's EV tier.
+--------------------------------------------------------------------------------
+
+local FORK_ICON = "__gregtorio-continued__/graphics/icons/fork/"
+local EV4 = "20.48MW"   -- four EV amps (4 x EU32_EV)
+
+create_item{
+	name = "titanium-firebox-casing",
+	icon = FORK_ICON .. "titanium-firebox-casing.png",
+	ingredients = {
+		{ type = "item", name = "titanium-plate", amount = 4 },
+		{ type = "item", name = "titanium-rod", amount = 4 },
+		{ type = "item", name = "titanium-frame", amount = 1 },
+	},
+}
+create_item{
+	name = "large-titanium-boiler",
+	icon = FORK_ICON .. "large-titanium-boiler.png",
+	place_result = "large-titanium-boiler",
+	subgroup = "subgroup-ev-age-multiblocks",
+	stack_size = 10,
+	ingredients = {
+		{ type = "item", name = "titanium-firebox-casing", amount = 6 },   -- the controller's and five of the structure
+		{ type = "item", name = "ev-circuit", amount = 4 },
+		{ type = "item", name = "gold-cable", amount = 4 },
+		{ type = "item", name = "stable-titanium-machine-casing", amount = 23 },
+		{ type = "item", name = "titanium-pipe-casing", amount = 2 },
+		{ type = "item", name = "lv-machine-hull", amount = 5 },
+	},
+}
+do
+	local picture = { structure = { layers = { {
+		filename = SPRITE_PATH .. "large-titanium-boiler-idle.png", width = 96, height = 96, shift = { 0, 0 },
+	} } } }
+	data:extend({ {
+		type = "boiler",
+		name = "large-titanium-boiler",
+		mode = "output-to-separate-pipe",   -- water in, superheated steam out (the default heats the water in place)
+		icon = FORK_ICON .. "large-titanium-boiler.png",
+		icon_size = 32,
+		flags = { "placeable-neutral", "player-creation" },
+		minable = { mining_time = 1, result = "large-titanium-boiler" },
+		max_health = 600,
+		corpse = "big-remnants",
+		dying_explosion = "big-explosion",
+		resistances = { { type = "fire", percent = 90 } },
+		collision_box = { { -1.3, -1.3 }, { 1.3, 1.3 } },
+		selection_box = { { -1.5, -1.5 }, { 1.5, 1.5 } },
+		fluid_box = {
+			volume = 1000,
+			pipe_covers = pipecoverspictures(),
+			pipe_picture = assembler2pipepictures(),
+			pipe_connections = {
+				{ flow_direction = "input-output", direction = W, position = { -1, 0 } },
+				{ flow_direction = "input-output", direction = E, position = { 1, 0 } },
+			},
+			production_type = "input",
+			filter = "water",
+		},
+		output_fluid_box = {
+			volume = 1000,
+			pipe_covers = pipecoverspictures(),
+			pipe_picture = assembler2pipepictures(),
+			pipe_connections = { { flow_direction = "output", direction = N, position = { 0, -1 } } },
+			production_type = "output",
+			filter = "superheated-steam",
+		},
+		energy_source = {
+			type = "burner",
+			fuel_categories = { "chemical" },
+			effectivity = 1,
+			fuel_inventory_size = 2,
+			emissions_per_minute = { pollution = 30 },
+		},
+		energy_consumption = "57.6MW",
+		target_temperature = 465,
+		burning_cooldown = 20,
+		pictures = { north = picture, east = picture, south = picture, west = picture },
+		localised_description = { "entity-description.large-titanium-boiler" },
+	} })
+end
+
+create_item{
+	name = "engine-intake-casing",
+	icon = FORK_ICON .. "engine-intake-casing.png",
+	ingredients = {
+		{ type = "item", name = "titanium-rotor", amount = 4 },
+		{ type = "item", name = "pipe", amount = 2 },
+		{ type = "item", name = "stable-titanium-machine-casing", amount = 1 },
+	},
+	results = { { type = "item", name = "engine-intake-casing", amount = 4 } },
+}
+create_item{
+	name = "large-combustion-engine",
+	icon = FORK_ICON .. "large-combustion-engine.png",
+	place_result = "large-combustion-engine",
+	subgroup = "subgroup-ev-age-multiblocks",
+	stack_size = 10,
+	ingredients = {
+		{ type = "item", name = "ev-machine-hull", amount = 1 },
+		{ type = "item", name = "ev-piston", amount = 2 },
+		{ type = "item", name = "ev-motor", amount = 2 },
+		{ type = "item", name = "iv-circuit", amount = 1 },
+		{ type = "item", name = "aluminium-cable", amount = 1 },
+		{ type = "item", name = "large-titanium-gear", amount = 2 },
+		{ type = "item", name = "ev-dynamo-hatch", amount = 1 },
+		{ type = "item", name = "stable-titanium-machine-casing", amount = 16 },
+		{ type = "item", name = "titanium-gear-box-casing", amount = 2 },
+		{ type = "item", name = "engine-intake-casing", amount = 8 },
+		{ type = "item", name = "lv-machine-hull", amount = 3 },
+	},
+}
+create_burner_generator{
+	name = "large-combustion-engine",
+	icon = FORK_ICON .. "large-combustion-engine.png",
+	efficiency = 1,
+	fuel_categories = { "combustion-generator-fuel" },
+	max_power = EV4,
+	working_animation = SPRITE_PATH .. "large-combustion-engine-working.png",
+	idle_animation = SPRITE_PATH .. "large-combustion-engine-idle.png",
+	frame_count = 1,
+}
+
+create_item{
+	name = "stainless-steel-turbine-casing",
+	icon = FORK_ICON .. "stainless-steel-turbine-casing.png",
+	category = "lv-assembling-machine-recipes",
+	energy_required = 2.5,
+	ingredients = {
+		{ type = "item", name = "stainless-steel-plate", amount = 6 },
+		{ type = "item", name = "steel-turbine-casing", amount = 1 },
+	},
+}
+create_item{
+	name = "large-gas-turbine",
+	icon = FORK_ICON .. "large-gas-turbine.png",
+	place_result = "large-gas-turbine",
+	subgroup = "subgroup-ev-age-multiblocks",
+	stack_size = 10,
+	ingredients = {
+		{ type = "item", name = "ev-machine-hull", amount = 1 },
+		{ type = "item", name = "ev-circuit", amount = 2 },
+		{ type = "item", name = "large-stainless-steel-gear", amount = 4 },
+		{ type = "item", name = "pipe", amount = 2 },
+		{ type = "item", name = "ev-dynamo-hatch", amount = 1 },
+		{ type = "item", name = "lv-machine-hull", amount = 5 },
+		{ type = "item", name = "stainless-steel-turbine-casing", amount = 28 },
+		{ type = "item", name = "magnalium-turbine-rotor", amount = 1 },
+	},
+}
+create_burner_generator{
+	name = "large-gas-turbine",
+	icon = FORK_ICON .. "large-gas-turbine.png",
+	efficiency = 1.25,
+	fuel_categories = { "gas-turbine-fuel" },
+	max_power = EV4,
+	working_animation = SPRITE_PATH .. "large-gas-turbine-working.png",
+	idle_animation = SPRITE_PATH .. "large-gas-turbine-idle.png",
+	frame_count = 1,
+}
+
+
+
+--------------------------------------------------------------------------------
 --- TECHNOLOGIES (the recipes are in the unlock table of 142)
 --------------------------------------------------------------------------------
 
@@ -335,6 +516,15 @@ F.tech{
 F.tech{
 	name = "high-pressure-steam-turbine", prerequisites = { "large-steam-turbine", "iv-energy-hatches" }, packs = 6,
 	count = 800, recipes = {},
+}
+--- issues #255 and #256: the fuel cell lines above HV
+F.tech{
+	name = "large-combustion-engine", prerequisites = { "ev-energy-hatches", "titanium" }, packs = 5, count = 600,
+	time = 45, recipes = {},
+}
+F.tech{
+	name = "large-gas-turbine", prerequisites = { "large-steam-turbine" }, packs = 5, count = 600, time = 45,
+	recipes = {},
 }
 --- GT's reactor is IC2's (EV/IV); its iridium neutron reflectors are IV parts (on fusion-reactor-mk1 so far only
 --- because the auto-unlock put them there). The heat exchanger comes with it: without lava it needs hot coolant.
@@ -356,4 +546,143 @@ F.tech{
 	prerequisites = { "luv-lapotronic-supercapacitor", "zpm-plasma-turbine", "zpm-energy-hatches",
 		"crystal-processor-mainframes" },
 	packs = 8, count = 2000, recipes = {},
+}
+
+
+
+--------------------------------------------------------------------------------
+--- 7) ROCKET ENGINES (issue #295, the maintainer's decision: rocket fuel as in GTNH). Gregtorio's rocket fuel
+--- (dimethylhydrazine and dinitrogen tetroxide) is GT++'s H8N4C2O4 Rocket Fuel; GTNH burns it in GT++'s rocket
+--- engines (gtPlusPlus/xmod/gregtech/registration/gregtech/GregtechRocketFuelGenerator.java, GT5-Unofficial
+--- af993ca6a9): the Basic, Advanced and Turbo Rocket Engine (EV, IV, LuV; here by their tier, issue #156), single
+--- blocks of GT's rocketFuels map (RecipeLoaderRocketFuels.java:179-184: 4196 EU per L) at 80, 70 and 60 %
+--- (MTERocketFuelGenerator.java:27-29: 80 - 10 x (tier - 4)), one amp of their tier (MTEBasicGenerator.maxEUOutput).
+--- Like the combustion lines a burner generator on a fuel cell of 800 L (Gregtorio's diesel cell: 500 J per GT EU):
+--- 4196 x 800 x 500 J = 1678.4 MJ, in a fuel category of its own (GT's rocketFuels map: only rocket engines burn it).
+--- Their recipes are GT++'s ("PCP", "EME", "GWG": 2 pistons, a circuit of the next tier, 2 motors, the hull, 2 gears, a
+--- double cable): Tantalloy-61, which the mod lacks, becomes Tantalloy-60; a double cable 2 cables. The fuel's recipe
+--- is GTNH's in the ExxonMobil Chemical Plant (159). GT++'s Large Rocket Engine: below (issue #304).
+--------------------------------------------------------------------------------
+
+data:extend({ { type = "fuel-category", name = "rocket-engine-fuel" } })
+create_item{
+	name = "rocket-fuel-cell",
+	category = "lv-canning-machine-recipes",
+	energy_required = 4,
+	fuel_category = "rocket-engine-fuel",
+	fuel_value = "1678.4MJ",
+	burnt_result = "empty-large-steel-fluid-cell",
+	subgroup = data.raw.item["diesel-cell"] and data.raw.item["diesel-cell"].subgroup or nil,
+	ingredients = {
+		{ type = "item", name = "empty-large-steel-fluid-cell", amount = 1 },
+		{ type = "fluid", name = "rocket-fuel", amount = 800 },
+	},
+}
+local ROCKET_ENGINES = {
+	--  tier   efficiency  power      next circuit   cable             gear (GT++)                    technology
+	{ "ev",  0.8, EU32_EV,  "iv-circuit",  "aluminium-cable", "large-tantalloy-60-gear", "rocket-engines" },
+	{ "iv",  0.7, EU32_IV,  "luv-circuit", "platinum-cable",  "large-stellite-gear",     "advanced-rocket-engine" },
+	{ "luv", 0.6, EU32_LuV, "zpm-circuit", "tungsten-cable",  "large-zeron-100-gear",    "turbo-rocket-engine" },
+}
+for _, e in pairs(ROCKET_ENGINES) do
+	local name = e[1] .. "-rocket-engine"
+	create_item{
+		name = name,
+		icon = FORK_ICON .. name .. ".png",
+		place_result = name,
+		subgroup = "subgroup-" .. e[1] .. "-age-multiblocks",
+		stack_size = 10,
+		ingredients = {
+			{ type = "item", name = e[1] .. "-machine-hull", amount = 1 },
+			{ type = "item", name = e[1] .. "-piston", amount = 2 },
+			{ type = "item", name = e[1] .. "-motor", amount = 2 },
+			{ type = "item", name = e[4], amount = 1 },
+			{ type = "item", name = e[5], amount = 2 },
+			{ type = "item", name = e[6], amount = 2 },
+		},
+	}
+	create_burner_generator{
+		name = name,
+		icon = FORK_ICON .. name .. ".png",
+		efficiency = e[2],
+		fuel_categories = { "rocket-engine-fuel" },
+		max_power = e[3],
+		working_animation = SPRITE_PATH .. name .. "-working.png",
+		idle_animation = SPRITE_PATH .. name .. "-idle.png",
+		frame_count = 1,
+	}
+end
+F.tech{
+	name = "rocket-engines", prerequisites = { "rocket-fuel", "ev-components", "alloy-blast-smelter" }, packs = 5,
+	count = 600, time = 45, recipes = { "ev-rocket-engine", "rocket-fuel-cell" },
+}
+F.tech{
+	name = "advanced-rocket-engine", prerequisites = { "rocket-engines", "iv-components", "industrial-electrolyzer" },
+	packs = 6, count = 800, recipes = { "iv-rocket-engine" },
+}
+F.tech{
+	name = "turbo-rocket-engine", prerequisites = { "advanced-rocket-engine", "luv-components", "luv-machines", "advanced-smds" },
+	packs = 7, count = 1000, recipes = { "luv-rocket-engine" },
+}
+--- issue #304 (the maintainer's decision: build it, simplified): GT++'s Large Rocket Engine, the "Rocketdyne F-1A Engine"
+--- (gtPlusPlus/xmod/gregtech/common/tileentities/machines/multi/production/MTELargeRocketEngine.java). GT++ burns 90 %
+--- of the rocket fuel in its hatch each second (consumeFuel, :360-375) for an energy of 3 x the fuel's value (setEUProduction,
+--- :377-395; the cube roots above 30 000 EU/t are not reached at its output), and gives a fixed 2 amps of IV once its
+--- efficiency is up (:330-345): fed just what it burns, 3 x the fuel's value goes into a fixed 2 A of IV. Here a burner
+--- generator on rocket fuel cells with that: efficiency 3, 2 amps of IV. Left out, as the large combustion engine of #255
+--- leaves its extras out: the 8 air intake hatches and the air they take, the carbon dioxide (consumeCO2, :399), the
+--- lubricant (:126) and the liquid hydrogen boost (consumeLOH, :403-407; Gregtorio has no liquid hydrogen).
+--- Its item is the controller and the structure's minimum (checkCasingMin 16 Turbodyne Casings, the 8 gear boxes of its
+--- shape), 2 IV dynamo hatches for its 2 amps and 3 hulls for the input, maintenance and muffler hatches (as #255).
+--- Recipes: GT++'s (GregtechRocketFuelGenerator.java:34-46): the controller from a large combustion engine, 2 IV pistons,
+--- 2 EV field generators, a LuV circuit, 2 8x platinum cables (16 cables) and 2 Maraging Steel 350 gears; the Turbodyne
+--- Casing from 4 Nitinol 60 gears, 2 medium tungstensteel pipes, a robust tungstensteel casing and a long tungstensteel
+--- rod. The mod lacks Maraging Steel 350 (Maraging Steel 300, the closest), gears of both alloys and the pipe: a gear is 4
+--- plates and a medium pipe 3 plates (GT's recipes). The gear box (GT++'s Inconel Reinforced Casing) is the mod's.
+create_item{
+	name = "turbodyne-casing",
+	icon = FORK_ICON .. "turbodyne-casing.png",
+	category = "crafting-or-assembling-recipes",
+	energy_required = 5,
+	ingredients = {
+		{ type = "item", name = "nitinol-60-plate", amount = 16 },
+		{ type = "item", name = "tungstensteel-plate", amount = 6 },
+		{ type = "item", name = "robust-tungstensteel-machine-casing", amount = 1 },
+		{ type = "item", name = "long-tungstensteel-rod", amount = 1 },
+	},
+}
+create_item{
+	name = "large-rocket-engine",
+	icon = FORK_ICON .. "large-rocket-engine.png",
+	place_result = "large-rocket-engine",
+	subgroup = "subgroup-iv-age-multiblocks",
+	stack_size = 10,
+	ingredients = {
+		{ type = "item", name = "large-combustion-engine", amount = 1 },
+		{ type = "item", name = "iv-piston", amount = 2 },
+		{ type = "item", name = "ev-field-generator", amount = 2 },
+		{ type = "item", name = "luv-circuit", amount = 1 },
+		{ type = "item", name = "platinum-cable", amount = 16 },
+		{ type = "item", name = "maraging-steel-300-plate", amount = 8 },
+		{ type = "item", name = "turbodyne-casing", amount = 16 },
+		{ type = "item", name = "inconel-reinforced-casing", amount = 8 },
+		{ type = "item", name = "iv-dynamo-hatch", amount = 2 },
+		{ type = "item", name = "lv-machine-hull", amount = 3 },
+	},
+}
+create_burner_generator{
+	name = "large-rocket-engine",
+	icon = FORK_ICON .. "large-rocket-engine.png",
+	efficiency = 3,
+	fuel_categories = { "rocket-engine-fuel" },
+	max_power = "20.48MW",   -- (2 x EU32_IV: 2 amps of IV)
+	working_animation = SPRITE_PATH .. "large-rocket-engine-working.png",
+	idle_animation = SPRITE_PATH .. "large-rocket-engine-idle.png",
+	frame_count = 1,
+}
+data.raw["burner-generator"]["large-rocket-engine"].localised_description = { "entity-description.large-rocket-engine" }
+F.tech{
+	name = "large-rocket-engine", prerequisites = { "advanced-rocket-engine", "large-combustion-engine", "luv-components",
+		"industrial-extrusion-machine", "industrial-cutting-factory", "hyper-intensity-laser-engraver", "space-science-pack" },   -- (#252: its casings' parts)
+	packs = 7, count = 1000, recipes = { "large-rocket-engine", "turbodyne-casing" },
 }

@@ -11,7 +11,7 @@
 ---   ingot 144 1.6 s, plate 144 1.6 s, block 1296 (GT: mass x 9 ticks; here 9 ingots of 1.6 s), nugget 16 0.8 s,
 ---   gear (GT's small gear) 144 0.8 s, large gear (GT's gear) 576 6.4 s, rotor 612 (GT: mass ticks; here the 4.9 s
 ---   of the upstream endgame casts), rod 72 7.5 s, long rod 144 15 s, bolt 18 2.5 s, ring 36 5 s, screw 18 2.5 s,
----   round 16 2.5 s
+---   round 16 2.5 s, item casing (issue #222) 72 0.8 s
 --- GT's fluid extractor melts an ingot into 144 in 24 ticks (GTRecipeRegistrator.registerReverseFluidSmelting).
 ---
 --- MATERIALS: per material the solidifier tier and the technology. The tier is the one of the material's ingot cast
@@ -50,6 +50,7 @@ local FORMS = {
 	{ "ring", "%s-ring", 3.6, 5 },
 	{ "screw", "%s-screw", 1.8, 2.5 },
 	{ "round", "%s-round", 1.6, 2.5 },
+	{ "item-casing", "%s-item-casing", 7.2, 0.8 },   -- issue #222: GT's casing mold, half an ingot in 16 ticks
 }
 
 local MATERIALS = {
@@ -66,7 +67,7 @@ local MATERIALS = {
 	["kanthal"] = { "lv", "kanthal", melt = true },
 	["lead"] = { "lv", "galena", color = { 192, 137, 192 } },
 	["nickel"] = { "lv", "invar", color = { 200, 200, 250 } },
-	["nickel-zinc-ferrite"] = { "lv", "smd-components" },
+	["nickel-zinc-ferrite"] = { "lv", "microprocessors" },
 	["red-alloy"] = { "lv", "concrete" },
 	["silver"] = { "lv", "galena", melt = true },
 	["stainless-steel"] = { "lv", "stainless-steel" },
@@ -89,7 +90,6 @@ local MATERIALS = {
 	["inconel-625"] = { "mv", "fluid-shaper" },
 	["maraging-steel-250"] = { "mv", "industrial-centrifuge" },
 	["maraging-steel-300"] = { "mv", "industrial-cutting-factory" },
-	["microversium"] = { "mv", "mv-machines" },
 	["niobium-titanium"] = { "mv", "niobium-titanium" },
 	["pulsating-iron"] = { "mv", "eyes-of-ender", color = { 128, 246, 155 } },
 	["ruridit"] = { "mv", "ruridit" },
@@ -112,28 +112,27 @@ local MATERIALS = {
 	["indovanadium"] = { "hv", "space-science-pack" },
 	["neodymium"] = { "hv", "hv-machines", melt = true },
 	["nichrome"] = { "hv", "nichrome-coils" },
-	["platinum"] = { "hv", "smd-components", color = { 255, 255, 200 } },
+	["platinum"] = { "hv", "platinum", color = { 255, 255, 200 } },   -- issue #239: platinum comes with Platinum (EV)
 	["rtm-alloy"] = { "hv", "alloy-blast-smelting-older-materials" },
 	["staballoy"] = { "hv", "staballoy" },
 	["talonite"] = { "hv", "industrial-cutting-factory" },
-	["tantalloy-60"] = { "hv", "industrial-wire-factory" },
+	["tantalloy-60"] = { "hv", "rocket-engines" },   -- issue #295: with the EV Rocket Engine's gear
 	["tantalum"] = { "hv", "niobium-and-tantalum-extraction" },
 	["tantalum-carbide"] = { "hv", "zyngen" },
 	["tumbaga"] = { "hv", "large-sifter", color = { 255, 178, 15 } },
 	["tungstensteel"] = { "hv", "tungstensteel" },
-	["vibrant-alloy"] = { "hv", "tier-three-microminers" },
+	["vibrant-alloy"] = { "hv", "ender-io" },
 	["dark-steel"] = { "ev", "ev-machines", color = { 159, 139, 159 } },
 	["electrical-steel"] = { "ev", "ev-machines", color = { 216, 216, 216 } },
 	["end-steel"] = { "ev", "ev-machines", color = { 219, 206, 125 } },
 	["enderium"] = { "ev", "zpm-materials" },
-	["hastelloy-c276"] = { "ev", "ev-machines" },
-	["incoloy-ma956"] = { "ev", "ev-machines" },
+	["hastelloy-c276"] = { "ev", "alloy-blast-smelter" },
+	["incoloy-ma956"] = { "ev", "alloy-blast-smelter" },
 	["soularium"] = { "ev", "ender-io", color = { 194, 146, 83 } },
 	["stellite"] = { "ev", "industrial-electrolyzer" },
 	["titanium"] = { "ev", "ev-machines", melt = true },
 	["tungsten"] = { "ev", "ev-machines" },
 	["zirconium-carbide"] = { "ev", "ev-machines", color = { 222, 202, 180 } },
-	["crystaltine"] = { "iv", "tier-four-microminers", color = { 115, 188, 218 } },
 	["iridium"] = { "iv", "iv-machines", color = { 240, 240, 245 } },
 	["magnalium"] = { "iv", "industrial-mixer", color = { 200, 190, 255 } },
 	["naquadah-alloy"] = { "iv", "naquadah-alloy" },
@@ -141,7 +140,6 @@ local MATERIALS = {
 	["potin"] = { "iv", "industrial-electrolyzer", color = { 201, 151, 129 } },
 	["rhodium-plated-palladium"] = { "iv", "rhodium-plated-palladium", color = { 220, 220, 240 } },
 	["samarium"] = { "iv", "luv-components", color = { 255, 255, 204 } },
-	["signalum"] = { "iv", "tier-four-microminers", color = { 174, 72, 14 } },
 	["yttrium-barium-cuprate"] = { "iv", "yttrium-barium-cuprate", color = { 159, 127, 139 } },
 	["enriched-naquadah"] = { "luv", "enriched-naquadah", color = { 64, 255, 64 } },
 	["ledox"] = { "luv", "super-coolant", color = { 0, 116, 255 } },
@@ -183,69 +181,80 @@ local function item_exists(n)
 	end
 	return false
 end
---- what is cast from a melt and which melts can be made from an ingot already
-local cast, melted = {}, {}
-for _, r in pairs(data.raw.recipe) do
-	local c = r.category or "crafting"
-	local melt
-	for _, i in pairs(r.ingredients or {}) do
-		if i.type == "fluid" and i.name:sub(1, 7) == "molten-" then melt = i.name end
-	end
-	if melt and (c:find("fluid%-solidifier") or c:find("vacuum%-freezer")) then
-		for _, res in pairs(r.results or {}) do cast[melt .. "|" .. res.name] = true end
-	end
-	if c:find("extractor") then
-		for _, res in pairs(r.results or {}) do
-			for _, i in pairs(r.ingredients or {}) do
-				if res.type == "fluid" and i.name:sub(-6) == "-ingot" then melted[res.name .. "|" .. i.name] = true end
+--- (recipes: the casts and melts made here; 199's auto-unlock does not count them as producers, see there)
+FORK_CASTING = { casts = 0, melts = 0, fluids = 0, recipes = {}, tiers = {}, materials = MATERIALS }   -- tiers: material -> its tier (194 orders the material parts by it)
+local made_fluid = {}
+--- Casts and melts of every material of MATERIALS. Run here and once more by 155-fork-ore-chain.lua (issue #207), which
+--- adds the ingots and nuggets it makes to MATERIALS (FORK_CASTING.materials) after this file: the second run makes only
+--- what is new. 151 has moved every extractor recipe with a fluid result to the fluid extractor by then, so a melt of
+--- that run goes there.
+function FORK_CASTING.run()
+	--- what is cast from a melt and which melts can be made from an ingot already
+	local cast, melted = {}, {}
+	for _, r in pairs(data.raw.recipe) do
+		local c = r.category or "crafting"
+		local melt
+		for _, i in pairs(r.ingredients or {}) do
+			if i.type == "fluid" and i.name:sub(1, 7) == "molten-" then melt = i.name end
+		end
+		if melt and (c:find("fluid%-solidifier") or c:find("vacuum%-freezer")) then
+			for _, res in pairs(r.results or {}) do cast[melt .. "|" .. res.name] = true end
+		end
+		if c:find("extractor") then
+			for _, res in pairs(r.results or {}) do
+				for _, i in pairs(r.ingredients or {}) do
+					if res.type == "fluid" and i.name:sub(-6) == "-ingot" then melted[res.name .. "|" .. i.name] = true end
+				end
 			end
 		end
 	end
-end
 
---- (recipes: the casts and melts made here; 199's auto-unlock does not count them as producers, see there)
-FORK_CASTING = { casts = 0, melts = 0, fluids = 0, recipes = {}, tiers = {} }   -- tiers: material -> its tier (194 orders the material parts by it)
-for mat, def in pairs(MATERIALS) do
-	local tier, tech = def[1], def[2]
-	FORK_CASTING.tiers[mat] = tier
-	local melt = "molten-" .. (ALIAS[mat] or mat)
-	if def.color then
-		F.fluid(melt, "molten-" .. mat, { def.color[1] / 255, def.color[2] / 255, def.color[3] / 255 })
-		FORK_CASTING.fluids = FORK_CASTING.fluids + 1
-	end
-	for _, f in pairs(FORMS) do
-		local item = string.format(f[2], mat)
-		if item_exists(item) and not cast[melt .. "|" .. item] then
-			local name = "solidify-" .. item
-			if data.raw.recipe[name] then name = "solidify-" .. item .. "-from-melt" end
+	for mat, def in pairs(MATERIALS) do
+		local tier, tech = def[1], def[2]
+		FORK_CASTING.tiers[mat] = tier
+		local melt = "molten-" .. (ALIAS[mat] or mat)
+		if def.color and not made_fluid[melt] then
+			F.fluid(melt, "molten-" .. mat, { def.color[1] / 255, def.color[2] / 255, def.color[3] / 255 })
+			made_fluid[melt] = true
+			FORK_CASTING.fluids = FORK_CASTING.fluids + 1
+		end
+		for _, f in pairs(FORMS) do
+			local item = string.format(f[2], mat)
+			if item_exists(item) and not cast[melt .. "|" .. item] then
+				local name = "solidify-" .. item
+				if data.raw.recipe[name] then name = "solidify-" .. item .. "-from-melt" end
+				create_recipe{
+					name = name,
+					category = tier .. "-fluid-solidifier-recipes",
+					energy_required = f[4] * SPEED[tier],
+					ingredients = { { type = "fluid", name = melt, amount = f[3] } },
+					results = { { type = "item", name = item, amount = 1 } },
+					main_product = item,
+				}
+				fork_add_unlock(tech, name)
+				FORK_CASTING.recipes[name] = true
+				FORK_CASTING.casts = FORK_CASTING.casts + 1
+			end
+		end
+		local ingot = mat .. "-ingot"
+		local name = "melt-" .. ingot
+		if item_exists(ingot) and not FORK_CASTING.recipes[name] and (def.melt or not melted[melt .. "|" .. ingot]) then
+			local category = tier .. "-extractor-recipes"
+			if data.raw["recipe-category"][tier .. "-fluid-extractor-recipes"] then category = tier .. "-fluid-extractor-recipes" end
 			create_recipe{
 				name = name,
-				category = tier .. "-fluid-solidifier-recipes",
-				energy_required = f[4] * SPEED[tier],
-				ingredients = { { type = "fluid", name = melt, amount = f[3] } },
-				results = { { type = "item", name = item, amount = 1 } },
-				main_product = item,
+				category = category,
+				energy_required = 1.2 * SPEED[tier],
+				ingredients = { { type = "item", name = ingot, amount = 1 } },
+				results = { { type = "fluid", name = melt, amount = 14.4 } },
+				main_product = melt,
 			}
 			fork_add_unlock(tech, name)
 			FORK_CASTING.recipes[name] = true
-			FORK_CASTING.casts = FORK_CASTING.casts + 1
+			FORK_CASTING.melts = FORK_CASTING.melts + 1
 		end
 	end
-	local ingot = mat .. "-ingot"
-	if item_exists(ingot) and (def.melt or not melted[melt .. "|" .. ingot]) then
-		local name = "melt-" .. ingot
-		create_recipe{
-			name = name,
-			category = tier .. "-extractor-recipes",
-			energy_required = 1.2 * SPEED[tier],
-			ingredients = { { type = "item", name = ingot, amount = 1 } },
-			results = { { type = "fluid", name = melt, amount = 14.4 } },
-			main_product = melt,
-		}
-		fork_add_unlock(tech, name)
-		FORK_CASTING.recipes[name] = true
-		FORK_CASTING.melts = FORK_CASTING.melts + 1
-	end
 end
+FORK_CASTING.run()
 log("FORK-CASTING: " .. FORK_CASTING.casts .. " casts, " .. FORK_CASTING.melts .. " melt recipes, "
 	.. FORK_CASTING.fluids .. " new melts")

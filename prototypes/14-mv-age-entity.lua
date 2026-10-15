@@ -976,36 +976,6 @@ create_item{
 
 
 
----MV MICROVERSE PROJECTOR
-make_electric_machine("mv-microverse-projector", "small-microverse-projector", "small-microverse-projector", { "mv-microverse-projector-recipes" }, "fr-small-microverse-projector", EU30_MV, 2, 1, 0.5, 3, 3, {
-    fluid_port(-1, -1, "input", defines.direction.north),
-    fluid_port( 1, -1, "input", defines.direction.north)  
-})
-create_item{
-	name = "microverse-projector-controller",
-	ingredients = {
-      {type = "item", name = "advanced-circuit", amount = 4},
-      {type = "item", name = "tempered-glass", amount = 1},
-      {type = "item", name = "microversium-casing", amount = 4},
-    }
-}
-create_item{
-	name = "mv-microverse-projector",
-	icon = ICON_PATH .. "small-microverse-projector.png",
-	ingredients = {
-      {type = "item", name = "microverse-projector-controller", amount = 1},
-      {type = "item", name = "microversium-casing", amount = 14},
-      {type = "item", name = "tempered-glass", amount = 4},
-      {type = "item", name = "block-of-diamond", amount = 1},
-      {type = "item", name = "lv-machine-hull", amount = 5},
-      {type = "item", name = "lv-energy-hatch", amount = 2},
-    },
-	place_result = "mv-microverse-projector",
-    stack_size = 10
-}
-
-
-
 ---MV PUMPJACK
 make_electric_machine("mv-drilling-rig", "mv-drilling-rig", "mv-drilling-rig", { "drilling-rig-recipes" }, "fr-drilling-rig", EU16_MV, 2, 1, 0.5, 3, 6.25, { 
     fluid_port(-1,  1, "output", defines.direction.south),
@@ -1037,60 +1007,6 @@ create_item{
 	place_result = "mv-drilling-rig",
     stack_size = 10
 }
-
-
-
----BASIC EXTENDED CRAFTING TABLE
-create_item{
-	name = "basic-extended-crafting-table",
-	stack_size = 10,
-	place_result = "basic-extended-crafting-table",
-	ingredients = {
-		{ type = "item", name = "basic-extended-crafting-component", amount = 3 },
-		{ type = "item", name = "basic-extended-crafting-catalyst", amount = 1 },
-		{ type = "item", name = "crafting-table", amount = 1 }
-	}
-}
-data:extend({
-  {
-    type = "assembling-machine",
-    name = "basic-extended-crafting-table",
-    icon = "__gregtorio-continued__/graphics/icons/basic-extended-crafting-table.png",
-    icon_size = 32,
-    flags = {"placeable-neutral", "placeable-player", "player-creation"},
-    minable = {mining_time = 0.2, result = "basic-extended-crafting-table"},
-    max_health = 200,
-    corpse = "small-remnants",
-    dying_explosion = "medium-explosion",
-    resistances = {
-      { type = "fire", percent = 70 }
-    },
-    collision_box = {{-1.3, -1.3}, {1.3, 1.3}},
-    selection_box = {{-1.5, -1.5}, {1.5, 1.5}},
-    fast_replaceable_group = "fr-extended-crafting-table",
-    crafting_categories = { "basic-extended-crafting-recipes" },
-    crafting_speed = 1,
-    energy_source = { type = "void" },
-    energy_usage = "1W",
-    emissions_per_minute = { pollution = 0 },
-    allowed_effects = {},
-    graphics_set = {
-      animation = {
-        layers = {
-          {
-            filename = "__gregtorio-continued__/graphics/entity/basic-extended-crafting-table.png",
-            width = 180,
-            height = 180,
-            frame_count = 1,
-            line_length = 1,
-            shift = {0, 0},
-            scale = 0.5
-          }
-        }
-      }
-    }
-  }
-})
 
 
 

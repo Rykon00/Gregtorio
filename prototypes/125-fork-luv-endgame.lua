@@ -2,7 +2,7 @@
 --- FORK LuV ENDGAME (roadmap phase 1)
 --- Finishes the LuV tier on top of 110-fork-luv.lua. Everything here is researched with
 --- LuV science (space science pack) and leads to the ZPM science pack:
----   * naquadah ore line (ore from the end microminer, neutron activator, naquadah, trinium,
+---   * naquadah ore line (ore from the asteroid belt of 160; neutron activator, naquadah, trinium,
 ---     naquadah alloy, osmiridium)
 ---   * bacterial vat and mutagen
 ---   * circuit assembly line and crystal processors
@@ -125,22 +125,6 @@ end
 ---     that makes naquadah-rich-solution was overwritten -> re-added under its own name
 --------------------------------------------------------------------------------
 
---- The end (tier three microminer) has a naquadah vein (see 52-microverse-module.lua)
-create_recipe{
-	name = "microminer-naquadah",
-	category = "lv-assembling-machine-recipes",
-	energy_required = 8,
-	subgroup = "subgroup-microminer-t3",
-	ingredients = {
-		{ type = "item", name = "tier-three-microminer-output", amount = 1 },
-	},
-	results = {
-		{ type = "item", name = "raw-naquadah", amount = 24 },
-		{ type = "item", name = "compressed-end-stone", amount = 8 },
-	},
-	main_product = "raw-naquadah",
-}
-
 --- Neutron activator (GoodGenerator): the machine for the naquadah line
 category("neutron-activator-recipes")
 make_multiblock{
@@ -228,9 +212,11 @@ create_recipe{
 --- branch (indium phosphate, low quality naquadria phosphate, naquadria rich solution; indium and indium gallium
 --- phosphide from the indium phosphate). Their technologies are in 142's UNLOCKS_205. The ore chain gives the oxide
 --- mixtures as GT converts the ore's dusts (NaquadahRecipeOutputs.convert: 2 per dust; 155-fork-ore-chain.lua).
+--- Issue #207: goodgenerator's naquadah nugget, 2 naquadah oxide mixtures (its naquadah earth) -> 1 nugget in the blast
+--- furnace with a gas (NaquadahRecipeLoader.java:512-520: IV, 5000 K, 2 min, 1000 L of any blast furnace gas, GT's time
+--- and gas factor per gas as 147's), 9 nuggets -> an ingot in the alloy smelter with the mold (GT ProcessingNugget.java).
 --- Not taken over: GT's P-507 recipe (2-ethyl-1-hexanol needs seed oil, which Gregtorio lacks), the quantum force
---- transformer's inert naquadah recipes (139 keeps its own), the goo and mass items (CropsNH) and the 2 oxide mixture ->
---- naquadah nugget blast furnace recipe.
+--- transformer's inert naquadah recipes (139 keeps its own) and the goo and mass items (CropsNH); docs/ORE-CHAIN.md.
 do
 	local function patch(name, f)
 		local r = data.raw.recipe[name]
@@ -283,6 +269,59 @@ for _, d in pairs(NQ_RECIPES) do
 	end
 	create_recipe{ name = d[1], category = d[2], energy_required = d[3], ingredients = stacks(d[4]), results = stacks(d[5]),
 		main_product = d[5][1][2] }
+end
+do
+	create_item{ name = "naquadah-nugget", subgroup = data.raw.item["naquadah-ingot"].subgroup, skip_recipe = true }
+	--- gas, time factor, gas factor (BlastFurnaceGasStat.java); the nitrogen recipe has the nugget's name
+	for _, g in pairs({ { "nitrogen", 1.0, 1.0 }, { "helium", 0.9, 1.0 }, { "argon", 0.8, 0.85 }, { "radon", 0.7, 0.7 },
+		{ "neon", 0.6, 0.55 }, { "krypton", 0.5, 0.4 }, { "xenon", 0.4, 0.25 } }) do
+		local name = g[1] == "nitrogen" and "naquadah-nugget" or ("naquadah-nugget-" .. g[1])
+		create_recipe{
+			name = name,
+			category = "iv-electric-blast-furnace-recipes",
+			energy_required = 120 * g[2] * IV_SPEED,
+			ingredients = {
+				{ type = "item", name = "naquadah-oxide-mixture", amount = 2 },
+				{ type = "fluid", name = g[1], amount = 100 * g[3] },
+			},
+			results = { { type = "item", name = "naquadah-nugget", amount = 1 } },
+			main_product = "naquadah-nugget",
+		}
+		data.raw.recipe[name].localised_name = { "recipe-name.fork-with-gas", { "item-name.naquadah-nugget" },
+			{ "fluid-name." .. g[1] } }
+	end
+	create_recipe{
+		name = "naquadah-ingot-from-nuggets",
+		category = "lv-alloy-smelter-recipes",
+		subgroup = "subgroup-lv-alloy-smelter-recipes",
+		energy_required = 10,
+		ingredients = { { type = "item", name = "naquadah-nugget", amount = 9 }, { type = "item", name = "mold", amount = 1 } },
+		results = { { type = "item", name = "naquadah-ingot", amount = 1 }, { type = "item", name = "mold", amount = 1 } },
+		main_product = "naquadah-ingot",
+	}
+end
+
+--- Issue #223: the vacuum freezer steps as GT New Horizons' (goodgenerator NaquadahRecipeLoader.java:540-545: naquadah,
+--- 16 s; NewHorizonsCoreMod VacuumFreezerRecipes.java:134-142: enriched naquadah and naquadria, 14.7 s; IV, without
+--- coolant; upstream's took cryogenic helium); GT has no electrolysis of the enriched naquadah and naquadria sulphates
+--- (upstream's: gone), its dusts come from the ingots (GTRecipeRegistrator.registerReverseMacerating: mass ticks, GT's
+--- default mass 98)
+for _, f in pairs({ { "naquadah", 16 }, { "enriched-naquadah", 14.7 }, { "naquadria", 14.7 } }) do
+	local r = data.raw.recipe[f[1] .. "-ingot"]
+	if r then
+		r.category, r.energy_required = "iv-vacuum-freezer-recipes", f[2] * IV_SPEED
+		r.ingredients = { { type = "item", name = "hot-" .. f[1] .. "-ingot", amount = 1 } }
+		r.results = { { type = "item", name = f[1] .. "-ingot", amount = 1 } }
+		r.main_product = f[1] .. "-ingot"
+	else
+		log("FORK-LUV2: missing recipe: " .. f[1] .. "-ingot")
+	end
+end
+for _, m in pairs({ "enriched-naquadah", "naquadria" }) do
+	data.raw.recipe[m .. "-dust"] = nil
+	create_recipe{ name = m .. "-dust-macerator", category = "lv-macerator-recipes", energy_required = 4.9,
+		ingredients = { { type = "item", name = m .. "-ingot", amount = 1 } },
+		results = { { type = "item", name = m .. "-dust", amount = 1 } }, main_product = m .. "-dust" }
 end
 
 --- Trinium, naquadah alloy and osmiridium (their upstream definitions are commented out)
@@ -587,13 +626,11 @@ move_unlock("luv-energy-hatches", "superconducting-coil-block")
 --- ZPM circuits (quantum mainframe) were only unlocked by the auto-unlock in 199-fork-finalize.lua,
 --- which skips them as soon as any other recipe (the crystal supercomputer) makes them
 fork_add_unlock("luv-components", "quantum-processor-mainframe")
---- Same for the end stone microminer (the naquadah microminer also yields end stone)
-fork_add_unlock("end-steel", "microminer-end-stone")
 
 tech{
 	name = "naquadah-processing", prerequisites = { "luv-machines" }, count = 1500,
 	recipes = {
-		"microminer-naquadah", "crushed-naquadah", "naquadah-oxide-mixture", "centrifuging-crushed-naquadah",
+		"crushed-naquadah", "naquadah-oxide-mixture", "centrifuging-crushed-naquadah",
 		"diethyl-ether", "antimony-trichloride-solution", "antimony-pentachloride-solution", "antimony-pentachloride",
 		"antimony-pentafluoride", "fluoroantimonic-acid",
 		"low-quality-naquadah-emulsion", "titanium-trifluoride-processing", "low-quality-naquadah-solution",
@@ -606,10 +643,10 @@ tech{
 	name = "enriched-naquadah", prerequisites = { "naquadah-processing" }, count = 1500,
 	recipes = {
 		"concentrated-enriched-naquadah-sludge", "enriched-naquadah-sulphate", "sodium-sulfate-electrolysis",
-		"hot-enriched-naquadah-ingot", "enriched-naquadah-ingot", "enriched-naquadah-dust",
+		"hot-enriched-naquadah-ingot", "enriched-naquadah-ingot", "enriched-naquadah-dust-macerator",
 		"low-quality-naquadria-sulphate", "trinium-dust", "hot-trinium-ingot", "trinium-ingot", "trinium-plate",
 		"low-quality-naquadria-sulphate-solution", "low-quality-naquadria-sulphate-distillation",
-		"naquadria-sulphate", "naquadria-dust",
+		"naquadria-sulphate",
 	},
 }
 tech{

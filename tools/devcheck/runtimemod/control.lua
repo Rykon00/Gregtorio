@@ -3,7 +3,8 @@
 --- the run. Results are logged as DEVCHECK-RUNTIME lines.
 --- The ME network's runtime tests are in the mod me-network since issue #83 (its tools/devcheck).
 --- Molds (prototypes/150-fork-molds.lua): an LV alloy smelter with a mold recipe must stop
---- without a mold, run with a mold in its mold slot and keep the mold there.
+--- without a mold, run with a mold in its mold slot and keep the mold there; issue #316: the same for an EV laser
+--- engraver with a gem step and its lens ("Missing lens").
 --- Endgame power (prototypes/136-fork-power.lua): a plasma turbine and a naquadah reactor under load
 --- must burn their fuel and make power; the turbine's output hatch gets the cooled fluid.
 --- Fuel check (issue #25): steam and the other generator's fuel stop a generator; the right fuel runs it.
@@ -23,6 +24,9 @@
 --- Offered recipes (issue #126): the machine recipes that were hidden from the crafting menu are offered by the machines.
 --- Melts and casts (issue #117): nine melted ingots fill one block cast, one fills an ingot cast; n melts cover every cast combination.
 --- Supercapacitor upgrade (issue #124): a replaced supercapacitor keeps its charge (capped at the new capacity).
+--- Electric mine (issue #335): a Manual Mine replaced by the Ore Drilling Plant Mk I by fast replace and by the upgrade
+--- planner (construction robots) keeps its neighbouring inserters and belts, the items of its slots come back, and the
+--- plant drills a vein with Drilling Fluid.
 --- Victory: when the other tests have reported, `victory` is researched by script and must win the game.
 
 local VICTORY_DEADLINE = 1450
@@ -40,8 +44,10 @@ local function tests_running()
 	check(storage.chain and storage.chain.done, "nuclear chain")
 	check(storage.lsc and storage.lsc.done, "supercapacitor")
 	check(storage.lsup and storage.lsup.done, "supercapacitor upgrade")
+	check(storage.elevator and storage.elevator.done, "space elevator")
 	check(storage.offer and storage.offer.done, "recipes offered by machines")
 	check(storage.melt and storage.melt.done, "melts and casts")
+	check(storage.emine and storage.emine.done, "electric mine")
 	return running
 end
 
@@ -681,15 +687,12 @@ local RT = {
 	{ "max-assembling-machine", "maximum-voltage-coil" },
 	{ "uxv-assembling-machine", "max-science-pack-from-magmatter" },
 	-- issue #91 (prototypes/142-fork-recipe-unlocks.lua): the producers GT has and Gregtorio lacked, the new machines
-	-- (ender tank, component assembly line), a microminer mission and recipes that were never unlocked
-	{ "lv-alloy-smelter", "signalum-ingot" },
+	-- (component assembly line) and recipes that were never unlocked
 	{ "ev-electric-blast-furnace", "naquadah-doped-monocrystaline-silicon-boule" },
 	{ "mv-pyrolyse-oven", "charcoal-byproducts" },
 	{ "ev-large-chemical-reactor", "cyanoacetic-acid" },
 	{ "iv-large-chemical-reactor", "super-glue" },
-	{ "nether-air-ender-tank", "nether-air-collection" },
 	{ "component-assembly-line", "lv-motor-coal" },
-	{ "lv-assembling-machine", "microminer-neutronium" },
 	-- issue #126 (prototypes/148-fork-gtnh-table-items.lua): GTNH's machine recipes of the items the crafting table made
 	{ "lv-fluid-solidifier", "anvil-fluid-solidifier" },
 	{ "mv-alloy-smelter", "anvil-alloy-smelter" },
@@ -702,7 +705,17 @@ local RT = {
 	{ "lv-macerator", "impure-iron-dust" },
 	{ "lv-macerator", "centrifuged-iron-maceration" },
 	{ "lv-centrifuge", "centrifuging-pure-iron-dust" },
-	{ "lv-electrolyzer", "pyrite-dust-decomposition" },
+	{ "mv-electrolyzer", "pyrite-dust-decomposition" },   -- issue #223: MV as GT's
+	-- issues #222 and #223: GT's parts of the new ingots, nugget recipes, bricked blast furnace and raw ore smelting
+	{ "mv-bending-machine", "double-thorium-plate" },
+	{ "lv-lathe", "antimony-rod" },
+	{ "lv-alloy-smelter", "iron-nugget-from-ingot" },
+	{ "lv-macerator", "copper-nugget-maceration" },
+	{ "primitive-blast-furnace", "galena-dust-pbf-coke" },
+	-- issue #227: GT's parts of every metal (158)
+	{ "mv-bending-machine", "double-steel-plate" },
+	{ "lv-alloy-smelter", "steel-item-casing" },
+	{ "hv-extruder", "staballoy-ring" },
 	-- issue #186: chemical bath washing with mercury and sodium persulfate
 	{ "lv-chemical-bath", "purified-gold-mercury" },
 	{ "mv-chemical-bath", "purified-iron-sodium-persulfate" },
@@ -1043,24 +1056,86 @@ function crush_test()
 		.. game.tick .. ", " .. st.hammers .. " forge hammers; researched " .. table.concat(techs, ", ") .. ")")
 end
 
+--- Molds and lenses (prototypes/150-fork-molds.lua, issue #316): a machine with a recipe that needs one stops without it
+--- (status: the missing mold or lens), runs with it in its module slot and keeps it there (nothing in the output)
 local MOLD_Y = 120
-local MOLD_RECIPE = "glass-alloy-smelter"
-local MOLD_DEADLINE = 900                               -- ticks for the first glass with the mold in (361 needed)
+local MOLD_DEADLINE = 900                               -- ticks for the first product with the tool in (361 needed)
+local TOOL_TESTS = {
+	{ key = "MOLD", x = 6, machine = "lv-alloy-smelter", recipe = "glass-alloy-smelter", input = { "glass-dust", 20 },
+		tool = "mold", product = "glass", status = "entity-status.fork-missing-mold" },
+	{ key = "LENS", x = 20, machine = "ev-laser-engraver", recipe = "engraving-chipped-ruby-to-flawed",
+		input = { "chipped-ruby", 12 }, tool = "ruby-lens", product = "flawed-ruby", status = "entity-status.fork-missing-lens" },
+}
 
 function setup_mold_test(s)
-	local ok, err = pcall(function()
-		local eei = s.create_entity{ name = "electric-energy-interface", position = { 0, MOLD_Y }, force = "player" }
-		eei.power_production = 1e6
-		eei.electric_buffer_size = 1e7
-		s.create_entity{ name = "substation", position = { 3, MOLD_Y }, force = "player" }
-		local m = s.create_entity{ name = "lv-alloy-smelter", position = { 6, MOLD_Y }, force = "player", raise_built = true }
-		m.force.recipes[MOLD_RECIPE].enabled = true
-		m.set_recipe(MOLD_RECIPE)
-		m.insert{ name = "glass-dust", count = 20 }
-		storage.mold_machine = m
-	end)
-	if not ok then return { "mold test setup: " .. tostring(err) } end
-	return {}
+	local fails = {}
+	storage.mold_tests = {}
+	for i, t in pairs(TOOL_TESTS) do
+		local ok, err = pcall(function()
+			local eei = s.create_entity{ name = "electric-energy-interface", position = { t.x - 6, MOLD_Y }, force = "player" }
+			eei.power_production = 1e8
+			eei.electric_buffer_size = 1e9
+			s.create_entity{ name = "substation", position = { t.x - 3, MOLD_Y }, force = "player" }
+			local m = s.create_entity{ name = t.machine, position = { t.x, MOLD_Y }, force = "player", raise_built = true }
+			m.force.recipes[t.recipe].enabled = true
+			m.set_recipe(t.recipe)
+			m.insert{ name = t.input[1], count = t.input[2] }
+			storage.mold_tests[i] = { machine = m }
+		end)
+		if not ok then
+			fails[#fails + 1] = t.key:lower() .. " test setup: " .. tostring(err)
+			storage.mold_tests[i] = { done = true }
+			log("DEVCHECK-RUNTIME-" .. t.key .. " failed (setup)")
+		end
+	end
+	return fails
+end
+
+--- phase 1 at tick 60: stopped, nothing made, the status names the tool; the tool goes in. Phase 2 as soon as the first
+--- product is out, at the latest MOLD_DEADLINE ticks later: running, the tool still in the slot and nowhere else
+local function tool_test_tick(t, st, tick)
+	local m = st.machine
+	local function made()
+		return m and m.valid and m.get_inventory(defines.inventory.crafter_output or defines.inventory.assembling_machine_output).get_item_count(t.product) or 0
+	end
+	local phase
+	if not st.phase1 and tick >= 60 then
+		phase = 1
+		st.phase1 = tick
+	elseif st.phase1 and (made() > 0 or tick >= st.phase1 + MOLD_DEADLINE) then
+		phase = 2
+		st.done = true
+	else
+		return
+	end
+	local what = t.key:lower() .. " test"
+	local problems = {}
+	local function expect(ok, text) if not ok then problems[#problems + 1] = what .. ": " .. text end end
+	expect(m and m.valid, "machine missing")
+	if #problems == 0 then
+		local n = made()
+		local inv = m.get_module_inventory()
+		if phase == 1 then
+			local status = m.custom_status
+			expect(m.disabled_by_script, "machine without " .. t.tool .. " is not stopped")
+			expect(n == 0, "made " .. n .. " " .. t.product .. " without " .. t.tool)
+			expect(status and status.label and status.label[1] == t.status,
+				"status is " .. serpent.line(status and status.label) .. ", not " .. t.status)
+			expect(inv and inv.insert{ name = t.tool, count = 1 } == 1, t.tool .. " does not fit into the module slot")
+		else
+			expect(not m.disabled_by_script, "machine with " .. t.tool .. " is still stopped")
+			expect(n > 0, "no " .. t.product .. " made with " .. t.tool .. " inserted")
+			expect(inv.get_item_count(t.tool) == 1, t.tool .. " left the module slot")
+			expect(m.get_item_count(t.tool) == 1, t.tool .. " was duplicated or moved")
+			log("DEVCHECK-RUNTIME-" .. t.key .. " " .. (#problems == 0 and "ok" or "failed") .. " (" .. t.product .. " " .. n
+				.. " after " .. (tick - st.phase1) .. " ticks)")
+		end
+	end
+	for _, p in pairs(problems) do log("DEVCHECK-RUNTIME-FAIL " .. p) end
+	if #problems > 0 and phase == 1 then
+		st.done = true
+		log("DEVCHECK-RUNTIME-" .. t.key .. " failed")
+	end
 end
 
 --- Steam turbines (issue #97, prototypes/145-fork-power-multiblocks.lua): a large steam turbine on steam and a high
@@ -1663,50 +1738,353 @@ function lsup_test()
 	end
 end
 
+--- Space Elevator modules (issues #301, #302, scripts/fork-space-elevator.lua): a mining module without an elevator next to
+--- it stops; next to a Mk-I elevator the first six Mk-I modules run, the seventh stops (its six slots are taken), a Mk-II
+--- module stops (motors too weak); the elevator replaced by a Mk-II one runs the Mk-II module too; the elevator removed
+--- stops them all. Issue #303: a Mk-I pump module (motors Mk-II) stops at the Mk-I elevator and runs at the Mk-II one, and
+--- takes a pumping recipe; a Planetary Gas Siphon takes a siphon recipe.
+local SE_X, SE_Y = 320, 300
+local SE_MODS = { { 316, 292 }, { 320, 292 }, { 324, 292 }, { 316, 308 }, { 320, 308 }, { 324, 308 }, { 312, 300 } }
+
+function setup_elevator_test(s)
+	local fails = {}
+	local ok, err = pcall(function()
+		local st = { phase = 0, mods = {} }
+		storage.elevator = st
+		st.mods[1] = s.create_entity{ name = "space-elevator-mining-module-mk1", position = SE_MODS[1], force = "player",
+			raise_built = true }
+	end)
+	if not ok then fails[#fails + 1] = "space elevator test: " .. tostring(err) end
+	return fails
+end
+
+local function se_status(m)
+	if not m.disabled_by_script then return "on" end
+	local cs = m.custom_status
+	return cs and type(cs.label) == "table" and cs.label[1]:gsub("^entity%-status%.fork%-space%-elevator%-", "") or "off"
+end
+
+function elevator_test()
+	local st = storage.elevator
+	if not st or st.done then return end
+	local t, s, problems = game.tick, game.surfaces[1], {}
+	local function expect(ok, what) if not ok then problems[#problems + 1] = what end end
+	if st.phase == 0 and t >= 20 then
+		expect(se_status(st.mods[1]) == "missing", "a module without an elevator: " .. se_status(st.mods[1]))
+		st.el = s.create_entity{ name = "space-elevator-mk1", position = { SE_X, SE_Y }, force = "player", raise_built = true }
+		for i = 2, #SE_MODS do
+			st.mods[i] = s.create_entity{ name = "space-elevator-mining-module-mk1", position = SE_MODS[i], force = "player",
+				raise_built = true }
+		end
+		st.mk2 = s.create_entity{ name = "space-elevator-mining-module-mk2", position = { 328, 300 }, force = "player",
+			raise_built = true }
+		st.pump = s.create_entity{ name = "space-elevator-pump-module-mk1", position = { 312, 292 }, force = "player",
+			raise_built = true }
+		local ok = pcall(function() st.pump.set_recipe("space-pump-lava") end)
+		expect(ok and st.pump.get_recipe() and st.pump.get_recipe().name == "space-pump-lava", "the pump module takes no pumping recipe")
+		local siphon = s.create_entity{ name = "planetary-gas-siphon", position = { 300, 280 }, force = "player", raise_built = true }
+		ok = pcall(function() siphon.set_recipe("gas-siphon-jupiter-1") end)
+		expect(ok and siphon.get_recipe() and siphon.get_recipe().name == "gas-siphon-jupiter-1", "the gas siphon takes no siphon recipe")
+		st.phase = 1
+	elseif st.phase == 1 then
+		local on = 0
+		for i = 1, 6 do if se_status(st.mods[i]) == "on" then on = on + 1 end end
+		st.on = on
+		expect(on == 6, "Mk-I elevator: " .. on .. " of the first 6 modules run")
+		expect(se_status(st.mods[7]) == "full", "the seventh module: " .. se_status(st.mods[7]))
+		expect(se_status(st.mk2) == "motors", "a Mk-II module at a Mk-I elevator: " .. se_status(st.mk2))
+		expect(se_status(st.pump) == "motors", "a Mk-I pump module at a Mk-I elevator: " .. se_status(st.pump))
+		st.el = s.create_entity{ name = "space-elevator-mk2", position = { SE_X, SE_Y }, force = "player", fast_replace = true,
+			spill = false, raise_built = true }
+		st.phase = 2
+	elseif st.phase == 2 then
+		expect(st.el and st.el.valid and st.el.name == "space-elevator-mk2", "the Mk-II elevator was not built")
+		expect(se_status(st.mk2) == "on", "a Mk-II module at a Mk-II elevator: " .. se_status(st.mk2))
+		expect(se_status(st.mods[7]) == "on", "the seventh module at 12 slots: " .. se_status(st.mods[7]))
+		expect(se_status(st.pump) == "on", "a Mk-I pump module at a Mk-II elevator: " .. se_status(st.pump))
+		st.el.destroy()
+		st.phase, st.t3 = 3, t
+	elseif st.phase == 3 and t >= st.t3 + 10 then
+		local off = 0
+		for _, m in pairs(st.mods) do if se_status(m) == "missing" then off = off + 1 end end
+		expect(off == #SE_MODS and se_status(st.mk2) == "missing" and se_status(st.pump) == "missing", "after the elevator went: "
+			.. off .. " of " .. #SE_MODS .. " modules stopped, the Mk-II one " .. se_status(st.mk2) .. ", the pump module "
+			.. se_status(st.pump))
+		st.done = true
+	end
+	if st.done or #problems > 0 then
+		st.done = true
+		for _, p in pairs(problems) do log("DEVCHECK-RUNTIME-FAIL space elevator test: " .. p) end
+		log("DEVCHECK-RUNTIME-ELEVATOR " .. (#problems == 0 and "ok" or "failed")
+			.. " (Mk-I elevator ran " .. tostring(st.on) .. " of 7 Mk-I modules)")
+	end
+end
+
+--- Electric mine (issue #335, prototypes/163-fork-electric-mine.lua): two Manual Mines with the iron vein recipe, a
+--- pickaxe and manual labor in their input slots and raw iron in their output slot (stopped by script, so the slots stay
+--- as they are), each with an inserter and a belt on two sides. Mine A is replaced by fast replace (no player: what the
+--- plant cannot take is spilled), mine B by the upgrade planner's mapping Manual Mine -> Mk I and the T1 construction
+--- robots of a T1 roboport (issue #336: the roboport must take them, and the T1 logistic robots) with the plant in a
+--- storage chest (the robots bring the old machine and its items back). The
+--- neighbours must stay, the items come back (on the ground, in the storage chest), and plant A drills the iron vein's
+--- twin with Drilling Fluid and 9 mining pipes (issue #341, used up: #346): 64 raw iron in 12 s. Issue #337: the Manual Mine's upgrade chain goes through the LV, MV and
+--- HV Miner to the plant; a third Manual Mine is replaced by fast replace with the HV Miner, which mines the iron vein's
+--- Miner twin: 64 raw iron in 6 s, and its 9 mining pipes are used up (issue #346).
+local EM_X, EM_Y = 260.5, -120.5
+local EM_C = 60                                          -- mine C (the HV Miner): x offset
+local EM_CHAIN = { "manual-mine", "lv-miner", "mv-miner", "hv-miner", "ore-drilling-plant-mk1" }
+--- Issue #342: a replaced mine keeps its vein (scripts/fork-electric-mine.lua). E: replaced by script after the remote
+--- note_replace (what on_pre_build does for a player): Manual Mine -> LV Miner -> MV Miner -> Mk I must give
+--- miner-iron-vein, miner-iron-vein, drilling-iron-vein; a Manual Mine hunting blazes replaced by a Mk I has no recipe and
+--- spills its manual labor. D: the same by order_upgrade and the T1 robots of a second network (each step on its own
+--- mine); B (the upgrade planner above) must give drilling-iron-vein too.
+local EM_E_Y, EM_D_Y = -105.5, -122.5
+local EM_D = { { 352.5, "manual-mine", "mining-iron-vein", "lv-miner", "miner-iron-vein" },
+	{ 360.5, "lv-miner", "miner-iron-vein", "mv-miner", "miner-iron-vein" },
+	{ 368.5, "mv-miner", "miner-iron-vein", "ore-drilling-plant-mk1", "drilling-iron-vein" },
+	{ 376.5, "manual-mine", "hunting-blazes", "ore-drilling-plant-mk1", nil } }
+local EM_LABOR = 10
+
+local function em_mine(s, name, x, y, recipe)
+	local e = s.create_entity{ name = name, position = { x, y }, force = "player", raise_built = true }
+	e.set_recipe(recipe)
+	e.disabled_by_script = true
+	if recipe == "hunting-blazes" then
+		assert(e.get_inventory(defines.inventory.assembling_machine_input).insert{ name = "manual-labor", count = EM_LABOR }
+			== EM_LABOR, "the hunting manual mine took no manual labor")
+	end
+	return e
+end
+local function em_recipe(e) return e and e.valid and e.get_recipe() and e.get_recipe().name or nil end
+local EM_B = 30                                          -- mine B: x offset
+local EM_ITEMS = { ["iron-pickaxe-usage"] = 1, ["manual-labor"] = 2, ["raw-iron"] = 10 }
+local EM_PLANT = "ore-drilling-plant-mk1"
+
+local function em_site(s, x, y)
+	local mine = s.create_entity{ name = "manual-mine", position = { x, y }, force = "player", raise_built = true }
+	mine.set_recipe("mining-iron-vein")
+	mine.disabled_by_script = true
+	local input = mine.get_inventory(defines.inventory.assembling_machine_input)
+	assert(input.insert{ name = "iron-pickaxe-usage", count = 1 } == 1, "the manual mine took no pickaxe")
+	assert(input.insert{ name = "manual-labor", count = 2 } == 2, "the manual mine took no manual labor")
+	assert(mine.get_inventory(defines.inventory.assembling_machine_output).insert{ name = "raw-iron", count = 10 } == 10,
+		"the manual mine's output slot took no raw iron")
+	local around = {}
+	for _, n in pairs({ { "inserter", 0, -3, defines.direction.north }, { "transport-belt", 0, 3, defines.direction.east },
+		{ "inserter", 3, 0, defines.direction.east }, { "transport-belt", -3, 0, defines.direction.north } }) do
+		local e = s.create_entity{ name = n[1], position = { x + n[2], y + n[3] }, direction = n[4], force = "player",
+			raise_built = true }
+		around[#around + 1] = e
+	end
+	return mine, around
+end
+
+local function em_items_in(list)
+	local out = {}
+	for _, e in pairs(list) do
+		if e.valid then
+			if e.type == "item-entity" then
+				out[e.stack.name] = (out[e.stack.name] or 0) + e.stack.count
+			else
+				for _, c in pairs(e.get_inventory(defines.inventory.chest).get_contents()) do
+					out[c.name] = (out[c.name] or 0) + c.count
+				end
+			end
+		end
+	end
+	return out
+end
+
+function setup_emine_test(s)
+	local fails = {}
+	local ok, err = pcall(function()
+		local st = { phase = 0 }
+		storage.emine = st
+		for _, r in pairs({ "mining-iron-vein", "drilling-iron-vein", "miner-iron-vein", "hunting-blazes" }) do
+			game.forces.player.recipes[r].enabled = true
+		end
+		st.a, st.a_around = em_site(s, EM_X, EM_Y)
+		st.b, st.b_around = em_site(s, EM_X + EM_B, EM_Y)
+		st.c = em_site(s, EM_X + EM_C, EM_Y)
+		for _, x in pairs({ EM_X, EM_X + EM_B, EM_X + EM_C }) do
+			s.create_entity{ name = "substation", position = { x + 5.5, EM_Y - 4.5 }, force = "player" }
+			s.create_entity{ name = "electric-energy-interface", position = { x + 8.5, EM_Y - 4.5 }, force = "player" }
+		end
+		local port = s.create_entity{ name = "roboport-mk1", position = { EM_X + EM_B + 7.5, EM_Y + 1.5 }, force = "player",
+			raise_built = true }
+		--- issue #336: the T1 robots' items place their robots, so the T1 roboport takes them
+		local robots = port.get_inventory(defines.inventory.roboport_robot)
+		assert(robots.insert{ name = "t1-construction-robot", count = 10 } == 10, "the T1 roboport took no T1 construction robots")
+		assert(robots.insert{ name = "t1-logistic-robot", count = 10 } == 10, "the T1 roboport took no T1 logistic robots")
+		port.energy = 300e6                                -- (it works from 60 MJ on, recharge_minimum)
+		st.chest = s.create_entity{ name = "storage-chest", position = { EM_X + EM_B + 11.5, EM_Y + 1.5 }, force = "player",
+			raise_built = true }
+		st.chest.insert{ name = EM_PLANT, count = 1 }
+		--- issue #342: D, a second robot network (its logistic area apart from B's)
+		st.d = {}
+		for i, m in pairs(EM_D) do st.d[i] = em_mine(s, m[2], m[1], EM_D_Y, m[3]) end
+		local dport = s.create_entity{ name = "roboport-mk1", position = { 368, -110 }, force = "player", raise_built = true }
+		dport.get_inventory(defines.inventory.roboport_robot).insert{ name = "t1-construction-robot", count = 10 }
+		dport.energy = 300e6
+		s.create_entity{ name = "substation", position = { 372, -114 }, force = "player" }
+		s.create_entity{ name = "electric-energy-interface", position = { 375, -114 }, force = "player" }
+		st.dchest = s.create_entity{ name = "storage-chest", position = { 372.5, -109.5 }, force = "player", raise_built = true }
+		for _, n in pairs({ "lv-miner", "mv-miner", EM_PLANT, EM_PLANT }) do st.dchest.insert{ name = n, count = 1 } end
+	end)
+	if not ok then fails[#fails + 1] = "electric mine test: " .. tostring(err) end
+	return fails
+end
+
+function emine_test()
+	local st = storage.emine
+	if not st or st.done then return end
+	local t, s, problems = game.tick, game.surfaces[1], {}
+	local function expect(ok, what) if not ok then problems[#problems + 1] = what end end
+	local function around_kept(list, site)
+		local kept = 0
+		for _, e in pairs(list) do if e.valid then kept = kept + 1 end end
+		expect(kept == #list, site .. ": " .. kept .. " of " .. #list .. " neighbouring inserters and belts stayed")
+	end
+	local function items_back(found, site)
+		for name, n in pairs(EM_ITEMS) do
+			expect((found[name] or 0) == n, site .. ": " .. (found[name] or 0) .. " of " .. n .. " " .. name .. " came back")
+		end
+	end
+	if st.phase == 0 and t >= 20 then
+		local mm = prototypes.entity["manual-mine"]
+		for i = 1, #EM_CHAIN - 1 do
+			local e = prototypes.entity[EM_CHAIN[i]]
+			expect(e.next_upgrade and e.next_upgrade.name == EM_CHAIN[i + 1], EM_CHAIN[i] .. "'s next upgrade is "
+				.. tostring(e.next_upgrade and e.next_upgrade.name) .. ", not " .. EM_CHAIN[i + 1])
+			expect(e.fast_replaceable_group == mm.fast_replaceable_group, EM_CHAIN[i + 1] .. " is not in the manual mine's"
+				.. " fast replace group")
+		end
+		--- C (issue #337): fast replace with the HV Miner, the iron vein's Miner twin with its 9 mining pipes
+		local okc, miner = pcall(function()
+			return s.create_entity{ name = "hv-miner", position = st.c.position, force = "player", fast_replace = true,
+				spill = true, raise_built = true }
+		end)
+		expect(okc and miner and miner.valid and miner.name == "hv-miner", "fast replace: no HV Miner built (" .. tostring(miner) .. ")")
+		if okc and miner and miner.valid then
+			st.miner = miner
+			miner.set_recipe("miner-iron-vein")
+			expect(miner.get_inventory(defines.inventory.assembling_machine_input).insert{ name = "mining-pipe", count = 9 } == 9,
+				"the HV Miner took no mining pipes")
+		end
+		--- A: fast replace
+		local pos = st.a.position
+		local ok, plant = pcall(function()
+			return s.create_entity{ name = EM_PLANT, position = pos, force = "player", fast_replace = true, spill = true,
+				raise_built = true }
+		end)
+		expect(ok and plant and plant.valid and plant.name == EM_PLANT, "fast replace: no Mk I built (" .. tostring(plant) .. ")")
+		expect(not st.a.valid, "fast replace: the manual mine is still there")
+		if ok and plant and plant.valid then
+			st.plant = plant
+			around_kept(st.a_around, "fast replace")
+			local area = { { pos.x - 6, pos.y - 6 }, { pos.x + 6, pos.y + 6 } }
+			items_back(em_items_in(s.find_entities_filtered{ area = area, type = "item-entity" }), "fast replace")
+			expect(plant.get_recipe() == nil, "fast replace: the Mk I kept a recipe")
+			plant.set_recipe("drilling-iron-vein")
+			expect(plant.insert_fluid{ name = "drilling-fluid", amount = 400 } == 400, "the Mk I took no drilling fluid")
+			--- issue #341: the plant takes mining pipes like the miners (used up, issue #346)
+			expect(plant.get_inventory(defines.inventory.assembling_machine_input).insert{ name = "mining-pipe", count = 9 } == 9,
+				"the Mk I took no mining pipes")
+		end
+		--- issue #342, E: the chain by script, each step noted first as on_pre_build does for a player
+		local e = em_mine(s, "manual-mine", EM_X, EM_E_Y, "mining-iron-vein")
+		st.e_chain = {}
+		for _, name in pairs({ "lv-miner", "mv-miner", EM_PLANT }) do
+			remote.call("fork-electric-mine", "note_replace", e)
+			e = s.create_entity{ name = name, position = { EM_X, EM_E_Y }, force = "player", fast_replace = true, spill = true,
+				raise_built = true }
+			st.e_chain[#st.e_chain + 1] = tostring(em_recipe(e))
+		end
+		expect(table.concat(st.e_chain, ",") == "miner-iron-vein,miner-iron-vein,drilling-iron-vein",
+			"replaced by script: the recipes were " .. table.concat(st.e_chain, ", "))
+		local h = em_mine(s, "manual-mine", EM_X + 10, EM_E_Y, "hunting-blazes")
+		remote.call("fork-electric-mine", "note_replace", h)
+		h = s.create_entity{ name = EM_PLANT, position = { EM_X + 10, EM_E_Y }, force = "player", fast_replace = true,
+			spill = true, raise_built = true }
+		expect(h and h.valid and em_recipe(h) == nil, "hunting blazes replaced by a Mk I: recipe " .. tostring(em_recipe(h)))
+		local labor = em_items_in(s.find_entities_filtered{ area = { { EM_X + 6, EM_E_Y - 4 }, { EM_X + 14, EM_E_Y + 4 } },
+			type = "item-entity" })["manual-labor"] or 0
+		expect(labor == EM_LABOR, "hunting blazes replaced by a Mk I: " .. labor .. " of " .. EM_LABOR .. " manual labor came back")
+		--- issue #342, D: order_upgrade (on_marked_for_upgrade) and the robots
+		for i, m in pairs(EM_D) do st.d[i].order_upgrade{ target = m[4], force = "player" } end
+		--- B: the upgrade planner
+		local inv = game.create_inventory(1)
+		inv.insert{ name = "upgrade-planner" }
+		local planner = inv[1]
+		planner.set_mapper(1, "from", { type = "entity", name = "manual-mine" })
+		planner.set_mapper(1, "to", { type = "entity", name = EM_PLANT })
+		local bp = st.b.position
+		s.upgrade_area{ area = { { bp.x - 2, bp.y - 2 }, { bp.x + 2, bp.y + 2 } }, force = "player", item = planner }
+		expect(st.b.to_be_upgraded(), "upgrade planner: the manual mine is not marked for the upgrade")
+		inv.destroy()
+		st.phase, st.t1 = 1, t
+	elseif st.phase == 1 then
+		local bp = { EM_X + EM_B, EM_Y }
+		local b = s.find_entity(EM_PLANT, bp)
+		local back = em_items_in({ st.chest })
+		local all_back = b and (back["manual-mine"] or 0) == 1
+		for name, n in pairs(EM_ITEMS) do all_back = all_back and (back[name] or 0) == n end
+		local drilled = st.plant and st.plant.valid and st.plant.get_inventory(defines.inventory.assembling_machine_output)
+			.get_item_count("raw-iron") or 0
+		local mout = st.miner and st.miner.valid and st.miner.get_inventory(defines.inventory.assembling_machine_output)
+		local mined = mout and mout.get_item_count("raw-iron") or 0
+		local pipes = st.miner and st.miner.valid and st.miner.get_item_count("mining-pipe") or 0
+		local d_done = true
+		for _, m in pairs(EM_D) do if not s.find_entity(m[4], { m[1], EM_D_Y }) then d_done = false end end
+		if (all_back and drilled >= 64 and mined >= 64 and d_done) or t >= st.t1 + 1200 then
+			--- issue #342: the recipes after the robots' upgrades
+			expect(em_recipe(b) == "drilling-iron-vein", "upgrade planner: the Mk I's recipe is " .. tostring(em_recipe(b)))
+			for _, m in pairs(EM_D) do
+				local new = s.find_entity(m[4], { m[1], EM_D_Y })
+				expect(new ~= nil and em_recipe(new) == m[5], "robots: " .. m[2] .. " with " .. m[3] .. " -> " .. m[4] .. ": "
+					.. (new and ("recipe " .. tostring(em_recipe(new))) or "not built") .. ", not " .. tostring(m[5]))
+			end
+			local dback = em_items_in({ st.dchest })["manual-labor"] or 0
+			expect(dback == EM_LABOR, "robots: " .. dback .. " of " .. EM_LABOR .. " manual labor of the hunting mine came back")
+			expect(mined == 64 and pipes == 0, "the HV Miner mined " .. mined .. " raw iron and kept " .. pipes
+				.. " mining pipes (64 in 6 s, the 9 pipes used up; status " .. tostring(st.miner and st.miner.valid and st.miner.status) .. ")")
+			st.mined = mined
+			expect(b ~= nil, "upgrade planner: no Mk I at the manual mine's place after " .. (t - st.t1) .. " ticks")
+			expect((back["manual-mine"] or 0) == 1, "upgrade planner: the manual mine did not come back to the storage chest")
+			items_back(back, "upgrade planner")
+			around_kept(st.b_around, "upgrade planner")
+			st.drilled, st.ticks = drilled, t - st.t1
+			expect(drilled >= 64, "the Mk I drilled " .. drilled .. " raw iron (64 in 12 s with drilling fluid; status "
+				.. tostring(st.plant and st.plant.valid and st.plant.status) .. ")")
+			local left = st.plant and st.plant.valid and st.plant.get_item_count("mining-pipe") or 0
+			expect(left == 0, "the Mk I kept " .. left .. " of its 9 mining pipes (issue #346: used up)")
+			st.done = true
+		end
+	end
+	if st.done or #problems > 0 then
+		st.done = true
+		for _, p in pairs(problems) do log("DEVCHECK-RUNTIME-FAIL electric mine test: " .. p) end
+		log("DEVCHECK-RUNTIME-EMINE " .. (#problems == 0 and "ok" or "failed") .. " (fast replace and upgrade planner, "
+			.. tostring(st.drilled) .. " raw iron drilled, " .. tostring(st.mined) .. " mined by the HV Miner, "
+			.. tostring(st.ticks) .. " ticks)")
+	end
+end
+
 script.on_event(defines.events.on_tick, function(event)
 	fuel_window_tick()
 	chain_tick(event.tick)
 	lsc_tick(event.tick)
 	cooled_load_tick(event.tick)
-	local m = storage.mold_machine
 	if storage.mold_done then return end
-	local function glass_made()
-		return m and m.valid and m.get_inventory(defines.inventory.crafter_output or defines.inventory.assembling_machine_output).get_item_count("glass") or 0
-	end
-	--- phase 2 as soon as the first glass is out, at the latest MOLD_DEADLINE ticks after the mold went in
-	local phase
-	if not storage.mold_phase1 and event.tick >= 60 then
-		phase = 1
-		storage.mold_phase1 = event.tick
-	elseif storage.mold_phase1 and (glass_made() > 0 or event.tick >= storage.mold_phase1 + MOLD_DEADLINE) then
-		phase = 2
-		storage.mold_done = true
-	else
-		return
-	end
-	local problems = {}
-	local function expect(ok, what) if not ok then problems[#problems + 1] = what end end
-	expect(m and m.valid, "mold test machine missing")
-	if #problems == 0 then
-		local glass = glass_made()
-		local inv = m.get_module_inventory()
-		if phase == 1 then
-			expect(m.disabled_by_script, "mold test: machine without mold is not stopped")
-			expect(glass == 0, "mold test: crafted " .. glass .. " glass without a mold")
-			expect(inv and inv.insert{ name = "mold", count = 1 } == 1, "mold test: mold does not fit into the mold slot")
-		else
-			expect(not m.disabled_by_script, "mold test: machine with mold is still stopped")
-			expect(glass > 0, "mold test: no glass crafted with the mold inserted")
-			expect(inv.get_item_count("mold") == 1, "mold test: mold left the mold slot")
-			expect(m.get_item_count("mold") == 1, "mold test: mold was duplicated or moved")
-			log("DEVCHECK-RUNTIME-MOLD " .. (#problems == 0 and "ok" or "failed") .. " (glass " .. glass .. " after " .. (event.tick - storage.mold_phase1) .. " ticks)")
+	local running = false
+	for i, t in pairs(TOOL_TESTS) do
+		local st = (storage.mold_tests or {})[i]
+		if st and not st.done then
+			running = true
+			tool_test_tick(t, st, event.tick)
 		end
 	end
-	for _, p in pairs(problems) do log("DEVCHECK-RUNTIME-FAIL " .. p) end
-	if #problems > 0 and phase == 1 then
-		storage.mold_done = true
-		log("DEVCHECK-RUNTIME-MOLD failed")
-	end
+	if not running then storage.mold_done = true end
 end)
 
 script.on_nth_tick(10, function()
@@ -1719,8 +2097,10 @@ script.on_nth_tick(10, function()
 	chain_test()
 	lsc_test()
 	lsup_test()
+	elevator_test()
 	offer_test()
 	melt_test()
+	emine_test()
 	victory_test()
 end)
 
@@ -1788,8 +2168,10 @@ script.on_init(function()
 	for _, f in pairs(setup_chain_test(s)) do fails[#fails + 1] = f end
 	for _, f in pairs(setup_lsc_test(s)) do fails[#fails + 1] = f end
 	for _, f in pairs(setup_lsup_test(s)) do fails[#fails + 1] = f end
+	for _, f in pairs(setup_elevator_test(s)) do fails[#fails + 1] = f end
 	for _, f in pairs(setup_offer_test(s)) do fails[#fails + 1] = f end
 	for _, f in pairs(setup_melt_test(s)) do fails[#fails + 1] = f end
+	for _, f in pairs(setup_emine_test(s)) do fails[#fails + 1] = f end
 	log("DEVCHECK-RUNTIME placed=" .. placed .. " with_recipe=" .. with_recipe .. " failed=" .. #fails)
 	for _, f in pairs(fails) do log("DEVCHECK-RUNTIME-FAIL " .. f) end
 end)

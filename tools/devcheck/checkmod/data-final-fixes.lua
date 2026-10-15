@@ -80,6 +80,10 @@ for t, _ in pairs(defines.prototypes.entity) do
 		end
 	end
 end
+--- K recipe item: the mold or lens a recipe needs in the machine's module slot, not as an ingredient
+--- (prototypes/150-fork-molds.lua, issue #316; absent in older versions)
+local md = data.raw["mod-data"] and data.raw["mod-data"]["fork-mold-recipes"]
+for n, item in pairs(md and md.data or {}) do D("K", n, item) end
 section("DUMP", dump)
 
 --- Issue #91: the Gregtorio recipes that stay locked on purpose (FORK_RECIPES_LOCKED in
@@ -88,11 +92,71 @@ local lk = {}
 for name, reason in pairs(FORK_RECIPES_LOCKED or {}) do lk[#lk + 1] = name .. "\t" .. reason end
 section("LOCKEDOK", lk)
 
+--- Issue #237: the causes of recipes unlocked before their technology's science can make them, kept on purpose
+--- (FORK_UNLOCK_GAPS in prototypes/142-fork-recipe-unlocks.lua, "<technology>:<cause>" -> reason; absent in older versions)
+local ug = {}
+for key, reason in pairs(FORK_UNLOCK_GAPS or {}) do ug[#ug + 1] = key .. "\t" .. reason end
+section("UNLOCKGAPOK", ug)
+
+--- Issue #252: items a technology's recipes take that its prerequisites do not make yet, kept on purpose
+--- (FORK_UNLOCK_TREE_GAPS in prototypes/142-fork-recipe-unlocks.lua, "<technology>:<item>" -> reason; absent in older versions)
+local ut = {}
+for key, reason in pairs(FORK_UNLOCK_TREE_GAPS or {}) do ut[#ut + 1] = key .. "\t" .. reason end
+section("UNLOCKTREEOK", ut)
+
 --- Issue #126: the recipes of items only the crafting table, the ME Molecular Assembler or the hand can make, on purpose
 --- (FORK_RECIPES_TABLE_ONLY in prototypes/148-fork-gtnh-table-items.lua; absent in older versions)
 local tk = {}
 for name, reason in pairs(FORK_RECIPES_TABLE_ONLY or {}) do tk[#tk + 1] = name .. "\t" .. reason end
 section("TABLEONLYOK", tk)
+
+--- Issue #318: the vanilla recipes without a technology, of items Gregtorio makes, that stay on purpose
+--- (FORK_VANILLA_RECIPES_KEPT in data-final-fixes.lua; absent in older versions)
+local vk = {}
+for name, reason in pairs(FORK_VANILLA_RECIPES_KEPT or {}) do vk[#vk + 1] = name .. "\t" .. reason end
+section("VANILLAKEPT", vk)
+
+--- Issue #325: the laser engraver recipes that keep no lens on purpose (FORK_ENGRAVER_NO_LENS in
+--- prototypes/155-fork-ore-chain.lua; absent in older versions)
+local nl = {}
+for name, reason in pairs(FORK_ENGRAVER_NO_LENS or {}) do nl[#nl + 1] = name .. "\t" .. reason end
+section("ENGRAVERNOLENS", nl)
+
+--- Issue #335: the Manual Mine and Dig Site recipes, their electric twins (FORK_ELECTRIC_MINE.twins in
+--- prototypes/163-fork-electric-mine.lua; issue #337: FORK_ELECTRIC_MINE.miner_twins of the miners) and the ones without
+--- a twin on purpose (FORK_ELECTRIC_MINE_EXCLUDED); one row per name: name, "manual" or "-", the twin or "-", the
+--- allow-list reason, the miners' twin or "-" (absent in older versions)
+local em, em_seen = {}, {}
+local function em_row(name)
+	if em_seen[name] then return end
+	em_seen[name] = true
+	local fem = FORK_ELECTRIC_MINE or {}
+	local r, twin, miner = data.raw.recipe[name], (fem.twins or {})[name], (fem.miner_twins or {})[name]
+	local manual = r and (r.category == "manual-mine-recipes" or r.category == "manual-digsite-recipes")
+	em[#em + 1] = table.concat({ name, manual and "manual" or "-", (twin and data.raw.recipe[twin]) and twin or "-",
+		(FORK_ELECTRIC_MINE_EXCLUDED or {})[name] or "", (miner and data.raw.recipe[miner]) and miner or "-" }, "\t")
+end
+for name, r in pairs(data.raw.recipe) do
+	if r.category == "manual-mine-recipes" or r.category == "manual-digsite-recipes" then em_row(name) end
+end
+for name in pairs(FORK_ELECTRIC_MINE_EXCLUDED or {}) do em_row(name) end
+section("ELECTRICMINE", em)
+
+--- Issue #214: the recipes of me-network (ME_NETWORK.recipes) and which of them prototypes/120-fork-me-network-compat.lua
+--- gives a Gregtorio recipe (FORK_ME_RECIPES) or keeps standalone on purpose (FORK_ME_RECIPES_STANDALONE); one row per
+--- name: name, "me" (a recipe of me-network) or "-", "gregtorio" or "-", the allow-list reason (absent in older versions)
+local mr, mr_seen = {}, {}
+local function me_row(name)
+	if mr_seen[name] then return end
+	mr_seen[name] = true
+	local listed = false
+	for _, n in pairs(ME_NETWORK and ME_NETWORK.recipes or {}) do if n == name then listed = true end end
+	mr[#mr + 1] = table.concat({ name, listed and "me" or "-", (FORK_ME_RECIPES or {})[name] and "gregtorio" or "-",
+		(FORK_ME_RECIPES_STANDALONE or {})[name] or "" }, "\t")
+end
+for _, name in pairs(ME_NETWORK and ME_NETWORK.recipes or {}) do me_row(name) end
+for name in pairs(FORK_ME_RECIPES_STANDALONE or {}) do me_row(name) end
+section("MERECIPES", mr)
 
 --- Issue #202: the raw ores without a forge hammer recipe on purpose (FORK_ORE_HAMMER_SKIP in
 --- prototypes/155-fork-ore-chain.lua; absent in older versions)
@@ -155,20 +219,12 @@ for n, e in pairs(data.raw["assembling-machine"]) do
 end
 section("SPRITES", sprites)
 
---- Prototypes with a Gregtorio icon, for locale checks (tools/gen_locale.py input format)
-local loc = {}
-local function greg(p) return type(p.icon) == "string" and p.icon:sub(1, 24) == "__gregtorio-continued__/" end
-for t, _ in pairs(defines.prototypes.item) do
-	for n, p in pairs(data.raw[t] or {}) do if greg(p) then loc[#loc + 1] = "item-name\t" .. n end end
-end
-for n, p in pairs(data.raw.fluid) do if greg(p) then loc[#loc + 1] = "fluid-name\t" .. n end end
-for n, p in pairs(data.raw.technology) do
-	if greg(p) and p.enabled ~= false then loc[#loc + 1] = "technology-name\t" .. n end
-end
-for t, _ in pairs(defines.prototypes.entity) do
-	for n, p in pairs(data.raw[t] or {}) do if greg(p) and p.minable then loc[#loc + 1] = "entity-name\t" .. n end end
-end
-section("LOCALE", loc)
+--- Issue #230: the prototypes that stay without a name on purpose (FORK_LOCALE_MISSING in prototypes/fork-locale.lua,
+--- "<class>:<name>" -> reason; absent in older versions). The names themselves are checked on the runtime prototypes
+--- (section NAMES of control.lua): only the engine knows the name it resolves and the mod that created a prototype.
+local lo = {}
+for key, reason in pairs(FORK_LOCALE_MISSING or {}) do lo[#lo + 1] = key .. "\t" .. reason end
+section("LOCALEOK", lo)
 
 --- Technology icons
 local ti = {}

@@ -281,6 +281,24 @@ create_recipe{
 	main_product = "raw-nether-quartz"
 }  
 
+---MINING GLOWSTONE VEIN (issue #278): GTNH's glowstone is vanilla's from the Nether (no GT ore vein holds it); Gregtorio
+---has no Nether, so a manual mine like the Nether quartz one gives the dust directly (glowstone is no ore here: no raw
+---item, no ore chain). The redstone and cinnabar byproduct of 155-fork-ore-chain.lua stays GT's second, late source.
+create_recipe{
+	name = "mining-glowstone-vein",
+	category = "manual-mine-recipes",
+	energy_required = 10,
+	subgroup = "subgroup-mining",
+	ingredients = {
+		{ type = "item", name = "iron-pickaxe-usage", amount = 1 },
+		{ type = "item", name = "manual-labor", amount = 24 }
+	},
+	results = {
+		{ type = "item", name = "glowstone-dust", amount = 32 }
+	},
+	main_product = "glowstone-dust"
+}
+
 ---MINING APATITE VEIN
 create_recipe{
 	name = "mining-apatite-vein",
@@ -338,391 +356,6 @@ create_recipe{
 
 
 
----TIER ONE MICROMINER OUTPUTS
-create_recipe{
-    name = "microminer-magnetite",
-    category = "lv-assembling-machine-recipes",	
-    energy_required = 2,
-    subgroup = "subgroup-microminer-t1",	
-	ingredients = {
-      {type = "item", name = "tier-one-microminer-output", amount = 1}
-    },
-    results = {
-      {type = "item", name = "raw-iron", amount = 34},
-      {type = "item", name = "raw-vanadium-magnetite", amount = 20},
-      {type = "item", name = "raw-gold", amount = 10},
-    },
-	main_product = "raw-iron"
-}
-create_recipe{
-    name = "microminer-coal",
-    category = "lv-assembling-machine-recipes",	
-    energy_required = 2,
-    subgroup = "subgroup-microminer-t1",	
-	ingredients = {
-      {type = "item", name = "tier-one-microminer-output", amount = 1},
-    },
-    results = {
-      {type = "item", name = "raw-coal", amount = 64 },
-    }
-}
-create_recipe{
-    name = "microminer-salt",
-    category = "lv-assembling-machine-recipes",	
-    energy_required = 2,
-    subgroup = "subgroup-microminer-t1",	
-	ingredients = {
-      {type = "item", name = "tier-one-microminer-output", amount = 1}
-    },
-    results = {
-      {type = "item", name = "raw-salt", amount = 34 },
-      {type = "item", name = "raw-rock-salt", amount = 20 },
-      {type = "item", name = "raw-lepidolite", amount = 10 },
-    },
-	main_product = "raw-salt"
-}   
-create_recipe{
-    name = "microminer-cassiterite",
-    category = "lv-assembling-machine-recipes",	
-    energy_required = 2,
-    subgroup = "subgroup-microminer-t1",	
-	ingredients = {
-      {type = "item", name = "tier-one-microminer-output", amount = 1}
-    },
-    results = {
-		{ type = "item", name = "raw-tin", amount = 42 },
-		{ type = "item", name = "raw-cassiterite", amount = 22 },
-    },
-	main_product = "raw-cassiterite"
-}
-create_recipe{
-    name = "microminer-copper-tin",
-    category = "lv-assembling-machine-recipes",	
-    energy_required = 2,
-    subgroup = "subgroup-microminer-t1",	
-	ingredients = {
-      {type = "item", name = "tier-one-microminer-output", amount = 1}
-    },
-    results = {
-      {type = "item", name = "raw-copper", amount = 40 },
-      {type = "item", name = "raw-tin", amount = 16 },
-      {type = "item", name = "raw-realgar", amount = 8 },
-    },
-	main_product = "raw-copper"
-}
-create_recipe{
-    name = "microminer-copper-tin",
-    category = "lv-assembling-machine-recipes",	
-    energy_required = 2,
-    subgroup = "subgroup-microminer-t1",	
-	ingredients = {
-      {type = "item", name = "tier-one-microminer-output", amount = 1}
-    },
-    results = {
-      {type = "item", name = "raw-copper", amount = 40 },
-      {type = "item", name = "raw-tin", amount = 16 },
-      {type = "item", name = "raw-realgar", amount = 8 },
-    },
-	main_product = "raw-copper"
-}
-create_recipe{
-    name = "microminer-redstone",
-    category = "lv-assembling-machine-recipes",	
-    energy_required = 2,
-    subgroup = "subgroup-microminer-t1",	
-	ingredients = {
-      {type = "item", name = "tier-one-microminer-output", amount = 1}
-    },
-    results = {
-      {type = "item", name = "raw-redstone", amount = 40 },
-      {type = "item", name = "raw-ruby", amount = 16 },
-      {type = "item", name = "raw-cinnabar", amount = 8 },
-    },
-	main_product = "raw-redstone"
-}
-create_recipe{
-    name = "microminer-basaltic-mineral-sands",
-    category = "lv-assembling-machine-recipes",	
-    energy_required = 2,
-    subgroup = "subgroup-microminer-t1",	
-	ingredients = {
-      {type = "item", name = "tier-one-microminer-output", amount = 1}
-    },
-    results = {
-      {type = "item", name = "raw-iron", amount = 40 },
-      {type = "item", name = "raw-fullers-earth", amount = 16 },
-      {type = "item", name = "raw-gypsum", amount = 8 },
-    },
-	main_product = "raw-iron"
-}
-create_recipe{
-    name = "microminer-apatite",
-    category = "lv-assembling-machine-recipes",	
-    energy_required = 2,
-    subgroup = "subgroup-microminer-t1",	
-	ingredients = {
-      {type = "item", name = "tier-one-microminer-output", amount = 1}
-    },
-    results = {
-      {type = "item", name = "raw-apatite", amount = 40 },
-      {type = "item", name = "raw-tricalcium-phosphate", amount = 16 },
-      {type = "item", name = "raw-pyrochlore", amount = 8 },
-    },
-	main_product = "raw-apatite"
-}
-create_recipe{
-    name = "microminer-clay",
-    category = "lv-assembling-machine-recipes",	
-    energy_required = 2,
-    subgroup = "subgroup-microminer-t1",	
-	ingredients = {
-      {type = "item", name = "tier-one-microminer-output", amount = 1}
-    },
-    results = {
-      {type = "item", name = "clay-ball", amount = 64 },
-    },
-	main_product = "clay-ball"
-}
-create_recipe{
-    name = "microminer-nickel",
-    category = "lv-assembling-machine-recipes",	
-    energy_required = 2,
-    subgroup = "subgroup-microminer-t1",	
-	ingredients = {
-      {type = "item", name = "tier-one-microminer-output", amount = 2}
-    },
-    results = {
-      {type = "item", name = "raw-nickel", amount = 40 },
-      {type = "item", name = "raw-pentlandite", amount = 16 },
-      {type = "item", name = "raw-cobaltite", amount = 8 },
-    },
-	main_product = "raw-nickel"
-}  
-create_recipe{
-    name = "microminer-tetrahedrite",
-    category = "lv-assembling-machine-recipes",	
-    energy_required = 2,
-    subgroup = "subgroup-microminer-t1",	
-	ingredients = {
-      {type = "item", name = "tier-one-microminer-output", amount = 2}
-    },
-    results = {
-      {type = "item", name = "raw-tetrahedrite", amount = 40 },
-      {type = "item", name = "raw-copper", amount = 16 },
-      {type = "item", name = "raw-stibnite", amount = 8 },
-    },
-	main_product = "raw-tetrahedrite"
-}
-create_recipe{
-    name = "microminer-lapis",
-    category = "lv-assembling-machine-recipes",	
-    energy_required = 2,
-    subgroup = "subgroup-microminer-t1",	
-	ingredients = {
-      {type = "item", name = "tier-one-microminer-output", amount = 2}
-    },
-    results = {
-      {type = "item", name = "raw-lazurite", amount = 24 },
-      {type = "item", name = "raw-sodalite", amount = 16 },
-      {type = "item", name = "raw-lapis", amount = 16 },
-      {type = "item", name = "raw-calcite", amount = 8 },
-    },
-	main_product = "raw-lapis"
-}
-create_recipe{
-    name = "microminer-galena",
-    category = "lv-assembling-machine-recipes",	
-    energy_required = 2,
-    subgroup = "subgroup-microminer-t1",	
-	ingredients = {
-      {type = "item", name = "tier-one-microminer-output", amount = 2}
-    },
-    results = {
-      {type = "item", name = "raw-galena", amount = 24 },
-      {type = "item", name = "raw-lead", amount = 16 },
-      {type = "item", name = "raw-silver", amount = 16 },
-      {type = "item", name = "raw-cryolite", amount = 8 },
-    },
-	main_product = "raw-galena"
-}
-create_recipe{
-    name = "microminer-diamond",
-    category = "lv-assembling-machine-recipes",	
-    energy_required = 2,
-    subgroup = "subgroup-microminer-t1",	
-	ingredients = {
-      {type = "item", name = "tier-one-microminer-output", amount = 3},
-    },
-    results = {
-      {type = "item", name = "raw-graphite", amount = 40},
-      {type = "item", name = "raw-diamond", amount = 18},
-      {type = "item", name = "raw-coal", amount = 6},
-    },
-	main_product = "raw-diamond"
-}   
-create_recipe{
-    name = "microminer-manganese",
-    category = "lv-assembling-machine-recipes",	
-    energy_required = 2,
-    subgroup = "subgroup-microminer-t1",	
-	ingredients = {
-      {type = "item", name = "tier-one-microminer-output", amount = 3},
-    },
-    results = {
-      {type = "item", name = "raw-grossular", amount = 24 },
-      {type = "item", name = "raw-spessartine", amount = 16 },
-      {type = "item", name = "raw-pyrolusite", amount = 16 },
-      {type = "item", name = "raw-tantalite", amount = 8 },
-    },
-	main_product = "raw-tantalite"
-}
-
-
-
-
-
-
-
-
-
----TIER TWO MICROMINER OUTPUTS
-create_recipe{
-    name = "microminer-sphalerite",
-    category = "lv-assembling-machine-recipes",	
-    energy_required = 4,
-    subgroup = "subgroup-microminer-t2",	
-	ingredients = {
-      {type = "item", name = "tier-two-microminer-output", amount = 1 },
-    },
-    results = {
-      {type = "item", name = "raw-sulfur", amount = 40 },
-      {type = "item", name = "raw-iron", amount = 16 },
-      {type = "item", name = "raw-sphalerite", amount = 8 },
-    },
-	main_product = "raw-sphalerite"
-}
-create_recipe{
-    name = "microminer-certus-quartz",
-    category = "lv-assembling-machine-recipes",	
-    energy_required = 4,
-    subgroup = "subgroup-microminer-t2",	
-	ingredients = {
-      {type = "item", name = "tier-two-microminer-output", amount = 1 }
-    },
-    results = {
-      {type = "item", name = "raw-nether-quartz", amount = 32},
-      {type = "item", name = "raw-certus-quartz", amount = 24},
-      {type = "item", name = "raw-barite", amount = 8}
-    },
-	main_product = "raw-nether-quartz"
-}
-create_recipe{
-    name = "microminer-beryllium",
-    category = "lv-assembling-machine-recipes",	
-    energy_required = 4,
-    subgroup = "subgroup-microminer-t2",	
-	ingredients = {
-      {type = "item", name = "tier-two-microminer-output", amount = 1 }
-    },
-    results = {
-      {type = "item", name = "raw-beryllium", amount = 48 },
-      {type = "item", name = "raw-emerald", amount = 16 }
-    },
-	main_product = "raw-emerald"
-}
-create_recipe{
-    name = "microminer-ilmenite",
-    category = "lv-assembling-machine-recipes",	
-    energy_required = 4,
-    subgroup = "subgroup-mining",	
-	ingredients = {
-      {type = "item", name = "tier-two-microminer-output", amount = 1 }
-    },
-    results = {
-      {type = "item", name = "raw-bauxite", amount = 32 },
-      {type = "item", name = "raw-ilmenite", amount = 16 },
-      {type = "item", name = "raw-aluminium", amount = 16 },
-    },
-	main_product = "raw-ilmenite"
-}
-create_recipe{
-    name = "microminer-monazite",
-    category = "lv-assembling-machine-recipes",	
-    energy_required = 4,
-    subgroup = "subgroup-microminer-t2",	
-	ingredients = {
-      {type = "item", name = "tier-two-microminer-output", amount = 1 }
-    },
-    results = {
-      {type = "item", name = "raw-bastnasite", amount = 18 },
-      {type = "item", name = "raw-monazite", amount = 18 },
-      {type = "item", name = "raw-molybdenite", amount = 18 },
-      {type = "item", name = "raw-neodymium", amount = 10 },
-    },
-	main_product = "raw-monazite"
-}
-
-
-
-
-
-
-
-
-
----TIER THREE MICROMINER OUTPUTS
-create_recipe{
-    name = "microminer-tungstate",
-    category = "lv-assembling-machine-recipes",	
-    energy_required = 8,
-    subgroup = "subgroup-microminer-t3",	
-	ingredients = {
-      {type = "item", name = "tier-three-microminer-output", amount = 1 }
-    },
-    results = {
-      {type = "item", name = "raw-tungstate", amount = 38 },
-      {type = "item", name = "raw-scheelite", amount = 18 },
-      {type = "item", name = "raw-bauxite", amount = 8 },
-    },
-	main_product = "raw-tungstate"
-}
-create_recipe{
-    name = "microminer-platinum",
-    category = "lv-assembling-machine-recipes",	
-    energy_required = 8,
-    subgroup = "subgroup-microminer-t3",	
-	ingredients = {
-      {type = "item", name = "tier-three-microminer-output", amount = 1 }
-    },
-    results = {
-      {type = "item", name = "raw-bornite", amount = 24 },
-      {type = "item", name = "raw-sheldonite", amount = 16 },
-      {type = "item", name = "raw-platinum", amount = 16 },
-      {type = "item", name = "raw-palladium", amount = 8 },
-    },
-	main_product = "raw-sheldonite"
-}
-create_recipe{
-    name = "microminer-uranium",
-    category = "lv-assembling-machine-recipes",	
-    energy_required = 8,
-    subgroup = "subgroup-microminer-t3",	
-	ingredients = {
-      {type = "item", name = "tier-three-microminer-output", amount = 1 }
-    },
-    results = {
-      {type = "item", name = "raw-pitchblende", amount = 32 },
-      {type = "item", name = "raw-uraninite", amount = 32 },
-    },
-	main_product = "raw-uraninite"
-}
-
-
-
-
-
-
-
 
 
 
@@ -749,7 +382,8 @@ create_recipe{
 create_ore("raw-gold", "gold-ingot", "crushed-gold", "gold-dust", "gold-ingot", "crushed-gold", "gold-dust", "silver-dust", 1, false, true )
 
 --- GYPSUM
-create_ore("raw-gypsum", nil, nil, "gypsum", "gypsum", "gypsum", nil, nil, 1, false, false )
+--- issue #203: GTNH's crushed ore and ore chain (155); the macerator recipe keeps its name "gypsum"
+create_ore("raw-gypsum", nil, "crushed-gypsum", "gypsum", "gypsum", "crushed-gypsum", nil, nil, 1, false, false, "gypsum" )
 
 --- FULLERS EARTH
 create_ore("raw-fullers-earth", nil, "crushed-fullers-earth", "fullers-earth", "fullers-earth", "crushed-fullers-earth", "fullers-earth", "alumina", 1, true, false )
@@ -893,7 +527,8 @@ create_recipe{
 create_ore("raw-stibnite", nil, "crushed-stibnite", nil, "antimony", "crushed-stibnite", "antimony", "antimony", 1, true, false )
 
 ---SULFUR ORE
-create_ore("raw-sulfur", nil, nil, "sulfur", "sulfur", "sulfur", nil, nil, 1, false, false )
+--- issue #203: GTNH's crushed ore and ore chain (155); the macerator recipe keeps its name "sulfur"
+create_ore("raw-sulfur", nil, "crushed-sulfur", "sulfur", "sulfur", "crushed-sulfur", nil, nil, 1, false, false, "sulfur" )
 
 ---SPHALERITE ORE
 create_ore("raw-sphalerite", "zinc-ingot", "crushed-sphalerite", "sphalerite-dust", "zinc-ingot", "crushed-sphalerite", "sphalerite-dust", "gallium", 1, true, false )
@@ -1276,7 +911,8 @@ create_recipe{
 create_ore("raw-pyrochlore", nil, "crushed-pyrochlore", "pyrochlore", "pyrochlore", "crushed-pyrochlore", "pyrochlore", "niobium-dust", 1, true, false )
 
 ---CALCITE ORE
-create_ore("raw-calcite", nil, nil, "calcite", "calcite", "calcite", nil, nil, 1, false, false )
+--- issue #203: GTNH's crushed ore and ore chain (155); the macerator recipe keeps its name "calcite"
+create_ore("raw-calcite", nil, "crushed-calcite", "calcite", "calcite", "crushed-calcite", nil, nil, 1, false, false, "calcite" )
 create_item{
 	name = "calcium",
 	subgroup = "subgroup-mv-electrolyzer-recipes"

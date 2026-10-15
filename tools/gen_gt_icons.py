@@ -97,6 +97,8 @@ MATERIALS = {
     # bartworks Werkstoffe (WerkstoffLoader.java)
     "ruridit": ("METALLIC", (0xA4, 0xA4, 0xA4)),
     "rhodium-plated-palladium": ("SHINY", (0xDC, 0xDC, 0xF0)),      # Materials.Chrome colour, like bartworks
+    # goodgenerator Werkstoff (GGMaterial.java, issue #228)
+    "incoloy-903": ("METALLIC", (0xA4, 0x8F, 0x8B)),
     # GT++ (MaterialsElements.java)
     "rhugnor": ("CUSTOM/rhugnor", (190, 0, 255)),
     # GT builds magmatter with a material builder (TextureSet.SET_MAGMATTER, no colour)
@@ -107,6 +109,8 @@ MATERIALS = {
     "gasoline": "Gasoline",
     # issue #98: black plutonium (hot ingot, ingot), the high octane cell, sodium bisulfate
     "black-plutonium": "BlackPlutonium", "high-octane-gasoline": "HighOctaneGasoline", "sodium-bisulfate": "SodiumBisulfate",
+    # issue #295: GT++'s H8N4C2O4 Rocket Fuel (GTPPFluids.java:371-377: a fluid, RGB 50, 220, 50) for its cell
+    "rocket-fuel": ("FLUID", (50, 220, 50)),
     # issue #96: bartworks Werkstoffe of the platinum line (WerkstoffLoader.java, their colours; dusts)
     "platinum-salt": ("DULL", (255, 255, 200)), "refined-platinum-salt": ("DULL", (255, 255, 200)),
     "reprecipitated-platinum": ("DULL", (255, 255, 200)), "platinum-residue": ("DULL", (100, 99, 46)),
@@ -136,17 +140,154 @@ MATERIALS = {
     "netherrack": "Netherrack", "pyrite": "Pyrite", "quartzite": "Quartzite",
     "dark-ash": "DarkAsh",  # issue #193
     "cassiterite": "Cassiterite",  # issue #202: its own crushed ore, dust and ore chain
+    "ender-pearl": "EnderPearl", "ender-eye": "EnderEye",  # issue #325: dust, plate and lens of the NAND/NOR lenses
     "antimony": "Antimony", "molybdenum": "Molybdenum",  # issue #205: their ingots
+    # issue #203: the crushed ores and chains of gypsum, sulfur and calcite, calcite's byproduct malachite; issue #207:
+    # the garnet minerals, bartworks' platinum metallic powder (WerkstoffLoader.java:811, platinum's colour)
+    "gypsum": "Gypsum", "sulfur": "Sulfur", "calcite": "Calcite", "malachite": "Malachite", "pyrope": "Pyrope",
+    "almandine": "Almandine", "uvarovite": "Uvarovite", "metallic-platinum-powder": ("METALLIC", (255, 255, 200)),
     # issue #205: goodgenerator's Werkstoffe of the naquadah line (GGMaterial.java, their colours; dusts)
     "naquadria-oxide-mixture": ("METALLIC", (77, 77, 85)), "indium-phosphate": ("DULL", (43, 46, 112)),
     "low-quality-naquadria-phosphate": ("DULL", (77, 77, 85)),
+    "ash": "Ash",  # issue #223: GT's Ashes (bricked blast furnace with coke, malachite's blast furnace recipe)
+    "potash": "Potash", "banded-iron": "BandedIron",  # issue #225: GT's dusts of the ash centrifuge
+    # issue #262: gtnhlanth's Werkstoffe of the monazite line (WerkstoffMaterialPool.java, SET_DULL and their colours);
+    # gadolinium is GT's element
+    "monazite-sulfate": ("DULL", (152, 118, 84)),
+    "acidic-monazite-powder": ("DULL", (50, 23, 77)),
+    "monazite-rare-earth-filtrate": ("DULL", (72, 60, 50)),
+    "thorium-phosphate-cake": ("DULL", (188, 143, 143)),
+    "thorium-phosphate-concentrate": ("DULL", (217, 144, 88)),
+    "neutralized-monazite-rare-earth-filtrate": ("DULL", (50, 23, 77)),
+    "monazite-rare-earth-hydroxide-concentrate": ("DULL", (193, 154, 107)),
+    "uranium-filtrate": ("DULL", (190, 240, 94)),
+    "neutralized-uranium-filtrate": ("DULL", (217, 120, 88)),
+    "dried-monazite-rare-earth-concentrate": ("DULL", (250, 214, 165)),
+    "cerium-dioxide": ("DULL", (255, 255, 255)),
+    "cooled-monazite-rare-earth-concentrate": ("DULL", (250, 214, 165)),
+    "monazite-rarer-earth-sediment": ("DULL", (250, 214, 165)),
+    "heterogenous-halogenic-monazite-rare-earth-mixture": ("DULL", (250, 214, 165)),
+    "saturated-monazite-rare-earth": ("DULL", (250, 214, 165)),
+    "samaric-residue": ("DULL", (248, 243, 231)),
+    "gadolinium": "Gadolinium",
+    # issue #269: the Werkstoffe of the bastnasite and cerium lines (gtnhlanth WerkstoffMaterialPool.java, SET_DULL;
+    # vanadium pentoxide is GoodGenerator's GGMaterial.java, SET_SHINY); cerium and lanthanum are GT's elements
+    "bastnasite-rare-earth-oxides": ("DULL", (205, 133, 63)),
+    "acid-leached-bastnasite-rare-earth-oxides": ("DULL", (205, 133, 63)),
+    "roasted-rare-earth-oxides": ("DULL", (160, 82, 45)),
+    "wet-rare-earth-oxides": ("DULL", (160, 82, 49)),
+    "cerium-oxidised-rare-earth-oxides": ("DULL", (160, 82, 49)),
+    "bastnasite-rarer-earth-oxides": ("DULL", (160, 82, 49)),
+    "neodymium-rare-earth-concentrate": ("DULL", (170, 90, 60)),
+    "lanthanum-chloride": ("DULL", (82, 112, 102)),
+    "neodymium-oxide": ("DULL", (82, 112, 102)),
+    "cerium-chloride": ("DULL", (255, 255, 255)),
+    "cerium-oxalate": ("DULL", (255, 255, 224)),
+    "cerium-iii-oxide": ("DULL", (255, 255, 102)),
+    "vanadium-pentoxide": ("SHINY", (0xDE, 0x8D, 0x12)),
+    "cerium": "Cerium", "lanthanum": "Lanthanum",
+    # issue #272: europium, zirconium, lanthanum hexaboride and the samaric branch (gtnhlanth WerkstoffMaterialPool.java;
+    # zirconium and red zircon are bartworks' WerkstoffLoader.java, ammonium nitrate GT++'s dust, ModItems.java);
+    # europium, holmium and terbium are GT's elements
+    "europium-iii-oxide": ("DULL", (255, 230, 255)),
+    "europium-oxide": ("DULL", (255, 255, 255)),
+    "hafnia-zirconia-blend": ("DULL", (247, 223, 203)),
+    "zirconia": ("SHINY", (177, 152, 101)),
+    "zirconium-tetrachloride": ("DULL", (179, 164, 151)),
+    "zirconium": ("METALLIC", (175, 175, 175)),
+    "red-zircon": ("GEM_VERTICAL", (195, 19, 19)),
+    "lanthanum-oxide": ("DULL", (105, 209, 180)),
+    "boron-trioxide": ("DULL", (238, 222, 209)),
+    "lanthanum-hexaboride": ("GEM_HORIZONTAL", (140, 110, 120)),
+    "samaric-rare-earth-concentrate": ("DULL", (170, 90, 60)),
+    "fluorinated-samaric-concentrate": ("DULL", (255, 182, 193)),
+    "samarium-terbium-mixture": ("DULL", (223, 182, 193)),
+    "nitrogenated-samarium-terbium-mixture": ("DULL", (223, 182, 193)),
+    "terbium-nitrate": ("DULL", (167, 252, 0)),
+    "ammonium-nitrate": ("DULL", (150, 75, 150)),
+    "holmium": "Holmium", "terbium": "Terbium",
+    # issue #274: bartworks' hafnium (gtnhlanth WerkstoffMaterialPool.java) and gangue
+    "hafnium": ("METALLIC", (232, 224, 219)),
+    # issue #249: GT's amalgatite (MaterialsInit.java loadAmalgatite, the stargate crystal texture set)
+    "amalgatite": "Amalgatite",
+    "gangue": ("DULL", (0, 0, 0)),
+    # issue #227: the metals whose GT parts are new (GT materials; GT++ alloys: set and colour of MaterialsAlloy.java)
+    "annealed-copper": "AnnealedCopper",
+    "battery-alloy": "BatteryAlloy",
+    "black-steel": "BlackSteel",
+    "blue-steel": "BlueSteel",
+    "brass": "Brass",
+    "bronze": "Bronze",
+    "chromium": "Chrome",
+    "cobalt-brass": "CobaltBrass",
+    "conductive-iron": "ConductiveIron",
+    "cupronickel": "Cupronickel",
+    "dark-steel": "DarkSteel",
+    "eglin-steel": ("METALLIC", (139, 69, 19)),  # GT++ EGLIN_STEEL
+    "electrical-steel": "ElectricalSteel",
+    "electrum": "Electrum",
+    "end-steel": "EndSteel",
+    "energetic-alloy": "EnergeticAlloy",
+    "enriched-naquadah": "NaquadahEnriched",
+    "gallium": "Gallium",
+    "grisium": ("METALLIC", (53, 93, 106)),  # GT++ LEAGRISIUM
+    "hastelloy-c276": ("METALLIC", (90, 74, 88)),  # GT++ HASTELLOY_C276 (GT++ mixes the colour of its parts: here the ingot icon's)
+    "hastelloy-w": ("METALLIC", (97, 94, 122)),  # GT++ HASTELLOY_W (GT++ mixes the colour of its parts: here the ingot icon's)
+    "hastelloy-x": ("METALLIC", (100, 98, 109)),  # GT++ HASTELLOY_X (GT++ mixes the colour of its parts: here the ingot icon's)
+    "hsse": "HSSE",
+    "hssg": "HSSG",
+    "incoloy-020": ("METALLIC", (120, 96, 90)),  # GT++ INCOLOY_020 (GT++ mixes the colour of its parts: here the ingot icon's)
+    "incoloy-ds": ("METALLIC", (97, 93, 123)),  # GT++ INCOLOY_DS (GT++ mixes the colour of its parts: here the ingot icon's)
+    "incoloy-ma956": ("METALLIC", (35, 101, 70)),  # GT++ INCOLOY_MA956 (GT++ mixes the colour of its parts: here the ingot icon's)
+    "inconel-625": ("METALLIC", (128, 200, 128)),  # GT++ INCONEL_625
+    "inconel-690": ("METALLIC", (118, 220, 138)),  # GT++ INCONEL_690
+    "inconel-792": ("METALLIC", (108, 240, 118)),  # GT++ INCONEL_792
+    "invar": "Invar",
+    "iridium": "Iridium",
+    "kanthal": "Kanthal",
+    "magnalium": "Magnalium",
+    "maraging-steel-250": ("SHINY", (104, 97, 141)),  # GT++ MARAGING250 (GT++ mixes the colour of its parts: here the ingot icon's)
+    "maraging-steel-300": ("SHINY", (98, 99, 143)),  # GT++ MARAGING300 (GT++ mixes the colour of its parts: here the ingot icon's)
+    "nichrome": "Nichrome",
+    "nickel-zinc-ferrite": "NickelZincFerrite",
+    "nitinol-60": ("SHINY", (136, 117, 159)),  # GT++ NITINOL_60 (GT++ mixes the colour of its parts: here the ingot icon's)
+    "osmium": "Osmium",
+    "palladium": "Palladium",
+    "platinum": "Platinum",
+    "potin": ("METALLIC", (201, 151, 129)),  # GT++ POTIN
+    "pulsating-iron": "PulsatingIron",
+    "red-alloy": "RedAlloy",
+    "silicon": "Silicon",
+    "soularium": "Soularium",
+    "staballoy": ("SHINY", (68, 75, 66)),  # GT++ STABALLOY
+    "stainless-steel": "StainlessSteel",
+    "steel": "Steel",
+    "stellite": ("SHINY", (130, 117, 157)),  # GT++ STELLITE (GT++ mixes the colour of its parts: here the ingot icon's)
+    "talonite": ("METALLIC", (124, 121, 113)),  # GT++ TALONITE (GT++ mixes the colour of its parts: here the ingot icon's)
+    "tantalloy-60": ("SHINY", (213, 231, 237)),  # GT++ TANTALLOY_60
+    "tantalum": "Tantalum",
+    "tantalum-carbide": ("SHINY", (139, 136, 120)),  # GT++ TANTALUM_CARBIDE
+    "titanium": "Titanium",
+    "tumbaga": ("SHINY", (255, 178, 15)),  # GT++ TUMBAGA
+    "tungsten": "Tungsten",
+    "tungsten-carbide": "TungstenCarbide",
+    "ultimet": "Ultimet",
+    "vanadium-steel": "VanadiumSteel",
+    "vibrant-alloy": "VibrantAlloy",
+    "watertight-steel": ("METALLIC", (120, 120, 180)),  # GT++ AQUATIC_STEEL
+    "yttrium-barium-cuprate": "YttriumBariumCuprate",
+    "zeron-100": ("METALLIC", (180, 180, 20)),  # GT++ ZERON_100
+    "zinc": "Zinc",
+    "amber": "Amber", "topaz": "Topaz",  # issue #332: the Twilight Forest's ores
+    "zirconium-carbide": ("SHINY", (222, 202, 180)),  # GT++ ZIRCONIUM_CARBIDE
 }
 
 # fork part name -> GT OrePrefix texture; "{m}" is the material
 PARTS = [
     # issue #185: the forms of the ore chain (before "{m}-dust", which would take pure-<m>-dust as a dust of "pure-<m>")
     ("impure-{m}-dust", "dustImpure"), ("pure-{m}-dust", "dustPure"), ("purified-{m}", "crushedPurified"),
-    ("centrifuged-{m}", "crushedCentrifuged"),
+    ("centrifuged-{m}", "crushedCentrifuged"), ("crushed-{m}", "crushed"),  # issue #203: crushed sulfur
+    ("raw-{m}", "oreRaw"),  # issue #332: the raw ores of new ores (upstream drew the others)
     # issues #187 and #188: small dusts of the separator, the gem grades of the sifter, the gems Gregtorio lacked
     ("small-pile-of-{m}-dust", "dustSmall"), ("chipped-{m}", "gemChipped"), ("flawed-{m}", "gemFlawed"),
     ("flawless-{m}", "gemFlawless"), ("exquisite-{m}", "gemExquisite"), ("{m}-gem", "gem"),
@@ -159,6 +300,11 @@ PARTS = [
     ("{m}-rod", "stick"), ("{m}-gear", "gearGtSmall"), ("{m}-ring", "ring"), ("{m}-bolt", "bolt"),
     ("{m}-screw", "screw"), ("{m}-rotor", "rotor"), ("{m}-round", "round"), ("{m}-nugget", "nugget"),
     ("{m}-dust", "dust"), ("{m}-frame", "@frame"), ("{m}-turbine-blade", "turbineBlade"),
+    # issue #222: GT's other parts of the metals of #205 (the item casing is GT's casingSmall texture)
+    ("double-{m}-plate", "plateDouble"), ("small-{m}-spring", "springSmall"), ("{m}-spring", "spring"),
+    ("{m}-item-casing", "casingSmall"), ("block-of-{m}", "@block"),
+    # issue #227: GT's multi plates
+    ("triple-{m}-plate", "plateTriple"), ("quadruple-{m}-plate", "plateQuadruple"), ("quintuple-{m}-plate", "plateQuintuple"),
 ]
 
 
@@ -349,6 +495,12 @@ class Composer:
             return img
         if prefix == "@frame":
             return self.m.icon(mat, "frameGt", kind="blocks")
+        if prefix == "@block":   # issue #222: GT's storage block texture of the material
+            spec = f"{BLK}BLOCK_{name.upper()}"
+            if self.t.exists(spec):
+                return fit(self.t.load(spec))
+            # issue #227: GT++'s blocks (BlockBaseModular.java) are the material icon set's block1 (block5 above tier 4)
+            return self.m.icon(mat, "block1", kind="blocks")
         return self.m.icon(mat, prefix)
 
     # machines ------------------------------------------------------------------------------------
@@ -613,14 +765,41 @@ def icon_table(c):
     T["cyanoacetic-acid"] = lambda: c.part("cyanoacetic-acid", "dust")
     for m in ("naquadria-oxide-mixture", "indium-phosphate", "low-quality-naquadria-phosphate"):   # issue #205
         T[m] = (lambda m=m: lambda: c.part(m, "dust"))()
+    # issue #207: the tiny pile of the platinum metallic powder (crushed platinum in the furnace)
+    T["tiny-pile-of-metallic-platinum-powder"] = lambda: c.part("metallic-platinum-powder", "dustTiny")
     # issue #98: the high octane cell (like the gasoline cell), sodium bisulfate (GT: a dust)
     T["high-octane-gasoline-cell"] = lambda: c.part("high-octane-gasoline", "cell")
+    T["rocket-fuel-cell"] = lambda: c.part("rocket-fuel", "cell")   # issue #295
     T["sodium-bisulfate"] = lambda: c.part("sodium-bisulfate", "dust")
+    # issue #302: the drill heads of the Space Elevator's mining drones (GT's toolHeadDrill of the material)
+    for m in ("steel", "titanium", "tungstensteel", "iridium", "trinium", "naquadah", "naquadah-alloy", "naquadria",
+              "neutronium", "cosmic-neutronium", "infinity", "transcendent-metal", "spacetime", "eternity"):
+        T[m + "-drill-head"] = (lambda m=m: lambda: c.part(m, "toolHeadDrill"))()
     # issue #96: the dusts of the platinum line, which the fork names without "-dust"
     for m in ("platinum-salt", "refined-platinum-salt", "reprecipitated-platinum", "platinum-residue", "palladium-salt",
               "reprecipitated-palladium", "potassium-disulfate", "rhodium-filter-cake", "reprecipitated-rhodium",
               "iridium-dioxide", "sludge-dust-residue", "iridium-chloride", "metallic-sludge-dust-residue"):
         T[m] = lambda m=m: c.part(m, "dust")
+
+    # issue #262: the dusts of the monazite line, which the fork names without "-dust"
+    for m in ("monazite-sulfate", "acidic-monazite-powder", "monazite-rare-earth-filtrate", "thorium-phosphate-cake", "thorium-phosphate-concentrate", "neutralized-monazite-rare-earth-filtrate", "monazite-rare-earth-hydroxide-concentrate", "uranium-filtrate", "neutralized-uranium-filtrate", "dried-monazite-rare-earth-concentrate", "cerium-dioxide", "cooled-monazite-rare-earth-concentrate", "monazite-rarer-earth-sediment", "heterogenous-halogenic-monazite-rare-earth-mixture", "saturated-monazite-rare-earth", "samaric-residue"):
+        T[m] = lambda m=m: c.part(m, "dust")
+
+    # issue #274: lanthanum hexaboride's gem, which the fork names without "-gem" (its dust is "-dust")
+    T["lanthanum-hexaboride"] = lambda: c.part("lanthanum-hexaboride", "gem")
+
+    # issue #272: the dusts of section 6 of 159, which the fork names without "-dust"
+    for m in ("europium-iii-oxide", "europium-oxide", "hafnia-zirconia-blend", "zirconia", "zirconium-tetrachloride", "lanthanum-oxide", "boron-trioxide", "samaric-rare-earth-concentrate", "fluorinated-samaric-concentrate", "samarium-terbium-mixture", "nitrogenated-samarium-terbium-mixture", "terbium-nitrate"):
+        T[m] = lambda m=m: c.part(m, "dust")
+
+    # issue #269: the dusts of the bastnasite and cerium lines, which the fork names without "-dust"
+    for m in ("bastnasite-rare-earth-oxides", "acid-leached-bastnasite-rare-earth-oxides", "roasted-rare-earth-oxides", "wet-rare-earth-oxides", "cerium-oxidised-rare-earth-oxides", "bastnasite-rarer-earth-oxides", "neodymium-rare-earth-concentrate", "lanthanum-chloride", "neodymium-oxide", "cerium-chloride", "cerium-oxalate", "cerium-iii-oxide", "vanadium-pentoxide"):
+        T[m] = lambda m=m: c.part(m, "dust")
+
+    # issue #337: the miners' mining pipe (IC2's item, whose texture is not in GT): GT's mining pipe slot overlay in
+    # steel's colour
+    T["mining-pipe"] = lambda: c.readable(tint(c.gt("gt:gregtech/textures/gui/overlay_slot/mining_pipe").convert("RGBA"),
+                                               c.m.colour("steel")))
 
     # multi-amp wires (upstream: 16x = a block of the metal)
     T["luv-superconductor-wire-16x"] = lambda: bar(c.m.colour("itbtc-alloy"), 2, n=4)

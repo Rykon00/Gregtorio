@@ -73,7 +73,7 @@ local missing_unlocks = {
 	{ "titanium-gear-box-casing",        "titanium-gear-box-casing" },       -- Heat Vent Block (Alloy Blast Smelter)
 	{ "centrifuging-crushed-thorium",    "uranium-238-dust" },               -- staballoy, fuel rods
 	{ "vibrant-alloy-wire",              "vibrant-alloy-wire" },             -- Octadic Capacitor (Ender IO)
-	{ "dinitrogen-tetroxide",            "dinitrogen-tetroxide" },           -- rocket fuel -> tier 3 microminer -> tungsten
+	{ "dinitrogen-tetroxide",            "dinitrogen-tetroxide" },           -- rocket fuel
 }
 for _, m in pairs(missing_unlocks) do
 	fork_unlock_with_consumers(m[1], m[2])
@@ -178,6 +178,8 @@ fork_add_unlock("iv-machines", "iv-turbocan-pro")
 --- in the style of the MV pack (LV components -> 4 packs). Everything is available when
 --- the LV science tech is researched: LV motor and tin cable (steam-turbine), LV piston
 --- (bending-machine), primitive electronic circuit (primitive-electronics).
+--- Issue #350 (the maintainer's decision): 4 packs per craft, like the MV pack; with 2 a pack took 2.5 to 4.5 steel (the
+--- piston's plates, rods and gear), about 20 h of primitive blast furnace steel for the 1105 packs of the LV technologies.
 --------------------------------------------------------------------------------
 
 if data.raw.recipe["lv-science-pack"] then
@@ -189,6 +191,18 @@ if data.raw.recipe["lv-science-pack"] then
 		{ type = "item", name = "electronic-circuit", amount = 1 },
 		{ type = "item", name = "tin-cable", amount = 2 },
 	}
-	r.results = { { type = "item", name = "logistic-science-pack", amount = 2 } }
+	r.results = { { type = "item", name = "logistic-science-pack", amount = 4 } }
 	r.main_product = "logistic-science-pack"
+end
+
+
+
+--------------------------------------------------------------------------------
+--- T1 ROBOTS (issue #336): 14-mv-age-entity.lua makes their items with create_item, which gives no place_result, so a
+--- roboport took none of them and the cursor could not place them. Vanilla's robot items are plain items with their
+--- robot as place_result; the items keep their type, so saves need no migration.
+--------------------------------------------------------------------------------
+
+for _, name in pairs({ "t1-construction-robot", "t1-logistic-robot" }) do
+	data.raw.item[name].place_result = name
 end

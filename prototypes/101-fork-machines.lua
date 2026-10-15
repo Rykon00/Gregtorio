@@ -726,7 +726,7 @@ IV_BASIC_MACHINES = {
 }
 --- Multiblocks that come as an upgrade of the EV version (graphics of the EV version with energy hatches of the tier)
 IV_UPGRADE_MACHINES = {
-	"electric-blast-furnace", "vacuum-freezer", "large-chemical-reactor", "microverse-projector",
+	"electric-blast-furnace", "vacuum-freezer", "large-chemical-reactor",
 	"tall-distillation-tower", "short-distillation-tower", "implosion-compressor", "cracker",
 	"multismelter", "pyrolyse-oven", "drilling-rig", "alloy-blast-smelter",
 }

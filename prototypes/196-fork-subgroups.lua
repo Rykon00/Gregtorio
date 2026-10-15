@@ -102,11 +102,11 @@ put("molten-superalloys", { "molten-hastelloy-c276", "molten-hastelloy-w", "molt
 put("molten-exotic", { "molten-naquadah", "molten-naquadah-alloy", "molten-naquadria", "molten-trinium",
 	"molten-tritanium", "molten-duranium", "molten-neutronium", "molten-cosmic-neutronium", "molten-draconium",
 	"molten-infinity", "molten-transcendent-metal", "molten-spacetime", "molten-universium", "molten-magmatter",
-	"molten-rhugnor", "molten-quantium", "molten-sunnarium", "molten-microversium", "molten-enderium",
+	"molten-rhugnor", "molten-quantium", "molten-sunnarium", "molten-enderium",
 	"molten-glowstone", "molten-vibrant-alloy", "molten-grisium", "molten-indovanadium", "molten-ruridit",
 	"liquid-blaze",
 	-- issue #91: the new melts of the endgame materials and the superconductor bases
-	"molten-bedrockium", "molten-eternity", "molten-crystaltine", "molten-enriched-naquadah", "molten-ledox",
+	"molten-bedrockium", "molten-eternity", "molten-enriched-naquadah", "molten-ledox",
 	"molten-itbtc-alloy", "molten-palladium-naqindium", "molten-naquamiridium", "molten-triamerotronium",
 	"molten-dracofinium", "molten-chromnorox", "molten-hypocosmium", "molten-yttrium-barium-cuprate" })
 --- issue #98 (147-fork-gt-routes.lua): the high octane line, sodium persulfate, the black plutonium melt
@@ -120,6 +120,22 @@ put("acids", { "ammonium-chloride" })
 put("ore-solutions", { "rhodium-sulfate", "rhodium-salt-solution", "rhodium-filter-cake-solution",
 	"ruthenium-tetroxide-solution", "ruthenium-tetroxide", "osmium-solution", "acidic-iridium-solution" })
 put("molten-elements", { "molten-potassium" })
+--- issue #262: the monazite rare earth line (159)
+put("ore-solutions", { "muddy-monazite-rare-earth-solution", "diluted-monazite-rare-earth-mud", "diluted-monazite-sulfate",
+	"nitrogenated-monazite-rare-earth-concentrate", "nitric-leached-monazite-mixture", "nitric-monazite-leached-concentrate" })
+put("acids", { "ammonium-nitrate-solution" })
+--- issue #269: the bastnasite and cerium lines (159)
+put("ore-solutions", { "muddy-bastnasite-rare-earth-solution", "steam-cracked-bastnasite-mud",
+	"conditioned-bastnasite-mud", "diluted-bastnasite-mud", "filtered-bastnasite-mud",
+	"nitrogenated-bastnasite-rarer-earth-oxides", "bastnasite-rarer-earth-oxide-suspension" })
+put("acids", { "hexafluorosilicic-acid", "sodium-fluorosilicate", "oxalic-acid" })
+--- issue #272: section 6 of 159
+put("ore-solutions", { "zirconium-tetrachloride-solution", "hydrated-ammonium-nitrate-slurry" })
+put("acids", { "boric-acid" })
+put("gases", { "phosgene", "boron-trichloride", "chloromethane" })
+put("molten-elements", { "calcium-fluoride" })
+--- issue #335: the Drilling Fluid of the Ore Drilling Plants (163), water with stone dust and lubricant
+put("basic", { "drilling-fluid" })
 --- issue #119: Space Age's melts, restyled below, are rows of the Fluids tab like the other melts
 put("molten-elements", { "molten-iron", "molten-copper" })
 put("molten-alloys", { "molten-potassium-disulfate" })
@@ -127,7 +143,7 @@ put("molten-alloys", { "molten-potassium-disulfate" })
 FLUID_SUBGROUP["excited-dimensionally-transcendent-crude-catalyst"] = { "endgame", 1 }
 FLUID_SUBGROUP["excited-dimensionally-transcendent-resplendent-catalyst"] = { "endgame", 2 }
 FLUID_SUBGROUP["excited-dimensionally-transcendent-stellar-catalyst"] = { "endgame", 3 }
-put("endgame", { "raw-star-matter", "spatially-enlarged-fluid", "tachyon-rich-temporal-fluid" })
+put("endgame", { "raw-star-matter", "spatially-enlarged-fluid", "tachyon-rich-temporal-fluid", "quark-gluon-plasma" })
 
 --- patterns for whole lines (and for new fluids of a known kind); rank = a capture that orders the line by tier
 local FLUID_PATTERNS = {
@@ -201,8 +217,9 @@ end
 --- vanilla and Space Age fluids that no recipe a player can reach makes or uses but their void recipe: hidden
 --- with it (hidden fluids are gone from the choosers and the Fluids tab). What still refers to them is Space Age
 --- content nobody can obtain (fusion reactor and generator, thruster, the Aquilo and oil ocean tiles, the lithium brine
---- resource); a hidden fluid there is fine. FORK_FLUIDS_HIDDEN: the list, for devcheck.
-FORK_FLUIDS_HIDDEN = { "heavy-oil", "light-oil", "petroleum-gas", "ammoniacal-solution", "fluoroketone-cold",
+--- resource); a hidden fluid there is fine. FORK_FLUIDS_HIDDEN: the list, for devcheck. (Issue #318: heavy and light oil
+--- are shown again: the Space Elevator's pump module makes them, 162 distils them.)
+FORK_FLUIDS_HIDDEN = { "petroleum-gas", "ammoniacal-solution", "fluoroketone-cold",
 	"fluoroketone-hot", "holmium-solution", "electrolyte", "lithium-brine", "thruster-fuel", "thruster-oxidizer",
 	"fusion-plasma" }
 for _, n in pairs(FORK_FLUIDS_HIDDEN) do
@@ -211,7 +228,12 @@ for _, n in pairs(FORK_FLUIDS_HIDDEN) do
 end
 
 --- fluids that keep an icon of another mod on purpose (allow-list of devcheck's icon warning, with the reason)
-FORK_FLUID_ICONS_KEPT = {}
+local GT_OIL_BLACK = "GT's oil textures are plain black in every frame (fluid.liquid_heavy_oil, fluid.liquid_light_oil); "
+	.. "the base game's icons tell the oils apart (issue #318)"
+FORK_FLUID_ICONS_KEPT = {
+	["heavy-oil"] = GT_OIL_BLACK,
+	["light-oil"] = GT_OIL_BLACK,
+}
 
 for name, f in pairs(data.raw.fluid) do
 	if is_gregtorios(f) and (FLUID_SUBGROUP[name] or not in_fluids_tab(f)) then
@@ -229,3 +251,47 @@ local gear = data.raw.item["iron-gear-wheel"]
 if gear and not gear.subgroup and data.raw["item-subgroup"]["subgroup-mv-extruder-recipes"] then
 	gear.subgroup, gear.order = "subgroup-mv-extruder-recipes", "j[gear]-a[iron]"
 end
+
+--------------------------------------------------------------------------------
+--- Issue #315: the production tab in tier order. Every tier has a row of machines (<tier>-age-production-machine) and a
+--- row of multiblocks (subgroup-<tier>-age-multiblocks); LV to EV are ordered "c" to "i", the machine row of a tier and
+--- then its multiblocks. The rows from IV up were "i-z-<tier>" (alphabetical: IV, LuV, MAX, UEV, UHV ...) and their
+--- multiblock rows "j" to "q-max", after all of them. They get the order of their tier now, the multiblocks right after
+--- the machines. Three EV items of upstream (18-ev-age-entity.lua) sat in the HV rows, and the recipes of the machines
+--- made one tier up (fork_make_tier_machine, 101) kept the row of the machine they were copied from: a recipe in a tier
+--- row goes into the row of its product.
+--------------------------------------------------------------------------------
+local TIER_ROWS = { "iv", "luv", "zpm", "uv", "uhv", "uev", "uiv", "umv", "uxv", "max" }
+for i, t in ipairs(TIER_ROWS) do
+	local key = string.format("i-z-%02d", i)
+	local machines = data.raw["item-subgroup"][t .. "-age-production-machine"]
+	if machines then machines.order = key .. "-a" end
+	local multiblocks = data.raw["item-subgroup"]["subgroup-" .. t .. "-age-multiblocks"]
+	if multiblocks then multiblocks.order = key .. "-b" end
+end
+for name, sg in pairs({ ["ev-autoclave"] = "ev-age-production-machine", ["ev-compressor"] = "ev-age-production-machine",
+	["ev-tall-distillation-tower"] = "subgroup-ev-age-multiblocks" }) do
+	local it = data.raw.item[name]
+	if it and data.raw["item-subgroup"][sg] then it.subgroup = sg end
+end
+local function tier_row(sg)
+	return sg and (sg:match("^[a-z]+%-age%-production%-machine$") or sg:match("^subgroup%-[a-z]+%-age%-multiblocks$"))
+end
+local function item_of(name)
+	for t in pairs(defines.prototypes.item) do
+		if data.raw[t] and data.raw[t][name] then return data.raw[t][name] end
+	end
+end
+local moved = 0
+for _, r in pairs(data.raw.recipe) do
+	if tier_row(r.subgroup) then
+		local main = r.main_product
+		if (not main or main == "") and r.results and #r.results == 1 then main = r.results[1].name end
+		local it = main and main ~= "" and item_of(main)
+		if it and tier_row(it.subgroup) and it.subgroup ~= r.subgroup then
+			r.subgroup = it.subgroup
+			moved = moved + 1
+		end
+	end
+end
+log("FORK-SUBGROUPS: " .. moved .. " machine recipes moved into the tier row of their product (issue #315)")

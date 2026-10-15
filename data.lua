@@ -3,6 +3,9 @@ ICON_PATH = "__gregtorio-continued__/graphics/icons/"
 
 YAFC_MODE = false
 
+--- Fork: names (issue #230): the recipes that exist before this mod, and FORK_LOCALE.name_of
+require("prototypes.fork-locale")
+
 require("prototypes.03-helper-functions-module")
 require("prototypes.04-item-groups-module")
 require("prototypes.05-definitions-module")
@@ -23,7 +26,6 @@ require("prototypes.19-iv-age-item")
 require("prototypes.20-iv-age-entity")
 require("prototypes.21-luv-age-item")
 require("prototypes.50-ae2-module")
-require("prototypes.52-microverse-module")
 require("prototypes.98-technology")
 
 if YAFC_MODE then require("prototypes.99-yafc-module") end
@@ -79,6 +81,8 @@ for _, fluid in pairs(data.raw["fluid"]) do
 			hide_from_player_crafting = true,
 			enabled = true
 		}
+		--- Fork (issue #230): a recipe without results has no product to take its name from
+		data.raw.recipe["void-" .. fluid.name].localised_name = { "recipe-name.fork-void", FORK_LOCALE.name_of("fluid", fluid.name) }
 	end
 end
 
@@ -112,6 +116,14 @@ require("prototypes.145-fork-power-multiblocks")
 require("prototypes.147-fork-gt-routes")
 --- issue #96: GTNH's platinum line (bartworks) instead of the GTCEu line of 19 (before 142, which unlocks it)
 require("prototypes.146-fork-platinum-line")
+--- issues #283-#287: the dimension mines and their technologies (decision of #154), before 142 and 155, which unlock
+--- recipes after the technology of their input
+require("prototypes.160-fork-dimension-mines")
+--- issue #301: the Space Elevator (part 1 of #292's decision), before 142
+require("prototypes.162-fork-space-elevator")
+--- issue #335: the Ore Drilling Plants and an electric twin of every vein recipe of the Manual Mine (after the veins
+--- of 160, before 142 and 155)
+require("prototypes.163-fork-electric-mine")
 --- issue #91: every Gregtorio recipe gets a technology (after every file that makes recipes and technologies)
 require("prototypes.142-fork-recipe-unlocks")
 --- issue #91: casts of every form, melts of every ingot, the missing melts (before the molds and the Fluids tab)
@@ -124,12 +136,18 @@ require("prototypes.148-fork-gtnh-table-items")
 require("prototypes.149-fork-early-research")
 --- issue #152: the Fluid Extractor, the extractor recipes with a fluid result move to it (after every extractor recipe, before the molds)
 require("prototypes.151-fork-fluid-extractor")
---- issue #153: air from the compressor, the Air Collectors gone (after 142, whose ender tanks copy them; before the molds)
+--- issue #153: air from the compressor, the Air Collectors gone (after 142; before the molds)
 require("prototypes.153-fork-compressor-air")
 --- issue #165: one Extreme Industrial Greenhouse instead of a greenhouse per tier (after the last tier, before the molds)
 require("prototypes.154-fork-greenhouse")
 --- issue #185: GTNH's ore chain, phase O1 (purified, centrifuged, impure and pure forms; after every ore, before the molds)
 require("prototypes.155-fork-ore-chain")
+--- issues #222 and #223: GT's parts of the new ingots and GT's nugget recipes (after 155, before the molds)
+require("prototypes.158-fork-gt-parts")
+--- issue #262: the monazite rare earth line (lanthanides), after 158 and before 156
+require("prototypes.159-fork-lanthanides")
+--- issue #287: the unlock rules of the dimension mines (160), after 159 and before 156
+require("prototypes.161-fork-dimension-unlocks")
 --- issue #164: the circuit variant recipes show the icon of their GTNH item (156)
 require("prototypes.156-fork-circuit-icons")
 --- issue #190: GTNH's material recycling (macerator, arc furnace, fluid extractor), after every file that makes recipes
@@ -138,8 +156,6 @@ require("prototypes.150-fork-molds")
 require("prototypes.190-fork-manual-labor")
 --- issue #137: fire animations of the stone furnace, the iron furnace and the small coal boiler (after their entities)
 require("prototypes.191-fork-burner-fire")
---- issue #120: the Microverse Projectors and the missions in the rows of the Microminer tab (after every file that makes them)
-require("prototypes.195-fork-microminer-tab")
 --- subgroups of the Fluids tab (after every file that creates fluids)
 require("prototypes.196-fork-subgroups")
 --- issue #117: fluid amounts of every recipe on the grid of 2^-24 (after every file that makes or changes a recipe)

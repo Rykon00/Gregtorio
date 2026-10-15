@@ -7,16 +7,29 @@
 ---   * the GT recipes of every ME item (the create_item calls of 13-mv-age-item.lua and of the old 120-122, recipe
 ---     only: the items are me-network's), the subgroups of the storage components and the housing;
 ---   * the standalone 1k component recipe removed (Gregtorio has the -lv and -nand recipes of upstream);
----   * the nine ME technologies with Gregtorio's prerequisites, science and unlocks; logistic-system unlocks the
----     ME Chest and the ME Drive;
+---   * the ME technologies with Gregtorio's prerequisites, science and unlocks;
 ---   * the Molecular Assembler built from the HV assembling machine (the LV to EV assembling categories, 6x speed).
+--- Issue #214: the recipes follow GregTech New Horizons' AE2 (NewHorizonsCoreMod scripts/ScriptAppliedEnergistics2.java,
+--- "SAE2" below, and gthandler/recipes/AssemblerRecipes.java, "ASM"; AE2-Unofficial's GTNHRecipes for its own cards)
+--- where GTNH has the item, with Gregtorio's stand-in where it lacks the GT or AE2 part. The ME network starts two tiers
+--- earlier here than in GTNH (HV instead of EV), so the blocks of the first technologies keep aluminium where GTNH takes
+--- titanium; the machine category of a recipe stays what it was.
 --- The one-time hand-over of the ME state of older saves is scripts/fork-me-handover.lua.
 --------------------------------------------------------------------------------
 
 local ME = ME_NETWORK
 
+--- Issue #214: every recipe of me-network (ME_NETWORK.recipes) gets its Gregtorio recipe in this file. FORK_ME_RECIPES
+--- holds the names this file gives a recipe (recipe_of and the crafting blocks fill it); a recipe that keeps me-network's
+--- standalone ingredients on purpose goes into the allow-list FORK_ME_RECIPES_STANDALONE with its reason. devcheck fails
+--- for a recipe of ME_NETWORK.recipes in neither (a new me-network item without a GT recipe) and for a stale entry.
+FORK_ME_RECIPES = {}
+FORK_ME_RECIPES_STANDALONE = {
+}
+
 --- the recipe Gregtorio's create_item made for an item (03-helper-functions-module.lua), without touching the item
 local function recipe_of(def)
+	FORK_ME_RECIPES[def.recipe_name or def.name] = true
 	local category = def.category or "crafting-or-assembling-recipes"
 	create_recipe{
 		recipe_name = def.recipe_name or def.name,
@@ -57,175 +70,152 @@ end
 
 
 --------------------------------------------------------------------------------
---- UPSTREAM ITEMS (from 13-mv-age-item.lua, unchanged)
+--- UPSTREAM ITEMS (from 13-mv-age-item.lua; issue #214: GTNH's recipes)
 --------------------------------------------------------------------------------
 
 ME.remove_recipe("me-1k-storage-component")
 
+--- Issue #294: GTNH's housing (ASM:4569-4577: a glass pane, a certus quartz plate, an aluminium plate, 2 stainless steel
+--- plates, 5 s at LV / 2); Gregtorio has no glass pane, its glass takes the place. Upstream kept steel (4 plates, 4
+--- screws, a glass) for its microverse data items, which needed the housing with Overworld Data, before aluminium and
+--- stainless steel; issue #287 removed them, so the housing comes with its first consumer now, the cells of the ME
+--- Network technology (below). The certus quartz plate is GT's bender recipe of a gem (OP/ProcessingGem.java:117-125:
+--- 1 gem -> 1 plate, mass x 2 ticks; certus quartz has no material list, so Technetium's mass 98 -> 9.8 s, 24 EU/t),
+--- as the nether quartz plate below
 upstream_item{
 	name = "basic-storage-housing",
 	category = "lv-assembling-machine-recipes",
-	ingredients = {
-		{type = "item", name = "steel-plate", amount = 4},
-		{type = "item", name = "steel-screw", amount = 4},
-		{type = "item", name = "glass", amount = 1},
-    }
+	energy_required = 5 * LV_SPEED,
+	ingredients = I{ "glass", 1, "certus-quartz-plate", 1, "aluminium-plate", 1, "stainless-steel-plate", 2 },
 }
+create_item{
+	name = "certus-quartz-plate",
+	category = "lv-bending-machine-recipes",
+	energy_required = 9.8 * LV_SPEED,
+	ingredients = { { type = "item", name = "certus-quartz", amount = 1 } },
+}
+do
+	local t = data.raw.technology["overworld-data"]
+	local keep = {}
+	for _, e in pairs(t.effects) do
+		if not (e.type == "unlock-recipe" and e.recipe == "basic-storage-housing") then keep[#keep + 1] = e end
+	end
+	t.effects = keep
+end
 
+--- GTNH (SAE2:2225-2230): 3 quartz fiber, 2 fluix dust -> 3, MV, 5 s
 upstream_item{
 	name = "fluix-cable",
 	category = "mv-assembling-machine-recipes",
-	energy_required = 10,
-	ingredients = {
-		{type = "item", name = "quartz-fiber", amount = 3},
-		{type = "item", name = "fluix-dust", amount = 2},
-    },
-	results = {
-		{type = "item", name = "fluix-cable", amount = 3}
-    }
+	energy_required = 5 * MV_SPEED,
+	ingredients = I{ "quartz-fiber", 3, "fluix-dust", 2 },
+	results = { { type = "item", name = "fluix-cable", amount = 3 } },
 }
 
+--- GTNH (ASM:4754-4763): 4 titanium plates, 2 fluix cables, a formation and an annihilation core, the EV machine
+--- casing; here aluminium and the MV casing (the network's tier)
 upstream_item{
 	name = "me-interface",
-	ingredients = {
-      {type = "item", name = "mv-machine-casing", amount = 1},
-      {type = "item", name = "aluminium-plate", amount = 4},
-      {type = "item", name = "fluix-cable", amount = 2},
-      {type = "item", name = "formation-core", amount = 1},
-      {type = "item", name = "annihilation-core", amount = 1},
-    }
+	ingredients = I{ "mv-machine-casing", 1, "aluminium-plate", 4, "fluix-cable", 2, "formation-core", 1,
+		"annihilation-core", 1 },
 }
 
+--- GTNH (SAE2:730-740, ASM:4744-4753): 4 titanium plates, an engineering processor, 2 fluix cables, the ME Chest, an
+--- HV circuit; here aluminium. GTNH keeps the ME Chest in it (AE2's modern drive has none: me-network issue #231)
 upstream_item{
 	name = "me-drive",
-	ingredients = {
-		{type = "item", name = "aluminium-plate", amount = 4},
-		{type = "item", name = "me-chest", amount = 1},
-		{type = "item", name = "fluix-cable", amount = 2},
-		{type = "item", name = "mv-emitter", amount = 1},
-		{type = "item", name = "processing-unit", amount = 1},
-    }
+	ingredients = I{ "aluminium-plate", 4, "engineering-processor", 1, "fluix-cable", 2, "me-chest", 1,
+		"processing-unit", 1 },
 }
 
+--- issue #213: GTNH (SAE2:719-729, ASM:4734-4742): 4 stainless steel plates, 2 fluix cables, 2 MV circuits and a
+--- silver chest (Iron Chests; Gregtorio's nearest is the steel chest, which is made like the gold chest). GTNH's chest
+--- has no terminal in it: the two MV circuits pay for the screen of its own
 upstream_item{
 	name = "me-chest",
-	ingredients = {
-		{type = "item", name = "steel-plate", amount = 4},
-		{type = "item", name = "steel-chest", amount = 1},
-		{type = "item", name = "fluix-cable", amount = 2},
-		{type = "item", name = "advanced-circuit", amount = 2},
-    }
+	ingredients = I{ "stainless-steel-plate", 4, "fluix-cable", 2, "advanced-circuit", 2, "steel-chest", 1 },
 }
 
+--- GTNH (SAE2:686-696, ASM:4632-4640): 4 titanium plates, 2 HV circuits, 2 engineering processors, a fluix block;
+--- here aluminium
 upstream_item{
 	name = "me-controller",
-	ingredients = {
-		{type = "item", name = "aluminium-plate", amount = 4},
-		{type = "item", name = "fluix-block", amount = 1},
-		{type = "item", name = "engineering-processor", amount = 2},
-		{type = "item", name = "processing-unit", amount = 2},
-    }
+	ingredients = I{ "aluminium-plate", 4, "processing-unit", 2, "engineering-processor", 2, "fluix-block", 1 },
 }
 
+--- GTNH (SAE2:2257-2266): 4 nether quartz rods, a quartzite screw, an illuminated panel, an MV circuit, a certus quartz
+--- plate (Gregtorio has no quartzite screw, no illuminated panel and no certus plate: the certus quartz screw, the
+--- computer monitor of the ME Terminal and the gem)
 upstream_item{
 	name = "me-terminal",
-	ingredients = {
-		{type = "item", name = "nether-quartz-rod", amount = 4},
-		{type = "item", name = "certus-quartz-screw", amount = 4},
-		{type = "item", name = "computer-monitor", amount = 1},
-		{type = "item", name = "processing-unit", amount = 2},
-    }
+	ingredients = I{ "nether-quartz-rod", 4, "certus-quartz-screw", 1, "computer-monitor", 1, "advanced-circuit", 1,
+		"certus-quartz", 1 },
 }
 
-upstream_item{
+--- GTNH's storage components (circuit assembler, 72 soldering alloy, 10 s; CAR = CircuitAssemblerRecipes.java): 1k from
+--- 2 ULV circuits, 2 charged certus quartz dust (certus quartz dust here: the 1k component comes with Overworld Data,
+--- before the charged certus of Applied Energistics Crystals), a logic processor and a basic board (CAR:844-853, LV);
+--- 4k from 4 LV and 16 ULV circuits (Gregtorio's NAND chips), a logic processor and a coated board (LV); 16k from 4 MV
+--- and 16 LV circuits, an engineering processor and a phenolic board (MV); 64k 4 HV, 16 MV, an engineering processor
+--- and an epoxy board (HV); 256k 4 EV, 16 HV, an engineering processor and a fiberglass board (EV, SAE2:327-335). The
+--- boards are Gregtorio's printed boards (resin, phenolic, phenolic, epoxy, fiber-reinforced).
+local function component(def)
+	def.energy_required = 10 * ({ lv = LV_SPEED, mv = MV_SPEED, hv = HV_SPEED, ev = EV_SPEED })[def.tier]
+	def.category = def.tier .. "-circuit-assembler-recipes"
+	def.ingredients[#def.ingredients + 1] = { type = "fluid", name = "soldering-alloy", amount = 7.2 }
+	def.results = { { type = "item", name = def.result or def.name, amount = 1 } }
+	return def
+end
+upstream_item(component{
 	name = "me-1k-storage-component",
 	recipe_name = "me-1k-storage-component-lv",
-	category = "lv-circuit-assembler-recipes",
-	energy_required = 5,
-	ingredients = {
-      {type = "item", name = "resin-printed-circuit-board", amount = 1},
-      {type = "item", name = "certus-quartz-dust", amount = 2},
-      {type = "item", name = "electronic-circuit", amount = 2},
-      {type = "item", name = "logic-processor", amount = 1},
-      {type = "fluid", name = "soldering-alloy", amount = 7.2},
-    },
-	results = {
-      {type = "item", name = "me-1k-storage-component", amount = 1}
-    }
-}
-create_recipe{
+	tier = "lv",
+	ingredients = I{ "resin-printed-circuit-board", 1, "certus-quartz-dust", 2, "electronic-circuit", 2,
+		"logic-processor", 1 },
+})
+--- Gregtorio's own 1k recipe with GTNH's ULV circuits (NAND chips)
+create_recipe(component{
 	recipe_name = "me-1k-storage-component-nand",
-	category = "lv-circuit-assembler-recipes",
-	energy_required = 5,
-	ingredients = {
-		{type = "item", name = "resin-printed-circuit-board", amount = 1},
-		{type = "item", name = "certus-quartz-dust", amount = 2},
-		{type = "item", name = "nand-chip", amount = 2},
-		{type = "item", name = "logic-processor", amount = 1},
-		{type = "fluid", name = "soldering-alloy", amount = 7.2},
-    },
-	results = {
-      {type = "item", name = "me-1k-storage-component", amount = 1}
-    }
-}
-
-upstream_item{
+	result = "me-1k-storage-component",
+	tier = "lv",
+	ingredients = I{ "resin-printed-circuit-board", 1, "certus-quartz-dust", 2, "nand-chip", 2,
+		"logic-processor", 1 },
+})
+upstream_item(component{
 	name = "me-4k-storage-component",
-	category = "lv-circuit-assembler-recipes",
-	energy_required = 10,
-	ingredients = {
-		{type = "item", name = "phenolic-printed-circuit-board", amount = 1},
-		{type = "item", name = "nand-chip", amount = 16 },
-		{type = "item", name = "electronic-circuit", amount = 4 },
-		{type = "item", name = "logic-processor", amount = 1},
-		{type = "fluid", name = "soldering-alloy", amount = 7.2},
-    }
-}
-
-upstream_item{
+	tier = "lv",
+	ingredients = I{ "phenolic-printed-circuit-board", 1, "nand-chip", 16, "electronic-circuit", 4, "logic-processor", 1 },
+})
+upstream_item(component{
 	name = "me-16k-storage-component",
-	category = "mv-circuit-assembler-recipes",
-	energy_required = 20,
-	ingredients = {
-		{type = "item", name = "plastic-printed-circuit-board", amount = 1},
-		{type = "item", name = "electronic-circuit", amount = 16 },
-		{type = "item", name = "advanced-circuit", amount = 4 },
-		{type = "item", name = "calculation-processor", amount = 1},
-		{type = "fluid", name = "soldering-alloy", amount = 7.2},
-    }
-}
-
-upstream_item{
+	tier = "mv",
+	ingredients = I{ "phenolic-printed-circuit-board", 1, "electronic-circuit", 16, "advanced-circuit", 4,
+		"engineering-processor", 1 },
+})
+upstream_item(component{
 	name = "me-64k-storage-component",
-	category = "hv-circuit-assembler-recipes",
-	energy_required = 40,
-	ingredients = {
-      {type = "item", name = "epoxy-printed-circuit-board", amount = 1},
-      {type = "item", name = "advanced-circuit", amount = 16},
-      {type = "item", name = "processing-unit", amount = 4},
-      {type = "item", name = "calculation-processor", amount = 1},
-      {type = "fluid", name = "soldering-alloy", amount = 7.2},
-    },
-	results = {
-      {type = "item", name = "me-64k-storage-component", amount = 1}
-    }
-}
-
-upstream_item{
+	tier = "hv",
+	ingredients = I{ "epoxy-printed-circuit-board", 1, "advanced-circuit", 16, "processing-unit", 4,
+		"engineering-processor", 1 },
+})
+upstream_item(component{
 	name = "me-256k-storage-component",
-	category = "ev-circuit-assembler-recipes",
-	energy_required = 80,
-	ingredients = {
-      {type = "item", name = "fiber-reinforced-printed-circuit-board", amount = 1},
-      {type = "item", name = "processing-unit", amount = 16},
-      {type = "item", name = "ev-circuit", amount = 4},
-      {type = "item", name = "engineering-processor", amount = 1},
-      {type = "fluid", name = "soldering-alloy", amount = 7.2},
-    },
-	results = {
-      {type = "item", name = "me-256k-storage-component", amount = 1}
-    }
-}
+	tier = "ev",
+	ingredients = I{ "fiber-reinforced-printed-circuit-board", 1, "processing-unit", 16, "ev-circuit", 4,
+		"engineering-processor", 1 },
+})
+--- issue #216: upstream unlocks the 4k and the 16k component with logistic-system (and with the data technologies of
+--- the microverse, removed in issue #287). The technology that unlocks them has the technologies of their ingredients
+--- before it: logistic-system gets nand-chips (the 4k one's NAND chips), an earlier technology of the same science
+for tech, pre in pairs({ ["logistic-system"] = "nand-chips" }) do
+	local t = data.raw.technology[tech]
+	local has = false
+	for _, x in pairs(t and t.prerequisites or {}) do if x == pre then has = true end end
+	if t and not has then
+		t.prerequisites = t.prerequisites or {}
+		table.insert(t.prerequisites, pre)
+	end
+end
 
 move_to("fork-me-network", "fluix-cable", "a0")
 move_to("fork-me-network", "me-controller", "a")
@@ -257,6 +247,8 @@ for i, tier in ipairs({ "1k", "4k", "16k", "64k", "256k" }) do
 	data.raw.recipe[cell].auto_recycle = false         -- a recycler would void the contents
 end
 
+--- GTNH (SAE2:2239-2256): a titanium plate, 2 certus quartz screws, an annihilation (import) or formation core (export),
+--- 2 nether quartz plates, an LV piston, MV, 10 s; here an aluminium plate
 for _, bus in pairs({
 	{ name = "me-import-bus", core = "annihilation-core", order = "b2" },
 	{ name = "me-export-bus", core = "formation-core", order = "b3" },
@@ -267,15 +259,12 @@ for _, bus in pairs({
 		subgroup = "fork-me-network",
 		order = bus.order,
 		energy_required = 10 * MV_SPEED,
-		ingredients = {
-			{ type = "item", name = bus.core, amount = 1 },
-			{ type = "item", name = "mv-piston", amount = 1 },
-			{ type = "item", name = "aluminium-plate", amount = 2 },
-			{ type = "item", name = "fluix-cable", amount = 2 },
-		},
+		ingredients = I{ "aluminium-plate", 1, "certus-quartz-screw", 2, bus.core, 1, "nether-quartz-plate", 2,
+			"lv-piston", 1 },
 	}
 end
 
+--- (not in AE2 or GTNH: Gregtorio's own)
 recipe_of{
 	name = "me-underground-cable",
 	category = "mv-assembling-machine-recipes",
@@ -295,12 +284,10 @@ recipe_of{
 	subgroup = "fork-me-network",
 	order = "b4",
 	energy_required = 10 * MV_SPEED,
-	ingredients = {
-		{ type = "item", name = "me-interface", amount = 1 },
-		{ type = "item", name = "mv-piston", amount = 2 },
-		{ type = "item", name = "aluminium-plate", amount = 2 },
-		{ type = "item", name = "fluix-cable", amount = 2 },
-	},
+	--- GTNH (SAE2:2231-2238): a chest, 2 certus quartz screws, an ME Interface, 2 nether quartz plates, an LV piston,
+	--- MV, 10 s
+	ingredients = I{ "wooden-chest", 1, "certus-quartz-screw", 2, "me-interface", 1, "nether-quartz-plate", 2,
+		"lv-piston", 1 },
 }
 
 
@@ -309,6 +296,8 @@ recipe_of{
 --- THE RECIPES OF THE OLD 121 (autocrafting) AND THE MOLECULAR ASSEMBLER
 --------------------------------------------------------------------------------
 
+--- AE2-Unofficial has no pattern provider (GTNH's ME Interface holds the patterns): Gregtorio's recipe, an ME Interface
+--- with the HV parts of an assembler's control
 recipe_of{
 	name = "me-pattern-provider",
 	category = "hv-assembling-machine-recipes",
@@ -323,19 +312,16 @@ recipe_of{
 	},
 }
 
---- issue #80: AE2's blank pattern (quartz glass, certus quartz, iron) in Gregtorio's materials, cheap (LV assembler)
+--- issue #80: a cheap blank pattern (LV assembler); issue #214: GTNH's (SAE2:1272-1282): 2 quartz glass, 3 glowstone
+--- plates, a certus quartz, 3 aluminium plates (Gregtorio has no quartz glass and no glowstone plate: glass and
+--- glowstone dust)
 recipe_of{
 	name = "me-blank-pattern",
 	category = "lv-assembling-machine-recipes",
 	subgroup = "fork-me-network",
 	order = "e1",
 	energy_required = 5 * LV_SPEED,
-	ingredients = {
-		{ type = "item", name = "glass", amount = 2 },
-		{ type = "item", name = "certus-quartz", amount = 1 },
-		{ type = "item", name = "aluminium-plate", amount = 1 },
-		{ type = "item", name = "fluix-cable", amount = 1 },
-	},
+	ingredients = I{ "glass", 2, "glowstone-dust", 3, "certus-quartz", 1, "aluminium-plate", 3 },
 }
 
 --- issue #159 (me-network 0.5.0, its issue #130): the ME Pattern Terminal, GTNH's recipe (NewHorizonsCoreMod
@@ -359,21 +345,62 @@ recipe_of{
 		"engineering-processor", 1 },
 }
 
+--- issue #297 (me-network 0.5.4, its issue #336): the ME Interface Terminal, GTNH's recipe (NewHorizonsCoreMod
+--- scripts/ScriptAppliedEnergistics2.java:2302-2311, "ME Interface Terminal"): an ME Terminal, 2 certus quartz screws,
+--- an ME Interface, 2 nether quartz plates and an engineering processor in the MV assembler, 10 s; the Pattern
+--- Terminal's recipe with the interface for the blank pattern. me-network before 0.5.4 has no such block
+--- me-network 0.5.4 (its issue #353): the ME Storage, Conversion and Throughput Monitor, GTNH's recipes (NewHorizonsCoreMod
+--- scripts/ScriptAppliedEnergistics2.java:2359-2367 storage, :2368-2376 throughput, :2312-2320 conversion), MV assembler:
+---   storage: an illuminated panel, 2 certus quartz screws, a level emitter, 3 nether quartz plates, 10 s;
+---   throughput: a storage monitor, 2 certus quartz screws, a level emitter, 3 nether quartz plates, 10 s;
+---   conversion: a storage monitor, 2 certus quartz screws, a formation core, 2 nether quartz plates, an annihilation core, 20 s.
+--- Gregtorio has no illuminated panel and no level emitter: the computer monitor (the ME Terminal's screen) and an MV sensor
+--- stand in. me-network before 0.5.4 has no monitors.
+local MONITORS = data.raw.item["me-storage-monitor"] and {
+	{ "me-storage-monitor", 10, I{ "computer-monitor", 1, "certus-quartz-screw", 2, "mv-sensor", 1, "nether-quartz-plate", 3 } },
+	{ "me-throughput-monitor", 10, I{ "me-storage-monitor", 1, "certus-quartz-screw", 2, "mv-sensor", 1, "nether-quartz-plate", 3 } },
+	{ "me-conversion-monitor", 20, I{ "me-storage-monitor", 1, "certus-quartz-screw", 2, "formation-core", 1,
+		"nether-quartz-plate", 2, "annihilation-core", 1 } },
+} or {}
+for i, m in ipairs(MONITORS) do
+	recipe_of{
+		name = m[1],
+		category = "mv-assembling-machine-recipes",
+		subgroup = "fork-me-network",
+		order = "c" .. i,
+		energy_required = m[2] * MV_SPEED,
+		ingredients = m[3],
+	}
+end
+
+local HAS_INTERFACE_TERMINAL = data.raw.item["me-interface-terminal"] ~= nil
+if HAS_INTERFACE_TERMINAL then
+	recipe_of{
+		name = "me-interface-terminal",
+		category = "mv-assembling-machine-recipes",
+		subgroup = "fork-me-network",
+		order = "e0b",
+		energy_required = 10 * MV_SPEED,
+		ingredients = I{ "me-terminal", 1, "certus-quartz-screw", 2, "me-interface", 1, "nether-quartz-plate", 2,
+			"engineering-processor", 1 },
+	}
+end
+
+--- GTNH (ASM:4800-4809): the EV assembler, 4 titanium plates, a formation and an annihilation core, 288 molten glass
+--- (2 glass here: the HV assembler has no fluid input), HV, 5 s
 recipe_of{
 	name = "me-molecular-assembler",
 	category = "hv-assembling-machine-recipes",
 	subgroup = "fork-me-network",
 	order = "f",
-	energy_required = 10 * HV_SPEED,
-	ingredients = {
-		{ type = "item", name = "hv-machine-hull", amount = 1 },
-		{ type = "item", name = "hv-robot-arm", amount = 2 },
-		{ type = "item", name = "hv-emitter", amount = 1 },
-		{ type = "item", name = "engineering-processor", amount = 2 },
-		{ type = "item", name = "fluix-cable", amount = 4 },
-	},
+	energy_required = 5 * HV_SPEED,
+	ingredients = I{ "ev-assembling-machine", 1, "titanium-plate", 4, "formation-core", 1, "annihilation-core", 1,
+		"glass", 2 },
 }
 
+--- GTNH's Level Maintainer is AE2 Fluid Crafting's (SFC:574-585: 4 niobium-titanium plates, 2 Crafting Cards, an
+--- annihilation core, an ME Interface, a fluid diamond core); me-network has no Crafting Card and the cards come one tier
+--- later here: Gregtorio's recipe, an ME Interface with an EV sensor
 recipe_of{
 	name = "me-level-maintainer",
 	category = "ev-assembling-machine-recipes",
@@ -388,6 +415,7 @@ recipe_of{
 	},
 }
 
+--- (not in AE2 or GTNH: Gregtorio's own)
 recipe_of{
 	name = "me-circuit-interface",
 	category = "hv-assembling-machine-recipes",
@@ -402,6 +430,29 @@ recipe_of{
 		{ type = "item", name = "fluix-cable", amount = 4 },
 	},
 }
+
+--- me-network 0.5.4 (its issue #355): the ME Level Emitter, the ME Toggle Bus and the ME Inverted Toggle Bus, GTNH's recipes
+--- (NewHorizonsCoreMod scripts/ScriptAppliedEnergistics2.java): the level emitter from a redstone torch and a calculation
+--- processor (:2201-2206; the torch is a decider combinator here, as the inverter card's redstone parts), the toggle bus from a
+--- level emitter and 2 fluix cables (:2213-2218), both LV assembler, 10 s; the inverted one from a toggle bus (:2222-2224, 5 s;
+--- GTNH also turns it back with circuit 1: left out, a recipe loop, as in me-network). me-network before 0.5.4 has none
+local HAS_TOGGLE = data.raw.item["me-toggle-bus"] ~= nil
+if HAS_TOGGLE then
+	for _, r in ipairs({
+		{ "me-level-emitter", "g7", 10, I{ "decider-combinator", 1, "calculation-processor", 1 } },
+		{ "me-toggle-bus", "g61", 10, I{ "me-level-emitter", 1, "fluix-cable", 2 } },
+		{ "me-inverted-toggle-bus", "g62", 5, I{ "me-toggle-bus", 1 } },
+	}) do
+		recipe_of{
+			name = r[1],
+			category = "lv-assembling-machine-recipes",
+			subgroup = "fork-me-network",
+			order = r[2],
+			energy_required = r[3] * LV_SPEED,
+			ingredients = r[4],
+		}
+	end
+end
 
 --- item recipes only (no fluid boxes), crafts like an EV assembler
 ME.make_molecular_assembler{
@@ -434,6 +485,7 @@ if HAS_CRAFTING_BLOCKS then
 	--- with me-network's subgroup and order of the item (fork-me-crafting-cpu, h0 to h7)
 	local function block(name, category, energy_required, ingredients)
 		local item = data.raw.item[name]
+		FORK_ME_RECIPES[name] = true
 		ME.replace_recipe{
 			name = name,
 			category = category,
@@ -508,9 +560,32 @@ end
 --- cards (the dependency is >= 0.5.0 since issue #195, and the guard can go).
 --------------------------------------------------------------------------------
 
+--- me-network 0.5.4 (its issue #354): the Void ME Storage Cell, GTNH's recipe (NewHorizonsCoreMod
+--- gthandler/recipes/AssemblerRecipes.java:4660-4668, "Void Cell"): 2 certus quartz screws, a certus quartz plate, 3 tungsten
+--- plates and a singularity in the HV assembler, 5 s. Gregtorio has no singularity (GTNH compresses 512 000 cobblestone into
+--- one in the IV neutronium compressor, SAE2:903-906): it is left out. AE2-Unofficial's void cell takes items and fluids,
+--- me-network has one of each: the fluid one gets the same recipe. me-network before 0.5.4 has none.
+local HAS_VOID_CELLS = data.raw["item-with-tags"]["me-void-storage-cell"] ~= nil   -- (cells are items with tags)
+if HAS_VOID_CELLS then
+	for i, name in ipairs({ "me-void-storage-cell", "me-void-fluid-storage-cell" }) do
+		if data.raw["item-with-tags"][name] then
+			recipe_of{
+				name = name,
+				category = "hv-assembling-machine-recipes",
+				subgroup = i == 1 and "fork-me-cells" or "fork-me-fluid-cells",
+				order = "z" .. i,
+				energy_required = 5 * HV_SPEED,
+				ingredients = I{ "certus-quartz-screw", 2, "certus-quartz-plate", 1, "tungsten-plate", 3 },
+			}
+		end
+	end
+end
+
 local HAS_CARDS = data.raw.item["me-basic-card"] ~= nil
 if HAS_CARDS then
+	--- (a card of a later me-network than the one loaded is skipped)
 	local function card(name, order, ingredients)
+		if not data.raw.item[name] and not data.raw.module[name] then return end
 		recipe_of{ name = name, subgroup = "fork-me-cards", order = order, ingredients = ingredients }
 	end
 
@@ -530,10 +605,10 @@ if HAS_CARDS then
 	--- GTNH: basic card, two 1k storage components, charged certus quartz
 	card("me-capacity-card", "c",
 		I{ "me-basic-card", 1, "me-1k-storage-component", 2, "charged-certus-quartz", 1 })
-	--- GTNH: basic card, two calculation processors, an ME Void Storage Cell (a cell without a storage component;
-	--- me-network has none, so its shell, the storage housing)
+	--- GTNH: basic card, two calculation processors, an ME Void Storage Cell (me-network before 0.5.4 has none: its shell,
+	--- the storage housing)
 	card("me-overflow-destruction-card", "d",
-		I{ "me-basic-card", 1, "calculation-processor", 2, "basic-storage-housing", 1 })
+		I{ "me-basic-card", 1, "calculation-processor", 2, HAS_VOID_CELLS and "me-void-storage-cell" or "basic-storage-housing", 1 })
 	--- GTNH: advanced card, engineering, logic and calculation processor
 	card("me-fuzzy-card", "e",
 		I{ "me-advanced-card", 1, "engineering-processor", 1, "logic-processor", 1, "calculation-processor", 1 })
@@ -542,6 +617,31 @@ if HAS_CARDS then
 	--- GTNH: advanced card, engineering and logic processor, an EV item distributor (the turbo splitter here)
 	card("me-equal-distribution-card", "g",
 		I{ "me-advanced-card", 1, "engineering-processor", 1, "logic-processor", 1, "turbo-splitter", 1 })
+	--- issue #211 (me-network 0.5.3): GTNH's Pattern Capacity Card (AE2-Unofficial GTNHRecipes materials/cards.recipe,
+	--- ASM:4866-4875): advanced card, two 16k storage components, an ME Interface
+	card("me-pattern-capacity-card", "e2",
+		I{ "me-advanced-card", 1, "me-16k-storage-component", 2, "me-interface", 1 })
+	--- issue #211: the ME Interface Capacity Card has no GTNH counterpart (GTNH's interface takes patterns, not more
+	--- config rows). By its nearest relative, the Pattern Capacity Card (more slots for the same block), one storage
+	--- tier lower: a config row asks for less than a pattern does
+	card("me-interface-capacity-card", "e3",
+		I{ "me-advanced-card", 1, "me-4k-storage-component", 2, "me-interface", 1 })
+	--- issue #211: GTNH's Sticky Card (SAE2:1290-1296): basic card, two 1k storage components, a slimeball (Gregtorio
+	--- has no slimeball: sticky resin, GT's other sticky ball)
+	card("me-sticky-card", "e4", I{ "me-basic-card", 1, "me-1k-storage-component", 2, "sticky-resin", 1 })
+	--- me-network 0.5.4 (its issue #354): the Group Filter Card is AE2-Unofficial's Ore Dictionary Filter Card, GTNH's recipe
+	--- (SAE2:1332-1338, shapeless): an advanced card, 2 engineering processors and an IV Type Filter. Gregtorio has no Type
+	--- Filter: its parts (GT5-Unofficial MTERecipeLoader.java:4182-4187: the IV hull, an IV conveyor module, a chest, an item
+	--- filter, an LV circuit)
+	card("me-group-filter-card", "e5", I{ "me-advanced-card", 1, "engineering-processor", 2, "iv-machine-hull", 1,
+		"iv-conveyor-module", 1, "wooden-chest", 1, "filter", 1, "electronic-circuit", 1 })
+	--- me-network 0.5.4 (its issue #356): the Super Speed and Superluminal Speed Cards with AE2-Unofficial's ingredients, as
+	--- me-network has them (an Acceleration Card and a 16k storage component; a Super Speed Card and 4 256k storage components,
+	--- for AE2-U's 1024k), made like the other cards. GTNH's (scripts/ScriptAppliedEnergistics2.java:196-202 and :2076-2082:
+	--- an advanced card, an engineering processor, a mysterious crystal and an LuV world accelerator; a dilithium gem and a UV
+	--- world accelerator) need items Gregtorio does not have: which stand-ins they get is open (the maintainer's decision)
+	card("me-super-speed-card", "h2", I{ "me-acceleration-card", 1, "me-16k-storage-component", 1 })
+	card("me-superluminal-speed-card", "h3", I{ "me-super-speed-card", 1, "me-256k-storage-component", 4 })
 
 	--- GTNH: computer screen cover, two titanium screws (stainless steel here: Gregtorio has no titanium screw),
 	--- crafting table, two titanium plates, calculation processor
@@ -553,6 +653,77 @@ if HAS_CARDS then
 			"calculation-processor", 1 },
 	}
 end
+
+
+
+--------------------------------------------------------------------------------
+--- THE WIRELESS TERMINAL (me-network 0.5.3, its issues #153, #205 to #211; Gregtorio issue #212)
+--- GTNH's AE2 recipes. Gregtorio has no Wireless Receiver: its stand-in is the HV sensor (GT's sensor is an ender eye on
+--- an HV circuit and plates, as the receiver is an ender eye rod on an HV circuit and certus plates); no titanium screw:
+--- stainless steel, as for the Cell Workbench; no AE2 energy cell and no GT battery above the battery: 4 batteries for
+--- the Dense Energy Cell, as in me-network's own recipe. Guarded by the technology (me-network before 0.5.3 has none).
+--------------------------------------------------------------------------------
+
+local HAS_WIRELESS = data.raw.technology["me-wireless"] ~= nil
+if HAS_WIRELESS then
+	--- with me-network's subgroup and order of the item (fork-me-wireless, a to e)
+	local function wireless(name, category, energy_required, ingredients)
+		local item = data.raw.item[name] or data.raw["item-with-tags"][name]
+		recipe_of{ name = name, category = category, energy_required = energy_required, subgroup = item.subgroup,
+			order = item.order, ingredients = ingredients }
+	end
+
+	--- GTNH (ASM:4890-4901): a calculation processor, a Wireless Receiver, a fluix cable, 2 titanium screws, HV, 3 s
+	wireless("me-wireless-access-point", "hv-assembling-machine-recipes", 3 * HV_SPEED,
+		I{ "calculation-processor", 1, "hv-sensor", 1, "fluix-cable", 1, "stainless-steel-screw", 2 })
+	--- GTNH (SAE2:1339-1350, crafting table): fluix dust, a certus quartz, an ender pearl plate, 2 titanium plates, an
+	--- aluminium plate (Gregtorio has no ender pearl plate: the pearl)
+	wireless("me-wireless-booster", nil, nil,
+		I{ "fluix-dust", 1, "certus-quartz", 1, "ender-pearl", 1, "titanium-plate", 2, "aluminium-plate", 1 })
+	--- GTNH (SAE2:1239-1249, crafting table): 2 Wireless Receivers, an ME Terminal, 4 nether quartz plates, an
+	--- engineering processor, a Dense Energy Cell
+	wireless("me-wireless-terminal", nil, nil, I{ "hv-sensor", 2, "me-terminal", 1, "nether-quartz-plate", 4,
+		"engineering-processor", 1, "battery", 4 })
+	--- GTNH (SAE2:774-784, crafting table): 4 titanium plates, 2 fluix crystals, 2 copper cables, the EV electrolyzer
+	wireless("me-charger", nil, nil,
+		I{ "titanium-plate", 4, "fluix-crystal", 2, "copper-cable", 2, "ev-electrolyzer", 1 })
+	--- The ME Wireless Terminal Module has no GTNH counterpart (GTNH has no armour module of the terminal). By its
+	--- nearest relative, the Wireless Terminal it is made from: that terminal, a second Dense Energy Cell (the grid's
+	--- buffer) and 2 engineering processors (me-network's own recipe: the terminal, 10 batteries, 2 processing units)
+	wireless("me-wireless-module", nil, nil, I{ "me-wireless-terminal", 1, "battery", 4, "engineering-processor", 2 })
+end
+
+
+
+--------------------------------------------------------------------------------
+--- THE IO PORT, THE QUANTUM BRIDGE AND THE WIRELESS LINK (me-network 0.5.4, its issues #384 to #386; issue #352)
+--- GTNH's AE2 recipes (ASM), each guarded by its item (an older me-network has none). Stand-ins as above: the HV sensor
+--- for the Wireless Receiver, a battery for AE2's Energy Cell (4 for the Dense one); and for the parts Gregtorio lacks:
+--- an ender pearl and a fluix crystal for a Fluix Pearl (AE2 makes it from an ender pearl, fluix dust and fluix
+--- crystals), glass for Quartz Glass (AE2's is glass and quartz dust)
+--------------------------------------------------------------------------------
+
+--- with me-network's subgroup and order of the item
+local function block_recipe(name, category, energy_required, ingredients)
+	local item = data.raw.item[name]
+	if not item then return end
+	recipe_of{ name = name, category = category, energy_required = energy_required, subgroup = item.subgroup,
+		order = item.order, ingredients = ingredients }
+end
+
+--- GTNH (ASM:4752-4760): 3 titanium plates, 3 fluix cables, a logic processor, 2 ME Drives, HV, 5 s; here aluminium
+--- and the drive's category, since it comes with ME Network (MV here)
+block_recipe("me-io-port", nil, 5, I{ "aluminium-plate", 3, "fluix-cable", 3, "logic-processor", 1, "me-drive", 2 })
+--- GTNH (ASM:4696-4713): the Quantum Ring (an Energy Cell, 4 titanium plates, an engineering processor, 2 logic
+--- processors, a fluix cable) and the Quantum Link Chamber (4 titanium plates, 4 Fluix Pearls, a Quartz Glass), HV, 5 s
+--- each. me-network's bridge is AE2's 8 rings and a chamber in one 3x3 block: their sum, 9 times the time
+block_recipe("me-quantum-bridge", "hv-assembling-machine-recipes", 45 * HV_SPEED,
+	I{ "battery", 8, "titanium-plate", 36, "engineering-processor", 8, "logic-processor", 16, "fluix-cable", 8,
+		"ender-pearl", 4, "fluix-crystal", 4, "glass", 1 })
+--- GTNH (ASM:5036-5044), AE2 Stuff's Wireless Connector: 2 titanium plates, 4 pure fluix crystals, 2 engineering
+--- processors, a Wireless Receiver, HV, 5 s
+block_recipe("me-wireless-link", "hv-assembling-machine-recipes", 5 * HV_SPEED,
+	I{ "titanium-plate", 2, "pure-fluix-crystal", 4, "engineering-processor", 2, "hv-sensor", 1 })
 
 
 
@@ -577,16 +748,17 @@ local function tech(name, prerequisites, packs, count, recipes, amounts)
 		unit = { count = count, ingredients = sci(packs, amounts or SIX), time = 30 } })
 end
 
---- the drive chassis (now the ME Drive itself) and the chest it is made from
-fork_add_unlock("logistic-system", "me-chest")
-fork_add_unlock("logistic-system", "me-drive")
-
---- MV: basic cells, terminal, buses (cable, controller and interface come with Applied Energistics Components)
-tech("me-network", { "logistic-system" }, 3, 400, {
-	"me-terminal", "computer-monitor", "certus-quartz-bolt", "certus-quartz-screw",
-	"me-1k-storage-cell", "me-4k-storage-cell", "me-16k-storage-cell", "me-import-bus", "me-export-bus",
-	"me-underground-cable", "me-storage-bus",
-})
+--- MV: basic cells, terminal, buses (cable, controller and interface come with Applied Energistics Components); issue
+--- #213: the ME Chest (a block of its own since me-network 0.5.3) and the ME Drive made from it come with the terminal
+--- (logistic-system unlocked them before; the chest needs stainless steel); the nether quartz plate of the buses (GTNH's
+--- recipe, issue #214); issue #294: GTNH's storage housing of the cells and its certus quartz plate (Overworld Data
+--- unlocked upstream's)
+local me_network = { "me-terminal", "computer-monitor", "certus-quartz-bolt", "certus-quartz-screw", "me-chest", "me-drive",
+	"basic-storage-housing", "certus-quartz-plate", "me-1k-storage-cell", "me-4k-storage-cell", "me-16k-storage-cell",
+	"nether-quartz-plate", "me-import-bus", "me-export-bus", "me-underground-cable", "me-storage-bus" }
+for _, m in ipairs(MONITORS) do me_network[#me_network + 1] = m[1] end      -- (me-network 0.5.4: the monitors)
+if data.raw.item["me-io-port"] then me_network[#me_network + 1] = "me-io-port" end   -- (0.5.4, issue #352)
+tech("me-network", { "logistic-system", "stainless-steel" }, 3, 400, me_network)
 --- EV: 64k (the component needs epoxy boards)
 tech("me-storage-64k", { "me-network", "nanoprocessors", "advanced-hv-machines" }, 5, 800,
 	{ "me-64k-storage-component", "me-64k-storage-cell" })
@@ -605,14 +777,20 @@ local function with_blocks(recipes, blocks)
 	return recipes
 end
 
---- EV: autocrafting and the first crafting CPU (a crafting unit, 1k and 4k crafting storage, the monitor)
-tech("me-autocrafting", { "me-storage-64k" }, 5, 600, with_blocks(
-	{ "me-pattern-provider", "me-pattern-terminal", "nether-quartz-plate", "me-blank-pattern", "me-molecular-assembler" },
+--- EV: autocrafting and the first crafting CPU (a crafting unit, 1k and 4k crafting storage, the monitor); issue #297:
+--- the ME Interface Terminal (me-network 0.5.4) with the Pattern Terminal, as me-network unlocks it
+local autocrafting = { "me-pattern-provider", "me-pattern-terminal", "me-blank-pattern", "me-molecular-assembler" }
+if HAS_INTERFACE_TERMINAL then autocrafting[#autocrafting + 1] = "me-interface-terminal" end
+tech("me-autocrafting", { "me-storage-64k" }, 5, 600, with_blocks(autocrafting,
 	{ "me-crafting-unit", "me-1k-crafting-storage", "me-4k-crafting-storage", "me-crafting-monitor" }), SEVEN)
---- issue #38: level maintainer and circuit interface (EV); issue #111: the 16k and 64k crafting storage and the
---- co-processing unit at IV, the 256k crafting storage at LuV
-tech("me-automation", { "me-autocrafting", "circuit-network" }, 5, 800,
-	{ "me-level-maintainer", "me-circuit-interface" }, SEVEN)
+--- issue #38: level maintainer and circuit interface (EV); the level emitter and the toggle buses (me-network 0.5.4, its
+--- issue #355), where me-network puts them; issue #111: the 16k and 64k crafting storage and the co-processing unit at IV,
+--- the 256k crafting storage at LuV
+local automation = { "me-level-maintainer", "me-circuit-interface" }
+if HAS_TOGGLE then
+	for _, name in ipairs({ "me-level-emitter", "me-toggle-bus", "me-inverted-toggle-bus" }) do automation[#automation + 1] = name end
+end
+tech("me-automation", { "me-autocrafting", "circuit-network" }, 5, 800, automation, SEVEN)
 tech("me-co-processing", { "me-autocrafting", "me-storage-256k", "iv-components" }, 6, 1200, with_blocks({},
 	{ "me-16k-crafting-storage", "me-64k-crafting-storage", "me-crafting-co-processing-unit" }), SEVEN)
 tech("me-quantum-crafting", { "me-co-processing", "luv-machines" }, 7, 1500,
@@ -626,10 +804,32 @@ tech("me-fluid-storage", { "me-autocrafting" }, 5, 600, {
 tech("me-fluid-storage-256k", { "me-fluid-storage", "me-storage-256k" }, 6, 800, { "me-256k-fluid-storage-cell" })
 
 --- IV: the Advanced Card (platinum) and the cards and the workbench; the Inverter Card needs decider combinators, the
---- Equal Distribution Card a turbo splitter; the Acceleration Card is made from the Advanced Card
+--- Equal Distribution Card a turbo splitter; the Acceleration Card is made from the Advanced Card; issue #211: the
+--- Pattern Capacity, Interface Capacity and Sticky Card (me-network 0.5.3; skipped when the loaded one lacks them); the Group
+--- Filter Card and the void cells (me-network 0.5.4): the Overflow Destruction Card is made from the item one
 if HAS_CARDS then
 	tech("me-upgrade-cards", { "me-storage-256k", "circuit-network", "turbo-transport-belt" }, 6, 1000, {
-		"me-basic-card", "me-advanced-card", "me-acceleration-card", "me-capacity-card", "me-overflow-destruction-card", "me-fuzzy-card", "me-inverter-card",
-		"me-equal-distribution-card", "me-cell-workbench",
+		"me-basic-card", "me-advanced-card", "me-acceleration-card", "me-capacity-card", "me-overflow-destruction-card",
+		"me-fuzzy-card", "me-pattern-capacity-card", "me-interface-capacity-card", "me-sticky-card", "me-inverter-card",
+		"me-equal-distribution-card", "me-cell-workbench", "me-group-filter-card", "me-void-storage-cell",
+		"me-void-fluid-storage-cell", "me-super-speed-card", "me-superluminal-speed-card",
 	})
+end
+
+--- issue #212: IV, after the cards (the Wireless Booster goes into the access point's card slots), which come after the
+--- battery, the EV electrolyzer of the charger and the ender pearl of the booster (me-network: after me-upgrade-cards and
+--- battery, 500 units of 3 packs); issue #215: the ME Wireless Terminal Module stays locked (FORK_RECIPES_LOCKED)
+if HAS_WIRELESS then
+	tech("me-wireless", { "me-upgrade-cards" }, 6, 1200, {
+		"me-wireless-access-point", "me-wireless-booster", "me-wireless-terminal", "me-charger",
+	})
+	--- issue #352: the Wireless Link (me-network 0.5.4) after the wireless terminal, as me-network puts it
+	if data.raw.technology["me-wireless-link"] then
+		tech("me-wireless-link", { "me-wireless" }, 6, 800, { "me-wireless-link" })
+	end
+end
+--- issue #352: the Quantum Bridge (me-network 0.5.4) after 256k storage, as me-network puts it (its own technology
+--- needs utility science, the sixth pack here)
+if data.raw.technology["me-quantum-bridge"] then
+	tech("me-quantum-bridge", { "me-storage-256k" }, 6, 1500, { "me-quantum-bridge" })
 end

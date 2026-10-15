@@ -11,7 +11,7 @@
 ---     UHV energy hatch
 ---   * UHV machines: the UV machines one tier up (fork_make_tier_machine)
 ---   * the UHV technologies, and the Phase 3 workarounds that are no longer needed
---- 27-uhv-age-item.lua is not loaded by data.lua (it is not valid Lua and mostly holds later
+--- 27-uhv-age-item.lua (removed in issue #249) was never loaded by data.lua (it was not valid Lua and mostly held later
 --- tiers), so the UHV parts of it are rebuilt here after the GT5-Unofficial recipes.
 --- Everything else in it (bedrockium, singularities, neutronium compressor, ore factory)
 --- waits for later phases.
@@ -225,7 +225,8 @@ create_item{
 ---   stem cells -> wetware circuit board + neuro processing unit
 ---   -> wetware processor (uses the crystal CPU) -> assembly -> supercomputer -> mainframe
 --- Changes against GT: no ytterbium wire (niobium-titanium instead), the mainframe uses the UV
---- superconductor. The mainframe takes complex SMDs like GT (issue #35, 129-fork-water-purification.lua).
+--- superconductor. The mainframe takes complex SMDs where GT takes optical SMDs (XSMD; issues #35 and #259,
+--- 129-fork-water-purification.lua).
 --------------------------------------------------------------------------------
 
 create_item{

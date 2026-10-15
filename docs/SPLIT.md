@@ -44,7 +44,7 @@ advanced and acceleration cards. They are made in GT machines and are ingredient
 blocks; the ME network has no function for them. The technologies `applied-energistics-crystals` and
 `applied-energistics-components` stay (upstream techs that unlock GT materials and, by name, the cable, controller
 and interface). The logistic chest recipes that use ME items (`requester-chest`, `storage-chest`, …), `roboport-mk1`,
-`overworld-data` and the microverse data recipes stay (Gregtorio recipes that use ME items as ingredients).
+The microverse data recipes stayed (Gregtorio recipes that used ME items as ingredients) until issue #287 removed the microverse.
 
 The rule: an item moves when the ME network needs it to exist (it is placed, goes into a slot, or is the cell or
 pattern itself) or it is part of the ME crafting chain that a standalone game needs (storage components and housing:
@@ -76,7 +76,7 @@ cell = component + housing as in AE2). Materials that GregTech processing makes 
 | Use | Replacement |
 |---|---|
 | upstream technologies unlock ME recipes by name (`applied-energistics-components`: cable, controller, interface; storage components in 4 techs; `basic-storage-housing`) | unchanged: the recipes keep their names (defined by the compat file) |
-| ME items as ingredients (`roboport-mk1`, logistic chests, `storage-chest`, `overworld-data`, microverse data, an MV entity) | unchanged: the items exist through the dependency |
+| ME items as ingredients (`roboport-mk1`, logistic chests, `storage-chest`, an MV entity; the microverse data items until issue #287) | unchanged: the items exist through the dependency |
 | `137-fork-endgame-materials.lua`: `me-storage-256k` is a prerequisite | unchanged: the technology keeps its name |
 | devcheck uses the ME remote interfaces (`gregtorio-me-network`, …) | unchanged: me-network keeps the interface names (other mods and the tests use them) |
 

@@ -13,6 +13,11 @@ categories:
         topic: >-
           Everything about Gregtorio Continued.
           Mod portal: https://mods.factorio.com/mod/gregtorio-continued
+      - name: gregtorio-ideas
+        topic: Polls and proposals for where Gregtorio Continued goes next. Start a thread with your own idea.
+        messages:
+          - file: content/ideas.md
+            pin: true
       - name: gregtorio-help
         type: forum
         topic: |-

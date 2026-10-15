@@ -1,24 +1,5 @@
 --- LV 1	MV 2	HV 4	EV 8	IV 16	LUV 32	ZPM 64	UV 128	UHV 256	UEV	512	UIV 1024	UMV 2048	UXV 4096
 
----TODO: Make a rare earth vein at mm t9 or t10 (cadmium, caesium, lanthanum, cerium)
-
-microverse_resources = {
-	  { type = "unlock-recipe", recipe = "microminer-magnetite" },
-      { type = "unlock-recipe", recipe = "microminer-coal" },
-      { type = "unlock-recipe", recipe = "microminer-salt" },
-      { type = "unlock-recipe", recipe = "microminer-cassiterite" },
-      { type = "unlock-recipe", recipe = "microminer-copper-tin" },
-      { type = "unlock-recipe", recipe = "microminer-redstone" }, 
-      { type = "unlock-recipe", recipe = "microminer-basaltic-mineral-sands" },
-      { type = "unlock-recipe", recipe = "microminer-apatite" },
-      { type = "unlock-recipe", recipe = "microminer-clay" },
-	  { type = "unlock-recipe", recipe = "microminer-nickel" },
-      { type = "unlock-recipe", recipe = "microminer-tetrahedrite" },
-      { type = "unlock-recipe", recipe = "microminer-lapis" },
-      { type = "unlock-recipe", recipe = "microminer-galena" },
-      { type = "unlock-recipe", recipe = "microminer-diamond" }
-}
-if YAFC_MODE then microverse_resources = { type = "unlock-recipe", recipe = "crafting-table" } end
 
 data:extend({
 
@@ -1705,15 +1686,15 @@ data:extend({
 
 
 
----BASIC EXTENDED CRAFTING
+---BLACK STEEL (issue #287: was Basic Extended Crafting, whose table, component and catalyst went with the
+--- microverse; migrations/2026-10-12-issue-287-microverse.json)
   {
     type = "technology",
-    name = "basic-extended-crafting",
-    icon = "__gregtorio-continued__/graphics/technology/basic-extended-crafting.png",
+    name = "black-steel",
+    icon = "__gregtorio-continued__/graphics/technology/nyi.png",
     icon_size = 256,
     effects = {
       { type = "unlock-recipe", recipe = "brick-dust-electrolysis" },
-      { type = "unlock-recipe", recipe = "luminessence" },
       { type = "unlock-recipe", recipe = "distilled-water" },
       { type = "unlock-recipe", recipe = "lapis-coolant" },
       { type = "unlock-recipe", recipe = "steel-dust" },
@@ -1725,11 +1706,9 @@ data:extend({
       { type = "unlock-recipe", recipe = "hot-black-steel-ingot" },
       { type = "unlock-recipe", recipe = "black-steel-ingot-chemical-bath" },
       { type = "unlock-recipe", recipe = "black-steel-plate" },
-      { type = "unlock-recipe", recipe = "basic-extended-crafting-component" },
-      { type = "unlock-recipe", recipe = "basic-extended-crafting-catalyst" },
-      { type = "unlock-recipe", recipe = "basic-extended-crafting-table" },
     },
-	prerequisites = { "phosphorus-processing"},
+	-- as Basic Extended Crafting had it
+	prerequisites = { "phosphorus-processing" },
 	unit =
 	{
       count = 180,
@@ -1811,32 +1790,6 @@ data:extend({
   
   
 
----MICROVERSIUM
-  {
-    type = "technology",
-    name = "microversium",
-    icon = "__gregtorio-continued__/graphics/technology/microversium.png",
-    icon_size = 256,
-    effects = {
-      { type = "unlock-recipe", recipe = "glowstone-dust" },
-      { type = "unlock-recipe", recipe = "deuterium" },
-      { type = "unlock-recipe", recipe = "microversium-dust" },
-      { type = "unlock-recipe", recipe = "hot-microversium-ingot" },
-      { type = "unlock-recipe", recipe = "microversium-ingot-chemical-bath" },
-      { type = "unlock-recipe", recipe = "microversium-plate" },
-      { type = "unlock-recipe", recipe = "microversium-casing" },
-      { type = "unlock-recipe", recipe = "block-of-diamond" },
-      { type = "unlock-recipe", recipe = "microverse-projector-controller" },
-      { type = "unlock-recipe", recipe = "mv-microverse-projector" },
-    },
-	prerequisites = { "military-science-pack", "greenhouse" },
-	unit =
-	{
-      count = 220,
-      ingredients = { {"automation-science-pack", SP03}, {"logistic-science-pack", SP02}, {"military-science-pack", SP01} },
-      time = 30
-	}
-  },
   
   
   
@@ -1857,7 +1810,6 @@ data:extend({
       { type = "unlock-recipe", recipe = "me-1k-storage-component-lv" },
       { type = "unlock-recipe", recipe = "steel-screw" },
       { type = "unlock-recipe", recipe = "basic-storage-housing" },
-      { type = "unlock-recipe", recipe = "overworld-data" },
     },
 	prerequisites = { "circuit-assembler" },
 	unit =
@@ -1870,49 +1822,9 @@ data:extend({
 
 
   
----INTO THE MICROVERSE
-  {
-    type = "technology",
-    name = "into-the-microverse",
-    icon = "__gregtorio-continued__/graphics/technology/into-the-microverse.png",
-    icon_size = 256,
-    effects = {
-      { type = "unlock-recipe", recipe = "conductive-iron-ingot" },
-      { type = "unlock-recipe", recipe = "conductive-iron-plate" },
-      { type = "unlock-recipe", recipe = "conductive-iron-thruster" },
-      { type = "unlock-recipe", recipe = "steel-heavy-plating" },
-      { type = "unlock-recipe", recipe = "basic-guidance-system" },
-      { type = "unlock-recipe", recipe = "ruby-lens" },
-      { type = "unlock-recipe", recipe = "basic-mining-laser" },
-      { type = "unlock-recipe", recipe = "steel-plated-microminer" },
-      { type = "unlock-recipe", recipe = "tier-one-microminer-output" }
-    },
-	prerequisites = { "microversium", "basic-extended-crafting", "gas-turbine", "radar", "overworld-data" },
-	unit =
-	{
-      count = 240,
-      ingredients = { {"automation-science-pack", SP03}, {"logistic-science-pack", SP02}, {"military-science-pack", SP01} },
-      time = 30
-	}
-  },
 
 
 
----MICROVERSE RESOURCES
-  {
-    type = "technology",
-    name = "microverse-resources",
-    icon = "__gregtorio-continued__/graphics/technology/microverse-resources.png",
-    icon_size = 256,
-    effects = microverse_resources,
-	prerequisites = { "into-the-microverse" },
-	unit =
-	{
-      count = 240,
-      ingredients = { {"automation-science-pack", SP03}, {"logistic-science-pack", SP02}, {"military-science-pack", SP01} },
-      time = 30
-	}
-  },  
 
 
   
@@ -1923,7 +1835,6 @@ data:extend({
     icon = "__gregtorio-continued__/graphics/technology/aluminium-processing.png",
     icon_size = 256,
     effects = {
-      { type = "unlock-recipe", recipe = "microminer-bauxite" },
       { type = "unlock-recipe", recipe = "crushed-bauxite" },
       { type = "unlock-recipe", recipe = "bauxite-dust" },
       { type = "unlock-recipe", recipe = "centrifuging-crushed-bauxite" },
@@ -1941,7 +1852,8 @@ data:extend({
       { type = "unlock-recipe", recipe = "fine-aluminium-wire" },
       { type = "unlock-recipe", recipe = "aluminium-spring" },
     },
-	prerequisites = { "microverse-resources" },
+	-- issue #287: the prerequisites of the removed microverse technologies
+	prerequisites = { "black-steel", "gas-turbine", "greenhouse", "military-science-pack", "overworld-data", "radar" },
 	unit =
 	{
       count = 240,
@@ -1979,6 +1891,8 @@ data:extend({
     icon = "__gregtorio-continued__/graphics/technology/mv-components.png",
     icon_size = 256,
     effects = {
+      { type = "unlock-recipe", recipe = "conductive-iron-ingot" },   -- issue #287: before MV Machines and the Extruder
+      { type = "unlock-recipe", recipe = "conductive-iron-plate" },
       { type = "unlock-recipe", recipe = "silver-wire" },
       { type = "unlock-recipe", recipe = "magnetic-steel-rod" },
       { type = "unlock-recipe", recipe = "copper-cable" },
@@ -2081,6 +1995,7 @@ data:extend({
     icon = "__gregtorio-continued__/graphics/technology/laser-engraver.png",
     icon_size = 256,
     effects = {
+      { type = "unlock-recipe", recipe = "ruby-lens" },   -- issue #287: first consumer (was into the microverse)
       { type = "unlock-recipe", recipe = "mv-laser-engraver" },
       { type = "unlock-recipe", recipe = "ilc-wafer-sw" },
       { type = "unlock-recipe", recipe = "ilc-chip" }
@@ -2166,7 +2081,6 @@ data:extend({
       { type = "unlock-recipe", recipe = "sodium-potassium" },
       { type = "unlock-recipe", recipe = "mv-energy-hatch" },
       { type = "unlock-recipe", recipe = "mv-greenhouse" },
-      { type = "unlock-recipe", recipe = "hv-microverse-projector" },
     },
 	prerequisites = { "laser-engraver" },
 	unit =
@@ -2213,6 +2127,7 @@ data:extend({
     icon = "__gregtorio-continued__/graphics/technology/advanced-integrated-circuits.png",
     icon_size = 256,
     effects = {
+      { type = "unlock-recipe", recipe = "electrum-plate" },   -- issue #287: first consumer (was advanced extended crafting)
       { type = "unlock-recipe", recipe = "electrum-dust-smelter" },
       { type = "unlock-recipe", recipe = "electrum-ingot" },
       { type = "unlock-recipe", recipe = "electrum-dust-macerator" },
@@ -2530,26 +2445,6 @@ data:extend({
   
 
 
----ADVANCED EXTENDED CRAFTING
-  {
-    type = "technology",
-    name = "advanced-extended-crafting",
-    icon = "__gregtorio-continued__/graphics/technology/advanced-extended-crafting.png",
-    icon_size = 256,
-    effects = {
-      { type = "unlock-recipe", recipe = "electrum-plate" }, 
-      { type = "unlock-recipe", recipe = "advanced-extended-crafting-component" },
-      { type = "unlock-recipe", recipe = "advanced-extended-crafting-catalyst" },
-      { type = "unlock-recipe", recipe = "advanced-extended-crafting-table" }
-    },
-	prerequisites = { "basic-extended-crafting", "advanced-integrated-circuits" },
-	unit =
-	{
-      count = 340,
-      ingredients = { {"automation-science-pack", SP03}, {"logistic-science-pack", SP02}, {"military-science-pack", SP01} },
-      time = 30
-	}
-  },
  
  
 
@@ -2624,6 +2519,7 @@ data:extend({
     icon = "__gregtorio-continued__/graphics/technology/fluix-block.png",
     icon_size = 256,
     effects = {
+      { type = "unlock-recipe", recipe = "block-of-diamond" },   -- issue #287: first consumer (was microversium)
       { type = "unlock-recipe", recipe = "charged-certus-quartz-dust" },  
       { type = "unlock-recipe", recipe = "charged-certus-quartz" },  
       { type = "unlock-recipe", recipe = "fluix-crystal" },  
@@ -2686,6 +2582,8 @@ data:extend({
     icon = "__base__/graphics/technology/construction-robotics.png",
     icon_size = 256,
     effects = {
+      { type = "unlock-recipe", recipe = "basic-guidance-system" },   -- issue #287: was unlocked with the microverse
+      { type = "unlock-recipe", recipe = "conductive-iron-thruster" },   -- issue #287: was unlocked with the microverse
       { type = "unlock-recipe", recipe = "t1-construction-robot" },  
     },
 	prerequisites = { "integrated-circuits", "battery" },
@@ -2706,6 +2604,8 @@ data:extend({
     icon = "__base__/graphics/technology/logistic-robotics.png",
     icon_size = 256,
     effects = {
+      { type = "unlock-recipe", recipe = "basic-guidance-system" },   -- issue #287: was unlocked with the microverse
+      { type = "unlock-recipe", recipe = "conductive-iron-thruster" },   -- issue #287: was unlocked with the microverse
       { type = "unlock-recipe", recipe = "t1-logistic-robot" },  
     },
 	prerequisites = { "integrated-circuits", "battery" },
@@ -2781,7 +2681,8 @@ data:extend({
       { type = "unlock-recipe", recipe = "raw-tantalite-multismelter" },
       { type = "unlock-recipe", recipe = "raw-certus-quartz-multismelter" },
     },
-	prerequisites = { "microverse-resources" },
+	-- issue #287: the prerequisites of the removed microverse technologies
+	prerequisites = { "black-steel", "gas-turbine", "greenhouse", "military-science-pack", "overworld-data", "radar" },
 	unit =
 	{
       count = 360,
@@ -2839,30 +2740,6 @@ data:extend({
 	}
   },  
   
---[[
-
----CLEANROOM
-  {
-    type = "technology",
-    name = "cleanroom",
-    icon = "__gregtorio-continued__/graphics/technology/cleanroom.png",
-    icon_size = 256,
-    effects = { 
-      { type = "unlock-recipe", recipe = "steel-frame" },  
-      { type = "unlock-recipe", recipe = "plascrete" },   
-      { type = "unlock-recipe", recipe = "filter-casing" },  
-      { type = "unlock-recipe", recipe = "cleanroom-tile" }  
-    },
-	prerequisites = { "concrete", "stainless-steel" },
-	unit =
-	{
-      count = 360,
-      ingredients = { {"automation-science-pack", SP03}, {"logistic-science-pack", SP02}, {"military-science-pack", SP01} },
-      time = 30
-	}
-  },  
-
---]]
 
 ---ENERGETIC ALLOY
   {
@@ -2871,6 +2748,7 @@ data:extend({
     icon = "__gregtorio-continued__/graphics/technology/energetic-alloy-processing.png",
     icon_size = 256,
     effects = { 
+      { type = "unlock-recipe", recipe = "mining-glowstone-vein" },   -- issue #287: glowstone's first consumer (luminessence went)
       { type = "unlock-recipe", recipe = "energetic-alloy-ingot" },
       { type = "unlock-recipe", recipe = "energetic-alloy-plate" },
       { type = "unlock-recipe", recipe = "energetic-alloy-wire" },
@@ -2944,57 +2822,9 @@ data:extend({
   
 
 
----NETHER DATA
-  {
-    type = "technology",
-    name = "nether-data",
-    icon = "__gregtorio-continued__/graphics/technology/nether-data.png",
-    icon_size = 256,
-    effects = { 
-      { type = "unlock-recipe", recipe = "me-4k-storage-component" },  
-      { type = "unlock-recipe", recipe = "nether-data" }
-    },
-	prerequisites = { "nand-chips" },
-	unit =
-	{
-      count = 380,
-      ingredients = { {"automation-science-pack", SP03}, {"logistic-science-pack", SP02}, {"military-science-pack", SP01} },
-      time = 30
-	}
-  },
   
   
   
----TIER TWO MICROMINERS
-  {
-    type = "technology",
-    name = "tier-two-microminers",
-    icon = "__gregtorio-continued__/graphics/technology/stainless-steel-plated-microminer.png",
-    icon_size = 256,
-    effects = {
-      { type = "unlock-recipe", recipe = "microminer-ender-pearls" },
-      { type = "unlock-recipe", recipe = "stainless-steel-heavy-plating" },
-      { type = "unlock-recipe", recipe = "lv-field-generator" },
-      { type = "unlock-recipe", recipe = "block-of-redstone" },
-      { type = "unlock-recipe", recipe = "electrum-microminer-engine-frame" },
-      { type = "unlock-recipe", recipe = "electrum-microminer-engine-core" },
-      { type = "unlock-recipe", recipe = "energetic-thruster" },
-      { type = "unlock-recipe", recipe = "stainless-steel-plated-microminer" },
-      { type = "unlock-recipe", recipe = "tier-two-microminer-output" },
-      { type = "unlock-recipe", recipe = "microminer-sphalerite" },
-      { type = "unlock-recipe", recipe = "microminer-certus-quartz" },
-      { type = "unlock-recipe", recipe = "microminer-beryllium" },
-      { type = "unlock-recipe", recipe = "microminer-manganese" },
-      { type = "unlock-recipe", recipe = "microminer-monazite" },
-    },
-	prerequisites = { "advanced-extended-crafting", "energetic-alloy", "stainless-steel", "nether-data", "diesel" },
-	unit =
-	{
-      count = 380,
-      ingredients = { {"automation-science-pack", SP03}, {"logistic-science-pack", SP02}, {"military-science-pack", SP01} },
-      time = 30
-	}
-  },  
   
 
 
@@ -3015,7 +2845,8 @@ data:extend({
       { type = "unlock-recipe", recipe = "battery-hull" },
       { type = "unlock-recipe", recipe = "filling-assorted-batteries" },
     },
-	prerequisites = { "rare-earth-processing", "mv-components" },
+	-- issue #287: the prerequisites of the removed microverse technologies
+	prerequisites = { "rare-earth-processing", "mv-components", "diesel", "energetic-alloy", "stainless-steel" },
 	unit =
 	{
       count = 300,
@@ -3034,14 +2865,16 @@ data:extend({
     icon = "__gregtorio-continued__/graphics/technology/eyes-of-ender.png",
     icon_size = 256,
     effects = {
-      { type = "unlock-recipe", recipe = "microminer-blaze-rods" },
+      { type = "unlock-recipe", recipe = "pulsating-iron-plate" },   -- issue #287: first consumer (was tier three microminers)
+      { type = "unlock-recipe", recipe = "lv-field-generator" },   -- issue #287: with the MV field generator (was tier two microminers)
       { type = "unlock-recipe", recipe = "liquid-blaze" },
       { type = "unlock-recipe", recipe = "eye-of-ender" },
       { type = "unlock-recipe", recipe = "pulsating-iron-ingot" },
       { type = "unlock-recipe", recipe = "pulsating-iron-wire" },
       { type = "unlock-recipe", recipe = "mv-field-generator" },
     },
-	prerequisites = { "tier-two-microminers" },
+	-- issue #287: the prerequisites of the removed microverse technologies
+	prerequisites = { "diesel", "energetic-alloy", "stainless-steel" },
 	unit =
 	{
       count = 400,
@@ -3063,7 +2896,7 @@ data:extend({
       { type = "unlock-recipe", recipe = "frost-proof-casing" }, 
       { type = "unlock-recipe", recipe = "hv-science-pack" },
     },
-	prerequisites = { "tier-two-microminers", "battery", "eyes-of-ender" },
+	prerequisites = { "battery", "eyes-of-ender" },
 	unit =
 	{
       count = 400,
@@ -3115,7 +2948,7 @@ data:extend({
       { type = "unlock-recipe", recipe = "centrifuging-crushed-neodymium" },
       { type = "unlock-recipe", recipe = "neodymium-ingot" },
     },
-	prerequisites = { "tier-two-microminers" },
+	prerequisites = {},
 	unit =
 	{
       count = 400,
@@ -3134,7 +2967,6 @@ data:extend({
     effects = {
       { type = "unlock-recipe", recipe = "vacuum-freezer-controller" },
       { type = "unlock-recipe", recipe = "mv-vacuum-freezer" },
-      { type = "unlock-recipe", recipe = "microversium-ingot" },
       { type = "unlock-recipe", recipe = "black-steel-ingot" },
     },
 	prerequisites = { "microprocessors", "hv-components" },
@@ -3304,7 +3136,6 @@ data:extend({
       { type = "unlock-recipe", recipe = "hv-drilling-rig-controller" },
       { type = "unlock-recipe", recipe = "hv-drilling-rig" },
       { type = "unlock-recipe", recipe = "hv-vacuum-freezer" },
-      { type = "unlock-recipe", recipe = "ev-microverse-projector" },
     },
 	prerequisites = { "hv-machines" },
 	unit =
@@ -3580,11 +3411,9 @@ data:extend({
     icon = "__gregtorio-continued__/graphics/technology/radon.png",
     icon_size = 256,
     effects = {
-      { type = "unlock-recipe", recipe = "microminer-radon-salt" }, 
-      { type = "unlock-recipe", recipe = "radon-salt-electrolysis" },
       { type = "unlock-recipe", recipe = "quantum-eye" },
     },
-	prerequisites = { "tier-two-microminers", "advanced-hv-machines" },
+	prerequisites = { "advanced-hv-machines" },
 	unit =
 	{
       count = 540,
@@ -3734,76 +3563,12 @@ data:extend({
   
   
 
----THE END DATA
-  {
-    type = "technology",
-    name = "the-end-data",
-    icon = "__gregtorio-continued__/graphics/technology/the-end-data.png",
-    icon_size = 256,
-    effects = {
-	  { type = "unlock-recipe", recipe = "me-16k-storage-component" }, 
-	  { type = "unlock-recipe", recipe = "the-end-data" }, 
-	},
-	prerequisites = { "mainframes" },
-	unit =
-	{
-      count = 600,
-      ingredients = { {"automation-science-pack", SP04}, {"logistic-science-pack", SP03}, {"military-science-pack", SP02}, {"chemical-science-pack", SP01} },
-      time = 30
-	}
-  },
   
 
 
----ELITE EXTENDED CRAFTING
-  {
-    type = "technology",
-    name = "elite-extended-crafting",
-    icon = "__gregtorio-continued__/graphics/technology/elite-extended-crafting.png",
-    icon_size = 256,
-    effects = {
-      { type = "unlock-recipe", recipe = "block-of-aluminium" }, 
-      { type = "unlock-recipe", recipe = "elite-extended-crafting-component" },
-      { type = "unlock-recipe", recipe = "elite-extended-crafting-catalyst" },
-      { type = "unlock-recipe", recipe = "elite-extended-crafting-table" }
-    },
-	prerequisites = { "advanced-extended-crafting"},
-	unit =
-	{
-      count = 600,
-      ingredients = { {"automation-science-pack", SP04}, {"logistic-science-pack", SP03}, {"military-science-pack", SP02}, {"chemical-science-pack", SP01} },
-      time = 30
-	}
-  },
   
   
 
----TIER THREE MICROMINERS
-  {
-    type = "technology",
-    name = "tier-three-microminers",
-    icon = "__gregtorio-continued__/graphics/technology/titanium-plated-microminer.png",
-    icon_size = 256,
-    effects = {
-      { type = "unlock-recipe", recipe = "solidified-argon" },
-      { type = "unlock-recipe", recipe = "reinforced-mining-laser" },
-      { type = "unlock-recipe", recipe = "titanium-heavy-plating" },
-      { type = "unlock-recipe", recipe = "vibrant-alloy-ingot" },
-      { type = "unlock-recipe", recipe = "molten-vibrant-alloy" },
-      { type = "unlock-recipe", recipe = "vibrant-crystal" },
-      { type = "unlock-recipe", recipe = "pulsating-iron-plate" },
-      { type = "unlock-recipe", recipe = "pulsating-thruster" },
-      { type = "unlock-recipe", recipe = "titanium-plated-microminer" },
-      { type = "unlock-recipe", recipe = "tier-three-microminer-output" },
-    },
-	prerequisites = { "rocket-fuel", "cryogenic-air-distillation", "the-end-data", "implosion-compressor", "elite-extended-crafting" },
-	unit =
-	{
-      count = 600,
-      ingredients = { {"automation-science-pack", SP04}, {"logistic-science-pack", SP03}, {"military-science-pack", SP02}, {"chemical-science-pack", SP01} },
-      time = 30
-	}
-  }, 
   
   
   
@@ -3816,7 +3581,8 @@ data:extend({
     effects = { 
 		{ type = "unlock-recipe", recipe = "ev-science-pack" },  
     },
-	prerequisites = { "tier-three-microminers" },
+	-- issue #287: the prerequisites of the removed microverse technologies
+	prerequisites = { "radon", "cryogenic-air-distillation", "mainframes", "rocket-fuel" },
 	unit =
 	{
       count = 600,
@@ -3834,7 +3600,6 @@ data:extend({
     icon = "__gregtorio-continued__/graphics/technology/nyi.png",
     icon_size = 256,
     effects = {
-      { type = "unlock-recipe", recipe = "microminer-ilmenite" },
       { type = "unlock-recipe", recipe = "crushed-ilmenite" },
       { type = "unlock-recipe", recipe = "ilmenite-dust" },
       { type = "unlock-recipe", recipe = "centrifuging-crushed-ilmenite" },
@@ -3852,7 +3617,7 @@ data:extend({
       { type = "unlock-recipe", recipe = "large-titanium-gear" },
       { type = "unlock-recipe", recipe = "titanium-rotor" },
     },
-	prerequisites = { "large-chemical-reactor", "vacuum-freezers", "tier-two-microminers", "bauxite-slurry-process" },
+	prerequisites = { "large-chemical-reactor", "vacuum-freezers", "bauxite-slurry-process" },
 	unit =
 	{
       count = 600,
@@ -3918,7 +3683,8 @@ data:extend({
 	  { type = "unlock-recipe", recipe = "end-steel-ingot" },
 	  { type = "unlock-recipe", recipe = "end-steel-wire" },
     },
-	prerequisites = { "tier-three-microminers" },
+	-- issue #287: the prerequisites of the removed microverse technologies
+	prerequisites = { "cryogenic-air-distillation", "mainframes", "rocket-fuel" },
 	unit =
 	{
       count = 600,
@@ -4125,20 +3891,20 @@ data:extend({
     icon = "__gregtorio-continued__/graphics/technology/nyi.png",
     icon_size = 256,
     effects = {          
+      { type = "unlock-recipe", recipe = "vibrant-crystal" },   -- issue #287: first consumer (was tier three microminers)
+      { type = "unlock-recipe", recipe = "molten-vibrant-alloy" },   -- issue #287: first consumer (was tier three microminers)
+      { type = "unlock-recipe", recipe = "vibrant-alloy-ingot" },   -- issue #287: first consumer (was tier three microminers)
       { type = "unlock-recipe", recipe = "dark-steel-plate" },	
       { type = "unlock-recipe", recipe = "electrical-steel-ingot" },              
       { type = "unlock-recipe", recipe = "electrical-steel-plate" },              
-      { type = "unlock-recipe", recipe = "microminer-soul-sand" },
       { type = "unlock-recipe", recipe = "soularium-ingot" },
       { type = "unlock-recipe", recipe = "soularium-plate" },              
       { type = "unlock-recipe", recipe = "enderio-capacitor" },              
       { type = "unlock-recipe", recipe = "double-layer-capacitor" },              
       { type = "unlock-recipe", recipe = "octadic-capacitor" },              
       { type = "unlock-recipe", recipe = "machine-chassis" },              
-      { type = "unlock-recipe", recipe = "microminer-zombie-heads" },  
       { type = "unlock-recipe", recipe = "slice-n-splice" },
       { type = "unlock-recipe", recipe = "z-logic-controller" },
-      { type = "unlock-recipe", recipe = "microminer-wither-skulls" },  
       { type = "unlock-recipe", recipe = "soul-binder" },
       { type = "unlock-recipe", recipe = "soul-vial" },              
       { type = "unlock-recipe", recipe = "fused-quartz" },
@@ -4205,7 +3971,6 @@ data:extend({
     icon = "__gregtorio-continued__/graphics/technology/nyi.png",
     icon_size = 256,
     effects = { 
-      { type = "unlock-recipe", recipe = "microminer-uranium" },              
       { type = "unlock-recipe", recipe = "raw-pitchblende-smelter" },
       { type = "unlock-recipe", recipe = "raw-pitchblende-multismelter" },
       { type = "unlock-recipe", recipe = "crushed-pitchblende" },
@@ -4219,7 +3984,8 @@ data:extend({
       { type = "unlock-recipe", recipe = "centrifuging-crushed-uraninite" },
      
     },
-	prerequisites = { "tier-three-microminers" },
+	-- issue #287: the prerequisites of the removed microverse technologies
+	prerequisites = { "cryogenic-air-distillation", "mainframes", "rocket-fuel" },
 	unit =
 	{
       count = 600,
@@ -4556,7 +4322,6 @@ data:extend({
     icon = "__gregtorio-continued__/graphics/technology/nyi.png",
     icon_size = 256,
     effects = { 
-      { type = "unlock-recipe", recipe = "microminer-tungstate" },
       { type = "unlock-recipe", recipe = "raw-tungstate-smelter" },
       { type = "unlock-recipe", recipe = "raw-tungstate-multismelter" },
       { type = "unlock-recipe", recipe = "crushed-tungstate" },
@@ -4572,7 +4337,7 @@ data:extend({
       { type = "unlock-recipe", recipe = "calcium-chloride" },      
       { type = "unlock-recipe", recipe = "calcium-chloride-electrolysis" },      
     },
-	prerequisites = { "tier-three-microminers" },
+	prerequisites = {},
 	unit =
 	{
       count = 600,
@@ -4767,10 +4532,9 @@ data:extend({
     icon = "__gregtorio-continued__/graphics/technology/nyi.png",
     icon_size = 256,
     effects = { 
+      { type = "unlock-recipe", recipe = "deuterium" },   -- issue #287: first consumer (was microversium)
       { type = "unlock-recipe", recipe = "molten-nickel-zinc-ferrite" },
       { type = "unlock-recipe", recipe = "solidify-nickel-zinc-ferrite-ingot" },
-      { type = "unlock-recipe", recipe = "molten-microversium" },
-      { type = "unlock-recipe", recipe = "solidify-microversium-ingot" },
       { type = "unlock-recipe", recipe = "molten-vanadium-steel" },
       { type = "unlock-recipe", recipe = "solidify-vanadium-steel-ingot" },
       { type = "unlock-recipe", recipe = "molten-kanthal" },

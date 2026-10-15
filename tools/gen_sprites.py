@@ -25,7 +25,7 @@ multiblocks keep the EV sprite and get a layer with GT energy hatches of their t
 """
 import argparse, re
 from pathlib import Path
-from PIL import Image, ImageOps
+from PIL import Image
 
 ROOT = Path(__file__).resolve().parent.parent
 ICONS = ROOT / "graphics/icons"
@@ -182,9 +182,120 @@ MULTIBLOCKS = {
                              "gregtech:iconsets/MACHINE_CASING_PIPE_TITANIUM"),
     "fluid-nuclear-reactor": ((3, 3), "gregtech:iconsets/MACHINE_CASING_RADIATIONPROOF", "fluid-nuclear-reactor",
                               None, None),
+    # issues #254 and #255 (145-fork-power-multiblocks.lua): GT's large titanium boiler (stable titanium casing, the
+    # titanium firebox as the middle row, the large boiler front) and large combustion engine (stable titanium casing,
+    # titanium gearboxes in the middle row, the diesel engine front)
+    "large-titanium-boiler": ((3, 3), "gregtech:iconsets/MACHINE_CASING_STABLE_TITANIUM", None,
+                              ("gregtech:iconsets/OVERLAY_FRONT_LARGE_BOILER",
+                               "gregtech:iconsets/OVERLAY_FRONT_LARGE_BOILER_ACTIVE"),
+                              "gregtech:iconsets/MACHINE_CASING_FIREBOX_TITANIUM"),
+    # issue #262 (159-fork-lanthanides.lua): gtnhlanth's digester (robust tungstensteel casing, heat proof casings in
+    # the middle row) and dissolution tank (clean stainless steel casing, glass in the middle row), both with the oil
+    # cracker front gtnhlanth gives them
+    "digester": ((3, 3), "gregtech:iconsets/MACHINE_CASING_ROBUST_TUNGSTENSTEEL", None,
+                 ("gregtech:iconsets/OVERLAY_FRONT_OIL_CRACKER", "gregtech:iconsets/OVERLAY_FRONT_OIL_CRACKER_ACTIVE"),
+                 "gregtech:iconsets/MACHINE_HEATPROOFCASING"),
+    "dissolution-tank": ((3, 3), "gregtech:iconsets/MACHINE_CASING_CLEAN_STAINLESSSTEEL", None,
+                         ("gregtech:iconsets/OVERLAY_FRONT_OIL_CRACKER",
+                          "gregtech:iconsets/OVERLAY_FRONT_OIL_CRACKER_ACTIVE"),
+                         "reinforced-glass"),
+    # issue #272 (159-fork-lanthanides.lua): GT++'s ExxonMobil Chemical Plant (solid steel casings, the casing tier its
+    # recipe needs, steel pipe casings in the middle row) and the MV and HV Dehydrators (the GT hull of the tier with
+    # the dehydrator front)
+    "exxonmobil-chemical-plant": ((3, 3), "solid-steel-machine-casing", None,
+                                  ("miscutils:iconsets/controllerFaces/chemicalPlant",
+                                   "miscutils:iconsets/controllerFaces/chemicalPlantActive"),
+                                  "gregtech:iconsets/MACHINE_CASING_PIPE_STEEL"),
+    "mv-dehydrator": ((3, 3), "gregtech:iconsets/MACHINE_MV_SIDE", None,
+                      ("gregtech:basicmachines/dehydrator/OVERLAY_FRONT",
+                       "gregtech:basicmachines/dehydrator/OVERLAY_FRONT_ACTIVE"), None),
+    "hv-dehydrator": ((3, 3), "gregtech:iconsets/MACHINE_HV_SIDE", None,
+                      ("gregtech:basicmachines/dehydrator/OVERLAY_FRONT",
+                       "gregtech:basicmachines/dehydrator/OVERLAY_FRONT_ACTIVE"), None),
+    # issue #286 (160-fork-dimension-mines.lua): bartworks' Void Miners I to III, their mining casings and the ore drill
+    # front
+    "void-miner-i": ((3, 3), "gregtech:iconsets/MACHINE_CASING_MINING_OSMIRIDIUM", None,
+                      ("gregtech:iconsets/OVERLAY_FRONT_ORE_DRILL", "gregtech:iconsets/OVERLAY_FRONT_ORE_DRILL_ACTIVE"),
+                      None),
+    "void-miner-ii": ((3, 3), "gregtech:iconsets/MACHINE_CASING_MINING_BLACKPLUTONIUM", None,
+                      ("gregtech:iconsets/OVERLAY_FRONT_ORE_DRILL", "gregtech:iconsets/OVERLAY_FRONT_ORE_DRILL_ACTIVE"),
+                      None),
+    "void-miner-iii": ((3, 3), "gregtech:iconsets/MACHINE_CASING_MINING_NEUTRONIUM", None,
+                      ("gregtech:iconsets/OVERLAY_FRONT_ORE_DRILL", "gregtech:iconsets/OVERLAY_FRONT_ORE_DRILL_ACTIVE"),
+                      None),
+    # issue #335 (163-fork-electric-mine.lua): GT's Ore Drilling Plants I to IV on the Manual Mine's 5x5 footprint, the
+    # casing of each Mk (MTEOreDrillingPlant1-4 getCasingBlockItem) and the ore drill front
+    **{f"ore-drilling-plant-mk{t}": ((5, 5), f"gregtech:iconsets/{casing}", None,
+                                     ("gregtech:iconsets/OVERLAY_FRONT_ORE_DRILL",
+                                      "gregtech:iconsets/OVERLAY_FRONT_ORE_DRILL_ACTIVE"), None)
+       for t, casing in enumerate(("MACHINE_CASING_SOLID_STEEL", "MACHINE_CASING_STABLE_TITANIUM",
+                                   "MACHINE_CASING_ROBUST_TUNGSTENSTEEL", "MACHINE_CASING_MINING_OSMIRIDIUM"), 1)},
+    # issue #337 (163): GT's Miners LV to HV on the same footprint, the hull of the tier and the miner's front
+    **{f"{t}-miner": ((5, 5), f"gregtech:iconsets/MACHINE_{t.upper()}_SIDE", None,
+                      ("gregtech:basicmachines/miner/OVERLAY_FRONT", "gregtech:basicmachines/miner/OVERLAY_FRONT_ACTIVE"),
+                      None) for t in ("lv", "mv", "hv")},
+    # issue #274: the Chemical Dehydrators I to IV, like the MV and HV ones
+    "ev-dehydrator": ((3, 3), "gregtech:iconsets/MACHINE_EV_SIDE", None,
+                      ("gregtech:basicmachines/dehydrator/OVERLAY_FRONT",
+                       "gregtech:basicmachines/dehydrator/OVERLAY_FRONT_ACTIVE"), None),
+    "iv-dehydrator": ((3, 3), "gregtech:iconsets/MACHINE_IV_SIDE", None,
+                      ("gregtech:basicmachines/dehydrator/OVERLAY_FRONT",
+                       "gregtech:basicmachines/dehydrator/OVERLAY_FRONT_ACTIVE"), None),
+    "luv-dehydrator": ((3, 3), "gregtech:iconsets/MACHINE_LuV_SIDE", None,
+                      ("gregtech:basicmachines/dehydrator/OVERLAY_FRONT",
+                       "gregtech:basicmachines/dehydrator/OVERLAY_FRONT_ACTIVE"), None),
+    "zpm-dehydrator": ((3, 3), "gregtech:iconsets/MACHINE_ZPM_SIDE", None,
+                      ("gregtech:basicmachines/dehydrator/OVERLAY_FRONT",
+                       "gregtech:basicmachines/dehydrator/OVERLAY_FRONT_ACTIVE"), None),
+    "large-combustion-engine": ((3, 3), "gregtech:iconsets/MACHINE_CASING_STABLE_TITANIUM", None,
+                                ("gregtech:iconsets/OVERLAY_FRONT_DIESEL_ENGINE",
+                                 "gregtech:iconsets/OVERLAY_FRONT_DIESEL_ENGINE_ACTIVE"),
+                                "gregtech:iconsets/MACHINE_CASING_GEARBOX_TITANIUM"),
+    # issue #295: GT++'s rocket engines (MTERocketFuelGenerator: the casing of its tier, the diesel motor overlay)
+    "ev-rocket-engine": ((3, 3), "miscutils:TileEntities/machine_top", None,
+                         ("miscutils:TileEntities/machine_top_dieselmotor2",
+                          "miscutils:TileEntities/machine_top_dieselmotor2_active"), None),
+    "iv-rocket-engine": ((3, 3), "miscutils:TileEntities/high_adv_machine", None,
+                         ("miscutils:TileEntities/machine_top_dieselmotor2",
+                          "miscutils:TileEntities/machine_top_dieselmotor2_active"), None),
+    "luv-rocket-engine": ((3, 3), "miscutils:TileEntities/adv_machine_lesu", None,
+                          ("miscutils:TileEntities/machine_top_dieselmotor2",
+                           "miscutils:TileEntities/machine_top_dieselmotor2_active"), None),
+    # issue #304: GT++'s Large Rocket Engine (its Turbodyne Casing, the controller face, the Inconel gear boxes in the middle row)
+    "large-rocket-engine": ((3, 3), "miscutils:TileEntities/MACHINE_CASING_ROCKETDYNE", None,
+                            "miscutils:iconsets/controllerFaces/largeRocketEngine",
+                            "miscutils:TileEntities/MACHINE_CASING_STABLE_HASTELLOY_X"),
+    # issue #301: the Space Elevator per motor tier (gtnhintergalactic's base casing, support structure and the motor)
+    **{f"space-elevator-mk{t}": ((11, 11), "gtnhintergalactic:spaceElevator/BaseCasing", None,
+                                 f"gtnhintergalactic:spaceElevator/MotorT{t}_Side",
+                                 "gtnhintergalactic:spaceElevator/SupportStructure_Side") for t in range(1, 6)},
+    # issue #302: the Space Elevator Mining Modules (the elevator's base casing, GT's ore drill front)
+    **{f"space-elevator-mining-module-mk{t}": ((3, 3), "gtnhintergalactic:spaceElevator/BaseCasing", None,
+                                               ("gregtech:iconsets/OVERLAY_FRONT_ORE_DRILL",
+                                                "gregtech:iconsets/OVERLAY_FRONT_ORE_DRILL_ACTIVE"),
+                                               f"gtnhintergalactic:spaceElevator/MotorT{t}_Side") for t in range(1, 4)},
+    # issue #303: the Planetary Gas Siphon (its siphon casing and front) and the Space Elevator Pump Modules (the elevator's
+    # base casing, GT's oil drill front, the motor they need: Mk-II to Mk-IV)
+    "planetary-gas-siphon": ((3, 3), "gtnhintergalactic:gasSiphon/SiphonCasing", None,
+                             ("gregtech:iconsets/OVERLAY_FRONT_PLANETARYSIPHON",
+                              "gregtech:iconsets/OVERLAY_FRONT_PLANETARYSIPHON"), None),   # (GT has no active front, only its glow)
+    **{f"space-elevator-pump-module-mk{t}": ((3, 3), "gtnhintergalactic:spaceElevator/BaseCasing", None,
+                                             ("gregtech:iconsets/OVERLAY_FRONT_OIL_DRILL",
+                                              "gregtech:iconsets/OVERLAY_FRONT_OIL_DRILL_ACTIVE"),
+                                             f"gtnhintergalactic:spaceElevator/MotorT{t + 1}_Side") for t in range(1, 4)},
 }
 # multiblocks without an upstream item icon: the icon is the controller tile
 CONTROLLER_ICONS = {"neutron-activator", "water-purification-plant", "uv-large-naquadah-reactor"}
+# multiblocks whose icon is the whole idle sprite, scaled down (issues #254, #255: their GT controller fronts look alike,
+# the middle row tells them apart)
+WHOLE_ICONS = {"large-titanium-boiler", "large-combustion-engine", "digester", "dissolution-tank",
+               "exxonmobil-chemical-plant", "mv-dehydrator", "hv-dehydrator", "ev-dehydrator", "iv-dehydrator",
+               "luv-dehydrator", "zpm-dehydrator", "void-miner-i", "void-miner-ii", "void-miner-iii",
+               "ev-rocket-engine", "iv-rocket-engine", "luv-rocket-engine", "large-rocket-engine",
+               *(f"space-elevator-mk{t}" for t in range(1, 6)),
+               *(f"space-elevator-mining-module-mk{t}" for t in range(1, 4)),
+               "planetary-gas-siphon", *(f"space-elevator-pump-module-mk{t}" for t in range(1, 4)),
+               *(f"ore-drilling-plant-mk{t}" for t in range(1, 5)), "lv-miner", "mv-miner", "hv-miner"}
 # tier versions of a generator (136-fork-power.lua): the base sprite with dynamo hatches of the tier
 # (GT hull of the tier + GT's dynamo hatch overlay) on the corner tiles; the base itself gets its own
 # tier's hatches too. The icon gets the hatch as a badge.
@@ -205,7 +316,6 @@ UPGRADE_MULTIBLOCKS = {
     "electric-blast-furnace": ("mv-electric-blast-furnace/mv-electric-blast-furnace", "hv-electric-blast-furnace"),
     "vacuum-freezer": ("vacuum-freezer/vacuum-freezer", "vacuum-freezer"),
     "large-chemical-reactor": ("large-chemical-reactor/large-chemical-reactor", "large-chemical-reactor"),
-    "microverse-projector": ("small-microverse-projector/small-microverse-projector", "small-microverse-projector"),
     "tall-distillation-tower": ("tall-distillation-tower/tall-distillation-tower", "tall-distillation-tower"),
     "short-distillation-tower": ("short-distillation-tower/short-distillation-tower", "short-distillation-tower"),
     "implosion-compressor": ("implosion-compressor/implosion-compressor", "implosion-compressor"),
@@ -226,15 +336,46 @@ PLASMA_TURBINE_FACE = "gregtech:iconsets/LARGETURBINE_TU"
 STEAM_TURBINES = {
     "large-steam-turbine": ("gregtech:iconsets/LARGETURBINE_ST", "EV"),
     "high-pressure-steam-turbine": ("gregtech:iconsets/LARGETURBINE_TI", "IV"),
+    # issue #256 (145): the large gas turbine, GT's stainless steel turbine face; no upstream item icon, so the icon is
+    # the face's middle tile (STEAM_TURBINE_ICONS)
+    "large-gas-turbine": ("gregtech:iconsets/LARGETURBINE_SS", "EV"),
 }
+STEAM_TURBINE_ICONS = {"large-gas-turbine"}
 # items whose icon is a GT block texture (written to graphics/icons/fork/)
 TEXTURE_ICONS = {
+    "turbodyne-casing": "miscutils:TileEntities/MACHINE_CASING_ROCKETDYNE",   # issue #304
     "titanium-reinforced-borosilicate-glass-block": "bartworks:TitaniumReinforcedBoronSilicateGlassBlock",
     "tungstensteel-turbine-casing": "gregtech:iconsets/MACHINE_CASING_TURBINE_TUNGSTENSTEEL",
     "naquadah-reactor-casing": "gregtech:iconsets/NAQUADAH_REACTOR_CASING",
     # issue #97: kekztech's LuV and ZPM lapotronic capacitor blocks
     "lapotronic-capacitor-luv": "kekztech:LapotronicEnergyUnit2_side",
     "lapotronic-capacitor-zpm": "kekztech:LapotronicEnergyUnit3_side",
+    # issues #254 to #256: the casings of the new power multiblocks
+    "titanium-firebox-casing": "gregtech:iconsets/MACHINE_CASING_FIREBOX_TITANIUM",
+    "engine-intake-casing": "gregtech:iconsets/MACHINE_CASING_ENGINE_INTAKE",
+    "stainless-steel-turbine-casing": "gregtech:iconsets/MACHINE_CASING_TURBINE_STAINLESSSTEEL",
+    # issue #301: the Space Elevator's parts (gtnhintergalactic's block and item textures)
+    "space-elevator-base-casing": "gtnhintergalactic:spaceElevator/BaseCasing",
+    "space-elevator-support-structure": "gtnhintergalactic:spaceElevator/SupportStructure_Side",
+    "space-elevator-internal-structure": "gtnhintergalactic:spaceElevator/InternalStructure_Side",
+    "space-elevator-cable": "gtnhintergalactic:spaceElevator/CablePart",
+    "space-elevator-controller": "gtnhintergalactic:spaceElevator/MotorT1_Side",
+    "nanotube-spool": "gtnhintergalactic:../items/nanotubeSpool",
+    **{f"space-elevator-motor-mk{t}": f"gtnhintergalactic:spaceElevator/MotorT{t}_Side" for t in range(1, 6)},
+    # issue #302: the mining drones (gtnhintergalactic's item textures)
+    **{f"mining-drone-{t.lower()}": f"gtnhintergalactic:../items/drones/MiningDrone{t}"
+       for t in ("LV", "MV", "HV", "EV", "IV", "LuV", "ZPM", "UV", "UHV", "UEV", "UIV", "UMV", "UXV")},
+    # issue #249: GT's timepiece (MetaGeneratedItem03, meta 757)
+    "timepiece": "gregtech:../items/gt.metaitem.03/757",
+    # issue #274: GT++'s dehydrator coil wires and coils (item textures)
+    "ev-dehydrator-coil-wire": "miscutils:../items/itemDehydratorCoilWire_0",
+    "ev-dehydrator-coil": "miscutils:../items/itemDehydratorCoil_0",
+    "iv-dehydrator-coil-wire": "miscutils:../items/itemDehydratorCoilWire_1",
+    "iv-dehydrator-coil": "miscutils:../items/itemDehydratorCoil_1",
+    "luv-dehydrator-coil-wire": "miscutils:../items/itemDehydratorCoilWire_2",
+    "luv-dehydrator-coil": "miscutils:../items/itemDehydratorCoil_2",
+    "zpm-dehydrator-coil-wire": "miscutils:../items/itemDehydratorCoilWire_3",
+    "zpm-dehydrator-coil": "miscutils:../items/itemDehydratorCoil_3",
 }
 # issue #97: the lapotronic supercapacitors (one 5x5 accumulator per capacitor tier): kekztech's LSC casing as the
 # border, the capacitor blocks of the tier inside, the controller in the top middle, GT's energy and dynamo hatch of
@@ -249,12 +390,6 @@ SUPERCAPACITOR_CASING = "kekztech:LSCBase_side"
 # hatch is the ME fluid interface in orange
 DERIVED = {
     "turbine-output-hatch": ("me-fluid-interface", (255, 170, 80)),
-}
-# issue #99: the ender tanks (name -> GT tier of the air collector they copy, tint of the ender fluid link)
-ENDER_LINK = "gregtech:iconsets/ENDERFLUIDLINK_OVERLAY"
-ENDER_TANKS = {
-    "nether-air-ender-tank": ("HV", ((40, 0, 0), (255, 140, 70))),     # recoloured from dark red to glowing orange
-    "ender-air-ender-tank": ("EV", None),                               # GT's teal as it is
 }
 # IV multiblocks: the casing is read from the recipe in 20-iv-age-entity.lua
 IV_MULTIBLOCK_FACES = {
@@ -725,19 +860,6 @@ def fluid_extractor_lv_ev():
         save(badged("fluid-extractor", load(ICONS / f"{t}-extractor.png")), ICONS / f"{t}-fluid-extractor.png")
 
 
-def in_hull(hull, top, size):
-    """the machine top (16 px) on the middle of a frame of the tier's hull: 3x3 hull tiles and the top on
-    the middle 2x2 for a sprite, the hull at 2x and the top at 1x for an icon"""
-    img = Image.new("RGBA", (size, size))
-    step = size // 3 if size > TILE else size
-    for y in range(0, size, step):
-        for x in range(0, size, step):
-            img.paste(scaled(hull, step), (x, y))
-    inner = size * 2 // 3 if size > TILE else size // 2
-    img.alpha_composite(scaled(top, inner), ((size - inner) // 2, (size - inner) // 2))
-    return img
-
-
 def multiblock(gt, name, size, casing, controller, face, middle):
     w, h = size
     cas = casing_tile(gt, casing, CASING_OVERRIDE.get(name))
@@ -770,6 +892,8 @@ def multiblock(gt, name, size, casing, controller, face, middle):
         img = build(False)
         cx, cy = w // 2, h - 1 if h > 3 else h // 2
         save(img.crop((cx * TILE, cy * TILE, (cx + 1) * TILE, (cy + 1) * TILE)), OUT_ICON / f"{name}.png")
+    if name in WHOLE_ICONS:
+        save(scaled(build(False), TILE), OUT_ICON / f"{name}.png")
 
 
 def turbine_face(gt, face, active):
@@ -796,6 +920,8 @@ def steam_turbine(gt, name, face, tier):
         for x, y in ((0, 0), (2 * TILE, 0), (0, 2 * TILE), (2 * TILE, 2 * TILE)):
             img.paste(hatch, (x, y))
         save(img, OUT_ENTITY / f"{name}{suffix}")
+    if name in STEAM_TURBINE_ICONS:
+        save(turbine_face(gt, face, False).crop((TILE, TILE, 2 * TILE, 2 * TILE)), OUT_ICON / f"{name}.png")
 
 
 def supercapacitor(gt, name, tier, unit):
@@ -898,25 +1024,6 @@ def derived(name, source, rgb):
             save(tint(load(src), rgb), folder / f"{name}.png")
 
 
-def recolour(img, dark, light):
-    """the image's brightness as a ramp from `dark` to `light` (alpha kept)"""
-    out = ImageOps.colorize(ImageOps.autocontrast(img.convert("L")), dark, light).convert("RGBA")
-    out.putalpha(img.getchannel("A"))
-    return out
-
-
-def ender_tank(gt, name, tier, ramp):
-    """Issue #99: the ender tanks (142-fork-recipe-unlocks.lua, copies of the HV and EV air collector): the GT hull of
-    their tier around GT's ender fluid link (the tank of TecTech's ender fluid link cover, animated: the working
-    strip), recoloured per air (nether red, ender as GT draws it), so they are no longer air collectors on the map."""
-    hull = load(gt_path(gt, f"gregtech:iconsets/MACHINE_{tier}_SIDE"))
-    frames = frames_of(load(gt_path(gt, ENDER_LINK)))
-    if ramp:
-        frames = [recolour(f, *ramp) for f in frames]
-    save(in_hull(hull, frames[0], 3 * TILE), OUT_ENTITY / f"{name}-idle.png")
-    save_strip([in_hull(hull, f, 3 * TILE) for f in frames], OUT_ENTITY / f"{name}-working.png")
-
-
 def icon_machine(name):
     img = scaled(load(ICONS / f"{name}.png"), 3 * TILE)
     save(img, OUT_ENTITY / f"{name}-idle.png")
@@ -979,8 +1086,6 @@ def main():
         upgrade_hatches(a.gt, base, sprite, icon)
     for name, (source, rgb) in DERIVED.items():
         derived(name, source, rgb)
-    for name, (tier, ramp) in ENDER_TANKS.items():
-        ender_tank(a.gt, name, tier, ramp)
     print("Sprites:", len(list(OUT_ENTITY.glob("*.png"))), "Icons:", len(list(OUT_ICON.glob("*.png"))))
 
 

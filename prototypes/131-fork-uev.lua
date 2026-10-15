@@ -12,7 +12,7 @@
 ---   * UEV machines: the UHV machines one tier up (fork_make_tier_machine)
 ---   * the UEV technologies, and the phase 4 workaround that is not needed any more (UHV field
 ---     generator)
---- 29-uev-age-item.lua is not loaded by data.lua (it is not valid Lua and mostly holds the
+--- 29-uev-age-item.lua (removed in issue #249) was never loaded by data.lua (it was not valid Lua and mostly held the
 --- quantum force transformer and the dimensional plasma forge), so the UEV parts of it are
 --- rebuilt here after the GT5-Unofficial recipes.
 --------------------------------------------------------------------------------
@@ -312,7 +312,8 @@ create_item{
 --- unit -> bio processor (takes wetware processors) -> assembly -> supercomputer -> mainframe.
 --- Changes against GT: bio cells are made from stem cells, mutagen and growth medium (GT: cosmic
 --- neutronium dust), no PCB factory (the boards come from the wetware board), the mainframe uses the
---- UHV superconductor. Supercomputer and mainframe take complex SMDs like GT (129-fork-water-purification.lua).
+--- UHV superconductor. Supercomputer and mainframe take complex SMDs where GT takes optical SMDs (XSMD; issue #259,
+--- 129-fork-water-purification.lua).
 --------------------------------------------------------------------------------
 
 create_item{

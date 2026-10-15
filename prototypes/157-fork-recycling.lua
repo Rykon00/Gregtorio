@@ -45,7 +45,7 @@ FORK_RECYCLING_MASS = {
 	["magnalium"] = 25, ["naquadah"] = 330, ["naquadah-alloy"] = 98, ["naquadria"] = 98, ["neodymium"] = 144,
 	["nether-quartz"] = 98, ["neutronium"] = 100, ["nichrome"] = 56, ["nickel"] = 58, ["nickel-zinc-ferrite"] = 33,
 	["niobium-titanium"] = 71, ["osmiridium"] = 191, ["osmium"] = 190, ["palladium"] = 106, ["platinum"] = 195,
-	["pulsating-iron"] = 61, ["quantium"] = 98, ["red-alloy"] = 403, ["samarium"] = 150, ["signalum"] = 98,
+	["pulsating-iron"] = 61, ["quantium"] = 98, ["red-alloy"] = 403, ["samarium"] = 150,
 	["silicon"] = 28, ["silver"] = 107, ["soularium"] = 102, ["spacetime"] = 98, ["stainless-steel"] = 55,
 	["steel"] = 56, ["tantalum"] = 180, ["tin"] = 118, ["titanium"] = 48, ["transcendent-metal"] = 98, ["trinium"] = 98,
 	["tritanium"] = 323, ["tungsten"] = 183, ["tungsten-carbide"] = 97, ["tungstensteel"] = 119, ["ultimet"] = 61,
@@ -189,7 +189,7 @@ local function recipe(kind, category, item, time, ingredients, results)
 		type = "recipe", name = name, category = category, enabled = false, energy_required = time,
 		ingredients = ingredients, results = results, subgroup = "fork-recycling-" .. kind,
 		icons = icons_of(item),
-		localised_name = { "recipe-name.fork-recycling-" .. kind, { "item-name." .. item } },
+		localised_name = { "recipe-name.fork-recycling-" .. kind, FORK_LOCALE.name_of("item", item) },
 		hide_from_player_crafting = true, allow_productivity = false, auto_recycle = false,
 	} })
 	FORK_RECYCLING.recipes[name] = true

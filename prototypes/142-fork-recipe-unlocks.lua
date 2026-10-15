@@ -7,14 +7,14 @@
 --- looks for it: the technology of its material or its machine, the line it belongs to. devcheck fails on a
 --- Gregtorio recipe that no researchable technology unlocks, unless it is in FORK_RECIPES_LOCKED below.
 ---
----   1) producers GregTech has and Gregtorio lacked, so that the unlocked recipes can be made: signalum ingot,
----      naquadah doped boule, charcoal byproducts, super glue (GT++'s glue line, condensed), the ender tanks of
----      the nether and ender air, the component assembly line, microminer missions for the ores of GT's space veins
----   2) two technologies: tier four microminers (the lunar mission) and super glue
+---   1) producers GregTech has and Gregtorio lacked, so that the unlocked recipes can be made: naquadah doped boule,
+---      charcoal byproducts, super glue (GT++'s glue line, condensed), the component assembly line (issue #287 removed
+---      the signalum ingot, the ender tanks and the microminer missions with the microverse)
+---   2) a technology: super glue
 ---   3) the unlock table
 ---   4) the recipes that stay locked, with the reason
 --- Amounts: fluids at Gregtorio's scale, a tenth of GregTech's (144 per ingot in GT, 14.4 here), items and times
---- as in GregTech. Loaded after 138 (no unit counts from UV up are set for the new technologies, both are IV) and
+--- as in GregTech. Loaded after 138 (no unit counts from UV up are set for the new technology, it is IV) and
 --- before 150 (molds) and 199 (the auto-unlock sees these recipes as unlocked and leaves them alone).
 --------------------------------------------------------------------------------
 
@@ -38,21 +38,6 @@ end
 --------------------------------------------------------------------------------
 --- 1) PRODUCERS
 --------------------------------------------------------------------------------
-
---- Signalum (upstream: the ingot without a recipe, its plate, rod and the signalum microminer engine). GTNH makes it
---- in EnderIO's alloy smelter (config/enderio/AlloySmelterRecipes_Core.xml): 3 copper, 1 silver and 10 redstone ->
---- 4 ingots for 32000 RF; energetic alloy there costs 10000 RF and takes 20 s in Gregtorio's LV alloy smelter.
-create_recipe{
-	name = "signalum-ingot",
-	category = "lv-alloy-smelter-recipes",
-	energy_required = 64,
-	ingredients = {
-		{ type = "item", name = "copper-ingot", amount = 3 },
-		{ type = "item", name = "silver-ingot", amount = 1 },
-		{ type = "item", name = "redstone-dust", amount = 10 },
-	},
-	results = { { type = "item", name = "signalum-ingot", amount = 4 } },
-}
 
 --- Naquadah doped boule (upstream: the item without a recipe, its wafer and the -nd wafer variants). GT: EBF, EV,
 --- 4484 K, 16 silicon blocks, a gallium arsenide crystal and a naquadah ingot, 12.5 minutes: half the europium boule
@@ -161,30 +146,8 @@ glue_step("super-glue", "iv-chemical-reactor-recipes", 55, {
 	{ type = "fluid", name = "water", amount = 100 },
 })
 
---- The ender tanks (upstream 15-hv-age-item.lua: the items come from the microverse projector, their entities were
---- commented out, so the nether and ender air collection had no machine). GT collects nether and ender air with the
---- air collector in the Nether and the End; here the tank filled on the other side stands in for it: the HV and the
---- EV air collector with the ender tank's recipes. Graphics (issue #99): the GT hull of the tier around GT's animated
---- ender fluid link, red for nether air (tools/gen_sprites.py, ENDER_TANKS).
-local function ender_tank(name, source, category)
-	local m = table.deepcopy(data.raw["assembling-machine"][source])
-	m.name = name
-	m.icon = ICON_PATH .. name .. ".png"
-	m.icon_size = 32
-	m.icons = nil
-	m.graphics_set = fork_sprites(name, 3, 3, 8, 8)
-	m.minable = { mining_time = 0.5, result = name }
-	m.crafting_categories = { category }
-	m.fast_replaceable_group = nil
-	m.next_upgrade = nil
-	data:extend({ m })
-	data.raw.item[name].place_result = name
-end
-ender_tank("nether-air-ender-tank", "hv-air-collector", "nether-air-ender-tank-recipes")
-ender_tank("ender-air-ender-tank", "ev-air-collector", "ender-air-ender-tank-recipes")
-
 --- Component assembly line (GoodGenerator's CoAL, ComponentAssemblyLineMiscRecipes.java). Upstream has its drafts
---- in 25-uv-age-item.lua (a controller and a structure of 1300 casings, not loaded) and 32 recipes in
+--- in 25-uv-age-item.lua (a controller and a structure of 1300 casings, never loaded, removed in issue #249) and 32 recipes in
 --- 11/13/15/17-*-age-item.lua that make 64 LV to EV components at once from long rods, 16x wires and cables and
 --- circuit wraps (uv-coal-recipes), with no machine. Here: one UV multiblock from the ZPM assembly line, with GT's
 --- controller recipe (UHV/2, 30 s in the assembly line; GT's 4 superdense iridium plates, 256 ingots, are 28
@@ -234,55 +197,6 @@ do
 	}
 end
 
---- Microminer missions for the ores of GT's space veins (OreMixes.java). Upstream has the ore lines (crushed ore,
---- washing, centrifuge, smelting; 07-ore-processing-module.lua) and drafts of the missions in the tier seven and
---- eight microminers (23-zpm-age-item.lua, 27-uhv-age-item.lua, not loaded), which do not exist; like the
---- bedrockium and quantium missions of 137-fork-endgame-materials.lua they are missions of the tier three
---- microminer (the end), unlocked with those technologies (UV and UHV). The vein decides the outputs, the drafts the
---- amounts; GT's sporadic titanium and the garnets have no raw ore item here and are left out.
-local function mission(name, tier_output, count, subgroup, results, main)
-	create_recipe{
-		name = name,
-		category = "lv-assembling-machine-recipes",
-		energy_required = 8,
-		subgroup = subgroup,
-		ingredients = { { type = "item", name = tier_output, amount = count } },
-		results = results,
-		main_product = main,
-	}
-end
---- GT's neutronium vein (Pluto, Makemake, Haumea, the Kuiper belt ...): neutronium, adamantium, naquadah, titanium
-mission("microminer-neutronium", "tier-three-microminer-output", 2, "subgroup-microminer-t3", {
-	{ type = "item", name = "raw-neutronium", amount = 32 },
-	{ type = "item", name = "raw-adamantium", amount = 16 },
-	{ type = "item", name = "raw-naquadah", amount = 8 },
-}, "raw-neutronium")
---- GT's black plutonium vein (Horus, Barnard C, Centauri Bb, Makemake, Pluto, T Ceti E): black plutonium, red and
---- yellow garnet, borax
-mission("microminer-black-plutonium", "tier-three-microminer-output", 2, "subgroup-microminer-t3", {
-	{ type = "item", name = "raw-black-plutonium", amount = 32 },
-	{ type = "item", name = "raw-borax", amount = 8 },
-}, "raw-black-plutonium")
---- GT's infinity catalyst vein (Anubis): neutronium, adamantium, infinity catalyst, bedrockium
-mission("microminer-infinity-catalyst", "tier-three-microminer-output", 2, "subgroup-microminer-t3", {
-	{ type = "item", name = "raw-infinity-catalyst", amount = 16 },
-	{ type = "item", name = "raw-neutronium", amount = 32 },
-	{ type = "item", name = "raw-adamantium", amount = 8 },
-	{ type = "item", name = "raw-bedrockium", amount = 8 },
-}, "raw-infinity-catalyst")
---- GT's cosmic neutronium vein (Horus): neutronium, cosmic neutronium, black plutonium, bedrockium
-mission("microminer-cosmic-neutronium", "tier-three-microminer-output", 2, "subgroup-microminer-t3", {
-	{ type = "item", name = "raw-cosmic-neutronium", amount = 16 },
-	{ type = "item", name = "raw-neutronium", amount = 32 },
-	{ type = "item", name = "raw-black-plutonium", amount = 8 },
-	{ type = "item", name = "raw-bedrockium", amount = 8 },
-}, "raw-cosmic-neutronium")
---- GT's titanium-chrome vein (the Moon, asteroids, Callisto ...): ilmenite, chromite, uvarovite, perlite. A mission of
---- the tier two microminer, like the ilmenite one (07-ore-processing-module.lua), and with its technology
-mission("microminer-chromite", "tier-two-microminer-output", 1, "subgroup-microminer-t2", {
-	{ type = "item", name = "raw-ilmenite", amount = 24 },
-	{ type = "item", name = "raw-chromite", amount = 16 },
-}, "raw-chromite")
 
 
 
@@ -290,14 +204,6 @@ mission("microminer-chromite", "tier-two-microminer-output", 1, "subgroup-microm
 --- 2) TECHNOLOGIES
 --------------------------------------------------------------------------------
 
---- The tier four microminer (upstream 52-microverse-module.lua: the lunar mission, its engine and plating, the
---- moon turf and moon dust) had no technology; IV like its microverse projector. Recipes: the table below.
-F.tech{
-	name = "tier-four-microminers",
-	prerequisites = { "tier-three-microminers", "iv-machines", "tungsten-carbide", "nuclear-power", "me-storage-64k" },
-	packs = 6, count = 800,
-	recipes = {},
-}
 --- GT++'s glue line is IV (6000 EU/t in the chemical plant)
 F.tech{
 	name = "super-glue",
@@ -313,8 +219,6 @@ F.tech{
 --- Technology -> recipes, by tier. Most recipes go to the technology of their material (the blocks, 16x wires,
 --- long rods and plates of a metal to the technology that makes its ingot) or of their machine; the rest by line:
 ---   * the 32 component assembly line recipes, its circuit wraps and the machine: uv-multiblocks
----   * the lunar mission, signalum, moon dust and the crystaltine parts of the extended crafting tables (they need
----     the nether star and HSS-G plates of IV): tier-four-microminers
 ---   * the naquadah doped boule, its wafer, the -nd wafer variants, graphene from them, the system on chip and the
 ---     cheap circuits from it: naquadah-processing (where the naquadah ingot comes); the europium (-ed) and
 ---     americium (-ad) variants already sit with their wafers (nano-power-ics, pico-quantum-power-ics)
@@ -325,9 +229,9 @@ F.tech{
 ---   * the power multiblocks (large heat exchanger, large and high pressure steam turbine, lapotronic
 ---     supercapacitor): with nuclear power, the magnalium of the industrial mixer (both steam turbines) and the
 ---     lapotronic energy orbs. Upstream has no entity for them yet (items only).
----   * nether and ender air (the ender tanks, collection, liquefaction, distillation): end-steel
----   * the ore lines of the exotic ores: with the missions (bedrockium for UV, quantium for UHV); chromite with the
----     titanium technology, which has the ilmenite mission (the chromite mission brings ilmenite too)
+---   * nether air (liquefaction, distillation): end-steel
+---   * the ore lines of the exotic ores: with their first consumers (bedrockium for UV, quantium for UHV); chromite
+---     with the titanium technology
 ---   * ore lines whose product main makes later by another route go to that route's technology, so nothing comes
 ---     earlier than before: bastnasite (neodymium) to neodymium, molybdenite (molybdenum) to tungstate-processing,
 ---     carbon fibres from PTFE, the carbon mesh and plate to nanoprocessors
@@ -336,7 +240,7 @@ F.tech{
 
 local UNLOCKS = {
 	["steam-compressor"] = { -- steam
-		"block-of-bronze", "block-of-copper", "block-of-red-alloy", "block-of-tin", "brick-block",
+		"block-of-bronze", "block-of-copper", "block-of-red-alloy", "block-of-redstone", "block-of-tin", "brick-block",
 	},
 	["steel-processing"] = { -- steam
 		"block-of-steel", "lapis-lazuli-block",
@@ -374,7 +278,7 @@ local UNLOCKS = {
 	["circuit-assembler"] = { -- LV
 		"block-of-brass",
 	},
-	["basic-extended-crafting"] = { -- MV
+	["black-steel"] = { -- MV (issue #287: was basic-extended-crafting)
 		"block-of-black-steel",
 	},
 	["aluminium"] = { -- MV
@@ -392,7 +296,7 @@ local UNLOCKS = {
 		"block-of-energetic-alloy", "energetic-alloy-wire-16x",
 	},
 	["polyethylene"] = { -- MV
-		"ether", "plascrete",
+		"ether",
 	},
 	["kanthal"] = { -- MV
 		"kanthal-wire-16x",
@@ -410,12 +314,8 @@ local UNLOCKS = {
 	["stainless-steel"] = { -- MV
 		"dense-stainless-steel-plate", "long-stainless-steel-rod",
 	},
-	["tier-two-microminers"] = { -- MV
-		"centrifuging-crushed-monazite", "ender-pearl-block", "monazite-dust", "monazite-dust-extraction",
-		"raw-monazite-multismelter", "raw-monazite-smelter",
-	},
 	["eyes-of-ender"] = { -- MV
-		"block-of-pulsating-iron", "pulsating-iron-wire-16x",
+		"block-of-pulsating-iron", "ender-pearl-block", "pulsating-iron-wire-16x",
 	},
 	["neodymium"] = { -- HV
 		"bastnasite-dust", "bastnasite-dust-electrolysis", "centrifuging-crushed-bastnasite", "crushed-bastnasite",
@@ -431,7 +331,7 @@ local UNLOCKS = {
 		"coal-sifter", "large-tumbaga-gear",
 	},
 	["smd-components"] = { -- HV
-		"block-of-nickel-zinc-ferrite", "block-of-platinum", "long-platinum-rod", "platinum-foil",
+		"block-of-nickel-zinc-ferrite",
 	},
 	["oil-processing"] = { -- HV
 		"charcoal-byproducts", "charcoal-byproducts-distillation", "toluene-from-wood-tar", "wood-gas-distillation",
@@ -443,20 +343,22 @@ local UNLOCKS = {
 	["rocket-fuel"] = { -- HV
 		"hydrochloric-acid-concentration",
 	},
-	["tier-three-microminers"] = { -- HV
-		"block-of-vibrant-alloy", "centrifuging-crushed-bornite", "raw-bornite-multismelter", "raw-bornite-smelter",
-		"vibrant-alloy-plate", "vibrant-alloy-wire-16x",
+	["reach-the-moon"] = { -- HV (issue #287: the monazite of the Moon's mine, 160; was tier-two-microminers)
+		"centrifuging-crushed-monazite", "monazite-dust", "monazite-dust-extraction", "raw-monazite-multismelter",
+		"raw-monazite-smelter",
+	},
+	["reach-ross128"] = { -- IV (issue #293: the bornite of Ross128's mine, 160; was tier-three-microminers)
+		"crushed-bornite",
 	},
 	["titanium"] = { -- EV
 		"block-of-titanium", "centrifuging-crushed-chromite", "chromium-dust", "crushed-chromite", "ilmenite-processing",
-		"ilmenite-slag-processing", "long-titanium-rod", "microminer-chromite", "raw-chromite-multismelter",
+		"ilmenite-slag-processing", "long-titanium-rod", "raw-chromite-multismelter",
 		"raw-chromite-smelter", "raw-ilmenite-multismelter", "raw-ilmenite-smelter", "sulfuric-iron-solution-electrolysis",
 		"titanium-pipe-casing",
 	},
 	["end-steel"] = { -- EV
-		"block-of-dark-steel", "block-of-electrical-steel", "end-steel-wire-16x", "ender-air-collection",
-		"ender-air-distillation", "ender-air-ender-tank", "ender-tank", "endstone-dust-centrifuging", "liquid-ender-air",
-		"liquid-nether-air", "nether-air-collection", "nether-air-distillation", "nether-air-ender-tank",
+		"block-of-dark-steel", "block-of-electrical-steel", "end-steel-wire-16x", "ender-air-distillation",
+		"endstone-dust-centrifuging", "liquid-ender-air", "liquid-nether-air", "nether-air-distillation",
 	},
 	["tungstate-processing"] = { -- EV
 		"centrifuging-crushed-molybdenite", "crushed-molybdenite", "molybdenite-dust", "molybdenum-dust",
@@ -474,7 +376,8 @@ local UNLOCKS = {
 		"solidify-incoloy-ma956-ingot", "solidify-ultimet-ingot", "solidify-zeron-100-ingot", "zeron-100-plate",
 	},
 	["ender-io"] = { -- EV
-		"block-of-soularium", "hv-field-generator",
+		"block-of-soularium", "block-of-vibrant-alloy", "hv-field-generator", "vibrant-alloy-plate",
+		"vibrant-alloy-wire-16x",
 	},
 	["platinum-ore-processing"] = { -- EV
 		"centrifuging-crushed-palladium", "centrifuging-crushed-platinum", "centrifuging-crushed-sheldonite",
@@ -528,7 +431,14 @@ local UNLOCKS = {
 		"long-magnalium-rod", "magnalium-bolt", "magnalium-rod", "magnalium-screw",
 	},
 	["high-pressure-steam-turbine"] = { -- IV (issue #97)
+		"large-titanium-boiler", "titanium-firebox-casing",   -- issue #254: superheated steam from fuel
 		"high-pressure-steam-turbine", "high-pressure-steam-turbine-controller", "titanium-turbine-casing",
+	},
+	["large-combustion-engine"] = { -- EV (issue #255; the gear box casing also comes with alloy-blast-smelter)
+		"large-combustion-engine", "engine-intake-casing", "titanium-gear-box-casing",
+	},
+	["large-gas-turbine"] = { -- EV (issue #256)
+		"large-gas-turbine", "stainless-steel-turbine-casing",
 	},
 	["fluid-nuclear-reactor"] = { -- IV (issue #97; the heat exchanger moves here from nuclear-power, the reactor from
 		-- fusion-reactor-mk1, the iridium neutron reflector is also on fusion-reactor-mk1)
@@ -550,13 +460,6 @@ local UNLOCKS = {
 	["super-glue"] = { -- IV
 		"chloroacetic-acid", "cyanoacetic-acid", "ethyl-cyanoacetate", "formaldehyde", "hydrogen-cyanide",
 		"sodium-cyanide", "super-glue",
-	},
-	["tier-four-microminers"] = { -- IV
-		"crystaltine-extended-crafting-catalyst", "crystaltine-extended-crafting-component", "crystaltine-ingot",
-		"extraterrestrial-metal-mixture-centrifuging", "lunar-navigation-data", "microminer-compressed-moon-turf",
-		"moon-dust", "moon-dust-centrifuging", "signalum-ingot", "signalum-microminer-engine-core",
-		"signalum-microminer-engine-frame", "signalum-plate", "signalum-rod", "tier-four-microminer-output",
-		"tungsten-carbide-heavy-plating", "tungsten-carbide-plated-microminer", "vibrant-thruster",
 	},
 	["naquadah-processing"] = { -- LuV
 		"cpu-wafer-nd", "fluorspar-electrolysis", "graphene-nd", "ilc-wafer-nd", "microchip-cheap", "microprocessor-cheap",
@@ -604,17 +507,16 @@ local UNLOCKS = {
 	["bedrockium"] = { -- UV
 		"black-plutonium-dust", "borax", "centrifuging-crushed-adamantium", "centrifuging-crushed-black-plutonium",
 		"centrifuging-crushed-borax", "centrifuging-crushed-neutronium", "crushed-adamantium", "crushed-black-plutonium",
-		"crushed-borax", "crushed-neutronium", "microminer-black-plutonium", "microminer-neutronium", "neutronium-dust",
+		"crushed-borax", "crushed-neutronium", "neutronium-dust",
 	},
 	["quantium"] = { -- UHV
 		"centrifuging-crushed-cosmic-neutronium", "centrifuging-crushed-infinity-catalyst", "cosmic-neutronium-dust",
-		"crushed-cosmic-neutronium", "crushed-infinity-catalyst", "infinity-catalyst-dust", "microminer-cosmic-neutronium",
-		"microminer-infinity-catalyst",
+		"crushed-cosmic-neutronium", "crushed-infinity-catalyst", "infinity-catalyst-dust",
 	},
 }
 --- Issue #98 (prototypes/147-fork-gt-routes.lua): the second printed board with sodium persulfate where the printed
 --- board is (microprocessors), black plutonium and cosmic neutronium in the blast furnace with their dusts (the
---- missions of bedrockium and quantium), the high octane line on its own technology, GT's PPIC wafer with the
+--- technologies of bedrockium and quantium), the high octane line on its own technology, GT's PPIC wafer with the
 --- other one
 local UNLOCKS_98 = {
 	["microprocessors"] = { -- MV
@@ -645,7 +547,7 @@ local UNLOCKS_96 = {
 	}, FORK_PLATINUM_LINE.feeds),
 	["platinum"] = { -- EV
 		"platinum-salt", "refined-platinum-salt", "metallic-platinum-powder-from-refined-salt",
-		"reprecipitated-platinum-processing",
+		"reprecipitated-platinum-processing", "block-of-platinum", "long-platinum-rod", "platinum-foil",
 	},
 	["palladium"] = { -- EV
 		"palladium-enriched-ammonia", "palladium-salt", "palladium-salt-from-ammonia", "metallic-palladium-powder-from-salt",
@@ -672,9 +574,13 @@ local UNLOCKS_96 = {
 --- technology of their input: gallium from the line's gallium hydroxide, zinc from the zinc sulfate of the enriched
 --- naquadah ingot, the naquadria oxide mixture branch with the naquadria ingot
 local UNLOCKS_205 = {
-	["naquadah-processing"] = { "gallium-from-gallium-hydroxide" }, -- LuV
+	["naquadah-processing"] = { "gallium-from-gallium-hydroxide", -- LuV
+		--- issue #207: goodgenerator's naquadah nugget (125) and its ingot
+		"naquadah-nugget", "naquadah-nugget-helium", "naquadah-nugget-argon", "naquadah-nugget-radon", "naquadah-nugget-neon",
+		"naquadah-nugget-krypton", "naquadah-nugget-xenon", "naquadah-ingot-from-nuggets" },
 	["enriched-naquadah"] = { "zinc-from-zinc-sulfate" }, -- LuV
 	["uv-materials"] = { -- UV
+		"naquadria-dust-macerator",   -- issue #223: GT's naquadria dust from the ingot (125)
 		"naquadah-dust-centrifuging", "enriched-naquadah-dust-centrifuging", "naquadria-oxide-mixture-centrifuging",
 		"naquadria-rich-solution-from-phosphate", "indium-from-indium-phosphate", "indium-gallium-phosphide-from-indium-phosphate",
 	},
@@ -690,12 +596,21 @@ local KEEP = {
 	["military-science-pack"] = { "lv-sensor" },
 	["end-steel"] = { "endstone-dust" },
 	["rhodium"] = { "sulfur-dioxide", "sulfur-trioxide" },
-	-- issue #185: the ore chain's new producers would move these to tier-three-microminers
-	["ore-washing"] = { "crushed-bornite", "microminer-platinum" },
 	-- issue #188: the forge hammer crushes raw sheldonite too, so the auto-unlock no longer places the macerator recipe
 	["platinum-ore-processing"] = { "crushed-sheldonite" },
+	-- issue #262: the dissolution tank of the monazite line makes thorianite too, so the auto-unlock no longer places the
+	-- blast furnace recipe of the thorium-yttrium glass
+	["fluid-shaper"] = { "thorianite" },
 }
-for _, list in pairs({ UNLOCKS, KEEP, UNLOCKS_98, UNLOCKS_96, UNLOCKS_205 }) do
+--- issue #237: the EV Alloy Blast Smelter needs a heat vent block, which takes a staballoy frame; the frame came only with
+--- industrial-extrusion-machine (IV), the staballoy rods it is made from are there at EV, so the Alloy Blast Smelter
+--- technology could not build its own machine; the Zyngen controller needs a large tantalum carbide gear, but molten
+--- tantalum carbide (Alloy Blast Smelter) and its ingot cast came only with max-machines
+local UNLOCKS_237 = {
+	["alloy-blast-smelter"] = { "staballoy-frame" },
+	["zyngen"] = { "molten-tantalum-carbide", "solidify-tantalum-carbide-ingot" },
+}
+for _, list in pairs({ UNLOCKS, KEEP, UNLOCKS_98, UNLOCKS_96, UNLOCKS_205, UNLOCKS_237 }) do
 	for tech, recipes in pairs(list) do
 		for _, r in pairs(recipes) do
 			if data.raw.recipe[r] then fork_add_unlock(tech, r) else log("FORK-UNLOCK: missing recipe: " .. r) end
@@ -703,22 +618,274 @@ for _, list in pairs({ UNLOCKS, KEEP, UNLOCKS_98, UNLOCKS_96, UNLOCKS_205 }) do
 	end
 end
 
+--- issue #239: the gaps the check of #237 found, as the maintainer decided them (2026-10-11)
+local function move_unlock(recipe, from, to)
+	local t = data.raw.technology[from]
+	local keep, found = {}, false
+	for _, e in pairs(t and t.effects or {}) do
+		if e.type == "unlock-recipe" and e.recipe == recipe then found = true else keep[#keep + 1] = e end
+	end
+	if not found then error("142-fork-recipe-unlocks: " .. from .. " does not unlock " .. recipe) end
+	t.effects = keep
+	fork_add_unlock(to, recipe)
+end
+local function add_prerequisite(tech, pre)
+	local t = data.raw.technology[tech]
+	for _, p in pairs(t.prerequisites or {}) do if p == pre then return end end
+	t.prerequisites = t.prerequisites or {}
+	table.insert(t.prerequisites, pre)
+end
+--- the logistic chests are HV assembler recipes: they come with HV Machines (Logistic System and the ME network stay MV)
+for _, r in pairs({ "requester-chest", "active-provider-chest", "passive-provider-chest", "storage-chest", "buffer-chest" }) do
+	move_unlock(r, "logistic-system", "hv-machines")
+end
+--- the advanced SMDs are IV/LuV parts, as in GTNH: their materials' technologies and the IV Large Chemical Reactor first
+--- (issue #252: not Qubit CPUs, whose quantum processors take advanced SMDs; the SMD diode's indium gallium phosphide
+--- comes with IV Energy Hatches, see below)
+for _, pre in pairs({ "graphene", "vanadium-gallium", "luv-components", "iv-machines" }) do
+	add_prerequisite("advanced-smds", pre)
+end
+--- the osmium solution of the platinum line needs the IV Tall Distillation Tower (issue #252: it comes with IV Energy
+--- Hatches, a prerequisite of Osmium in FORK_UNLOCK_TREE); HSS-S takes osmium dust, so it follows Osmium
+add_prerequisite("osmium", "iv-machines")
+add_prerequisite("hsss", "osmium")
+--- the Fluid Nuclear Reactor's iridium neutron reflector takes LuV parts
+add_prerequisite("fluid-nuclear-reactor", "fusion-reactor-mk1")
+add_prerequisite("fluid-nuclear-reactor", "naquadah-processing")
+--- issue #251: the inductor (Microprocessors) takes the nickel zinc ferrite ring; the ferrite chain comes where it is first
+--- used (GTNH: the ferrite ingot in the MV blast furnace, its ring in the LV and MV inductor); the SMD inductor stays with
+--- SMD Components
+for _, r in pairs({ "nickel-zinc-ferrite-dust", "nickel-zinc-ferrite-ingot", "nickel-zinc-ferrite-ring" }) do
+	move_unlock(r, "smd-components", "microprocessors")
+end
+--- issue #295: Tantalloy-60 (the gear of the EV Rocket Engine, 145) comes with Rocket Engines, its first consumer now (its
+--- tantalum and tungsten dusts and the alloy blast smelter are EV); the Industrial Wire Factory follows it
+move_unlock("molten-tantalloy-60", "industrial-wire-factory", "rocket-engines")
+add_prerequisite("industrial-wire-factory", "rocket-engines")
+--- the SMD diode takes fine platinum wire: with the platinum smelting, Platinum (the SMD variant of the microprocessor
+--- supercomputer waits for it; its plain recipe stays with Microprocessors)
+for _, r in pairs({ "platinum-dust-smelter", "platinum-dust-multismelter", "fine-platinum-wire", "smd-diode" }) do
+	move_unlock(r, "smd-components", "platinum")
+end
+
+--- issue #252, the maintainer's rule: every item and fluid is unlocked at the technology where it can first be consumed,
+--- never later (devcheck's tree check: the technology or one of its prerequisites makes it). A producer whose own inputs
+--- are there moves up to its first consumer; a producer in another branch of no higher science becomes a prerequisite
+--- (FORK_UNLOCK_TREE.prerequisites); only where the producer's own chain is late (platinum, the energy hatches of a tier, the
+--- advanced SMDs) the consumer goes to the producer's technology.
+--- the producers that move up: recipe, from, to (the comment: what takes it there)
+for _, m in pairs({
+	-- issue #320: the mold (4 steel plates) comes with the steel, where its first users are (the steel nuggets and
+	-- casings); the steam technologies before it have no steel, so the mold recipes of 158 wait for it (unlock_after counts
+	-- the mold) and the glass of the alloy smelter stays with Glassmaking, the forge hammer's glass dust with it (below)
+	{ "mold", "glassmaking", "steel-processing" },
+	{ "lv-centrifuge", "ore-centrifuging", "ore-washing" },                    -- the garnet decompositions (#207)
+	{ "molten-tin", "electric-blast-furnace", "concrete" },                    -- the tin and red alloy casts
+	{ "molten-red-alloy", "improved-electronic-parts", "concrete" },
+	{ "mv-emitter", "advanced-mv-machines", "laser-engraver" },                -- MV Laser Engraver (ILC, RAM, NAND wafers)
+	{ "electrum-rod", "advanced-mv-machines", "laser-engraver" },
+	{ "electrum-ingot", "advanced-integrated-circuits", "laser-engraver" },
+	{ "mining-beryllium-vein", "advanced-mv-machines", "laser-engraver" },     -- emerald
+	{ "crushed-beryllium", "advanced-mv-machines", "laser-engraver" },
+	{ "chromium-ingot", "advanced-hv-machines", "hv-components" },              -- chromium rod of the HV sensor
+	{ "chromium-rod", "advanced-hv-machines", "hv-components" },
+	{ "hv-emitter", "advanced-hv-machines", "hv-machines" },                    -- HV Laser Engraver
+	{ "clean-stainless-steel-casing", "bauxite-slurry-process", "hv-energy-hatches" },   -- HV Drilling Rig
+	{ "molten-naquadah", "zpm-superconductors", "naquadah-processing" },        -- naquadah casts
+	{ "silicon-ingot", "advanced-integrated-circuits", "overworld-data" },      -- printed silicon of the AE2 processors
+	{ "silicon-plate", "advanced-integrated-circuits", "overworld-data" },
+	{ "poly-si-dust", "mcsb", "overworld-data" },
+	{ "silicon-tetrachloride", "mcsb", "overworld-data" },
+	{ "platinum-wire", "nuclear-power", "platinum" },                           -- EV Electrolyzer
+	{ "indium-gallium-phosphide", "qubit-cpus", "iv-energy-hatches" },          -- HPIC wafer, advanced SMD diode
+	{ "robust-tungstensteel-machine-casing", "large-extractor", "space-science-pack" },   -- LuV science pack
+}) do
+	move_unlock(m[1], m[2], m[3])
+end
+--- the consumers whose producer's chain is late go to the producer's technology: recipe, from, to (the comment: the late
+--- producer)
+for _, m in pairs({
+	{ "glass-dust-forge-hammer", "steam-forge-hammer", "glassmaking" },         -- glass (the alloy smelter's, with the mold)
+	{ "long-aluminium-rod", "aluminium", "extruder" },                          -- MV extruder (MV hull, MV piston)
+	{ "aluminium-spring", "aluminium", "extruder" },                            -- its long aluminium rod
+	{ "liquid-ender-air", "end-steel", "ev-machines" },                         -- (the EV compressor's ender air)
+	{ "ender-air-distillation", "end-steel", "ev-machines" },
+	{ "ev-field-generator", "ev-components", "extreme-entity-crushers" },       -- nether star (the wither)
+	{ "ev-circuit-assembler", "ev-machines", "advanced-ev-machines" },          -- EV emitter (platinum rod)
+	{ "ev-laser-engraver", "ev-machines", "advanced-ev-machines" },
+	{ "ev-electrolyzer", "ev-machines", "platinum" },                           -- platinum wire
+	{ "quantum-processor-mainframe", "luv-components", "advanced-smds" },       -- advanced SMD capacitor and inductor
+	{ "nor-memory-wafer-nd", "naquadah-processing", "water-purification" },     -- grade 5 water
+	{ "microprocessor-supercomputer-smd", "smd-components", "platinum" },       -- SMD diode (platinum, #239)
+	{ "ilmenite-processing", "titanium", "ev-machines" },                       -- EV chemical bath
+}) do
+	move_unlock(m[1], m[2], m[3])
+end
+--- the multiblocks of IV and LuV Machines take the energy hatch of their tier (insane voltage coil, HPIC; UHPIC)
+for _, r in pairs({ "iv-alloy-blast-smelter", "iv-cracker", "iv-implosion-compressor", "iv-large-chemical-reactor",
+	"iv-short-distillation-tower", "iv-tall-distillation-tower", "iv-turbocan-pro", "iv-vacuum-freezer" }) do
+	move_unlock(r, "iv-machines", "iv-energy-hatches")
+end
+for _, r in pairs({ "luv-alloy-blast-smelter", "luv-cracker", "luv-implosion-compressor", "luv-large-chemical-reactor",
+	"luv-short-distillation-tower", "luv-tall-distillation-tower", "luv-vacuum-freezer" }) do
+	move_unlock(r, "luv-machines", "luv-energy-hatches")
+end
+--- the producer's technology as a prerequisite, where the producer is in another branch of no higher science (the
+--- technology: its new prerequisites; the comment: what the technology's recipes take from them, "machine" for the machine
+--- of a recipe category). Applied here, so the unlocks of 155 and 158 (unlock_after) see them, and once more by
+--- data-final-fixes.lua after it sets the vanilla technologies' prerequisites.
+FORK_UNLOCK_TREE = { prerequisites = {
+	["advanced-ev-machines"] = { "platinum" },   -- platinum-ingot
+	["advanced-integrated-circuits"] = { "nand-chips", "oil-gathering" },   -- fine-tin-wire; lubricant
+	["alloy-blast-smelter"] = { "nuclear-power" },   -- platinum-cable
+	["aluminium"] = { "cutting-machine" },   -- machine lv-cutting-machine
+	["assembly-line"] = { "industrial-precision-lathe" },   -- grate-machine-casing
+	["black-steel"] = { "electric-blast-furnace", "galena", "rare-earth-processing" },   -- machine mv-electric-blast-furnace; silver-ingot; nether-quartz
+	["bio-processors"] = { "qubit-cpus" },   -- qubit-cpu-chip
+	["cetane-boosted-diesel"] = { "implosion-compressor" },   -- nitric-acid
+	["concrete"] = { "automation-2" },   -- machine lv-assembling-machine
+	["crystal-processors"] = { "advanced-smds" },   -- advanced-smd-capacitor
+	["elevated-rail"] = { "railway" },   -- rail
+	["ev-energy-hatches"] = { "platinum" },   -- fine-platinum-wire
+	["ev-machines"] = { "nichrome-coils" },   -- nichrome-wire
+	["extreme-entity-crushers"] = { "ev-energy-hatches" },   -- ev-energy-hatch
+	["fusion-reactor-mk1"] = { "advanced-smds" },   -- zpm-circuit
+	["fusion-reactor-mk2"] = { "zpm-assembly-line" },   -- machine zpm-assembly-line
+	["galena"] = { "concrete" },   -- machine lv-fluid-solidifier
+	["gas-turbine"] = { "semifluid-generator", "sulfuric-acid" },   -- machine lv-canning-machine; machine lv-distillation
+	["graphene"] = { "ev-energy-hatches" },   -- machine ev-chemical-reactor
+	["high-octane-gasoline"] = { "ev-energy-hatches" },   -- machine ev-chemical-reactor
+	["hv-energy-hatches"] = { "vacuum-freezers" },   -- mv-vacuum-freezer
+	["hv-machines"] = { "me-network" },   -- me-drive
+	["hyper-intensity-laser-engraver"] = { "fluid-shaper" },   -- thorium-yttrium-glass-block
+	["industrial-centrifuge"] = { "industrial-extrusion-machine", "large-sifter" },   -- inconel-reinforced-casing; tumbaga-rod
+	["industrial-wire-factory"] = { "large-sifter", "large-steam-turbine" },   -- long-tumbaga-rod; blue-steel-frame
+	["iridium"] = { "ev-energy-hatches" },   -- machine ev-chemical-reactor
+	["iv-components"] = { "extreme-entity-crushers", "nuclear-power", "tungstensteel" },   -- nether-star; platinum-cable; tungstensteel-rod
+	["iv-energy-hatches"] = { "large-steel-boiler", "vanadium-gallium" },   -- steel-pipe-casing; molten-vanadium-gallium
+	["iv-machines"] = { "nanoprocessors", "rtm-alloy-coils" },   -- luv-circuit; rtm-alloy-coil-block
+	["kanthal-coils"] = { "multismelter" },   -- mv-multismelter
+	["large-extractor"] = { "fluid-shaper", "space-science-pack" },   -- thorium-yttrium-glass-block; indovanadium-superconductive-wire
+	["logistic-science-pack"] = { "logistics" },   -- transport-belt
+	["luv-components"] = { "niobium-titanium" },   -- niobium-titanium-wire
+	["luv-machines"] = { "alloy-blast-smelting-older-materials", "tungsten-carbide" },   -- molten-rtm-alloy; tungsten-carbide-ingot
+	["magnetic-flux-exhibiter"] = { "space-science-pack" },   -- indovanadium-superconductive-wire
+	["max-machines"] = { "hyper-intensity-laser-engraver" },   -- nitinol-60-rod
+	["microprocessors"] = { "kanthal-coils" },   -- aluminium-foil
+	["military-science-pack"] = { "circuit-assembler" },   -- lv-emitter
+	["nanoprocessors"] = { "ev-energy-hatches" },   -- machine ev-chemical-reactor
+	["naquadah-fuels"] = { "uv-materials" },   -- neutronium-ingot
+	["neodymium"] = { "hv-machines" },   -- machine hv-polarizer
+	["niobium-and-tantalum-extraction"] = { "ptfe" },   -- hydrofluoric-acid
+	["niobium-titanium"] = { "titanium" },   -- titanium-ingot
+	["nuclear-fuel-rods"] = { "uranium-processing" },   -- uraninite-dust
+	["oil-processing"] = { "bauxite-slurry-process" },   -- machine hv-cracker
+	["ore-centrifuging"] = { "concrete" },   -- machine lv-fluid-solidifier
+	["ore-crushing"] = { "electrolyzer" },   -- raw-vanadium-magnetite
+	["ore-washing"] = { "automation-2" },   -- lv-conveyor-module
+	["osmium"] = { "iv-energy-hatches" },   -- machine iv-tall-distillation
+	["phosphorus-processing"] = { "sulfuric-acid", "lv-miner" },   -- sulfuric-acid; machine lv-miner (issue #337: the twins of
+	-- every later vein, whose technologies all follow Phosphorus Processing)
+	["plasma-turbine"] = { "industrial-mixer" },   -- titanium-turbine-casing
+	["polybenzimidazole"] = { "alloy-blast-smelter" },   -- machine hv-alloy-blast-smelter
+	["production-science-pack"] = { "radon" },   -- quantum-eye
+	["qubit-cpus"] = { "iv-energy-hatches" },   -- indium-gallium-phosphide
+	["radar"] = { "circuit-assembler" },   -- brass-rod
+	["reach-the-moon"] = { "ore-drilling-plant-mk1" },   -- machine ore-drilling-plant-mk1 (issue #335: the Moon's twins)
+	["rare-earth-processing"] = { "ore-washing" },   -- rare-earth
+	["rhodium-plated-palladium"] = { "iv-machines" },   -- machine iv-fluid-extractor
+	["rocket-fuel"] = { "implosion-compressor" },   -- ammonia
+	["rtm-alloy-coils"] = { "ruthenium", "tungsten" },   -- ruthenium-dust; tungsten-dust
+	["ruthenium"] = { "epoxy-processing" },   -- salt-water
+	["semifluid-generator"] = { "lathe" },   -- bronze-rod
+	["smd-components"] = { "polyvinyl-chloride" },   -- thin-pvc-sheet
+	["staballoy"] = { "titanium" },   -- titanium-ingot
+	["super-glue"] = { "iv-energy-hatches" },   -- machine iv-chemical-reactor
+	["tungstate-processing"] = { "ev-machines" },   -- machine ev-autoclave
+	["tungsten"] = { "ev-energy-hatches" },   -- machine ev-chemical-reactor
+	["utility-science-pack"] = { "ev-machines" },   -- machine ev-assembling-machine
+	["zpm-assembly-line"] = { "me-storage-256k" },   -- fiber-reinforced-circuit-board
+} }
+--- recipes of 155 and 158 (unlock_after: the first technology after the machine and the inputs) that the moves above
+--- would send to a technology of a higher science than before: they stay where they were (the recipe: its technology)
+FORK_UNLOCK_TREE.keep = {
+	["nickel-zinc-ferrite-gear"] = "smd-components",          -- the MV extruder and the ferrite (Microprocessors)
+	["large-nickel-zinc-ferrite-gear"] = "smd-components",
+	["purified-copper-mercury"] = "primitive-electronic-circuit-assemblies",   -- mercury and the chemical bath
+	["purified-gold-mercury"] = "primitive-electronic-circuit-assemblies",
+	-- issue #335: Reach the Moon's new prerequisite (the Ore Drilling Plant Mk I) gives it more ancestors at 155's time,
+	-- so the hammering of the Moon's crushed ores would go to Titanium (EV); the Moon's hammer makes them
+	["hammering-crushed-chromite"] = "reach-the-moon",
+	["hammering-crushed-ilmenite"] = "reach-the-moon",
+}
+function FORK_UNLOCK_TREE.apply(final)
+	for tech, pres in pairs(FORK_UNLOCK_TREE.prerequisites) do
+		for _, p in pairs(pres) do
+			if data.raw.technology[tech] and data.raw.technology[p] then
+				add_prerequisite(tech, p)
+			elseif final then
+				error("142-fork-recipe-unlocks: no technology " .. tech .. " or " .. p)
+			end
+		end
+	end
+	if not final then return end
+	for recipe, tech in pairs(FORK_UNLOCK_TREE.keep) do
+		for _, t in pairs(data.raw.technology) do
+			local keep = {}
+			for _, e in pairs(t.effects or {}) do
+				if not (e.type == "unlock-recipe" and e.recipe == recipe) then keep[#keep + 1] = e end
+			end
+			if t.effects and #keep < #t.effects then t.effects = keep end
+		end
+		if not data.raw.recipe[recipe] then error("142-fork-recipe-unlocks: no recipe " .. recipe) end
+		fork_add_unlock(tech, recipe)
+	end
+end
+FORK_UNLOCK_TREE.apply()
+--- issue #337 (163): the miners' twins of the veins, after the moves above and the prerequisites (a vein before the LV
+--- Miner comes with it, a later one with its own technology)
+FORK_ELECTRIC_MINE.unlock_miner_twins()
+
 
 
 --------------------------------------------------------------------------------
 --- 4) RECIPES THAT STAY LOCKED (devcheck's allow-list, read from the dump of checkmod)
 --------------------------------------------------------------------------------
 
+--- issue #237: recipes a technology unlocks before the technologies of its science can make them, kept on purpose:
+--- "<technology>:<cause>" -> reason (the cause as `devcheck.py check` names it: the first missing item, or the recipe
+--- whose machine is missing); devcheck fails for any other such recipe and for an entry that matches nothing
+FORK_UNLOCK_GAPS = {
+	["uv-components:uhv-circuit"] = "GT's field generator takes the next tier's circuit; kept with the components on purpose (128, phase 3 note): craftable once that circuit is",
+	["uhv-components:uev-circuit"] = "GT's field generator takes the next tier's circuit; kept with the components on purpose (128, phase 3 note): craftable once that circuit is",
+	["uev-components:uiv-circuit"] = "GT's field generator takes the next tier's circuit; kept with the components on purpose (128, phase 3 note): craftable once that circuit is",
+	["uiv-components:umv-circuit"] = "GT's field generator takes the next tier's circuit; kept with the components on purpose (128, phase 3 note): craftable once that circuit is",
+	["umv-components:uxv-circuit"] = "GT's field generator takes the next tier's circuit; kept with the components on purpose (128, phase 3 note): craftable once that circuit is",
+}
+
+--- issue #252: items a technology's recipes take that neither it nor its prerequisites make, kept on purpose:
+--- "<technology>:<item>" -> reason (for a machine: its item); devcheck fails for any other such item and for an entry
+--- that matches nothing
+local FIELD_GENERATOR = "GT's field generator takes the next tier's circuit; kept with the components on purpose (128, phase 3 note; #237): craftable once that circuit is"
+FORK_UNLOCK_TREE_GAPS = {
+	["luv-components:zpm-circuit"] = FIELD_GENERATOR,
+	["uv-components:uhv-circuit"] = FIELD_GENERATOR,
+	["uhv-components:uev-circuit"] = FIELD_GENERATOR,
+	["uev-components:uiv-circuit"] = FIELD_GENERATOR,
+	["uiv-components:umv-circuit"] = FIELD_GENERATOR,
+	["umv-components:uxv-circuit"] = FIELD_GENERATOR,
+}
+
 FORK_RECIPES_LOCKED = {
 	["calcium"] = "upstream placeholder without ingredients (an item from nothing); calcium comes from fluorspar",
 	["cerium-rich-mixture"] = "upstream placeholder without ingredients; the mixture comes from bastnasite",
 	["phosphorus"] = "upstream placeholder without ingredients; phosphorus comes from the phosphorus line",
-	["ultimate-extended-crafting-component"] = "upstream recipe needs four of its own product (copy error); no GT recipe",
-	["ultimate-extended-crafting-catalyst"] = "needs the ultimate extended crafting component",
-	["ultimate-extended-crafting-table"] = "needs the ultimate component and catalyst; the table has no entity",
 	["crushed-firestone"] = "no source of firestone ore: GT has no firestone vein (Railcraft's nether ore)",
 	["firestone-dust"] = "needs crushed firestone",
 	["centrifuging-crushed-firestone"] = "needs crushed firestone",
 	["raw-firestone-ore-smelter"] = "no source of firestone ore",
 	["raw-firestone-ore-multismelter"] = "no source of firestone ore",
+	--- issue #215 (the maintainer's decision): armour equipment that needs an armour with an equipment grid and a power
+	--- source in it, which Gregtorio does not have (the vanilla armour and equipment technologies are disabled)
+	["me-wireless-module"] = "armour equipment; Gregtorio has no armour with an equipment grid (the Wireless ME Terminal item does the same)",
 }

@@ -121,6 +121,8 @@ def setup(a):
 
 MOD_NAMES = ("Gregtorio", "gregtorio-continued")   # the mod before and since 0.3.0
 ME_NETWORK = "me-network"                           # the ME network since issue #83 (docs/SPLIT.md), a dependency
+TEXTURES = "me-network-ae2-textures"                # me-network's texture mod, required since me-network #325
+STAND_IN = "stand-in of the texture mod (Gregtorio devcheck, issue #231)"
 
 
 def me_network_dir():
@@ -132,6 +134,37 @@ def me_network_dir():
 
 def needs_me_network(info):
     return any(re.split(r"\s*[<>=]", dep.strip())[0].strip() == ME_NETWORK for dep in info.get("dependencies", []))
+
+
+def texture_stand_in(me_info, me_dir):
+    """Issue #231: me-network 0.5.3 and later require its texture mod (me-network #325, `~ me-network-ae2-textures`).
+    A Gregtorio run never loads the texture mod's graphics (CC BY-NC-SA, me-network #239; me-network's own harness does
+    the same), so the mods folder gets an empty stand-in of its name: an info.json only, with the version of the
+    checkout's ae2-textures/info.json (else the lowest version the dependency allows). Nothing for a me-network that
+    does not require it (the older ones of `migrate`). Returns True when the stand-in was made."""
+    dep = next((d.strip() for d in me_info.get("dependencies", [])
+                if re.split(r"\s*[<>=]", d.strip().lstrip("~").strip())[0].strip() == TEXTURES), None)
+    if not dep or dep.startswith(("!", "?", "(?)")):
+        return False
+    real = me_dir / "ae2-textures" / "info.json" if me_dir else None
+    if real and real.exists():
+        version = json.loads(real.read_text(encoding="utf-8"))["version"]
+    else:
+        m = re.search(r">=?\s*([\d.]+)", dep)
+        version = m.group(1) if m else "0.0.1"
+    stub = MODS / TEXTURES
+    stub.mkdir()
+    (stub / "info.json").write_text(json.dumps({"name": TEXTURES, "version": version, "title": STAND_IN,
+                                                "author": "devcheck", "factorio_version": "2.0",
+                                                "dependencies": ["base >= 2.0"]}), encoding="utf-8")
+    return True
+
+
+def zip_info(path):
+    """info.json of a mod zip"""
+    import zipfile
+    with zipfile.ZipFile(path) as z:
+        return json.loads(z.read(next(n for n in z.namelist() if n.endswith("/info.json") and n.count("/") == 1)))
 
 
 def link_dir(link, target):
@@ -162,14 +195,15 @@ def prepare_mods(with_runtime=False, gregtorio_zip=None, with_migrate=False, men
     remove_path(MODS / "mod-settings.dat")
     for p in MODS.iterdir():
         if p.name.startswith(MOD_NAMES + ("zz-gregtorio-devcheck",)) or p.name == "mod-list.json" or (
-                p.name == ME_NETWORK and not p.is_file()):
+                p.name in (ME_NETWORK, TEXTURES) and not p.is_file()):
             remove_path(p)
+    if list(MODS.glob(f"{TEXTURES}_*.zip")):
+        sys.exit(f"{MODS}: remove {TEXTURES}_*.zip; a Gregtorio run loads the empty stand-in of the texture mod "
+                 "(issue #231), never its graphics")
     if not gregtorio:
         info = None
     elif gregtorio_zip:
-        import zipfile
-        with zipfile.ZipFile(gregtorio_zip) as z:
-            info = json.loads(z.read(next(n for n in z.namelist() if n.endswith("/info.json") and n.count("/") == 1)))
+        info = zip_info(gregtorio_zip)
         # Factorio insists on <name>_<version>.zip
         shutil.copy2(gregtorio_zip, MODS / f"{info['name']}_{info['version']}.zip")
     else:
@@ -182,9 +216,16 @@ def prepare_mods(with_runtime=False, gregtorio_zip=None, with_migrate=False, men
     disabled = []
     if info and needs_me_network(info):
         # issue #83: a me-network checkout (ME_NETWORK_DIR or ../me-network) wins over the portal zip
-        if me_network_dir():
-            link_dir(MODS / ME_NETWORK, me_network_dir())
+        me_dir = me_network_dir()
+        if me_dir:
+            link_dir(MODS / ME_NETWORK, me_dir)
+            me_info = json.loads((me_dir / "info.json").read_text(encoding="utf-8"))
+        else:
+            me_zips = sorted(MODS.glob(f"{ME_NETWORK}_*.zip"), key=lambda p: version_tuple(p.stem.rsplit("_", 1)[1]))
+            me_info = zip_info(me_zips[-1]) if me_zips else {}
         enabled.append(ME_NETWORK)
+        if texture_stand_in(me_info, me_dir):
+            enabled.append(TEXTURES)
     elif ME_NETWORK in zips:
         # older versions of the mod (migrate) contain the ME network themselves and refuse to load next to it
         disabled.append(ME_NETWORK)
@@ -239,6 +280,13 @@ def load_errors(log):
     return m.group(1).strip() if m else "unknown error (see .devcheck/last-run.log)"
 
 
+def script_error(log):
+    """the first error of a mod's event handler (e.g. me-network refusing an old save in on_configuration_changed),
+    which load_errors misses because the map itself was read"""
+    m = re.search(r"Error while running event (\S+)\n(.*?)(?=\nstack traceback|\n-{5}|\Z)", log, re.S)
+    return (m.group(1) + ": " + " ".join(l.strip() for l in m.group(2).splitlines() if l.strip())) if m else None
+
+
 def not_saved(log):
     """--create runs on_init and then saves; a failed save (e.g. a function in `storage`) or an error in on_init
     (e.g. a test helper calling a remote function the mod version does not have) keeps the previous map file, so
@@ -257,6 +305,7 @@ class Model:
         kinds = lambda s: [x.split(":", 1)[0] for x in s.split(",") if x]
         self.R, self.C, self.CF, self.I, self.T = {}, {}, {}, {}, {}
         self.burnt, self.burners = [], {}   # (fuel item, burnt result, fuel category); burner entity -> categories
+        self.tools = {}                     # recipe -> the mold or lens it needs in the module slot (issue #316)
         self.base = {"water", "steam"}
         for p in rows:
             k = p[0]
@@ -283,6 +332,12 @@ class Model:
                 self.burnt.append((p[1], p[2], p[3]))
             elif k == "U":
                 self.burners[p[1]] = p[2].split(",")
+            elif k == "K":
+                self.tools[p[1]] = p[2]
+        # issue #316: a recipe needs its mold or lens (150, in the module slot) as if it were an ingredient
+        for r, item in self.tools.items():
+            if r in self.R and item not in self.R[r]["ing"]:
+                self.R[r]["ing"].append(item)
         self.solve()
 
     def solve(self):
@@ -377,6 +432,72 @@ class Model:
                 out.append((r, f"needs {v['fin']} fluid in / {v['fout']} out, no reachable machine has that"))
         return out
 
+    def obtainable(self, techs):
+        """Issue #237: what can be obtained with the recipes enabled from the start or unlocked by `techs` (as solve,
+        without research; a worklist instead of the fixed point loop). Returns (items and fluids, recipe categories
+        with a buildable machine)."""
+        R, C = self.R, self.C
+        if not hasattr(self, "_ob"):
+            uses, by_cat, entity_of, burner_of = {}, {}, {}, {}
+            for r, v in R.items():
+                for i in set(v["ing"]):
+                    uses.setdefault(i, []).append(r)
+                by_cat.setdefault(v["cat"], []).append(r)
+            for it, pr in self.I.items():
+                if pr in C:
+                    entity_of.setdefault(it, []).append(pr)
+                if pr in self.burners:
+                    burner_of.setdefault(it, []).extend(self.burners[pr])
+            unl = {}
+            for t, v in self.T.items():
+                for r in v["eff"]:
+                    unl.setdefault(r, []).append(t)
+            self._ob = uses, by_cat, entity_of, burner_of, unl
+        uses, by_cat, entity_of, burner_of, unl = self._ob
+        ok = {r for r, v in R.items() if not v["hidden"] and (v["en"] or any(t in techs for t in unl.get(r, [])))}
+        need = {r: len(set(R[r]["ing"])) for r in ok}
+        avail, cats, crafters, fuel_cats = set(), set(), set(), set()
+        queue, ready = [], [r for r in ok if need[r] == 0]
+
+        def add(x):
+            if x not in avail:
+                avail.add(x)
+                queue.append(x)
+
+        def crafter(e):
+            if e in crafters:
+                return
+            crafters.add(e)
+            for c in C.get(e, []):
+                if c not in cats:
+                    cats.add(c)
+                    ready.extend(r for r in by_cat.get(c, []) if r in ok and need[r] == 0)
+        crafter("character")
+        for x in self.base:
+            add(x)
+        while queue or ready:
+            while ready:
+                r = ready.pop()
+                if R[r]["cat"] in cats:
+                    for x in R[r]["res"]:
+                        add(x)
+            if not queue:
+                break
+            x = queue.pop()
+            for e in entity_of.get(x, []):
+                crafter(e)
+            fuel_cats.update(burner_of.get(x, []))
+            # a fuel burnt in a burner that can be built leaves its burnt result
+            for fuel, burnt, cat in self.burnt:
+                if fuel in avail and cat in fuel_cats:
+                    add(burnt)
+            for r in uses.get(x, []):
+                if r in need:
+                    need[r] -= 1
+                    if need[r] == 0:
+                        ready.append(r)
+        return avail, cats
+
 
 def check_crafting_menu(m, sec):
     """Issue #49: every recipe that is enabled or unlocked by a technology and whose category has a
@@ -420,7 +541,6 @@ def check_crafting_menu(m, sec):
 
 
 FLUID_FALLBACK = "gregtorio-fluids-unsorted"
-MICROMINER_TAB = "microminer-tab"
 
 
 def check_fluids_tab(sec):
@@ -478,19 +598,114 @@ def check_table_only(m, sec):
     stale = [f"{r} (allow-list entry: not a recipe of an item that only the crafting table or the hand makes)"
              for r in sorted(allow) if r not in flagged]
     return f"{only_items} reachable items with only crafting table or hand recipes, {len(allow)} recipes in the allow-list", problems + stale
-def check_microminer_tab(sec):
-    """Issue #120 (prototypes/195-fork-microminer-tab.lua): the missions of every Microverse Projector (the recipes of its
-    categories) and the projectors themselves (and their controller) are recipes of the Microminer tab, so a projector's
-    recipe window has one tab and a search for "micro" finds the machines next to the microminers. The recycling recipes
-    of a projector (issue #190) are recycling, in the rows of their machine."""
-    out = []
-    for r in sec.get("DUMP", []):
-        if r[0] == "R" and not r[6] == "true" and not r[1].startswith("recycling-") and (
-                r[2].endswith("-microverse-projector-recipes") or r[1].endswith("microverse-projector")
-                or r[1] == "microverse-projector-controller"):
-            if r[9] != MICROMINER_TAB:
-                out.append(f"{r[1]} ({r[2]}): row {r[8]}, tab {r[9]}")
-    return sorted(out)
+
+
+VANILLA_MODS = {"base", "space-age", "quality", "elevated-rails"}
+
+
+def check_engraver_lenses(m, sec):
+    """Issue #325: GT engraves with a lens that stays (prototypes/150-fork-molds.lua puts it into the engraver's lens slot,
+    `K` rows of the dump). Every laser engraver recipe needs one, except the allow-list FORK_ENGRAVER_NO_LENS of
+    prototypes/155-fork-ore-chain.lua with its reason (section ENGRAVERNOLENS); an entry that is not a laser engraver
+    recipe without a lens fails too. Returns (info line, problems)."""
+    kept = {r[0]: (r[1] if len(r) > 1 else "") for r in sec.get("ENGRAVERNOLENS", [])}
+    engraver = [r for r, v in m.R.items() if "laser-engraver" in v["cat"] and not v["hidden"]]
+    without = sorted(r for r in engraver if r not in m.tools)
+    problems = [f"{r}: a laser engraver recipe without a lens (GTNH's lens of the recipe, or FORK_ENGRAVER_NO_LENS)"
+                for r in without if r not in kept]
+    problems += [f"FORK_ENGRAVER_NO_LENS: {r} has no reason" for r, why in sorted(kept.items()) if not why]
+    problems += [f"FORK_ENGRAVER_NO_LENS: {r} is not a laser engraver recipe without a lens" for r in sorted(kept)
+                 if r not in without]
+    return f"{len(engraver)} laser engraver recipes, {len(engraver) - len(without)} with a lens in the lens slot, " \
+           f"{len(kept)} without one on purpose (FORK_ENGRAVER_NO_LENS)", problems
+
+
+def check_electric_mine(m, sec):
+    """Issue #335 (prototypes/163-fork-electric-mine.lua): every recipe of the Manual Mine and the Dig Site has an electric
+    twin for the Ore Drilling Plants (the same results, Drilling Fluid and, issues #341 and #346, mining pipes as
+    ingredients, category electric-mine-recipes) and (issue #337) one for the Miners (category miner-recipes, the same
+    results, mining pipes as the ingredient), unless it is in the allow-list FORK_ELECTRIC_MINE_EXCLUDED with its reason (section
+    ELECTRICMINE); an entry that is no such recipe or has a twin fails too. Returns (info line, problems)."""
+    rows = [r + [""] * (5 - len(r)) for r in sec.get("ELECTRICMINE", [])]
+    manual = [r for r in rows if r[1] == "manual"]
+    problems = [f"{r[0]}: a Manual Mine or Dig Site recipe without an electric twin (163 makes one for a mining-<vein> "
+                "recipe it sees, or add it to FORK_ELECTRIC_MINE_EXCLUDED with its reason)"
+                for r in manual if r[2] == "-" and not r[3]]
+    problems += [f"{r[0]}: a Manual Mine recipe with the Ore Drilling Plant's twin but no Miner twin" for r in manual
+                 if r[2] != "-" and r[4] in ("", "-")]
+    problems += [f"FORK_ELECTRIC_MINE_EXCLUDED: {r[0]} " + ("is not a Manual Mine or Dig Site recipe" if r[1] != "manual"
+                 else f"has the twin {r[2]}") + " (remove the entry)" for r in rows if r[3] and (r[1] != "manual" or r[2] != "-")]
+    for r in manual:
+        if r[0] not in m.R:
+            continue
+        res = sorted(m.R[r[0]]["res"])
+        twin = m.R.get(r[2])
+        if twin is not None and (twin["cat"] != "electric-mine-recipes"
+                                 or sorted(twin["ing"]) != ["drilling-fluid", "mining-pipe"]
+                                 or sorted(twin["res"]) != res):
+            problems.append(f"{r[2]}: not the twin of {r[0]} (category {twin['cat']}, ingredients {twin['ing']}, "
+                            f"results {twin['res']} against {m.R[r[0]]['res']})")
+        miner = m.R.get(r[4])
+        if miner is not None and (miner["cat"] != "miner-recipes" or miner["ing"] != ["mining-pipe"]
+                                  or sorted(miner["res"]) != res):
+            problems.append(f"{r[4]}: not the Miner twin of {r[0]} (category {miner['cat']}, ingredients {miner['ing']}, "
+                            f"results {miner['res']} against {m.R[r[0]]['res']})")
+    twins = sum(1 for r in manual if r[2] != "-")
+    miners = sum(1 for r in manual if r[4] not in ("", "-"))
+    return (f"{len(manual)} Manual Mine and Dig Site recipes, {twins} with an electric twin, {miners} with a Miner twin, "
+            f"{sum(1 for r in manual if r[3])} without one on purpose (FORK_ELECTRIC_MINE_EXCLUDED)", sorted(problems))
+
+
+def check_vanilla_recipes(m, sec):
+    """Issues #317 and #318: a vanilla recipe that no technology unlocks (and that is not enabled), whose every product
+    a reachable recipe of another kind makes, and that is not hidden, is an alternative in Factoriopedia that nobody can
+    use (the vanilla battery next to GTNH's filled battery hulls). data-final-fixes.lua deletes such recipes
+    (VANILLA_RECIPES_REMOVED); one that stays on purpose goes into FORK_VANILLA_RECIPES_KEPT with its reason. Returns
+    (info line, problems)."""
+    owner = {r[0]: r[1] for r in sec.get("OWNERS", []) if len(r) > 1}
+    kept = {r[0]: (r[1] if len(r) > 1 else "") for r in sec.get("VANILLAKEPT", [])}
+    unlocked_by_tech = {r for v in m.T.values() if v["en"] for r in v["eff"]}
+    makers = {}
+    for r, v in m.R.items():
+        if v["hidden"] or v["cat"] in ("recycling", "parameters") or r.endswith("-recycling"):
+            continue
+        for x in v["res"]:
+            makers.setdefault(x, []).append(r)
+    found = []
+    for r, v in sorted(m.R.items()):
+        if owner.get(r) not in VANILLA_MODS or v["hidden"] or v["en"] or r in unlocked_by_tech or not v["res"]:
+            continue
+        if r.endswith("-recycling") or r.startswith("void-") or v["cat"] in ("recycling", "parameters"):
+            continue
+        if all(any(o != r and o in m.unlocked for o in makers.get(x, [])) for x in v["res"]):
+            found.append(r)
+    problems = [f"{r} ({owner[r]}): makes {', '.join(m.R[r]['res'])}, which Gregtorio makes another way; no technology "
+                f"unlocks it" for r in found if r not in kept]
+    problems += [f"FORK_VANILLA_RECIPES_KEPT: {r} has no reason" for r, why in sorted(kept.items()) if not why]
+    problems += [f"FORK_VANILLA_RECIPES_KEPT: {r} is not such a recipe (any more)" for r in sorted(kept) if r not in found]
+    return f"{len(found)} vanilla recipes without a technology of items Gregtorio makes, {len(kept)} kept on purpose " \
+           f"(FORK_VANILLA_RECIPES_KEPT)", problems
+
+
+def check_me_recipes(sec):
+    """Issue #214 (prototypes/120-fork-me-network-compat.lua): every recipe me-network defines (ME_NETWORK.recipes) has a
+    Gregtorio recipe in the compat file (FORK_ME_RECIPES), so a new me-network item cannot keep its standalone vanilla
+    ingredients unnoticed; a recipe kept standalone on purpose is in the allow-list FORK_ME_RECIPES_STANDALONE with its
+    reason. An allow-list entry that is no me-network recipe or has a Gregtorio recipe fails too. Returns (info line,
+    problems)."""
+    rows = [r + [""] * (4 - len(r)) for r in sec.get("MERECIPES", [])]
+    me = [r for r in rows if r[1] == "me"]
+    greg = sum(1 for r in me if r[2] == "gregtorio")
+    allowed = sum(1 for r in me if r[2] != "gregtorio" and r[3])
+    problems = [f"{r[0]}: me-network's standalone recipe (give it a GT recipe in the compat file or add it to "
+                "FORK_ME_RECIPES_STANDALONE)" for r in me if r[2] != "gregtorio" and not r[3]]
+    problems += [f"{r[0]}: in FORK_ME_RECIPES_STANDALONE but " +
+                 ("not a recipe of me-network" if r[1] != "me" else "it has a Gregtorio recipe") + " (remove the entry)"
+                 for r in rows if r[3] and (r[1] != "me" or r[2] == "gregtorio")]
+    return (f"{len(me)} recipes of me-network, {greg} with a Gregtorio recipe, {allowed} standalone in the allow-list",
+            sorted(problems))
+
+
 ORE_CHAIN_SKIP = {"crushed-platinum", "crushed-palladium", "crushed-firestone"}   # 155-fork-ore-chain.lua's skip list
 def check_ore_chain(m):
     """Issue #185 (prototypes/155-fork-ore-chain.lua): every ore with a purified form has GTNH's whole chain (washer,
@@ -552,16 +767,21 @@ def check_ore_baths(m):
 # Issue #187: GTNH's electromagnetic separator per ore (docs/ORE-CHAIN.md appendix B, column EM separator)
 ORE_SEPARATOR = {"vanadium-magnetite": "gold", "tin": "iron", "ilmenite": "iron", "nickel": "iron", "pentlandite": "iron",
                  "chromite": "iron", "bornite": "iron", "bastnasite": "neodymium", "monazite": "neodymium"}
+# Issue #262: the other separator recipes of GTNH (gtnhlanth's monazite line, prototypes/159-fork-lanthanides.lua)
+SEPARATOR_OTHER = {"monazite-rarer-earth-sediment"}
 # Issue #188: the gem ores of GTNH's sifter (table, crystallisable for the autoclave) and their gem items
 ORE_GEMS = {"ruby": ("ruby", False), "emerald": ("emerald", False), "diamond": ("diamond", False),
             "nether-quartz": ("nether-quartz", True), "certus-quartz": ("certus-quartz", True),
             "apatite": ("apatite-gem", True), "tricalcium-phosphate": ("tricalcium-phosphate-gem", False),
             "lazurite": ("lazurite-gem", True), "sodalite": ("sodalite-gem", True), "lapis": ("lapis-lazuli", True),
-            "monazite": ("monazite-gem", True)}
+            "monazite": ("monazite-gem", True),
+            "amber": ("amber-gem", False), "topaz": ("topaz-gem", False)}   # issue #332: the Twilight Forest's gems
 # Issue #193: the laser engraver steps of the grades, with the lens of the gem's colour (red ruby, green emerald, white
-# diamond; GT's other colours need lenses of materials Gregtorio lacks)
+# diamond; issue #328: cyan apatite and blue lapis, #325's substitutes; certus quartz's light gray has no lens; issue
+# #332: orange amber)
 ORE_GEM_LENS = {"ruby": "ruby-lens", "emerald": "emerald-lens", "monazite": "emerald-lens", "diamond": "diamond-lens",
-                "nether-quartz": "diamond-lens"}
+                "nether-quartz": "diamond-lens", "apatite": "apatite-lens", "lazurite": "apatite-lens",
+                "sodalite": "lapis-lens", "lapis": "lapis-lens", "amber": "amber-lens", "topaz": "amber-lens"}
 def check_ore_o3_o4(m):
     """Issues #187 and #188 (prototypes/155-fork-ore-chain.lua, phases O3 and O4): the electromagnetic separator works
     exactly the pure dusts of ORE_SEPARATOR (dust, small dust and nugget of the metal); every ore of ORE_GEMS is sifted
@@ -577,6 +797,8 @@ def check_ore_o3_o4(m):
         if r["cat"] == "lv-electromagnetic-separator-recipes":
             pure = [i for i in r["ing"] if i.startswith("pure-") and i.endswith("-dust")]
             x = pure[0][len("pure-"):-len("-dust")] if pure else None
+            if x is None and name in SEPARATOR_OTHER:
+                continue
             if x not in ORE_SEPARATOR:
                 out.append(f"{name}: GTNH's separator has no recipe for {', '.join(r['ing'])}")
                 continue
@@ -632,11 +854,12 @@ def check_ore_o3_o4(m):
             lens = ORE_GEM_LENS.get(x)
             if lens:
                 e = f"engraving-{lo}-to-{'gem' if hi == gem else hi.split('-')[0]}"
-                if live(e) and m.R[e]["cat"].endswith("-laser-engraver-recipes") and lens in m.R[e]["ing"] \
-                        and lens in m.R[e]["res"] and hi in m.R[e]["res"]:
+                # issue #316: the lens stays in the engraver's lens slot (150), it is neither used up nor a result
+                if live(e) and m.R[e]["cat"].endswith("-laser-engraver-recipes") and m.tools.get(e) == lens \
+                        and lens not in m.R[e]["res"] and hi in m.R[e]["res"]:
                     engraves += 1
                 else:
-                    out.append(f"{x}: the laser engraver lacks {e} (3 x {lo} and the {lens}, which stays)")
+                    out.append(f"{x}: the laser engraver lacks {e} (3 x {lo}, the {lens} in its lens slot)")
         for k, n in (("chipped", 1), ("flawed", 2)):
             r = m.R.get(f"{k}-{x}-maceration")
             if r and f"small-pile-of-{x}-dust" not in r["res"]:
@@ -812,6 +1035,138 @@ def check_fluid_steps(sec):
     return [f"{r} ({kind}) {fluid}: {amount}" for r, kind, fluid, amount in sec.get("FLUIDSTEPS", [])]
 
 
+NAME_CLASSES = ("item", "fluid", "recipe", "technology", "entity", "equipment", "tile", "item-group", "item-subgroup")
+
+
+def locale_keys():
+    """{"<section>.<key>": file} of every English locale file the game loads in a devcheck run: this mod's
+    (locale/en/*.cfg), the base game's and Space Age's (factorio/data/*/locale/en) and the dependencies' (zips and the
+    me-network checkout). A key of this mod wins, so a missing name points at this mod's files."""
+    import zipfile
+    keys = {}
+
+    def read(text, where):
+        section = None
+        for line in text.splitlines():
+            line = line.strip()
+            if line.startswith("[") and line.endswith("]"):
+                section = line[1:-1]
+            elif "=" in line and section and not line.startswith((";", "#")):
+                keys.setdefault(f"{section}.{line.split('=', 1)[0].strip()}", where)
+
+    for f in sorted((ROOT / "locale/en").glob("*.cfg")):
+        read(f.read_text(encoding="utf-8"), f"locale/en/{f.name}")
+    for f in sorted((FACTORIO / "data").glob("*/locale/en/*.cfg")):
+        read(f.read_text(encoding="utf-8"), f.parent.parent.parent.name)
+    for z in sorted(MODS.glob("*.zip")):
+        if z.name.startswith(MOD_NAMES):
+            continue
+        with zipfile.ZipFile(z) as zf:
+            for n in zf.namelist():
+                if re.search(r"^[^/]+/locale/en/[^/]+\.cfg$", n):
+                    read(zf.read(n).decode("utf-8-sig"), z.name)
+    if me_network_dir():
+        for f in sorted(me_network_dir().glob("locale/en/*.cfg")):
+            read(f.read_text(encoding="utf-8"), ME_NETWORK)
+    return keys
+
+
+def missing_keys(ls, keys):
+    """the keys of a localised string that no locale file has; [] if the game shows a name. A string is literal text,
+    {"", ...} joins its parameters, {"?", ...} shows the first one that resolves, {"<key>", ...} needs the key and its
+    parameters (__1__ ...)."""
+    if not isinstance(ls, list):
+        return []
+    if not ls:
+        return ["(empty localised string)"]
+    head, params = ls[0], ls[1:]
+    if head == "?":
+        alts = [missing_keys(p, keys) for p in params]
+        return [] if any(not a for a in alts) else [k for a in alts for k in a]
+    out = [] if head == "" or head in keys else [head]
+    for p in params:
+        out += missing_keys(p, keys)
+    return out
+
+
+def defining_files():
+    """{quoted string: first file of this mod that has it}, to name where a prototype is defined"""
+    out = {}
+    for f in [ROOT / "data.lua", ROOT / "data-final-fixes.lua"] + sorted((ROOT / "prototypes").glob("*.lua")):
+        for s in re.findall(r'"([A-Za-z0-9_.-]+)"', f.read_text(encoding="utf-8")):
+            out.setdefault(s, f.relative_to(ROOT).as_posix())
+    return out
+
+
+def check_placeable(sec):
+    """Issue #336: a player-built entity of this mod that gives items when mined must be placeable again by one of them
+    (section PLACEABLE of checkmod/control.lua: the runtime prototypes, the mined items and items_to_place_this); the T1
+    robots' items had no place_result, so no roboport took them. Returns (info line, problems)."""
+    rows = [r + [""] * (4 - len(r)) for r in sec.get("PLACEABLE", [])]
+    problems = []
+    for etype, name, mined, placers in rows:
+        mined_set, placer_set = set(filter(None, mined.split(","))), set(filter(None, placers.split(",")))
+        if not mined_set & placer_set:
+            problems.append(f"{etype} {name}: mined it gives {', '.join(sorted(mined_set))}, which "
+                            + (f"does not place it (placed by {', '.join(sorted(placer_set))})" if placer_set
+                               else "has no place_result for it (no item places it)"))
+    return f"{len(rows)} player-built entities that give items when mined", sorted(problems)
+
+
+def check_names(sec):
+    """Issue #230: every prototype this mod creates that a player can see (item, fluid, recipe, technology, entity,
+    equipment, tile, item group and subgroup; section NAMES of checkmod/control.lua: the runtime prototypes, so the name
+    is the one the engine resolves from the final data stage) must have a name: every key of its localised name must be
+    in a locale file. The engine names a recipe after its product only when the recipe has the product's name;
+    any other recipe shows `recipe-name.<recipe>`, with a main product or not (prototypes/fork-locale.lua gives
+    Gregtorio's recipes their product's name as the fallback). Shown: not hidden (an item or fluid also when a recipe
+    that is not hidden takes or makes it), a technology that is enabled, an entity placed by an item, minable or a
+    resource, a group or subgroup with a shown prototype. Allow-list FORK_LOCALE_MISSING (section LOCALEOK, "class:name"
+    -> reason). Returns (info lines, problems, missing default keys as "section\\tname" rows for tools/gen_locale.py)."""
+    if "NAMES" not in sec:
+        return [], ["no DEVCHECK-NAMES section in the log (checkmod/control.lua did not run)"], []
+    keys, files = locale_keys(), defining_files()
+    allowed = {r[0]: r[1] if len(r) > 1 else "" for r in sec.get("LOCALEOK", [])}
+    seen, counts, problems, gen = set(), {}, [], []
+    for r in sec["NAMES"]:
+        cls, typ, name, created, shown = r[0], r[1], r[2], r[3], r[5]
+        ls = json.loads(r[7]).get("n")
+        extra = r[8] if len(r) > 8 else ""
+        if created not in MOD_NAMES:
+            continue
+        seen.add(f"{cls}:{name}")
+        if not shown:
+            continue
+        c = counts.setdefault(cls, [0, 0])
+        c[0] += 1
+        miss = missing_keys(ls, keys)
+        if not miss or f"{cls}:{name}" in allowed:
+            continue
+        c[1] += 1
+        why = ""
+        if cls == "recipe":
+            main, n = extra.split(" ")
+            why = (", no results" if main == "-" and n == "0" else
+                   f", {n} results and no main product" if main == "-" else
+                   f", its name differs from its main product {main}" if main.split(":", 1)[1] != name else "")
+        where = files.get(name, "built in a loop, no literal name")
+        problems.append(f"{cls} {name} ({typ}, {where}): unknown key {', '.join(miss)}{why}")
+        for k in miss:
+            s, _, n = k.partition(".")
+            if n and s.endswith("-name"):
+                gen.append(f"{s}\t{n}")
+    for k, why in sorted(allowed.items()):
+        cls, _, name = k.partition(":")
+        row = next((r for r in sec["NAMES"] if r[0] == cls and r[2] == name), None)
+        if k not in seen:
+            problems.append(f"{k}: in FORK_LOCALE_MISSING but no prototype of this mod (remove the entry)")
+        elif row and not missing_keys(json.loads(row[7]).get("n"), keys):
+            problems.append(f"{k}: in FORK_LOCALE_MISSING but has a name (remove the entry)")
+    info = [f"{cls}: {counts[cls][0]} shown, {counts[cls][1]} without a name" for cls in NAME_CLASSES if cls in counts]
+    info.append(f"{len(allowed)} kept without a name (FORK_LOCALE_MISSING)")
+    return info, sorted(problems), sorted(set(gen))
+
+
 def check_material_parts(sec):
     """Issue #118 (prototypes/200-fork-material-parts.lua): the material parts are in the rows of the item group "Material
     parts", one per form, the materials by tier. A material with no tier (no solidifier tier, no recipe that makes one of its
@@ -942,6 +1297,217 @@ def check_required(m):
     return out
 
 
+#: the science packs in Gregtorio's tier order (103's PACKS, then the endgame packs of 127 to 141)
+SCIENCE_ORDER = ["automation", "logistic", "military", "chemical", "production", "utility", "space", "metallurgic",
+                 "agricultural", "electromagnetic", "cryogenic", "promethium", "umv", "uxv", "max"]
+
+
+def check_unlock_gaps(m, sec):
+    """Issue #237: a Gregtorio recipe that a technology unlocks must be makeable with the technologies of that science:
+    every ingredient obtainable and a machine for its category buildable with the recipes of every researchable
+    technology whose highest science pack is not above the technology's effective science: the highest of its own
+    and its prerequisites' (issue #239: a technology that needs an IV prerequisite is researched with IV science at hand).
+    Gregtorio's tree is not closed under prerequisites: siblings of the same science are researched anyway, so ancestors
+    alone would flag thousands. A
+    recipe whose products are all obtainable anyway is an alternative that waits for its input (water / distilled water)
+    and passes. For a failing recipe the check names the causes (the first missing link: an item whose recipes all come
+    with higher science, or a category without a buildable machine; recycling never counts as a source), one row per
+    technology and cause; allow-list FORK_UNLOCK_GAPS ("<technology>:<cause>" -> reason, section UNLOCKGAPOK; an entry
+    that matches no cause fails). Returns (info line, problems)."""
+    rank = {p + "-science-pack": i for i, p in enumerate(SCIENCE_ORDER)}
+    T, R = m.T, m.R
+
+    def tier(t):
+        return max((rank.get(p, len(SCIENCE_ORDER)) for p in T[t]["sci"]), default=-1)
+    mod = MOD_NAMES[1]
+    greg = {r[0] for r in sec.get("OWNERS", [])
+            if len(r) > 1 and (r[1] == mod or mod in (r[2] if len(r) > 2 else "").split(","))}
+    allowed = {r[0]: r[1] if len(r) > 1 else "" for r in sec.get("UNLOCKGAPOK", [])}
+    unl, makers = {}, {}
+    for t, v in T.items():
+        for r in v["eff"]:
+            unl.setdefault(r, []).append(t)
+    for r, v in R.items():
+        if not v["hidden"] and "recycling" not in r:
+            for x in v["res"]:
+                makers.setdefault(x, []).append(r)
+    eff_memo, solved, techs_at = {}, {}, {}
+
+    def effective(t):
+        """the highest science of t and its prerequisites"""
+        if t not in eff_memo:
+            eff_memo[t] = max([tier(t)] + [effective(p) for p in T[t]["pre"] if p in T])
+        return eff_memo[t]
+
+    def key_of(t):
+        k = effective(t)
+        if k not in solved:
+            techs_at[k] = {x for x in m.researched if tier(x) <= k}
+            solved[k] = m.obtainable(techs_at[k])
+        return k
+
+    def causes(x, k, seen):
+        if x in seen:
+            return set()
+        seen.add(x)
+        avail, cats = solved[k]
+        cands = [p for p in makers.get(x, []) if p in m.unlocked]
+        here = [p for p in cands if R[p]["en"] or any(t in techs_at[k] for t in unl.get(p, []))]
+        if not here:
+            later = sorted({t for p in cands for t in unl.get(p, []) if t in m.researched}, key=tier)
+            return {(x, f"comes with {later[0] if later else 'no researchable technology'}")}
+        out = set()
+        for p in here:
+            if R[p]["cat"] not in cats:
+                out.add((x, f"no machine for {R[p]['cat']}"))
+                continue
+            for i in R[p]["ing"]:
+                if i not in avail:
+                    out |= causes(i, k, seen)
+        return out
+    found, n_recipes = {}, 0
+    for t in sorted(m.researched):
+        k = key_of(t)
+        avail, cats = solved[k]
+        for r in T[t]["eff"]:
+            v = R.get(r)
+            if not v or v["hidden"] or r not in greg or r not in m.unlocked or "recycling" in r or r.startswith("void-") \
+                    or v["cat"] in ("recycling", "parameters"):
+                continue
+            miss = [i for i in v["ing"] if i not in avail and i in m.avail]
+            if not (miss or v["cat"] not in cats) or all(x in avail for x in v["res"]):
+                continue
+            n_recipes += 1
+            got = set()
+            for i in miss:
+                got |= causes(i, k, set())
+            if v["cat"] not in cats:
+                got.add((r, f"no machine for {v['cat']}"))
+            if not got:
+                got.add((r, "its inputs only come from each other at this science"))
+            for x, why in got:
+                found.setdefault(f"{t}:{x}", (why, r))
+    sci = lambda t: SCIENCE_ORDER[effective(t)] if 0 <= effective(t) < len(SCIENCE_ORDER) else "-"
+    problems = [f"{k} ({sci(k.split(':')[0])} science): {why}, needed by {r}"
+                for k, (why, r) in sorted(found.items()) if k not in allowed]
+    problems += [f"{k}: in FORK_UNLOCK_GAPS but no such gap (remove the entry)" for k in sorted(allowed) if k not in found]
+    info = (f"{n_recipes} recipes not makeable with the science of the technology that unlocks them, {len(found)} causes, "
+            f"{sum(1 for k in found if k in allowed)} kept on purpose (FORK_UNLOCK_GAPS)")
+    return info, problems
+
+
+def check_unlock_tree(m, sec):
+    """Issue #252, the maintainer's rule: every item and fluid is unlocked at the technology where it can first be
+    consumed, never later. For every Gregtorio recipe a technology T unlocks (same selection as check_unlock_gaps) and
+    every ingredient X that can be obtained at all, a recipe that makes X (recycling never counts) must be enabled from
+    the start or unlocked by T or a technology in T's prerequisite closure, or X is a raw resource (mining, offshore,
+    the burnt result of a fuel that is there); the recipe's category needs a machine whose item is made that way (the
+    character for hand recipes). A recipe whose products all come from other recipes of that closure is an alternative
+    and passes (as in #237). One row per technology and missing item (for a machine: its item with the nearest
+    producer), naming the nearest producer and its technology; allow-list FORK_UNLOCK_TREE_GAPS
+    ("<technology>:<item>" -> reason, section UNLOCKTREEOK; an entry that matches nothing fails). Returns (info line,
+    problems, findings as {key: (recipes, nearest)})."""
+    rank = {p + "-science-pack": i for i, p in enumerate(SCIENCE_ORDER)}
+    T, R = m.T, m.R
+    mod = MOD_NAMES[1]
+    greg = {r[0] for r in sec.get("OWNERS", [])
+            if len(r) > 1 and (r[1] == mod or mod in (r[2] if len(r) > 2 else "").split(","))}
+    allowed = {r[0]: r[1] if len(r) > 1 else "" for r in sec.get("UNLOCKTREEOK", [])}
+    unl, makers, item_of, machines = {}, {}, {}, {}
+    for t, v in T.items():
+        for r in v["eff"]:
+            unl.setdefault(r, []).append(t)
+    for r, v in R.items():
+        if not v["hidden"] and "recycling" not in r and r in m.unlocked:
+            for x in set(v["res"]):
+                makers.setdefault(x, []).append(r)
+    for it, pr in m.I.items():
+        if pr in m.C:
+            item_of.setdefault(pr, []).append(it)
+    for e, cats in m.C.items():
+        for c in cats:
+            machines.setdefault(c, []).append(e)
+    start = {r for r, v in R.items() if v["en"] and not v["hidden"] and "recycling" not in r}
+    memo, eff_memo = {}, {}
+
+    def closure(t):
+        """(the technologies, the recipes they unlock)"""
+        if t not in memo:
+            s, rs = {t}, set(T[t]["eff"])
+            for p in T[t]["pre"]:
+                if p in T:
+                    ps, prs = closure(p)
+                    s |= ps
+                    rs |= prs
+            memo[t] = (frozenset(s), frozenset(rs))
+        return memo[t]
+
+    def effective(t):
+        if t not in eff_memo:
+            eff_memo[t] = max([max((rank.get(p, len(SCIENCE_ORDER)) for p in T[t]["sci"]), default=-1)]
+                              + [effective(p) for p in T[t]["pre"] if p in T])
+        return eff_memo[t]
+
+    def made(rs):
+        """what the recipes rs and those of the start make, raw resources and the burnt results of what is there"""
+        out = set(m.base)
+        for r in rs | start:
+            v = R.get(r)
+            if v and not v["hidden"] and "recycling" not in r:
+                out.update(v["res"])
+        for fuel, burnt, _ in m.burnt:
+            if fuel in out:
+                out.add(burnt)
+        return out
+
+    def other_maker(x, r, rs):
+        return x in m.base or any(p != r and (p in rs or p in start) for p in makers.get(x, []))
+
+    def machine_items(cat):
+        return [it for e in machines.get(cat, []) for it in item_of.get(e, [])]
+
+    def has_machine(cat, have):
+        return "character" in machines.get(cat, []) or any(it in have for it in machine_items(cat))
+
+    def nearest(xs):
+        """the producer whose technology has the lowest science: (science rank, item, recipe, technology)"""
+        best = [(effective(u), x, p, u) for x in xs for p in makers.get(x, []) for u in unl.get(p, [])
+                if u in m.researched]
+        return min(best) if best else None
+    found, n_recipes = {}, 0
+    for t in sorted(m.researched):
+        rs = closure(t)[1]
+        have = made(rs)
+        for r in T[t]["eff"]:
+            v = R.get(r)
+            if not v or v["hidden"] or r not in greg or r not in m.unlocked or "recycling" in r or r.startswith("void-") \
+                    or v["cat"] in ("recycling", "parameters"):
+                continue
+            miss = [(x, nearest([x])) for x in sorted(set(v["ing"])) if x in m.avail and x not in have]
+            if not has_machine(v["cat"], have):
+                near = nearest(machine_items(v["cat"]))
+                miss.append((near[1] if near else "<machine for " + v["cat"] + ">", near))
+            if not miss or all(other_maker(x, r, rs) for x in v["res"]):
+                continue
+            n_recipes += 1
+            for x, near in miss:
+                found.setdefault(f"{t}:{x}", ([], near))[0].append(r)
+    sci = lambda k: SCIENCE_ORDER[k] if 0 <= k < len(SCIENCE_ORDER) else "-"
+    problems = []
+    for k, (rs, near) in sorted(found.items()):
+        if k in allowed:
+            continue
+        t = k.split(":")[0]
+        where = f"nearest producer {near[2]} with {near[3]} ({sci(near[0])} science)" if near else "no producer"
+        problems.append(f"{k} ({sci(effective(t))} science): not made in its prerequisites; {where}; needed by "
+                        f"{', '.join(sorted(rs)[:4])}{' and %d more' % (len(rs) - 4) if len(rs) > 4 else ''}")
+    problems += [f"{k}: in FORK_UNLOCK_TREE_GAPS but no such gap (remove the entry)" for k in sorted(allowed)
+                 if k not in found]
+    info = (f"{n_recipes} recipes need something their technology's prerequisites do not make, {len(found)} items, "
+            f"{sum(1 for k in found if k in allowed)} kept on purpose (FORK_UNLOCK_TREE_GAPS)")
+    return info, problems, found
+
+
 def check_locked(m, sec):
     """Issue #91: every recipe of Gregtorio (created or changed by it: prototypes.get_history, logged by
     checkmod/control.lua) that is not hidden must be enabled or unlocked by a researchable technology, unless it is in
@@ -1051,6 +1617,15 @@ def check(a):
     print(f"\nGregtorio recipes (issue #91): {n_greg} not hidden, {n_greg - n_allowed - len(locked)} enabled or unlocked "
           f"by a researchable technology, {n_allowed} kept locked (FORK_RECIPES_LOCKED)")
     report("Gregtorio recipes that no researchable technology unlocks", locked)
+    gaps_info, gaps = check_unlock_gaps(m, sec)
+    print(f"\nrecipes unlocked before what they need (issue #237): {gaps_info}")
+    report("recipes a technology unlocks before its science can make them (the cause, the recipe that needs it; fix the "
+           "unlock or a prerequisite, or add the cause to FORK_UNLOCK_GAPS of prototypes/142-fork-recipe-unlocks.lua)", gaps)
+    tree_info, tree, _ = check_unlock_tree(m, sec)
+    print(f"\nitems unlocked after their first use (issue #252): {tree_info}")
+    report("items a technology's recipes take that its prerequisites do not make (the technology, the item, the nearest "
+           "producer; unlock the producer there or earlier, make the producer's technology a prerequisite, or add "
+           "<technology>:<item> to FORK_UNLOCK_TREE_GAPS of prototypes/142-fork-recipe-unlocks.lua)", tree, limit=400)
     report("draft recipes outside DRAFTS_OK (issue #39)", new_drafts)
     menu_info, menu = check_crafting_menu(m, sec)
     print("\ncrafting menu (issue #49):")
@@ -1067,11 +1642,27 @@ def check(a):
     table_info, table_only = check_table_only(m, sec)
     print(f"\ncrafting table and hand only items (issue #126): {table_info}")
     report("items that only the crafting table or the hand can make, without an entry in FORK_RECIPES_TABLE_ONLY", table_only)
+    lens_info, lenses = check_engraver_lenses(m, sec)
+    print(f"\nlaser engraver lenses (issue #325): {lens_info}")
+    report("laser engraver recipes without a lens (prototypes/155-fork-ore-chain.lua)", lenses)
+    mine_info, mine_twins = check_electric_mine(m, sec)
+    print(f"\nelectric mine (issue #335): {mine_info}")
+    report("Manual Mine recipes without an electric twin of the Ore Drilling Plants (prototypes/163-fork-electric-mine.lua)",
+           mine_twins)
+    place_info, unplaceable = check_placeable(sec)
+    print(f"\nplaceable entities (issue #336): {place_info}")
+    report("entities whose mined item does not place them again (place_result missing or wrong)", unplaceable)
+    vanilla_info, vanilla = check_vanilla_recipes(m, sec)
+    print(f"\nvanilla recipes of Gregtorio's items (issues #317, #318): {vanilla_info}")
+    report("vanilla recipes without a technology whose products Gregtorio makes another way (delete them in "
+           "VANILLA_RECIPES_REMOVED of data-final-fixes.lua, or keep one in FORK_VANILLA_RECIPES_KEPT with its reason)",
+           vanilla)
+    me_info, me_recipes = check_me_recipes(sec)
+    print(f"\nME recipes (issue #214): {me_info}")
+    report("me-network recipes without a Gregtorio recipe (prototypes/120-fork-me-network-compat.lua)", me_recipes)
     parts_info, parts_unranked = check_material_parts(sec)
     print(f"\nmaterial parts (issue #118): {parts_info}")
     report("WARNING: materials of the material parts without a tier (prototypes/200-fork-material-parts.lua)", parts_unranked)
-    microminer = check_microminer_tab(sec)
-    report("Microverse Projector recipes outside the Microminer tab (issue #120)", microminer)
     chain_ores, ore_chain = check_ore_chain(m)
     print(f"\nore chain (issue #185): {chain_ores} ores with GTNH's chain")
     report("ore chain gaps and ore washer shortcuts (prototypes/155-fork-ore-chain.lua)", ore_chain)
@@ -1104,20 +1695,27 @@ def check(a):
     one_pack_info, one_pack = check_one_pack(sec)
     print(f"\ncheap research ({ONE_PACK}): {one_pack_info}")
     report("technologies that cost more than one science pack of each kind although the setting is on", one_pack)
+    names_info, names, names_gen = check_names(sec)
+    print("\nnames of the shown prototypes of this mod (issue #230):")
+    for line in names_info:
+        print("  " + line)
+    report("prototypes without a name (\"Unknown key\" in the game; add the locale entry, a main product or the "
+           "allow-list FORK_LOCALE_MISSING of prototypes/fork-locale.lua)", names, limit=60)
     if getattr(a, "fluids_out", None):
         Path(a.fluids_out).write_text("\n".join("\t".join(r) for r in sec.get("FLUIDS", [])) + "\n", encoding="utf-8")
         print(f"\nfluid list written to {a.fluids_out} (input for tools/gen_review_sheet.py fluids)")
     if a.locale_out:
-        Path(a.locale_out).write_text("\n".join("\t".join(r) for r in sec.get("LOCALE", [])))
-        print(f"\nlocale name list written to {a.locale_out} (input for tools/gen_locale.py)")
+        Path(a.locale_out).write_text("".join(r + "\n" for r in names_gen), encoding="utf-8")
+        print(f"\nmissing names written to {a.locale_out} ({len(names_gen)} keys, input for tools/gen_locale.py)")
     if getattr(a, "balance_out", None):
         rows = ["\t".join(r) for r in sec.get("BALANCE", [])]
         Path(a.balance_out).write_text("[\n" + ",\n".join(rows) + "\n]\n", encoding="utf-8")
         print(f"\nbalance data written to {a.balance_out} (recipes, machines, technologies as JSON)")
     ok = not (files or [s for s in sprites if not s.startswith("(")] or uncraft or menu or required or unresearchable
-              or new_drafts or fluid_problems or locked or one_pack or fluid_steps or microminer or table_only
+              or new_drafts or fluid_problems or locked or one_pack or fluid_steps or table_only or me_recipes
               or extractor_split or ore_chain or ore_baths or ore_o34 or ore_hammer
-              or circuit_icons or pgm_dusts or recycling)
+              or circuit_icons or pgm_dusts or recycling or names or gaps or tree or vanilla or lenses or mine_twins
+              or unplaceable)
     print("\nRESULT:", "OK" if ok else "PROBLEMS FOUND")
     return 0 if ok else 1
 
@@ -1162,8 +1760,8 @@ def runtime(a):
     fails += re.findall(r"DEVCHECK-RUNTIME-FAIL (.*)", log)
     print(f"benchmark: {ran.group(0) if ran else 'did not run'}")
     # the ME network's runtime tests are in me-network since issue #83 (its tools/devcheck)
-    tests = (("MOLD", "mold test"), ("POWER", "power test"), ("FUEL", "fuel check test"), ("COOLED", "cooled fluid test"),
-             ("TIERS", "turbine tier test"), ("RECIPES", "recipe test"), ("CRUSH", "raw ore crushing test"), ("STEAM", "steam turbine test"), ("CHAIN", "nuclear chain test"), ("LSC", "supercapacitor test"), ("LSUP", "supercapacitor upgrade test"), ("MELT", "melt and cast test"), ("OFFER", "offered recipes test"), ("VICTORY", "victory test"),
+    tests = (("MOLD", "mold test"), ("LENS", "lens test"), ("POWER", "power test"), ("FUEL", "fuel check test"), ("COOLED", "cooled fluid test"),
+             ("TIERS", "turbine tier test"), ("RECIPES", "recipe test"), ("CRUSH", "raw ore crushing test"), ("STEAM", "steam turbine test"), ("CHAIN", "nuclear chain test"), ("LSC", "supercapacitor test"), ("LSUP", "supercapacitor upgrade test"), ("ELEVATOR", "space elevator test"), ("MELT", "melt and cast test"), ("OFFER", "offered recipes test"), ("EMINE", "electric mine test"), ("VICTORY", "victory test"),
              ("POSTVICTORY", "post-victory test"))
     for key, label in tests:
         m = re.search(rf"DEVCHECK-RUNTIME-{key} (.*)", log)
@@ -1191,10 +1789,11 @@ def zip_from_ref(ref):
     return out
 
 
-def old_me_network(ref):
+def old_me_network(ref, use="old save created with"):
     """The me-network release an old Gregtorio shipped with (a git ref of the me-network checkout, e.g. v0.1.0 for
     Gregtorio 0.5.0), exported to .devcheck/me-network-<ref>: the old save is created with it, the working copy loads
-    it with the current checkout (the old version's ME blocks may be gone from the current me-network)."""
+    it with the current checkout (the old version's ME blocks may be gone from the current me-network). Also the
+    me-network of the intermediate load (issue #209)."""
     src = me_network_dir()
     if not src:
         sys.exit("--old-me-network needs a me-network checkout (../me-network or ME_NETWORK_DIR)")
@@ -1206,8 +1805,137 @@ def old_me_network(ref):
     import io
     with tarfile.open(fileobj=io.BytesIO(tar)) as t:
         t.extractall(out)
-    print(f"old save created with me-network {ref} ({json.loads((out / 'info.json').read_text())['version']})")
+    print(f"{use} me-network {ref} ({json.loads((out / 'info.json').read_text())['version']})")
     return out
+
+
+class me_network_from:
+    """with me_network_from(dir): prepare_mods links that me-network export (None: the usual checkout or zip)"""
+    def __init__(self, d):
+        self.d, self.env = d, os.environ.get("ME_NETWORK_DIR")
+
+    def __enter__(self):
+        if self.d:
+            os.environ["ME_NETWORK_DIR"] = str(self.d)
+
+    def __exit__(self, *exc):
+        if self.d:
+            os.environ.pop("ME_NETWORK_DIR") if self.env is None else os.environ.update(ME_NETWORK_DIR=self.env)
+
+
+# issue #209: me-network 0.5.1 refuses a save from before me-network 0.5.0 (its issue #146: "Load the save once with
+# me-network 0.5.0"), and a Gregtorio Continued 0.4.x save whose ME state waits for the hand-over. `migrate` takes the
+# player's way for such a save: it is loaded once with me-network 0.5.0 and the last Gregtorio release that works with
+# it, saved, and that save is loaded with the working copies.
+STEP_GREGTORIO, STEP_ME_NETWORK = "v0.5.2", "v0.5.0"
+ME_CUT_OFF = (0, 5, 0)
+
+
+def version_tuple(v):
+    return tuple(int(n) for n in re.findall(r"\d+", v)[:3])
+
+
+def save_me_network(old_zip, old_me):
+    """the me-network version the old save is created with, or None for a version of the mod from before issue #83
+    (the ME network inside the mod, no me-network)"""
+    if not needs_me_network(zip_info(old_zip)):
+        return None
+    d = old_me or me_network_dir()
+    if d:
+        return json.loads((d / "info.json").read_text(encoding="utf-8"))["version"]
+    z = sorted(MODS.glob(f"{ME_NETWORK}_*.zip"), key=lambda p: version_tuple(p.stem.rsplit("_", 1)[1]))
+    return z[-1].stem.rsplit("_", 1)[1] if z else None
+
+
+def rcon(sock, kind, body, req_id):
+    """one Source RCON request (kind 3: auth, 2: command) and its response body (as in me-network's devcheck)"""
+    import struct
+    data = body.encode("utf-8")
+    sock.sendall(struct.pack("<iii", 4 + 4 + len(data) + 2, req_id, kind) + data + b"\x00\x00")
+
+    def read(n):
+        out = b""
+        while len(out) < n:
+            chunk = sock.recv(n - len(out))
+            if not chunk:
+                raise OSError("rcon: connection closed")
+            out += chunk
+        return out
+    rest = read(struct.unpack("<i", read(4))[0])
+    rid, _ = struct.unpack("<ii", rest[:8])
+    if kind == 3 and rid == -1:
+        raise OSError("rcon: authentication refused")
+    return rest[8:-2].decode("utf-8", errors="replace")
+
+
+def load_and_save(mapfile, log_path):
+    """Loads `mapfile` in a headless server with nobody connected and `auto_pause`, so no tick runs: only the load with
+    the mods' on_init / on_configuration_changed and the migrations. Quits through RCON at once (a Lua command would run
+    a tick, and the helper mod's checks with it): the server saves the map when it quits (`--benchmark` cannot save),
+    the save is copied over `mapfile`. Returns the server log and None, or the log and a reason. The ports are free
+    ones (another devcheck may run a server at the same time)."""
+    import socket, time
+
+    def free_port(kind):
+        with socket.socket(socket.AF_INET, kind) as s:
+            s.bind(("127.0.0.1", 0))
+            return s.getsockname()[1]
+    rcon_port, game_port = free_port(socket.SOCK_STREAM), free_port(socket.SOCK_DGRAM)
+    binary = FACTORIO / ("bin/x64/factorio.exe" if os.name == "nt" else "bin/x64/factorio")
+    settings = WORK / "server-settings.json"
+    settings.write_text(json.dumps({"name": "devcheck", "description": "devcheck migrate: the intermediate load",
+                                    "visibility": {"public": False, "lan": False}, "auto_pause": True,
+                                    "require_user_verification": False, "max_players": 1}), encoding="utf-8")
+    step = WORK / "migrate-step.zip"                   # the server saves the map back into this file when it quits
+    shutil.copy2(mapfile, step)
+    reason = None
+    with open(log_path, "w", encoding="utf-8") as out:
+        proc = subprocess.Popen([str(binary), "--mod-directory", str(MODS), "--start-server", str(step),
+                                 "--server-settings", str(settings), "--bind", f"127.0.0.1:{game_port}",
+                                 "--rcon-bind", f"127.0.0.1:{rcon_port}", "--rcon-password", "devcheck"],
+                                stdout=out, stderr=subprocess.STDOUT)
+        sock = None
+        deadline = time.time() + 300
+        try:
+            while time.time() < deadline and proc.poll() is None:
+                try:
+                    sock = socket.create_connection(("127.0.0.1", rcon_port), timeout=5)
+                    rcon(sock, 3, "devcheck", 1)
+                    break
+                except OSError:
+                    sock = None
+                    time.sleep(0.5)
+            if not sock:
+                reason = "the server did not load the save or answer RCON"
+            else:
+                try:
+                    rcon(sock, 2, "/quit", 2)
+                except OSError:
+                    pass
+        finally:
+            if sock:
+                sock.close()
+            # (on Windows the server can hang after closing the game, its map saved: stopped a few seconds later)
+            closed = None
+            while proc.poll() is None and time.time() < deadline + 60:
+                if closed is None and "to(Closed)" in log_path.read_text(encoding="utf-8", errors="replace"):
+                    closed = time.time()
+                if closed is not None and time.time() > closed + 5:
+                    break
+                time.sleep(0.5)
+            if proc.poll() is None:
+                proc.kill()
+                proc.wait()
+    log = log_path.read_text(encoding="utf-8", errors="replace")
+    if not reason and not re.search(r"Saving map as .*\n(?:.*\n)*?.*Saving progress: 100", log):
+        reason = "the server did not save the map when it quit"
+    if not reason and re.search(r"DEVCHECK-MIGRATE-(?!SETUP)[A-Z]+ ", log):
+        reason = "a tick ran in the intermediate load (the helper mod's checks ran there)"
+    ticks = re.findall(r"updateTick\((\d+)\) changing state from\(InGame\)", log)
+    if not reason:
+        shutil.copy2(step, mapfile)
+        print(f"  saved when the server quit (tick {ticks[-1] if ticks else '?'}, no tick run)")
+    return log, reason
 
 
 def bumped_working_copy(old_zip):
@@ -1240,12 +1968,8 @@ def migrate(a):
     """Create a map with an older version (also "Gregtorio" before 0.3.0), then load and run it with the working copy."""
     old = a.from_zip or zip_from_ref(a.from_ref)
     old_me = old_me_network(a.old_me_network) if getattr(a, "old_me_network", None) else None
-    env_me = os.environ.get("ME_NETWORK_DIR")
-    if old_me:
-        os.environ["ME_NETWORK_DIR"] = str(old_me)
-    prepare_mods(gregtorio_zip=old, with_migrate=True)
-    if old_me:
-        os.environ.pop("ME_NETWORK_DIR") if env_me is None else os.environ.update(ME_NETWORK_DIR=env_me)
+    with me_network_from(old_me):
+        prepare_mods(gregtorio_zip=old, with_migrate=True)
     log = factorio("--create", str(WORK / "migrate-map.zip"), *seed_args(a))
     print(f"map seed: {'random' if a.seed == 'random' else a.seed}")
     if load_errors(log):
@@ -1277,6 +2001,26 @@ def migrate(a):
     print(f"old save with researched technologies (issue #91): {setup.group(1) if setup else 'no result'}")
     setup = re.search(r"DEVCHECK-MIGRATE-SETUP-REMOVED (.*)", log)
     print(f"old save with removed fluids and items (issues #98, #96): {setup.group(1) if setup else 'no result'}")
+    # issue #209: a save from before me-network 0.5.0 goes through the intermediate load first (--direct: not)
+    save_me = save_me_network(old, old_me)
+    step_log = ""
+    if (save_me is None or version_tuple(save_me) < ME_CUT_OFF) and not a.direct:
+        print(f"old save made {'without me-network' if save_me is None else 'with me-network ' + save_me}, before "
+              f"me-network {'.'.join(map(str, ME_CUT_OFF))}: loaded once with Gregtorio {STEP_GREGTORIO} and me-network "
+              f"{STEP_ME_NETWORK} and saved (issue #209), as a player has to before updating")
+        step_me = old_me_network(STEP_ME_NETWORK, "intermediate load with")
+        old = zip_from_ref(STEP_GREGTORIO)
+        with me_network_from(step_me):
+            prepare_mods(gregtorio_zip=old, with_migrate=True)
+        step_log, why = load_and_save(WORK / "migrate-map.zip", WORK / "migrate-step.log")
+        if why:
+            print(f"intermediate load: FAILED, {why}: "
+                  f"{script_error(step_log) or load_errors(step_log) or ''} (see .devcheck/migrate-step.log)")
+            return 1
+        print("intermediate load: ok")
+    elif save_me is not None and version_tuple(save_me) < ME_CUT_OFF:
+        print(f"--direct: the old save of me-network {save_me} is loaded with the working copies (me-network 0.5.1 and "
+              f"later refuse it)")
     prepare_mods(with_migrate=True, gregtorio_zip=bumped_working_copy(old))
     log = factorio("--benchmark", str(WORK / "migrate-map.zip"), "--benchmark-ticks", str(a.ticks))
     ran = re.search(r"Performed (\d+) updates", log)
@@ -1299,18 +2043,20 @@ def migrate(a):
     print(f"technology effects of the old save (issue #91): {techs.group(1) if techs else 'no result'}")
     removed = re.search(r"DEVCHECK-MIGRATE-REMOVED (.*)", log)
     print(f"removed fluids and items of the old save (issues #98, #96): {removed.group(1) if removed else 'no result'}")
-    # issue #83: the fingerprints of what gregtorio-continued gave and what me-network got must be equal
-    gave = re.findall(r"FORK-ME-HANDOVER: gave (\S+) (\S+)", log)
-    took = re.search(r"ME-NETWORK-HANDOVER: (ok|MISMATCH.*|refused.*)", log)
+    # issue #83: the fingerprints of what gregtorio-continued gave and what me-network got must be equal (issue #209:
+    # the hand-over and the conversions of me-network 0.5.0 happen in the intermediate load)
+    both = step_log + log
+    gave = re.findall(r"FORK-ME-HANDOVER: gave (\S+) (\S+)", both)
+    took = re.search(r"ME-NETWORK-HANDOVER: (ok|MISMATCH.*|refused.*)", both)
     print(f"hand-over fingerprints: {(took.group(1) if took else 'no hand-over') if gave else 'nothing to hand over'}"
           + (f" ({sum(1 for _, f in gave if f != 'nil')} of {len(gave)} tables with state)" if gave else ""))
     handover_ok = (not gave or (took and took.group(1) == "ok")) and not (handover and handover.group(1).startswith("failed"))
-    for line in re.findall(r"FORK-ME-MIGRATE: (.*)", log):
+    for line in re.findall(r"FORK-ME-MIGRATE: (.*)", both):
         print("  migration: " + line)
     for f in re.findall(r"DEVCHECK-MIGRATE-FAIL (.*)", log):
         print("  - " + f)
     if not ran:
-        print(load_errors(log) or "")
+        print(load_errors(log) or script_error(log) or "")
     ok = ran and fluids and not fluids.group(1).startswith("failed") and power and not power.group(1).startswith("failed") \
         and turbine and not turbine.group(1).startswith("failed") \
         and patterns and not patterns.group(1).startswith("failed") and job and not job.group(1).startswith("failed") \
@@ -1491,6 +2237,10 @@ def main():
     m.add_argument("--ticks", type=int, default=600)
     m.add_argument("--old-me-network", help="git ref of the me-network checkout to create the old save with, "
                    "e.g. v0.1.0 for --from-ref v0.5.0 (default: the current checkout for both)")
+    m.add_argument("--direct", action="store_true",
+                   help=f"issue #209: load a save from before me-network {'.'.join(map(str, ME_CUT_OFF))} with the "
+                   f"working copies directly, without the intermediate load with Gregtorio {STEP_GREGTORIO} and "
+                   f"me-network {STEP_ME_NETWORK} (me-network 0.5.1 and later refuse it)")
     m.add_argument("--seed", default=str(DEFAULT_SEED), help=f"map seed or `random` (default {DEFAULT_SEED})")
     ms = sub.add_parser("menusim", help="run main menu simulations")
     ms.add_argument("--sim", default="nauvis_biter_base_laser_defense", help="simulation name or `all`")

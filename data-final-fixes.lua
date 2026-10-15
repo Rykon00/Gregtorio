@@ -23,6 +23,174 @@ data.raw["furnace"]["electric-furnace"] = nil
 data.raw["recipe"]["electric-furnace"] = nil
 data.raw["item"]["electric-furnace"] = nil
 
+---VANILLA RECIPES OF GREGTORIO'S ITEMS (issue #317)
+--- Vanilla and Space Age recipes that no technology unlocks, of items Gregtorio makes with recipes of its own. They
+--- still showed in Factoriopedia (the vanilla battery as the first recipe of the battery) and counted as producers for
+--- every tool that reads the recipes. None of their machines (chemical plant, foundry, biochamber, cryogenic plant,
+--- electromagnetic plant) has a technology in Gregtorio. Deleted with the technology effects and tips that name them
+--- (FORK-REMOVED in the log); the items stay, and so do their recycling recipes.
+--- Issue #318 (maintainer's decision): the vanilla oil recipes too, though petroleum gas and solid fuel have no Gregtorio
+--- producer; heavy and light oil have GTNH's uses instead (162).
+local VANILLA_RECIPES_REMOVED = {
+	-- the item's own recipe, replaced by Gregtorio's
+	["battery"] = "GTNH fills a battery hull in the canning machine (filling-assorted-batteries)",
+	["small-lamp"] = "the technology lamp unlocks Gregtorio's recipe torch of the item",
+	["chemical-science-pack"] = "Gregtorio's recipe hv-science-pack",
+	["space-science-pack"] = "Gregtorio's recipe luv-science-pack",
+	["metallurgic-science-pack"] = "Gregtorio's recipe zpm-science-pack",
+	["agricultural-science-pack"] = "Gregtorio's recipe uv-science-pack",
+	["electromagnetic-science-pack"] = "Gregtorio's recipe uhv-science-pack",
+	["cryogenic-science-pack"] = "Gregtorio's recipe uev-science-pack",
+	["promethium-science-pack"] = "Gregtorio's recipe uiv-science-pack",
+	["lithium"] = "Aquilo; Gregtorio's lithium dust comes from lepidolite and the other ores",
+	["lithium-plate"] = "Aquilo; Gregtorio casts the plate from molten lithium (solidify-lithium-plate)",
+	["tungsten-plate"] = "Vulcanus foundry; Gregtorio casts the plate from molten tungsten (solidify-tungsten-plate)",
+	["molten-iron"] = "Vulcanus foundry; Gregtorio melts iron in the fluid extractor",
+	["molten-copper"] = "Vulcanus foundry; Gregtorio melts copper in the fluid extractor",
+	["carbon"] = "Space Age chemical plant; Gregtorio's carbon dust comes from electrolysis and the centrifuge",
+	-- alternative recipes of items Gregtorio makes
+	["molten-iron-from-lava"] = "Vulcanus foundry, from lava",
+	["molten-copper-from-lava"] = "Vulcanus foundry, from lava",
+	["casting-iron"] = "Vulcanus foundry; iron plates from Gregtorio's recipes",
+	["casting-copper"] = "Vulcanus foundry; copper plates from Gregtorio's recipes",
+	["casting-steel"] = "Vulcanus foundry; steel plates from Gregtorio's recipes",
+	["casting-iron-gear-wheel"] = "Vulcanus foundry; gears from Gregtorio's recipes",
+	["casting-iron-stick"] = "Vulcanus foundry; iron rods from Gregtorio's recipes",
+	["casting-pipe"] = "Vulcanus foundry; pipes from Gregtorio's recipes",
+	["casting-pipe-to-ground"] = "Vulcanus foundry; Gregtorio's recipe pipe-to-ground",
+	["casting-copper-cable"] = "Vulcanus foundry; copper cables from Gregtorio's recipes",
+	["concrete-from-molten-iron"] = "Vulcanus foundry; Gregtorio's recipe concrete",
+	["coal-synthesis"] = "Space Age chemical plant; Gregtorio's coal comes from raw coal",
+	["acid-neutralisation"] = "Vulcanus chemical plant; steam from Gregtorio's boilers and recipes",
+	["steam-condensation"] = "Space Age chemical plant; water from Gregtorio's recipes",
+	["ice-melting"] = "Space Age chemical plant; ice has no producer in Gregtorio",
+	["ammonia-rocket-fuel"] = "Aquilo; Gregtorio's recipe rocket-fuel",
+	["rocket-fuel-from-jelly"] = "Gleba biochamber; Gregtorio's recipe rocket-fuel",
+	["biolubricant"] = "Gleba biochamber; Gregtorio's recipe lubricant",
+	["biosulfur"] = "Gleba biochamber; sulfur from Gregtorio's recipes",
+	["burnt-spoilage"] = "Gleba biochamber; carbon from Gregtorio's recipes",
+	-- issue #318: the oil refinery's and the chemical plant's oil recipes and the oil barrels (no barrel has a recipe)
+	["basic-oil-processing"] = "oil refinery; Gregtorio distils crude oil in the distillation towers (oil-distillation)",
+	["advanced-oil-processing"] = "oil refinery; oil-distillation",
+	["coal-liquefaction"] = "oil refinery",
+	["simple-coal-liquefaction"] = "Vulcanus oil refinery",
+	["heavy-oil-cracking"] = "chemical plant; heavy oil goes into the distillation tower (162)",
+	["light-oil-cracking"] = "chemical plant; light oil goes into the distillation tower (162)",
+	["solid-fuel-from-heavy-oil"] = "chemical plant",
+	["solid-fuel-from-light-oil"] = "chemical plant",
+	["solid-fuel-from-petroleum-gas"] = "chemical plant",
+	["solid-fuel-from-ammonia"] = "Aquilo chemical plant",
+	["heavy-oil-barrel"] = "filling a barrel, which no recipe makes",
+	["light-oil-barrel"] = "filling a barrel, which no recipe makes",
+	["petroleum-gas-barrel"] = "filling a barrel, which no recipe makes",
+	["empty-heavy-oil-barrel"] = "emptying a barrel, which no recipe fills",
+	["empty-light-oil-barrel"] = "emptying a barrel, which no recipe fills",
+	["empty-petroleum-gas-barrel"] = "emptying a barrel, which no recipe fills",
+}
+--- Issue #323 (maintainer's decision): the other vanilla and Space Age recipes that no technology unlocks, whose products
+--- Gregtorio does not make (they were in Factoriopedia, and nobody could make them), deleted the same way, by the groups of
+--- #323. The items and entities stay.
+local VANILLA_RECIPES_UNUSED = {
+	{ "Space Age planets and space platforms: Gregtorio has neither", {
+		"advanced-carbonic-asteroid-crushing", "advanced-metallic-asteroid-crushing",
+		"advanced-oxide-asteroid-crushing", "advanced-thruster-fuel", "advanced-thruster-oxidizer",
+		"agricultural-tower", "ammoniacal-solution-separation", "artificial-jellynut-soil", "artificial-yumako-soil",
+		"asteroid-collector", "biochamber", "bioflux", "bioplastic", "biter-egg", "captive-biter-spawner",
+		"carbon-fiber", "carbonic-asteroid-crushing", "carbonic-asteroid-reprocessing", "cargo-bay",
+		"cargo-landing-pad", "casting-low-density-structure", "copper-bacteria", "copper-bacteria-cultivation",
+		"crusher", "electrolyte", "fish-breeding", "fluoroketone", "fluoroketone-cooling", "foundation",
+		"heating-tower", "holmium-plate", "holmium-solution", "ice-platform", "iron-bacteria",
+		"iron-bacteria-cultivation", "jellynut-processing", "lightning-collector", "lightning-rod",
+		"metallic-asteroid-crushing", "metallic-asteroid-reprocessing", "nutrients-from-bioflux",
+		"nutrients-from-biter-egg", "nutrients-from-fish", "nutrients-from-spoilage", "nutrients-from-yumako-mash",
+		"overgrowth-jellynut-soil", "overgrowth-yumako-soil", "oxide-asteroid-crushing", "oxide-asteroid-reprocessing",
+		"pentapod-egg", "rocket-part", "rocket-silo", "space-platform-foundation", "space-platform-starter-pack",
+		"supercapacitor", "superconductor", "thruster", "thruster-fuel", "thruster-oxidizer", "tungsten-carbide",
+		"yumako-processing"
+	} },
+	{ "military and equipment: their technologies are disabled", {
+		"artillery-shell", "artillery-turret", "artillery-wagon", "atomic-bomb", "cannon-shell", "capture-robot-rocket",
+		"cluster-grenade", "combat-shotgun", "defender-capsule", "destroyer-capsule", "discharge-defense-equipment",
+		"distractor-capsule", "explosive-cannon-shell", "explosive-rocket", "explosive-uranium-cannon-shell",
+		"flamethrower", "flamethrower-ammo", "flamethrower-turret", "gate", "grenade", "gun-turret", "heavy-armor",
+		"land-mine", "laser-turret", "personal-laser-defense-equipment", "piercing-rounds-magazine",
+		"piercing-shotgun-shell", "poison-capsule", "railgun", "railgun-ammo", "railgun-turret", "rocket",
+		"rocket-launcher", "rocket-turret", "shotgun", "shotgun-shell", "slowdown-capsule", "solar-panel-equipment",
+		"stone-wall", "submachine-gun", "tank", "tesla-ammo", "tesla-turret", "teslagun", "toolbelt-equipment",
+		"uranium-cannon-shell", "uranium-rounds-magazine"
+	} },
+	{ "vanilla machines, power, logistics and modules: Gregtorio builds its GT machines instead", {
+		"accumulator", "assembling-machine-1", "assembling-machine-2", "assembling-machine-3", "beacon",
+		"big-mining-drill", "biolab", "boiler", "centrifuge", "chemical-plant", "construction-robot", "cryogenic-plant",
+		"efficiency-module", "efficiency-module-2", "efficiency-module-3", "electric-mining-drill",
+		"electromagnetic-plant", "foundry", "heat-pipe", "logistic-robot", "nuclear-reactor", "oil-refinery",
+		"productivity-module", "productivity-module-2", "productivity-module-3", "programmable-speaker", "pumpjack",
+		"quality-module", "quality-module-2", "quality-module-3", "recycler", "roboport", "solar-panel", "speed-module",
+		"speed-module-2", "speed-module-3", "steam-engine", "steam-turbine", "steel-furnace"
+	} },
+	{ "vanilla intermediates, uranium processing and barrels: nothing Gregtorio unlocks uses them", {
+		"barrel", "electric-engine-unit", "empty-fluoroketone-cold-barrel", "empty-fluoroketone-hot-barrel",
+		"empty-water-barrel", "engine-unit", "fluoroketone-cold-barrel", "fluoroketone-hot-barrel",
+		"flying-robot-frame", "kovarex-enrichment-process", "low-density-structure", "nuclear-fuel",
+		"nuclear-fuel-reprocessing", "plastic-bar", "uranium-fuel-cell", "uranium-processing", "water-barrel"
+	} },
+}
+for _, group in pairs(VANILLA_RECIPES_UNUSED) do
+	for _, name in pairs(group[2]) do VANILLA_RECIPES_REMOVED[name] = group[1] end
+end
+--- Issue #318: devcheck fails for a recipe of this class (a vanilla recipe without a technology, every product of which
+--- Gregtorio makes another way, not hidden) that is neither deleted here nor kept in this allow-list with its reason
+FORK_VANILLA_RECIPES_KEPT = {}
+for name, _ in pairs(VANILLA_RECIPES_REMOVED) do
+	if data.raw.recipe[name] then
+		data.raw.recipe[name] = nil
+		log("FORK-REMOVED: recipe " .. name)
+	end
+end
+for _, tech in pairs(data.raw.technology) do
+	if tech.effects then
+		local keep = {}
+		for _, e in pairs(tech.effects) do
+			if not (e.recipe and VANILLA_RECIPES_REMOVED[e.recipe]) then keep[#keep + 1] = e end
+		end
+		tech.effects = keep
+	end
+end
+--- a tip's trigger that names a deleted recipe can never fire (no technology unlocked it): an "or" drops that branch, an
+--- "and" or a "sequence" with it can never fire as a whole (issue #323: the triggers are nested)
+local function prune_trigger(trigger)
+	if trigger.recipe and VANILLA_RECIPES_REMOVED[trigger.recipe] then return nil end
+	if trigger.triggers then
+		local keep = {}
+		for _, t in pairs(trigger.triggers) do
+			local p = prune_trigger(t)
+			if p then keep[#keep + 1] = p elseif trigger.type ~= "or" then return nil end
+		end
+		if #keep == 0 then return nil end
+		trigger.triggers = keep
+	end
+	return trigger
+end
+for name, tip in pairs(data.raw["tips-and-tricks-item"] or {}) do
+	for _, key in pairs({ "trigger", "skip_trigger" }) do
+		if tip[key] then
+			tip[key] = prune_trigger(tip[key])
+			if not tip[key] then
+				--- a tip without its trigger stays locked, as before (its trigger could never fire)
+				if key == "trigger" then tip.starting_status = "locked" end
+				log("FORK-TIP: the " .. key .. " of " .. name .. " could never fire (it needs a deleted recipe)")
+			end
+		end
+	end
+end
+--- issue #323: machines whose fixed recipe is gone (the captive biter spawner's biter egg, the rocket silo's rocket part);
+--- nothing in Gregtorio builds them
+for _, t in pairs({ "assembling-machine", "furnace", "rocket-silo" }) do
+	for _, e in pairs(data.raw[t] or {}) do
+		if e.fixed_recipe and VANILLA_RECIPES_REMOVED[e.fixed_recipe] then e.fixed_recipe = nil end
+	end
+end
+
 
 
 
@@ -445,9 +613,13 @@ disable_tech("tesla-weapons")
 --- Fork: the technologies whose units were set above are divided like the others (prototypes/149-fork-early-research.lua,
 --- issue #146)
 FORK_EARLY_RESEARCH.rescale()
+--- Fork: the prerequisites of issue #252 (prototypes/142-fork-recipe-unlocks.lua), after the vanilla ones are set above
+FORK_UNLOCK_TREE.apply(true)
 --- Fork: the recycling recipes get their technologies now that the vanilla ones are set and disabled
 --- (prototypes/157-fork-recycling.lua, issue #190)
 FORK_RECYCLING.unlock()
+--- Fork: every Gregtorio recipe named after its product unless it has its own name (prototypes/fork-locale.lua, issue #230)
+FORK_LOCALE.name_recipes()
 require("prototypes.fork-menu-simulations")
 --- Fork: cheap research (startup setting, default off); after every change to the technologies above
 require("prototypes.fork-one-pack-research")

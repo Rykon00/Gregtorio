@@ -7,7 +7,7 @@
 --- parts in a row of their own.
 ---
 --- Rule A (maintainer's decision): BY FORM. The material parts are in the item group "Material parts" (tab, after the
---- Microminer tab), one row (subgroup) per form, the materials by tier inside it. Rows wrap after ten. That is
+--- Microminer tab, which issue #287 removed), one row (subgroup) per form, the materials by tier inside it. Rows wrap after ten. That is
 --- GregTech's order too: its material item is one item whose damage value is `prefix index x 1000 + material id`
 --- (GT5-Unofficial MetaGeneratedItem01.java:3957, the prefix list in its constructor), so NEI and the creative tab list every
 --- ingot, then every plate ... The forms follow GT's prefix order (ingot, hot ingot, nugget, plates up to dense, foil, rod,
@@ -36,6 +36,10 @@ local FORMS = {
 	{ "hot-ingot", "hot-", "-ingot" },
 	{ "nugget", "", "-nugget" },
 	{ "plate", "", "-plate" },
+	{ "double-plate", "double-", "-plate" },   -- issue #222
+	{ "triple-plate", "triple-", "-plate" },   -- issue #227
+	{ "quadruple-plate", "quadruple-", "-plate" },
+	{ "quintuple-plate", "quintuple-", "-plate" },
 	{ "dense-plate", "dense-", "-plate" },
 	{ "superdense-plate", "superdense-", "-plate" },
 	{ "foil", "", "-foil" },
@@ -49,13 +53,18 @@ local FORMS = {
 	{ "gear", "", "-gear" },
 	{ "large-gear", "large-", "-gear" },
 	{ "rotor", "", "-rotor" },
+	{ "item-casing", "", "-item-casing" },   -- issue #222
+	{ "small-spring", "small-", "-spring" },
+	{ "spring", "", "-spring" },
 	{ "wire", "", "-wire" },
 	{ "fine-wire", "fine-", "-wire" },
 	{ "cable", "", "-cable" },
 }
 --- the most specific pattern first (hot-iron-ingot before iron-ingot, long-steel-rod before steel-rod)
-local MATCH = { "hot-ingot", "superdense-plate", "dense-plate", "long-rod", "large-gear", "fine-wire", "ingot", "nugget",
-	"plate", "foil", "block", "rod", "round", "bolt", "screw", "ring", "gear", "rotor", "wire", "cable" }
+local MATCH = { "hot-ingot", "superdense-plate", "dense-plate", "double-plate", "triple-plate", "quadruple-plate",
+	"quintuple-plate", "long-rod", "large-gear", "fine-wire",
+	"small-spring", "item-casing", "ingot", "nugget", "plate", "foil", "block", "rod", "round", "bolt", "screw", "ring", "gear",
+	"rotor", "spring", "wire", "cable" }
 local SPECIAL = { ["iron-stick"] = { "iron", "rod" }, ["iron-gear-wheel"] = { "iron", "gear" } }
 local TIERS = { lv = 1, mv = 2, hv = 3, ev = 4, iv = 5, luv = 6, zpm = 7, uv = 8, uhv = 9, uev = 10, uiv = 11, umv = 12,
 	uxv = 13, max = 14 }
