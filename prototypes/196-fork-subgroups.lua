@@ -152,6 +152,8 @@ put("polymers", { "polystyrene", "styrene-butadiene-rubber", "polycaprolactam" }
 --- issue #361: the oil variety (164)
 put("fuels", { "medium-oil", "natural-gas", "lpg" })
 put("organic", { "mtbe-reaction-mixture" })
+--- issue #366: trichlorosilane (164)
+put("acids", { "trichlorosilane" })
 --- issue #364: GTNH's sapphire and green sapphire juice (155)
 put("ore-solutions", { "sapphire-juice", "green-sapphire-juice" })
 --- issue #119: Space Age's melts, restyled below, are rows of the Fluids tab like the other melts

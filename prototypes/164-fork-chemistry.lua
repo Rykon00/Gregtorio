@@ -536,3 +536,24 @@ step(RECIPES, "mtbe-reaction-mixture-distillation", "mv-tall-distillation-recipe
 	{ { "mtbe-reaction-mixture", 90 } }, { { "anti-knock-agent", 40 }, { "methanol", 50 }, { "butene", 40 } },
 	"anti-knock-agent")
 for _, r in pairs(RECIPES) do fork_add_unlock("high-octane-gasoline", r) end
+
+--------------------------------------------------------------------------------
+--- 5) SIDE-CHAIN CHEMISTRY (issue #366: each piece with the line that needs it). Of the issue's list, Gregtorio has a
+--- consumer for trichlorosilane only: GTNH's second route to the solar grade silicon of the boules (poly-si dust;
+--- gregtech/loaders/postload/recipes/ChemicalRecipes.java:4248-4254: silicon + 3000 L hydrochloric acid -> trichlorosilane +
+--- 2 hydrogen, 15 s, LV; :713-729: trichlorosilane + 2000 L hydrogen -> poly-si + 3000 L hydrochloric acid, 15 s, LV).
+--- GT's silane recipe (:735-742) is left out (no consumer). The others belong to lines Gregtorio does not have: acetylene,
+--- acetaldehyde, ethylene oxide and glycol, the methylamines, nickel tetracarbonyl and aniline to the Kevlar chain
+--- (question #378), nitrobenzene and aniline to GT's netherite chain, chlorosulfonic acid and the phosphorus chlorides to
+--- GT's toxic slurry chain (chains/AcidRecipes.java) and bartworks' acid generator (#367: leave).
+--------------------------------------------------------------------------------
+
+F.fluid("trichlorosilane", "nearly-white-fluid", { 0.95, 0.95, 0.95 })
+RECIPES = {}
+step(RECIPES, "trichlorosilane", "lv-chemical-reactor-recipes", 15, LV_SPEED,
+	{ { "raw-silicon", 1 }, { "hydrochloric-acid", 300 } }, { { "trichlorosilane", 100 }, { "hydrogen", 200 } })
+step(RECIPES, "poly-si-dust-from-trichlorosilane", "lv-chemical-reactor-recipes", 15, LV_SPEED,
+	{ { "trichlorosilane", 100 }, { "hydrogen", 200 } }, { { "poly-si-dust", 1 }, { "hydrochloric-acid", 300 } })
+for _, r in pairs(RECIPES) do
+	for _, t in pairs(techs_of("poly-si-dust")) do fork_add_unlock(t, r) end
+end

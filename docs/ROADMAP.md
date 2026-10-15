@@ -2343,3 +2343,11 @@ module to crude oil's technologies. Built with them: raw oil's distillation, nat
 route to the anti-knock agent, the natural gas and LPG cells. Not built: GT's butane variant of MTBE (no butane), extra
 heavy oil (no Overworld fluid), GT's naphthenic acid of the oil towers (no consumer). The issue's "regular and premium
 gasoline" are GT's gasoline and high octane gasoline, which the mod has.
+
+### Side-chain chemistry (issue #366)
+
+Each piece comes with the line that needs it. Gregtorio has a consumer for trichlorosilane only (poly-si dust of the
+boules): built (164). The rest of the issue's list belongs to lines the mod does not have: acetylene, acetaldehyde,
+ethylene oxide and glycol, the methylamines, nickel tetracarbonyl and aniline to the Kevlar chain (question #378),
+nitrobenzene and aniline to GT's netherite chain, chlorosulfonic acid and the phosphorus chlorides to GT's toxic slurry
+chain and bartworks' acid generator (#367: leave).
