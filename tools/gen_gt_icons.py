@@ -111,6 +111,9 @@ MATERIALS = {
     "black-plutonium": "BlackPlutonium", "high-octane-gasoline": "HighOctaneGasoline", "sodium-bisulfate": "SodiumBisulfate",
     # issue #295: GT++'s H8N4C2O4 Rocket Fuel (GTPPFluids.java:371-377: a fluid, RGB 50, 220, 50) for its cell
     "rocket-fuel": ("FLUID", (50, 220, 50)),
+    # issue #362: GT++'s other rocket fuels (GTPPFluids.java:379-401) for their cells, phthalic anhydride (ModItems.java:686)
+    "rp-1-rocket-fuel": ("FLUID", (250, 50, 50)), "dense-hydrazine-fuel-mixture": ("FLUID", (175, 80, 120)),
+    "cn3h7o3-rocket-fuel": ("FLUID", (125, 75, 180)), "phthalic-anhydride": ("DULL", (175, 175, 175)),
     # issue #96: bartworks Werkstoffe of the platinum line (WerkstoffLoader.java, their colours; dusts)
     "platinum-salt": ("DULL", (255, 255, 200)), "refined-platinum-salt": ("DULL", (255, 255, 200)),
     "reprecipitated-platinum": ("DULL", (255, 255, 200)), "platinum-residue": ("DULL", (100, 99, 46)),
@@ -770,6 +773,9 @@ def icon_table(c):
     # issue #98: the high octane cell (like the gasoline cell), sodium bisulfate (GT: a dust)
     T["high-octane-gasoline-cell"] = lambda: c.part("high-octane-gasoline", "cell")
     T["rocket-fuel-cell"] = lambda: c.part("rocket-fuel", "cell")   # issue #295
+    for m in ("rp-1-rocket-fuel", "dense-hydrazine-fuel-mixture", "cn3h7o3-rocket-fuel"):   # issue #362
+        T[m + "-cell"] = (lambda m=m: lambda: c.part(m, "cell"))()
+    T["phthalic-anhydride"] = lambda: c.part("phthalic-anhydride", "dust")
     T["sodium-bisulfate"] = lambda: c.part("sodium-bisulfate", "dust")
     # issue #302: the drill heads of the Space Elevator's mining drones (GT's toolHeadDrill of the material)
     for m in ("steel", "titanium", "tungstensteel", "iridium", "trinium", "naquadah", "naquadah-alloy", "naquadria",

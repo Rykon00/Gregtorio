@@ -2235,3 +2235,28 @@ effectivity.
 * The LuV capacitor block takes osmiridium plates and rods instead of GT's frames and screws (Gregtorio has none).
 * The supercapacitor has 27 blocks of one tier and one pair of hatches; no mixed tiers, no glass rule, no wireless, no
   UV and higher blocks (Gregtorio has no energy cluster; UHV and up are GT's Long.MAX blocks).
+
+## GTNH gap research after 0.5.4 (issues #355 to #367)
+
+A research against GT5-Unofficial 638b3f37ca after release 0.5.4 listed GTNH content Gregtorio lacks, one issue per area.
+Each issue first checks its claims against the code; the chemical lines go into `prototypes/164-fork-chemistry.lua`
+(GT's numbers, fluids a tenth of GT's litres, times GT's seconds x the tier's speed).
+
+### Rocket fuels (issue #362)
+
+GT++'s three rocket fuels next to #295's H8N4C2O4 Rocket Fuel, with GTNH's recipes and fuel values (EU per L: Rp-1 512,
+Dense Hydrazine Fuel Mixture 1024, CN3H7O3 2048) and a cell each for the rocket engines of 145 (800 L at 500 J per EU, as
+the H8N4C2O4 cell: 204.8, 409.6 and 819.2 MJ). Two technologies: Rp-1 Rocket Fuel (kerosene from diesel, RP-1, liquid
+oxygen from the HV vacuum freezer) and Hydrazine Rocket Fuels (GT++'s coal tar line and anthraquinone process to hydrogen
+peroxide, hydrazine, monomethylhydrazine).
+
+Deviations from GT:
+* GT++'s catalysts (the orange metal catalyst of the hydroquinone step) are left out, as in the glue line and 159.
+* GT's small piles of ash and dark ash from the coal tar of the pyrolyse oven: Gregtorio has no small piles of them, so a
+  dust at the piles' chance (2 small piles: 50 %, 3: 75 %).
+* Coal tar is distilled only in the distillation tower (GT's tower recipe with its five outputs); GT's five single-output
+  distillery recipes are left out.
+* The ExxonMobil Chemical Plant gets a third fluid input and two more outputs for the hydrogen peroxide recipes (three
+  fluids in, two out); the new boxes come after the old ones, so the old recipes keep their boxes.
+* #295's H8N4C2O4 recipe uses GT's litres (2000 + 2000 -> 5000), the new recipes a tenth like the rest of 159; the ratios
+  are GT's either way, only the chemical plant's throughput of the H8N4C2O4 recipe is ten times that of the others.

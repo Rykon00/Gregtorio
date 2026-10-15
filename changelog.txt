@@ -1,4 +1,11 @@
 ---------------------------------------------------------------------------------------------------
+Version: 0.5.5
+  Features:
+    - GT++'s other rocket fuels (issue #362): Rp-1 Rocket Fuel (512 EU per L), the Dense Hydrazine Fuel Mixture (1024) and the CN3H7O3 Rocket Fuel (2048) with GT New Horizons' recipes in the ExxonMobil Chemical Plant, each with a fuel cell for the EV, IV and LuV Rocket Engines and the Large Rocket Engine (204.8, 409.6 and 819.2 MJ). Rp-1 comes from kerosene (the distillery, from diesel) and liquid oxygen (the HV vacuum freezer), technology Rp-1 Rocket Fuel. The hydrazine fuels take GT++'s chain: coal tar from the pyrolyse oven (coal, charcoal, coke), its distillation into coal tar oil, naphtha, ethylbenzene, anthracene and kerosene, naphthalene and GT++'s phthalic acid, phthalic anhydride in the MV Dehydrator, ethylbenzene, 2-ethylanthraquinone and the anthraquinone process to hydrogen peroxide, hydrazine and monomethylhydrazine; technology Hydrazine Rocket Fuels, which now also unlocks the MV Dehydrator.
+  Changes:
+    - The ExxonMobil Chemical Plant has a third fluid input and two more fluid outputs (the hydrogen peroxide recipes of issue #362 take three fluids and give two).
+
+---------------------------------------------------------------------------------------------------
 Version: 0.5.4
 Date: 2026-10-15
   Features:
