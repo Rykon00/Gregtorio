@@ -628,7 +628,8 @@ end
 --- (GT per 100: heavy oil 100, 45, 15, 60 in 40 ticks; light oil 7, 13, 20, 160 in 10 ticks; crude 30, 100, 40, 120 in 30;
 --- GT's naphthenic acid of the tower is left out, the mod has none), the distillery into one of the fuels, and the distillery
 --- into lubricant (GT: 12 L of heavy oil into 9, of light oil into 3, 16 ticks). They come with the pump module, the only
---- producer of these oils (#252's rule).
+--- producer of these oils (#252's rule); issue #361: the drilling rigs pump them too (164), so 164 moves them to crude
+--- oil's technologies (Oil Processing, Diesel).
 local CRUDE_TIME = 20   -- oil-distillation (crude oil, GT's 30 ticks)
 local OILS = {
 	--  fluid        GT ticks  heavy fuel  light fuel  naphtha  gas   lubricant per 40

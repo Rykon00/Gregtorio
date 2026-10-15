@@ -2333,3 +2333,13 @@ epichlorohydrin), polystyrene, styrene-butadiene rubber and polycaprolactam with
 * Polystyrene and polycaprolactam have no Gregtorio consumer (GT's: the Bio Lab's petri dish, the QFT's plastics recipe,
   vanilla string, goodgenerator's fluid storage cores).
 * Polyurethane does not exist in GTNH; Kevlar and radox are question #378.
+
+### Oil variety (issue #361)
+
+Decision (the issue left it open): GTNH's Overworld pool of underground fluids becomes recipes of the drilling rigs next
+to crude oil (light oil, raw oil, heavy oil, natural gas, at their share of GT's maximum amounts), not a fluid vein per
+rig: Gregtorio's rigs have no veins, the player picks the fluid. #318's light and heavy oil recipes move from the pump
+module to crude oil's technologies. Built with them: raw oil's distillation, natural gas desulfurization, LPG, GT's MTBE
+route to the anti-knock agent, the natural gas and LPG cells. Not built: GT's butane variant of MTBE (no butane), extra
+heavy oil (no Overworld fluid), GT's naphthenic acid of the oil towers (no consumer). The issue's "regular and premium
+gasoline" are GT's gasoline and high octane gasoline, which the mod has.
