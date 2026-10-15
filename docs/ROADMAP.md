@@ -2352,6 +2352,20 @@ ethylene oxide and glycol, the methylamines, nickel tetracarbonyl and aniline to
 nitrobenzene and aniline to GT's netherite chain, chlorosulfonic acid and the phosphorus chlorides to GT's toxic slurry
 chain and bartworks' acid generator (#367: leave).
 
+### Circuit rungs (issue #355)
+
+Part 1 (164): GT's ASoC wafer and chip with GTNH's recipes (GT's engraver steps with the green lens, here the emerald
+lens; the core mod's cutter; the core mod's ASoC variants of the nanoprocessor and the quantum processor, which run in
+the IV circuit assembler, the mod's last). The energy module takes GTNH's 2 x 64 ASoC wafers instead of 133's 64 UHPIC
+wafers. GTNH's other ASoC users (the Really and Extremely Ultimate Batteries, goodgenerator's HiC components, the nanites,
+the raw pico wafer) are not in the mod.
+
+Not built: GT's ZPIC and YPIC. The ZPIC wafer is a beamcrafter recipe of the core mod (APIC wafer, spacetime dust,
+molten creon and mellion, 20 gravitons each beam), the YPIC wafer a MAX fluid solidifier recipe (the Bose-Einstein
+condensate wafer, GT's Wafer8, with 1500 L quark gluon plasma); the mod has no beamcrafter, creon, mellion, gravitons or
+Wafer6 to Wafer8. The UMV and UXV energy and dynamo hatches keep 133's and 134's doubled APICs. Issue #355 stays open for
+them.
+
 ### GoodGenerator's fuels (issue #357)
 
 Part 1 (164): the liquid fuels with GoodGenerator's recipes and fuel values. Ether and naquadah gas already existed

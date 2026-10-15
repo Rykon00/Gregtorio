@@ -802,3 +802,63 @@ F.tech{
 	name = "thorium-based-liquid-fuel", prerequisites = { "uev-materials", "naquadah-fuels" }, packs = 10, count = 2500,
 	time = 60, recipes = RECIPES,
 }
+
+--------------------------------------------------------------------------------
+--- 8) THE ASOC WAFER AND CHIP (issue #355, part 1; GT's Circuit_Wafer_SoC2 and Circuit_Chip_SoC2)
+--- GT engraves the ASoC wafer with a green lens (LaserEngraverRecipes.java:375-394): GT's Wafer3 (Gregtorio's naquadah
+--- doped wafer) into 1 (90 s, EV), Wafer4 (europium) into 2 (75 s, IV), Wafer5 (americium) into 4 (60 s, LuV); here
+--- the emerald lens in the engraver's lens slot (#325). The cutter makes 6 ASoCs of a wafer (NewHorizonsCoreMod
+--- CuttingMachineRecipes.java:56-58, 45 s, EV; with 25 lubricant as Gregtorio's other chips). GT New Horizons uses them in
+--- the energy module (AssemblyLineRecipes.java:788-789: 2 x 64 ASoC wafers; 133 had 64 UHPIC wafers for them) and in the
+--- ASoC variants of the nanoprocessor and the quantum processor (NewHorizonsCoreMod CircuitAssemblerRecipes.java:571-591:
+--- 6 boards, 6 ASoCs, 48 fine wires and 48 bolts with 2 ingots of Indalloy 140 into one circuit, 10 s, IV and LuV; the
+--- mod's circuit assembler ends at IV, so both run there). GT's ZPIC and YPIC wafers need what the mod lacks (issue #355:
+--- the beamcrafter, creon, mellion and gravitons; the Bose-Einstein condensate wafer and quark gluon plasma in the MAX
+--- solidifier); the UMV and UXV hatches keep their APIC stand-ins of 133 and 134.
+--------------------------------------------------------------------------------
+
+create_item{ skip_recipe = true, name = "asoc-wafer", subgroup = data.raw.item["soc-wafer"].subgroup }
+create_item{ skip_recipe = true, name = "advanced-system-on-chip", subgroup = data.raw.item["system-on-chip"].subgroup }
+local LENS = { type = "item", name = "emerald-lens", amount = 1 }
+local function engrave(name, wafer, out, seconds, tier, speed)
+	create_recipe{
+		name = name,
+		category = tier .. "-laser-engraver-recipes",
+		energy_required = seconds * speed,
+		ingredients = { { type = "item", name = wafer, amount = 1 }, LENS },
+		results = { { type = "item", name = "asoc-wafer", amount = out }, LENS },
+		main_product = "asoc-wafer",
+	}
+	return name
+end
+local ASOC_ND = engrave("asoc-wafer-nd", "naquadah-doped-wafer", 1, 90, "ev", EV_SPEED)
+local ASOC_ED = engrave("asoc-wafer-ed", "europium-doped-wafer", 2, 75, "iv", IV_SPEED)
+local ASOC_AD = engrave("asoc-wafer-ad", "americium-doped-wafer", 4, 60, "luv", LUV_SPEED)
+RECIPES = {}
+step(RECIPES, "advanced-system-on-chip", "ev-cutting-machine-recipes", 45, EV_SPEED, { { "asoc-wafer", 1 }, { "lubricant", 25 } },
+	{ { "advanced-system-on-chip", 6 } })
+step(RECIPES, "nanoprocessor-asoc", "iv-circuit-assembler-recipes", 10, IV_SPEED,
+	{ { "epoxy-printed-circuit-board", 6 }, { "advanced-system-on-chip", 6 }, { "fine-electrum-wire", 48 },
+		{ "platinum-bolt", 48 }, { "molten-indalloy-140", 28.8 } }, { { "processing-unit", 1 } })
+local NANO_ASOC = table.remove(RECIPES)
+step(RECIPES, "quantum-processor-asoc", "iv-circuit-assembler-recipes", 10, IV_SPEED,
+	{ { "fiber-reinforced-printed-circuit-board", 6 }, { "advanced-system-on-chip", 6 }, { "fine-platinum-wire", 64 },
+		{ "niobium-titanium-bolt", 48 }, { "molten-indalloy-140", 28.8 } }, { { "ev-circuit", 1 } })
+local QUANTUM_ASOC = table.remove(RECIPES)
+--- unlocked where they are first used (#252): the first wafer, the cutter and the nanoprocessor variant after the
+--- nanoprocessor and Indalloy 140, the quantum variant after the quantum processor too, the europium and americium wafers
+--- with their SoC wafers' technologies; the energy module's technology comes later
+--- (the technologies by name: 142 hands out the circuit recipes after this file)
+local T_NANO = after_both(after_both("nanoprocessors", "luv-components"), "naquadah-processing")   -- (Indalloy 140; the wafer)
+for _, r in pairs({ ASOC_ND, RECIPES[1], NANO_ASOC }) do fork_add_unlock(T_NANO, r) end
+fork_add_unlock(after_both(T_NANO, "qubit-cpus"), QUANTUM_ASOC)
+fork_add_unlock(after_both(T_NANO, "nano-power-ics"), ASOC_ED)
+fork_add_unlock(after_both(T_NANO, "pico-quantum-power-ics"), ASOC_AD)
+--- the variants show their GTNH item's texture (156, issue #164)
+for _, r in pairs({ NANO_ASOC, QUANTUM_ASOC }) do
+	local x = data.raw.recipe[r]
+	x.icon, x.icon_size, x.icons = "__gregtorio-continued__/graphics/icons/circuit-recipe-" .. r .. ".png", 32, nil
+end
+for _, i in pairs(data.raw.recipe["energy-module"].ingredients) do
+	if i.name == "uhpic-wafer" then i.name, i.amount = "asoc-wafer", 128 end
+end

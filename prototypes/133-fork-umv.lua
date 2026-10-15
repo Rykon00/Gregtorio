@@ -424,7 +424,7 @@ end
 ---     line makes); molten flerovium: americium + calcium plasma (the draft: plutonium-241);
 ---     both are MK4 recipes, so nothing the MK5 makes is needed to build it
 ---   * energy module: the ZPM assembly line recipe of 23-zpm-age-item.lua (never loaded, removed in issue #249), with UHPIC
----     wafers instead of the ASOC wafers (not built)
+---     wafers instead of the ASOC wafers (issue #355: 164 makes them GT's 128 ASoC wafers)
 ---   * advanced fusion coil II: UEV emitter and sensor (a UIV field generator or emitter would need
 ---     UMV circuits, which need spacetime, which the MK5 makes), the compact fusion coil of the
 ---     draft is the advanced fusion coil, rhugnor plates
