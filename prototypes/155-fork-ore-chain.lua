@@ -232,7 +232,55 @@ local NEW_ORES = {
 	["tiberium"] = { dust = "tiberium-dust", byproducts = { "tiberium-dust", "tiberium-dust", "tiberium-dust" }, mass = 326 },   -- bartworks Tiberium: tiberium, tiberium, tiberium
 	["bartimaeusnek"] = { dust = "bartimaeusnek-dust", byproducts = { "boron", "titanium-dust", "europium-dust" }, mass = 42, decompose = { "lv-centrifuge-recipes", 0.25, 8, { item("boron", 1), fluid("argon", 100), item("titanium-dust", 1), item("europium-dust", 1), item("sulfur", 1), fluid("neon", 100), item("potassium", 1) } } },   -- bartworks BArTiMaEuSNeK: boron, titanium, europium; decomposition without its Magic (no dust in GT) boron, titanium, europium
 	["prasiolite"] = { dust = "prasiolite-dust", byproducts = { "prasiolite-dust", "prasiolite-dust", "prasiolite-dust" }, mass = 22 },   -- bartworks Prasiolite: prasiolite, prasiolite, prasiolite
-	["fluorspar"] = { dust = "fluorspar", byproducts = { "fluorspar", "fluorspar", "fluorspar" }, mass = 25 },   -- bartworks Fluorspar: fluorspar, fluorspar, fluorspar
+	["fluorspar"] = { dust = "fluorspar", byproducts = { "fluorspar", "fluorspar", "fluorspar" }, mass = 25 },
+	--- issue #373, group 3: GT++'s ores of the Toxic Everglades (160; gtPlusPlus/core/material/MaterialsOres.java,
+	--- RecipeGenOre.java): dust ores without gems or smelting. Byproducts A and B are the first two components with a solid
+	--- form (stone dust when there is none), as the platinum line's and gtnhlanth's outputs (cerium-rich mixture); mass =
+	--- floor of the plain average of the components' protons plus that of their neutrons (fluorite (F): 14, GT++'s
+	--- quirk); decomposition: up to 6 components the LV electrolyzer, 7 to 9 the LV chemical dehydrator, mass x 3 or x 4
+	--- ticks, 16 EU/t, gases as fluids (a tenth of GT's cells), every component the mod has no item of left out (named
+	--- per ore). Agardite (Cd), yttrialite and lanthanite (Ce) are the mod's agardite, yttrialite and lanthanite dust
+	--- (rare earth I) and keep their electrolysis.
+	["agardite-cd"] = { dust = "agardite-dust", byproducts = { "copper-dust", "arsenic" }, mass = 51 },   -- GT++ Agardite (Cd); the mod's electrolysis of its dust stays
+	["agardite-la"] = { dust = "agardite-la-dust", byproducts = { "lanthanum-dust", "copper-dust" }, mass = 54, decompose = { "lv-electrolyzer-recipes", 8.1, 38, { item("lanthanum-dust", 1), item("calcium", 1), item("copper-dust", 5), item("arsenic", 2), fluid("oxygen", 1900), fluid("hydrogen", 1000) } } },   -- GT++ Agardite (La)
+	["agardite-nd"] = { dust = "agardite-nd-dust", byproducts = { "neodymium-dust", "copper-dust" }, mass = 56, decompose = { "lv-electrolyzer-recipes", 8.4, 47, { item("neodymium-dust", 1), item("calcium", 1), item("copper-dust", 6), item("arsenic", 6), fluid("oxygen", 2100), fluid("hydrogen", 1200) } } },   -- GT++ Agardite (Nd)
+	["agardite-y"] = { dust = "agardite-y-dust", byproducts = { "yttrium-dust", "copper-dust" }, mass = 46, decompose = { "lv-electrolyzer-recipes", 6.9, 46, { item("yttrium-dust", 1), item("calcium", 1), item("copper-dust", 5), item("arsenic", 6), fluid("oxygen", 2100), fluid("hydrogen", 1200) } } },   -- GT++ Agardite (Y)
+	["alburnite"] = { dust = "alburnite-dust", byproducts = { "gold-dust" }, mass = 106, decompose = { "lv-electrolyzer-recipes", 15.9, 15, { item("gold-dust", 8), item("sulfur", 4) } } },   -- GT++ Alburnite; left out (not in the mod): Germanium, Tellurium
+	["barite-ra"] = { dust = "barite-ra-dust", byproducts = { "stone-dust" }, mass = 102, decompose = { "lv-electrolyzer-recipes", 15.3, 64, { item("barium", 32), item("sulfur", 16), fluid("oxygen", 1500) } } },   -- GT++ Barite (Ra); left out (not in the mod): Radium
+	["cerite"] = { dust = "cerite-dust", byproducts = { "cerium-rich-mixture", "lanthanum-dust" }, mass = 54, decompose = { "lv-dehydrator-recipes", 10.8, 64, { item("cerium-rich-mixture", 9), item("lanthanum-dust", 9), item("calcium", 9), item("magnesium", 3), item("iron-dust", 3), item("raw-silicon", 7), fluid("oxygen", 2000) } } },   -- GT++ Cerite; hydrogen left out (the dehydrator has one fluid output)
+	["crocoite"] = { dust = "crocoite-dust", byproducts = { "lead-dust", "chromium-dust" }, mass = 101, decompose = { "lv-electrolyzer-recipes", 15.15, 8, { item("lead-dust", 2), item("chromium-dust", 2), fluid("oxygen", 300), item("caesium-dust", 1) } } },   -- GT++ Crocoite
+	["cryolite-f"] = { dust = "cryolite-f-dust", byproducts = { "stone-dust", "aluminium-dust" }, mass = 22, decompose = { "lv-electrolyzer-recipes", 3.3, 10, { item("sodium", 3), item("aluminium-dust", 1), fluid("fluorine", 600) } } },   -- GT++ Cryolite (F)
+	["demicheleite-br"] = { dust = "demicheleite-br-dust", byproducts = { "bismuth", "stone-dust" }, mass = 106, decompose = { "lv-electrolyzer-recipes", 15.9, 25, { item("bismuth", 13), item("sulfur", 11) } } },   -- GT++ Demicheleite (Br); left out (not in the mod): Bromine
+	["florencite"] = { dust = "florencite-dust", byproducts = { "aluminium-dust" }, mass = 43, decompose = { "lv-electrolyzer-recipes", 6.45, 21, { item("aluminium-dust", 3), item("phosphorus", 1), fluid("oxygen", 1000), fluid("hydrogen", 600) } } },   -- GT++ Florencite; left out (not in the mod): Samarium Ore Concentrate
+	["fluorcaphite"] = { dust = "fluorcaphite-dust", byproducts = { "stone-dust", "cerium-rich-mixture" }, mass = 44, decompose = { "lv-dehydrator-recipes", 8.8, 41, { item("calcium", 5), item("cerium-rich-mixture", 5), item("sodium", 5), item("phosphorus", 3), fluid("oxygen", 1200) } } },   -- GT++ Fluorcaphite; fluorine left out (the dehydrator has one fluid output); left out (not in the mod): Strontium Oxide
+	["gadolinite-ce"] = { dust = "gadolinite-ce-dust", byproducts = { "cerium-rich-mixture" }, mass = 98, decompose = { "lv-dehydrator-recipes", 19.6, 36, { item("cerium-rich-mixture", 4), item("lanthanum-dust", 2), item("neodymium-dust", 2), item("yttrium-dust", 2), item("gadolinium-dust", 1), item("beryllium-dust", 2), item("raw-silicon", 7), fluid("oxygen", 1400) } } },   -- GT++ Gadolinite (Ce); left out (not in the mod): Erbium
+	["gadolinite-y"] = { dust = "gadolinite-y-dust", byproducts = { "cerium-rich-mixture" }, mass = 98, decompose = { "lv-dehydrator-recipes", 19.6, 30, { item("cerium-rich-mixture", 2), item("lanthanum-dust", 2), item("neodymium-dust", 2), item("yttrium-dust", 4), item("gadolinium-dust", 2), item("beryllium-dust", 3), item("raw-silicon", 4), fluid("oxygen", 900) } } },   -- GT++ Gadolinite (Y); left out (not in the mod): Erbium
+	["geikielite"] = { dust = "geikielite-dust", byproducts = { "magnesium", "titanium-dust" }, mass = 29, decompose = { "lv-electrolyzer-recipes", 4.35, 5, { item("magnesium", 1), item("titanium-dust", 1), fluid("oxygen", 300) } } },   -- GT++ Geikielite
+	["hibonite"] = { dust = "hibonite-dust", byproducts = { "cerium-rich-mixture", "aluminium-dust" }, mass = 48, decompose = { "lv-electrolyzer-recipes", 7.2, 57, { item("calcium", 1), item("cerium-rich-mixture", 1), item("aluminium-dust", 12), item("titanium-dust", 12), item("magnesium", 12), fluid("oxygen", 1900) } } },   -- GT++ Hibonite
+	["honeaite"] = { dust = "honeaite-dust", byproducts = { "gold-dust" }, mass = 175, decompose = { "lv-electrolyzer-recipes", 26.25, 6, { item("gold-dust", 3) } } },   -- GT++ Honeaite; left out (not in the mod): Thallium, Tellurium
+	["irarsite"] = { dust = "irarsite-dust", byproducts = { "iridium-metal-residue", "iridium-group-sludge" }, mass = 102, decompose = { "lv-dehydrator-recipes", 20.4, 7, { item("iridium-metal-residue", 2), item("iridium-group-sludge", 2), item("crude-rhodium-residue", 2), item("metallic-platinum-powder", 2), item("arsenic", 1), item("sulfur", 1), fluid("oxygen", 100) } } },   -- GT++ Irarsite
+	["kashinite"] = { dust = "kashinite-dust", byproducts = { "iridium-metal-residue", "crude-rhodium-residue" }, mass = 109, decompose = { "lv-electrolyzer-recipes", 16.35, 7, { item("iridium-metal-residue", 4), item("crude-rhodium-residue", 4), item("sulfur", 3) } } },   -- GT++ Kashinite
+	["lafossaite"] = { dust = "lafossaite-dust", byproducts = { "stone-dust" }, mass = 106, decompose = { "lv-electrolyzer-recipes", 15.9, 3, { fluid("chlorine", 100) } } },   -- GT++ Lafossaite; left out (not in the mod): Bromine, Thallium
+	["lanthanite-ce"] = { dust = "lanthanite-dust", byproducts = { "cerium-rich-mixture", "stone-dust" }, mass = 42 },   -- GT++ Lanthanite (Ce); the mod's electrolysis of its dust stays
+	["lanthanite-la"] = { dust = "lanthanite-la-dust", byproducts = { "lanthanum-dust", "stone-dust" }, mass = 41, decompose = { "lv-electrolyzer-recipes", 6.15, 38, { item("lanthanum-dust", 2), item("carbon", 3), fluid("oxygen", 1700), fluid("hydrogen", 1600) } } },   -- GT++ Lanthanite (La)
+	["lautarite"] = { dust = "lautarite-dust", byproducts = { "stone-dust" }, mass = 61, decompose = { "lv-electrolyzer-recipes", 9.15, 9, { item("calcium", 1), fluid("oxygen", 600) } } },   -- GT++ Lautarite
+	["lepersonnite"] = { dust = "lepersonnite-dust", byproducts = { "gadolinium-dust" }, mass = 111, decompose = { "lv-dehydrator-recipes", 22.2, 63, { item("calcium", 1), item("gadolinium-dust", 2), item("uranium-235-dust", 2), fluid("oxygen", 2900) } } },   -- GT++ Lepersonnite; hydrogen left out (the dehydrator has one fluid output); left out (not in the mod): Ytterbium, Dysprosium
+	["miessiite"] = { dust = "miessiite-dust", byproducts = { "metallic-palladium-powder" }, mass = 104, decompose = { "lv-electrolyzer-recipes", 15.6, 15, { item("metallic-palladium-powder", 22) } } },   -- GT++ Miessiite; left out (not in the mod): Tellurium, Selenium
+	["nichromite"] = { dust = "nichromite-dust", byproducts = { "nickel-dust", "cobalt-dust" }, mass = 44, decompose = { "lv-electrolyzer-recipes", 6.6, 17, { item("nickel-dust", 1), item("cobalt-dust", 1), item("iron-dust", 3), item("aluminium-dust", 2), item("chromium-dust", 2), fluid("oxygen", 800) } } },   -- GT++ Nichromite
+	["perroudite"] = { dust = "perroudite-dust", byproducts = { "silver-dust" }, mass = 96, decompose = { "lv-electrolyzer-recipes", 14.4, 20, { item("sulfur", 5), item("silver-dust", 4), fluid("mercury", 500), fluid("chlorine", 200) } } },   -- GT++ Perroudite; left out (not in the mod): Bromine
+	["polycrase"] = { dust = "polycrase-dust", byproducts = { "yttrium-dust", "cerium-rich-mixture" }, mass = 119, decompose = { "lv-dehydrator-recipes", 23.8, 17, { item("yttrium-dust", 1), item("calcium", 1), item("cerium-rich-mixture", 1), item("uranium-235-dust", 1), item("thorium-dust", 1), item("titanium-dust", 2), item("niobium-dust", 2), item("tantalum-dust", 2), fluid("oxygen", 600) } } },   -- GT++ Polycrase
+	["samarskite-y"] = { dust = "samarskite-y-dust", byproducts = { "yttrium-dust", "iron-dust" }, mass = 147, decompose = { "lv-electrolyzer-recipes", 22.05, 22, { item("yttrium-dust", 2), item("iron-dust", 10), item("uranium-235-dust", 2), item("thorium-dust", 3), item("niobium-dust", 2), item("tantalum-dust", 3) } } },   -- GT++ Samarskite (Y)
+	["samarskite-yb"] = { dust = "samarskite-yb-dust", byproducts = { "iron-dust" }, mass = 161, decompose = { "lv-electrolyzer-recipes", 24.15, 21, { item("iron-dust", 9), item("uranium-235-dust", 3), item("thorium-dust", 2), item("niobium-dust", 3), item("tantalum-dust", 2) } } },   -- GT++ Samarskite (Yb); left out (not in the mod): Ytterbium
+	["titanite"] = { dust = "titanite-dust", byproducts = { "titanium-dust", "raw-silicon" }, mass = 72, decompose = { "lv-electrolyzer-recipes", 10.8, 17, { item("calcium", 2), item("titanium-dust", 2), item("raw-silicon", 2), item("thorium-dust", 1), fluid("oxygen", 1000) } } },   -- GT++ Titanite
+	["xenotime"] = { dust = "xenotime-dust", byproducts = { "yttrium-dust" }, mass = 103, decompose = { "lv-electrolyzer-recipes", 15.45, 17, { item("yttrium-dust", 2), item("europium-dust", 1), item("phosphorus", 2), fluid("oxygen", 800) } } },   -- GT++ Xenotime; left out (not in the mod): Ytterbium, Erbium
+	["yttrialite"] = { dust = "yttrialite-dust", byproducts = { "yttrium-dust", "thorium-dust" }, mass = 90 },   -- GT++ Yttrialite; the mod's electrolysis of its dust stays
+	["yttrocerite"] = { dust = "yttrocerite-dust", byproducts = { "cerium-rich-mixture", "yttrium-dust" }, mass = 71, decompose = { "lv-electrolyzer-recipes", 10.65, 8, { item("cerium-rich-mixture", 1), item("calcium", 1), fluid("fluorine", 500), item("yttrium-dust", 1) } } },   -- GT++ Yttrocerite
+	["zimbabweite"] = { dust = "zimbabweite-dust", byproducts = { "lead-dust", "arsenic" }, mass = 87, decompose = { "lv-dehydrator-recipes", 17.4, 39, { item("calcium", 2), item("potassium", 2), item("lead-dust", 1), item("arsenic", 4), item("niobium-dust", 4), item("tantalum-dust", 4), item("titanium-dust", 4), fluid("oxygen", 1800) } } },   -- GT++ Zimbabweite
+	["zircon"] = { dust = "zircon-dust", byproducts = { "zirconium-dust", "raw-silicon" }, mass = 44, decompose = { "lv-electrolyzer-recipes", 6.6, 6, { item("zirconium-dust", 1), item("raw-silicon", 1), fluid("oxygen", 400) } } },   -- GT++ Zircon
+	["zirconolite"] = { dust = "zirconolite-dust", byproducts = { "zirconium-dust", "titanium-dust" }, mass = 66, decompose = { "lv-electrolyzer-recipes", 9.9, 23, { item("calcium", 2), item("zirconium-dust", 2), item("titanium-dust", 4), item("cerium-rich-mixture", 1), fluid("oxygen", 1400) } } },   -- GT++ Zirconolite
+	["zirkelite"] = { dust = "zirkelite-dust", byproducts = { "thorium-dust", "cerium-rich-mixture" }, mass = 93, decompose = { "lv-dehydrator-recipes", 18.6, 15, { item("calcium", 1), item("thorium-dust", 1), item("cerium-rich-mixture", 1), item("zirconium-dust", 1), item("titanium-dust", 2), item("niobium-dust", 2), fluid("oxygen", 700) } } },   -- GT++ Zirkelite
+	["fluorite-f"] = { dust = "fluorite-f-dust", byproducts = { "stone-dust", "iron-dust" }, mass = 14 },   -- GT++ Fluorite (F)
+	["runite"] = { dust = "runite-dust", byproducts = {  }, mass = 160 },   -- GT++ Runite   -- bartworks Fluorspar: fluorspar, fluorspar, fluorspar
 }
 for x, o in pairs(NEW_ORES) do
 	ORE_CHAIN[x] = { dust = o.dust, byproducts = o.byproducts, mass = o.mass }
@@ -513,6 +561,8 @@ for _, x in pairs({ "thorianite", "bismuthinite", "bismutite", "olenite", "fluor
 	"vanadio-oxy-dravite", "arsenopyrite", "ferberite", "loellingite", "roquesite", "huebnerite", "djurleite", "wittichenite",
 	"forsterite", "fayalite", "orange-descloizite", "red-descloizite", "hedenbergite", "green-fuchsite", "red-fuchsite",
 	"red-zircon", "tiberium", "bartimaeusnek", "prasiolite", "fluorspar" }) do BATH_SKIP[x] = true end
+--- and GT++'s ores of the Everglades (RecipeGenOre.java has no chemical bath; fluorite (F)'s hydrogen bath is left out)
+for _, x in pairs({ "agardite-cd", "agardite-la", "agardite-nd", "agardite-y", "alburnite", "barite-ra", "cerite", "crocoite", "cryolite-f", "demicheleite-br", "florencite", "fluorcaphite", "gadolinite-ce", "gadolinite-y", "geikielite", "hibonite", "honeaite", "irarsite", "kashinite", "lafossaite", "lanthanite-ce", "lanthanite-la", "lautarite", "lepersonnite", "miessiite", "nichromite", "perroudite", "polycrase", "samarskite-y", "samarskite-yb", "titanite", "xenotime", "yttrialite", "yttrocerite", "zimbabweite", "zircon", "zirconolite", "zirkelite", "fluorite-f", "runite" }) do BATH_SKIP[x] = true end
 
 --- the technologies that unlock a recipe making the fluid (an enabled one: none needed)
 local function producer_techs(fluid_name)
@@ -719,6 +769,10 @@ local function machine_techs(category)
 	machine_techs_cache[category] = out
 	return out
 end
+--- issue #373: recipes of a machine that 159 makes later (the chemical dehydrators) wait for 161, which calls
+--- FORK_ORE_CHAIN.unlock_after_159 (after 159's machines and 164's moves): recipe -> its inputs
+local after_159 = {}
+local function waits_for_159(category) return category:match("%-dehydrator%-recipes$") ~= nil end
 --- unlock a recipe after its machine and its inputs (each a list of technologies, nil = there from the start)
 local function unlock_after(name, groups)
 	local g = {}
@@ -775,7 +829,9 @@ for _, b in pairs(bath_late) do
 end
 for x, o in pairs(NEW_ORES) do
 	local name = decompose_of[o.dust]
-	if name and #tech_list(name) == 0 and data.raw.recipe[name].category:sub(1, 3) == "lv-" then
+	if name and waits_for_159(data.raw.recipe[name].category) then
+		after_159[name] = { o.dust }
+	elseif name and #tech_list(name) == 0 and data.raw.recipe[name].category:sub(1, 3) == "lv-" then
 		unlock_after(name, { machine_techs(data.raw.recipe[name].category), item_techs(o.dust) })
 	end
 end
@@ -787,6 +843,16 @@ for d, name in pairs(decompose_of) do
 	end
 end
 
+--- issue #373: GT++'s fluorite (F) decomposes only in this chemical dehydrator recipe (MaterialGenerator.java:278-294):
+--- 37 dusts and 8000 sulfuric acid -> 15 gypsum, silver (10 %), 2 gold (10 %), tin (30 %), 2 copper (20 %) and 16000
+--- hydrofluoric acid; 10 min at HV (240 EU/t)
+do
+	local name = made(recipe{ name = "fluorite-f-dust-dehydration", category = "hv-dehydrator-recipes", time = 600 * HV_SPEED,
+		main = "gypsum", ingredients = { item("fluorite-f-dust", 37), fluid("sulfuric-acid", 800) },
+		results = { item("gypsum", 15), item("silver-dust", 1, 0.1), item("gold-dust", 2, 0.1), item("tin-dust", 1, 0.3),
+			item("copper-dust", 2, 0.2), fluid("hydrofluoric-acid", 1600) } })
+	after_159[name] = { "fluorite-f-dust" }   -- (sulfuric acid comes long before: HV)
+end
 --- issue #207: GT's use of the garnet minerals (BauxiteRefineChain.java:230-324): a dust and 1 nitric acid (GT 10 L) ->
 --- 1 sluice juice and six dusts by chance, 2.25 s at MV. For pyrope and almandine it is GT's only use.
 local GARNET_SLUICE = {
@@ -1245,6 +1311,11 @@ FORK_ORE_HAMMER_GEM = {
 	["raw-tiberium"] = "tiberium-gem", ["raw-bartimaeusnek"] = "bartimaeusnek-gem", ["raw-prasiolite"] = "prasiolite-gem",
 	["raw-fluorspar"] = "fluorspar-gem",
 }
+--- issue #373: GT++'s ores have no forge hammer recipe for the raw ore (RecipeGenOre.java registers it for the ore block
+--- only, which Gregtorio has none of)
+for _, x in pairs({ "agardite-cd", "agardite-la", "agardite-nd", "agardite-y", "alburnite", "barite-ra", "cerite", "crocoite", "cryolite-f", "demicheleite-br", "florencite", "fluorcaphite", "gadolinite-ce", "gadolinite-y", "geikielite", "hibonite", "honeaite", "irarsite", "kashinite", "lafossaite", "lanthanite-ce", "lanthanite-la", "lautarite", "lepersonnite", "miessiite", "nichromite", "perroudite", "polycrase", "samarskite-y", "samarskite-yb", "titanite", "xenotime", "yttrialite", "yttrocerite", "zimbabweite", "zircon", "zirconolite", "zirkelite", "fluorite-f", "runite" }) do
+	FORK_ORE_HAMMER_SKIP["raw-" .. x] = "GT++ ore: RecipeGenOre.java hammers the ore block, not the raw ore (issue #373)"
+end
 --- the first byproduct of the ores ORE_CHAIN leaves out (GT Platinum: Nickel; GT Palladium: none, its own dust)
 local RAW_BYPRODUCT = { ["raw-platinum"] = "nickel-dust", ["raw-palladium"] = "palladium-dust" }
 --- GT's gems of byproduct materials that Gregtorio has
@@ -1936,5 +2007,38 @@ end
 log("FORK-ORE-CHAIN: " .. given .. " laser engraver recipes take GTNH's lens (issue #325)")
 
 --- issue #222: the helpers for 158-fork-gt-parts.lua (the parts of the new ingots and GT's nugget recipes)
+--- issue #373: the recipes that wait for 159's dehydrators, called by 161 (the machine cache is filled without them)
+function FORK_ORE_CHAIN.unlock_after_159()
+	--- the technologies of the machines of a category (159's items are not in this file's makers)
+	local function machines(category)
+		local out = {}
+		for ename, e in pairs(data.raw["assembling-machine"]) do
+			for _, c in pairs(e.crafting_categories or {}) do
+				if c == category then
+					for iname, it in pairs(data.raw.item) do
+						if it.place_result == ename then
+							for rname, r in pairs(data.raw.recipe) do
+								for _, res in pairs(r.results or {}) do
+									if res.name == iname then
+										for _, t in pairs(tech_list(rname)) do out[#out + 1] = t end
+									end
+								end
+							end
+						end
+					end
+				end
+			end
+		end
+		return out
+	end
+	local names = {}
+	for name in pairs(after_159) do names[#names + 1] = name end
+	table.sort(names)
+	for _, name in pairs(names) do
+		local groups = { machines(data.raw.recipe[name].category) }
+		for _, i in pairs(after_159[name]) do groups[#groups + 1] = item_techs(i) end
+		unlock_after(name, groups)
+	end
+end
 FORK_ORE_CHAIN.unlock_after, FORK_ORE_CHAIN.machine_techs, FORK_ORE_CHAIN.item_techs, FORK_ORE_CHAIN.made =
 	unlock_after, machine_techs, item_techs, made

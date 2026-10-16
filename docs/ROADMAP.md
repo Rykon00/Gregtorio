@@ -2283,8 +2283,17 @@ Part 2: the Twilight Forest's olivine vein and small ores and the Nether's saltp
   Ross128b and of Ross128ba (Reach Ross128ba at ZPM, GTNH's T5) with bartworks' Werkstoff ores: bartworks' byproducts,
   mass, decomposition and sifter table; the gems engrave with the mod's lens of their colour (BWColorUtil's dye;
   olenite, fluor-buergerite and fayalite have no lens of theirs here); BArTiMaEuSNeK's decomposition leaves out its
-  Magic (GT has no dust of it); GT's bismuth has no ingot in the mod, so raw bismuth does not smelt. The Everglades
-  (GT++) and Neper follow in #373's other pull requests.
+  Magic (GT has no dust of it); GT's bismuth has no ingot in the mod, so raw bismuth does not smelt.
+* #373, the Toxic Everglades: Reach the Toxic Everglades at LuV (GT++'s portal frame is a LuV assembler recipe; GTNH
+  lists the dimension as T0), its veins GTPP0-19 with GT++'s 39 ores (RecipeGenOre.java). Deviations: the mod's generic
+  chain with GT++'s two byproducts (GT++ uses byproduct B in the thermal centrifuge of the crushed ore and the
+  centrifuge of the impure dust, the mod's chain its usual order); no forge hammer recipe for the raw ore (GT++ hammers
+  only the ore block); elements the mod lacks are left out of byproducts and decompositions (germanium, tellurium,
+  thallium, bromine, iodine, radium, ytterbium, erbium, dysprosium, selenium, strontium oxide, samarium ore
+  concentrate); the LV chemical dehydrator has one fluid output, so cerite, fluorcaphite and lepersonnite give only
+  their oxygen; fluorite (F)'s hydrogen chemical bath is left out; runite gets its ore chain to runite dust, GT++'s
+  alloy blast smelter melt and ingot are not built (no consumer). Agardite (Cd), yttrialite and lanthanite (Ce) are
+  the mod's rare earth dusts of the same names. Neper follows in #373's last pull request.
 
 ### Elements and the fusion recipes (issue #365)
 

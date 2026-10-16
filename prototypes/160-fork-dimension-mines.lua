@@ -480,6 +480,51 @@ F.tech{ name = ROSS_BA, prerequisites = { ROSS, VENUS, "zpm-machines" }, packs =
 
 
 --------------------------------------------------------------------------------
+--- THE TOXIC EVERGLADES (issue #373, group 3): GT++'s dimension (GTNH's T0 in DimensionHelper.java:102, reached by a
+--- portal whose Containment Frame is a LuV assembler recipe, gtPlusPlus/core/recipe/RecipesMachines.java:164-178:
+--- here LuV, Reach the Toxic Everglades). Its veins GTPP0 to GTPP19 (OreMixes.java:1131-1349) at GT's 32, 24, 16, 8,
+--- GT++'s ores as raw ores of create_ore with 155's chain (NEW_ORES). GTPP0 is GT's iron four times.
+--------------------------------------------------------------------------------
+
+local EVERGLADES = "reach-the-everglades"
+for _, x in pairs({ "agardite-cd", "agardite-la", "agardite-nd", "agardite-y", "alburnite", "barite-ra", "cerite", "crocoite", "cryolite-f", "demicheleite-br", "florencite", "fluorcaphite", "gadolinite-ce", "gadolinite-y", "geikielite", "hibonite", "honeaite", "irarsite", "kashinite", "lafossaite", "lanthanite-ce", "lanthanite-la", "lautarite", "lepersonnite", "miessiite", "nichromite", "perroudite", "polycrase", "samarskite-y", "samarskite-yb", "titanite", "xenotime", "yttrialite", "yttrocerite", "zimbabweite", "zircon", "zirconolite", "zirkelite", "fluorite-f", "runite" }) do
+	local dust = ({ ["agardite-cd"] = true, yttrialite = true, ["lanthanite-ce"] = true })[x]
+	create_ore("raw-" .. x, nil, "crushed-" .. x, not dust and (x .. "-dust") or nil, nil, "crushed-" .. x, nil, nil, 1,
+		false, false)
+end
+local GTPP = {
+	{ "iron", "iron", "iron", "iron" },
+	{ "agardite-cd", "agardite-la", "demicheleite-br", "irarsite" },
+	{ "agardite-nd", "agardite-y", "kashinite", "cerite" },
+	{ "cerite", "nichromite", "xenotime", "hibonite" },
+	{ "geikielite", "cryolite-f", "gadolinite-ce", "agardite-nd" },
+	{ "hibonite", "yttrialite", "zirconolite", "cerite" },
+	{ "xenotime", "zirkelite", "crocoite", "irarsite" },
+	{ "honeaite", "miessiite", "samarskite-y", "samarskite-yb" },
+	{ "titanite", "zimbabweite", "zircon", "florencite" },
+	{ "lanthanite-ce", "fluorite-f", "lafossaite", "florencite" },
+	{ "geikielite", "yttrocerite", "lanthanite-la", "barite-ra" },
+	{ "fluorite-f", "kashinite", "zircon", "cryolite-f" },
+	{ "cerite", "alburnite", "miessiite", "hibonite" },
+	{ "cryolite-f", "barite-ra", "honeaite", "florencite" },
+	{ "demicheleite-br", "perroudite", "irarsite", "barite-ra" },
+	{ "fluorcaphite", "lafossaite", "gadolinite-ce", "gadolinite-y" },
+	{ "yttrocerite", "lepersonnite", "lautarite", "fluorite-f" },
+	{ "florencite", "lautarite", "samarskite-yb", "polycrase" },
+	{ "gadolinite-ce", "gadolinite-y", "agardite-la", "agardite-cd" },
+	{ "runite", "runite", "runite", "runite" },
+}
+local everglades = {}
+for i, ores in ipairs(GTPP) do everglades[#everglades + 1] = vein("mining-everglades-gtpp" .. (i - 1) .. "-vein", ores) end
+for _, x in pairs({ "agardite-cd", "agardite-la", "agardite-nd", "agardite-y", "alburnite", "barite-ra", "cerite", "crocoite", "cryolite-f", "demicheleite-br", "florencite", "fluorcaphite", "gadolinite-ce", "gadolinite-y", "geikielite", "hibonite", "honeaite", "irarsite", "kashinite", "lafossaite", "lanthanite-ce", "lanthanite-la", "lautarite", "lepersonnite", "miessiite", "nichromite", "perroudite", "polycrase", "samarskite-y", "samarskite-yb", "titanite", "xenotime", "yttrialite", "yttrocerite", "zimbabweite", "zircon", "zirconolite", "zirkelite", "fluorite-f", "runite" }) do everglades[#everglades + 1] = "crushed-" .. x end
+--- (the MV and HV Dehydrators' technologies are prerequisites: GT++ decomposes the ores of 7 to 9 components and
+--- fluorite (F) in the chemical dehydrator, #252)
+F.tech{ name = EVERGLADES, prerequisites = { "luv-machines", "naquadah-processing", "hydrazine-rocket-fuels",
+	"samaric-rare-earth-processing" }, packs = 7, count = 50, time = 60, recipes = everglades }
+
+
+
+--------------------------------------------------------------------------------
 --- THE VOID MINERS (issue #286, the decision of #154: the late ores come from GTNH's late ore machines; the
 --- maintainer chose the Void Miner only, with its full ore pools). bartworks' Void Miner I, II and III
 --- (bwcrossmod/galacticgreg/MTEVoidMinerBase.java, MTEVoidMiners.java, VoidMinerUtility.java):

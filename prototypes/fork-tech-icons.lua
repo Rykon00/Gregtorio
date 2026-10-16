@@ -152,6 +152,7 @@ FORK_TECH_ICONS = {
 	["reach-ross128ba"] = true,
 	["reach-the-asteroid-belt"] = true,
 	["reach-the-end"] = true,
+	["reach-the-everglades"] = true,
 	["reach-the-jovian-moons"] = true,
 	["reach-the-moon"] = true,
 	["reach-the-nether"] = true,
