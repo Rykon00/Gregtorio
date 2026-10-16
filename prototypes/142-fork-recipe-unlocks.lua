@@ -282,8 +282,7 @@ local UNLOCKS = {
 		"block-of-black-steel",
 	},
 	["aluminium"] = { -- MV
-		"aluminium-wire-16x", "bauxite-dust-electrolysis", "dense-aluminium-plate", "raw-aluminium-smelter",
-		"raw-bauxite-smelter",
+		"aluminium-wire-16x", "bauxite-dust-electrolysis", "dense-aluminium-plate",
 	},
 	["extruder"] = { -- MV
 		"large-black-steel-gear", "long-brass-rod", "long-iron-rod", "long-magnetic-iron-rod", "long-magnetic-steel-rod",
@@ -308,8 +307,8 @@ local UNLOCKS = {
 		"lapis-bolt", "lapis-screw",
 	},
 	["multismelter"] = { -- MV
-		"cobalt-brass-ingot-multismelter", "pentlandite-dust-multismelter", "raw-aluminium-multismelter",
-		"raw-barite-multismelter", "raw-cassiterite-multismelter", "raw-sodalite-multismelter",
+		"cobalt-brass-ingot-multismelter", "pentlandite-dust-multismelter", "raw-cassiterite-multismelter",
+		"raw-sodalite-multismelter",
 	},
 	["stainless-steel"] = { -- MV
 		"dense-stainless-steel-plate", "long-stainless-steel-rod",
@@ -319,7 +318,7 @@ local UNLOCKS = {
 	},
 	["neodymium"] = { -- HV
 		"bastnasite-dust", "bastnasite-dust-electrolysis", "centrifuging-crushed-bastnasite", "crushed-bastnasite",
-		"long-magnetic-neodymium-rod", "long-neodymium-rod", "raw-bastnasite-multismelter", "raw-bastnasite-smelter",
+		"long-magnetic-neodymium-rod", "long-neodymium-rod",
 	},
 	["hv-components"] = { -- HV
 		"hv-sensor",
@@ -352,9 +351,7 @@ local UNLOCKS = {
 	},
 	["titanium"] = { -- EV
 		"block-of-titanium", "centrifuging-crushed-chromite", "chromium-dust", "crushed-chromite", "ilmenite-processing",
-		"ilmenite-slag-processing", "long-titanium-rod", "raw-chromite-multismelter",
-		"raw-chromite-smelter", "raw-ilmenite-multismelter", "raw-ilmenite-smelter", "sulfuric-iron-solution-electrolysis",
-		"titanium-pipe-casing",
+		"ilmenite-slag-processing", "long-titanium-rod", "sulfuric-iron-solution-electrolysis", "titanium-pipe-casing",
 	},
 	["end-steel"] = { -- EV
 		"block-of-dark-steel", "block-of-electrical-steel", "end-steel-wire-16x", "ender-air-distillation",

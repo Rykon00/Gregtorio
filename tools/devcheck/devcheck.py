@@ -1621,6 +1621,7 @@ def check(a):
     print(f"draft recipes hidden by the draft guard: {len(drafts)} (FORK-DRAFT in .devcheck/last-run.log)")
     removed = re.findall(r"FORK-REMOVED: (\S+ \S+)", log)
     print(f"drafts removed for good: {len(removed)} prototypes (FORK-REMOVED)")
+    stale_unlocks = [f"{t} names {r}" for t, r in re.findall(r"FORK-STALE-UNLOCK: (\S+) (\S+)", log)]
     new_drafts = [d for d in drafts if d not in DRAFTS_OK]
     m = Model(sec["DUMP"])
     files, sprites, uncraft = check_files(sec), check_sprites(sec), m.uncraftable()
@@ -1664,6 +1665,8 @@ def check(a):
            "producer; unlock the producer there or earlier, make the producer's technology a prerequisite, or add "
            "<technology>:<item> to FORK_UNLOCK_TREE_GAPS of prototypes/142-fork-recipe-unlocks.lua)", tree, limit=400)
     report("draft recipes outside DRAFTS_OK (issue #39)", new_drafts)
+    report("technologies that unlock a recipe the ore chain removes (issue #388: delete the unlock from "
+           "prototypes/98-technology.lua or the table of 142; FORK-STALE-UNLOCK in the log)", stale_unlocks)
     menu_info, menu = check_crafting_menu(m, sec)
     print("\ncrafting menu (issue #49):")
     for line in menu_info:
@@ -1752,7 +1755,7 @@ def check(a):
               or new_drafts or fluid_problems or locked or one_pack or fluid_steps or table_only or me_recipes
               or extractor_split or ore_chain or ore_baths or ore_o34 or ore_hammer
               or circuit_icons or pgm_dusts or recycling or names or gaps or tree or vanilla or lenses or mine_twins
-              or unplaceable)
+              or unplaceable or stale_unlocks)
     print("\nRESULT:", "OK" if ok else "PROBLEMS FOUND")
     return 0 if ok else 1
 
