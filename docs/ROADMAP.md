@@ -2290,10 +2290,21 @@ file lacks):
 | D + T and D + He-3 -> helium plasma (40M, 60M) | yes (`helium-plasma-first`, `-second`, #32's numbers) |
 | Al + Li -> sulfur, Be + D -> nitrogen, Si + Mg -> iron, Cu + T -> zinc, Co + Si -> niobium, Ag + He-3 -> tin plasma, Mg + O -> calcium plasma | yes (#32's numbers) |
 | Nd + H, Nd + Pm -> europium; Lu + Cr, Lu + Pm -> americium; Am + naquadria -> neutronium; glowstone + He -> sunnarium; Ga + Rn -> duranium; Ti + duranium -> tritanium | yes (promethium routes: Gregtorio has no promethium, the other route of each) |
-| Li + W -> iridium, Be + W -> platinum, Pu + Th -> naquadah, W + He -> osmium, Mn + H -> iron, Hg + Mg and Au + Al -> uranium, U + He -> plutonium, V + H -> chrome, Ta + T -> tungsten, Ag + Li -> indium | no: transmutations of elements Gregtorio makes through their ore lines (the platinum line, the naquadah line, ...); question #375 |
+| Li + W -> iridium, Be + W -> platinum, Pu + Th -> naquadah, W + He -> osmium, Mn + H -> iron, Hg + Mg and Au + Al -> uranium, U + He -> plutonium, V + H -> chrome, Ta + T -> tungsten, Ag + Li -> indium | yes since #375 part A (136 section 1c; the maintainer's decision: as GTNH has them), see "Accepted shortcuts" below |
 | K + F -> nickel, Au + As -> silver, Ta + Zn plasma -> bismuth, Ir + F -> radon, Pu-241 + H -> americium, Lu + V -> Pu-241, Os + Si -> thorium plasma | no: plasmas GT burns in its turbines that Gregtorio's plasma balance left out (and Pu-241, #359); question #375 |
 | Co + neon -> rubidium (500M); Te + Zn -> lead plasma (6G) | no: rubidium and tellurium have no consumer in Gregtorio (the issue's two elements), lead plasma none either |
 | redstone plasma + ichorium -> unformed hexanite (6G) | no: Thaumcraft's ichorium (#39 removed it) |
+
+Accepted shortcuts (#375, the maintainer's decision): the transmutations are real and cheap late routes in GTNH and
+here too. From fusion MK1 on (LuV) platinum (beryllium + tungsten), osmium (tungsten + helium) and iron and chrome come
+without their ore lines; from MK2 iridium, naquadah (plutonium + thorium, past the naquadah line of #205), uranium and
+tungsten; from MK3 plutonium and indium. Platinum and iridium skip the platinum line of #96 (its sludge, the residues,
+the leaching steps), naquadah the goodgenerator line of #205, the others their ore chains. Amounts: GT's nugget (16 L)
+of each input for a nugget of the product, at Gregtorio's tenth (1.6); GT's times at the reactor's tier speed. The melts
+of plutonium, manganese, uranium, vanadium and indium are melted from the dust (IV fluid extractor, as molten
+lutetium); uranium, plutonium and indium have no ingot in the mod, so their melts solidify into the dust instead of
+GT's ingot (a stand-in). Fusion Plasmas MK2 needs Nuclear Fuel Rods now (the plutonium 239 dust of the naquadah
+transmutation, #252).
 
 The elements of #365 by consumer in Gregtorio's lines:
 * **Desh** (built): Mars's Desh vein (`OreMixes.java:707-717`; desh twice, scheelite, tungstate) as a Manual Mine recipe

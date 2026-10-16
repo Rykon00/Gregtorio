@@ -85,6 +85,7 @@ MATERIALS = {
     "neutronium": "Neutronium", "niobium-titanium": "NiobiumTitanium", "osmiridium": "Osmiridium",
     "quantium": "Quantium", "samarium": "Samarium", "spacetime": "SpaceTime", "transcendent-metal": "TranscendentMetal",
     "trinium": "Trinium", "tritanium": "Tritanium", "universium": "Universium", "vanadium-gallium": "VanadiumGallium",
+    "manganese": "Manganese", "uranium": "Uranium", "vanadium": "Vanadium", "indium": "Indium", "arsenic": "Arsenic",   # issue #375: the melts of the transmutations
     "callisto-ice": "CallistoIce", "plutonium": "Plutonium241", "tungstensteel": "TungstenSteel",
     # superconductor bases (fork names, GT's base of the same tier)
     "itbtc-alloy": "Tetraindiumditindibariumtitaniumheptacoppertetrakaidekaoxid",       # LuV
