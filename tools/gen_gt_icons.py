@@ -148,7 +148,7 @@ MATERIALS = {
     # issue #203: the crushed ores and chains of gypsum, sulfur and calcite, calcite's byproduct malachite; issue #207:
     # the garnet minerals, bartworks' platinum metallic powder (WerkstoffLoader.java:811, platinum's colour)
     "gypsum": "Gypsum", "sulfur": "Sulfur", "calcite": "Calcite", "malachite": "Malachite", "pyrope": "Pyrope",
-    "almandine": "Almandine", "uvarovite": "Uvarovite", "metallic-platinum-powder": ("METALLIC", (255, 255, 200)),
+    "almandine": "Almandine", "uvarovite": "Uvarovite", "basalt": "Basalt", "black-granite": "GraniteBlack", "rubidium": "Rubidium", "ferrosilite": "Ferrosilite", "metallic-platinum-powder": ("METALLIC", (255, 255, 200)),
     # issue #205: goodgenerator's Werkstoffe of the naquadah line (GGMaterial.java, their colours; dusts)
     "naquadria-oxide-mixture": ("METALLIC", (77, 77, 85)), "indium-phosphate": ("DULL", (43, 46, 112)),
     "low-quality-naquadria-phosphate": ("DULL", (77, 77, 85)),
