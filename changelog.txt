@@ -21,6 +21,8 @@ Version: 0.5.5
     - The Digester takes 4 desh rotors as in GT New Horizons, and the MAX recipes of the plasma forge and the quantum force transformer take exquisite jasper, sapphire and opal instead of red garnet, sodalite and lapis (issue #365: the stand-ins of #262 and #249, now that the materials exist).
     - GT++'s dehydrator coil wires take the Olivine Lens, GT New Horizons' lime lens, instead of the emerald lens (issue #363): an engraver running them needs the new lens in its lens slot.
     - The ExxonMobil Chemical Plant has a third fluid input and two more fluid outputs (the hydrogen peroxide recipes of issue #362 take three fluids and give two).
+    - Raw ores that GT New Horizons does not smelt (raw sulfur, aluminium, bauxite, chromite, salt and 56 more: their metal needs the blast furnace, or they have neither an ingot nor a gem) say "Cannot be smelted. Crush it first." in their description (issue #388).
+    - The gem ores of the Twilight Forest and Overworld veins (amber, topaz, sapphire, green sapphire, olivine, opal, jasper, jade, amethyst, tanzanite, blue topaz, spinel, red and yellow garnet, lignite) smelt into one gem in the furnace and 64 in the multi smelter, as their raw ores do in GT New Horizons (issue #388).
 
 ---------------------------------------------------------------------------------------------------
 Version: 0.5.4

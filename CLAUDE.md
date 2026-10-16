@@ -161,7 +161,10 @@
     recipe for every furnace recipe of the chain, GT's garnet minerals (pyrope, almandine, uvarovite), crushed platinum
     smelting, the melts of #205's ingots; devcheck fails for a gap in an ore's chain or a washer shortcut; issue #325: every
     laser engraver recipe takes GTNH's lens (150 turns it into the lens slot), devcheck fails for one without a lens unless
-    it is in the allow-list `FORK_ENGRAVER_NO_LENS` with its reason; loads after 154 and before 150)
+    it is in the allow-list `FORK_ENGRAVER_NO_LENS` with its reason; issue #388: a technology that still names a recipe
+    155 removes for good fails devcheck (`FORK-STALE-UNLOCK`; the washer and centrifuge shortcuts the chain replaces stay
+    in 98 and 142 as the anchors 155 takes the chain's technologies from), the raw ores without a furnace recipe say so
+    in their description; loads after 154 and before 150)
   - 158 GT parts (issues #222, #223, #227 and #228: GT's parts of every metal from `prototypes/gt-parts-data.lua`
     (regenerate it with `tools/gen_gt_parts.py` after a `devcheck.py check` when a metal is added; sources: GT
     materials, GT++ alloys and elements, bartworks and goodgenerator Werkstoffe with their own recipe numbers) and GT's

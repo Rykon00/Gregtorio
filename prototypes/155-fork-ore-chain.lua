@@ -228,14 +228,22 @@ local function recipe(def)
 	return def.name
 end
 
-local function remove_recipe(name)
+--- issue #388: a technology that still names a recipe removed for good (98-technology.lua, 142's tables) is logged as
+--- FORK-STALE-UNLOCK; devcheck fails for it, so the files never read as if the recipe existed. `replaced`: the washer
+--- and centrifuge shortcuts of the chain below, whose technologies the chain's recipes take over (the unlock there is
+--- where the chain is read from, not a dead line)
+local function remove_recipe(name, replaced)
 	if not data.raw.recipe[name] then return end
 	data.raw.recipe[name] = nil
 	for _, tech in pairs(data.raw.technology) do
 		if tech.effects then
 			local keep = {}
 			for _, e in pairs(tech.effects) do
-				if not (e.type == "unlock-recipe" and e.recipe == name) then keep[#keep + 1] = e end
+				if e.type == "unlock-recipe" and e.recipe == name then
+					if not replaced then log("FORK-STALE-UNLOCK: " .. tech.name .. " " .. name) end
+				else
+					keep[#keep + 1] = e
+				end
 			end
 			tech.effects = keep
 		end
@@ -399,11 +407,11 @@ for x, ore in pairs(ORE_CHAIN) do
 
 		--- the shortcuts go; their names are mapped by the JSON migration
 		if wash_ok then
-			remove_recipe(ore.dust)
+			remove_recipe(ore.dust, true)
 			FORK_ORE_CHAIN.migrated[ore.dust] = purified
 		end
 		if data.raw.recipe[old_cf] then
-			remove_recipe(old_cf)
+			remove_recipe(old_cf, true)
 			FORK_ORE_CHAIN.migrated[old_cf] = "centrifuging-" .. impure
 		end
 	end
@@ -1504,6 +1512,14 @@ local RAW_SMELT = {
 	["raw-lapis"] = { "lapis-lazuli", 1 }, ["raw-lazurite"] = { "lazurite-gem", 1 }, ["raw-monazite"] = { "monazite-gem", 1 },
 	["raw-nether-quartz"] = { "nether-quartz", 1 }, ["raw-sodalite"] = { "sodalite-gem", 1 },
 	["raw-tricalcium-phosphate"] = { "tricalcium-phosphate-gem", 1 },
+	--- issue #388: the gem ores of 160's veins (issues #332, #363, #364), which had no furnace recipe; GT smelts them
+	--- into their gem like the others (ProcessingRawOre.java:187-198, also spinel, whose NO_SMELTING the raw ore ignores)
+	["raw-amber"] = { "amber-gem", 1 }, ["raw-amethyst"] = { "amethyst-gem", 1 }, ["raw-blue-topaz"] = { "blue-topaz-gem", 1 },
+	["raw-green-sapphire"] = { "green-sapphire-gem", 1 }, ["raw-jade"] = { "jade-gem", 1 }, ["raw-jasper"] = { "jasper-gem", 1 },
+	["raw-lignite"] = { "lignite-gem", 1 }, ["raw-olivine"] = { "olivine-gem", 1 }, ["raw-opal"] = { "opal-gem", 1 },
+	["raw-red-garnet"] = { "red-garnet-gem", 1 }, ["raw-sapphire"] = { "sapphire-gem", 1 },
+	["raw-spinel"] = { "spinel-gem", 1 }, ["raw-tanzanite"] = { "tanzanite-gem", 1 }, ["raw-topaz"] = { "topaz-gem", 1 },
+	["raw-yellow-garnet"] = { "yellow-garnet-gem", 1 },
 	--- the ingot of the direct smelting metal
 	["raw-cassiterite"] = { "tin-ingot", 1 }, ["raw-galena"] = { "lead-ingot", 1 },
 	["raw-molybdenite"] = { "molybdenum-ingot", 1 }, ["raw-realgar"] = { "realgar-ingot", 1 },
@@ -1572,8 +1588,25 @@ for _, c in pairs(CALCITE_ORES) do
 		unlock_after(name, { machine_techs("mv-electric-blast-furnace-recipes"), item_techs(c[1]), item_techs(add) })
 	end
 end
+--- issue #388: a raw ore that is left without a furnace recipe (GT has neither an ingot outside the blast furnace nor a
+--- gem for it) says so in its description, so a player who expects vanilla's furnace finds the crushing route
+local smeltable, raw_hint = {}, {}
+for _, r in pairs(data.raw.recipe) do
+	if r.category == "smelting" then
+		for _, i in pairs(r.ingredients or {}) do smeltable[i.name] = true end
+	end
+end
+for x in pairs(ORE_CHAIN) do
+	local raw = data.raw.item["raw-" .. x]
+	if raw and x ~= "firestone" and not smeltable[raw.name] then   -- firestone: no source (FORK_ORE_CHAIN.skip)
+		raw.localised_description = { "item-description.fork-raw-no-smelting" }
+		raw_hint[#raw_hint + 1] = raw.name
+	end
+end
+table.sort(raw_hint)
 log("FORK-ORE-CHAIN: raw ore smelting as GT's (issue #223): " .. raw_changed .. " ores smelt into GT's ingot or gem, "
-	.. raw_removed .. " recipes removed")
+	.. raw_removed .. " recipes removed; " .. #raw_hint .. " raw ores cannot be smelted (issue #388): "
+	.. table.concat(raw_hint, " "))
 
 --------------------------------------------------------------------------------
 --- Issue #223, B2: GT's bricked blast furnace recipes of the dusts that smelt into another metal
