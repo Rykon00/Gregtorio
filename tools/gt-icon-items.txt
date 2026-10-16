@@ -3422,6 +3422,13 @@ dual-mox-fuel-rod
 depleted-dual-mox-fuel-rod
 quad-mox-fuel-rod
 depleted-quad-mox-fuel-rod
+empty-large-tungstensteel-fluid-cell
+naquadah-fuel-rod
+depleted-naquadah-fuel-rod
+dual-naquadah-fuel-rod
+depleted-dual-naquadah-fuel-rod
+quad-naquadah-fuel-rod
+depleted-quad-naquadah-fuel-rod
 calcium-carbide-dust
 calcium-hydroxide-dust
 cobalt-ii-nitrate-dust
