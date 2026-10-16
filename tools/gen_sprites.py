@@ -283,6 +283,21 @@ MULTIBLOCKS = {
                                       ("gregtech:iconsets/OVERLAY_FRONT_MULTI_SMELTER",
                                        "gregtech:iconsets/OVERLAY_FRONT_MULTI_SMELTER_ACTIVE"),
                                       "miscutils:TileEntities/MACHINE_CASING_FLUID_INCOLOY_DS"),
+    # issue #386 (3): GT++'s LFTR (its Hastelloy-N reactor casing, GT's nuclear reactor front, the reactor shield casings
+    # of its middle rings), the Sparge Tower (its exterior casing and front) and the Cold Trap I and Reactor Processing
+    # Unit I (single blocks: GT's IV hull with their fronts)
+    "liquid-fluoride-thorium-reactor": ((3, 3), "miscutils:TileEntities/MACHINE_CASING_STABLE_HASTELLOY_N", None,
+                                        ("gregtech:iconsets/OVERLAY_FRONT_NUCLEAR_REACTOR",
+                                         "gregtech:iconsets/OVERLAY_FRONT_NUCLEAR_REACTOR_ACTIVE"),
+                                        "miscutils:TileEntities/MACHINE_CASING_STABLE_ZERON100"),
+    "sparge-tower": ((3, 3), "gregtech:iconsets/SPARGE_TOWER_EXTERIOR_CASING", None,
+                     "miscutils:iconsets/controllerFaces/spargeTower", None),
+    "cold-trap-i": ((3, 3), "gregtech:iconsets/MACHINE_IV_SIDE", None,
+                    ("gregtech:basicmachines/cold_trap/OVERLAY_FRONT", "gregtech:basicmachines/cold_trap/OVERLAY_FRONT_ACTIVE"),
+                    None),
+    "reactor-processing-unit-i": ((3, 3), "gregtech:iconsets/MACHINE_IV_SIDE", None,
+                                  ("gregtech:basicmachines/reactor_processing_unit/OVERLAY_FRONT",
+                                   "gregtech:basicmachines/reactor_processing_unit/OVERLAY_FRONT_ACTIVE"), None),
     # issue #301: the Space Elevator per motor tier (gtnhintergalactic's base casing, support structure and the motor)
     **{f"space-elevator-mk{t}": ((11, 11), "gtnhintergalactic:spaceElevator/BaseCasing", None,
                                  f"gtnhintergalactic:spaceElevator/MotorT{t}_Side",
@@ -310,7 +325,8 @@ WHOLE_ICONS = {"large-titanium-boiler", "large-combustion-engine", "digester", "
                "exxonmobil-chemical-plant", "mv-dehydrator", "hv-dehydrator", "ev-dehydrator", "iv-dehydrator",
                "luv-dehydrator", "zpm-dehydrator", "void-miner-i", "void-miner-ii", "void-miner-iii",
                "ev-rocket-engine", "iv-rocket-engine", "luv-rocket-engine", "large-rocket-engine",
-               "universal-chemical-fuel-engine", "reactor-fuel-processing-plant",
+               "universal-chemical-fuel-engine", "reactor-fuel-processing-plant", "liquid-fluoride-thorium-reactor",
+               "sparge-tower", "cold-trap-i", "reactor-processing-unit-i",
                *(f"space-elevator-mk{t}" for t in range(1, 6)),
                *(f"space-elevator-mining-module-mk{t}" for t in range(1, 4)),
                "planetary-gas-siphon", *(f"space-elevator-pump-module-mk{t}" for t in range(1, 4)),

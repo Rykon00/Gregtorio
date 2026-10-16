@@ -2467,6 +2467,33 @@ the Reactor Fuel Processing Plant only, so the plant comes here, not in step 4):
   has no fluid pipe items), the Hermetic Casing V and the Super Tank IV. GT's Computer Monitor Cover is the mod's
   computer monitor; GT's crafting table recipes are crafting-or-assembling recipes.
 
+Step 3 (164 section 15, scripts/fork-power.lua; technologies Liquid Fluoride Thorium Reactor, Nuclear Salt Processing,
+Sparge Tower):
+- The LFTR (GT++'s Thorium Reactor, IV) is a 3x3 machine that needs no power and burns 10 fuel and 20 lithium
+  tetrafluoroberyllate a run into GT++'s depleted salts, uranium hexafluoride (the mod's, the same chemical) and molten
+  uranium 233. Power: GT's energy per run at 1 EU = 1 kJ (as the fusion fuels of 136): 65.5, 262 and 1049 GJ per 10
+  units of Fuel 1, 2, 3, given at four amps of IV, LuV and ZPM (40.96, 81.92, 163.84 MW), so a run takes 1600, 3200 and
+  6400 s (GT: 100 s at GT's power, which the mod's tier scale does not have). A hidden electric energy interface under
+  the reactor gives that power while it works (the script). GT's random uranium 233 (1 to 10 L at 1 in 300 ticks) is
+  its mean, 3.67 a run; GT's warm-up of 250 s and its explosion are not modelled.
+- Its item: GT++'s controller with the structure (83 Hastelloy-N Reactor Casings, 48 Reactor Shield Casings, 4 dynamo
+  hatches, hulls for the other hatches). GT's 12x naquadah cable is 3 of the mod's naquadah cables (by wire count); the
+  mod's naquadah cable comes with ZPM Materials, so the LFTR and its fuels (#252) need it: LuV science (GT: IV). The
+  IC2 reactor platings of the reactor casing are NewHorizonsCoreMod's assembler recipes; thorium 232 makes the
+  controller's plates (bartworks' blast furnace and bender).
+- The Reactor Processing Unit I and Cold Trap I (GT++'s IV single blocks, 3x3 here) with GT++'s recipes; GT's cells
+  are fluids, so a recipe that takes and returns sodium fluoride in cells takes the difference. The RPU's controller
+  takes GT's IV chemical reactor as its parts (the mod has no single block IV chemical reactor; its 2 huge polyethylene
+  pipes as 12 polyethylene sheets, as the mod's HV chemical reactor does for GT's pipe). Sodium fluoride melts in the
+  fluid extractor (GT: the fluid heater, which the mod does not have). Uranium 233's melt solidifies into its dust
+  (GT++: the ingot), as 136 does for uranium and plutonium.
+- The Sparge Tower (LuV) with GT++'s recipes; GT gives each of the five sparged gases a random amount: here the mean.
+  Its controller is GT++'s assembly line recipe without GT's research item (the mod's assembly lines take none); GT's
+  IV distillery is the mod's IV short distillation tower. HS188-A: GT++'s alloy blast smelter recipe; its rhenium from
+  GT++'s roasting of purified scheelite and molybdenite (the alloy blast smelter), talonite and niobium carbide dust
+  from GT++'s mixer, Hastelloy-X dust from the ingot.
+- Left (issue #406): the Cold Trap II and RPU II (Pikyonium needs ytterbium) and the Nuclear Salt Processing Plant.
+
 ### GoodGenerator's fuels (issue #357)
 
 Part 1 (164): the liquid fuels with GoodGenerator's recipes and fuel values. Ether and naquadah gas already existed

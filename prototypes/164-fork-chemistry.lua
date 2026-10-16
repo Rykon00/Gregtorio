@@ -1756,3 +1756,380 @@ FORK_CASTING.materials["hastelloy-n"] = { "ev", LFTR }
 FORK_CASTING.run()
 --- GoodGenerator's uranium carbide-thorium mixture (section 7) takes thorium 232
 table.insert(data.raw.technology["thorium-based-liquid-fuel"].prerequisites, LFTR)
+
+
+
+
+--------------------------------------------------------------------------------
+--- 15) THE LFTR, ITS SALT PROCESSING AND THE SPARGE TOWER (issue #386 (3)). GT5-Unofficial 638b3f37ca, gtPlusPlus/xmod/
+--- gregtech/loaders/recipe/RecipeLoaderLFTR.java (L), RecipeLoaderNuclearFuelProcessing.java (P), RecipeLoaderNuclear.java
+--- (N), core/recipe/RecipesMachinesCustom.java (C); fluids a tenth of GT's litres, GT's seconds x the tier speed. GT's
+--- cells are fluids here, so a recipe that takes and returns the same fluid in cells takes the difference.
+--- The Liquid Fluoride Thorium Reactor (IV; xmod/gregtech/common/tileentities/machines/multi/production/
+--- MTENuclearReactor.java): a run of 100 s burns 100 L fuel and 200 L lithium tetrafluoroberyllate (LFTB) into the
+--- depleted salts and uranium hexafluoride (L 70-106), no power in, GT's EU/t out (4 dynamos x 8192, 32 768 and 131 072:
+--- 32 768, 131 072 and 524 288 EU/t, 65.5 M, 262 M and 1049 M EU a run), and while it runs 1 to 10 L molten uranium 233
+--- at 1 in 300 ticks (about 36.7 L a run; :516-529). Here a 3x3 machine that needs no power: GT's energy at 1 EU = 1 kJ
+--- (as 136's fuels) at four amps of the fuel's tier, IV, LuV and ZPM (40.96, 81.92 and 163.84 MW), so a run takes 1600,
+--- 3200 and 6400 s; the power comes from a hidden electric energy interface under it while it works (scripts/
+--- fork-power.lua, the mod data `lftr`); its uranium 233 is a fixed 3.67 a run. Not modelled: GT's warm-up of 250 s
+--- (efficiency) and its explosion. Its item: the controller (C 487-494: 2 LFTR Control Circuits, a 12x naquadah cable,
+--- here 3 naquadah cables by wire count, 2 double Hastelloy-N plates, the computer cube, 2 thorium 232 plates, an IV
+--- hull) and the structure (:204-248): 83 Hastelloy-N Reactor Casings, 48 Reactor Shield Casings, 4 dynamo hatches (IV),
+--- hulls for 4 mufflers, 1 input and 4 output hatches (IV) and the maintenance hatch.
+--- The parts: LFTR Control Circuit (HV assembler, LuV circuit + HV field generator, 240 s; C 521-529), Hastelloy-N
+--- Reactor Casing (crafting table: 4 double Hastelloy-N plates, 4 heat-capacity reactor platings, a C-276 frame; C 513-519)
+--- with NewHorizonsCoreMod's reactor platings (gthandler/recipes/AssemblerRecipes.java:1269-1283), thorium 232 ingot
+--- (bartworks: blast furnace, 120 EU/t, 280.75 s) and plate (bender, LV, 11.6 s), Hastelloy-N's double plate (bender,
+--- EV, 3 s) and ring (extruder, 4 from an ingot, EV, 3 s), its screws cast by 143.
+--- LFTB (N 79-87, 392-397): blast furnace 4 lithium fluoride + 3 beryllium fluoride -> 7 (EV, 140 s), its melt (HV, 5 s).
+--- The Reactor Processing Unit I and the Cold Trap I (IV single blocks, GregtechLFTR.java:30-80; 3x3 here) with GT++'s
+--- recipes (P 70-205): the T and TB salts with fluorine into lithium (and beryllium) fluoride, protactinium and
+--- fluorinated UF6, the U salt into phosphorous UF6 and the impure molten salt base; the cold trap takes sodium fluoride
+--- and turns the UF6 salts into uranium hexafluoride (the mod's, the same chemical as GT++'s), fluorine, uranium 233
+--- and phosphorus. Sodium fluoride (N 183-221): 3 sodium hydroxide + 1000 HF (or 500 industrial strength HF) -> 2 + 1000
+--- water (LV, 60 s); its melt in the fluid extractor (GT: the fluid heater, which the mod does not have; HV, 30 s).
+--- RPU I (C 588-594): 2 HV field generators, an IV robot arm, 2 Inconel-625 plates, 2 double Hastelloy-N plates and GT's
+--- IV chemical reactor, which the mod lacks as a single block: its own parts instead (MTERecipeLoader.java:441-447: a
+--- tungstensteel rotor, 2 platinum cables, an IV motor, 2 IV circuits, an IV hull; its 2 huge polyethylene pipes as 12
+--- polyethylene sheets, as the mod's HV chemical reactor takes sheets for GT's pipe). Cold Trap I (C 572-578): 4
+--- Inconel-625 plates, a double Hastelloy-X plate, an IV machine casing, 2 IV robot arms, a frost proof casing.
+--- Uranium 233's melt solidifies into its dust (GT++: the ingot, which the mod does not have; as 136 does for uranium).
+--- The Sparge Tower (LuV; processing/MTESpargeTower.java): helium through the U salt, fluorine through the T and TB salts
+--- (L 110-153, IV, 25 s); GT gives each of the five gases a random 1 to 200 (10, 20) L and the rest of the sparge gas
+--- back: here their mean (100.5, 5.5, 10.5 L). Its controller is GT++'s assembly line recipe (C 901-924; GT's research
+--- item, Research on Gas Sparging, is left out: the mod's assembly lines take no research) with GT's IV distillery as the
+--- mod's (the IV short distillation tower), on 4 Sparge Tower Exterior Casings (C 927-940) and GT++'s Integral
+--- Encasement IV (RecipesMachinesTiered.java:534-546) and V (the mod's). HS188-A (MaterialsAlloy.java:548-563): the alloy
+--- blast smelter, 10 cobalt, 10 hafnium, 8 talonite, 5 rhenium, 5 niobium carbide, 4 Hastelloy-X, 4 tungstensteel, 4
+--- zirconium carbide dust -> 7200 L (IV, 300 s); talonite dust from GT++'s mixer (4 cobalt, 3 chrome, 2 phosphorus, 1
+--- molybdenum; LV, 2.6 s), niobium carbide from niobium and carbon (HV, 2.2 s), Hastelloy-X dust from the ingot
+--- (macerator), rhenium as GT++ roasts it from purified scheelite or molybdenite in the alloy blast smelter
+--- (RecipesGregTech.java:1019-1040: 1.8 and 3.6 molten rhenium; IV), cast into an ingot and macerated.
+--- Technologies: the reactor with Liquid Fluoride Thorium Reactor (its fuels', #252); Nuclear Salt Processing (IV) has
+--- the RPU, the cold trap and what only they take; Sparge Tower (LuV) the tower and HS188-A.
+--------------------------------------------------------------------------------
+
+local REACTOR = "liquid-fluoride-thorium-reactor"
+local SALTS, SPARGE = "nuclear-salt-processing", "sparge-tower"
+RECIPES = {}
+local SALT_RECIPES, SPARGE_RECIPES = {}, {}
+for _, f in pairs({
+	{ "lithium-tetrafluoroberyllate", "nearly-white-fluid", { 0.85, 0.95, 0.85 } },
+	{ "uranium-depleted-molten-salt", "spackled-forest-green-fluid", { 0.30, 0.60, 0.30 } },
+	{ "thorium-depleted-molten-salt", "dark-gray-spackled-fluid", { 0.30, 0.35, 0.30 } },
+	{ "thorium-beryllium-depleted-molten-salt", "dark-gray-spackled-fluid", { 0.35, 0.45, 0.35 } },
+	{ "helium-sparged-u-salt", "spackled-forest-green-fluid", { 0.40, 0.70, 0.40 } },
+	{ "fluorine-sparged-t-salt", "dark-gray-spackled-fluid", { 0.40, 0.45, 0.40 } },
+	{ "fluorine-sparged-tb-salt", "dark-gray-spackled-fluid", { 0.45, 0.55, 0.45 } },
+	{ "fluorinated-uranium-hexafluoride", "forest-green-fluid", { 0.25, 0.75, 0.25 } },
+	{ "phosphorous-uranium-hexafluoride", "forest-green-fluid", { 0.45, 0.70, 0.25 } },
+	{ "impure-molten-salt-base", "medium-gray-fluid", { 0.55, 0.60, 0.55 } },
+	{ "sodium-fluoride", "nearly-white-fluid", { 0.90, 0.90, 0.95 } },
+	{ "neptunium-hexafluoride", "forest-green-fluid", { 0.40, 0.60, 0.20 } },
+	{ "technetium-hexafluoride", "medium-gray-fluid", { 0.55, 0.55, 0.55 } },
+	{ "selenium-hexafluoride", "light-orange-fluid", { 0.85, 0.60, 0.30 } },
+	{ "molten-uranium-233", "molten-uranium-233", { 0.29, 0.86, 0.33 } },
+	{ "molten-hs188-a", "molten-hs188-a", { 0.60, 0.55, 0.70 } },
+	{ "molten-rhenium", "molten-rhenium", { 0.70, 0.70, 0.75 } },
+}) do
+	F.fluid(f[1], f[2], f[3])
+end
+for _, n in pairs({ "lithium-tetrafluoroberyllate-dust", "sodium-fluoride-dust", "protactinium-dust", "talonite-dust",
+		"niobium-carbide-dust", "hastelloy-x-dust", "rhenium-dust" }) do
+	dust(n)
+end
+local PARTS = data.raw.item["hastelloy-x-plate"].subgroup
+for _, n in pairs({ "double-hastelloy-n-plate", "hastelloy-n-ring", "hastelloy-n-screw", "thorium-232-ingot",
+		"thorium-232-plate", "rhenium-ingot", "hs188-a-ingot", "hs188-a-plate", "large-hs188-a-gear" }) do
+	create_item{ skip_recipe = true, name = n, subgroup = PARTS }
+end
+for _, n in pairs({ "reactor-plating", "heat-capacity-reactor-plating", "hastelloy-n-reactor-casing", "lftr-control-circuit",
+		"integral-encasement-iv", "sparge-tower-exterior-casing" }) do
+	create_item{ skip_recipe = true, name = n, subgroup = "subgroup-iv-age-multiblocks" }
+end
+
+--- the reactor's parts and coolant
+step(RECIPES, "double-hastelloy-n-plate", "ev-bending-machine-recipes", 3, EV_SPEED, { { "hastelloy-n-ingot", 2 } },
+	{ { "double-hastelloy-n-plate", 1 } })
+step(RECIPES, "hastelloy-n-ring", "ev-extruder-recipes", 3, EV_SPEED, { { "hastelloy-n-ingot", 1 } },
+	{ { "hastelloy-n-ring", 4 } })
+step(RECIPES, "thorium-232-ingot", "mv-electric-blast-furnace-recipes", 280.75, MV_SPEED, { { "thorium-232-dust", 1 } },
+	{ { "thorium-232-ingot", 1 } })
+step(RECIPES, "thorium-232-plate", "lv-bending-machine-recipes", 11.6, LV_SPEED, { { "thorium-232-ingot", 1 } },
+	{ { "thorium-232-plate", 1 } })
+step(RECIPES, "reactor-plating", "mv-assembling-machine-recipes", 20, MV_SPEED,
+	{ { "dense-lead-plate", 1 }, { "advanced-alloy", 4 } }, { { "reactor-plating", 1 } })
+step(RECIPES, "heat-capacity-reactor-plating", "hv-assembling-machine-recipes", 30, HV_SPEED,
+	{ { "dense-copper-plate", 2 }, { "copper-plate", 1 }, { "silver-plate", 1 }, { "reactor-plating", 1 } },
+	{ { "heat-capacity-reactor-plating", 1 } })
+step(RECIPES, "hastelloy-n-reactor-casing", "crafting-or-assembling-recipes", 1, 1,
+	{ { "double-hastelloy-n-plate", 4 }, { "heat-capacity-reactor-plating", 4 }, { "hastelloy-c276-frame", 1 } },
+	{ { "hastelloy-n-reactor-casing", 1 } })
+step(RECIPES, "lftr-control-circuit", "hv-assembling-machine-recipes", 240, HV_SPEED,
+	{ { "luv-circuit", 1 }, { "hv-field-generator", 1 } }, { { "lftr-control-circuit", 1 } })
+step(RECIPES, "lithium-tetrafluoroberyllate-dust", "ev-electric-blast-furnace-recipes", 140, EV_SPEED,
+	{ { "lithium-fluoride-dust", 4 }, { "beryllium-fluoride-dust", 3 } }, { { "lithium-tetrafluoroberyllate-dust", 7 } })
+step(RECIPES, "melt-lithium-tetrafluoroberyllate-dust", "hv-fluid-extractor-recipes", 5, HV_SPEED,
+	{ { "lithium-tetrafluoroberyllate-dust", 1 } }, { { "lithium-tetrafluoroberyllate", 14.4 } })
+step(RECIPES, "solidify-uranium-233-dust", "iv-fluid-solidifier-recipes", 1.6, IV_SPEED, { { "molten-uranium-233", 14.4 } },
+	{ { "uranium-233-dust", 1 } })
+
+--- the reactor
+local function machine(def)
+	local m = table.deepcopy(data.raw["assembling-machine"]["hv-chemical-reactor"])
+	m.name = def.name
+	m.icons = nil
+	m.icon = FORK_ICON .. def.name .. ".png"
+	m.icon_size = 32
+	m.minable = { mining_time = 1, result = def.name }
+	m.crafting_categories = { def.category }
+	m.crafting_speed = def.speed
+	m.energy_usage = def.energy or EU16_IV
+	if def.energy_source then m.energy_source = def.energy_source end
+	m.fast_replaceable_group = "fr-" .. def.name
+	m.next_upgrade = nil
+	m.collision_box = { { -1.3, -1.3 }, { 1.3, 1.3 } }
+	m.selection_box = { { -1.5, -1.5 }, { 1.5, 1.5 } }
+	m.fluid_boxes = def.ports
+	m.fluid_boxes_off_when_no_fluid_recipe = false
+	m.graphics_set = {
+		idle_animation = { layers = { { filename = SPRITE_PATH .. def.name .. "-idle.png", width = 96, height = 96,
+			frame_count = 1, shift = { 0, 0 } } } },
+		animation = { layers = { { filename = SPRITE_PATH .. def.name .. "-working.png", width = 96, height = 96,
+			frame_count = 1, shift = { 0, 0 } } } },
+	}
+	m.localised_description = { "entity-description." .. def.name }
+	F.category(def.category)
+	data:extend({ m })
+	create_item{
+		name = def.name,
+		icon = m.icon,
+		place_result = def.name,
+		subgroup = def.subgroup or "subgroup-iv-age-multiblocks",
+		stack_size = 10,
+		category = def.recipe[1],
+		energy_required = def.recipe[2],
+		ingredients = def.recipe[3],
+	}
+	def.list[#def.list + 1] = def.name
+end
+machine{
+	name = REACTOR, category = "lftr-recipes", speed = 1, energy_source = { type = "void" }, energy = "1W",
+	ports = { port("input", N, { -1, -1 }), port("input", N, { 1, -1 }, 2000), port("output", S, { -1, 1 }),
+		port("output", S, { 0, 1 }, 2000), port("output", S, { 1, 1 }), port("output", E, { 1, 0 }) },
+	list = RECIPES,
+	recipe = { "crafting-or-assembling-recipes", 1, {
+		{ type = "item", name = "lftr-control-circuit", amount = 2 },
+		{ type = "item", name = "naquadah-cable", amount = 3 },
+		{ type = "item", name = "double-hastelloy-n-plate", amount = 2 },
+		{ type = "item", name = "gregtech-computer-cube", amount = 1 },
+		{ type = "item", name = "thorium-232-plate", amount = 2 },
+		{ type = "item", name = "iv-machine-hull", amount = 10 },   -- (the controller's, 4 mufflers, 1 input, 4 outputs)
+		{ type = "item", name = "hastelloy-n-reactor-casing", amount = 83 },
+		{ type = "item", name = "reactor-shield-casing", amount = 48 },
+		{ type = "item", name = "iv-dynamo-hatch", amount = 4 },
+		{ type = "item", name = "lv-machine-hull", amount = 1 },   -- (maintenance)
+	} },
+}
+--- fuel, GT's EU per run (1 EU = 1 kJ), the tier's four amps, the depleted salt
+local LFTR_POWER = {}
+for _, f in pairs({ { 1, 65536000, EU32_IV, "thorium-depleted-molten-salt", 2.5, 5, 0.6 },
+		{ 2, 262144000, EU32_LuV, "thorium-beryllium-depleted-molten-salt", 5, 10, 1.5 },
+		{ 3, 1048576000, EU32_ZPM, "thorium-beryllium-depleted-molten-salt", 10, 20, 3 } }) do
+	local watts = 4 * tonumber(f[3]:match("^[%d.]+")) * ({ kW = 1e3, MW = 1e6 })[f[3]:match("%a+$")]
+	local name = "lftr-fuel-" .. f[1] .. "-burning"
+	step(RECIPES, name, "lftr-recipes", f[2] * 1e3 / watts, 1,
+		{ { "lftr-fuel-" .. f[1], 10 }, { "lithium-tetrafluoroberyllate", 20 } },
+		{ { "uranium-depleted-molten-salt", f[5] }, { f[4], f[6] }, { "uranium-hexafluoride", f[7] },
+			{ "molten-uranium-233", 3.67 } }, f[4])
+	LFTR_POWER[name] = watts
+end
+do
+	local md = data.raw["mod-data"]["fork-power"].data
+	md.lftr = { [REACTOR] = LFTR_POWER }
+	md.lftr_dynamo = "lftr-dynamo"
+end
+data:extend({ {
+	type = "electric-energy-interface",
+	name = "lftr-dynamo",
+	icon = FORK_ICON .. REACTOR .. ".png",
+	icon_size = 32,
+	flags = { "not-on-map", "not-blueprintable", "not-deconstructable", "placeable-off-grid", "not-flammable",
+		"no-copy-paste", "not-selectable-in-game", "not-upgradable", "hide-alt-info" },
+	hidden = true,
+	selectable_in_game = false,
+	collision_box = { { -1.3, -1.3 }, { 1.3, 1.3 } },
+	collision_mask = { layers = {} },
+	energy_source = { type = "electric", usage_priority = "secondary-output", buffer_capacity = "3MJ",
+		output_flow_limit = "200MW", input_flow_limit = "0W" },
+	energy_production = "0W",
+	gui_mode = "none",
+	localised_name = { "entity-name." .. REACTOR },
+} })
+
+--- the salt processing
+local IV_CF = data.raw["assembling-machine"]["iv-centrifuge"]
+local IV_POWER = IV_CF and IV_CF.energy_usage or EU16_IV
+local IV_SUB = data.raw.item["iv-centrifuge"] and data.raw.item["iv-centrifuge"].subgroup
+machine{
+	name = "reactor-processing-unit-i", category = "reactor-processing-unit-recipes", speed = IV_SPEED,
+	energy = IV_POWER, subgroup = IV_SUB,
+	ports = { port("input", N, { -1, -1 }), port("input", N, { 1, -1 }), port("output", S, { -1, 1 }),
+		port("output", S, { 0, 1 }), port("output", S, { 1, 1 }) },
+	list = SALT_RECIPES,
+	recipe = { "crafting-or-assembling-recipes", 1, {
+		{ type = "item", name = "hv-field-generator", amount = 2 },
+		{ type = "item", name = "iv-robot-arm", amount = 1 },
+		{ type = "item", name = "inconel-625-plate", amount = 2 },
+		{ type = "item", name = "double-hastelloy-n-plate", amount = 2 },
+		{ type = "item", name = "tungstensteel-rotor", amount = 1 },   -- GT's IV chemical reactor ...
+		{ type = "item", name = "platinum-cable", amount = 2 },
+		{ type = "item", name = "iv-motor", amount = 1 },
+		{ type = "item", name = "iv-circuit", amount = 2 },
+		{ type = "item", name = "iv-machine-hull", amount = 1 },
+		{ type = "item", name = "polyethylene-sheet", amount = 12 },   -- ... its 2 huge polyethylene pipes
+	} },
+}
+machine{
+	name = "cold-trap-i", category = "cold-trap-recipes", speed = IV_SPEED, energy = IV_POWER,
+	subgroup = IV_SUB,
+	ports = { port("input", N, { -1, -1 }), port("input", N, { 1, -1 }), port("output", S, { -1, 1 }),
+		port("output", S, { 1, 1 }) },
+	list = SALT_RECIPES,
+	recipe = { "crafting-or-assembling-recipes", 1, {
+		{ type = "item", name = "inconel-625-plate", amount = 4 },
+		{ type = "item", name = "double-hastelloy-x-plate", amount = 1 },
+		{ type = "item", name = "iv-machine-casing", amount = 1 },
+		{ type = "item", name = "iv-robot-arm", amount = 2 },
+		{ type = "item", name = "frost-proof-casing", amount = 1 },
+	} },
+}
+local PA = "protactinium-dust"
+step(SALT_RECIPES, "thorium-depleted-molten-salt-processing", "reactor-processing-unit-recipes", 600, IV_SPEED,
+	{ { "fluorine", 600 }, { "thorium-depleted-molten-salt", 1000 } },
+	{ { "lithium-fluoride", 100 }, { "fluorinated-uranium-hexafluoride", 150 }, { PA, 1, 0.05 }, { PA, 1, 0.05 },
+		{ PA, 1, 0.05 }, { PA, 1, 0.025 }, { PA, 1, 0.025 }, { PA, 1, 0.025 } }, "fluorinated-uranium-hexafluoride")
+step(SALT_RECIPES, "thorium-beryllium-depleted-molten-salt-processing", "reactor-processing-unit-recipes", 600, IV_SPEED,
+	{ { "fluorine", 600 }, { "thorium-beryllium-depleted-molten-salt", 1000 } },
+	{ { "lithium-fluoride", 100 }, { "beryllium-fluoride", 100 }, { "fluorinated-uranium-hexafluoride", 300 },
+		{ PA, 1, 0.1 }, { PA, 1, 0.1 }, { PA, 1, 0.1 }, { PA, 1, 0.05 }, { PA, 1, 0.05 }, { PA, 1, 0.05 } },
+	"fluorinated-uranium-hexafluoride")
+step(SALT_RECIPES, "uranium-depleted-molten-salt-processing", "reactor-processing-unit-recipes", 7200, HV_SPEED,
+	{ { "fluorine", 100 }, { "uranium-depleted-molten-salt", 100 } },
+	{ { "phosphorous-uranium-hexafluoride", 100 }, { "impure-molten-salt-base", 100 } })
+step(SALT_RECIPES, "fluorinated-uranium-hexafluoride-cold-trapping", "cold-trap-recipes", 600, HV_SPEED,
+	{ { "sodium-fluoride", 200 }, { "fluorinated-uranium-hexafluoride", 300 } },
+	{ { "fluorine", 200 }, { "uranium-hexafluoride", 200 }, { "uranium-233-dust", 1, 0.3 }, { "uranium-233-dust", 1, 0.2 },
+		{ "uranium-233-dust", 1, 0.1 } }, "uranium-hexafluoride")
+local P6 = {}
+for i = 1, 6 do P6[i] = { "phosphorus", 1, 0.5 } end
+step(SALT_RECIPES, "phosphorous-uranium-hexafluoride-cold-trapping", "cold-trap-recipes", 600, EV_SPEED,
+	{ { "sodium-fluoride", 100 }, { "phosphorous-uranium-hexafluoride", 200 } },
+	{ { "fluorine", 100 }, { "uranium-hexafluoride", 200 }, table.unpack(P6) }, "uranium-hexafluoride")
+step(SALT_RECIPES, "sodium-fluoride-dust", "lv-chemical-reactor-recipes", 60, LV_SPEED,
+	{ { "sodium-hydroxide", 3 }, { "hydrofluoric-acid", 100 } }, { { "sodium-fluoride-dust", 2 }, { "water", 100 } })
+step(SALT_RECIPES, "sodium-fluoride-dust-ishf", "lv-chemical-reactor-recipes", 60, LV_SPEED,
+	{ { "sodium-hydroxide", 3 }, { ISHF, 50 } }, { { "sodium-fluoride-dust", 2 }, { "water", 100 } })
+step(SALT_RECIPES, "melt-sodium-fluoride-dust", "hv-fluid-extractor-recipes", 30, HV_SPEED, { { "sodium-fluoride-dust", 1 } },
+	{ { "sodium-fluoride", 14.4 } })
+
+--- the Sparge Tower and HS188-A
+step(SPARGE_RECIPES, "rhenium-from-scheelite", "iv-alloy-blast-smelter-recipes", 75, IV_SPEED,
+	{ { "purified-scheelite", 1 }, { "carbon", 4 }, { "sulfuric-acid", 125 } }, { { "molten-rhenium", 1.8 } })
+step(SPARGE_RECIPES, "rhenium-from-molybdenite", "iv-alloy-blast-smelter-recipes", 37.5, IV_SPEED,
+	{ { "purified-molybdenite", 1 }, { "carbon", 8 }, { "sulfuric-acid", 187.5 } }, { { "molten-rhenium", 3.6 } })
+step(SPARGE_RECIPES, "rhenium-dust", "lv-macerator-recipes", 9.3, LV_SPEED, { { "rhenium-ingot", 1 } },
+	{ { "rhenium-dust", 1 } })
+step(SPARGE_RECIPES, "hastelloy-x-dust", "lv-macerator-recipes", 1.3, LV_SPEED, { { "hastelloy-x-ingot", 1 } },
+	{ { "hastelloy-x-dust", 1 } })
+step(SPARGE_RECIPES, "talonite-dust", "lv-mixer-recipes", 2.6, LV_SPEED,
+	{ { "cobalt-dust", 4 }, { "chromium-dust", 3 }, { "phosphorus", 2 }, { "molybdenum-dust", 1 } }, { { "talonite-dust", 10 } })
+step(SPARGE_RECIPES, "niobium-carbide-dust", "hv-mixer-recipes", 2.2, HV_SPEED, { { "niobium-dust", 1 }, { "carbon", 1 } },
+	{ { "niobium-carbide-dust", 2 } })
+step(SPARGE_RECIPES, "molten-hs188-a", "iv-alloy-blast-smelter-recipes", 300, IV_SPEED,
+	{ { "cobalt-dust", 10 }, { "hafnium-dust", 10 }, { "talonite-dust", 8 }, { "rhenium-dust", 5 },
+		{ "niobium-carbide-dust", 5 }, { "hastelloy-x-dust", 4 }, { "tungstensteel-dust", 4 },
+		{ "zirconium-carbide-dust", 4 } }, { { "molten-hs188-a", 720 } })
+step(SPARGE_RECIPES, "hs188-a-plate", "iv-bending-machine-recipes", 1.95, IV_SPEED, { { "hs188-a-ingot", 1 } },
+	{ { "hs188-a-plate", 1 } })
+step(SPARGE_RECIPES, "integral-encasement-iv", "hv-assembling-machine-recipes", 20, HV_SPEED,
+	{ { "hv-machine-casing", 1 }, { "tantalum-carbide-plate", 8 }, { "large-tantalum-carbide-gear", 2 }, { "gold-cable", 8 },
+		{ "processing-unit", 2 }, { "molten-tantalum-carbide", 115.2 } }, { { "integral-encasement-iv", 1 } })
+step(SPARGE_RECIPES, "sparge-tower-exterior-casing", "iv-assembling-machine-recipes", 120, IV_SPEED,
+	{ { "integral-encasement-iv", 1 }, { "hs188-a-plate", 2 }, { "hastelloy-n-ring", 4 }, { "double-tungstensteel-plate", 4 },
+		{ "hastelloy-n-screw", 4 }, { "molten-stainless-steel", 115.2 } }, { { "sparge-tower-exterior-casing", 1 } })
+local SPARGE_IN = { port("input", N, { -1, -1 }), port("input", N, { 1, -1 }) }
+local SPARGE_OUT = {}
+for _, p in pairs({ { S, { -1, 1 } }, { S, { 0, 1 } }, { S, { 1, 1 } }, { W, { -1, 0 } }, { E, { 1, 0 } } }) do
+	SPARGE_OUT[#SPARGE_OUT + 1] = port("output", p[1], p[2])
+end
+SPARGE_OUT[#SPARGE_OUT + 1] = port("output", N, { 0, -1 })
+SPARGE_OUT[#SPARGE_OUT + 1] = port("output", E, { 1, -1 })
+local sparge_ports = { SPARGE_IN[1], SPARGE_IN[2] }
+for _, p in pairs(SPARGE_OUT) do sparge_ports[#sparge_ports + 1] = p end
+machine{
+	name = SPARGE, category = "sparge-tower-recipes", speed = IV_SPEED, energy = EU16_LuV,
+	subgroup = "subgroup-luv-age-multiblocks", ports = sparge_ports, list = SPARGE_RECIPES,
+	recipe = { "luv-assembly-line-recipes", 60 * LUV_SPEED, {
+		{ type = "item", name = "sparge-tower-exterior-casing", amount = 4 },
+		{ type = "item", name = "integral-encasement-v", amount = 4 },
+		{ type = "item", name = "iv-short-distillation-tower", amount = 1 },
+		{ type = "item", name = "iv-circuit", amount = 8 },
+		{ type = "item", name = "large-hs188-a-gear", amount = 8 },
+		{ type = "item", name = "hs188-a-plate", amount = 32 },
+		{ type = "item", name = "double-hastelloy-n-plate", amount = 16 },
+		{ type = "item", name = "hastelloy-n-screw", amount = 64 },
+		{ type = "item", name = "fine-yttrium-barium-cuprate-wire", amount = 128 },
+		{ type = "item", name = "platinum-foil", amount = 64 },
+		{ type = "fluid", name = "molten-incoloy-ds", amount = 230.4 },
+		{ type = "fluid", name = "molten-tantalum-carbide", amount = 460.8 },
+		{ type = "fluid", name = "molten-titanium", amount = 460.8 },
+	} },
+}
+--- GT's random byproducts at their mean
+step(SPARGE_RECIPES, "uranium-depleted-molten-salt-sparging", "sparge-tower-recipes", 25, IV_SPEED,
+	{ { "helium", 100 }, { "uranium-depleted-molten-salt", 5 } },
+	{ { "helium-sparged-u-salt", 5 }, { "helium", 49.75 }, { "xenon", 10.05 }, { "neon", 10.05 }, { "argon", 10.05 },
+		{ "krypton", 10.05 }, { "radon", 10.05 } }, "helium-sparged-u-salt")
+for _, s in pairs({ { "thorium-depleted-molten-salt", "fluorine-sparged-t-salt", 0.55 },
+		{ "thorium-beryllium-depleted-molten-salt", "fluorine-sparged-tb-salt", 1.05 } }) do
+	step(SPARGE_RECIPES, s[1] .. "-sparging", "sparge-tower-recipes", 25, IV_SPEED, { { "fluorine", 10 }, { s[1], 5 } },
+		{ { s[2], 5 }, { "fluorine", 10 - 5 * s[3] }, { "lithium-fluoride", s[3] }, { "neptunium-hexafluoride", s[3] },
+			{ "technetium-hexafluoride", s[3] }, { "selenium-hexafluoride", s[3] }, { "thorium-tetrafluoride", s[3] } }, s[2])
+end
+--- the sparged salts in the RPU (P 108-185)
+step(SPARGE_RECIPES, "fluorine-sparged-t-salt-processing", "reactor-processing-unit-recipes", 300, IV_SPEED,
+	{ { "fluorine", 600 }, { "fluorine-sparged-t-salt", 1000 } },
+	{ { "lithium-fluoride", 200 }, { "fluorinated-uranium-hexafluoride", 300 }, { PA, 1, 0.1 }, { PA, 1, 0.1 },
+		{ PA, 1, 0.1 }, { PA, 1, 0.1 }, { PA, 1, 0.1 }, { PA, 1, 0.1 } }, "fluorinated-uranium-hexafluoride")
+step(SPARGE_RECIPES, "fluorine-sparged-tb-salt-processing", "reactor-processing-unit-recipes", 300, IV_SPEED,
+	{ { "fluorine", 600 }, { "fluorine-sparged-tb-salt", 1000 } },
+	{ { "lithium-fluoride", 200 }, { "beryllium-fluoride", 200 }, { "fluorinated-uranium-hexafluoride", 600 },
+		{ PA, 1, 0.2 }, { PA, 1, 0.2 }, { PA, 1, 0.2 }, { PA, 1, 0.2 }, { PA, 1, 0.2 }, { PA, 1, 0.2 } },
+	"fluorinated-uranium-hexafluoride")
+step(SPARGE_RECIPES, "helium-sparged-u-salt-processing", "reactor-processing-unit-recipes", 3600, HV_SPEED,
+	{ { "fluorine", 300 }, { "helium-sparged-u-salt", 100 } },
+	{ { "phosphorous-uranium-hexafluoride", 200 }, { "impure-molten-salt-base", 200 } })
+
+--- the reactor with its fuels: the mod's naquadah cable (GT's 12x naquadah cable of the controller) comes with ZPM
+--- Materials, so the reactor and its fuels (#252) do (LuV science; GT: IV); the salt processing; the tower
+for _, r in pairs(RECIPES) do fork_add_unlock(LFTR, r) end
+do
+	local t = data.raw.technology[LFTR]
+	t.prerequisites[#t.prerequisites + 1] = "zpm-materials"
+	t.unit.ingredients = F.sci(7)
+end
+F.tech{
+	--- (the reactor's salts)
+	name = SALTS, prerequisites = { LFTR }, packs = 7, count = 1000, time = 60, recipes = SALT_RECIPES,
+}
+F.tech{
+	--- (LuV: GT++'s controller; the assembly line, the IV short distillation tower, YBCO, Incoloy-DS)
+	name = SPARGE, prerequisites = { SALTS, "luv-machines" }, packs = 7, count = 1500, time = 60,
+	recipes = SPARGE_RECIPES,
+}
+FORK_CASTING.materials["hs188-a"] = { "iv", SPARGE }
+FORK_CASTING.materials["rhenium"] = { "iv", SPARGE }
+FORK_CASTING.run()
+FORK_RECIPES_TABLE_ONLY["uranium-233-dust-from-small-piles"] = nil

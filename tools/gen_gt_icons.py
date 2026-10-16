@@ -106,7 +106,11 @@ MATERIALS = {
     "zirconium-tetrafluoride": ("DULL", (170, 170, 170)), "cooked-zirconium-tetrachloride": ("DULL", (180, 160, 140)),
     "thorium-hydroxide": ("DULL", (60, 80, 60)),
     "zirconium-chloride-pellet": ("ROUGH", (180, 180, 170)),
-    "hastelloy-n": ("METALLIC", (150, 150, 170)),   # GT++ alloy (colour from its components)   # (GT++'s itemZirconiumPellet texture is not in the checkout)
+    "hastelloy-n": ("METALLIC", (150, 150, 170)),   # GT++ alloy (colour from its components)
+    "lithium-tetrafluoroberyllate": ("DULL", (200, 230, 200)), "sodium-fluoride": ("DULL", (230, 230, 240)),
+    "protactinium": ("NUCLEAR", (190, 140, 60)), "talonite": ("METALLIC", (228, 200, 200)),
+    "niobium-carbide": ("DULL", (100, 100, 100)), "hastelloy-x": ("METALLIC", (160, 160, 180)),
+    "rhenium": ("METALLIC", (180, 180, 190)), "hs188-a": ("METALLIC", (160, 140, 180)), "uranium-233": ("NUCLEAR", (73, 220, 83)),   # (GT++'s itemZirconiumPellet texture is not in the checkout)
     "callisto-ice": "CallistoIce", "plutonium": "Plutonium241", "tungstensteel": "TungstenSteel",
     # superconductor bases (fork names, GT's base of the same tier)
     "itbtc-alloy": "Tetraindiumditindibariumtitaniumheptacoppertetrakaidekaoxid",       # LuV
@@ -857,6 +861,13 @@ def icon_table(c):
     T["super-tank-iv"] = lambda: c.face(f"{BLK}MACHINE_CASING_TANK_5", f"{BLK}OVERLAY_STANK")
     T["huge-staballoy-fluid-pipe"] = lambda: c.m.icon("staballoy", "pipeHuge", kind="blocks")
     T["large-titanium-fluid-pipe"] = lambda: c.m.icon("titanium", "pipeLarge", kind="blocks")
+    # issue #386 (3): the LFTR's parts (IC2's reactor platings, GT++'s casings and control circuit)
+    T["reactor-plating"] = lambda: c.part("lead", "plateDense")   # (IC2's textures are not in the checkouts)
+    T["heat-capacity-reactor-plating"] = lambda: c.part("copper", "plateDense")
+    T["hastelloy-n-reactor-casing"] = lambda: c.gt(f"{GTPP_TE}MACHINE_CASING_STABLE_HASTELLOY_N")
+    T["lftr-control-circuit"] = lambda: c.gt("gt:miscutils/textures/items/itemCircuitLFTR")
+    T["integral-encasement-iv"] = lambda: c.gt(f"{BLK}INTEGRAL_FRAMEWORK_HV")
+    T["sparge-tower-exterior-casing"] = lambda: c.gt(f"{BLK}SPARGE_TOWER_EXTERIOR_CASING")
     T["empty-large-tungstensteel-fluid-cell"] = lambda: c.gt(M1 + "406")   # issue #386: ItemList.Large_Fluid_Cell_TungstenSteel
     # issue #357, part 2: goodgenerator's thorium fuel line (its items as the plutonium line's above)
     T["uranium-carbide-thorium-mixture"] = lambda: c.part("uranium-carbide-thorium-mixture", "dust")

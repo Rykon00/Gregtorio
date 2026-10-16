@@ -174,7 +174,12 @@ put("acids", { "lithium-hydroxide", "beryllium-hydroxide", "ammonium-bifluoride"
 	"thorium-nitrate" })
 put("nuclear", { "lithium-fluoride", "beryllium-fluoride", "zirconium-tetrafluoride", "thorium-tetrafluoride",
 	"uranium-tetrafluoride", "lftr-fuel-1", "lftr-fuel-2", "lftr-fuel-3" })
-put("molten-elements", { "molten-uranium-235", "molten-plutonium-241" })
+put("molten-elements", { "molten-uranium-235", "molten-plutonium-241", "molten-uranium-233", "molten-rhenium" })
+put("molten-superalloys", { "molten-hastelloy-n", "molten-hs188-a" })
+put("nuclear", { "lithium-tetrafluoroberyllate", "uranium-depleted-molten-salt", "thorium-depleted-molten-salt",
+	"thorium-beryllium-depleted-molten-salt", "helium-sparged-u-salt", "fluorine-sparged-t-salt", "fluorine-sparged-tb-salt",
+	"fluorinated-uranium-hexafluoride", "phosphorous-uranium-hexafluoride", "impure-molten-salt-base", "sodium-fluoride" })
+put("gases", { "neptunium-hexafluoride", "technetium-hexafluoride", "selenium-hexafluoride" })
 --- issue #364: GTNH's sapphire and green sapphire juice (155)
 put("ore-solutions", { "sapphire-juice", "green-sapphire-juice" })
 --- issue #119: Space Age's melts, restyled below, are rows of the Fluids tab like the other melts
