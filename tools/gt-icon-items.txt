@@ -3387,3 +3387,7 @@ tiny-pile-of-desh-dust
 triple-desh-plate
 bio-diesel-cell
 glycerol-cell
+polystyrene-sheet
+styrene-butadiene-rubber-sheet
+raw-styrene-butadiene-rubber-dust
+polycaprolactam-sheet

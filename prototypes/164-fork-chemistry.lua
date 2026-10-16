@@ -292,3 +292,166 @@ step(RECIPES, "cetane-boosted-diesel-from-bio-diesel", "hv-chemical-reactor-reci
 	{ { "bio-diesel", 1000 }, { "tetranitromethane", 40 } }, { { "cetane-boosted-diesel", 900 } })
 for _, r in pairs(RECIPES) do fork_add_unlock("cetane-boosted-diesel", r) end
 table.insert(data.raw.technology["cetane-boosted-diesel"].prerequisites, FERMENTATION)
+
+--------------------------------------------------------------------------------
+--- 3) THE POLYMER LADDER (issue #358): GTNH's polymers Gregtorio lacked and the epoxy route through bisphenol A
+--- (gregtech/loaders/postload/recipes/ChemicalRecipes.java; fluids a tenth of GT's litres, a polymer's 144 L ingot is 14.4):
+---   epoxy: benzene + propene + 12.5 phosphoric acid -> cumene (:4308-4314, 12 s, LV); cumene + 200 oxygen -> phenol and
+---     acetone (:1954-1995, 8 s); acetone + 200 phenol + hydrochloric acid -> bisphenol A + water (:4316-4342, 8 s); bisphenol
+---     A + 200 epichlorohydrin + 6 sodium hydroxide -> epoxy + 200 salt water (:1996-2003, 10 s). Upstream's one-step epoxy
+---     recipe (17) is GT's large chemical reactor recipe (:5327-5337) in the small reactor and stays.
+---   polystyrene: benzene + ethylene -> styrene + 200 hydrogen (:3300-3316, 6 s, LV); GT's default polymerization
+---     (:3940-3990, :4017): 14.4 styrene + 100 air -> 14.4 polystyrene, or + 100 oxygen -> 21.6 (8 s), as Gregtorio's
+---     polyethylene; its sheet in the fluid solidifier like the polyethylene sheet. GT's only uses (the Bio Lab's petri
+---     dish, the QFT's plastics recipe) are not in Gregtorio.
+---   styrene-butadiene rubber: 35 styrene + 100 butadiene + 500 air -> 9 raw SBR dust, or + 500 oxygen -> 13 (:4479-4524,
+---     8 s, MV); 9 raw SBR + sulfur -> 129.6 SBR (:3321-3326, 30 s, LV); its sheet; GT's cable insulation
+---     (gregtech/loaders/oreprocessing/ProcessingWire.java:265-310): SBR takes the place of rubber at three quarters of its
+---     amount and of silicone rubber at one and a half times, in every cable recipe of the assembler that takes them
+--------------------------------------------------------------------------------
+
+local POLYSTYRENE, SBR = "polystyrene", "styrene-butadiene-rubber"
+F.fluid("cumene", "rust-brown-fluid", { 0.33, 0.13, 0.00 })
+F.fluid("bisphenol-a", "dark-muted-yellow-fluid", { 0.83, 0.67, 0.00 })
+F.fluid("styrene", "nearly-white-fluid", { 0.82, 0.78, 0.75 })
+F.fluid("polystyrene", "medium-gray-fluid", { 0.75, 0.71, 0.67 })
+F.fluid("styrene-butadiene-rubber", "black-fluid", { 0.13, 0.10, 0.09 })
+for _, name in pairs({ "polystyrene-sheet", "raw-styrene-butadiene-rubber-dust", "styrene-butadiene-rubber-sheet" }) do
+	create_item{ skip_recipe = true, name = name, subgroup = data.raw.item["polyethylene-sheet"].subgroup }
+end
+
+--- the technologies of a recipe and a test whether one technology lies on the path to another
+local function techs_of(recipe)
+	local out = {}
+	for name, t in pairs(data.raw.technology) do
+		for _, e in pairs(t.effects or {}) do
+			if e.type == "unlock-recipe" and e.recipe == recipe then out[#out + 1] = name end
+		end
+	end
+	return out
+end
+local function leads_to(from, to)
+	local seen, stack = {}, { to }
+	while #stack > 0 do
+		local n = table.remove(stack)
+		if n == from then return true end
+		if not seen[n] then
+			seen[n] = true
+			for _, p in pairs((data.raw.technology[n] or {}).prerequisites or {}) do stack[#stack + 1] = p end
+		end
+	end
+	return false
+end
+--- the first technology after both (the one of them that leads to the other, else the technology with the fewest
+--- ancestors that has both before it)
+local function after_both(a, b)
+	if leads_to(a, b) then return b end
+	if leads_to(b, a) then return a end
+	local best, best_n
+	for name, t in pairs(data.raw.technology) do
+		if not t.hidden and t.enabled ~= false and leads_to(a, name) and leads_to(b, name) then
+			local n, seen, stack = 0, {}, { name }
+			while #stack > 0 do
+				local x = table.remove(stack)
+				if not seen[x] then
+					seen[x] = true
+					n = n + 1
+					for _, p in pairs((data.raw.technology[x] or {}).prerequisites or {}) do stack[#stack + 1] = p end
+				end
+			end
+			if not best or n < best_n or (n == best_n and name < best) then best, best_n = name, n end
+		end
+	end
+	return best
+end
+
+RECIPES = {}
+step(RECIPES, "cumene", "lv-chemical-reactor-recipes", 12, LV_SPEED,
+	{ { "benzene", 100 }, { "propene", 100 }, { "phosphoric-acid", 12.5 } }, { { "cumene", 100 } })
+step(RECIPES, "phenol-and-acetone-from-cumene", "lv-chemical-reactor-recipes", 8, LV_SPEED,
+	{ { "cumene", 100 }, { "oxygen", 200 } }, { { "phenol", 100 }, { "acetone", 100 } }, "phenol")
+step(RECIPES, "bisphenol-a", "lv-chemical-reactor-recipes", 8, LV_SPEED,
+	{ { "acetone", 100 }, { "phenol", 200 }, { "hydrochloric-acid", 100 } }, { { "bisphenol-a", 100 }, { "water", 100 } })
+step(RECIPES, "epoxy-from-bisphenol-a", "lv-chemical-reactor-recipes", 10, LV_SPEED,
+	{ { "sodium-hydroxide", 6 }, { "bisphenol-a", 100 }, { "epichlorohydrin", 200 } },
+	{ { "epoxy", 100 }, { "salt-water", 200 } })
+F.tech{
+	name = "bisphenol-a", prerequisites = { "epoxy-processing", "phosphorus-processing" }, packs = 3, count = 60, time = 30,
+	recipes = RECIPES,
+}
+
+RECIPES = {}
+step(RECIPES, "styrene", "lv-chemical-reactor-recipes", 6, LV_SPEED, { { "benzene", 100 }, { "ethylene", 100 } },
+	{ { "styrene", 100 }, { "hydrogen", 200 } })
+step(RECIPES, "polystyrene-from-air", "lv-chemical-reactor-recipes", 8, LV_SPEED, { { "styrene", 14.4 }, { "air", 100 } },
+	{ { "polystyrene", 14.4 } })
+step(RECIPES, "polystyrene", "lv-chemical-reactor-recipes", 8, LV_SPEED, { { "styrene", 14.4 }, { "oxygen", 100 } },
+	{ { "polystyrene", 21.6 } })
+step(RECIPES, "polystyrene-sheet", "lv-fluid-solidifier-recipes", 1, LV_SPEED, { { "polystyrene", 14.4 } },
+	{ { "polystyrene-sheet", 1 } })
+F.tech{
+	name = POLYSTYRENE, prerequisites = { "polyethylene", "gas-turbine" }, packs = 2, count = 60, time = 30, recipes = RECIPES,
+}
+
+RECIPES = {}
+step(RECIPES, "raw-styrene-butadiene-rubber-from-air", "mv-chemical-reactor-recipes", 8, MV_SPEED,
+	{ { "styrene", 35 }, { "butadiene", 100 }, { "air", 500 } }, { { "raw-styrene-butadiene-rubber-dust", 9 } })
+step(RECIPES, "raw-styrene-butadiene-rubber", "mv-chemical-reactor-recipes", 8, MV_SPEED,
+	{ { "styrene", 35 }, { "butadiene", 100 }, { "oxygen", 500 } }, { { "raw-styrene-butadiene-rubber-dust", 13 } })
+step(RECIPES, "styrene-butadiene-rubber", "lv-chemical-reactor-recipes", 30, LV_SPEED,
+	{ { "raw-styrene-butadiene-rubber-dust", 9 }, { "sulfur", 1 } }, { { "styrene-butadiene-rubber", 129.6 } })
+step(RECIPES, "styrene-butadiene-rubber-sheet", "lv-fluid-solidifier-recipes", 1, LV_SPEED,
+	{ { "styrene-butadiene-rubber", 14.4 } }, { { "styrene-butadiene-rubber-sheet", 1 } })
+F.tech{
+	name = SBR, prerequisites = { POLYSTYRENE, "oil-processing" }, packs = 4, count = 80, time = 30,
+	recipes = RECIPES,
+}
+--- polycaprolactam (nylon): GT makes it straight from saltpeter and naphtha (ChemicalRecipes.java:304-311: a saltpeter
+--- dust + 576 L naphtha -> 1296 L and a tiny pile of potassium, 32 s, LV; here the potassium dust at a ninth); its sheet.
+--- GT's uses (vanilla string, goodgenerator's fluid storage cores) are not in Gregtorio.
+F.fluid("polycaprolactam", "nearly-white-fluid", { 0.20, 0.20, 0.20 })
+create_item{ skip_recipe = true, name = "polycaprolactam-sheet", subgroup = data.raw.item["polyethylene-sheet"].subgroup }
+RECIPES = {}
+step(RECIPES, "polycaprolactam", "lv-chemical-reactor-recipes", 32, LV_SPEED, { { "saltpeter", 1 }, { "naphtha", 57.6 } },
+	{ { "polycaprolactam", 129.6 }, { "potassium", 1, 1 / 9 } })
+step(RECIPES, "polycaprolactam-sheet", "lv-fluid-solidifier-recipes", 1, LV_SPEED, { { "polycaprolactam", 14.4 } },
+	{ { "polycaprolactam-sheet", 1 } })
+F.tech{
+	name = "polycaprolactam", prerequisites = { POLYSTYRENE, "implosion-compressor" }, packs = 3, count = 60, time = 30,
+	recipes = RECIPES,
+}
+--- the cable recipes: a twin with SBR for every cable recipe of the assembler that takes liquid or silicone rubber; it comes
+--- with the first technology after both the base recipe's and SBR's
+do
+	local made, skipped = 0, 0
+	local names = {}
+	for name in pairs(data.raw.recipe) do names[#names + 1] = name end
+	table.sort(names)
+	for _, name in pairs(names) do
+		local r = data.raw.recipe[name]
+		local out = r.results and r.results[1] and r.results[1].name or ""
+		if r.category == "lv-assembling-machine-recipes" and out:match("%-cable$") and #r.results == 1 then
+			local ing, found = table.deepcopy(r.ingredients), false
+			for _, i in pairs(ing) do
+				if i.name == "liquid-rubber" then i.name, i.amount, found = SBR, i.amount * 0.75, true
+				elseif i.name == "silicone-rubber" then i.name, i.amount, found = SBR, i.amount * 1.5, true end
+			end
+			if found then
+				local base = techs_of(name)[1]
+				local tech = base == nil and SBR or after_both(SBR, base)
+				if tech then
+					create_recipe{ name = name .. "-sbr", category = r.category, energy_required = r.energy_required,
+						ingredients = ing, results = table.deepcopy(r.results), main_product = out }
+					fork_add_unlock(tech, name .. "-sbr")
+					data.raw.recipe[name .. "-sbr"].enabled = false
+					made = made + 1
+				else
+					skipped = skipped + 1
+					log("FORK-CHEMISTRY: no technology after " .. SBR .. " and " .. tostring(base) .. " for " .. name .. "-sbr")
+				end
+			end
+		end
+	end
+	log("FORK-CHEMISTRY: " .. made .. " cable recipes with styrene-butadiene rubber, " .. skipped
+		.. " skipped (no technology after both)")
+end

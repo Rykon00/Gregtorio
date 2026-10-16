@@ -285,6 +285,9 @@ MATERIALS = {
     "sapphire": "Sapphire", "green-sapphire": "GreenSapphire",  # issue #364: the sapphire vein
     "desh": "Desh",  # issue #365: the Desh vein of Mars
     "bio-diesel": "BioDiesel", "glycerol": "Glycerol",  # issue #360: their cells
+    # issue #358: the polymers' sheets (GT's plates) and raw SBR (a dust)
+    "polystyrene": "Polystyrene", "styrene-butadiene-rubber": "StyreneButadieneRubber", "polycaprolactam": "Polycaprolactam",
+    "raw-styrene-butadiene-rubber": "RawStyreneButadieneRubber",
     # issue #363, part 2: the Twilight Forest's and the Nether's ores
     "olivine": "Olivine", "bentonite": "Bentonite", "magnesite": "Magnesite", "garnierite": "Garnierite",
     "wulfenite": "Wulfenite", "powellite": "Powellite", "saltpeter": "Saltpeter", "tanzanite": "Tanzanite",
@@ -793,6 +796,9 @@ def icon_table(c):
         T[m + "-cell"] = (lambda m=m: lambda: c.part(m, "cell"))()
     T["bio-diesel-cell"] = lambda: c.part("bio-diesel", "cell")   # issue #360
     T["glycerol-cell"] = lambda: c.part("glycerol", "cell")   # issue #360
+    for m in ("polystyrene", "styrene-butadiene-rubber", "polycaprolactam"):   # issue #358: the sheets are GT's plates
+        T[m + "-sheet"] = (lambda m=m: lambda: c.part(m, "plate"))()
+    T["raw-styrene-butadiene-rubber-dust"] = lambda: c.part("raw-styrene-butadiene-rubber", "dust")
     T["phthalic-anhydride"] = lambda: c.part("phthalic-anhydride", "dust")
     T["sodium-bisulfate"] = lambda: c.part("sodium-bisulfate", "dust")
     # issue #302: the drill heads of the Space Elevator's mining drones (GT's toolHeadDrill of the material)

@@ -2320,3 +2320,16 @@ GTNH's non-potion recipes, the fermented biomass line, seed oil, bio diesel and 
   oil are left out.
 * Bio diesel's chemical reactor recipe is GT's x9 one (a sodium hydroxide dust; Gregtorio has no tiny piles of it).
 * The fermented biomass distillation leaves out GT's CropsNH fertilizer and IC2's biogas.
+
+### Polymers (issue #358)
+
+Built: the epoxy route through bisphenol A (cumene, phenol and acetone from cumene, bisphenol A, epoxy from it and
+epichlorohydrin), polystyrene, styrene-butadiene rubber and polycaprolactam with GT's recipes (164). Notes:
+* Upstream's one-step epoxy recipe is GT's large chemical reactor recipe (`ChemicalRecipes.java:5327-5337`) in the small
+  reactor; it stays (Gregtorio has no large-reactor-only category).
+* SBR cable insulation (GT: SBR at three quarters of rubber, one and a half of silicone rubber) is a twin of a cable recipe
+  only where the cable's technology and Styrene-Butadiene Rubber are ordered (5 of 27); the others would need new
+  prerequisite edges for an optional recipe and are left out.
+* Polystyrene and polycaprolactam have no Gregtorio consumer (GT's: the Bio Lab's petri dish, the QFT's plastics recipe,
+  vanilla string, goodgenerator's fluid storage cores).
+* Polyurethane does not exist in GTNH; Kevlar and radox are question #378.
