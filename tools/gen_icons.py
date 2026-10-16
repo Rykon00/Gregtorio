@@ -51,6 +51,7 @@ DONORS = {
     # issue #36: quantium (the fluxed electrum and bedrockium ingots have upstream icons), the new dusts
     "quantium-ingot": ("neutronium-ingot", 285), "quantium-dust": ("naquadah-dust", 285),
     "callisto-ice-dust": ("naquadah-dust", 195), "fluxed-electrum-dust": ("naquadah-dust", 50),
+    "wheat-seeds": ("wheat", 75),   # issue #360: the greenhouse wheat's seeds
 }
 
 

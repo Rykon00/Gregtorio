@@ -284,6 +284,7 @@ MATERIALS = {
     "amber": "Amber", "topaz": "Topaz",  # issue #332: the Twilight Forest's ores
     "sapphire": "Sapphire", "green-sapphire": "GreenSapphire",  # issue #364: the sapphire vein
     "desh": "Desh",  # issue #365: the Desh vein of Mars
+    "bio-diesel": "BioDiesel", "glycerol": "Glycerol",  # issue #360: their cells
     # issue #363, part 2: the Twilight Forest's and the Nether's ores
     "olivine": "Olivine", "bentonite": "Bentonite", "magnesite": "Magnesite", "garnierite": "Garnierite",
     "wulfenite": "Wulfenite", "powellite": "Powellite", "saltpeter": "Saltpeter", "tanzanite": "Tanzanite",
@@ -790,6 +791,8 @@ def icon_table(c):
     T["rocket-fuel-cell"] = lambda: c.part("rocket-fuel", "cell")   # issue #295
     for m in ("rp-1-rocket-fuel", "dense-hydrazine-fuel-mixture", "cn3h7o3-rocket-fuel"):   # issue #362
         T[m + "-cell"] = (lambda m=m: lambda: c.part(m, "cell"))()
+    T["bio-diesel-cell"] = lambda: c.part("bio-diesel", "cell")   # issue #360
+    T["glycerol-cell"] = lambda: c.part("glycerol", "cell")   # issue #360
     T["phthalic-anhydride"] = lambda: c.part("phthalic-anhydride", "dust")
     T["sodium-bisulfate"] = lambda: c.part("sodium-bisulfate", "dust")
     # issue #302: the drill heads of the Space Elevator's mining drones (GT's toolHeadDrill of the material)

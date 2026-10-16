@@ -2309,3 +2309,14 @@ The elements of #365 by consumer in Gregtorio's lines:
 * **Mithril, rubidium, tellurium, dysprosium, scandium, strontium, radium, polonium, curium, neptunium, technetium,
   rhenium, thallium, germanium, selenium**: no consumer in Gregtorio's lines (strontium's GTNH use is the netherite
   chain, scandium's and strontium's their plasmas' fuel values), so not built.
+
+### Bio fuels, Brewery and Fermenter (issue #360)
+
+#155's "leave for now" of the Brewery and the Fermenter is revisited (#165 is done): both are added LV to MAX, with
+GTNH's non-potion recipes, the fermented biomass line, seed oil, bio diesel and glycerol (164). Deviations:
+* The brewery's light, medium and heavy oil lubricant recipes are left out (the pump modules' oils come at IV with their
+  own lubricant, #318; medium oil is #361's); GT's brewing stand is not in the Brewery's recipe (a Minecraft block).
+* Wheat seeds come from the Extreme Industrial Greenhouse's wheat (one per wheat); GT's melon and pumpkin seeds and fish
+  oil are left out.
+* Bio diesel's chemical reactor recipe is GT's x9 one (a sodium hydroxide dust; Gregtorio has no tiny piles of it).
+* The fermented biomass distillation leaves out GT's CropsNH fertilizer and IC2's biogas.

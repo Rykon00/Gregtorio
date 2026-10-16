@@ -3385,3 +3385,5 @@ small-pile-of-desh-dust
 superdense-desh-plate
 tiny-pile-of-desh-dust
 triple-desh-plate
+bio-diesel-cell
+glycerol-cell

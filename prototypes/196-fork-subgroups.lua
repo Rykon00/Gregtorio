@@ -143,6 +143,9 @@ put("organic", { "naphthalene", "ethylbenzene", "anthracene", "2-ethylanthraquin
 	"monomethylhydrazine" })
 put("acids", { "hydrogen-peroxide" })
 put("coolants", { "liquid-oxygen" })
+--- issue #360: the bio fuels (164)
+put("fuels", { "seed-oil", "bio-diesel" })
+put("organic", { "glycerol", "fermented-biomass" })
 --- issue #364: GTNH's sapphire and green sapphire juice (155)
 put("ore-solutions", { "sapphire-juice", "green-sapphire-juice" })
 --- issue #119: Space Age's melts, restyled below, are rows of the Fluids tab like the other melts

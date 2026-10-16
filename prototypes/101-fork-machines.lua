@@ -621,6 +621,80 @@ data.raw["assembling-machine"]["lv-autoclave"].next_upgrade = "mv-autoclave"
 
 
 --------------------------------------------------------------------------------
+--- 2j) BREWERY AND FERMENTER, LV TO EV (issue #360, the revisit of #155's "leave for now")
+---    GT New Horizons' Basic Brewery (LoaderMetaTileEntities.java:1910, recipe map brewingRecipes) and Basic Fermenter
+---    (:2748, fermentingRecipes), one item and one fluid slot in and a fluid out; 164-fork-chemistry.lua makes their
+---    recipes (lubricant and biomass in the brewery, fermented biomass in the fermenter; GT's potions are n/a). Machine
+---    recipes as GT's: the Brewery "GPG", "WMW", "CBC" (MTERecipeLoader.java:3366-3400: 2 glass, the pump, 2 cables, the
+---    hull, 2 circuits; GT's brewing stand, Minecraft's, is left out), the Fermenter "WPW", "GMG", "WCW"
+---    (registerFermenter: 4 cables, the pump, 2 glass, the hull, a circuit). Power: GT's 4 and 2 EU/t at LV, doubled per
+---    tier like the other machines. LV with Fermentation (164), MV to EV with the machines of their tier. Sprites:
+---    tools/gen_sprites.py (brewery_lv_mv: the assembling machine's frame with GT's potion brewer front; fermenter_lv_mv: the
+---    fluid solidifier's frame with GT's fermenter front); IV to MAX through IV_BASIC_MACHINES.
+--------------------------------------------------------------------------------
+
+recipe_category_and_subgroup("lv-brewery-recipes")
+recipe_category_and_subgroup("lv-fermenter-recipes")
+do
+	local TIERS_360 = {
+		--  tier  path tier  brewery   fermenter  speed  cable             circuit
+		{ "lv", "lv",  "80kW",  "40kW",  1, "tin-cable",       "electronic-circuit" },
+		{ "mv", "mv",  "160kW", "80kW",  2, "copper-cable",    "advanced-circuit" },
+		{ "hv", "mv",  "320kW", "160kW", 4, "gold-cable",      "processing-unit" },
+		{ "ev", "mv",  "640kW", "320kW", 8, "aluminium-cable", "ev-circuit" },
+	}
+	local TECH_OF = { lv = "fermentation", mv = "mv-machines", hv = "hv-machines", ev = "ev-machines" }
+	for _, a in ipairs(TIERS_360) do
+		local t, pt, e_brew, e_ferm, speed, cable, circuit = table.unpack(a)
+		local ports = {
+			fluid_port(0, -1, "input", defines.direction.north),
+			fluid_port(0, 1, "output", defines.direction.south),
+		}
+		make_electric_machine(t .. "-brewery", t .. "-brewery", pt .. "-brewery", { "lv-brewery-recipes" }, "fr-brewery",
+			e_brew, speed, 1, 0.5, 3, 3, ports)
+		make_electric_machine(t .. "-fermenter", t .. "-fermenter", pt .. "-fermenter", { "lv-fermenter-recipes" },
+			"fr-fermenter", e_ferm, speed, 1, 0.5, 3, 3, ports)
+		create_item{
+			name = t .. "-brewery",
+			subgroup = t .. "-age-production-machine",
+			ingredients = {
+				{ type = "item", name = "glass", amount = 2 },
+				{ type = "item", name = t .. "-pump", amount = 1 },
+				{ type = "item", name = cable, amount = 2 },
+				{ type = "item", name = t .. "-machine-hull", amount = 1 },
+				{ type = "item", name = circuit, amount = 2 },
+			},
+			place_result = t .. "-brewery",
+			stack_size = 10,
+		}
+		create_item{
+			name = t .. "-fermenter",
+			subgroup = t .. "-age-production-machine",
+			ingredients = {
+				{ type = "item", name = cable, amount = 4 },
+				{ type = "item", name = t .. "-pump", amount = 1 },
+				{ type = "item", name = "glass", amount = 2 },
+				{ type = "item", name = t .. "-machine-hull", amount = 1 },
+				{ type = "item", name = circuit, amount = 1 },
+			},
+			place_result = t .. "-fermenter",
+			stack_size = 10,
+		}
+		if TECH_OF[t] ~= "fermentation" then
+			fork_add_unlock(TECH_OF[t], t .. "-brewery")
+			fork_add_unlock(TECH_OF[t], t .. "-fermenter")
+		end
+	end
+	for _, m in pairs({ "brewery", "fermenter" }) do
+		data.raw["assembling-machine"]["lv-" .. m].next_upgrade = "mv-" .. m
+		data.raw["assembling-machine"]["mv-" .. m].next_upgrade = "hv-" .. m
+		data.raw["assembling-machine"]["hv-" .. m].next_upgrade = "ev-" .. m
+	end
+end
+
+
+
+--------------------------------------------------------------------------------
 --- 3) IV BASIC MACHINES
 ---    Copy of the EV machine: double speed, double power draw, IV categories added,
 ---    recipe = EV recipe with every tiered component shifted one tier up.
@@ -723,6 +797,7 @@ IV_BASIC_MACHINES = {
 	"extractor", "electrolyzer", "assembling-machine", "cutting-machine",
 	"canning-machine", "mixer", "ore-washer", "laser-engraver", "fluid-solidifier", "chemical-bath",
 	"polarizer", "circuit-assembler", "autoclave", "alloy-smelter", "compressor", "forge-hammer", "arc-furnace", "forming-press", "electric-furnace", "sifting-machine", "thermal-centrifuge", "electromagnetic-separator",
+	"brewery", "fermenter",   -- issue #360
 }
 --- Multiblocks that come as an upgrade of the EV version (graphics of the EV version with energy hatches of the tier)
 IV_UPGRADE_MACHINES = {
