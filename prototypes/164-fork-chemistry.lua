@@ -2133,3 +2133,32 @@ FORK_CASTING.materials["hs188-a"] = { "iv", SPARGE }
 FORK_CASTING.materials["rhenium"] = { "iv", SPARGE }
 FORK_CASTING.run()
 FORK_RECIPES_TABLE_ONLY["uranium-233-dust-from-small-piles"] = nil
+
+
+
+--------------------------------------------------------------------------------
+--- 16) THE LFTR LOOP IN THE REACTOR FUEL PROCESSING PLANT (issue #386 (4); gtPlusPlus/xmod/gregtech/loaders/recipe/
+--- RecipeLoaderNuclearFuelProcessing.java:207-256): the RPU's impure molten salt base distils into the stable molten salt
+--- base (LiFBeF2; distillation tower, IV, 7.5 min, 1000 -> 250); with the cold trap's uranium hexafluoride and hydrogen it
+--- becomes GT++'s LFTR Fuel Base (the blast furnace at 5400 K: a cell of each, 2000 hydrogen -> 3000 + 2 cells of
+--- hydrofluoric acid; or the chemical plant: 1000 + 1000 + 2000 -> 3000 + 2000 industrial strength HF; IV, 150 s), and
+--- the plant mixes 900 of it with 100 zirconium or thorium tetrafluoride into LFTR Fuel 2 or 3 (IV, 12 and 15 min),
+--- GT++'s cheaper routes to the fuels of section 14. With Nuclear Salt Processing, where the salts are processed.
+--------------------------------------------------------------------------------
+
+F.fluid("stable-molten-salt-base", "nearly-white-fluid", { 0.75, 0.85, 0.75 })
+F.fluid("lftr-fuel-base", "spackled-forest-green-fluid", { 0.35, 0.60, 0.35 })
+RECIPES = {}
+step(RECIPES, "impure-molten-salt-base-distillation", "iv-tall-distillation-recipes", 450, IV_SPEED,
+	{ { "impure-molten-salt-base", 100 } }, { { "stable-molten-salt-base", 25 } })
+step(RECIPES, "lftr-fuel-base", "iv-electric-blast-furnace-recipes", 150, IV_SPEED,
+	{ { "uranium-hexafluoride", 100 }, { "stable-molten-salt-base", 100 }, { "hydrogen", 200 } },
+	{ { "lftr-fuel-base", 300 }, { "hydrofluoric-acid", 200 } })
+step(RECIPES, "lftr-fuel-base-chemical-plant", "chemical-plant-recipes", 150, IV_SPEED,
+	{ { "uranium-hexafluoride", 100 }, { "stable-molten-salt-base", 100 }, { "hydrogen", 200 } },
+	{ { "lftr-fuel-base", 300 }, { ISHF, 200 } })
+step(RECIPES, "lftr-fuel-2-from-fuel-base", "reactor-fuel-processing-recipes", 720, IV_SPEED,
+	{ { "zirconium-tetrafluoride", 10 }, { "lftr-fuel-base", 90 } }, { { "lftr-fuel-2", 100 } })
+step(RECIPES, "lftr-fuel-3-from-fuel-base", "reactor-fuel-processing-recipes", 900, IV_SPEED,
+	{ { "thorium-tetrafluoride", 10 }, { "lftr-fuel-base", 90 } }, { { "lftr-fuel-3", 100 } })
+for _, r in pairs(RECIPES) do fork_add_unlock(SALTS, r) end

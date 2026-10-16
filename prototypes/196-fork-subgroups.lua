@@ -178,7 +178,8 @@ put("molten-elements", { "molten-uranium-235", "molten-plutonium-241", "molten-u
 put("molten-superalloys", { "molten-hastelloy-n", "molten-hs188-a" })
 put("nuclear", { "lithium-tetrafluoroberyllate", "uranium-depleted-molten-salt", "thorium-depleted-molten-salt",
 	"thorium-beryllium-depleted-molten-salt", "helium-sparged-u-salt", "fluorine-sparged-t-salt", "fluorine-sparged-tb-salt",
-	"fluorinated-uranium-hexafluoride", "phosphorous-uranium-hexafluoride", "impure-molten-salt-base", "sodium-fluoride" })
+	"fluorinated-uranium-hexafluoride", "phosphorous-uranium-hexafluoride", "impure-molten-salt-base", "sodium-fluoride",
+	"stable-molten-salt-base", "lftr-fuel-base" })
 put("gases", { "neptunium-hexafluoride", "technetium-hexafluoride", "selenium-hexafluoride" })
 --- issue #364: GTNH's sapphire and green sapphire juice (155)
 put("ore-solutions", { "sapphire-juice", "green-sapphire-juice" })
