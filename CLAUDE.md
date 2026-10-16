@@ -91,13 +91,13 @@
   - 163 electric mine (issue #335: GTNH's Ore Drilling Plants Mk I to IV (`ore-drilling-plant-mk1` to `-mk4`, MV to IV,
     the Mk changes speed and energy only) on the Manual Mine's footprint and fast replace group, the Manual Mine's
     `next_upgrade` is the Mk I; one electric twin `drilling-<vein>` of every `mining-<vein>` recipe of the Manual Mine
-    (category `electric-mine-recipes`, the same results, Drilling Fluid and (issues #341, #346) 9 mining pipes, consumed,
+    (category `electric-mine-recipes`, the same results, Drilling Fluid and (issues #341, #346, #393) 1 mining pipe, consumed,
     instead of the pickaxe and manual labor); GTNH's
     Drilling Fluid from the mixer with the Mk I's technology; the twins of veins before the Mk I come with its technology,
     the later ones with their vein's technology; devcheck fails for a Manual Mine or Dig Site recipe without a twin unless
     it is in the allow-list `FORK_ELECTRIC_MINE_EXCLUDED` with its reason; issue #337: GT's Miners LV to HV (`lv-miner` to
-    `hv-miner`, upgrade chain Manual Mine -> LV -> MV -> HV Miner -> Mk I) with their twins `miner-<vein>` that use up 9
-    mining pipes, technology `lv-miner` (its later twins are unlocked by
+    `hv-miner`, upgrade chain Manual Mine -> LV -> MV -> HV Miner -> Mk I) with their twins `miner-<vein>` that use up 1
+    mining pipe, technology `lv-miner` (its later twins are unlocked by
     `FORK_ELECTRIC_MINE.unlock_miner_twins()`, which 142 calls after its moves); issue #342: the mod data `fork-electric-mine`
     (recipe -> vein, vein -> recipe per category) for `scripts/fork-electric-mine.lua`; loads after 162 and **before** 142)
   - 142 recipe unlocks (issue #91: every Gregtorio recipe gets a technology from its explicit table `UNLOCKS`, the
