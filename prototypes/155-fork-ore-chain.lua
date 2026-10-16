@@ -280,7 +280,14 @@ local NEW_ORES = {
 	["zirconolite"] = { dust = "zirconolite-dust", byproducts = { "zirconium-dust", "titanium-dust" }, mass = 66, decompose = { "lv-electrolyzer-recipes", 9.9, 23, { item("calcium", 2), item("zirconium-dust", 2), item("titanium-dust", 4), item("cerium-rich-mixture", 1), fluid("oxygen", 1400) } } },   -- GT++ Zirconolite
 	["zirkelite"] = { dust = "zirkelite-dust", byproducts = { "thorium-dust", "cerium-rich-mixture" }, mass = 93, decompose = { "lv-dehydrator-recipes", 18.6, 15, { item("calcium", 1), item("thorium-dust", 1), item("cerium-rich-mixture", 1), item("zirconium-dust", 1), item("titanium-dust", 2), item("niobium-dust", 2), fluid("oxygen", 700) } } },   -- GT++ Zirkelite
 	["fluorite-f"] = { dust = "fluorite-f-dust", byproducts = { "stone-dust", "iron-dust" }, mass = 14 },   -- GT++ Fluorite (F)
-	["runite"] = { dust = "runite-dust", byproducts = {  }, mass = 160 },   -- GT++ Runite   -- bartworks Fluorspar: fluorspar, fluorspar, fluorspar
+	["runite"] = { dust = "runite-dust", byproducts = {  }, mass = 160 },   -- GT++ Runite
+	--- issue #373, group 4: Neper's ores of the Void Miner III (160). GT's dilithium (a crystallisable gem; GT's sifter's
+	--- default table), mysterious crystal (a metal of the blast furnace) and vinteum (metal and gem; its decomposition
+	--- into Thaumcraft's thaumium is left out, and the mod has no vinteum ingot for its furnace recipe); none of the three
+	--- has a composition, so GT's mass is technetium's 98 (vinteum: thaumium's 56)
+	["dilithium"] = { dust = "dilithium-dust", byproducts = {  }, mass = 98 },   -- GT Dilithium: Dilithium
+	["mysterious-crystal"] = { dust = "mysterious-crystal-dust", byproducts = {  }, mass = 98 },   -- GT MysteriousCrystal: none (itself)
+	["vinteum"] = { dust = "vinteum-dust", byproducts = {  }, mass = 56 },   -- GT Vinteum: Vinteum   -- bartworks Fluorspar: fluorspar, fluorspar, fluorspar
 }
 for x, o in pairs(NEW_ORES) do
 	ORE_CHAIN[x] = { dust = o.dust, byproducts = o.byproducts, mass = o.mass }
@@ -1003,6 +1010,9 @@ local GEMS = {
 	{ "bartimaeusnek",              "bartimaeusnek-gem",              "bartworks", false },
 	{ "prasiolite",                 "prasiolite-gem",                 "bartworks", false },
 	{ "fluorspar",                  "fluorspar-gem",                  "bartworks", false },
+	--- issue #373: Neper's gems (GT's default table; dilithium crystallises in the autoclave)
+	{ "dilithium",                  "dilithium-gem",                  "default",   true },
+	{ "vinteum",                    "vinteum-gem",                    "default",   false },
 }
 --- GT's sifter tables: exquisite, flawless, gem, flawed, chipped, dust (ProcessingCrushedOre.java:90-120)
 local SIFT = { precious = { 0.03, 0.12, 0.45, 0.14, 0.28, 0.35 }, default = { 0.01, 0.04, 0.15, 0.20, 0.40, 0.50 },
@@ -1042,7 +1052,9 @@ local ENGRAVER_LENS = { ruby = "ruby-lens", emerald = "emerald-lens", monazite =
 	--- olenite (light gray), fluor-buergerite and fayalite (black) have no lens of their colour in the mod
 	bismutite = "yellow-garnet-lens", prasiolite = "yellow-garnet-lens", ["chromo-alumino-povondraite"] = "green-sapphire-lens",
 	["vanadio-oxy-dravite"] = "green-sapphire-lens", forsterite = "diamond-lens", hedenbergite = "emerald-lens",
-	tiberium = "emerald-lens", bartimaeusnek = "emerald-lens", ["red-zircon"] = "ruby-lens", fluorspar = "ruby-lens" }
+	tiberium = "emerald-lens", bartimaeusnek = "emerald-lens", ["red-zircon"] = "ruby-lens", fluorspar = "ruby-lens",
+	--- issue #373: white dilithium the diamond lens (light blue vinteum has no lens of its colour in the mod)
+	dilithium = "diamond-lens" }
 --- grade -> the engraver category and time of the step up (GT tier: LV, MV, HV, EV; time x the tier's speed)
 local ENGRAVE = { chipped = { "mv-laser-engraver-recipes", 30 }, flawed = { "mv-laser-engraver-recipes", 60 },
 	gem = { "hv-laser-engraver-recipes", 240 }, flawless = { "ev-laser-engraver-recipes", 960 } }
@@ -1310,6 +1322,7 @@ FORK_ORE_HAMMER_GEM = {
 	["raw-fayalite"] = "fayalite-gem", ["raw-hedenbergite"] = "hedenbergite-gem", ["raw-red-zircon"] = "red-zircon-gem",
 	["raw-tiberium"] = "tiberium-gem", ["raw-bartimaeusnek"] = "bartimaeusnek-gem", ["raw-prasiolite"] = "prasiolite-gem",
 	["raw-fluorspar"] = "fluorspar-gem",
+	["raw-dilithium"] = "dilithium-gem", ["raw-vinteum"] = "vinteum-gem",   -- issue #373: Neper's gems
 }
 --- issue #373: GT++'s ores have no forge hammer recipe for the raw ore (RecipeGenOre.java registers it for the ore block
 --- only, which Gregtorio has none of)
@@ -1693,6 +1706,7 @@ local RAW_SMELT = {
 	["raw-stibnite"] = { "antimony-ingot", 1 }, ["raw-thorium"] = { "thorium-ingot", 1 },
 	["raw-platinum"] = { "metallic-platinum-powder", 2 }, ["raw-sheldonite"] = { "metallic-platinum-powder", 2 },
 }
+RAW_SMELT["raw-dilithium"] = { "dilithium-gem", 1 }   -- issue #373: GT smelts its raw ore into the gem
 for x, o in pairs(NEW_ORES) do   -- issue #363: the raw ores of the new ores smelt into GT's direct smelting metal
 	if o.smelt then RAW_SMELT["raw-" .. x] = { o.smelt .. "-ingot", 1 } end
 end

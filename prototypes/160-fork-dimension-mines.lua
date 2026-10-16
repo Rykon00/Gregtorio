@@ -571,6 +571,16 @@ local VOID_POOLS = {
 		{ "raw-cosmic-neutronium", 0.01093 }, { "raw-sulfur", 0.01002 }, { "raw-borax", 0.00364 },
 		{ "raw-realgar", 0.00364 }, { "raw-emerald", 0.00146 }, { "raw-ruby", 0.00146 }, { "raw-bedrockium", 0.00137 },
 	},
+	--- issue #373: Neper (GTNH's T9, DimensionHelper.java:167), its veins (OreMixes.java: AquaIgnis, TerraAer, Mica,
+	--- TungstenIrons, HeavyPentele, CertusQuartz, Dilithium) with the dilithium, mysterious crystal and vinteum the mod
+	--- lacked before; Thaumcraft's shards, arsenic, tungsten, antimony, quartz sand, charged certus quartz, shadow and deep
+	--- iron left out (no ore of them in the mod)
+	["neper"] = {
+		{ "raw-certus-quartz", 0.24465 }, { "raw-bismuth", 0.12232 }, { "raw-dilithium", 0.12232 }, { "raw-kyanite", 0.04077 },
+		{ "raw-mica", 0.04077 }, { "raw-silicon", 0.03262 }, { "raw-cinnabar", 0.00815 }, { "raw-amber", 0.00815 },
+		{ "raw-vinteum", 0.00765 }, { "raw-mysterious-crystal", 0.00765 }, { "raw-pollucite", 0.0051 },
+		{ "raw-cassiterite", 0.0051 },
+	},
 	["anubis"] = {
 		{ "raw-sulfur", 0.17238 }, { "callisto-ice-dust", 0.03448 }, { "raw-galena", 0.03448 }, { "raw-silver", 0.03448 },
 		{ "raw-neutronium", 0.01293 }, { "raw-adamantium", 0.01293 }, { "raw-sphalerite", 0.01077 },
@@ -583,7 +593,13 @@ local VOID_POOLS = {
 
 local VM_PICKS = 20                -- ores per recipe at tier I (2 per second, 10 s)
 local VM_GAS = { { nil, 1 }, { "neon", 4 }, { "krypton", 8 }, { "xenon", 16 } }
-local VM_DIMS = { { "pluto", 1 }, { "barnard-f", 2 }, { "horus", 3 }, { "anubis", 3 } }
+local VM_DIMS = { { "pluto", 1 }, { "barnard-f", 2 }, { "horus", 3 }, { "anubis", 3 }, { "neper", 3 } }   -- neper: #373
+--- issue #373: Neper's ores the mod lacked (GT's dilithium, mysterious crystal and vinteum; the mysterious crystal dust is
+--- the moon dust's above)
+create_ore("raw-dilithium", nil, "crushed-dilithium", "dilithium-dust", nil, "crushed-dilithium", nil, nil, 1, false, false)
+create_ore("raw-mysterious-crystal", nil, "crushed-mysterious-crystal", nil, nil, "crushed-mysterious-crystal", nil, nil, 1,
+	false, false)
+create_ore("raw-vinteum", nil, "crushed-vinteum", "vinteum-dust", nil, "crushed-vinteum", nil, nil, 1, false, false)
 local VM_TECHS = { "void-miner-i", "void-miner-ii", "void-miner-iii" }
 
 --- an output of the expected amount `e`
@@ -686,3 +702,4 @@ F.tech{ name = VM_TECHS[2], prerequisites = { VM_TECHS[1], "zpm-assembly-line", 
 	"crystal-processor-mainframes" }, packs = 8, count = 50, time = 60, recipes = F.join({ vm2 }, vm_recipes[2]) }
 F.tech{ name = VM_TECHS[3], prerequisites = { VM_TECHS[2], "uv-components" }, packs = 9, count = 50, time = 60,
 	recipes = F.join({ vm3 }, vm_recipes[3]) }
+unlock_in(VM_TECHS[3], { "crushed-dilithium", "crushed-mysterious-crystal", "crushed-vinteum" })   -- issue #373: Neper
