@@ -180,3 +180,6 @@ ore_dimension(VM_TECHS[3], { "cosmic-neutronium", "infinity-catalyst" })
 --------------------------------------------------------------------------------
 
 ore_dimension(ROSS, { "bornite" })
+
+--- issue #373: 155's recipes of the chemical dehydrators, which 159 makes (the Everglades ores' decompositions)
+FORK_ORE_CHAIN.unlock_after_159()

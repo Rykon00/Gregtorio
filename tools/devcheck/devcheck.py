@@ -790,18 +790,35 @@ ORE_GEMS = {"ruby": ("ruby", False), "emerald": ("emerald", False), "diamond": (
             "olivine": ("olivine-gem", False), "tanzanite": ("tanzanite-gem", False), "amethyst": ("amethyst-gem", False),
             "opal": ("opal-gem", False), "jasper": ("jasper-gem", False), "blue-topaz": ("blue-topaz-gem", False),
             "spinel": ("spinel-gem", False), "jade": ("jade-gem", True), "red-garnet": ("red-garnet-gem", False),
-            "yellow-garnet": ("yellow-garnet-gem", False)}
+            "yellow-garnet": ("yellow-garnet-gem", False),
+            # issue #373: bartworks' gem ores of Ross128b and Ross128ba
+            "bismutite": ("bismutite-gem", False), "olenite": ("olenite-gem", False),
+            "fluor-buergerite": ("fluor-buergerite-gem", False),
+            "chromo-alumino-povondraite": ("chromo-alumino-povondraite-gem", False),
+            "vanadio-oxy-dravite": ("vanadio-oxy-dravite-gem", False), "forsterite": ("forsterite-gem", False),
+            "fayalite": ("fayalite-gem", False), "hedenbergite": ("hedenbergite-gem", False),
+            "red-zircon": ("red-zircon-gem", False), "tiberium": ("tiberium-gem", False),
+            "bartimaeusnek": ("bartimaeusnek-gem", False), "prasiolite": ("prasiolite-gem", False),
+            "fluorspar": ("fluorspar-gem", False),
+            "dilithium": ("dilithium-gem", True), "vinteum": ("vinteum-gem", False)}   # issue #373: Neper
 # Issue #193: the laser engraver steps of the grades, with the lens of the gem's colour (red ruby, green emerald, white
-# diamond; issue #328: cyan apatite and blue lapis, #325's substitutes; certus quartz's light gray has no lens; issue
+# diamond; issues #328 and #370: cyan the green sapphire lens, blue the sapphire lens; certus quartz's light gray has no lens; issue
 # #332: orange amber)
 ORE_GEM_LENS = {"ruby": "ruby-lens", "emerald": "emerald-lens", "monazite": "emerald-lens", "diamond": "diamond-lens",
-                "nether-quartz": "diamond-lens", "apatite": "apatite-lens", "lazurite": "apatite-lens",
-                "sodalite": "lapis-lens", "lapis": "lapis-lens", "amber": "amber-lens", "topaz": "amber-lens",
-                "sapphire": "lapis-lens", "green-sapphire": "apatite-lens",   # issue #364: blue and cyan (question #370)
+                "nether-quartz": "diamond-lens", "apatite": "green-sapphire-lens", "lazurite": "green-sapphire-lens",
+                "sodalite": "sapphire-lens", "lapis": "sapphire-lens", "amber": "amber-lens", "topaz": "amber-lens",
+                "sapphire": "sapphire-lens", "green-sapphire": "green-sapphire-lens",   # issue #370: blue and cyan
                 # issue #363: lime, purple and pink their own lenses, the other colours the mod's lens of the colour
                 "olivine": "olivine-lens", "tanzanite": "tanzanite-lens", "amethyst": "amethyst-lens",
-                "jasper": "ruby-lens", "spinel": "ruby-lens", "opal": "lapis-lens", "blue-topaz": "lapis-lens",
-                "jade": "emerald-lens", "red-garnet": "ruby-lens", "yellow-garnet": "yellow-garnet-lens"}
+                "jasper": "ruby-lens", "spinel": "ruby-lens", "opal": "sapphire-lens", "blue-topaz": "sapphire-lens",
+                "jade": "emerald-lens", "red-garnet": "ruby-lens", "yellow-garnet": "yellow-garnet-lens",
+                # issue #373: bartworks' gems, the lens of their dye (none for light gray olenite, black
+                # fluor-buergerite and fayalite)
+                "bismutite": "yellow-garnet-lens", "prasiolite": "yellow-garnet-lens",
+                "chromo-alumino-povondraite": "green-sapphire-lens", "vanadio-oxy-dravite": "green-sapphire-lens",
+                "forsterite": "diamond-lens", "hedenbergite": "emerald-lens", "tiberium": "emerald-lens",
+                "bartimaeusnek": "emerald-lens", "red-zircon": "ruby-lens", "fluorspar": "ruby-lens",
+                "dilithium": "diamond-lens"}
 def check_ore_o3_o4(m):
     """Issues #187 and #188 (prototypes/155-fork-ore-chain.lua, phases O3 and O4): the electromagnetic separator works
     exactly the pure dusts of ORE_SEPARATOR (dust, small dust and nugget of the metal); every ore of ORE_GEMS is sifted
@@ -1604,6 +1621,7 @@ def check(a):
     print(f"draft recipes hidden by the draft guard: {len(drafts)} (FORK-DRAFT in .devcheck/last-run.log)")
     removed = re.findall(r"FORK-REMOVED: (\S+ \S+)", log)
     print(f"drafts removed for good: {len(removed)} prototypes (FORK-REMOVED)")
+    stale_unlocks = [f"{t} names {r}" for t, r in re.findall(r"FORK-STALE-UNLOCK: (\S+) (\S+)", log)]
     new_drafts = [d for d in drafts if d not in DRAFTS_OK]
     m = Model(sec["DUMP"])
     files, sprites, uncraft = check_files(sec), check_sprites(sec), m.uncraftable()
@@ -1647,6 +1665,8 @@ def check(a):
            "producer; unlock the producer there or earlier, make the producer's technology a prerequisite, or add "
            "<technology>:<item> to FORK_UNLOCK_TREE_GAPS of prototypes/142-fork-recipe-unlocks.lua)", tree, limit=400)
     report("draft recipes outside DRAFTS_OK (issue #39)", new_drafts)
+    report("technologies that unlock a recipe the ore chain removes (issue #388: delete the unlock from "
+           "prototypes/98-technology.lua or the table of 142; FORK-STALE-UNLOCK in the log)", stale_unlocks)
     menu_info, menu = check_crafting_menu(m, sec)
     print("\ncrafting menu (issue #49):")
     for line in menu_info:
@@ -1735,7 +1755,7 @@ def check(a):
               or new_drafts or fluid_problems or locked or one_pack or fluid_steps or table_only or me_recipes
               or extractor_split or ore_chain or ore_baths or ore_o34 or ore_hammer
               or circuit_icons or pgm_dusts or recycling or names or gaps or tree or vanilla or lenses or mine_twins
-              or unplaceable)
+              or unplaceable or stale_unlocks)
     print("\nRESULT:", "OK" if ok else "PROBLEMS FOUND")
     return 0 if ok else 1
 
