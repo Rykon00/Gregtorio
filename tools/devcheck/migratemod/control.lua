@@ -221,6 +221,7 @@ local RM_ITEMS = { ["ammonia-hexachloroplatinate"] = "platinum-salt", ["crude-pl
 	["ammonia-hexachloroiridiate"] = "iridium-chloride",
 	["advanced-card"] = "me-advanced-card",           -- issue #121
 	["acceleration-card"] = "me-acceleration-card",   -- issue #195 (an item becomes me-network's module)
+	["apatite-lens"] = "green-sapphire-lens", ["lapis-lens"] = "sapphire-lens",   -- issue #370
 	["lv-air-collector"] = "lv-compressor", ["ev-air-collector"] = "ev-compressor",   -- issue #153
 	["ev-greenhouse"] = "lv-greenhouse" }   -- issue #165
 local RM_MACHINES = {
@@ -271,6 +272,11 @@ local RM_MACHINES = {
 	{ "manual-mine", "mining-iron-vein", "mining-iron-vein", "manual-mine" },
 	-- issue #348: upstream's Ruby Lens from a plain ruby is deleted; a lathe of an old save loads without the recipe
 	{ "lv-lathe", "ruby-lens", nil },
+	-- issue #370: GTNH's green sapphire and sapphire lens replace the apatite and lapis lens; an engraver of an old save
+	-- has the new lens in its slot (JSON migration), a lathe loads without the old lens recipe
+	{ "mv-laser-engraver", "ram-wafer-sw", "ram-wafer-sw" },
+	{ "mv-laser-engraver", "engraving-chipped-lapis-to-flawed", "engraving-chipped-lapis-to-flawed" },
+	{ "lv-lathe", "apatite-lens-from-exquisite", nil },
 }
 --- Issue #317: a character of the old save has a hand craft of a deleted vanilla recipe in its queue; after the update the
 --- save loads, the character is there and its queue is empty. The game drops the craft with its ingredients (they are
