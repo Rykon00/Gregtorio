@@ -345,6 +345,7 @@ end
 local LATER = {
 	["reach-the-moon"] = true, ["reach-mars"] = true, ["reach-the-asteroid-belt"] = true,
 	["reach-the-jovian-moons"] = true, ["reach-venus"] = true, ["reach-ross128"] = true,
+	["reach-ross128ba"] = true,   -- issue #373
 }
 local early = {}
 for _, name in ipairs(twins) do
