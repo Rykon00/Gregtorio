@@ -129,6 +129,78 @@ unlock_in("end-steel", { "nether-air-intake" })
 
 
 --------------------------------------------------------------------------------
+--- GTNH'S OVERWORLD VEINS (issue #363, part 1): the veins of GT5-Unofficial 638b3f37ca OreMixes.java that are in the
+--- Overworld and whose ores the mod lacked. The raw ores are GT's (create_ore, 07; GT's ore multiplier, cassiterite sand
+--- 2); 155 gives them GTNH's chain, decomposition and smelting.
+---   * a vein Gregtorio has under GT's name or with GT's main ores (upstream's veins: iron, magnetite, chalcopyrite = GT's
+---     Copper, salt = GT's Salts, copper-tin = GT's CopperTin, basaltic mineral sands = GT's MineralSand) keeps what it
+---     gives; GT's ores it lacked join it, 8 each (a sporadic ore's share), so no yield of the old vein changes;
+---   * a vein without one is a new Manual Mine recipe with GT's ores at 32, 24, 16 and 8 (primary, secondary, in between,
+---     sporadic; GT's LigniteCoal has lignite three times): LigniteCoal (with the Steam Forge Hammer, which turns raw
+---     lignite into its gem, a fuel), Soapstone, GarnetTin, KaoliniteZeolite, Mica and Dolomite (with Ore Crushing, the
+---     LV macerator of their crushed ores; the electrolyzer and centrifuge of their dusts come with or after it).
+--- 163 gives every vein its Miner and Ore Drilling Plant twin.
+--------------------------------------------------------------------------------
+
+local VEIN_ORES_363 = {
+	--  raw ore (GT material)          ore multiplier
+	{ "lignite", 1 }, { "brown-limonite", 1 }, { "yellow-limonite", 1 }, { "banded-iron", 1 }, { "malachite", 1 },
+	{ "magnetite", 1 }, { "chalcopyrite", 1 }, { "pyrite", 1 }, { "spodumene", 1 }, { "soapstone", 1 }, { "talc", 1 },
+	{ "glauconite", 1 }, { "vermiculite", 1 }, { "alunite", 1 }, { "basaltic-mineral-sand", 1 },
+	{ "granitic-mineral-sand", 1 }, { "cassiterite-sand", 2 }, { "garnet-sand", 1 }, { "asbestos", 1 }, { "diatomite", 1 },
+	{ "kaolinite", 1 }, { "zeolite", 1 }, { "glauconite-sand", 1 }, { "kyanite", 1 }, { "mica", 1 }, { "pollucite", 1 },
+	{ "dolomite", 1 }, { "wollastonite", 1 }, { "trona", 1 }, { "andradite", 1 },
+}
+--- the raw ores that only join a vein of a later technology are crushed from that technology on, like the vein's
+--- other ores (crushed lepidolite with Hydrochloric Acid, crushed realgar with Primitive Electronic Circuit Assemblies)
+local LATE_CRUSH_363 = { spodumene = "hydrochloric-acid", vermiculite = "primitive-electronic-circuit-assemblies",
+	alunite = "primitive-electronic-circuit-assemblies" }
+local crushed_363 = {}
+for _, o in pairs(VEIN_ORES_363) do
+	local x = o[1]
+	create_ore("raw-" .. x, nil, "crushed-" .. x, x .. "-dust", nil, "crushed-" .. x, nil, nil, o[2], false, false)
+	if LATE_CRUSH_363[x] then
+		unlock_in(LATE_CRUSH_363[x], { "crushed-" .. x })
+	else
+		crushed_363[#crushed_363 + 1] = "crushed-" .. x
+	end
+end
+--- GT's ores that join a vein Gregtorio has (8 each)
+local JOIN_363 = {
+	["mining-iron-vein"] = { "brown-limonite", "yellow-limonite", "banded-iron", "malachite" },   -- GT Iron
+	["mining-magnetite-vein"] = { "magnetite" },                                                    -- GT Magnetite
+	["mining-chalcopyrite-vein"] = { "chalcopyrite", "pyrite" },                                    -- GT Copper
+	["mining-salt-vein"] = { "spodumene" },                                                         -- GT Salts
+	["mining-copper-tin-vein"] = { "chalcopyrite", "vermiculite", "cassiterite", "alunite" },       -- GT CopperTin
+	["mining-basaltic-mineral-sands-vein"] = { "basaltic-mineral-sand", "granitic-mineral-sand" },  -- GT MineralSand
+}
+for name, ores in pairs(JOIN_363) do
+	local r = data.raw.recipe[name]
+	--- (a recipe with several results needs an icon or a main product: the vein's first ore, as before)
+	if not (r.icon or r.icons or r.main_product) then r.main_product = r.results[1].name end
+	for _, x in pairs(ores) do r.results[#r.results + 1] = item("raw-" .. x, 8) end
+end
+unlock_in("steam-forge-hammer", {
+	manual("mining-lignite-vein", "manual-mine-recipes", { PICKAXE, LABOR(8) },
+		{ item("raw-lignite", 72), item("raw-coal", 8) }),
+})
+unlock_in("ore-crushing", {
+	manual("mining-soapstone-vein", "manual-mine-recipes", { PICKAXE, LABOR(8) },
+		{ item("raw-soapstone", 32), item("raw-talc", 24), item("raw-glauconite", 16), item("raw-pentlandite", 8) }),
+	manual("mining-garnet-tin-vein", "manual-mine-recipes", { PICKAXE, LABOR(8) },
+		{ item("raw-cassiterite-sand", 32), item("raw-garnet-sand", 24), item("raw-asbestos", 16), item("raw-diatomite", 8) }),
+	manual("mining-kaolinite-zeolite-vein", "manual-mine-recipes", { PICKAXE, LABOR(8) },
+		{ item("raw-kaolinite", 32), item("raw-zeolite", 24), item("raw-fullers-earth", 16), item("raw-glauconite-sand", 8) }),
+	manual("mining-mica-vein", "manual-mine-recipes", { PICKAXE, LABOR(8) },
+		{ item("raw-kyanite", 32), item("raw-mica", 24), item("raw-cassiterite", 16), item("raw-pollucite", 8) }),
+	manual("mining-dolomite-vein", "manual-mine-recipes", { PICKAXE, LABOR(8) },
+		{ item("raw-dolomite", 32), item("raw-wollastonite", 24), item("raw-trona", 16), item("raw-andradite", 8) }),
+})
+unlock_in("ore-crushing", crushed_363)
+
+
+
+--------------------------------------------------------------------------------
 --- THE TWILIGHT FOREST (issue #332, the maintainer's decision): GTNH's T0 dimension (DimensionHelper.java:99), two
 --- recipes of the Manual Mine unlocked with NAND Chips, the first technology that needs them (the maintainer's choice: no
 --- technology of their own). Its ores the mod lacked are topaz and amber, the two materials of GT's orange lens

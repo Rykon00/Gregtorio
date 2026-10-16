@@ -136,6 +136,50 @@ local function fluid(name, amount)
 	return { type = "fluid", name = name, amount = amount }
 end
 
+--- issue #363: the ores of GTNH's Overworld veins (160), from GT5-Unofficial 638b3f37ca MaterialsInit.java (byproducts,
+--- mass, tags) with the decompositions the mod lacked: GT's (ProcessingDust.java:165-266: the electrolyzer protons x 2
+--- ticks, the centrifuge mass x 4 ticks per input dust, components past a stack of 64 left out, every gas and water as a
+--- fluid) or, for the ores GT does not decompose, the core mod's (NewHorizonsCoreMod ElectrolyzerRecipes.java). smelt: GT's
+--- direct smelting metal (furnace recipes of the ore forms, raw ore smelting, the bricked blast furnace); calcite: GT's
+--- BLASTFURNACE_CALCITE_DOUBLE (raw ore + calcite or quicklime -> 2 ingots in the MV blast furnace); ems: GT's
+--- ELECTROMAGNETIC_SEPERATION_* metal. GT byproducts the mod has no item of are left out (basalt, black granite,
+--- rubidium); the mineral sands' basalt and black granite come out of their centrifuge as stone dust.
+local NEW_ORES = {
+	["lignite"] = { dust = "lignite-dust", byproducts = { "coal-dust" }, mass = 10 },   -- GT Lignite: Coal; its decomposition is the mod's already
+	["brown-limonite"] = { dust = "brown-limonite-dust", byproducts = { "malachite-dust", "yellow-limonite-dust" }, mass = 22, smelt = "iron", calcite = 2, ems = "iron", decompose = { "lv-centrifuge-recipes", 17.6, 4, { item("iron-dust", 1), fluid("hydrogen", 100), fluid("oxygen", 200) } } },   -- GT BrownLimonite: Malachite, YellowLimonite; GT decomposition
+	["yellow-limonite"] = { dust = "yellow-limonite-dust", byproducts = { "nickel-dust", "brown-limonite-dust", "cobalt-dust" }, mass = 22, smelt = "iron", calcite = 2, ems = "iron", decompose = { "lv-centrifuge-recipes", 17.6, 4, { item("iron-dust", 1), fluid("hydrogen", 100), fluid("oxygen", 200) } } },   -- GT YellowLimonite: Nickel, BrownLimonite, Cobalt; GT decomposition
+	["banded-iron"] = { dust = "banded-iron-dust", byproducts = {  }, mass = 32, smelt = "iron", ems = "iron" },   -- GT BandedIron: no byproducts; its decomposition is the mod's already
+	["malachite"] = { dust = "malachite-dust", byproducts = { "copper-dust", "brown-limonite-dust", "calcite" }, mass = 22, smelt = "copper" },   -- GT Malachite: Copper, BrownLimonite, Calcite; its decomposition is the mod's already
+	["magnetite"] = { dust = "magnetite-dust", byproducts = { "iron-dust", "gold-dust" }, mass = 33, smelt = "iron", calcite = 2, ems = "gold" },   -- GT Magnetite: Iron, Gold; its decomposition is the mod's already
+	["chalcopyrite"] = { dust = "chalcopyrite-dust", byproducts = { "pyrite-dust", "cobalt-dust", "cadmium", "gold-dust" }, mass = 45, smelt = "copper" },   -- GT Chalcopyrite: Pyrite, Cobalt, Cadmium, Gold; its decomposition is the mod's already
+	["pyrite"] = { dust = "pyrite-dust", byproducts = { "sulfur", "tricalcium-phosphate", "iron-dust" }, mass = 40, smelt = "iron", calcite = 2, ems = "iron" },   -- GT Pyrite: Sulfur, TricalciumPhosphate, Iron; its decomposition is the mod's already
+	["spodumene"] = { dust = "spodumene-dust", byproducts = { "alumina", "lithium" }, mass = 18, decompose = { "mv-electrolyzer-recipes", 9 * MV_SPEED, 20, { item("lithium", 2), item("alumina", 5), item("silicon-dioxide", 12), fluid("oxygen", 100) } } },   -- GT Spodumene: Aluminiumoxide, Lithium; core decomposition
+	["soapstone"] = { dust = "soapstone-dust", byproducts = {  }, mass = 18, decompose = { "mv-electrolyzer-recipes", 18.9 * MV_SPEED, 21, { item("magnesium", 3), item("raw-silicon", 4), fluid("hydrogen", 200), fluid("oxygen", 1200) } } },   -- GT Soapstone: no byproducts; GT decomposition
+	["talc"] = { dust = "talc-dust", byproducts = {  }, mass = 18, decompose = { "mv-electrolyzer-recipes", 18.9 * MV_SPEED, 21, { item("magnesium", 3), item("raw-silicon", 4), fluid("hydrogen", 200), fluid("oxygen", 1200) } } },   -- GT Talc: no byproducts; GT decomposition
+	["glauconite"] = { dust = "glauconite-dust", byproducts = { "sodium", "alumina", "iron-dust" }, mass = 18, ems = "iron", decompose = { "mv-electrolyzer-recipes", 18.9 * MV_SPEED, 21, { item("potassium", 1), item("magnesium", 2), item("alumina", 10), fluid("oxygen", 600), fluid("hydrogen", 200) } } },   -- GT Glauconite: Sodium, Aluminiumoxide, Iron; core decomposition
+	["vermiculite"] = { dust = "vermiculite-dust", byproducts = { "iron-dust", "alumina", "magnesium" }, mass = 20, ems = "iron", decompose = { "mv-electrolyzer-recipes", 21 * MV_SPEED, 29, { item("iron-dust", 3), item("alumina", 10), item("raw-silicon", 4), fluid("oxygen", 600), fluid("hydrogen", 200) } } },   -- GT Vermiculite: Iron, Aluminiumoxide, Magnesium; core decomposition without its water (the electrolyzers have two fluid outputs)
+	["alunite"] = { dust = "alunite-dust", byproducts = {  }, mass = 15, decompose = { "mv-electrolyzer-recipes", 10.5 * MV_SPEED, 52, { item("potassium", 2), item("alumina", 15), item("silicon-dioxide", 12), fluid("oxygen", 1100), fluid("hydrogen", 1200) } } },   -- GT Alunite: no byproducts; core decomposition
+	["basaltic-mineral-sand"] = { dust = "basaltic-mineral-sand-dust", byproducts = { "magnetite-dust" }, mass = 25, smelt = "iron", calcite = 2, ems = "gold", decompose = { "lv-centrifuge-recipes", 10, 2, { item("magnetite-dust", 1), item("stone-dust", 1) } } },   -- GT BasalticMineralSand: Basalt, Magnetite; GT decomposition, its basalt or black granite as stone dust
+	["granitic-mineral-sand"] = { dust = "granitic-mineral-sand-dust", byproducts = { "magnetite-dust" }, mass = 26, smelt = "iron", calcite = 2, ems = "gold", decompose = { "lv-centrifuge-recipes", 10.4, 2, { item("magnetite-dust", 1), item("stone-dust", 1) } } },   -- GT GraniticMineralSand: GraniteBlack, Magnetite; GT decomposition, its basalt or black granite as stone dust
+	["cassiterite-sand"] = { dust = "cassiterite-sand-dust", byproducts = { "tin-dust" }, mass = 50, smelt = "tin", decompose = { "mv-electrolyzer-recipes", 6.6 * MV_SPEED, 3, { item("tin-dust", 1), fluid("oxygen", 200) } } },   -- GT CassiteriteSand: Tin; GT decomposition
+	["garnet-sand"] = { dust = "garnet-sand-dust", byproducts = { "red-garnet-dust", "yellow-garnet-dust" }, mass = 23, decompose = { "lv-centrifuge-recipes", 9.2, 2, { item("red-garnet-dust", 1), item("yellow-garnet-dust", 1) } } },   -- GT GarnetSand: GarnetRed, GarnetYellow; GT decomposition
+	["asbestos"] = { dust = "asbestos-dust", byproducts = { "asbestos-dust", "silicon-dioxide", "magnesium" }, mass = 15, decompose = { "mv-electrolyzer-recipes", 12.6 * MV_SPEED, 18, { item("magnesium", 3), item("raw-silicon", 2), fluid("hydrogen", 400), fluid("oxygen", 900) } } },   -- GT Asbestos: Asbestos, SiliconDioxide, Magnesium; GT decomposition
+	["diatomite"] = { dust = "diatomite-dust", byproducts = { "banded-iron-dust", "sapphire-dust" }, mass = 21, decompose = { "lv-centrifuge-recipes", 42, 10, { item("flint-dust", 8), item("banded-iron-dust", 1), item("sapphire-dust", 1) } } },   -- GT Diatomite: BandedIron, Sapphire; GT decomposition
+	["kaolinite"] = { dust = "kaolinite-dust", byproducts = {  }, mass = 15, decompose = { "mv-electrolyzer-recipes", 24 * MV_SPEED, 17, { item("alumina", 5), item("silicon-dioxide", 6), fluid("oxygen", 200), fluid("hydrogen", 400) } } },   -- GT Kaolinite: no byproducts; core decomposition
+	["zeolite"] = { dust = "zeolite-dust", byproducts = {  }, mass = 20, decompose = { "mv-electrolyzer-recipes", 47.2 * MV_SPEED, 113, { item("sodium", 1), item("calcium", 4), item("silicon-dioxide", 81), item("aluminium-dust", 9), fluid("oxygen", 1800) } } },   -- GT Zeolite: no byproducts; core decomposition
+	["glauconite-sand"] = { dust = "glauconite-sand-dust", byproducts = { "sodium", "alumina", "iron-dust" }, mass = 18, ems = "iron", decompose = { "mv-electrolyzer-recipes", 18.9 * MV_SPEED, 21, { item("potassium", 1), item("magnesium", 2), item("alumina", 10), fluid("oxygen", 600), fluid("hydrogen", 200) } } },   -- GT GlauconiteSand: Sodium, Aluminiumoxide, Iron; core decomposition
+	["kyanite"] = { dust = "kyanite-dust", byproducts = {  }, mass = 20, decompose = { "mv-electrolyzer-recipes", 8 * MV_SPEED, 8, { item("alumina", 5), item("silicon-dioxide", 3) } } },   -- GT Kyanite: no byproducts; core decomposition
+	["mica"] = { dust = "mica-dust", byproducts = {  }, mass = 20, decompose = { "mv-electrolyzer-recipes", 13 * MV_SPEED, 38, { item("potassium", 2), item("alumina", 15), item("raw-silicon", 6), fluid("oxygen", 1100), fluid("fluorine", 400) } } },   -- GT Mica: no byproducts; core decomposition
+	["pollucite"] = { dust = "pollucite-dust", byproducts = { "caesium-dust", "alumina" }, mass = 28, decompose = { "mv-electrolyzer-recipes", 10.5 * MV_SPEED, 22, { item("caesium-dust", 2), item("alumina", 5), item("silicon-dioxide", 12), fluid("oxygen", 100), fluid("water", 200) } } },   -- GT Pollucite: Caesium, Aluminiumoxide, Rubidium; core decomposition
+	["dolomite"] = { dust = "dolomite-dust", byproducts = {  }, mass = 18, decompose = { "mv-electrolyzer-recipes", 9 * MV_SPEED, 10, { item("calcium", 1), item("magnesium", 1), item("carbon", 2), fluid("oxygen", 600) } } },   -- GT Dolomite: no byproducts; GT decomposition
+	["wollastonite"] = { dust = "wollastonite-dust", byproducts = {  }, mass = 23, decompose = { "mv-electrolyzer-recipes", 5.5 * MV_SPEED, 5, { item("calcium", 1), item("raw-silicon", 1), fluid("oxygen", 300) } } },   -- GT Wollastonite: no byproducts; GT decomposition
+	["trona"] = { dust = "trona-dust", byproducts = {  }, mass = 14, decompose = { "mv-electrolyzer-recipes", 9.8 * MV_SPEED, 14, { item("sodium", 3), item("carbon", 2), fluid("hydrogen", 100), fluid("oxygen", 600) } } },   -- GT Trona: no byproducts; GT decomposition without its water (the electrolyzers have two fluid outputs)
+	["andradite"] = { dust = "andradite-dust", byproducts = { "yellow-garnet-dust", "iron-dust" }, mass = 25 },   -- GT Andradite: GarnetYellow, Iron; its decomposition is the mod's already
+}
+for x, o in pairs(NEW_ORES) do
+	ORE_CHAIN[x] = { dust = o.dust, byproducts = o.byproducts, mass = o.mass }
+end
+
 --- issue #199: GTNH sends every ore processing output through bartworks' PlatinumSludgeOutputs.convert
 --- (gtenhancement/PlatinumSludgeOutputs.java, called from ProcessingDirty, ProcessingCrushedOre, ProcessingPure and
 --- ProcessingDust): a platinum, palladium or iridium dust becomes two of the platinum line's powder or residue, so the
@@ -232,6 +276,13 @@ local DECOMPOSE = {
 	{ "amber-dust", "mv-electrolyzer-recipes", 18 * MV_SPEED, 36,
 		{ item("carbon", 10), fluid("hydrogen", 1000), fluid("oxygen", 1600) } },
 }
+--- issue #363: the decompositions of the new ores' dusts
+for x, o in pairs(NEW_ORES) do
+	if o.decompose then
+		local d = o.decompose
+		table.insert(DECOMPOSE, { o.dust, d[1], d[2], d[3], d[4] })
+	end
+end
 local decompose_of = {}
 for _, d in pairs(DECOMPOSE) do
 	local name = d[1] .. "-decomposition"
@@ -481,6 +532,7 @@ for _, f in pairs({ "mercury", "sodium-persulfate" }) do
 end
 
 local baths = 0
+local bath_late = {}   -- issue #363
 for x, ore in pairs(ORE_CHAIN) do
 	local purified, crushed = "purified-" .. x, "crushed-" .. x
 	if data.raw.recipe[purified] and not BATH_SKIP[x] then
@@ -503,11 +555,15 @@ for x, ore in pairs(ORE_CHAIN) do
 			if f then
 				local groups = { bath_techs, tech_list(purified) }
 				if fluid_techs[k[2]] then groups[#groups + 1] = fluid_techs[k[2]] end
-				local tech = after_all(groups)
 				local name = purified .. "-" .. k[2]
 				recipe{ name = name, category = "lv-chemical-bath-recipes", time = 40, main = purified,
 					ingredients = { item(crushed), fluid(k[2], k[3]) }, results = { item(purified), item(f[1], 1, f[2]) } }
-				if tech then
+				--- issue #363: an ore whose chain is unlocked late (o1_late) has no technology for its purified ore yet: its
+				--- bath recipe follows it (below)
+				local tech = #groups[2] > 0 and after_all(groups) or nil
+				if #groups[2] == 0 then
+					bath_late[#bath_late + 1] = { name, purified, fluid_techs[k[2]] }
+				elseif tech then
 					fork_add_unlock(tech, name)
 				else
 					log("FORK-ORE-CHAIN: no technology after the chemical bath, " .. k[2] .. " and " .. purified .. " for " .. name)
@@ -640,6 +696,16 @@ for _, name in pairs(o1_late) do
 	local r = data.raw.recipe[name]
 	unlock_after(name, { machine_techs(r.category), item_techs(r.ingredients[1].name) })
 end
+--- issue #363: the bath recipes of the ores unlocked late, and the LV decompositions of new ores' own dusts
+for _, b in pairs(bath_late) do
+	unlock_after(b[1], { bath_techs, techs_of_recipe[b[2]], b[3] or false })
+end
+for x, o in pairs(NEW_ORES) do
+	local name = decompose_of[o.dust]
+	if name and #tech_list(name) == 0 and data.raw.recipe[name].category:sub(1, 3) == "lv-" then
+		unlock_after(name, { machine_techs(data.raw.recipe[name].category), item_techs(o.dust) })
+	end
+end
 --- the decompositions GT runs at MV (andradite, pyrite, malachite, uvarovite; issues #207, #223): after the MV
 --- electrolyzer and their dust
 for d, name in pairs(decompose_of) do
@@ -691,6 +757,7 @@ local EMS_TAG = {
 	tin = "iron", ilmenite = "iron", nickel = "iron", pentlandite = "iron", chromite = "iron", bornite = "iron",
 	bastnasite = "neodymium", monazite = "neodymium",
 }
+for x, o in pairs(NEW_ORES) do EMS_TAG[x] = o.ems or EMS_TAG[x] end   -- issue #363
 local EMS_CAT = "lv-electromagnetic-separator-recipes"
 for _, m in pairs({ "gold", "iron", "neodymium" }) do
 	local dust, ingot = m .. "-dust", m .. "-ingot"
@@ -1019,6 +1086,7 @@ FORK_ORE_HAMMER_GEM = {
 	["raw-monazite"] = "monazite-gem", ["raw-tricalcium-phosphate"] = "tricalcium-phosphate-gem",
 	["raw-amber"] = "amber-gem", ["raw-topaz"] = "topaz-gem",   -- issue #332
 	["raw-sapphire"] = "sapphire-gem", ["raw-green-sapphire"] = "green-sapphire-gem",   -- issue #364
+	["raw-lignite"] = "lignite-gem",   -- issue #363
 }
 --- the first byproduct of the ores ORE_CHAIN leaves out (GT Platinum: Nickel; GT Palladium: none, its own dust)
 local RAW_BYPRODUCT = { ["raw-platinum"] = "nickel-dust", ["raw-palladium"] = "palladium-dust" }
@@ -1123,6 +1191,17 @@ do
 	if data.raw.item[tcp.chipped] then late_gems = late_gems + engrave(tcp, "yellow-garnet-lens", pending) end
 end
 unlock_pending(pending)
+--- issue #363: lignite is an ore now (GTNH's LigniteCoal vein, 160): GT sifts its purified ore (default table, its grades
+--- are #205's above)
+if data.raw.recipe["purified-lignite"] then
+	local c = SIFT.default
+	local name = made(recipe{ name = "sifting-purified-lignite", category = "lv-sifter-recipes", time = 40, main = "lignite-gem",
+		ingredients = { item("purified-lignite") },
+		results = { item("exquisite-lignite", 1, c[1]), item("flawless-lignite", 1, c[2]), item("lignite-gem", 1, c[3]),
+			item("flawed-lignite", 1, c[4]), item("chipped-lignite", 1, c[5]), item("lignite-dust", 1, c[6]) } })
+	unlock_after(name, { machine_techs("lv-sifter-recipes"), techs_of_recipe["purified-lignite"] })
+	late_gems = late_gems + 1
+end
 local DUST_GEMS = {
 	--  dust                    gem                         autoclave  implosion: explosives, tiny piles of dark ash
 	{ "nether-quartz-dust",  "nether-quartz",            true },
@@ -1232,6 +1311,7 @@ local SMELT_INTO = { cassiterite = "tin", galena = "lead", molybdenite = "molybd
 --- the ingots GT has and Gregtorio lacked: their dust and GT mass
 local NEW_INGOTS = { realgar = { "realgar-dust", 53 }, thorium = { "thorium-dust", 230 }, antimony = { "antimony", 122 },
 	molybdenum = { "molybdenum-dust", 96 } }
+for x, o in pairs(NEW_ORES) do SMELT_INTO[x] = o.smelt or SMELT_INTO[x] end   -- issue #363
 local smelt_into = {}
 for _, m in pairs(SMELT_SELF) do smelt_into[m] = m end
 for x, m in pairs(SMELT_INTO) do smelt_into[x] = m end
@@ -1350,6 +1430,9 @@ local RAW_SMELT = {
 	["raw-stibnite"] = { "antimony-ingot", 1 }, ["raw-thorium"] = { "thorium-ingot", 1 },
 	["raw-platinum"] = { "metallic-platinum-powder", 2 }, ["raw-sheldonite"] = { "metallic-platinum-powder", 2 },
 }
+for x, o in pairs(NEW_ORES) do   -- issue #363: the raw ores of the new ores smelt into GT's direct smelting metal
+	if o.smelt then RAW_SMELT["raw-" .. x] = { o.smelt .. "-ingot", 1 } end
+end
 local raw_changed, raw_removed = 0, 0
 for raw, out in pairs(RAW_SMELT) do
 	local name, multi = raw .. "-smelter", raw .. "-multismelter"
@@ -1391,12 +1474,23 @@ for _, n in pairs({ "vanadium-magnetite-dust-smelter", "vanadium-magnetite-dust-
 		raw_removed = raw_removed + 1
 	end
 end
-for _, add in pairs({ "calcite", "quicklime" }) do
-	local name = made(recipe{ name = "raw-iron-with-" .. add, category = "mv-electric-blast-furnace-recipes",
-		subgroup = "subgroup-mv-electric-blast-furnace-recipes",
-		time = 25 * MV_SPEED, main = "iron-ingot", ingredients = { item("raw-iron"), item(add) },
-		results = { item("iron-ingot", 3), item("dark-ash-dust", 1, 0.25) } })
-	unlock_after(name, { machine_techs("mv-electric-blast-furnace-recipes"), item_techs("raw-iron"), item_techs(add) })
+--- issue #363: GT's BLASTFURNACE_CALCITE_DOUBLE ores the same way with 2 ingots (OP/ProcessingRawOre.java:159-185)
+local CALCITE_ORES = { { "raw-iron", "iron-ingot", 3 } }
+local new_x = {}
+for x in pairs(NEW_ORES) do new_x[#new_x + 1] = x end
+table.sort(new_x)
+for _, x in pairs(new_x) do
+	local o = NEW_ORES[x]
+	if o.calcite and o.smelt then CALCITE_ORES[#CALCITE_ORES + 1] = { "raw-" .. x, o.smelt .. "-ingot", o.calcite } end
+end
+for _, c in pairs(CALCITE_ORES) do
+	for _, add in pairs({ "calcite", "quicklime" }) do
+		local name = made(recipe{ name = c[1] .. "-with-" .. add, category = "mv-electric-blast-furnace-recipes",
+			subgroup = "subgroup-mv-electric-blast-furnace-recipes",
+			time = 25 * MV_SPEED, main = c[2], ingredients = { item(c[1]), item(add) },
+			results = { item(c[2], c[3]), item("dark-ash-dust", 1, 0.25) } })
+		unlock_after(name, { machine_techs("mv-electric-blast-furnace-recipes"), item_techs(c[1]), item_techs(add) })
+	end
 end
 log("FORK-ORE-CHAIN: raw ore smelting as GT's (issue #223): " .. raw_changed .. " ores smelt into GT's ingot or gem, "
 	.. raw_removed .. " recipes removed")
@@ -1425,6 +1519,12 @@ local PBF = {
 	{ "malachite-dust", { item("copper-ingot", 3) } },
 	{ "tetrahedrite-dust", { item("copper-ingot", 3), item("antimony-nugget", 9) } },
 }
+--- issue #363: the new ores' dusts that smelt into another metal (chalcopyrite: GT's special recipes with sand, glass or
+--- the quartzes and its ferrosilite byproduct are left out, the mod has no ferrosilite; malachite has one above)
+for _, x in pairs(new_x) do
+	local o = NEW_ORES[x]
+	if o.smelt and x ~= "chalcopyrite" and x ~= "malachite" then PBF[#PBF + 1] = { o.dust, { item(o.smelt .. "-ingot", 3) } } end
+end
 local PBF_FUEL = {   -- fuel, amount, time factor, ash, its chance
 	{ "coal", 2, 1, "dark-ash-dust", 2 / 9 }, { "coal-dust", 2, 1, "dark-ash-dust", 2 / 9 },
 	{ "charcoal", 2, 1, "dark-ash-dust", 2 / 9 }, { "coke", 1, 2 / 3, "ash-dust", 1 / 9 },

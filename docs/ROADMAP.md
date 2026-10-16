@@ -2260,3 +2260,15 @@ Deviations from GT:
   fluids in, two out); the new boxes come after the old ones, so the old recipes keep their boxes.
 * #295's H8N4C2O4 recipe uses GT's litres (2000 + 2000 -> 5000), the new recipes a tenth like the rest of 159; the ratios
   are GT's either way, only the chemical plant's throughput of the H8N4C2O4 recipe is ten times that of the others.
+
+### Ore veins (issue #363)
+
+Part 1: GTNH's Overworld veins (`OreMixes.java`) whose ores the mod lacked, 30 raw ores with GTNH's chain (155's
+`NEW_ORES`, 160's mines). Decisions and deviations:
+* Upstream's veins that stand for a GT vein (iron, magnetite, chalcopyrite = GT's Copper, salt, copper-tin, basaltic
+  mineral sands) keep their yields; GT's ores they lacked join them at 8 each. A GT vein without such a counterpart is a
+  new Manual Mine recipe at 32/24/16/8 (primary to sporadic).
+* GT's byproducts without a Gregtorio item are left out (basalt, black granite, rubidium); the mineral sands'
+  centrifuge gives stone dust for basalt and black granite.
+* Trona and vermiculite decompose without their water (the electrolyzers have two fluid outputs).
+* Chalcopyrite's bricked blast furnace recipes with sand, glass or the quartzes are left out (GT's ferrosilite).

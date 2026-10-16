@@ -283,6 +283,14 @@ MATERIALS = {
     "zinc": "Zinc",
     "amber": "Amber", "topaz": "Topaz",  # issue #332: the Twilight Forest's ores
     "sapphire": "Sapphire", "green-sapphire": "GreenSapphire",  # issue #364: the sapphire vein
+    # issue #363: the ores of GTNH's Overworld veins
+    "brown-limonite": "BrownLimonite", "yellow-limonite": "YellowLimonite", "chalcopyrite": "Chalcopyrite",
+    "spodumene": "Spodumene", "soapstone": "Soapstone", "talc": "Talc", "glauconite": "Glauconite",
+    "vermiculite": "Vermiculite", "alunite": "Alunite", "basaltic-mineral-sand": "BasalticMineralSand",
+    "granitic-mineral-sand": "GraniticMineralSand", "cassiterite-sand": "CassiteriteSand",
+    "garnet-sand": "GarnetSand", "asbestos": "Asbestos", "diatomite": "Diatomite", "kaolinite": "Kaolinite",
+    "zeolite": "Zeolite", "glauconite-sand": "GlauconiteSand", "kyanite": "Kyanite", "mica": "Mica",
+    "pollucite": "Pollucite", "dolomite": "Dolomite", "wollastonite": "Wollastonite", "trona": "Trona",
     "zirconium-carbide": ("SHINY", (222, 202, 180)),  # GT++ ZIRCONIUM_CARBIDE
 }
 

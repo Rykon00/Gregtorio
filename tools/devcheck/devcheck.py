@@ -739,6 +739,10 @@ ORE_BATHS = {
                           "tetrahedrite": "tetrahedrite-dust", "sphalerite": "zinc-dust", "nickel": "nickel-dust",
                           "pentlandite": "cobalt-dust", "cobaltite": "cobalt-dust", "sheldonite": "nickel-dust"},
 }
+# issue #363: the new ores of GTNH's Overworld veins (their first byproduct tagged for the bath)
+ORE_BATHS["mercury"].update({"magnetite": "gold-dust", "chalcopyrite": "gold-dust"})
+ORE_BATHS["sodium-persulfate"].update({"yellow-limonite": "nickel-dust", "malachite": "copper-dust",
+                                       "chalcopyrite": "cobalt-dust"})
 def check_ore_baths(m):
     """Issue #186 (prototypes/155-fork-ore-chain.lua, phase O2): the chemical bath washes exactly the ores of ORE_BATHS
     with mercury or sodium persulfate into purified ore and the tagged material's dust, as in GTNH. Returns (number of
@@ -766,7 +770,11 @@ def check_ore_baths(m):
     return n, out
 # Issue #187: GTNH's electromagnetic separator per ore (docs/ORE-CHAIN.md appendix B, column EM separator)
 ORE_SEPARATOR = {"vanadium-magnetite": "gold", "tin": "iron", "ilmenite": "iron", "nickel": "iron", "pentlandite": "iron",
-                 "chromite": "iron", "bornite": "iron", "bastnasite": "neodymium", "monazite": "neodymium"}
+                 "chromite": "iron", "bornite": "iron", "bastnasite": "neodymium", "monazite": "neodymium",
+                 # issue #363: the new ores of GTNH's Overworld veins
+                 "brown-limonite": "iron", "yellow-limonite": "iron", "banded-iron": "iron", "magnetite": "gold",
+                 "pyrite": "iron", "glauconite": "iron", "vermiculite": "iron", "basaltic-mineral-sand": "gold",
+                 "granitic-mineral-sand": "gold", "glauconite-sand": "iron"}
 # Issue #262: the other separator recipes of GTNH (gtnhlanth's monazite line, prototypes/159-fork-lanthanides.lua)
 SEPARATOR_OTHER = {"monazite-rarer-earth-sediment"}
 # Issue #188: the gem ores of GTNH's sifter (table, crystallisable for the autoclave) and their gem items
@@ -776,7 +784,8 @@ ORE_GEMS = {"ruby": ("ruby", False), "emerald": ("emerald", False), "diamond": (
             "lazurite": ("lazurite-gem", True), "sodalite": ("sodalite-gem", True), "lapis": ("lapis-lazuli", True),
             "monazite": ("monazite-gem", True),
             "amber": ("amber-gem", False), "topaz": ("topaz-gem", False),   # issue #332: the Twilight Forest's gems
-            "sapphire": ("sapphire-gem", False), "green-sapphire": ("green-sapphire-gem", False)}   # issue #364
+            "sapphire": ("sapphire-gem", False), "green-sapphire": ("green-sapphire-gem", False),   # issue #364
+            "lignite": ("lignite-gem", False)}   # issue #363: GTNH's LigniteCoal vein
 # Issue #193: the laser engraver steps of the grades, with the lens of the gem's colour (red ruby, green emerald, white
 # diamond; issue #328: cyan apatite and blue lapis, #325's substitutes; certus quartz's light gray has no lens; issue
 # #332: orange amber)
