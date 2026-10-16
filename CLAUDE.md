@@ -32,7 +32,7 @@
   - 133 UMV (fusion MK5, spacetime, exotic line, UMV components; also the shared helpers, global table `FORK5B`)
   - 134 UXV (universium, temporal line, UXV components)
   - 135 endgame (stargate, MAX science pack; researching `victory` wins the game via `scripts/fork-victory.lua`)
-  - 136 power (plasma fuel values, plasma balance of issue #32, issue #375: GTNH's fusion transmutations (section 1c), large plasma turbines with turbine output hatches,
+  - 136 power (plasma fuel values, plasma balance of issue #32, issue #375: GTNH's fusion transmutations (section 1c) and its other plasmas (section 1d), large plasma turbines with turbine output hatches,
     naquadah fuel line, large naquadah reactors, dynamo hatches LuV to UXV; runtime in `scripts/fork-power.lua`: fuel
     check, turbine output hatch with a ratio per fluid and the generator's effectivity from the mod data, used by 145's
     steam turbines, and the passive loss of 145's supercapacitors, mod data `capacitors`, and the carry-over of their
