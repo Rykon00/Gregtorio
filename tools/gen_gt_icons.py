@@ -94,7 +94,8 @@ MATERIALS = {
     "p-phenylenediamine": ("POWDER", (100, 60, 30)), "diphenylmethane-diisocyanate": "DiphenylmethaneDiisocyanate",
     "pentaerythritol": "Pentaerythritol", "rhodium-chloride": "RhodiumChloride", "triphenylphosphine": "Triphenylphosphene",
     "sodium-hydride": "SodiumHydride", "sodium-borohydride": "SodiumBorohydride", "sodium-methoxide": "SodiumMethoxide",
-    "organorhodium-catalyst": "OrganorhodiumCatalyst", "polyurethane-catalyst-a": ("DULL", (200, 200, 100)), "kevlar": "Kevlar",   # issue #378
+    "organorhodium-catalyst": "OrganorhodiumCatalyst", "polyurethane-catalyst-a": ("DULL", (200, 200, 100)), "kevlar": "Kevlar", "radox-polymer": "RadoxPoly",
+    "antimony-trioxide": "AntimonyTrioxide",   # issue #378
     "callisto-ice": "CallistoIce", "plutonium": "Plutonium241", "tungstensteel": "TungstenSteel",
     # superconductor bases (fork names, GT's base of the same tier)
     "itbtc-alloy": "Tetraindiumditindibariumtitaniumheptacoppertetrakaidekaoxid",       # LuV

@@ -3447,3 +3447,6 @@ kevlar-fiber
 woven-kevlar
 kevlar-plate
 kevlar-ring
+antimony-trioxide-dust
+radox-polymer-plate
+radox-polymer-ring
