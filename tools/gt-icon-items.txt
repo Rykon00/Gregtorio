@@ -2917,8 +2917,10 @@ infinity-drill-head
 transcendent-metal-drill-head
 spacetime-drill-head
 eternity-drill-head
-apatite-lens
-lapis-lens
+green-sapphire-lens
+sapphire-lens
+green-sapphire-plate
+sapphire-plate
 yellow-garnet-plate
 ender-pearl-dust
 ender-pearl-plate
