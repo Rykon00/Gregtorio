@@ -3393,3 +3393,10 @@ raw-styrene-butadiene-rubber-dust
 polycaprolactam-sheet
 natural-gas-cell
 lpg-cell
+ether-cell
+naquadah-gas-cell
+ethanol-gasoline-cell
+cyclopentadiene-cell
+jet-fuel-no-3-cell
+jet-fuel-a-cell
+ferrocene-dust

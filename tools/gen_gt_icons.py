@@ -289,6 +289,14 @@ MATERIALS = {
     "polystyrene": "Polystyrene", "styrene-butadiene-rubber": "StyreneButadieneRubber", "polycaprolactam": "Polycaprolactam",
     "raw-styrene-butadiene-rubber": "RawStyreneButadieneRubber",
     "natural-gas": "NatruralGas", "lpg": "LPG",  # issue #361: their cells (GT spells NatruralGas so)
+    # issue #357: goodgenerator's fuels (Werkstoffe: FLUID set in their colour) for their cells, ferrocene (a dust)
+    "ether": ("FLUID", (234, 234, 234)),
+    "naquadah-gas": ("FLUID", (51, 51, 51)),
+    "ethanol-gasoline": ("FLUID", (255, 140, 50)),
+    "cyclopentadiene": ("FLUID", (255, 246, 220)),
+    "jet-fuel-no-3": ("FLUID", (215, 175, 77)),
+    "jet-fuel-a": ("FLUID", (242, 177, 92)),
+    "ferrocene": ("DULL", (249, 166, 71)),
     # issue #363, part 2: the Twilight Forest's and the Nether's ores
     "olivine": "Olivine", "bentonite": "Bentonite", "magnesite": "Magnesite", "garnierite": "Garnierite",
     "wulfenite": "Wulfenite", "powellite": "Powellite", "saltpeter": "Saltpeter", "tanzanite": "Tanzanite",
@@ -800,8 +808,10 @@ def icon_table(c):
     for m in ("polystyrene", "styrene-butadiene-rubber", "polycaprolactam"):   # issue #358: the sheets are GT's plates
         T[m + "-sheet"] = (lambda m=m: lambda: c.part(m, "plate"))()
     T["raw-styrene-butadiene-rubber-dust"] = lambda: c.part("raw-styrene-butadiene-rubber", "dust")
-    for m in ("natural-gas", "lpg"):   # issue #361
+    for m in ("natural-gas", "lpg", "ether", "naquadah-gas", "ethanol-gasoline", "cyclopentadiene", "jet-fuel-no-3",
+              "jet-fuel-a"):   # issues #361, #357
         T[m + "-cell"] = (lambda m=m: lambda: c.part(m, "cell"))()
+    T["ferrocene-dust"] = lambda: c.part("ferrocene", "dust")   # issue #357
     T["phthalic-anhydride"] = lambda: c.part("phthalic-anhydride", "dust")
     T["sodium-bisulfate"] = lambda: c.part("sodium-bisulfate", "dust")
     # issue #302: the drill heads of the Space Elevator's mining drones (GT's toolHeadDrill of the material)
