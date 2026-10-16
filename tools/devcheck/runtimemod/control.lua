@@ -1896,9 +1896,9 @@ end
 --- robots of a T1 roboport (issue #336: the roboport must take them, and the T1 logistic robots) with the plant in a
 --- storage chest (the robots bring the old machine and its items back). The
 --- neighbours must stay, the items come back (on the ground, in the storage chest), and plant A drills the iron vein's
---- twin with Drilling Fluid and 9 mining pipes (issue #341, used up: #346): 64 raw iron in 12 s. Issue #337: the Manual Mine's upgrade chain goes through the LV, MV and
+--- twin with Drilling Fluid and a mining pipe (issue #341, used up: #346, one per vein: #393): 64 raw iron in 12 s. Issue #337: the Manual Mine's upgrade chain goes through the LV, MV and
 --- HV Miner to the plant; a third Manual Mine is replaced by fast replace with the HV Miner, which mines the iron vein's
---- Miner twin: 64 raw iron in 6 s, and its 9 mining pipes are used up (issue #346).
+--- Miner twin: 64 raw iron in 6 s, and its mining pipe is used up (issue #346; one per vein, #393).
 local EM_X, EM_Y = 260.5, -120.5
 local EM_C = 60                                          -- mine C (the HV Miner): x offset
 local EM_CHAIN = { "manual-mine", "lv-miner", "mv-miner", "hv-miner", "ore-drilling-plant-mk1" }
@@ -2028,7 +2028,7 @@ function emine_test()
 			expect(e.fast_replaceable_group == mm.fast_replaceable_group, EM_CHAIN[i + 1] .. " is not in the manual mine's"
 				.. " fast replace group")
 		end
-		--- C (issue #337): fast replace with the HV Miner, the iron vein's Miner twin with its 9 mining pipes
+		--- C (issue #337): fast replace with the HV Miner, the iron vein's Miner twin with its mining pipe (issue #393: one per vein)
 		local okc, miner = pcall(function()
 			return s.create_entity{ name = "hv-miner", position = st.c.position, force = "player", fast_replace = true,
 				spill = true, raise_built = true }
@@ -2037,7 +2037,7 @@ function emine_test()
 		if okc and miner and miner.valid then
 			st.miner = miner
 			miner.set_recipe("miner-iron-vein")
-			expect(miner.get_inventory(defines.inventory.assembling_machine_input).insert{ name = "mining-pipe", count = 9 } == 9,
+			expect(miner.get_inventory(defines.inventory.assembling_machine_input).insert{ name = "mining-pipe", count = 1 } == 1,
 				"the HV Miner took no mining pipes")
 		end
 		--- A: fast replace
@@ -2056,8 +2056,8 @@ function emine_test()
 			expect(plant.get_recipe() == nil, "fast replace: the Mk I kept a recipe")
 			plant.set_recipe("drilling-iron-vein")
 			expect(plant.insert_fluid{ name = "drilling-fluid", amount = 400 } == 400, "the Mk I took no drilling fluid")
-			--- issue #341: the plant takes mining pipes like the miners (used up, issue #346)
-			expect(plant.get_inventory(defines.inventory.assembling_machine_input).insert{ name = "mining-pipe", count = 9 } == 9,
+			--- issue #341: the plant takes mining pipes like the miners (used up, issue #346; one per vein, #393)
+			expect(plant.get_inventory(defines.inventory.assembling_machine_input).insert{ name = "mining-pipe", count = 1 } == 1,
 				"the Mk I took no mining pipes")
 		end
 		--- issue #342, E: the chain by script, each step noted first as on_pre_build does for a player
@@ -2116,7 +2116,7 @@ function emine_test()
 			local dback = em_items_in({ st.dchest })["manual-labor"] or 0
 			expect(dback == EM_LABOR, "robots: " .. dback .. " of " .. EM_LABOR .. " manual labor of the hunting mine came back")
 			expect(mined == 64 and pipes == 0, "the HV Miner mined " .. mined .. " raw iron and kept " .. pipes
-				.. " mining pipes (64 in 6 s, the 9 pipes used up; status " .. tostring(st.miner and st.miner.valid and st.miner.status) .. ")")
+				.. " mining pipes (64 in 6 s, the pipe used up; status " .. tostring(st.miner and st.miner.valid and st.miner.status) .. ")")
 			st.mined = mined
 			expect(b ~= nil, "upgrade planner: no Mk I at the manual mine's place after " .. (t - st.t1) .. " ticks")
 			expect((back["manual-mine"] or 0) == 1, "upgrade planner: the manual mine did not come back to the storage chest")
@@ -2126,7 +2126,7 @@ function emine_test()
 			expect(drilled >= 64, "the Mk I drilled " .. drilled .. " raw iron (64 in 12 s with drilling fluid; status "
 				.. tostring(st.plant and st.plant.valid and st.plant.status) .. ")")
 			local left = st.plant and st.plant.valid and st.plant.get_item_count("mining-pipe") or 0
-			expect(left == 0, "the Mk I kept " .. left .. " of its 9 mining pipes (issue #346: used up)")
+			expect(left == 0, "the Mk I kept " .. left .. " of its mining pipe (issue #346: used up)")
 			st.done = true
 		end
 	end

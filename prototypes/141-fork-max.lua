@@ -288,10 +288,10 @@ F.tech{
 --- left out (139: the forge has none). Their materials do not exist in the mod; the substitutes:
 ---   space-time bending core, continuum ripper (kept)   the QFT coil casing, which the recipe returns
 ---   dense dark iron plate                               dense dark steel plate
----   32 dilithium                                        32 diamonds
 ---   universium nanite / magmatter nanite (kept)         superdense universium / magmatter plate
 ---   hexanite round                                      universium round
----   (issue #365: GT's exquisite jasper, sapphire and opal since #363 and #364; before, red garnet, sodalite, lapis)
+---   (issue #365: GT's exquisite jasper, sapphire and opal since #363 and #364; before, red garnet, sodalite, lapis;
+---   issue #373: GT's 32 dilithium since Neper's ores come from the Void Miner III; before, 32 diamonds)
 ---   stargate crystal slurry, primordial matter          raw star matter
 ---   energised tesseract, quantum anomaly                MAX field generator, gravi-star
 ---   chronic singularity                                 block of universium
@@ -316,7 +316,7 @@ local function max_recipe(name, category, seconds, ingredients, results)
 end
 local dtpf_max = {
 	max_recipe("timepiece", DTPF_CAT, 80,
-		{ item(CORE, 1), item("dense-dark-steel-plate", 1), item("diamond", 32), item("superdense-universium-plate", 1),
+		{ item(CORE, 1), item("dense-dark-steel-plate", 1), item("dilithium-gem", 32), item("superdense-universium-plate", 1),
 		  fluid(TIME, 14745.6), fluid(STELLAR, 10000) },
 		{ item("timepiece", 3), item(CORE, 1), fluid(SPACE, 14745.6) }),
 	max_recipe("time-to-space-conversion", DTPF_CAT, 10,

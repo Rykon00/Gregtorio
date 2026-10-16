@@ -2281,16 +2281,33 @@ Part 1: GTNH's Overworld veins (`OreMixes.java`) whose ores the mod lacked, 30 r
 * Upstream's veins that stand for a GT vein (iron, magnetite, chalcopyrite = GT's Copper, salt, copper-tin, basaltic
   mineral sands) keep their yields; GT's ores they lacked join them at 8 each. A GT vein without such a counterpart is a
   new Manual Mine recipe at 32/24/16/8 (primary to sporadic).
-* GT's byproducts without a Gregtorio item are left out (basalt, black granite, rubidium); the mineral sands'
-  centrifuge gives stone dust for basalt and black granite.
+* GT's byproducts basalt, black granite and rubidium are items since #373; the mineral sands' centrifuge gives basalt
+  or black granite (black granite's own decomposition leaves out its biotite, which the mod lacks).
 * Trona and vermiculite decompose without their water (the electrolyzers have two fluid outputs).
-* Chalcopyrite's bricked blast furnace recipes with sand, glass or the quartzes are left out (GT's ferrosilite).
+* Chalcopyrite's bricked blast furnace recipes with sand, glass or the quartzes are built since #373, with GT's
+  ferrosilite (its small piles make a dust at the crafting table: Gregtorio has no packager).
 
 Part 2: the Twilight Forest's olivine vein and small ores and the Nether's saltpeter electrotine vein (16 more ores).
 * Electrotine (Project Red's) is left out of its vein.
 * GT's lime, purple and pink lenses (olivine, tanzanite, amethyst) are new; the dehydrator coil wires' emerald lens, a
-  stand-in of #274, becomes the olivine lens. The blue and cyan lenses stay #325's (question #370).
-* Ross128, the Everglades and the later dimensions' veins: #373.
+  stand-in of #274, becomes the olivine lens. The blue and cyan lenses are GTNH's sapphire and green sapphire lens
+  since #370 (#325's lapis and apatite lens before).
+* #373: the Sapphire vein's almandine and pyrope ores (GT's 32/24/16/8 with sapphire and green sapphire); every vein of
+  Ross128b and of Ross128ba (Reach Ross128ba at ZPM, GTNH's T5) with bartworks' Werkstoff ores: bartworks' byproducts,
+  mass, decomposition and sifter table; the gems engrave with the mod's lens of their colour (BWColorUtil's dye;
+  olenite, fluor-buergerite and fayalite have no lens of theirs here); BArTiMaEuSNeK's decomposition leaves out its
+  Magic (GT has no dust of it); GT's bismuth has no ingot in the mod, so raw bismuth does not smelt.
+* #373, the Toxic Everglades: Reach the Toxic Everglades at LuV (GT++'s portal frame is a LuV assembler recipe; GTNH
+  lists the dimension as T0), its veins GTPP0-19 with GT++'s 39 ores (RecipeGenOre.java). Deviations: the mod's generic
+  chain with GT++'s two byproducts (GT++ uses byproduct B in the thermal centrifuge of the crushed ore and the
+  centrifuge of the impure dust, the mod's chain its usual order); no forge hammer recipe for the raw ore (GT++ hammers
+  only the ore block); elements the mod lacks are left out of byproducts and decompositions (germanium, tellurium,
+  thallium, bromine, iodine, radium, ytterbium, erbium, dysprosium, selenium, strontium oxide, samarium ore
+  concentrate); the LV chemical dehydrator has one fluid output, so cerite, fluorcaphite and lepersonnite give only
+  their oxygen; fluorite (F)'s hydrogen chemical bath is left out; runite gets its ore chain to runite dust, GT++'s
+  alloy blast smelter melt and ingot are not built (no consumer). Agardite (Cd), yttrialite and lanthanite (Ce) are
+  the mod's rare earth dusts of the same names.
+* #373, Neper: a Void Miner III recipe (T9, as Horus and Anubis), see Dilithium below.
 
 ### Elements and the fusion recipes (issue #365)
 
@@ -2328,8 +2345,10 @@ The elements of #365 by consumer in Gregtorio's lines:
   instead of #249's red garnet, sodalite and lapis.
 * **Praseodymium**: its GTNH consumers are the naquadah fuel MK4 (goodgenerator `FuelRecipeLoader.java:98`, #356) and the
   depleted thorium fuel (#357): built with those.
-* **Dilithium**: GTNH's only vein is Neper's (`OreMixes.java:1025`), a dimension Gregtorio has no mine of (#373); 141's
-  diamonds stay.
+* **Dilithium** (built in #373): GTNH's only vein is Neper's (`OreMixes.java:1025`). Neper is GTNH's T9, and #154/#286
+  give the T7 to T9 dimensions to the Void Miner, so Neper is a Void Miner III recipe (its full pool: dilithium,
+  mysterious crystal and vinteum are new ores, the shards, arsenic, tungsten, antimony, quartz sand, charged certus and
+  the irons have no ore in the mod and are left out); 141's timepiece takes GT's 32 dilithium instead of 32 diamonds.
 * **Mithril, rubidium, tellurium, dysprosium, scandium, strontium, radium, polonium, curium, neptunium, technetium,
   rhenium, thallium, germanium, selenium**: no consumer in Gregtorio's lines (strontium's GTNH use is the netherite
   chain, scandium's and strontium's their plasmas' fuel values), so not built.
