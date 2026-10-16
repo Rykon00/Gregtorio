@@ -3391,3 +3391,5 @@ polystyrene-sheet
 styrene-butadiene-rubber-sheet
 raw-styrene-butadiene-rubber-dust
 polycaprolactam-sheet
+natural-gas-cell
+lpg-cell

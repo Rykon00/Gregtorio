@@ -455,3 +455,84 @@ do
 	log("FORK-CHEMISTRY: " .. made .. " cable recipes with styrene-butadiene rubber, " .. skipped
 		.. " skipped (no technology after both)")
 end
+
+--------------------------------------------------------------------------------
+--- 4) OIL VARIETY (issue #361). The decision: GTNH's Overworld pool of underground fluids
+--- (gregtech/api/objects/GTUODimensionList.java:128-166: natural gas, light oil, raw oil, heavy oil and oil, each at a
+--- 20 % chance, up to 350, 350, 625, 625 and 625 buckets) as recipes of the drilling rigs next to the crude oil one
+--- (100 crude oil in 4 s for GT's 625; the others at their share of it), instead of a fluid vein per rig: Gregtorio's rigs
+--- have no veins, the player picks the fluid.
+---   raw oil (GT's OilMedium) is distilled like 162's heavy and light oil (#318: half of GT's 100 L universal distillation,
+---     DistilleryRecipes.java:666-672: 10 heavy fuel, 50 light fuel, 150 naphtha, 60 gas in 20 ticks; lubricant 12 -> 6)
+---   light and heavy oil come at MV now: their distillation and lubricant recipes move from the pump module (#318) to the
+---     technologies of crude oil's (Oil Processing, Diesel)
+---   natural gas: GT's hydrodesulfurization into refinery gas (ChemicalRecipes.java:205-213: 2000 natural gas + 250
+---     hydrogen -> 2000 refinery gas + 125 hydrogen sulfide, 1 s, LV), a gas turbine fuel (20 EU/L, MaterialsInit.java)
+---   LPG from propane (CentrifugeRecipes.java:706-710: 320 -> 290, 1 s, LV), a gas turbine fuel (320 EU/L)
+---   GT's MTBE route to the anti-knock agent: methanol + butene -> MTBE reaction mixture (ChemicalRecipes.java:5815-5822,
+---     MixerRecipes.java:1393-1398: 1 s, HV), its distillation into 400 anti-knock, 500 methanol, 400 butene per 900
+---     (DistilleryRecipes.java:567-575, 2 s, MV); GT's butane variant waits for butane, which the mod lacks
+--- GT's MTBE and "regular/premium gasoline" of the issue are GT's MTBE mixtures and its gasoline and high octane gasoline,
+--- which Gregtorio has (147); extra heavy oil is no Overworld fluid.
+--------------------------------------------------------------------------------
+
+F.fluid("medium-oil", "black-fluid", { 0.00, 1.00, 0.00 })
+F.fluid("natural-gas", "spackled-light-blue-fluid", { 0.00, 1.00, 1.00 })
+F.fluid("lpg", "light-orange-fluid", { 1.00, 1.00, 0.00 })
+F.fluid("mtbe-reaction-mixture", "nearly-white-fluid", { 1.00, 1.00, 1.00 })
+
+RECIPES = {}
+for _, r in pairs({ { "light-oil", 56 }, { "medium-oil", 100 }, { "heavy-oil", 100 }, { "natural-gas", 56 } }) do
+	step(RECIPES, r[1] .. "-drilling-rig", "drilling-rig-recipes", 4, 1, {}, { { r[1], r[2] } })
+end
+for _, r in pairs(RECIPES) do fork_add_unlock("oil-gathering", r) end
+local CRUDE_TIME = 20   -- 162's oil-distillation (GT's 30 ticks)
+RECIPES = {}
+step(RECIPES, "medium-oil-distillation", "mv-tall-distillation-recipes", CRUDE_TIME * 20 / 30, 1, { { "medium-oil", 50 } },
+	{ { "sulfuric-gas", 30 }, { "sulfuric-heavy-fuel", 5 }, { "sulfuric-light-fuel", 25 }, { "sulfuric-naphtha", 75 } },
+	"sulfuric-naphtha")
+step(RECIPES, "natural-gas-desulfurization", "lv-chemical-reactor-recipes", 1, LV_SPEED,
+	{ { "natural-gas", 200 }, { "hydrogen", 25 } }, { { "refinery-gas", 200 }, { "hydrogen-sulfide", 12.5 } })
+for _, r in pairs(RECIPES) do fork_add_unlock("oil-processing", r) end
+RECIPES = {}
+step(RECIPES, "medium-oil-distillation-light", "mv-distillation-recipes", CRUDE_TIME * 20 / 30, 1, { { "medium-oil", 50 } },
+	{ { "sulfuric-light-fuel", 25 } })
+step(RECIPES, "medium-oil-distillation-heavy", "mv-distillation-recipes", CRUDE_TIME * 20 / 30, 1, { { "medium-oil", 50 } },
+	{ { "sulfuric-heavy-fuel", 5 } })
+step(RECIPES, "medium-oil-lubricant", "mv-distillation-recipes", 16 / 20 * 40 / 12, 1, { { "medium-oil", 40 } },
+	{ { "lubricant", 20 } })
+for _, r in pairs(RECIPES) do fork_add_unlock("diesel", r) end
+--- light and heavy oil (162, #318) with crude oil's technologies
+for _, o in pairs({ "light-oil", "heavy-oil" }) do
+	move_unlock(o .. "-distillation", "oil-processing")
+	for _, suffix in pairs({ "-distillation-light", "-distillation-heavy", "-lubricant" }) do move_unlock(o .. suffix, "diesel") end
+end
+--- the gas fuels' cells (GT EU/L x 800 x 500 J, as 15's propane cell)
+local function gas_cell(fluid, eu)
+	create_item{
+		name = fluid .. "-cell",
+		category = "lv-canning-machine-recipes",
+		energy_required = 4,
+		fuel_category = "gas-turbine-fuel",
+		fuel_value = string.format("%.1fMJ", eu * 800 * 500 / 1e6),
+		burnt_result = "empty-large-steel-fluid-cell",
+		subgroup = data.raw.item["propane-cell"].subgroup,
+		ingredients = {
+			{ type = "item", name = "empty-large-steel-fluid-cell", amount = 1 },
+			{ type = "fluid", name = fluid, amount = 800 },
+		},
+	}
+	return fluid .. "-cell"
+end
+fork_add_unlock("oil-gathering", gas_cell("natural-gas", 20))
+RECIPES = {}
+step(RECIPES, "lpg", "lv-centrifuge-recipes", 1, LV_SPEED, { { "propane", 32 } }, { { "lpg", 29 } })
+RECIPES[#RECIPES + 1] = gas_cell("lpg", 320)
+for _, r in pairs(RECIPES) do fork_add_unlock("more-gas-turbine-fuels", r) end
+RECIPES = {}
+step(RECIPES, "mtbe-reaction-mixture", "hv-mixer-recipes", 1, HV_SPEED, { { "methanol", 100 }, { "butene", 100 } },
+	{ { "mtbe-reaction-mixture", 100 } })
+step(RECIPES, "mtbe-reaction-mixture-distillation", "mv-tall-distillation-recipes", 2, MV_SPEED,
+	{ { "mtbe-reaction-mixture", 90 } }, { { "anti-knock-agent", 40 }, { "methanol", 50 }, { "butene", 40 } },
+	"anti-knock-agent")
+for _, r in pairs(RECIPES) do fork_add_unlock("high-octane-gasoline", r) end

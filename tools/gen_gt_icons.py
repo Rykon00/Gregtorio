@@ -288,6 +288,7 @@ MATERIALS = {
     # issue #358: the polymers' sheets (GT's plates) and raw SBR (a dust)
     "polystyrene": "Polystyrene", "styrene-butadiene-rubber": "StyreneButadieneRubber", "polycaprolactam": "Polycaprolactam",
     "raw-styrene-butadiene-rubber": "RawStyreneButadieneRubber",
+    "natural-gas": "NatruralGas", "lpg": "LPG",  # issue #361: their cells (GT spells NatruralGas so)
     # issue #363, part 2: the Twilight Forest's and the Nether's ores
     "olivine": "Olivine", "bentonite": "Bentonite", "magnesite": "Magnesite", "garnierite": "Garnierite",
     "wulfenite": "Wulfenite", "powellite": "Powellite", "saltpeter": "Saltpeter", "tanzanite": "Tanzanite",
@@ -799,6 +800,8 @@ def icon_table(c):
     for m in ("polystyrene", "styrene-butadiene-rubber", "polycaprolactam"):   # issue #358: the sheets are GT's plates
         T[m + "-sheet"] = (lambda m=m: lambda: c.part(m, "plate"))()
     T["raw-styrene-butadiene-rubber-dust"] = lambda: c.part("raw-styrene-butadiene-rubber", "dust")
+    for m in ("natural-gas", "lpg"):   # issue #361
+        T[m + "-cell"] = (lambda m=m: lambda: c.part(m, "cell"))()
     T["phthalic-anhydride"] = lambda: c.part("phthalic-anhydride", "dust")
     T["sodium-bisulfate"] = lambda: c.part("sodium-bisulfate", "dust")
     # issue #302: the drill heads of the Space Elevator's mining drones (GT's toolHeadDrill of the material)
