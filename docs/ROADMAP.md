@@ -2494,6 +2494,12 @@ Sparge Tower):
   from GT++'s mixer, Hastelloy-X dust from the ingot.
 - Left (issue #406): the Cold Trap II and RPU II (Pikyonium needs ytterbium) and the Nuclear Salt Processing Plant.
 
+Step 4 (164 section 16, with Nuclear Salt Processing): the loop closes in the Reactor Fuel Processing Plant, GT++'s
+recipes. The RPU's impure molten salt base distils into the stable molten salt base (IV tall distillation tower); with the
+cold trap's uranium hexafluoride and hydrogen it becomes the LFTR Fuel Base (the IV blast furnace, GT's cells as fluids,
+or the chemical plant with industrial strength HF back), and the plant mixes it with zirconium or thorium tetrafluoride
+into Fuel 2 and 3. The blast furnace's 5400 K are not modelled (the mod's blast furnaces have tiers, no heat).
+
 ### GoodGenerator's fuels (issue #357)
 
 Part 1 (164): the liquid fuels with GoodGenerator's recipes and fuel values. Ether and naquadah gas already existed
