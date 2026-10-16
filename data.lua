@@ -146,6 +146,8 @@ require("prototypes.155-fork-ore-chain")
 require("prototypes.158-fork-gt-parts")
 --- issue #262: the monazite rare earth line (lanthanides), after 158 and before 156
 require("prototypes.159-fork-lanthanides")
+--- issues #355 to #367: GTNH's chemical lines Gregtorio lacked (GT++'s rocket fuels, ...), after 159 and before 161
+require("prototypes.164-fork-chemistry")
 --- issue #287: the unlock rules of the dimension mines (160), after 159 and before 156
 require("prototypes.161-fork-dimension-unlocks")
 --- issue #164: the circuit variant recipes show the icon of their GTNH item (156)

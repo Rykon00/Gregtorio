@@ -136,6 +136,13 @@ put("gases", { "phosgene", "boron-trichloride", "chloromethane" })
 put("molten-elements", { "calcium-fluoride" })
 --- issue #335: the Drilling Fluid of the Ore Drilling Plants (163), water with stone dust and lubricant
 put("basic", { "drilling-fluid" })
+--- issue #362: GT++'s rocket fuels and the chains behind them (164)
+put("fuels", { "kerosene", "rp-1", "rp-1-rocket-fuel", "dense-hydrazine-fuel-mixture", "cn3h7o3-rocket-fuel", "coal-tar",
+	"coal-tar-oil", "sulfuric-coal-tar-oil" })
+put("organic", { "naphthalene", "ethylbenzene", "anthracene", "2-ethylanthraquinone", "2-ethylanthrahydroquinone", "hydrazine",
+	"monomethylhydrazine" })
+put("acids", { "hydrogen-peroxide" })
+put("coolants", { "liquid-oxygen" })
 --- issue #119: Space Age's melts, restyled below, are rows of the Fluids tab like the other melts
 put("molten-elements", { "molten-iron", "molten-copper" })
 put("molten-alloys", { "molten-potassium-disulfate" })

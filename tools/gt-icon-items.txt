@@ -2956,3 +2956,7 @@ flawless-topaz
 exquisite-topaz
 mining-pipe
 ruby-plate
+rp-1-rocket-fuel-cell
+dense-hydrazine-fuel-mixture-cell
+cn3h7o3-rocket-fuel-cell
+phthalic-anhydride
