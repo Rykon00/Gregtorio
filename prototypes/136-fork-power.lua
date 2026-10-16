@@ -120,6 +120,70 @@ end
 
 
 --------------------------------------------------------------------------------
+--- 1c) GTNH'S TRANSMUTATIONS (issue #375, part A; the maintainer's decision: as GTNH has them, the shortcuts around
+--- the platinum line (#96), the naquadah line (#205) and the ore chains accepted, docs/ROADMAP.md)
+--- GT5-Unofficial gregtech/loaders/postload/recipes/FusionReactorRecipes.java: one nugget (GT 16 L, here a tenth, 1.6) of
+--- each input -> one nugget of the product, GT's time at the reactor's tier speed (MK1 LuV, MK2 ZPM, MK3 UV), the
+--- reactor by GT's FUSION_THRESHOLD (MK1 up to 160M EU, MK2 320M, MK3 640M). The melts the mod lacked are melted
+--- from the dust in the IV fluid extractor (as molten lutetium); uranium, plutonium and indium have no ingot in the mod,
+--- so their melts solidify into the dust (GT: the ingot), the stand-in named here and in docs/ROADMAP.md.
+--------------------------------------------------------------------------------
+
+local TRANSMUTE_MELTS = {
+	--  melt                dust                   colour (gen_gt_icons --molten) technology (first consumer or maker)
+	{ "molten-plutonium", "plutonium-239-dust", { 0.98, 0.27, 0.27 }, "fusion-plasmas-mk2", solidify = "fusion-plasmas-mk3" },
+	{ "molten-manganese", "manganese-dust",     { 0.98, 0.98, 0.98 }, "fusion-plasmas-mk1" },
+	{ "molten-uranium",   "uranium-238-dust",   { 0.20, 0.94, 0.20 }, "fusion-plasmas-mk3", solidify = "fusion-plasmas-mk2" },
+	{ "molten-vanadium",  "vanadium-dust",      { 0.56, 0.56, 0.56 }, "fusion-plasmas-mk1" },
+	{ "molten-indium",    "indium",             { 0.36, 0.00, 0.73 }, nil,                  solidify = "fusion-plasmas-mk3" },
+}
+for _, m in pairs(TRANSMUTE_MELTS) do
+	F.fluid(m[1], m[1], m[3])
+	if m[4] then
+		create_recipe{
+			name = "melt-" .. m[2], category = "iv-fluid-extractor-recipes", energy_required = 1.2 * IV_SPEED,
+			ingredients = { { type = "item", name = m[2], amount = 1 } },
+			results = { { type = "fluid", name = m[1], amount = 14.4 } }, main_product = m[1],
+		}
+		fork_add_unlock(m[4], "melt-" .. m[2])
+	end
+	if m.solidify then
+		create_recipe{
+			name = "solidify-" .. m[2], category = "iv-fluid-solidifier-recipes", energy_required = 1.6 * IV_SPEED,
+			ingredients = { { type = "fluid", name = m[1], amount = 14.4 } },
+			results = { { type = "item", name = m[2], amount = 1 } }, main_product = m[2],
+		}
+		fork_add_unlock(m.solidify, "solidify-" .. m[2])
+	end
+end
+
+local TRANSMUTATIONS = {
+	--  name                     reactor  GT s  speed       inputs (name, amount)                         product
+	{ "iridium-transmutation",    2, 3.2,  ZPM_SPEED, { { "molten-lithium", 1.6 }, { "molten-tungsten", 1.6 } }, "molten-iridium" },
+	{ "platinum-transmutation",   1, 1.6,  LUV_SPEED, { { "molten-beryllium", 1.6 }, { "molten-tungsten", 1.6 } }, "molten-platinum" },
+	{ "naquadah-transmutation",   2, 3.2,  ZPM_SPEED, { { "molten-plutonium", 1.6 }, { "molten-thorium", 1.6 } }, "molten-naquadah" },
+	{ "osmium-transmutation",     1, 12.8, LUV_SPEED, { { "molten-tungsten", 1.6 }, { "helium", 1.6 } }, "molten-osmium" },
+	{ "iron-transmutation",       1, 3.2,  LUV_SPEED, { { "molten-manganese", 1.6 }, { "hydrogen", 1.6 } }, "molten-iron" },
+	{ "uranium-from-mercury-transmutation", 2, 3.2, ZPM_SPEED, { { "mercury", 1.6 }, { "molten-magnesium", 1.6 } }, "molten-uranium" },
+	{ "uranium-from-gold-transmutation",    2, 3.2, ZPM_SPEED, { { "molten-gold", 1.6 }, { "molten-aluminium", 1.6 } }, "molten-uranium" },
+	{ "plutonium-transmutation",  3, 6.4,  UV_SPEED,  { { "molten-uranium", 1.6 }, { "helium", 1.6 } }, "molten-plutonium" },
+	{ "chrome-transmutation",     1, 3.2,  LUV_SPEED, { { "molten-vanadium", 1.6 }, { "hydrogen", 12.5 } }, "molten-chrome" },
+	{ "tungsten-transmutation",   2, 0.8,  ZPM_SPEED, { { "molten-tantalum", 1.6 }, { "tritium", 1.6 } }, "molten-tungsten" },
+	{ "indium-transmutation",     3, 1.6,  UV_SPEED,  { { "molten-silver", 1.6 }, { "molten-lithium", 1.6 } }, "molten-indium" },
+}
+for _, t in pairs(TRANSMUTATIONS) do
+	local ing = {}
+	for _, i in pairs(t[5]) do ing[#ing + 1] = { type = "fluid", name = i[1], amount = i[2] } end
+	create_recipe{
+		name = t[1], category = "mk" .. t[2] .. "-fusion-reactor-recipes", energy_required = t[3] * t[4],
+		ingredients = ing, results = { { type = "fluid", name = t[6], amount = 1.6 } }, main_product = t[6],
+	}
+	fork_add_unlock("fusion-plasmas-mk" .. t[2], t[1])
+end
+
+
+
+--------------------------------------------------------------------------------
 --- 2) GENERATORS
 --- A `generator` that burns fluids by fuel value (like the LV steam turbine), no filter, pass
 --- through north/south. max_power_output caps the tier; scale_fluid_usage makes the fluid usage
