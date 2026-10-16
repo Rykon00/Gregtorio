@@ -936,12 +936,14 @@ the new ones are in the table of `prototypes/136-fork-power.lua` (section 1b, pl
 | bismuth (#375) | 425.98 MJ | 144 tantalum melt + 72 zinc plasma -> 144 in 15 s (MK3; GT 0.8 s) | 2458 MJ | 61 342 MJ | 25.0x (18.3x with its zinc plasma) | - | 9.6 | 4.09 GW |
 | radon (#375) | 450.56 MJ | 144 iridium melt + 500 fluorine -> 144 in 16 s (MK3; GT 1.6 s) | 2621 MJ | 64 881 MJ | 24.8x | - | 9 | 4.06 GW |
 | plutonium 241 (#375) | 497.66 MJ | 576 lutetium + 576 vanadium melt -> 576 in 17.5 s (MK5; GT 0.2 s) | 11 469 MJ | 286 654 MJ | 25.0x | - | 32.9 | 16.4 GW |
+| americium (#386) | 501.76 MJ | 144 plutonium 241 melt + 2000 hydrogen -> 144 in 17.5 s (MK3; GT 3.2 s) | 2867 MJ | 72 253 MJ | 25.2x | - | 8.2 | 4.13 GW |
 | thorium (#375) | 471.04 MJ | 576 osmium + 576 silicon melt -> 576 in 16.5 s (MK5; GT 0.2 s) | 10 813 MJ | 271 319 MJ | 25.1x | - | 34.9 | 16.4 GW |
 
 Issue #375's plasmas (part B, the maintainer's decision: GT's fuel values, a place in this table): GT's inputs and outputs
 in GT litres like the plasmas above, the reactor by GT's threshold (MK3, the 6G ones MK5); GT's times would give 160x
 to 240x, so the times are set for about 25x like the balanced cheap plasmas (full chain not computed). Americium plasma
-(plutonium 241 + hydrogen) comes with issue #386's isotopes, lead plasma (tellurium + zinc) when tellurium exists.
+(plutonium 241 + hydrogen) came with issue #386's isotopes (step 2: the MOX rods' plutonium 241 from GT's IV centrifuge,
+melted in the IV fluid extractor), lead plasma (tellurium + zinc) waits for tellurium (#397).
 
 Helium-3 (issue #32): `end-stone-centrifuging` makes 50 helium-3 per compressed end stone in 200 s (before 100 in 40 s),
 1.92 MJ per unit like deuterium (before 0.19 MJ). The fuel values are unchanged (GT's). The recipes that use a plasma as an
@@ -2319,7 +2321,7 @@ file lacks):
 | Al + Li -> sulfur, Be + D -> nitrogen, Si + Mg -> iron, Cu + T -> zinc, Co + Si -> niobium, Ag + He-3 -> tin plasma, Mg + O -> calcium plasma | yes (#32's numbers) |
 | Nd + H, Nd + Pm -> europium; Lu + Cr, Lu + Pm -> americium; Am + naquadria -> neutronium; glowstone + He -> sunnarium; Ga + Rn -> duranium; Ti + duranium -> tritanium | yes (promethium routes: Gregtorio has no promethium, the other route of each) |
 | Li + W -> iridium, Be + W -> platinum, Pu + Th -> naquadah, W + He -> osmium, Mn + H -> iron, Hg + Mg and Au + Al -> uranium, U + He -> plutonium, V + H -> chrome, Ta + T -> tungsten, Ag + Li -> indium | yes since #375 part A (136 section 1c; the maintainer's decision: as GTNH has them), see "Accepted shortcuts" below |
-| K + F -> nickel, Au + As -> silver, Ta + Zn plasma -> bismuth, Ir + F -> radon, Pu-241 + H -> americium, Lu + V -> Pu-241, Os + Si -> thorium plasma | yes since #375 part B (136 section 1d, balanced like #32) except americium (with #386's plutonium 241) |
+| K + F -> nickel, Au + As -> silver, Ta + Zn plasma -> bismuth, Ir + F -> radon, Pu-241 + H -> americium, Lu + V -> Pu-241, Os + Si -> thorium plasma | yes since #375 part B (136 section 1d, balanced like #32); americium since #386 step 2 |
 | Co + neon -> rubidium (500M); Te + Zn -> lead plasma (6G) | no: rubidium and tellurium have no consumer in Gregtorio (the issue's two elements), lead plasma none either |
 | redstone plasma + ichorium -> unformed hexanite (6G) | no: Thaumcraft's ichorium (#39 removed it) |
 
@@ -2465,6 +2467,24 @@ Fuel Rods): GT's Large Tungstensteel Fluid Cell canned with enriched naquadah du
 rods in GT's EV centrifuge. Value by #359's rule (the rod's energy over its life against the uranium rod's): 10 times,
 60 000 MJ; dual and quad 4 and 12 times. GT's quad naquadah rod heats less than the others; the mod's reactors have no
 hull heat, so that difference is lost. GT's fifth rod, The Core, needs bartworks' tiberium (issue #402).
+
+Step 2 (164 section 14, technology Liquid Fluoride Thorium Reactor; the plan on #386: GT++'s LFTR fuels are recipes of
+the Reactor Fuel Processing Plant only, so the plant comes here, not in step 4):
+- the isotopes: GT's IV centrifuge of 8 depleted thorium, uranium or MOX rods (4 dual, 2 quad) with GT's chances;
+  small and tiny piles make their dust at the crafting table (GT's packager is not in the mod; FORK_RECIPES_TABLE_ONLY
+  names the dusts nothing else makes). The MOX isotopes come with Fusion Plasmas MK3, where their plutonium 241 is first
+  used (americium plasma, 136 section 1d); thorium 232 also goes into GoodGenerator's uranium carbide-thorium mixture
+  (11 thorium + 1 thorium 232 as in GTNH, before 12 thorium).
+- GT++'s fluorides and GoodGenerator's thorium tetrafluoride with GT's recipes; the mod's zirconium tetrachloride of 159
+  serves as GT++'s (the same chemical). GT++'s industrial strength hydrofluoric acid is its own fluid; its first source is
+  the beryllium fluoride recipe, as in GTNH. Left out: the lithium carbonate routes (the mod has no lithium carbonate)
+  and the beryllium fluoride dehydrator (two fluid outputs).
+- Hastelloy-N (GT++'s alloy blast smelter recipe, cast by 143) and the Reactor Fuel Processing Plant: a 3x3 machine with
+  four fluid inputs at IV speed, its item the controller with the structure's casings (17 sealant, 7 structural, 5
+  fluid containment, 4 reactor shield) and hatches as hulls. Its parts with GT's and the core mod's recipes: the
+  Gregtech Computer Cube and the Data Orb, GT++'s huge Staballoy pipe and GT's large titanium pipe (as parts: the mod
+  has no fluid pipe items), the Hermetic Casing V and the Super Tank IV. GT's Computer Monitor Cover is the mod's
+  computer monitor; GT's crafting table recipes are crafting-or-assembling recipes.
 
 ### GoodGenerator's fuels (issue #357)
 

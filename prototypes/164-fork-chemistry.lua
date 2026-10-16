@@ -726,8 +726,8 @@ F.tech{
 }
 
 --- GoodGenerator's thorium based liquid fuel (RecipeLoader.java:188-234): the uranium carbide-thorium mixture (bartworks'
---- mixer recipe of the Werkstoff: 11 thorium, 1 thorium 232, 1 uranium 235 and 3 carbon into 16, 2.35 s, LV; the mod
---- has no thorium isotopes, so 12 thorium dust), 64 of it with 4 tungstensteel foils into a wrapped thorium ingot (HV
+--- mixer recipe of the Werkstoff: 11 thorium, 1 thorium 232, 1 uranium 235 and 3 carbon into 16, 2.35 s, LV; thorium
+--- 232 since issue #386, section 14), 64 of it with 4 tungstensteel foils into a wrapped thorium ingot (HV
 --- assembler, 15 s), the implosion compressor (GT's 4 TNT: one explosive) into a high density thorium nugget and 8 tiny
 --- tungstensteel dusts, 9 nuggets into high density thorium (MV compressor, 10 s), with 4 lithium, 2 draconium and 1000
 --- mercury into 4000 thorium based liquid fuel (HV mixer, 150 s), excited with 250 helium plasma per 1000 (IV mixer, 6 s;
@@ -755,7 +755,8 @@ create_item{
 	category = "lv-mixer-recipes",
 	energy_required = 2.35,
 	ingredients = {
-		{ type = "item", name = "thorium-dust", amount = 12 },
+		{ type = "item", name = "thorium-dust", amount = 11 },
+		{ type = "item", name = "thorium-232-dust", amount = 1 },
 		{ type = "item", name = "uranium-235-dust", amount = 1 },
 		{ type = "item", name = "carbon", amount = 3 },
 	},
@@ -876,8 +877,8 @@ end
 --- assembler, 20 s), canned into an empty fuel rod (1.5 s). The depleted rods go into GT's thermal centrifuge (25 s, LV):
 --- the dual and quad rods give 2 and 4 times the single rod's outputs and 3 and 6 iron dust; IC2's small piles are a ninth
 --- of a dust, as the mod's single rods have them (a small plutonium pile: 11 % of a plutonium 239 dust). GT's IV
---- centrifuge of 8 depleted rods (the isotopes plutonium 238 and 241, uranium 232 and 233, thorium 232, krypton) is left
---- out: nothing in the mod takes the isotopes before the LFTR (issue #359's later steps). They come with Nuclear Fuel Rods,
+--- centrifuge of 8 depleted rods (the isotopes plutonium 238 and 241, uranium 232 and 233, thorium 232, krypton) came
+--- with the LFTR (issue #386, section 14). They come with Nuclear Fuel Rods,
 --- and the coolant with them (MOX takes it).
 --------------------------------------------------------------------------------
 
@@ -1400,3 +1401,358 @@ F.tech{
 	name = NAQ_RODS, prerequisites = { "enriched-naquadah", "nuclear-fuel-rods" }, packs = 7, count = 1500, time = 60,
 	recipes = RECIPES,
 }
+
+
+
+
+--------------------------------------------------------------------------------
+--- 14) THE ISOTOPES AND THE LFTR FUELS (issue #386 (2); the plan on #386: GT++'s fuels are made only in the Reactor
+--- Fuel Processing Plant, so the plant comes with them). Fluids a tenth of GT's litres, GT's seconds x the tier speed.
+--- The isotopes: GT's IV centrifuge of 8 depleted rods (or 4 dual, 2 quad; gregtech/loaders/load/FissionFuelLoader.java:
+--- 134-175, 245-286, 354-395): 8 empty fuel rods back, the fuel's dust, thorium 232, uranium 232 and 233, plutonium 238
+--- and 241, polonium, thallium and krypton (GT's chances; small and tiny piles make the dust at the crafting table, GT's
+--- packager is not in the mod). GT's "uranium" dust is the mod's uranium 238, GT's "plutonium" its plutonium 239.
+--- GT++'s fluoride chemistry (gtPlusPlus/xmod/gregtech/loaders/recipe/RecipeLoaderNuclear.java, N below):
+---   lithium 7: laser engraver, 3 lithium + a white lens (the mod's: diamond) -> 1, EV, 120 s (RecipesLaserEngraver.java:
+---     40-47); lithium hydroxide: 16 lithium 7 + 8000 oxygen + 8000 water -> 6912 L, LV, 300 s (N 125-132), its dust in the
+---     dehydrator (144 L, MV, 1 s; N 272-277); lithium fluoride: 3 lithium hydroxide + 500 industrial strength HF -> 2 + 1000
+---     water, LV, 120 s (N 116-123)
+---   beryllium fluoride: beryllium hydroxide from 1 beryllium + 1000 oxygen + 1000 hydrogen -> 432 L (LV, 8 s; N 136-143),
+---     its dust (GT++'s generated dehydrator recipe, 144 L, 16 EU/t, 1.5 s; MaterialGenerator.java:181-191), ammonium
+---     bifluoride from 2000 GT hydrofluoric acid + 1000 ammonia -> 576 L (LV, 40 s; N 157-165), ammonium
+---     tetrafluoroberyllate from 3 beryllium hydroxide + 1152 L of it -> 1000 + 2000 water (MV, 300 s; N 314-322; or the
+---     MV dehydrator in 6 s, N 305-312, its water left out: one fluid output), beryllium fluoride from 1000 of it -> 3 +
+---     2000 ammonia + 1000 industrial strength HF (MV, 300 s; N 341-350)
+---   zirconium tetrafluoride: the zirconium pellet (autoclave, 1 zirconium + 4000 chlorine, LV, 15 s; N 67-75), 5
+---     zirconium tetrachloride from it (macerator, 20 s; N 527-534; the mod's zirconium tetrachloride of 159 is the same
+---     chemical and serves as GT++'s), cooked in the blast furnace (HV, 60 s; N 89-95), with 800 GT hydrofluoric acid (HV,
+---     30 s) or 400 industrial strength HF (15 s) into 1 + 800 hydrochloric acid in the HV dehydrator (N 281-300)
+---   thorium tetrafluoride (GoodGenerator, goodgenerator/loader/RecipeLoader.java:308-349): thorium nitrate (1 thorium +
+---     100 HF + 8000 nitric acid -> 1000 + 4000 NO2, MV, 2 s), thorium hydroxide (12 sodium hydroxide + 1000 -> 9 + 20
+---     sodium nitrate, MV, 10 s), 9 of it + 4000 HF -> 1000 L (LV, 20 s)
+---   uranium tetrafluoride: mixer, 4 uranium 233 + 1 uranium 235 + 10 000 industrial strength HF -> 3600 L (HV, 150 s;
+---     N 541-547)
+---   industrial strength hydrofluoric acid (GT++'s, twice as strong as GT's; RecipesGregTech.java:279-288): the chemical
+---     plant, 2000 of it + 5000 GT hydrofluoric acid -> 4500 (HV, 30 s); the first comes from beryllium fluoride above
+---   the melts: lithium, beryllium and zirconium fluoride from the dust (fluid extractor, 144 L, HV 5 s, HV 5 s, EV 10 s;
+---     N 399-413, 438-443), uranium 235 as GT's other melts (1.2 s, 136's transmutation melts)
+---   LFTR Fuel 1 to 3 in the Reactor Fuel Processing Plant (RecipeLoaderNuclearFuelProcessing.java:34-65): 550 lithium
+---     fluoride + 150 beryllium fluoride + 60 zirconium tetrafluoride + 240 uranium 235 (EV, 30 min); 600 + 250 + 80
+---     zirconium tetrafluoride + 70 uranium tetrafluoride (IV, 40 min); 580 + 270 + 80 thorium tetrafluoride + 70 uranium
+---     tetrafluoride (IV, 50 min); 1000 each
+--- Left out: GT++'s routes through lithium carbonate (the sulfuric lithium mix of lepidolite, the chemical bath; the mod
+--- has no lithium carbonate) and the beryllium fluoride dehydrator (two fluid outputs). GT's plutonium 241 melts for
+--- americium plasma (136 section 1d), so the MOX isotopes come with Fusion Plasmas MK3, where plutonium 241 is first used
+--- (#252); the others with the LFTR's technology, which (3) gives the reactor.
+--------------------------------------------------------------------------------
+
+local LFTR = "liquid-fluoride-thorium-reactor"
+local DUSTS = data.raw.item["uranium-235-dust"].subgroup
+local function dust(name)
+	if not data.raw.item[name] then create_item{ skip_recipe = true, name = name, subgroup = DUSTS } end
+end
+--- a small (4 make a dust) or tiny (9) pile and its crafting table recipe; `only` when nothing else makes the dust
+local function pile(d, kind, only)
+	dust(d)
+	local p = kind .. "-pile-of-" .. d
+	if not data.raw.item[p] then create_item{ skip_recipe = true, name = p, subgroup = data.raw.item[d].subgroup } end
+	local r = d .. "-from-" .. kind .. "-piles"
+	if not data.raw.recipe[r] then
+		create_recipe{
+			name = r, category = "crafting", energy_required = 0.5, subgroup = DUSTS,
+			ingredients = { { type = "item", name = p, amount = kind == "small" and 4 or 9 } },
+			results = { { type = "item", name = d, amount = 1 } },
+		}
+	end
+	if only then
+		FORK_RECIPES_TABLE_ONLY[r] = "GTNH: the dust comes only from the piles of GT's IV centrifuge of depleted rods "
+			.. "(FissionFuelLoader.java), and the piles make the dust in GT's packager, which the mod does not have"
+	end
+	return p, r
+end
+
+RECIPES = {}
+local MK3 = {}
+for _, d in pairs({ { "thorium-232-dust" }, { "polonium-dust", "small" }, { "thallium-dust", "tiny" },
+		{ "uranium-232-dust", "small" }, { "uranium-233-dust", "small" }, { "plutonium-238-dust", "tiny" },
+		{ "plutonium-241-dust", "tiny" } }) do
+	dust(d[1])
+	if d[2] then
+		local _, r = pile(d[1], d[2], true)
+		local list = d[1]:find("^plutonium") and MK3 or RECIPES
+		list[#list + 1] = r
+	end
+end
+for _, d in pairs({ { "lutetium-dust", "small" }, { "uranium-235-dust", "small" } }) do
+	local _, r = pile(d[1], d[2])
+	RECIPES[#RECIPES + 1] = r
+end
+RECIPES[#RECIPES + 1] = select(2, pile("plutonium-239-dust", "tiny"))   -- (the uranium isotopes give it too)
+local ISOTOPES = {
+	--  fuel        GT s  outputs after the empty rods and the fuel's 2 dusts                                     krypton
+	{ "thorium",   125, "thorium-dust", { { "thorium-232-dust", 1, 0.5 }, { "small-pile-of-lutetium-dust", 1, 0.5 },
+		{ "small-pile-of-polonium-dust", 1, 0.5 }, { "tiny-pile-of-thallium-dust", 1, 0.25 } }, 3, RECIPES },
+	{ "uranium",   250, "uranium-238-dust", { { "small-pile-of-uranium-232-dust", 1, 0.1 },
+		{ "small-pile-of-uranium-233-dust", 1, 0.1 }, { "small-pile-of-uranium-235-dust", 1, 0.1 },
+		{ "tiny-pile-of-plutonium-239-dust", 1, 0.05 } }, 6, RECIPES },
+	{ "mox",       375, "plutonium-239-dust", { { "tiny-pile-of-plutonium-241-dust", 1, 0.05 },
+		{ "tiny-pile-of-plutonium-239-dust", 1, 0.05 }, { "tiny-pile-of-plutonium-238-dust", 1, 0.05 },
+		{ "tiny-pile-of-plutonium-239-dust", 1, 0.05 } }, 9, MK3 },
+}
+for _, f in pairs(ISOTOPES) do
+	for _, v in pairs({ { "", 8 }, { "dual-", 4 }, { "quad-", 2 } }) do
+		local depleted = "depleted-" .. v[1] .. f[1] .. "-fuel-rod"
+		local results = { { "empty-fuel-rod", 8 }, { f[3], 2 } }
+		for _, o in pairs(f[4]) do results[#results + 1] = o end
+		results[#results + 1] = { "krypton", f[5] }
+		step(f[6], depleted .. "-isotope-centrifuging", "iv-centrifuge-recipes", f[2], IV_SPEED, { { depleted, v[2] } }, results,
+			"empty-fuel-rod")
+	end
+end
+--- plutonium 241's melt for americium plasma (136; as 136's transmutation melts)
+create_recipe{
+	name = "melt-plutonium-241-dust", category = "iv-fluid-extractor-recipes", energy_required = 1.2 * IV_SPEED,
+	ingredients = { { type = "item", name = "plutonium-241-dust", amount = 1 } },
+	results = { { type = "fluid", name = "molten-plutonium-241", amount = 14.4 } }, main_product = "molten-plutonium-241",
+}
+MK3[#MK3 + 1] = "melt-plutonium-241-dust"
+for _, r in pairs(MK3) do fork_add_unlock("fusion-plasmas-mk3", r) end
+
+--- the fluorides
+for _, f in pairs({
+	{ "industrial-strength-hydrofluoric-acid", "rich-green-fluid", { 0.00, 0.53, 0.00 } },
+	{ "lithium-hydroxide", "nearly-white-fluid", { 0.85, 0.85, 0.85 } },
+	{ "beryllium-hydroxide", "pale-green-fluid", { 0.38, 0.53, 0.38 } },
+	{ "ammonium-bifluoride", "deep-blue-fluid", { 0.00, 0.60, 0.85 } },
+	{ "ammonium-tetrafluoroberyllate", "deep-blue-fluid", { 0.15, 0.55, 0.65 } },
+	{ "thorium-nitrate", "nearly-white-fluid", { 0.75, 0.75, 0.75 } },
+	{ "thorium-tetrafluoride", "forest-green-fluid", { 0.20, 0.60, 0.20 } },
+	{ "uranium-tetrafluoride", "forest-green-fluid", { 0.16, 0.73, 0.16 } },
+	{ "lithium-fluoride", "nearly-white-fluid", { 0.94, 0.94, 0.94 } },
+	{ "beryllium-fluoride", "pale-green-fluid", { 0.47, 0.78, 0.47 } },
+	{ "zirconium-tetrafluoride", "nearly-white-fluid", { 0.67, 0.67, 0.67 } },
+	{ "molten-uranium-235", "molten-uranium-235", { 0.27, 0.86, 0.27 } },
+	{ "lftr-fuel-1", "spackled-forest-green-fluid", { 0.24, 0.65, 0.24 } },
+	{ "lftr-fuel-2", "spackled-forest-green-fluid", { 0.24, 0.55, 0.40 } },
+	{ "lftr-fuel-3", "spackled-forest-green-fluid", { 0.40, 0.55, 0.24 } },
+}) do
+	F.fluid(f[1], f[2], f[3])
+end
+for _, n in pairs({ "lithium-7-dust", "lithium-hydroxide-dust", "lithium-fluoride-dust", "beryllium-hydroxide-dust",
+		"beryllium-fluoride-dust", "zirconium-pellet", "cooked-zirconium-tetrachloride-dust", "zirconium-tetrafluoride-dust",
+		"thorium-hydroxide-dust" }) do
+	dust(n)
+end
+local ISHF = "industrial-strength-hydrofluoric-acid"
+step(RECIPES, "lithium-7-dust", "ev-laser-engraver-recipes", 120, EV_SPEED, { { "lithium", 3 }, { "diamond-lens", 1 } },
+	{ { "lithium-7-dust", 1 }, { "diamond-lens", 1 } }, "lithium-7-dust")
+step(RECIPES, "lithium-hydroxide", "lv-chemical-reactor-recipes", 300, LV_SPEED,
+	{ { "lithium-7-dust", 16 }, { "oxygen", 800 }, { "water", 800 } }, { { "lithium-hydroxide", 691.2 } })
+step(RECIPES, "lithium-hydroxide-dust", "mv-dehydrator-recipes", 1, MV_SPEED, { { "lithium-hydroxide", 14.4 } },
+	{ { "lithium-hydroxide-dust", 1 } })
+step(RECIPES, "lithium-fluoride-dust", "lv-chemical-reactor-recipes", 120, LV_SPEED,
+	{ { "lithium-hydroxide-dust", 3 }, { ISHF, 50 } }, { { "lithium-fluoride-dust", 2 }, { "water", 100 } })
+step(RECIPES, "beryllium-hydroxide", "lv-chemical-reactor-recipes", 8, LV_SPEED,
+	{ { "beryllium-dust", 1 }, { "oxygen", 100 }, { "hydrogen", 100 } }, { { "beryllium-hydroxide", 43.2 } })
+step(RECIPES, "beryllium-hydroxide-dust", "lv-dehydrator-recipes", 1.5, LV_SPEED, { { "beryllium-hydroxide", 14.4 } },
+	{ { "beryllium-hydroxide-dust", 1 } })
+step(RECIPES, "ammonium-bifluoride", "lv-chemical-reactor-recipes", 40, LV_SPEED,
+	{ { "hydrofluoric-acid", 200 }, { "ammonia", 100 } }, { { "ammonium-bifluoride", 57.6 } })
+step(RECIPES, "ammonium-tetrafluoroberyllate", "mv-chemical-reactor-recipes", 300, MV_SPEED,
+	{ { "beryllium-hydroxide-dust", 3 }, { "ammonium-bifluoride", 115.2 } },
+	{ { "ammonium-tetrafluoroberyllate", 100 }, { "water", 200 } })
+step(RECIPES, "ammonium-tetrafluoroberyllate-dehydration", "mv-dehydrator-recipes", 6, MV_SPEED,
+	{ { "beryllium-hydroxide-dust", 3 }, { "ammonium-bifluoride", 115.2 } }, { { "ammonium-tetrafluoroberyllate", 100 } })
+step(RECIPES, "beryllium-fluoride-dust", "mv-chemical-reactor-recipes", 300, MV_SPEED,
+	{ { "ammonium-tetrafluoroberyllate", 100 } },
+	{ { "beryllium-fluoride-dust", 3 }, { "ammonia", 200 }, { ISHF, 100 } })
+step(RECIPES, ISHF, "chemical-plant-recipes", 30, HV_SPEED, { { ISHF, 200 }, { "hydrofluoric-acid", 500 } },
+	{ { ISHF, 450 } })
+step(RECIPES, "zirconium-pellet", "lv-autoclave-recipes", 15, LV_SPEED, { { "zirconium-dust", 1 }, { "chlorine", 400 } },
+	{ { "zirconium-pellet", 1 } })
+step(RECIPES, "zirconium-pellet-maceration", "lv-macerator-recipes", 20, LV_SPEED, { { "zirconium-pellet", 1 } },
+	{ { "zirconium-tetrachloride", 5 } })
+step(RECIPES, "cooked-zirconium-tetrachloride-dust", "hv-electric-blast-furnace-recipes", 60, HV_SPEED,
+	{ { "zirconium-tetrachloride", 1 } }, { { "cooked-zirconium-tetrachloride-dust", 1 } })
+step(RECIPES, "zirconium-tetrafluoride-dust", "hv-dehydrator-recipes", 30, HV_SPEED,
+	{ { "cooked-zirconium-tetrachloride-dust", 1 }, { "hydrofluoric-acid", 80 } },
+	{ { "zirconium-tetrafluoride-dust", 1 }, { "hydrochloric-acid", 80 } })
+step(RECIPES, "zirconium-tetrafluoride-dust-ishf", "hv-dehydrator-recipes", 15, HV_SPEED,
+	{ { "cooked-zirconium-tetrachloride-dust", 1 }, { ISHF, 40 } },
+	{ { "zirconium-tetrafluoride-dust", 1 }, { "hydrochloric-acid", 80 } })
+step(RECIPES, "thorium-nitrate", "mv-chemical-reactor-recipes", 2, MV_SPEED,
+	{ { "thorium-dust", 1 }, { "hydrofluoric-acid", 10 }, { "nitric-acid", 800 } },
+	{ { "thorium-nitrate", 100 }, { "nitrogen-dioxide", 400 } })
+step(RECIPES, "thorium-hydroxide-dust", "mv-chemical-reactor-recipes", 10, MV_SPEED,
+	{ { "sodium-hydroxide", 12 }, { "thorium-nitrate", 100 } },
+	{ { "thorium-hydroxide-dust", 9 }, { "sodium-nitrate", 20 } })
+step(RECIPES, "thorium-tetrafluoride", "lv-chemical-reactor-recipes", 20, LV_SPEED,
+	{ { "thorium-hydroxide-dust", 9 }, { "hydrofluoric-acid", 400 } }, { { "thorium-tetrafluoride", 100 } })
+step(RECIPES, "uranium-tetrafluoride", "hv-mixer-recipes", 150, HV_SPEED,
+	{ { "uranium-233-dust", 4 }, { "uranium-235-dust", 1 }, { ISHF, 1000 } }, { { "uranium-tetrafluoride", 360 } })
+for _, m in pairs({ { "lithium-fluoride", "hv", 5, HV_SPEED }, { "beryllium-fluoride", "hv", 5, HV_SPEED },
+		{ "zirconium-tetrafluoride", "ev", 10, EV_SPEED } }) do
+	step(RECIPES, "melt-" .. m[1] .. "-dust", m[2] .. "-fluid-extractor-recipes", m[3], m[4], { { m[1] .. "-dust", 1 } },
+		{ { m[1], 14.4 } })
+end
+step(RECIPES, "melt-uranium-235-dust", "iv-fluid-extractor-recipes", 1.2, IV_SPEED, { { "uranium-235-dust", 1 } },
+	{ { "molten-uranium-235", 14.4 } })
+--- GT++'s chemical plant recipe of thorium 232 (RecipesGregTech.java:215-225; EV, 100 s): from plain thorium
+step(RECIPES, "thorium-232-dust", "chemical-plant-recipes", 100, EV_SPEED,
+	{ { "thorium-dust", 4 }, { "distilled-water", 200 }, { "boric-acid", 50 } },
+	{ { "thorianite", 3 }, { "thorium-232-dust", 1 } }, "thorium-232-dust")
+--- GT++'s Reactor Fuel Processing Plant (IV; gtPlusPlus/xmod/gregtech/common/tileentities/machines/multi/production/
+--- MTERefinery.java; machine type "Fuel Refinery, RFPP"): GT++'s fluid-only map of the LFTR fuels, up to 6 fluids in and
+--- 1 out, normal overclocks. Here a 3x3 machine with four fluid inputs and one output at IV speed, as 159's chemical plant.
+--- Its item is the controller with the structure's casings (MTERefinery.java:140-194: 17 Hastelloy-N Sealant Blocks, at
+--- least 7 Hastelloy-X Structural Blocks, 5 Incoloy-DS Fluid Containment Blocks, 4 Reactor Shield Casings), an IV
+--- energy hatch and hulls for the maintenance, muffler (IV), 4 input and 1 output hatches (as #255). The controller is
+--- GT++'s crafting recipe (RecipesMachinesCustom.java:531-537): 2 EV circuits, 2 dense tungstensteel plates, the
+--- Gregtech Computer Cube, 2 Stellite gears and an IV hull (the soldering iron is a tool).
+--------------------------------------------------------------------------------
+local RFPP = "reactor-fuel-processing-plant"
+local function port(kind, direction, position, volume)
+	return {
+		production_type = kind, volume = volume or 1000, pipe_covers = pipecoverspictures(),
+		pipe_picture = assembler2pipepictures(),
+		pipe_connections = { { flow_direction = kind, direction = direction, position = position } },
+	}
+end
+local W, E = defines.direction.west, defines.direction.east
+F.category("reactor-fuel-processing-recipes")
+do
+	local m = table.deepcopy(data.raw["assembling-machine"]["hv-chemical-reactor"])
+	m.name = RFPP
+	m.icons = nil
+	m.icon = FORK_ICON .. RFPP .. ".png"
+	m.icon_size = 32
+	m.minable = { mining_time = 1, result = RFPP }
+	m.crafting_categories = { "reactor-fuel-processing-recipes" }
+	m.crafting_speed = IV_SPEED
+	m.energy_usage = EU16_IV
+	m.fast_replaceable_group = "fr-" .. RFPP
+	m.next_upgrade = nil
+	m.collision_box = { { -1.3, -1.3 }, { 1.3, 1.3 } }
+	m.selection_box = { { -1.5, -1.5 }, { 1.5, 1.5 } }
+	m.fluid_boxes = { port("input", N, { -1, -1 }), port("input", N, { 1, -1 }), port("input", W, { -1, 0 }),
+		port("input", E, { 1, 0 }), port("output", S, { 0, 1 }, 2000) }
+	m.fluid_boxes_off_when_no_fluid_recipe = false
+	m.graphics_set = {
+		idle_animation = { layers = { { filename = SPRITE_PATH .. RFPP .. "-idle.png", width = 96, height = 96,
+			frame_count = 1, shift = { 0, 0 } } } },
+		animation = { layers = { { filename = SPRITE_PATH .. RFPP .. "-working.png", width = 96, height = 96,
+			frame_count = 1, shift = { 0, 0 } } } },
+	}
+	m.localised_description = { "entity-description." .. RFPP }
+	data:extend({ m })
+end
+--- GT++'s three LFTR fuels (RecipeLoaderNuclearFuelProcessing.java:34-65)
+step(RECIPES, "lftr-fuel-1", "reactor-fuel-processing-recipes", 1800, EV_SPEED,
+	{ { "lithium-fluoride", 55 }, { "beryllium-fluoride", 15 }, { "zirconium-tetrafluoride", 6 },
+		{ "molten-uranium-235", 24 } }, { { "lftr-fuel-1", 100 } })
+step(RECIPES, "lftr-fuel-2", "reactor-fuel-processing-recipes", 2400, IV_SPEED,
+	{ { "lithium-fluoride", 60 }, { "beryllium-fluoride", 25 }, { "zirconium-tetrafluoride", 8 },
+		{ "uranium-tetrafluoride", 7 } }, { { "lftr-fuel-2", 100 } })
+step(RECIPES, "lftr-fuel-3", "reactor-fuel-processing-recipes", 3000, IV_SPEED,
+	{ { "lithium-fluoride", 58 }, { "beryllium-fluoride", 27 }, { "thorium-tetrafluoride", 8 },
+		{ "uranium-tetrafluoride", 7 } }, { { "lftr-fuel-3", 100 } })
+
+--- Hastelloy-N (GT++'s alloy, gtPlusPlus/core/material/MaterialsAlloy.java:329-342; the parts of the plant and the LFTR):
+--- the alloy blast smelter melts 2 yttrium, 4 molybdenum, 2 chrome, 2 titanium and 15 nickel dust into 3600 L (EV, 40 s;
+--- xmod/gregtech/loaders/RecipeGenBlastSmelter.java:117-183; GT++ has no mixer recipe for 5 components), cast by 143;
+--- the plate also from the bender (1 ingot, EV, 1.5 s; RecipeGenPlates.java:68-77).
+F.fluid("molten-hastelloy-n", "molten-hastelloy-n", { 0.59, 0.59, 0.67 })
+for _, n in pairs({ "hastelloy-n-ingot", "hastelloy-n-plate" }) do
+	create_item{ skip_recipe = true, name = n, subgroup = data.raw.item["hastelloy-x-plate"].subgroup }
+end
+step(RECIPES, "molten-hastelloy-n", "ev-alloy-blast-smelter-recipes", 40, EV_SPEED,
+	{ { "yttrium-dust", 2 }, { "molybdenum-dust", 4 }, { "chromium-dust", 2 }, { "titanium-dust", 2 }, { "nickel-dust", 15 } },
+	{ { "molten-hastelloy-n", 360 } })
+step(RECIPES, "hastelloy-n-plate", "ev-bending-machine-recipes", 1.5, EV_SPEED, { { "hastelloy-n-ingot", 1 } },
+	{ { "hastelloy-n-plate", 1 } })
+
+--- The plant's parts (GT's crafting table recipes are the mod's crafting-or-assembling recipes):
+---   Gregtech Computer Cube: 4 data orbs, 4 computer monitor covers, an IV hull, 2 ZPM circuits, 2304 L molten tantalum
+---     (IV assembler, 180 s; gtPlusPlus/core/recipe/RecipesMachines.java:35-46); the Data Orb is NewHorizonsCoreMod's
+---     circuit assembler recipe (gthandler/recipes/CircuitAssemblerRecipes.java:389-398: an advanced circuit board, the
+---     mod's epoxy board, 2 nanoprocessors, the mod's HV circuit, 4 RAM, 32 NOR, 64 NAND chips, 32 fine platinum wire,
+---     144 L solder; EV, 20 s); GT's Computer Monitor Cover is the mod's computer monitor
+---   Hastelloy-N Sealant Block: 4 Incoloy MA956 and 4 Hastelloy-N plates, a Hastelloy C-276 frame (HV assembler, 5 s;
+---     RecipesMachinesCustom.java:547-562)
+---   Hastelloy-X Structural Block: 2 Inconel-792 rings, a Hastelloy-X gear, 2 steel plates, a C-276 frame, an EV
+---     machine casing (crafting table; :564-569)
+---   Incoloy-DS Fluid Containment Block: 4 Incoloy-DS plates, 2 huge Staballoy fluid pipes, 2 Incoloy-DS gears, a Super
+---     Tank IV (crafting table; :539-545). The huge pipe is GT++'s (GregtechConduits.java:699-707: extruder, 12 Staballoy
+---     ingots, HV, 4 s); the Super Tank IV NewHorizonsCoreMod's (gthandler/recipes/AssemblerRecipes.java:2381-2390: 4 IV
+---     circuits, 2 niobium-titanium plates, an EV pump, an HV field generator, a Hermetic Casing V; 5 s, LV) with the
+---     Hermetic Casing V (:884-889: a large titanium fluid pipe and 8 tungstensteel plates, 5 s, LV) and GT's large
+---     titanium pipe (ProcessingShaping.java:114-121: extruder, 6 titanium ingots, MV, 2.4 s). The mod has no fluid pipe
+---     items of its own; these are the only ones, as parts.
+---   Reactor Shield Casing: 4 double Hastelloy C-276 plates, 2 Talonite gears, an LV field generator (HV assembler, 5 s;
+---     :496-511)
+for _, n in pairs({ "data-orb", "gregtech-computer-cube", "hastelloy-n-sealant-block", "hastelloy-x-structural-block",
+		"incoloy-ds-fluid-containment-block", "huge-staballoy-fluid-pipe", "large-titanium-fluid-pipe", "hermetic-casing-v",
+		"super-tank-iv", "reactor-shield-casing" }) do
+	create_item{ skip_recipe = true, name = n, subgroup = "subgroup-iv-age-multiblocks" }
+end
+step(RECIPES, "data-orb", "ev-circuit-assembler-recipes", 20, EV_SPEED,
+	{ { "epoxy-printed-circuit-board", 1 }, { "processing-unit", 2 }, { "ram-chip", 4 }, { "nor-memory-chip", 32 },
+		{ "nand-memory-chip", 64 }, { "fine-platinum-wire", 32 }, { "soldering-alloy", 14.4 } }, { { "data-orb", 1 } })
+step(RECIPES, "gregtech-computer-cube", "iv-assembling-machine-recipes", 180, IV_SPEED,
+	{ { "data-orb", 4 }, { "computer-monitor", 4 }, { "iv-machine-hull", 1 }, { "zpm-circuit", 2 },
+		{ "molten-tantalum", 230.4 } }, { { "gregtech-computer-cube", 1 } })
+step(RECIPES, "hastelloy-n-sealant-block", "hv-assembling-machine-recipes", 5, HV_SPEED,
+	{ { "incoloy-ma956-plate", 4 }, { "hastelloy-n-plate", 4 }, { "hastelloy-c276-frame", 1 } },
+	{ { "hastelloy-n-sealant-block", 1 } })
+step(RECIPES, "hastelloy-x-structural-block", "crafting-or-assembling-recipes", 1, 1,
+	{ { "inconel-792-ring", 2 }, { "large-hastelloy-x-gear", 1 }, { "steel-plate", 2 }, { "hastelloy-c276-frame", 1 },
+		{ "ev-machine-casing", 1 } }, { { "hastelloy-x-structural-block", 1 } })
+step(RECIPES, "huge-staballoy-fluid-pipe", "hv-extruder-recipes", 4, HV_SPEED, { { "staballoy-ingot", 12 } },
+	{ { "huge-staballoy-fluid-pipe", 1 } })
+step(RECIPES, "large-titanium-fluid-pipe", "mv-extruder-recipes", 2.4, MV_SPEED, { { "titanium-ingot", 6 } },
+	{ { "large-titanium-fluid-pipe", 1 } })
+step(RECIPES, "hermetic-casing-v", "lv-assembling-machine-recipes", 5, LV_SPEED,
+	{ { "large-titanium-fluid-pipe", 1 }, { "tungstensteel-plate", 8 } }, { { "hermetic-casing-v", 1 } })
+step(RECIPES, "super-tank-iv", "lv-assembling-machine-recipes", 5, LV_SPEED,
+	{ { "iv-circuit", 4 }, { "niobium-titanium-plate", 2 }, { "ev-pump", 1 }, { "hv-field-generator", 1 },
+		{ "hermetic-casing-v", 1 } }, { { "super-tank-iv", 1 } })
+step(RECIPES, "incoloy-ds-fluid-containment-block", "crafting-or-assembling-recipes", 1, 1,
+	{ { "incoloy-ds-plate", 4 }, { "huge-staballoy-fluid-pipe", 2 }, { "large-incoloy-ds-gear", 2 }, { "super-tank-iv", 1 } },
+	{ { "incoloy-ds-fluid-containment-block", 1 } })
+step(RECIPES, "reactor-shield-casing", "hv-assembling-machine-recipes", 5, HV_SPEED,
+	{ { "double-hastelloy-c276-plate", 4 }, { "large-talonite-gear", 2 }, { "lv-field-generator", 1 } },
+	{ { "reactor-shield-casing", 1 } })
+create_item{
+	name = RFPP,
+	icon = FORK_ICON .. RFPP .. ".png",
+	place_result = RFPP,
+	subgroup = "subgroup-iv-age-multiblocks",
+	stack_size = 10,
+	ingredients = {
+		{ type = "item", name = "ev-circuit", amount = 2 },
+		{ type = "item", name = "dense-tungstensteel-plate", amount = 2 },
+		{ type = "item", name = "gregtech-computer-cube", amount = 1 },
+		{ type = "item", name = "large-stellite-gear", amount = 2 },
+		{ type = "item", name = "iv-machine-hull", amount = 2 },   -- (the controller's and the muffler hatch's, IV)
+		{ type = "item", name = "hastelloy-n-sealant-block", amount = 17 },
+		{ type = "item", name = "hastelloy-x-structural-block", amount = 7 },
+		{ type = "item", name = "incoloy-ds-fluid-containment-block", amount = 5 },
+		{ type = "item", name = "reactor-shield-casing", amount = 4 },
+		{ type = "item", name = "iv-energy-hatch", amount = 1 },
+		{ type = "item", name = "lv-machine-hull", amount = 6 },   -- (maintenance, 4 input and 1 output hatches)
+	},
+}
+RECIPES[#RECIPES + 1] = RFPP
+F.tech{
+	--- (IV: GT's IV centrifuge and the plant; the chemical plant, the dehydrators, the EV laser engraver, boric acid;
+	--- the plant's Incoloy-DS and Hastelloy-X parts and the computer cube's ZPM circuits)
+	name = LFTR, prerequisites = { "iv-machines", "nuclear-fuel-rods", "rocket-fuel", "hydrazine-rocket-fuels",
+		"samaric-rare-earth-processing", "advanced-ev-machines", "lanthanum-hexaboride", "zyngen",
+		"hyper-intensity-laser-engraver", "advanced-smds" },
+	packs = 6, count = 1000, time = 60, recipes = RECIPES,
+}
+--- Hastelloy-N's casts (143: ingot and plate from the melt, the melt from the ingot)
+FORK_CASTING.materials["hastelloy-n"] = { "ev", LFTR }
+FORK_CASTING.run()
+--- GoodGenerator's uranium carbide-thorium mixture (section 7) takes thorium 232
+table.insert(data.raw.technology["thorium-based-liquid-fuel"].prerequisites, LFTR)

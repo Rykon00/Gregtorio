@@ -97,6 +97,7 @@ FORK_TECH_ICONS = {
 	["large-naquadah-reactor"] = true,
 	["large-rocket-engine"] = true,
 	["large-steam-turbine"] = true,
+	["liquid-fluoride-thorium-reactor"] = true,
 	["luv-chemical-dehydrator"] = true,
 	["luv-components"] = true,
 	["luv-energy-hatches"] = true,

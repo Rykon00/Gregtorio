@@ -56,6 +56,9 @@ for _, p in pairs({
 	{ "radon-plasma", "spackled-purple-fluid", { 1.00, 0.00, 1.00 } },
 	{ "plutonium-241-plasma", "spackled-orange-fluid", { 0.98, 0.27, 0.27 } },
 	{ "thorium-plasma", "dark-gray-spackled-fluid", { 0.35, 0.30, 0.30 } },
+	--- issue #386 (2): americium plasma from the melt of plutonium 241 (its dust comes from 164's isotopes)
+	{ "americium-plasma", "spackled-medium-gray-fluid", { 0.78, 0.78, 0.78 } },
+	{ "molten-plutonium-241", "molten-plutonium-241", { 0.94, 0.20, 0.20 } },
 }) do
 	F.fluid(p[1], p[2], p[3])
 end
@@ -81,6 +84,7 @@ local PLASMAS = {
 	{ "bismuth-plasma",         425984, nil },
 	{ "radon-plasma",           450560, "radon" },
 	{ "plutonium-241-plasma",   497664, nil },
+	{ "americium-plasma",       501760, "molten-americium" },   -- issue #386 (2)
 	{ "thorium-plasma",         471040, "molten-thorium" },
 }
 local cooled = {}
@@ -207,8 +211,8 @@ end
 --- table of docs/ROADMAP.md). GT's inputs and outputs (FusionReactorRecipes.java:77, 254, 270, 278, 304, 320) in GT
 --- litres like the other plasmas of section 1b, the reactor by GT's FUSION_THRESHOLD (MK3 up to 640M EU, the 6G ones the
 --- MK5); the time balanced like #32: about 25x plasma energy out per reactor energy in (GT's own times give 160 to 240x).
---- Left for later: americium plasma (plutonium 241 + hydrogen) needs a melt of plutonium 241, which issue #386's
---- isotopes bring; lead plasma (tellurium + zinc) needs tellurium, which the mod lacks (#365).
+--- Issue #386 (2): americium plasma (FusionReactorRecipes.java:286; the melt of plutonium 241 and hydrogen, MK3), the
+--- dust from 164's isotopes. Left for later: lead plasma (tellurium + zinc) needs tellurium, which the mod lacks (#397).
 --------------------------------------------------------------------------------
 
 F.fluid("molten-arsenic", "molten-arsenic", { 1, 1, 1 })   -- GT's colour (gen_gt_icons --molten)
@@ -225,6 +229,7 @@ local OTHER_PLASMAS = {
 	{ "bismuth-plasma",          3, 15,   UV_SPEED,  { { "molten-tantalum", 144 }, { "zinc-plasma", 72 } }, 144 },
 	{ "radon-plasma",            3, 16,   UV_SPEED,  { { "molten-iridium", 144 }, { "fluorine", 500 } }, 144 },
 	{ "plutonium-241-plasma",    5, 17.5, UIV_SPEED, { { "molten-lutetium", 576 }, { "molten-vanadium", 576 } }, 576 },
+	{ "americium-plasma",        3, 17.5, UV_SPEED,  { { "molten-plutonium-241", 144 }, { "hydrogen", 2000 } }, 144 },
 	{ "thorium-plasma-fusion",   5, 16.5, UIV_SPEED, { { "molten-osmium", 576 }, { "molten-silicon", 576 } }, 576 },
 }
 for _, p in pairs(OTHER_PLASMAS) do
