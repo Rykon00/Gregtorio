@@ -258,13 +258,14 @@ local TF_SMALL_363 = { "olivine", "tanzanite", "amethyst", "opal", "jasper", "bl
 ---   * the small ores (SmallOres.java:214, 256, two of each per chunk): topaz (Twilight Forest and Horus) and amber,
 ---     8 of each, a quarter of a vein's first ore; the Twilight Forest's other small ores and veins hold ores the mod
 ---     mines elsewhere, so they get no mine (as #284/#285);
----   * issue #364: the Sapphire vein (OreMixes.java:375-386, Twilight Forest and Horus): almandine (primary) and pyrope
----     (secondary), which the mod has as dusts but not as ores (left out, as above), sapphire (in between) and green
----     sapphire (sporadic): sapphire 32 as the first ore the mod has, green sapphire 8; and the sapphire and green sapphire
----     small ores (SmallOres.java, Twilight Forest and Horus), 8 of each in the small ores' mine.
---- The raw ores are GT's (create_ore, 07): amber with GT's ore multiplier 2, all NO_SMELTING (no furnace recipe);
+---   * issue #364: the Sapphire vein (OreMixes.java:375-386, Twilight Forest and Horus): almandine (primary), pyrope
+---     (secondary), sapphire (in between) and green sapphire (sporadic), since issue #373 at GT's 32, 24, 16 and 8 (before,
+---     without almandine and pyrope ores, sapphire 32); and the sapphire and green sapphire small ores (SmallOres.java,
+---     Twilight Forest and Horus), 8 of each in the small ores' mine.
+--- The raw ores are GT's (create_ore, 07): amber with GT's ore multiplier 2; create_ore makes no furnace recipe, 155
+--- smelts them into their gem as GT does (issue #388);
 --- 155 gives them GTNH's ore chain, gem grades and the amber lens (issue #364: sapphire and green sapphire their chain,
---- grades and juice).
+--- grades and juice; issue #370: their lenses, GTNH's blue and cyan lens).
 --------------------------------------------------------------------------------
 
 create_ore("raw-topaz", nil, "crushed-topaz", "topaz-dust", nil, "crushed-topaz", nil, nil, 1, false, false)
@@ -272,16 +273,25 @@ create_ore("raw-amber", nil, "crushed-amber", "amber-dust", nil, "crushed-amber"
 create_ore("raw-sapphire", nil, "crushed-sapphire", "sapphire-dust", nil, "crushed-sapphire", nil, nil, 1, false, false)
 create_ore("raw-green-sapphire", nil, "crushed-green-sapphire", "green-sapphire-dust", nil, "crushed-green-sapphire", nil,
 	nil, 1, false, false)
+create_ore("raw-almandine", nil, "crushed-almandine", "almandine-dust", nil, "crushed-almandine", nil, nil, 1, false, false)
+create_ore("raw-pyrope", nil, "crushed-pyrope", "pyrope-dust", nil, "crushed-pyrope", nil, nil, 1, false, false)
 unlock_in("nand-chips", {
 	manual("mining-amber-vein", "manual-mine-recipes", { PICKAXE, LABOR(24) },
 		{ item("raw-amber", 32), item("raw-cinnabar", 8) }),
 	manual("mining-twilight-forest-small-ores", "manual-mine-recipes", { PICKAXE, LABOR(24) },
 		{ item("raw-topaz", 8), item("raw-amber", 8), item("raw-sapphire", 8),
 			item("raw-green-sapphire", 8) }),
-	manual("mining-sapphire-vein", "manual-mine-recipes", { PICKAXE, LABOR(24) },   -- issue #364
-		{ item("raw-sapphire", 32), item("raw-green-sapphire", 8) }),
-	"crushed-topaz", "crushed-amber", "crushed-sapphire", "crushed-green-sapphire",
+	"crushed-topaz", "crushed-amber",
 })
+--- issue #370: the sapphire vein (issue #364) and the crushing of its ores come with the Laser Engraver, the first
+--- consumer of the sapphire and green sapphire lens (the cyan and blue gem steps; the RAM wafer of Advanced Integrated
+--- Circuits after it), no longer with NAND Chips (#252; #334 had put every Twilight Forest mine there)
+unlock_in("laser-engraver", {
+	manual("mining-sapphire-vein", "manual-mine-recipes", { PICKAXE, LABOR(24) },   -- issues #364, #373
+		{ item("raw-almandine", 32), item("raw-pyrope", 24), item("raw-sapphire", 16), item("raw-green-sapphire", 8) }),
+	"crushed-sapphire", "crushed-green-sapphire", "crushed-almandine", "crushed-pyrope",
+})
+data.raw.recipe["mining-sapphire-vein"].main_product = "raw-sapphire"   -- the vein keeps its name and icon
 --- issue #363: the Twilight Forest's other small ores (above), 8 of each
 do
 	local r = data.raw.recipe["mining-twilight-forest-small-ores"]
@@ -406,20 +416,112 @@ F.tech{ name = VENUS, prerequisites = { JOVIAN, "luv-machines" }, packs = 7, cou
 
 
 --------------------------------------------------------------------------------
---- ROSS128 (issue #293): bartworks' Ross128b, GTNH's T3 (DimensionHelper.java:118; Ross128ba, T5 at :130, holds the
---- same vein), here IV like the asteroid belt. Bornite's only source in GTNH:
----   CopperSulfits (OreMixes.java:1417-1426, Ross128ba :1516-1526): djurleite (primary), bornite (secondary),
----              wittichenite (in between), tetrahedrite (sporadic); djurleite and wittichenite left out
---- Ross128b's other veins hold no ore the mod lacks a source for (thorianite, carbon, bismuth, tungstate, turmaline,
---- roquesite, forsterite, hedenbergite, red zircon: their ores the mod has are uraninite, lepidolite, graphite, diamond,
---- coal, stibnite and scheelite, mined elsewhere), so they get no mine, as in #284/#285.
+--- ROSS128 (issue #293): bartworks' Ross128b, GTNH's T3 (DimensionHelper.java:118), here IV like the asteroid belt.
+--- Issue #373 (the maintainer's decision): every vein of Ross128b and of its moon Ross128ba (T5 at :130, here ZPM: Reach
+--- Ross128ba) at GT's 32, 24, 16 and 8 (primary, secondary, in between, sporadic; an ore named twice adds up); the ores
+--- the mod lacked are raw ores of create_ore, 155 gives them their chain (NEW_ORES: bartworks' byproducts, mass and
+--- decomposition; the gem ores' grades). Ross128ba's Tungstate, TurmalinAlkali, CopperSulfits and RedZircon veins are
+--- Ross128b's: one mine each, with Reach Ross128.
+---   Ross128b (OreMixes.java:1351-1460): Thorianit (thorianite, uraninite, lepidolite, spodumene), Carbon (graphite,
+---     diamond, coal, graphite), Bismuth (bismuthinite, stibnite, bismuth, bismutite), TurmalinAlkali (olenite,
+---     fluor-buergerite, chromo-alumino-povondraite, vanadio-oxy-dravite), Roquesit (arsenopyrite, ferberite,
+---     loellingite, roquesite), Tungstate (ferberite, huebnerite, loellingite, scheelite), CopperSulfits (djurleite,
+---     bornite, wittichenite, tetrahedrite; issue #293 had bornite 32 and tetrahedrite 8, bornite's only source in
+---     GTNH), Forsterit (forsterite, fayalite, orange and red descloizite), Hedenbergit (hedenbergite, fayalite, the
+---     descloizites), RedZircon (fayalite, green fuchsite, red zircon, red fuchsite)
+---   Ross128ba (:1461-1545): Tiberium (tiberium twice, enriched naquadah twice), Bart (BArTiMaEuSNeK four times),
+---     Amethyst (amethyst, olivine, prasiolite, hedenbergite), Fluorspar (galena, sphalerite, fluorspar, barite)
 --------------------------------------------------------------------------------
 
-local ROSS = "reach-ross128"
-F.tech{ name = ROSS, prerequisites = { MARS, "iv-machines" }, packs = 6, count = 50, time = 60, recipes = {
-	manual("mining-copper-sulfide-vein", "manual-mine-recipes", { PICKAXE, LABOR(24) },
-		{ item("raw-bornite", 32), item("raw-tetrahedrite", 8) }),
-} }
+local ROSS, ROSS_BA = "reach-ross128", "reach-ross128ba"
+for _, x in pairs({ "thorianite", "bismuthinite", "bismutite", "bismuth", "olenite", "fluor-buergerite", "chromo-alumino-povondraite", "vanadio-oxy-dravite", "arsenopyrite", "ferberite", "loellingite", "roquesite", "huebnerite", "djurleite", "wittichenite", "forsterite", "fayalite", "orange-descloizite", "red-descloizite", "hedenbergite", "green-fuchsite", "red-fuchsite", "red-zircon", "tiberium", "enriched-naquadah", "bartimaeusnek", "prasiolite", "fluorspar" }) do
+	local dust = ({ ["thorianite"] = "thorianite", ["bismuth"] = "bismuth", ["enriched-naquadah"] = "enriched-naquadah-oxide-mixture", ["fluorspar"] = "fluorspar", ["red-zircon"] = "red-zircon-dust" })[x]
+	--- (a dust the mod has already keeps its item: create_ore makes only the new ones; red zircon dust is 159's, which
+	--- loads after 155, so it is made here, in 159's row)
+	if x == "red-zircon" and not data.raw.item["red-zircon-dust"] then
+		create_item{ skip_recipe = true, name = "red-zircon-dust", subgroup = "subgroup-digester-recipes" }
+	end
+	create_ore("raw-" .. x, nil, "crushed-" .. x, not dust and (x .. "-dust") or nil, nil, "crushed-" .. x, nil, nil, 1,
+		false, false)
+end
+local function vein(name, ores)   -- GT's four ores at 32, 24, 16, 8; an ore named twice adds up
+	local amounts, order = {}, {}
+	for i, x in pairs(ores) do
+		if not amounts[x] then order[#order + 1] = x end
+		amounts[x] = (amounts[x] or 0) + ({ 32, 24, 16, 8 })[i]
+	end
+	local results = {}
+	for _, x in pairs(order) do results[#results + 1] = item("raw-" .. x, amounts[x]) end
+	return manual(name, "manual-mine-recipes", { PICKAXE, LABOR(24) }, results)
+end
+local ross_b = {
+	vein("mining-thorianite-vein", { "thorianite", "uraninite", "lepidolite", "spodumene" }),
+	vein("mining-carbon-vein", { "graphite", "diamond", "coal", "graphite" }),
+	vein("mining-bismuth-vein", { "bismuthinite", "stibnite", "bismuth", "bismutite" }),
+	vein("mining-alkali-tourmaline-vein", { "olenite", "fluor-buergerite", "chromo-alumino-povondraite", "vanadio-oxy-dravite" }),
+	vein("mining-roquesite-vein", { "arsenopyrite", "ferberite", "loellingite", "roquesite" }),
+	vein("mining-ross128-tungstate-vein", { "ferberite", "huebnerite", "loellingite", "scheelite" }),
+	vein("mining-copper-sulfide-vein", { "djurleite", "bornite", "wittichenite", "tetrahedrite" }),
+	vein("mining-forsterite-vein", { "forsterite", "fayalite", "orange-descloizite", "red-descloizite" }),
+	vein("mining-hedenbergite-vein", { "hedenbergite", "fayalite", "orange-descloizite", "red-descloizite" }),
+	vein("mining-red-zircon-vein", { "fayalite", "green-fuchsite", "red-zircon", "red-fuchsite" }),
+}
+for _, x in pairs({ "thorianite", "bismuthinite", "bismutite", "bismuth", "olenite", "fluor-buergerite", "chromo-alumino-povondraite", "vanadio-oxy-dravite", "arsenopyrite", "ferberite", "loellingite", "roquesite", "huebnerite", "djurleite", "wittichenite", "forsterite", "fayalite", "orange-descloizite", "red-descloizite", "hedenbergite", "green-fuchsite", "red-fuchsite", "red-zircon" }) do ross_b[#ross_b + 1] = "crushed-" .. x end
+F.tech{ name = ROSS, prerequisites = { MARS, "iv-machines" }, packs = 6, count = 50, time = 60, recipes = ross_b }
+local ross_ba = {
+	vein("mining-tiberium-vein", { "tiberium", "tiberium", "enriched-naquadah", "enriched-naquadah" }),
+	vein("mining-bartimaeusnek-vein", { "bartimaeusnek", "bartimaeusnek", "bartimaeusnek", "bartimaeusnek" }),
+	vein("mining-ross128ba-amethyst-vein", { "amethyst", "olivine", "prasiolite", "hedenbergite" }),
+	vein("mining-fluorspar-vein", { "galena", "sphalerite", "fluorspar", "barite" }),
+}
+for _, x in pairs({ "tiberium", "enriched-naquadah", "bartimaeusnek", "prasiolite", "fluorspar" }) do ross_ba[#ross_ba + 1] = "crushed-" .. x end
+F.tech{ name = ROSS_BA, prerequisites = { ROSS, VENUS, "zpm-machines" }, packs = 8, count = 50, time = 60,
+	recipes = ross_ba }
+
+
+
+--------------------------------------------------------------------------------
+--- THE TOXIC EVERGLADES (issue #373, group 3): GT++'s dimension (GTNH's T0 in DimensionHelper.java:102, reached by a
+--- portal whose Containment Frame is a LuV assembler recipe, gtPlusPlus/core/recipe/RecipesMachines.java:164-178:
+--- here LuV, Reach the Toxic Everglades). Its veins GTPP0 to GTPP19 (OreMixes.java:1131-1349) at GT's 32, 24, 16, 8,
+--- GT++'s ores as raw ores of create_ore with 155's chain (NEW_ORES). GTPP0 is GT's iron four times.
+--------------------------------------------------------------------------------
+
+local EVERGLADES = "reach-the-everglades"
+for _, x in pairs({ "agardite-cd", "agardite-la", "agardite-nd", "agardite-y", "alburnite", "barite-ra", "cerite", "crocoite", "cryolite-f", "demicheleite-br", "florencite", "fluorcaphite", "gadolinite-ce", "gadolinite-y", "geikielite", "hibonite", "honeaite", "irarsite", "kashinite", "lafossaite", "lanthanite-ce", "lanthanite-la", "lautarite", "lepersonnite", "miessiite", "nichromite", "perroudite", "polycrase", "samarskite-y", "samarskite-yb", "titanite", "xenotime", "yttrialite", "yttrocerite", "zimbabweite", "zircon", "zirconolite", "zirkelite", "fluorite-f", "runite" }) do
+	local dust = ({ ["agardite-cd"] = true, yttrialite = true, ["lanthanite-ce"] = true })[x]
+	create_ore("raw-" .. x, nil, "crushed-" .. x, not dust and (x .. "-dust") or nil, nil, "crushed-" .. x, nil, nil, 1,
+		false, false)
+end
+local GTPP = {
+	{ "iron", "iron", "iron", "iron" },
+	{ "agardite-cd", "agardite-la", "demicheleite-br", "irarsite" },
+	{ "agardite-nd", "agardite-y", "kashinite", "cerite" },
+	{ "cerite", "nichromite", "xenotime", "hibonite" },
+	{ "geikielite", "cryolite-f", "gadolinite-ce", "agardite-nd" },
+	{ "hibonite", "yttrialite", "zirconolite", "cerite" },
+	{ "xenotime", "zirkelite", "crocoite", "irarsite" },
+	{ "honeaite", "miessiite", "samarskite-y", "samarskite-yb" },
+	{ "titanite", "zimbabweite", "zircon", "florencite" },
+	{ "lanthanite-ce", "fluorite-f", "lafossaite", "florencite" },
+	{ "geikielite", "yttrocerite", "lanthanite-la", "barite-ra" },
+	{ "fluorite-f", "kashinite", "zircon", "cryolite-f" },
+	{ "cerite", "alburnite", "miessiite", "hibonite" },
+	{ "cryolite-f", "barite-ra", "honeaite", "florencite" },
+	{ "demicheleite-br", "perroudite", "irarsite", "barite-ra" },
+	{ "fluorcaphite", "lafossaite", "gadolinite-ce", "gadolinite-y" },
+	{ "yttrocerite", "lepersonnite", "lautarite", "fluorite-f" },
+	{ "florencite", "lautarite", "samarskite-yb", "polycrase" },
+	{ "gadolinite-ce", "gadolinite-y", "agardite-la", "agardite-cd" },
+	{ "runite", "runite", "runite", "runite" },
+}
+local everglades = {}
+for i, ores in ipairs(GTPP) do everglades[#everglades + 1] = vein("mining-everglades-gtpp" .. (i - 1) .. "-vein", ores) end
+for _, x in pairs({ "agardite-cd", "agardite-la", "agardite-nd", "agardite-y", "alburnite", "barite-ra", "cerite", "crocoite", "cryolite-f", "demicheleite-br", "florencite", "fluorcaphite", "gadolinite-ce", "gadolinite-y", "geikielite", "hibonite", "honeaite", "irarsite", "kashinite", "lafossaite", "lanthanite-ce", "lanthanite-la", "lautarite", "lepersonnite", "miessiite", "nichromite", "perroudite", "polycrase", "samarskite-y", "samarskite-yb", "titanite", "xenotime", "yttrialite", "yttrocerite", "zimbabweite", "zircon", "zirconolite", "zirkelite", "fluorite-f", "runite" }) do everglades[#everglades + 1] = "crushed-" .. x end
+--- (the MV and HV Dehydrators' technologies are prerequisites: GT++ decomposes the ores of 7 to 9 components and
+--- fluorite (F) in the chemical dehydrator, #252)
+F.tech{ name = EVERGLADES, prerequisites = { "luv-machines", "naquadah-processing", "hydrazine-rocket-fuels",
+	"samaric-rare-earth-processing" }, packs = 7, count = 50, time = 60, recipes = everglades }
 
 
 
@@ -470,6 +572,16 @@ local VOID_POOLS = {
 		{ "raw-cosmic-neutronium", 0.01093 }, { "raw-sulfur", 0.01002 }, { "raw-borax", 0.00364 },
 		{ "raw-realgar", 0.00364 }, { "raw-emerald", 0.00146 }, { "raw-ruby", 0.00146 }, { "raw-bedrockium", 0.00137 },
 	},
+	--- issue #373: Neper (GTNH's T9, DimensionHelper.java:167), its veins (OreMixes.java: AquaIgnis, TerraAer, Mica,
+	--- TungstenIrons, HeavyPentele, CertusQuartz, Dilithium) with the dilithium, mysterious crystal and vinteum the mod
+	--- lacked before; Thaumcraft's shards, arsenic, tungsten, antimony, quartz sand, charged certus quartz, shadow and deep
+	--- iron left out (no ore of them in the mod)
+	["neper"] = {
+		{ "raw-certus-quartz", 0.24465 }, { "raw-bismuth", 0.12232 }, { "raw-dilithium", 0.12232 }, { "raw-kyanite", 0.04077 },
+		{ "raw-mica", 0.04077 }, { "raw-silicon", 0.03262 }, { "raw-cinnabar", 0.00815 }, { "raw-amber", 0.00815 },
+		{ "raw-vinteum", 0.00765 }, { "raw-mysterious-crystal", 0.00765 }, { "raw-pollucite", 0.0051 },
+		{ "raw-cassiterite", 0.0051 },
+	},
 	["anubis"] = {
 		{ "raw-sulfur", 0.17238 }, { "callisto-ice-dust", 0.03448 }, { "raw-galena", 0.03448 }, { "raw-silver", 0.03448 },
 		{ "raw-neutronium", 0.01293 }, { "raw-adamantium", 0.01293 }, { "raw-sphalerite", 0.01077 },
@@ -482,7 +594,13 @@ local VOID_POOLS = {
 
 local VM_PICKS = 20                -- ores per recipe at tier I (2 per second, 10 s)
 local VM_GAS = { { nil, 1 }, { "neon", 4 }, { "krypton", 8 }, { "xenon", 16 } }
-local VM_DIMS = { { "pluto", 1 }, { "barnard-f", 2 }, { "horus", 3 }, { "anubis", 3 } }
+local VM_DIMS = { { "pluto", 1 }, { "barnard-f", 2 }, { "horus", 3 }, { "anubis", 3 }, { "neper", 3 } }   -- neper: #373
+--- issue #373: Neper's ores the mod lacked (GT's dilithium, mysterious crystal and vinteum; the mysterious crystal dust is
+--- the moon dust's above)
+create_ore("raw-dilithium", nil, "crushed-dilithium", "dilithium-dust", nil, "crushed-dilithium", nil, nil, 1, false, false)
+create_ore("raw-mysterious-crystal", nil, "crushed-mysterious-crystal", nil, nil, "crushed-mysterious-crystal", nil, nil, 1,
+	false, false)
+create_ore("raw-vinteum", nil, "crushed-vinteum", "vinteum-dust", nil, "crushed-vinteum", nil, nil, 1, false, false)
 local VM_TECHS = { "void-miner-i", "void-miner-ii", "void-miner-iii" }
 
 --- an output of the expected amount `e`
@@ -585,3 +703,4 @@ F.tech{ name = VM_TECHS[2], prerequisites = { VM_TECHS[1], "zpm-assembly-line", 
 	"crystal-processor-mainframes" }, packs = 8, count = 50, time = 60, recipes = F.join({ vm2 }, vm_recipes[2]) }
 F.tech{ name = VM_TECHS[3], prerequisites = { VM_TECHS[2], "uv-components" }, packs = 9, count = 50, time = 60,
 	recipes = F.join({ vm3 }, vm_recipes[3]) }
+unlock_in(VM_TECHS[3], { "crushed-dilithium", "crushed-mysterious-crystal", "crushed-vinteum" })   -- issue #373: Neper
