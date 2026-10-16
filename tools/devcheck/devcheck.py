@@ -790,7 +790,16 @@ ORE_GEMS = {"ruby": ("ruby", False), "emerald": ("emerald", False), "diamond": (
             "olivine": ("olivine-gem", False), "tanzanite": ("tanzanite-gem", False), "amethyst": ("amethyst-gem", False),
             "opal": ("opal-gem", False), "jasper": ("jasper-gem", False), "blue-topaz": ("blue-topaz-gem", False),
             "spinel": ("spinel-gem", False), "jade": ("jade-gem", True), "red-garnet": ("red-garnet-gem", False),
-            "yellow-garnet": ("yellow-garnet-gem", False)}
+            "yellow-garnet": ("yellow-garnet-gem", False),
+            # issue #373: bartworks' gem ores of Ross128b and Ross128ba
+            "bismutite": ("bismutite-gem", False), "olenite": ("olenite-gem", False),
+            "fluor-buergerite": ("fluor-buergerite-gem", False),
+            "chromo-alumino-povondraite": ("chromo-alumino-povondraite-gem", False),
+            "vanadio-oxy-dravite": ("vanadio-oxy-dravite-gem", False), "forsterite": ("forsterite-gem", False),
+            "fayalite": ("fayalite-gem", False), "hedenbergite": ("hedenbergite-gem", False),
+            "red-zircon": ("red-zircon-gem", False), "tiberium": ("tiberium-gem", False),
+            "bartimaeusnek": ("bartimaeusnek-gem", False), "prasiolite": ("prasiolite-gem", False),
+            "fluorspar": ("fluorspar-gem", False)}
 # Issue #193: the laser engraver steps of the grades, with the lens of the gem's colour (red ruby, green emerald, white
 # diamond; issues #328 and #370: cyan the green sapphire lens, blue the sapphire lens; certus quartz's light gray has no lens; issue
 # #332: orange amber)
@@ -801,7 +810,13 @@ ORE_GEM_LENS = {"ruby": "ruby-lens", "emerald": "emerald-lens", "monazite": "eme
                 # issue #363: lime, purple and pink their own lenses, the other colours the mod's lens of the colour
                 "olivine": "olivine-lens", "tanzanite": "tanzanite-lens", "amethyst": "amethyst-lens",
                 "jasper": "ruby-lens", "spinel": "ruby-lens", "opal": "sapphire-lens", "blue-topaz": "sapphire-lens",
-                "jade": "emerald-lens", "red-garnet": "ruby-lens", "yellow-garnet": "yellow-garnet-lens"}
+                "jade": "emerald-lens", "red-garnet": "ruby-lens", "yellow-garnet": "yellow-garnet-lens",
+                # issue #373: bartworks' gems, the lens of their dye (none for light gray olenite, black
+                # fluor-buergerite and fayalite)
+                "bismutite": "yellow-garnet-lens", "prasiolite": "yellow-garnet-lens",
+                "chromo-alumino-povondraite": "green-sapphire-lens", "vanadio-oxy-dravite": "green-sapphire-lens",
+                "forsterite": "diamond-lens", "hedenbergite": "emerald-lens", "tiberium": "emerald-lens",
+                "bartimaeusnek": "emerald-lens", "red-zircon": "ruby-lens", "fluorspar": "ruby-lens"}
 def check_ore_o3_o4(m):
     """Issues #187 and #188 (prototypes/155-fork-ore-chain.lua, phases O3 and O4): the electromagnetic separator works
     exactly the pure dusts of ORE_SEPARATOR (dust, small dust and nugget of the metal); every ore of ORE_GEMS is sifted

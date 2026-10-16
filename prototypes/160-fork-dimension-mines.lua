@@ -415,20 +415,67 @@ F.tech{ name = VENUS, prerequisites = { JOVIAN, "luv-machines" }, packs = 7, cou
 
 
 --------------------------------------------------------------------------------
---- ROSS128 (issue #293): bartworks' Ross128b, GTNH's T3 (DimensionHelper.java:118; Ross128ba, T5 at :130, holds the
---- same vein), here IV like the asteroid belt. Bornite's only source in GTNH:
----   CopperSulfits (OreMixes.java:1417-1426, Ross128ba :1516-1526): djurleite (primary), bornite (secondary),
----              wittichenite (in between), tetrahedrite (sporadic); djurleite and wittichenite left out
---- Ross128b's other veins hold no ore the mod lacks a source for (thorianite, carbon, bismuth, tungstate, turmaline,
---- roquesite, forsterite, hedenbergite, red zircon: their ores the mod has are uraninite, lepidolite, graphite, diamond,
---- coal, stibnite and scheelite, mined elsewhere), so they get no mine, as in #284/#285.
+--- ROSS128 (issue #293): bartworks' Ross128b, GTNH's T3 (DimensionHelper.java:118), here IV like the asteroid belt.
+--- Issue #373 (the maintainer's decision): every vein of Ross128b and of its moon Ross128ba (T5 at :130, here ZPM: Reach
+--- Ross128ba) at GT's 32, 24, 16 and 8 (primary, secondary, in between, sporadic; an ore named twice adds up); the ores
+--- the mod lacked are raw ores of create_ore, 155 gives them their chain (NEW_ORES: bartworks' byproducts, mass and
+--- decomposition; the gem ores' grades). Ross128ba's Tungstate, TurmalinAlkali, CopperSulfits and RedZircon veins are
+--- Ross128b's: one mine each, with Reach Ross128.
+---   Ross128b (OreMixes.java:1351-1460): Thorianit (thorianite, uraninite, lepidolite, spodumene), Carbon (graphite,
+---     diamond, coal, graphite), Bismuth (bismuthinite, stibnite, bismuth, bismutite), TurmalinAlkali (olenite,
+---     fluor-buergerite, chromo-alumino-povondraite, vanadio-oxy-dravite), Roquesit (arsenopyrite, ferberite,
+---     loellingite, roquesite), Tungstate (ferberite, huebnerite, loellingite, scheelite), CopperSulfits (djurleite,
+---     bornite, wittichenite, tetrahedrite; issue #293 had bornite 32 and tetrahedrite 8, bornite's only source in
+---     GTNH), Forsterit (forsterite, fayalite, orange and red descloizite), Hedenbergit (hedenbergite, fayalite, the
+---     descloizites), RedZircon (fayalite, green fuchsite, red zircon, red fuchsite)
+---   Ross128ba (:1461-1545): Tiberium (tiberium twice, enriched naquadah twice), Bart (BArTiMaEuSNeK four times),
+---     Amethyst (amethyst, olivine, prasiolite, hedenbergite), Fluorspar (galena, sphalerite, fluorspar, barite)
 --------------------------------------------------------------------------------
 
-local ROSS = "reach-ross128"
-F.tech{ name = ROSS, prerequisites = { MARS, "iv-machines" }, packs = 6, count = 50, time = 60, recipes = {
-	manual("mining-copper-sulfide-vein", "manual-mine-recipes", { PICKAXE, LABOR(24) },
-		{ item("raw-bornite", 32), item("raw-tetrahedrite", 8) }),
-} }
+local ROSS, ROSS_BA = "reach-ross128", "reach-ross128ba"
+for _, x in pairs({ "thorianite", "bismuthinite", "bismutite", "bismuth", "olenite", "fluor-buergerite", "chromo-alumino-povondraite", "vanadio-oxy-dravite", "arsenopyrite", "ferberite", "loellingite", "roquesite", "huebnerite", "djurleite", "wittichenite", "forsterite", "fayalite", "orange-descloizite", "red-descloizite", "hedenbergite", "green-fuchsite", "red-fuchsite", "red-zircon", "tiberium", "enriched-naquadah", "bartimaeusnek", "prasiolite", "fluorspar" }) do
+	local dust = ({ ["thorianite"] = "thorianite", ["bismuth"] = "bismuth", ["enriched-naquadah"] = "enriched-naquadah-oxide-mixture", ["fluorspar"] = "fluorspar", ["red-zircon"] = "red-zircon-dust" })[x]
+	--- (a dust the mod has already keeps its item: create_ore makes only the new ones; red zircon dust is 159's, which
+	--- loads after 155, so it is made here, in 159's row)
+	if x == "red-zircon" and not data.raw.item["red-zircon-dust"] then
+		create_item{ skip_recipe = true, name = "red-zircon-dust", subgroup = "subgroup-digester-recipes" }
+	end
+	create_ore("raw-" .. x, nil, "crushed-" .. x, not dust and (x .. "-dust") or nil, nil, "crushed-" .. x, nil, nil, 1,
+		false, false)
+end
+local function vein(name, ores)   -- GT's four ores at 32, 24, 16, 8; an ore named twice adds up
+	local amounts, order = {}, {}
+	for i, x in pairs(ores) do
+		if not amounts[x] then order[#order + 1] = x end
+		amounts[x] = (amounts[x] or 0) + ({ 32, 24, 16, 8 })[i]
+	end
+	local results = {}
+	for _, x in pairs(order) do results[#results + 1] = item("raw-" .. x, amounts[x]) end
+	return manual(name, "manual-mine-recipes", { PICKAXE, LABOR(24) }, results)
+end
+local ross_b = {
+	vein("mining-thorianite-vein", { "thorianite", "uraninite", "lepidolite", "spodumene" }),
+	vein("mining-carbon-vein", { "graphite", "diamond", "coal", "graphite" }),
+	vein("mining-bismuth-vein", { "bismuthinite", "stibnite", "bismuth", "bismutite" }),
+	vein("mining-alkali-tourmaline-vein", { "olenite", "fluor-buergerite", "chromo-alumino-povondraite", "vanadio-oxy-dravite" }),
+	vein("mining-roquesite-vein", { "arsenopyrite", "ferberite", "loellingite", "roquesite" }),
+	vein("mining-ross128-tungstate-vein", { "ferberite", "huebnerite", "loellingite", "scheelite" }),
+	vein("mining-copper-sulfide-vein", { "djurleite", "bornite", "wittichenite", "tetrahedrite" }),
+	vein("mining-forsterite-vein", { "forsterite", "fayalite", "orange-descloizite", "red-descloizite" }),
+	vein("mining-hedenbergite-vein", { "hedenbergite", "fayalite", "orange-descloizite", "red-descloizite" }),
+	vein("mining-red-zircon-vein", { "fayalite", "green-fuchsite", "red-zircon", "red-fuchsite" }),
+}
+for _, x in pairs({ "thorianite", "bismuthinite", "bismutite", "bismuth", "olenite", "fluor-buergerite", "chromo-alumino-povondraite", "vanadio-oxy-dravite", "arsenopyrite", "ferberite", "loellingite", "roquesite", "huebnerite", "djurleite", "wittichenite", "forsterite", "fayalite", "orange-descloizite", "red-descloizite", "hedenbergite", "green-fuchsite", "red-fuchsite", "red-zircon" }) do ross_b[#ross_b + 1] = "crushed-" .. x end
+F.tech{ name = ROSS, prerequisites = { MARS, "iv-machines" }, packs = 6, count = 50, time = 60, recipes = ross_b }
+local ross_ba = {
+	vein("mining-tiberium-vein", { "tiberium", "tiberium", "enriched-naquadah", "enriched-naquadah" }),
+	vein("mining-bartimaeusnek-vein", { "bartimaeusnek", "bartimaeusnek", "bartimaeusnek", "bartimaeusnek" }),
+	vein("mining-ross128ba-amethyst-vein", { "amethyst", "olivine", "prasiolite", "hedenbergite" }),
+	vein("mining-fluorspar-vein", { "galena", "sphalerite", "fluorspar", "barite" }),
+}
+for _, x in pairs({ "tiberium", "enriched-naquadah", "bartimaeusnek", "prasiolite", "fluorspar" }) do ross_ba[#ross_ba + 1] = "crushed-" .. x end
+F.tech{ name = ROSS_BA, prerequisites = { ROSS, VENUS, "zpm-machines" }, packs = 8, count = 50, time = 60,
+	recipes = ross_ba }
 
 
 

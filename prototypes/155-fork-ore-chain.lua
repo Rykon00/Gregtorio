@@ -198,6 +198,41 @@ local NEW_ORES = {
 	--- nitric acid centrifuge); mass from Al 26, Fe 56, Mg 24, Si 28, O 16 (GT's Element.java)
 	["almandine"] = { dust = "almandine-dust", byproducts = { "red-garnet-dust", "alumina" }, mass = 24 },   -- GT Almandine: GarnetRed, Aluminiumoxide
 	["pyrope"] = { dust = "pyrope-dust", byproducts = { "red-garnet-dust", "magnesium" }, mass = 20 },   -- GT Pyrope: GarnetRed, Magnesium
+	--- issue #373, group 2: the ores of Ross128b and Ross128ba (160). GT's bismuth (no byproducts: itself; its dust is the
+	--- mod's bismuth, no ingot, so no smelting) and enriched naquadah (Naquadah, Naquadria; goodgenerator's earths as
+	--- naquadah's; GT mass: no element, technetium's 98), and bartworks' Werkstoffe (WerkstoffLoader.java): byproducts
+	--- from their list, padded with themselves; mass the amount-weighted average of their contents; the decomposition of
+	--- the ones bartworks electrolyses or centrifuges (DustLoader.java: all contents, the dust count of their sum, mass /
+	--- number of contents ticks, min(4, contents) x 30 EU/t (electrolyzer) or x 5 (centrifuge); fluids as fluids, Magic
+	--- left out); fluorspar and red zircon keep the mod's electrolysis
+	["bismuth"] = { dust = "bismuth", byproducts = {  }, mass = 208 },   -- GT Bismuth: no byproducts (itself)
+	["enriched-naquadah"] = { dust = "enriched-naquadah-oxide-mixture", byproducts = { "naquadah-oxide-mixture", "naquadria-oxide-mixture" }, mass = 98 },   -- GT NaquadahEnriched: Naquadah, Naquadria
+	["thorianite"] = { dust = "thorianite", byproducts = { "thorium-dust", "thorianite", "thorianite" }, mass = 87, decompose = { "mv-electrolyzer-recipes", 2.15 * MV_SPEED, 3, { item("thorium-dust", 1), fluid("oxygen", 200) } } },   -- bartworks Thorianite: thorium, thorianite, thorianite
+	["bismuthinite"] = { dust = "bismuthinite-dust", byproducts = { "bismuth", "sulfur", "bismuthinite-dust" }, mass = 102, decompose = { "mv-electrolyzer-recipes", 2.55 * MV_SPEED, 5, { item("bismuth", 2), item("sulfur", 3) } } },   -- bartworks Bismuthinite: bismuth, sulfur, bismuthinite
+	["bismutite"] = { dust = "bismutite-dust", byproducts = { "bismuth", "bismutite-dust", "bismutite-dust" }, mass = 79, decompose = { "mv-electrolyzer-recipes", 1.3 * MV_SPEED, 6, { item("bismuth", 2), fluid("oxygen", 200), fluid("carbon-dioxide", 200) } } },   -- bartworks Bismutite: bismuth, bismutite, bismutite
+	["olenite"] = { dust = "olenite-dust", byproducts = { "sodium", "boron", "silicon-dioxide" }, mass = 18 },   -- bartworks Olenite: sodium, boron, silicon-dioxide
+	["fluor-buergerite"] = { dust = "fluor-buergerite-dust", byproducts = { "sodium", "boron", "silicon-dioxide" }, mass = 20 },   -- bartworks Fluor-Buergerite: sodium, boron, silicon-dioxide
+	["chromo-alumino-povondraite"] = { dust = "chromo-alumino-povondraite-dust", byproducts = { "sodium", "boron", "silicon-dioxide" }, mass = 19 },   -- bartworks Chromo-Alumino-Povondraite: sodium, boron, silicon-dioxide
+	["vanadio-oxy-dravite"] = { dust = "vanadio-oxy-dravite-dust", byproducts = { "sodium", "boron", "silicon-dioxide" }, mass = 19 },   -- bartworks Vanadio-Oxy-Dravite: sodium, boron, silicon-dioxide
+	["arsenopyrite"] = { dust = "arsenopyrite-dust", byproducts = { "sulfur", "arsenic", "iron-dust" }, mass = 54, decompose = { "mv-electrolyzer-recipes", 0.9 * MV_SPEED, 3, { item("iron-dust", 1), item("arsenic", 1), item("sulfur", 1) } } },   -- bartworks Arsenopyrite: sulfur, arsenic, iron
+	["ferberite"] = { dust = "ferberite-dust", byproducts = { "iron-dust", "tungsten-dust", "ferberite-dust" }, mass = 57 },   -- bartworks Ferberite: iron, tungsten, ferberite
+	["loellingite"] = { dust = "loellingite-dust", byproducts = { "iron-dust", "arsenic", "loellingite-dust" }, mass = 68, decompose = { "mv-electrolyzer-recipes", 1.7 * MV_SPEED, 3, { item("iron-dust", 1), item("arsenic", 2) } } },   -- bartworks Loellingite: iron, arsenic, loellingite
+	["roquesite"] = { dust = "roquesite-dust", byproducts = { "copper-dust", "sulfur", "roquesite-dust" }, mass = 60, decompose = { "mv-electrolyzer-recipes", 1 * MV_SPEED, 4, { item("copper-dust", 1), item("indium", 1), item("sulfur", 2) } } },   -- bartworks Roquesite: copper, sulfur, roquesite
+	["huebnerite"] = { dust = "huebnerite-dust", byproducts = { "manganese-dust", "tungsten-dust", "huebnerite-dust" }, mass = 57 },   -- bartworks Huebnerite: manganese, tungsten, huebnerite
+	["djurleite"] = { dust = "djurleite-dust", byproducts = { "copper-dust", "copper-dust", "sulfur" }, mass = 52, decompose = { "mv-electrolyzer-recipes", 1.3 * MV_SPEED, 47, { item("copper-dust", 31), item("sulfur", 16) } } },   -- bartworks Djurleite: copper, copper, sulfur
+	["wittichenite"] = { dust = "wittichenite-dust", byproducts = { "copper-dust", "bismuth", "sulfur" }, mass = 65, decompose = { "mv-electrolyzer-recipes", 1.05 * MV_SPEED, 10, { item("copper-dust", 5), item("bismuth", 1), item("sulfur", 4) } } },   -- bartworks Wittichenite: copper, bismuth, sulfur
+	["forsterite"] = { dust = "forsterite-dust", byproducts = { "magnesium", "silicon-dioxide", "forsterite-dust" }, mass = 20 },   -- bartworks Forsterite: magnesium, silicon-dioxide, forsterite
+	["fayalite"] = { dust = "fayalite-dust", byproducts = { "iron-dust", "silicon-dioxide", "fayalite-dust" }, mass = 29 },   -- bartworks Fayalite: iron, silicon-dioxide, fayalite
+	["orange-descloizite"] = { dust = "orange-descloizite-dust", byproducts = { "lead-dust", "zinc-dust", "vanadium-dust" }, mass = 55, decompose = { "mv-electrolyzer-recipes", 0.65 * MV_SPEED, 7, { item("lead-dust", 1), item("copper-dust", 1), item("vanadium-dust", 1), fluid("oxygen", 400) } } },   -- bartworks Orange Descloizite: lead, zinc, vanadium
+	["red-descloizite"] = { dust = "red-descloizite-dust", byproducts = { "lead-dust", "copper-dust", "vanadium-dust" }, mass = 55, decompose = { "mv-electrolyzer-recipes", 0.65 * MV_SPEED, 7, { item("lead-dust", 1), item("zinc-dust", 1), item("vanadium-dust", 1), fluid("oxygen", 400) } } },   -- bartworks Red Descloizite: lead, copper, vanadium
+	["hedenbergite"] = { dust = "hedenbergite-dust", byproducts = { "iron-dust", "calcium", "silicon-dioxide" }, mass = 24 },   -- bartworks Hedenbergite: iron, calcium, silicon-dioxide
+	["green-fuchsite"] = { dust = "green-fuchsite-dust", byproducts = { "potassium", "alumina", "silicon-dioxide" }, mass = 18 },   -- bartworks Green Fuchsite: potassium, aluminiumoxide, silicon-dioxide
+	["red-fuchsite"] = { dust = "red-fuchsite-dust", byproducts = { "potassium", "chromium-dust", "silicon-dioxide" }, mass = 22 },   -- bartworks Red Fuchsite: potassium, chrome, silicon-dioxide
+	["red-zircon"] = { dust = "red-zircon-dust", byproducts = { "zirconium-dust", "silicon-dioxide", "red-zircon-dust" }, mass = 30 },   -- bartworks Red Zircon: zirconium, silicon-dioxide, red-zircon
+	["tiberium"] = { dust = "tiberium-dust", byproducts = { "tiberium-dust", "tiberium-dust", "tiberium-dust" }, mass = 326 },   -- bartworks Tiberium: tiberium, tiberium, tiberium
+	["bartimaeusnek"] = { dust = "bartimaeusnek-dust", byproducts = { "boron", "titanium-dust", "europium-dust" }, mass = 42, decompose = { "lv-centrifuge-recipes", 0.25, 8, { item("boron", 1), fluid("argon", 100), item("titanium-dust", 1), item("europium-dust", 1), item("sulfur", 1), fluid("neon", 100), item("potassium", 1) } } },   -- bartworks BArTiMaEuSNeK: boron, titanium, europium; decomposition without its Magic (no dust in GT) boron, titanium, europium
+	["prasiolite"] = { dust = "prasiolite-dust", byproducts = { "prasiolite-dust", "prasiolite-dust", "prasiolite-dust" }, mass = 22 },   -- bartworks Prasiolite: prasiolite, prasiolite, prasiolite
+	["fluorspar"] = { dust = "fluorspar", byproducts = { "fluorspar", "fluorspar", "fluorspar" }, mass = 25 },   -- bartworks Fluorspar: fluorspar, fluorspar, fluorspar
 }
 for x, o in pairs(NEW_ORES) do
 	ORE_CHAIN[x] = { dust = o.dust, byproducts = o.byproducts, mass = o.mass }
@@ -473,6 +508,11 @@ local BATH_TAGS = {
 			["tetrahedrite-dust"] = true } },
 }
 local BATH_SKIP = { bornite = true }
+--- issue #373: bartworks' ores of Ross128 check only their own tags too (CrushedLoader.java), none has one
+for _, x in pairs({ "thorianite", "bismuthinite", "bismutite", "olenite", "fluor-buergerite", "chromo-alumino-povondraite",
+	"vanadio-oxy-dravite", "arsenopyrite", "ferberite", "loellingite", "roquesite", "huebnerite", "djurleite", "wittichenite",
+	"forsterite", "fayalite", "orange-descloizite", "red-descloizite", "hedenbergite", "green-fuchsite", "red-fuchsite",
+	"red-zircon", "tiberium", "bartimaeusnek", "prasiolite", "fluorspar" }) do BATH_SKIP[x] = true end
 
 --- the technologies that unlock a recipe making the fluid (an enabled one: none needed)
 local function producer_techs(fluid_name)
@@ -883,9 +923,24 @@ local GEMS = {
 	{ "blue-topaz",           "blue-topaz-gem",           "precious", false },
 	{ "spinel",               "spinel-gem",               "precious", false },
 	{ "jade",                 "jade-gem",                 "default",  true },
+	--- issue #373: bartworks' gem ores of Ross128b and Ross128ba (160), bartworks' sifter (GemLoader.java:74-85)
+	{ "bismutite",                  "bismutite-gem",                  "bartworks", false },
+	{ "olenite",                    "olenite-gem",                    "bartworks", false },
+	{ "fluor-buergerite",           "fluor-buergerite-gem",           "bartworks", false },
+	{ "chromo-alumino-povondraite", "chromo-alumino-povondraite-gem", "bartworks", false },
+	{ "vanadio-oxy-dravite",        "vanadio-oxy-dravite-gem",        "bartworks", false },
+	{ "forsterite",                 "forsterite-gem",                 "bartworks", false },
+	{ "fayalite",                   "fayalite-gem",                   "bartworks", false },
+	{ "hedenbergite",               "hedenbergite-gem",               "bartworks", false },
+	{ "red-zircon",                 "red-zircon-gem",                 "bartworks", false },
+	{ "tiberium",                   "tiberium-gem",                   "bartworks", false },
+	{ "bartimaeusnek",              "bartimaeusnek-gem",              "bartworks", false },
+	{ "prasiolite",                 "prasiolite-gem",                 "bartworks", false },
+	{ "fluorspar",                  "fluorspar-gem",                  "bartworks", false },
 }
 --- GT's sifter tables: exquisite, flawless, gem, flawed, chipped, dust (ProcessingCrushedOre.java:90-120)
-local SIFT = { precious = { 0.03, 0.12, 0.45, 0.14, 0.28, 0.35 }, default = { 0.01, 0.04, 0.15, 0.20, 0.40, 0.50 } }
+local SIFT = { precious = { 0.03, 0.12, 0.45, 0.14, 0.28, 0.35 }, default = { 0.01, 0.04, 0.15, 0.20, 0.40, 0.50 },
+	bartworks = { 0.02, 0.10, 0.25, 0.20, 0.40, 0.50 } }   -- issue #373: bartworks' GemLoader.java:82
 local GRADES = { "chipped", "flawed", "gem", "flawless", "exquisite" }
 --- dusts (count, or small piles for the two lower grades)
 local MACERATE = { chipped = { 1, small = true }, flawed = { 2, small = true }, gem = { 1 }, flawless = { 2 }, exquisite = { 4 } }
@@ -914,7 +969,14 @@ local ENGRAVER_LENS = { ruby = "ruby-lens", emerald = "emerald-lens", monazite =
 	--- issue #363: lime, purple and pink their own lenses; red jasper and spinel the ruby lens, blue opal and blue topaz the
 	--- sapphire lens (issue #370), green jade the emerald lens
 	olivine = "olivine-lens", tanzanite = "tanzanite-lens", amethyst = "amethyst-lens", jasper = "ruby-lens",
-	spinel = "ruby-lens", opal = "sapphire-lens", ["blue-topaz"] = "sapphire-lens", jade = "emerald-lens" }
+	spinel = "ruby-lens", opal = "sapphire-lens", ["blue-topaz"] = "sapphire-lens", jade = "emerald-lens",
+	--- issue #373: bartworks' gems engrave with every lens of their dye (GemLoader.java:209-240; the dye from their colour
+	--- by BWColorUtil.getDyeFromColor): yellow bismutite and prasiolite, cyan chromo-alumino-povondraite and
+	--- vanadio-oxy-dravite, white forsterite, green hedenbergite, tiberium and BArTiMaEuSNeK, red red zircon and fluorspar;
+	--- olenite (light gray), fluor-buergerite and fayalite (black) have no lens of their colour in the mod
+	bismutite = "yellow-garnet-lens", prasiolite = "yellow-garnet-lens", ["chromo-alumino-povondraite"] = "green-sapphire-lens",
+	["vanadio-oxy-dravite"] = "green-sapphire-lens", forsterite = "diamond-lens", hedenbergite = "emerald-lens",
+	tiberium = "emerald-lens", bartimaeusnek = "emerald-lens", ["red-zircon"] = "ruby-lens", fluorspar = "ruby-lens" }
 --- grade -> the engraver category and time of the step up (GT tier: LV, MV, HV, EV; time x the tier's speed)
 local ENGRAVE = { chipped = { "mv-laser-engraver-recipes", 30 }, flawed = { "mv-laser-engraver-recipes", 60 },
 	gem = { "hv-laser-engraver-recipes", 240 }, flawless = { "ev-laser-engraver-recipes", 960 } }
@@ -1059,6 +1121,8 @@ end
 --- (Laser Engraver) and the RAM wafer (Advanced Integrated Circuits) come long before an exquisite sapphire
 plate_lens("sapphire", "sapphire-gem")
 plate_lens("green-sapphire", "green-sapphire-gem")
+--- issue #373: and the yellow garnet lens (yellow bismutite and prasiolite of Ross128 engrave with it)
+plate_lens("yellow-garnet")
 
 local gem_recipes = 0
 for _, g in pairs(GEMS) do
@@ -1173,6 +1237,13 @@ FORK_ORE_HAMMER_GEM = {
 	["raw-blue-topaz"] = "blue-topaz-gem",
 	["raw-spinel"] = "spinel-gem",
 	["raw-jade"] = "jade-gem",
+	--- issue #373: bartworks' gem ores (RawOreLoader.java: the forge hammer gives the gem)
+	["raw-bismutite"] = "bismutite-gem", ["raw-olenite"] = "olenite-gem", ["raw-fluor-buergerite"] = "fluor-buergerite-gem",
+	["raw-chromo-alumino-povondraite"] = "chromo-alumino-povondraite-gem",
+	["raw-vanadio-oxy-dravite"] = "vanadio-oxy-dravite-gem", ["raw-forsterite"] = "forsterite-gem",
+	["raw-fayalite"] = "fayalite-gem", ["raw-hedenbergite"] = "hedenbergite-gem", ["raw-red-zircon"] = "red-zircon-gem",
+	["raw-tiberium"] = "tiberium-gem", ["raw-bartimaeusnek"] = "bartimaeusnek-gem", ["raw-prasiolite"] = "prasiolite-gem",
+	["raw-fluorspar"] = "fluorspar-gem",
 }
 --- the first byproduct of the ores ORE_CHAIN leaves out (GT Platinum: Nickel; GT Palladium: none, its own dust)
 local RAW_BYPRODUCT = { ["raw-platinum"] = "nickel-dust", ["raw-palladium"] = "palladium-dust" }
@@ -1813,7 +1884,6 @@ end
 --------------------------------------------------------------------------------
 plate_lens("ender-pearl", "ender-pearl")
 plate_lens("ender-eye", "eye-of-ender")
-plate_lens("yellow-garnet")
 plate_lens("emerald", "emerald")   -- the ULPIC wafer (MV Energy Hatches) comes before the emerald sifter
 plate_lens("amber", "amber-gem")   -- issue #332: the lens with the simple SoC wafer (NAND Chips, the MV lathe)
 plate_lens("ruby", "ruby")         -- issue #348: instead of upstream's lens from a plain ruby (removed above)
