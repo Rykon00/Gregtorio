@@ -87,6 +87,7 @@ FORK_TECH_ICONS = {
 	["iv-machines"] = true,
 	["jet-fuel"] = true,
 	["jet-fuel-a"] = true,
+	["kevlar"] = true,
 	["lanthanum-hexaboride"] = true,
 	["lapotronic-energy-orbs"] = true,
 	["large-combustion-engine"] = true,

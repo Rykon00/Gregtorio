@@ -963,3 +963,64 @@ RECIPES[#RECIPES + 1] = centrifuge("depleted-" .. MQ,
 	{ { "plutonium-239-dust", 12 }, { "iron-dust", 6 }, { "plutonium-239-dust", 1, 0.44 } })
 RECIPES[#RECIPES + 1] = "coolant"
 for _, r in pairs(RECIPES) do fork_add_unlock("nuclear-fuel-rods", r) end
+
+
+
+--------------------------------------------------------------------------------
+--- 10) THE SIDE CHEMICALS OF THE KEVLAR LINE (issue #378 (a), the maintainer's decision: Kevlar and radox as GTNH has
+--- them, the side chemicals of #366 first). GT's recipes (gregtech/loaders/postload/recipes/ChemicalRecipes.java unless
+--- named; GT++'s chemical plant routes left out, as in section 1), consumed catalyst dusts as GT has them:
+---   calcium carbide: EBF, 2 quicklime + 3 carbon -> 3 + 1000 CO (HV, 30 s; BlastFurnaceRecipes.java:508-515)
+---   acetylene: 3 calcium carbide + 2000 water -> 1000 + 5 calcium hydroxide (HV, 15 s; :3823-3831)
+---   acetaldehyde: 2000 ethylene + 1000 oxygen -> 1000 (MV, 10 s; :860-868)
+---   ethylene oxide: silver dust + alumina + 1000 ethylene + 1000 oxygen -> 1000 (HV, 2.5 s; :4821-4830)
+---   ethylene glycol: 1000 ethylene oxide + 1000 water -> 1000 (HV, 10 s; :838-846)
+---   methylamine: alumina + silicon dioxide + 1000 methanol + 1000 ammonia -> 1000 + 1000 water (UV, 75 s; :4867-4876;
+---     GT's EV route also makes dimethyl- and trimethylamine, which nothing takes: left out)
+---   nickel tetracarbonyl: nickel dust + 4000 carbon monoxide -> 1000 (EV, 20 s; :819-826)
+---   nitrobenzene: 5000 benzene + 3000 sulfuric acid + 5000 nitric acid + 10000 distilled water -> 5000 + 3000 diluted
+---     sulfuric acid (IV, 6 s; :5863-5875)
+---   aniline: palladium dust + 9000 nitrobenzene + 54000 hydrogen -> 9000 + 18000 water (EV, 45 s; :5850-5859)
+--- Their only consumers are the Kevlar line's (section 11), so they come with its technology, Kevlar (UV: its liquid
+--- crystal Kevlar and polyurethane resin need the UV large chemical reactor).
+--------------------------------------------------------------------------------
+
+local KEVLAR = "kevlar"
+--- (GT's colours, MaterialsInit.java, 0..1)
+F.fluid("acetylene", "nearly-white-fluid", { 0.55, 0.43, 0.35 })
+F.fluid("acetaldehyde", "nearly-white-fluid", { 0.85, 0.75, 0.66 })
+F.fluid("ethylene-oxide", "nearly-white-fluid", { 0.63, 0.78, 0.98 })
+F.fluid("ethylene-glycol", "nearly-white-fluid", { 0.38, 0.32, 0.97 })
+F.fluid("methylamine", "nearly-white-fluid", { 0.67, 0.43, 0.53 })
+F.fluid("nickel-tetracarbonyl", "pale-green-fluid", { 0.84, 0.92, 0.48 })
+F.fluid("nitrobenzene", "pale-green-fluid", { 0.49, 0.77, 0.36 })
+F.fluid("aniline", "pale-green-fluid", { 0.79, 0.92, 0.29 })
+for _, n in pairs({ "calcium-carbide-dust", "calcium-hydroxide-dust" }) do
+	create_item{ skip_recipe = true, name = n, subgroup = "subgroup-macerator-dust" }
+end
+
+RECIPES = {}
+step(RECIPES, "calcium-carbide-dust", "hv-electric-blast-furnace-recipes", 30, HV_SPEED,
+	{ { "quicklime", 2 }, { "carbon", 3 } }, { { "calcium-carbide-dust", 3 }, { "carbon-monoxide", 100 } })
+step(RECIPES, "acetylene", "hv-chemical-reactor-recipes", 15, HV_SPEED,
+	{ { "calcium-carbide-dust", 3 }, { "water", 200 } }, { { "acetylene", 100 }, { "calcium-hydroxide-dust", 5 } })
+step(RECIPES, "acetaldehyde", "mv-chemical-reactor-recipes", 10, MV_SPEED,
+	{ { "ethylene", 200 }, { "oxygen", 100 } }, { { "acetaldehyde", 100 } })
+step(RECIPES, "ethylene-oxide", "hv-chemical-reactor-recipes", 2.5, HV_SPEED,
+	{ { "silver-dust", 1 }, { "alumina", 1 }, { "ethylene", 100 }, { "oxygen", 100 } }, { { "ethylene-oxide", 100 } })
+step(RECIPES, "ethylene-glycol", "hv-chemical-reactor-recipes", 10, HV_SPEED,
+	{ { "ethylene-oxide", 100 }, { "water", 100 } }, { { "ethylene-glycol", 100 } })
+step(RECIPES, "methylamine", "uv-chemical-reactor-recipes", 75, UV_SPEED,
+	{ { "alumina", 1 }, { "silicon-dioxide", 1 }, { "methanol", 100 }, { "ammonia", 100 } },
+	{ { "methylamine", 100 }, { "water", 100 } })
+step(RECIPES, "nickel-tetracarbonyl", "ev-chemical-reactor-recipes", 20, EV_SPEED,
+	{ { "nickel-dust", 1 }, { "carbon-monoxide", 400 } }, { { "nickel-tetracarbonyl", 100 } })
+step(RECIPES, "nitrobenzene", "iv-chemical-reactor-recipes", 6, IV_SPEED,
+	{ { "benzene", 500 }, { "sulfuric-acid", 300 }, { "nitric-acid", 500 }, { "distilled-water", 1000 } },
+	{ { "nitrobenzene", 500 }, { "diluted-sulfuric-acid", 300 } })
+step(RECIPES, "aniline", "ev-chemical-reactor-recipes", 45, EV_SPEED,
+	{ { "palladium-dust", 1 }, { "nitrobenzene", 900 }, { "hydrogen", 5400 } }, { { "aniline", 900 }, { "water", 1800 } })
+F.tech{
+	name = KEVLAR, prerequisites = { "uv-multiblocks", "palladium" }, packs = 9, count = 1500, time = 60,   -- (aniline: #252)
+	recipes = RECIPES,
+}

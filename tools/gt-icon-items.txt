@@ -3424,6 +3424,8 @@ dual-mox-fuel-rod
 depleted-dual-mox-fuel-rod
 quad-mox-fuel-rod
 depleted-quad-mox-fuel-rod
+calcium-carbide-dust
+calcium-hydroxide-dust
 raw-almandine
 crushed-almandine
 purified-almandine
