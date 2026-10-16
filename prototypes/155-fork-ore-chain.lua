@@ -142,8 +142,8 @@ end
 --- fluid) or, for the ores GT does not decompose, the core mod's (NewHorizonsCoreMod ElectrolyzerRecipes.java). smelt: GT's
 --- direct smelting metal (furnace recipes of the ore forms, raw ore smelting, the bricked blast furnace); calcite: GT's
 --- BLASTFURNACE_CALCITE_DOUBLE (raw ore + calcite or quicklime -> 2 ingots in the MV blast furnace); ems: GT's
---- ELECTROMAGNETIC_SEPERATION_* metal. GT byproducts the mod has no item of are left out (basalt, black granite,
---- rubidium); the mineral sands' basalt and black granite come out of their centrifuge as stone dust.
+--- ELECTROMAGNETIC_SEPERATION_* metal. Issue #373: GT's byproducts basalt, black granite and rubidium are items now (the
+--- mineral sands' centrifuge gives basalt or black granite instead of stone dust).
 local NEW_ORES = {
 	["lignite"] = { dust = "lignite-dust", byproducts = { "coal-dust" }, mass = 10 },   -- GT Lignite: Coal; its decomposition is the mod's already
 	["brown-limonite"] = { dust = "brown-limonite-dust", byproducts = { "malachite-dust", "yellow-limonite-dust" }, mass = 22, smelt = "iron", calcite = 2, ems = "iron", decompose = { "lv-centrifuge-recipes", 17.6, 4, { item("iron-dust", 1), fluid("hydrogen", 100), fluid("oxygen", 200) } } },   -- GT BrownLimonite: Malachite, YellowLimonite; GT decomposition
@@ -159,8 +159,8 @@ local NEW_ORES = {
 	["glauconite"] = { dust = "glauconite-dust", byproducts = { "sodium", "alumina", "iron-dust" }, mass = 18, ems = "iron", decompose = { "mv-electrolyzer-recipes", 18.9 * MV_SPEED, 21, { item("potassium", 1), item("magnesium", 2), item("alumina", 10), fluid("oxygen", 600), fluid("hydrogen", 200) } } },   -- GT Glauconite: Sodium, Aluminiumoxide, Iron; core decomposition
 	["vermiculite"] = { dust = "vermiculite-dust", byproducts = { "iron-dust", "alumina", "magnesium" }, mass = 20, ems = "iron", decompose = { "mv-electrolyzer-recipes", 21 * MV_SPEED, 29, { item("iron-dust", 3), item("alumina", 10), item("raw-silicon", 4), fluid("oxygen", 600), fluid("hydrogen", 200) } } },   -- GT Vermiculite: Iron, Aluminiumoxide, Magnesium; core decomposition without its water (the electrolyzers have two fluid outputs)
 	["alunite"] = { dust = "alunite-dust", byproducts = {  }, mass = 15, decompose = { "mv-electrolyzer-recipes", 10.5 * MV_SPEED, 52, { item("potassium", 2), item("alumina", 15), item("silicon-dioxide", 12), fluid("oxygen", 1100), fluid("hydrogen", 1200) } } },   -- GT Alunite: no byproducts; core decomposition
-	["basaltic-mineral-sand"] = { dust = "basaltic-mineral-sand-dust", byproducts = { "magnetite-dust" }, mass = 25, smelt = "iron", calcite = 2, ems = "gold", decompose = { "lv-centrifuge-recipes", 10, 2, { item("magnetite-dust", 1), item("stone-dust", 1) } } },   -- GT BasalticMineralSand: Basalt, Magnetite; GT decomposition, its basalt or black granite as stone dust
-	["granitic-mineral-sand"] = { dust = "granitic-mineral-sand-dust", byproducts = { "magnetite-dust" }, mass = 26, smelt = "iron", calcite = 2, ems = "gold", decompose = { "lv-centrifuge-recipes", 10.4, 2, { item("magnetite-dust", 1), item("stone-dust", 1) } } },   -- GT GraniticMineralSand: GraniteBlack, Magnetite; GT decomposition, its basalt or black granite as stone dust
+	["basaltic-mineral-sand"] = { dust = "basaltic-mineral-sand-dust", byproducts = { "basalt-dust", "magnetite-dust" }, mass = 25, smelt = "iron", calcite = 2, ems = "gold", decompose = { "lv-centrifuge-recipes", 10, 2, { item("magnetite-dust", 1), item("basalt-dust", 1) } } },   -- GT BasalticMineralSand: Basalt, Magnetite; GT decomposition
+	["granitic-mineral-sand"] = { dust = "granitic-mineral-sand-dust", byproducts = { "black-granite-dust", "magnetite-dust" }, mass = 26, smelt = "iron", calcite = 2, ems = "gold", decompose = { "lv-centrifuge-recipes", 10.4, 2, { item("magnetite-dust", 1), item("black-granite-dust", 1) } } },   -- GT GraniticMineralSand: GraniteBlack, Magnetite; GT decomposition
 	["cassiterite-sand"] = { dust = "cassiterite-sand-dust", byproducts = { "tin-dust" }, mass = 50, smelt = "tin", decompose = { "mv-electrolyzer-recipes", 6.6 * MV_SPEED, 3, { item("tin-dust", 1), fluid("oxygen", 200) } } },   -- GT CassiteriteSand: Tin; GT decomposition
 	["garnet-sand"] = { dust = "garnet-sand-dust", byproducts = { "red-garnet-dust", "yellow-garnet-dust" }, mass = 23, decompose = { "lv-centrifuge-recipes", 9.2, 2, { item("red-garnet-dust", 1), item("yellow-garnet-dust", 1) } } },   -- GT GarnetSand: GarnetRed, GarnetYellow; GT decomposition
 	["asbestos"] = { dust = "asbestos-dust", byproducts = { "asbestos-dust", "silicon-dioxide", "magnesium" }, mass = 15, decompose = { "mv-electrolyzer-recipes", 12.6 * MV_SPEED, 18, { item("magnesium", 3), item("raw-silicon", 2), fluid("hydrogen", 400), fluid("oxygen", 900) } } },   -- GT Asbestos: Asbestos, SiliconDioxide, Magnesium; GT decomposition
@@ -170,7 +170,7 @@ local NEW_ORES = {
 	["glauconite-sand"] = { dust = "glauconite-sand-dust", byproducts = { "sodium", "alumina", "iron-dust" }, mass = 18, ems = "iron", decompose = { "mv-electrolyzer-recipes", 18.9 * MV_SPEED, 21, { item("potassium", 1), item("magnesium", 2), item("alumina", 10), fluid("oxygen", 600), fluid("hydrogen", 200) } } },   -- GT GlauconiteSand: Sodium, Aluminiumoxide, Iron; core decomposition
 	["kyanite"] = { dust = "kyanite-dust", byproducts = {  }, mass = 20, decompose = { "mv-electrolyzer-recipes", 8 * MV_SPEED, 8, { item("alumina", 5), item("silicon-dioxide", 3) } } },   -- GT Kyanite: no byproducts; core decomposition
 	["mica"] = { dust = "mica-dust", byproducts = {  }, mass = 20, decompose = { "mv-electrolyzer-recipes", 13 * MV_SPEED, 38, { item("potassium", 2), item("alumina", 15), item("raw-silicon", 6), fluid("oxygen", 1100), fluid("fluorine", 400) } } },   -- GT Mica: no byproducts; core decomposition
-	["pollucite"] = { dust = "pollucite-dust", byproducts = { "caesium-dust", "alumina" }, mass = 28, decompose = { "mv-electrolyzer-recipes", 10.5 * MV_SPEED, 22, { item("caesium-dust", 2), item("alumina", 5), item("silicon-dioxide", 12), fluid("oxygen", 100), fluid("water", 200) } } },   -- GT Pollucite: Caesium, Aluminiumoxide, Rubidium; core decomposition
+	["pollucite"] = { dust = "pollucite-dust", byproducts = { "caesium-dust", "alumina", "rubidium-dust" }, mass = 28, decompose = { "mv-electrolyzer-recipes", 10.5 * MV_SPEED, 22, { item("caesium-dust", 2), item("alumina", 5), item("silicon-dioxide", 12), fluid("oxygen", 100), fluid("water", 200) } } },   -- GT Pollucite: Caesium, Aluminiumoxide, Rubidium; core decomposition
 	["dolomite"] = { dust = "dolomite-dust", byproducts = {  }, mass = 18, decompose = { "mv-electrolyzer-recipes", 9 * MV_SPEED, 10, { item("calcium", 1), item("magnesium", 1), item("carbon", 2), fluid("oxygen", 600) } } },   -- GT Dolomite: no byproducts; GT decomposition
 	["wollastonite"] = { dust = "wollastonite-dust", byproducts = {  }, mass = 23, decompose = { "mv-electrolyzer-recipes", 5.5 * MV_SPEED, 5, { item("calcium", 1), item("raw-silicon", 1), fluid("oxygen", 300) } } },   -- GT Wollastonite: no byproducts; GT decomposition
 	["trona"] = { dust = "trona-dust", byproducts = {  }, mass = 14, decompose = { "mv-electrolyzer-recipes", 9.8 * MV_SPEED, 14, { item("sodium", 3), item("carbon", 2), fluid("hydrogen", 100), fluid("oxygen", 600) } } },   -- GT Trona: no byproducts; GT decomposition without its water (the electrolyzers have two fluid outputs)
@@ -194,6 +194,10 @@ local NEW_ORES = {
 	["jade"] = { dust = "jade-dust", byproducts = {  }, mass = 20, decompose = { "mv-electrolyzer-recipes", 10 * MV_SPEED, 20, { item("sodium", 2), item("alumina", 5), item("silicon-dioxide", 12), fluid("oxygen", 100) } } },   -- GT Jade: no byproducts; core decomposition
 	["red-garnet"] = { dust = "red-garnet-dust", byproducts = { "spessartine-dust", "pyrope-dust", "almandine-dust" }, mass = 23 },   -- GT GarnetRed: Spessartine, Pyrope, Almandine; its decomposition is the mod's already
 	["yellow-garnet"] = { dust = "yellow-garnet-dust", byproducts = { "andradite-dust", "grossular-dust", "uvarovite-dust" }, mass = 23, ems = "iron" },   -- GT GarnetYellow: Andradite, Grossular, Uvarovite; its decomposition is the mod's already
+	--- issue #373: the sapphire vein's almandine and pyrope (160); GT has no decomposition of them (their use is #207's
+	--- nitric acid centrifuge); mass from Al 26, Fe 56, Mg 24, Si 28, O 16 (GT's Element.java)
+	["almandine"] = { dust = "almandine-dust", byproducts = { "red-garnet-dust", "alumina" }, mass = 24 },   -- GT Almandine: GarnetRed, Aluminiumoxide
+	["pyrope"] = { dust = "pyrope-dust", byproducts = { "red-garnet-dust", "magnesium" }, mass = 20 },   -- GT Pyrope: GarnetRed, Magnesium
 }
 for x, o in pairs(NEW_ORES) do
 	ORE_CHAIN[x] = { dust = o.dust, byproducts = o.byproducts, mass = o.mass }
@@ -252,6 +256,11 @@ for _, n in pairs({ "andradite-dust", "red-garnet-dust", "yellow-garnet-dust", "
 	data:extend({ { type = "item", name = n, icon = P .. n .. ".png", icon_size = 32,
 		subgroup = "subgroup-macerator-dust", order = "z-" .. n, stack_size = 100 } })
 end
+--- issue #373: GT's byproducts the mod lacked, basalt and black granite (the mineral sands) and rubidium (pollucite)
+for _, n in pairs({ "basalt-dust", "black-granite-dust", "rubidium-dust" }) do
+	data:extend({ { type = "item", name = n, icon = P .. n .. ".png", icon_size = 32,
+		subgroup = "subgroup-macerator-dust", order = "z-" .. n, stack_size = 100 } })
+end
 --- GT burns lignite for 1200 ticks, coal for 1600 (GTProxy.java:380-414): three quarters of coal's fuel value
 do
 	local coal = data.raw.item["coal"]
@@ -268,6 +277,11 @@ end
 --- uvarovite; GT's electrolyzer runs at 30 EU/t per output item, up to 4: andradite, pyrite (issue #223), malachite and
 --- uvarovite in the MV electrolyzer)
 local DECOMPOSE = {
+	--- issue #373: GT's centrifuge of basalt (16 dusts, mass 18: 1152 ticks, LV) and black granite (5 dusts, mass 20: 400
+	--- ticks; its biotite left out, the mod has none)
+	{ "basalt-dust", "lv-centrifuge-recipes", 57.6, 16,
+		{ item("olivine-dust", 1), item("calcite", 3), item("flint-dust", 8), item("dark-ash-dust", 4) } },
+	{ "black-granite-dust", "lv-centrifuge-recipes", 20, 5, { item("silicon-dioxide", 4) } },
 	{ "andradite-dust", "mv-electrolyzer-recipes", 24 * MV_SPEED, 20,   -- issue #223: GT's 90 EU/t (was LV)
 		{ item("calcium", 3), item("iron-dust", 2), item("raw-silicon", 3), fluid("oxygen", 1200) } },
 	{ "red-garnet-dust", "lv-centrifuge-recipes", 73.6, 16,
@@ -1626,8 +1640,8 @@ local PBF = {
 	{ "malachite-dust", { item("copper-ingot", 3) } },
 	{ "tetrahedrite-dust", { item("copper-ingot", 3), item("antimony-nugget", 9) } },
 }
---- issue #363: the new ores' dusts that smelt into another metal (chalcopyrite: GT's special recipes with sand, glass or
---- the quartzes and its ferrosilite byproduct are left out, the mod has no ferrosilite; malachite has one above)
+--- issue #363: the new ores' dusts that smelt into another metal (chalcopyrite: GT's special recipes below, issue #373;
+--- malachite has one above)
 for _, x in pairs(new_x) do
 	local o = NEW_ORES[x]
 	if o.smelt and x ~= "chalcopyrite" and x ~= "malachite" then PBF[#PBF + 1] = { o.dust, { item(o.smelt .. "-ingot", 3) } } end
@@ -1651,6 +1665,34 @@ for _, p in pairs(PBF) do
 			end
 		end
 	end
+end
+--- issue #373: chalcopyrite's special recipes (ProcessingOreSmelting.java:117-160; DONT_ADD_DEFAULT_BBF_RECIPE): 2 dusts
+--- with 2 sand, glass dust, silicon dioxide, nether or certus quartz dust -> 3 copper ingots and small piles of GT's
+--- ferrosilite (6, 21, 3, 3, 3), with the fuels above; ferrosilite (FeSiO3) decomposes in GT's electrolyzer (5 dusts, 12
+--- protons: 120 ticks, 60 EU/t, MV)
+add_item("ferrosilite-dust", "subgroup-macerator-dust", "z-ferrosilite-dust")
+add_item("small-pile-of-ferrosilite-dust", "subgroup-macerator-dust", "z-ferrosilite-dust-small")
+for _, a in pairs({ { "sand", 6 }, { "glass-dust", 21 }, { "silicon-dioxide", 3 }, { "nether-quartz-dust", 3 },
+	{ "certus-quartz-dust", 3 } }) do
+	for _, f in pairs(PBF_FUEL) do
+		local name = made(recipe{ name = "chalcopyrite-dust-with-" .. a[1] .. "-pbf-" .. f[1], category = "pbf-recipes",
+			subgroup = "subgroup-pbf-recipes", time = 120 * f[3], main = "copper-ingot",
+			ingredients = { item("chalcopyrite-dust", 2), item(a[1], 2), item(f[1], f[2]) },
+			results = { item("copper-ingot", 3), item("small-pile-of-ferrosilite-dust", a[2]), item(f[4], 1, f[5]) } })
+		unlock_after(name, { machine_techs("pbf-recipes"), item_techs("chalcopyrite-dust"), item_techs(a[1]),
+			item_techs(f[1]) })
+		pbf = pbf + 1
+	end
+end
+do
+	local name = made(recipe{ name = "ferrosilite-dust-from-small-piles", category = "crafting", time = 0.5,
+		main = "ferrosilite-dust", ingredients = { item("small-pile-of-ferrosilite-dust", 4) },
+		results = { item("ferrosilite-dust") } })
+	unlock_after(name, { item_techs("small-pile-of-ferrosilite-dust") })
+	name = made(recipe{ name = "ferrosilite-dust-decomposition", category = "mv-electrolyzer-recipes", time = 6 * MV_SPEED,
+		main = "iron-dust", ingredients = { item("ferrosilite-dust", 5) },
+		results = { item("iron-dust"), item("raw-silicon"), fluid("oxygen", 300) } })
+	unlock_after(name, { machine_techs("mv-electrolyzer-recipes"), item_techs("ferrosilite-dust") })
 end
 do
 	local name = made(recipe{ name = "malachite-dust-blast-furnace", category = "mv-electric-blast-furnace-recipes",

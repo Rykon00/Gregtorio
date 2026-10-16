@@ -258,10 +258,10 @@ local TF_SMALL_363 = { "olivine", "tanzanite", "amethyst", "opal", "jasper", "bl
 ---   * the small ores (SmallOres.java:214, 256, two of each per chunk): topaz (Twilight Forest and Horus) and amber,
 ---     8 of each, a quarter of a vein's first ore; the Twilight Forest's other small ores and veins hold ores the mod
 ---     mines elsewhere, so they get no mine (as #284/#285);
----   * issue #364: the Sapphire vein (OreMixes.java:375-386, Twilight Forest and Horus): almandine (primary) and pyrope
----     (secondary), which the mod has as dusts but not as ores (left out, as above), sapphire (in between) and green
----     sapphire (sporadic): sapphire 32 as the first ore the mod has, green sapphire 8; and the sapphire and green sapphire
----     small ores (SmallOres.java, Twilight Forest and Horus), 8 of each in the small ores' mine.
+---   * issue #364: the Sapphire vein (OreMixes.java:375-386, Twilight Forest and Horus): almandine (primary), pyrope
+---     (secondary), sapphire (in between) and green sapphire (sporadic), since issue #373 at GT's 32, 24, 16 and 8 (before,
+---     without almandine and pyrope ores, sapphire 32); and the sapphire and green sapphire small ores (SmallOres.java,
+---     Twilight Forest and Horus), 8 of each in the small ores' mine.
 --- The raw ores are GT's (create_ore, 07): amber with GT's ore multiplier 2, all NO_SMELTING (no furnace recipe);
 --- 155 gives them GTNH's ore chain, gem grades and the amber lens (issue #364: sapphire and green sapphire their chain,
 --- grades and juice; issue #370: their lenses, GTNH's blue and cyan lens).
@@ -272,6 +272,8 @@ create_ore("raw-amber", nil, "crushed-amber", "amber-dust", nil, "crushed-amber"
 create_ore("raw-sapphire", nil, "crushed-sapphire", "sapphire-dust", nil, "crushed-sapphire", nil, nil, 1, false, false)
 create_ore("raw-green-sapphire", nil, "crushed-green-sapphire", "green-sapphire-dust", nil, "crushed-green-sapphire", nil,
 	nil, 1, false, false)
+create_ore("raw-almandine", nil, "crushed-almandine", "almandine-dust", nil, "crushed-almandine", nil, nil, 1, false, false)
+create_ore("raw-pyrope", nil, "crushed-pyrope", "pyrope-dust", nil, "crushed-pyrope", nil, nil, 1, false, false)
 unlock_in("nand-chips", {
 	manual("mining-amber-vein", "manual-mine-recipes", { PICKAXE, LABOR(24) },
 		{ item("raw-amber", 32), item("raw-cinnabar", 8) }),
@@ -284,10 +286,11 @@ unlock_in("nand-chips", {
 --- consumer of the sapphire and green sapphire lens (the cyan and blue gem steps; the RAM wafer of Advanced Integrated
 --- Circuits after it), no longer with NAND Chips (#252; #334 had put every Twilight Forest mine there)
 unlock_in("laser-engraver", {
-	manual("mining-sapphire-vein", "manual-mine-recipes", { PICKAXE, LABOR(24) },   -- issue #364
-		{ item("raw-sapphire", 32), item("raw-green-sapphire", 8) }),
-	"crushed-sapphire", "crushed-green-sapphire",
+	manual("mining-sapphire-vein", "manual-mine-recipes", { PICKAXE, LABOR(24) },   -- issues #364, #373
+		{ item("raw-almandine", 32), item("raw-pyrope", 24), item("raw-sapphire", 16), item("raw-green-sapphire", 8) }),
+	"crushed-sapphire", "crushed-green-sapphire", "crushed-almandine", "crushed-pyrope",
 })
+data.raw.recipe["mining-sapphire-vein"].main_product = "raw-sapphire"   -- the vein keeps its name and icon
 --- issue #363: the Twilight Forest's other small ores (above), 8 of each
 do
 	local r = data.raw.recipe["mining-twilight-forest-small-ores"]

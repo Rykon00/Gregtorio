@@ -67,7 +67,9 @@
     (bornite); issue #332: the Twilight Forest's Manual Mine recipes, unlocked with NAND Chips (no technology of
     their own): the amber vein and the topaz and amber small ores, the raw ores of GT's orange lens (155 makes the amber lens), and
     (issue #364) the sapphire vein and the sapphire small ore (sapphire, green sapphire; 155 their chain and juice; issue
-    #370: the sapphire vein with the Laser Engraver, the first consumer of GTNH's sapphire and green sapphire lens);
+    #370: the sapphire vein with the Laser Engraver, the first consumer of GTNH's sapphire and green sapphire lens;
+    issue #373: its almandine and pyrope ores, GT's byproducts basalt, black granite and rubidium, chalcopyrite's
+    bricked blast furnace recipes with ferrosilite);
     issue #363: GTNH's Overworld veins (new Manual Mine recipes, or GT's missing ores joining upstream's vein of the same
     name) with 30 raw ores, 155's `NEW_ORES` gives them GTNH's chain, decomposition and smelting; part 2: the Twilight
     Forest's olivine vein, the Nether's saltpeter vein, garnierite, wulfenite and powellite in upstream's veins, the
