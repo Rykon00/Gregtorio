@@ -661,3 +661,204 @@ F.tech{
 	name = "jet-fuel-a", prerequisites = { "jet-fuel", "iv-energy-hatches" }, packs = 6, count = 600, time = 45,
 	recipes = RECIPES,
 }
+
+--------------------------------------------------------------------------------
+--- 7) THE UNIVERSAL CHEMICAL FUEL ENGINE AND THE THORIUM BASED LIQUID FUEL (issue #357, part 2)
+--- GT's Universal Chemical Fuel Engine (LuV; gregtech/common/tileentities/machines/multi/
+--- MTEUniversalChemicalFuelEngine.java) burns everything in its hatches each second, from the diesel, gas or rocket fuel
+--- maps, at an efficiency of exp(-c x fuel / promoter) x 150 % (c 0.04 for diesel and gas, 0.005 for rocket fuel; no
+--- promoter, no power), rocket fuel at 3 times its value. Here a burner generator on the combustion and gas turbine fuel
+--- cells at GT's ceiling of 150 %, one LuV amp (the one dynamo hatch of its structure). Left out, as the large combustion
+--- engine of #255 and the large rocket engine of #304 leave their extras out: the combustion promoter (a burner takes one
+--- fuel; the promoter is made, 6 above, and goes into Jet Fuel A) and the rocket fuels (a burner has one efficiency, and
+--- the Large Rocket Engine of 145 burns them at 3 times their value already).
+--- Its item is the controller with the structure's casings (checkCasingMin 100 Stable Titanium Machine Casings; the shape's
+--- 39 Chemically Inert Casings, 20 Engine Intake Casings, 12 Titanium Pipe Casings, 10 Titanium Firebox Casings and 72 PTFE
+--- frames, the frames as their 144 PTFE sheets: the mod has no PTFE frame), a LuV dynamo hatch and 3 hulls for the input,
+--- maintenance and muffler hatches (as #255). The controller is goodgenerator's crafting recipe (RecipeLoader.java:947-955):
+--- 2 dense titanium plates, a ZPM circuit, a large combustion engine, an extreme combustion engine, a LuV hull, 2 naquadah
+--- cables and an osmium gear. The mod has no Extreme Combustion Engine (the multiblock audit: leave): a second large
+--- combustion engine stands in for it.
+--------------------------------------------------------------------------------
+
+local FORK_ICON = "__gregtorio-continued__/graphics/icons/fork/"
+local SPRITE_PATH = "__gregtorio-continued__/graphics/entity/fork/"
+create_item{
+	name = "universal-chemical-fuel-engine",
+	icon = FORK_ICON .. "universal-chemical-fuel-engine.png",
+	place_result = "universal-chemical-fuel-engine",
+	subgroup = "subgroup-luv-age-multiblocks",
+	stack_size = 10,
+	ingredients = {
+		{ type = "item", name = "dense-titanium-plate", amount = 2 },
+		{ type = "item", name = "zpm-circuit", amount = 1 },
+		{ type = "item", name = "large-combustion-engine", amount = 2 },
+		{ type = "item", name = "luv-machine-hull", amount = 1 },
+		{ type = "item", name = "naquadah-cable", amount = 2 },
+		{ type = "item", name = "osmium-gear", amount = 1 },
+		{ type = "item", name = "stable-titanium-machine-casing", amount = 100 },
+		{ type = "item", name = "chemically-inert-casing", amount = 39 },
+		{ type = "item", name = "engine-intake-casing", amount = 20 },
+		{ type = "item", name = "titanium-pipe-casing", amount = 12 },
+		{ type = "item", name = "titanium-firebox-casing", amount = 10 },
+		{ type = "item", name = "ptfe-sheet", amount = 144 },
+		{ type = "item", name = "luv-dynamo-hatch", amount = 1 },
+		{ type = "item", name = "lv-machine-hull", amount = 3 },
+	},
+}
+create_burner_generator{
+	name = "universal-chemical-fuel-engine",
+	icon = FORK_ICON .. "universal-chemical-fuel-engine.png",
+	efficiency = 1.5,
+	fuel_categories = { COMB, GAS },
+	max_power = EU32_LuV,   -- (one LuV amp)
+	working_animation = SPRITE_PATH .. "universal-chemical-fuel-engine-working.png",
+	idle_animation = SPRITE_PATH .. "universal-chemical-fuel-engine-idle.png",
+	frame_count = 1,
+}
+data.raw["burner-generator"]["universal-chemical-fuel-engine"].localised_description =
+	{ "entity-description.universal-chemical-fuel-engine" }
+F.tech{
+	name = "universal-chemical-fuel-engine",
+	prerequisites = { "large-combustion-engine", "large-gas-turbine", "zpm-energy-hatches", "zpm-materials", "plasma-turbine",
+		"high-pressure-steam-turbine", "large-chemical-reactor", "jet-fuel" },
+	packs = 8, count = 2000, time = 60, recipes = { "universal-chemical-fuel-engine" },
+}
+
+--- GoodGenerator's thorium based liquid fuel (RecipeLoader.java:188-234): the uranium carbide-thorium mixture (bartworks'
+--- mixer recipe of the Werkstoff: 11 thorium, 1 thorium 232, 1 uranium 235 and 3 carbon into 16, 2.35 s, LV; the mod
+--- has no thorium isotopes, so 12 thorium dust), 64 of it with 4 tungstensteel foils into a wrapped thorium ingot (HV
+--- assembler, 15 s), the implosion compressor (GT's 4 TNT: one explosive) into a high density thorium nugget and 8 tiny
+--- tungstensteel dusts, 9 nuggets into high density thorium (MV compressor, 10 s), with 4 lithium, 2 draconium and 1000
+--- mercury into 4000 thorium based liquid fuel (HV mixer, 150 s), excited with 250 helium plasma per 1000 (IV mixer, 6 s;
+--- GT fills a cell). Fluids a tenth of GT's litres; the mod has no draconium dust (its ingot). GT burns the excited fuel
+--- in the large naquadah reactor at 2200 EU/t for 500 ticks per L (GGConfigLoader.java:15-17), as 136 burns the uranium
+--- and plutonium fuels; as there, no depleted fuel (its centrifuge gives GT's praseodymium, which waits for #356).
+--- Gregtorio's draconium comes with UEV Materials (the MK3 fusion reactor), so the fuel comes that late.
+for _, f in pairs({ { "thorium-based-liquid-fuel", "spackled-purple-fluid", { 0.31, 0.20, 0.40 } },
+	{ "excited-thorium-based-liquid-fuel", "spackled-purple-fluid", { 0.45, 0.30, 0.60 } } }) do
+	F.fluid(f[1], f[2], f[3])
+end
+data.raw.fluid["excited-thorium-based-liquid-fuel"].fuel_value = "1.1GJ"   -- (2200 x 500 EU, 1 EU = 1 kJ as in 136)
+do
+	local fuels = data.raw["mod-data"]["fork-power"].data.fuels
+	for name, list in pairs(fuels) do
+		if name:find("large%-naquadah%-reactor$") then
+			local found = false
+			for _, x in pairs(list) do found = found or x == "excited-thorium-based-liquid-fuel" end
+			if not found then list[#list + 1] = "excited-thorium-based-liquid-fuel" end
+		end
+	end
+end
+create_item{
+	name = "uranium-carbide-thorium-mixture",
+	category = "lv-mixer-recipes",
+	energy_required = 2.35,
+	ingredients = {
+		{ type = "item", name = "thorium-dust", amount = 12 },
+		{ type = "item", name = "uranium-235-dust", amount = 1 },
+		{ type = "item", name = "carbon", amount = 3 },
+	},
+	results = { { type = "item", name = "uranium-carbide-thorium-mixture", amount = 16 } },
+}
+create_item{
+	name = "wrapped-thorium-ingot",
+	category = "hv-assembling-machine-recipes",
+	energy_required = 15 * HV_SPEED,
+	ingredients = {
+		{ type = "item", name = "uranium-carbide-thorium-mixture", amount = 64 },
+		{ type = "item", name = "tungstensteel-foil", amount = 4 },
+	},
+}
+create_item{
+	name = "high-density-thorium-nugget",
+	category = "lv-implosion-compressor-recipes",
+	energy_required = 1,
+	ingredients = {
+		{ type = "item", name = "wrapped-thorium-ingot", amount = 1 },
+		{ type = "item", name = "explosives", amount = 1 },
+	},
+	results = {
+		{ type = "item", name = "high-density-thorium-nugget", amount = 1 },
+		{ type = "item", name = "tiny-pile-of-tungstensteel-dust", amount = 8 },
+	},
+	main_product = "high-density-thorium-nugget",
+}
+create_item{
+	name = "high-density-thorium",
+	category = "mv-compressor-recipes",
+	energy_required = 10 * MV_SPEED,
+	ingredients = { { type = "item", name = "high-density-thorium-nugget", amount = 9 } },
+}
+RECIPES = { "uranium-carbide-thorium-mixture", "wrapped-thorium-ingot", "high-density-thorium-nugget",
+	"high-density-thorium" }
+for _, i in pairs(RECIPES) do data.raw.item[i].subgroup = data.raw.item["high-density-plutonium"].subgroup end
+step(RECIPES, "thorium-based-liquid-fuel", "hv-mixer-recipes", 150, HV_SPEED,
+	{ { "high-density-thorium", 1 }, { "lithium", 4 }, { "draconium-ingot", 2 }, { "mercury", 100 } },
+	{ { "thorium-based-liquid-fuel", 400 } })
+step(RECIPES, "excited-thorium-based-liquid-fuel", "iv-mixer-recipes", 6, IV_SPEED,
+	{ { "thorium-based-liquid-fuel", 100 }, { "helium-plasma", 25 } }, { { "excited-thorium-based-liquid-fuel", 100 } })
+F.tech{
+	name = "thorium-based-liquid-fuel", prerequisites = { "uev-materials", "naquadah-fuels" }, packs = 10, count = 2500,
+	time = 60, recipes = RECIPES,
+}
+
+--------------------------------------------------------------------------------
+--- 8) THE ASOC WAFER AND CHIP (issue #355, part 1; GT's Circuit_Wafer_SoC2 and Circuit_Chip_SoC2)
+--- GT engraves the ASoC wafer with a green lens (LaserEngraverRecipes.java:375-394): GT's Wafer3 (Gregtorio's naquadah
+--- doped wafer) into 1 (90 s, EV), Wafer4 (europium) into 2 (75 s, IV), Wafer5 (americium) into 4 (60 s, LuV); here
+--- the emerald lens in the engraver's lens slot (#325). The cutter makes 6 ASoCs of a wafer (NewHorizonsCoreMod
+--- CuttingMachineRecipes.java:56-58, 45 s, EV; with 25 lubricant as Gregtorio's other chips). GT New Horizons uses them in
+--- the energy module (AssemblyLineRecipes.java:788-789: 2 x 64 ASoC wafers; 133 had 64 UHPIC wafers for them) and in the
+--- ASoC variants of the nanoprocessor and the quantum processor (NewHorizonsCoreMod CircuitAssemblerRecipes.java:571-591:
+--- 6 boards, 6 ASoCs, 48 fine wires and 48 bolts with 2 ingots of Indalloy 140 into one circuit, 10 s, IV and LuV; the
+--- mod's circuit assembler ends at IV, so both run there). GT's ZPIC and YPIC wafers need what the mod lacks (issue #355:
+--- the beamcrafter, creon, mellion and gravitons; the Bose-Einstein condensate wafer and quark gluon plasma in the MAX
+--- solidifier); the UMV and UXV hatches keep their APIC stand-ins of 133 and 134.
+--------------------------------------------------------------------------------
+
+create_item{ skip_recipe = true, name = "asoc-wafer", subgroup = data.raw.item["soc-wafer"].subgroup }
+create_item{ skip_recipe = true, name = "advanced-system-on-chip", subgroup = data.raw.item["system-on-chip"].subgroup }
+local LENS = { type = "item", name = "emerald-lens", amount = 1 }
+local function engrave(name, wafer, out, seconds, tier, speed)
+	create_recipe{
+		name = name,
+		category = tier .. "-laser-engraver-recipes",
+		energy_required = seconds * speed,
+		ingredients = { { type = "item", name = wafer, amount = 1 }, LENS },
+		results = { { type = "item", name = "asoc-wafer", amount = out }, LENS },
+		main_product = "asoc-wafer",
+	}
+	return name
+end
+local ASOC_ND = engrave("asoc-wafer-nd", "naquadah-doped-wafer", 1, 90, "ev", EV_SPEED)
+local ASOC_ED = engrave("asoc-wafer-ed", "europium-doped-wafer", 2, 75, "iv", IV_SPEED)
+local ASOC_AD = engrave("asoc-wafer-ad", "americium-doped-wafer", 4, 60, "luv", LUV_SPEED)
+RECIPES = {}
+step(RECIPES, "advanced-system-on-chip", "ev-cutting-machine-recipes", 45, EV_SPEED, { { "asoc-wafer", 1 }, { "lubricant", 25 } },
+	{ { "advanced-system-on-chip", 6 } })
+step(RECIPES, "nanoprocessor-asoc", "iv-circuit-assembler-recipes", 10, IV_SPEED,
+	{ { "epoxy-printed-circuit-board", 6 }, { "advanced-system-on-chip", 6 }, { "fine-electrum-wire", 48 },
+		{ "platinum-bolt", 48 }, { "molten-indalloy-140", 28.8 } }, { { "processing-unit", 1 } })
+local NANO_ASOC = table.remove(RECIPES)
+step(RECIPES, "quantum-processor-asoc", "iv-circuit-assembler-recipes", 10, IV_SPEED,
+	{ { "fiber-reinforced-printed-circuit-board", 6 }, { "advanced-system-on-chip", 6 }, { "fine-platinum-wire", 64 },
+		{ "niobium-titanium-bolt", 48 }, { "molten-indalloy-140", 28.8 } }, { { "ev-circuit", 1 } })
+local QUANTUM_ASOC = table.remove(RECIPES)
+--- unlocked where they are first used (#252): the first wafer, the cutter and the nanoprocessor variant after the
+--- nanoprocessor and Indalloy 140, the quantum variant after the quantum processor too, the europium and americium wafers
+--- with their SoC wafers' technologies; the energy module's technology comes later
+--- (the technologies by name: 142 hands out the circuit recipes after this file)
+local T_NANO = after_both(after_both("nanoprocessors", "luv-components"), "naquadah-processing")   -- (Indalloy 140; the wafer)
+for _, r in pairs({ ASOC_ND, RECIPES[1], NANO_ASOC }) do fork_add_unlock(T_NANO, r) end
+fork_add_unlock(after_both(T_NANO, "qubit-cpus"), QUANTUM_ASOC)
+fork_add_unlock(after_both(T_NANO, "nano-power-ics"), ASOC_ED)
+fork_add_unlock(after_both(T_NANO, "pico-quantum-power-ics"), ASOC_AD)
+--- the variants show their GTNH item's texture (156, issue #164)
+for _, r in pairs({ NANO_ASOC, QUANTUM_ASOC }) do
+	local x = data.raw.recipe[r]
+	x.icon, x.icon_size, x.icons = "__gregtorio-continued__/graphics/icons/circuit-recipe-" .. r .. ".png", 32, nil
+end
+for _, i in pairs(data.raw.recipe["energy-module"].ingredients) do
+	if i.name == "uhpic-wafer" then i.name, i.amount = "asoc-wafer", 128 end
+end

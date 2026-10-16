@@ -139,14 +139,14 @@ Result: **one add**, the lanthanide chain (#262). Every other multiblock is one 
 ### Generators
 
 Gregtorio has no fuel value for lava; `rocket-fuel` has one since #295 (its cell, burnt by GT++'s single-block rocket
-engines and, since #304, the Large Rocket Engine). It also has no supercritical steam, solar salt, combustion
-promoter or TRISO pebbles. The single-block generators of the same fuels (geothermal, RTG) are in `docs/MACHINE-AUDIT.md`
-(#367).
+engines and, since #304, the Large Rocket Engine). It also has no supercritical steam, solar salt or TRISO pebbles; the
+combustion promoter came with issue #357. The single-block generators of the same fuels (geothermal, RTG) are in
+`docs/MACHINE-AUDIT.md` (#367).
 
 | GTNH multiblock (name, tier, class) | GT fuel map and loader | What GTNH uses it for | In Gregtorio today | Verdict |
 |---|---|---|---|---|
 | Thermal Boiler (IV; `.../multi/MTEThermalBoiler.java`, LMTE:1011) | `thermalBoilerRecipes` (`gtPlusPlus/core/recipe/RecipesGregTech.java:1484-1537`) | lava to steam, hot coolant or solar salt to superheated steam | lava is endless from the drilling rig. The rig spends 12.8 kJ per unit, and GT's boiler would give 8 kJ back. Hot coolant already goes to the Large Heat Exchanger | **leave** (a net loss; the coolant role is taken) |
-| Universal Chemical Fuel Engine (LuV; `.../multi/MTEUniversalChemicalFuelEngine.java`, LMTE:1035) | diesel, gas and rocket fuel maps | any fuel, up to 150 % with a promoter | the combustion and gas lines up to HV; EV is #255/#256 | **leave** (a later upgrade of #255/#256) |
+| Universal Chemical Fuel Engine (LuV; `.../multi/MTEUniversalChemicalFuelEngine.java`, LMTE:1035) | diesel, gas and rocket fuel maps | any fuel, up to 150 % with a promoter | the combustion and gas lines up to HV; EV is #255/#256 | **built** (issue #357, 164: the "leave, a later upgrade of #255/#256" verdict changed once goodgenerator's fuels came; combustion and gas cells at 150 %, one LuV amp, the promoter and rocket fuels left out) |
 | Large Supercritical Steam Turbine (IV; `.../multi/turbines/MTELargeTurbineSCSteam.java`, LMTE:938) | supercritical steam from goodgenerator's Extreme Heat Exchanger | a third steam stage | the steam line ends at the HP steam turbine | **leave** (a new fluid and exchanger) |
 | Large Rocket Engine (LuV, GT++ `MTELargeRocketEngine.java`) | `rocketFuels` (`gtPlusPlus/core/item/chemistry/RecipeLoaderRocketFuels.java:179-184`) | rocket fuel power | #295: `rocket-fuel` is GT++'s H8N4C2O4 rocket fuel with GTNH's recipe in the Chemical Plant; its cell (1678.4 MJ) burns in GT++'s EV, IV and LuV Rocket Engines; #304 (0.5.4): `large-rocket-engine` (`145-fork-power-multiblocks.lua:627`), a burner generator on the rocket fuel cells with a fixed 2 A of IV, without the air intakes, carbon dioxide and liquid hydrogen boost | **add**: done, #304 (the maintainer's decision: build it simplified) |
 | Large Semifluid Burner (EV, GT++ `MTELargeSemifluidGenerator.java`) | `semiFluidFuels` | creosote and heavy oils at 2048 EU/t | LV to HV semifluid generators; heavy fuel also goes into diesel for #255 | **leave** |

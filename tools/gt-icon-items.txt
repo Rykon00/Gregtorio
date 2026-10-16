@@ -3400,3 +3400,11 @@ cyclopentadiene-cell
 jet-fuel-no-3-cell
 jet-fuel-a-cell
 ferrocene-dust
+uranium-carbide-thorium-mixture
+wrapped-thorium-ingot
+high-density-thorium-nugget
+high-density-thorium
+asoc-wafer
+advanced-system-on-chip
+circuit-recipe-nanoprocessor-asoc
+circuit-recipe-quantum-processor-asoc

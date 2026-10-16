@@ -297,6 +297,7 @@ MATERIALS = {
     "jet-fuel-no-3": ("FLUID", (215, 175, 77)),
     "jet-fuel-a": ("FLUID", (242, 177, 92)),
     "ferrocene": ("DULL", (249, 166, 71)),
+    "uranium-carbide-thorium-mixture": ("DULL", (22, 50, 7)),   # issue #357, part 2: the thorium fuel's mixture
     # issue #363, part 2: the Twilight Forest's and the Nether's ores
     "olivine": "Olivine", "bentonite": "Bentonite", "magnesite": "Magnesite", "garnierite": "Garnierite",
     "wulfenite": "Wulfenite", "powellite": "Powellite", "saltpeter": "Saltpeter", "tanzanite": "Tanzanite",
@@ -676,9 +677,9 @@ def icon_table(c):
             "advanced-circuit": (M1, 702), "good-electronic-circuit": (M1, 702), "good-integrated-circuit": (M3, 79),
             "microprocessor": (M3, 80), "microprocessor-smd": (M3, 80), "microprocessor-cheap": (M3, 80),
             "processing-unit": (M3, 306), "microprocessor-assembly": (M1, 703), "microprocessor-assembly-smd": (M1, 703),
-            "nanoprocessor": (M3, 82),
+            "nanoprocessor": (M3, 82), "nanoprocessor-asoc": (M3, 82),   # (issue #355: its ASoC variant)
             "microprocessor-supercomputer": (M1, 704), "microprocessor-supercomputer-smd": (M1, 704),
-            "nanoprocessor-assembly": (M3, 83), "quantum-processor": (M3, 85),
+            "nanoprocessor-assembly": (M3, 83), "quantum-processor": (M3, 85), "quantum-processor-asoc": (M3, 85),
             "microprocessor-mainframe": (M1, 705), "nanoprocessor-supercomputer": (M3, 84),
             "quantum-processor-assembly": (M3, 86), "crystal-processor": (M3, 89),
             "nanoprocessor-mainframe": (M1, 706), "quantum-processor-supercomputer": (M3, 87),
@@ -698,7 +699,7 @@ def icon_table(c):
     for name, i in {"uhpic-wafer": 58, "ultra-high-powered-integrated-circuit": 59, "npic-wafer": 160,
                     "nano-power-ic": 161, "ppic-wafer": 162, "pico-power-ic": 163, "qpic-wafer": 164,
                     "quantum-power-ic": 165, "fpic-wafer": 266, "femto-power-ic": 267, "apic-wafer": 268,
-                    "atto-power-ic": 269, "complex-smd-resistor": 178, "complex-smd-diode": 179,
+                    "atto-power-ic": 269, "asoc-wafer": 48, "advanced-system-on-chip": 49, "complex-smd-resistor": 178, "complex-smd-diode": 179,
                     "complex-smd-transistor": 180, "complex-smd-capacitor": 181, "complex-smd-inductor": 184}.items():
         T[name] = lambda i=i: c.gt(f"{M3}{i}")
     for name, i in {"advanced-smd-capacitor-wrap": 27, "advanced-smd-inductor-wrap": 183,
@@ -812,6 +813,11 @@ def icon_table(c):
               "jet-fuel-a"):   # issues #361, #357
         T[m + "-cell"] = (lambda m=m: lambda: c.part(m, "cell"))()
     T["ferrocene-dust"] = lambda: c.part("ferrocene", "dust")   # issue #357
+    # issue #357, part 2: goodgenerator's thorium fuel line (its items as the plutonium line's above)
+    T["uranium-carbide-thorium-mixture"] = lambda: c.part("uranium-carbide-thorium-mixture", "dust")
+    T["wrapped-thorium-ingot"] = lambda: c.gt(f"{GG}items/wrappedThoriumIngot")
+    T["high-density-thorium-nugget"] = lambda: c.gt(f"{GG}items/highDensityThoriumNugget")
+    T["high-density-thorium"] = lambda: c.gt(f"{GG}items/highDensityThorium")
     T["phthalic-anhydride"] = lambda: c.part("phthalic-anhydride", "dust")
     T["sodium-bisulfate"] = lambda: c.part("sodium-bisulfate", "dust")
     # issue #302: the drill heads of the Space Elevator's mining drones (GT's toolHeadDrill of the material)
