@@ -87,6 +87,14 @@ MATERIALS = {
     "trinium": "Trinium", "tritanium": "Tritanium", "universium": "Universium", "vanadium-gallium": "VanadiumGallium",
     "manganese": "Manganese", "uranium": "Uranium", "vanadium": "Vanadium", "indium": "Indium", "arsenic": "Arsenic",   # issue #375: the melts of the transmutations
     "calcium-carbide": "CacliumCarbide", "calcium-hydroxide": ("DULL", (255, 255, 255)),   # issue #378
+    "cobalt-ii-nitrate": ("POWDER", (170, 0, 0)), "cobalt-ii-hydroxide": "CobaltIIHydroxide",
+    "cobalt-ii-naphthenate": ("POWDER", (90, 60, 30)), "terephthaloyl-chloride": "TerephthaloylChloride",
+    "cupric-oxide": "CupricOxide", "bismuth-iii-oxide": "BismuthIIIOxide", "2-butyne-1-4-diol": ("POWDER", (240, 240, 200)),
+    "nickel-aluminide": "NickelAluminide", "raney-nickel": "RaneyNickelActivated",
+    "p-phenylenediamine": ("POWDER", (100, 60, 30)), "diphenylmethane-diisocyanate": "DiphenylmethaneDiisocyanate",
+    "pentaerythritol": "Pentaerythritol", "rhodium-chloride": "RhodiumChloride", "triphenylphosphine": "Triphenylphosphene",
+    "sodium-hydride": "SodiumHydride", "sodium-borohydride": "SodiumBorohydride", "sodium-methoxide": "SodiumMethoxide",
+    "organorhodium-catalyst": "OrganorhodiumCatalyst", "polyurethane-catalyst-a": ("DULL", (200, 200, 100)), "kevlar": "Kevlar",   # issue #378
     "callisto-ice": "CallistoIce", "plutonium": "Plutonium241", "tungstensteel": "TungstenSteel",
     # superconductor bases (fork names, GT's base of the same tier)
     "itbtc-alloy": "Tetraindiumditindibariumtitaniumheptacoppertetrakaidekaoxid",       # LuV
@@ -693,6 +701,8 @@ def icon_table(c):
         T[f"{line}-processor-assembly"] = lambda i=asm: c.gt(f"{M3}{i}")
         T[f"{line}-processor-supercomputer"] = lambda i=sup: c.gt(f"{M3}{i}")
     T["bioware-printed-circuit-board"] = lambda: c.gt(f"{M3}8")
+    T["kevlar-fiber"] = lambda: c.gt(f"{M3}192")   # issue #378
+    T["woven-kevlar"] = lambda: c.gt(f"{M3}193")
     T["neuro-processing-unit"] = lambda: c.gt(f"{M3}72")
     T["stem-cells"] = lambda: c.gt(f"{M3}73")
     T["bio-cells"] = lambda: c.gt(f"{M3}76")

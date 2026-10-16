@@ -54,6 +54,7 @@ local FORMS = {
 }
 
 local MATERIALS = {
+	["kevlar"] = { "uv", "kevlar" },   -- issue #378: the Kevlar ring of the UXV pump (melt: 164, from the plate)
 	["brass"] = { "lv", "circuit-assembler", color = { 255, 180, 0 } },
 	["bronze"] = { "lv", "concrete", color = { 255, 128, 0 } },
 	["cobalt-brass"] = { "lv", "cobalt-brass", color = { 180, 180, 160 } },

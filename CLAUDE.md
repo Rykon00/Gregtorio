@@ -200,7 +200,8 @@
     ethanol gasoline, cyclopentadiene and naquadah gas cells, the ferrocene line to Jet Fuel No.3 and Jet Fuel A, the
     combustion promoter), the Universal Chemical Fuel Engine and the thorium based liquid fuel; issue #355: the ASoC wafer
     and chip with their circuit variants, the energy module's ASoC wafers; issue #359: GT's dual and quad fuel rods and
-    the MOX rods; issue #378: the Kevlar line's side chemicals (section 10, technology Kevlar); loads after 159 and
+    the MOX rods; issue #378: the Kevlar line's side chemicals (section 10, technology Kevlar) and the Kevlar line (section 11;
+    the UXV pump, conveyor and hull take Kevlar, 143's casting runs once more for the Kevlar ring); loads after 159 and
     before 161)
   - 161 dimension unlocks (issue #287: the unlock rules of 160, `ore_dimension` moves or gates the ore chains of the
     dimensions' ores, the ender air with Radon, black plutonium with the Void Miner II, the bornite chain with

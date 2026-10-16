@@ -1021,6 +1021,224 @@ step(RECIPES, "nitrobenzene", "iv-chemical-reactor-recipes", 6, IV_SPEED,
 step(RECIPES, "aniline", "ev-chemical-reactor-recipes", 45, EV_SPEED,
 	{ { "palladium-dust", 1 }, { "nitrobenzene", 900 }, { "hydrogen", 5400 } }, { { "aniline", 900 }, { "water", 1800 } })
 F.tech{
-	name = KEVLAR, prerequisites = { "uv-multiblocks", "palladium" }, packs = 9, count = 1500, time = 60,   -- (aniline: #252)
+	--- (#252: palladium (aniline's catalyst); formaldehyde (Super Glue), boric acid and phosgene (Lanthanum
+	--- Hexaboride), the HV Dehydrator (Samaric Rare Earth Processing) for section 11)
+	name = KEVLAR, prerequisites = { "uv-multiblocks", "palladium", "super-glue", "lanthanum-hexaboride",
+		"samaric-rare-earth-processing" }, packs = 9, count = 1500, time = 60,
 	recipes = RECIPES,
 }
+
+
+
+
+--------------------------------------------------------------------------------
+--- 11) KEVLAR (issue #378 (b)): GTNH's UV line to the Kevlar plate, GT's recipes (ChemicalRecipes.java unless named;
+--- fluids a tenth of GT's litres, consumed catalyst dusts as GT has them; GT's x9 large chemical reactor recipes where
+--- the single one needs a tiny pile, which the mod does not have):
+---   p-xylene (1,4-dimethylbenzene): 1000 benzene + 2000 methane -> 1000 + 4000 hydrogen (MV, 200 s; :4986-4992)
+---   naphthenic acid: GT's circuit 9 distillation of the oils (DistilleryRecipes.java:513-562), at the mod's oil scale (a
+---     twentieth) and oil time (section 4)
+---   cobalt(II) nitrate, hydroxide and naphthenate (:1043-1050, :3835-3842, :1022-1029); terephthalic acid from p-xylene
+---     and 41 cobalt naphthenate (HV, 7.5 s; :967-976); dimethyl terephthalate (EV, 12.5 s; :4952-4963)
+---   sulfur dichloride (LV, 40 s; :942-949), thionyl chloride (HV, 7.5 s; :953-963), terephthaloyl chloride: 18000
+---     thionyl chloride + 5000 dimethyl terephthalate + 6000 CO2 -> 112 + 22000 diluted HCl + 18000 SO2 (EV, 20 s;
+---     :4936-4948)
+---   cupric oxide, bismuth(III) oxide (:898-905, :920-927), 2-butyne-1,4-diol (EV, 20 s; :6009-6021), nickel aluminide
+---     (blast furnace, HV, 45 s; BlastFurnaceRecipes.java:519-525), Raney nickel (EV, 60 s; :872-883), 1,4-butanediol
+---     (UV, 15 s; :6041-6050), gamma-butyrolactone (EV, 5 s; :5989-5996), N-methyl-2-pyrrolidone (IV, 30 s; :931-940)
+---   acetic anhydride: 2000 acetic acid -> 1000 (HV dehydrator, 30 s; gtPlusPlus RecipesGregTech.java:1224-1231; its
+---     water left out: the dehydrator has one fluid output), 4-nitroaniline (EV, 15 s; :5950-5959), p-phenylenediamine
+---     (UV, 20 s; :5974-5985)
+---   diaminodiphenylmethane mixture (EV, 60 s; :5837-5846), its MDI mixture with phosgene (EV, 30 s; :5879-5887), MDI
+---     from the distillation tower (EV, 125 s; DistilleryRecipes.java:423-430)
+---   pentaerythritol (HV, 30 s; :3808-3819), dimethyldichlorosilane (MV, 12 s; :2248-2255), silicon oil (EV, 0.75 s;
+---     :4843-4852), propionic acid with nickel tetracarbonyl (EV, 10 s; :5924-5934)
+---   butanol: rhodium chloride (blast furnace, HV, 30 s; BlastFurnaceRecipes.java:626-634), phosphorus trichloride (MV,
+---     10 s; :1071-1078), triphenylphosphine (EV, 20 s; :5087-5094), sodium hydride (MV, 10 s; :1091-1098), trimethyl
+---     borate (EV, 30 s; :6094-6104), sodium borohydride (EV, 30 s; :5098-5106) with GT's sodium methoxide back to NaOH
+---     and methanol (HV, 10 s; :1102-1110), organorhodium catalyst (UV, 40 s; :6118-6134), butyraldehyde and
+---     isobutyraldehyde (LV, 100 s, x9; :4807-4817), butanol (HV, 4 s, x9; :5889-5896)
+---   polyurethane catalyst A (GT's "Kevlar catalyst"; EV, 30 s; :5898-5908), polyurethane resin (UV, 10 s; :4878-4888)
+---   liquid crystal Kevlar (UV, 30 s; :6052-6064), Kevlar fiber (EV fluid solidifier, 40 s; FluidSolidifierRecipes.java:
+---     282-288), woven Kevlar (EV assembler, 15 s; AssemblerRecipes.java:3077-3083), the Kevlar plate (LV chemical bath,
+---     60 s; ChemicalBathRecipes.java:329-335)
+--- Stand-in: GT's spinneret (the solidifier's tool for the fibers) is the solidifier's generic mold (150).
+--- Molten Kevlar (GT: the extractor melts a plate into 144 L) casts the Kevlar ring (143). GTNH's users the mod has: the
+--- UXV pump takes 64 Kevlar rings instead of the silicone rubber rings, the UXV conveyor 80 Kevlar plates instead of the
+--- silicone rubber sheets (tectech ResearchStationAssemblyLine.java:2004-2048), the UXV hull molten Kevlar (GT's 576 L,
+--- here a tenth) instead of polybenzimidazole (NH AssemblerRecipes.java:846-852).
+--------------------------------------------------------------------------------
+
+F.fluid("1-4-dimethylbenzene", "nearly-white-fluid", { 0.84, 0.81, 0.69 })
+F.fluid("naphthenic-acid", "black-fluid", { 0.25, 0.20, 0.10 })
+F.fluid("terephthalic-acid", "nearly-white-fluid", { 1.00, 1.00, 1.00 })
+F.fluid("dimethyl-terephthalate", "nearly-white-fluid", { 0.95, 0.95, 0.95 })
+F.fluid("sulfur-dichloride", "medium-red-fluid", { 0.78, 0.00, 0.00 })
+F.fluid("thionyl-chloride", "nearly-white-fluid", { 0.98, 0.98, 0.98 })
+F.fluid("1-4-butanediol", "nearly-white-fluid", { 0.85, 0.85, 0.85 })
+F.fluid("gamma-butyrolactone", "pale-green-fluid", { 1.00, 1.00, 0.59 })
+F.fluid("n-methyl-2-pyrrolidone", "nearly-white-fluid", { 0.92, 0.92, 0.92 })
+F.fluid("acetic-anhydride", "nearly-white-fluid", { 0.90, 0.90, 0.85 })
+F.fluid("4-nitroaniline", "light-orange-fluid", { 0.87, 0.67, 0.09 })
+F.fluid("diaminodiphenylmethane-mixture", "dark-muted-yellow-fluid", { 1.00, 0.95, 0.48 })
+F.fluid("diphenylmethane-diisocyanate-mixture", "dark-muted-yellow-fluid", { 1.00, 0.90, 0.20 })
+F.fluid("dimethyldichlorosilane", "purple-fluid", { 0.27, 0.09, 0.31 })
+F.fluid("silicon-oil", "nearly-white-fluid", { 0.95, 0.95, 0.95 })
+F.fluid("propionic-acid", "nearly-white-fluid", { 0.73, 0.61, 0.43 })
+F.fluid("phosphorus-trichloride", "nearly-white-fluid", { 0.98, 0.98, 0.98 })
+F.fluid("trimethyl-borate", "nearly-white-fluid", { 0.96, 0.96, 0.96 })
+F.fluid("butyraldehyde", "nearly-white-fluid", { 0.96, 0.96, 0.96 })
+F.fluid("isobutyraldehyde", "nearly-white-fluid", { 0.94, 0.94, 0.94 })
+F.fluid("butanol", "nearly-white-fluid", { 0.77, 0.67, 0.46 })
+F.fluid("polyurethane-resin", "dark-muted-yellow-fluid", { 0.90, 0.90, 0.47 })
+F.fluid("liquid-crystal-kevlar", "dark-muted-yellow-fluid", { 0.94, 0.94, 0.47 })
+F.fluid("molten-kevlar", "molten-kevlar", { 0.94, 0.94, 0.47 })   -- (143 casts it: its MATERIALS)
+for _, n in pairs({ "cobalt-ii-nitrate-dust", "cobalt-ii-hydroxide-dust", "cobalt-ii-naphthenate-dust",
+	"terephthaloyl-chloride-dust", "cupric-oxide-dust", "bismuth-iii-oxide-dust", "2-butyne-1-4-diol-dust",
+	"nickel-aluminide-ingot", "raney-nickel-dust", "p-phenylenediamine-dust", "diphenylmethane-diisocyanate-dust",
+	"pentaerythritol-dust", "rhodium-chloride-dust", "triphenylphosphine-dust", "sodium-hydride-dust",
+	"sodium-borohydride-dust", "sodium-methoxide-dust", "organorhodium-catalyst-dust", "polyurethane-catalyst-a-dust",
+	"kevlar-fiber", "woven-kevlar", "kevlar-plate", "kevlar-ring" }) do
+	create_item{ skip_recipe = true, name = n, subgroup = "subgroup-macerator-dust" }
+end
+
+RECIPES = {}
+--- terephthaloyl chloride
+step(RECIPES, "1-4-dimethylbenzene", "mv-chemical-reactor-recipes", 200, MV_SPEED, { { "benzene", 100 }, { "methane", 200 } },
+	{ { "1-4-dimethylbenzene", 100 }, { "hydrogen", 400 } })
+for _, o in pairs({
+	{ "light-oil", 21, 3.5, 6.5, 10, 0.75, 80 }, { "medium-oil", 32, 5, 25, 75, 1.25, 30 },
+	{ "crude-oil", 64, 15, 50, 20, 2.5, 60 }, { "heavy-oil", 100, 50, 22.5, 7.5, 2.5, 30 },
+}) do
+	step(RECIPES, o[1] .. "-distillation-naphthenic-acid", "hv-tall-distillation-recipes", CRUDE_TIME * o[2] / 30, 1,
+		{ { o[1], 50 } }, { { "sulfuric-heavy-fuel", o[3] }, { "sulfuric-light-fuel", o[4] }, { "sulfuric-naphtha", o[5] },
+			{ "naphthenic-acid", o[6] }, { "sulfuric-gas", o[7] } }, "naphthenic-acid")
+end
+step(RECIPES, "cobalt-ii-nitrate-dust", "mv-chemical-reactor-recipes", 5, MV_SPEED,
+	{ { "cobalt-dust", 1 }, { "nitric-acid", 200 } }, { { "cobalt-ii-nitrate-dust", 9 }, { "hydrogen", 200 } })
+step(RECIPES, "cobalt-ii-hydroxide-dust", "mv-chemical-reactor-recipes", 5, MV_SPEED,
+	{ { "cobalt-ii-nitrate-dust", 9 }, { "sodium-hydroxide", 6 } }, { { "cobalt-ii-hydroxide-dust", 5 }, { "sodium-nitrate", 10 } })
+step(RECIPES, "cobalt-ii-naphthenate-dust", "hv-chemical-reactor-recipes", 10, HV_SPEED,
+	{ { "cobalt-ii-hydroxide-dust", 5 }, { "naphthenic-acid", 100 } }, { { "cobalt-ii-naphthenate-dust", 41 } })
+step(RECIPES, "terephthalic-acid", "hv-chemical-reactor-recipes", 7.5, HV_SPEED,
+	{ { "1-4-dimethylbenzene", 100 }, { "cobalt-ii-naphthenate-dust", 41 }, { "oxygen", 600 } },
+	{ { "terephthalic-acid", 100 }, { "water", 200 } })
+step(RECIPES, "dimethyl-terephthalate", "ev-chemical-reactor-recipes", 12.5, EV_SPEED,
+	{ { "terephthalic-acid", 100 }, { "methanol", 200 }, { "sulfuric-acid", 200 } },
+	{ { "dimethyl-terephthalate", 100 }, { "diluted-sulfuric-acid", 200 } })
+step(RECIPES, "sulfur-dichloride", "lv-chemical-reactor-recipes", 40, LV_SPEED, { { "sulfur", 8 }, { "chlorine", 1600 } },
+	{ { "sulfur-dichloride", 800 } })
+step(RECIPES, "thionyl-chloride", "hv-chemical-reactor-recipes", 7.5, HV_SPEED,
+	{ { "sulfur-trioxide", 100 }, { "sulfur-dichloride", 100 } }, { { "thionyl-chloride", 100 }, { "sulfur-dioxide", 100 } })
+step(RECIPES, "terephthaloyl-chloride-dust", "ev-chemical-reactor-recipes", 20, EV_SPEED,
+	{ { "thionyl-chloride", 1800 }, { "dimethyl-terephthalate", 500 }, { "carbon-dioxide", 600 } },
+	{ { "terephthaloyl-chloride-dust", 112 }, { "diluted-hydrochloric-acid", 2200 }, { "sulfur-dioxide", 1800 } })
+--- N-methyl-2-pyrrolidone
+step(RECIPES, "cupric-oxide-dust", "lv-chemical-reactor-recipes", 5, LV_SPEED, { { "copper-dust", 1 }, { "oxygen", 100 } },
+	{ { "cupric-oxide-dust", 2 } })
+step(RECIPES, "bismuth-iii-oxide-dust", "mv-chemical-reactor-recipes", 10, MV_SPEED, { { "bismuth", 4 }, { "oxygen", 600 } },
+	{ { "bismuth-iii-oxide-dust", 10 } })
+step(RECIPES, "2-butyne-1-4-diol-dust", "ev-chemical-reactor-recipes", 20, EV_SPEED,
+	{ { "cupric-oxide-dust", 1 }, { "bismuth-iii-oxide-dust", 1 }, { "silicon-dioxide", 1 }, { "acetylene", 100 },
+		{ "formaldehyde", 200 } }, { { "2-butyne-1-4-diol-dust", 12 } })
+step(RECIPES, "nickel-aluminide-ingot", "hv-electric-blast-furnace-recipes", 45, HV_SPEED,
+	{ { "nickel-dust", 1 }, { "aluminium-dust", 3 } }, { { "nickel-aluminide-ingot", 4 } })
+step(RECIPES, "raney-nickel-dust", "ev-chemical-reactor-recipes", 60, EV_SPEED,
+	{ { "nickel-aluminide-ingot", 4 }, { "sodium-hydroxide", 6 }, { "water", 200 } },
+	{ { "raney-nickel-dust", 2 }, { "sodium-aluminate", 8 }, { "hydrogen", 600 } })
+step(RECIPES, "1-4-butanediol", "uv-chemical-reactor-recipes", 15, UV_SPEED,
+	{ { "2-butyne-1-4-diol-dust", 12 }, { "raney-nickel-dust", 1 }, { "hydrogen", 400 } }, { { "1-4-butanediol", 100 } })
+step(RECIPES, "gamma-butyrolactone", "ev-chemical-reactor-recipes", 5, EV_SPEED,
+	{ { "copper-dust", 1 }, { "1-4-butanediol", 100 } }, { { "gamma-butyrolactone", 100 }, { "hydrogen", 400 } })
+step(RECIPES, "n-methyl-2-pyrrolidone", "iv-chemical-reactor-recipes", 30, IV_SPEED,
+	{ { "methylamine", 100 }, { "gamma-butyrolactone", 100 } }, { { "n-methyl-2-pyrrolidone", 100 }, { "water", 100 } })
+--- p-phenylenediamine
+step(RECIPES, "acetic-anhydride", "hv-dehydrator-recipes", 30, HV_SPEED, { { "acetic-acid", 200 } },
+	{ { "acetic-anhydride", 100 } })
+step(RECIPES, "4-nitroaniline", "ev-chemical-reactor-recipes", 15, EV_SPEED,
+	{ { "aniline", 100 }, { "acetic-anhydride", 10 }, { "nitration-mixture", 200 } },
+	{ { "4-nitroaniline", 100 }, { "diluted-sulfuric-acid", 100 } })
+step(RECIPES, "p-phenylenediamine-dust", "uv-chemical-reactor-recipes", 20, UV_SPEED,
+	{ { "palladium-dust", 1 }, { "nitrogen-dioxide", 10 }, { "hydrogen", 600 }, { "4-nitroaniline", 100 } },
+	{ { "p-phenylenediamine-dust", 16 }, { "water", 200 } })
+--- MDI
+step(RECIPES, "diaminodiphenylmethane-mixture", "ev-chemical-reactor-recipes", 60, EV_SPEED,
+	{ { "formaldehyde", 100 }, { "aniline", 200 }, { "hydrochloric-acid", 100 } }, { { "diaminodiphenylmethane-mixture", 100 } })
+step(RECIPES, "diphenylmethane-diisocyanate-mixture", "ev-chemical-reactor-recipes", 30, EV_SPEED,
+	{ { "diaminodiphenylmethane-mixture", 100 }, { "phosgene", 200 } }, { { "diphenylmethane-diisocyanate-mixture", 100 } })
+step(RECIPES, "diphenylmethane-diisocyanate-dust", "ev-tall-distillation-recipes", 125, EV_SPEED,
+	{ { "diphenylmethane-diisocyanate-mixture", 100 } },
+	{ { "diphenylmethane-diisocyanate-dust", 29 }, { "hydrochloric-acid", 500 } })
+--- the resin's other inputs
+step(RECIPES, "pentaerythritol-dust", "hv-chemical-reactor-recipes", 30, HV_SPEED,
+	{ { "sodium-hydroxide", 1 }, { "formaldehyde", 400 }, { "acetaldehyde", 100 } },
+	{ { "pentaerythritol-dust", 21 }, { "carbon-monoxide", 100 } })
+step(RECIPES, "dimethyldichlorosilane", "mv-chemical-reactor-recipes", 12, MV_SPEED,
+	{ { "raw-silicon", 1 }, { "chloromethane", 200 } }, { { "dimethyldichlorosilane", 100 } })
+step(RECIPES, "silicon-oil", "ev-chemical-reactor-recipes", 0.75, EV_SPEED,
+	{ { "ethylene-oxide", 100 }, { "dimethyldichlorosilane", 400 }, { "water", 500 } }, { { "silicon-oil", 500 } })
+step(RECIPES, "propionic-acid", "ev-chemical-reactor-recipes", 10, EV_SPEED,
+	{ { "ethylene", 100 }, { "carbon-monoxide", 100 }, { "nickel-tetracarbonyl", 10 }, { "water", 100 } },
+	{ { "propionic-acid", 100 } })
+step(RECIPES, "rhodium-chloride-dust", "hv-electric-blast-furnace-recipes", 30, HV_SPEED,
+	{ { "rhodium-dust", 1 }, { "chlorine", 300 } }, { { "rhodium-chloride-dust", 4 } })
+step(RECIPES, "phosphorus-trichloride", "mv-chemical-reactor-recipes", 10, MV_SPEED,
+	{ { "phosphorus", 1 }, { "chlorine", 300 } }, { { "phosphorus-trichloride", 100 } })
+step(RECIPES, "triphenylphosphine-dust", "ev-chemical-reactor-recipes", 20, EV_SPEED,
+	{ { "sodium", 6 }, { "phosphorus-trichloride", 100 }, { "chlorobenzene", 300 } },
+	{ { "triphenylphosphine-dust", 34 }, { "salt", 12 } })
+step(RECIPES, "sodium-hydride-dust", "mv-chemical-reactor-recipes", 10, MV_SPEED, { { "sodium", 1 }, { "hydrogen", 100 } },
+	{ { "sodium-hydride-dust", 2 } })
+step(RECIPES, "trimethyl-borate", "ev-chemical-reactor-recipes", 30, EV_SPEED,
+	{ { "methanol", 300 }, { "boric-acid", 100 }, { "sulfuric-acid", 600 } },
+	{ { "diluted-sulfuric-acid", 600 }, { "trimethyl-borate", 100 } }, "trimethyl-borate")
+step(RECIPES, "sodium-borohydride-dust", "ev-chemical-reactor-recipes", 30, EV_SPEED,
+	{ { "sodium-hydride-dust", 8 }, { "trimethyl-borate", 100 } },
+	{ { "sodium-borohydride-dust", 6 }, { "sodium-methoxide-dust", 18 } })
+step(RECIPES, "sodium-methoxide-hydrolysis", "hv-chemical-reactor-recipes", 10, HV_SPEED,
+	{ { "sodium-methoxide-dust", 6 }, { "water", 100 } }, { { "sodium-hydroxide", 3 }, { "methanol", 100 } })
+step(RECIPES, "organorhodium-catalyst-dust", "uv-chemical-reactor-recipes", 40, UV_SPEED,
+	{ { "rhodium-chloride-dust", 4 }, { "triphenylphosphine-dust", 102 }, { "sodium-borohydride-dust", 18 },
+		{ "carbon-monoxide", 100 } },
+	{ { "organorhodium-catalyst-dust", 106 }, { "salt", 6 }, { "boron", 3 }, { "hydrogen", 1100 } })
+step(RECIPES, "butyraldehyde", "lv-chemical-reactor-recipes", 100, LV_SPEED,
+	{ { "organorhodium-catalyst-dust", 1 }, { "hydrogen", 3600 }, { "propene", 1800 }, { "carbon-monoxide", 1800 } },
+	{ { "butyraldehyde", 900 }, { "isobutyraldehyde", 900 } })
+step(RECIPES, "butanol", "hv-chemical-reactor-recipes", 4, HV_SPEED,
+	{ { "palladium-dust", 1 }, { "butyraldehyde", 900 }, { "hydrogen", 1800 } }, { { "butanol", 900 } })
+step(RECIPES, "polyurethane-catalyst-a-dust", "ev-chemical-reactor-recipes", 30, EV_SPEED,
+	{ { "tin-dust", 1 }, { "butanol", 200 }, { "propionic-acid", 100 }, { "iron-iii-chloride", 10 } },
+	{ { "polyurethane-catalyst-a-dust", 1 } })
+step(RECIPES, "polyurethane-resin", "uv-chemical-reactor-recipes", 10, UV_SPEED,
+	{ { "polyurethane-catalyst-a-dust", 1 }, { "pentaerythritol-dust", 1 }, { "diphenylmethane-diisocyanate-dust", 5 },
+		{ "ethylene-glycol", 400 }, { "silicon-oil", 100 } }, { { "polyurethane-resin", 100 } })
+--- Kevlar
+step(RECIPES, "liquid-crystal-kevlar", "uv-chemical-reactor-recipes", 30, UV_SPEED,
+	{ { "calcium-chloride", 1 }, { "p-phenylenediamine-dust", 9 }, { "terephthaloyl-chloride-dust", 9 },
+		{ "n-methyl-2-pyrrolidone", 100 } }, { { "liquid-crystal-kevlar", 900 }, { "diluted-hydrochloric-acid", 200 } })
+step(RECIPES, "kevlar-fiber", "ev-fluid-solidifier-recipes", 40, EV_SPEED, { { "liquid-crystal-kevlar", 14.4 } },
+	{ { "kevlar-fiber", 8 } })
+step(RECIPES, "woven-kevlar", "ev-assembling-machine-recipes", 15, EV_SPEED, { { "kevlar-fiber", 8 } }, { { "woven-kevlar", 1 } })
+step(RECIPES, "kevlar-plate", "lv-chemical-bath-recipes", 60, LV_SPEED, { { "woven-kevlar", 1 }, { "polyurethane-resin", 100 } },
+	{ { "kevlar-plate", 1 } })
+step(RECIPES, "melt-kevlar-plate", "ev-fluid-extractor-recipes", 1.2, EV_SPEED, { { "kevlar-plate", 1 } },
+	{ { "molten-kevlar", 14.4 } })
+for _, r in pairs(RECIPES) do fork_add_unlock(KEVLAR, r) end
+--- GTNH's Kevlar users the mod has
+local function swap(recipe, old, new, amount)
+	local r = data.raw.recipe[recipe]
+	for _, i in pairs(r.ingredients) do
+		if i.name == old then
+			i.name, i.type, i.amount = new, data.raw.fluid[new] and "fluid" or "item", amount or i.amount
+			return
+		end
+	end
+	error("issue #378: " .. recipe .. " has no " .. old)
+end
+swap("uxv-pump", "silicone-rubber-ring", "kevlar-ring")
+swap("uxv-conveyor-module", "silicone-rubber-sheet", "kevlar-plate")
+swap("uxv-machine-hull", "polybenzimidazole", "molten-kevlar", 57.6)
+--- the ring is cast from the melt (143 ran before this file: its run again makes only what is new) and UXV Components
+--- needs the Kevlar technology (#252)
+FORK_CASTING.run()
+table.insert(data.raw.technology["uxv-components"].prerequisites, KEVLAR)
