@@ -2370,7 +2370,8 @@ gasoline" are GT's gasoline and high octane gasoline, which the mod has.
 
 Each piece comes with the line that needs it. Gregtorio has a consumer for trichlorosilane only (poly-si dust of the
 boules): built (164). The rest of the issue's list belongs to lines the mod does not have: acetylene, acetaldehyde,
-ethylene oxide and glycol, the methylamines, nickel tetracarbonyl and aniline to the Kevlar chain (question #378),
+ethylene oxide and glycol, the methylamines, nickel tetracarbonyl and aniline to the Kevlar chain (#378, built in 164 section 10 with
+the Kevlar technology; GT's EV methylamine route is left out, its dimethyl- and trimethylamine have no consumer),
 nitrobenzene and aniline to GT's netherite chain, chlorosulfonic acid and the phosphorus chlorides to GT's toxic slurry
 chain and bartworks' acid generator (#367: leave).
 

@@ -158,6 +158,9 @@ put("acids", { "trichlorosilane" })
 put("fuels", { "ethanol-gasoline", "cyclopentadiene", "jet-fuel-no-3", "jet-fuel-a", "combustion-promoter" })
 put("organic", { "iron-ii-chloride", "diethylamine", "impure-ferrocene-mixture", "ferrocene-solution", "ferrocene-waste" })
 put("nuclear", { "thorium-based-liquid-fuel", "excited-thorium-based-liquid-fuel" })
+--- issue #378: the Kevlar line (164)
+put("organic", { "acetylene", "acetaldehyde", "ethylene-oxide", "ethylene-glycol", "methylamine", "nickel-tetracarbonyl",
+	"nitrobenzene", "aniline" })
 --- issue #364: GTNH's sapphire and green sapphire juice (155)
 put("ore-solutions", { "sapphire-juice", "green-sapphire-juice" })
 --- issue #119: Space Age's melts, restyled below, are rows of the Fluids tab like the other melts
