@@ -175,6 +175,23 @@ local NEW_ORES = {
 	["wollastonite"] = { dust = "wollastonite-dust", byproducts = {  }, mass = 23, decompose = { "mv-electrolyzer-recipes", 5.5 * MV_SPEED, 5, { item("calcium", 1), item("raw-silicon", 1), fluid("oxygen", 300) } } },   -- GT Wollastonite: no byproducts; GT decomposition
 	["trona"] = { dust = "trona-dust", byproducts = {  }, mass = 14, decompose = { "mv-electrolyzer-recipes", 9.8 * MV_SPEED, 14, { item("sodium", 3), item("carbon", 2), fluid("hydrogen", 100), fluid("oxygen", 600) } } },   -- GT Trona: no byproducts; GT decomposition without its water (the electrolyzers have two fluid outputs)
 	["andradite"] = { dust = "andradite-dust", byproducts = { "yellow-garnet-dust", "iron-dust" }, mass = 25 },   -- GT Andradite: GarnetYellow, Iron; its decomposition is the mod's already
+	--- part 2: the Twilight Forest's and the Nether's veins and the Twilight Forest's small ores (160)
+	["olivine"] = { dust = "olivine-dust", byproducts = { "pyrope-dust", "magnesium" }, mass = 28, decompose = { "mv-electrolyzer-recipes", 7 * MV_SPEED, 5, { item("magnesium", 2), item("iron-dust", 1), item("silicon-dioxide", 2) } } },   -- GT Olivine: Pyrope, Magnesium; GT decomposition
+	["bentonite"] = { dust = "bentonite-dust", byproducts = { "alumina", "calcium", "magnesium" }, mass = 16, decompose = { "mv-electrolyzer-recipes", 24 * MV_SPEED, 30, { item("sodium", 1), item("magnesium", 6), item("raw-silicon", 12), fluid("hydrogen", 600), fluid("water", 500) } } },   -- GT Bentonite: Aluminiumoxide, Calcium, Magnesium; GT decomposition (GT leaves its oxygen out: past a stack)
+	["magnesite"] = { dust = "magnesite-dust", byproducts = { "magnesium" }, mass = 16, decompose = { "mv-electrolyzer-recipes", 4 * MV_SPEED, 5, { item("magnesium", 1), item("carbon", 1), fluid("oxygen", 300) } } },   -- GT Magnesite: Magnesium; GT decomposition
+	["garnierite"] = { dust = "garnierite-dust", byproducts = { "nickel-dust" }, mass = 37, smelt = "nickel", calcite = 2, decompose = { "mv-electrolyzer-recipes", 3.6 * MV_SPEED, 2, { item("nickel-dust", 1), fluid("oxygen", 100) } } },   -- GT Garnierite: Nickel; GT decomposition
+	["wulfenite"] = { dust = "wulfenite-dust", byproducts = {  }, mass = 61, decompose = { "lv-centrifuge-recipes", 73.2, 6, { item("lead-dust", 1), item("molybdenum-dust", 1), fluid("oxygen", 400) } } },   -- GT Wulfenite: no byproducts; GT decomposition
+	["powellite"] = { dust = "powellite-dust", byproducts = {  }, mass = 33, decompose = { "lv-centrifuge-recipes", 39.6, 6, { item("calcium", 1), item("molybdenum-dust", 1), fluid("oxygen", 400) } } },   -- GT Powellite: no byproducts; GT decomposition
+	["saltpeter"] = { dust = "saltpeter", byproducts = { "saltpeter" }, mass = 20, decompose = { "mv-electrolyzer-recipes", 5 * MV_SPEED, 5, { item("potassium", 1), fluid("nitrogen", 100), fluid("oxygen", 300) } } },   -- GT Saltpeter: Saltpeter; GT decomposition
+	["tanzanite"] = { dust = "tanzanite-dust", byproducts = { "opal-dust" }, mass = 20, decompose = { "mv-electrolyzer-recipes", 14 * MV_SPEED, 44, { item("calcium", 4), item("alumina", 15), item("silicon-dioxide", 18), fluid("oxygen", 500), fluid("hydrogen", 200) } } },   -- GT Tanzanite: Opal; core decomposition
+	["amethyst"] = { dust = "amethyst-dust", byproducts = { "amethyst-dust" }, mass = 27, decompose = { "mv-electrolyzer-recipes", 6.5 * MV_SPEED, 5, { item("silicon-dioxide", 4), item("iron-dust", 1) } } },   -- GT Amethyst: Amethyst; GT decomposition
+	["opal"] = { dust = "opal-dust", byproducts = { "tanzanite-dust" }, mass = 20, decompose = { "lv-electrolyzer-recipes", 1, 1, { item("silicon-dioxide", 1) } } },   -- GT Opal: Tanzanite; GT decomposition
+	["jasper"] = { dust = "jasper-dust", byproducts = {  }, mass = 20, decompose = { "lv-electrolyzer-recipes", 1, 1, { item("silicon-dioxide", 1) } } },   -- GT Jasper: no byproducts; GT decomposition
+	["blue-topaz"] = { dust = "blue-topaz-dust", byproducts = { "topaz-dust" }, mass = 16, decompose = { "mv-electrolyzer-recipes", 10.4 * MV_SPEED, 13, { item("alumina", 5), item("silicon-dioxide", 3), fluid("hydrogen", 200), fluid("fluorine", 200) } } },   -- GT BlueTopaz: Topaz; core decomposition
+	["spinel"] = { dust = "spinel-dust", byproducts = { "jasper-dust" }, mass = 20, decompose = { "mv-electrolyzer-recipes", 7 * MV_SPEED, 7, { item("magnesium", 1), item("aluminium-dust", 2), fluid("oxygen", 400) } } },   -- GT FoolsRuby (Spinel): Jasper; GT decomposition
+	["jade"] = { dust = "jade-dust", byproducts = {  }, mass = 20, decompose = { "mv-electrolyzer-recipes", 10 * MV_SPEED, 20, { item("sodium", 2), item("alumina", 5), item("silicon-dioxide", 12), fluid("oxygen", 100) } } },   -- GT Jade: no byproducts; core decomposition
+	["red-garnet"] = { dust = "red-garnet-dust", byproducts = { "spessartine-dust", "pyrope-dust", "almandine-dust" }, mass = 23 },   -- GT GarnetRed: Spessartine, Pyrope, Almandine; its decomposition is the mod's already
+	["yellow-garnet"] = { dust = "yellow-garnet-dust", byproducts = { "andradite-dust", "grossular-dust", "uvarovite-dust" }, mass = 23, ems = "iron" },   -- GT GarnetYellow: Andradite, Grossular, Uvarovite; its decomposition is the mod's already
 }
 for x, o in pairs(NEW_ORES) do
 	ORE_CHAIN[x] = { dust = o.dust, byproducts = o.byproducts, mass = o.mass }
@@ -840,6 +857,16 @@ local GEMS = {
 	--- issue #364: the sapphire vein's gems (160), GT's precious table
 	{ "sapphire",             "sapphire-gem",             "precious", false },
 	{ "green-sapphire",       "green-sapphire-gem",       "precious", false },
+	--- issue #363: the gems of the Twilight Forest's olivine vein and small ores (160); GT's precious table for all but
+	--- jade (ProcessingCrushedOre.java:91; spinel is GT's FoolsRuby), jade crystallisable
+	{ "olivine",              "olivine-gem",              "precious", false },
+	{ "tanzanite",            "tanzanite-gem",            "precious", false },
+	{ "amethyst",             "amethyst-gem",             "precious", false },
+	{ "opal",                 "opal-gem",                 "precious", false },
+	{ "jasper",               "jasper-gem",               "precious", false },
+	{ "blue-topaz",           "blue-topaz-gem",           "precious", false },
+	{ "spinel",               "spinel-gem",               "precious", false },
+	{ "jade",                 "jade-gem",                 "default",  true },
 }
 --- GT's sifter tables: exquisite, flawless, gem, flawed, chipped, dust (ProcessingCrushedOre.java:90-120)
 local SIFT = { precious = { 0.03, 0.12, 0.45, 0.14, 0.28, 0.35 }, default = { 0.01, 0.04, 0.15, 0.20, 0.40, 0.50 } }
@@ -851,8 +878,11 @@ local MACERATE = { chipped = { 1, small = true }, flawed = { 2, small = true }, 
 --- issue #325 (maintainer's decision): the cyan and blue lens of GTNH's wafer engraving (GT: green sapphire, sapphire,
 --- blue topaz, which Gregtorio lacks) from the Gregtorio gems of that colour, apatite and lapis (GT's dyeCyan, dyeBlue)
 --- issue #332: the orange lens from amber (GT cuts it from amber or topaz; the amber vein is the larger source)
+--- issue #363: the colours Gregtorio had no lens of, now that their gems exist: lime (olivine; GT++'s dehydrator coil
+--- wires of 159 take it instead of the emerald lens), purple (tanzanite) and pink (amethyst)
 local LENS = { ruby = "ruby-lens", emerald = "emerald-lens", diamond = "diamond-lens", ["red-garnet"] = "red-garnet-lens",
-	["yellow-garnet"] = "yellow-garnet-lens", apatite = "apatite-lens", lapis = "lapis-lens", amber = "amber-lens" }
+	["yellow-garnet"] = "yellow-garnet-lens", apatite = "apatite-lens", lapis = "lapis-lens", amber = "amber-lens",
+	olivine = "olivine-lens", tanzanite = "tanzanite-lens", amethyst = "amethyst-lens" }
 --- the lens of the gem's colour for the laser engraver (MaterialsInit.java setColor; GT takes any lens of the colour)
 --- (issue #205: quartzite white, red garnet red, yellow garnet yellow; tricalcium phosphate, yellow, gets the yellow garnet
 --- lens after the byproduct gems below)
@@ -863,7 +893,11 @@ local ENGRAVER_LENS = { ruby = "ruby-lens", emerald = "emerald-lens", monazite =
 	amber = "amber-lens", topaz = "amber-lens",   -- issue #332: orange
 	--- issue #364: sapphire (GT dyeBlue) and green sapphire (dyeCyan) take #325's blue and cyan lens; whether their own
 	--- lenses replace those is the open question #370
-	sapphire = "lapis-lens", ["green-sapphire"] = "apatite-lens" }
+	sapphire = "lapis-lens", ["green-sapphire"] = "apatite-lens",
+	--- issue #363: lime, purple and pink their own lenses; red jasper and spinel the ruby lens, blue opal and blue topaz the
+	--- lapis lens (question #370), green jade the emerald lens
+	olivine = "olivine-lens", tanzanite = "tanzanite-lens", amethyst = "amethyst-lens", jasper = "ruby-lens",
+	spinel = "ruby-lens", opal = "lapis-lens", ["blue-topaz"] = "lapis-lens", jade = "emerald-lens" }
 --- grade -> the engraver category and time of the step up (GT tier: LV, MV, HV, EV; time x the tier's speed)
 local ENGRAVE = { chipped = { "mv-laser-engraver-recipes", 30 }, flawed = { "mv-laser-engraver-recipes", 60 },
 	gem = { "hv-laser-engraver-recipes", 240 }, flawless = { "ev-laser-engraver-recipes", 960 } }
@@ -873,7 +907,7 @@ local DARK_TINY, DARK_DUST = "tiny-pile-of-dark-ash-dust", "dark-ash-dust"
 add_item(DARK_TINY, "subgroup-macerator-dust", "z-dark-ash-a")
 add_item(DARK_DUST, "subgroup-macerator-dust", "z-dark-ash-b")
 for _, lens in pairs({ "emerald-lens", "diamond-lens", "red-garnet-lens", "yellow-garnet-lens", "apatite-lens", "lapis-lens",
-	"amber-lens" }) do
+	"amber-lens", "olivine-lens", "tanzanite-lens", "amethyst-lens" }) do
 	if not data.raw.item[lens] then add_item(lens, sub_of("ruby-lens", "subgroup-lv-lathe-recipes"), "z-" .. lens) end
 end
 
@@ -1087,6 +1121,15 @@ FORK_ORE_HAMMER_GEM = {
 	["raw-amber"] = "amber-gem", ["raw-topaz"] = "topaz-gem",   -- issue #332
 	["raw-sapphire"] = "sapphire-gem", ["raw-green-sapphire"] = "green-sapphire-gem",   -- issue #364
 	["raw-lignite"] = "lignite-gem",   -- issue #363
+	["raw-red-garnet"] = "red-garnet-gem", ["raw-yellow-garnet"] = "yellow-garnet-gem",
+	["raw-olivine"] = "olivine-gem",
+	["raw-tanzanite"] = "tanzanite-gem",
+	["raw-amethyst"] = "amethyst-gem",
+	["raw-opal"] = "opal-gem",
+	["raw-jasper"] = "jasper-gem",
+	["raw-blue-topaz"] = "blue-topaz-gem",
+	["raw-spinel"] = "spinel-gem",
+	["raw-jade"] = "jade-gem",
 }
 --- the first byproduct of the ores ORE_CHAIN leaves out (GT Platinum: Nickel; GT Palladium: none, its own dust)
 local RAW_BYPRODUCT = { ["raw-platinum"] = "nickel-dust", ["raw-palladium"] = "palladium-dust" }
@@ -1096,6 +1139,7 @@ local BYPRODUCT_GEM = { ["emerald-dust"] = "emerald", ["apatite"] = "apatite-gem
 	["sodalite-dust"] = "sodalite-gem", ["monazite-dust"] = "monazite-gem", ["amber-dust"] = "amber-gem",
 	["topaz-dust"] = "topaz-gem",   -- issue #332
 	["sapphire-dust"] = "sapphire-gem", ["green-sapphire-dust"] = "green-sapphire-gem" }   -- issue #364
+for _, g in pairs({ "olivine", "tanzanite", "amethyst", "opal", "jasper", "blue-topaz", "spinel", "jade" }) do BYPRODUCT_GEM[g .. "-dust"] = g .. "-gem" end   -- issue #363
 for _, g in pairs(BYPRODUCT_GEMS) do BYPRODUCT_GEM[g[2]] = g[3] end   -- issue #205
 --- GT's byproduct multipliers (Materials.java setByProductMultiplier; 1 for every other ore)
 local BYPRODUCT_MULT = { ["raw-apatite"] = 2, ["raw-coal"] = 2, ["raw-cryolite"] = 4, ["raw-lapis"] = 4,
@@ -1191,16 +1235,19 @@ do
 	if data.raw.item[tcp.chipped] then late_gems = late_gems + engrave(tcp, "yellow-garnet-lens", pending) end
 end
 unlock_pending(pending)
---- issue #363: lignite is an ore now (GTNH's LigniteCoal vein, 160): GT sifts its purified ore (default table, its grades
---- are #205's above)
-if data.raw.recipe["purified-lignite"] then
-	local c = SIFT.default
-	local name = made(recipe{ name = "sifting-purified-lignite", category = "lv-sifter-recipes", time = 40, main = "lignite-gem",
-		ingredients = { item("purified-lignite") },
-		results = { item("exquisite-lignite", 1, c[1]), item("flawless-lignite", 1, c[2]), item("lignite-gem", 1, c[3]),
-			item("flawed-lignite", 1, c[4]), item("chipped-lignite", 1, c[5]), item("lignite-dust", 1, c[6]) } })
-	unlock_after(name, { machine_techs("lv-sifter-recipes"), techs_of_recipe["purified-lignite"] })
-	late_gems = late_gems + 1
+--- issue #363: lignite and the garnets are ores now (GTNH's LigniteCoal vein, the Twilight Forest's small ores, 160): GT
+--- sifts their purified ore (lignite the default table, the garnets the precious one; their grades are #205's above)
+for _, g in pairs({ { "lignite", "default" }, { "red-garnet", "precious" }, { "yellow-garnet", "precious" } }) do
+	local x, purified = g[1], "purified-" .. g[1]
+	if data.raw.recipe[purified] then
+		local c = SIFT[g[2]]
+		local name = made(recipe{ name = "sifting-" .. purified, category = "lv-sifter-recipes", time = 40, main = x .. "-gem",
+			ingredients = { item(purified) },
+			results = { item("exquisite-" .. x, 1, c[1]), item("flawless-" .. x, 1, c[2]), item(x .. "-gem", 1, c[3]),
+				item("flawed-" .. x, 1, c[4]), item("chipped-" .. x, 1, c[5]), item(x .. "-dust", 1, c[6]) } })
+		unlock_after(name, { machine_techs("lv-sifter-recipes"), techs_of_recipe[purified] })
+		late_gems = late_gems + 1
+	end
 end
 local DUST_GEMS = {
 	--  dust                    gem                         autoclave  implosion: explosives, tiny piles of dark ash
@@ -1221,6 +1268,16 @@ local DUST_GEMS = {
 	{ "amber-dust",          "amber-gem",                false,     { 2, 8 } },    -- issue #332
 	{ "sapphire-dust",       "sapphire-gem",             false,     { 3, 12 } },   -- issue #364 (GT: as ruby)
 	{ "green-sapphire-dust", "green-sapphire-gem",       false,     { 3, 12 } },   -- issue #364
+	--- issue #363 (ProcessingDust.java:355-392): 24 TNT for olivine, opal, blue topaz, tanzanite and amethyst, 16 for jasper
+	--- and spinel (GT's FoolsRuby); jade grows in the autoclave
+	{ "olivine-dust",        "olivine-gem",              false,     { 3, 12 } },
+	{ "opal-dust",           "opal-gem",                 false,     { 3, 12 } },
+	{ "blue-topaz-dust",     "blue-topaz-gem",           false,     { 3, 12 } },
+	{ "tanzanite-dust",      "tanzanite-gem",            false,     { 3, 12 } },
+	{ "amethyst-dust",       "amethyst-gem",             false,     { 3, 12 } },
+	{ "jasper-dust",         "jasper-gem",               false,     { 2, 8 } },
+	{ "spinel-dust",         "spinel-gem",               false,     { 2, 8 } },
+	{ "jade-dust",           "jade-gem",                 true },
 }
 for _, g in pairs(DUST_GEMS) do
 	local dust, gem = g[1], g[2]
@@ -1688,6 +1745,7 @@ plate_lens("yellow-garnet")
 plate_lens("emerald", "emerald")   -- the ULPIC wafer (MV Energy Hatches) comes before the emerald sifter
 plate_lens("amber", "amber-gem")   -- issue #332: the lens with the simple SoC wafer (NAND Chips, the MV lathe)
 plate_lens("ruby", "ruby")         -- issue #348: instead of upstream's lens from a plain ruby (removed above)
+plate_lens("olivine", "olivine-gem")   -- issue #363: the lime lens of the dehydrator coil wires (159)
 
 --- recipe -> its lens (the GT recipe: file, line of the output). Gregtorio's wafers: sw silicon (GT's Wafer), pd phosphorus
 --- (Wafer2), nd/qd naquadah (Wafer3), ed europium (Wafer4), ad americium (Wafer5)

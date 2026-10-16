@@ -201,6 +201,52 @@ unlock_in("ore-crushing", crushed_363)
 
 
 --------------------------------------------------------------------------------
+--- GTNH'S TWILIGHT FOREST AND NETHER VEINS (issue #363, part 2), the same rules as part 1 above:
+---   * the Twilight Forest's Olivine vein (bentonite, magnesite, olivine, glauconite) is a new Manual Mine recipe with NAND
+---     Chips, as #332's Twilight Forest mines; its Nickel vein's garnierite joins upstream's nickel vein, the Molybdenum
+---     vein's wulfenite and powellite the Nether's molybdenum vein (their crushed ores with the vein's other ores);
+---   * the Nether's SaltPeterElectrotine vein (saltpeter, diatomite, alunite; electrotine, Project Red's, left out) is a
+---     new Manual Mine recipe with Reach the Nether;
+---   * the Twilight Forest's small ores the mod lacked (SmallOres.java: olivine, tanzanite, amethyst, opal, jasper, blue
+---     topaz, spinel (GT's fools ruby), red and yellow garnet, jade, saltpeter) and its emerald and ruby join the small
+---     ores' mine below, 8 of each.
+--- The TF veins whose ores the mod mines elsewhere (coal, magnetite, gold, iron, salts, soapstone, apatite, lapis, galena)
+--- get no second mine.
+--------------------------------------------------------------------------------
+
+local VEIN_ORES_363B = {
+	--  raw ore, its dust (nil: <ore>-dust), GT's ore multiplier
+	{ "olivine" }, { "bentonite" }, { "magnesite" }, { "garnierite" }, { "wulfenite" }, { "powellite" },
+	{ "saltpeter", "saltpeter", 4 }, { "tanzanite" }, { "amethyst" }, { "opal" }, { "jasper" }, { "blue-topaz" },
+	{ "spinel" }, { "jade" }, { "red-garnet" }, { "yellow-garnet" },
+}
+local CRUSH_363B = { garnierite = { "invar" }, wulfenite = { "tungstate-processing" }, powellite = { "tungstate-processing" },
+	saltpeter = { "reach-the-nether", "nand-chips" } }
+for _, o in pairs(VEIN_ORES_363B) do
+	local x = o[1]
+	create_ore("raw-" .. x, nil, "crushed-" .. x, o[2] or (x .. "-dust"), nil, "crushed-" .. x, nil, nil, o[3] or 1, false,
+		false)
+	for _, t in pairs(CRUSH_363B[x] or { "nand-chips" }) do unlock_in(t, { "crushed-" .. x }) end
+end
+for name, ores in pairs({ ["mining-nickel-vein"] = { "garnierite" }, ["mining-molybdenum-vein"] = { "wulfenite", "powellite" } }) do
+	local r = data.raw.recipe[name]
+	if not (r.icon or r.icons or r.main_product) then r.main_product = r.results[1].name end
+	for _, x in pairs(ores) do r.results[#r.results + 1] = item("raw-" .. x, 8) end
+end
+unlock_in("nand-chips", {
+	manual("mining-olivine-vein", "manual-mine-recipes", { PICKAXE, LABOR(24) },
+		{ item("raw-bentonite", 32), item("raw-magnesite", 24), item("raw-olivine", 16), item("raw-glauconite", 8) }),
+})
+unlock_in("reach-the-nether", {
+	manual("mining-saltpeter-electrotine-vein", "manual-mine-recipes", { PICKAXE, LABOR(24) },
+		{ item("raw-saltpeter", 32), item("raw-diatomite", 24), item("raw-alunite", 8) }),
+})
+local TF_SMALL_363 = { "olivine", "tanzanite", "amethyst", "opal", "jasper", "blue-topaz", "spinel", "red-garnet",
+	"yellow-garnet", "jade", "saltpeter", "emerald", "ruby" }
+
+
+
+--------------------------------------------------------------------------------
 --- THE TWILIGHT FOREST (issue #332, the maintainer's decision): GTNH's T0 dimension (DimensionHelper.java:99), two
 --- recipes of the Manual Mine unlocked with NAND Chips, the first technology that needs them (the maintainer's choice: no
 --- technology of their own). Its ores the mod lacked are topaz and amber, the two materials of GT's orange lens
@@ -236,6 +282,12 @@ unlock_in("nand-chips", {
 		{ item("raw-sapphire", 32), item("raw-green-sapphire", 8) }),
 	"crushed-topaz", "crushed-amber", "crushed-sapphire", "crushed-green-sapphire",
 })
+--- issue #363: the Twilight Forest's other small ores (above), 8 of each
+do
+	local r = data.raw.recipe["mining-twilight-forest-small-ores"]
+	if not (r.icon or r.icons or r.main_product) then r.main_product = r.results[1].name end
+	for _, x in pairs(TF_SMALL_363) do r.results[#r.results + 1] = item("raw-" .. x, 8) end
+end
 
 
 

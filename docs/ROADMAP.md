@@ -2272,3 +2272,9 @@ Part 1: GTNH's Overworld veins (`OreMixes.java`) whose ores the mod lacked, 30 r
   centrifuge gives stone dust for basalt and black granite.
 * Trona and vermiculite decompose without their water (the electrolyzers have two fluid outputs).
 * Chalcopyrite's bricked blast furnace recipes with sand, glass or the quartzes are left out (GT's ferrosilite).
+
+Part 2: the Twilight Forest's olivine vein and small ores and the Nether's saltpeter electrotine vein (16 more ores).
+* Electrotine (Project Red's) is left out of its vein.
+* GT's lime, purple and pink lenses (olivine, tanzanite, amethyst) are new; the dehydrator coil wires' emerald lens, a
+  stand-in of #274, becomes the olivine lens. The blue and cyan lenses stay #325's (question #370).
+* Ross128, the Everglades and the later dimensions' veins: #373.

@@ -651,7 +651,7 @@ F.tech{
 --- GT pipes: 3 plates, a medium pipe's metal); the coil wire comes from GT++'s laser engraver recipes
 --- (RecipesLaserEngraver.java 49-110): a 2x wire (2 wires) of aluminium or nichrome (HV, 10 s), platinum (EV, 20 s;
 --- GT's osmium wire is not in Gregtorio), vanadium-gallium or niobium-titanium (IV, 30 s; no YBCO wire) or naquadah (LuV,
---- 40 s), with a lime lens, which stays (Gregtorio has none: the green emerald lens). Substitutes for parts Gregtorio
+--- 40 s), with a lime lens, which stays (issue #363: GT's olivine lens, 155; before, the green emerald lens). Substitutes for parts Gregtorio
 --- lacks: the LuV Dehydrator's Hastelloy-N gears are Hastelloy-X gears, the ZPM one's osmium cables naquadah cables (the
 --- ZPM chemical bath's cable). Each tier has its own technology after the one of its chemical bath.
 ---
@@ -693,6 +693,7 @@ unlock_in(ZIRCONIUM, RECIPES)
 
 --- the Chemical Dehydrators I to IV
 for _, t in pairs({ "ev", "iv", "luv", "zpm" }) do F.category(t .. "-dehydrator-recipes") end
+local LIME_LENS = data.raw.item["olivine-lens"] and "olivine-lens" or "emerald-lens"   -- issue #363
 local DEHYDRATOR_TIERS = {
 	--  tier   speed       engraver (s)  wires                                          coil pipe (3 plates)  assembler   cable                            gear                       circuit
 	{ "ev",  EV_SPEED,  10, HV_SPEED,  { "aluminium-wire", "nichrome-wire" },                 "bronze-plate",           MV_SPEED, "aluminium-cable",               "large-tumbaga-gear",      "ev-circuit", { "large-sifter" } },
@@ -713,7 +714,7 @@ for i, d in ipairs(DEHYDRATOR_TIERS) do
 	RECIPES = {}
 	for _, w in pairs(d[5]) do
 		step(wire .. "-from-" .. w, ENGRAVER_OF[d[4]] .. "-laser-engraver-recipes", d[3], d[4],
-			{ { w, 2 }, { "emerald-lens", 1 } }, { { wire, 1 }, { "emerald-lens", 1 } }, wire)
+			{ { w, 2 }, { LIME_LENS, 1 } }, { { wire, 1 }, { LIME_LENS, 1 } }, wire)
 	end
 	step(coil, (t == "ev" and "mv" or t == "iv" and "hv" or t == "luv" and "hv" or "ev") .. "-assembling-machine-recipes", 8,
 		d[7], { { wire, 4 }, { d[6], 3 } }, { { coil, 1 } })
