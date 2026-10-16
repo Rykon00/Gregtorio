@@ -2354,7 +2354,22 @@ epichlorohydrin), polystyrene, styrene-butadiene rubber and polycaprolactam with
   prerequisite edges for an optional recipe and are left out.
 * Polystyrene and polycaprolactam have no Gregtorio consumer (GT's: the Bio Lab's petri dish, the QFT's plastics recipe,
   vanilla string, goodgenerator's fluid storage cores).
-* Polyurethane does not exist in GTNH; Kevlar and radox are question #378.
+* Polyurethane does not exist in GTNH (its polyurethane resin is the Kevlar line's).
+
+### Kevlar (issue #378 (b))
+
+Built in 164 section 11 with GT's recipes (the technology Kevlar, UV): p-xylene, naphthenic acid (GT's circuit 9 oil
+distillations at the mod's oil scale), the cobalt naphthenate catalyst, terephthalic acid to terephthaloyl chloride,
+the butanediol route to N-methyl-2-pyrrolidone with Raney nickel, 4-nitroaniline to p-phenylenediamine, MDI, the
+organorhodium catalyst route to butanol, polyurethane catalyst A, polyurethane resin, liquid crystal Kevlar, the fiber,
+woven Kevlar and the Kevlar plate. Deviations:
+* GT's spinneret (the solidifier's tool for the fiber) is the solidifier's generic mold (a stand-in).
+* Where GT's single reactor recipe needs a tiny pile (butyraldehyde, butanol), GT's x9 large reactor recipe is used.
+* Acetic anhydride's water is left out (the dehydrator has one fluid output).
+* Users: the UXV pump's 64 rings and the UXV conveyor's 80 plates are Kevlar (GTNH: Kevlar and radox; the silicone
+  rubber stand-ins before), the UXV hull takes molten Kevlar (GT's 576 L at the mod's tenth) instead of
+  polybenzimidazole. GTNH's other users (PCB factory tier 7, neutron accelerators, black hole compressor, solar factory,
+  nanochips) are machines the mod does not have. UXV Components needs Kevlar now.
 
 ### Oil variety (issue #361)
 

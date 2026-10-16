@@ -161,6 +161,12 @@ put("nuclear", { "thorium-based-liquid-fuel", "excited-thorium-based-liquid-fuel
 --- issue #378: the Kevlar line (164)
 put("organic", { "acetylene", "acetaldehyde", "ethylene-oxide", "ethylene-glycol", "methylamine", "nickel-tetracarbonyl",
 	"nitrobenzene", "aniline" })
+put("organic", { "1-4-dimethylbenzene", "naphthenic-acid", "terephthalic-acid", "dimethyl-terephthalate", "1-4-butanediol",
+	"gamma-butyrolactone", "n-methyl-2-pyrrolidone", "acetic-anhydride", "4-nitroaniline", "diaminodiphenylmethane-mixture",
+	"diphenylmethane-diisocyanate-mixture", "dimethyldichlorosilane", "silicon-oil", "propionic-acid", "trimethyl-borate",
+	"butyraldehyde", "isobutyraldehyde", "butanol" })
+put("acids", { "sulfur-dichloride", "thionyl-chloride", "phosphorus-trichloride" })
+put("polymers", { "polyurethane-resin", "liquid-crystal-kevlar" })
 --- issue #364: GTNH's sapphire and green sapphire juice (155)
 put("ore-solutions", { "sapphire-juice", "green-sapphire-juice" })
 --- issue #119: Space Age's melts, restyled below, are rows of the Fluids tab like the other melts
