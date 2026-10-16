@@ -74,7 +74,9 @@
     name) with 30 raw ores, 155's `NEW_ORES` gives them GTNH's chain, decomposition and smelting; part 2: the Twilight
     Forest's olivine vein, the Nether's saltpeter vein, garnierite, wulfenite and powellite in upstream's veins, the
     Twilight Forest's small ores (16 more ores; the olivine, tanzanite and amethyst lenses); issue #365: Mars's desh vein; issue #373:
-    every vein of Ross128b (Reach Ross128) and Ross128ba (Reach Ross128ba, ZPM) with bartworks' ores (155's `NEW_ORES`); loads after 146 and **before** 142 (issue #287: the
+    every vein of Ross128b (Reach Ross128) and Ross128ba (Reach Ross128ba, ZPM) with bartworks' ores (155's `NEW_ORES`);
+    the Toxic Everglades' veins GTPP0-19 (Reach the Toxic Everglades, LuV) with GT++'s ores, whose dehydrator
+    decompositions 161 unlocks through `FORK_ORE_CHAIN.unlock_after_159` (159 makes the dehydrators after 155); loads after 146 and **before** 142 (issue #287: the
     unlock table of 142 and the ore chains of 155 see the mines; the rules are in 161))
   - 162 space elevator (issue #301, part 1 of #292's decision: gtnhintergalactic's Space Elevator in GTNH's full scope:
     controller, casings, nanotube spool, cable, motors Mk-I to Mk-V; one 11 x 11 entity per motor tier
