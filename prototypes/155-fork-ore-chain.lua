@@ -826,9 +826,9 @@ log("FORK-ORE-CHAIN: " .. separations .. " electromagnetic separator recipes")
 ---   laser engraver      3 chipped -> flawed (30 s, LV), 3 flawed -> gem (30 s, MV), 3 gems -> flawless (60 s, HV),
 ---                       3 flawless -> exquisite (2 min, EV), with a lens of the gem's colour that stays (issue #193):
 ---                       red the ruby lens (ruby), green the emerald lens (emerald, monazite), white the diamond lens
----                       (diamond, nether quartz); issue #328: cyan the apatite lens (apatite, lazurite) and blue the
----                       lapis lens (sodalite, lapis), the maintainer's substitutes of #325 for GT's green sapphire and
----                       sapphire lens; issue #332: orange the amber lens (amber, topaz, the Twilight Forest's gems).
+---                       (diamond, nether quartz); issues #328 and #370: cyan the green sapphire lens (apatite,
+---                       lazurite, green sapphire) and blue the sapphire lens (sodalite, lapis, sapphire), GT's lenses
+---                       (#325's apatite and lapis lens before); issue #332: orange the amber lens (amber, topaz).
 ---                       Certus quartz (GT: light gray) has no lens of its colour in Gregtorio: no
 ---                       engraver steps for it. Gregtorio's laser engraver
 ---                       starts at MV: the LV step is in the MV category with its LV time (an MV engraver runs it
@@ -849,7 +849,7 @@ local GEMS = {
 	{ "apatite",              "apatite-gem",              "default",  true },
 	{ "tricalcium-phosphate", "tricalcium-phosphate-gem", "default",  false },
 	{ "lazurite",             "lazurite-gem",             "default",  true },
-	{ "lapis",                "lapis-lazuli",             "default",  true },   -- before sodalite: its engraver steps take the lapis lens (issue #328)
+	{ "lapis",                "lapis-lazuli",             "default",  true },
 	{ "sodalite",             "sodalite-gem",             "default",  true },
 	{ "monazite",             "monazite-gem",             "default",  true },
 	--- issue #332: the Twilight Forest's gems (160), GT's precious table (ProcessingCrushedOre.java:91); amber before
@@ -877,13 +877,14 @@ local GRADES = { "chipped", "flawed", "gem", "flawless", "exquisite" }
 local MACERATE = { chipped = { 1, small = true }, flawed = { 2, small = true }, gem = { 1 }, flawless = { 2 }, exquisite = { 4 } }
 --- the lenses the lathe makes from an exquisite gem (GT: the gems whose material keeps the lens prefix)
 --- issue #205: the red and yellow garnet lens (GT's GarnetRed and GarnetYellow keep the lens prefix)
---- issue #325 (maintainer's decision): the cyan and blue lens of GTNH's wafer engraving (GT: green sapphire, sapphire,
---- blue topaz, which Gregtorio lacks) from the Gregtorio gems of that colour, apatite and lapis (GT's dyeCyan, dyeBlue)
+--- issue #370 (maintainer's decision, replaces #325's apatite and lapis lens): GTNH's cyan and blue lens of the wafer
+--- engraving, the green sapphire and the sapphire lens (GT has no apatite or lapis lens: removeOrePrefix(lens))
 --- issue #332: the orange lens from amber (GT cuts it from amber or topaz; the amber vein is the larger source)
 --- issue #363: the colours Gregtorio had no lens of, now that their gems exist: lime (olivine; GT++'s dehydrator coil
 --- wires of 159 take it instead of the emerald lens), purple (tanzanite) and pink (amethyst)
 local LENS = { ruby = "ruby-lens", emerald = "emerald-lens", diamond = "diamond-lens", ["red-garnet"] = "red-garnet-lens",
-	["yellow-garnet"] = "yellow-garnet-lens", apatite = "apatite-lens", lapis = "lapis-lens", amber = "amber-lens",
+	["yellow-garnet"] = "yellow-garnet-lens", sapphire = "sapphire-lens", ["green-sapphire"] = "green-sapphire-lens",
+	amber = "amber-lens",
 	olivine = "olivine-lens", tanzanite = "tanzanite-lens", amethyst = "amethyst-lens" }
 --- the lens of the gem's colour for the laser engraver (MaterialsInit.java setColor; GT takes any lens of the colour)
 --- (issue #205: quartzite white, red garnet red, yellow garnet yellow; tricalcium phosphate, yellow, gets the yellow garnet
@@ -891,15 +892,15 @@ local LENS = { ruby = "ruby-lens", emerald = "emerald-lens", diamond = "diamond-
 local ENGRAVER_LENS = { ruby = "ruby-lens", emerald = "emerald-lens", monazite = "emerald-lens",
 	diamond = "diamond-lens", ["nether-quartz"] = "diamond-lens", quartzite = "diamond-lens", ["red-garnet"] = "ruby-lens",
 	["yellow-garnet"] = "yellow-garnet-lens",
-	apatite = "apatite-lens", lazurite = "apatite-lens", sodalite = "lapis-lens", lapis = "lapis-lens",   -- issue #328
+	--- issues #328 and #370: cyan apatite and lazurite the green sapphire lens, blue sodalite and lapis the sapphire lens
+	apatite = "green-sapphire-lens", lazurite = "green-sapphire-lens", sodalite = "sapphire-lens", lapis = "sapphire-lens",
 	amber = "amber-lens", topaz = "amber-lens",   -- issue #332: orange
-	--- issue #364: sapphire (GT dyeBlue) and green sapphire (dyeCyan) take #325's blue and cyan lens; whether their own
-	--- lenses replace those is the open question #370
-	sapphire = "lapis-lens", ["green-sapphire"] = "apatite-lens",
+	--- issue #370: sapphire (GT dyeBlue) and green sapphire (dyeCyan) their own lenses
+	sapphire = "sapphire-lens", ["green-sapphire"] = "green-sapphire-lens",
 	--- issue #363: lime, purple and pink their own lenses; red jasper and spinel the ruby lens, blue opal and blue topaz the
-	--- lapis lens (question #370), green jade the emerald lens
+	--- sapphire lens (issue #370), green jade the emerald lens
 	olivine = "olivine-lens", tanzanite = "tanzanite-lens", amethyst = "amethyst-lens", jasper = "ruby-lens",
-	spinel = "ruby-lens", opal = "lapis-lens", ["blue-topaz"] = "lapis-lens", jade = "emerald-lens" }
+	spinel = "ruby-lens", opal = "sapphire-lens", ["blue-topaz"] = "sapphire-lens", jade = "emerald-lens" }
 --- grade -> the engraver category and time of the step up (GT tier: LV, MV, HV, EV; time x the tier's speed)
 local ENGRAVE = { chipped = { "mv-laser-engraver-recipes", 30 }, flawed = { "mv-laser-engraver-recipes", 60 },
 	gem = { "hv-laser-engraver-recipes", 240 }, flawless = { "ev-laser-engraver-recipes", 960 } }
@@ -908,7 +909,7 @@ local ENGRAVE = { chipped = { "mv-laser-engraver-recipes", 30 }, flawed = { "mv-
 local DARK_TINY, DARK_DUST = "tiny-pile-of-dark-ash-dust", "dark-ash-dust"
 add_item(DARK_TINY, "subgroup-macerator-dust", "z-dark-ash-a")
 add_item(DARK_DUST, "subgroup-macerator-dust", "z-dark-ash-b")
-for _, lens in pairs({ "emerald-lens", "diamond-lens", "red-garnet-lens", "yellow-garnet-lens", "apatite-lens", "lapis-lens",
+for _, lens in pairs({ "emerald-lens", "diamond-lens", "red-garnet-lens", "yellow-garnet-lens", "sapphire-lens", "green-sapphire-lens",
 	"amber-lens", "olivine-lens", "tanzanite-lens", "amethyst-lens" }) do
 	if not data.raw.item[lens] then add_item(lens, sub_of("ruby-lens", "subgroup-lv-lathe-recipes"), "z-" .. lens) end
 end
@@ -1018,6 +1019,32 @@ local function gem_grades(x, grade, dust, pending)
 	if ENGRAVER_LENS[x] then n = n + engrave(grade, ENGRAVER_LENS[x], pending) end
 	return n
 end
+
+--- GT's lens from a plate (ProcessingLens.java; the route is explained with issue #325's lenses below)
+local function plate_lens(m, gem)
+	local dust, plate, lens, small = m .. "-dust", m .. "-plate", m .. "-lens", "small-pile-of-" .. m .. "-dust"
+	local sub = sub_of("ruby-lens", "subgroup-lv-lathe-recipes")
+	if not data.raw.item[dust] then
+		add_item(dust, "subgroup-macerator-dust", "z-" .. dust)
+		local name = made(recipe{ name = dust .. "-maceration", category = "lv-macerator-recipes", time = 2.8, main = dust,
+			ingredients = { item(gem) }, results = { item(dust) } })
+		unlock_after(name, { machine_techs("lv-macerator-recipes"), item_techs(gem) })
+	end
+	if not data.raw.item[plate] then add_item(plate, sub, "z-" .. plate) end
+	if not data.raw.item[lens] then add_item(lens, sub, "z-" .. lens) end
+	local name = made(recipe{ name = plate .. "-compressor", category = "lv-compressor-recipes", time = 15, main = plate,
+		ingredients = { item(dust) }, results = { item(plate) } })
+	unlock_after(name, { machine_techs("lv-compressor-recipes"), item_techs(dust) })
+	local out = { item(lens) }
+	if data.raw.item[small] then out[2] = item(small) end
+	name = made(recipe{ name = lens .. "-from-plate", category = "mv-lathe-recipes", time = 60 * MV_SPEED, main = lens,
+		ingredients = { item(plate) }, results = out })
+	unlock_after(name, { machine_techs("mv-lathe-recipes"), item_techs(plate) })
+end
+--- issue #370: the sapphire and green sapphire lens from a plate before the gem steps, whose cyan and blue engraving
+--- (Laser Engraver) and the RAM wafer (Advanced Integrated Circuits) come long before an exquisite sapphire
+plate_lens("sapphire", "sapphire-gem")
+plate_lens("green-sapphire", "green-sapphire-gem")
 
 local gem_recipes = 0
 for _, g in pairs(GEMS) do
@@ -1733,8 +1760,8 @@ end
 --- recipe here takes its lens as ingredient and result, and 150 turns it into the engraver's lens slot. GT takes any lens
 --- of the colour (OreDictRegistrationHandler.java:303-308: a transparent material's lens is craftingLens<its dye>);
 --- Gregtorio names one: red the ruby lens, white the diamond lens, green the emerald lens, yellow the yellow garnet lens,
---- cyan the apatite lens and blue the lapis lens (the maintainer's substitutes for GT's green sapphire and sapphire,
---- above), orange the amber lens (issue #332). Sources: gregtech LaserEngraverRecipes.java (LE) and NewHorizonsCoreMod's LaserEngraverRecipes.java (NHC).
+--- cyan the green sapphire lens and blue the sapphire lens (issue #370; #325's apatite and lapis lens before), orange
+--- the amber lens (issue #332). Sources: gregtech LaserEngraverRecipes.java (LE) and NewHorizonsCoreMod's LaserEngraverRecipes.java (NHC).
 --- The NAND and NOR wafers take GT's ender pearl and ender eye lens (NHC 99-152). GT's lens from a plate (ProcessingLens.java:
 --- 1 min, MV, with a small pile of the dust where Gregtorio has one), the plate of a gem that cannot be hammered from its
 --- dust (ProcessingDust.java: compressor, 15 s), the dust from the gem in the macerator (2.8 s, as Gregtorio's diamond). The
@@ -1742,26 +1769,6 @@ end
 --- compressor, after the LPIC wafer, the exquisite emerald from the sifter, after the ULPIC wafer. Issue #348: the ruby lens
 --- too, instead of upstream's lens from a plain ruby.
 --------------------------------------------------------------------------------
-local function plate_lens(m, gem)
-	local dust, plate, lens, small = m .. "-dust", m .. "-plate", m .. "-lens", "small-pile-of-" .. m .. "-dust"
-	local sub = sub_of("ruby-lens", "subgroup-lv-lathe-recipes")
-	if not data.raw.item[dust] then
-		add_item(dust, "subgroup-macerator-dust", "z-" .. dust)
-		local name = made(recipe{ name = dust .. "-maceration", category = "lv-macerator-recipes", time = 2.8, main = dust,
-			ingredients = { item(gem) }, results = { item(dust) } })
-		unlock_after(name, { machine_techs("lv-macerator-recipes"), item_techs(gem) })
-	end
-	if not data.raw.item[plate] then add_item(plate, sub, "z-" .. plate) end
-	if not data.raw.item[lens] then add_item(lens, sub, "z-" .. lens) end
-	local name = made(recipe{ name = plate .. "-compressor", category = "lv-compressor-recipes", time = 15, main = plate,
-		ingredients = { item(dust) }, results = { item(plate) } })
-	unlock_after(name, { machine_techs("lv-compressor-recipes"), item_techs(dust) })
-	local out = { item(lens) }
-	if data.raw.item[small] then out[2] = item(small) end
-	name = made(recipe{ name = lens .. "-from-plate", category = "mv-lathe-recipes", time = 60 * MV_SPEED, main = lens,
-		ingredients = { item(plate) }, results = out })
-	unlock_after(name, { machine_techs("mv-lathe-recipes"), item_techs(plate) })
-end
 plate_lens("ender-pearl", "ender-pearl")
 plate_lens("ender-eye", "eye-of-ender")
 plate_lens("yellow-garnet")
@@ -1782,10 +1789,11 @@ local ENGRAVER_RECIPE_LENS = {
 	["lpic-wafer-sw"] = "yellow-garnet-lens", ["lpic-wafer-pd"] = "yellow-garnet-lens",               -- LE 163-170, yellow
 	["soc-wafer-nd"] = "yellow-garnet-lens", ["soc-wafer-ed"] = "yellow-garnet-lens",
 	["soc-wafer-ad"] = "yellow-garnet-lens",                                                          -- LE 178-194, yellow
-	["ram-wafer-sw"] = "apatite-lens", ["ram-wafer-pd"] = "apatite-lens", ["ram-wafer-qd"] = "apatite-lens",   -- LE 250-281, cyan
-	["mpic-wafer-pd"] = "lapis-lens", ["mpic-wafer-nd"] = "lapis-lens",                               -- LE 120-128 (PIC), blue
-	["qpic-wafer"] = "lapis-lens",                                                                    -- LE 136, blue
-	["engraved-lapotron-chip"] = "lapis-lens",                                                        -- LE 104 (master chip), blue
+	["ram-wafer-sw"] = "green-sapphire-lens", ["ram-wafer-pd"] = "green-sapphire-lens",
+	["ram-wafer-qd"] = "green-sapphire-lens",                                                         -- LE 250-281, cyan
+	["mpic-wafer-pd"] = "sapphire-lens", ["mpic-wafer-nd"] = "sapphire-lens",                         -- LE 120-128 (PIC), blue
+	["qpic-wafer"] = "sapphire-lens",                                                                 -- LE 136, blue
+	["engraved-lapotron-chip"] = "sapphire-lens",                                                     -- LE 104 (master chip), blue
 	["nand-memory-wafer-pd"] = "ender-pearl-lens", ["nand-memory-nd"] = "ender-pearl-lens",
 	["nand-memory-wafer-ed"] = "ender-pearl-lens", ["nand-memory-wafer-ad"] = "ender-pearl-lens",     -- NHC 103-124
 	["nor-memory-wafer-pd"] = "ender-eye-lens", ["nor-memory-wafer-nd"] = "ender-eye-lens",           -- NHC 131-138

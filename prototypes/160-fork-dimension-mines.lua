@@ -264,7 +264,7 @@ local TF_SMALL_363 = { "olivine", "tanzanite", "amethyst", "opal", "jasper", "bl
 ---     small ores (SmallOres.java, Twilight Forest and Horus), 8 of each in the small ores' mine.
 --- The raw ores are GT's (create_ore, 07): amber with GT's ore multiplier 2, all NO_SMELTING (no furnace recipe);
 --- 155 gives them GTNH's ore chain, gem grades and the amber lens (issue #364: sapphire and green sapphire their chain,
---- grades and juice).
+--- grades and juice; issue #370: their lenses, GTNH's blue and cyan lens).
 --------------------------------------------------------------------------------
 
 create_ore("raw-topaz", nil, "crushed-topaz", "topaz-dust", nil, "crushed-topaz", nil, nil, 1, false, false)
@@ -278,9 +278,15 @@ unlock_in("nand-chips", {
 	manual("mining-twilight-forest-small-ores", "manual-mine-recipes", { PICKAXE, LABOR(24) },
 		{ item("raw-topaz", 8), item("raw-amber", 8), item("raw-sapphire", 8),
 			item("raw-green-sapphire", 8) }),
+	"crushed-topaz", "crushed-amber",
+})
+--- issue #370: the sapphire vein (issue #364) and the crushing of its ores come with the Laser Engraver, the first
+--- consumer of the sapphire and green sapphire lens (the cyan and blue gem steps; the RAM wafer of Advanced Integrated
+--- Circuits after it), no longer with NAND Chips (#252; #334 had put every Twilight Forest mine there)
+unlock_in("laser-engraver", {
 	manual("mining-sapphire-vein", "manual-mine-recipes", { PICKAXE, LABOR(24) },   -- issue #364
 		{ item("raw-sapphire", 32), item("raw-green-sapphire", 8) }),
-	"crushed-topaz", "crushed-amber", "crushed-sapphire", "crushed-green-sapphire",
+	"crushed-sapphire", "crushed-green-sapphire",
 })
 --- issue #363: the Twilight Forest's other small ores (above), 8 of each
 do

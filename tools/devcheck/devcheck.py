@@ -792,15 +792,15 @@ ORE_GEMS = {"ruby": ("ruby", False), "emerald": ("emerald", False), "diamond": (
             "spinel": ("spinel-gem", False), "jade": ("jade-gem", True), "red-garnet": ("red-garnet-gem", False),
             "yellow-garnet": ("yellow-garnet-gem", False)}
 # Issue #193: the laser engraver steps of the grades, with the lens of the gem's colour (red ruby, green emerald, white
-# diamond; issue #328: cyan apatite and blue lapis, #325's substitutes; certus quartz's light gray has no lens; issue
+# diamond; issues #328 and #370: cyan the green sapphire lens, blue the sapphire lens; certus quartz's light gray has no lens; issue
 # #332: orange amber)
 ORE_GEM_LENS = {"ruby": "ruby-lens", "emerald": "emerald-lens", "monazite": "emerald-lens", "diamond": "diamond-lens",
-                "nether-quartz": "diamond-lens", "apatite": "apatite-lens", "lazurite": "apatite-lens",
-                "sodalite": "lapis-lens", "lapis": "lapis-lens", "amber": "amber-lens", "topaz": "amber-lens",
-                "sapphire": "lapis-lens", "green-sapphire": "apatite-lens",   # issue #364: blue and cyan (question #370)
+                "nether-quartz": "diamond-lens", "apatite": "green-sapphire-lens", "lazurite": "green-sapphire-lens",
+                "sodalite": "sapphire-lens", "lapis": "sapphire-lens", "amber": "amber-lens", "topaz": "amber-lens",
+                "sapphire": "sapphire-lens", "green-sapphire": "green-sapphire-lens",   # issue #370: blue and cyan
                 # issue #363: lime, purple and pink their own lenses, the other colours the mod's lens of the colour
                 "olivine": "olivine-lens", "tanzanite": "tanzanite-lens", "amethyst": "amethyst-lens",
-                "jasper": "ruby-lens", "spinel": "ruby-lens", "opal": "lapis-lens", "blue-topaz": "lapis-lens",
+                "jasper": "ruby-lens", "spinel": "ruby-lens", "opal": "sapphire-lens", "blue-topaz": "sapphire-lens",
                 "jade": "emerald-lens", "red-garnet": "ruby-lens", "yellow-garnet": "yellow-garnet-lens"}
 def check_ore_o3_o4(m):
     """Issues #187 and #188 (prototypes/155-fork-ore-chain.lua, phases O3 and O4): the electromagnetic separator works
