@@ -7,7 +7,8 @@
 ---   * GTNH mines one ore block per operation and drinks 2000 L Drilling Fluid for it (tryConsumeDrillingFluid); here an
 ---     operation is one vein recipe of the Manual Mine with the same results, 200 Drilling Fluid (Gregtorio's tenth of
 ---     GT's litres) instead of the pickaxe and the manual labor; issue #341: like the Miners below it lowers mining pipes
----     (MTEDrillerBase tryLowerPipeState), so a vein takes 9 Mining Pipes too (issue #346: consumed, see the Miners);
+---     (MTEDrillerBase tryLowerPipeState), so a vein takes a Mining Pipe too (issue #346: consumed; issue #393: one,
+---     see the Miners);
 ---   * the Mk changes the speed and the energy only, never the yield of an operation (GTNH's Mk gives radius and fortune
 ---     on small ores, which the vein recipes do not model): GT's operation takes base / 2^tier ticks at the energy tier
 ---     (calculateMaxProgressTime; base 960, 800, 640, 480), so 240 ticks (12 s) for the Mk I at MV, 100 for the Mk II at HV,
@@ -48,10 +49,12 @@
 ---   * a vein takes 24 s in the LV Miner (the maintainer's choice: half the Mk I's speed), GT halves it per tier
 ---     (SPEED 160, 80, 40 ticks): 12 s and 6 s, the tier speeds 1, 2, 4;
 ---   * GT's energy 8, 32, 128 EU/t is a quarter amp of the tier, class EU8;
----   * mining pipes (DrillingLogicDelegate: one pipe per block of depth): a vein recipe takes 9 mining pipes (a GT ore
----     vein is 9 layers high, WorldgenGTOreLayer layers -1 to 7). GTNH keeps them in the ground and pulls them up at the
----     end; a recipe cannot keep a stock, and giving them back every vein needed an inserter loop, so (issue #346, the
----     maintainer's decision) they are consumed;
+---   * mining pipes (DrillingLogicDelegate: one pipe per block of depth): a vein recipe takes 1 mining pipe. GTNH keeps
+---     them in the ground and pulls them up at the end; a recipe cannot keep a stock, and giving them back every vein
+---     needed an inserter loop, so (issue #346, the maintainer's decision) they are consumed. A GT ore vein is 9 layers
+---     high (WorldgenGTOreLayer layers -1 to 7), but the vein recipes do not model its layers: the one pipe stands for the
+---     drill string of a vein (issue #393, the maintainer's decision; 9 consumed pipes made the pipe line the main load
+---     of an electric mine);
 ---   * the Mining Pipe: GT's wiremill recipe (WiremillRecipes.java: 1 tiny steel pipe -> 1 mining pipe, 10 s, LV/2);
 ---     Gregtorio has no tiny pipes, a steel rod holds the same half ingot of steel;
 ---   * machine recipes as GT's (MTERecipeLoader.java: LV "EEE/WMW/CSC" 3 motors, 2 tin cables, the hull, 2 circuits, a
@@ -95,7 +98,8 @@ FORK_ELECTRIC_MINE_EXCLUDED = {
 
 --- manual recipe -> electric recipe of the plants and of the miners (devcheck reads both)
 FORK_ELECTRIC_MINE = { twins = {}, miner_twins = {} }
-local MINER_CATEGORY, PIPE, PIPES_PER_VEIN = "miner-recipes", "mining-pipe", 9
+--- (issue #393: one pipe per vein, the drill string of the vein; GTNH's 9 layers are not modelled, see the header)
+local MINER_CATEGORY, PIPE, PIPES_PER_VEIN = "miner-recipes", "mining-pipe", 1
 local MINER_TECH = "lv-miner"
 
 --------------------------------------------------------------------------------
@@ -291,13 +295,13 @@ for _, name in ipairs(twins) do
 		category = CATEGORY,
 		energy_required = OP_TIME,
 		subgroup = "subgroup-" .. CATEGORY,
-		ingredients = { fluid(FLUID, FLUID_PER_OP), item(PIPE, PIPES_PER_VEIN) },   -- issues #341, #346: consumed
+		ingredients = { fluid(FLUID, FLUID_PER_OP), item(PIPE, PIPES_PER_VEIN) },   -- issues #341, #346: consumed; #393: one
 		results = table.deepcopy(r.results),
 		main_product = r.main_product or r.results[1].name,
 	}
 	FORK_ELECTRIC_MINE.twins[name] = twin
 	twin_of[name] = twin
-	--- issue #337: the miners' twin, with its 9 mining pipes (consumed, issue #346)
+	--- issue #337: the miners' twin, with its mining pipe (consumed, issue #346; one per vein, issue #393)
 	local results = table.deepcopy(r.results)
 	local miner_twin = name:gsub("^mining%-", "miner-")
 	create_recipe{
