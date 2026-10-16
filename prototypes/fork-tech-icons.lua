@@ -116,6 +116,7 @@ FORK_TECH_ICONS = {
 	["nano-power-ics"] = true,
 	["nanoprocessors"] = true,
 	["naquadah-alloy"] = true,
+	["naquadah-fuel-rods"] = true,
 	["naquadah-fuels"] = true,
 	["naquadah-processing"] = true,
 	["niobium-and-tantalum-extraction"] = true,

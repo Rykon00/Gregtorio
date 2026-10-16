@@ -1334,3 +1334,69 @@ end
 FORK_CASTING.materials["radox-polymer"] = { "uev", RADOX }
 FORK_CASTING.run()
 table.insert(data.raw.technology["uxv-components"].prerequisites, RADOX)
+
+
+
+--------------------------------------------------------------------------------
+--- 13) NAQUADAH FUEL RODS (issue #386 (1); gregtech/loaders/load/FissionFuelLoader.java:740-839, values
+--- gregtech/loaders/preload/LoaderGTBlockFluid.java:595-630). GT's naquadah rod is a Large Tungstensteel Fluid Cell
+--- (4 double tungstensteel plates and 4 platinum rings, HV assembler, 10 s; AssemblerRecipes.java:113-122) canned with
+--- 3 enriched naquadah dust (LV, 1.5 s); 2 rods and 4 tungstensteel rods make a dual rod (HV, 5 s), 4 rods and 6 long
+--- tungstensteel rods (7.5 s) or 2 duals and 4 tungstensteel rods (5 s) a quad rod. The depleted rods go into GT's EV
+--- centrifuge (25 s, 50 s, 100 s): naquadah, naquadria, enriched naquadah, the cell's tungstensteel and platinum (in
+--- GTNH bartworks turns a platinum dust output into two platinum metallic powder, PlatinumSludgeOutputs.java:53, as
+--- #199 does).
+--- Value (as section 9: the rod's energy over its life against the uranium rod's): GT's naquadah rod gives 4 per pulse
+--- for 100 000 reactor seconds, the uranium rod 2 for 20 000: 10 times, 60 000 MJ; dual and quad 4 and 12 times that.
+--- GT's quad rod heats less (heat 1 against 4); the mod's reactors have no hull heat, so only the energy counts.
+--- GT's fifth rod, The Core (32 rods, 3 x 64 long tungstensteel rods and 2 x 64 tiberium dust, LuV), waits for
+--- bartworks' tiberium (issue #402).
+--------------------------------------------------------------------------------
+
+local NAQ_RODS = "naquadah-fuel-rods"
+RECIPES = {}
+create_item{
+	name = "empty-large-tungstensteel-fluid-cell",
+	category = "hv-assembling-machine-recipes",
+	energy_required = 10 * HV_SPEED,
+	ingredients = {
+		{ type = "item", name = "double-tungstensteel-plate", amount = 4 },
+		{ type = "item", name = "platinum-ring", amount = 4 },
+	},
+	subgroup = ROD_GROUP,
+}
+RECIPES[#RECIPES + 1] = "empty-large-tungstensteel-fluid-cell"
+RECIPES[#RECIPES + 1] = rod("naquadah-fuel-rod", 60000, "depleted-naquadah-fuel-rod", {
+	{ type = "item", name = "empty-large-tungstensteel-fluid-cell", amount = 1 },
+	{ type = "item", name = "enriched-naquadah-dust", amount = 3 },
+}, "lv-canning-machine-recipes", 1.5)
+local ND = rod("dual-naquadah-fuel-rod", 240000, "depleted-dual-naquadah-fuel-rod",
+	{ { type = "item", name = "naquadah-fuel-rod", amount = 2 }, { type = "item", name = "tungstensteel-rod", amount = 4 } },
+	"hv-assembling-machine-recipes", 5 * HV_SPEED)
+local NQ = rod("quad-naquadah-fuel-rod", 720000, "depleted-quad-naquadah-fuel-rod",
+	{ { type = "item", name = "naquadah-fuel-rod", amount = 4 }, { type = "item", name = "long-tungstensteel-rod", amount = 6 } },
+	"hv-assembling-machine-recipes", 7.5 * HV_SPEED)
+RECIPES[#RECIPES + 1] = ND
+RECIPES[#RECIPES + 1] = NQ
+create_recipe{
+	name = NQ .. "-from-dual",
+	category = "hv-assembling-machine-recipes",
+	energy_required = 5 * HV_SPEED,
+	ingredients = { { type = "item", name = ND, amount = 2 }, { type = "item", name = "tungstensteel-rod", amount = 4 } },
+	results = { { type = "item", name = NQ, amount = 1 } },
+}
+RECIPES[#RECIPES + 1] = NQ .. "-from-dual"
+--- the depleted rods: x 1, 2, 4 of the single rod's dusts (GT: 18 and 38 tungstensteel, the cells and the rods' steel)
+for _, d in pairs({ { "depleted-naquadah-fuel-rod", 1, 8, 25 }, { "depleted-" .. ND, 2, 18, 50 },
+		{ "depleted-" .. NQ, 4, 38, 100 } }) do
+	local n = d[2]
+	step(RECIPES, d[1] .. "-centrifuging", "ev-centrifuge-recipes", d[4], EV_SPEED, { { d[1], 1 } }, {
+		{ "naquadah-dust", n }, { "naquadah-dust", n, 0.5 },
+		n == 1 and { "small-pile-of-naquadria-dust", 2, 0.5 } or { "naquadria-dust", n / 2, 0.5 },
+		{ "tiny-pile-of-enriched-naquadah-dust", 2 * n, 0.25 }, { "tungstensteel-dust", d[3] }, { "metallic-platinum-powder", 2 * n } })
+end
+F.tech{
+	--- (LuV: enriched naquadah; the rods burn in the reactors of Nuclear Fuel Rods)
+	name = NAQ_RODS, prerequisites = { "enriched-naquadah", "nuclear-fuel-rods" }, packs = 7, count = 1500, time = 60,
+	recipes = RECIPES,
+}

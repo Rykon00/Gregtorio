@@ -863,13 +863,14 @@ def icon_table(c):
         T[m + "-cell"] = (lambda m=m: lambda: c.part(m, "cell"))()
     T["ferrocene-dust"] = lambda: c.part("ferrocene", "dust")   # issue #357
     # issue #359: GT's dual and quad fuel rods and the MOX rods (gregtech/textures/items/gt.rod*.png), full and depleted
-    for fuel, gt in (("uranium", "Uranium"), ("thorium", "Thorium"), ("mox", "MOX")):
+    for fuel, gt in (("uranium", "Uranium"), ("thorium", "Thorium"), ("mox", "MOX"), ("naquadah", "Naquadah")):   # + #386
         for size, suffix in (("", ""), ("dual-", "2"), ("quad-", "4")):
-            if fuel != "mox" and size == "":
+            if fuel in ("uranium", "thorium") and size == "":
                 continue   # (the single uranium and thorium rods keep upstream's icons)
             T[f"{size}{fuel}-fuel-rod"] = (lambda g=gt, s=suffix: lambda: c.gt(f"gt:gregtech/textures/items/gt.rod{g}{s}"))()
             T[f"depleted-{size}{fuel}-fuel-rod"] = (
                 lambda g=gt, s=suffix: lambda: c.gt(f"gt:gregtech/textures/items/gt.depletedRod{g}{s}"))()
+    T["empty-large-tungstensteel-fluid-cell"] = lambda: c.gt(M1 + "406")   # issue #386: ItemList.Large_Fluid_Cell_TungstenSteel
     # issue #357, part 2: goodgenerator's thorium fuel line (its items as the plutonium line's above)
     T["uranium-carbide-thorium-mixture"] = lambda: c.part("uranium-carbide-thorium-mixture", "dust")
     T["wrapped-thorium-ingot"] = lambda: c.gt(f"{GG}items/wrappedThoriumIngot")

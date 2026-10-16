@@ -2458,6 +2458,14 @@ depleted rods go into GT's thermal centrifuge. Left for later: GT's IV centrifug
 cans them into a large tungstensteel fluid cell, which the mod lacks), the LFTR with its salt loop, the Cold Trap and the
 Reactor Processing Unit, and the Reactor Fuel Processing Plant (issue #386).
 
+### Nuclear depth, part 2 (issue #386)
+
+The maintainer's decision: all four steps of the issue. Step 1, the naquadah rods (164 section 13, technology Naquadah
+Fuel Rods): GT's Large Tungstensteel Fluid Cell canned with enriched naquadah dust, the dual and quad rods, the depleted
+rods in GT's EV centrifuge. Value by #359's rule (the rod's energy over its life against the uranium rod's): 10 times,
+60 000 MJ; dual and quad 4 and 12 times. GT's quad naquadah rod heats less than the others; the mod's reactors have no
+hull heat, so that difference is lost. GT's fifth rod, The Core, needs bartworks' tiberium (issue #402).
+
 ### GoodGenerator's fuels (issue #357)
 
 Part 1 (164): the liquid fuels with GoodGenerator's recipes and fuel values. Ether and naquadah gas already existed
