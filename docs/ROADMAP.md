@@ -931,6 +931,17 @@ the new ones are in the table of `prototypes/136-fork-power.lua` (section 1b, pl
 | oxygen | 131.07 MJ | 144 in 120 s (MK2) | 9830 MJ | 18 874 MJ | 1.3x (1.9x without its boron plasma) | 1.2x | 1.2 | 157 MW |
 | krypton | 86.02 MJ | 144 in 16 s (MK2) | 1311 MJ | 12 386 MJ | 3.8x (9.4x without its niobium and zinc plasma) | 1.3x (before 1.5x) | 9 | 774 MW |
 | iron | 206.44 MJ | 72 silicon + 72 magnesium melt -> 144 in 8 s (MK3; before 16 + 16 in 2 s) | 1311 MJ | 29 727 MJ | 22.7x (before 91x) | 17.2x (before 70.9x) | 18 (before 72) | 3.72 GW (before 14.9) |
+| nickel (#375) | 213.81 MJ | 16 potassium melt + 144 fluorine -> 144 in 7.5 s (MK3; GT 0.8 s) | 1229 MJ | 30 789 MJ | 25.1x | - | 19.2 | 4.1 GW |
+| silver (#375) | 282.69 MJ | 144 gold + 144 arsenic melt -> 144 in 10 s (MK3; GT 0.8 s) | 1638 MJ | 40 707 MJ | 24.8x | - | 14.4 | 4.07 GW |
+| bismuth (#375) | 425.98 MJ | 144 tantalum melt + 72 zinc plasma -> 144 in 15 s (MK3; GT 0.8 s) | 2458 MJ | 61 342 MJ | 25.0x (18.3x with its zinc plasma) | - | 9.6 | 4.09 GW |
+| radon (#375) | 450.56 MJ | 144 iridium melt + 500 fluorine -> 144 in 16 s (MK3; GT 1.6 s) | 2621 MJ | 64 881 MJ | 24.8x | - | 9 | 4.06 GW |
+| plutonium 241 (#375) | 497.66 MJ | 576 lutetium + 576 vanadium melt -> 576 in 17.5 s (MK5; GT 0.2 s) | 11 469 MJ | 286 654 MJ | 25.0x | - | 32.9 | 16.4 GW |
+| thorium (#375) | 471.04 MJ | 576 osmium + 576 silicon melt -> 576 in 16.5 s (MK5; GT 0.2 s) | 10 813 MJ | 271 319 MJ | 25.1x | - | 34.9 | 16.4 GW |
+
+Issue #375's plasmas (part B, the maintainer's decision: GT's fuel values, a place in this table): GT's inputs and outputs
+in GT litres like the plasmas above, the reactor by GT's threshold (MK3, the 6G ones MK5); GT's times would give 160x
+to 240x, so the times are set for about 25x like the balanced cheap plasmas (full chain not computed). Americium plasma
+(plutonium 241 + hydrogen) comes with issue #386's isotopes, lead plasma (tellurium + zinc) when tellurium exists.
 
 Helium-3 (issue #32): `end-stone-centrifuging` makes 50 helium-3 per compressed end stone in 200 s (before 100 in 40 s),
 1.92 MJ per unit like deuterium (before 0.19 MJ). The fuel values are unchanged (GT's). The recipes that use a plasma as an
@@ -2291,7 +2302,7 @@ file lacks):
 | Al + Li -> sulfur, Be + D -> nitrogen, Si + Mg -> iron, Cu + T -> zinc, Co + Si -> niobium, Ag + He-3 -> tin plasma, Mg + O -> calcium plasma | yes (#32's numbers) |
 | Nd + H, Nd + Pm -> europium; Lu + Cr, Lu + Pm -> americium; Am + naquadria -> neutronium; glowstone + He -> sunnarium; Ga + Rn -> duranium; Ti + duranium -> tritanium | yes (promethium routes: Gregtorio has no promethium, the other route of each) |
 | Li + W -> iridium, Be + W -> platinum, Pu + Th -> naquadah, W + He -> osmium, Mn + H -> iron, Hg + Mg and Au + Al -> uranium, U + He -> plutonium, V + H -> chrome, Ta + T -> tungsten, Ag + Li -> indium | yes since #375 part A (136 section 1c; the maintainer's decision: as GTNH has them), see "Accepted shortcuts" below |
-| K + F -> nickel, Au + As -> silver, Ta + Zn plasma -> bismuth, Ir + F -> radon, Pu-241 + H -> americium, Lu + V -> Pu-241, Os + Si -> thorium plasma | no: plasmas GT burns in its turbines that Gregtorio's plasma balance left out (and Pu-241, #359); question #375 |
+| K + F -> nickel, Au + As -> silver, Ta + Zn plasma -> bismuth, Ir + F -> radon, Pu-241 + H -> americium, Lu + V -> Pu-241, Os + Si -> thorium plasma | yes since #375 part B (136 section 1d, balanced like #32) except americium (with #386's plutonium 241) |
 | Co + neon -> rubidium (500M); Te + Zn -> lead plasma (6G) | no: rubidium and tellurium have no consumer in Gregtorio (the issue's two elements), lead plasma none either |
 | redstone plasma + ichorium -> unformed hexanite (6G) | no: Thaumcraft's ichorium (#39 removed it) |
 

@@ -48,6 +48,17 @@ end
 --- exists here; zinc and niobium have no molten fluid, boron, calcium and sulfur none at all.
 --------------------------------------------------------------------------------
 
+--- issue #375: the plasmas of section 1d (thorium plasma is 140's, made here for its fuel value)
+for _, p in pairs({
+	{ "nickel-plasma", "silver-blue-spackled-fluid", { 0.67, 0.67, 0.86 } },
+	{ "silver-plasma", "spackled-gray-fluid", { 0.86, 0.86, 1.00 } },
+	{ "bismuth-plasma", "spackled-medium-blue-fluid", { 0.39, 0.63, 0.63 } },
+	{ "radon-plasma", "spackled-purple-fluid", { 1.00, 0.00, 1.00 } },
+	{ "plutonium-241-plasma", "spackled-orange-fluid", { 0.98, 0.27, 0.27 } },
+	{ "thorium-plasma", "dark-gray-spackled-fluid", { 0.35, 0.30, 0.30 } },
+}) do
+	F.fluid(p[1], p[2], p[3])
+end
 local PLASMAS = {
 	--  plasma              EU per unit  cooled fluid
 	{ "helium-plasma",     81920,   "helium" },
@@ -63,6 +74,14 @@ local PLASMAS = {
 	{ "oxygen-plasma",    131072,   "oxygen" },
 	{ "krypton-plasma",    86016,   "krypton" },
 	{ "iron-plasma",      206438,   "molten-iron" },
+	--- issue #375, part B: GTNH's other plasmas of FusionReactorRecipes.java (their recipes: section 1d); thorium plasma
+	--- was the godforge's only (140)
+	{ "nickel-plasma",          213811, "molten-nickel" },
+	{ "silver-plasma",          282685, "molten-silver" },
+	{ "bismuth-plasma",         425984, nil },
+	{ "radon-plasma",           450560, "radon" },
+	{ "plutonium-241-plasma",   497664, nil },
+	{ "thorium-plasma",         471040, "molten-thorium" },
 }
 local cooled = {}
 for _, p in pairs(PLASMAS) do
@@ -179,6 +198,44 @@ for _, t in pairs(TRANSMUTATIONS) do
 		ingredients = ing, results = { { type = "fluid", name = t[6], amount = 1.6 } }, main_product = t[6],
 	}
 	fork_add_unlock("fusion-plasmas-mk" .. t[2], t[1])
+end
+
+
+
+--------------------------------------------------------------------------------
+--- 1d) GTNH'S OTHER PLASMAS (issue #375, part B; the maintainer's decision: GT's fuel values above, a place in #32's gain
+--- table of docs/ROADMAP.md). GT's inputs and outputs (FusionReactorRecipes.java:77, 254, 270, 278, 304, 320) in GT
+--- litres like the other plasmas of section 1b, the reactor by GT's FUSION_THRESHOLD (MK3 up to 640M EU, the 6G ones the
+--- MK5); the time balanced like #32: about 25x plasma energy out per reactor energy in (GT's own times give 160 to 240x).
+--- Left for later: americium plasma (plutonium 241 + hydrogen) needs a melt of plutonium 241, which issue #386's
+--- isotopes bring; lead plasma (tellurium + zinc) needs tellurium, which the mod lacks (#365).
+--------------------------------------------------------------------------------
+
+F.fluid("molten-arsenic", "molten-arsenic", { 1, 1, 1 })   -- GT's colour (gen_gt_icons --molten)
+create_recipe{
+	name = "melt-arsenic", category = "iv-fluid-extractor-recipes", energy_required = 1.2 * IV_SPEED,
+	ingredients = { { type = "item", name = "arsenic", amount = 1 } },
+	results = { { type = "fluid", name = "molten-arsenic", amount = 14.4 } }, main_product = "molten-arsenic",
+}
+fork_add_unlock("fusion-plasmas-mk3", "melt-arsenic")
+local OTHER_PLASMAS = {
+	--  plasma                  reactor  s     speed      inputs                                                  amount
+	{ "nickel-plasma",           3, 7.5,  UV_SPEED,  { { "molten-potassium", 16 }, { "fluorine", 144 } }, 144 },
+	{ "silver-plasma",           3, 10,   UV_SPEED,  { { "molten-gold", 144 }, { "molten-arsenic", 144 } }, 144 },
+	{ "bismuth-plasma",          3, 15,   UV_SPEED,  { { "molten-tantalum", 144 }, { "zinc-plasma", 72 } }, 144 },
+	{ "radon-plasma",            3, 16,   UV_SPEED,  { { "molten-iridium", 144 }, { "fluorine", 500 } }, 144 },
+	{ "plutonium-241-plasma",    5, 17.5, UIV_SPEED, { { "molten-lutetium", 576 }, { "molten-vanadium", 576 } }, 576 },
+	{ "thorium-plasma-fusion",   5, 16.5, UIV_SPEED, { { "molten-osmium", 576 }, { "molten-silicon", 576 } }, 576 },
+}
+for _, p in pairs(OTHER_PLASMAS) do
+	local ing = {}
+	for _, i in pairs(p[5]) do ing[#ing + 1] = { type = "fluid", name = i[1], amount = i[2] } end
+	local product = p[1]:gsub("%-fusion$", "")
+	create_recipe{
+		name = p[1], category = "mk" .. p[2] .. "-fusion-reactor-recipes", energy_required = p[3] * p[4],
+		ingredients = ing, results = { { type = "fluid", name = product, amount = p[6] } }, main_product = product,
+	}
+	fork_add_unlock("fusion-plasmas-mk" .. p[2], p[1])
 end
 
 
