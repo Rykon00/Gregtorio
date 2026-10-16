@@ -199,6 +199,7 @@ MATERIALS = {
     "zirconium-tetrachloride": ("DULL", (179, 164, 151)),
     "zirconium": ("METALLIC", (175, 175, 175)),
     "red-zircon": ("GEM_VERTICAL", (195, 19, 19)),
+    "dilithium": "Dilithium", "vinteum": "Vinteum", "mysterious-crystal": "MysteriousCrystal",   # issue #373: Neper
     #  issue #373: GT++'s ores of the Toxic Everglades (MaterialsOres.java colour and texture set)
     "agardite-cd": ("METALLIC", (170, 188, 33)), "agardite-la": ("FINE", (206, 232, 9)),
     "agardite-nd": ("METALLIC", (225, 244, 78)), "agardite-y": ("METALLIC", (210, 232, 44)),

@@ -2293,7 +2293,8 @@ Part 2: the Twilight Forest's olivine vein and small ores and the Nether's saltp
   concentrate); the LV chemical dehydrator has one fluid output, so cerite, fluorcaphite and lepersonnite give only
   their oxygen; fluorite (F)'s hydrogen chemical bath is left out; runite gets its ore chain to runite dust, GT++'s
   alloy blast smelter melt and ingot are not built (no consumer). Agardite (Cd), yttrialite and lanthanite (Ce) are
-  the mod's rare earth dusts of the same names. Neper follows in #373's last pull request.
+  the mod's rare earth dusts of the same names.
+* #373, Neper: a Void Miner III recipe (T9, as Horus and Anubis), see Dilithium below.
 
 ### Elements and the fusion recipes (issue #365)
 
@@ -2320,8 +2321,10 @@ The elements of #365 by consumer in Gregtorio's lines:
   instead of #249's red garnet, sodalite and lapis.
 * **Praseodymium**: its GTNH consumers are the naquadah fuel MK4 (goodgenerator `FuelRecipeLoader.java:98`, #356) and the
   depleted thorium fuel (#357): built with those.
-* **Dilithium**: GTNH's only vein is Neper's (`OreMixes.java:1025`), a dimension Gregtorio has no mine of (#373); 141's
-  diamonds stay.
+* **Dilithium** (built in #373): GTNH's only vein is Neper's (`OreMixes.java:1025`). Neper is GTNH's T9, and #154/#286
+  give the T7 to T9 dimensions to the Void Miner, so Neper is a Void Miner III recipe (its full pool: dilithium,
+  mysterious crystal and vinteum are new ores, the shards, arsenic, tungsten, antimony, quartz sand, charged certus and
+  the irons have no ore in the mod and are left out); 141's timepiece takes GT's 32 dilithium instead of 32 diamonds.
 * **Mithril, rubidium, tellurium, dysprosium, scandium, strontium, radium, polonium, curium, neptunium, technetium,
   rhenium, thallium, germanium, selenium**: no consumer in Gregtorio's lines (strontium's GTNH use is the netherite
   chain, scandium's and strontium's their plasmas' fuel values), so not built.

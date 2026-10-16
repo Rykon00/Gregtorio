@@ -799,7 +799,8 @@ ORE_GEMS = {"ruby": ("ruby", False), "emerald": ("emerald", False), "diamond": (
             "fayalite": ("fayalite-gem", False), "hedenbergite": ("hedenbergite-gem", False),
             "red-zircon": ("red-zircon-gem", False), "tiberium": ("tiberium-gem", False),
             "bartimaeusnek": ("bartimaeusnek-gem", False), "prasiolite": ("prasiolite-gem", False),
-            "fluorspar": ("fluorspar-gem", False)}
+            "fluorspar": ("fluorspar-gem", False),
+            "dilithium": ("dilithium-gem", True), "vinteum": ("vinteum-gem", False)}   # issue #373: Neper
 # Issue #193: the laser engraver steps of the grades, with the lens of the gem's colour (red ruby, green emerald, white
 # diamond; issues #328 and #370: cyan the green sapphire lens, blue the sapphire lens; certus quartz's light gray has no lens; issue
 # #332: orange amber)
@@ -816,7 +817,8 @@ ORE_GEM_LENS = {"ruby": "ruby-lens", "emerald": "emerald-lens", "monazite": "eme
                 "bismutite": "yellow-garnet-lens", "prasiolite": "yellow-garnet-lens",
                 "chromo-alumino-povondraite": "green-sapphire-lens", "vanadio-oxy-dravite": "green-sapphire-lens",
                 "forsterite": "diamond-lens", "hedenbergite": "emerald-lens", "tiberium": "emerald-lens",
-                "bartimaeusnek": "emerald-lens", "red-zircon": "ruby-lens", "fluorspar": "ruby-lens"}
+                "bartimaeusnek": "emerald-lens", "red-zircon": "ruby-lens", "fluorspar": "ruby-lens",
+                "dilithium": "diamond-lens"}
 def check_ore_o3_o4(m):
     """Issues #187 and #188 (prototypes/155-fork-ore-chain.lua, phases O3 and O4): the electromagnetic separator works
     exactly the pure dusts of ORE_SEPARATOR (dust, small dust and nugget of the metal); every ore of ORE_GEMS is sifted
