@@ -48,6 +48,13 @@
 --- does not fit, as a full accumulator does). The note is up to one step old: the energy of that step, at most 13.6 MJ of the 25
 --- GJ of a ZPM one, is lost. One that was mined and replaced later starts empty.
 ---
+--- LFTR dynamos (issue #386). GT++'s Liquid Fluoride Thorium Reactor takes no power and gives power while a run is on
+--- (MTENuclearReactor.java); Factorio's crafting machines cannot give power, so each reactor (mod data `lftr`: entity ->
+--- recipe -> watts) gets a hidden electric energy interface (`lftr_dynamo`) at its place, made when it is built (or found
+--- again after a configuration change) and removed with it. Every INTERVAL ticks the interface produces the watts of the
+--- reactor's recipe while the reactor's status is "working", else nothing; what the network does not take is lost, as
+--- GT voids it. Work per step: one status read per reactor, a write only when the power changes.
+---
 --- State (lazy, `storage.fork_power`): `turbines` by unit number with the plasma seen at the last step
 --- (`fluid`, `amount` in the turbine and its segment), `on` (counted this step), the `energy` summed
 --- since the last step and the cooled fluid still `owed` (by fluid name); `generators` by unit number
@@ -67,10 +74,14 @@ local function mod_data()
 	return md and md.data or { turbines = {}, cooled = {}, hatch = "turbine-output-hatch", fuels = {} }
 end
 
-local turbine_names, cooled_of, ratio_of, effectivity_of, hatch_name, fuels_of, loss_of
+local turbine_names, cooled_of, ratio_of, effectivity_of, hatch_name, fuels_of, loss_of, lftr_power, dynamo_name
 local function init()
 	if turbine_names then return end
 	local d = mod_data()
+	lftr_power, dynamo_name = {}, d.lftr_dynamo
+	for name, recipes in pairs(d.lftr or {}) do
+		if prototypes.entity[name] then lftr_power[name] = recipes end
+	end
 	turbine_names, cooled_of, hatch_name, fuels_of = {}, d.cooled or {}, d.hatch, {}
 	ratio_of, effectivity_of, loss_of = d.ratio or {}, d.effectivity or {}, {}
 	for name, w in pairs(d.capacitors or {}) do
@@ -99,6 +110,7 @@ local function state()
 	end
 	st.generators = st.generators or {}         -- saves from before the fuel check
 	st.capacitors = st.capacitors or {}         -- saves from before issue #97
+	st.lftrs = st.lftrs or {}                   -- issue #386
 	return st
 end
 
@@ -215,9 +227,48 @@ local function register_turbine(st, entity)
 	t.on = t.fluid ~= nil and not entity.disabled_by_script
 end
 
+--------------------------------------------------------------------------------
+--- LFTR dynamos
+--------------------------------------------------------------------------------
+
+local function register_lftr(st, entity)
+	local l = st.lftrs[entity.unit_number]
+	if l and l.dynamo and l.dynamo.valid then return end
+	local surface, position = entity.surface, entity.position
+	local dynamo = surface.find_entities_filtered{ name = dynamo_name, position = position, limit = 1 }[1]
+		or surface.create_entity{ name = dynamo_name, position = position, force = entity.force }
+	if dynamo then dynamo.power_production = 0 end
+	st.lftrs[entity.unit_number] = { entity = entity, dynamo = dynamo, power = 0 }
+end
+
+local function lftr_step(st)
+	for id, l in pairs(st.lftrs) do
+		local e, d = l.entity, l.dynamo
+		if not (e and e.valid) then
+			if d and d.valid then d.destroy() end
+			st.lftrs[id] = nil
+		elseif not (d and d.valid) then
+			l.dynamo = nil
+			register_lftr(st, e)
+		else
+			local power = 0
+			if e.status == defines.entity_status.working then
+				local recipe = e.get_recipe()
+				local watts = recipe and lftr_power[e.name] and lftr_power[e.name][recipe.name]
+				if watts then power = watts / 60 end
+			end
+			if l.power ~= power then
+				d.power_production = power
+				l.power = power
+			end
+		end
+	end
+end
+
 function M.on_built(entity)
 	init()
 	if not (entity and entity.valid) then return end
+	if lftr_power[entity.name] then register_lftr(state(), entity) end
 	if turbine_names[entity.name] then register_turbine(state(), entity) end
 	if fuels_of[entity.name] then register_generator(state(), entity) end
 	if loss_of[entity.name] then
@@ -246,7 +297,25 @@ function M.on_configuration_changed()
 	for n, _ in pairs(loss_of) do
 		if not seen[n] then names[#names + 1] = n; seen[n] = true end
 	end
+	for n, _ in pairs(lftr_power) do
+		if not seen[n] then names[#names + 1] = n; seen[n] = true end
+	end
 	local st = state()
+	--- LFTR dynamos: drop the gone reactors' and any interface without its reactor
+	for id, l in pairs(st.lftrs) do
+		if not (l.entity and l.entity.valid and lftr_power[l.entity.name]) then
+			if l.dynamo and l.dynamo.valid then l.dynamo.destroy() end
+			st.lftrs[id] = nil
+		end
+	end
+	if dynamo_name and prototypes.entity[dynamo_name] then
+		for _, surface in pairs(game.surfaces) do
+			for _, d in pairs(surface.find_entities_filtered{ name = dynamo_name }) do
+				local owner = surface.find_entities_filtered{ type = "assembling-machine", position = d.position, limit = 1 }[1]
+				if not (owner and lftr_power[owner.name]) then d.destroy() end
+			end
+		end
+	end
 	for id, t in pairs(st.turbines) do
 		if not (t.entity and t.entity.valid) then st.turbines[id] = nil end
 	end
@@ -270,6 +339,7 @@ function M.on_configuration_changed()
 			if turbine_names[e.name] then register_turbine(st, e) end
 			if fuels_of[e.name] then register_generator(st, e) end
 			if loss_of[e.name] then st.capacitors[e.unit_number] = e end
+			if lftr_power[e.name] then register_lftr(st, e) end
 		end
 	end
 end
@@ -386,6 +456,7 @@ script.on_event(defines.events.on_tick, function(event)
 	init()
 	check_step(st)
 	step(st)
+	if st.lftrs then lftr_step(st) end
 	if st.capacitors then capacitor_step(st) end
 end)
 

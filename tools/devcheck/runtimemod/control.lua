@@ -19,6 +19,72 @@
 --- issue #97 can be blueprinted and mined.
 --- Nuclear chain (issue #97): fluid nuclear reactor -> large heat exchanger -> high pressure steam turbine -> large
 --- steam turbine makes power from fuel rods; depleted rods come out; the steam recipe of the heat exchanger is exact.
+--- LFTR (issue #386, scripts/fork-power.lua): the reactor with fuel and coolant for two runs, a load of its 40.96 MW and
+--- a substation. At LF_TICK the reactor works, its dynamo produces 40.96 MW and the load got energy; then the reactor is
+--- destroyed and LF_GONE ticks later its dynamo must be gone.
+local LF_X, LF_Y = -320.5, 250.5
+local LF_TICK, LF_GONE = 600, 30
+local LF_W = 40.96e6
+
+function setup_lftr_test(s)
+	local fails = {}
+	local lf = {}
+	storage.lftr = lf
+	local ok, err = pcall(function()
+		lf.reactor = s.create_entity{ name = "liquid-fluoride-thorium-reactor", position = { LF_X, LF_Y }, force = "player",
+			raise_built = true }
+		game.forces.player.recipes["lftr-fuel-1-burning"].enabled = true
+		lf.reactor.set_recipe("lftr-fuel-1-burning")
+		for _, f in pairs({ { "lftr-fuel-1", 20 }, { "lithium-tetrafluoroberyllate", 40 } }) do
+			local got = lf.reactor.insert_fluid{ name = f[1], amount = f[2] }
+			if math.abs(got - f[2]) > 1e-6 then fails[#fails + 1] = "LFTR test: the reactor took only " .. got .. " " .. f[1] end
+		end
+		lf.load = s.create_entity{ name = "electric-energy-interface", position = { LF_X, LF_Y + 6 }, force = "player" }
+		lf.load.power_production = 0
+		lf.load.power_usage = LF_W / 60
+		lf.load.electric_buffer_size = 1e9
+		lf.load.energy = 0
+		s.create_entity{ name = "substation", position = { LF_X + 4, LF_Y + 3 }, force = "player" }
+	end)
+	if not ok then fails[#fails + 1] = "LFTR test: " .. tostring(err) end
+	return fails
+end
+
+function lftr_test()
+	local lf = storage.lftr
+	if not lf or lf.done or game.tick < LF_TICK then return end
+	local s = game.surfaces[1]
+	local problems = {}
+	local function expect(ok, what) if not ok then problems[#problems + 1] = what end end
+	if not lf.destroyed_at then
+		expect(lf.reactor and lf.reactor.valid, "the reactor is missing")
+		if #problems == 0 then
+			local r = lf.reactor
+			local d = s.find_entity("lftr-dynamo", r.position)
+			expect(r.status == defines.entity_status.working, "the reactor does not work (status " .. tostring(r.status) .. ")")
+			expect(d ~= nil, "no dynamo under the reactor")
+			if d then
+				expect(math.abs(d.power_production * 60 - LF_W) < 1, "the dynamo produces " .. d.power_production * 60 .. " W, not 40.96 MW")
+			end
+			expect(lf.load.valid and lf.load.energy > 0, "the load got no energy")
+			lf.summary = string.format(" (dynamo %.2f MW, load %.1f MJ in its buffer)", d and d.power_production * 60 / 1e6 or 0,
+				lf.load.valid and lf.load.energy / 1e6 or 0)
+			lf.position = r.position
+			r.destroy{ raise_destroy = true }
+			lf.destroyed_at = game.tick
+		end
+		if #problems > 0 then lf.done = true end
+	elseif game.tick >= lf.destroyed_at + LF_GONE then
+		expect(s.find_entity("lftr-dynamo", lf.position) == nil, "the dynamo stayed after the reactor was destroyed")
+		lf.done = true
+	else
+		return
+	end
+	if not lf.done then return end
+	for _, p in pairs(problems) do log("DEVCHECK-RUNTIME-FAIL LFTR test: " .. p) end
+	log("DEVCHECK-RUNTIME-LFTR " .. (#problems == 0 and "ok" or "failed") .. (lf.summary or ""))
+end
+
 --- Lapotronic supercapacitor (issue #97): charges and discharges at two amps of its tier, holds its capacity by tier
 --- and loses GT's 1 % per day.
 --- Offered recipes (issue #126): the machine recipes that were hidden from the crafting menu are offered by the machines.
@@ -27,6 +93,8 @@
 --- Electric mine (issue #335): a Manual Mine replaced by the Ore Drilling Plant Mk I by fast replace and by the upgrade
 --- planner (construction robots) keeps its neighbouring inserters and belts, the items of its slots come back, and the
 --- plant drills a vein with Drilling Fluid.
+--- LFTR (issue #386): the Liquid Fluoride Thorium Reactor on LFTR Fuel 1 runs without power and its hidden dynamo gives
+--- 40.96 MW into a network with a load; mined, the dynamo goes with it.
 --- Victory: when the other tests have reported, `victory` is researched by script and must win the game.
 
 local VICTORY_DEADLINE = 1450
@@ -48,6 +116,7 @@ local function tests_running()
 	check(storage.offer and storage.offer.done, "recipes offered by machines")
 	check(storage.melt and storage.melt.done, "melts and casts")
 	check(storage.emine and storage.emine.done, "electric mine")
+	check(storage.lftr and storage.lftr.done, "LFTR")
 	return running
 end
 
@@ -2095,6 +2164,7 @@ script.on_nth_tick(10, function()
 	crush_test()
 	steam_test()
 	chain_test()
+	lftr_test()
 	lsc_test()
 	lsup_test()
 	elevator_test()
@@ -2166,6 +2236,7 @@ script.on_init(function()
 	for _, f in pairs(setup_crush_test(s)) do fails[#fails + 1] = f end
 	for _, f in pairs(setup_steam_test(s)) do fails[#fails + 1] = f end
 	for _, f in pairs(setup_chain_test(s)) do fails[#fails + 1] = f end
+	for _, f in pairs(setup_lftr_test(s)) do fails[#fails + 1] = f end
 	for _, f in pairs(setup_lsc_test(s)) do fails[#fails + 1] = f end
 	for _, f in pairs(setup_lsup_test(s)) do fails[#fails + 1] = f end
 	for _, f in pairs(setup_elevator_test(s)) do fails[#fails + 1] = f end
