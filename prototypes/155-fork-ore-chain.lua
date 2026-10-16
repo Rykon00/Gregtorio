@@ -175,6 +175,8 @@ local NEW_ORES = {
 	["wollastonite"] = { dust = "wollastonite-dust", byproducts = {  }, mass = 23, decompose = { "mv-electrolyzer-recipes", 5.5 * MV_SPEED, 5, { item("calcium", 1), item("raw-silicon", 1), fluid("oxygen", 300) } } },   -- GT Wollastonite: no byproducts; GT decomposition
 	["trona"] = { dust = "trona-dust", byproducts = {  }, mass = 14, decompose = { "mv-electrolyzer-recipes", 9.8 * MV_SPEED, 14, { item("sodium", 3), item("carbon", 2), fluid("hydrogen", 100), fluid("oxygen", 600) } } },   -- GT Trona: no byproducts; GT decomposition without its water (the electrolyzers have two fluid outputs)
 	["andradite"] = { dust = "andradite-dust", byproducts = { "yellow-garnet-dust", "iron-dust" }, mass = 25 },   -- GT Andradite: GarnetYellow, Iron; its decomposition is the mod's already
+	--- issue #365: desh, Mars's Desh vein (160); GT's metal, no byproducts, blast furnace only (below)
+	["desh"] = { dust = "desh-dust", byproducts = {  }, mass = 49 },   -- GT Desh: no byproducts (itself)
 	--- part 2: the Twilight Forest's and the Nether's veins and the Twilight Forest's small ores (160)
 	["olivine"] = { dust = "olivine-dust", byproducts = { "pyrope-dust", "magnesium" }, mass = 28, decompose = { "mv-electrolyzer-recipes", 7 * MV_SPEED, 5, { item("magnesium", 2), item("iron-dust", 1), item("silicon-dioxide", 2) } } },   -- GT Olivine: Pyrope, Magnesium; GT decomposition
 	["bentonite"] = { dust = "bentonite-dust", byproducts = { "alumina", "calcium", "magnesium" }, mass = 16, decompose = { "mv-electrolyzer-recipes", 24 * MV_SPEED, 30, { item("sodium", 1), item("magnesium", 6), item("raw-silicon", 12), fluid("hydrogen", 600), fluid("water", 500) } } },   -- GT Bentonite: Aluminiumoxide, Calcium, Magnesium; GT decomposition (GT leaves its oxygen out: past a stack)
@@ -1452,6 +1454,27 @@ for _, m in pairs(SMELT_SELF) do
 	end
 end
 log("FORK-ORE-CHAIN: " .. smelted .. " furnace recipes of ore forms, " .. new_items .. " new ingots and nuggets (issue #205)")
+--- issue #365: desh (GT's metal of the Desh vein, 160) needs the blast furnace (2500 K): its dust into the hot ingot (core mod
+--- BlastFurnaceRecipes.java:233-241: 100 s with 1000 L oxygen, here 100, or 140 s without, HV), the vacuum freezer the
+--- ingot (VacuumFreezerRecipes.java:214-216: 7.35 s, HV), the macerator the ingot back into dust (GT mass ticks)
+do
+	add_item("hot-desh-ingot", metal_sub, "z-desh-ingot-a")
+	add_item("desh-ingot", metal_sub, "z-desh-ingot-b")
+	new_items = new_items + 2
+	local ebf = "hv-electric-blast-furnace-recipes"
+	local name = made(recipe{ name = "hot-desh-ingot", category = ebf, time = 100 * HV_SPEED, main = "hot-desh-ingot",
+		ingredients = { item("desh-dust"), fluid("oxygen", 100) }, results = { item("hot-desh-ingot") } })
+	unlock_after(name, { machine_techs(ebf), item_techs("desh-dust") })
+	name = made(recipe{ name = "hot-desh-ingot-without-oxygen", category = ebf, time = 140 * HV_SPEED, main = "hot-desh-ingot",
+		ingredients = { item("desh-dust") }, results = { item("hot-desh-ingot") } })
+	unlock_after(name, { machine_techs(ebf), item_techs("desh-dust") })
+	name = made(recipe{ name = "desh-ingot", category = "hv-vacuum-freezer-recipes", time = 7.35 * HV_SPEED, main = "desh-ingot",
+		ingredients = { item("hot-desh-ingot") }, results = { item("desh-ingot") } })
+	unlock_after(name, { machine_techs("hv-vacuum-freezer-recipes"), item_techs("hot-desh-ingot") })
+	name = made(recipe{ name = "desh-dust-macerator", category = "lv-macerator-recipes", time = 49 / 20, main = "desh-dust",
+		ingredients = { item("desh-ingot") }, results = { item("desh-dust") } })
+	unlock_after(name, { machine_techs("lv-macerator-recipes"), item_techs("desh-ingot") })
+end
 
 --------------------------------------------------------------------------------
 --- Issue #223, B1: GT's raw ore smelting (OP/ProcessingRawOre.java:118-198; bornite: bartworks RawOreLoader.java:44). A

@@ -283,6 +283,7 @@ MATERIALS = {
     "zinc": "Zinc",
     "amber": "Amber", "topaz": "Topaz",  # issue #332: the Twilight Forest's ores
     "sapphire": "Sapphire", "green-sapphire": "GreenSapphire",  # issue #364: the sapphire vein
+    "desh": "Desh",  # issue #365: the Desh vein of Mars
     # issue #363, part 2: the Twilight Forest's and the Nether's ores
     "olivine": "Olivine", "bentonite": "Bentonite", "magnesite": "Magnesite", "garnierite": "Garnierite",
     "wulfenite": "Wulfenite", "powellite": "Powellite", "saltpeter": "Saltpeter", "tanzanite": "Tanzanite",

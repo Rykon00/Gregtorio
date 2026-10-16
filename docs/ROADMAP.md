@@ -1994,8 +1994,8 @@ and the godforge, the 36 MAX machines and the MAX turbine.
   QFT's temporal harmony needs eternal singularities, energised tesseracts, primordial matter and shirabon. None exists in the mod:
   the QFT coil casing stands in for the space-time bending core and continuum ripper (returned), dense dark steel for dark iron,
   diamonds for dilithium, superdense universium and magmatter plates for the nanites, MAX field generators for energised
-  tesseracts, gravi-stars for quantum anomalies, the universium round for hexanite, red garnet, sodalite and lapis for jasper,
-  sapphire and opal, raw star matter for the slurry and primordial matter, a block of universium for the chronic singularity. GT's
+  tesseracts, gravi-stars for quantum anomalies, the universium round for hexanite (issue #365: GT's exquisite jasper,
+  sapphire and opal since #363 and #364 instead of red garnet, sodalite and lapis), raw star matter for the slurry and primordial matter, a block of universium for the chronic singularity. GT's
   returned tesseract and the shirabon are left out. Nothing takes the timepiece and chipped amalgatite but these recipes, and with
   equal amounts of time and space in the magmatter recipe the conversions have no job.
 
@@ -2278,3 +2278,34 @@ Part 2: the Twilight Forest's olivine vein and small ores and the Nether's saltp
 * GT's lime, purple and pink lenses (olivine, tanzanite, amethyst) are new; the dehydrator coil wires' emerald lens, a
   stand-in of #274, becomes the olivine lens. The blue and cyan lenses stay #325's (question #370).
 * Ross128, the Everglades and the later dimensions' veins: #373.
+
+### Elements and the fusion recipes (issue #365)
+
+GT5-Unofficial's `gregtech/loaders/postload/recipes/FusionReactorRecipes.java` (38 recipes) against Gregtorio's fusion
+recipes (MK1 to MK5, 110 to 134 and the plasma balance of #32 above, which also has GT++'s and the endgame's plasmas that
+file lacks):
+
+| GT recipe (FUSION_THRESHOLD) | In Gregtorio |
+|---|---|
+| D + T and D + He-3 -> helium plasma (40M, 60M) | yes (`helium-plasma-first`, `-second`, #32's numbers) |
+| Al + Li -> sulfur, Be + D -> nitrogen, Si + Mg -> iron, Cu + T -> zinc, Co + Si -> niobium, Ag + He-3 -> tin plasma, Mg + O -> calcium plasma | yes (#32's numbers) |
+| Nd + H, Nd + Pm -> europium; Lu + Cr, Lu + Pm -> americium; Am + naquadria -> neutronium; glowstone + He -> sunnarium; Ga + Rn -> duranium; Ti + duranium -> tritanium | yes (promethium routes: Gregtorio has no promethium, the other route of each) |
+| Li + W -> iridium, Be + W -> platinum, Pu + Th -> naquadah, W + He -> osmium, Mn + H -> iron, Hg + Mg and Au + Al -> uranium, U + He -> plutonium, V + H -> chrome, Ta + T -> tungsten, Ag + Li -> indium | no: transmutations of elements Gregtorio makes through their ore lines (the platinum line, the naquadah line, ...); question #375 |
+| K + F -> nickel, Au + As -> silver, Ta + Zn plasma -> bismuth, Ir + F -> radon, Pu-241 + H -> americium, Lu + V -> Pu-241, Os + Si -> thorium plasma | no: plasmas GT burns in its turbines that Gregtorio's plasma balance left out (and Pu-241, #359); question #375 |
+| Co + neon -> rubidium (500M); Te + Zn -> lead plasma (6G) | no: rubidium and tellurium have no consumer in Gregtorio (the issue's two elements), lead plasma none either |
+| redstone plasma + ichorium -> unformed hexanite (6G) | no: Thaumcraft's ichorium (#39 removed it) |
+
+The elements of #365 by consumer in Gregtorio's lines:
+* **Desh** (built): Mars's Desh vein (`OreMixes.java:707-717`; desh twice, scheelite, tungstate) as a Manual Mine recipe
+  with Reach Mars, GT's ore chain, the core mod's blast furnace (hot ingot at 2500 K) and vacuum freezer, GT's parts (158);
+  the Digester's 4 rotors are desh rotors (gtnhlanth `RecipeLoader.java:3266`) instead of #262's tungstensteel stand-in.
+  GT's other desh uses (Galacticraft's heavy plates, Thaumcraft combs) have no Gregtorio counterpart.
+* **Jasper, sapphire, opal** (since #363/#364): the MAX recipes of 141 take GT's exquisite jasper, sapphire and opal
+  instead of #249's red garnet, sodalite and lapis.
+* **Praseodymium**: its GTNH consumers are the naquadah fuel MK4 (goodgenerator `FuelRecipeLoader.java:98`, #356) and the
+  depleted thorium fuel (#357): built with those.
+* **Dilithium**: GTNH's only vein is Neper's (`OreMixes.java:1025`), a dimension Gregtorio has no mine of (#373); 141's
+  diamonds stay.
+* **Mithril, rubidium, tellurium, dysprosium, scandium, strontium, radium, polonium, curium, neptunium, technetium,
+  rhenium, thallium, germanium, selenium**: no consumer in Gregtorio's lines (strontium's GTNH use is the netherite
+  chain, scandium's and strontium's their plasmas' fuel values), so not built.

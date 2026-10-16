@@ -6,8 +6,8 @@
 --- its GT use (the second nitric leaching mixer).
 ---
 --- The machines are gtnhlanth's: the Digester (IV controller, GT's recipe at line 3259: IV hull, IV motors and pumps,
---- LuV circuits, PTFE; the EV super tanks are storage tanks, the desh rotors tungstensteel rotors, Gregtorio has no
---- desh) and the Dissolution Tank (EV controller, line 3274). The sifting machines get a fluid input and output, as GT's
+--- LuV circuits, PTFE; the EV super tanks are storage tanks; the desh rotors are GT's since issue #365, desh from Mars's
+--- Desh vein, 160) and the Dissolution Tank (EV controller, line 3274). The sifting machines get a fluid input and output, as GT's
 --- sifter has (101), for the sifter steps of the line.
 ---
 --- The line (GT's numbers; fluids a tenth of GT's litres, times GT's seconds x the speed of the recipe's tier):
@@ -151,7 +151,7 @@ machine{
 		{ type = "item", name = "storage-tank", amount = 2 },
 		{ type = "item", name = "iv-motor", amount = 4 },
 		{ type = "item", name = "iv-pump", amount = 4 },
-		{ type = "item", name = "tungstensteel-rotor", amount = 4 },
+		{ type = "item", name = data.raw.item["desh-rotor"] and "desh-rotor" or "tungstensteel-rotor", amount = 4 },   -- issue #365
 		{ type = "item", name = "luv-circuit", amount = 4 },
 		{ type = "fluid", name = "ptfe", amount = 144 },
 	} },

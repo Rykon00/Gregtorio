@@ -310,7 +310,13 @@ local moon = {
 	manual("mining-monazite-vein", "manual-mine-recipes", { PICKAXE, LABOR(24) },
 		{ item("raw-bastnasite", 32), item("raw-monazite", 16), item("raw-neodymium", 8) }),
 }
+--- issue #365: GTNH's Desh vein (OreMixes.java:707-717, Mars, Anubis, Miranda: desh twice, scheelite, tungstate), the
+--- desh of the Digester's rotors (159); desh is GT's material (create_ore, 155's chain, its blast furnace)
+create_ore("raw-desh", nil, "crushed-desh", "desh-dust", nil, "crushed-desh", nil, nil, 1, false, false)
 local mars = {
+	manual("mining-desh-vein", "manual-mine-recipes", { PICKAXE, LABOR(24) },
+		{ item("raw-desh", 56), item("raw-scheelite", 16), item("raw-tungstate", 8) }),
+	"crushed-desh",
 	manual("mining-tungstate-vein", "manual-mine-recipes", { PICKAXE, LABOR(24) },
 		{ item("raw-scheelite", 32), item("raw-tungstate", 16) }),
 	manual("mining-pitchblende-vein", "manual-mine-recipes", { PICKAXE, LABOR(24) },
