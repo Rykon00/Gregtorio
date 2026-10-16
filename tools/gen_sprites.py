@@ -277,6 +277,12 @@ MULTIBLOCKS = {
                                        ("gregtech:iconsets/OVERLAY_FRONT_DIESEL_ENGINE",
                                         "gregtech:iconsets/OVERLAY_FRONT_DIESEL_ENGINE_ACTIVE"),
                                        "gregtech:iconsets/MACHINE_CASING_CHEMICALLY_INERT"),
+    # issue #386: GT++'s Reactor Fuel Processing Plant (its Hastelloy-X structural casing, GT's multi smelter front that
+    # MTERefinery.java shows, the Incoloy-DS fluid containment blocks of its middle row)
+    "reactor-fuel-processing-plant": ((3, 3), "miscutils:TileEntities/MACHINE_CASING_STABLE_HASTELLOY_X", None,
+                                      ("gregtech:iconsets/OVERLAY_FRONT_MULTI_SMELTER",
+                                       "gregtech:iconsets/OVERLAY_FRONT_MULTI_SMELTER_ACTIVE"),
+                                      "miscutils:TileEntities/MACHINE_CASING_FLUID_INCOLOY_DS"),
     # issue #301: the Space Elevator per motor tier (gtnhintergalactic's base casing, support structure and the motor)
     **{f"space-elevator-mk{t}": ((11, 11), "gtnhintergalactic:spaceElevator/BaseCasing", None,
                                  f"gtnhintergalactic:spaceElevator/MotorT{t}_Side",
@@ -304,7 +310,7 @@ WHOLE_ICONS = {"large-titanium-boiler", "large-combustion-engine", "digester", "
                "exxonmobil-chemical-plant", "mv-dehydrator", "hv-dehydrator", "ev-dehydrator", "iv-dehydrator",
                "luv-dehydrator", "zpm-dehydrator", "void-miner-i", "void-miner-ii", "void-miner-iii",
                "ev-rocket-engine", "iv-rocket-engine", "luv-rocket-engine", "large-rocket-engine",
-               "universal-chemical-fuel-engine",
+               "universal-chemical-fuel-engine", "reactor-fuel-processing-plant",
                *(f"space-elevator-mk{t}" for t in range(1, 6)),
                *(f"space-elevator-mining-module-mk{t}" for t in range(1, 4)),
                "planetary-gas-siphon", *(f"space-elevator-pump-module-mk{t}" for t in range(1, 4)),

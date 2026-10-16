@@ -169,6 +169,12 @@ put("acids", { "sulfur-dichloride", "thionyl-chloride", "phosphorus-trichloride"
 put("polymers", { "polyurethane-resin", "liquid-crystal-kevlar" })
 put("fuels", { "xenoxene", "diluted-xenoxene", "raw-radox", "super-heavy-radox", "heavy-radox", "light-radox",
 	"super-light-radox", "cracked-radox", "radox-gas" })
+--- issue #386: the LFTR's fluorides and fuels (164 section 14)
+put("acids", { "lithium-hydroxide", "beryllium-hydroxide", "ammonium-bifluoride", "ammonium-tetrafluoroberyllate",
+	"thorium-nitrate" })
+put("nuclear", { "lithium-fluoride", "beryllium-fluoride", "zirconium-tetrafluoride", "thorium-tetrafluoride",
+	"uranium-tetrafluoride", "lftr-fuel-1", "lftr-fuel-2", "lftr-fuel-3" })
+put("molten-elements", { "molten-uranium-235", "molten-plutonium-241" })
 --- issue #364: GTNH's sapphire and green sapphire juice (155)
 put("ore-solutions", { "sapphire-juice", "green-sapphire-juice" })
 --- issue #119: Space Age's melts, restyled below, are rows of the Fluids tab like the other melts

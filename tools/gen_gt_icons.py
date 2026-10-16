@@ -96,6 +96,17 @@ MATERIALS = {
     "sodium-hydride": "SodiumHydride", "sodium-borohydride": "SodiumBorohydride", "sodium-methoxide": "SodiumMethoxide",
     "organorhodium-catalyst": "OrganorhodiumCatalyst", "polyurethane-catalyst-a": ("DULL", (200, 200, 100)), "kevlar": "Kevlar", "radox-polymer": "RadoxPoly",
     "antimony-trioxide": "AntimonyTrioxide",   # issue #378
+    # issue #386: the isotopes (GT++'s MaterialsElements colours and texture sets) and GT++'s fluorides (MaterialsFluorides)
+    "thorium-232": ("NUCLEAR", (15, 60, 15)), "uranium-232": ("NUCLEAR", (88, 220, 103)),
+    "uranium-233": ("NUCLEAR", (73, 220, 83)), "plutonium-238": ("NUCLEAR", (240, 50, 50)), "plutonium-241": "Plutonium241",
+    "polonium": ("NUCLEAR", (180, 170, 180)), "thallium": ("METALLIC", (175, 175, 175)), "lutetium": "Lutetium",
+    "uranium-235": "Uranium235", "plutonium-239": "Plutonium", "lithium-7": ("SHINY", (225, 220, 255)),
+    "lithium-hydroxide": ("DULL", (220, 220, 220)), "lithium-fluoride": ("DULL", (240, 240, 240)),
+    "beryllium-hydroxide": ("DULL", (100, 140, 100)), "beryllium-fluoride": ("DULL", (120, 200, 120)),
+    "zirconium-tetrafluoride": ("DULL", (170, 170, 170)), "cooked-zirconium-tetrachloride": ("DULL", (180, 160, 140)),
+    "thorium-hydroxide": ("DULL", (60, 80, 60)),
+    "zirconium-chloride-pellet": ("ROUGH", (180, 180, 170)),
+    "hastelloy-n": ("METALLIC", (150, 150, 170)),   # GT++ alloy (colour from its components)   # (GT++'s itemZirconiumPellet texture is not in the checkout)
     "callisto-ice": "CallistoIce", "plutonium": "Plutonium241", "tungstensteel": "TungstenSteel",
     # superconductor bases (fork names, GT's base of the same tier)
     "itbtc-alloy": "Tetraindiumditindibariumtitaniumheptacoppertetrakaidekaoxid",       # LuV
@@ -834,6 +845,18 @@ def icon_table(c):
             T[f"{size}{fuel}-fuel-rod"] = (lambda g=gt, s=suffix: lambda: c.gt(f"gt:gregtech/textures/items/gt.rod{g}{s}"))()
             T[f"depleted-{size}{fuel}-fuel-rod"] = (
                 lambda g=gt, s=suffix: lambda: c.gt(f"gt:gregtech/textures/items/gt.depletedRod{g}{s}"))()
+    T["zirconium-pellet"] = lambda: c.part("zirconium-chloride-pellet", "nugget")   # issue #386
+    # issue #386: the Reactor Fuel Processing Plant's parts (GT++'s casing blocks, GT's data orb, tank casing and pipes)
+    T["data-orb"] = lambda: c.gt(M1 + "707")
+    T["gregtech-computer-cube"] = lambda: c.gt("gt:miscutils/textures/items/MU-metaitem.01/55")
+    T["hastelloy-n-sealant-block"] = lambda: c.gt(f"{GTPP_TE}MACHINE_CASING_STABLE_HASTELLOY_N")
+    T["hastelloy-x-structural-block"] = lambda: c.gt(f"{GTPP_TE}MACHINE_CASING_STABLE_HASTELLOY_X")
+    T["incoloy-ds-fluid-containment-block"] = lambda: c.gt(f"{GTPP_TE}MACHINE_CASING_FLUID_INCOLOY_DS")
+    T["reactor-shield-casing"] = lambda: c.gt(f"{GTPP_TE}MACHINE_CASING_STABLE_ZERON100")
+    T["hermetic-casing-v"] = lambda: c.gt(f"{BLK}MACHINE_CASING_TANK_5")
+    T["super-tank-iv"] = lambda: c.face(f"{BLK}MACHINE_CASING_TANK_5", f"{BLK}OVERLAY_STANK")
+    T["huge-staballoy-fluid-pipe"] = lambda: c.m.icon("staballoy", "pipeHuge", kind="blocks")
+    T["large-titanium-fluid-pipe"] = lambda: c.m.icon("titanium", "pipeLarge", kind="blocks")
     T["empty-large-tungstensteel-fluid-cell"] = lambda: c.gt(M1 + "406")   # issue #386: ItemList.Large_Fluid_Cell_TungstenSteel
     # issue #357, part 2: goodgenerator's thorium fuel line (its items as the plutonium line's above)
     T["uranium-carbide-thorium-mixture"] = lambda: c.part("uranium-carbide-thorium-mixture", "dust")
