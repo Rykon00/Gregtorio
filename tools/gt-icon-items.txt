@@ -3431,6 +3431,8 @@ dual-naquadah-fuel-rod
 depleted-dual-naquadah-fuel-rod
 quad-naquadah-fuel-rod
 depleted-quad-naquadah-fuel-rod
+the-core
+depleted-the-core
 thorium-232-dust
 polonium-dust
 small-pile-of-polonium-dust

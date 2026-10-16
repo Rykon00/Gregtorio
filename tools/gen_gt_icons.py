@@ -885,6 +885,8 @@ def icon_table(c):
             T[f"{size}{fuel}-fuel-rod"] = (lambda g=gt, s=suffix: lambda: c.gt(f"gt:gregtech/textures/items/gt.rod{g}{s}"))()
             T[f"depleted-{size}{fuel}-fuel-rod"] = (
                 lambda g=gt, s=suffix: lambda: c.gt(f"gt:gregtech/textures/items/gt.depletedRod{g}{s}"))()
+    T["the-core"] = lambda: c.gt("gt:gregtech/textures/items/gt.rodNaquadah32")   # issue #402
+    T["depleted-the-core"] = lambda: c.gt("gt:gregtech/textures/items/gt.depletedRodNaquadah32")
     T["zirconium-pellet"] = lambda: c.part("zirconium-chloride-pellet", "nugget")   # issue #386
     # issue #386: the Reactor Fuel Processing Plant's parts (GT++'s casing blocks, GT's data orb, tank casing and pipes)
     T["data-orb"] = lambda: c.gt(M1 + "707")

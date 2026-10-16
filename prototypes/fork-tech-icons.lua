@@ -194,6 +194,7 @@ FORK_TECH_ICONS = {
 	["super-glue"] = true,
 	["temporal-processor-mainframes"] = true,
 	["temporal-processors"] = true,
+	["the-core"] = true,
 	["thorium-based-liquid-fuel"] = true,
 	["titanium"] = true,
 	["tungstate-processing"] = true,
