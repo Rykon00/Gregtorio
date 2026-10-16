@@ -282,6 +282,7 @@ MATERIALS = {
     "zeron-100": ("METALLIC", (180, 180, 20)),  # GT++ ZERON_100
     "zinc": "Zinc",
     "amber": "Amber", "topaz": "Topaz",  # issue #332: the Twilight Forest's ores
+    "sapphire": "Sapphire", "green-sapphire": "GreenSapphire",  # issue #364: the sapphire vein
     "zirconium-carbide": ("SHINY", (222, 202, 180)),  # GT++ ZIRCONIUM_CARBIDE
 }
 

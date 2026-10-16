@@ -65,7 +65,8 @@
     Asteroid Belt, the Jovian Moons and Venus; issue #286: Void Miners I-III, `VOID_POOLS` from GT's veins and small
     ores (tools: none, generated once from OreMixes/SmallOres); issue #293: Reach Ross128 with the copper sulfide vein
     (bornite); issue #332: the Twilight Forest's Manual Mine recipes, unlocked with NAND Chips (no technology of
-    their own): the amber vein and the topaz and amber small ores, the raw ores of GT's orange lens (155 makes the amber lens); loads after 146 and **before** 142 (issue #287: the
+    their own): the amber vein and the topaz and amber small ores, the raw ores of GT's orange lens (155 makes the amber lens), and
+    (issue #364) the sapphire vein and the sapphire small ore (sapphire, green sapphire; 155 their chain and juice); loads after 146 and **before** 142 (issue #287: the
     unlock table of 142 and the ore chains of 155 see the mines; the rules are in 161))
   - 162 space elevator (issue #301, part 1 of #292's decision: gtnhintergalactic's Space Elevator in GTNH's full scope:
     controller, casings, nanotube spool, cable, motors Mk-I to Mk-V; one 11 x 11 entity per motor tier

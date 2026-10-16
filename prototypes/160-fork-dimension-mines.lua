@@ -139,19 +139,30 @@ unlock_in("end-steel", { "nether-air-intake" })
 ---     of Ross128), cinnabar 8;
 ---   * the small ores (SmallOres.java:214, 256, two of each per chunk): topaz (Twilight Forest and Horus) and amber,
 ---     8 of each, a quarter of a vein's first ore; the Twilight Forest's other small ores and veins hold ores the mod
----     mines elsewhere, so they get no mine (as #284/#285).
---- The raw ores are GT's (create_ore, 07): amber with GT's ore multiplier 2, both NO_SMELTING (no furnace recipe);
---- 155 gives them GTNH's ore chain, gem grades and the amber lens.
+---     mines elsewhere, so they get no mine (as #284/#285);
+---   * issue #364: the Sapphire vein (OreMixes.java:375-386, Twilight Forest and Horus): almandine (primary) and pyrope
+---     (secondary), which the mod has as dusts but not as ores (left out, as above), sapphire (in between) and green
+---     sapphire (sporadic): sapphire 32 as the first ore the mod has, green sapphire 8; and the sapphire and green sapphire
+---     small ores (SmallOres.java, Twilight Forest and Horus), 8 of each in the small ores' mine.
+--- The raw ores are GT's (create_ore, 07): amber with GT's ore multiplier 2, all NO_SMELTING (no furnace recipe);
+--- 155 gives them GTNH's ore chain, gem grades and the amber lens (issue #364: sapphire and green sapphire their chain,
+--- grades and juice).
 --------------------------------------------------------------------------------
 
 create_ore("raw-topaz", nil, "crushed-topaz", "topaz-dust", nil, "crushed-topaz", nil, nil, 1, false, false)
 create_ore("raw-amber", nil, "crushed-amber", "amber-dust", nil, "crushed-amber", nil, nil, 2, false, false)
+create_ore("raw-sapphire", nil, "crushed-sapphire", "sapphire-dust", nil, "crushed-sapphire", nil, nil, 1, false, false)
+create_ore("raw-green-sapphire", nil, "crushed-green-sapphire", "green-sapphire-dust", nil, "crushed-green-sapphire", nil,
+	nil, 1, false, false)
 unlock_in("nand-chips", {
 	manual("mining-amber-vein", "manual-mine-recipes", { PICKAXE, LABOR(24) },
 		{ item("raw-amber", 32), item("raw-cinnabar", 8) }),
 	manual("mining-twilight-forest-small-ores", "manual-mine-recipes", { PICKAXE, LABOR(24) },
-		{ item("raw-topaz", 8), item("raw-amber", 8) }),
-	"crushed-topaz", "crushed-amber",
+		{ item("raw-topaz", 8), item("raw-amber", 8), item("raw-sapphire", 8),
+			item("raw-green-sapphire", 8) }),
+	manual("mining-sapphire-vein", "manual-mine-recipes", { PICKAXE, LABOR(24) },   -- issue #364
+		{ item("raw-sapphire", 32), item("raw-green-sapphire", 8) }),
+	"crushed-topaz", "crushed-amber", "crushed-sapphire", "crushed-green-sapphire",
 })
 
 
