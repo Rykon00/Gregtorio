@@ -167,6 +167,8 @@ put("organic", { "1-4-dimethylbenzene", "naphthenic-acid", "terephthalic-acid", 
 	"butyraldehyde", "isobutyraldehyde", "butanol" })
 put("acids", { "sulfur-dichloride", "thionyl-chloride", "phosphorus-trichloride" })
 put("polymers", { "polyurethane-resin", "liquid-crystal-kevlar" })
+put("fuels", { "xenoxene", "diluted-xenoxene", "raw-radox", "super-heavy-radox", "heavy-radox", "light-radox",
+	"super-light-radox", "cracked-radox", "radox-gas" })
 --- issue #364: GTNH's sapphire and green sapphire juice (155)
 put("ore-solutions", { "sapphire-juice", "green-sapphire-juice" })
 --- issue #119: Space Age's melts, restyled below, are rows of the Fluids tab like the other melts

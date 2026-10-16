@@ -1242,3 +1242,95 @@ swap("uxv-machine-hull", "polybenzimidazole", "molten-kevlar", 57.6)
 --- needs the Kevlar technology (#252)
 FORK_CASTING.run()
 table.insert(data.raw.technology["uxv-components"].prerequisites, KEVLAR)
+
+
+
+
+--------------------------------------------------------------------------------
+--- 12) RADOX POLYMER (issue #378 (c), the maintainer's decision: GTNH's chain with named stand-ins for what the mod
+--- lacks). GTNH (NewHorizonsCoreMod bartworksHandler/BacteriaRegistry.java:98-178, gthandler/recipes/
+--- CrackingRecipes.java:13-19), fluids a tenth of GT's litres:
+---   antimony trioxide: 2 antimony + 3000 oxygen -> 5 (LV, 1 s; GT ChemicalRecipes.java:3706-3713)
+---   xenoxene: bacterial vat, 16 antimony trioxide + 16 osmium dust + 20 oil -> 20 xenoxene (UEV, 180 s; :174-178)
+---   raw radox: pyrolyse oven, 64 Barnarda C logs + 1000 xenoxene -> 1000 + 8 ash (UV, 180 s; :124-127)
+---   its distillation tower: 5000 -> 600 heavy oil, 300 oil, 1000 creosote, 1400 water, 50 fermented bacterial sludge,
+---     50 fermented biomass, 100 super heavy radox, 150 heavy radox, 50 diluted xenoxene, 300 light radox, 500 super
+---     light radox, 5 ash (UHV, 40 s; :129-142)
+---   cracking with 1 L silver plasma each (UV, 25 s): 100 super light -> 100 cracked radox, 100 light -> 50 super light,
+---     100 heavy -> 20 light (:144-146, CrackingRecipes.java:13-19); cracked radox's distillation: 1000 -> 100 radox gas
+---     + 200 light radox + an ash (UV, 30 s; :148-150); diluted xenoxene's: 1000 -> 250 xenoxene + 300 light radox +
+---     an ash (UV, 30 s; :100-102); super heavy radox in the centrifuge: 1000 -> 2000 heavy (UV, 50 min; :111-113)
+---   radox polymer: large chemical reactor, 2160 radox gas + 7500 oxygen plasma + 100 titanium plasma -> 720 molten
+---     (5 ingots; UV, 30 s; :165-168)
+--- STAND-INS (also in docs/ROADMAP.md):
+---   * the Xenoxsis culture (GTNH: a petri dish from the bio lab or the beamcrafter; the mod has neither) is the mod's
+---     mutagen (125's vat line), 100 per run, used up where GT keeps its dish;
+---   * xenoxene in the bacterial vat: the vat's glass tier and radiation are not modelled; its output multiplier is taken
+---     at its maximum (bartworks MTEBioVat.java:238-251, 318-336: oil and xenoxene x 1001 with a half full output
+---     hatch), so a run turns 2002 oil (GT's Oil: the mod's crude oil) into 2002 xenoxene;
+---   * GalaxySpace's Barnarda C logs (64 per pyrolysis; Barnarda C is GTNH's T8 world, the mod has no mine of it) are
+---     the mod's wood;
+---   * GT's fermented bacterial sludge of the distillation is left out (the mod has none) and GT's low gravity autoclave
+---     recipes (enriched naquadah and naquadria from radox) are not made (no low gravity in the mod).
+--- The melt casts the radox polymer plate and ring (143). GTNH's users the mod has: the UXV pump (64 radox rings next to
+--- the Kevlar rings) and the UXV conveyor (80 radox plates next to the Kevlar plates).
+--------------------------------------------------------------------------------
+
+local RADOX = "radox-polymer"
+--- (GT's colours, MaterialsInit.java)
+for _, f in pairs({
+	{ "xenoxene", "black-fluid", { 0.52, 0.51, 0.50 } },
+	{ "diluted-xenoxene", "black-fluid", { 0.81, 0.78, 0.77 } },
+	{ "raw-radox", "purple-fluid", { 0.31, 0.12, 0.31 } },
+	{ "super-heavy-radox", "purple-fluid", { 0.39, 0.00, 0.39 } },
+	{ "heavy-radox", "purple-fluid", { 0.45, 0.00, 0.45 } },
+	{ "light-radox", "purple-fluid", { 0.55, 0.00, 0.55 } },
+	{ "super-light-radox", "purple-fluid", { 0.61, 0.00, 0.61 } },
+	{ "cracked-radox", "purple-fluid", { 0.71, 0.51, 0.71 } },
+	{ "radox-gas", "purple-fluid", { 1.00, 0.51, 1.00 } },
+	{ "molten-radox-polymer", "molten-radox-polymer", { 0.52, 0.00, 0.50 } },   -- (143 casts it: its MATERIALS)
+}) do
+	F.fluid(f[1], f[2], f[3])
+end
+for _, n in pairs({ "antimony-trioxide-dust", "radox-polymer-plate", "radox-polymer-ring" }) do
+	create_item{ skip_recipe = true, name = n, subgroup = "subgroup-macerator-dust" }
+end
+
+RECIPES = {}
+step(RECIPES, "antimony-trioxide-dust", "lv-chemical-reactor-recipes", 1, LV_SPEED, { { "antimony", 2 }, { "oxygen", 300 } },
+	{ { "antimony-trioxide-dust", 5 } })
+step(RECIPES, "xenoxene", "bacterial-vat-recipes", 180, 1,
+	{ { "antimony-trioxide-dust", 16 }, { "osmium-dust", 16 }, { "crude-oil", 2002 }, { "mutagen", 100 } },
+	{ { "xenoxene", 2002 } })
+step(RECIPES, "raw-radox", "pyrolyse-oven-recipes", 180, UV_SPEED, { { "wood", 64 }, { "xenoxene", 100 } },
+	{ { "raw-radox", 100 }, { "ash-dust", 8 } })
+step(RECIPES, "raw-radox-distillation", "uhv-tall-distillation-recipes", 40, UHV_SPEED, { { "raw-radox", 500 } },
+	{ { "heavy-oil", 60 }, { "crude-oil", 30 }, { "creosote", 100 }, { "water", 140 }, { "fermented-biomass", 5 },
+		{ "super-heavy-radox", 10 }, { "heavy-radox", 15 }, { "diluted-xenoxene", 5 }, { "light-radox", 30 },
+		{ "super-light-radox", 50 }, { "ash-dust", 1, 0.5 } }, "super-light-radox")
+step(RECIPES, "super-light-radox-cracking", "uv-cracker-recipes", 25, UV_SPEED,
+	{ { "super-light-radox", 10 }, { "silver-plasma", 0.1 } }, { { "cracked-radox", 10 } })
+step(RECIPES, "light-radox-cracking", "uv-cracker-recipes", 25, UV_SPEED,
+	{ { "light-radox", 10 }, { "silver-plasma", 0.1 } }, { { "super-light-radox", 5 } })
+step(RECIPES, "heavy-radox-cracking", "uv-cracker-recipes", 25, UV_SPEED,
+	{ { "heavy-radox", 10 }, { "silver-plasma", 0.1 } }, { { "light-radox", 2 } })
+step(RECIPES, "cracked-radox-distillation", "uv-tall-distillation-recipes", 30, UV_SPEED, { { "cracked-radox", 100 } },
+	{ { "radox-gas", 10 }, { "light-radox", 20 }, { "ash-dust", 1, 0.1 } })
+step(RECIPES, "diluted-xenoxene-distillation", "uv-tall-distillation-recipes", 30, UV_SPEED, { { "diluted-xenoxene", 100 } },
+	{ { "xenoxene", 25 }, { "light-radox", 30 }, { "ash-dust", 1, 0.1 } })
+step(RECIPES, "super-heavy-radox-centrifuging", "uv-centrifuge-recipes", 3000, UV_SPEED, { { "super-heavy-radox", 100 } },
+	{ { "heavy-radox", 200 } })
+step(RECIPES, "molten-radox-polymer", "uv-chemical-reactor-recipes", 30, UV_SPEED,
+	{ { "radox-gas", 216 }, { "oxygen-plasma", 750 }, { "titanium-plasma", 10 } }, { { "molten-radox-polymer", 72 } })
+F.tech{
+	--- (UEV: the vat's xenoxene; the UHV distillation tower, the fusion plasmas of MK3 (silver, #375), the vat)
+	name = RADOX, prerequisites = { "uev-machines", "uhv-multiblocks", "fusion-plasmas-mk3", "bacterial-vat" }, packs = 11,
+	count = 1500, time = 60, recipes = RECIPES,
+}
+--- GTNH's radox users the mod has: the UXV pump and conveyor take it next to the Kevlar (section 11)
+for _, u in pairs({ { "uxv-pump", "radox-polymer-ring", 64 }, { "uxv-conveyor-module", "radox-polymer-plate", 80 } }) do
+	table.insert(data.raw.recipe[u[1]].ingredients, { type = "item", name = u[2], amount = u[3] })
+end
+FORK_CASTING.materials["radox-polymer"] = { "uev", RADOX }
+FORK_CASTING.run()
+table.insert(data.raw.technology["uxv-components"].prerequisites, RADOX)

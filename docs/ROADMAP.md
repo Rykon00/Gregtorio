@@ -2390,6 +2390,25 @@ woven Kevlar and the Kevlar plate. Deviations:
   polybenzimidazole. GTNH's other users (PCB factory tier 7, neutron accelerators, black hole compressor, solar factory,
   nanochips) are machines the mod does not have. UXV Components needs Kevlar now.
 
+### Radox polymer (issue #378 (c))
+
+Built in 164 section 12 with GTNH's chain (the core mod's BacteriaRegistry.java and CrackingRecipes.java; technology
+Radox Polymer, UEV): antimony trioxide, xenoxene in the bacterial vat, raw radox in the pyrolyse oven, its distillation
+(UHV), the cracking of super light, light and heavy radox with silver plasma (#375), cracked and diluted xenoxene's
+distillation, super heavy radox in the centrifuge, and radox polymer from radox gas with oxygen and titanium plasma.
+The stand-ins (the maintainer's decision: named, never silent):
+* **The Xenoxsis culture** (a petri dish from GTNH's bio lab or beamcrafter; the mod has neither): the mod's mutagen
+  (125's vat line), 100 per vat run, used up.
+* **Xenoxene in the bacterial vat:** the vat's glass tier and radiation are not modelled; its output multiplier is taken
+  at the maximum (x1001 with a half full output hatch, bartworks MTEBioVat.java), so one run turns 2002 crude oil (GT's
+  Oil) into 2002 xenoxene with GT's 16 antimony trioxide and 16 osmium dust.
+* **GalaxySpace's Barnarda C logs** (GTNH's T8 world): the mod's wood, 64 per pyrolysis.
+* Left out: the fermented bacterial sludge of the distillation (no such fluid) and the low gravity autoclave recipes
+  (enriched naquadah and naquadria from radox; no low gravity).
+Users: the UXV pump's 64 and the UXV conveyor's 80 radox rings and plates next to the Kevlar ones (GTNH). GTNH's other
+users (PCB factory tier 8, UEV to MAX fluid hatches, the Dyson swarm, nanochips, the core mod's APIC route) are machines
+or recipes the mod does not have; heavy radox (naquadah fuel MK V/VI, #356) exists now.
+
 ### Oil variety (issue #361)
 
 Decision (the issue left it open): GTNH's Overworld pool of underground fluids becomes recipes of the drilling rigs next
