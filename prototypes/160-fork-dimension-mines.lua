@@ -262,7 +262,8 @@ local TF_SMALL_363 = { "olivine", "tanzanite", "amethyst", "opal", "jasper", "bl
 ---     (secondary), which the mod has as dusts but not as ores (left out, as above), sapphire (in between) and green
 ---     sapphire (sporadic): sapphire 32 as the first ore the mod has, green sapphire 8; and the sapphire and green sapphire
 ---     small ores (SmallOres.java, Twilight Forest and Horus), 8 of each in the small ores' mine.
---- The raw ores are GT's (create_ore, 07): amber with GT's ore multiplier 2, all NO_SMELTING (no furnace recipe);
+--- The raw ores are GT's (create_ore, 07): amber with GT's ore multiplier 2; create_ore makes no furnace recipe, 155
+--- smelts them into their gem as GT does (issue #388);
 --- 155 gives them GTNH's ore chain, gem grades and the amber lens (issue #364: sapphire and green sapphire their chain,
 --- grades and juice).
 --------------------------------------------------------------------------------
