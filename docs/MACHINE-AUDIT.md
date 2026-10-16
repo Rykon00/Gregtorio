@@ -62,6 +62,19 @@ Decided (2026-10-06, #176): GTNH's full chain, planned in `docs/ORE-CHAIN.md` an
 (`prototypes/155-fork-ore-chain.lua`): purified, centrifuged, impure and pure forms, the thermal centrifuge, chemical bath
 washing, the electromagnetic separator and gem sifting. The paragraph "Gregtorio: ..." above is the state before.
 
+## Machines the first audit missed (issue #367)
+
+State of 2026-10-15: GT5-Unofficial 638b3f37ca, Gregtorio 0.5.4. GT++'s and bartworks' single-block machines and
+generators that had no row. Gregtorio's fluids are a tenth of GT's litres and 1 EU = 1 kJ (`docs/ROADMAP.md`).
+
+| GTNH machine (name, tiers) | GT recipe or fuel map and loader | What GTNH uses it for | In Gregtorio today | Verdict |
+|---|---|---|---|---|
+| Bio Lab ("Basic Bio Lab", bartworks, `bartworks/common/tileentities/tiered/MTEBioLab.java`) | `bw.recipe.biolab`: 8 culture incubations, each with water and with distilled water (`bartworks/common/loaders/BioRecipeLoader.java:46-123`), plus DNA extraction, plasmid synthesis and transformation from the cultures (`MTEBioLab.java`) | the cultures in petri dishes that the Bacterial Vat needs as its "special" item (wine yeast, anaerobic oil bacteria, ...) | the Bacterial Vat runs its four recipes on fluids alone (growth medium -> bacterial sludge -> enriched sludge -> mutagen), "No petri dishes" (`125-fork-luv-endgame.lua:365-370`); GTNH's stem cells come from a chemical reactor recipe (`gregtech/loaders/postload/recipes/ChemicalRecipes.java:145-152`), not from the Bio Lab, and Gregtorio's stand-in for its GalaxySpace crystal is documented at `128-fork-uhv.lua:222-225` | **leave** (it only breeds the cultures of a vat mechanic Gregtorio left out; nothing Gregtorio makes depends on a culture) |
+| Basic, Turbo and Vulcan Geothermal Engine (GT++, EV, IV, LuV; `gtPlusPlus/xmod/gregtech/common/tileentities/generators/MTEGeothermalGenerator.java`, `.../registration/gregtech/GregtechGeothermalThermalGenerator.java`) | `hotFuels`: lava 32 EU/L, pahoehoe lava 24, pyrotheum and cryotheum dust 62 (`gtPlusPlus/core/recipe/RecipesGregTech.java:1538-1577`); efficiency 100 - 7 x tier (72 % at EV) | power from lava | lava is endless from the drilling rigs (the MV rig: 50 lava/s for 640 kW, 12.8 kJ per unit); no pahoehoe lava, pyrotheum or cryotheum. GT's value is 320 kJ per Gregtorio unit, so one EV engine would make about 11.5 MW from one MV rig's 640 kW | **leave** (power from almost nothing, the reason of the Thermal Boiler, Deep Earth Heating Pump and heat exchanger rows: `docs/ROADMAP.md`, "No lava recipe") |
+| Radioisotope Thermoelectric Generator (GT++, HV; `gtPlusPlus/xmod/gregtech/common/tileentities/generators/MTERTGenerator.java`) | `rtgFuels`: 5 pellets (Pu-238, Sr-90, Po-210, Am-241, IC2's RTG pellet), duration in Minecraft days (`gtPlusPlus/xmod/gregtech/common/items/MetaGeneratedGregtechItems.java:344-380`) | slow, long-lasting power | no pellets and no Pu-238, Sr-90 or Po-210; GT++ makes the pellets only in the COMET Cyclotron (`gtPlusPlus/core/recipe/RecipesGregTech.java:1770-1815`), which is n/a in `docs/MULTIBLOCK-AUDIT.md` (deprecated in GTNH, no controller recipe) | **n/a** (its fuel has no source in GTNH outside the deprecated cyclotron) |
+| Cold Trap I/II and Reactor Processing Unit I/II (GT++, IV and ZPM; `gtPlusPlus/xmod/gregtech/registration/gregtech/GregtechLFTR.java`) | `coldTrapRecipes`, `reactorProcessingUnitRecipes` (`gtPlusPlus/xmod/gregtech/loaders/recipe/RecipeLoaderNuclearFuelProcessing.java`); the Nuclear Salt Processing Plant's map is generated from them (`gtPlusPlus/GTplusplus.java:160-162`) | the burnt salt of the LFTR back to fluorides, uranium hexafluoride, U-233 and phosphorus | no LFTR and no fluoride salts | **leave** (part of the LFTR package, which `docs/MULTIBLOCK-AUDIT.md` leaves as one package; #359 step 2 tracks it) |
+| Simple Washer I to VIII (GT++, ULV up; `gtPlusPlus/xmod/gregtech/registration/gregtech/GregtechSimpleWasher.java`) | `simpleWasherRecipes`: crushed ore -> purified crushed ore, impure and pure dust -> dust, 100 L water, 5 ticks, no byproduct (`GregtechSimpleWasher.java:100-196`); the Ore Washing Plant runs the map too | a cheap washer without byproducts | the ore washer (crushed -> purified with GTNH's byproduct, `155-fork-ore-chain.lua`), the centrifuge and the furnaces for impure and pure dust | **leave** (a byproduct-free shortcut of steps Gregtorio's ore chain already has; devcheck's ore chain check forbids washer shortcuts) |
+
 ## Issues opened for "add" verdicts
 
 All closed; the verdicts are decided:
@@ -73,5 +86,6 @@ All closed; the verdicts are decided:
 - #174 Electric Furnace: done
 - #175 Sifting Machine from LV: done
 - #176 the ore chain: GTNH's full chain, built in #185 to #188 (`docs/ORE-CHAIN.md`)
+- #367 (the machines the first audit missed): no "add" verdict, so no new issue
 
 The multiblocks are audited in `docs/MULTIBLOCK-AUDIT.md` (#246, #257).
