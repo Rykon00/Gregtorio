@@ -2548,8 +2548,8 @@ coils T1 for MK III, T2 for MK IV).
     has the vacuum furnace and the multiblock dehydrator modes, 4 parallels at 2.2 times the speed, and twice a ZPM
     machine's power.
   - Left out: the vacuum casing's GT++ Energy Crystal alloy, which is made of Thaumcraft's aspects.
-  - 157 sums the two machines' recycling last (`FORK_RECYCLING_LATE`). Otherwise the energy hatch loops of the machine
-    upgrades would empty other machines' sums (issue #423).
+  - Issue #423: 157's recycling sums count only a recipe's main product, so the energy hatch a machine upgrade gives
+    back no longer makes loops, and a new item cannot change the sums of others.
 
   Part 3 (164 section 26): the chain itself, from red algae prismarine to the sheet, with GT's recipes.
   - The baths' and engravers' extra fluid ports follow GT's maps (2 fluids in, 2 out; 101).
