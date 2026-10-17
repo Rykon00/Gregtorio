@@ -733,7 +733,7 @@ F.tech{
 --- mercury into 4000 thorium based liquid fuel (HV mixer, 150 s), excited with 250 helium plasma per 1000 (IV mixer, 6 s;
 --- GT fills a cell). Fluids a tenth of GT's litres; the mod has no draconium dust (its ingot). GT burns the excited fuel
 --- in the large naquadah reactor at 2200 EU/t for 500 ticks per L (GGConfigLoader.java:15-17), as 136 burns the uranium
---- and plutonium fuels; as there, no depleted fuel (its centrifuge gives GT's praseodymium, which waits for #356).
+--- and plutonium fuels; as there, the reactor gives no depleted fuel (the neutron activator does, section 23, #356).
 --- Gregtorio's draconium comes with UEV Materials (the MK3 fusion reactor), so the fuel comes that late.
 for _, f in pairs({ { "thorium-based-liquid-fuel", "spackled-purple-fluid", { 0.31, 0.20, 0.40 } },
 	{ "excited-thorium-based-liquid-fuel", "spackled-purple-fluid", { 0.45, 0.30, 0.60 } } }) do
@@ -2719,4 +2719,26 @@ do
 	step(L, "draconium-ingot-from-hot-ingot", "iv-vacuum-freezer-recipes", 14.7, IV_SPEED, { { "hot-draconium-ingot", 1 } },
 		{ { "draconium-ingot", 1 } })
 	for _, r in pairs(L) do fork_add_unlock("void-miner-iii", r) end
+end
+
+
+
+--------------------------------------------------------------------------------
+--- 23) THE DEPLETED THORIUM BASED LIQUID FUEL AND PRASEODYMIUM (issue #356): GoodGenerator's neutron activator depletes
+--- the excited fuel (NeutronActivatorLoader.java:26-32: 200 L, 500 s, no power; GT's other source, the large naquadah
+--- reactor burning it 1:1, is left out as for the uranium and plutonium fuels of 136), its centrifuge (RecipeLoader.java:
+--- 1529-1542: 1000 L into 64 + 16 (80 %) thorium 232, 64 + 32 (80 %) praseodymium, 2 boron (30 %), 4 indium (50 %),
+--- 75 s at EV) gives GT's praseodymium, the mod's only source of it (fuel MK IV, #356). Fluids a tenth, the items GT's.
+--------------------------------------------------------------------------------
+do
+	local L = {}
+	local DEPLETED = "depleted-thorium-based-liquid-fuel"
+	F.fluid(DEPLETED, "spackled-purple-fluid", { 0.25, 0.18, 0.30 })
+	dust("praseodymium-dust")
+	step(L, DEPLETED, "neutron-activator-recipes", 500, 1, { { "excited-thorium-based-liquid-fuel", 20 } },
+		{ { DEPLETED, 20 } })
+	step(L, DEPLETED .. "-centrifuging", "ev-centrifuge-recipes", 75, EV_SPEED, { { DEPLETED, 100 } },
+		{ { "thorium-232-dust", 64 }, { "thorium-232-dust", 16, 0.8 }, { "praseodymium-dust", 64 },
+			{ "praseodymium-dust", 32, 0.8 }, { "boron", 2, 0.3 }, { "indium", 4, 0.5 } }, "praseodymium-dust")
+	for _, r in pairs(L) do fork_add_unlock("thorium-based-liquid-fuel", r) end
 end

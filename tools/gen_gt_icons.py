@@ -196,7 +196,7 @@ MATERIALS = {
     # issue #356: the Mehen Belt's awakened draconium (GT's DraconiumAwakened)
     "awakened-draconium": "DraconiumAwakened",
     # issue #356: the Lutetium Asteroid's thulium and tellurium
-    "thulium": "Thulium", "tellurium": "Tellurium",
+    "thulium": "Thulium", "tellurium": "Tellurium", "praseodymium": "Praseodymium",
     "calcium": "Calcium",
     # issue #205: goodgenerator's Werkstoffe of the naquadah line (GGMaterial.java, their colours; dusts)
     "naquadria-oxide-mixture": ("METALLIC", (77, 77, 85)), "indium-phosphate": ("DULL", (43, 46, 112)),
