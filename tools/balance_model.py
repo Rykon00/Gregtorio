@@ -37,7 +37,7 @@ FIXED = {  # category -> (class, speed of the best machine)
     "luv-circuit-assembly-line-recipes": ("circuit-assembly-line", 64),
     "water-purification-recipes": ("water-purification", 1),
     "bacterial-vat-recipes": ("bacterial-vat", 1),
-    "dimensionally-transcendent-plasma-forge-recipes": ("dtpf", 2048),
+    "dimensionally-transcendent-plasma-forge-recipes": ("dtpf", 1024),   # UIV since issue #355
     "quantum-force-transformer-recipes": ("qft", 2048),
     "godforge-recipes": ("godforge", 4096),
 }
@@ -47,8 +47,8 @@ OPTIONAL_CATS = {DTPF_CAT, "quantum-force-transformer-recipes"}  # phase 6a: not
 DTPF_METALS = ["molten-neutronium", "molten-cosmic-neutronium", "molten-infinity", "molten-transcendent-metal",
                "molten-spacetime", "molten-universium"]
 # power per crafting speed (MW): every fusion recipe runs in the MK4/MK5 of the endgame factories
-# (327.68 MW / 512, 655.36 MW / 1024), the DTPF draws 1310.72 MW at speed 2048
-MW_PER_SPEED = {"fusion": 0.64, "dtpf": 1310.72 / 2048, "godforge": 2621.44 / 4096}
+# (327.68 MW / 512, 655.36 MW / 1024), the DTPF draws 655.36 MW at speed 1024 (UIV since issue #355)
+MW_PER_SPEED = {"fusion": 0.64, "dtpf": 655.36 / 1024, "godforge": 2621.44 / 4096}
 FREE_RAW = {"p507"}  # loop reagent of the naquadah line
 GLOBAL_OV = {"raw-crystal-chip": "raw-crystal-chip-loop"}  # steady state of the GT loop
 CREDIT = {"bacterial-sludge", "p507"}  # loop byproducts: a recipe that returns them is credited
