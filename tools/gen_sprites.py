@@ -298,6 +298,14 @@ MULTIBLOCKS = {
     "reactor-processing-unit-i": ((3, 3), "gregtech:iconsets/MACHINE_IV_SIDE", None,
                                   ("gregtech:basicmachines/reactor_processing_unit/OVERLAY_FRONT",
                                    "gregtech:basicmachines/reactor_processing_unit/OVERLAY_FRONT_ACTIVE"), None),
+    # issue #356: GT++'s Algae Farm (its algae casing and controller face, MTEAlgaePond.java) and Industrial Dehydrator
+    # (Utupu-Tanuri: the vacuum casing and its controller face, MTEIndustrialDehydrator.java)
+    "algae-farm": ((3, 3), "gregtech:iconsets/ALGAE_CASING", None,
+                   ("miscutils:iconsets/controllerFaces/algaePondBase", "miscutils:iconsets/controllerFaces/algaePondBaseActive"),
+                   None),
+    "industrial-dehydrator": ((3, 3), "gregtech:iconsets/VACUUM_CASING_SIDE", None,
+                              ("miscutils:iconsets/controllerFaces/industrialDehydrator",
+                               "miscutils:iconsets/controllerFaces/industrialDehydratorActive"), None),
     # issue #406: GT++'s ZPM tiers of the two blocks (GregtechLFTR.java: the same overlays on the ZPM machine casing)
     "cold-trap-ii": ((3, 3), "gregtech:iconsets/MACHINE_ZPM_SIDE", None,
                      ("gregtech:basicmachines/cold_trap/OVERLAY_FRONT", "gregtech:basicmachines/cold_trap/OVERLAY_FRONT_ACTIVE"),
@@ -346,6 +354,7 @@ WHOLE_ICONS = {"large-titanium-boiler", "large-combustion-engine", "digester", "
                "ev-rocket-engine", "iv-rocket-engine", "luv-rocket-engine", "large-rocket-engine",
                "universal-chemical-fuel-engine", "reactor-fuel-processing-plant", "liquid-fluoride-thorium-reactor",
                "sparge-tower", "cold-trap-i", "reactor-processing-unit-i", "nuclear-salt-processing-plant", "cold-trap-ii", "reactor-processing-unit-ii",
+               "algae-farm", "industrial-dehydrator",
                *(f"precise-assembler-mk{i}" for i in range(1, 4)),
                *(f"space-elevator-mk{t}" for t in range(1, 6)),
                *(f"space-elevator-mining-module-mk{t}" for t in range(1, 4)),
