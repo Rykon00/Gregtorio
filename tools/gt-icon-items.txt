@@ -4223,3 +4223,17 @@ pure-awakened-draconium-dust
 draconium-dust
 awakened-draconium-dust
 hot-draconium-ingot
+raw-thulium
+crushed-thulium
+purified-thulium
+centrifuged-thulium
+impure-thulium-dust
+pure-thulium-dust
+thulium-dust
+raw-tellurium
+crushed-tellurium
+purified-tellurium
+centrifuged-tellurium
+impure-tellurium-dust
+pure-tellurium-dust
+tellurium-dust

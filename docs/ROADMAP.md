@@ -2318,6 +2318,9 @@ Part 2: the Twilight Forest's olivine vein and small ores and the Nether's saltp
   (155). Draconium also gets GTNH's blast furnace (7200 K, LuV) and vacuum freezer route beside the fusion recipe of
   131. Titanium, iridium, chrome, osmium, uranium, nether star, perlite, uvarovite and mithril ore are left out (no ore
   of them in the mod).
+* #356: the space elevator's Lutetium Asteroid gives GT's thulium (1000) and tellurium (1500) ores again, new ores with
+  GTNH's chain (155). It is the mod's only GT source of them: thulium for the Naquadah Fuel Refinery's controller and
+  casing, tellurium for lead plasma (#397). Its tantalum and lutetium ores stay left out.
 
 ### Elements and the fusion recipes (issue #365)
 
