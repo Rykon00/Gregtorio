@@ -1350,8 +1350,7 @@ table.insert(data.raw.technology["uxv-components"].prerequisites, RADOX)
 --- Value (as section 9: the rod's energy over its life against the uranium rod's): GT's naquadah rod gives 4 per pulse
 --- for 100 000 reactor seconds, the uranium rod 2 for 20 000: 10 times, 60 000 MJ; dual and quad 4 and 12 times that.
 --- GT's quad rod heats less (heat 1 against 4); the mod's reactors have no hull heat, so only the energy counts.
---- GT's fifth rod, The Core (32 rods, 3 x 64 long tungstensteel rods and 2 x 64 tiberium dust, LuV), waits for
---- bartworks' tiberium (issue #402).
+--- GT's fifth rod, The Core (issue #402), at the end of the section.
 --------------------------------------------------------------------------------
 
 local NAQ_RODS = "naquadah-fuel-rods"
@@ -1399,6 +1398,25 @@ end
 F.tech{
 	--- (LuV: enriched naquadah; the rods burn in the reactors of Nuclear Fuel Rods)
 	name = NAQ_RODS, prerequisites = { "enriched-naquadah", "nuclear-fuel-rods" }, packs = 7, count = 1500, time = 60,
+	recipes = RECIPES,
+}
+--- GT's fifth rod, The Core (issue #402): 32 rods, 3 x 64 long tungstensteel rods and 2 x 64 tiberium dust in the LuV
+--- assembler (5 s; FissionFuelLoader.java:775-786). Value: 32 cells, 8 per pulse for 100 000 reactor seconds, 17 pulses
+--- per cell (LoaderGTBlockFluid.java:631-642): 10 880 times a uranium rod. The depleted Core gives 8 depleted quad rods,
+--- 2 x 64 zirconium dust at 50 % and 144 tungstensteel dust in the IV centrifuge (100 s; :827-839).
+--- Its technology comes after Naquadah Fuel Rods and Reach Ross128ba, whose veins (#392) give bartworks' tiberium (#252;
+--- Reach Ross128ba has higher science, as a prerequisite of Naquadah Fuel Rods it would hold the other rods back to ZPM).
+RECIPES = {}
+RECIPES[#RECIPES + 1] = rod("the-core", 65280000, "depleted-the-core", {
+	{ type = "item", name = "naquadah-fuel-rod", amount = 32 },
+	{ type = "item", name = "long-tungstensteel-rod", amount = 192 },
+	{ type = "item", name = "tiberium-dust", amount = 128 },
+}, "luv-assembling-machine-recipes", 5 * LUV_SPEED)
+step(RECIPES, "depleted-the-core-centrifuging", "iv-centrifuge-recipes", 100, IV_SPEED, { { "depleted-the-core", 1 } }, {
+	{ "depleted-" .. NQ, 8 }, { "zirconium-dust", 64, 0.5 }, { "zirconium-dust", 64, 0.5 }, { "tungstensteel-dust", 144 } })
+F.tech{
+	--- (ZPM: Reach Ross128ba)
+	name = "the-core", prerequisites = { NAQ_RODS, "reach-ross128ba" }, packs = 8, count = 2000, time = 60,
 	recipes = RECIPES,
 }
 

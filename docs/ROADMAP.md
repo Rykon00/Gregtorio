@@ -2466,7 +2466,10 @@ The maintainer's decision: all four steps of the issue. Step 1, the naquadah rod
 Fuel Rods): GT's Large Tungstensteel Fluid Cell canned with enriched naquadah dust, the dual and quad rods, the depleted
 rods in GT's EV centrifuge. Value by #359's rule (the rod's energy over its life against the uranium rod's): 10 times,
 60 000 MJ; dual and quad 4 and 12 times. GT's quad naquadah rod heats less than the others; the mod's reactors have no
-hull heat, so that difference is lost. GT's fifth rod, The Core, needs bartworks' tiberium (issue #402).
+hull heat, so that difference is lost. GT's fifth rod, The Core (issue #402, after the Ross128b veins of #392 brought
+bartworks' tiberium): GT's LuV assembler recipe, 10 880 times a uranium rod (65 280 000 MJ), the depleted Core in GT's IV
+centrifuge. Its tiberium comes with Reach Ross128ba (ZPM): #252 would make that technology a prerequisite of Naquadah Fuel
+Rods, but its higher science would hold the other rods back, so The Core has its own technology after both.
 
 Step 2 (164 section 14, technology Liquid Fluoride Thorium Reactor; the plan on #386: GT++'s LFTR fuels are recipes of
 the Reactor Fuel Processing Plant only, so the plant comes here, not in step 4):
