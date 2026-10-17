@@ -4271,3 +4271,7 @@ tungstensteel-reinforced-borosilicate-glass-block
 algae-farm-controller
 vacuum-furnace-casing
 industrial-dehydrator-controller
+inconel-792-dust
+pikyonium-64b-ingot
+pikyonium-64b-plate
+double-hs188-a-plate
