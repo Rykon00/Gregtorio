@@ -204,6 +204,11 @@ end
 ---     a 4x superconductor wire -> 4 wires; GT's Ore Drilling Plant IV -> the IV drilling rig (as the Void Miner I).
 --------------------------------------------------------------------------------
 
+--- issue #356: GT's thulium and tellurium ores of the Lutetium Asteroid, the mod's only GT source of them (thulium for the
+--- Naquadah Fuel Refinery, tellurium for lead plasma, #397); its tantalum and lutetium ores stay left out
+create_ore("raw-thulium", nil, "crushed-thulium", "thulium-dust", nil, "crushed-thulium", nil, nil, 1, false, false)
+create_ore("raw-tellurium", nil, "crushed-tellurium", "tellurium-dust", nil, "crushed-tellurium", nil, nil, 1, false, false)
+
 local TIERS = { "LV", "MV", "HV", "EV", "IV", "LuV", "ZPM", "UV", "UHV", "UEV", "UIV", "UMV", "UXV" }
 local TIER_OF = {}
 for i, t in ipairs(TIERS) do TIER_OF[t] = i end
@@ -350,7 +355,7 @@ local ASTEROIDS = {
 	{ "quartzAsteroid", "Quartz Asteroid", 1, "MV", "ZPM", 20, 80, 500, 7680, 10000, -- L358
 		{ { "raw-certus-quartz", 2250 }, { "raw-nether-quartz", 2250 } } },
 	{ "lutetiumAsteroid", "Lutetium Asteroid", 1, "IV", "UHV", 20, 80, 500, 30720, 10000, -- L378
-		{ { "raw-redstone", 5500 } } },
+		{ { "raw-tellurium", 1500 }, { "raw-thulium", 1000 }, { "raw-redstone", 5500 } } },   -- tellurium, thulium: #356
 	{ "siliconAsteroid", "Silicon Asteroid", 2, "HV", "LuV", 20, 80, 500, 30720, 9000, -- L399
 		{ { "raw-silicon", 4500 } } },
 	{ "phosphateAsteroid", "Phosphate Asteroid", 1, "IV", "UIV", 20, 150, 500, 30720, 13000, -- L419
@@ -452,6 +457,8 @@ for i, name in ipairs(MTECH) do
 	for _, p in ipairs(MPRE[i]) do pre[#pre + 1] = p end
 	F.tech{ name = name, prerequisites = pre, packs = MPACKS[i], count = 50, time = 60, recipes = unlocks[i] }
 end
+--- issue #356: the crushing of the Lutetium Asteroid's new ores with its module (the rest of their chain follows, 155)
+for _, r in pairs({ "crushed-thulium", "crushed-tellurium" }) do fork_add_unlock(MTECH[1], r) end
 
 
 --------------------------------------------------------------------------------
