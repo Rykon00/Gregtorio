@@ -306,6 +306,14 @@ MULTIBLOCKS = {
     "industrial-dehydrator": ((3, 3), "gregtech:iconsets/VACUUM_CASING_SIDE", None,
                               ("miscutils:iconsets/controllerFaces/industrialDehydrator",
                                "miscutils:iconsets/controllerFaces/industrialDehydratorActive"), None),
+    # issue #356: the Naquadah Fuel Refinery (goodgenerator's FRF casing, GT's black plutonium mining casing; the assembly
+    # line front MTENaquadahFuelRefinery.java shows), both coil tiers
+    "naquadah-fuel-refinery": ((3, 3), "gregtech:iconsets/MACHINE_CASING_MINING_BLACKPLUTONIUM", None,
+                               ("gregtech:iconsets/OVERLAY_FRONT_ASSEMBLY_LINE",
+                                "gregtech:iconsets/OVERLAY_FRONT_ASSEMBLY_LINE_ACTIVE"), None),
+    "naquadah-fuel-refinery-t2": ((3, 3), "gregtech:iconsets/MACHINE_CASING_MINING_BLACKPLUTONIUM", None,
+                                  ("gregtech:iconsets/OVERLAY_FRONT_ASSEMBLY_LINE",
+                                   "gregtech:iconsets/OVERLAY_FRONT_ASSEMBLY_LINE_ACTIVE"), None),
     # issue #406: GT++'s ZPM tiers of the two blocks (GregtechLFTR.java: the same overlays on the ZPM machine casing)
     "cold-trap-ii": ((3, 3), "gregtech:iconsets/MACHINE_ZPM_SIDE", None,
                      ("gregtech:basicmachines/cold_trap/OVERLAY_FRONT", "gregtech:basicmachines/cold_trap/OVERLAY_FRONT_ACTIVE"),
@@ -354,7 +362,7 @@ WHOLE_ICONS = {"large-titanium-boiler", "large-combustion-engine", "digester", "
                "ev-rocket-engine", "iv-rocket-engine", "luv-rocket-engine", "large-rocket-engine",
                "universal-chemical-fuel-engine", "reactor-fuel-processing-plant", "liquid-fluoride-thorium-reactor",
                "sparge-tower", "cold-trap-i", "reactor-processing-unit-i", "nuclear-salt-processing-plant", "cold-trap-ii", "reactor-processing-unit-ii",
-               "algae-farm", "industrial-dehydrator",
+               "algae-farm", "industrial-dehydrator", "naquadah-fuel-refinery", "naquadah-fuel-refinery-t2",
                *(f"precise-assembler-mk{i}" for i in range(1, 4)),
                *(f"space-elevator-mk{t}" for t in range(1, 6)),
                *(f"space-elevator-mining-module-mk{t}" for t in range(1, 4)),

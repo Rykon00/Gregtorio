@@ -55,10 +55,10 @@ FORK_RECYCLING_MASS = {
 local DEFAULT_MASS = 98   -- GT: a material without element and composition (technetium)
 
 --- items never recycled, with the reason (devcheck fails for an entry without one or for an item that does not exist)
-FORK_RECYCLING_BLACKLIST = {
-	["blaze-rod"] = "GT: registerMaterialRecycling skips the blaze rod (GTRecipeRegistrator.java 185)",
-	["obsidian"] = "GT: registerMaterialRecycling skips obsidian (GTRecipeRegistrator.java 188)",
-}
+--- (data.lua's files before this one may already have listed theirs)
+FORK_RECYCLING_BLACKLIST = FORK_RECYCLING_BLACKLIST or {}
+FORK_RECYCLING_BLACKLIST["blaze-rod"] = "GT: registerMaterialRecycling skips the blaze rod (GTRecipeRegistrator.java 185)"
+FORK_RECYCLING_BLACKLIST["obsidian"] = "GT: registerMaterialRecycling skips obsidian (GTRecipeRegistrator.java 188)"
 
 FORK_RECYCLING = { recipes = {}, pending = {}, items = 0, by_kind = { macerator = 0, ["arc-furnace"] = 0, ["fluid-extractor"] = 0 } }
 

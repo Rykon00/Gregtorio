@@ -3092,3 +3092,225 @@ do
 		{ { "radiation-proof-prismatic-naquadah-composite-sheet", 16 } })
 	for _, r in pairs(L) do fork_add_unlock(PN, r) end
 end
+
+
+
+
+--------------------------------------------------------------------------------
+--- 27) THE NAQUADAH FUEL REFINERY WITH NAQUADAH FUEL MK III AND MK IV (issue #356, the maintainer's decisions on #417
+--- and #421). GT5-Unofficial 638b3f37ca (GoodGenerator: goodgenerator/loader/RecipeLoader.java (RL), FuelRecipeLoader.java
+--- (FL); GT's refinery gregtech/common/tileentities/machines/multi/MTENaquadahFuelRefinery.java) and NewHorizonsCoreMod;
+--- melts a tenth of GT's litres, GT's seconds x the tier speed of GT's EU/t.
+--- * The refinery: 27x27x5 in GT, 470-483 Naquadah Fuel Refinery Casings, 192 Field Restriction Glass, 124 Europium
+---   Reinforced Radiation Proof Machine Casings, 72 Field Restriction Coils, 64 Radiation Proof Steel Frame Boxes. The
+---   coil tier gates the recipe (MK III: T1, MK IV: T2), gives 4 parallels per tier and a perfect overclock per tier above
+---   the recipe's. Here two machines as the mod builds tiered casings (the precise assembler): the refinery with T1 coils
+---   (UHV, 4 parallels: MK III) and the one with T2 coils (UMV, 8 parallels: MK III and MK IV), each at its tier's speed
+---   times its parallels and that many amps of its tier; the second is the first with 72 T2 coils and a UMV hatch.
+---   Their items: GT's controller (RL:658-684, the assembly line) with the structure (483 casings), the energy hatch and
+---   hulls for the input bus, input hatch and output hatch.
+--- * The parts with GT's recipes: the casing (RL:704-722; thulium frame, 6 advanced radiation protection plates, ...),
+---   the advanced radiation protection plate (RL:686-702) and the radiation protection plate (RL:67-77), the field
+---   restriction glass (RL:813-824: a borosilicate glass frame, 6 reinforced glass plates, 32 naquadah alloy rings, 4 HV
+---   field generators, 2 ingots of molten naquadria; ZPM, 15 s), the Europium reinforced casing and its radiation proof
+---   machine casing (bartworks Assembler.java:106-126), the radiation proof steel frame box (RL:129-138: 8 long prismatic
+---   naquadah rods, 4 HSS-E frames), the coils T1 and T2 (RL:724-766), the controller's huge mysterious crystal pipes
+---   (GT's extruder, 12 ingots; the ingot from NewHorizonsCoreMod's blast furnace with gas, 7200 K, ZPM, 320 s, and
+---   vacuum freezer, IV, 14.7 s), thulium screws and frame (GT's blast furnace at 1818 K: mass / 40 x 1818 ticks, MV;
+---   vacuum freezer mass x 3 ticks, MV; 158's part rules), awakened draconium (NHC's blast furnace with gas, 9900 K, ZPM,
+---   250 s; vacuum freezer, LuV, 14.7 s), extremely unstable naquadah (RL:647-656: 32 naquadria dust and fluoroantimonic
+---   acid in the IV blast furnace into 17 and acid naquadah emulsion; RecipeLoader2.java:104: the hot ingot, ZPM, 400 s;
+---   RL:1430-1435: the vacuum freezer, LuV, 20 s), GT's medium pipes (extruder, 3 ingots), tiny naquadah pipes (extruder,
+---   1 ingot into 2), fine manyullyn wire (wiremill), the reinforced glass melt (GT's fluid extractor, EV, 5 s) cast into
+---   plates and the borosilicate glass cast into rods (143). GT's 2x and 4x superconductor wires are 2 and 4 wires.
+--- * High density uranium (RL:141-166): the graphite-uranium mixture (bartworks' mixer: 3 graphite, 1 uranium into 4),
+---   4 of it with 2 tungsten carbide foils wrapped (HV, 70 s), 4 wraps in the implosion compressor (GT's 8 TNT: 2
+---   explosives) into a nugget and 8 tiny tungsten carbide piles, 9 nuggets compressed (HV, 30 s); nether star dust (GT's
+---   macerator, its mass in ticks).
+--- * MK III (FL:57-71: 4 extremely unstable naquadah, 27 tiberium dust, 2 high density uranium, 1 high density plutonium,
+---   800 L heavy and 1000 L light naquadah fuel into 100 L; 5 s, UHV) replaces 136's stand-in in the UEV mixer; MK IV
+---   (FL:89-103: 27 extremely unstable naquadah, 64 nether star dust, 64 awakened draconium dust, 32 orundum dust, 2000 L
+---   MK III and 9216 L molten praseodymium into 250 L; 8 s, 46 000 000 EU/t: UMV). The fuels keep GT's litres as 136's MK1
+---   and MK2 (their fuel value is GT's EU per litre), the melts are a tenth (their material cost stays GT's). MK IV burns at
+---   GT's 88 540 000 EU/t x 100 ticks per litre in the large naquadah reactors. GT's alternative recipes (chromatic glass
+---   dust, hypogen, the one-step MK IV) and MK V and VI are left for later (#356).
+--------------------------------------------------------------------------------
+do
+	local T1, T2 = "naquadah-fuel-refinery", "naquadah-based-fuel-mk4"
+	local R1, R2 = {}, {}
+	local NFR = "naquadah-fuel-refinery"
+	local EUN = "extremely-unstable-naquadah"
+	local MK3, MK4 = "naquadah-based-fuel-mk3", "naquadah-based-fuel-mk4"
+	local function item(name, amount) return { type = "item", name = name, amount = amount } end
+	F.category(NFR .. "-recipes")
+	F.category(NFR .. "-t2-recipes")
+	F.fluid("molten-" .. EUN, "molten-" .. EUN, { 21 / 255, 136 / 255, 18 / 255 })
+	F.fluid("molten-awakened-draconium", "molten-awakened-draconium", { 244 / 255, 78 / 255, 0 })
+	F.fluid("molten-praseodymium", "molten-praseodymium", { 117 / 255, 214 / 255, 129 / 255 })
+	F.fluid("molten-reinforced-glass", "molten-reinforced-glass", { 192 / 255, 245 / 255, 254 / 255 })
+	F.fluid(MK4, "spackled-forest-green-fluid", { 0.15, 0.85, 0.65 })   -- (as 136's MK1 to MK3)
+	data.raw.fluid[MK4].fuel_value = "8854GJ"   -- (88 540 000 EU/t x 100 ticks, 1 EU = 1 kJ as in 136)
+	do
+		local fuels = data.raw["mod-data"]["fork-power"].data.fuels
+		for name, list in pairs(fuels) do
+			if name:find("large%-naquadah%-reactor$") then
+				local found = false
+				for _, x in pairs(list) do found = found or x == MK4 end   -- (the reactors share one list)
+				if not found then list[#list + 1] = MK4 end
+			end
+		end
+	end
+	items(SUB_DUST, { EUN .. "-dust", "graphite-uranium-mixture", "nether-star-dust" })
+	items(SUB_PART, { "hot-" .. EUN .. "-ingot", EUN .. "-ingot", "wrapped-uranium-ingot", "high-density-uranium-nugget",
+		"high-density-uranium", "hot-mysterious-crystal-ingot", "mysterious-crystal-ingot",
+		"huge-mysterious-crystal-fluid-pipe", "hot-awakened-draconium-ingot", "awakened-draconium-ingot",
+		"hot-thulium-ingot", "thulium-ingot", "thulium-rod", "thulium-bolt", "thulium-screw", "thulium-frame",
+		"fine-manyullyn-wire", "tiny-naquadah-fluid-pipe", "medium-black-plutonium-item-pipe", "medium-neutronium-fluid-pipe",
+		"borosilicate-glass-rod", "borosilicate-glass-frame", "reinforced-glass-plate", "long-prismatic-naquadah-rod" })
+	items("subgroup-uhv-age-multiblocks", { "radiation-protection-plate", "advanced-radiation-protection-plate",
+		"naquadah-fuel-refinery-casing", "field-restriction-glass", "radiation-proof-machine-casing",
+		"europium-reinforced-radiation-proof-machine-casing", "radiation-proof-steel-frame-box", "field-restriction-coil",
+		"advanced-field-restriction-coil", "naquadah-fuel-refinery-controller" })
+	local tiny_wc, tiny_wc_r = pile("tungsten-carbide-dust", "tiny")
+	local thulium_small, thulium_small_r = pile("thulium-dust", "small")
+	FORK_CASTING.recipes[tiny_wc_r] = true
+	FORK_CASTING.recipes[thulium_small_r] = true
+	R1[#R1 + 1] = tiny_wc_r
+	R1[#R1 + 1] = thulium_small_r
+
+	--- extremely unstable naquadah
+	step(R1, EUN .. "-dust", "iv-electric-blast-furnace-recipes", 180, IV_SPEED,
+		{ { "naquadria-dust", 32 }, { "fluoroantimonic-acid", 400 } }, { { EUN .. "-dust", 17 }, { "acid-naquadah-emulsion", 800 } })
+	step(R1, "hot-" .. EUN .. "-ingot", "zpm-electric-blast-furnace-recipes", 400, ZPM_SPEED, { { EUN .. "-dust", 1 } },
+		{ { "hot-" .. EUN .. "-ingot", 1 } })
+	step(R1, EUN .. "-ingot", "luv-vacuum-freezer-recipes", 20, LUV_SPEED, { { "hot-" .. EUN .. "-ingot", 1 } }, { { EUN .. "-ingot", 1 } })
+	--- high density uranium, nether star dust
+	step(R1, "graphite-uranium-mixture", "lv-mixer-recipes", 1.7, LV_SPEED, { { "graphite", 3 }, { "uranium-238-dust", 1 } },
+		{ { "graphite-uranium-mixture", 4 } })
+	step(R1, "wrapped-uranium-ingot", "hv-assembling-machine-recipes", 70, HV_SPEED,
+		{ { "graphite-uranium-mixture", 4 }, { "tungsten-carbide-foil", 2 } }, { { "wrapped-uranium-ingot", 1 } })
+	step(R1, "high-density-uranium-nugget", "lv-implosion-compressor-recipes", 1, LV_SPEED,
+		{ { "wrapped-uranium-ingot", 4 }, { "explosives", 2 } }, { { "high-density-uranium-nugget", 1 }, { tiny_wc, 8 } })
+	step(R1, "high-density-uranium", "hv-compressor-recipes", 30, HV_SPEED, { { "high-density-uranium-nugget", 9 } },
+		{ { "high-density-uranium", 1 } })
+	step(R2, "nether-star-dust", "lv-macerator-recipes", 4.9, LV_SPEED, { { "nether-star", 1 } }, { { "nether-star-dust", 1 } })
+	--- mysterious crystal, awakened draconium, thulium
+	blast(R1, "mysterious-crystal", "zpm-electric-blast-furnace-recipes", 320, ZPM_SPEED)
+	step(R1, "mysterious-crystal-ingot", "iv-vacuum-freezer-recipes", 14.7, IV_SPEED, { { "hot-mysterious-crystal-ingot", 1 } },
+		{ { "mysterious-crystal-ingot", 1 } })
+	step(R1, "huge-mysterious-crystal-fluid-pipe", "hv-extruder-recipes", 4.8, HV_SPEED, { { "mysterious-crystal-ingot", 12 } },
+		{ { "huge-mysterious-crystal-fluid-pipe", 1 } })
+	blast(R1, "awakened-draconium", "zpm-electric-blast-furnace-recipes", 250, ZPM_SPEED)
+	step(R1, "awakened-draconium-ingot", "luv-vacuum-freezer-recipes", 14.7, LUV_SPEED,
+		{ { "hot-awakened-draconium-ingot", 1 } }, { { "awakened-draconium-ingot", 1 } })
+	step(R1, "hot-thulium-ingot", "mv-electric-blast-furnace-recipes", 363.6, MV_SPEED, { { "thulium-dust", 1 } },
+		{ { "hot-thulium-ingot", 1 } })
+	step(R1, "thulium-ingot", "mv-vacuum-freezer-recipes", 25.2, MV_SPEED, { { "hot-thulium-ingot", 1 } }, { { "thulium-ingot", 1 } })
+	step(R1, "thulium-rod", "lv-lathe-recipes", 42, LV_SPEED, { { "thulium-ingot", 1 } }, { { "thulium-rod", 1 }, { thulium_small, 2 } })
+	step(R1, "thulium-bolt", "lv-cutting-machine-recipes", 33.6, LV_SPEED, { { "thulium-rod", 1 }, { "water", 0.4 } },
+		{ { "thulium-bolt", 4 } })
+	step(R1, "thulium-screw", "lv-lathe-recipes", 1.05, LV_SPEED, { { "thulium-bolt", 1 } }, { { "thulium-screw", 1 } })
+	step(R1, "thulium-frame", "lv-assembling-machine-recipes", 3.2, LV_SPEED, { { "thulium-rod", 4 } }, { { "thulium-frame", 1 } })
+	--- small parts
+	step(R1, "fine-manyullyn-wire", "lv-wiremill-recipes", 5, LV_SPEED, { { "manyullyn-ingot", 1 } }, { { "fine-manyullyn-wire", 4 } })
+	step(R1, "tiny-naquadah-fluid-pipe", "hv-extruder-recipes", 0.2, HV_SPEED, { { "naquadah-ingot", 1 } },
+		{ { "tiny-naquadah-fluid-pipe", 2 } })
+	step(R1, "medium-black-plutonium-item-pipe", "hv-extruder-recipes", 1.2, HV_SPEED, { { "black-plutonium-ingot", 3 } },
+		{ { "medium-black-plutonium-item-pipe", 1 } })
+	step(R2, "medium-neutronium-fluid-pipe", "hv-extruder-recipes", 1.2, HV_SPEED, { { "neutronium-ingot", 3 } },
+		{ { "medium-neutronium-fluid-pipe", 1 } })
+	step(R1, "borosilicate-glass-frame", "lv-assembling-machine-recipes", 3.2, LV_SPEED, { { "borosilicate-glass-rod", 4 } },
+		{ { "borosilicate-glass-frame", 1 } })
+	step(R1, "melt-reinforced-glass", "ev-fluid-extractor-recipes", 5, EV_SPEED, { { "reinforced-glass", 1 } },
+		{ { "molten-reinforced-glass", 14.4 } })
+	--- the structure
+	step(R1, "radiation-protection-plate", "ev-assembling-machine-recipes", 20, EV_SPEED,
+		{ { "dense-iridium-plate", 8 }, { "naquadah-alloy-plate", 8 }, { "molten-lead", 115.2 } }, { { "radiation-protection-plate", 1 } })
+	step(R1, "advanced-radiation-protection-plate", "zpm-assembly-line-recipes", 50, ZPM_SPEED,
+		{ { "radiation-protection-plate", 2 }, { "fluxed-electrum-plate", 4 }, { "trinium-plate", 4 }, { "naquadah-alloy-plate", 4 },
+			{ "osmiridium-plate", 4 }, { "vibrant-alloy-plate", 4 }, { "radiation-proof-prismatic-naquadah-composite-sheet", 4 },
+			{ "molten-indalloy-140", 115.2 } }, { { "advanced-radiation-protection-plate", 1 } })
+	step(R1, "naquadah-fuel-refinery-casing", "zpm-assembly-line-recipes", 25, ZPM_SPEED,
+		{ { "thulium-frame", 1 }, { "advanced-radiation-protection-plate", 6 }, { "iv-field-generator", 2 },
+			{ "tiny-naquadah-fluid-pipe", 16 }, { "fine-naquadah-alloy-wire", 64 }, { "fine-manyullyn-wire", 64 }, { "orundum-plate", 4 },
+			{ "molten-tungstensteel", 115.2 }, { "molten-indalloy-140", 230.4 } }, { { "naquadah-fuel-refinery-casing", 1 } })
+	step(R1, "field-restriction-glass", "zpm-assembling-machine-recipes", 15, ZPM_SPEED,
+		{ { "borosilicate-glass-frame", 1 }, { "reinforced-glass-plate", 6 }, { "naquadah-alloy-ring", 32 }, { "hv-field-generator", 4 },
+			{ "molten-naquadria", 28.8 } }, { { "field-restriction-glass", 1 } })
+	step(R1, "radiation-proof-machine-casing", "iv-assembling-machine-recipes", 2, IV_SPEED,
+		{ { "dense-lead-plate", 6 }, { "tungstensteel-frame", 1 }, { "liquid-concrete", 129.6 } }, { { "radiation-proof-machine-casing", 1 } })
+	step(R1, "europium-reinforced-radiation-proof-machine-casing", "luv-assembling-machine-recipes", 10, LUV_SPEED,
+		{ { "radiation-proof-machine-casing", 1 }, { "radiation-proof-prismatic-naquadah-composite-sheet", 4 }, { "europium-foil", 6 },
+			{ "europium-screw", 24 }, { "molten-lead", 86.4 } }, { { "europium-reinforced-radiation-proof-machine-casing", 1 } })
+	step(R1, "radiation-proof-steel-frame-box", "ev-assembling-machine-recipes", 16, EV_SPEED,
+		{ { "long-prismatic-naquadah-rod", 8 }, { "hsse-frame", 4 } }, { { "radiation-proof-steel-frame-box", 1 } })
+	step(R1, "field-restriction-coil", "zpm-assembly-line-recipes", 60, ZPM_SPEED,
+		{ { "osmium-frame", 1 }, { "uv-field-generator", 2 }, { "uv-pump", 8 }, { "palladium-naqindium-superconductive-wire", 128 },
+			{ "dense-americium-plate", 8 }, { "medium-black-plutonium-item-pipe", 16 }, { "ppic-wafer", 32 }, { "uhv-circuit", 1 },
+			{ "krypton", 100 }, { "molten-fluxed-electrum", 921.6 }, { "lubricant", 12800 } }, { { "field-restriction-coil", 1 } })
+	step(R2, "advanced-field-restriction-coil", "zpm-assembly-line-recipes", 60, ZPM_SPEED,
+		{ { "cosmic-neutronium-frame", 1 }, { "uhv-field-generator", 2 }, { "uhv-pump", 8 },
+			{ "naquamiridium-superconductive-wire", 256 }, { "dense-infinity-plate", 8 }, { "medium-neutronium-fluid-pipe", 16 },
+			{ "qpic-wafer", 32 }, { "uev-circuit", 1 }, { "radon-plasma", 1000 }, { "molten-awakened-draconium", 921.6 },
+			{ "lubricant", 12800 } }, { { "advanced-field-restriction-coil", 1 } })
+	step(R1, "naquadah-fuel-refinery-controller", "zpm-assembly-line-recipes", 60, ZPM_SPEED,
+		{ { "osmiridium-frame", 8 }, { "advanced-radiation-protection-plate", 64 }, { "uv-field-generator", 8 }, { "uhv-pump", 2 },
+			{ "uev-circuit", 4 }, { "huge-mysterious-crystal-fluid-pipe", 8 }, { "npic-wafer", 16 },
+			{ "highly-ultimate-voltage-coil", 64 }, { "yellow-garnet-lens", 16 }, { "thulium-screw", 64 }, { "molten-quantium", 921.6 },
+			{ "molten-awakened-draconium", 460.8 }, { "molten-" .. EUN, 144 }, { "molten-indalloy-140", 1440 } },
+		{ { "naquadah-fuel-refinery-controller", 1 } })
+	--- the machines
+	local function power(tier, n)
+		local cf = data.raw["assembling-machine"][tier .. "-centrifuge"]
+		local p = cf and cf.energy_usage or EU16_UHV
+		return (tonumber(p:match("^[%d.]+")) * n) .. p:match("%a+$")
+	end
+	local ports = { port("input", N, { -1, -1 }), port("input", N, { 0, -1 }), port("input", N, { 1, -1 }),
+		port("input", W, { -1, 0 }), port("output", S, { 0, 1 }) }
+	machine{
+		name = NFR, category = NFR .. "-recipes", speed = UHV_SPEED * 4, energy = power("uhv", 4),
+		subgroup = "subgroup-uhv-age-multiblocks", ports = ports, list = R1,
+		recipe = { "crafting-or-assembling-recipes", 1, { item("naquadah-fuel-refinery-controller", 1),
+			item("naquadah-fuel-refinery-casing", 483), item("field-restriction-glass", 192),
+			item("europium-reinforced-radiation-proof-machine-casing", 124), item("field-restriction-coil", 72),
+			item("radiation-proof-steel-frame-box", 64), item("uhv-energy-hatch", 1), item("lv-machine-hull", 3) } },
+	}
+	machine{
+		name = NFR .. "-t2", category = NFR .. "-t2-recipes", speed = UMV_SPEED * 8, energy = power("umv", 8),
+		subgroup = "subgroup-uhv-age-multiblocks", ports = ports, list = R2,
+		recipe = { "crafting-or-assembling-recipes", 1, { item(NFR, 1), item("advanced-field-restriction-coil", 72),
+			item("umv-energy-hatch", 1) } },
+	}
+	data.raw["assembling-machine"][NFR .. "-t2"].crafting_categories = { NFR .. "-recipes", NFR .. "-t2-recipes" }
+	--- (not recycled: the structure's sum passes Factorio's 65 535 per result; GT recycles the controller alone, which
+	--- keeps its recycling)
+	FORK_RECYCLING_BLACKLIST = FORK_RECYCLING_BLACKLIST or {}
+	for _, n in pairs({ NFR, NFR .. "-t2" }) do
+		FORK_RECYCLING_BLACKLIST[n] = "the refinery's structure: its sum passes 65535 per result; GT recycles the controller"
+	end
+	--- the fuels
+	local mk3 = data.raw.recipe[MK3]
+	mk3.category = NFR .. "-recipes"
+	mk3.energy_required = 5 * UHV_SPEED
+	mk3.ingredients = { item(EUN .. "-dust", 4), item("tiberium-dust", 27), item("high-density-uranium", 2),
+		item("high-density-plutonium", 1), { type = "fluid", name = "heavy-naquadah-fuel", amount = 800 },
+		{ type = "fluid", name = "light-naquadah-fuel", amount = 1000 } }
+	mk3.results = { { type = "fluid", name = MK3, amount = 100 } }
+	mk3.subgroup = "subgroup-" .. NFR .. "-recipes"
+	step(R2, "melt-praseodymium-dust", "iv-fluid-extractor-recipes", 1.2, IV_SPEED, { { "praseodymium-dust", 1 } },
+		{ { "molten-praseodymium", 14.4 } })
+	step(R2, MK4, NFR .. "-t2-recipes", 8, UMV_SPEED,
+		{ { EUN .. "-dust", 27 }, { "nether-star-dust", 64 }, { "awakened-draconium-dust", 64 }, { "orundum-dust", 32 }, { MK3, 2000 },
+			{ "molten-praseodymium", 921.6 } }, { { MK4, 250 } })
+
+	F.tech{ name = T1, prerequisites = { "prismatic-naquadah", "quantium", "naquadah-fuels", "precise-electronic-unit-mk3",
+		"bio-processor-mainframes" }, packs = 10, count = 1500,
+		time = 60, recipes = R1 }
+	move_unlock(MK3, T1)
+	F.tech{ name = T2, prerequisites = { T1, "thorium-based-liquid-fuel", "umv-energy-hatches" }, packs = 13, count = 95, time = 60, recipes = R2 }   -- (as 138's UMV techs)
+	for m, def in pairs({ [EUN] = { "luv", T1 }, ["awakened-draconium"] = { "zpm", T1 },
+		["borosilicate-glass"] = { "lv", T1 }, ["reinforced-glass"] = { "ev", T1 }, ["prismatic-naquadah"] = { "zpm", T1 } }) do
+		FORK_CASTING.materials[m] = def
+	end
+	FORK_CASTING.run()
+end
