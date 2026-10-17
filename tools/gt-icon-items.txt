@@ -4271,6 +4271,11 @@ tungstensteel-reinforced-borosilicate-glass-block
 algae-farm-controller
 vacuum-furnace-casing
 industrial-dehydrator-controller
+prismarine-precipitate
+prismatic-crystal
+radiation-proof-prismatic-naquadah-composite-sheet
+prismarine-shard
+strontium-hydroxide-dust
 inconel-792-dust
 pikyonium-64b-ingot
 pikyonium-64b-plate

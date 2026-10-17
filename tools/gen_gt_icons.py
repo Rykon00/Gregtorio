@@ -205,6 +205,11 @@ MATERIALS = {
     "magneto-resonatic": ("MAGNETIC", (221, 119, 221)), "crystalline-alloy": "CrystallineAlloy",
     # issue #356 part 2: the algae farm's rose gold and wood plate
     "rose-gold": "RoseGold", "wood": "Wood",
+    # issue #356 part 3: the chain's prismatic naquadah (MaterialsInit.java:14323-14335), GT++'s strontium hydroxide (its
+    # components' mean colour) and the prismarine shard (no texture in the checkouts: GT's chipped gem in the prismarine
+    # solution's colour, MaterialsInit.java:14262)
+    "prismatic-naquadah": ("METALLIC", (0x37, 0x37, 0x37)), "strontium-hydroxide": ("METALLIC", (76, 103, 188)),
+    "prismarine": ("DIAMOND", (0x55, 0x9a, 0x8a)),
     "thulium": "Thulium", "tellurium": "Tellurium",
     # issue #406: GT++'s Pikyonium 64B (MaterialsAlloy.java:700-717, its colour)
     "pikyonium-64b": ("METALLIC", (52, 103, 186)),
@@ -1012,6 +1017,11 @@ def icon_table(c):
     T["industrial-dehydrator-controller"] = lambda: c.face(f"{BLK}VACUUM_CASING_SIDE",
                                                            "gt:miscutils/textures/blocks/iconsets/controllerFaces/industrialDehydrator")
     T["integral-encasement-i"] = lambda: c.gt(f"{BLK}INTEGRAL_FRAMEWORK_ULV")
+    # issue #356 part 3: the netherite chain's items (gt.metaitem.03 248-250, MetaGeneratedItem03.java:1809-1824)
+    T["prismarine-precipitate"] = lambda: c.gt(M3 + "248")
+    T["prismatic-crystal"] = lambda: c.gt(M3 + "249")
+    T["radiation-proof-prismatic-naquadah-composite-sheet"] = lambda: c.gt(M3 + "250")
+    T["prismarine-shard"] = lambda: c.part("prismarine", "gemChipped")
     T["tungstensteel-reinforced-borosilicate-glass-block"] = lambda: c.gt(
         "gt:bartworks/textures/blocks/TungstenSteelReinforcedBoronSilicateGlassBlock")
     # issue #355: GT++'s quantum anomaly (MetaGeneratedItemIDs.Laser_Lens_Special 105) and Unknown Particle (particle

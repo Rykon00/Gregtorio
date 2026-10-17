@@ -157,6 +157,38 @@ for name, m in pairs(data.raw["assembling-machine"]) do
 	end
 end
 
+--- Issue #356: GT's chemical bath and laser engraver maps take 2 fluids in and give 2 out (gregtech/api/recipe/
+--- RecipeMaps.java: chemicalBathRecipes maxIO(2, 6, 2, 2), laserEngraverRecipes maxIO(4, 4, 2, 2); the netherite chain's
+--- extraction and crystallization use them): the 3x3 baths get a second input (north) and output (south), the 3x3
+--- laser engravers two outputs (south), on the free tiles of their sides.
+local function add_port(m, src, kind, direction, x, y)
+	local b = table.deepcopy(src)
+	b.production_type = kind
+	for _, pc in pairs(b.pipe_connections) do
+		pc.flow_direction = kind
+		pc.direction = direction
+		pc.position = { x, y }
+	end
+	m.fluid_boxes[#m.fluid_boxes + 1] = b
+end
+for _, m in pairs(data.raw["assembling-machine"]) do
+	local bath, engraver = false, false
+	for _, c in pairs(m.crafting_categories or {}) do
+		if c:match("%-chemical%-bath%-recipes$") then bath = true end
+		if c:match("%-laser%-engraver%-recipes$") then engraver = true end
+	end
+	local h = m.selection_box and m.selection_box[2][2]
+	if h == 1.5 and m.fluid_boxes and #m.fluid_boxes == 2 then
+		if bath then
+			add_port(m, m.fluid_boxes[1], "input", defines.direction.north, 1, -1)
+			add_port(m, m.fluid_boxes[2], "output", defines.direction.south, -1, 1)
+		elseif engraver then
+			add_port(m, m.fluid_boxes[1], "output", defines.direction.south, -1, 1)
+			add_port(m, m.fluid_boxes[1], "output", defines.direction.south, 1, 1)
+		end
+	end
+end
+
 
 
 --------------------------------------------------------------------------------

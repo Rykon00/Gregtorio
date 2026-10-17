@@ -2891,7 +2891,7 @@ do
 	step(L, "crystalline-alloy-ingot", "ev-vacuum-freezer-recipes", 28.6, EV_SPEED, { { "hot-crystalline-alloy-ingot", 1 } },
 		{ { "crystalline-alloy-ingot", 1 } })
 
-	F.tech{ name = PN, prerequisites = { "reach-the-everglades", "industrial-mixer", "zpm-energy-hatches" }, packs = 9,
+	F.tech{ name = PN, prerequisites = { "reach-the-everglades", "industrial-mixer", "zpm-multiblocks" }, packs = 9,
 		count = 1500, time = 60, recipes = L }
 	--- (the cubic zirconia recipe gives its yttrium oxide back, so 199 would count it as a producer and drop the pull of
 	--- yttrium oxide into its first consumer, the fluid shaper: keep that unlock)
@@ -3014,5 +3014,81 @@ do
 	FORK_RECYCLING_LATE = FORK_RECYCLING_LATE or {}
 	FORK_RECYCLING_LATE["algae-farm"] = true
 	FORK_RECYCLING_LATE["industrial-dehydrator"] = true
+	for _, r in pairs(L) do fork_add_unlock(PN, r) end
+end
+
+
+
+
+--------------------------------------------------------------------------------
+--- 26) THE NETHERITE CHAIN TO THE RADIATION PROOF PRISMATIC NAQUADAH COMPOSITE SHEET (issue #356, part 3): GT's
+--- gregtech/loaders/postload/chains/NetheriteRecipes.java:66-224 (GT5-Unofficial 638b3f37ca), fluids a tenth of GT's
+--- litres (plasmas and the water grades GT's), GT's seconds x the tier speed of GT's EU/t:
+--- * prismarine shards (autoclave: 32 red algae, 32 certus quartz dust, 8000 L grade 1 water into 8; 15 s, LuV);
+--- * the prismarine solution (dissolution tank: 24 shards with industrial strength hydrofluoric acid and hydrogen
+---   peroxide, 4000 L each, into 8000 L and 4 certus quartz dust; the loop: 6 shards with 6000 L of the contaminated
+---   hydrogen peroxide and 2000 L hydrogen peroxide, 1 nether quartz dust; 20 s, IV);
+--- * the extraction (chemical bath: 1000 L solution with 2000 L nitrobenzene, 15 s, EV; the loop with 3000 L of the
+---   contaminated nitrobenzene, 30 s, IV) into 1000 L contaminated hydrogen peroxide and 2000 L prismarine-rich
+---   nitrobenzene solution (the baths' second ports: 101);
+--- * strontium hydroxide (1 strontium, 1000 L oxygen and hydrogen into 3; 10 s, MV) and the precipitation (chemical
+---   plant: 42 of it with 16 000 L rich solution into 8 prismarine precipitate, 12 000 L contaminated nitrobenzene and
+---   4000 L nitrobenzene; 40 s, LuV);
+--- * the prismatic crystal (laser engraver: a precipitate, the Magneto Resonatic lens, 72 L molten crystalline alloy; the
+---   crystal and 288 L molten strontium back; 10 s, LuV; the engravers' fluid outputs: 101);
+--- * prismatic gas (the vacuum furnace, 7200 K: a crystal and 100 L boron plasma into 1000 L; 80 s, LuV), prismatic acid
+---   (vacuum freezer: 4000 L gas, 12 000 L liquid nitrogen into 16 000 L; 25 s, ZPM);
+--- * molten prismatic naquadah (alloy blast smelter: 32 enriched naquadah dust, 8000 L acid into 2304 L; 20 s, LuV), the
+---   composite slurry (mixer: 4 YSZ, 32 mica dust, 576 L into 2000 L; 5 s, IV) and the sheet (the multiblock chemical
+---   dehydrator: 16 tungsten carbide foils, 16 lead foils, 8000 L slurry into 16; 16 s, ZPM).
+--- Left out: GT's prismatic bee comb (no bees in the mod), the raw fluorophlogopite slurry (no fluorophlogopite), the
+--- Naquarite foil (netherite). Unlocked with Prismatic Naquadah.
+--------------------------------------------------------------------------------
+do
+	local PN = "prismatic-naquadah"
+	local L = {}
+	local SOL, CH2O2 = "prismarine-solution", "prismarine-contaminated-hydrogen-peroxide"
+	local RICH, CNB = "prismarine-rich-nitrobenzene-solution", "prismarine-contaminated-nitrobenzene-solution"
+	F.fluid(SOL, SOL, { 0x55 / 255, 0x9a / 255, 0x8a / 255 })
+	F.fluid(CH2O2, CH2O2, { 0x44 / 255, 0x5f / 255, 0x59 / 255 })
+	F.fluid(RICH, RICH, { 0x5d / 255, 0x76 / 255, 0x3f / 255 })
+	F.fluid(CNB, CNB, { 0x2f / 255, 0x33 / 255, 0x1e / 255 })
+	F.fluid("prismatic-gas", "prismatic-gas", { 0x76 / 255, 0xba / 255, 0xbd / 255 })
+	F.fluid("prismatic-acid", "prismatic-acid", { 1, 1, 1 })
+	F.fluid("molten-prismatic-naquadah", "molten-prismatic-naquadah", { 0.57, 0.57, 0.57 })   -- (lifted, as its icon)
+	F.fluid("prismatic-naquadah-composite-slurry", "prismatic-naquadah-composite-slurry", { 0x4b / 255, 0x4b / 255, 0x4b / 255 })
+	items(SUB_DUST, { "strontium-hydroxide-dust" })
+	items(SUB_PART, { "prismarine-shard", "prismarine-precipitate", "prismatic-crystal",
+		"radiation-proof-prismatic-naquadah-composite-sheet" })
+	step(L, "prismarine-shard", "luv-autoclave-recipes", 15, LUV_SPEED,
+		{ { "red-algae-biomass", 32 }, { "certus-quartz-dust", 32 }, { "grade-1-water", 8000 } }, { { "prismarine-shard", 8 } })
+	step(L, SOL, "dissolution-tank-recipes", 20, IV_SPEED,
+		{ { "prismarine-shard", 24 }, { "industrial-strength-hydrofluoric-acid", 400 }, { "hydrogen-peroxide", 400 } },
+		{ { SOL, 800 }, { "certus-quartz-dust", 4 } })
+	step(L, SOL .. "-looped", "dissolution-tank-recipes", 20, IV_SPEED,
+		{ { "prismarine-shard", 6 }, { CH2O2, 600 }, { "hydrogen-peroxide", 200 } }, { { SOL, 800 }, { "nether-quartz-dust", 1 } }, SOL)
+	step(L, RICH, "ev-chemical-bath-recipes", 15, EV_SPEED, { { SOL, 100 }, { "nitrobenzene", 200 } },
+		{ { RICH, 200 }, { CH2O2, 100 } })
+	step(L, RICH .. "-looped", "iv-chemical-bath-recipes", 30, IV_SPEED, { { SOL, 100 }, { CNB, 300 } },
+		{ { RICH, 200 }, { CH2O2, 100 } }, RICH)
+	step(L, "strontium-hydroxide-dust", "mv-chemical-reactor-recipes", 10, MV_SPEED,
+		{ { "strontium-dust", 1 }, { "oxygen", 100 }, { "hydrogen", 100 } }, { { "strontium-hydroxide-dust", 3 } })
+	step(L, "prismarine-precipitate", "chemical-plant-recipes", 40, LUV_SPEED, { { "strontium-hydroxide-dust", 42 }, { RICH, 1600 } },
+		{ { "prismarine-precipitate", 8 }, { CNB, 1200 }, { "nitrobenzene", 400 } })
+	step(L, "prismatic-crystal", "luv-laser-engraver-recipes", 10, LUV_SPEED,
+		{ { "prismarine-precipitate", 1 }, { "magneto-resonatic-lens", 1 }, { "molten-crystalline-alloy", 7.2 } },
+		{ { "prismatic-crystal", 1 }, { "magneto-resonatic-lens", 1 }, { "molten-strontium", 28.8 } }, "prismatic-crystal")
+	step(L, "prismatic-gas", "vacuum-furnace-recipes", 80, LUV_SPEED, { { "prismatic-crystal", 1 }, { "boron-plasma", 100 } },
+		{ { "prismatic-gas", 100 } })
+	step(L, "prismatic-acid", "zpm-vacuum-freezer-recipes", 25, ZPM_SPEED, { { "prismatic-gas", 400 }, { "liquid-nitrogen", 1200 } },
+		{ { "prismatic-acid", 1600 } })
+	step(L, "molten-prismatic-naquadah", "luv-alloy-blast-smelter-recipes", 20, LUV_SPEED,
+		{ { "enriched-naquadah-dust", 32 }, { "prismatic-acid", 800 } }, { { "molten-prismatic-naquadah", 230.4 } })
+	step(L, "prismatic-naquadah-composite-slurry", "iv-mixer-recipes", 5, IV_SPEED,
+		{ { "ysz-ceramic-dust", 4 }, { "mica-dust", 32 }, { "molten-prismatic-naquadah", 57.6 } },
+		{ { "prismatic-naquadah-composite-slurry", 200 } })
+	step(L, "radiation-proof-prismatic-naquadah-composite-sheet", "industrial-dehydrator-recipes", 16, ZPM_SPEED,
+		{ { "tungsten-carbide-foil", 16 }, { "lead-foil", 16 }, { "prismatic-naquadah-composite-slurry", 800 } },
+		{ { "radiation-proof-prismatic-naquadah-composite-sheet", 16 } })
 	for _, r in pairs(L) do fork_add_unlock(PN, r) end
 end
