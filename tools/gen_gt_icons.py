@@ -203,6 +203,9 @@ MATERIALS = {
     "cubic-zirconia": ("DIAMOND", (255, 255, 255)), "strontium": "Strontium", "strontium-oxide": ("METALLIC", (115, 155, 155)),
     "bismuth-telluride": ("METALLIC", (32, 72, 32)), "magnetic-steel": "SteelMagnetic",
     "magneto-resonatic": ("MAGNETIC", (221, 119, 221)), "crystalline-alloy": "CrystallineAlloy",
+    "thulium": "Thulium", "tellurium": "Tellurium",
+    # issue #406: GT++'s Pikyonium 64B (MaterialsAlloy.java:700-717, its colour)
+    "pikyonium-64b": ("METALLIC", (52, 103, 186)),
     "calcium": "Calcium",
     # issue #205: goodgenerator's Werkstoffe of the naquadah line (GGMaterial.java, their colours; dusts)
     "naquadria-oxide-mixture": ("METALLIC", (77, 77, 85)), "indium-phosphate": ("DULL", (43, 46, 112)),

@@ -4257,3 +4257,7 @@ pulsating-crystal-powder
 crystalline-alloy-dust
 hot-crystalline-alloy-ingot
 crystalline-alloy-ingot
+inconel-792-dust
+pikyonium-64b-ingot
+pikyonium-64b-plate
+double-hs188-a-plate
