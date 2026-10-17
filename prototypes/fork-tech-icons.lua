@@ -25,6 +25,7 @@ FORK_TECH_ICONS = {
 	["cryogenic-air-distillation"] = true,
 	["crystal-processor-mainframes"] = true,
 	["crystal-processors"] = true,
+	["dimensionally-shifted-superfluid"] = true,
 	["dimensionally-transcendent-plasma-forge"] = true,
 	["dtpf-max-recipes"] = true,
 	["dtpf-resplendent-catalyst"] = true,
