@@ -2541,8 +2541,8 @@ FORK_CASTING.run()
 --- GT's deterministic quantum anomaly (gregtech/loaders/postload/recipes/PlasmaForgeRecipes.java:128-140, "bypass for
 --- UEV+"): the plasma forge at 10 800 K takes an Unknown Particle with a Chromatic Lens and a Hi-Computation Station
 --- Mk-V (both stay: they come back) and 92 L of the excited resplendent catalyst with an ingot of molten duranium,
---- 60 s at UEV. Its 46 L of residue (GT's DTR) are left out until the plasma forge's residue comes (#355). The Unknown
---- Particle (GT++'s particle item; an item here, the plant has one fluid output) is the 1 % output of GT's grade 8
+--- 60 s at UEV, with 46 L of residue (GT's DTR, section 20). The Unknown
+--- Particle (GT++'s particle item, an item here too) is the 1 % output of GT's grade 8
 --- water unit (gregtech/loaders/postload/chains/PurifiedWaterRecipes.java:342-353). The Chromatic Lens
 --- (NewHorizonsCoreMod LatheRecipes.java:19-20): a Chromatic Glass plate in the UHV lathe, 60 s. GT++'s Chromatic
 --- Glass comes from the plasma forge (NewHorizonsCoreMod DTPFRecipes.java:344-401 with its DTPFCalculator: 256
@@ -2559,7 +2559,7 @@ do
 	F.fluid("molten-chromatic-glass", "molten-chromatic-glass", { 0.94, 0, 0 })   -- (GT++'s molten texture)
 	items(SUB_PART, { "unknown-particle", "chromatic-glass-plate", "chromatic-lens" })
 	--- (GT: tier 1 156 040 L crude catalyst and 36 864 L molten glass, 150 s at 50 331 648 EU/t, UMV; tier 3 26 350 L
-	--- resplendent catalyst and 147 456 L glass, 37.5 s at 201 326 592 EU/t, UXV; the residue left out as above)
+	--- resplendent catalyst and 147 456 L glass, 37.5 s at 201 326 592 EU/t, UXV; their residue in section 20)
 	step(AQ, "molten-chromatic-glass", DTPF_CAT, 150, UMV_SPEED, { { CRUDE, 15604 }, { "molten-glass", 3686.4 } },
 		{ { "molten-chromatic-glass", 3686.4 } })
 	step(AQ, "molten-chromatic-glass-resplendent", DTPF_CAT, 37.5, UXV_SPEED,
@@ -2574,5 +2574,132 @@ do
 	g8.results[#g8.results + 1] = { type = "item", name = "unknown-particle", amount = 1, probability = 0.01 }
 	for _, r in pairs(AQ) do fork_add_unlock(GF, r) end
 	FORK_CASTING.materials["chromatic-glass"] = { "uev", GF }
+	FORK_CASTING.run()
+end
+
+
+
+
+--------------------------------------------------------------------------------
+--- 20) THE PLASMA FORGE'S RESIDUE AND DIMENSIONALLY SHIFTED SUPERFLUID (issue #355, the shared foundation of the ZPIC
+--- and YPIC rungs). GT5-Unofficial 638b3f37ca and NewHorizonsCoreMod; fluids a tenth of GT's litres, plasmas and the
+--- water grades GT's litres, GT's seconds x the tier speed of GT's EU/t.
+--- * Dimensionally Transcendent Residue (GT's DTR): the plasma forge's byproduct. Where GT has a plasma forge recipe of
+---   the same product and catalyst tier, the mod's recipe gives GT's residue per litre of product (NewHorizonsCoreMod
+---   DTPFRecipes.java with its DTPFCalculator: residue = catalyst x 2^tier / 8; the crude and resplendent neutronium and
+---   cosmic neutronium, the resplendent and stellar infinity, the stellar transcendent metal, the MAX recipes of 141,
+---   the quantum anomaly and chromatic glass of section 19). The mod's other forge recipes have no GT counterpart and
+---   no residue. Nothing in the mod takes it yet (GT: mellion, creon, the godforge's fuel); every fluid has its voiding
+---   recipe.
+--- * Stable Baryonic Matter: grade 8 water's byproduct (gregtech/loaders/postload/chains/PurifiedWaterRecipes.java:
+---   339-354): 500 L per 1000 L of grade 7 water, net of GT's realignment of the quark catalysts.
+--- * The oganessons (bartworks/system/material/processingLoaders/AdditionalRecipes.java:392-408, goodgenerator/loader/
+---   RecipeLoader2.java:1500-1508): californium (MK3: plutonium and beryllium), oganesson (MK3: californium and molten
+---   calcium), metastable oganesson (MK4: molten enriched naquadah alloy and oganesson; GT's route A, the MK5 route B
+---   takes copper plasma, which only the godforge makes). Their fusion recipes like 136's transmutations: a tenth of
+---   GT's litres, GT's time at the reactor's tier speed. Bartworks' calcium (WerkstoffLoader.java:695-711: the blast
+---   furnace with gas, 1115 K, MV, no gas-free recipe) gives the melt; GoodGenerator's enriched naquadah alloy
+---   (GGMaterial.java:1500-1523: 8 enriched naquadah, 5 tritanium, 3 californium, 2 black plutonium; the blast furnace
+---   with gas, 120 s at UEV, 11 000 K, RecipeLoader2.java:118) with bartworks' mixer (mass / 4 ticks at its ZPM
+---   processing tier) and vacuum freezer (mass x 3 ticks) rules; its mass, 289, derived from its contents (Werkstoff.java
+---   350-362; black plutonium without an element counts as technetium, 98).
+--- * The prosaic catalyst (GT's ExcitedDTPC: the crude catalyst's plasmas with radon, nickel, boron and sulfur;
+---   TranscendentPlasmaMixerRecipes.java:40-54): the crude catalyst with those four plasmas, as 139 makes the
+---   resplendent one, in GT's mixer time.
+--- * Dimensionally Shifted Superfluid (gregtech/loaders/postload/recipes/PlasmaForgeRecipes.java:43-112): GT's tiers 2
+---   (prosaic, UIV), 3 (resplendent, UMV) and 5 (stellar, UXV; with the stellar catalyst after the stargate). GT's tier 4
+---   takes the exotic catalyst, which the mod lacks.
+--- * Left for later: fermium plasma (no consumer before GT's creon), the godforge burning residue as fuel.
+--- Unlocked with the technology Dimensionally Shifted Superfluid, the first consumer of the chain.
+--------------------------------------------------------------------------------
+do
+	local DSS = "dimensionally-shifted-superfluid"
+	local DTR = "dimensionally-transcendent-residue"
+	local DTPF_CAT = "dimensionally-transcendent-plasma-forge-recipes"
+	local CRUDE = "excited-dimensionally-transcendent-crude-catalyst"
+	local PROSAIC = "excited-dimensionally-transcendent-prosaic-catalyst"
+	local RESPLENDENT = "excited-dimensionally-transcendent-resplendent-catalyst"
+	local STELLAR = "excited-dimensionally-transcendent-stellar-catalyst"
+	local L = {}
+	F.fluid(DTR, DTR, { 0.31, 0.31, 0.39 })   -- (the colours of GT's textures, gen_gt_icons.py)
+	F.fluid("stable-baryonic-matter", "stable-baryonic-matter", { 0, 0.04, 0.61 })   -- (lifted)
+	F.fluid(DSS, DSS, { 0.33, 0.04, 0.48 })
+	F.fluid(PROSAIC, PROSAIC, { 0.83, 0.49, 0.49 })
+	F.fluid("molten-calcium", "molten-calcium", { 1, 0.96, 0.96 })
+	F.fluid("molten-californium", "molten-californium", { 0.67, 0.67, 0.67 })
+	F.fluid("oganesson", "oganesson", { 0.11, 0.33, 0.73 })   -- (lifted)
+	F.fluid("molten-enriched-naquadah-alloy", "molten-enriched-naquadah-alloy", { 0.20, 0.06, 0.59 })   -- (lifted)
+	F.fluid("molten-metastable-oganesson", "molten-metastable-oganesson", { 0.11, 0.33, 0.73 })   -- (lifted)
+
+	--- the residue of the existing plasma forge recipes (GT's DTR per litre of the product, a tenth)
+	for name, amount in pairs({
+		["molten-neutronium-dtpf-crude"] = 7.3, ["molten-neutronium-dtpf-resplendent"] = 2.46,
+		["molten-cosmic-neutronium-dtpf-crude"] = 3.59, ["molten-cosmic-neutronium-dtpf-resplendent"] = 1.21,
+		["molten-infinity-dtpf-resplendent"] = 920.8, ["molten-infinity-dtpf-stellar"] = 355.4,
+		["molten-transcendent-metal-dtpf-stellar"] = 157.3,
+		["timepiece"] = 20000, ["time-to-space-conversion"] = 200, ["space-to-time-conversion"] = 200,
+		["chipped-amalgatite"] = 14400,
+		["quantum-anomaly"] = 4.6, ["molten-chromatic-glass"] = 1950.5, ["molten-chromatic-glass-resplendent"] = 1317.5,
+	}) do
+		local r = data.raw.recipe[name]
+		if r then r.results[#r.results + 1] = { type = "fluid", name = DTR, amount = amount } end
+	end
+
+	--- grade 8 water's stable baryonic matter
+	local g8 = data.raw.recipe["grade-8-water"]
+	g8.results[#g8.results + 1] = { type = "fluid", name = "stable-baryonic-matter", amount = 50 }
+
+	--- calcium (the mod's calcium is GT's calcium dust)
+	items(SUB_PART, { "calcium-ingot" })
+	for _, g in pairs(GAS) do
+		step(L, "calcium-ingot" .. (g[1] and ("-" .. g[1]) or ""), "mv-electric-blast-furnace-recipes", 55.75 * g[4], MV_SPEED,
+			{ { "calcium", 1 }, { g[2], g[3] } }, { { "calcium-ingot", 1 } }, "calcium-ingot")
+	end
+	--- californium, oganesson
+	items(SUB_PART, { "californium-ingot" })
+	items(SUB_DUST, { "californium-dust", "tritanium-dust" })
+	step(L, "molten-californium", "mk3-fusion-reactor-recipes", 12, UV_SPEED,
+		{ { "molten-plutonium", 4.8 }, { "molten-beryllium", 4.8 } }, { { "molten-californium", 4.8 } })
+	step(L, "californium-dust", "lv-macerator-recipes", 12.55, LV_SPEED, { { "californium-ingot", 1 } },
+		{ { "californium-dust", 1 } })
+	step(L, "tritanium-dust", "lv-macerator-recipes", 16.15, LV_SPEED, { { "tritanium-ingot", 1 } },
+		{ { "tritanium-dust", 1 } })
+	step(L, "oganesson", "mk3-fusion-reactor-recipes", 24, UV_SPEED,
+		{ { "molten-californium", 3.2 }, { "molten-calcium", 72 } }, { { "oganesson", 72 } })
+	--- enriched naquadah alloy, metastable oganesson
+	local ENA = "enriched-naquadah-alloy"
+	items(SUB_DUST, { ENA .. "-dust" })
+	items(SUB_PART, { "hot-" .. ENA .. "-ingot", ENA .. "-ingot" })
+	step(L, ENA .. "-dust", "zpm-mixer-recipes", 3.6, ZPM_SPEED,
+		{ { "enriched-naquadah-dust", 8 }, { "tritanium-dust", 5 }, { "californium-dust", 3 }, { "black-plutonium-dust", 2 } },
+		{ { ENA .. "-dust", 18 } })
+	blast(L, ENA, "uev-electric-blast-furnace-recipes", 120, UEV_SPEED)
+	step(L, ENA .. "-ingot", "zpm-vacuum-freezer-recipes", 43.35, ZPM_SPEED, { { "hot-" .. ENA .. "-ingot", 1 } },
+		{ { ENA .. "-ingot", 1 } })
+	step(L, "molten-metastable-oganesson", "mk4-fusion-reactor-recipes", 30, UEV_SPEED,
+		{ { "molten-" .. ENA, 14.4 }, { "oganesson", 25 } }, { { "molten-metastable-oganesson", 3.6 } })
+	--- the prosaic catalyst
+	step(L, PROSAIC, DTPF_CAT, 5, UMV_SPEED,
+		{ { CRUDE, 100 }, { "radon-plasma", 100 }, { "nickel-plasma", 100 }, { "boron-plasma", 100 }, { "sulfur-plasma", 100 } },
+		{ { PROSAIC, 100 } })
+	--- the superfluid
+	local function superfluid(list, name, seconds, speed, sbm, mog, g8w, ct, radox, catalyst, out, residue)
+		step(list, name, DTPF_CAT, seconds, speed,
+			{ { "stable-baryonic-matter", sbm }, { "molten-metastable-oganesson", mog }, { "grade-8-water", g8w },
+				{ "celestial-tungsten-plasma", ct }, radox, catalyst }, { { DSS, out }, { DTR, residue } }, DSS)
+	end
+	superfluid(L, DSS, 30, UIV_SPEED, 25, 14.4, 400, 3456, { "super-heavy-radox", 200 }, { PROSAIC, 100 }, 750, 25)
+	superfluid(L, DSS .. "-resplendent", 30, UMV_SPEED, 100, 14.4, 1600, 3456, { "super-heavy-radox", 200 },
+		{ RESPLENDENT, 200 }, 3000, 100)
+	local STELLAR_DSS = {}
+	superfluid(STELLAR_DSS, DSS .. "-stellar", 7.5, UXV_SPEED, 800, 57.6, 12800, 13824, { "heavy-radox", 3200 },
+		{ STELLAR, 200 }, 36000, 400)
+
+	F.tech{
+		name = DSS, prerequisites = { "godforge-plasma-module" }, packs = 13, count = 95, time = 60, recipes = L,   -- (as 138's UMV techs)
+	}
+	for _, r in pairs(STELLAR_DSS) do fork_add_unlock("dtpf-stellar-catalyst", r) end
+	table.insert(data.raw.technology["dtpf-stellar-catalyst"].prerequisites, DSS)
+	for m, t in pairs({ calcium = "mv", californium = "uv", [ENA] = "uev" }) do FORK_CASTING.materials[m] = { t, DSS } end
 	FORK_CASTING.run()
 end

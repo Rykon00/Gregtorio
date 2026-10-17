@@ -2463,8 +2463,8 @@ mod. Left out: GT's oganesson gas variant of the blast furnace.
 
 Step 2 (140, 164 section 19, 150): the quantum anomaly and the godforge at GTNH's place.
 - The quantum anomaly is GT's deterministic plasma forge recipe: an Unknown Particle (the 1 % output of GT's grade 8 water
-  unit; an item, the plant has one fluid output) with the Chromatic Lens and the HiC Mk-V (both come back), the excited
-  resplendent catalyst and molten duranium. Its residue (DTR) is left out until the forge's residue comes.
+  unit; an item, as GT++'s particle) with the Chromatic Lens and the HiC Mk-V (both come back), the excited
+  resplendent catalyst and molten duranium. Its residue (DTR) comes with step 3.
 - The Chromatic Lens is cut in the UHV lathe from a Chromatic Glass plate. The glass comes from the plasma forge with
   NewHorizonsCoreMod's numbers for the crude and resplendent tiers (the mod has no prosaic and exotic catalyst).
 - The resplendent catalyst recipe moves to the godforge, its first consumer. Its tier of the forge's metals stays after the
@@ -2482,8 +2482,33 @@ Step 2 (140, 164 section 19, 150): the quantum anomaly and the godforge at GTNH'
 - The tier 1 plasmas (lead, thorium, naquadria) go with the stellar catalyst after the stargate. The molten and exotic
   modules stay after the stargate.
 
-Next: the shared foundation (the forge's residue, DSS with the celestial tungsten plasma, the oganessons), then creon
-and mellion, the gravitational lens, ZPIC and YPIC.
+Step 3 (164 section 20): the shared foundation.
+- **The residue.** GT's Dimensionally Transcendent Residue (DTR) is the plasma forge's byproduct. Where GT has a plasma
+  forge recipe for the same product and catalyst tier, the mod's recipe gives GT's residue per litre of product
+  (NewHorizonsCoreMod's DTPF calculator):
+  - the crude and resplendent neutronium and cosmic neutronium;
+  - the resplendent and stellar infinity;
+  - the stellar transcendent metal;
+  - the MAX recipes of 141;
+  - the quantum anomaly;
+  - chromatic glass.
+
+  The other forge recipes have no GT counterpart and give none. Nothing takes the residue yet: it goes to the fluid
+  voider until mellion, creon and the godforge's fuel come.
+- **Stabilised baryonic matter.** Grade 8 water now also gives GT's net 500 L of it (50 here) per 1000 L.
+- **The oganessons.**
+  - Californium (MK3, plutonium and beryllium).
+  - Oganesson (MK3, californium and molten calcium). Bartworks' calcium ingot comes from the blast furnace with gas.
+  - Metastable oganesson by GT's route A (MK4: GoodGenerator's enriched naquadah alloy and oganesson). Route B takes
+    copper plasma, which only the godforge makes.
+  - The fusion recipes follow 136's transmutations. The alloy's mixer and freezer times come from bartworks' mass rule.
+- **The prosaic catalyst.** The crude one with radon, nickel, boron and sulfur plasma.
+- **Dimensionally Shifted Superfluid.** GT's tiers 2 (prosaic, UIV) and 3 (resplendent, UMV) come with the technology
+  Dimensionally Shifted Superfluid, after the plasma module (celestial tungsten plasma). Tier 5 (stellar) comes with
+  the stellar catalyst after the stargate. Tier 4 needs the exotic catalyst, which the mod lacks.
+- **Left for later:** fermium plasma (nothing takes it before creon) and the godforge burning residue as fuel.
+
+Next: creon and mellion, the gravitational lens, ZPIC and YPIC.
 
 ### Naquadah fuel MK IV to VI and the refinery (issue #356)
 

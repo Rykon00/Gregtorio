@@ -4201,3 +4201,10 @@ unknown-particle
 chromatic-glass-plate
 chromatic-lens
 celestial-tungsten-dust
+calcium-ingot
+californium-dust
+californium-ingot
+enriched-naquadah-alloy-dust
+enriched-naquadah-alloy-ingot
+hot-enriched-naquadah-alloy-ingot
+tritanium-dust

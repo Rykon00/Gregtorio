@@ -15,7 +15,8 @@
 ---   * DTPF: no coil heat, no runtime discount and no convergence. GT's five catalysts (made from up to
 ---     20 plasmas in the transcendent plasma mixer) are two fluids made in the forge itself: crude (GT's
 ---     four plasmas) and resplendent (crude + boron, sulfur, nitrogen, zinc and titanium plasma; GT's
----     radon, nickel and silver plasma do not exist here). No residue.
+---     radon, nickel and silver plasma do not exist here). Issue #355: GT's residue (DTR) and the prosaic catalyst in 164
+---     section 20.
 ---   * DTPF metals: GT makes them from carrier melts (copper -> cosmic neutronium) and tesseracts, which
 ---     would skip the whole fusion chain. Here each DTPF recipe is the fusion recipe of the metal with
 ---     two thirds of the inputs per output and in a third of the reactor time (see DTPF_INPUT and

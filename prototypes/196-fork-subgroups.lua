@@ -186,11 +186,15 @@ put("ore-solutions", { "sapphire-juice", "green-sapphire-juice" })
 --- issue #119: Space Age's melts, restyled below, are rows of the Fluids tab like the other melts
 put("molten-elements", { "molten-iron", "molten-copper" })
 put("molten-alloys", { "molten-potassium-disulfate" })
---- tiered: the plasma forge catalysts crude < resplendent < stellar, then the godforge fluids
+--- tiered: the plasma forge catalysts crude < prosaic < resplendent < stellar, then the godforge fluids
 FLUID_SUBGROUP["excited-dimensionally-transcendent-crude-catalyst"] = { "endgame", 1 }
-FLUID_SUBGROUP["excited-dimensionally-transcendent-resplendent-catalyst"] = { "endgame", 2 }
-FLUID_SUBGROUP["excited-dimensionally-transcendent-stellar-catalyst"] = { "endgame", 3 }
+FLUID_SUBGROUP["excited-dimensionally-transcendent-prosaic-catalyst"] = { "endgame", 2 }   -- issue #355
+FLUID_SUBGROUP["excited-dimensionally-transcendent-resplendent-catalyst"] = { "endgame", 3 }
+FLUID_SUBGROUP["excited-dimensionally-transcendent-stellar-catalyst"] = { "endgame", 4 }
 put("endgame", { "raw-star-matter", "spatially-enlarged-fluid", "tachyon-rich-temporal-fluid", "quark-gluon-plasma" })
+--- issue #355: the plasma forge's residue and superfluid, grade 8 water's baryonic matter, oganesson
+put("endgame", { "dimensionally-transcendent-residue", "stable-baryonic-matter", "dimensionally-shifted-superfluid" })
+put("gases", { "oganesson" })
 
 --- patterns for whole lines (and for new fluids of a known kind); rank = a capture that orders the line by tier
 local FLUID_PATTERNS = {
