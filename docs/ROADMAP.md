@@ -2551,7 +2551,13 @@ coils T1 for MK III, T2 for MK IV).
   - 157 sums the two machines' recycling last (`FORK_RECYCLING_LATE`). Otherwise the energy hatch loops of the machine
     upgrades would empty other machines' sums (issue #423).
 
-  Next: the chain itself, then the refinery.
+  Part 3 (164 section 26): the chain itself, from red algae prismarine to the sheet, with GT's recipes.
+  - The baths' and engravers' extra fluid ports follow GT's maps (2 fluids in, 2 out; 101).
+  - The loops run as in GT: contaminated hydrogen peroxide and contaminated nitrobenzene. The crystal step gives the
+    strontium back.
+  - Left out: GT's prismatic bee comb, the raw fluorophlogopite slurry and the netherite Naquarite foil.
+
+  Next: the refinery with MK III and MK IV.
 MK I to III stay as 136 builds them until the refinery comes.
 
 ### Nuclear depth (issue #359)

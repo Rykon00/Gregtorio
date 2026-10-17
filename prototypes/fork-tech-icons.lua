@@ -151,6 +151,7 @@ FORK_TECH_ICONS = {
 	["precise-assembler"] = true,
 	["precise-electronic-unit-mk2"] = true,
 	["precise-electronic-unit-mk3"] = true,
+	["prismatic-naquadah"] = true,
 	["ptfe"] = true,
 	["qft-temporal-harmony"] = true,
 	["quantium"] = true,

@@ -141,7 +141,8 @@ put("fuels", { "kerosene", "rp-1", "rp-1-rocket-fuel", "dense-hydrazine-fuel-mix
 	"coal-tar-oil", "sulfuric-coal-tar-oil" })
 put("organic", { "naphthalene", "ethylbenzene", "anthracene", "2-ethylanthraquinone", "2-ethylanthrahydroquinone", "hydrazine",
 	"monomethylhydrazine" })
-put("acids", { "hydrogen-peroxide" })
+put("acids", { "hydrogen-peroxide", "prismarine-contaminated-hydrogen-peroxide" })   -- the second: #356
+put("gases", { "prismatic-gas" })   -- #356
 put("coolants", { "liquid-oxygen", "liquid-nitrogen" })   -- liquid nitrogen: #356
 --- issue #360: the bio fuels (164)
 put("fuels", { "seed-oil", "bio-diesel" })
