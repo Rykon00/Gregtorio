@@ -210,6 +210,10 @@ MATERIALS = {
     # solution's colour, MaterialsInit.java:14262)
     "prismatic-naquadah": ("METALLIC", (0x37, 0x37, 0x37)), "strontium-hydroxide": ("METALLIC", (76, 103, 188)),
     "prismarine": ("DIAMOND", (0x55, 0x9a, 0x8a)),
+    # issue #356 part 4: the refinery's extremely unstable naquadah and graphite-uranium mixture (GGMaterial.java: their
+    # colours and texture sets), GT's borosilicate and reinforced glass
+    "extremely-unstable-naquadah": ("SHINY", (0x06, 0x26, 0x05)), "graphite-uranium-mixture": ("DULL", (0x3a, 0x77, 0x3d)),
+    "borosilicate-glass": "BorosilicateGlass", "reinforced-glass": "ReinforcedGlass",
     "calcium": "Calcium",
     # issue #205: goodgenerator's Werkstoffe of the naquadah line (GGMaterial.java, their colours; dusts)
     "naquadria-oxide-mixture": ("METALLIC", (77, 77, 85)), "indium-phosphate": ("DULL", (43, 46, 112)),
@@ -1019,6 +1023,27 @@ def icon_table(c):
     T["prismatic-crystal"] = lambda: c.gt(M3 + "249")
     T["radiation-proof-prismatic-naquadah-composite-sheet"] = lambda: c.gt(M3 + "250")
     T["prismarine-shard"] = lambda: c.part("prismarine", "gemChipped")
+    # issue #356 part 4: goodgenerator's refinery items and blocks (Loaders.java: the FRF casing is GT's black plutonium
+    # mining casing, the coils FRF_Coils/1 and 2; the controller GT's assembly line front, MTENaquadahFuelRefinery.java),
+    # GT's radiation proof casings (BlockCasings8 meta 5: the Europium reinforced one), GT's pipes
+    for n, f in (("wrapped-uranium-ingot", "wrappedUraniumIngot"), ("high-density-uranium", "highDensityUranium"),
+                 ("high-density-uranium-nugget", "highDensityUraniumNugget"), ("radiation-protection-plate", "radiationProtectionPlate"),
+                 ("advanced-radiation-protection-plate", "advancedRadiationProtectionPlate")):
+        T[n] = (lambda f=f: c.gt(f"{GG}items/{f}"))
+    T["graphite-uranium-mixture"] = lambda: c.part("graphite-uranium-mixture", "dust")
+    T["field-restriction-glass"] = lambda: c.gt(f"{GG}blocks/fieldRestrictingGlass")
+    T["field-restriction-coil"] = lambda: c.gt(f"{GG}blocks/FRF_Coils/1")
+    T["advanced-field-restriction-coil"] = lambda: c.gt(f"{GG}blocks/FRF_Coils/2")
+    T["radiation-proof-steel-frame-box"] = lambda: c.gt(f"{GG}blocks/radiationProtectionSteelFrame")
+    T["naquadah-fuel-refinery-casing"] = lambda: c.gt(f"{BLK}MACHINE_CASING_MINING_BLACKPLUTONIUM")
+    T["naquadah-fuel-refinery-controller"] = lambda: c.face(f"{BLK}MACHINE_CASING_MINING_BLACKPLUTONIUM",
+                                                            f"{BLK}OVERLAY_FRONT_ASSEMBLY_LINE")
+    T["radiation-proof-machine-casing"] = lambda: c.gt(f"{BLK}MACHINE_CASING_RADIATIONPROOF")
+    T["europium-reinforced-radiation-proof-machine-casing"] = lambda: c.gt(f"{BLK}MACHINE_CASING_ADVANCEDRADIATIONPROOF")
+    T["tiny-naquadah-fluid-pipe"] = lambda: c.m.icon("naquadah", "pipeTiny", kind="blocks")
+    T["medium-black-plutonium-item-pipe"] = lambda: c.m.icon("black-plutonium", "pipeMedium", kind="blocks")
+    T["medium-neutronium-fluid-pipe"] = lambda: c.m.icon("neutronium", "pipeMedium", kind="blocks")
+    T["huge-mysterious-crystal-fluid-pipe"] = lambda: c.m.icon("mysterious-crystal", "pipeHuge", kind="blocks")
     T["tungstensteel-reinforced-borosilicate-glass-block"] = lambda: c.gt(
         "gt:bartworks/textures/blocks/TungstenSteelReinforcedBoronSilicateGlassBlock")
     # issue #355: GT++'s quantum anomaly (MetaGeneratedItemIDs.Laser_Lens_Special 105) and Unknown Particle (particle

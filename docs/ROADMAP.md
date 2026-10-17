@@ -2557,8 +2557,33 @@ coils T1 for MK III, T2 for MK IV).
     strontium back.
   - Left out: GT's prismatic bee comb, the raw fluorophlogopite slurry and the netherite Naquarite foil.
 
-  Next: the refinery with MK III and MK IV.
-MK I to III stay as 136 builds them until the refinery comes.
+The refinery (164 section 27; GoodGenerator's RecipeLoader.java and FuelRecipeLoader.java):
+- **Two machines**, as the mod builds tiered casings: the Naquadah Fuel Refinery with T1 coils (UHV, 4 parallels: MK III)
+  and the one with T2 coils (UMV, 8 parallels: MK III and MK IV). Each runs at its tier's speed times its parallels and
+  draws that many amps of its tier. The second is the first plus 72 T2 coils and a UMV energy hatch.
+- **Their items:** GT's controller with the structure (483 casings, 192 field restriction glass, 124 Europium reinforced
+  radiation proof casings, 72 coils, 64 radiation proof steel frame boxes), the energy hatch and hulls for the buses and
+  hatches. Every part has GT's recipe.
+- **New materials for the parts:**
+  - extremely unstable naquadah (dust, hot ingot, ingot, melt);
+  - high density uranium (the graphite-uranium mixture, wrapped ingots, nuggets);
+  - nether star dust;
+  - mysterious crystal and awakened draconium ingots and melts;
+  - thulium ingots, rods, bolts, screws and frames;
+  - fine manyullyn wire;
+  - GT's tiny naquadah, medium black plutonium and neutronium, and huge mysterious crystal pipes;
+  - the borosilicate glass rods and frame, the reinforced glass plates and long prismatic naquadah rods.
+- **MK III** replaces 136's stand-in in the UEV mixer, with GT's recipe: 4 extremely unstable naquadah, 27 tiberium dust,
+  2 high density uranium, 1 high density plutonium, 800 heavy and 1000 light naquadah fuel into 100, 5 s, UHV.
+- **MK IV:** 27 extremely unstable naquadah, 64 nether star dust, 64 awakened draconium dust, 32 orundum dust, 2000 MK III
+  and 921.6 molten praseodymium into 250, 8 s, UMV. It burns at GT's 8854 GJ per unit in the large naquadah reactors.
+- **Units:** the fuels keep GT's litres, as MK1 and MK2 do (their fuel value is GT's EU per litre). The melts are a tenth.
+- **Not recycled:** the two machines. Their structure's sum passes Factorio's 65 535 per result. GT recycles the
+  controller alone, which keeps its recycling.
+- **Technologies:** Naquadah Fuel Refinery (10 packs) and Naquadah Based Fuel MK4 (13 packs, after the UMV energy hatches
+  and the thorium based liquid fuel).
+- **Left for later:** GT's alternative recipes (chromatic glass dust, hypogen, the one-step MK IV), MK V and VI and
+  coils T3 and T4.
 
 ### Nuclear depth (issue #359)
 
