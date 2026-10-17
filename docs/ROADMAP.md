@@ -2302,8 +2302,8 @@ Part 2: the Twilight Forest's olivine vein and small ores and the Nether's saltp
   chain with GT++'s two byproducts (GT++ uses byproduct B in the thermal centrifuge of the crushed ore and the
   centrifuge of the impure dust, the mod's chain its usual order); no forge hammer recipe for the raw ore (GT++ hammers
   only the ore block); elements the mod lacks are left out of byproducts and decompositions (germanium, tellurium,
-  thallium, bromine, iodine, radium, ytterbium, erbium, dysprosium, selenium, strontium oxide, samarium ore
-  concentrate); the LV chemical dehydrator has one fluid output, so cerite, fluorcaphite and lepersonnite give only
+  thallium, bromine, iodine, radium, selenium, strontium oxide, samarium ore concentrate; erbium, ytterbium and
+  dysprosium are GT's dusts since #355, which needs them); the LV chemical dehydrator has one fluid output, so cerite, fluorcaphite and lepersonnite give only
   their oxygen; fluorite (F)'s hydrogen chemical bath is left out; runite gets its ore chain to runite dust, GT++'s
   alloy blast smelter melt and ingot are not built (no consumer). Agardite (Cd), yttrialite and lanthanite (Ce) are
   the mod's rare earth dusts of the same names.
