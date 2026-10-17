@@ -733,8 +733,8 @@ end
 ---    333 L of water, no energy, no time). Here a 1x1 machine without energy and one water input, category
 ---    cauldron-recipes; 155-fork-ore-chain.lua makes its recipes. Its recipe is Minecraft's cauldron, 7 iron ingots (GT
 ---    keeps it and adds an assembler recipe of 7 iron plates, AssemblerRecipes.java), unlocked with Rubber, the first
----    technology with an impure dust (sulfur's). Sprite and icon are placeholders (tools/gen_icons.py,
----    tools/gen_sprites.py).
+---    technology with an impure dust (sulfur's). Issue #431: icon and sprites are drawn as code
+---    (`tools/gen_icons.py --drawn`): the empty pot, and while it works the water surface (a 4-frame strip).
 --------------------------------------------------------------------------------
 
 recipe_category_and_subgroup("cauldron-recipes")
@@ -788,6 +788,21 @@ data:extend({
 						height = 32,
 						frame_count = 1,
 						line_length = 1,
+					},
+				},
+			},
+			-- issue #431: the water and its glints, drawn over the empty pot while a recipe runs
+			working_visualisations = {
+				{
+					constant_speed = true,
+					animation = {
+						filename = "__gregtorio-continued__/graphics/entity/fork/cauldron-working.png",
+						width = 32,
+						height = 32,
+						frame_count = 4,
+						line_length = 1,
+						animation_speed = 0.125,
+						run_mode = "forward-then-backward",
 					},
 				},
 			},

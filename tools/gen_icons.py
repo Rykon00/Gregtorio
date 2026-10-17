@@ -13,8 +13,14 @@ The fallback color is derived from the name so items stay distinguishable.
 
     python tools/gen_icons.py name1 name2 ...
     python tools/gen_icons.py --from-file list.txt
+
+Graphics with no GT texture and no donor are drawn here as code (issue #431: the cauldron, GTNH's is Minecraft's own
+block, whose texture is not used); --drawn writes their icon and entity sprites (a file whose pixels did not change is
+not rewritten):
+
+    python tools/gen_icons.py --drawn
 """
-import argparse, colorsys, hashlib, warnings
+import argparse, colorsys, hashlib, math, warnings
 warnings.filterwarnings("ignore", category=DeprecationWarning)
 from pathlib import Path
 from PIL import Image
@@ -53,7 +59,6 @@ DONORS = {
     "callisto-ice-dust": ("naquadah-dust", 195), "fluxed-electrum-dust": ("naquadah-dust", 50),
     "wheat-seeds": ("wheat", 75),   # issue #360: the greenhouse wheat's seeds
     "mox-fuel": ("uranium-235-dust", 30),   # issue #359: IC2's MOX fuel (no IC2 texture here)
-    "cauldron": ("bucket-of-water", 190),   # issue #427: Minecraft's cauldron (no texture of it in GT)
 }
 
 
@@ -148,11 +153,123 @@ def recolor(img, hue_deg):
     return img
 
 
+# --- issue #431: the cauldron, drawn from scratch ---------------------------------------------------------------------
+# An iron pot seen from the front above: a rim with a lip, a round belly, three short legs, lit from the upper left like
+# the other 32 x 32 machine icons, with their 1 px dark outline. Shapes are ellipses tested at the pixel centres; the
+# shading picks one of a few tones (pixel art, no smooth gradients).
+ENTITY = ROOT / "graphics/entity/fork"
+IRON = [(16, 16, 19), (31, 31, 35), (44, 44, 50), (58, 58, 65), (74, 74, 82), (93, 93, 102), (118, 118, 128)]
+WATER = [(20, 46, 102), (30, 70, 140), (46, 100, 178), (84, 146, 214), (176, 214, 246)]
+CAULDRON_CX, CAULDRON_RIM_Y, CAULDRON_RIM_RX, CAULDRON_RIM_RY = 16, 9.5, 13.5, 5.0
+CAULDRON_HOLE_RX, CAULDRON_HOLE_RY = 10.5, 3.3
+CAULDRON_BELLY_Y, CAULDRON_BELLY_RX, CAULDRON_BELLY_RY = 16.5, 14.0, 11.0
+CAULDRON_LEGS = [(5, 9, 23, 29), (23, 27, 23, 29), (14, 18, 26, 31)]   # x0, x1, y0, y1: pixel columns and rows [0, 1)
+CAULDRON_FRAMES = 4   # the working strip: the glints on the water drift one pixel a frame
+
+
+def tone(palette, s):
+    return palette[max(0, min(len(palette) - 1, int(round(s * (len(palette) - 1)))))] + (255,)
+
+
+def in_ellipse(x, y, ex, ey, rx, ry):
+    return ((x - ex) / rx) ** 2 + ((y - ey) / ry) ** 2 <= 1
+
+
+def cauldron_part(x, y):
+    cx, rim_y, X, Y = CAULDRON_CX, CAULDRON_RIM_Y, x + 0.5, y + 0.5
+    if in_ellipse(X, Y, cx, rim_y, CAULDRON_HOLE_RX, CAULDRON_HOLE_RY):
+        return "hole"
+    if in_ellipse(X, Y, cx, rim_y, CAULDRON_RIM_RX, CAULDRON_RIM_RY):
+        return "rim"
+    if any(in_ellipse(X, Y, cx, rim_y + d, CAULDRON_RIM_RX, CAULDRON_RIM_RY) for d in (0.5, 1.0, 1.5)):
+        return "lip"
+    if Y >= rim_y and in_ellipse(X, Y, cx, CAULDRON_BELLY_Y, CAULDRON_BELLY_RX, CAULDRON_BELLY_RY):
+        return "body"
+    if any(x0 <= x < x1 and y0 <= y < y1 for x0, x1, y0, y1 in CAULDRON_LEGS):
+        return "leg"
+    return None
+
+
+def draw_cauldron(frame=None):
+    """32 x 32 RGBA: the empty pot (frame None), or with water and the glints of that frame"""
+    cx, rim_y = CAULDRON_CX, CAULDRON_RIM_Y
+    water = (cx, rim_y + 0.9, CAULDRON_HOLE_RX - 0.6, CAULDRON_HOLE_RY - 0.5)
+    parts = {(x, y): cauldron_part(x, y) for y in range(32) for x in range(32)}
+    img = Image.new("RGBA", (32, 32), (0, 0, 0, 0))
+    px = img.load()
+    for (x, y), p in parts.items():
+        X, Y = x + 0.5, y + 0.5
+        if p is None:
+            continue
+        if p == "rim":     # the top of the rim, the lightest part
+            s = 0.8 - 0.25 * (X - cx) / CAULDRON_RIM_RX - 0.1 * (Y - rim_y) / CAULDRON_RIM_RY
+        elif p == "lip":   # the outer face of the rim
+            s = 0.55 - 0.4 * (X - cx) / CAULDRON_RIM_RX
+        elif p == "body":  # round belly: light on the left, a highlight band, dark below and under the lip
+            half = CAULDRON_BELLY_RX * math.sqrt(max(0.0, 1 - ((Y - CAULDRON_BELLY_Y) / CAULDRON_BELLY_RY) ** 2)) or 1
+            n = (X - cx) / half
+            s = 0.5 - 0.32 * n - 0.35 * max(0.0, (Y - 18) / 9)
+            if -0.8 < n < -0.45 and Y < 21:
+                s += 0.17
+            if parts.get((x, y - 1)) == "lip":
+                s -= 0.3
+        elif p == "leg":
+            x0 = next(l[0] for l in CAULDRON_LEGS if l[0] <= x < l[1])
+            s = 0.5 if x == x0 + 1 else 0.3
+        else:              # the inside: the far wall lit, darker towards the front
+            v = (Y - (rim_y - CAULDRON_HOLE_RY)) / (2 * CAULDRON_HOLE_RY)
+            s = 0.36 - 0.3 * v + 0.08 * (cx - X) / CAULDRON_HOLE_RX
+        px[x, y] = tone(IRON, s)
+        if p == "hole" and frame is not None and in_ellipse(X, Y, *water):
+            px[x, y] = tone(WATER, 0.55 - 0.25 * (X - cx) / CAULDRON_HOLE_RX - 0.1 * (Y - rim_y) / CAULDRON_HOLE_RY)
+    out = img.copy()
+    o = out.load()
+    for (x, y), p in parts.items():
+        if p is None:
+            continue
+        nb = [parts.get((x + dx, y + dy)) for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1))]
+        if None in nb:
+            o[x, y] = IRON[0] + (255,)          # the outline
+        elif p == "hole" and "rim" in nb and y + 0.5 < rim_y:
+            o[x, y] = IRON[1] + (255,)          # the shadow of the far rim on the inside
+    if frame is not None:
+        glint = (water[0], water[1], water[2] - 0.6, water[3] - 0.3)
+        for gx, gy, length in ((10, 10, 3), (17, 11, 2)):
+            for i in range(length):
+                x = gx + (frame + i) % 8
+                if parts.get((x, gy)) == "hole" and in_ellipse(x + 0.5, gy + 0.5, *glint):
+                    o[x, gy] = WATER[-1] + (255,)
+    return out
+
+
+def save_if_changed(img, path):
+    if path.exists():
+        old = Image.open(path).convert("RGBA")
+        if old.size == img.size and old.tobytes() == img.tobytes():
+            return
+    img.save(path, optimize=True)
+    print("written", path.relative_to(ROOT))
+
+
+def drawn():
+    """the drawn graphics: icon, idle sprite (the empty pot) and working strip (water, vertical frames)"""
+    idle = draw_cauldron()
+    save_if_changed(idle, ICONS / "cauldron.png")
+    save_if_changed(idle, ENTITY / "cauldron-idle.png")
+    strip = Image.new("RGBA", (32, 32 * CAULDRON_FRAMES), (0, 0, 0, 0))
+    for i in range(CAULDRON_FRAMES):
+        strip.paste(draw_cauldron(i), (0, 32 * i))
+    save_if_changed(strip, ENTITY / "cauldron-working.png")
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("names", nargs="*")
     ap.add_argument("--from-file", type=Path)
+    ap.add_argument("--drawn", action="store_true", help="write the graphics drawn as code (issue #431)")
     a = ap.parse_args()
+    if a.drawn:
+        drawn()
     names = list(a.names)
     if a.from_file:
         names += [l.strip() for l in a.from_file.read_text().splitlines() if l.strip()]

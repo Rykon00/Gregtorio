@@ -11,13 +11,16 @@ sprites at up to 192 pixels.
     python tools/gen_review_sheet.py upgrades               # IV to MAX upgrade multiblocks: EV look vs tier hatches
     python tools/gen_review_sheet.py tiers                  # basic machines LV to MAX in a row: idle, a working frame,
                                                             # icon (issue #148; no before/after)
+    python tools/gen_review_sheet.py small                  # the 1x1 machines next to each other: icon, idle, a working
+                                                            # frame, and the sprites at game size (issue #431)
     python tools/gen_review_sheet.py fluid-icons            # changed fluid icons (graphics/fluids)
     python tools/gen_review_sheet.py fluids --fluids <file> # the Fluids tab, rows per subgroup (no before/after);
                                                             # <file> from `devcheck.py check --fluids-out <file>`
     python tools/gen_review_sheet.py all --ref origin/main --out docs/graphics-review
 
 Output: <out>/icons-<n>-<group>.png, techs.png, sprites-<n>-<group>.png, upgrades-<tier>.png, upgrades-icons.png,
-fluid-icons.png, fluids-tab.png, machine-tiers-block.png (assembling machine and macerator), machine-tiers-all.png
+fluid-icons.png, fluids-tab.png, machine-tiers-block.png (assembling machine and macerator), machine-tiers-all.png,
+small-machines.png
 """
 import argparse, io, re, subprocess, warnings
 warnings.filterwarnings("ignore", category=DeprecationWarning)
@@ -343,9 +346,63 @@ def tiers(out, machines=("assembling-machine", "macerator"), name="machine-tiers
     print("machine tiers:", out / name)
 
 
+# issue #431: the 1x1 machines and chests (name, icon, idle sprite, working strip or None), and LV machine icons for the
+# style of the 32 x 32 machine icons
+SMALL_MACHINES = [
+    ("cauldron", "graphics/icons/cauldron.png", "graphics/entity/fork/cauldron-idle.png",
+     "graphics/entity/fork/cauldron-working.png"),
+    ("trash-can", "graphics/entity/trash-can.png", "graphics/entity/trash-can.png", None),
+    ("fluid-trash-can", "graphics/icons/fluid-trash-can.png", "graphics/entity/fluid-trash-can.png", None),
+    ("diamond-chest", "graphics/icons/diamond-chest.png", "graphics/entity/diamond-chest.png", None),
+    ("wooden chest", "graphics/entity/chest.png", "graphics/entity/chest.png", None),
+]
+SMALL_ICONS = ["lv-macerator", "lv-chemical-bath", "lv-brewery", "iron-furnace", "crafting-table"]
+
+
+def small(ref, out):
+    """Issue #431: per 1x1 machine its icon, idle picture and the middle working frame at 2x, the cauldron's icon at
+    <ref> as "before", LV machine icons at 2x, and every idle picture at game size (1 px = 1 px) on a grass colour"""
+    ft, fn = font(20), font(12)
+    cols = [(n, now(i), now(e), now(w) if w else None) for n, i, e, w in SMALL_MACHINES]
+    cw = 3 * 64 + 16
+    img = Image.new("RGBA", (16 + cw * len(cols), 52 + 2 * (64 + 22) + 96), BG + (255,))
+    d = ImageDraw.Draw(img)
+    d.text((10, 8), "1x1 machines: icon, idle, working (middle frame), 2x", fill=TEXT, font=ft)
+    for k, (name, icon, idle, work) in enumerate(cols):
+        x, y = 8 + k * cw, 52
+        mid = None
+        if work is not None:
+            n = work.height // work.width
+            mid = work.crop((0, (n // 2) * work.width, work.width, (n // 2 + 1) * work.width))
+        for j, pic in enumerate((icon, idle, mid)):
+            if pic is not None or j < 2:
+                img.alpha_composite(cell(pic, 64), (x + j * 68, y))
+        d.text((x, y + 67), name, fill=TEXT, font=fn)
+    y = 52 + 64 + 22
+    d.text((8, y), f"icons: cauldron at {ref} (before), now, LV machines", fill=DIM, font=fn)
+    row = [("before", at_ref(ref, "graphics/icons/cauldron.png")), ("cauldron", now("graphics/icons/cauldron.png"))]
+    row += [(n, now(f"graphics/icons/{n}.png")) for n in SMALL_ICONS]
+    for k, (name, pic) in enumerate(row):
+        x = 8 + k * 100
+        img.alpha_composite(cell(pic, 64), (x, y + 16))
+        d.text((x, y + 16 + 67), name, fill=TEXT, font=fn)
+    y += 16 + 64 + 22 + 8
+    d.text((8, y), "game size (32 px per tile)", fill=DIM, font=fn)
+    ground = Image.new("RGBA", (8 + 40 * len(cols) + 40, 48), (74, 82, 52, 255))
+    for k, (name, icon, idle, work) in enumerate(cols):
+        if idle is not None:
+            ground.alpha_composite(idle, (8 + k * 40, 8))
+    if cols[0][3] is not None:   # the cauldron while it works, last
+        ground.alpha_composite(cols[0][3].crop((0, 0, 32, 32)), (8 + 40 * len(cols), 8))
+    img.alpha_composite(ground, (8, y + 16))
+    img.convert("RGB").save(out / "small-machines.png", optimize=True)
+    print("written", out / "small-machines.png")
+
+
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("what", choices=["icons", "techs", "sprites", "upgrades", "fluid-icons", "fluids", "tiers", "all"])
+    ap.add_argument("what", choices=["icons", "techs", "sprites", "upgrades", "fluid-icons", "fluids", "tiers", "small",
+                                     "all"])
     ap.add_argument("--ref", default="origin/main")
     ap.add_argument("--out", type=Path, default=ROOT / "docs/graphics-review")
     ap.add_argument("--fluids", help="fluids: the list of `devcheck.py check --fluids-out <file>`")
@@ -354,7 +411,7 @@ def main():
     a = ap.parse_args()
     a.out.mkdir(parents=True, exist_ok=True)
     for what, fn in (("icons", icons), ("techs", techs), ("sprites", sprites), ("upgrades", upgrades),
-                     ("fluid-icons", fluid_icons)):
+                     ("fluid-icons", fluid_icons), ("small", small)):
         if a.what in (what, "all"):
             fn(a.ref, a.out)
     if a.what in ("tiers", "all"):
