@@ -287,7 +287,11 @@ local NEW_ORES = {
 	--- has a composition, so GT's mass is technetium's 98 (vinteum: thaumium's 56)
 	["dilithium"] = { dust = "dilithium-dust", byproducts = {  }, mass = 98 },   -- GT Dilithium: Dilithium
 	["mysterious-crystal"] = { dust = "mysterious-crystal-dust", byproducts = {  }, mass = 98 },   -- GT MysteriousCrystal: none (itself)
-	["vinteum"] = { dust = "vinteum-dust", byproducts = {  }, mass = 56 },   -- GT Vinteum: Vinteum   -- bartworks Fluorspar: fluorspar, fluorspar, fluorspar
+	["vinteum"] = { dust = "vinteum-dust", byproducts = {  }, mass = 56 },
+	--- issue #356: the Mehen Belt's draconium and awakened draconium (Void Miner III, 160); no composition (GT's mass is
+	--- technetium's 98), no byproducts of their own (GT: themselves)
+	["draconium"] = { dust = "draconium-dust", byproducts = {  }, mass = 98 },   -- GT Draconium: none (itself)
+	["awakened-draconium"] = { dust = "awakened-draconium-dust", byproducts = {  }, mass = 98 },   -- GT DraconiumAwakened: none (itself)   -- GT Vinteum: Vinteum   -- bartworks Fluorspar: fluorspar, fluorspar, fluorspar
 }
 for x, o in pairs(NEW_ORES) do
 	ORE_CHAIN[x] = { dust = o.dust, byproducts = o.byproducts, mass = o.mass }

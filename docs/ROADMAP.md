@@ -2312,6 +2312,12 @@ Part 2: the Twilight Forest's olivine vein and small ores and the Nether's saltp
   alloy blast smelter melt and ingot are not built (no consumer). Agardite (Cd), yttrialite and lanthanite (Ce) are
   the mod's rare earth dusts of the same names.
 * #373, Neper: a Void Miner III recipe (T9, as Horus and Anubis), see Dilithium below.
+* #356 (the maintainer's decision on #417): the Mehen Belt, AmunRa's T9 asteroid belt, as a Void Miner III recipe with
+  its full pool (12 veins, 7 small ores). It is GT New Horizons' source of awakened draconium (the vein of draconium,
+  draconium, awakened draconium and nether star). Draconium and awakened draconium are new ores with GTNH's chain
+  (155). Draconium also gets GTNH's blast furnace (7200 K, LuV) and vacuum freezer route beside the fusion recipe of
+  131. Titanium, iridium, chrome, osmium, uranium, nether star, perlite, uvarovite and mithril ore are left out (no ore
+  of them in the mod).
 
 ### Elements and the fusion recipes (issue #365)
 
