@@ -186,6 +186,9 @@ MATERIALS = {
     "tanmolyium-beta-c": ("METALLIC", (0xc7, 0x2f, 0xcc)), "adamantium-alloy": ("SHINY", (0xa0, 0xa0, 0xa0)),
     "artherium-sn": ("SHINY", (0x60, 0x36, 0xf7)), "dalisenite": ("SHINY", (0xb0, 0xb8, 0x12)),
     "ic2-energy-crystal": ("DIAMOND", (0xff, 0x20, 0x20)),
+    # issue #355: GT++'s Chromatic Glass and Celestial Tungsten (their own texture sets, MaterialsElements.java:472-507)
+    "chromatic-glass": ("CUSTOM/chromaticglass", (255, 255, 255)),
+    "celestial-tungsten": ("CUSTOM/celestialtungsten", (255, 255, 255)),
     # issue #205: goodgenerator's Werkstoffe of the naquadah line (GGMaterial.java, their colours; dusts)
     "naquadria-oxide-mixture": ("METALLIC", (77, 77, 85)), "indium-phosphate": ("DULL", (43, 46, 112)),
     "low-quality-naquadria-phosphate": ("DULL", (77, 77, 85)),
@@ -973,6 +976,11 @@ def icon_table(c):
     T["raw-advanced-crystal-chip"] = lambda: c.gt(
         "gt:gregtech/textures/items/gt.circuitcomponent/processed/processedchiprawadvancedcrystal")
     T["energy-crystal"] = lambda: c.part("ic2-energy-crystal", "gemFlawless")
+    # issue #355: GT++'s quantum anomaly (MetaGeneratedItemIDs.Laser_Lens_Special 105) and Unknown Particle (particle
+    # meta 24), the core mod's Chromatic Lens
+    T["quantum-anomaly"] = lambda: c.gt("gt:miscutils/textures/items/MU-metaitem.01/105")
+    T["unknown-particle"] = lambda: c.gt("gt:miscutils/textures/items/particle/24")
+    T["chromatic-lens"] = lambda: c.gt(f"{CORE}itemChromaticLens")
     return T
 
 
@@ -1057,7 +1065,8 @@ def fluid_icons(tex, names):
     steam=fluid.steam): that texture's first frame, GT's colours as they are, scaled to the icon size."""
     for spec in names:
         name, texture = spec.split("=", 1)
-        img = fit(tex.load("gt:gregtech/textures/blocks/fluids/" + texture))
+        # (a full "gt:..." spec for the fluids of the other mods in the checkout, e.g. GT++'s miscutils)
+        img = fit(tex.load(texture if texture.startswith("gt:") else "gt:gregtech/textures/blocks/fluids/" + texture))
         target = ROOT / "graphics/fluids" / f"{name}.png"
         if not (target.exists() and Image.open(target).convert("RGBA").tobytes() == img.tobytes()):
             img.save(target, optimize=True)

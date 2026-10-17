@@ -2533,3 +2533,46 @@ end
 FORK_CASTING.materials["mar-ce-m200-steel"] = { "luv", PA1 }
 FORK_CASTING.materials["energetic-alloy"] = FORK_CASTING.materials["energetic-alloy"] or { "hv", PA3 }
 FORK_CASTING.run()
+
+
+
+--------------------------------------------------------------------------------
+--- 19) THE QUANTUM ANOMALY AND CHROMATIC GLASS (issue #355, the godforge route)
+--- GT's deterministic quantum anomaly (gregtech/loaders/postload/recipes/PlasmaForgeRecipes.java:128-140, "bypass for
+--- UEV+"): the plasma forge at 10 800 K takes an Unknown Particle with a Chromatic Lens and a Hi-Computation Station
+--- Mk-V (both stay: they come back) and 92 L of the excited resplendent catalyst with an ingot of molten duranium,
+--- 60 s at UEV. Its 46 L of residue (GT's DTR) are left out until the plasma forge's residue comes (#355). The Unknown
+--- Particle (GT++'s particle item; an item here, the plant has one fluid output) is the 1 % output of GT's grade 8
+--- water unit (gregtech/loaders/postload/chains/PurifiedWaterRecipes.java:342-353). The Chromatic Lens
+--- (NewHorizonsCoreMod LatheRecipes.java:19-20): a Chromatic Glass plate in the UHV lathe, 60 s. GT++'s Chromatic
+--- Glass comes from the plasma forge (NewHorizonsCoreMod DTPFRecipes.java:344-401 with its DTPFCalculator: 256
+--- parallels of a 1 966 080 EU/t, 300 s recipe; tier 1 crude, tier 3 resplendent, the mod has no prosaic and exotic
+--- catalyst), 143 casts it into plates. GT++'s other anomaly engravings (chromatic glass dust, astral titanium,
+--- advanced nitinol) are left out: no consumer, no such materials. Everything here is unlocked with the godforge, the
+--- anomaly's first consumer (its Graviton Flow Modulators, 140).
+--------------------------------------------------------------------------------
+do
+	local GF, DTPF_CAT = "godforge", "dimensionally-transcendent-plasma-forge-recipes"
+	local CRUDE = "excited-dimensionally-transcendent-crude-catalyst"
+	local RESPLENDENT = "excited-dimensionally-transcendent-resplendent-catalyst"
+	local AQ = {}
+	F.fluid("molten-chromatic-glass", "molten-chromatic-glass", { 0.94, 0, 0 })   -- (GT++'s molten texture)
+	items(SUB_PART, { "unknown-particle", "chromatic-glass-plate", "chromatic-lens" })
+	--- (GT: tier 1 156 040 L crude catalyst and 36 864 L molten glass, 150 s at 50 331 648 EU/t, UMV; tier 3 26 350 L
+	--- resplendent catalyst and 147 456 L glass, 37.5 s at 201 326 592 EU/t, UXV; the residue left out as above)
+	step(AQ, "molten-chromatic-glass", DTPF_CAT, 150, UMV_SPEED, { { CRUDE, 15604 }, { "molten-glass", 3686.4 } },
+		{ { "molten-chromatic-glass", 3686.4 } })
+	step(AQ, "molten-chromatic-glass-resplendent", DTPF_CAT, 37.5, UXV_SPEED,
+		{ { RESPLENDENT, 2635 }, { "molten-glass", 14745.6 } }, { { "molten-chromatic-glass", 14745.6 } },
+		"molten-chromatic-glass")
+	step(AQ, "chromatic-lens", "uhv-lathe-recipes", 60, UHV_SPEED, { { "chromatic-glass-plate", 1 } },
+		{ { "chromatic-lens", 1 } })
+	step(AQ, "quantum-anomaly", DTPF_CAT, 60, UEV_SPEED,
+		{ { "unknown-particle", 1 }, { "chromatic-lens", 1 }, { HIC[5], 1 }, { RESPLENDENT, 9.2 }, { "molten-duranium", 14.4 } },
+		{ { "quantum-anomaly", 1 }, { "chromatic-lens", 1 }, { HIC[5], 1 } })
+	local g8 = data.raw.recipe["grade-8-water"]
+	g8.results[#g8.results + 1] = { type = "item", name = "unknown-particle", amount = 1, probability = 0.01 }
+	for _, r in pairs(AQ) do fork_add_unlock(GF, r) end
+	FORK_CASTING.materials["chromatic-glass"] = { "uev", GF }
+	FORK_CASTING.run()
+end

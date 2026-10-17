@@ -1913,10 +1913,11 @@ drafts `80-umv-age-item.lua` and `90-uxv-age-item.lua` (never loaded, removed in
 
 | Technology | Prerequisites | Units | Unlocks |
 |---|---|---|---|
-| `godforge` | `stargate`, `dtpf-resplendent-catalyst` | 55 | stellar energy siphon casing, singularity reinforced stellar shielding casing, remote graviton flow modulator, godforge controller, the godforge; raw star matter; lead, thorium and naquadria plasma (plasma module) |
-| `godforge-molten-module` | `godforge` | 55 | universium in the godforge |
+| `godforge` (UMV science since issue #355, see "Circuit rungs") | `precise-electronic-unit-mk3`, `umv-machines` | 95 | stellar energy siphon casing, singularity reinforced stellar shielding casing, remote graviton flow modulator, godforge controller, the godforge; the quantum anomaly, chromatic glass and lens, the resplendent catalyst |
+| `godforge-plasma-module` (UMV science, issue #355) | `godforge` | 95 | celestial tungsten dust and plasma, raw star matter |
+| `godforge-molten-module` | `godforge-plasma-module`, `stargate` | 55 | universium in the godforge |
 | `godforge-exotic-module` | `godforge-molten-module` | 55 | time and space from spacetime, the 7 magmatter recipes |
-| `dtpf-stellar-catalyst` | `godforge` | 55 | stellar catalyst, the six stellar metal recipes of the plasma forge |
+| `dtpf-stellar-catalyst` | `godforge-plasma-module`, `stargate`, `dtpf-resplendent-catalyst` | 55 | stellar catalyst, the six stellar metal recipes of the plasma forge; lead, thorium and naquadria plasma (plasma module) |
 | `godforge-upgrades` (infinite) | `godforge-exotic-module` | `55 * 2^(L-1)` | +5 % productivity per level for raw star matter, godforge universium and magmatter |
 | `max-materials` | `godforge-exotic-module` | 55 | magmatter parts (ingot, plate, rods, frame, gears, ring, round, screw, rotor, wires, foil), magmatter cable |
 | `planck-processors` | `max-materials` | 55 | Planck board, processing unit, processor, assembly, supercomputer |
@@ -1931,7 +1932,7 @@ All with the 15 packs up to MAX, 60 s per unit. Machines:
 
 | Machine | Size | Tier | Power | Speed | Technology | Recipe |
 |---|---|---|---|---|---|---|
-| godforge | 13x13 | UXV | 2621.44 MW (one UXV amp) | 4096 | `godforge` | UXV assembler, 5 min: controller, 64 shielding casings, 8 siphon casings, 4 graviton flow modulators, 2 UXV energy hatches, 8 UXV hulls |
+| godforge | 13x13 | UMV (since issue #355) | 1310.72 MW (one UMV amp) | 2048 | `godforge` | UMV assembler, 5 min: controller, 64 shielding casings, 8 siphon casings, 4 graviton flow modulators, 2 UIV energy hatches, 8 UIV hulls |
 | MAX basic machines (23) | 3x3 | MAX | twice the UXV machine (MAX assembler 1.97 GW) | 8192 | `max-machines` | the UXV recipe with every tiered part one tier up (`fork_make_tier_machine`) |
 | MAX multiblock upgrades (13) | as the EV version | MAX | twice the UXV one (MAX EBF 4.92 GW) | 8192 | `max-multiblocks` | the UXV multiblock with MAX parts |
 | MAX large plasma turbine | 3x3 | MAX | makes up to 20 971.52 MW (four MAX amps) | - | `max-plasma-turbine` | upgrade of the UXV turbine with the MAX dynamo hatch and a MAX hull (the old hatch and hull come back) |
@@ -1945,7 +1946,8 @@ time, GT's star fuel):
 | Recipe | Inputs | Output | Time | Module (GT) |
 |---|---|---|---|---|
 | raw star matter | 1000 hydrogen, 1000 helium, 10 crude catalyst | 100 raw star matter | 20 s | eye of harmony in GT |
-| lead / thorium plasma | 1 lead ingot / 1 thorium dust | 144 plasma | 1 s | plasma module, tier 0 |
+| celestial tungsten plasma (issue #355) | 1 celestial tungsten dust | 144 plasma | 8 s (GT: 4 s at UXV) | plasma module, tier 0 multi-step |
+| lead / thorium plasma | 1 lead ingot / 1 thorium dust | 144 plasma | 1 s | plasma module, tier 1 |
 | naquadria plasma | 144 molten naquadria | 144 plasma | 10 s | plasma module, tier 1 |
 | universium | 144 spacetime, 144 flerovium | 288 universium | 1.25 s | eye of harmony in GT |
 | time and space | 288 molten spacetime | 144 tachyon rich temporal fluid, 144 spatially enlarged fluid | 10 s | GT: centrifuge from tesseracts |
@@ -2457,8 +2459,31 @@ variants; their leaves: GT's tin alloy, manyullyn (cobalt and ardite; ardite as 
 with each quantium vein), orundum, lithium chloride from purified lepidolite, the cerium ingot, sunnarium dust (the mod's
 molten sunnarium, without IC2's glowstone rods), the core mod's engraved chips, IC2's energy crystal (autoclave of
 energium), GT's Crystal SoC and Raw Advanced Crystal Chip. GT's 4x and 8x cables are 4 and 8 cables, as elsewhere in the
-mod. Left out: GT's oganesson gas variant of the blast furnace. Next: the quantum anomaly (the plasma forge with the
-Chromatic Lens and the HiC Mk-V), celestial tungsten dust, the godforge between UIV and UMV, the plasma module upgrade.
+mod. Left out: GT's oganesson gas variant of the blast furnace.
+
+Step 2 (140, 164 section 19, 150): the quantum anomaly and the godforge at GTNH's place.
+- The quantum anomaly is GT's deterministic plasma forge recipe: an Unknown Particle (the 1 % output of GT's grade 8 water
+  unit; an item, the plant has one fluid output) with the Chromatic Lens and the HiC Mk-V (both come back), the excited
+  resplendent catalyst and molten duranium. Its residue (DTR) is left out until the forge's residue comes.
+- The Chromatic Lens is cut in the UHV lathe from a Chromatic Glass plate. The glass comes from the plasma forge with
+  NewHorizonsCoreMod's numbers for the crude and resplendent tiers (the mod has no prosaic and exotic catalyst).
+- The resplendent catalyst recipe moves to the godforge, its first consumer. Its tier of the forge's metals stays after the
+  UXV multiblocks.
+- The godforge comes between the UIV and UMV energy hatches with UMV science, at UMV (one UMV amp through two UIV
+  hatches). Its parts take GT's UIV and UMV recipes with what the mod has.
+- Named deviation: creon, mellion and metastable oganesson are left out of the godforge. GTNH makes them from celestial
+  tungsten plasma, which the mod makes in the godforge itself, so they would close a cycle. The shielding casing's molten
+  celestial tungsten is left out for the same reason.
+- GT's other godforge items the mod lacks are left out and named in 140: the singularities, hypogen, Six-Phased Copper,
+  the boson containment units and the exotic catalyst, among others.
+- `godforge-plasma-module` stands for GT's plasma module upgrades GPCI to TPTP (17 graviton shards). It unlocks
+  celestial tungsten dust (6 tungsten dust, engraved with the anomaly as the lens at UEV), its plasma (GT's multi-step
+  plasma) and raw star matter.
+- The tier 1 plasmas (lead, thorium, naquadria) go with the stellar catalyst after the stargate. The molten and exotic
+  modules stay after the stargate.
+
+Next: the shared foundation (the forge's residue, DSS with the celestial tungsten plasma, the oganessons), then creon
+and mellion, the gravitational lens, ZPIC and YPIC.
 
 ### Naquadah fuel MK IV to VI and the refinery (issue #356)
 

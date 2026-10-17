@@ -30,6 +30,8 @@ local TOOLS = {
 for name, _ in pairs(data.raw.item) do
 	if name:match("%-lens$") then table.insert(TOOLS.lens.items, name) end
 end
+--- issue #355: GT++'s quantum anomaly (Laser_Lens_Special) is a lens of the laser engraver too (celestial tungsten dust)
+if data.raw.item["quantum-anomaly"] then table.insert(TOOLS.lens.items, "quantum-anomaly") end
 table.sort(TOOLS.lens.items)
 
 local tool_of = {}   -- item -> module category

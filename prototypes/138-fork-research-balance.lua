@@ -70,6 +70,8 @@ local FORK_RESEARCH_COUNTS = {
 	["umv-science-pack"] = 90, -- 2300
 	-- UMV: /32.2
 	["quantum-force-transformer"] = 95, -- new in phase 6a
+	["godforge"] = 95, -- phase 6b (140); between the UIV and UMV energy hatches since issue #355 (GTNH's place)
+	["godforge-plasma-module"] = 95, -- issue #355: GT's plasma module upgrades for celestial tungsten plasma
 	["temporal-processor-mainframes"] = 95, -- 3000
 	["temporal-processors"] = 95, -- 3000
 	["umv-energy-hatches"] = 95, -- 3000
@@ -90,7 +92,6 @@ local FORK_RESEARCH_COUNTS = {
 	["uxv-plasma-turbine"] = 40, -- 2500
 	-- phase 6b (140-fork-godforge.lua, 141-fork-max.lua), MAX science: about 8 hours of pack production each in
 	-- the MAX reference factory (the UXV one doubled, with godforges; tools/balance_model.py)
-	["godforge"] = 55,
 	["godforge-molten-module"] = 55,
 	["godforge-exotic-module"] = 55,
 	["dtpf-stellar-catalyst"] = 55,

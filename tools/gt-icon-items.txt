@@ -4196,3 +4196,8 @@ hi-computation-station-mk2
 hi-computation-station-mk3
 hi-computation-station-mk4
 hi-computation-station-mk5
+quantum-anomaly
+unknown-particle
+chromatic-glass-plate
+chromatic-lens
+celestial-tungsten-dust
