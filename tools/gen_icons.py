@@ -53,6 +53,7 @@ DONORS = {
     "callisto-ice-dust": ("naquadah-dust", 195), "fluxed-electrum-dust": ("naquadah-dust", 50),
 }
 
+    "cauldron": ("bucket-of-water", 190),   # issue #427: Minecraft's cauldron (no texture of it in GT)
 
 def existing():
     return {p.stem for p in ICONS.glob("*.png")}

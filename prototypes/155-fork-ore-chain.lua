@@ -23,6 +23,10 @@
 --- (07; the macerator recipes keep their names gypsum, sulfur and calcite) and this chain. Their recipes replace none,
 --- so they are unlocked after their machine and their input like those of O3 and O4 (o1_late, below); calcite's second
 --- byproduct, malachite, is a new dust with GT's decomposition and smelting.
+--- Issue #427: GTNH's cauldron (machine in 101, with Rubber) washes every impure and pure dust of the chain into the dust
+---   cauldron           impure or pure dust + 33.3 water -> dust, no byproduct (1 s; GT: 333 L, instant)
+--- with the technology of the dust recipe it takes (sulfur's with Rubber), so the early game has the dust before the LV
+--- Centrifuge; GT's crushed -> purified cauldron recipe is left out (it would replace the ore washer, see CAULDRON).
 --- Loads after 149 (every ore exists, 137 removed infused gold) and before 150, 196, 198, 199 and 200.
 --------------------------------------------------------------------------------
 
@@ -240,6 +244,16 @@ end
 local made = 0
 local furnace_made = {}   -- issue #207: the furnace recipes of this file, for the multi smelter (end of the file)
 local o1_late = {}   -- issue #203: recipes unlocked after their machine and input (below)
+--- issue #427: GT New Horizons' cauldron (machine in 101). GTPostLoad.addCauldronRecipe and
+--- MetaGeneratedItem01.getCauldronWashingResult turn an impure or a pure dust into the ore's dust with one cauldron level,
+--- 333 L of water, in no time and without a byproduct; here a tenth of the water (as the ore washer's 100 for GT's 1000 L)
+--- and a short time. The dust is the one of ORE_CHAIN, as GT's cauldronRemap gives goodgenerator's naquadah earth for
+--- naquadah, one per dust (not the two of the ore processing outputs, NQ_EARTH); its other remaps (cerium, samarium, the
+--- platinum metals) concern no ore of this chain. GT's third cauldron recipe, crushed -> purified crushed ore, is left out
+--- on purpose: it would replace the ore washer (and the byproduct of its first step) for an early player; and the LV
+--- Centrifuge stays with Ore Centrifuging: the cauldron is the early route without byproducts, the centrifuge the one
+--- with them, as in GTNH (decision of #427, a later issue can revisit both).
+local CAULDRON = { water = 33.3, time = 1, washes = {} }   -- washes: { ore, impure dust, pure dust, dust }
 for x, ore in pairs(ORE_CHAIN) do
 	local crushed = "crushed-" .. x
 	if data.raw.item[crushed] and data.raw.item[ore.dust] and not FORK_ORE_CHAIN.skip[x] then
@@ -306,6 +320,7 @@ for x, ore in pairs(ORE_CHAIN) do
 			ingredients = { item(impure) }, results = { item(ore.dust), item(byp(1), 1, 0.1111) } }, t_cf)
 		u(recipe{ name = "centrifuging-" .. pure, category = "lv-centrifuge-recipes", time = cf_time, main = ore.dust,
 			ingredients = { item(pure) }, results = { item(ore.dust), item(byp(2), 1, 0.1111) } }, t_cf)
+		CAULDRON.washes[#CAULDRON.washes + 1] = { x, impure, pure, ore.dust }   -- issue #427 (end of the file)
 		local smelt = data.raw.recipe[ore.dust .. "-smelter"]
 		if smelt and smelt.category == "smelting" then
 			for _, f in pairs({ { impure, t_crush }, { pure, t_wash } }) do
@@ -1591,6 +1606,33 @@ for name, lens in pairs(ENGRAVER_RECIPE_LENS) do
 	end
 end
 log("FORK-ORE-CHAIN: " .. given .. " laser engraver recipes take GTNH's lens (issue #325)")
+
+--------------------------------------------------------------------------------
+--- ISSUE #427: the cauldron's recipes (CAULDRON, above the O1 loop): impure and pure dust -> the dust of every ore of
+--- the chain. A recipe comes with the technology of the impure or pure dust recipe it washes (t_crush, t_wash or
+--- o1_late's: sulfur's with Rubber), or with the first one after the cauldron's (Rubber) where that technology does not
+--- follow it (gypsum's and calcite's impure dust come with Steel Processing). Made last, outside `makers`, so that no
+--- unlock of this file or of 158 (item_techs) takes the cauldron for an earlier source of a dust and moves the dust's
+--- consumers: the cauldron adds a route and moves nothing. 161 gates them with the other recipes of the dimension ores'
+--- impure and pure dust.
+--------------------------------------------------------------------------------
+do
+	local made_c = 0
+	for _, w in pairs(CAULDRON.washes) do
+		local x, dust = w[1], w[4]
+		for _, d in pairs({ w[2], w[3] }) do
+			local name = "cauldron-" .. d
+			data:extend({ {
+				type = "recipe", name = name, category = "cauldron-recipes", enabled = false, energy_required = CAULDRON.time,
+				ingredients = { item(d), fluid("water", CAULDRON.water) }, results = { item(dust) }, main_product = dust,
+				subgroup = "subgroup-cauldron-recipes", order = x .. "-" .. d,
+			} })
+			unlock_after(name, { machine_techs("cauldron-recipes"), tech_list(d) })
+			made_c = made_c + 1
+		end
+	end
+	log("FORK-ORE-CHAIN: " .. made_c .. " cauldron recipes")
+end
 
 --- issue #222: the helpers for 158-fork-gt-parts.lua (the parts of the new ingots and GT's nugget recipes)
 FORK_ORE_CHAIN.unlock_after, FORK_ORE_CHAIN.machine_techs, FORK_ORE_CHAIN.item_techs, FORK_ORE_CHAIN.made =
