@@ -55,6 +55,7 @@ local FORK_RESEARCH_COUNTS = {
 	["uiv-materials"] = 225, -- 3000
 	-- UIV (promethium pack): /25.3
 	["exotic-processor-mainframes"] = 120, -- 3000
+	["dimensionally-transcendent-plasma-forge"] = 120, -- phase 6a (139); UIV since issue #355 (GTNH's place)
 	["exotic-processors"] = 100, -- 2500
 	["fusion-coil-ii"] = 100, -- 2500
 	["fusion-plasmas-mk5"] = 120, -- 3000
@@ -68,7 +69,6 @@ local FORK_RESEARCH_COUNTS = {
 	["umv-materials"] = 100, -- 2500
 	["umv-science-pack"] = 90, -- 2300
 	-- UMV: /32.2
-	["dimensionally-transcendent-plasma-forge"] = 95, -- new in phase 6a (139-fork-endgame-multiblocks.lua)
 	["quantum-force-transformer"] = 95, -- new in phase 6a
 	["temporal-processor-mainframes"] = 95, -- 3000
 	["temporal-processors"] = 95, -- 3000
