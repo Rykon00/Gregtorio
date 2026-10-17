@@ -3492,6 +3492,7 @@ hastelloy-n-reactor-casing
 lftr-control-circuit
 integral-encasement-iv
 sparge-tower-exterior-casing
+thermally-insulated-casing
 calcium-carbide-dust
 calcium-hydroxide-dust
 cobalt-ii-nitrate-dust

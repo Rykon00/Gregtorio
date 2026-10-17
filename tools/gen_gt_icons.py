@@ -906,6 +906,7 @@ def icon_table(c):
     T["lftr-control-circuit"] = lambda: c.gt("gt:miscutils/textures/items/itemCircuitLFTR")
     T["integral-encasement-iv"] = lambda: c.gt(f"{BLK}INTEGRAL_FRAMEWORK_HV")
     T["sparge-tower-exterior-casing"] = lambda: c.gt(f"{BLK}SPARGE_TOWER_EXTERIOR_CASING")
+    T["thermally-insulated-casing"] = lambda: c.gt(f"{GTPP_TE}machine_top")   # issue #406
     T["empty-large-tungstensteel-fluid-cell"] = lambda: c.gt(M1 + "406")   # issue #386: ItemList.Large_Fluid_Cell_TungstenSteel
     # issue #357, part 2: goodgenerator's thorium fuel line (its items as the plutonium line's above)
     T["uranium-carbide-thorium-mixture"] = lambda: c.part("uranium-carbide-thorium-mixture", "dust")
