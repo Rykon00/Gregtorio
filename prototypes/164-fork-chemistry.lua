@@ -2228,3 +2228,308 @@ machine{
 }
 data.raw["assembling-machine"][NSPP].crafting_categories = { "reactor-processing-unit-recipes", "cold-trap-recipes" }
 for _, r in pairs(RECIPES) do fork_add_unlock(SALTS, r) end
+
+
+
+
+--------------------------------------------------------------------------------
+--- 18) THE PRECISE ASSEMBLER AND THE HI-COMPUTATION STATIONS (issue #355, the godforge route: the quantum anomaly
+--- through the HiC chain). GoodGenerator (GT5-Unofficial 638b3f37ca, goodgenerator/loader/RecipeLoader.java (R1),
+--- RecipeLoader2.java (R2), items/GGMaterial.java) and NewHorizonsCoreMod (scripts/ScriptCoreMod.java), fluids a tenth
+--- of GT's litres, GT's seconds x the tier speed of GT's EU/t.
+--- The Precise Assembler (R2:1027-1041; goodgenerator/blocks/tileEntity/MTEPreciseAssembler.java): 9x5x5 with 42 to 81
+--- Precise Electronic Unit Casings of one tier, 42 glass, 21 machine casings (they cap the voltage), 12 tungstensteel
+--- frames; a recipe of casing tier N needs Mk N casings (:197-204). Here three machines, Mk-I to Mk-III (3x3): each one
+--- the controller with 42 casings of its tier (Mk-II and Mk-III built from the one below, GT's casing swap), the glass,
+--- 21 machine casings of its voltage (LuV, ZPM, UHV: GT's HiC Mk-V is UHV) and hatches as hulls; precise mode only (GT's
+--- assembler mode, more parallels for plain assembler recipes, is left out).
+--- The HiCs (R1:1066-1094, R2:1043-1170) with GT's alternatives: where GT takes an IC2 vent or rotors, both recipes
+--- where the mod has the part (the Reactor Heat Vent and the Tin Alloy rotor it lacks). The casings (R2:1188-1230).
+--- GT's 4x and 8x cables are 4 and 8 of the mod's cables (its convention, 126-fork-zpm.lua).
+--- The alloys (GGMaterial, R2:103-130, 963-970, 1462-1498; bartworks' generated mixer, vacuum freezer and parts):
+--- Signalium and Lumiium from their own mixer recipes, Hikarium, MAR-M200, MAR-Ce-M200 (from MAR-M200 ingots, cerium and
+--- lithium chloride in the blast furnace), Tanmolyium Beta-C, Adamantium Alloy, Artherium-Sn, Dalisenite; the hot ingots
+--- with GT's gas variants (BlastFurnaceGasStat.java:14-21: nitrogen x1, helium x0.9, argon 850 L x0.8, radon 700 L
+--- x0.7, neon 550 L x0.6, krypton 400 L x0.5, xenon 250 L x0.4; oganesson left out), 143 casts the parts.
+--- The leaves: tin alloy, red alloy, annealed copper and niobium-titanium dust (macerated ingots), molten redstone,
+--- GoodGenerator's High Energy Mixture and Lumiinessence, lithium chloride (bath of purified lepidolite), the cerium
+--- ingot (GT's blast furnace, 1068 K), sunnarium dust (the mod's molten sunnarium cast into an ingot and macerated:
+--- GT's route without IC2's glowstone rods), orundum (forming press, tiberium plate and 8 silicon plates; the mod's
+--- forming press has only the LV tier, GT's IV time), ardite (the sporadic ore of GT's Quantium mix, OreMixes.java:
+--- 729-738: 8 with the quantium vein), manyullyn (cobalt and ardite), the energy crystal (autoclave of energium).
+--- The chips: NewHorizonsCoreMod's engraved gold, diamond crystal, energy and manyullyn crystal chips, GT's Crystal SoC
+--- and Raw Advanced Crystal Chip (LaserEngraverRecipes.java:110-116, 354-360; GT's blue lens is the sapphire lens).
+--- Technologies by the casing tier: Precise Assembler (the Mk-I casing; after the ZPM assembly line, whose fiber-reinforced
+--- board and palladium melt the HiC Mk-I and the controller take, as #252 asks), Precise Electronic Unit Mk-II (ZPM),
+--- Mk-III (UHV).
+--------------------------------------------------------------------------------
+
+local PA1, PA2, PA3 = "precise-assembler", "precise-electronic-unit-mk2", "precise-electronic-unit-mk3"
+local R1, R2, R3 = {}, {}, {}
+local GAS = { { nil, "nitrogen", 100, 1 }, { "helium", "helium", 100, 0.9 }, { "argon", "argon", 85, 0.8 },
+	{ "radon", "radon", 70, 0.7 }, { "neon", "neon", 55, 0.6 }, { "krypton", "krypton", 40, 0.5 },
+	{ "xenon", "xenon", 25, 0.4 } }
+--- the hot ingot from the dust in the blast furnace with GT's gas variants (GG's reAddBlastRecipe, no gas-free one)
+local function blast(list, m, cat, seconds, speed)
+	for _, g in pairs(GAS) do
+		local name = "hot-" .. m .. "-ingot" .. (g[1] and ("-" .. g[1]) or "")
+		step(list, name, cat, seconds * g[4], speed, { { m .. "-dust", 1 }, { g[2], g[3] } }, { { "hot-" .. m .. "-ingot", 1 } },
+			"hot-" .. m .. "-ingot")
+	end
+end
+local SUB_DUST, SUB_PART = "subgroup-macerator-dust", data.raw.item["hastelloy-x-plate"].subgroup
+local function items(sub, names)
+	for _, n in pairs(names) do
+		if not data.raw.item[n] then create_item{ skip_recipe = true, name = n, subgroup = sub } end
+	end
+end
+
+--- the leaves
+items(SUB_DUST, { "tin-alloy-dust", "red-alloy-dust", "annealed-copper-dust", "niobium-titanium-dust",
+	"high-energy-mixture", "lumiinessence-dust", "lithium-chloride-dust", "sunnarium-dust", "orundum-dust",
+	"ardite-dust", "manyullyn-dust" })
+items(SUB_PART, { "cerium-ingot", "sunnarium-ingot", "tiberium-plate", "orundum-plate", "hot-manyullyn-ingot",
+	"manyullyn-ingot", "manyullyn-plate" })
+F.fluid("molten-redstone", "molten-redstone", { 0.78, 0.00, 0.00 })
+F.fluid("molten-lithium-chloride", "molten-lithium-chloride", { 0.72, 0.89, 0.81 })
+step(R1, "tin-alloy-dust", "lv-mixer-recipes", 5, LV_SPEED, { { "iron-dust", 1 }, { "tin-dust", 1 } }, { { "tin-alloy-dust", 2 } })
+step(R1, "red-alloy-dust", "lv-macerator-recipes", 20.15, LV_SPEED, { { "red-alloy-ingot", 1 } }, { { "red-alloy-dust", 1 } })
+step(R1, "annealed-copper-dust", "lv-macerator-recipes", 3.15, LV_SPEED, { { "annealed-copper-ingot", 1 } },
+	{ { "annealed-copper-dust", 1 } })
+step(R3, "niobium-titanium-dust", "lv-macerator-recipes", 3.55, LV_SPEED, { { "niobium-titanium-ingot", 1 } },
+	{ { "niobium-titanium-dust", 1 } })
+step(R1, "molten-redstone", "lv-fluid-extractor-recipes", 1.2, LV_SPEED, { { "redstone-dust", 1 } }, { { "molten-redstone", 14.4 } })
+step(R1, "high-energy-mixture", "mv-mixer-recipes", 12, MV_SPEED,
+	{ { "glowstone-dust", 4 }, { "redstone-dust", 2 }, { "aluminium-dust", 1 } }, { { "high-energy-mixture", 4 } })
+step(R1, "lumiinessence-dust", "hv-fluid-solidifier-recipes", 30, HV_SPEED,
+	{ { "high-energy-mixture", 2 }, { "phosphoric-acid", 400 } }, { { "lumiinessence-dust", 1 } })
+step(R1, "lithium-chloride-dust", "mv-chemical-bath-recipes", 7, MV_SPEED,
+	{ { "purified-lepidolite", 1 }, { "hydrochloric-acid", 100 } },
+	{ { "rock-salt", 1, 0.8 }, { "lithium-chloride-dust", 3, 0.8 }, { "cryolite", 4, 0.8 } }, "lithium-chloride-dust")
+step(R1, "molten-lithium-chloride", "lv-fluid-extractor-recipes", 15, LV_SPEED, { { "lithium-chloride-dust", 1 } },
+	{ { "molten-lithium-chloride", 14.4 } })
+step(R1, "cerium-ingot", "mv-electric-blast-furnace-recipes", 160.2, MV_SPEED, { { "cerium-dust", 1 } }, { { "cerium-ingot", 1 } })
+step(R1, "sunnarium-ingot", "lv-fluid-solidifier-recipes", 1.6, LV_SPEED, { { "molten-sunnarium", 14.4 } },
+	{ { "sunnarium-ingot", 1 } })
+step(R1, "sunnarium-dust", "lv-macerator-recipes", 4.9, LV_SPEED, { { "sunnarium-ingot", 1 } }, { { "sunnarium-dust", 1 } })
+step(R2, "tiberium-plate", "lv-bending-machine-recipes", 9.8, LV_SPEED, { { "tiberium-gem", 1 } }, { { "tiberium-plate", 1 } })
+step(R2, "orundum-plate", "lv-forming-press-recipes", 20, IV_SPEED, { { "tiberium-plate", 1 }, { "silicon-plate", 8 } },
+	{ { "orundum-plate", 1 } })
+step(R2, "orundum-dust", "lv-macerator-recipes", 4.9, LV_SPEED, { { "orundum-plate", 1 } }, { { "orundum-dust", 1 } })
+step(R3, "manyullyn-dust", "lv-mixer-recipes", 20, LV_SPEED, { { "cobalt-dust", 1 }, { "ardite-dust", 1 } },
+	{ { "manyullyn-dust", 2 } })
+step(R3, "hot-manyullyn-ingot", "hv-electric-blast-furnace-recipes", 75, HV_SPEED, { { "manyullyn-dust", 1 }, { "hydrogen", 100 } },
+	{ { "hot-manyullyn-ingot", 1 } })
+step(R3, "hot-manyullyn-ingot-without-gas", "hv-electric-blast-furnace-recipes", 120, HV_SPEED, { { "manyullyn-dust", 1 } },
+	{ { "hot-manyullyn-ingot", 1 } })
+step(R3, "manyullyn-ingot", "mv-vacuum-freezer-recipes", 11.7, MV_SPEED, { { "hot-manyullyn-ingot", 1 } },
+	{ { "manyullyn-ingot", 1 } })
+step(R3, "manyullyn-plate", "lv-bending-machine-recipes", 3.9, LV_SPEED, { { "manyullyn-ingot", 1 } }, { { "manyullyn-plate", 1 } })
+
+--- the alloys: dust, hot ingot (gas variants), ingot (vacuum freezer); 143 casts the parts from the melt
+local ALLOYS = {
+	--  material            list  EBF category, s, speed                    freezer category, s, speed     colour
+	{ "signalium",          R1, "luv-electric-blast-furnace-recipes", 80, LUV_SPEED, "mv-vacuum-freezer-recipes", 23.4, MV_SPEED, { 212, 64, 0 } },
+	{ "lumiium",            R1, "luv-electric-blast-furnace-recipes", 80, LUV_SPEED, "mv-vacuum-freezer-recipes", 10.2, MV_SPEED, { 232, 242, 36 } },
+	{ "hikarium",           R1, "luv-electric-blast-furnace-recipes", 60, LUV_SPEED, "mv-vacuum-freezer-recipes", 12.3, MV_SPEED, { 255, 214, 251 } },
+	{ "mar-m200-steel",     R1, "iv-electric-blast-furnace-recipes", 10, IV_SPEED, "ev-vacuum-freezer-recipes", 12.3, EV_SPEED, { 81, 81, 81 } },
+	{ "tanmolyium-beta-c",  R1, "iv-electric-blast-furnace-recipes", 20, IV_SPEED, "mv-vacuum-freezer-recipes", 9.3, MV_SPEED, { 199, 47, 204 } },
+	{ "adamantium-alloy",   R2, "ev-electric-blast-furnace-recipes", 125, EV_SPEED, "zpm-vacuum-freezer-recipes", 23.4, ZPM_SPEED, { 160, 160, 160 } },
+	{ "artherium-sn",       R2, "zpm-electric-blast-furnace-recipes", 25, ZPM_SPEED, "mv-vacuum-freezer-recipes", 21.6, MV_SPEED, { 96, 54, 247 } },
+	{ "dalisenite",         R3, "uv-electric-blast-furnace-recipes", 40, UV_SPEED, "mv-vacuum-freezer-recipes", 16, MV_SPEED, { 176, 184, 18 } },
+}
+--- the melts first (step() types an ingredient by data.raw.fluid when it is called); 143 casts with them at the end
+--- (the near-black MAR-M200 steels lifted as gen_gt_icons.py lifts their melt icons)
+local MELT_RGB = { ["mar-m200-steel"] = { 159, 159, 159 } }
+for _, a in pairs(ALLOYS) do
+	local c = MELT_RGB[a[1]] or a[9]
+	F.fluid("molten-" .. a[1], "molten-" .. a[1], { c[1] / 255, c[2] / 255, c[3] / 255 })
+end
+F.fluid("molten-mar-ce-m200-steel", "molten-mar-ce-m200-steel", { 146 / 255, 125 / 255, 125 / 255 })
+F.fluid("molten-energetic-alloy", "molten-energetic-alloy", { 1, 152 / 255, 0 })
+for _, a in pairs(ALLOYS) do
+	local m = a[1]
+	items(SUB_DUST, { m .. "-dust" })
+	items(SUB_PART, { "hot-" .. m .. "-ingot", m .. "-ingot" })
+	blast(a[2], m, a[3], a[4], a[5])
+	step(a[2], m .. "-ingot", a[6], a[7], a[8], { { "hot-" .. m .. "-ingot", 1 } }, { { m .. "-ingot", 1 } })
+end
+--- the dusts (Signalium and Lumiium: GG's own mixer recipes; the others bartworks' generated ones)
+step(R1, "signalium-dust", "mv-mixer-recipes", 12, MV_SPEED,
+	{ { "annealed-copper-dust", 4 }, { "ardite-dust", 2 }, { "red-alloy-dust", 2 }, { "molten-redstone", 28.8 } },
+	{ { "signalium-dust", 1 } })
+step(R1, "lumiium-dust", "mv-mixer-recipes", 12, MV_SPEED,
+	{ { "tin-alloy-dust", 4 }, { "sterling-silver-dust", 2 }, { "lumiinessence-dust", 2 }, { "molten-glowstone", 28.8 } },
+	{ { "lumiium-dust", 1 } })
+step(R1, "hikarium-dust", "lv-mixer-recipes", 1.35, LV_SPEED,
+	{ { "lumiium-dust", 18 }, { "silver-dust", 8 }, { "sunnarium-dust", 4 } }, { { "hikarium-dust", 30 } })
+step(R1, "mar-m200-steel-dust", "ev-mixer-recipes", 0.55, EV_SPEED,
+	{ { "niobium-dust", 2 }, { "chromium-dust", 9 }, { "aluminium-dust", 5 }, { "titanium-dust", 2 }, { "cobalt-dust", 10 },
+		{ "tungsten-dust", 13 }, { "nickel-dust", 18 } }, { { "mar-m200-steel-dust", 59 } })
+step(R1, "tanmolyium-beta-c-dust", "lv-mixer-recipes", 0.6, LV_SPEED,
+	{ { "titanium-dust", 5 }, { "molybdenum-dust", 5 }, { "vanadium-dust", 2 }, { "chromium-dust", 3 }, { "aluminium-dust", 1 } },
+	{ { "tanmolyium-beta-c-dust", 16 } })
+step(R2, "adamantium-alloy-dust", "zpm-mixer-recipes", 2.6, ZPM_SPEED,
+	{ { "adamantium-dust", 5 }, { "naquadah-dust", 2 }, { "lanthanum-dust", 3 } }, { { "adamantium-alloy-dust", 10 } })
+step(R2, "artherium-sn-dust", "lv-mixer-recipes", 1.2, LV_SPEED,
+	{ { "adamantium-alloy-dust", 12 }, { "orundum-dust", 9 }, { "tin-dust", 8 }, { "arsenic", 7 }, { "caesium-dust", 4 },
+		{ "osmiridium-dust", 3 } }, { { "artherium-sn-dust", 43 } })
+step(R3, "dalisenite-dust", "lv-mixer-recipes", 0.85, LV_SPEED,
+	{ { "tanmolyium-beta-c-dust", 14 }, { "tungsten-dust", 10 }, { "niobium-titanium-dust", 9 },
+		{ "rhodium-plated-palladium-dust", 8 }, { "quantium-dust", 7 }, { "erbium-dust", 3 } }, { { "dalisenite-dust", 51 } })
+step(R2, "adamantium-alloy-dust-maceration", "lv-macerator-recipes", 7.8, LV_SPEED, { { "adamantium-alloy-ingot", 1 } },
+	{ { "adamantium-alloy-dust", 1 } })
+step(R1, "lumiium-dust-maceration", "lv-macerator-recipes", 3.4, LV_SPEED, { { "lumiium-ingot", 1 } }, { { "lumiium-dust", 1 } })
+step(R1, "tanmolyium-beta-c-dust-maceration", "lv-macerator-recipes", 3.1, LV_SPEED, { { "tanmolyium-beta-c-ingot", 1 } },
+	{ { "tanmolyium-beta-c-dust", 1 } })
+--- MAR-Ce-M200 (no dust: GG's blast furnace recipe from MAR-M200 ingots)
+items(SUB_PART, { "hot-mar-ce-m200-steel-ingot", "mar-ce-m200-steel-ingot" })
+step(R1, "hot-mar-ce-m200-steel-ingot", "zpm-electric-blast-furnace-recipes", 285, ZPM_SPEED,
+	{ { "mar-m200-steel-ingot", 18 }, { "cerium-ingot", 1 }, { "molten-lithium-chloride", 14.4 } },
+	{ { "hot-mar-ce-m200-steel-ingot", 19 } })
+step(R1, "mar-ce-m200-steel-ingot", "iv-vacuum-freezer-recipes", 58.8, IV_SPEED, { { "hot-mar-ce-m200-steel-ingot", 1 } },
+	{ { "mar-ce-m200-steel-ingot", 1 } })
+--- the parts (cast by 143 where it has the form; double plates in the bender, bartworks: 2 ingots, 2 m ticks)
+items(SUB_PART, { "signalium-bolt", "lumiium-bolt", "large-hikarium-gear", "mar-m200-steel-plate",
+	"double-mar-m200-steel-plate", "double-mar-ce-m200-steel-plate", "mar-ce-m200-steel-bolt", "tanmolyium-beta-c-bolt",
+	"tanmolyium-beta-c-gear", "artherium-sn-gear", "dalisenite-gear", "lumiium-wire", "lumiium-cable", "titanium-wire",
+	"titanium-cable", "fluxed-electrum-cable" })
+step(R1, "double-mar-m200-steel-plate", "ev-bending-machine-recipes", 8.2, EV_SPEED, { { "mar-m200-steel-ingot", 2 } },
+	{ { "double-mar-m200-steel-plate", 1 } })
+step(R1, "double-mar-ce-m200-steel-plate", "iv-bending-machine-recipes", 39.2, IV_SPEED, { { "mar-ce-m200-steel-ingot", 2 } },
+	{ { "double-mar-ce-m200-steel-plate", 1 } })
+--- wires and cables (GT's wiremill: 1 ingot -> 2 wires; the mod's cables: rubber for titanium, GT's rubber branch;
+--- PPS sheets and silicone rubber for Lumiium and fluxed electrum, as its bedrockium cable)
+step(R1, "lumiium-wire", "lv-wiremill-recipes", 5, LV_SPEED, { { "lumiium-ingot", 1 } }, { { "lumiium-wire", 2 } })
+step(R1, "lumiium-cable", "lv-assembling-machine-recipes", 5, LV_SPEED,
+	{ { "lumiium-wire", 4 }, { "thin-polyphenylene-sulfide-sheet", 1 }, { "silicone-rubber", 7.2 } }, { { "lumiium-cable", 4 } })
+step(R1, "titanium-wire", "lv-wiremill-recipes", 5, LV_SPEED, { { "titanium-ingot", 1 } }, { { "titanium-wire", 2 } })
+step(R1, "titanium-cable", "lv-assembling-machine-recipes", 5, LV_SPEED, { { "titanium-wire", 1 }, { "liquid-rubber", 14.4 } },
+	{ { "titanium-cable", 1 } })
+step(R2, "fluxed-electrum-cable", "lv-assembling-machine-recipes", 5, LV_SPEED,
+	{ { "fluxed-electrum-wire", 4 }, { "thin-polyphenylene-sulfide-sheet", 1 }, { "silicone-rubber", 7.2 } },
+	{ { "fluxed-electrum-cable", 4 } })
+
+--- the chips
+items(SUB_PART, { "engraved-gold-chip", "engraved-diamond-crystal-chip", "energy-crystal", "engraved-energy-chip",
+	"manyullyn-crystal", "engraved-manyullyn-crystal-chip", "crystal-soc", "raw-advanced-crystal-chip" })
+local function engrave(list, name, cat, seconds, speed, ings, lens, n)
+	ings[#ings + 1] = { lens, 1 }
+	step(list, name, cat, seconds, speed, ings, { { name, n or 1 }, { lens, 1 } }, name)
+end
+engrave(R1, "engraved-gold-chip", "mv-laser-engraver-recipes", 5, MV_SPEED, { { "gold-plate", 1 } }, "diamond-lens")
+engrave(R1, "engraved-diamond-crystal-chip", "ev-laser-engraver-recipes", 20, EV_SPEED, { { "diamond-plate", 4 } }, "diamond-lens")
+step(R3, "energy-crystal", "hv-autoclave-recipes", 30, HV_SPEED, { { "energium-dust", 9 }, { "molten-energetic-alloy", 28.8 } },
+	{ { "energy-crystal", 1 } })
+engrave(R3, "engraved-energy-chip", "iv-laser-engraver-recipes", 30, IV_SPEED, { { "energy-crystal", 1 } }, "ruby-lens")
+engrave(R3, "manyullyn-crystal", "ev-laser-engraver-recipes", 60, EV_SPEED, { { "manyullyn-plate", 4 } }, "tanzanite-lens")
+engrave(R3, "engraved-manyullyn-crystal-chip", "iv-laser-engraver-recipes", 45, IV_SPEED, { { "manyullyn-crystal", 1 } },
+	"tanzanite-lens")
+engrave(R2, "crystal-soc", "luv-laser-engraver-recipes", 30, LUV_SPEED, { { "crystal-cpu", 1 } }, "sapphire-lens")
+engrave(R2, "raw-advanced-crystal-chip", "zpm-laser-engraver-recipes", 60, ZPM_SPEED, { { "crystal-soc", 1 } }, "emerald-lens")
+
+--- the HiCs, the casings, the controller
+local HIC = {}
+for i = 1, 5 do HIC[i] = "hi-computation-station-mk" .. i end
+items(SUB_PART, HIC)
+items("subgroup-luv-age-multiblocks", { "precise-assembler-controller", "precise-electronic-unit-casing-mk1",
+	"precise-electronic-unit-casing-mk2", "precise-electronic-unit-casing-mk3" })
+for _, c in pairs({ "precise-assembler-mk1-recipes", "precise-assembler-mk2-recipes", "precise-assembler-mk3-recipes" }) do
+	F.category(c)
+end
+for _, v in pairs({ { "heat-vent", 1, "" } }) do
+	step(R1, HIC[1] .. v[3], "iv-assembling-machine-recipes", 60, IV_SPEED,
+		{ { "multilayered-fiber-reinforced-printed-circuit-board", 1 }, { "engraved-gold-chip", 16 },
+			{ "advanced-system-on-chip", 8 }, { "nor-memory-chip", 32 }, { "signalium-bolt", 32 }, { "aluminium-wire", 8 },
+			{ v[1], v[2] }, { "soldering-alloy", 28.8 } }, { { HIC[1], 1 } }, HIC[1])
+end
+--- (GT: the Reactor Heat Vent or 2 aluminium rotors; the mod has no Reactor Heat Vent)
+step(R1, HIC[2], "precise-assembler-mk1-recipes", 5, LUV_SPEED,
+	{ { HIC[1], 2 }, { "engraved-diamond-crystal-chip", 8 }, { "nand-memory-chip", 16 }, { "aluminium-rotor", 2 },
+		{ "polyethylene", 28.8 }, { "molten-signalium", 14.4 }, { "molten-lumiium", 7.2 }, { "molten-enderium", 7.2 } },
+	{ { HIC[2], 1 } })
+for _, v in pairs({ { 3, "precise-assembler-mk2-recipes", ZPM_SPEED, R2, "advanced-heat-vent", "stainless-steel-rotor",
+		{ { HIC[2], 2 }, { "engraved-lapotron-chip", 8 }, { "raw-advanced-crystal-chip", 1 } },
+		{ { "molten-adamantium-alloy", 57.6 }, { "molten-signalium", 28.8 }, { "molten-lumiium", 14.4 }, { "molten-tungsten-carbide", 7.2 } } },
+	{ 4, "precise-assembler-mk3-recipes", UV_SPEED, R3, "overclocked-heat-vent", "energetic-alloy-rotor",
+		{ { HIC[3], 2 }, { "engraved-energy-chip", 8 }, { "qubit-cpu-chip", 16 } },
+		{ { "molten-mar-m200-steel", 115.2 }, { "molten-signalium", 57.6 }, { "molten-lumiium", 28.8 }, { "molten-artherium-sn", 14.4 } } },
+	{ 5, "precise-assembler-mk3-recipes", UHV_SPEED, R3, "component-heat-vent", "tungsten-carbide-rotor",
+		{ { HIC[4], 2 }, { "engraved-manyullyn-crystal-chip", 8 }, { "bio-processing-unit", 1 } },
+		{ { "molten-tanmolyium-beta-c", 172.8 }, { "molten-signalium", 115.2 }, { "molten-lumiium", 57.6 }, { "molten-dalisenite", 28.8 } } } }) do
+	for _, alt in pairs({ { v[5], 1, "" }, { v[6], 2, "-from-rotors" } }) do
+		local ings = {}
+		for _, i in pairs(v[7]) do ings[#ings + 1] = i end
+		ings[#ings + 1] = { alt[1], alt[2] }
+		for _, f in pairs(v[8]) do ings[#ings + 1] = f end
+		step(v[4], HIC[v[1]] .. alt[3], v[2], 5, v[3], ings, { { HIC[v[1]], 1 } }, HIC[v[1]])
+	end
+end
+step(R1, "precise-electronic-unit-casing-mk1", "luv-assembling-machine-recipes", 40, LUV_SPEED,
+	{ { "zpm-machine-casing", 3 }, { "iv-robot-arm", 2 }, { "lumiium-cable", 8 }, { "double-mar-ce-m200-steel-plate", 2 },
+		{ HIC[1], 1 }, { "signalium-bolt", 32 }, { "tanmolyium-beta-c-gear", 8 }, { "molten-black-steel", 57.6 } },
+	{ { "precise-electronic-unit-casing-mk1", 2 } })
+step(R2, "precise-electronic-unit-casing-mk2", "zpm-assembling-machine-recipes", 240, ZPM_SPEED,
+	{ { "uv-machine-casing", 3 }, { "luv-robot-arm", 2 }, { "fluxed-electrum-cable", 16 }, { HIC[2], 1 },
+		{ "precise-electronic-unit-casing-mk1", 1 }, { "mar-ce-m200-steel-bolt", 32 }, { "artherium-sn-gear", 8 },
+		{ "molten-adamantium-alloy", 115.2 } }, { { "precise-electronic-unit-casing-mk2", 4 } })
+step(R3, "precise-electronic-unit-casing-mk3", "uv-assembling-machine-recipes", 240, UV_SPEED,
+	{ { "uhv-machine-casing", 3 }, { "zpm-field-generator", 2 }, { "bedrockium-cable", 16 }, { HIC[3], 1 },
+		{ "precise-electronic-unit-casing-mk2", 1 }, { "tanmolyium-beta-c-bolt", 32 }, { "dalisenite-gear", 8 },
+		{ "molten-artherium-sn", 115.2 } }, { { "precise-electronic-unit-casing-mk3", 4 } })
+step(R1, "precise-assembler-controller", "iv-assembling-machine-recipes", 90, IV_SPEED,
+	{ { "iv-robot-arm", 4 }, { HIC[1], 4 }, { "data-orb", 3 }, { "titanium-cable", 32 }, { "large-hikarium-gear", 4 },
+		{ "double-mar-m200-steel-plate", 2 }, { "iridium-reinforced-plate", 2 }, { "lumiium-bolt", 48 },
+		{ "molten-palladium", 115.2 } }, { { "precise-assembler-controller", 1 } })
+--- the machines (3x3; precise mode, GT's voltage of the machine casings)
+local PA_PORTS = { port("input", N, { -1, -1 }), port("input", N, { 0, -1 }), port("input", N, { 1, -1 }),
+	port("input", W, { -1, 0 }) }
+for i, def in pairs({
+	{ LUV_SPEED, EU16_LuV, R1, { { "precise-assembler-controller", 1 }, { "precise-electronic-unit-casing-mk1", 42 },
+		{ "titanium-reinforced-borosilicate-glass-block", 42 }, { "luv-machine-casing", 21 }, { "tungstensteel-frame", 12 },
+		{ "luv-energy-hatch", 1 }, { "lv-machine-hull", 4 } } },
+	{ ZPM_SPEED, EU16_ZPM, R2, { { "precise-assembler-mk1", 1 }, { "precise-electronic-unit-casing-mk2", 42 },
+		{ "zpm-machine-casing", 21 }, { "zpm-energy-hatch", 1 } } },
+	{ UHV_SPEED, EU16_UHV, R3, { { "precise-assembler-mk2", 1 }, { "precise-electronic-unit-casing-mk3", 42 },
+		{ "uhv-machine-casing", 21 }, { "uhv-energy-hatch", 1 } } } }) do
+	local ings = {}
+	for _, x in pairs(def[4]) do ings[#ings + 1] = { type = "item", name = x[1], amount = x[2] } end
+	machine{
+		name = "precise-assembler-mk" .. i, category = "precise-assembler-mk" .. i .. "-recipes", speed = def[1],
+		energy = def[2], subgroup = "subgroup-luv-age-multiblocks", ports = PA_PORTS, list = def[3],
+		recipe = { "crafting-or-assembling-recipes", 1, ings },
+	}
+	local cats = {}
+	for j = 1, i do cats[#cats + 1] = "precise-assembler-mk" .. j .. "-recipes" end
+	data.raw["assembling-machine"]["precise-assembler-mk" .. i].crafting_categories = cats
+	if i > 1 then data.raw["assembling-machine"]["precise-assembler-mk" .. (i - 1)].next_upgrade = nil end
+end
+
+--- the quantium vein's sporadic ardite (GT's Quantium mix; the vein gives its quantium as dust, ardite the same), in
+--- the Manual Mine and its two electric twins of 163
+for _, n in pairs({ "mining-quantium-vein", "drilling-quantium-vein", "miner-quantium-vein" }) do
+	local r = data.raw.recipe[n]
+	if r then
+		r.results[#r.results + 1] = { type = "item", name = "ardite-dust", amount = 8 }
+		r.main_product = r.main_product or "quantium-dust"
+	end
+end
+
+F.tech{
+	name = PA1, prerequisites = { "reach-venus", "cerium-processing", "liquid-fluoride-thorium-reactor", "zpm-assembly-line",
+		"zpm-multiblocks" }, packs = 8, count = 1500, time = 60, recipes = R1,
+}
+F.tech{
+	name = PA2, prerequisites = { PA1, "fluxed-electrum", "reach-ross128ba", "uv-components" }, packs = 8, count = 2000,
+	time = 60, recipes = R2,
+}
+F.tech{
+	name = PA3, prerequisites = { PA2, "reach-the-everglades", "uhv-energy-hatches" }, packs = 10, count = 2500, time = 60,
+	recipes = R3,
+}
+for _, a in pairs(ALLOYS) do
+	FORK_CASTING.materials[a[1]] = { ({ [R1] = "luv", [R2] = "zpm", [R3] = "uv" })[a[2]], ({ [R1] = PA1, [R2] = PA2, [R3] = PA3 })[a[2]] }
+end
+FORK_CASTING.materials["mar-ce-m200-steel"] = { "luv", PA1 }
+FORK_CASTING.materials["energetic-alloy"] = FORK_CASTING.materials["energetic-alloy"] or { "hv", PA3 }
+FORK_CASTING.run()

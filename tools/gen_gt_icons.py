@@ -176,6 +176,16 @@ MATERIALS = {
     "gypsum": "Gypsum", "sulfur": "Sulfur", "calcite": "Calcite", "malachite": "Malachite", "pyrope": "Pyrope",
     "almandine": "Almandine", "uvarovite": "Uvarovite", "basalt": "Basalt", "black-granite": "GraniteBlack", "rubidium": "Rubidium", "erbium": "Erbium", "ytterbium": "Ytterbium", "dysprosium": "Dysprosium",   # (#355)
     "ferrosilite": "Ferrosilite", "metallic-platinum-powder": ("METALLIC", (255, 255, 200)),
+    # issue #355: the HiC chain (GT's TinAlloy, Sunnarium, Ardite, Manyullyn; GoodGenerator's Werkstoffe, GGMaterial.java,
+    # their colours and sets; IC2's energy crystal as a red gem)
+    "tin-alloy": "TinAlloy", "sunnarium": "Sunnarium", "ardite": "Ardite", "manyullyn": "Manyullyn",
+    "orundum": ("DIAMOND", (0xcd, 0x26, 0x26)), "lithium-chloride": ("DULL", (0xb7, 0xe2, 0xce)),
+    "lumiinessence": ("DULL", (0xe8, 0xf2, 0x24)), "signalium": ("SHINY", (0xd4, 0x40, 0x00)),
+    "lumiium": ("SHINY", (0xe8, 0xf2, 0x24)), "hikarium": ("SHINY", (0xff, 0xd6, 0xfb)),
+    "mar-m200-steel": ("SHINY", (0x51, 0x51, 0x51)), "mar-ce-m200-steel": ("METALLIC", (0x38, 0x30, 0x30)),
+    "tanmolyium-beta-c": ("METALLIC", (0xc7, 0x2f, 0xcc)), "adamantium-alloy": ("SHINY", (0xa0, 0xa0, 0xa0)),
+    "artherium-sn": ("SHINY", (0x60, 0x36, 0xf7)), "dalisenite": ("SHINY", (0xb0, 0xb8, 0x12)),
+    "ic2-energy-crystal": ("DIAMOND", (0xff, 0x20, 0x20)),
     # issue #205: goodgenerator's Werkstoffe of the naquadah line (GGMaterial.java, their colours; dusts)
     "naquadria-oxide-mixture": ("METALLIC", (77, 77, 85)), "indium-phosphate": ("DULL", (43, 46, 112)),
     "low-quality-naquadria-phosphate": ("DULL", (77, 77, 85)),
@@ -948,6 +958,21 @@ def icon_table(c):
 
     # multi-amp wires (upstream: 16x = a block of the metal)
     T["luv-superconductor-wire-16x"] = lambda: bar(c.m.colour("itbtc-alloy"), 2, n=4)
+    # issue #355: GoodGenerator's HiCs, unit casings and High Energy Mixture, NewHorizonsCoreMod's engraved chips, GT's
+    # crystal chips, the precise assembler controller (its casing with GT's quantum chest front, MTEPreciseAssembler.java)
+    for i in range(1, 6):
+        T[f"hi-computation-station-mk{i}"] = (lambda i=i: c.gt(f"{GG}items/ciruits/{i}"))
+    for i in range(1, 4):
+        T[f"precise-electronic-unit-casing-mk{i}"] = (lambda i=i: c.gt(f"{GG}blocks/preciseUnitCasing/{i}"))
+    T["precise-assembler-controller"] = lambda: c.face(f"{GG}blocks/preciseUnitCasing/1", f"{BLK}OVERLAY_QCHEST")
+    T["high-energy-mixture"] = lambda: c.gt(f"{GG}items/highEnergyMixture")
+    for n in ("EngravedGoldChip", "EngravedDiamondCrystalChip", "EngravedEnergyChip", "EngravedManyullynCrystalChip",
+              "ManyullynCrystal"):
+        T[re.sub(r"(?<!^)([A-Z])", r"-\g<1>", n).lower()] = (lambda n=n: c.gt(f"{CORE}item{n}"))
+    T["crystal-soc"] = lambda: c.gt("gt:gregtech/textures/items/gt.circuitcomponent/processed/processedchipcrystalsoc")
+    T["raw-advanced-crystal-chip"] = lambda: c.gt(
+        "gt:gregtech/textures/items/gt.circuitcomponent/processed/processedchiprawadvancedcrystal")
+    T["energy-crystal"] = lambda: c.part("ic2-energy-crystal", "gemFlawless")
     return T
 
 

@@ -2446,6 +2446,20 @@ condensate wafer, GT's Wafer8, with 1500 L quark gluon plasma); the mod has no b
 Wafer6 to Wafer8. The UMV and UXV energy and dynamo hatches keep 133's and 134's doubled APICs. Issue #355 stays open for
 them.
 
+Part 2, the godforge route (the maintainer's decision on #355: celestial tungsten from the godforge, the quantum anomaly
+through the HiC chain). Step 1 (164 section 18): GoodGenerator's Precise Auto-Assembler MT-3662 and the Hi-Computation
+Stations Mk-I to Mk-V. GT's one multiblock whose casing tier caps the recipes is three machines here (Mk-I to Mk-III, the
+casing swap as the upgrade: each one is the one below with 42 casings of its tier, 21 machine casings of its voltage and
+its energy hatch); precise mode only (GT's normal assembler mode with more parallels is left out). The HiCs as GT, with
+both recipes where GT takes an IC2 vent or rotors (the mod has no Reactor Heat Vent: the HiC Mk-II takes the rotors).
+Their alloys from GoodGenerator's Werkstoffe with bartworks' generated mixer and vacuum freezer recipes and GT's gas
+variants; their leaves: GT's tin alloy, manyullyn (cobalt and ardite; ardite as the sporadic ore of GT's quantium mix: 8
+with each quantium vein), orundum, lithium chloride from purified lepidolite, the cerium ingot, sunnarium dust (the mod's
+molten sunnarium, without IC2's glowstone rods), the core mod's engraved chips, IC2's energy crystal (autoclave of
+energium), GT's Crystal SoC and Raw Advanced Crystal Chip. GT's 4x and 8x cables are 4 and 8 cables, as elsewhere in the
+mod. Left out: GT's oganesson gas variant of the blast furnace. Next: the quantum anomaly (the plasma forge with the
+Chromatic Lens and the HiC Mk-V), celestial tungsten dust, the godforge between UIV and UMV, the plasma module upgrade.
+
 ### Naquadah fuel MK IV to VI and the refinery (issue #356)
 
 Not built: every recipe of the Naquadah Fuel Refinery, and the refinery and its casing, take an input the mod lacks

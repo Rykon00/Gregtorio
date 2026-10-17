@@ -304,6 +304,12 @@ MULTIBLOCKS = {
                                       ("gregtech:iconsets/OVERLAY_FRONT_DISASSEMBLER",
                                        "gregtech:iconsets/OVERLAY_FRONT_DISASSEMBLER_ACTIVE"),
                                       "miscutils:TileEntities/machine_top"),
+    # issue #355: GoodGenerator's Precise Auto-Assembler MT-3662 per casing tier (the machine casing of its voltage, its
+    # quantum chest and tank front, MTEPreciseAssembler.java, the Precise Electronic Unit Casings of the middle row)
+    **{f"precise-assembler-mk{i}": ((3, 3), f"gregtech:iconsets/MACHINE_{v}_SIDE", None,
+                                    ("gregtech:iconsets/OVERLAY_QCHEST", "gregtech:iconsets/OVERLAY_QTANK"),
+                                    f"goodgenerator:preciseUnitCasing/{i}")
+       for i, v in ((1, "LuV"), (2, "ZPM"), (3, "UHV"))},
     # issue #301: the Space Elevator per motor tier (gtnhintergalactic's base casing, support structure and the motor)
     **{f"space-elevator-mk{t}": ((11, 11), "gtnhintergalactic:spaceElevator/BaseCasing", None,
                                  f"gtnhintergalactic:spaceElevator/MotorT{t}_Side",
@@ -333,6 +339,7 @@ WHOLE_ICONS = {"large-titanium-boiler", "large-combustion-engine", "digester", "
                "ev-rocket-engine", "iv-rocket-engine", "luv-rocket-engine", "large-rocket-engine",
                "universal-chemical-fuel-engine", "reactor-fuel-processing-plant", "liquid-fluoride-thorium-reactor",
                "sparge-tower", "cold-trap-i", "reactor-processing-unit-i", "nuclear-salt-processing-plant",
+               *(f"precise-assembler-mk{i}" for i in range(1, 4)),
                *(f"space-elevator-mk{t}" for t in range(1, 6)),
                *(f"space-elevator-mining-module-mk{t}" for t in range(1, 4)),
                "planetary-gas-siphon", *(f"space-elevator-pump-module-mk{t}" for t in range(1, 4)),
