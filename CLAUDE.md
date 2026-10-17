@@ -46,7 +46,8 @@
     and **before** 138, which sets the
     unit counts of its technologies; phase 6b hooks are marked `6b hook`)
   - 140 godforge (phase 6b: the godforge, raw star matter, magmatter, the stellar catalyst of the plasma forge, the
-    infinite `godforge-upgrades`; issue #249: quark gluon plasma and GT's rhugnor MK5 recipe)
+    infinite `godforge-upgrades`; issue #249: quark gluon plasma and GT's rhugnor MK5 recipe; issue #355: the godforge between
+    the UIV and UMV energy hatches with GT's recipes, the plasma module technology with celestial tungsten)
   - 141 MAX tier (phase 6b: magmatter parts, the Planck line and MAX circuit, MAX components, hatches, machines and
     turbine; needs 140's magmatter and adds its turbine to 136's mod data; issue #249: the MAX recipes of the plasma
     forge and the QFT with substitutes); 140 and 141 load after 139 and **before** 138
@@ -206,7 +207,7 @@
     (section 13, technology Naquadah Fuel Rods), the isotopes, the LFTR fuels, Hastelloy-N and the Reactor Fuel
     Processing Plant (section 14, technology Liquid Fluoride Thorium Reactor), the LFTR, the Reactor Processing Unit I,
     the Cold Trap I and the Sparge Tower (section 15; the LFTR's power comes from scripts/fork-power.lua) and the LFTR
-    loop (section 16); issue #406: the Nuclear Salt Processing Plant (section 17); issue #355: the Precise Assembler and the HiCs (section 18); loads after 159 and
+    loop (section 16); issue #406: the Nuclear Salt Processing Plant (section 17); issue #355: the Precise Assembler and the HiCs (section 18), the quantum anomaly and chromatic glass (section 19); loads after 159 and
     before 161)
   - 161 dimension unlocks (issue #287: the unlock rules of 160, `ore_dimension` moves or gates the ore chains of the
     dimensions' ores, the ender air with Radon, black plutonium with the Void Miner II, the bornite chain with

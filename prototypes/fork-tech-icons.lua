@@ -60,6 +60,7 @@ FORK_TECH_ICONS = {
 	["godforge"] = true,
 	["godforge-exotic-module"] = true,
 	["godforge-molten-module"] = true,
+	["godforge-plasma-module"] = true,
 	["godforge-upgrades"] = true,
 	["graphene"] = true,
 	["greenhouse"] = true,
