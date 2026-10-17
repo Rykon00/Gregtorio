@@ -709,9 +709,9 @@ def check_me_recipes(sec):
 ORE_CHAIN_SKIP = {"crushed-platinum", "crushed-palladium", "crushed-firestone"}   # 155-fork-ore-chain.lua's skip list
 def check_ore_chain(m):
     """Issue #185 (prototypes/155-fork-ore-chain.lua): every ore with a purified form has GTNH's whole chain (washer,
-    thermal centrifuge from crushed and purified ore, the three macerator steps, the centrifuge of impure and pure dust),
-    and no ore washer turns a crushed ore straight into something else (the shortcut of upstream; the platinum line's
-    washing and firestone are skipped)."""
+    thermal centrifuge from crushed and purified ore, the three macerator steps, the centrifuge of impure and pure dust;
+    issue #427: the cauldron of impure and pure dust), and no ore washer turns a crushed ore straight into something else
+    (the shortcut of upstream; the platinum line's washing and firestone are skipped)."""
     out, ores = [], 0
     for name, r in sorted(m.R.items()):
         if r["hidden"]:
@@ -725,7 +725,8 @@ def check_ore_chain(m):
             x = name[len("purified-"):]
             for need in (f"purified-{x}-distilled-water", f"centrifuged-{x}", f"centrifuged-{x}-from-crushed",
                          f"impure-{x}-dust", f"pure-{x}-dust", f"centrifuged-{x}-maceration",
-                         f"centrifuging-impure-{x}-dust", f"centrifuging-pure-{x}-dust"):
+                         f"centrifuging-impure-{x}-dust", f"centrifuging-pure-{x}-dust",
+                         f"cauldron-impure-{x}-dust", f"cauldron-pure-{x}-dust"):
                 if need not in m.R or m.R[need]["hidden"]:
                     out.append(f"{x}: the ore chain lacks {need}")
     return ores, out

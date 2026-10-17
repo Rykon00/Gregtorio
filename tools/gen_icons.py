@@ -53,6 +53,7 @@ DONORS = {
     "callisto-ice-dust": ("naquadah-dust", 195), "fluxed-electrum-dust": ("naquadah-dust", 50),
     "wheat-seeds": ("wheat", 75),   # issue #360: the greenhouse wheat's seeds
     "mox-fuel": ("uranium-235-dust", 30),   # issue #359: IC2's MOX fuel (no IC2 texture here)
+    "cauldron": ("bucket-of-water", 190),   # issue #427: Minecraft's cauldron (no texture of it in GT)
 }
 
 

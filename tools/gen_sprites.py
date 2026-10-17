@@ -485,6 +485,8 @@ IV_MULTIBLOCK_FACES = {
 }
 # single-block machines (Ender IO): icon upscaled 3x
 ICON_MACHINES = ["slice-n-splice", "soul-binder", "powered-spawner"]
+# 1x1 machines whose sprite is their icon (issue #427: the cauldron, a placeholder from tools/gen_icons.py)
+ICON_MACHINES_1X1 = ["cauldron"]
 
 
 def gt_path(gt, spec):
@@ -1113,6 +1115,11 @@ def icon_machine(name):
     save(img, OUT_ENTITY / f"{name}-working.png")
 
 
+def icon_machine_1x1(name):
+    """one picture, no working strip (the 1x1 machine has no working animation)"""
+    save(scaled(load(ICONS / f"{name}.png"), TILE), OUT_ENTITY / f"{name}-idle.png")
+
+
 def iv_multiblock_casings():
     """Casing = the ingredient with 'casing' in its name and the largest amount in the multiblock recipe."""
     txt = (ROOT / "prototypes/20-iv-age-entity.lua").read_text(encoding="utf-8")
@@ -1158,6 +1165,8 @@ def main():
         multiblock(a.gt, name, (3, 3), casing, controller, IV_MULTIBLOCK_FACES.get(name), None)
     for name in ICON_MACHINES:
         icon_machine(name)
+    for name in ICON_MACHINES_1X1:
+        icon_machine_1x1(name)
     for name, spec in TEXTURE_ICONS.items():
         save(casing_tile(gt=a.gt, casing=name, override=spec), OUT_ICON / f"{name}.png")
     plasma_turbine(a.gt, PLASMA_TURBINE)
