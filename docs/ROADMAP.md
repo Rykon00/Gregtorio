@@ -2521,9 +2521,26 @@ Next: creon and mellion, the gravitational lens, ZPIC and YPIC.
 
 ### Naquadah fuel MK IV to VI and the refinery (issue #356)
 
-Not built: every recipe of the Naquadah Fuel Refinery, and the refinery and its casing, take an input the mod lacks
-(awakened draconium, orundum, praseodymium, tiberium or chronomatic glass, the atomic separation catalyst, heavy radox,
-astral titanium, shirabon; the full list is on #356). MK I to III stay as 136 builds them. Issue #356 stays open.
+The refinery with MK III and MK IV comes in steps, by the maintainer's decisions on #417 and #421 (GT's sources, no
+stand-ins). Research notes: GoodGenerator's live refinery is GT's `MTENaquadahFuelRefinery` (27x27x5, field restriction
+coils T1 for MK III, T2 for MK IV).
+- Awakened draconium: the Mehen Belt in the Void Miner III (see the Void Miner pools above).
+- Thulium (the controller's screws, the casing's frame) and tellurium: the Lutetium Asteroid.
+- Praseodymium (MK IV): the depleted thorium based liquid fuel's centrifuge (164 section 23).
+- The Radiation Proof Prismatic Naquadah Composite Sheet (the advanced radiation protection plate, the Europium
+  reinforced casing, the steel frame box): GT's netherite chain (NetheriteRecipes.java:66-224). Part 1, its materials
+  (164 section 24):
+  - liquid nitrogen;
+  - cubic zirconia (bartworks' blast furnace, flawed gems into small piles) and YSZ;
+  - strontium from GT++'s fluorcaphite (its strontium oxide is back in 155) through the alloy blast smelter;
+  - tellurium back in three Everglades ores' decompositions;
+  - bismuth telluride, magnetic steel dust;
+  - the Magneto Resonatic gem (autoclave only) and its lens (pink lens, lathe);
+  - Ender IO's pulsating crystal and crystalline alloy.
+
+  Next: red algae biomass (GT++'s algae farm) and the vacuum furnace (GT++'s Industrial Dehydrator), then the chain
+  itself, then the refinery.
+MK I to III stay as 136 builds them until the refinery comes.
 
 ### Nuclear depth (issue #359)
 
