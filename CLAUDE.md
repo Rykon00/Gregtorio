@@ -283,7 +283,8 @@
 - New machines one tier up: `fork_make_tier_machine(base, from_tier, to_tier, frames, tech)`.
   Their sprites/icons come from `tools/gen_sprites.py --gt <GT5-Unofficial checkout>`;
   missing item icons from `tools/gen_icons.py` (a placeholder; the real icon from GT textures with
-  `tools/gen_gt_icons.py` after adding the item to `tools/gt-icon-items.txt`), technology icons from
+  `tools/gen_gt_icons.py` after adding the item to `tools/gt-icon-items.txt`; `tools/gen_icons.py --drawn` writes the graphics
+  drawn as code where GT has no texture, issue #431: the cauldron), technology icons from
   `tools/gen_tech_icons.py` (`tools/tech-icons.tsv`), missing names from `tools/gen_locale.py`.
   Check graphics changes with the contact sheets of `tools/gen_review_sheet.py`.
 - **Machine names are GTNH's** (issue #156): a new machine, multiblock or controller takes the name GT New Horizons
