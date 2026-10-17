@@ -1703,7 +1703,7 @@ in `29-uev-age-item.lua`, `31-uiv-age-item.lua`, `80-umv-age-item.lua`, `90-uxv-
 
 | Technology | Science | Prerequisites | Units | Unlocks |
 |---|---|---|---|---|
-| `dimensionally-transcendent-plasma-forge` | UMV | `umv-multiblocks`, `fusion-plasmas-mk5` | 95 (8.3 h) | dimensionally transcendent casing, dimensional bridge, DTPF controller, the DTPF, crude catalyst, the six crude metal recipes |
+| `dimensionally-transcendent-plasma-forge` | UIV (since #355; before UMV) | `uev-energy-hatches`, `femto-power-ics`, `optical-processor-mainframes`, `uev-materials`, `naquadah-alloy`, `fusion-plasmas-mk4` | 120 | dimensionally transcendent casing, dimensional bridge, DTPF controller, the DTPF, crude catalyst, four crude metal recipes (spacetime and universium with `fusion-plasmas-mk5`, which needs the DTPF) |
 | `dtpf-resplendent-catalyst` | UXV | `dimensionally-transcendent-plasma-forge`, `uxv-multiblocks` | 50 (8.0 h) | resplendent catalyst, the six resplendent metal recipes |
 | `quantum-force-transformer` | UMV | `umv-multiblocks` | 95 (8.3 h) | QFT coil casing, QFT controller, the QFT, its 29 recipes |
 
@@ -1715,18 +1715,20 @@ reactors, one amp of their tier):
 
 | Machine | Size | Tier | Power | Speed | Fluid ports | Recipe (UMV assembler, 5 min) |
 |---|---|---|---|---|---|---|
-| dimensionally transcendent plasma forge | 11x11 | UMV | 1310.72 MW | 2048 | 6 in (5 north, 1 west), 2 out (south) | controller, 48 dimensionally transcendent casings, 16 dimensional bridges, 32 spacetime coils, 2 UMV energy hatches, 8 UMV hulls |
+| dimensionally transcendent plasma forge | 11x11 | UIV (since #355) | 655.36 MW | 1024 | 6 in (5 north, 1 west), 2 out (south) | controller, 48 dimensionally transcendent casings, 16 dimensional bridges, 32 Awakened Draconium coils, 2 UEV energy hatches, 8 UEV hulls (ZPM assembly line) |
 | quantum force transformer | 9x9 | UMV | 1310.72 MW | 2048 | 4 in (north), 2 out (south) | controller, 16 QFT coil casings, 32 titanium reinforced borosilicate glass, 2 UMV energy hatches, 8 UMV hulls |
 
-Parts: the DTPF casing (UMV assembler: osmiridium plates, spacetime screws, a 1080k super coolant cell, a UV emitter, a
-triamerotronium superconductor wire), the dimensional bridge (ZPM assembly line: casing, UHV field generator, UV emitter and
-circuits, PPIC wafers, triamerotronium wire), the DTPF controller (ZPM assembly line: 4 bridges, 4 UIV energy hatches, chromnorox
-wire, 4 super coolant cells, 20 UMV circuits, 4 UIV field generators and pumps, superdense neutronium); the QFT coil casing (UMV
+Parts (issue #355: GT's UIV recipes, fluids a tenth of GT's litres): the DTPF casing (ZPM assembly line: osmiridium plates,
+infinity screws for GT's laurenium screws (no dysprosium in the mod), a 1080k super coolant cell, a triamerotronium
+superconductor wire), the dimensional bridge (casing, UHV field generator, UV emitter for GT's microwave energy transmitter, UV
+circuits, 4 FPIC wafers, triamerotronium wire), the DTPF controller (4 bridges, 4 UEV energy hatches, dracofinium wire, 4 super
+coolant cells, 20 UIV circuits, 4 UEV field generators and pumps, superdense osmiridium; indalloy 140 for GT's mutated living
+solder and molten enriched naquadah, GT's amounts); before #355 the DTPF and its parts were one tier up (UMV). The QFT coil casing (UMV
 assembler: infinity coil, 4 super coolant cells, transcendent metal, a superconducting coil block) and the QFT controller (ZPM
-assembly line: UIV circuits, pumps, field generators and robot arms). GT builds both at UIV with UEV parts; here they are UMV
-machines (the techs are UMV science), so the parts are one tier up. GT items the mod does not have are left out (eternal singularity,
-quantum anomaly, the ZPM battery, oganesson and californium; mutated living solder is indalloy 140, enriched naquadah is naquadah,
-laurenium screws are spacetime screws, the microwave energy transmitter is a UV emitter).
+assembly line: UIV circuits, pumps, field generators and robot arms). GT builds both at UIV with UEV parts; the QFT here is a UMV
+machine (UMV science), so its parts are one tier up. GT items the mod does not have are left out of the DTPF (the 16 Exothermic
+Hearths, eternal singularities, the quantum anomaly, which comes from the forge itself in #355, the ZPM battery, the teleporter,
+oganesson and californium, the Avaritia singularities of the bridge).
 
 **DTPF recipes** (2 catalysts, 12 metal recipes). The catalysts are made in the forge (5 s and 10 s):
 
