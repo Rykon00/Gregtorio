@@ -197,6 +197,12 @@ MATERIALS = {
     "awakened-draconium": "DraconiumAwakened",
     # issue #356: the Lutetium Asteroid's thulium and tellurium
     "thulium": "Thulium", "tellurium": "Tellurium", "praseodymium": "Praseodymium",
+    # issue #356: the netherite chain's materials (bartworks' cubic zirconia, bismuth telluride and Magneto Resonatic,
+    # WerkstoffLoader.java:196, 556, 625; GT's strontium, magnetic steel, crystalline alloy; GT++'s strontium oxide, its
+    # components' mean colour)
+    "cubic-zirconia": ("DIAMOND", (255, 255, 255)), "strontium": "Strontium", "strontium-oxide": ("METALLIC", (115, 155, 155)),
+    "bismuth-telluride": ("METALLIC", (32, 72, 32)), "magnetic-steel": "SteelMagnetic",
+    "magneto-resonatic": ("MAGNETIC", (221, 119, 221)), "crystalline-alloy": "CrystallineAlloy",
     "thulium": "Thulium", "tellurium": "Tellurium",
     # issue #406: GT++'s Pikyonium 64B (MaterialsAlloy.java:700-717, its colour)
     "pikyonium-64b": ("METALLIC", (52, 103, 186)),
@@ -988,6 +994,11 @@ def icon_table(c):
     T["raw-advanced-crystal-chip"] = lambda: c.gt(
         "gt:gregtech/textures/items/gt.circuitcomponent/processed/processedchiprawadvancedcrystal")
     T["energy-crystal"] = lambda: c.part("ic2-energy-crystal", "gemFlawless")
+    # issue #356: kekztech's YSZ ceramic dust; Ender IO's pulsating crystal and its powder (no Ender IO textures in the
+    # checkouts: GT's gem and dust in pulsating iron's colour)
+    T["ysz-ceramic-dust"] = lambda: c.gt("gt:kekztech/textures/items/YSZCeramicDust")
+    T["pulsating-crystal"] = lambda: c.part("pulsating-iron", "gemExquisite")
+    T["pulsating-crystal-powder"] = lambda: c.part("pulsating-iron", "dust")
     # issue #355: GT++'s quantum anomaly (MetaGeneratedItemIDs.Laser_Lens_Special 105) and Unknown Particle (particle
     # meta 24), the core mod's Chromatic Lens
     T["quantum-anomaly"] = lambda: c.gt("gt:miscutils/textures/items/MU-metaitem.01/105")

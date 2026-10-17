@@ -142,7 +142,7 @@ put("fuels", { "kerosene", "rp-1", "rp-1-rocket-fuel", "dense-hydrazine-fuel-mix
 put("organic", { "naphthalene", "ethylbenzene", "anthracene", "2-ethylanthraquinone", "2-ethylanthrahydroquinone", "hydrazine",
 	"monomethylhydrazine" })
 put("acids", { "hydrogen-peroxide" })
-put("coolants", { "liquid-oxygen" })
+put("coolants", { "liquid-oxygen", "liquid-nitrogen" })   -- liquid nitrogen: #356
 --- issue #360: the bio fuels (164)
 put("fuels", { "seed-oil", "bio-diesel" })
 put("organic", { "glycerol", "fermented-biomass" })

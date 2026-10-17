@@ -2806,3 +2806,96 @@ do
 			{ "praseodymium-dust", 32, 0.8 }, { "boron", 2, 0.3 }, { "indium", 4, 0.5 } }, "praseodymium-dust")
 	for _, r in pairs(L) do fork_add_unlock("thorium-based-liquid-fuel", r) end
 end
+
+
+
+
+--------------------------------------------------------------------------------
+--- 24) THE NETHERITE CHAIN'S MATERIALS (issue #356, the maintainer's decision on #421: GT's netherite chain for the
+--- Radiation Proof Prismatic Naquadah Composite Sheet of the Naquadah Fuel Refinery). GT5-Unofficial 638b3f37ca and
+--- NewHorizonsCoreMod; fluids a tenth of GT's litres, GT's seconds x the tier speed of GT's EU/t.
+--- * Liquid nitrogen: GT's vacuum freezer (VacuumFreezerRecipes.java:221-226, 60 s, HV), as the mod's liquid oxygen.
+--- * Cubic zirconia (bartworks AdditionalRecipes.java:372-380): 10 zirconium dust with oxygen and yttrium oxide (not
+---   used up) in the blast furnace into 40 flawed gems (48 min, HV), each macerated into 2 small piles (GT: a flawed gem
+---   is half a dust); YSZ ceramic dust (kekztech Mixer.java:23-30: 1 yttrium oxide, 5 cubic zirconia, 20 s, MV).
+--- * Strontium: GT++'s fluorcaphite decomposition gives strontium oxide again (155), GT++'s alloy blast smelter reduces
+---   it with aluminium (RecipesGregTech.java:1066-1076: 8 + 8 into oxygen, molten aluminium and molten strontium, 2 min,
+---   EV); 143 casts the ingot, the macerator makes the dust (its mass in ticks, 87). The chain gives the strontium back.
+--- * Bismuth telluride (bartworks DustLoader.java:249-273: 2 bismuth, 3 tellurium, 8.05 s, MV), magnetic steel dust (GT's
+---   polarizer, ProcessingTransforming.java:116-132: 6.4 s, LV); tellurium from the Everglades ores of 155 (#356).
+--- * Magneto Resonatic (bartworks WerkstoffLoader.java:625-639): the mixer (3 prasiolite, 4 bismuth telluride, 1 cubic
+---   zirconia, 1 magnetic steel into 9, 1.1 s, LV), the gem only from the autoclave (krypton, 25 s, IV; AdditionalRecipes
+---   .java:427-442, no implosion: NO_BLAST), the laser engraver's pink lens (the amethyst lens, 155) from 3 gems to a
+---   flawless (60 s, HV) and 3 flawless to an exquisite gem (2 min, EV; GemLoader.java:204-240), the lathe into the lens
+---   and 2 dust (2 min, LV; GemLoader.java:194-201). GT's chipped gems from neon are left out (no consumer).
+--- * Crystalline alloy (Ender IO's; NewHorizonsCoreMod): the pulsating crystal (ScriptEnderIO.java:1321-1326: a diamond
+---   and 8 pulsating iron nuggets, 30 s, MV), its powder (1724-1726: macerator, 5 s, MV), the dust (MixerRecipes.java:
+---   941-947: powder, gold and emerald dust into 3, 5 s), the blast furnace with gas (BlastFurnaceRecipes.java:98-101:
+---   4500 K, 60 s, EV), the vacuum freezer (VacuumFreezerRecipes.java:69-72: 28.6 s, EV); 143 melts it.
+--- Unlocked with the technology Prismatic Naquadah, the chain's first consumer.
+--------------------------------------------------------------------------------
+do
+	local PN = "prismatic-naquadah"
+	local L = {}
+	F.fluid("liquid-nitrogen", "liquid-nitrogen", { 0.66, 0.82, 0.96 })
+	F.fluid("molten-strontium", "molten-strontium", { 0.78, 0.78, 0.78 })
+	F.fluid("molten-crystalline-alloy", "molten-crystalline-alloy", { 0.29, 0.86, 0.86 })
+	items(SUB_DUST, { "ysz-ceramic-dust", "strontium-dust", "bismuth-telluride-dust", "magnetic-steel-dust",
+		"magneto-resonatic-dust", "pulsating-crystal-powder", "crystalline-alloy-dust" })
+	items(SUB_PART, { "flawed-cubic-zirconia", "strontium-ingot", "magneto-resonatic-gem", "flawless-magneto-resonatic",
+		"exquisite-magneto-resonatic", "magneto-resonatic-lens", "pulsating-crystal", "hot-crystalline-alloy-ingot",
+		"crystalline-alloy-ingot" })
+	step(L, "liquid-nitrogen", "hv-vacuum-freezer-recipes", 60, HV_SPEED, { { "nitrogen", 100 } }, { { "liquid-nitrogen", 100 } })
+	--- cubic zirconia, YSZ
+	step(L, "flawed-cubic-zirconia", "hv-electric-blast-furnace-recipes", 2880, HV_SPEED,
+		{ { "zirconium-dust", 10 }, { "yttrium-oxide", 1 }, { "oxygen", 2000 } },
+		{ { "flawed-cubic-zirconia", 40 }, { "yttrium-oxide", 1 } }, "flawed-cubic-zirconia")
+	local p, r = pile("cubic-zirconia-dust", "small")
+	FORK_RECIPES_TABLE_ONLY[r] = "GTNH: cubic zirconia comes only as flawed gems (bartworks' blast furnace), which "
+		.. "macerate into small piles; GT makes the dust from them in the packager, which the mod does not have"
+	L[#L + 1] = r
+	step(L, "flawed-cubic-zirconia-maceration", "lv-macerator-recipes", 1.4, LV_SPEED, { { "flawed-cubic-zirconia", 1 } },
+		{ { p, 2 } })
+	step(L, "ysz-ceramic-dust", "mv-mixer-recipes", 20, MV_SPEED, { { "yttrium-oxide", 1 }, { "cubic-zirconia-dust", 5 } },
+		{ { "ysz-ceramic-dust", 6 } })
+	--- strontium
+	step(L, "molten-strontium", "ev-alloy-blast-smelter-recipes", 120, EV_SPEED,
+		{ { "strontium-oxide-dust", 8 }, { "aluminium-dust", 8 } },
+		{ { "molten-strontium", 115.2 }, { "oxygen", 800 }, { "molten-aluminium", 115.2 } })
+	step(L, "strontium-dust", "lv-macerator-recipes", 4.35, LV_SPEED, { { "strontium-ingot", 1 } }, { { "strontium-dust", 1 } })
+	--- the Magneto Resonatic lens
+	step(L, "bismuth-telluride-dust", "mv-chemical-reactor-recipes", 8.05, MV_SPEED, { { "bismuth", 2 }, { "tellurium-dust", 3 } },
+		{ { "bismuth-telluride-dust", 5 } })
+	step(L, "magnetic-steel-dust", "lv-polarizer-recipes", 6.4, LV_SPEED, { { "steel-dust", 1 } }, { { "magnetic-steel-dust", 1 } })
+	step(L, "magneto-resonatic-dust", "lv-mixer-recipes", 1.1, LV_SPEED,
+		{ { "prasiolite-dust", 3 }, { "bismuth-telluride-dust", 4 }, { "cubic-zirconia-dust", 1 }, { "magnetic-steel-dust", 1 } },
+		{ { "magneto-resonatic-dust", 9 } })
+	step(L, "magneto-resonatic-gem", "iv-autoclave-recipes", 25, IV_SPEED, { { "magneto-resonatic-dust", 1 }, { "krypton", 100 } },
+		{ { "magneto-resonatic-gem", 1 } })
+	step(L, "flawless-magneto-resonatic", "hv-laser-engraver-recipes", 60, HV_SPEED,
+		{ { "magneto-resonatic-gem", 3 }, { "amethyst-lens", 1 } }, { { "flawless-magneto-resonatic", 1 }, { "amethyst-lens", 1 } },
+		"flawless-magneto-resonatic")
+	step(L, "exquisite-magneto-resonatic", "ev-laser-engraver-recipes", 120, EV_SPEED,
+		{ { "flawless-magneto-resonatic", 3 }, { "amethyst-lens", 1 } },
+		{ { "exquisite-magneto-resonatic", 1 }, { "amethyst-lens", 1 } }, "exquisite-magneto-resonatic")
+	step(L, "magneto-resonatic-lens", "lv-lathe-recipes", 120, LV_SPEED, { { "exquisite-magneto-resonatic", 1 } },
+		{ { "magneto-resonatic-lens", 1 }, { "magneto-resonatic-dust", 2 } })
+	--- crystalline alloy
+	step(L, "pulsating-crystal", "mv-assembling-machine-recipes", 30, MV_SPEED,
+		{ { "diamond", 1 }, { "pulsating-iron-nugget", 8 } }, { { "pulsating-crystal", 1 } })
+	step(L, "pulsating-crystal-powder", "mv-macerator-recipes", 5, MV_SPEED, { { "pulsating-crystal", 1 } },
+		{ { "pulsating-crystal-powder", 1 } })
+	step(L, "crystalline-alloy-dust", "lv-mixer-recipes", 5, LV_SPEED,
+		{ { "pulsating-crystal-powder", 1 }, { "gold-dust", 1 }, { "emerald-dust", 1 } }, { { "crystalline-alloy-dust", 3 } })
+	blast(L, "crystalline-alloy", "ev-electric-blast-furnace-recipes", 60, EV_SPEED)
+	step(L, "crystalline-alloy-ingot", "ev-vacuum-freezer-recipes", 28.6, EV_SPEED, { { "hot-crystalline-alloy-ingot", 1 } },
+		{ { "crystalline-alloy-ingot", 1 } })
+
+	F.tech{ name = PN, prerequisites = { "reach-the-everglades" }, packs = 9, count = 1500, time = 60, recipes = L }
+	--- (the cubic zirconia recipe gives its yttrium oxide back, so 199 would count it as a producer and drop the pull of
+	--- yttrium oxide into its first consumer, the fluid shaper: keep that unlock)
+	fork_add_unlock("fluid-shaper", "yttrium-oxide")
+	FORK_CASTING.materials["strontium"] = { "lv", PN }
+	FORK_CASTING.materials["crystalline-alloy"] = { "ev", PN }
+	FORK_CASTING.run()
+end
