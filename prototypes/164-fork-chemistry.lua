@@ -2000,7 +2000,7 @@ machine{
 		{ type = "item", name = "hv-field-generator", amount = 2 },
 		{ type = "item", name = "iv-robot-arm", amount = 1 },
 		{ type = "item", name = "inconel-625-plate", amount = 2 },
-		{ type = "item", name = "double-hastelloy-n-plate", amount = 2 },
+		{ type = "item", name = "double-hastelloy-n-plate", amount = 3 },   -- (GT's pattern FRP/DCD/PDF: 3; #406)
 		{ type = "item", name = "tungstensteel-rotor", amount = 1 },   -- GT's IV chemical reactor ...
 		{ type = "item", name = "platinum-cable", amount = 2 },
 		{ type = "item", name = "iv-motor", amount = 1 },
@@ -2701,5 +2701,70 @@ do
 	for _, r in pairs(STELLAR_DSS) do fork_add_unlock("dtpf-stellar-catalyst", r) end
 	table.insert(data.raw.technology["dtpf-stellar-catalyst"].prerequisites, DSS)
 	for m, t in pairs({ calcium = "mv", californium = "uv", [ENA] = "uev" }) do FORK_CASTING.materials[m] = { t, DSS } end
+	FORK_CASTING.run()
+end
+
+
+
+
+--------------------------------------------------------------------------------
+--- 21) THE COLD TRAP II AND THE REACTOR PROCESSING UNIT II (issue #406): GT++'s ZPM tiers of the two single blocks
+--- (gtPlusPlus/xmod/gregtech/registration/gregtech/GregtechLFTR.java:30-80), the same recipes at the ZPM speed. Their
+--- controllers (gtPlusPlus/core/recipe/RecipesMachinesCustom.java:580-586, 596-602): the IV block with Pikyonium 64B
+--- plates, double HS188-A plates and ZPM robot arms, with a frost proof casing (Cold Trap II) or two IV field generators
+--- (RPU II). Pikyonium 64B (core/material/MaterialsAlloy.java:700-717): GT++'s alloy blast smelter
+--- (xmod/gregtech/loaders/RecipeGenBlastSmelter.java:117-183) melts its eight dusts in their smallest ratio (8
+--- Inconel-792, 5 Eglin steel, 4 enriched naquadah, 3 cerium, 2 antimony, 2 platinum, 1 ytterbium, 4 tungstensteel) into
+--- 29 x 144 L at its tier (6850 C: tier 7, ZPM, 420 s); 143 casts ingots and plates. Inconel-792 dust from the ingot
+--- (macerator, GT++'s rule RecipeGenRecycling.java:126: its mass in ticks, 58), the double HS188-A plate from two ingots
+--- (bender, as the double Hastelloy-N plate). Each II block is the upgrade of its I block.
+--------------------------------------------------------------------------------
+do
+	local II = {}
+	local PIKY = "pikyonium-64b"
+	F.fluid("molten-" .. PIKY, "molten-" .. PIKY, { 52 / 255, 103 / 255, 186 / 255 })
+	dust("inconel-792-dust")
+	for _, n in pairs({ PIKY .. "-ingot", PIKY .. "-plate", "double-hs188-a-plate" }) do
+		create_item{ skip_recipe = true, name = n, subgroup = PARTS }
+	end
+	step(II, "inconel-792-dust", "lv-macerator-recipes", 2.9, LV_SPEED, { { "inconel-792-ingot", 1 } },
+		{ { "inconel-792-dust", 1 } })
+	step(II, "molten-" .. PIKY, "zpm-alloy-blast-smelter-recipes", 420, ZPM_SPEED,
+		{ { "inconel-792-dust", 8 }, { "eglin-steel-dust", 5 }, { "enriched-naquadah-dust", 4 }, { "cerium-dust", 3 },
+			{ "antimony", 2 }, { "platinum-dust", 2 }, { "ytterbium-dust", 1 }, { "tungstensteel-dust", 4 } },
+		{ { "molten-" .. PIKY, 417.6 } })
+	step(II, "double-hs188-a-plate", "iv-bending-machine-recipes", 3.9, IV_SPEED, { { "hs188-a-ingot", 2 } },
+		{ { "double-hs188-a-plate", 1 } })
+	local ZPM_CF = data.raw["assembling-machine"]["zpm-centrifuge"]
+	local ZPM_POWER = ZPM_CF and ZPM_CF.energy_usage or EU16_ZPM
+	local ZPM_SUB = data.raw.item["zpm-centrifuge"] and data.raw.item["zpm-centrifuge"].subgroup
+	local function item(name, amount) return { type = "item", name = name, amount = amount } end
+	machine{
+		name = "reactor-processing-unit-ii", category = "reactor-processing-unit-recipes", speed = ZPM_SPEED,
+		energy = ZPM_POWER, subgroup = ZPM_SUB,
+		ports = { port("input", N, { -1, -1 }), port("input", N, { 1, -1 }), port("output", S, { -1, 1 }),
+			port("output", S, { 0, 1 }), port("output", S, { 1, 1 }) },
+		list = II,
+		recipe = { "crafting-or-assembling-recipes", 1, { item("iv-field-generator", 2), item("zpm-robot-arm", 1),
+			item(PIKY .. "-plate", 2), item("double-hs188-a-plate", 3), item("reactor-processing-unit-i", 1) } },
+	}
+	machine{
+		name = "cold-trap-ii", category = "cold-trap-recipes", speed = ZPM_SPEED, energy = ZPM_POWER, subgroup = ZPM_SUB,
+		ports = { port("input", N, { -1, -1 }), port("input", N, { 1, -1 }), port("output", S, { -1, 1 }),
+			port("output", S, { 1, 1 }) },
+		list = II,
+		recipe = { "crafting-or-assembling-recipes", 1, { item(PIKY .. "-plate", 4), item("double-hs188-a-plate", 1),
+			item("cold-trap-i", 1), item("zpm-robot-arm", 2), item("frost-proof-casing", 1) } },
+	}
+	--- the II block as the upgrade of the I block (fast replace, the upgrade planner)
+	for _, n in pairs({ "reactor-processing-unit", "cold-trap" }) do
+		local one, two = data.raw["assembling-machine"][n .. "-i"], data.raw["assembling-machine"][n .. "-ii"]
+		two.fast_replaceable_group = one.fast_replaceable_group
+		one.next_upgrade = two.name
+	end
+	F.tech{
+		name = "nuclear-salt-processing-ii", prerequisites = { SPARGE, "zpm-machines" }, packs = 8, count = 1500, time = 60, recipes = II,
+	}
+	FORK_CASTING.materials[PIKY] = { "zpm", "nuclear-salt-processing-ii" }
 	FORK_CASTING.run()
 end

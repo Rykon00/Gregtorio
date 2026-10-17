@@ -126,6 +126,7 @@ FORK_TECH_ICONS = {
 	["niobium-titanium"] = true,
 	["nuclear-fuel-rods"] = true,
 	["nuclear-salt-processing"] = true,
+	["nuclear-salt-processing-ii"] = true,
 	["optical-processor-mainframes"] = true,
 	["optical-processors"] = true,
 	["ore-drilling-plant-mk1"] = true,
