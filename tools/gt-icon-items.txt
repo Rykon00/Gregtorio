@@ -4223,3 +4223,7 @@ pure-awakened-draconium-dust
 draconium-dust
 awakened-draconium-dust
 hot-draconium-ingot
+inconel-792-dust
+pikyonium-64b-ingot
+pikyonium-64b-plate
+double-hs188-a-plate

@@ -195,6 +195,8 @@ MATERIALS = {
     "metastable-oganesson": ("METALLIC", (0x14, 0x39, 0x7f)),
     # issue #356: the Mehen Belt's awakened draconium (GT's DraconiumAwakened)
     "awakened-draconium": "DraconiumAwakened",
+    # issue #406: GT++'s Pikyonium 64B (MaterialsAlloy.java:700-717, its colour)
+    "pikyonium-64b": ("METALLIC", (52, 103, 186)),
     "calcium": "Calcium",
     # issue #205: goodgenerator's Werkstoffe of the naquadah line (GGMaterial.java, their colours; dusts)
     "naquadria-oxide-mixture": ("METALLIC", (77, 77, 85)), "indium-phosphate": ("DULL", (43, 46, 112)),
