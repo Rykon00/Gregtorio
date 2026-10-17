@@ -2827,11 +2827,128 @@ do
 	step(L, "crystalline-alloy-ingot", "ev-vacuum-freezer-recipes", 28.6, EV_SPEED, { { "hot-crystalline-alloy-ingot", 1 } },
 		{ { "crystalline-alloy-ingot", 1 } })
 
-	F.tech{ name = PN, prerequisites = { "reach-the-everglades" }, packs = 9, count = 1500, time = 60, recipes = L }
+	F.tech{ name = PN, prerequisites = { "reach-the-everglades", "industrial-mixer", "zpm-energy-hatches" }, packs = 9,
+		count = 1500, time = 60, recipes = L }
 	--- (the cubic zirconia recipe gives its yttrium oxide back, so 199 would count it as a producer and drop the pull of
 	--- yttrium oxide into its first consumer, the fluid shaper: keep that unlock)
 	fork_add_unlock("fluid-shaper", "yttrium-oxide")
 	FORK_CASTING.materials["strontium"] = { "lv", PN }
 	FORK_CASTING.materials["crystalline-alloy"] = { "ev", PN }
 	FORK_CASTING.run()
+end
+
+
+
+
+--------------------------------------------------------------------------------
+--- 25) GT++'S ALGAE FARM AND INDUSTRIAL DEHYDRATOR (issue #356, the netherite chain, part 2): the red algae biomass of
+--- the chain's prismarine and the vacuum furnace of its prismatic gas. GT5-Unofficial 638b3f37ca.
+--- * The Algae Farm (gregtech/common/tileentities/machines/multi/MTEAlgaePond.java, recipes gtPlusPlus/xmod/gregtech/
+---   loaders/recipe/RecipeLoaderAlgaePond.java): recipes without inputs, the tier of its energy hatch picks the recipe
+---   (and needs glass of that tier), compost lifts it one tier for 2^(tier-1) of it (MTEAlgaePond.java:327-370), no
+---   overclock. Red algae starts at tier 5: here an IV farm (GT's IV glass is bartworks' tungstensteel reinforced
+---   borosilicate glass, FluidSolidifier.java: borosilicate glass and 8 ingots of molten tungstensteel, 40 s, EV), its
+---   tier-5 recipe (50 s: 4 red algae at 90 %) and with 16 compost the tier-6 one (25.6 s: 3 and 12 at 90 %). GT's other
+---   algae (algae, green, brown and golden-brown biomass) are left out: nothing in the mod takes them but compost. Compost
+---   from red algae (gtPlusPlus/plugin/agrichem/BioRecipes.java:172-178: 1 into 2, macerator, 20 s).
+---   Its item: GT++'s controller (core/recipe/RecipesMachinesCustom.java:368-383: 4 Integral Encasements I, 12 aluminium
+---   rods, 32 wood plates, 16 steel bolts, 32 redstone, 8 ingots of molten potin; MV, 60 s) with the structure (25 algae
+---   casings, 64 glass, 6 stainless steel frames, 5 filter casings), the energy hatch and hulls for the maintenance hatch
+---   and the output bus. Integral Encasement I (RecipesMachinesTiered.java:488-502): GT's ULV casing, 8 potin plates, 2
+---   potin gears (GT++'s gear is the mod's large gear), 4 2x tin cables (8 cables), 2 ULV circuits (vacuum tubes), 2
+---   ingots of molten steel; LV, 20 s. The algae casing (gregtech/loaders/load/MTERecipeLoader.java:1638-1648): a rose
+---   gold frame, 4 rose gold plates, 2 stainless steel plates; LV, 2.5 s. Rose gold: the mod's dust (its mixer), GT's
+---   blast furnace (1600 K: mass / 40 x 1600 ticks, MV,
+---   ProcessingDust.java:100-118) and 158's part rules (plate: bender, mass; rod: lathe, 5 x mass, 2 small piles; frame:
+---   assembler, 4 rods, 3.2 s); the wood plate (CompressorRecipes.java:159-165: 8 wood dust, the mod's wood pulp; 15 s).
+--- * The Industrial Dehydrator, Utupu-Tanuri (xmod/gregtech/common/tileentities/machines/multi/processing/
+---   MTEIndustrialDehydrator.java): two modes, the vacuum furnace and the multiblock chemical dehydrator, 4 parallels at
+---   2.2 times the speed and half the EU, its coils' heat for the recipes' (the prismatic gas: 7200 K, the naquadah coil).
+---   Here a ZPM machine (its 24 coils naquadah coils) at ZPM speed x 2.2 x 4 parallels, twice a ZPM machine's power.
+---   Its item: GT++'s controller (core/recipe/RecipesMachinesMulti.java:932-946: a vacuum casing, 4 16x YBCO wires (64
+---   wires), 4 EV robot arms, 8 Zeron-100 plates, 8 LuV circuits, 20 ingots of molten Zeron-100; LuV, 12 min), 12 vacuum
+---   casings (:919-930: a multi-use casing, a nichrome coil, 2 HV pistons, 4 Zeron-100 plates, 2 Zeron-100 gears; LuV,
+---   60 s), the coils, the energy hatch and hulls for the muffler, the maintenance hatch and the buses and hatches.
+---   Left out: the vacuum casing's 8 ingots of GT++'s Energy Crystal alloy, made of Thaumcraft's aspects (Aer, Terra,
+---   Ignis, Aqua; MaterialsAlloy.java), which the mod does not have.
+--- Unlocked with Prismatic Naquadah, the chain's technology.
+--------------------------------------------------------------------------------
+do
+	local PN = "prismatic-naquadah"
+	local L = {}
+	local function item(name, amount) return { type = "item", name = name, amount = amount } end
+	F.category("algae-farm-recipes")
+	F.category("vacuum-furnace-recipes")
+	F.category("industrial-dehydrator-recipes")
+	items(SUB_PART, { "red-algae-biomass", "compost", "rose-gold-ingot", "rose-gold-plate", "rose-gold-rod",
+		"rose-gold-frame", "wood-plate", "integral-encasement-i", "algae-farm-casing",
+		"tungstensteel-reinforced-borosilicate-glass-block", "algae-farm-controller", "vacuum-furnace-casing",
+		"industrial-dehydrator-controller" })
+	--- rose gold
+	local small, small_r = pile("rose-gold-dust", "small")
+	L[#L + 1] = small_r
+	--- (the piles only give the lathe's dust back: 157 must not count them as a second recipe of rose gold dust, whose
+	--- material it would then lose in the recycling of everything made with the dust; 157 skips 143's recipes)
+	FORK_CASTING.recipes[small_r] = true
+	step(L, "rose-gold-ingot", "mv-electric-blast-furnace-recipes", 320, MV_SPEED, { { "rose-gold-dust", 1 } },
+		{ { "rose-gold-ingot", 1 } })
+	step(L, "rose-gold-plate", "lv-bending-machine-recipes", 8.45, LV_SPEED, { { "rose-gold-ingot", 1 } },
+		{ { "rose-gold-plate", 1 } })
+	step(L, "rose-gold-rod", "lv-lathe-recipes", 42.25, LV_SPEED, { { "rose-gold-ingot", 1 } },
+		{ { "rose-gold-rod", 1 }, { small, 2 } })
+	step(L, "rose-gold-frame", "lv-assembling-machine-recipes", 3.2, LV_SPEED, { { "rose-gold-rod", 4 } },
+		{ { "rose-gold-frame", 1 } })
+	--- the algae farm's parts
+	step(L, "wood-plate", "lv-compressor-recipes", 15, LV_SPEED, { { "wood-pulp", 8 } }, { { "wood-plate", 1 } })
+	step(L, "integral-encasement-i", "lv-assembling-machine-recipes", 20, LV_SPEED,
+		{ { "ulv-machine-casing", 1 }, { "potin-plate", 8 }, { "large-potin-gear", 2 }, { "tin-cable", 8 }, { "vacuum-tube", 2 },
+			{ "molten-steel", 28.8 } }, { { "integral-encasement-i", 1 } })
+	step(L, "algae-farm-casing", "lv-assembling-machine-recipes", 2.5, LV_SPEED,
+		{ { "rose-gold-frame", 1 }, { "rose-gold-plate", 4 }, { "stainless-steel-plate", 2 } }, { { "algae-farm-casing", 1 } })
+	step(L, "tungstensteel-reinforced-borosilicate-glass-block", "ev-fluid-solidifier-recipes", 40, EV_SPEED,
+		{ { "borosilicate-glass-block", 1 }, { "molten-tungstensteel", 115.2 } },
+		{ { "tungstensteel-reinforced-borosilicate-glass-block", 1 } })
+	step(L, "algae-farm-controller", "mv-assembling-machine-recipes", 60, MV_SPEED,
+		{ { "integral-encasement-i", 4 }, { "aluminium-rod", 12 }, { "wood-plate", 32 }, { "steel-bolt", 16 },
+			{ "redstone-dust", 32 }, { "molten-potin", 115.2 } }, { { "algae-farm-controller", 1 } })
+	local IV_CF = data.raw["assembling-machine"]["iv-centrifuge"]
+	machine{
+		name = "algae-farm", category = "algae-farm-recipes", speed = IV_SPEED, energy = IV_CF and IV_CF.energy_usage or EU16_IV,
+		subgroup = "subgroup-iv-age-multiblocks", ports = {}, list = L,
+		recipe = { "crafting-or-assembling-recipes", 1, { item("algae-farm-controller", 1), item("algae-farm-casing", 25),
+			item("tungstensteel-reinforced-borosilicate-glass-block", 64), item("stainless-steel-frame", 6),
+			item("filter-casing", 5), item("iv-energy-hatch", 1), item("lv-machine-hull", 2) } },
+	}
+	step(L, "red-algae-biomass", "algae-farm-recipes", 50, IV_SPEED, {}, { { "red-algae-biomass", 4, 0.9 } })
+	step(L, "red-algae-biomass-with-compost", "algae-farm-recipes", 25.6, IV_SPEED, { { "compost", 16 } },
+		{ { "red-algae-biomass", 3 }, { "red-algae-biomass", 12, 0.9 } }, "red-algae-biomass")
+	step(L, "compost", "lv-macerator-recipes", 20, LV_SPEED, { { "red-algae-biomass", 1 } }, { { "compost", 2 } })
+	--- the industrial dehydrator
+	step(L, "vacuum-furnace-casing", "luv-assembling-machine-recipes", 60, LUV_SPEED,
+		{ { "multi-use-casing", 1 }, { "nichrome-coil-block", 1 }, { "hv-piston", 2 }, { "zeron-100-plate", 4 },
+			{ "large-zeron-100-gear", 2 } }, { { "vacuum-furnace-casing", 1 } })
+	step(L, "industrial-dehydrator-controller", "luv-assembling-machine-recipes", 720, LUV_SPEED,
+		{ { "vacuum-furnace-casing", 1 }, { "yttrium-barium-cuprate-wire", 64 }, { "ev-robot-arm", 4 }, { "zeron-100-plate", 8 },
+			{ "luv-circuit", 8 }, { "molten-zeron-100", 288 } }, { { "industrial-dehydrator-controller", 1 } })
+	local ZPM_CF = data.raw["assembling-machine"]["zpm-centrifuge"]
+	local ZPM_POWER = ZPM_CF and ZPM_CF.energy_usage or EU16_ZPM
+	machine{
+		name = "industrial-dehydrator", category = "vacuum-furnace-recipes", speed = ZPM_SPEED * 2.2 * 4,
+		energy = (tonumber(ZPM_POWER:match("^[%d.]+")) * 2) .. ZPM_POWER:match("%a+$"),
+		subgroup = "subgroup-zpm-age-multiblocks",
+		ports = { port("input", N, { -1, -1 }), port("input", N, { 0, -1 }), port("input", N, { 1, -1 }),
+			port("output", S, { -1, 1 }), port("output", S, { 0, 1 }), port("output", S, { 1, 1 }) },
+		list = L,
+		recipe = { "crafting-or-assembling-recipes", 1, { item("industrial-dehydrator-controller", 1),
+			item("vacuum-furnace-casing", 12), item("naquadah-coil-block", 24), item("zpm-energy-hatch", 1),
+			item("lv-machine-hull", 4) } },
+	}
+	data.raw["assembling-machine"]["industrial-dehydrator"].crafting_categories =
+		{ "vacuum-furnace-recipes", "industrial-dehydrator-recipes" }
+	--- (summed last in 157's recycling: the farm's energy hatch would otherwise cut the energy hatch loops of the
+	--- machine upgrades first and empty the large chemical reactors' and vacuum freezers' sums, issue #423)
+	FORK_RECYCLING_LATE = FORK_RECYCLING_LATE or {}
+	FORK_RECYCLING_LATE["algae-farm"] = true
+	FORK_RECYCLING_LATE["industrial-dehydrator"] = true
+	for _, r in pairs(L) do fork_add_unlock(PN, r) end
 end

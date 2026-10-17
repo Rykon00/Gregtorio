@@ -203,6 +203,8 @@ MATERIALS = {
     "cubic-zirconia": ("DIAMOND", (255, 255, 255)), "strontium": "Strontium", "strontium-oxide": ("METALLIC", (115, 155, 155)),
     "bismuth-telluride": ("METALLIC", (32, 72, 32)), "magnetic-steel": "SteelMagnetic",
     "magneto-resonatic": ("MAGNETIC", (221, 119, 221)), "crystalline-alloy": "CrystallineAlloy",
+    # issue #356 part 2: the algae farm's rose gold and wood plate
+    "rose-gold": "RoseGold", "wood": "Wood",
     "calcium": "Calcium",
     # issue #205: goodgenerator's Werkstoffe of the naquadah line (GGMaterial.java, their colours; dusts)
     "naquadria-oxide-mixture": ("METALLIC", (77, 77, 85)), "indium-phosphate": ("DULL", (43, 46, 112)),
@@ -996,6 +998,19 @@ def icon_table(c):
     T["ysz-ceramic-dust"] = lambda: c.gt("gt:kekztech/textures/items/YSZCeramicDust")
     T["pulsating-crystal"] = lambda: c.part("pulsating-iron", "gemExquisite")
     T["pulsating-crystal-powder"] = lambda: c.part("pulsating-iron", "dust")
+    # issue #356 part 2: GT++'s agrichem items (meta 4 red algae, 8 compost), the algae farm's and the industrial
+    # dehydrator's casings and controllers, GT++'s Integral Encasement I, bartworks' tungstensteel glass
+    T["red-algae-biomass"] = lambda: c.gt("gt:miscutils/textures/items/bioscience/MetaItem1/4")
+    T["compost"] = lambda: c.gt("gt:miscutils/textures/items/bioscience/MetaItem1/8")
+    T["algae-farm-casing"] = lambda: c.gt(f"{BLK}ALGAE_CASING")
+    T["algae-farm-controller"] = lambda: c.face(f"{BLK}ALGAE_CASING",
+                                                "gt:miscutils/textures/blocks/iconsets/controllerFaces/algaePondBase")
+    T["vacuum-furnace-casing"] = lambda: c.gt(f"{BLK}VACUUM_CASING_SIDE")
+    T["industrial-dehydrator-controller"] = lambda: c.face(f"{BLK}VACUUM_CASING_SIDE",
+                                                           "gt:miscutils/textures/blocks/iconsets/controllerFaces/industrialDehydrator")
+    T["integral-encasement-i"] = lambda: c.gt(f"{BLK}INTEGRAL_FRAMEWORK_ULV")
+    T["tungstensteel-reinforced-borosilicate-glass-block"] = lambda: c.gt(
+        "gt:bartworks/textures/blocks/TungstenSteelReinforcedBoronSilicateGlassBlock")
     # issue #355: GT++'s quantum anomaly (MetaGeneratedItemIDs.Laser_Lens_Special 105) and Unknown Particle (particle
     # meta 24), the core mod's Chromatic Lens
     T["quantum-anomaly"] = lambda: c.gt("gt:miscutils/textures/items/MU-metaitem.01/105")

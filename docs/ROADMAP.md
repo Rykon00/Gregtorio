@@ -2538,8 +2538,20 @@ coils T1 for MK III, T2 for MK IV).
   - the Magneto Resonatic gem (autoclave only) and its lens (pink lens, lathe);
   - Ender IO's pulsating crystal and crystalline alloy.
 
-  Next: red algae biomass (GT++'s algae farm) and the vacuum furnace (GT++'s Industrial Dehydrator), then the chain
-  itself, then the refinery.
+  Part 2 (164 section 25): GT++'s Algae Farm and Industrial Dehydrator.
+  - The Algae Farm is an IV multiblock. Its recipes take no inputs, and the tier of its energy hatch picks the recipe:
+    GT's tier 5 gives 4 red algae at 90 % in 50 s, and with 16 compost tier 6 gives 3 + 12 at 90 % in 25.6 s.
+  - GT's IV glass is bartworks' tungstensteel reinforced borosilicate glass.
+  - GT's other algae are left out: nothing in the mod takes them but compost.
+  - The farm's item is GT++'s controller with Integral Encasement I, rose gold and wood plates, plus the structure.
+  - The Industrial Dehydrator (Utupu-Tanuri) is a ZPM machine with naquadah coils (the prismatic gas needs 7200 K). It
+    has the vacuum furnace and the multiblock dehydrator modes, 4 parallels at 2.2 times the speed, and twice a ZPM
+    machine's power.
+  - Left out: the vacuum casing's GT++ Energy Crystal alloy, which is made of Thaumcraft's aspects.
+  - 157 sums the two machines' recycling last (`FORK_RECYCLING_LATE`). Otherwise the energy hatch loops of the machine
+    upgrades would empty other machines' sums (issue #423).
+
+  Next: the chain itself, then the refinery.
 MK I to III stay as 136 builds them until the refinery comes.
 
 ### Nuclear depth (issue #359)

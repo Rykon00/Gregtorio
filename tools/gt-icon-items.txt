@@ -4257,3 +4257,17 @@ pulsating-crystal-powder
 crystalline-alloy-dust
 hot-crystalline-alloy-ingot
 crystalline-alloy-ingot
+red-algae-biomass
+compost
+rose-gold-ingot
+rose-gold-plate
+rose-gold-rod
+rose-gold-frame
+small-pile-of-rose-gold-dust
+wood-plate
+integral-encasement-i
+algae-farm-casing
+tungstensteel-reinforced-borosilicate-glass-block
+algae-farm-controller
+vacuum-furnace-casing
+industrial-dehydrator-controller

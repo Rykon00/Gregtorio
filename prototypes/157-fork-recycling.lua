@@ -218,6 +218,16 @@ for name, r in pairs(data.raw.recipe) do
 	end
 end
 table.sort(names)
+--- comp() remembers a sum even when it cut a loop below it (the upgrade recipes give the old energy hatch back), so a
+--- sum can depend on which item came first. Items listed in FORK_RECYCLING_LATE (their file says why) are summed after
+--- the others, so that they do not change the others' sums; the loop itself is issue #423.
+FORK_RECYCLING_LATE = FORK_RECYCLING_LATE or {}
+do
+	local early, late = {}, {}
+	for _, n in pairs(names) do table.insert(FORK_RECYCLING_LATE[n] and late or early, n) end
+	for _, n in pairs(late) do early[#early + 1] = n end
+	names = early
+end
 
 for _, item in pairs(names) do
 	local c = comp(item, {})
