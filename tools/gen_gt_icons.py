@@ -210,6 +210,9 @@ MATERIALS = {
     # solution's colour, MaterialsInit.java:14262)
     "prismatic-naquadah": ("METALLIC", (0x37, 0x37, 0x37)), "strontium-hydroxide": ("METALLIC", (76, 103, 188)),
     "prismarine": ("DIAMOND", (0x55, 0x9a, 0x8a)),
+    "thulium": "Thulium", "tellurium": "Tellurium",
+    # issue #406: GT++'s Pikyonium 64B (MaterialsAlloy.java:700-717, its colour)
+    "pikyonium-64b": ("METALLIC", (52, 103, 186)),
     "calcium": "Calcium",
     # issue #205: goodgenerator's Werkstoffe of the naquadah line (GGMaterial.java, their colours; dusts)
     "naquadria-oxide-mixture": ("METALLIC", (77, 77, 85)), "indium-phosphate": ("DULL", (43, 46, 112)),
