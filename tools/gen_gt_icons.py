@@ -193,6 +193,8 @@ MATERIALS = {
     # metastable oganesson (GGMaterial.java:1500, 1527)
     "californium": ("METALLIC", (0xaa, 0xaa, 0xaa)), "enriched-naquadah-alloy": ("METALLIC", (0x16, 0x07, 0x40)),
     "metastable-oganesson": ("METALLIC", (0x14, 0x39, 0x7f)),
+    # issue #356: the Mehen Belt's awakened draconium (GT's DraconiumAwakened)
+    "awakened-draconium": "DraconiumAwakened",
     "calcium": "Calcium",
     # issue #205: goodgenerator's Werkstoffe of the naquadah line (GGMaterial.java, their colours; dusts)
     "naquadria-oxide-mixture": ("METALLIC", (77, 77, 85)), "indium-phosphate": ("DULL", (43, 46, 112)),

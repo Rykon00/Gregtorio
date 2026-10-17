@@ -592,15 +592,35 @@ local VOID_POOLS = {
 	},
 }
 
+--- issue #356 (the maintainer's decision on #417): the Mehen Belt, AmunRa's asteroid belt (GTNH's T9; GT5-Unofficial
+--- 638b3f37ca OreMixes.java and SmallOres.java, enableInDim MehenBelt: 12 veins, 7 small ores), for its awakened
+--- draconium vein (draconium, draconium, awakened draconium, nether star); the draconium ores are new (155), titanium,
+--- iridium, chrome, osmium, uranium, nether star, perlite, uvarovite and mithril ore are left out (no ore of them in the
+--- mod)
+VOID_POOLS["mehen-belt"] = {
+	{ "raw-tin", 0.18464 }, { "raw-nickel", 0.09249 }, { "raw-bentonite", 0.08013 }, { "raw-magnesite", 0.08013 },
+	{ "raw-garnierite", 0.05342 }, { "raw-lazurite", 0.05342 }, { "raw-sodalite", 0.05342 }, { "raw-uraninite", 0.05342 },
+	{ "raw-draconium", 0.05342 }, { "raw-chromite", 0.03205 }, { "raw-neutronium", 0.02404 }, { "raw-ilmenite", 0.02137 },
+	{ "raw-platinum", 0.01419 }, { "raw-adamantium", 0.01336 }, { "raw-olivine", 0.01269 }, { "raw-lapis", 0.01202 },
+	{ "raw-palladium", 0.01002 }, { "raw-glauconite", 0.01002 }, { "raw-cassiterite", 0.00835 },
+	{ "raw-sheldonite", 0.00835 }, { "raw-pentlandite", 0.00668 }, { "raw-cobaltite", 0.00668 },
+	{ "raw-calcite", 0.00668 }, { "raw-awakened-draconium", 0.00334 }, { "raw-naquadah", 0.00167 },
+}
+
 local VM_PICKS = 20                -- ores per recipe at tier I (2 per second, 10 s)
 local VM_GAS = { { nil, 1 }, { "neon", 4 }, { "krypton", 8 }, { "xenon", 16 } }
-local VM_DIMS = { { "pluto", 1 }, { "barnard-f", 2 }, { "horus", 3 }, { "anubis", 3 }, { "neper", 3 } }   -- neper: #373
+local VM_DIMS = { { "pluto", 1 }, { "barnard-f", 2 }, { "horus", 3 }, { "anubis", 3 }, { "neper", 3 },
+	{ "mehen-belt", 3 } }   -- neper: #373, mehen-belt: #356
 --- issue #373: Neper's ores the mod lacked (GT's dilithium, mysterious crystal and vinteum; the mysterious crystal dust is
 --- the moon dust's above)
 create_ore("raw-dilithium", nil, "crushed-dilithium", "dilithium-dust", nil, "crushed-dilithium", nil, nil, 1, false, false)
 create_ore("raw-mysterious-crystal", nil, "crushed-mysterious-crystal", nil, nil, "crushed-mysterious-crystal", nil, nil, 1,
 	false, false)
 create_ore("raw-vinteum", nil, "crushed-vinteum", "vinteum-dust", nil, "crushed-vinteum", nil, nil, 1, false, false)
+--- issue #356: the Mehen Belt's draconium and awakened draconium (their metals in 164 section 22)
+create_ore("raw-draconium", nil, "crushed-draconium", "draconium-dust", nil, "crushed-draconium", nil, nil, 1, false, false)
+create_ore("raw-awakened-draconium", nil, "crushed-awakened-draconium", "awakened-draconium-dust", nil,
+	"crushed-awakened-draconium", nil, nil, 1, false, false)
 local VM_TECHS = { "void-miner-i", "void-miner-ii", "void-miner-iii" }
 
 --- an output of the expected amount `e`
@@ -704,3 +724,4 @@ F.tech{ name = VM_TECHS[2], prerequisites = { VM_TECHS[1], "zpm-assembly-line", 
 F.tech{ name = VM_TECHS[3], prerequisites = { VM_TECHS[2], "uv-components" }, packs = 9, count = 50, time = 60,
 	recipes = F.join({ vm3 }, vm_recipes[3]) }
 unlock_in(VM_TECHS[3], { "crushed-dilithium", "crushed-mysterious-crystal", "crushed-vinteum" })   -- issue #373: Neper
+unlock_in(VM_TECHS[3], { "crushed-draconium", "crushed-awakened-draconium" })   -- issue #356: the Mehen Belt
