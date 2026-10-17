@@ -206,7 +206,7 @@
     (section 13, technology Naquadah Fuel Rods), the isotopes, the LFTR fuels, Hastelloy-N and the Reactor Fuel
     Processing Plant (section 14, technology Liquid Fluoride Thorium Reactor), the LFTR, the Reactor Processing Unit I,
     the Cold Trap I and the Sparge Tower (section 15; the LFTR's power comes from scripts/fork-power.lua) and the LFTR
-    loop (section 16); loads after 159 and
+    loop (section 16); issue #406: the Nuclear Salt Processing Plant (section 17); loads after 159 and
     before 161)
   - 161 dimension unlocks (issue #287: the unlock rules of 160, `ore_dimension` moves or gates the ore chains of the
     dimensions' ores, the ender air with Radon, black plutonium with the Void Miner II, the bornite chain with

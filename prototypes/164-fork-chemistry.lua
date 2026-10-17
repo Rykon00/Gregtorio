@@ -2180,3 +2180,51 @@ step(RECIPES, "lftr-fuel-2-from-fuel-base", "reactor-fuel-processing-recipes", 7
 step(RECIPES, "lftr-fuel-3-from-fuel-base", "reactor-fuel-processing-recipes", 900, IV_SPEED,
 	{ { "thorium-tetrafluoride", 10 }, { "lftr-fuel-base", 90 } }, { { "lftr-fuel-3", 100 } })
 for _, r in pairs(RECIPES) do fork_add_unlock(SALTS, r) end
+
+
+
+--------------------------------------------------------------------------------
+--- 17) THE NUCLEAR SALT PROCESSING PLANT (issue #406; gtPlusPlus/xmod/gregtech/common/tileentities/machines/multi/
+--- processing/MTENuclearSaltProcessingPlant.java): GT++'s multiblock of the Reactor Processing Unit and the Cold Trap. Its
+--- map is theirs with the cells as fluids (gtPlusPlus/GTplusplus.java:159-162), which the recipes of section 15 already
+--- are, so it runs the categories of both. GT: 2 parallels per voltage tier, 2.5 times as fast, the EU of each parallel;
+--- its structure takes exactly 2 energy hatches, so at IV (4 amps) it runs 4 of GT's IV recipes at once: here 4 x 2.5 = 10
+--- times the speed of the IV single blocks at 4 times their power (GT's HV recipes could run 10 parallels; the mod gives
+--- a machine one speed). A 3x3 machine with the fluid ports of the RPU. Its item: GT++'s controller (RecipesMachinesCustom
+--- .java:604-610: 4 osmiridium plates, the Reactor Processing Unit I, 2 Ruridit plates, a ZPM circuit, the Cold Trap I) and
+--- the structure (:136-178): 58 IV machine casings, 32 Thermally Insulated Casings (GT++'s assembler recipe, :274-285: a
+--- Maraging Steel 250 frame, 4 black steel plates, 8 Maraging Steel 250 screws, 576 L molten tantalum carbide; HV, 30 s),
+--- 2 IV energy hatches and hulls for the 2 mufflers, the maintenance, input and output hatches. With Nuclear Salt
+--- Processing.
+--------------------------------------------------------------------------------
+
+local NSPP = "nuclear-salt-processing-plant"
+--- "5.12MW" -> 5.12e6
+local function watts_of(power)
+	return tonumber(power:match("^[%d.]+")) * ({ W = 1, kW = 1e3, MW = 1e6, GW = 1e9 })[power:match("%a+$")]
+end
+RECIPES = {}
+create_item{ skip_recipe = true, name = "thermally-insulated-casing", subgroup = "subgroup-iv-age-multiblocks" }
+step(RECIPES, "thermally-insulated-casing", "hv-assembling-machine-recipes", 30, HV_SPEED,
+	{ { "maraging-steel-250-frame", 1 }, { "black-steel-plate", 4 }, { "maraging-steel-250-screw", 8 },
+		{ "molten-tantalum-carbide", 57.6 } }, { { "thermally-insulated-casing", 1 } })
+machine{
+	name = NSPP, category = "reactor-processing-unit-recipes", speed = IV_SPEED * 2.5 * 4,
+	energy = string.format("%.6gMW", 4 * watts_of(IV_POWER) / 1e6), subgroup = "subgroup-iv-age-multiblocks",
+	ports = { port("input", N, { -1, -1 }), port("input", N, { 1, -1 }), port("output", S, { -1, 1 }),
+		port("output", S, { 0, 1 }), port("output", S, { 1, 1 }) },
+	list = RECIPES,
+	recipe = { "crafting-or-assembling-recipes", 1, {
+		{ type = "item", name = "osmiridium-plate", amount = 4 },
+		{ type = "item", name = "reactor-processing-unit-i", amount = 1 },
+		{ type = "item", name = "ruridit-plate", amount = 2 },
+		{ type = "item", name = "zpm-circuit", amount = 1 },
+		{ type = "item", name = "cold-trap-i", amount = 1 },
+		{ type = "item", name = "iv-machine-casing", amount = 58 },
+		{ type = "item", name = "thermally-insulated-casing", amount = 32 },
+		{ type = "item", name = "iv-energy-hatch", amount = 2 },
+		{ type = "item", name = "lv-machine-hull", amount = 5 },   -- (2 mufflers, maintenance, input and output hatch)
+	} },
+}
+data.raw["assembling-machine"][NSPP].crafting_categories = { "reactor-processing-unit-recipes", "cold-trap-recipes" }
+for _, r in pairs(RECIPES) do fork_add_unlock(SALTS, r) end

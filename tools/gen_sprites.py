@@ -298,6 +298,12 @@ MULTIBLOCKS = {
     "reactor-processing-unit-i": ((3, 3), "gregtech:iconsets/MACHINE_IV_SIDE", None,
                                   ("gregtech:basicmachines/reactor_processing_unit/OVERLAY_FRONT",
                                    "gregtech:basicmachines/reactor_processing_unit/OVERLAY_FRONT_ACTIVE"), None),
+    # issue #406: GT++'s Nuclear Salt Processing Plant (GT's IV machine casing, the disassembler front MTENuclearSaltProcessing
+    # Plant.java shows, its thermally insulated casings of the middle row)
+    "nuclear-salt-processing-plant": ((3, 3), "gregtech:iconsets/MACHINE_IV_SIDE", None,
+                                      ("gregtech:iconsets/OVERLAY_FRONT_DISASSEMBLER",
+                                       "gregtech:iconsets/OVERLAY_FRONT_DISASSEMBLER_ACTIVE"),
+                                      "miscutils:TileEntities/machine_top"),
     # issue #301: the Space Elevator per motor tier (gtnhintergalactic's base casing, support structure and the motor)
     **{f"space-elevator-mk{t}": ((11, 11), "gtnhintergalactic:spaceElevator/BaseCasing", None,
                                  f"gtnhintergalactic:spaceElevator/MotorT{t}_Side",
@@ -326,7 +332,7 @@ WHOLE_ICONS = {"large-titanium-boiler", "large-combustion-engine", "digester", "
                "luv-dehydrator", "zpm-dehydrator", "void-miner-i", "void-miner-ii", "void-miner-iii",
                "ev-rocket-engine", "iv-rocket-engine", "luv-rocket-engine", "large-rocket-engine",
                "universal-chemical-fuel-engine", "reactor-fuel-processing-plant", "liquid-fluoride-thorium-reactor",
-               "sparge-tower", "cold-trap-i", "reactor-processing-unit-i",
+               "sparge-tower", "cold-trap-i", "reactor-processing-unit-i", "nuclear-salt-processing-plant",
                *(f"space-elevator-mk{t}" for t in range(1, 6)),
                *(f"space-elevator-mining-module-mk{t}" for t in range(1, 4)),
                "planetary-gas-siphon", *(f"space-elevator-pump-module-mk{t}" for t in range(1, 4)),

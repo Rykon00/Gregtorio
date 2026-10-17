@@ -2514,7 +2514,11 @@ Sparge Tower):
   IV distillery is the mod's IV short distillation tower. HS188-A: GT++'s alloy blast smelter recipe; its rhenium from
   GT++'s roasting of purified scheelite and molybdenite (the alloy blast smelter), talonite and niobium carbide dust
   from GT++'s mixer, Hastelloy-X dust from the ingot.
-- Left (issue #406): the Cold Trap II and RPU II (Pikyonium needs ytterbium) and the Nuclear Salt Processing Plant.
+- Left (issue #406): the Cold Trap II and RPU II (Pikyonium needs ytterbium). The Nuclear Salt Processing Plant came with
+  #406 (164 section 17): the RPU's and the cold trap's recipes in one machine; GT's 2 parallels per tier are limited by
+  its 2 energy hatches to 4 of GT's IV recipes at IV, so it runs at 4 x 2.5 = 10 times the IV single blocks' speed at 4
+  times their power (one speed for all its recipes: GT's HV ones could run 10 parallels). Its item is GT++'s controller
+  with the structure (58 IV machine casings, 32 Thermally Insulated Casings with GT++'s recipe, hatches as hulls).
 
 Step 4 (164 section 16, with Nuclear Salt Processing): the loop closes in the Reactor Fuel Processing Plant, GT++'s
 recipes. The RPU's impure molten salt base distils into the stable molten salt base (IV tall distillation tower); with the
