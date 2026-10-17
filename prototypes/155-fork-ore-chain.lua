@@ -292,6 +292,9 @@ local NEW_ORES = {
 	--- technetium's 98), no byproducts of their own (GT: themselves)
 	["draconium"] = { dust = "draconium-dust", byproducts = {  }, mass = 98 },   -- GT Draconium: none (itself)
 	["awakened-draconium"] = { dust = "awakened-draconium-dust", byproducts = {  }, mass = 98 },   -- GT DraconiumAwakened: none (itself)
+	--- issue #356: the Lutetium Asteroid's thulium and tellurium (162); GT gives them no byproducts of their own
+	["thulium"] = { dust = "thulium-dust", byproducts = {  }, mass = 168 },   -- GT Thulium: none (itself)
+	["tellurium"] = { dust = "tellurium-dust", byproducts = {  }, mass = 127 },   -- GT Tellurium: none (itself)
 }
 for x, o in pairs(NEW_ORES) do
 	ORE_CHAIN[x] = { dust = o.dust, byproducts = o.byproducts, mass = o.mass }
