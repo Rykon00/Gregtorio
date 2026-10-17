@@ -2706,7 +2706,6 @@ end
 
 
 
-
 --------------------------------------------------------------------------------
 --- 21) THE COLD TRAP II AND THE REACTOR PROCESSING UNIT II (issue #406): GT++'s ZPM tiers of the two single blocks
 --- (gtPlusPlus/xmod/gregtech/registration/gregtech/GregtechLFTR.java:30-80), the same recipes at the ZPM speed. Their
@@ -2767,4 +2766,21 @@ do
 	}
 	FORK_CASTING.materials[PIKY] = { "zpm", "nuclear-salt-processing-ii" }
 	FORK_CASTING.run()
+end
+
+
+
+--------------------------------------------------------------------------------
+--- 22) THE MEHEN BELT'S DRACONIUM (issue #356, the maintainer's decision on #417): the draconium ore of the Void Miner III
+--- (160) gives GT New Horizons' draconium: the blast furnace with gas (NewHorizonsCoreMod BlastFurnaceRecipes.java:
+--- 199-202: 7200 K, 200 s at LuV) and the vacuum freezer (VacuumFreezerRecipes.java:118-120: 14.7 s at IV), beside the
+--- mod's fusion recipe of 131. Awakened draconium's ingot comes with its first consumer, the Naquadah Fuel Refinery.
+--------------------------------------------------------------------------------
+do
+	local L = {}
+	items(SUB_PART, { "hot-draconium-ingot" })
+	blast(L, "draconium", "luv-electric-blast-furnace-recipes", 200, LUV_SPEED)
+	step(L, "draconium-ingot-from-hot-ingot", "iv-vacuum-freezer-recipes", 14.7, IV_SPEED, { { "hot-draconium-ingot", 1 } },
+		{ { "draconium-ingot", 1 } })
+	for _, r in pairs(L) do fork_add_unlock("void-miner-iii", r) end
 end
