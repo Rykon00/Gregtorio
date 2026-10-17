@@ -33,6 +33,7 @@ end
 ---   * GoodGenerator's atomic separation catalyst (blaze powder, manyullyn, orundum from
 ---     tiberium) and the naquadah fuel cracking it drives (naquadah asphalt, cracked heavy fuel,
 ---     thulium and thorium melt); the fuel line of 136-fork-power.lua works without them
+---     (issue #356: 164 makes orundum and the catalyst again with GT's recipes, for fuel MK V)
 ---   * the electric implosion compressor recipe of high density plutonium (GT's EIC is not
 ---     built; the implosion compressors have no fluid input for its neutronium, and the nugget
 ---     route below makes the same item)

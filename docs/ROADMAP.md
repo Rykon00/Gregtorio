@@ -2585,6 +2585,42 @@ The refinery (164 section 27; GoodGenerator's RecipeLoader.java and FuelRecipeLo
 - **Left for later:** GT's alternative recipes (chromatic glass dust, hypogen, the one-step MK IV), MK V and VI and
   coils T3 and T4.
 
+MK V, MK VI and the coils T3 and T4 (164 section 28; GoodGenerator's FuelRecipeLoader.java, RecipeLoader.java and
+RecipeLoader2.java, GT++'s RecipesGregTech.java):
+- **MK V:** 8 infinity dust, 32 atomic separation catalyst dust, 2000 MK IV and 25 heavy radox into 500, 10 s, UMV. GT
+  gates it with coil T2, so the T2 refinery makes it. Technology Naquadah Based Fuel MK5 (13 packs).
+  - Infinity dust from the infinity ingot in the macerator.
+  - GoodGenerator's atomic separation catalyst: the raw catalyst from 32 blaze powder (the blaze rod macerated), 4
+    draconium or quantium dust, 4 ardite or manyullyn dust and 28.8 molten naquadah (HV mixer, 63); the hot ingot from 2
+    orundum plates, 4 raw catalyst and 14.4 molten plutonium (HV blast furnace); the vacuum freezer; the dust.
+  - Left out: GT's firestone variants of the raw catalyst. The mod has no source of firestone.
+- **MK VI:** 64 astral titanium dust, 32 tritanium dust, 2000 MK V and 36 molten shirabon into 750, 12 s, UXV, coil T3.
+  Technology Naquadah Based Fuel MK6 (14 packs).
+  - Astral titanium dust: 8 titanium dust engraved with the quantum anomaly as the lens (UHV).
+  - Shirabon: the plasma forge with the Hi-Computation Station Mk-V (kept), 115.2 molten metastable oganesson, 230.4
+    molten precious metals alloy, 28.8 molten spacetime and 500 residue into 14.4. GT's 1.5G EU/t is above UXV, so the
+    recipe runs at MAX speed.
+  - GoodGenerator's precious metals alloy: one dust of each platinum group metal into 6 (UHV mixer), the blast furnace
+    with gas (UEV), the vacuum freezer and the melt (UHV).
+- **MK VI from celestial tungsten:** 64 celestial tungsten dust, 48 tritanium dust, 2000 MK V, 36 shirabon and 6 raw star
+  matter into 1250, 3 s, UXV, coil T4. Technology Temporal Field Restriction Coils (14 packs, after the plasma module).
+- **MK III from chromatic glass:** 8 extremely unstable naquadah, 9 chromatic glass dust, 2 high density uranium, 1
+  high density plutonium, 800 heavy and 1000 light naquadah fuel into 200, 5 s at UEV speed, coil T1. Chromatic glass
+  dust is 64 glass dust engraved with the quantum anomaly (UHV). It comes with Naquadah Based Fuel MK6, which has the
+  anomaly.
+- **Coils T3 and T4:** GT's Ultimate and Temporal Field Restriction Coils with GT's parts; the medium infinity and
+  spacetime fluid pipes from the extruder (UV, UEV). Like T1 and T2 they are made in the ZPM assembly line in 60 s.
+- **Two more machines:** the refinery with T3 coils (UXV, 12 parallels) and with T4 coils (UXV, 16 parallels), each the
+  one before plus 72 coils and a UXV energy hatch. Like the first two, they are not recycled.
+- **Fuel values:** MK V 63 932.16 GJ and MK VI 498 670.848 GJ per unit (GT's 399 576 000 EU/t x 160 ticks and
+  2 077 795 200 EU/t x 240 ticks per litre), in every large naquadah reactor.
+- **Units:** the fuels keep GT's litres; the melts, heavy radox, the residue and raw star matter are a tenth.
+- **Left out, with the reason:**
+  - MK IV from hypogen and the one-step MK IV: GT++'s hypogen needs dragon metal, a drop of the Ender Dragon. The mod
+    has no source of it.
+  - MK V from creon and mellion: mellion dust needs fiery steel (Twilight Forest vials) and firestone dust. The mod has
+    no source of either, and creon comes only with mellion (#355).
+
 ### Nuclear depth (issue #359)
 
 Decision (the issue's step 1, the smallest one): GT's dual and quad rods of uranium and thorium and the MOX rods (164).
