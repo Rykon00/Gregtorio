@@ -2621,5 +2621,7 @@ Part 2 (164): the Universal Chemical Fuel Engine and the thorium based liquid fu
   combustion engine stands in. The structure's 72 PTFE frames are 144 PTFE sheets (no PTFE frame in the mod).
 - The thorium fuel follows GoodGenerator's chain with 12 thorium dust for GT's 11 thorium and 1 thorium-232 (no thorium
   isotopes) and draconium ingots for the dust. Gregtorio's draconium comes with UEV Materials, so the fuel does too,
-  later than in GT New Horizons. As 136's uranium and plutonium fuels it leaves no depleted fuel: the depleted fuel's
-  centrifuge (thorium-232, praseodymium, boron, indium) is not built, and praseodymium waits for #356.
+  later than in GT New Horizons. As 136's uranium and plutonium fuels, the reactor leaves no depleted fuel. #356 adds
+  GoodGenerator's neutron activator recipe for it (200 L excited -> 200 L depleted, 500 s) and its centrifuge
+  (thorium-232, praseodymium, boron, indium). That centrifuge is the mod's only source of praseodymium (fuel MK IV;
+  164 section 23).

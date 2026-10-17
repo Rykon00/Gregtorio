@@ -4237,6 +4237,7 @@ centrifuged-tellurium
 impure-tellurium-dust
 pure-tellurium-dust
 tellurium-dust
+praseodymium-dust
 inconel-792-dust
 pikyonium-64b-ingot
 pikyonium-64b-plate
