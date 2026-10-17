@@ -621,6 +621,78 @@ data.raw["assembling-machine"]["lv-autoclave"].next_upgrade = "mv-autoclave"
 
 
 --------------------------------------------------------------------------------
+--- 2k) CAULDRON (issue #427)
+---    GT New Horizons' early, byproduct-free washing: an impure or pure dust dropped into a filled cauldron becomes the
+---    dust (MetaGeneratedItem01.getCauldronWashingResult, recipe map cauldronRecipe of GTPostLoad.addCauldronRecipe:
+---    333 L of water, no energy, no time). Here a 1x1 machine without energy and one water input, category
+---    cauldron-recipes; 155-fork-ore-chain.lua makes its recipes. Its recipe is Minecraft's cauldron, 7 iron ingots (GT
+---    keeps it and adds an assembler recipe of 7 iron plates, AssemblerRecipes.java), unlocked with Rubber, the first
+---    technology with an impure dust (sulfur's). Sprite and icon are placeholders (tools/gen_icons.py,
+---    tools/gen_sprites.py).
+--------------------------------------------------------------------------------
+
+recipe_category_and_subgroup("cauldron-recipes")
+create_item{
+	name = "cauldron",
+	subgroup = "steam-age-production-machine",
+	place_result = "cauldron",
+	stack_size = 50,
+	ingredients = {
+		{ type = "item", name = "iron-ingot", amount = 7 },
+	},
+}
+data:extend({
+	{
+		type = "assembling-machine",
+		name = "cauldron",
+		icon = "__gregtorio-continued__/graphics/icons/cauldron.png",
+		icon_size = 32,
+		flags = { "placeable-neutral", "placeable-player", "player-creation" },
+		minable = { mining_time = 0.2, result = "cauldron" },
+		max_health = 150,
+		corpse = "small-remnants",
+		dying_explosion = "explosion",
+		collision_box = { { -0.3, -0.3 }, { 0.3, 0.3 } },
+		selection_box = { { -0.5, -0.5 }, { 0.5, 0.5 } },
+		crafting_categories = { "cauldron-recipes" },
+		crafting_speed = 1,
+		energy_source = { type = "void" },
+		energy_usage = "1W",
+		emissions_per_minute = { pollution = 0 },
+		allowed_effects = {},
+		fluid_boxes = {
+			{
+				production_type = "input",
+				volume = 1000,
+				pipe_covers = pipecoverspictures(),
+				pipe_connections = {
+					{ flow_direction = "input-output", direction = defines.direction.north, position = { 0, 0 } },
+					{ flow_direction = "input-output", direction = defines.direction.east, position = { 0, 0 } },
+					{ flow_direction = "input-output", direction = defines.direction.south, position = { 0, 0 } },
+					{ flow_direction = "input-output", direction = defines.direction.west, position = { 0, 0 } },
+				},
+			},
+		},
+		graphics_set = {
+			animation = {
+				layers = {
+					{
+						filename = "__gregtorio-continued__/graphics/entity/fork/cauldron-idle.png",
+						width = 32,
+						height = 32,
+						frame_count = 1,
+						line_length = 1,
+					},
+				},
+			},
+		},
+	},
+})
+fork_add_unlock("rubber", "cauldron")
+
+
+
+--------------------------------------------------------------------------------
 --- 3) IV BASIC MACHINES
 ---    Copy of the EV machine: double speed, double power draw, IV categories added,
 ---    recipe = EV recipe with every tiered component shifted one tier up.
