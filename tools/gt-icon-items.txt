@@ -3536,6 +3536,9 @@ pure-pyrope-dust
 basalt-dust
 black-granite-dust
 rubidium-dust
+erbium-dust
+ytterbium-dust
+dysprosium-dust
 ferrosilite-dust
 small-pile-of-ferrosilite-dust
 arsenopyrite-dust
