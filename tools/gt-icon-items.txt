@@ -4314,3 +4314,7 @@ advanced-field-restriction-coil
 naquadah-fuel-refinery-controller
 small-pile-of-thulium-dust
 tiny-pile-of-tungsten-carbide-dust
+inconel-792-dust
+pikyonium-64b-ingot
+pikyonium-64b-plate
+double-hs188-a-plate
