@@ -38,6 +38,8 @@ DONORS = {
     # issue #355 step 2: Minecraft's ghast tear and the Twilight Forest's Ur-Ghast trophy and Fiery Tears vial (their
     # textures are not in the GT checkouts)
     "ghast-tear": ("ender-pearl", 200), "ur-ghast-trophy": ("wither-skull", 0), "fiery-tears": ("filled-soul-vial-enderman", 15),
+    # issue #355 step 4: Chisel's neonite (not in the GT checkouts)
+    "neonite": ("borosilicate-glass-block", 320),
     "npic-wafer": ("uhpic-wafer", 190), "ppic-wafer": ("uhpic-wafer", 130), "qpic-wafer": ("uhpic-wafer", 0),
     "nano-power-ic": ("ultra-high-powered-integrated-circuit", 190),
     "pico-power-ic": ("ultra-high-powered-integrated-circuit", 130),

@@ -225,6 +225,8 @@ MATERIALS = {
     "fiery-steel": "FierySteel", "creon": "Creon", "mellion": "Mellion",
     # issue #355 step 4: gtnhlanth's permalloy and mu-metal (WerkstoffMaterialPool.java:1804-1840, their colours and sets)
     "permalloy": ("DULL", (195, 230, 225)), "mu-metal": ("METALLIC", (210, 230, 225)),
+    # issue #355 step 4: GT's niobium; GT++'s Advanced Nitinol (MaterialsElements.java:508-516: SET_FIERY, nitinol's colour)
+    "niobium": "Niobium", "advanced-nitinol": ("FIERY", (136, 117, 159)), "cobalt": "Cobalt",
     "shirabon": ("METALLIC", (0xe0, 0x15, 0x6d)), "astral-titanium": ("METALLIC", (220, 160, 240)),
     "chromatic-glass": ("GLASS", (255, 255, 255)), "blaze": "Blaze",
     "calcium": "Calcium",
@@ -1073,6 +1075,45 @@ def icon_table(c):
     T["electrode-casing"] = lambda: c.gt(LANTH + "blocks/casing.electrode")
     T["capillary-exchange"] = lambda: c.gt(LANTH + "items/capillary_exchange")
     T["mu-metal-lattice"] = lambda: c.gt(LANTH + "items/mm_lattice")
+    # the LHC: GT's cyclotron solenoids, collider and module casings, its front, the large fluid cells
+    # (MetaGeneratedItem01 410/411/413), the samarium electromagnet (348), the tantalum capacitor (499), the ULV coil
+    # (MetaGeneratedItem03 140); GoodGenerator's compact fusion coils (fuison/2, 3) and resonator parts
+    for t in ("uv", "uhv", "uiv"):
+        T[f"{t}-solenoid-superconductor-coil"] = (lambda t=t: c.gt(f"{BLK}{GT_TIER[t]}_SIDE_CYCLOTRON_SOLENOID"))
+    for n, f in (("collider-casing", "COLLIDER_CASING"), ("cms-casing", "CMS_CASING"), ("atlas-casing", "ATLAS_CASING"),
+                 ("lhcb-casing", "LHCB_CASING")):
+        T[n] = (lambda f=f: c.gt(BLK + f))
+    T["large-hadron-collider-controller"] = lambda: c.face(f"{BLK}COLLIDER_CASING", f"{BLK}OVERLAY_FRONT_LHC")
+    T["niobium-cavity-casing"] = lambda: c.gt(LANTH + "blocks/casing.niobium_cavity")
+    T["advanced-beam-output-hatch"] = lambda: c.hatch("uv", "OVERLAY_BO_SIDES")
+    for n, i in (("empty-large-chrome-fluid-cell", "410"), ("empty-large-iridium-fluid-cell", "411"),
+                 ("empty-large-neutronium-fluid-cell", "413"), ("samarium-electromagnet", "348"), ("tantalum-capacitor", "499")):
+        T[n] = (lambda i=i: c.gt(M1 + i))
+    T["ultra-low-voltage-coil"] = lambda: c.gt(M3 + "140")
+    T["compact-fusion-coil"] = lambda: c.gt(f"{GG}blocks/fuison/2")
+    T["advanced-compact-fusion-coil"] = lambda: c.gt(f"{GG}blocks/fuison/3")
+    for n, f in (("quartz-wafer", "quartzWafer"), ("special-ceramics-dust", "specialCeramics"),
+                 ("special-ceramics-plate", "specialCeramicsPlate"), ("micro-heater", "microHeater"),
+                 ("quartz-crystal-resonator", "quartzCrystalResonator"), ("aluminium-nitride-dust", "aluminumNitride")):
+        T[n] = (lambda f=f: c.gt(f"{GG}items/{f}"))
+    T["medium-naquadah-fluid-pipe"] = lambda: c.m.icon("naquadah", "pipeMedium", kind="blocks")
+    T["medium-awakened-draconium-fluid-pipe"] = lambda: c.m.icon("awakened-draconium", "pipeMedium", kind="blocks")
+    # the gravitational lens: TecTech's casings (BlockGTCasingsTT.java: EM_POWER, EM_CASING), Quantum Glass and the godforge
+    # glass, bartworks' TM-reinforced glass, GT's containment units and lens (MetaGeneratedItem03 303, 304, 277), the
+    # core mod's mysterious crystal grades and lenses
+    TTB = "gt:tectech/textures/blocks/"
+    T["high-power-casing"] = lambda: c.gt(f"{BLK}EM_POWER")
+    T["molecular-casing"] = lambda: c.gt(f"{BLK}EM_CASING")
+    T["quantum-glass"] = lambda: c.gt(TTB + "blockQuantumGlass")
+    T["spatially-transcendent-gravitational-lens-block"] = lambda: c.gt(TTB + "blockSpatiallyTranscendentGravitationalLens")
+    T["transcendent-metal-reinforced-borosilicate-glass-block"] = lambda: c.gt(
+        "gt:bartworks/textures/blocks/TranscendentallyReinforcedBoronSilicateGlassBlock")
+    for n, i in (("stable-boson-containment-unit", "303"), ("stable-empty-containment-unit", "304"), ("gravitational-lens", "277")):
+        T[n] = (lambda i=i: c.gt(M3 + i))
+    for n, f in (("mysterious-crystal-gem", "itemMysteriousCrystal"), ("flawless-mysterious-crystal", "itemMysteriousCrystalGemFlawless"),
+                 ("exquisite-mysterious-crystal", "itemMysteriousCrystalGemExquisite"), ("mysterious-crystal-lens", "itemMysteriousCrystalLens"),
+                 ("radox-polymer-lens", "itemRadoxPolymerLens")):
+        T[n] = (lambda f=f: c.gt(CORE + f))
     T["beam-pipe"] = lambda: c.gt(BLK + "pipe")
     T["beam-input-hatch"] = lambda: c.hatch("luv", "OVERLAY_BI_SIDES")
     T["beam-output-hatch"] = lambda: c.hatch("luv", "OVERLAY_BO_SIDES")
