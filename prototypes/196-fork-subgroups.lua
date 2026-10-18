@@ -32,6 +32,7 @@ local ROWS = {
 	"coolants",         -- coolants and cryogenic fluids
 	"purified-water",   -- water grades 1-8
 	"plasmas",          -- *-plasma
+	"particles",        -- the beamline's particles (issue #355)
 	"molten-elements",  -- molten elements and glass, mercury
 	"molten-alloys",    -- molten steels and conductor alloys (and any other molten-*)
 	"molten-superalloys",
@@ -196,6 +197,9 @@ put("endgame", { "raw-star-matter", "spatially-enlarged-fluid", "tachyon-rich-te
 --- issue #355: the plasma forge's residue and superfluid, grade 8 water's baryonic matter, oganesson
 put("endgame", { "dimensionally-transcendent-residue", "stable-baryonic-matter", "dimensionally-shifted-superfluid" })
 put("gases", { "oganesson" })
+--- issue #355 step 4: the beamline's particles and UU matter
+put("particles", { "electron", "proton" })
+put("endgame", { "uu-matter" })
 
 --- patterns for whole lines (and for new fluids of a known kind); rank = a capture that orders the line by tier
 local FLUID_PATTERNS = {

@@ -761,6 +761,8 @@ Not switched, on purpose:
 - **UU matter is not built.** Its magic consumers are removed. The rest are the MK4 fusion parts, where it is one of four fluids
   (with cinobite, octiron and astral titanium, none of them in the mod; tritanium and cosmic neutronium melt stand in for all four)
   and the UEV to UXV hatches (which leave it out). It needs GT's mass fabricator, a machine the fork does not have. Open point.
+  Issue #355 step 4 built it (164 section 30): the LuV Mass Fabricator makes it for the Beam Crafter and the beamline.
+  The MK4 fusion parts and the hatches keep leaving it out.
 
 ### Numbers
 
@@ -2541,6 +2543,27 @@ godforge's plasma module and the first mining module; the maintainer's decisions
   variants of the raw catalyst.
 - **Still left out:** creon and mellion in the godforge's parts (the named deviation above: their celestial tungsten
   plasma comes from the godforge). Fluids are a tenth, as the plasma forge's other mixer recipes.
+
+The beamline (the plan's step 4, part 1; 164 section 30, technology Beamline after the Naquadah Fuel Refinery and ME
+Autocrafting; the maintainer's decisions of 2026-10-18):
+- **Particles are fluids, one unit per particle.** GT's beam moves `rate` particles once a second, so a Source Chamber
+  recipe of 1 s gives `rate` units. GT's beam energy and focus are not modelled; the recipes keep GT's times.
+- **Mu-metal:** gtnhlanth's permalloy (mixer) and mu-metal (EV blast furnace, 4500 K), its plate, dense plate and fine
+  wire by bartworks' rules.
+- **The parts, with gtnhlanth's recipes:** Shielded Accelerator Casing and Glass, Mu-Metal Lattice, Electrode Casing
+  (bartworks' Rebolted Silver Casing), Capillary Exchange (the core mod's Mica Insulator Sheet: pulp, sheet, insulator
+  sheet; GT's tiny tungstensteel pipe), Beam Pipe, the LuV Beam Input and Output Hatches. Their 1x LuV superconductor
+  wires come from GT's 16x bundle split on the crafting table.
+- **Source Chamber** (ZPM): a tungsten rod gives 20 electrons, a long lanthanum hexaboride rod 60, 1000 L hydrogen 40
+  protons, each in 1 s. Its item is the controller with GT's structure (56 casings, 52 glass, 16 electrode casings, the
+  beam output hatch).
+- **Beam Crafter** (UV): GT's controller (the Target Chamber, GT's Large Molecular Assemblers, 8000 L UU matter) with
+  its structure (224 casings, 26 glass, 16 grate casings, 2 beam input hatches). Its first recipe: GT's unknown
+  particle from hydrogen, 120 protons and 720 electrons (20.85 %), which the quantum anomaly takes.
+- **UU matter:** GT's Elite Mass Fabricator as the LuV Mass Fabricator, 1 L per 3200 ticks at 256 EU/t (HV), without
+  the UU amplifier (the mod has no IC2 scrap).
+- **Not built:** the Target Chamber as a machine (only its controller, an ingredient), the Synchrotron and the LINAC
+  (GT's LHC accelerates the beam itself).
 
 ### Naquadah fuel MK IV to VI and the refinery (issue #356)
 

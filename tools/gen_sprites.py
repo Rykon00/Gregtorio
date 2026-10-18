@@ -315,6 +315,16 @@ MULTIBLOCKS = {
                                         ("gregtech:iconsets/OVERLAY_FRONT_ASSEMBLY_LINE",
                                          "gregtech:iconsets/OVERLAY_FRONT_ASSEMBLY_LINE_ACTIVE"), None)
        for t in range(2, 5)},   # (issue #356: T3 and T4 too)
+    # issue #355 step 4: the beamline (gtnhlanth's shielded accelerator casing; the fronts MTESourceChamber and
+    # MTEBeamCrafter show, the electrode casings and the beam input hatches of the middle row) and GT's mass fabricator
+    "source-chamber": ((3, 3), "gtnhlanth:casing.shielded_accelerator", None,
+                       ("gregtech:iconsets/OVERLAY_FRONT_OIL_CRACKER", "gregtech:iconsets/OVERLAY_FRONT_OIL_CRACKER_ACTIVE"),
+                       "gtnhlanth:casing.electrode"),
+    "beam-crafter": ((3, 3), "gtnhlanth:casing.shielded_accelerator", None,
+                     ("gregtech:iconsets/OVERLAY_FRONT_BEAMCRAFTER", "gregtech:iconsets/OVERLAY_FRONT_BEAMCRAFTER_ACTIVE"),
+                     "gtnhlanth:casing.shielded_accelerator_glass"),
+    "luv-mass-fabricator": ((3, 3), "gregtech:iconsets/MACHINE_LuV_SIDE", None,
+                            ("gregtech:iconsets/OVERLAY_FRONT_MASSFAB", "gregtech:iconsets/OVERLAY_FRONT_MASSFAB_ACTIVE"), None),
     # issue #406: GT++'s ZPM tiers of the two blocks (GregtechLFTR.java: the same overlays on the ZPM machine casing)
     "cold-trap-ii": ((3, 3), "gregtech:iconsets/MACHINE_ZPM_SIDE", None,
                      ("gregtech:basicmachines/cold_trap/OVERLAY_FRONT", "gregtech:basicmachines/cold_trap/OVERLAY_FRONT_ACTIVE"),
@@ -364,7 +374,8 @@ WHOLE_ICONS = {"large-titanium-boiler", "large-combustion-engine", "digester", "
                "universal-chemical-fuel-engine", "reactor-fuel-processing-plant", "liquid-fluoride-thorium-reactor",
                "sparge-tower", "cold-trap-i", "reactor-processing-unit-i", "nuclear-salt-processing-plant", "cold-trap-ii", "reactor-processing-unit-ii",
                "algae-farm", "industrial-dehydrator", "naquadah-fuel-refinery", "naquadah-fuel-refinery-t2",
-               "naquadah-fuel-refinery-t3", "naquadah-fuel-refinery-t4",
+               "naquadah-fuel-refinery-t3", "naquadah-fuel-refinery-t4", "source-chamber", "beam-crafter",
+               "luv-mass-fabricator",
                *(f"precise-assembler-mk{i}" for i in range(1, 4)),
                *(f"space-elevator-mk{t}" for t in range(1, 6)),
                *(f"space-elevator-mining-module-mk{t}" for t in range(1, 4)),

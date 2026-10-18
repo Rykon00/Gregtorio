@@ -3574,3 +3574,159 @@ do
 	FORK_CASTING.materials[ASC] = { "iv", T }
 	FORK_CASTING.run()
 end
+
+
+
+
+
+--------------------------------------------------------------------------------
+--- 30) THE BEAMLINE: MU-METAL, THE SOURCE CHAMBER, THE BEAM CRAFTER, UU MATTER (issue #355, step 4 part 1; the
+--- maintainer's decisions of 2026-10-18). GT5-Unofficial 1c385e739b: gtnhlanth (gtnhlanth/loader/RecipeLoader.java (RL),
+--- gtnhlanth/common/tileentity/recipe/beamline/BeamlineRecipeLoader.java (BRL)), GT's Beam Crafter
+--- (gregtech/loaders/postload/recipes/beamcrafter/BeamCrafterRecipes.java (BCR), tectech/loader/recipe/AssemblyLine.java
+--- (TAL)), NewHorizonsCoreMod; fluids a tenth of GT's litres, GT's seconds x the tier speed of GT's EU/t.
+--- * Particles are fluids, one unit per particle (the maintainer's decision): GT's beam moves `rate` particles once a
+---   second, so a Source Chamber recipe of 1 s gives `rate` units. Energy and focus of a beam are not modelled; the
+---   recipes keep GT's times and the particle fluids limit them.
+--- * Mu-metal (gtnhlanth's Werkstoff, WerkstoffMaterialPool.java:1804-1840): permalloy from 4 nickel, 1 iron and 1
+---   molybdenum dust (bartworks' mixer: its mass 64 / 3 components in ticks, LV), mu-metal in the blast furnace (9
+---   permalloy, 1 copper, 1 chrome dust -> 11 ingots, EV, 20 s, 4500 K; RL:231-242), its parts by bartworks' rules at
+---   its processing tier EV and mass 180 (plate, dense plate of 9 ingots, fine wire: 8 per ingot).
+--- * The parts (RL:158-535): Shielded Accelerator Casing, Electrode Casing (bartworks' Rebolted Silver Casing,
+---   CasingLoader.java), Capillary Exchange (with the core mod's Mica Insulator Sheet: mica based pulp in the mixer, the
+---   sheet in the forming press, the insulator sheet in the alloy smelter; MixerRecipes.java:550-553,
+---   FormingPressRecipes.java:44-48, AlloySmelterRecipes.java:31-36; GT's tiny tungstensteel pipe from the extruder),
+---   Mu-Metal Lattice, Shielded Accelerator Glass, Beam Pipe, the LuV Beam Input and Output Hatches (their 8 1x LuV
+---   superconductor wires: GT's 16x bundle split into 16 on the crafting table).
+--- * The Source Chamber (BRL:67-159): a tungsten rod gives 20 electrons, a long lanthanum hexaboride rod 60, 1000 L
+---   hydrogen 40 protons, each in 1 s (IV, IV, ZPM). Controller RL:158-172; structure MTESourceChamber.java:145-154 (56
+---   shielded accelerator casings, 52 glass, 16 electrode casings, a beam output hatch, the energy hatch and hulls for
+---   the maintenance, input and output hatches and buses).
+--- * The Target Chamber is only the Beam Crafter controller's ingredient (RL:191-206); GT's Synchrotron and LINAC are
+---   not built. GT's Large Molecular Assembler (AssemblerRecipes.java:3214-3227) is an ingredient too.
+--- * The Beam Crafter (TAL:173-186: the Target Chamber, 4 ZPM field generators, 32 shielded accelerator casings, 2 Large
+---   Molecular Assemblers, 8000 L UU matter; UV, 60 s; structure MTEBeamCrafter.java:309-328: 224 casings, 26 glass, 16
+---   grate casings, 2 beam input hatches). It runs at UV speed (one UV energy hatch); its first recipe is GT's unknown
+---   particle (BCR:47-62: 2000 L hydrogen, 120 protons, 720 electrons -> 20.85 %, LuV, 1 s), which the quantum anomaly
+---   takes.
+--- * UU matter: GT's Elite Mass Fabricator (LuV; NHC GT_Loader_Machines.java:121-125) makes 1 L per 3200 ticks at 256
+---   EU/t (MTEMassfabricator.java:63-65, HV), 10 L (1 unit) per 1600 s here. GT's UU amplifier is left out: the mod has
+---   no IC2 scrap. The UMV hatches keep leaving their UU matter out (ROADMAP).
+--------------------------------------------------------------------------------
+do
+	local T = "beamline"
+	local R = {}
+	local MU = "mu-metal"
+	local function item(name, amount) return { type = "item", name = name, amount = amount } end
+	F.fluid("uu-matter", "spackled-purple-fluid", { 0.55, 0.15, 0.55 })   -- (IC2's texture is not in the checkouts)
+	F.fluid("electron", "electron", { 0.35, 0.65, 1.00 })   -- (gtnhlanth's particle icons)
+	F.fluid("proton", "proton", { 1.00, 0.35, 0.30 })
+	items(SUB_DUST, { "permalloy-dust", "mica-based-pulp" })
+	items(SUB_PART, { MU .. "-ingot", MU .. "-plate", "dense-" .. MU .. "-plate", "fine-" .. MU .. "-wire",
+		"tiny-tungstensteel-fluid-pipe", "mica-based-sheet", "mica-insulator-sheet", "mu-metal-lattice", "capillary-exchange",
+		"luv-superconductor-wire" })
+	items("subgroup-uhv-age-multiblocks", { "rebolted-silver-casing", "shielded-accelerator-casing", "electrode-casing",
+		"shielded-accelerator-glass", "beam-pipe", "beam-input-hatch", "beam-output-hatch", "source-chamber-controller",
+		"target-chamber-controller", "large-molecular-assembler", "beam-crafter-controller" })
+
+	--- mu-metal
+	step(R, "permalloy-dust", "lv-mixer-recipes", 1.05, LV_SPEED, { { "nickel-dust", 4 }, { "iron-dust", 1 }, { "molybdenum-dust", 1 } },
+		{ { "permalloy-dust", 6 } })
+	step(R, MU .. "-ingot", "ev-electric-blast-furnace-recipes", 20, EV_SPEED,
+		{ { "permalloy-dust", 9 }, { "copper-dust", 1 }, { "chromium-dust", 1 } }, { { MU .. "-ingot", 11 } })
+	step(R, MU .. "-plate", "ev-bending-machine-recipes", 9, EV_SPEED, { { MU .. "-ingot", 1 } }, { { MU .. "-plate", 1 } })
+	step(R, "dense-" .. MU .. "-plate", "ev-bending-machine-recipes", 81, EV_SPEED, { { MU .. "-ingot", 9 } },
+		{ { "dense-" .. MU .. "-plate", 1 } })
+	step(R, "fine-" .. MU .. "-wire", "ev-wiremill-recipes", 9, EV_SPEED, { { MU .. "-ingot", 1 } }, { { "fine-" .. MU .. "-wire", 8 } })
+	--- small parts
+	step(R, "tiny-tungstensteel-fluid-pipe", "hv-extruder-recipes", 0.2, HV_SPEED, { { "tungstensteel-ingot", 1 } },
+		{ { "tiny-tungstensteel-fluid-pipe", 2 } })
+	step(R, "mica-based-pulp", "lv-mixer-recipes", 20, LV_SPEED, { { "mica-dust", 3 }, { "sticky-resin", 1 } }, { { "mica-based-pulp", 4 } })
+	step(R, "mica-based-sheet", "lv-forming-press-recipes", 20, LV_SPEED, { { "mica-based-pulp", 4 }, { "asbestos-dust", 1 } },
+		{ { "mica-based-sheet", 4 } })
+	step(R, "mica-insulator-sheet", "lv-alloy-smelter-recipes", 20, LV_SPEED, { { "mica-based-sheet", 4 }, { "silicon-dioxide", 1 } },
+		{ { "mica-insulator-sheet", 4 } })
+	step(R, "luv-superconductor-wire", "crafting-or-assembling-recipes", 0.5, 1, { { "luv-superconductor-wire-16x", 1 } },
+		{ { "luv-superconductor-wire", 16 } })
+	--- the casings and parts
+	step(R, "rebolted-silver-casing", "lv-assembling-machine-recipes", 10, LV_SPEED,
+		{ { "double-silver-plate", 6 }, { "silver-screw", 2 }, { "silver-gear", 1 } }, { { "rebolted-silver-casing", 1 } })
+	step(R, "shielded-accelerator-casing", "iv-assembling-machine-recipes", 40, IV_SPEED,
+		{ { "radiation-proof-machine-casing", 1 }, { "dense-" .. MU .. "-plate", 6 }, { "soldering-alloy", 14.4 } },
+		{ { "shielded-accelerator-casing", 1 } })
+	step(R, "electrode-casing", "iv-assembling-machine-recipes", 40, IV_SPEED,
+		{ { "rebolted-silver-casing", 1 }, { "silver-wire", 24 }, { "dense-gold-plate", 6 }, { "soldering-alloy", 28.8 } },
+		{ { "electrode-casing", 1 } })
+	step(R, "capillary-exchange", "iv-assembling-machine-recipes", 20, IV_SPEED,
+		{ { "tiny-tungstensteel-fluid-pipe", 8 }, { "double-copper-plate", 2 }, { "titanium-plate", 6 }, { "mica-insulator-sheet", 4 },
+			{ "luv-pump", 1 }, { "silver-dust", 2 }, { "silicone-rubber", 28.8 } }, { { "capillary-exchange", 1 } })
+	step(R, "mu-metal-lattice", "ev-assembling-machine-recipes", 15, EV_SPEED,
+		{ { "fine-" .. MU .. "-wire", 12 }, { "tungstensteel-rod", 4 }, { "soldering-alloy", 14.4 } }, { { "mu-metal-lattice", 1 } })
+	step(R, "shielded-accelerator-glass", "iv-fluid-solidifier-recipes", 25, IV_SPEED,
+		{ { "mu-metal-lattice", 4 }, { "molten-borosilicate-glass", 14.4 } }, { { "shielded-accelerator-glass", 1 } })
+	step(R, "beam-pipe", "luv-assembling-machine-recipes", 20, LUV_SPEED,
+		{ { MU .. "-plate", 4 }, { "long-tungsten-carbide-rod", 4 }, { "tungsten-carbide-rod", 8 }, { "osmiridium-foil", 4 },
+			{ "soldering-alloy", 14.4 } }, { { "beam-pipe", 1 } })
+	step(R, "beam-input-hatch", "luv-assembly-line-recipes", 120, LUV_SPEED,
+		{ { "luv-machine-hull", 1 }, { "luv-circuit", 2 }, { "capillary-exchange", 2 }, { "luv-pump", 1 }, { "beam-pipe", 1 },
+			{ MU .. "-plate", 4 }, { "soldering-alloy", 921.6 }, { "argon", 100 }, { "helium", 200 } }, { { "beam-input-hatch", 1 } })
+	step(R, "beam-output-hatch", "luv-assembly-line-recipes", 240, LUV_SPEED,
+		{ { "luv-machine-hull", 1 }, { "luv-circuit", 6 }, { "capillary-exchange", 4 }, { "luv-pump", 2 }, { "luv-motor", 4 },
+			{ "luv-superconductor-wire", 8 }, { "beam-pipe", 1 }, { MU .. "-plate", 8 }, { "soldering-alloy", 921.6 }, { "argon", 100 },
+			{ "helium", 600 } }, { { "beam-output-hatch", 1 } })
+	--- the controllers
+	step(R, "source-chamber-controller", "zpm-assembling-machine-recipes", 30, ZPM_SPEED,
+		{ { "luv-machine-hull", 1 }, { "dense-" .. MU .. "-plate", 8 }, { "zpm-circuit", 4 }, { "luv-conveyor-module", 4 },
+			{ "beam-pipe", 2 }, { "vanadium-gallium-cable", 8 }, { "soldering-alloy", 28.8 } }, { { "source-chamber-controller", 1 } })
+	step(R, "target-chamber-controller", "zpm-assembling-machine-recipes", 30, ZPM_SPEED,
+		{ { "luv-machine-hull", 1 }, { "dense-" .. MU .. "-plate", 8 }, { "dense-lead-plate", 4 }, { "zpm-circuit", 4 },
+			{ "uv-circuit", 2 }, { "beam-pipe", 2 }, { "vanadium-gallium-cable", 2 }, { "soldering-alloy", 28.8 } },
+		{ { "target-chamber-controller", 1 } })
+	step(R, "large-molecular-assembler", "iv-assembling-machine-recipes", 60, IV_SPEED,
+		{ { "me-interface", 8 }, { "me-molecular-assembler", 8 }, { "iv-emitter", 4 }, { "robust-tungstensteel-machine-casing", 1 },
+			{ "polyethylene", 129.6 } }, { { "large-molecular-assembler", 1 } })
+	step(R, "beam-crafter-controller", "zpm-assembly-line-recipes", 60, UV_SPEED,
+		{ { "target-chamber-controller", 1 }, { "zpm-field-generator", 4 }, { "shielded-accelerator-casing", 32 },
+			{ "large-molecular-assembler", 2 }, { "uu-matter", 800 } }, { { "beam-crafter-controller", 1 } })
+
+	--- the machines
+	local function power(tier, n)
+		local p = data.raw["assembling-machine"][tier .. "-centrifuge"].energy_usage
+		return (tonumber(p:match("^[%d.]+")) * n) .. p:match("%a+$")
+	end
+	machine{
+		name = "luv-mass-fabricator", category = "mass-fabricator-recipes", speed = LUV_SPEED, energy = power("luv", 1),
+		subgroup = "subgroup-luv-age-multiblocks", ports = { port("output", S, { 0, 1 }) }, list = R,
+		recipe = { "crafting-or-assembling-recipes", 1, { item("luv-machine-hull", 1), item("luv-field-generator", 2),
+			item("luv-circuit", 4), item("vanadium-gallium-cable", 8) } },
+	}
+	machine{
+		name = "source-chamber", category = "source-chamber-recipes", speed = ZPM_SPEED, energy = power("zpm", 1),
+		subgroup = "subgroup-uhv-age-multiblocks", ports = { port("input", N, { 0, -1 }), port("output", S, { 0, 1 }) }, list = R,
+		recipe = { "crafting-or-assembling-recipes", 1, { item("source-chamber-controller", 1),
+			item("shielded-accelerator-casing", 56), item("shielded-accelerator-glass", 52), item("electrode-casing", 16),
+			item("beam-output-hatch", 1), item("zpm-energy-hatch", 1), item("lv-machine-hull", 4) } },
+	}
+	machine{
+		name = "beam-crafter", category = "beam-crafter-recipes", speed = UV_SPEED, energy = power("uv", 1),
+		subgroup = "subgroup-uhv-age-multiblocks",
+		ports = { port("input", N, { -1, -1 }), port("input", N, { 0, -1 }), port("input", N, { 1, -1 }), port("input", W, { -1, 0 }),
+			port("output", S, { 0, 1 }) },
+		list = R,
+		recipe = { "crafting-or-assembling-recipes", 1, { item("beam-crafter-controller", 1), item("shielded-accelerator-casing", 224),
+			item("borosilicate-glass-block", 26), item("grate-machine-casing", 16), item("beam-input-hatch", 2), item("uv-energy-hatch", 1),
+			item("lv-machine-hull", 3) } },
+	}
+
+	--- UU matter, the particles, the unknown particle
+	step(R, "uu-matter", "mass-fabricator-recipes", 1600, HV_SPEED, {}, { { "uu-matter", 1 } })
+	step(R, "electron-from-tungsten-rod", "source-chamber-recipes", 1, IV_SPEED, { { "tungsten-rod", 1 } }, { { "electron", 20 } })
+	step(R, "electron-from-lanthanum-hexaboride-rod", "source-chamber-recipes", 1, IV_SPEED,
+		{ { "long-lanthanum-hexaboride-rod", 1 } }, { { "electron", 60 } })
+	step(R, "proton", "source-chamber-recipes", 1, ZPM_SPEED, { { "hydrogen", 100 } }, { { "proton", 40 } })
+	step(R, "unknown-particle-beam-crafter", "beam-crafter-recipes", 1, LUV_SPEED,
+		{ { "hydrogen", 200 }, { "proton", 120 }, { "electron", 720 } }, { { "unknown-particle", 1, 0.2085 } })
+
+	F.tech{ name = T, prerequisites = { "naquadah-fuel-refinery", "me-autocrafting" }, packs = 10, count = 1500, time = 60,
+		recipes = R }   -- (as section 27's refinery: the radiation proof casing comes there)
+end
