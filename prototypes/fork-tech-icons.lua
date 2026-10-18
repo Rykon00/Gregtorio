@@ -12,6 +12,7 @@ FORK_TECH_ICONS = {
 	["atto-power-ics"] = true,
 	["bacterial-vat"] = true,
 	["bastnasite-rare-earth-processing"] = true,
+	["beamline"] = true,
 	["bedrockium"] = true,
 	["bio-processor-mainframes"] = true,
 	["bio-processors"] = true,

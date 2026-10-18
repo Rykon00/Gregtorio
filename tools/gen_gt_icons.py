@@ -223,6 +223,8 @@ MATERIALS = {
     "atomic-separation-catalyst": ("METALLIC", (0xe8, 0x5e, 0x0c)), "precious-metals-alloy": ("METALLIC", (0x9d, 0x90, 0xc6)),
     # issue #355 step 2: GT's fiery steel, creon and mellion
     "fiery-steel": "FierySteel", "creon": "Creon", "mellion": "Mellion",
+    # issue #355 step 4: gtnhlanth's permalloy and mu-metal (WerkstoffMaterialPool.java:1804-1840, their colours and sets)
+    "permalloy": ("DULL", (195, 230, 225)), "mu-metal": ("METALLIC", (210, 230, 225)),
     "shirabon": ("METALLIC", (0xe0, 0x15, 0x6d)), "astral-titanium": ("METALLIC", (220, 160, 240)),
     "chromatic-glass": ("GLASS", (255, 255, 255)), "blaze": "Blaze",
     "calcium": "Calcium",
@@ -1063,6 +1065,27 @@ def icon_table(c):
     T["blaze-powder"] = lambda: c.part("blaze", "dust")
     # issue #355 step 2: GT's Harmonic Compound (MetaGeneratedItem03 762)
     T["harmonic-compound"] = lambda: c.gt(M3 + "762")
+    # issue #355 step 4: the beamline (gtnhlanth's casings and items, GT's beam hatch overlays and pipe, the controllers'
+    # fronts MTESourceChamber/MTETargetChamber/MTEBeamCrafter show, the core mod's mica sheets)
+    LANTH = "gt:gtnhlanth/textures/"
+    T["shielded-accelerator-casing"] = lambda: c.gt(LANTH + "blocks/casing.shielded_accelerator")
+    T["shielded-accelerator-glass"] = lambda: c.gt(LANTH + "blocks/casing.shielded_accelerator_glass")
+    T["electrode-casing"] = lambda: c.gt(LANTH + "blocks/casing.electrode")
+    T["capillary-exchange"] = lambda: c.gt(LANTH + "items/capillary_exchange")
+    T["mu-metal-lattice"] = lambda: c.gt(LANTH + "items/mm_lattice")
+    T["beam-pipe"] = lambda: c.gt(BLK + "pipe")
+    T["beam-input-hatch"] = lambda: c.hatch("luv", "OVERLAY_BI_SIDES")
+    T["beam-output-hatch"] = lambda: c.hatch("luv", "OVERLAY_BO_SIDES")
+    T["source-chamber-controller"] = lambda: c.face(LANTH + "blocks/casing.shielded_accelerator", f"{BLK}OVERLAY_FRONT_OIL_CRACKER")
+    T["target-chamber-controller"] = lambda: c.face(LANTH + "blocks/casing.shielded_accelerator", f"{BLK}OVERLAY_FRONT_OIL_CRACKER")
+    T["beam-crafter-controller"] = lambda: c.face(LANTH + "blocks/casing.shielded_accelerator", f"{BLK}OVERLAY_FRONT_BEAMCRAFTER")
+    T["large-molecular-assembler"] = lambda: c.gt(f"{BLK}MOLECULAR_CONTAINMENT_CASING")
+    T["rebolted-silver-casing"] = lambda: c.m.icon("silver", "blockCasingAdvanced", kind="blocks")
+    T["tiny-tungstensteel-fluid-pipe"] = lambda: c.m.icon("tungstensteel", "pipeTiny", kind="blocks")
+    T["luv-superconductor-wire"] = lambda: bar(c.m.colour("itbtc-alloy"), 4)
+    for n, f in (("mica-based-pulp", "itemMicaBasedPulp"), ("mica-based-sheet", "itemMicaBasedSheet"),
+                 ("mica-insulator-sheet", "itemMicaInsulatorSheet")):
+        T[n] = (lambda f=f: c.gt(CORE + f))
     T["tungstensteel-reinforced-borosilicate-glass-block"] = lambda: c.gt(
         "gt:bartworks/textures/blocks/TungstenSteelReinforcedBoronSilicateGlassBlock")
     # issue #355: GT++'s quantum anomaly (MetaGeneratedItemIDs.Laser_Lens_Special 105) and Unknown Particle (particle
