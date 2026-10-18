@@ -179,7 +179,8 @@ end
 --- graviton shards on the cheapest path): the technology `godforge-plasma-module`. Its dust is GT++'s laser engraver
 --- recipe (gtPlusPlus/core/recipe/RecipesGregTech.java:809-818): 6 tungsten dust with the quantum anomaly as the lens,
 --- 3 min at UEV. After the stargate, the three plasmas of the stellar catalyst (GT's tier 1, which needs the SEDS
---- upgrade: 1 s, 10 s for naquadria). They have no fuel value (the turbines do not burn them).
+--- upgrade: 1 s, 10 s for naquadria). Thorium and lead plasma
+--- have GT's fuel values (136, issues #375 and #397), naquadria plasma none.
 --------------------------------------------------------------------------------
 
 local STAR = "raw-star-matter"
