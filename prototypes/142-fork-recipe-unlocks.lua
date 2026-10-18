@@ -878,11 +878,6 @@ FORK_RECIPES_LOCKED = {
 	["calcium"] = "upstream placeholder without ingredients (an item from nothing); calcium comes from fluorspar",
 	["cerium-rich-mixture"] = "upstream placeholder without ingredients; the mixture comes from bastnasite",
 	["phosphorus"] = "upstream placeholder without ingredients; phosphorus comes from the phosphorus line",
-	["crushed-firestone"] = "no source of firestone ore: GT has no firestone vein (Railcraft's nether ore)",
-	["firestone-dust"] = "needs crushed firestone",
-	["centrifuging-crushed-firestone"] = "needs crushed firestone",
-	["raw-firestone-ore-smelter"] = "no source of firestone ore",
-	["raw-firestone-ore-multismelter"] = "no source of firestone ore",
 	--- issue #215 (the maintainer's decision): armour equipment that needs an armour with an equipment grid and a power
 	--- source in it, which Gregtorio does not have (the vanilla armour and equipment technologies are disabled)
 	["me-wireless-module"] = "armour equipment; Gregtorio has no armour with an equipment grid (the Wireless ME Terminal item does the same)",

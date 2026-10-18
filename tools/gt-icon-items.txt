@@ -4318,3 +4318,7 @@ inconel-792-dust
 pikyonium-64b-ingot
 pikyonium-64b-plate
 double-hs188-a-plate
+purified-firestone
+centrifuged-firestone
+impure-firestone-dust
+pure-firestone-dust
