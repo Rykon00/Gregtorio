@@ -815,7 +815,8 @@ F.tech{
 --- 6 boards, 6 ASoCs, 48 fine wires and 48 bolts with 2 ingots of Indalloy 140 into one circuit, 10 s, IV and LuV; the
 --- mod's circuit assembler ends at IV, so both run there). GT's ZPIC and YPIC wafers need what the mod lacks (issue #355:
 --- the beamcrafter, creon, mellion and gravitons; the Bose-Einstein condensate wafer and quark gluon plasma in the MAX
---- solidifier); the UMV and UXV hatches keep their APIC stand-ins of 133 and 134.
+--- solidifier); the UMV and UXV hatches keep their APIC stand-ins of 133 and 134 (the ZPIC came later, section 33:
+--- GTNH's ZPIC recipe of the UMV hatches is a second recipe).
 --------------------------------------------------------------------------------
 
 create_item{ skip_recipe = true, name = "asoc-wafer", subgroup = data.raw.item["soc-wafer"].subgroup }
@@ -4030,4 +4031,44 @@ do
 	FORK_CASTING.materials["cobalt"] = { "iv", T }
 	FORK_CASTING.materials["creon"] = { "uev", T }
 	FORK_CASTING.run()
+end
+
+
+
+
+
+--------------------------------------------------------------------------------
+--- 33) THE ZEPTO POWER IC (issue #355, step 4 part 3; the maintainer's decisions of 2026-10-18). NewHorizonsCoreMod
+--- (NHC) and GT5-Unofficial 1c385e739b.
+--- * The ZPIC wafer in the Beam Crafter (NHC BeamcraftingRecipes.java:27-36: an APIC wafer, spacetime dust, 576 L each
+---   of molten creon and mellion, 20 + 20 gravitons; UIV, 2 s); spacetime dust from the ingot (GT's macerator, its mass
+---   in ticks). The chip in the laser engraver with the gravitational lens (NHC LaserEngraverRecipes.java:305-310: the
+---   wafer and 20 L superfluid -> 2; UMV, 5 s).
+--- * GTNH's UMV energy and dynamo hatches with ZPIC (tectech ResearchStationAssemblyLine.java:256-276, 375-395: the UMV
+---   hull, 2 4x UMV superconductor wires (dynamo: 8 springs), 2 ZPIC, 2 UMV circuits, 2 UMV coils, 6 space coolant
+---   cells, the UMV pump, 32 000 L super coolant, 40 ingots of mutated living solder; UMV, 50 s; its UU matter is left
+---   out as in the hatches of 133) as additional recipes. The hatches keep their APIC recipe (133, 136): the ZPIC needs
+---   creon and mellion, whose chain runs after the UMV hatches (naquadah fuel MK IV to VI, the UMV blast furnace), so
+---   GTNH's recipe alone would be a cycle.
+--------------------------------------------------------------------------------
+do
+	local T = "zepto-power-ics"
+	local R = {}
+	items(SUB_DUST, { "spacetime-dust" })
+	items(SUB_PART, { "zpic-wafer", "zepto-power-ic" })
+	step(R, "spacetime-dust", "lv-macerator-recipes", 4.9, LV_SPEED, { { "spacetime-ingot", 1 } }, { { "spacetime-dust", 1 } })
+	step(R, "zpic-wafer", "beam-crafter-recipes", 2, UIV_SPEED,
+		{ { "apic-wafer", 1 }, { "spacetime-dust", 1 }, { "molten-creon", 57.6 }, { "molten-mellion", 57.6 }, { "graviton", 40 } },
+		{ { "zpic-wafer", 1 } })
+	step(R, "zepto-power-ic", "umv-laser-engraver-recipes", 5, UMV_SPEED,
+		{ { "zpic-wafer", 1 }, { "gravitational-lens", 1 }, { "dimensionally-shifted-superfluid", 2 } },
+		{ { "zepto-power-ic", 2 }, { "gravitational-lens", 1 } }, "zepto-power-ic")
+	for _, h in pairs({ { "umv-energy-hatch", { "hypocosmium-superconductive-wire", 8 } }, { "umv-dynamo-hatch", { "hypocosmium-spring", 8 } } }) do
+		step(R, h[1] .. "-zpic", "zpm-assembly-line-recipes", 50, UMV_SPEED,
+			{ { "umv-machine-hull", 1 }, h[2], { "zepto-power-ic", 2 }, { "umv-circuit", 2 }, { "mega-ultimate-voltage-coil", 2 },
+				{ "1080k-super-coolant-cell", 6 }, { "umv-pump", 1 }, { "super-coolant", 3200 }, { "molten-indalloy-140", 576 } },
+			{ { h[1], 1 } })
+	end
+	F.tech{ name = T, prerequisites = { "gravitational-lens", "umv-energy-hatches", "umv-plasma-turbine" }, packs = 15, count = 55,
+		time = 60, recipes = R }   -- (as section 32)
 end

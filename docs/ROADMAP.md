@@ -1259,7 +1259,7 @@ Where the chips go (GT: 2 chips of the tier per hatch; the fork has used 4 since
 |---|---|---|---|
 | UEV energy / dynamo hatch | 4 QPIC | 4 FPIC | 2 FPIC |
 | UIV energy / dynamo hatch | 8 QPIC | 4 APIC | 2 APIC |
-| UMV energy / dynamo hatch | 16 QPIC | 8 APIC | 2 ZPIC (not built) |
+| UMV energy / dynamo hatch | 16 QPIC | 8 APIC | 2 ZPIC (#355: a second recipe; the 8 APIC one stays) |
 | UXV energy / dynamo hatch | 32 QPIC | 16 APIC | 2 YPIC (not built) |
 | MK4 controller | 48 QPIC wafers | 48 FPIC wafers | 64 FPIC wafers |
 | MK5 controller | 64 QPIC wafers | 64 APIC wafers | 64 APIC wafers |
@@ -2460,7 +2460,7 @@ Not built: GT's ZPIC and YPIC. The ZPIC wafer is a beamcrafter recipe of the cor
 molten creon and mellion, 20 gravitons each beam), the YPIC wafer a MAX fluid solidifier recipe (the Bose-Einstein
 condensate wafer, GT's Wafer8, with 1500 L quark gluon plasma); the mod has no beamcrafter, creon, mellion, gravitons or
 Wafer6 to Wafer8. The UMV and UXV energy and dynamo hatches keep 133's and 134's doubled APICs. Issue #355 stays open for
-them.
+them. (2026-10-18: the ZPIC is built, see "The Large Hadron Collider and the gravitational lens" below; YPIC is open.)
 
 Part 2, the godforge route (the maintainer's decision on #355: celestial tungsten from the godforge, the quantum anomaly
 through the HiC chain). Step 1 (164 section 18): GoodGenerator's Precise Auto-Assembler MT-3662 and the Hi-Computation
@@ -2588,6 +2588,12 @@ Large Hadron Collider (13 packs) and Gravitational Lens (15 packs: its Space com
   compressor with 576 Space. The UMV, UXV and MAX compressors get a fluid input for it.
 - **First consumer:** GT's second APIC recipe (an APIC wafer engraved with the lens and 1.5 superfluid -> 2 chips, UIV),
   next to the mod's own APIC recipe.
+- **ZPIC** (step 4 part 3; 164 section 33, technology Zepto Power ICs): the ZPIC wafer in the Beam Crafter (APIC wafer,
+  spacetime dust, 57.6 molten creon and mellion, 40 gravitons; UIV, 2 s), 2 chips per wafer in the UMV laser engraver
+  with the lens and 2 superfluid. GTNH's UMV energy and dynamo hatches with 2 ZPIC (8 superconductor wires or springs,
+  3200 super coolant, UMV, 50 s; UU matter left out as before) are second recipes: the 8 APIC recipes stay, because the
+  ZPIC's creon and mellion come after the UMV hatches (naquadah fuel MK IV to VI, the UMV blast furnace), so GTNH's
+  recipe alone would close a cycle.
 - **Left out, named:** GT's black hole compressor (the lens runs in the UMV compressor), the glass's Force Field Glass
   (netherite, molten celestial tungsten) and Six-Phased Copper rods (hypogen, #436), the collider casing's Naquarite
   foil (netherite, Thaumcraft), the LHC controller's Research Stations (no TecTech computation) and UV Neutron

@@ -671,7 +671,8 @@ F.components{
 --- GT: the UMV coil is a magnetic samarium rod with 16 fine spacetime wires. The UMV blast furnace
 --- coil is built like the infinity coil (spacetime wire and screws, transcendent metal foil, a UIV
 --- circuit and a melt). Energy hatch as in 132-fork-uiv.lua: cryogenic helium, APICs (twice as many as
---- in the UIV hatch: they stand in for GT's ZPIC, which is not built), no UU matter.
+--- in the UIV hatch: they stand in for GT's ZPIC; issue #355 added GT's ZPIC recipe as a second one in 164 section 33,
+--- this one stays because the ZPIC comes after the UMV hatches), no UU matter.
 --------------------------------------------------------------------------------
 
 create_item{
