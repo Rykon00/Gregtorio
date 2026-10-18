@@ -4330,3 +4330,7 @@ medium-infinity-fluid-pipe
 medium-spacetime-fluid-pipe
 ultimate-field-restriction-coil
 temporal-field-restriction-coil
+purified-firestone
+centrifuged-firestone
+impure-firestone-dust
+pure-firestone-dust

@@ -373,7 +373,7 @@ local ASTEROIDS = {
 	{ "aluminiumLanthlineAsteroid", "Aluminium Lanthanide Asteroid", 1, "MV", "ZPM", 10, 80, 500, 7680, 10000, -- L543
 		{ { "raw-aluminium", 3500 }, { "raw-bauxite", 1500 }, { "raw-monazite", 2500 }, { "raw-bastnasite", 2500 } } },
 	{ "NetherOreAsteroid", "Nether Ore Asteroid", 1, "EV", "ZPM", 30, 110, 1000, 7680, 10000, -- L646
-		{ { "raw-nether-quartz", 3000 }, { "raw-sulfur", 3000 }, { "raw-certus-quartz", 2000 }, { "raw-firestone", 500 } } },
+		{ { "raw-nether-quartz", 3000 }, { "raw-sulfur", 3000 }, { "raw-certus-quartz", 2000 }, { "raw-firestone-ore", 500 } } },
 	{ "europiumAsteroid", "Europium Asteroid", 2, "ZPM", "UXV", 40, 120, 1000, 122880, 10000, -- L667
 		{ { "raw-ledox", 4000 }, { "callisto-ice-dust", 4000 }, { "raw-borax", 1500 } } },
 	{ "cosmicAsteroid", "Cosmic Asteroid", 2, "ZPM", "UXV", 10, 70, 500, 491520, 10000, -- L687
@@ -457,8 +457,9 @@ for i, name in ipairs(MTECH) do
 	for _, p in ipairs(MPRE[i]) do pre[#pre + 1] = p end
 	F.tech{ name = name, prerequisites = pre, packs = MPACKS[i], count = 50, time = 60, recipes = unlocks[i] }
 end
---- issue #356: the crushing of the Lutetium Asteroid's new ores with its module (the rest of their chain follows, 155)
-for _, r in pairs({ "crushed-thulium", "crushed-tellurium" }) do fork_add_unlock(MTECH[1], r) end
+--- issue #356: the crushing of the Lutetium Asteroid's new ores with its module (the rest of their chain follows, 155);
+--- issue #435: the Nether Ore Asteroid's firestone ore the same way
+for _, r in pairs({ "crushed-thulium", "crushed-tellurium", "crushed-firestone" }) do fork_add_unlock(MTECH[1], r) end
 
 
 --------------------------------------------------------------------------------

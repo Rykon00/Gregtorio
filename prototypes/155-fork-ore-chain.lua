@@ -14,8 +14,8 @@
 --- macerator never gave it). The shortcuts go: the washer recipe crushed -> dust (named after the dust) and
 --- centrifuging-<crushed>; migrations/2026-10-06-issue-185-ore-chain.json maps their names onto the washer recipe of
 --- the purified ore and the centrifuge recipe of the impure dust, so an old machine keeps running. Not touched: platinum and
---- palladium (their washing is the platinum line's, 146), firestone (no source of its ore), and every other recipe that
---- takes a crushed ore.
+--- palladium (their washing is the platinum line's, 146) and every other recipe that takes a crushed ore (firestone was
+--- left out until issue #435 gave it an ore source).
 --- New recipes are unlocked with the technologies of the recipes they replace (the washer's, else the centrifuge's) or of
 --- the crushed ore (macerator and furnace steps). The nine byproducts Gregtorio lacked are new dusts with GT's
 --- decomposition (ProcessingDust.java) as their use. Masses: GT's Materials.getMass (bornite, a bartworks material: copper's).
@@ -111,9 +111,9 @@ local ORE_CHAIN = {
 	["sapphire"] = { dust = "sapphire-dust", byproducts = { "alumina", "green-sapphire-dust" }, mass = 20 },   -- GT Sapphire: Aluminiumoxide, GreenSapphire
 	["green-sapphire"] = { dust = "green-sapphire-dust", byproducts = { "alumina", "sapphire-dust" }, mass = 20 },   -- GT GreenSapphire: Aluminiumoxide, Sapphire
 }
---- skipped: platinum and palladium (their washing is the platinum line's, 146) and firestone (no source of its ore: its
---- recipes stay locked in 142's FORK_RECIPES_LOCKED)
-FORK_ORE_CHAIN = { ores = ORE_CHAIN, skip = { platinum = true, palladium = true, firestone = true }, migrated = {} }
+--- skipped: platinum and palladium (their washing is the platinum line's, 146); firestone has its chain since issue #435
+--- (the Nether Ore Asteroid of 162 gives its ore)
+FORK_ORE_CHAIN = { ores = ORE_CHAIN, skip = { platinum = true, palladium = true }, migrated = {} }
 
 local P = "__gregtorio-continued__/graphics/icons/"
 
@@ -1330,7 +1330,6 @@ end
 --- FORK_ORE_HAMMER_SKIP: raw ores without them on purpose, with the reason (devcheck fails for any other).
 --------------------------------------------------------------------------------
 FORK_ORE_HAMMER_SKIP = {
-	["raw-firestone-ore"] = "no source of firestone ore: its macerator recipe stays locked (142's FORK_RECIPES_LOCKED)",
 }
 FORK_ORE_HAMMER_GEM = {
 	["raw-coal"] = "coal", ["raw-ruby"] = "ruby", ["raw-emerald"] = "emerald", ["raw-diamond"] = "diamond",
@@ -1364,12 +1363,14 @@ for _, x in pairs({ "agardite-cd", "agardite-la", "agardite-nd", "agardite-y", "
 	FORK_ORE_HAMMER_SKIP["raw-" .. x] = "GT++ ore: RecipeGenOre.java hammers the ore block, not the raw ore (issue #373)"
 end
 --- the first byproduct of the ores ORE_CHAIN leaves out (GT Platinum: Nickel; GT Palladium: none, its own dust)
-local RAW_BYPRODUCT = { ["raw-platinum"] = "nickel-dust", ["raw-palladium"] = "palladium-dust" }
+local RAW_BYPRODUCT = { ["raw-platinum"] = "nickel-dust", ["raw-palladium"] = "palladium-dust",
+	["raw-firestone-ore"] = "firestone-dust" }   -- (issue #435: GT Firestone has no byproducts: itself)
 --- GT's gems of byproduct materials that Gregtorio has
 local BYPRODUCT_GEM = { ["emerald-dust"] = "emerald", ["apatite"] = "apatite-gem",
 	["tricalcium-phosphate"] = "tricalcium-phosphate-gem", ["lazurite-dust"] = "lazurite-gem",
 	["sodalite-dust"] = "sodalite-gem", ["monazite-dust"] = "monazite-gem", ["amber-dust"] = "amber-gem",
 	["topaz-dust"] = "topaz-gem",   -- issue #332
+	["firestone-dust"] = "raw-firestone",   -- issue #435: Railcraft's firestone, GT's gemFirestone
 	["sapphire-dust"] = "sapphire-gem", ["green-sapphire-dust"] = "green-sapphire-gem" }   -- issue #364
 for _, g in pairs({ "olivine", "tanzanite", "amethyst", "opal", "jasper", "blue-topaz", "spinel", "jade" }) do BYPRODUCT_GEM[g .. "-dust"] = g .. "-gem" end   -- issue #363
 for _, g in pairs(BYPRODUCT_GEMS) do BYPRODUCT_GEM[g[2]] = g[3] end   -- issue #205
@@ -1416,6 +1417,14 @@ for _, s in pairs(macerated) do
 	end
 end
 log("FORK-ORE-CHAIN: " .. byproducts .. " raw ore macerator recipes with GT's byproduct")
+--- issue #435: firestone ore comes from the Nether Ore Asteroid (162); its furnace recipes give Railcraft's firestone, GT's
+--- gemFirestone (raw-firestone), which GT's macerator turns into the dust (as the other gems)
+for _, r in pairs({ "raw-firestone-ore-smelter", "raw-firestone-ore-multismelter" }) do
+	unlock_after(r, { item_techs("raw-firestone-ore") })
+end
+unlock_after(made(recipe{ name = "raw-firestone-maceration", category = "lv-macerator-recipes", time = 2.8, main = "firestone-dust",
+	ingredients = { item("raw-firestone") }, results = { item("firestone-dust") } }),
+	{ machine_techs("lv-macerator-recipes"), item_techs("raw-firestone-ore") })
 --- issue #202: cassiterite dust, new with its own crushed ore, decomposes in the electrolyzer
 unlock_after(decompose_of["cassiterite-dust"], { machine_techs("lv-electrolyzer-recipes"), item_techs("cassiterite-dust") })
 for _, x in pairs(the_ores) do
@@ -1821,7 +1830,7 @@ for _, r in pairs(data.raw.recipe) do
 end
 for x in pairs(ORE_CHAIN) do
 	local raw = data.raw.item["raw-" .. x]
-	if raw and x ~= "firestone" and not smeltable[raw.name] then   -- firestone: no source (FORK_ORE_CHAIN.skip)
+	if raw and x ~= "firestone" and not smeltable[raw.name] then   -- (raw-firestone is the gem, the ore is raw-firestone-ore)
 		raw.localised_description = { "item-description.fork-raw-no-smelting" }
 		raw_hint[#raw_hint + 1] = raw.name
 	end
