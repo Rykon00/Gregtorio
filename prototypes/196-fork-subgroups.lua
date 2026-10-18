@@ -104,7 +104,7 @@ put("molten-exotic", { "molten-naquadah", "molten-naquadah-alloy", "molten-naqua
 	"molten-infinity", "molten-transcendent-metal", "molten-spacetime", "molten-universium", "molten-magmatter",
 	"molten-rhugnor", "molten-quantium", "molten-sunnarium", "molten-enderium",
 	"molten-glowstone", "molten-vibrant-alloy", "molten-grisium", "molten-indovanadium", "molten-ruridit",
-	"liquid-blaze",
+	"liquid-blaze", "fiery-blood",   -- (issue #355: GT's fiery blood, the fiery steel bath)
 	-- issue #91: the new melts of the endgame materials and the superconductor bases
 	"molten-bedrockium", "molten-eternity", "molten-enriched-naquadah", "molten-ledox",
 	"molten-itbtc-alloy", "molten-palladium-naqindium", "molten-naquamiridium", "molten-triamerotronium",

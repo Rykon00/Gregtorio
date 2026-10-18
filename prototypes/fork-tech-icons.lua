@@ -22,6 +22,7 @@ FORK_TECH_ICONS = {
 	["circuit-assembly-line"] = true,
 	["coke-oven"] = true,
 	["complex-smds"] = true,
+	["creon-and-mellion"] = true,
 	["cryogenic-air-distillation"] = true,
 	["crystal-processor-mainframes"] = true,
 	["crystal-processors"] = true,

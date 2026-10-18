@@ -221,6 +221,8 @@ MATERIALS = {
     # issue #356, MK V and MK VI: GoodGenerator's atomic separation catalyst, precious metals alloy and shirabon
     # (GGMaterial.java: their colours), GT++'s astral titanium and chromatic glass (MaterialsElements.java), GT's blaze
     "atomic-separation-catalyst": ("METALLIC", (0xe8, 0x5e, 0x0c)), "precious-metals-alloy": ("METALLIC", (0x9d, 0x90, 0xc6)),
+    # issue #355 step 2: GT's fiery steel, creon and mellion
+    "fiery-steel": "FierySteel", "creon": "Creon", "mellion": "Mellion",
     "shirabon": ("METALLIC", (0xe0, 0x15, 0x6d)), "astral-titanium": ("METALLIC", (220, 160, 240)),
     "chromatic-glass": ("GLASS", (255, 255, 255)), "blaze": "Blaze",
     "calcium": "Calcium",
@@ -1059,6 +1061,8 @@ def icon_table(c):
     T["medium-infinity-fluid-pipe"] = lambda: c.m.icon("infinity", "pipeMedium", kind="blocks")
     T["medium-spacetime-fluid-pipe"] = lambda: c.m.icon("spacetime", "pipeMedium", kind="blocks")
     T["blaze-powder"] = lambda: c.part("blaze", "dust")
+    # issue #355 step 2: GT's Harmonic Compound (MetaGeneratedItem03 762)
+    T["harmonic-compound"] = lambda: c.gt(M3 + "762")
     T["tungstensteel-reinforced-borosilicate-glass-block"] = lambda: c.gt(
         "gt:bartworks/textures/blocks/TungstenSteelReinforcedBoronSilicateGlassBlock")
     # issue #355: GT++'s quantum anomaly (MetaGeneratedItemIDs.Laser_Lens_Special 105) and Unknown Particle (particle

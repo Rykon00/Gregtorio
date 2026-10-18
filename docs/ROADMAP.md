@@ -2519,6 +2519,26 @@ Step 3 (164 section 20): the shared foundation.
 
 Next: creon and mellion, the gravitational lens, ZPIC and YPIC.
 
+Creon and mellion (the plan's step 2; 164 section 29, technology Creon and Mellion after Naquadah Based Fuel MK6, the
+godforge's plasma module and the first mining module; the maintainer's decisions of 2026-10-18):
+- **Fiery steel:** GT's chemical bath of iron dust with 250 L fiery blood. The fiery blood comes from the canner and a
+  Twilight Forest Fiery Tears vial (GT's empty bottle is left out: the mod has none). The core mod assembles the vial from
+  a ghast tear and the Ur-Ghast trophy, which stays (HV, 75 s). Both are hunted, as 160's blazes: Hunting Ghasts (4 tears)
+  and Hunting the Ur-Ghast (its trophy). The other vial (fiery blood from Thaumcraft's salis mundis) is left out.
+- **Firestone dust** from the Nether Ore Asteroid's ore (#435).
+- **Fermium plasma:** GT++'s fusion of americium and boron plasma (MK4, 30 s at UHV).
+- **Creon plasma:** GT's Transcendent Plasma Mixer recipe (fermium, thorium, celestial tungsten and calcium plasma and the
+  residue, 100 each into 500) in the plasma forge, as the catalysts of 139 and 164. The mixer itself needs GT parts the
+  mod lacks (laser target hatch, proto-halkonite, energised tesseracts, the exotic catalyst).
+- **Mellion dust** (UMV mixer: tritanium, orundum, rubidium, fiery steel, firestone and catalyst dust, 500 residue into
+  63), the **harmonic compound** (UMV blast furnace with 14.4 creon plasma) and the UIV vacuum freezer with 14.4 molten
+  catalyst into a mellion ingot and 14.4 molten creon; molten mellion from the ingot (UEV).
+- **First consumer (#252):** naquadah fuel MK V from creon and mellion (16 transcendent metal dust, 48 catalyst dust,
+  2000 MK IV, 25 heavy radox, 28.8 molten mellion and creon into 750; 2.5 s, UXV, refinery T3), and GT's firestone
+  variants of the raw catalyst.
+- **Still left out:** creon and mellion in the godforge's parts (the named deviation above: their celestial tungsten
+  plasma comes from the godforge). Fluids are a tenth, as the plasma forge's other mixer recipes.
+
 ### Naquadah fuel MK IV to VI and the refinery (issue #356)
 
 The refinery with MK III and MK IV comes in steps, by the maintainer's decisions on #417 and #421 (GT's sources, no
@@ -2618,8 +2638,7 @@ RecipeLoader2.java, GT++'s RecipesGregTech.java):
 - **Left out, with the reason:**
   - MK IV from hypogen and the one-step MK IV: GT++'s hypogen needs dragon metal, a drop of the Ender Dragon. The mod
     has no source of it.
-  - MK V from creon and mellion: mellion dust needs fiery steel (Twilight Forest vials) and firestone dust. The mod has
-    no source of either, and creon comes only with mellion (#355).
+  - MK V from creon and mellion: built with #355 step 2 (164 section 29).
 
 ### Nuclear depth (issue #359)
 
