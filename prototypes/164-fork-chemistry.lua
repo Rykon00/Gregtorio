@@ -3010,11 +3010,6 @@ do
 	}
 	data.raw["assembling-machine"]["industrial-dehydrator"].crafting_categories =
 		{ "vacuum-furnace-recipes", "industrial-dehydrator-recipes" }
-	--- (summed last in 157's recycling: the farm's energy hatch would otherwise cut the energy hatch loops of the
-	--- machine upgrades first and empty the large chemical reactors' and vacuum freezers' sums, issue #423)
-	FORK_RECYCLING_LATE = FORK_RECYCLING_LATE or {}
-	FORK_RECYCLING_LATE["algae-farm"] = true
-	FORK_RECYCLING_LATE["industrial-dehydrator"] = true
 	for _, r in pairs(L) do fork_add_unlock(PN, r) end
 end
 
