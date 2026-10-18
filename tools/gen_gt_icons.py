@@ -218,6 +218,11 @@ MATERIALS = {
     "thulium": "Thulium", "tellurium": "Tellurium",
     # issue #406: GT++'s Pikyonium 64B (MaterialsAlloy.java:700-717, its colour)
     "pikyonium-64b": ("METALLIC", (52, 103, 186)),
+    # issue #356, MK V and MK VI: GoodGenerator's atomic separation catalyst, precious metals alloy and shirabon
+    # (GGMaterial.java: their colours), GT++'s astral titanium and chromatic glass (MaterialsElements.java), GT's blaze
+    "atomic-separation-catalyst": ("METALLIC", (0xe8, 0x5e, 0x0c)), "precious-metals-alloy": ("METALLIC", (0x9d, 0x90, 0xc6)),
+    "shirabon": ("METALLIC", (0xe0, 0x15, 0x6d)), "astral-titanium": ("METALLIC", (220, 160, 240)),
+    "chromatic-glass": ("GLASS", (255, 255, 255)), "blaze": "Blaze",
     "calcium": "Calcium",
     # issue #205: goodgenerator's Werkstoffe of the naquadah line (GGMaterial.java, their colours; dusts)
     "naquadria-oxide-mixture": ("METALLIC", (77, 77, 85)), "indium-phosphate": ("DULL", (43, 46, 112)),
@@ -1048,6 +1053,12 @@ def icon_table(c):
     T["medium-black-plutonium-item-pipe"] = lambda: c.m.icon("black-plutonium", "pipeMedium", kind="blocks")
     T["medium-neutronium-fluid-pipe"] = lambda: c.m.icon("neutronium", "pipeMedium", kind="blocks")
     T["huge-mysterious-crystal-fluid-pipe"] = lambda: c.m.icon("mysterious-crystal", "pipeHuge", kind="blocks")
+    # issue #356, MK V and MK VI: the coils FRF_Coils/3 and 4, GT's medium pipes, GT's blaze dust (Minecraft's blaze powder)
+    T["ultimate-field-restriction-coil"] = lambda: c.gt(f"{GG}blocks/FRF_Coils/3")
+    T["temporal-field-restriction-coil"] = lambda: c.gt(f"{GG}blocks/FRF_Coils/4")
+    T["medium-infinity-fluid-pipe"] = lambda: c.m.icon("infinity", "pipeMedium", kind="blocks")
+    T["medium-spacetime-fluid-pipe"] = lambda: c.m.icon("spacetime", "pipeMedium", kind="blocks")
+    T["blaze-powder"] = lambda: c.part("blaze", "dust")
     T["tungstensteel-reinforced-borosilicate-glass-block"] = lambda: c.gt(
         "gt:bartworks/textures/blocks/TungstenSteelReinforcedBoronSilicateGlassBlock")
     # issue #355: GT++'s quantum anomaly (MetaGeneratedItemIDs.Laser_Lens_Special 105) and Unknown Particle (particle

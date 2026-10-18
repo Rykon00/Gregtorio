@@ -3309,3 +3309,170 @@ do
 	end
 	FORK_CASTING.run()
 end
+
+
+
+
+
+--------------------------------------------------------------------------------
+--- 28) NAQUADAH FUEL MK V AND MK VI, THE REFINERY'S COILS T3 AND T4 (issue #356, after section 27). GT5-Unofficial
+--- 638b3f37ca, GoodGenerator's FuelRecipeLoader.java (FL), RecipeLoader.java (RL) and RecipeLoader2.java (RL2), GT++'s
+--- RecipesGregTech.java (RGT); the rules of section 27 (GT's seconds x the tier speed of GT's EU/t, the fuels in GT's
+--- litres, the other fluids a tenth).
+--- * MK V (FL:139-149: 8 infinity dust, 32 atomic separation catalyst dust, 2000 L MK IV, 250 L heavy radox into 500 L;
+---   10 s, 100 000 000 EU/t: UMV; coil T2, so the T2 refinery). Infinity dust from the ingot (GT's macerator, its mass in
+---   ticks). GoodGenerator's atomic separation catalyst (RL:396-442): the raw catalyst in the mixer from 32 blaze powder,
+---   4 draconium or quantium dust, 4 ardite or manyullyn dust and 2 ingots of molten naquadah into 63 (HV, 15 s; GT's
+---   firestone variants are left out: the mod has no firestone source), its hot ingot in the blast furnace (2 orundum
+---   plates, 4 raw catalyst, 1 ingot of molten plutonium; HV, 180 s), the vacuum freezer (LuV, 10 s), the dust (GT's
+---   macerator, the Werkstoff's mass 259 in ticks, as orundum). Blaze powder from the blaze rod (GT's macerator: 3 and 1
+---   more at 50 %, 20 s).
+--- * MK VI (FL:167-179: 64 astral titanium dust, 32 tritanium dust, 2000 L MK V, 360 L molten shirabon into 750 L; 12 s,
+---   320 000 000 EU/t: UXV; coil T3). Astral titanium dust (RGT:820-828: 8 titanium dust engraved with the quantum
+---   anomaly as the lens, UHV, 120 s), shirabon (RL2:1527-1538: the plasma forge with the Hi-Computation Station Mk-V
+---   kept, 1152 L molten metastable oganesson, 2304 L molten precious metals alloy, 288 L molten spacetime and 5000 L
+---   residue into 144 L; 1 500 000 000 EU/t, above UXV: MAX, 10 s), GoodGenerator's precious metals alloy (the mixer:
+---   ruthenium, rhodium, palladium, platinum, osmium and iridium dust into 6, UHV, 1.2 s; RL2:117 the blast furnace with
+---   gas, UEV, 120 s; the vacuum freezer, UHV, 22.05 s; the melt, UHV).
+--- * MK VI from celestial tungsten (FL:181-194: 64 celestial tungsten dust, 48 tritanium dust, 2000 L MK V, 360 L molten
+---   shirabon, 60 L raw star matter into 1250 L; 3 s, UXV; coil T4).
+--- * MK III from chromatic glass (FL:73-87: 8 extremely unstable naquadah dust, 9 chromatic glass dust, 2 high density
+---   uranium, 1 high density plutonium, 800 L heavy and 1000 L light naquadah fuel into 200 L; 5 s, 2 100 000 EU/t: UEV;
+---   coil T1). Chromatic glass dust (RGT:839-846: 64 glass dust engraved with the quantum anomaly, UHV, 300 s).
+--- * The coils (RL:768-811): Ultimate Field Restriction Coil (an infinity frame, 2 UEV field generators, 8 UEV pumps, 64
+---   8x UHV superconductor wires, 8 dense transcendent metal plates, 16 medium infinity pipes, 32 FPIC wafers, a UIV
+---   circuit, 1000 L oganesson, 9216 L molten neutronium, 64 000 L superfluid) and Temporal Field Restriction Coil (a
+---   spacetime frame, 2 UIV field generators, 8 UIV pumps, 2 x 64 4x UEV superconductor wires, 8 dense spacetime plates,
+---   16 medium spacetime pipes, 64 PPIC wafers, a UXV circuit, 1000 L molten metastable oganesson, 9216 L molten
+---   transcendent metal, 64 000 L superfluid); in the ZPM assembly line in 60 s as T1 and T2; GT's medium pipes from the
+---   extruder (3 ingots, 1.2 s at the material's tier: infinity UV, spacetime UEV). The refinery with T3 and T4 coils:
+---   UXV, 12 and 16 parallels, each the one before with 72 coils and a UXV energy hatch.
+--- * MK V and MK VI burn in the large naquadah reactors at GT's 399 576 000 EU/t x 160 ticks and 2 077 795 200 EU/t x
+---   240 ticks per litre (GGConfigLoader.java:15-17). Their depleted fuels are left out, as section 27's.
+--- * Left out: GT's MK IV from hypogen and the one-step MK IV (hypogen needs GT++'s dragon metal, a drop of the Ender
+---   Dragon that the mod does not have) and MK V from creon and mellion (mellion dust needs fiery steel and firestone dust,
+---   which the mod has no source of; creon comes only with mellion).
+--------------------------------------------------------------------------------
+do
+	local NFR = "naquadah-fuel-refinery"
+	local T5, T6, T7 = "naquadah-based-fuel-mk5", "naquadah-based-fuel-mk6", "temporal-field-restriction-coils"
+	local R5, R6, R7 = {}, {}, {}
+	local MK3, MK4, MK5, MK6 = "naquadah-based-fuel-mk3", "naquadah-based-fuel-mk4", T5, T6
+	local ASC, PMA = "atomic-separation-catalyst", "precious-metals-alloy"
+	local EUN = "extremely-unstable-naquadah"
+	local function item(name, amount) return { type = "item", name = name, amount = amount } end
+	F.category(NFR .. "-t3-recipes")
+	F.category(NFR .. "-t4-recipes")
+	F.fluid(MK5, "spackled-blue-fluid", { 0.15, 0.55, 0.90 })   -- (as 136's MK1 to MK3)
+	F.fluid(MK6, "spackled-purple-fluid", { 0.70, 0.25, 0.85 })
+	data.raw.fluid[MK5].fuel_value = "63932.16GJ"     -- (399 576 000 EU/t x 160 ticks, 1 EU = 1 kJ as in 136)
+	data.raw.fluid[MK6].fuel_value = "498670.848GJ"   -- (2 077 795 200 EU/t x 240 ticks)
+	for name, list in pairs(data.raw["mod-data"]["fork-power"].data.fuels) do
+		if name:find("large%-naquadah%-reactor$") then
+			for _, f in pairs({ MK5, MK6 }) do
+				local found = false
+				for _, x in pairs(list) do found = found or x == f end   -- (the reactors share one list)
+				if not found then list[#list + 1] = f end
+			end
+		end
+	end
+	F.fluid("molten-shirabon", "molten-shirabon", { 0xe0 / 255, 0x15 / 255, 0x6d / 255 })
+	F.fluid("molten-" .. PMA, "molten-" .. PMA, { 0x9d / 255, 0x90 / 255, 0xc6 / 255 })
+	items(SUB_DUST, { "infinity-dust", "blaze-powder", ASC .. "-dust", "astral-titanium-dust", "chromatic-glass-dust",
+		PMA .. "-dust" })
+	items(SUB_PART, { "raw-" .. ASC, "hot-" .. ASC .. "-ingot", ASC .. "-ingot", "hot-" .. PMA .. "-ingot", PMA .. "-ingot",
+		"medium-infinity-fluid-pipe", "medium-spacetime-fluid-pipe" })
+	items("subgroup-uhv-age-multiblocks", { "ultimate-field-restriction-coil", "temporal-field-restriction-coil" })
+
+	--- MK V: infinity dust, blaze powder, the atomic separation catalyst
+	step(R5, "infinity-dust", "lv-macerator-recipes", 4.9, LV_SPEED, { { "infinity-ingot", 1 } }, { { "infinity-dust", 1 } })
+	step(R5, "blaze-powder", "lv-macerator-recipes", 20, LV_SPEED, { { "blaze-rod", 1 } },
+		{ { "blaze-powder", 3 }, { "blaze-powder", 1, 0.5 } })
+	for _, a in pairs({ "draconium", "quantium" }) do
+		for _, b in pairs({ "ardite", "manyullyn" }) do
+			step(R5, "raw-" .. ASC .. "-" .. a .. "-" .. b, "hv-mixer-recipes", 15, HV_SPEED,
+				{ { "blaze-powder", 32 }, { a .. "-dust", 4 }, { b .. "-dust", 4 }, { "molten-naquadah", 28.8 } }, { { "raw-" .. ASC, 63 } })
+		end
+	end
+	step(R5, "hot-" .. ASC .. "-ingot", "hv-electric-blast-furnace-recipes", 180, HV_SPEED,
+		{ { "orundum-plate", 2 }, { "raw-" .. ASC, 4 }, { "molten-plutonium", 14.4 } }, { { "hot-" .. ASC .. "-ingot", 1 } })
+	step(R5, ASC .. "-ingot", "luv-vacuum-freezer-recipes", 10, LUV_SPEED, { { "hot-" .. ASC .. "-ingot", 1 } }, { { ASC .. "-ingot", 1 } })
+	step(R5, ASC .. "-dust", "lv-macerator-recipes", 12.95, LV_SPEED, { { ASC .. "-ingot", 1 } }, { { ASC .. "-dust", 1 } })
+	step(R5, MK5, NFR .. "-t2-recipes", 10, UMV_SPEED,
+		{ { "infinity-dust", 8 }, { ASC .. "-dust", 32 }, { MK4, 2000 }, { "heavy-radox", 25 } }, { { MK5, 500 } })
+
+	--- MK VI: astral titanium, the precious metals alloy, shirabon; the T3 coil and refinery
+	step(R6, "astral-titanium-dust", "uhv-laser-engraver-recipes", 120, UHV_SPEED,
+		{ { "titanium-dust", 8 }, { "quantum-anomaly", 1 } }, { { "astral-titanium-dust", 1 }, { "quantum-anomaly", 1 } })
+	step(R6, PMA .. "-dust", "uhv-mixer-recipes", 1.2, UHV_SPEED,
+		{ { "ruthenium-dust", 1 }, { "rhodium-dust", 1 }, { "palladium-dust", 1 }, { "platinum-dust", 1 }, { "osmium-dust", 1 },
+			{ "iridium-dust", 1 } }, { { PMA .. "-dust", 6 } })
+	blast(R6, PMA, "uev-electric-blast-furnace-recipes", 120, UEV_SPEED)
+	step(R6, PMA .. "-ingot", "uhv-vacuum-freezer-recipes", 22.05, UHV_SPEED, { { "hot-" .. PMA .. "-ingot", 1 } }, { { PMA .. "-ingot", 1 } })
+	step(R6, "molten-shirabon", "dimensionally-transcendent-plasma-forge-recipes", 10, MAX_SPEED,
+		{ { "hi-computation-station-mk5", 1 }, { "molten-metastable-oganesson", 115.2 }, { "molten-" .. PMA, 230.4 },
+			{ "molten-spacetime", 28.8 }, { "dimensionally-transcendent-residue", 500 } },
+		{ { "molten-shirabon", 14.4 }, { "hi-computation-station-mk5", 1 } })
+	step(R6, "medium-infinity-fluid-pipe", "uv-extruder-recipes", 1.2, UV_SPEED, { { "infinity-ingot", 3 } },
+		{ { "medium-infinity-fluid-pipe", 1 } })
+	step(R6, "ultimate-field-restriction-coil", "zpm-assembly-line-recipes", 60, ZPM_SPEED,
+		{ { "infinity-frame", 1 }, { "uev-field-generator", 2 }, { "uev-pump", 8 }, { "triamerotronium-superconductive-wire", 512 },
+			{ "dense-transcendent-metal-plate", 8 }, { "medium-infinity-fluid-pipe", 16 }, { "fpic-wafer", 32 }, { "uiv-circuit", 1 },
+			{ "oganesson", 100 }, { "molten-neutronium", 921.6 }, { "dimensionally-shifted-superfluid", 6400 } },
+		{ { "ultimate-field-restriction-coil", 1 } })
+	step(R6, MK6, NFR .. "-t3-recipes", 12, UXV_SPEED,
+		{ { "astral-titanium-dust", 64 }, { "tritanium-dust", 32 }, { MK5, 2000 }, { "molten-shirabon", 36 } }, { { MK6, 750 } })
+	--- MK III from chromatic glass (the anomaly comes with the godforge, which MK VI needs as well)
+	step(R6, "chromatic-glass-dust", "uhv-laser-engraver-recipes", 300, UHV_SPEED,
+		{ { "glass-dust", 64 }, { "quantum-anomaly", 1 } }, { { "chromatic-glass-dust", 1 }, { "quantum-anomaly", 1 } })
+	step(R6, MK3 .. "-chromatic-glass", NFR .. "-recipes", 5, UEV_SPEED,
+		{ { EUN .. "-dust", 8 }, { "chromatic-glass-dust", 9 }, { "high-density-uranium", 2 }, { "high-density-plutonium", 1 },
+			{ "heavy-naquadah-fuel", 800 }, { "light-naquadah-fuel", 1000 } }, { { MK3, 200 } })
+
+	--- MK VI from celestial tungsten: the T4 coil and refinery
+	step(R7, "medium-spacetime-fluid-pipe", "uev-extruder-recipes", 1.2, UEV_SPEED, { { "spacetime-ingot", 3 } },
+		{ { "medium-spacetime-fluid-pipe", 1 } })
+	step(R7, "temporal-field-restriction-coil", "zpm-assembly-line-recipes", 60, ZPM_SPEED,
+		{ { "spacetime-frame", 1 }, { "uiv-field-generator", 2 }, { "uiv-pump", 8 }, { "dracofinium-superconductive-wire", 512 },
+			{ "dense-spacetime-plate", 8 }, { "medium-spacetime-fluid-pipe", 16 }, { "ppic-wafer", 64 }, { "uxv-circuit", 1 },
+			{ "molten-metastable-oganesson", 100 }, { "molten-transcendent-metal", 921.6 }, { "dimensionally-shifted-superfluid", 6400 } },
+		{ { "temporal-field-restriction-coil", 1 } })
+	step(R7, MK6 .. "-celestial-tungsten", NFR .. "-t4-recipes", 3, UXV_SPEED,
+		{ { "celestial-tungsten-dust", 64 }, { "tritanium-dust", 48 }, { MK5, 2000 }, { "molten-shirabon", 36 },
+			{ "raw-star-matter", 6 } }, { { MK6, 1250 } })
+
+	--- the machines (section 27's)
+	local function power(tier, n)
+		local p = data.raw["assembling-machine"][tier .. "-centrifuge"].energy_usage
+		return (tonumber(p:match("^[%d.]+")) * n) .. p:match("%a+$")
+	end
+	local ports = { port("input", N, { -1, -1 }), port("input", N, { 0, -1 }), port("input", N, { 1, -1 }),
+		port("input", W, { -1, 0 }), port("output", S, { 0, 1 }) }
+	machine{
+		name = NFR .. "-t3", category = NFR .. "-t3-recipes", speed = UXV_SPEED * 12, energy = power("uxv", 12),
+		subgroup = "subgroup-uhv-age-multiblocks", ports = ports, list = R6,
+		recipe = { "crafting-or-assembling-recipes", 1, { item(NFR .. "-t2", 1), item("ultimate-field-restriction-coil", 72),
+			item("uxv-energy-hatch", 1) } },
+	}
+	machine{
+		name = NFR .. "-t4", category = NFR .. "-t4-recipes", speed = UXV_SPEED * 16, energy = power("uxv", 16),
+		subgroup = "subgroup-uhv-age-multiblocks", ports = ports, list = R7,
+		recipe = { "crafting-or-assembling-recipes", 1, { item(NFR .. "-t3", 1), item("temporal-field-restriction-coil", 72),
+			item("uxv-energy-hatch", 1) } },
+	}
+	data.raw["assembling-machine"][NFR .. "-t3"].crafting_categories = { NFR .. "-recipes", NFR .. "-t2-recipes",
+		NFR .. "-t3-recipes" }
+	data.raw["assembling-machine"][NFR .. "-t4"].crafting_categories = { NFR .. "-recipes", NFR .. "-t2-recipes",
+		NFR .. "-t3-recipes", NFR .. "-t4-recipes" }
+	for _, n in pairs({ NFR .. "-t3", NFR .. "-t4" }) do
+		FORK_RECYCLING_BLACKLIST[n] = "the refinery's structure: its sum passes 65535 per result; GT recycles the controller"
+	end
+
+	F.tech{ name = T5, prerequisites = { "naquadah-based-fuel-mk4", "radox-polymer" }, packs = 13, count = 95, time = 60,
+		recipes = R5 }   -- (as section 27's MK IV)
+	F.tech{ name = T6, prerequisites = { T5, "dimensionally-shifted-superfluid", "uxv-energy-hatches" }, packs = 14,
+		count = 50, time = 60, recipes = R6 }   -- (as 138's UXV techs)
+	F.tech{ name = T7, prerequisites = { T6, "godforge-plasma-module" }, packs = 14, count = 50, time = 60, recipes = R7 }
+	FORK_CASTING.materials[PMA] = { "uhv", T6 }
+	FORK_CASTING.run()
+end
