@@ -748,6 +748,7 @@ FORK_UNLOCK_TREE = { prerequisites = {
 	["extreme-entity-crushers"] = { "ev-energy-hatches" },   -- ev-energy-hatch
 	["fusion-reactor-mk1"] = { "advanced-smds" },   -- zpm-circuit
 	["fusion-plasmas-mk2"] = { "nuclear-fuel-rods" },   -- plutonium-239-dust (issue #375: the naquadah transmutation)
+	["fusion-plasmas-mk5"] = { "reach-the-everglades" },   -- tellurium-dust (issue #397: lead plasma)
 	["fusion-reactor-mk2"] = { "zpm-assembly-line" },   -- machine zpm-assembly-line
 	["galena"] = { "concrete" },   -- machine lv-fluid-solidifier
 	["gas-turbine"] = { "semifluid-generator", "sulfuric-acid" },   -- machine lv-canning-machine; machine lv-distillation
@@ -878,11 +879,6 @@ FORK_RECIPES_LOCKED = {
 	["calcium"] = "upstream placeholder without ingredients (an item from nothing); calcium comes from fluorspar",
 	["cerium-rich-mixture"] = "upstream placeholder without ingredients; the mixture comes from bastnasite",
 	["phosphorus"] = "upstream placeholder without ingredients; phosphorus comes from the phosphorus line",
-	["crushed-firestone"] = "no source of firestone ore: GT has no firestone vein (Railcraft's nether ore)",
-	["firestone-dust"] = "needs crushed firestone",
-	["centrifuging-crushed-firestone"] = "needs crushed firestone",
-	["raw-firestone-ore-smelter"] = "no source of firestone ore",
-	["raw-firestone-ore-multismelter"] = "no source of firestone ore",
 	--- issue #215 (the maintainer's decision): armour equipment that needs an armour with an equipment grid and a power
 	--- source in it, which Gregtorio does not have (the vanilla armour and equipment technologies are disabled)
 	["me-wireless-module"] = "armour equipment; Gregtorio has no armour with an equipment grid (the Wireless ME Terminal item does the same)",

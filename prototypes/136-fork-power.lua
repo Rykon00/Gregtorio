@@ -48,7 +48,7 @@ end
 --- exists here; zinc and niobium have no molten fluid, boron, calcium and sulfur none at all.
 --------------------------------------------------------------------------------
 
---- issue #375: the plasmas of section 1d (thorium plasma is 140's, made here for its fuel value)
+--- issue #375: the plasmas of section 1d (thorium plasma is 140's, made here for its fuel value; issue #397: lead plasma too)
 for _, p in pairs({
 	{ "nickel-plasma", "silver-blue-spackled-fluid", { 0.67, 0.67, 0.86 } },
 	{ "silver-plasma", "spackled-gray-fluid", { 0.86, 0.86, 1.00 } },
@@ -59,6 +59,9 @@ for _, p in pairs({
 	--- issue #386 (2): americium plasma from the melt of plutonium 241 (its dust comes from 164's isotopes)
 	{ "americium-plasma", "spackled-medium-gray-fluid", { 0.78, 0.78, 0.78 } },
 	{ "molten-plutonium-241", "molten-plutonium-241", { 0.94, 0.20, 0.20 } },
+	--- issue #397: lead plasma (140's colour) and the melt of tellurium (GT's colour, gen_gt_icons --molten)
+	{ "lead-plasma", "medium-gray-fluid", { 0.55, 0.50, 0.65 } },
+	{ "molten-tellurium", "molten-tellurium", { 0.81, 1.00, 0.34 } },
 }) do
 	F.fluid(p[1], p[2], p[3])
 end
@@ -86,6 +89,7 @@ local PLASMAS = {
 	{ "plutonium-241-plasma",   497664, nil },
 	{ "americium-plasma",       501760, "molten-americium" },   -- issue #386 (2)
 	{ "thorium-plasma",         471040, "molten-thorium" },
+	{ "lead-plasma",            423936, "molten-lead" },   -- issue #397
 }
 local cooled = {}
 for _, p in pairs(PLASMAS) do
@@ -212,7 +216,9 @@ end
 --- litres like the other plasmas of section 1b, the reactor by GT's FUSION_THRESHOLD (MK3 up to 640M EU, the 6G ones the
 --- MK5); the time balanced like #32: about 25x plasma energy out per reactor energy in (GT's own times give 160 to 240x).
 --- Issue #386 (2): americium plasma (FusionReactorRecipes.java:286; the melt of plutonium 241 and hydrogen, MK3), the
---- dust from 164's isotopes. Left for later: lead plasma (tellurium + zinc) needs tellurium, which the mod lacks (#397).
+--- dust from 164's isotopes. Issue #397: lead plasma (FusionReactorRecipes.java:311-317, tellurium + zinc, MK5), now that
+--- the mod has tellurium (the Toxic Everglades' ores and the Lutetium Asteroid); molten tellurium from the dust in the IV
+--- fluid extractor, as molten arsenic (GT: the dust or ingot, 144 L).
 --------------------------------------------------------------------------------
 
 F.fluid("molten-arsenic", "molten-arsenic", { 1, 1, 1 })   -- GT's colour (gen_gt_icons --molten)
@@ -222,6 +228,12 @@ create_recipe{
 	results = { { type = "fluid", name = "molten-arsenic", amount = 14.4 } }, main_product = "molten-arsenic",
 }
 fork_add_unlock("fusion-plasmas-mk3", "melt-arsenic")
+create_recipe{
+	name = "melt-tellurium-dust", category = "iv-fluid-extractor-recipes", energy_required = 1.2 * IV_SPEED,
+	ingredients = { { type = "item", name = "tellurium-dust", amount = 1 } },
+	results = { { type = "fluid", name = "molten-tellurium", amount = 14.4 } }, main_product = "molten-tellurium",
+}
+fork_add_unlock("fusion-plasmas-mk5", "melt-tellurium-dust")
 local OTHER_PLASMAS = {
 	--  plasma                  reactor  s     speed      inputs                                                  amount
 	{ "nickel-plasma",           3, 7.5,  UV_SPEED,  { { "molten-potassium", 16 }, { "fluorine", 144 } }, 144 },
@@ -231,6 +243,7 @@ local OTHER_PLASMAS = {
 	{ "plutonium-241-plasma",    5, 17.5, UIV_SPEED, { { "molten-lutetium", 576 }, { "molten-vanadium", 576 } }, 576 },
 	{ "americium-plasma",        3, 17.5, UV_SPEED,  { { "molten-plutonium-241", 144 }, { "hydrogen", 2000 } }, 144 },
 	{ "thorium-plasma-fusion",   5, 16.5, UIV_SPEED, { { "molten-osmium", 576 }, { "molten-silicon", 576 } }, 576 },
+	{ "lead-plasma-fusion",      5, 15,   UIV_SPEED, { { "molten-tellurium", 576 }, { "molten-zinc", 576 } }, 576 },   -- #397
 }
 for _, p in pairs(OTHER_PLASMAS) do
 	local ing = {}
