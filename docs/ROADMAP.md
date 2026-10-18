@@ -940,12 +940,15 @@ the new ones are in the table of `prototypes/136-fork-power.lua` (section 1b, pl
 | plutonium 241 (#375) | 497.66 MJ | 576 lutetium + 576 vanadium melt -> 576 in 17.5 s (MK5; GT 0.2 s) | 11 469 MJ | 286 654 MJ | 25.0x | - | 32.9 | 16.4 GW |
 | americium (#386) | 501.76 MJ | 144 plutonium 241 melt + 2000 hydrogen -> 144 in 17.5 s (MK3; GT 3.2 s) | 2867 MJ | 72 253 MJ | 25.2x | - | 8.2 | 4.13 GW |
 | thorium (#375) | 471.04 MJ | 576 osmium + 576 silicon melt -> 576 in 16.5 s (MK5; GT 0.2 s) | 10 813 MJ | 271 319 MJ | 25.1x | - | 34.9 | 16.4 GW |
+| lead (#397) | 423.94 MJ | 576 tellurium + 576 zinc melt -> 576 in 15 s (MK5; GT 0.2 s) | 9830 MJ | 244 187 MJ | 24.8x | - | 38.4 | 16.3 GW |
 
 Issue #375's plasmas (part B, the maintainer's decision: GT's fuel values, a place in this table): GT's inputs and outputs
 in GT litres like the plasmas above, the reactor by GT's threshold (MK3, the 6G ones MK5); GT's times would give 160x
 to 240x, so the times are set for about 25x like the balanced cheap plasmas (full chain not computed). Americium plasma
 (plutonium 241 + hydrogen) came with issue #386's isotopes (step 2: the MOX rods' plutonium 241 from GT's IV centrifuge,
-melted in the IV fluid extractor), lead plasma (tellurium + zinc) waits for tellurium (#397).
+melted in the IV fluid extractor). Lead plasma (tellurium + zinc, #397) came once the mod had tellurium (the Toxic
+Everglades' ores, the Lutetium Asteroid): molten tellurium from the dust in the IV fluid extractor, Fusion Plasmas MK5 gets
+Reach the Toxic Everglades as a prerequisite for it (#252).
 
 Helium-3 (issue #32): `end-stone-centrifuging` makes 50 helium-3 per compressed end stone in 200 s (before 100 in 40 s),
 1.92 MJ per unit like deuterium (before 0.19 MJ). The fuel values are unchanged (GT's). The recipes that use a plasma as an
@@ -2591,8 +2594,8 @@ coils T1 for MK III, T2 for MK IV).
     has the vacuum furnace and the multiblock dehydrator modes, 4 parallels at 2.2 times the speed, and twice a ZPM
     machine's power.
   - Left out: the vacuum casing's GT++ Energy Crystal alloy, which is made of Thaumcraft's aspects.
-  - 157 sums the two machines' recycling last (`FORK_RECYCLING_LATE`). Otherwise the energy hatch loops of the machine
-    upgrades would empty other machines' sums (issue #423).
+  - Issue #423: 157's recycling sums count only a recipe's main product, so the energy hatch a machine upgrade gives
+    back no longer makes loops, and a new item cannot change the sums of others.
 
   Part 3 (164 section 26): the chain itself, from red algae prismarine to the sheet, with GT's recipes.
   - The baths' and engravers' extra fluid ports follow GT's maps (2 fluids in, 2 out; 101).

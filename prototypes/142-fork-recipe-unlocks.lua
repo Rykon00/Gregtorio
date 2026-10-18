@@ -748,6 +748,7 @@ FORK_UNLOCK_TREE = { prerequisites = {
 	["extreme-entity-crushers"] = { "ev-energy-hatches" },   -- ev-energy-hatch
 	["fusion-reactor-mk1"] = { "advanced-smds" },   -- zpm-circuit
 	["fusion-plasmas-mk2"] = { "nuclear-fuel-rods" },   -- plutonium-239-dust (issue #375: the naquadah transmutation)
+	["fusion-plasmas-mk5"] = { "reach-the-everglades" },   -- tellurium-dust (issue #397: lead plasma)
 	["fusion-reactor-mk2"] = { "zpm-assembly-line" },   -- machine zpm-assembly-line
 	["galena"] = { "concrete" },   -- machine lv-fluid-solidifier
 	["gas-turbine"] = { "semifluid-generator", "sulfuric-acid" },   -- machine lv-canning-machine; machine lv-distillation
