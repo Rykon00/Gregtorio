@@ -1108,7 +1108,8 @@ def icon_table(c):
     T["spatially-transcendent-gravitational-lens-block"] = lambda: c.gt(TTB + "blockSpatiallyTranscendentGravitationalLens")
     T["transcendent-metal-reinforced-borosilicate-glass-block"] = lambda: c.gt(
         "gt:bartworks/textures/blocks/TranscendentallyReinforcedBoronSilicateGlassBlock")
-    for n, i in (("stable-boson-containment-unit", "303"), ("stable-empty-containment-unit", "304"), ("gravitational-lens", "277")):
+    for n, i in (("stable-boson-containment-unit", "303"), ("stable-empty-containment-unit", "304"), ("gravitational-lens", "277"),
+                 ("zpic-wafer", "270"), ("zepto-power-ic", "271")):
         T[n] = (lambda i=i: c.gt(M3 + i))
     for n, f in (("mysterious-crystal-gem", "itemMysteriousCrystal"), ("flawless-mysterious-crystal", "itemMysteriousCrystalGemFlawless"),
                  ("exquisite-mysterious-crystal", "itemMysteriousCrystalGemExquisite"), ("mysterious-crystal-lens", "itemMysteriousCrystalLens"),

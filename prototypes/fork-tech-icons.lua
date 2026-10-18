@@ -269,6 +269,7 @@ FORK_TECH_ICONS = {
 	["wetware-processor-mainframes"] = true,
 	["wetware-processors"] = true,
 	["yttrium-barium-cuprate"] = true,
+	["zepto-power-ics"] = true,
 	["zirconium-carbide"] = true,
 	["zirconium-processing"] = true,
 	["zpm-assembly-line"] = true,
