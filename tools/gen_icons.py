@@ -35,6 +35,9 @@ TIER_HUE = {"luv": 320, "zpm": 190, "uv": 130, "uhv": 0, "uev": 90, "uiv": 150, 
 # explicit donors (icon to recolor, hue in degrees) where the longest-suffix guess picks a bad one
 DONORS = {
     "gasoline-cell": ("diesel-cell", 50),   # issue #91
+    # issue #355 step 2: Minecraft's ghast tear and the Twilight Forest's Ur-Ghast trophy and Fiery Tears vial (their
+    # textures are not in the GT checkouts)
+    "ghast-tear": ("ender-pearl", 200), "ur-ghast-trophy": ("wither-skull", 0), "fiery-tears": ("filled-soul-vial-enderman", 15),
     "npic-wafer": ("uhpic-wafer", 190), "ppic-wafer": ("uhpic-wafer", 130), "qpic-wafer": ("uhpic-wafer", 0),
     "nano-power-ic": ("ultra-high-powered-integrated-circuit", 190),
     "pico-power-ic": ("ultra-high-powered-integrated-circuit", 130),

@@ -3350,8 +3350,7 @@ end
 --- * MK V and MK VI burn in the large naquadah reactors at GT's 399 576 000 EU/t x 160 ticks and 2 077 795 200 EU/t x
 ---   240 ticks per litre (GGConfigLoader.java:15-17). Their depleted fuels are left out, as section 27's.
 --- * Left out: GT's MK IV from hypogen and the one-step MK IV (hypogen needs GT++'s dragon metal, a drop of the Ender
----   Dragon that the mod does not have) and MK V from creon and mellion (mellion dust needs fiery steel and firestone dust,
----   which the mod has no source of; creon comes only with mellion).
+---   Dragon that the mod does not have). MK V from creon and mellion: section 29 (issue #355).
 --------------------------------------------------------------------------------
 do
 	local NFR = "naquadah-fuel-refinery"
@@ -3474,5 +3473,104 @@ do
 		count = 50, time = 60, recipes = R6 }   -- (as 138's UXV techs)
 	F.tech{ name = T7, prerequisites = { T6, "godforge-plasma-module" }, packs = 14, count = 50, time = 60, recipes = R7 }
 	FORK_CASTING.materials[PMA] = { "uhv", T6 }
+	FORK_CASTING.run()
+end
+
+
+
+
+
+--------------------------------------------------------------------------------
+--- 29) CREON AND MELLION (issue #355, step 2; the maintainer's decisions of 2026-10-18: fiery tears from hunting, creon
+--- plasma in the plasma forge, naquadah fuel MK V's alternative as the first consumer). GT5-Unofficial 638b3f37ca and
+--- NewHorizonsCoreMod c729b6f; fluids a tenth of GT's litres as the plasma forge's other mixer recipes (139, section 20).
+--- * Fiery steel: GT's only dust recipe is the chemical bath of iron dust with 250 L fiery blood
+---   (ProcessingTransforming.java:51-65, ULV, 5 s); the canner empties a Twilight Forest Fiery Tears vial into 250 L
+---   (FluidCannerRecipes.java:70-76; GT's empty bottle is left out: the mod has none); NewHorizonsCoreMod assembles the
+---   vial from a ghast tear and the Ur-Ghast trophy, which it keeps (ScriptTwilightForest.java:320-325, HV, 75 s). The
+---   ghast tears and the trophy are hunted, as 160's blazes: a Nether hunt (4 tears) and the Twilight Forest's Ur-Ghast
+---   (its trophy). GT's other vial (fiery blood: Thaumcraft's salis mundis and the Hydra trophy) is left out.
+--- * Fermium plasma: GT++'s fusion, 100 L americium plasma + 100 L boron plasma -> 100 L (RecipeLoaderChemicalSkips.java:
+---   417-423, UHV, 30 s, 1G EU to start: the MK4 as 164's other 1G recipes; plasmas in GT litres as 136's).
+--- * Creon plasma: the Transcendent Plasma Mixer (TranscendentPlasmaMixerRecipes.java:141-152: 1000 L each of fermium,
+---   thorium, celestial tungsten and calcium plasma and the residue -> 5000 L, UMV, 5 s) runs in the plasma forge, as the
+---   catalysts of 139 and 164 (the mixer itself needs GT parts the mod lacks).
+--- * Mellion dust (MixerRecipes.java:1756-1769: 11 tritanium, 8 orundum, 11 rubidium, 7 fiery steel, 13 firestone and 13
+---   atomic separation catalyst dust, 5000 L residue -> 63; UMV, 15 s); the harmonic compound (BlastFurnaceRecipes.java:
+---   662-670: 1 mellion dust, 144 L creon plasma -> 2; UMV, 30 s, 14 000 K); the vacuum freezer (VacuumFreezerRecipes.java:
+---   363-370: 2 harmonic compound, 144 L molten catalyst -> a mellion ingot and 144 L molten creon; UIV, 1 s); molten
+---   mellion from the ingot (GT's fluid extractor, 143's casting at UEV, mellion's processing tier); molten catalyst from
+---   its ingot (bartworks, IV).
+--- * The first consumer (#252): naquadah fuel MK V's alternative (FuelRecipeLoader.java:151-165: 16 transcendent metal
+---   dust, 48 catalyst dust, 2000 L MK IV, 250 L heavy radox, 288 L molten mellion and creon -> 750 L; 2.5 s, 300M EU/t:
+---   UXV; coil T3), transcendent metal dust from the ingot (GT's macerator, its mass in ticks). GT's firestone variants
+---   of the raw catalyst (RecipeLoader.java:396-417: 4 firestone dust for 32 blaze powder) now that firestone has a source
+---   (#435).
+--- * The godforge's parts keep leaving creon and mellion out (140): their celestial tungsten plasma comes from the
+---   godforge itself.
+--------------------------------------------------------------------------------
+do
+	local T = "creon-and-mellion"
+	local R = {}
+	local NFR = "naquadah-fuel-refinery"
+	local ASC = "atomic-separation-catalyst"
+	local MK4, MK5 = "naquadah-based-fuel-mk4", "naquadah-based-fuel-mk5"
+	F.fluid("fiery-blood", "fiery-blood", { 0.65, 0.12, 0.05 })   -- (GT's fluid.fieryblood)
+	F.fluid("fermium-plasma", "spackled-copper-fluid", { 0.90, 0.45, 0.85 })
+	F.fluid("creon-plasma", "spackled-purple-fluid", { 0x46 / 255, 0, 0x46 / 255 })
+	F.fluid("molten-creon", "molten-creon", { 0.60, 0, 0.60 })   -- (GT's colour, lifted as its icon)
+	F.fluid("molten-mellion", "molten-mellion", { 0.58, 0.05, 0.05 })
+	F.fluid("molten-" .. ASC, "molten-" .. ASC, { 0xe8 / 255, 0x5e / 255, 0x0c / 255 })
+	items("subgroup-mining", { "ghast-tear", "ur-ghast-trophy" })
+	items(SUB_DUST, { "fiery-steel-dust", "transcendent-metal-dust", "mellion-dust" })
+	items(SUB_PART, { "fiery-tears", "harmonic-compound", "mellion-ingot" })
+
+	--- the hunts (160's)
+	for _, h in pairs({ { "hunting-ghasts", "ghast-tear", 4 }, { "hunting-the-ur-ghast", "ur-ghast-trophy", 1 } }) do
+		create_recipe{
+			name = h[1], category = "manual-mine-recipes", energy_required = 10, subgroup = "subgroup-mining",
+			ingredients = { { type = "item", name = "manual-labor", amount = 24 } },
+			results = { { type = "item", name = h[2], amount = h[3] } }, main_product = h[2],
+		}
+		R[#R + 1] = h[1]
+		FORK_ELECTRIC_MINE_EXCLUDED[h[1]] = "a mob drop (" .. h[2] .. "), no ore: the Ore Drilling Plant mines ore blocks only"
+	end
+	--- fiery steel
+	step(R, "fiery-tears", "hv-assembling-machine-recipes", 75, HV_SPEED, { { "ghast-tear", 1 }, { "ur-ghast-trophy", 1 } },
+		{ { "fiery-tears", 1 }, { "ur-ghast-trophy", 1 } })
+	step(R, "fiery-blood", "lv-canning-machine-recipes", 0.2, LV_SPEED, { { "fiery-tears", 1 } }, { { "fiery-blood", 25 } })
+	step(R, "fiery-steel-dust", "lv-chemical-bath-recipes", 5, LV_SPEED, { { "iron-dust", 1 }, { "fiery-blood", 25 } },
+		{ { "fiery-steel-dust", 1 } })
+	--- the atomic separation catalyst's firestone variants (section 28's recipes with 4 firestone dust)
+	for _, a in pairs({ "draconium", "quantium" }) do
+		for _, b in pairs({ "ardite", "manyullyn" }) do
+			step(R, "raw-" .. ASC .. "-firestone-" .. a .. "-" .. b, "hv-mixer-recipes", 15, HV_SPEED,
+				{ { "firestone-dust", 4 }, { a .. "-dust", 4 }, { b .. "-dust", 4 }, { "molten-naquadah", 28.8 } }, { { "raw-" .. ASC, 63 } })
+		end
+	end
+	--- creon plasma and mellion
+	step(R, "fermium-plasma", "mk4-fusion-reactor-recipes", 30, UHV_SPEED,
+		{ { "americium-plasma", 100 }, { "boron-plasma", 100 } }, { { "fermium-plasma", 100 } })
+	step(R, "creon-plasma", "dimensionally-transcendent-plasma-forge-recipes", 5, UMV_SPEED,
+		{ { "fermium-plasma", 100 }, { "thorium-plasma", 100 }, { "celestial-tungsten-plasma", 100 }, { "calcium-plasma", 100 },
+			{ "dimensionally-transcendent-residue", 100 } }, { { "creon-plasma", 500 } })
+	step(R, "mellion-dust", "umv-mixer-recipes", 15, UMV_SPEED,
+		{ { "tritanium-dust", 11 }, { "orundum-dust", 8 }, { "rubidium-dust", 11 }, { "fiery-steel-dust", 7 }, { "firestone-dust", 13 },
+			{ ASC .. "-dust", 13 }, { "dimensionally-transcendent-residue", 500 } }, { { "mellion-dust", 63 } })
+	step(R, "harmonic-compound", "umv-electric-blast-furnace-recipes", 30, UMV_SPEED,
+		{ { "mellion-dust", 1 }, { "creon-plasma", 14.4 } }, { { "harmonic-compound", 2 } })
+	step(R, "mellion-ingot", "uiv-vacuum-freezer-recipes", 1, UIV_SPEED,
+		{ { "harmonic-compound", 2 }, { "molten-" .. ASC, 14.4 } }, { { "mellion-ingot", 1 }, { "molten-creon", 14.4 } })
+	--- the first consumer: MK V from creon and mellion
+	step(R, "transcendent-metal-dust", "lv-macerator-recipes", 4.9, LV_SPEED, { { "transcendent-metal-ingot", 1 } },
+		{ { "transcendent-metal-dust", 1 } })
+	step(R, MK5 .. "-creon-mellion", NFR .. "-t3-recipes", 2.5, UXV_SPEED,
+		{ { "transcendent-metal-dust", 16 }, { ASC .. "-dust", 48 }, { MK4, 2000 }, { "heavy-radox", 25 }, { "molten-mellion", 28.8 },
+			{ "molten-creon", 28.8 } }, { { MK5, 750 } })
+
+	F.tech{ name = T, prerequisites = { "naquadah-based-fuel-mk6", "godforge-plasma-module", "space-elevator-mining-module-mk1" },
+		packs = 14, count = 50, time = 60, recipes = R }   -- (as 138's UXV techs)
+	FORK_CASTING.materials["mellion"] = { "uev", T }
+	FORK_CASTING.materials[ASC] = { "iv", T }
 	FORK_CASTING.run()
 end
