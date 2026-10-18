@@ -2565,6 +2565,34 @@ Autocrafting; the maintainer's decisions of 2026-10-18):
 - **Not built:** the Target Chamber as a machine (only its controller, an ingredient), the Synchrotron and the LINAC
   (GT's LHC accelerates the beam itself).
 
+The Large Hadron Collider and the gravitational lens (step 4 part 2 with step 3; 164 sections 31 and 32, technologies
+Large Hadron Collider (13 packs) and Gravitational Lens (15 packs: its Space comes from the godforge's exotic module)):
+- **One machine, upgraded module by module** (as the refinery's coils): the LHC with the EM module, then the Weak
+  module, then the LHCb module. Its recipes are GT's operating points as expected amounts:
+  - EM: 400 protons -> 28 taus + 16.8 omegas in 10 s (1 GeV protons, no acceleration; UIV);
+  - Weak: 2000 electrons -> 45.2 upsilons, 113.2 taus, 68 omegas in 100 s (electrons accelerated past 4.73 GeV;
+    6.55G EU/t: MAX);
+  - LHCb: 20 electrons -> 40 gravitons in 1 s (UIV).
+  The other particles are voided, as GT's hatch filters would. One UIV energy hatch (GT: exactly one).
+- **Structure scaled** like the plasma forge and the godforge (GT's counts / 44): the main ring 129 collider casings
+  (GT 5664), each module 12 collider casings and 4 of its own casings (GT 144 to 160).
+- **Parts with GT's recipes:** the UV, UHV and UIV Solenoid Superconductor Coils (GT's cyclotron coils; their large
+  fluid cells, medium pipes, the long metastable oganesson rod), the CMS, ATLAS and LHCb casings in the Beam Crafter,
+  niobium and the Niobium Cavity Casing, the Collider Casing, neonite, the Filtered Beam Output Hatch, the Samarium
+  Electromagnet, the Compact and Advanced Compact Fusion Coils with GoodGenerator's quartz crystal resonator, GT++'s
+  Advanced Nitinol (two nitinol-60 blocks engraved with the quantum anomaly) and its melt.
+- **The lens:** the Stable Boson Containment Unit (40 gravitons in the Beam Crafter), the Spatially Transcendent
+  Gravitational Lens Block (Quantum Glass with its Molecular and High Power Casings, TM-reinforced glass, the radox
+  polymer, chromatic, mysterious crystal (UU matter) and magneto resonatic lenses, dense chromatic glass plates, long
+  creon and mellion rods, rhugnor, creon and advanced nitinol melts), then the Gravitational Lens in the UMV
+  compressor with 576 Space. The UMV, UXV and MAX compressors get a fluid input for it.
+- **First consumer:** GT's second APIC recipe (an APIC wafer engraved with the lens and 1.5 superfluid -> 2 chips, UIV),
+  next to the mod's own APIC recipe.
+- **Left out, named:** GT's black hole compressor (the lens runs in the UMV compressor), the glass's Force Field Glass
+  (netherite, molten celestial tungsten) and Six-Phased Copper rods (hypogen, #436), the collider casing's Naquarite
+  foil (netherite, Thaumcraft), the LHC controller's Research Stations (no TecTech computation) and UV Neutron
+  Accelerators (their inverter's plastic case takes cyan dye, which the mod has none of).
+
 ### Naquadah fuel MK IV to VI and the refinery (issue #356)
 
 The refinery with MK III and MK IV comes in steps, by the maintainer's decisions on #417 and #421 (GT's sources, no

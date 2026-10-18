@@ -198,7 +198,7 @@ put("endgame", { "raw-star-matter", "spatially-enlarged-fluid", "tachyon-rich-te
 put("endgame", { "dimensionally-transcendent-residue", "stable-baryonic-matter", "dimensionally-shifted-superfluid" })
 put("gases", { "oganesson" })
 --- issue #355 step 4: the beamline's particles and UU matter
-put("particles", { "electron", "proton" })
+put("particles", { "electron", "proton", "tau", "omega", "upsilon", "graviton" })
 put("endgame", { "uu-matter" })
 
 --- patterns for whole lines (and for new fluids of a known kind); rank = a capture that orders the line by tier

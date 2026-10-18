@@ -3730,3 +3730,304 @@ do
 	F.tech{ name = T, prerequisites = { "naquadah-fuel-refinery", "me-autocrafting" }, packs = 10, count = 1500, time = 60,
 		recipes = R }   -- (as section 27's refinery: the radiation proof casing comes there)
 end
+
+
+
+
+
+--------------------------------------------------------------------------------
+--- 31) THE LARGE HADRON COLLIDER AND ITS PARTICLES (issue #355, step 4 part 2; the maintainer's decisions of
+--- 2026-10-18). GT5-Unofficial 1c385e739b: the LHC (gregtech/common/tileentities/machines/multi/beamcrafting/
+--- MTELargeHadronCollider.java, LHCModule.java), its casings (gregtech/loaders/postload/recipes/beamcrafter/
+--- BeamCrafterRecipes.java (BCR)), its controller (tectech/loader/recipe/ResearchStationAssemblyLine.java (RSAL));
+--- NewHorizonsCoreMod (NHC) for the solenoids, the collider casing, neonite and the electromagnet; GoodGenerator for the
+--- compact fusion coils (RecipeLoader2.java:1261-1285) and the quartz crystal resonator (RecipeLoader.java:845-1036).
+--- * One machine, upgraded module by module (as the refinery's coils): the LHC with the EM module (taus and omegas from
+---   protons), + the Weak module (upsilons), + the LHCb module (gravitons). GT's main ring accelerates the beam
+---   (1048.6 x (cycles + 1)^2 keV per second) and each module's 2 output hatches roll a particle per second, weighted by
+---   GT's LHC weights among the particles below the collision energy. The recipes are GT's operating points as
+---   expected amounts: EM on 1 GeV protons (no acceleration): 40 protons a second, 2.8 taus and 1.68 omegas (3.5 % and
+---   2.1 %), UIV; Weak on electrons accelerated to 4.73 GeV and more (24 cycles): 40 particles a second, 1.13 % upsilons,
+---   2.83 % taus, 1.70 % omegas, 6.55G EU/t: MAX; LHCb on the Source Chamber's 1 MeV electrons: 20 electrons, 40
+---   gravitons a second (100 %), UIV. The other particles are voided (GT's hatch filters). GT's Strong module is not
+---   needed. The LHC has one UIV energy hatch (GT: exactly one energy hatch).
+--- * The structure is scaled as the plasma forge's and the godforge's (GT's counts / 44, rounded up): the main ring 129
+---   collider casings (GT 5664), 2 neonite, 1 glass, 1 shielded accelerator casing, the beam input hatch; each module 12
+---   collider casings, 4 of its own casings (GT 144-160), 3 glass, 1 neonite and GT's 2 advanced beam output hatches.
+--- * GT's UV, UHV and UIV Solenoid Superconductor Coils (BlockCyclotronCoils.java, the IV one is 20's; NHC
+---   AssemblingLineRecipes.java:1523-1590) with GT's large fluid cells (AssemblerRecipes.java:154-192), medium pipes and the long
+---   metastable oganesson rod; the CMS, ATLAS and LHCb casings in the Beam Crafter (BCR:98-160: 6000 electrons, 1800
+---   taus, 750 upsilons + 750 omegas); niobium (GT's blast furnace at 2750 K, MV), the Niobium Cavity Casing (gtnhlanth
+---   RecipeLoader.java:351-360) and the Collider Casing (NHC AssemblerRecipes.java:9800-9808); neonite (NHC 7012-7015);
+---   the Advanced Beam Output Hatch (RSAL:2209-2220); the Samarium Electromagnet (NHC AssemblingLineRecipes.java:
+---   1103-1117); GT++'s Advanced Nitinol (RecipesGregTech.java:830-836: two nitinol-60 blocks engraved with the quantum
+---   anomaly; its melt 1296 L per block, RecipeGenRecycling.java:162-190) for the ATLAS casings; GT++'s Quantum is
+---   transcendent metal (as 140) for the LHCb casings.
+--- * The controller (RSAL:2192-2207): 64 Compact Fusion Coils, 32 Advanced Compact Fusion Coils (the precise assembler;
+---   the quartz crystal resonator with GT's quartz wafer, special ceramics and micro heater), 64 UHV circuits, 64 UV
+---   field generators, the electromagnet, 8 CMS casings and the neutronium melts.
+--- * Left out, named: the collider casing's Naquarite Universal Insulator Foil (netherite and Thaumcraft's infused gold,
+---   as 26), the controller's 8 Research Stations (the mod has no TecTech computation) and 8 UV Neutron Accelerators
+---   (their inverter's plastic case takes cyan dye, which the mod has none of).
+--------------------------------------------------------------------------------
+do
+	local T = "large-hadron-collider"
+	local R = {}
+	local LHC = "large-hadron-collider"
+	local function item(name, amount) return { type = "item", name = name, amount = amount } end
+	for _, p in pairs({ { "tau", { 0.85, 0.75, 0.30 } }, { "omega", { 0.55, 0.85, 0.40 } }, { "upsilon", { 0.75, 0.40, 0.90 } },
+		{ "graviton", { 0.30, 0.30, 0.45 } } }) do
+		F.fluid(p[1], p[1], p[2])   -- (gtnhlanth's particle icons)
+	end
+	F.fluid("molten-advanced-nitinol", "molten-advanced-nitinol", { 0.39, 0.39, 0.86 })
+	items(SUB_DUST, { "aluminium-nitride-dust", "special-ceramics-dust" })
+	items(SUB_PART, { "medium-naquadah-fluid-pipe", "medium-awakened-draconium-fluid-pipe", "long-metastable-oganesson-rod",
+		"magnetic-samarium-ring", "empty-large-chrome-fluid-cell", "empty-large-iridium-fluid-cell", "empty-large-neutronium-fluid-cell",
+		"hot-niobium-ingot", "niobium-ingot", "niobium-plate", "niobium-rod", "niobium-frame", "block-of-advanced-nitinol",
+		"block-of-quartzite", "quartzite-plate", "quartz-wafer", "special-ceramics-plate", "ultra-low-voltage-coil",
+		"manganese-ingot", "manganese-foil", "tantalum-capacitor", "micro-heater", "quartz-crystal-resonator" })
+	items("subgroup-uhv-age-multiblocks", { "uv-solenoid-superconductor-coil", "uhv-solenoid-superconductor-coil",
+		"uiv-solenoid-superconductor-coil", "cms-casing", "atlas-casing", "lhcb-casing", "niobium-cavity-casing",
+		"collider-casing", "neonite", "advanced-beam-output-hatch", "samarium-electromagnet", "compact-fusion-coil",
+		"advanced-compact-fusion-coil", "large-hadron-collider-controller" })
+	local niobium_small, niobium_small_r = pile("niobium-dust", "small")
+	FORK_CASTING.recipes[niobium_small_r] = true
+	R[#R + 1] = niobium_small_r
+
+	--- the solenoids and their parts
+	step(R, "medium-naquadah-fluid-pipe", "hv-extruder-recipes", 1.2, HV_SPEED, { { "naquadah-ingot", 3 } },
+		{ { "medium-naquadah-fluid-pipe", 1 } })
+	step(R, "medium-awakened-draconium-fluid-pipe", "hv-extruder-recipes", 1.2, HV_SPEED, { { "awakened-draconium-ingot", 3 } },
+		{ { "medium-awakened-draconium-fluid-pipe", 1 } })
+	step(R, "empty-large-chrome-fluid-cell", "ev-assembling-machine-recipes", 10, EV_SPEED,
+		{ { "double-rhodium-plated-palladium-plate", 4 }, { "palladium-ring", 4 } }, { { "empty-large-chrome-fluid-cell", 1 } })
+	step(R, "empty-large-iridium-fluid-cell", "ev-assembling-machine-recipes", 10, EV_SPEED,
+		{ { "double-iridium-plate", 4 }, { "naquadah-ring", 4 } }, { { "empty-large-iridium-fluid-cell", 1 } })
+	step(R, "empty-large-neutronium-fluid-cell", "iv-assembling-machine-recipes", 10, IV_SPEED,
+		{ { "double-neutronium-plate", 4 }, { "draconium-ring", 4 } }, { { "empty-large-neutronium-fluid-cell", 1 } })
+	step(R, "long-metastable-oganesson-rod", "uev-fluid-solidifier-recipes", 15, UEV_SPEED, { { "molten-metastable-oganesson", 14.4 } },
+		{ { "long-metastable-oganesson-rod", 1 } })
+	step(R, "magnetic-samarium-ring", "iv-polarizer-recipes", 1.6, IV_SPEED, { { "samarium-ring", 1 } }, { { "magnetic-samarium-ring", 1 } })
+	step(R, "uv-solenoid-superconductor-coil", "zpm-assembly-line-recipes", 20, UV_SPEED,
+		{ { "naquamiridium-superconductive-wire", 32 }, { "fluxed-electrum-cable", 8 }, { "medium-naquadah-fluid-pipe", 1 },
+			{ "long-naquadria-rod", 8 }, { "double-neutronium-plate", 2 }, { "empty-large-chrome-fluid-cell", 1 }, { "uv-pump", 1 },
+			{ "super-coolant", 1600 }, { "molten-indalloy-140", 230.4 } }, { { "uv-solenoid-superconductor-coil", 1 } })
+	step(R, "uhv-solenoid-superconductor-coil", "zpm-assembly-line-recipes", 20, UHV_SPEED,
+		{ { "triamerotronium-superconductive-wire", 32 }, { "bedrockium-cable", 8 }, { "medium-neutronium-fluid-pipe", 1 },
+			{ "long-naquadria-rod", 8 }, { "double-cosmic-neutronium-plate", 2 }, { "empty-large-iridium-fluid-cell", 1 }, { "uhv-pump", 1 },
+			{ "super-coolant", 6400 }, { "molten-indalloy-140", 921.6 } }, { { "uhv-solenoid-superconductor-coil", 1 } })
+	step(R, "uiv-solenoid-superconductor-coil", "zpm-assembly-line-recipes", 20, UIV_SPEED,
+		{ { "chromnorox-superconductive-wire", 32 }, { "nether-star-cable", 8 }, { "medium-awakened-draconium-fluid-pipe", 1 },
+			{ "long-metastable-oganesson-rod", 8 }, { "double-transcendent-metal-plate", 2 }, { "empty-large-neutronium-fluid-cell", 1 },
+			{ "uiv-pump", 1 }, { "super-coolant", 102400 }, { "molten-indalloy-140", 460.8 } }, { { "uiv-solenoid-superconductor-coil", 1 } })
+	--- advanced nitinol (the ATLAS casings' melt)
+	step(R, "block-of-advanced-nitinol", "uv-laser-engraver-recipes", 60, UV_SPEED, { { "block-of-nitinol-60", 2 }, { "quantum-anomaly", 1 } },
+		{ { "block-of-advanced-nitinol", 1 }, { "quantum-anomaly", 1 } })
+	step(R, "melt-block-of-advanced-nitinol", "uv-fluid-extractor-recipes", 10.8, UV_SPEED, { { "block-of-advanced-nitinol", 1 } },
+		{ { "molten-advanced-nitinol", 129.6 } })
+	--- the module casings (Beam Crafter)
+	step(R, "cms-casing", "beam-crafter-recipes", 1, UV_SPEED,
+		{ { "uv-solenoid-superconductor-coil", 4 }, { "zpm-field-generator", 4 }, { "americium-plasma", 921.6 }, { "electron", 6000 } },
+		{ { "cms-casing", 4 } })
+	step(R, "atlas-casing", "beam-crafter-recipes", 1, UHV_SPEED,
+		{ { "uhv-solenoid-superconductor-coil", 4 }, { "uv-field-generator", 4 }, { "molten-advanced-nitinol", 921.6 }, { "tau", 1800 } },
+		{ { "atlas-casing", 4 } })
+	step(R, "lhcb-casing", "beam-crafter-recipes", 1, UIV_SPEED,
+		{ { "uiv-solenoid-superconductor-coil", 4 }, { "uev-field-generator", 4 }, { "molten-transcendent-metal", 921.6 },
+			{ "upsilon", 750 }, { "omega", 750 } }, { { "lhcb-casing", 4 } })
+	--- niobium, the collider casing, neonite, the hatch, the electromagnet
+	step(R, "hot-niobium-ingot", "mv-electric-blast-furnace-recipes", 275, MV_SPEED, { { "niobium-dust", 1 } }, { { "hot-niobium-ingot", 1 } })
+	step(R, "niobium-ingot", "mv-vacuum-freezer-recipes", 14.1, MV_SPEED, { { "hot-niobium-ingot", 1 } }, { { "niobium-ingot", 1 } })
+	step(R, "niobium-plate", "lv-bending-machine-recipes", 4.7, LV_SPEED, { { "niobium-ingot", 1 } }, { { "niobium-plate", 1 } })
+	step(R, "niobium-rod", "lv-lathe-recipes", 23.5, LV_SPEED, { { "niobium-ingot", 1 } }, { { "niobium-rod", 1 }, { niobium_small, 2 } })
+	step(R, "niobium-frame", "lv-assembling-machine-recipes", 3.2, LV_SPEED, { { "niobium-rod", 4 } }, { { "niobium-frame", 1 } })
+	step(R, "niobium-cavity-casing", "iv-assembling-machine-recipes", 12, IV_SPEED,
+		{ { "niobium-frame", 1 }, { "niobium-plate", 6 }, { "helium", 200 } }, { { "niobium-cavity-casing", 1 } })
+	step(R, "collider-casing", "zpm-assembling-machine-recipes", 30, ZPM_SPEED,
+		{ { "shielded-accelerator-casing", 32 }, { "niobium-cavity-casing", 32 }, { "niobium-titanium-cable", 256 }, { "uv-sensor", 1 },
+			{ "molten-pikyonium-64b", 921.6 } }, { { "collider-casing", 32 } })
+	step(R, "neonite", "lv-assembling-machine-recipes", 5, LV_SPEED, { { "emerald", 8 }, { "glowstone-dust", 1 } }, { { "neonite", 8 } })
+	step(R, "advanced-beam-output-hatch", "zpm-assembly-line-recipes", 60, UV_SPEED,
+		{ { "beam-output-hatch", 1 }, { "uv-sensor", 4 }, { "uv-emitter", 4 }, { "activated-carbon-mesh-filter", 32 }, { "uu-matter", 100 } },
+		{ { "advanced-beam-output-hatch", 1 } })
+	step(R, "samarium-electromagnet", "zpm-assembly-line-recipes", 60, UV_SPEED,
+		{ { "double-neutronium-plate", 32 }, { "magnetic-samarium-ring", 32 }, { "ultimate-voltage-coil", 32 },
+			{ "naquamiridium-superconductive-wire", 256 }, { "uv-field-generator", 2 }, { "super-coolant", 3200 }, { "molten-cobalt", 691.2 },
+			{ "molten-fluxed-electrum", 230.4 } }, { { "samarium-electromagnet", 1 } })
+	--- the compact fusion coils and the quartz crystal resonator
+	step(R, "block-of-quartzite", "lv-compressor-recipes", 15, LV_SPEED, { { "quartzite-gem", 9 } }, { { "block-of-quartzite", 1 } })
+	step(R, "quartzite-plate", "lv-cutting-machine-recipes", 49, LV_SPEED, { { "block-of-quartzite", 1 }, { "lubricant", 2.2 } },
+		{ { "quartzite-plate", 9 } })
+	step(R, "quartz-wafer", "lv-autoclave-recipes", 75, LV_SPEED, { { "quartzite-plate", 1 }, { "sodium", 4 }, { "distilled-water", 100 } },
+		{ { "quartz-wafer", 1 } })
+	step(R, "aluminium-nitride-dust", "ev-electric-blast-furnace-recipes", 10, EV_SPEED,
+		{ { "sapphire-dust", 5 }, { "coal-dust", 3 }, { "liquid-nitrogen", 200 } }, { { "aluminium-nitride-dust", 2 }, { "carbon-monoxide", 300 } })
+	step(R, "special-ceramics-dust", "ev-mixer-recipes", 5, EV_SPEED,
+		{ { "aluminium-nitride-dust", 4 }, { "yttrium-oxide", 5 }, { "advanced-glue", 100 } }, { { "special-ceramics-dust", 9 } })
+	step(R, "special-ceramics-plate", "hv-extruder-recipes", 20, HV_SPEED, { { "special-ceramics-dust", 2 } }, { { "special-ceramics-plate", 1 } })
+	step(R, "ultra-low-voltage-coil", "lv-assembling-machine-recipes", 10, LV_SPEED, { { "magnetic-iron-rod", 1 }, { "fine-lead-wire", 16 } },
+		{ { "ultra-low-voltage-coil", 1 } })
+	step(R, "manganese-dust-smelter", "smelting", 10, LV_SPEED, { { "manganese-dust", 1 } }, { { "manganese-ingot", 1 } })
+	step(R, "manganese-foil", "lv-bending-machine-recipes", 5.5, LV_SPEED, { { "manganese-ingot", 1 } }, { { "manganese-foil", 4 } })
+	step(R, "tantalum-capacitor", "lv-assembling-machine-recipes", 5, LV_SPEED,
+		{ { "tantalum-dust", 1 }, { "manganese-foil", 1 }, { "polyethylene", 14.4 } }, { { "tantalum-capacitor", 8 } })
+	step(R, "micro-heater", "precise-assembler-mk1-recipes", 2, MV_SPEED,
+		{ { "resin-circuit-board", 1 }, { "ultra-low-powered-integrated-circuit", 1 }, { "ultra-low-voltage-coil", 2 },
+			{ "tantalum-capacitor", 1 }, { "molten-red-alloy", 14.4 }, { "molten-aluminium", 14.4 } }, { { "micro-heater", 1 } })
+	step(R, "quartz-crystal-resonator", "precise-assembler-mk1-recipes", 2, MV_SPEED,
+		{ { "quartz-wafer", 1 }, { "special-ceramics-plate", 2 }, { "micro-heater", 1 }, { "ilc-chip", 4 }, { "molten-energetic-alloy", 7.2 },
+			{ "molten-silver", 1.8 } }, { { "quartz-crystal-resonator", 1 } })
+	step(R, "compact-fusion-coil", "precise-assembler-mk2-recipes", 40, LUV_SPEED,
+		{ { "fusion-coil-block", 3 }, { "quartz-crystal-resonator", 2 }, { "hi-computation-station-mk3", 1 }, { "molten-artherium-sn", 57.6 },
+			{ "molten-tanmolyium-beta-c", 14.4 } }, { { "compact-fusion-coil", 1 } })
+	step(R, "advanced-compact-fusion-coil", "precise-assembler-mk3-recipes", 40, ZPM_SPEED,
+		{ { "fusion-coil-block", 3 }, { "radiation-protection-plate", 2 }, { "quantum-star", 4 }, { "hi-computation-station-mk4", 1 },
+			{ "molten-dalisenite", 57.6 }, { "molten-hikarium", 14.4 } }, { { "advanced-compact-fusion-coil", 1 } })
+	--- the controller
+	step(R, "large-hadron-collider-controller", "zpm-assembly-line-recipes", 300, UHV_SPEED,
+		{ { "compact-fusion-coil", 64 }, { "advanced-compact-fusion-coil", 32 }, { "uhv-circuit", 64 }, { "uv-field-generator", 64 },
+			{ "samarium-electromagnet", 1 }, { "cms-casing", 8 }, { "molten-neutronium", 66355.2 }, { "molten-cosmic-neutronium", 66355.2 } },
+		{ { "large-hadron-collider-controller", 1 } })
+
+	--- the machine and its modules
+	local function power(tier, n)
+		local p = data.raw["assembling-machine"][tier .. "-centrifuge"].energy_usage
+		return (tonumber(p:match("^[%d.]+")) * n) .. p:match("%a+$")
+	end
+	local ports = { port("input", N, { 0, -1 }), port("output", S, { -1, 1 }), port("output", S, { 0, 1 }), port("output", S, { 1, 1 }) }
+	local function module(casing)
+		return { item("collider-casing", 12), item(casing, 4), item("shielded-accelerator-glass", 3), item("neonite", 1),
+			item("advanced-beam-output-hatch", 2) }
+	end
+	local base = { item("large-hadron-collider-controller", 1), item("collider-casing", 129), item("neonite", 2),
+		item("shielded-accelerator-glass", 1), item("shielded-accelerator-casing", 1), item("beam-input-hatch", 1),
+		item("uiv-energy-hatch", 1), item("lv-machine-hull", 1) }
+	for _, i in pairs(module("cms-casing")) do   -- (the EM module joins the main ring's casings)
+		local found = false
+		for _, j in pairs(base) do
+			if j.name == i.name then j.amount, found = j.amount + i.amount, true end
+		end
+		if not found then base[#base + 1] = i end
+	end
+	local stages = {
+		{ LHC, "lhc-em-recipes", base },
+		{ LHC .. "-weak", "lhc-weak-recipes", F.join({ item(LHC, 1) }, module("atlas-casing")) },
+		{ LHC .. "-lhcb", "lhc-lhcb-recipes", F.join({ item(LHC .. "-weak", 1) }, module("lhcb-casing")) },
+	}
+	local cats = {}
+	for _, s in pairs(stages) do
+		machine{
+			name = s[1], category = s[2], speed = UIV_SPEED, energy = power("uiv", 1), subgroup = "subgroup-uhv-age-multiblocks",
+			ports = ports, list = R, recipe = { "crafting-or-assembling-recipes", 1, s[3] },
+		}
+		cats[#cats + 1] = s[2]
+		data.raw["assembling-machine"][s[1]].crafting_categories = table.deepcopy(cats)
+		FORK_RECYCLING_BLACKLIST[s[1]] = "the LHC's structure: GT recycles the controller"
+	end
+	--- the particles: GT's operating points (see above), expected amounts
+	step(R, "lhc-em-tau-and-omega", "lhc-em-recipes", 10, UIV_SPEED, { { "proton", 400 } }, { { "tau", 28 }, { "omega", 16.8 } })
+	step(R, "lhc-weak-upsilon", "lhc-weak-recipes", 100, MAX_SPEED, { { "electron", 2000 } },
+		{ { "upsilon", 45.2 }, { "tau", 113.2 }, { "omega", 68 } })
+	step(R, "lhc-lhcb-graviton", "lhc-lhcb-recipes", 1, UIV_SPEED, { { "electron", 20 } }, { { "graviton", 40 } })
+
+	F.tech{ name = T, prerequisites = { "beamline", "godforge", "naquadah-based-fuel-mk4", "dimensionally-shifted-superfluid",
+		"nuclear-salt-processing-ii" }, packs = 13, count = 95, time = 60, recipes = R }   -- (as 138's UMV techs; the tree check's prerequisites)
+end
+
+
+
+
+
+--------------------------------------------------------------------------------
+--- 32) THE GRAVITATIONAL LENS (issue #355, step 3 with step 4's gravitons; the maintainer's decisions of 2026-10-18).
+--- GT5-Unofficial 1c385e739b and NewHorizonsCoreMod (NHC).
+--- * The Stable Boson Containment Unit (BeamCrafterRecipes.java:342-356: the empty unit, 100 L krypton, 20 + 20
+---   gravitons; UHV, 2 s) and its empty unit (NHC AssemblerRecipes.java:9845-9850: a niobium cavity casing, 4 dense lead
+---   plates, 10 L ethyl cyanoacrylate (super glue) -> 64; LuV, 30 s).
+--- * The Spatially Transcendent Gravitational Lens Block (godforge glass; the research station assembly line,
+---   ResearchStationAssemblyLine.java:2503-2524, UIV, 10 s): 8 Quantum Glass, 8 transcendent metal reinforced
+---   borosilicate glass, 4 Stable Boson Containment Units, 6 each of the radox polymer, chromatic, mysterious crystal and
+---   magneto resonatic lenses, 36 dense chromatic glass plates, 6 long creon and mellion rods, 2304 L molten rhugnor and
+---   creon, 147 456 L molten Advanced Nitinol (31's). Its parts with GT's recipes: Quantum Glass, the Molecular Casing and
+---   the High Power Casing (tectech Assembler.java:48-129; fine cobalt wire from a cast cobalt ingot), the TM-reinforced
+---   glass (bartworks FluidSolidifier.java:85-91), the Radox Polymer Lens (NHC LatheRecipes.java:22-24), the Mysterious
+---   Crystal Lens (NHC ChemicalBathRecipes.java:120-122, with UU matter; its gem grades NHC LaserEngraverRecipes.java:
+---   43-83), GT++'s dense chromatic glass plate (RecipeGenPlates.java:155-163), the long creon and mellion rods (143's
+---   casts, UEV). The BEC route (BECRecipes.java:200-217) needs the same parts and is not built.
+--- * The Gravitational Lens (NHC CompressorRecipes.java:179-182: the glass and 5760 L molten Space, UMV, 2 min) runs in
+---   the UMV compressor: GT's Pseudostable Black Hole Containment Field is not built (MULTIBLOCK-AUDIT, the
+---   maintainer's decision); the UMV, UXV and MAX compressors get a fluid input for it. Molten Space is the mod's spatially enlarged fluid (the godforge's exotic module, the
+---   plasma forge's MAX recipes).
+--- * The first consumer: GT's second APIC recipe (NHC LaserEngraverRecipes.java:297-303: an APIC wafer engraved with the
+---   gravitational lens and 15 L superfluid -> 2 chips; UIV, 5 s), next to the mod's own APIC recipe (129).
+--- * Left out, named: the glass's 8 Force Field Glass (GT++: netherite and molten celestial tungsten rods) and 6 long
+---   Six-Phased Copper rods (hypogen, #436).
+--------------------------------------------------------------------------------
+do
+	local T = "gravitational-lens"
+	local R = {}
+	items(SUB_PART, { "stable-empty-containment-unit", "stable-boson-containment-unit", "cobalt-ingot", "fine-cobalt-wire",
+		"mysterious-crystal-plate", "mysterious-crystal-gem", "flawless-mysterious-crystal", "exquisite-mysterious-crystal",
+		"radox-polymer-lens", "mysterious-crystal-lens", "dense-chromatic-glass-plate", "long-creon-rod", "long-mellion-rod",
+		"gravitational-lens" })
+	items("subgroup-uhv-age-multiblocks", { "high-power-casing", "molecular-casing", "quantum-glass",
+		"transcendent-metal-reinforced-borosilicate-glass-block", "spatially-transcendent-gravitational-lens-block" })
+
+	--- the boson containment units
+	step(R, "stable-empty-containment-unit", "luv-assembling-machine-recipes", 30, LUV_SPEED,
+		{ { "niobium-cavity-casing", 1 }, { "dense-lead-plate", 4 }, { "super-glue", 1 } }, { { "stable-empty-containment-unit", 64 } })
+	step(R, "stable-boson-containment-unit", "beam-crafter-recipes", 2, UHV_SPEED,
+		{ { "stable-empty-containment-unit", 1 }, { "krypton", 10 }, { "graviton", 40 } }, { { "stable-boson-containment-unit", 1 } })
+	--- quantum glass
+	step(R, "fine-cobalt-wire", "lv-wiremill-recipes", 5, LV_SPEED, { { "cobalt-ingot", 1 } }, { { "fine-cobalt-wire", 4 } })
+	step(R, "high-power-casing", "luv-assembling-machine-recipes", 5, LUV_SPEED,
+		{ { "iridium-frame", 1 }, { "double-iridium-plate", 6 }, { "luv-circuit", 1 }, { "fine-cobalt-wire", 16 }, { "fine-copper-wire", 16 },
+			{ "niobium-titanium-wire", 4 }, { "molten-tungstensteel", 57.6 } }, { { "high-power-casing", 1 } })
+	step(R, "molecular-casing", "uv-assembling-machine-recipes", 40, UV_SPEED,
+		{ { "high-power-casing", 1 }, { "dense-osmiridium-plate", 6 }, { "trinium-foil", 12 }, { "tungstensteel-screw", 24 },
+			{ "tungstensteel-ring", 24 }, { "iv-field-generator", 1 }, { "molten-osmium", 129.6 } }, { { "molecular-casing", 1 } })
+	step(R, "quantum-glass", "uv-assembling-machine-recipes", 10, UV_SPEED,
+		{ { "molecular-casing", 1 }, { "reinforced-glass", 1 }, { "molten-trinium", 57.6 } }, { { "quantum-glass", 1 } })
+	step(R, "transcendent-metal-reinforced-borosilicate-glass-block", "uev-fluid-solidifier-recipes", 40, UEV_SPEED,
+		{ { "borosilicate-glass-block", 1 }, { "molten-transcendent-metal", 115.2 } },
+		{ { "transcendent-metal-reinforced-borosilicate-glass-block", 1 } })
+	--- the lenses and plates
+	step(R, "radox-polymer-lens", "uev-lathe-recipes", 90, UEV_SPEED, { { "radox-polymer-plate", 1 } }, { { "radox-polymer-lens", 1 } })
+	step(R, "mysterious-crystal-plate", "lv-bending-machine-recipes", 4.9, LV_SPEED, { { "mysterious-crystal-ingot", 1 } },
+		{ { "mysterious-crystal-plate", 1 } })
+	step(R, "mysterious-crystal-gem", "hv-laser-engraver-recipes", 60, HV_SPEED, { { "mysterious-crystal-plate", 9 }, { "ender-pearl-lens", 1 } },
+		{ { "mysterious-crystal-gem", 1 }, { "ender-pearl-lens", 1 } })
+	step(R, "flawless-mysterious-crystal", "zpm-laser-engraver-recipes", 30, ZPM_SPEED,
+		{ { "mysterious-crystal-gem", 3 }, { "ender-pearl-lens", 1 } }, { { "flawless-mysterious-crystal", 1 }, { "ender-pearl-lens", 1 } })
+	step(R, "exquisite-mysterious-crystal", "luv-laser-engraver-recipes", 30, LUV_SPEED,
+		{ { "flawless-mysterious-crystal", 3 }, { "ender-pearl-lens", 1 } }, { { "exquisite-mysterious-crystal", 1 }, { "ender-pearl-lens", 1 } })
+	step(R, "mysterious-crystal-lens", "uv-chemical-bath-recipes", 30, UV_SPEED,
+		{ { "exquisite-mysterious-crystal", 1 }, { "uu-matter", 14.4 } }, { { "mysterious-crystal-lens", 1 } })
+	step(R, "dense-chromatic-glass-plate", "uhv-bending-machine-recipes", 9.1, UHV_SPEED, { { "chromatic-glass-plate", 9 } },
+		{ { "dense-chromatic-glass-plate", 1 } })
+	--- the glass and the lens
+	step(R, "spatially-transcendent-gravitational-lens-block", "zpm-assembly-line-recipes", 10, UIV_SPEED,
+		{ { "quantum-glass", 8 }, { "transcendent-metal-reinforced-borosilicate-glass-block", 8 }, { "stable-boson-containment-unit", 4 },
+			{ "radox-polymer-lens", 6 }, { "chromatic-lens", 6 }, { "mysterious-crystal-lens", 6 }, { "magneto-resonatic-lens", 6 },
+			{ "dense-chromatic-glass-plate", 36 }, { "long-creon-rod", 6 }, { "long-mellion-rod", 6 }, { "molten-rhugnor", 230.4 },
+			{ "molten-creon", 230.4 }, { "molten-advanced-nitinol", 14745.6 } }, { { "spatially-transcendent-gravitational-lens-block", 1 } })
+	step(R, "gravitational-lens", "umv-compressor-recipes", 120, UMV_SPEED,
+		{ { "spatially-transcendent-gravitational-lens-block", 1 }, { "spatially-enlarged-fluid", 576 } }, { { "gravitational-lens", 1 } })
+	--- the UMV compressor (and the UXV and MAX ones, which run its recipes) gets a fluid input on the north side for the
+	--- lens's Space, as GT's compressors of the higher compression tiers take fluids (shown only with a fluid recipe)
+	for _, t in pairs({ "umv", "uxv", "max" }) do
+		local m = data.raw["assembling-machine"][t .. "-compressor"]
+		m.fluid_boxes = m.fluid_boxes or {}
+		table.insert(m.fluid_boxes, port("input", N, { 0, -1 }))
+	end
+	--- the first consumer: GT's APIC chip with the lens
+	step(R, "atto-power-ic-gravitational-lens", "uiv-laser-engraver-recipes", 5, UIV_SPEED,
+		{ { "apic-wafer", 1 }, { "gravitational-lens", 1 }, { "dimensionally-shifted-superfluid", 1.5 } },
+		{ { "atto-power-ic", 2 }, { "gravitational-lens", 1 } }, "atto-power-ic")
+
+	F.tech{ name = T, prerequisites = { "large-hadron-collider", "creon-and-mellion", "godforge-exotic-module" }, packs = 15,
+		count = 55, time = 60, recipes = R }   -- (as 138's godforge modules: MAX science for the Space)
+	FORK_CASTING.materials["cobalt"] = { "iv", T }
+	FORK_CASTING.materials["creon"] = { "uev", T }
+	FORK_CASTING.run()
+end
