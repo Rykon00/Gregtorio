@@ -44,7 +44,7 @@ worked off one pull request each; this list is their status.
 
 | Age | Gap | Issue | Status |
 |---|---|---|---|
-| Stone | wrought iron (ULV hull and casing, the arc furnace) and charcoal from logs in the coke oven | #448 | open |
+| Stone | wrought iron (ULV hull and casing, the arc furnace) and charcoal from logs in the coke oven | #448 | done (as Cast Iron, GTNH's name since 2026; the coke oven's charcoal) |
 | Steam | the high pressure tier (HP coal boiler, HP steam machines), the steam furnace, the solar and lava boilers | #446 | open |
 | Steam | the steam machines run the whole LV category with byproducts; GT's run recipes up to 32 EU/t, the macerator without byproducts | #447 | open |
 | LV | the LV Miner waited for the Military Science Pack technology (its LV sensor) | #443 | fixed (the sensor comes with the Circuit Assembler) |

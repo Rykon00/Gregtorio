@@ -4423,3 +4423,26 @@ gravitational-lens
 spacetime-dust
 zpic-wafer
 zepto-power-ic
+# issue #448: GT New Horizons' Cast Iron (its Wrought Iron of before)
+block-of-cast-iron
+cast-iron-bolt
+cast-iron-foil
+cast-iron-frame
+cast-iron-gear
+cast-iron-ingot
+cast-iron-item-casing
+cast-iron-nugget
+cast-iron-plate
+cast-iron-ring
+cast-iron-rod
+cast-iron-rotor
+cast-iron-round
+cast-iron-screw
+cast-iron-spring
+dense-cast-iron-plate
+double-cast-iron-plate
+fine-cast-iron-wire
+large-cast-iron-gear
+long-cast-iron-rod
+small-cast-iron-spring
+superdense-cast-iron-plate

@@ -192,6 +192,32 @@ local function piles(d, m)
 end
 
 --------------------------------------------------------------------------------
+--- 0) CAST IRON (issue #448). GT New Horizons' Wrought Iron, which GT5-Unofficial merged into Cast Iron in May 2026
+---    (b22dc69: Materials.WroughtIron = Materials.CastIron, "Cast Iron"); the name is GTNH's of today. GT's routes: an
+---    iron nugget smelts into a cast iron nugget in the furnace (SmelterRecipes.java:60-62), 3 iron ingots or dusts and a
+---    carbon dust give 3 ingots in the arc furnace (ArcFurnaceRecipes.java:522-530: 9 s, LV; Gregtorio's carbon dust is
+---    the coal dust). Its parts come from the data like every metal's (1 and 2); GT casts none (ProcessingIngot.java:60
+---    and the others leave CastIron out of the fluid solidifier). Iron arc-smelts into iron in GT now (157's ARC_INTO).
+--------------------------------------------------------------------------------
+local CAST_IRON = "cast-iron-ingot"
+if CAST_IRON then
+	add_item(CAST_IRON, sub_of("iron-ingot", "subgroup-smelting"), "z-cast-iron-0")
+	add_item("cast-iron-nugget", sub_of("iron-ingot", "subgroup-smelting"), "z-cast-iron-a")
+	data:extend({ {
+		type = "recipe", name = "cast-iron-nugget-smelting", category = "smelting", enabled = false, energy_required = 10,
+		ingredients = { item("iron-nugget") }, results = { item("cast-iron-nugget") }, main_product = "cast-iron-nugget",
+		subgroup = "subgroup-smelting",
+	} })
+	OC.made("cast-iron-nugget-smelting")
+	FORK_GT_PARTS.recipes["cast-iron-nugget-smelting"] = true
+	OC.unlock_after("cast-iron-nugget-smelting", { item_techs("iron-nugget") })
+	for _, from in pairs({ "iron-ingot", "iron-dust" }) do
+		recipe{ name = "cast-iron-ingot-from-" .. from, machine = "arc-furnace", tier = "lv", seconds = 9,
+			ingredients = { item(from, 3), item("coal-dust") }, results = { item(CAST_IRON, 3) } }
+	end
+end
+
+--------------------------------------------------------------------------------
 --- 1) THE NUGGETS (issue #223 B5 for every metal; the new nuggets of #227 first, the round takes one)
 --------------------------------------------------------------------------------
 --- the GT mass of metals with a nugget and no entry in the data
@@ -397,6 +423,17 @@ for _, m in pairs(metals) do
 					ingredients = { item(form("plate"), 4), item(form("ring")), fluid("soldering-alloy", 1.6) },
 					results = { item(n) } }
 			end
+		end
+	end
+end
+
+--- issue #448: GTNH's ULV machine casing and hull of cast iron (AssemblerRecipes.java:2580-2586: 8 plates; MTERecipeLoader
+--- registerHulls "PHP", "CMC": 2 wood plates, a cast iron plate, the casing, 2 lead cables). Gregtorio keeps its planks
+--- and red alloy cables (it has no lead cable); the iron plates become cast iron ones
+if CAST_IRON and data.raw.item["cast-iron-plate"] then
+	for _, name in pairs({ "ulv-machine-casing", "ulv-machine-hull" }) do
+		for _, i in pairs(data.raw.recipe[name].ingredients) do
+			if i.name == "iron-plate" then i.name = "cast-iron-plate" end
 		end
 	end
 end

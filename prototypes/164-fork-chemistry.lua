@@ -4074,3 +4074,17 @@ do
 	F.tech{ name = T, prerequisites = { "gravitational-lens", "umv-energy-hatches", "umv-plasma-turbine" }, packs = 15, count = 55,
 		time = 60, recipes = R }   -- (as section 32)
 end
+
+
+
+--------------------------------------------------------------------------------
+--- 34) CHARCOAL FROM THE COKE OVEN (issue #448). GT's coke oven turns a log into a charcoal and 250 L creosote in 90 s
+---   (CokeOvenRecipes.java:73-78; coal into coke and 500 L in 90 s, :15-20). Gregtorio's coke recipe (09) takes half
+---   GT's time, so the log does too; a tenth of the litres. With Coke Oven, which unlocks the coke recipe.
+--------------------------------------------------------------------------------
+do
+	local R = {}
+	step(R, "charcoal-coke-oven", "coke-oven-recipes", 45, 1, { { "wood", 1 } }, { { "charcoal", 1 }, { "creosote", 25 } },
+		"charcoal")
+	for _, r in pairs(R) do fork_add_unlock("coke-oven", r) end
+end
