@@ -49,7 +49,7 @@ worked off one pull request each; this list is their status.
 | Steam | the steam machines run the whole LV category with byproducts; GT's run recipes up to 32 EU/t, the macerator without byproducts | #447 | done (the steam macerator's own category: the LV recipes without byproducts; 32 EU/t is every LV recipe) |
 | LV | the LV Miner waited for the Military Science Pack technology (its LV sensor) | #443 | fixed (the sensor comes with the Circuit Assembler) |
 | LV | the LV Combustion Generator, LV Extruder and LV Laser Engraver | #449 | done (the LV categories hold GT's LV recipes; the LV extruder has one, the aluminium rod) |
-| LV, MV | energy storage before IV: battery buffers and the LV to HV batteries | #444 | open |
+| LV, MV | energy storage before IV: battery buffers and the LV to HV batteries | #444 | done (fixed-size buffers LV to HV with the batteries in the recipe; LV and MV with Battery, HV with Large Batteries) |
 | LV to HV | circuit recipe names of GTNH (Integrated Logic Circuit, Microprocessor, Integrated Processor, Processor Assembly, Workstation, Mainframe) | #445 | open |
 | ULV, HV | the ULV circuit tier; the nanoprocessor's parts at HV | #450 | open (the maintainer's decisions of 2026-10-20) |
 | all | GTNH's veins as mixed ore patches on the map instead of the vein recipes | #451 | question (Discord poll) |

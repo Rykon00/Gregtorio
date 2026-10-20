@@ -686,3 +686,121 @@ F.tech{
 		"industrial-extrusion-machine", "industrial-cutting-factory", "hyper-intensity-laser-engraver", "space-science-pack" },   -- (#252: its casings' parts)
 	packs = 7, count = 1000, recipes = { "large-rocket-engine", "turbodyne-casing" },
 }
+
+
+
+--------------------------------------------------------------------------------
+--- 8) BATTERIES AND BATTERY BUFFERS, LV TO HV (issue #444; the maintainer's decision of 2026-10-20: fixed sizes)
+--- GT New Horizons' energy storage before the IV supercapacitor: the battery buffers (MTEBasicBatteryBuffer, 1, 4, 9
+--- and 16 battery slots; out 1 amp, in 2 amps per battery) with the LV to HV batteries. Here a buffer is an accumulator
+--- of a fixed size: the batteries are part of its recipe (the tier's lithium battery, GT's largest of the tier), its
+--- capacity is theirs (MetaGeneratedItem01.java:5212-5224: lithium 100 000, 400 000 and 1 600 000 EU; 1 EU = 1/3 kJ
+--- here: 32 EU/t are 640 kW), its flow 1 amp out and 2 in per battery at the tier's voltage. No passive loss (GT's
+--- buffer keeps its charge).
+--- The batteries with GT's names and recipes: the hulls (AssemblerRecipes.java:2938-2966: LV a tin cable, a battery
+--- alloy plate and 144 L polyethylene, 4 s; MV 2 copper cables, 3 plates, 432 L, 16 s; HV 4 gold cables, 9 plates,
+--- 1296 L, 64 s; 20 EU/t), filled in the canner with 2, 8 or 32 lithium, cadmium or sodium dust (CannerRecipes.java:
+--- 21-112: 5, 20, 80 s, 2 EU/t). Gregtorio's battery hull is GT's MV one (Medium Battery Hull, its recipe now with GT's
+--- 3 plates); its mixed `battery` stays as it was. The buffers' recipe (MTERecipeLoader: "WTW", "WMW": 4 wires of the
+--- tier's material, x1, x4, x8, x16 for the sizes, a chest and the hull) with the batteries: tin, copper and gold wires
+--- (16x wires for x16), the wooden chest.
+--- Technologies: the LV and MV ones with Battery (the battery alloy plates; polyethylene comes before it), the HV ones
+--- with the new Large Batteries after Battery and HV Components (gold cables, the HV hull).
+--------------------------------------------------------------------------------
+do
+	local EU = 1e3 / 3   -- J per EU
+	local BATTERY_TIERS = {
+		--   tier  size      hull                   dust  seconds cable           plates poly   hull s  capacity (EU) volts wire
+		{ "lv", "small", "small-battery-hull", 2, 5, "tin-cable", 1, 14.4, 4, 100000, 32, "tin-wire" },
+		{ "mv", "medium", "battery-hull", 8, 20, "copper-cable", 3, 43.2, 16, 400000, 128, "copper-wire" },
+		{ "hv", "large", "large-battery-hull", 32, 80, "gold-cable", 9, 129.6, 64, 1600000, 512, "gold-wire" },
+	}
+	local TECH_OF = { lv = "battery", mv = "battery", hv = "large-batteries" }
+	local hv_recipes = {}
+	local function unlock(tier, name)
+		if TECH_OF[tier] == "large-batteries" then hv_recipes[#hv_recipes + 1] = name else fork_add_unlock(TECH_OF[tier], name) end
+	end
+	local sub = data.raw.item["battery-hull"].subgroup
+	for i, b in ipairs(BATTERY_TIERS) do
+		local tier, size, hull = b[1], b[2], b[3]
+		local hull_ingredients = {
+			{ type = "item", name = b[6], amount = ({ 1, 2, 4 })[i] },
+			{ type = "item", name = "battery-alloy-plate", amount = b[7] },
+			{ type = "fluid", name = "polyethylene", amount = b[8] },
+		}
+		if hull == "battery-hull" then
+			data.raw.recipe[hull].ingredients = hull_ingredients   -- (GT's 3 plates instead of upstream's 5)
+		else
+			create_item{
+				name = hull,
+				subgroup = sub,
+				category = "lv-assembling-machine-recipes",
+				energy_required = b[9] * LV_SPEED,
+				ingredients = hull_ingredients,
+			}
+			unlock(tier, hull)
+		end
+		for j, dust in ipairs({ "cadmium", "lithium", "sodium" }) do
+			local name = size .. "-" .. dust .. "-battery"
+			create_item{
+				name = name,
+				subgroup = sub,
+				order = "b[" .. i .. "]-" .. j,
+				category = "lv-canning-machine-recipes",
+				energy_required = b[5] * LV_SPEED,
+				ingredients = { { type = "item", name = hull, amount = 1 }, { type = "item", name = dust, amount = b[4] } },
+			}
+			unlock(tier, name)
+		end
+		--- the buffers: 1, 4, 9, 16 lithium batteries
+		for _, n in ipairs({ 1, 2, 3, 4 }) do
+			local slots = n * n
+			local name = tier .. "-battery-buffer-" .. slots
+			local wire = n == 4 and { b[12] .. "-16x", 4 } or { b[12], 4 * ({ 1, 4, 8 })[n] }
+			create_item{
+				name = name,
+				subgroup = "energy",
+				order = "e[battery-buffer]-" .. i .. "-" .. n,
+				place_result = name,
+				stack_size = 10,
+				ingredients = {
+					{ type = "item", name = wire[1], amount = wire[2] },
+					{ type = "item", name = "wooden-chest", amount = 1 },
+					{ type = "item", name = tier .. "-machine-hull", amount = 1 },
+					{ type = "item", name = size .. "-lithium-battery", amount = slots },
+				},
+			}
+			local amp = b[11] * 60 * EU   -- one amp of the tier in W
+			data:extend({ {
+				type = "accumulator",
+				name = name,
+				icon = "__gregtorio-continued__/graphics/icons/" .. name .. ".png",
+				icon_size = 32,
+				flags = { "placeable-neutral", "player-creation" },
+				minable = { mining_time = 0.5, result = name },
+				max_health = 200,
+				corpse = "small-remnants",
+				collision_box = { { -0.8, -0.8 }, { 0.8, 0.8 } },
+				selection_box = { { -1, -1 }, { 1, 1 } },
+				fast_replaceable_group = "fr-battery-buffer",
+				energy_source = {
+					type = "electric",
+					buffer_capacity = string.format("%.6fMJ", slots * b[10] * EU / 1e6),
+					usage_priority = "tertiary",
+					input_flow_limit = string.format("%.6gkW", 2 * slots * amp / 1e3),
+					output_flow_limit = string.format("%.6gkW", slots * amp / 1e3),
+				},
+				chargable_graphics = {
+					picture = { layers = { { filename = SPRITE_PATH .. name .. ".png", width = 64, height = 64 } } },
+				},
+				circuit_wire_max_distance = 9,
+				default_output_signal = { type = "virtual", name = "signal-A" },
+			} })
+			unlock(tier, name)
+		end
+	end
+	F.tech{
+		name = "large-batteries", prerequisites = { "battery", "hv-components" }, packs = 4, count = 400,
+		recipes = hv_recipes,
+	}
+end

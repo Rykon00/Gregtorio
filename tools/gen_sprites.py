@@ -1039,6 +1039,38 @@ def steam_age(gt):
         save(badged_icon(look(icon), solar), ICONS / f"{name}.png")
 
 
+# issue #444: the battery buffers LV to HV, 1 to 16 batteries (prototypes/145-fork-power-multiblocks.lua, section 8)
+BUFFER_TINT = {"LV": (150, 144, 136), "MV": (175, 225, 250), "HV": (220, 220, 236)}
+
+
+def battery_buffers(gt):
+    """GT's battery buffer: the tier's hull (MACHINE_<tier>_SIDE in the colour of Gregtorio's hull of the tier) with GT's
+    energy output overlay on top and the battery slots below, n x n dark slots with a lit battery each (2 x 2 tiles,
+    and the icon the same at half the size)"""
+    for tier in ("LV", "MV", "HV"):
+        side = tint(load(gt_path(gt, f"gregtech:iconsets/MACHINE_{tier}_SIDE")), BUFFER_TINT[tier])
+        face = side.copy()
+        face.alpha_composite(frames_of(load(gt_path(gt, "gregtech:iconsets/OVERLAY_ENERGY_OUT")))[0])
+        for n in (1, 2, 3, 4):
+            name = f"{tier.lower()}-battery-buffer-{n * n}"
+            for size, path in ((64, OUT_ENTITY / f"{name}.png"), (TILE, ICONS / f"{name}.png")):
+                img = Image.new("RGBA", (size, size))
+                img.alpha_composite(side.resize((size, size), Image.NEAREST))
+                top = face.resize((size // 2, size // 2), Image.NEAREST)
+                img.alpha_composite(top, (size // 4, 0))
+                box = (size // 8, size // 2 + size // 16, size - size // 8, size - size // 16)
+                cw, ch = (box[2] - box[0]) // n, (box[3] - box[1]) // n
+                px = img.load()
+                for i in range(n):
+                    for j in range(n):
+                        x0, y0 = box[0] + i * cw, box[1] + j * ch
+                        for y in range(y0, y0 + ch):
+                            for x in range(x0, x0 + cw):
+                                edge = x in (x0, x0 + cw - 1) or y in (y0, y0 + ch - 1)
+                                px[x, y] = (30, 30, 34, 255) if edge else (90, 200, 120, 255)
+                save(img, path)
+
+
 def fluid_extractor_lv_ev():
     """Issue #152: the LV and MV fluid extractor sprites (HV and EV use MV's, like the extractor) are upstream's
     extractor with the liquid in its tubes molten; the idle picture keeps a low melt in the tubes, so the two machines
@@ -1283,6 +1315,7 @@ def main():
     fermenter_lv_mv(a.gt)
     lv_from_mv("autoclave")      # before the autoclave's tiers (it reads the MV autoclave)
     steam_age(a.gt)              # issue #446
+    battery_buffers(a.gt)        # issue #444
     lv_from_mv("extruder", icon=False)          # issue #449 (the LV extruder icon is upstream's)
     lv_from_mv("laser-engraver", icon_palette=True)
     lv_from_mv("combustion-generator", icon=False)   # (the LV icon is upstream's)

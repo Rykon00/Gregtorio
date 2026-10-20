@@ -96,6 +96,7 @@ FORK_TECH_ICONS = {
 	["kevlar"] = true,
 	["lanthanum-hexaboride"] = true,
 	["lapotronic-energy-orbs"] = true,
+	["large-batteries"] = true,
 	["large-combustion-engine"] = true,
 	["large-electric-compressor"] = true,
 	["large-extractor"] = true,
