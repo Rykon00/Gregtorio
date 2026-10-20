@@ -945,6 +945,100 @@ def lv_from_mv(base, icon=True, icon_palette=False):
     save(out_icon, ICONS / f"lv-{base}.png")
 
 
+# issue #446: GT New Horizons' steam age (Large Coal Boiler, Reinforced Lava Boiler, Simple and Advanced Solar Boiler,
+# Steam Furnace and the High Pressure steam machines)
+STEAM_MACHINES = ["alloy-smelter", "compressor", "forge-hammer", "macerator", "extractor"]
+BOILER_WINDOW = (16, 54, 70, 81)       # the fire opening of the small coal boiler (its on and off pictures differ there)
+STEAM_WINDOW = (11, 21, 70, 60)        # the window of the steam compressor
+
+
+def steel(img):
+    """GT's high pressure (steel) machines: the bronze casing pixels (hue 20-50 degrees, saturated, not the fire's bright
+    yellow) in grey of the same brightness with a cold cast"""
+    import colorsys
+    out = img.copy()
+    px = out.load()
+    for y in range(out.height):
+        for x in range(out.width):
+            r, g, b, a = px[x, y]
+            if not a:
+                continue
+            h, s, v = colorsys.rgb_to_hsv(r / 255, g / 255, b / 255)
+            if 20 / 360 <= h <= 50 / 360 and s >= 0.3 and not (s > 0.8 and v > 0.85):
+                l = lum((r, g, b)) * 1.05
+                px[x, y] = (min(255, int(l * 0.90)), min(255, int(l * 0.94)), min(255, int(l * 1.0)), a)
+    return out
+
+
+def in_window(img, overlay, window, scale=2):
+    """the overlay at scale in the middle of the window, cut to it"""
+    x0, y0, x1, y1 = window
+    o = overlay.resize((overlay.width * scale, overlay.height * scale), Image.NEAREST)
+    at = (x0 + (x1 - x0 - o.width) // 2, y0 + (y1 - y0 - o.height) // 2)
+    cut = o.crop((max(0, x0 - at[0]), max(0, y0 - at[1]), min(o.width, x1 - at[0]), min(o.height, y1 - at[1])))
+    out = img.copy()
+    out.alpha_composite(cut, (max(x0, at[0]), max(y0, at[1])))
+    return out
+
+
+def badged_icon(icon, overlay):
+    k = 12 / max(overlay.size)
+    b = overlay.resize((max(1, round(overlay.width * k)), max(1, round(overlay.height * k))), Image.NEAREST)
+    out = icon.copy()
+    out.alpha_composite(b, (TILE - b.width, TILE - b.height))
+    return out
+
+
+def steam_age(gt):
+    """Issue #446: the high pressure machines are the steam machines in steel (steel()); the Steam Furnace the steam
+    compressor's frame with GT's steam furnace front in its window; the Large Coal Boiler the small coal boiler in steel;
+    the Reinforced Lava Boiler that with GT's lava boiler front in the fire opening, the Simple Solar Boiler the small coal
+    boiler with GT's solar boiler top there (the Advanced one in steel). Icons: the source's in steel, or with the front as
+    a badge."""
+    def tex(name, i=0):
+        return frames_of(load(gt_path(gt, "gregtech:iconsets/" + name)))[i]
+    def entity_dir(name):
+        d = ENTITY / name
+        d.mkdir(exist_ok=True)
+        return d
+    # the steam furnace
+    comp = load(ENTITY / "steam-compressor" / "steam-compressor-idle.png")
+    work = tex("OVERLAY_FRONT_STEAM_FURNACE_ACTIVE")
+    work.alpha_composite(tex("OVERLAY_FRONT_STEAM_FURNACE_ACTIVE_GLOW"))
+    d = entity_dir("steam-furnace")
+    save(in_window(comp, tex("OVERLAY_FRONT_STEAM_FURNACE"), STEAM_WINDOW), d / "steam-furnace-idle.png")
+    save(in_window(comp, work, STEAM_WINDOW), d / "steam-furnace-working.png")
+    save(badged_icon(load(ICONS / "steam-compressor.png"), work), ICONS / "steam-furnace.png")
+    # the high pressure machines
+    for m in STEAM_MACHINES + ["furnace"]:
+        src, dst = f"steam-{m}", f"hp-steam-{m}"
+        d = entity_dir(dst)
+        for kind in ("idle", "working"):
+            save(steel(load(ENTITY / src / f"{src}-{kind}.png")), d / f"{dst}-{kind}.png")
+        save(steel(load(ICONS / f"{src}.png")), ICONS / f"{dst}.png")
+    # the boilers
+    on = load(ENTITY / "small-coal-boiler" / "small-coal-boiler.png")
+    off = load(ENTITY / "small-coal-boiler" / "steam-boiler-off.png")
+    icon = load(ICONS / "small-coal-boiler.png")
+    d = entity_dir("large-coal-boiler")
+    save(steel(on), d / "large-coal-boiler.png")
+    save(steel(off), d / "large-coal-boiler-off.png")
+    save(steel(icon), ICONS / "large-coal-boiler.png")
+    lava_on = tex("BOILER_LAVA_FRONT_ACTIVE")
+    lava_on.alpha_composite(tex("BOILER_LAVA_FRONT_ACTIVE_GLOW"))
+    d = entity_dir("reinforced-lava-boiler")
+    save(in_window(steel(off), tex("BOILER_LAVA_FRONT"), BOILER_WINDOW), d / "reinforced-lava-boiler-idle.png")
+    save(in_window(steel(off), lava_on, BOILER_WINDOW), d / "reinforced-lava-boiler-working.png")
+    save(badged_icon(steel(icon), lava_on), ICONS / "reinforced-lava-boiler.png")
+    solar = tex("BOILER_SOLAR")
+    for name, look in (("simple-solar-boiler", lambda i: i), ("advanced-solar-boiler", steel)):
+        d = entity_dir(name)
+        pic = in_window(look(off), solar, BOILER_WINDOW)
+        save(pic, d / f"{name}-idle.png")
+        save(pic, d / f"{name}-working.png")
+        save(badged_icon(look(icon), solar), ICONS / f"{name}.png")
+
+
 def fluid_extractor_lv_ev():
     """Issue #152: the LV and MV fluid extractor sprites (HV and EV use MV's, like the extractor) are upstream's
     extractor with the liquid in its tubes molten; the idle picture keeps a low melt in the tubes, so the two machines
@@ -1188,6 +1282,7 @@ def main():
     brewery_lv_mv(a.gt)          # issue #360: the LV and MV brewery and fermenter of their tiers
     fermenter_lv_mv(a.gt)
     lv_from_mv("autoclave")      # before the autoclave's tiers (it reads the MV autoclave)
+    steam_age(a.gt)              # issue #446
     lv_from_mv("extruder", icon=False)          # issue #449 (the LV extruder icon is upstream's)
     lv_from_mv("laser-engraver", icon_palette=True)
     lv_from_mv("combustion-generator", icon=False)   # (the LV icon is upstream's)

@@ -69,6 +69,7 @@ FORK_TECH_ICONS = {
 	["gravitational-lens"] = true,
 	["greenhouse"] = true,
 	["high-octane-gasoline"] = true,
+	["high-pressure-steam"] = true,
 	["high-pressure-steam-turbine"] = true,
 	["hsse"] = true,
 	["hssg"] = true,

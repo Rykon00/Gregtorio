@@ -117,6 +117,7 @@ local function tests_running()
 	check(storage.melt and storage.melt.done, "melts and casts")
 	check(storage.emine and storage.emine.done, "electric mine")
 	check(storage.lftr and storage.lftr.done, "LFTR")
+	check(storage.solar and storage.solar.done, "solar boilers")
 	return running
 end
 
@@ -1123,6 +1124,54 @@ function crush_test()
 	for _, p in pairs(problems) do log("DEVCHECK-RUNTIME-FAIL crush test: " .. p) end
 	log("DEVCHECK-RUNTIME-CRUSH " .. (#problems == 0 and "ok" or "failed") .. " (" .. n .. " of " .. #st.m .. " crushed by tick "
 		.. game.tick .. ", " .. st.hammers .. " forge hammers; researched " .. table.concat(techs, ", ") .. ")")
+end
+
+--- Solar boilers (issue #446, scripts/fork-steam-boilers.lua): on a surface of their own with the time of day frozen, a
+--- Simple Solar Boiler stops at midnight (status "No sunlight") and makes steam at noon
+local SB_WAIT = 150
+function setup_solar_test(_)
+	local ss = game.create_surface("devcheck-solar")
+	ss.always_day = false
+	ss.freeze_daytime = true
+	ss.daytime = 0.5
+	ss.request_to_generate_chunks({ 0, 0 }, 1)
+	ss.force_generate_chunk_requests()
+	local e = ss.create_entity{ name = "simple-solar-boiler", position = { 0, 0 }, force = "player", raise_built = true }
+	if not e then return { "solar boiler test: could not place the Simple Solar Boiler" } end
+	e.insert_fluid{ name = "water", amount = 100 }
+	storage.solar = { e = e, surface = ss, phase = "night", at = game.tick }
+	return {}
+end
+
+function solar_test()
+	local st = storage.solar
+	if not st or st.done then return end
+	if game.tick < st.at + SB_WAIT then return end
+	local problems = st.problems or {}
+	st.problems = problems
+	local e = st.e
+	if not (e and e.valid) then
+		problems[#problems + 1] = "the boiler is gone"
+	elseif st.phase == "night" then
+		local cs = e.custom_status
+		if not e.disabled_by_script then problems[#problems + 1] = "it runs at midnight" end
+		if not (cs and type(cs.label) == "table" and cs.label[1] == "entity-status.fork-no-sunlight") then
+			problems[#problems + 1] = "no status 'No sunlight' at midnight"
+		end
+		st.night_steam = e.get_fluid_count("steam")
+		st.surface.daytime = 0
+		e.insert_fluid{ name = "water", amount = 100 }
+		st.phase, st.at = "day", game.tick
+		return
+	else
+		if e.disabled_by_script then problems[#problems + 1] = "it is stopped at noon" end
+		st.day_steam = e.get_fluid_count("steam")
+		if not (st.day_steam > (st.night_steam or 0)) then problems[#problems + 1] = "no steam at noon" end
+	end
+	st.done = true
+	for _, p in pairs(problems) do log("DEVCHECK-RUNTIME-FAIL solar boiler test: " .. p) end
+	log("DEVCHECK-RUNTIME-SOLAR " .. (#problems == 0 and "ok" or "failed") .. string.format(" (steam %.1f at midnight, %.1f at noon)",
+		st.night_steam or 0, st.day_steam or 0))
 end
 
 --- Molds and lenses (prototypes/150-fork-molds.lua, issue #316): a machine with a recipe that needs one stops without it
@@ -2171,6 +2220,7 @@ script.on_nth_tick(10, function()
 	offer_test()
 	melt_test()
 	emine_test()
+	solar_test()
 	victory_test()
 end)
 
@@ -2243,6 +2293,7 @@ script.on_init(function()
 	for _, f in pairs(setup_offer_test(s)) do fails[#fails + 1] = f end
 	for _, f in pairs(setup_melt_test(s)) do fails[#fails + 1] = f end
 	for _, f in pairs(setup_emine_test(s)) do fails[#fails + 1] = f end
+	for _, f in pairs(setup_solar_test(s)) do fails[#fails + 1] = f end
 	log("DEVCHECK-RUNTIME placed=" .. placed .. " with_recipe=" .. with_recipe .. " failed=" .. #fails)
 	for _, f in pairs(fails) do log("DEVCHECK-RUNTIME-FAIL " .. f) end
 end)

@@ -436,6 +436,10 @@ if CAST_IRON and data.raw.item["cast-iron-plate"] then
 			if i.name == "iron-plate" then i.name = "cast-iron-plate" end
 		end
 	end
+	--- issue #446: GT's forge hammer plate (ProcessingIngot.java:107-116: 3 ingots -> 2 plates, mass ticks, 16 EU/t), so the
+	--- steam forge hammer makes the cast iron plates of the high pressure steam machines (101) in the steam age
+	recipe{ name = "cast-iron-plate-forge-hammer", machine = "forge-hammer", tier = "lv", ticks = 56,
+		ingredients = { item(CAST_IRON, 3) }, results = { item("cast-iron-plate", 2) } }
 end
 
 FORK_CASTING.run()
