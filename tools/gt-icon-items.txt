@@ -4458,3 +4458,8 @@ medium-sodium-battery
 large-cadmium-battery
 large-lithium-battery
 large-sodium-battery
+# issue #450: the ULV circuit and its variant recipes
+ulv-circuit
+circuit-recipe-vacuum-tube
+circuit-recipe-vacuum-tube-crafting-table
+circuit-recipe-nand-chip

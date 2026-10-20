@@ -51,7 +51,7 @@ worked off one pull request each; this list is their status.
 | LV | the LV Combustion Generator, LV Extruder and LV Laser Engraver | #449 | done (the LV categories hold GT's LV recipes; the LV extruder has one, the aluminium rod) |
 | LV, MV | energy storage before IV: battery buffers and the LV to HV batteries | #444 | done (fixed-size buffers LV to HV with the batteries in the recipe; LV and MV with Battery, HV with Large Batteries) |
 | LV to HV | circuit recipe names of GTNH (Integrated Logic Circuit, Microprocessor, Integrated Processor, Processor Assembly, Workstation, Mainframe) | #445 | open |
-| ULV, HV | the ULV circuit tier; the nanoprocessor's parts at HV | #450 | open (the maintainer's decisions of 2026-10-20) |
+| ULV, HV | the ULV circuit tier; the nanoprocessor's parts at HV | #450 | done (`ulv-circuit` from the vacuum tube and NAND chip recipes; the nanoprocessor in the HV circuit assembler, its parts at HV, the wafer EV; the MV EBF and vacuum freezer keep their names) |
 | all | GTNH's veins as mixed ore patches on the map instead of the vein recipes | #451 | question (Discord poll) |
 
 ## Phase 1: LuV (done)
