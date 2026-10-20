@@ -6,7 +6,10 @@
 - Upstream content lives in `prototypes/0*-*.lua` … `98-technology.lua`; keep changes there minimal. Fork logic lives in
   `prototypes/1xx-fork-*.lua`, loaded at the end of `data.lua` in this order:
   - 100 fixes
-  - 101 machines
+  - 101 machines (issue #446: the steam age of GTNH, the high pressure machines, the steam furnace, the lava and solar
+    boilers; issue #447: the steam macerator's copies of the LV macerator recipes without byproducts,
+    `fork_steam_categories()` at the end of data-final-fixes.lua; issue #449: the LV combustion generator, extruder and laser
+    engraver, the LV categories run by every MV machine through `fork_lv_machine_categories()` in 199)
   - 102 resources
   - 103 QoL techs (re-gates the vanilla inserter, belt and worker robot techs of issue #29 onto Gregtorio techs, GT
     recipes for bulk/stack inserters and express/turbo belts)
@@ -244,12 +247,12 @@
     unlocks count).
   The phase plan is in `docs/ROADMAP.md`. Runtime fork code lives in `scripts/` and is required from `control.lua`
   (`fork-molds.lua`, `fork-victory.lua`, `fork-power.lua`, `fork-space-elevator.lua` (#302), `fork-electric-mine.lua` (#342: a Miner or Ore Drilling Plant that replaces a mine
-  keeps its vein, from 163's mod data `fork-electric-mine`; event driven, `storage.fork_electric_mine`), and `fork-me-handover.lua`: the one-time hand-over of the ME
+  keeps its vein, from 163's mod data `fork-electric-mine`; event driven, `storage.fork_electric_mine`), `fork-steam-boilers.lua` (#446: the solar boilers of 101 stop at night; every 120 ticks, `storage.fork_solar_boilers`), and `fork-me-handover.lua`: the one-time hand-over of the ME
   state of saves from before issue #83 to me-network through the remote interface `gregtorio-me-handover`, which
   me-network calls in its `on_init`; keep its table list and fingerprint function equal to me-network's
   `scripts/fork-me-handover.lua`). Everything else of the ME network (runtime, graphics, locale, its tests,
   `docs/AE2.md`, `docs/ME-REWORK.md`) is in the me-network repository; an ME change goes there, Gregtorio only changes
-  the compat file when a recipe or a tier changes. Tick intervals in use: `on_nth_tick` 30 (molds); `on_tick`
+  the compat file when a recipe or a tier changes. Tick intervals in use: `on_nth_tick` 30 (molds), 120 (solar boilers); `on_tick`
   (fork-power: turbine energy every tick, fuel check, output hatches and the supercapacitor loss every 10th tick);
   registrations for the same interval (or a second `on_tick`) overwrite each other, so a new periodic task picks a free
   interval. The scripts keep their state lazy (`storage.fork_molds`, `storage.fork_power`).

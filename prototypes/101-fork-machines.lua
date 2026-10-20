@@ -842,6 +842,180 @@ end
 
 
 --------------------------------------------------------------------------------
+--- 2m) GT NEW HORIZONS' STEAM AGE (issue #446): the high pressure tier, the steam furnace, the lava and solar boilers.
+---    Names of GT5-Unofficial's en_US.lang (gt.blockmachines.boiler.*, bronzemachine.furnace, hpmachine.*); recipes of
+---    MTERecipeLoader.java:2786-2885 with Gregtorio's parts: the mod's pipe for GT's small bronze, cast iron and steel
+---    pipes (its steam machines take it for the bronze one), the hulls as their plates (Hull_Bronze_Bricks: 5 bronze
+---    plates and 3 bricks; Hull_HP: 8 steel plates), its storage tank for BuildCraft's tank, the iron furnace for the
+---    blast furnace of the boilers (as the small coal boiler's recipe).
+---    Units: a steam unit is 100 GT litres (100 kJ; the small coal boiler's 36 kW give 1.2 a second = GT's 120 L/s), 1
+---    EU/t is 40 kW of steam (GT: 2 L of steam per EU; Gregtorio's steam machines: "2 MB/t" = 40 kW).
+---    * High pressure machines (MTEBasicMachineSteel, SteamOverclockDescriber(STEEL, 2, 1)): twice the EU of the bronze
+---      machine at its full speed, so speed 1 and twice its power here; the bronze machine, cast iron plates, a steel
+---      plate and pipes. The macerator runs the steam category of #447 (FORK_STEAM_MACHINES).
+---    * Steam Furnace (MTESteamFurnaceBronze: furnace recipes, 4 EU/t, 256 ticks; Steel: 8 EU/t, 128 ticks): a furnace
+---      of the smelting category at 10 s / 12.8 s = 0.78125 (1.5625), 160 kW (320 kW).
+---    * Large Coal Boiler (MTEBoilerSteel: 300 L/s against the small coal boiler's 120): the small coal boiler with 90 kW.
+---    * Reinforced Lava Boiler (MTEBoilerLava: 600 L/s from 9 L of lava a second, 1 energy per litre, 3 per heat-up every
+---      20 ticks): 6 steam a second from 6 water and 0.9 lava (a tenth of GT's litres).
+---    * Simple and Advanced Solar Boiler (MachineStats: 120 and 360 L/s at most): 1.2 and 3.6 steam a second from water
+---      while the sun shines; scripts/fork-steam-boilers.lua stops them at night (the sun is there: Gregtorio removed the
+---      solar panel, not the day). GT's calcification (the output falls after 15 hours of work) is left out.
+---    Technologies: the high pressure machines and the Large Coal Boiler with the new High Pressure Steam (after Steel
+---    Processing: steel and cast iron plates, and the steam machines), the Steam Furnace with Steam Alloy Smelter, the
+---    lava boiler with Oil Gathering (its lava), the Simple Solar Boiler with MV Machines (double silver plates), the
+---    Advanced one with Reinforced Glass. Sprites: tools/gen_sprites.py (steam_age).
+--------------------------------------------------------------------------------
+
+do
+	--- the high pressure steam machines and the steam furnaces
+	local HP = {   -- bronze machine, category, fast replace group, bronze power, frames, animation speed, cast iron plates, pipes
+		{ "alloy-smelter", "lv-alloy-smelter-recipes", "fr-alloy-smelter", 320, 1, 1, 6, 1 },
+		{ "compressor", "lv-compressor-recipes", "fr-compressor", 40, 9, 0.5, 2, 5 },
+		{ "forge-hammer", "lv-forge-hammer-recipes", "fr-forge-hammer", 320, 5, 0.5, 5, 2 },
+		{ "macerator", "lv-macerator-recipes", "fr-macerator", 40, 6, 0.5, 5, 2 },
+		{ "extractor", "lv-extractor-recipes", "fr-extractor", 40, 5, 0.5, 2, 5 },
+		{ "furnace", "smelting", "fr-steam-furnace", 160, 1, 0.5, 2, 5 },
+	}
+	make_steam_machine("steam-furnace", "steam-furnace", "smelting", "fr-steam-furnace", "160kW", 1, 0.5)
+	create_item{
+		name = "steam-furnace",
+		subgroup = "steam-age-production-machine",
+		place_result = "steam-furnace",
+		stack_size = 10,
+		ingredients = {
+			{ type = "item", name = "pipe", amount = 7 },
+			{ type = "item", name = "bronze-plate", amount = 5 },
+			{ type = "item", name = "brick-block", amount = 3 },
+			{ type = "item", name = "stone-furnace", amount = 1 },
+		},
+	}
+	fork_add_unlock("steam-alloy-smelter", "steam-furnace")
+	local hp_recipes = {}
+	for _, m in pairs(HP) do
+		local bronze, name = "steam-" .. m[1], "hp-steam-" .. m[1]
+		make_steam_machine(name, name, m[2], m[3], (2 * m[4]) .. "kW", m[5], m[6])
+		data.raw["assembling-machine"][name].crafting_speed = 1
+		data.raw["assembling-machine"][bronze].next_upgrade = name
+		create_item{
+			name = name,
+			subgroup = "steam-age-production-machine",
+			place_result = name,
+			stack_size = 10,
+			ingredients = {
+				{ type = "item", name = bronze, amount = 1 },
+				{ type = "item", name = "cast-iron-plate", amount = m[7] },
+				{ type = "item", name = "steel-plate", amount = 1 },
+				{ type = "item", name = "pipe", amount = m[8] },
+			},
+		}
+		hp_recipes[#hp_recipes + 1] = name
+	end
+	table.insert(FORK_STEAM_MACHINES.macerator, "hp-steam-macerator")
+	--- upgrades of the bronze machines, never the first machine of a category: 155's unlocks leave them out
+	FORK_MACHINES_NOT_FIRST = FORK_MACHINES_NOT_FIRST or {}
+	for _, r in pairs(hp_recipes) do FORK_MACHINES_NOT_FIRST[r] = true end
+	--- the furnaces are furnaces (they pick the smelting recipe themselves)
+	for _, f in pairs({ { "steam-furnace", 0.78125 }, { "hp-steam-furnace", 1.5625 } }) do
+		local e = data.raw["assembling-machine"][f[1]]
+		data.raw["assembling-machine"][f[1]] = nil
+		e.type = "furnace"
+		e.crafting_speed = f[2]
+		e.source_inventory_size = 1
+		e.result_inventory_size = 1
+		data:extend({ e })
+	end
+	data.raw.furnace["steam-furnace"].next_upgrade = "hp-steam-furnace"
+
+	--- the Large Coal Boiler
+	local b = table.deepcopy(data.raw.boiler["small-coal-boiler"])
+	b.name = "large-coal-boiler"
+	b.icon = "__gregtorio-continued__/graphics/icons/large-coal-boiler.png"
+	b.minable = { mining_time = 0.3, result = "large-coal-boiler" }
+	b.energy_consumption = "90kW"
+	b.fluid_box.volume = 500
+	b.output_fluid_box.volume = 500
+	for _, dir in pairs({ "north", "east", "south", "west" }) do
+		for _, layer in pairs(b.pictures[dir].structure.layers) do
+			layer.filename = "__gregtorio-continued__/graphics/entity/large-coal-boiler/large-coal-boiler.png"
+		end
+	end
+	b.fast_replaceable_group = "fr-coal-boiler"
+	data.raw.boiler["small-coal-boiler"].fast_replaceable_group = "fr-coal-boiler"
+	data.raw.boiler["small-coal-boiler"].next_upgrade = "large-coal-boiler"
+	data:extend({ b })
+	create_item{
+		name = "large-coal-boiler",
+		subgroup = "energy",
+		place_result = "large-coal-boiler",
+		stack_size = 10,
+		ingredients = {
+			{ type = "item", name = "steel-plate", amount = 5 },
+			{ type = "item", name = "brick-block", amount = 2 },
+			{ type = "item", name = "iron-furnace", amount = 1 },
+		},
+	}
+	hp_recipes[#hp_recipes + 1] = "large-coal-boiler"
+	data:extend({ {
+		type = "technology",
+		name = "high-pressure-steam",
+		icon = "__gregtorio-continued__/graphics/technology/nyi.png",
+		icon_size = 256,
+		effects = {},
+		prerequisites = { "steel-processing", "steam-extractor", "steam-alloy-smelter" },
+		unit = { count = 40, ingredients = { { "automation-science-pack", 1 } }, time = 30 },
+	} })
+	for _, r in pairs(hp_recipes) do fork_add_unlock("high-pressure-steam", r) end
+
+	--- the lava and solar boilers: machines with their one recipe and no power (GT's boilers burn lava or take sunlight)
+	local function boiler_machine(name, category, ports, ingredients, steam, tech, item_ingredients)
+		recipe_category_and_subgroup(category)
+		make_electric_machine(name, name, name, { category }, "fr-" .. name, "1kW", 1, 1, 0.5, 3, 3, ports)
+		local e = data.raw["assembling-machine"][name]
+		e.energy_source = { type = "void" }
+		e.fixed_recipe = name .. "-steam"
+		create_recipe{
+			recipe_name = name .. "-steam",
+			category = category,
+			energy_required = 1,
+			ingredients = ingredients,
+			results = { { type = "fluid", name = "steam", amount = steam, temperature = 165 } },
+			main_product = "steam",
+		}
+		create_item{
+			name = name,
+			subgroup = "energy",
+			place_result = name,
+			stack_size = 10,
+			ingredients = item_ingredients,
+		}
+		fork_add_unlock(tech, name)
+		fork_add_unlock(tech, name .. "-steam")
+	end
+	local function water_in() return fluid_port(-1, 1, "input", defines.direction.south) end
+	local function steam_out() return fluid_port(0, -1, "output", defines.direction.north) end
+	boiler_machine("reinforced-lava-boiler", "lava-boiler-recipes",
+		{ water_in(), fluid_port(1, 1, "input", defines.direction.south), steam_out() },
+		{ { type = "fluid", name = "water", amount = 6 }, { type = "fluid", name = "lava", amount = 0.9 } }, 6, "oil-gathering",
+		{ { type = "item", name = "steel-plate", amount = 15 }, { type = "item", name = "storage-tank", amount = 1 } })
+	boiler_machine("simple-solar-boiler", "simple-solar-boiler-recipes", { water_in(), steam_out() },
+		{ { type = "fluid", name = "water", amount = 1.2 } }, 1.2, "mv-machines",
+		{ { type = "item", name = "glass", amount = 3 }, { type = "item", name = "double-silver-plate", amount = 3 },
+			{ type = "item", name = "pipe", amount = 2 }, { type = "item", name = "bronze-plate", amount = 5 },
+			{ type = "item", name = "brick-block", amount = 3 } })
+	boiler_machine("advanced-solar-boiler", "advanced-solar-boiler-recipes", { water_in(), steam_out() },
+		{ { type = "fluid", name = "water", amount = 3.6 } }, 3.6, "reinforced-glass",
+		{ { type = "item", name = "simple-solar-boiler", amount = 1 }, { type = "item", name = "reinforced-glass", amount = 3 },
+			{ type = "item", name = "double-cast-iron-plate", amount = 2 }, { type = "item", name = "triple-silver-plate", amount = 1 },
+			{ type = "item", name = "pipe", amount = 2 } })
+	data.raw["assembling-machine"]["advanced-solar-boiler"].fast_replaceable_group = "fr-simple-solar-boiler"
+	data.raw["assembling-machine"]["simple-solar-boiler"].next_upgrade = "advanced-solar-boiler"
+	data:extend({ { type = "mod-data", name = "fork-solar-boilers", data = { names = { "simple-solar-boiler", "advanced-solar-boiler" } } } })
+end
+
+
+
+--------------------------------------------------------------------------------
 --- 2j) BREWERY AND FERMENTER, LV TO EV (issue #360, the revisit of #155's "leave for now")
 ---    GT New Horizons' Basic Brewery (LoaderMetaTileEntities.java:1910, recipe map brewingRecipes) and Basic Fermenter
 ---    (:2748, fermentingRecipes), one item and one fluid slot in and a fluid out; 164-fork-chemistry.lua makes their

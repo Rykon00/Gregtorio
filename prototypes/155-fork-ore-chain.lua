@@ -791,7 +791,7 @@ local function machine_techs(category)
 	local out = {}
 	for _, kind in pairs({ "assembling-machine", "furnace" }) do
 		for ename, e in pairs(data.raw[kind] or {}) do
-			for _, c in pairs(e.crafting_categories or {}) do
+			for _, c in pairs((FORK_MACHINES_NOT_FIRST or {})[ename] and {} or e.crafting_categories or {}) do
 				if c == category then
 					for iname, it in pairs(data.raw.item) do
 						if it.place_result == ename then
@@ -807,6 +807,7 @@ local function machine_techs(category)
 			end
 		end
 	end
+	--- (issue #446: FORK_MACHINES_NOT_FIRST of 101, the high pressure steam machines, are upgrades that never come first)
 	--- issue #449: the MV machines run the LV extruder and laser engraver categories too (101's
 	--- fork_lv_machine_categories, applied in 199 after this file)
 	local base = category:match("^lv%-(.+)$")
@@ -2134,7 +2135,7 @@ function FORK_ORE_CHAIN.unlock_after_159()
 	local function machines(category)
 		local out = {}
 		for ename, e in pairs(data.raw["assembling-machine"]) do
-			for _, c in pairs(e.crafting_categories or {}) do
+			for _, c in pairs((FORK_MACHINES_NOT_FIRST or {})[ename] and {} or e.crafting_categories or {}) do
 				if c == category then
 					for iname, it in pairs(data.raw.item) do
 						if it.place_result == ename then

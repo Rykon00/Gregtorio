@@ -11,6 +11,8 @@ local fork_power = require("scripts.fork-power")
 local fork_space_elevator = require("scripts.fork-space-elevator")
 --- Fork: a Miner or Ore Drilling Plant that replaces a mine keeps its vein (issue #342, see prototypes/163-fork-electric-mine.lua)
 local fork_electric_mine = require("scripts.fork-electric-mine")
+--- Fork: the solar boilers make steam by day only (issue #446, see prototypes/101-fork-machines.lua)
+local fork_steam_boilers = require("scripts.fork-steam-boilers")
 
 local function on_built(event)
   local entity = event.entity
@@ -21,6 +23,7 @@ local function on_built(event)
   fork_molds.on_built(entity)
   fork_power.on_built(entity)
   fork_space_elevator.on_built(entity)
+  fork_steam_boilers.on_built(entity)
 end
 script.on_event({ defines.events.on_built_entity, defines.events.on_robot_built_entity }, on_built)
 --- Fork: the vein of a mine about to be replaced (issue #342)
@@ -36,10 +39,12 @@ script.on_event({ defines.events.script_raised_built, defines.events.script_rais
   fork_molds.on_built(event.entity)
   fork_power.on_built(event.entity)
   fork_space_elevator.on_built(event.entity)
+  fork_steam_boilers.on_built(event.entity)
 end)
 script.on_event(defines.events.on_entity_cloned, function(event)
   fork_power.on_built(event.destination)
   fork_space_elevator.on_built(event.destination)
+  fork_steam_boilers.on_built(event.destination)
 end)
 --- Fork: a Space Elevator or a module removed (any way): its surface is assigned again
 script.on_event(defines.events.on_object_destroyed, fork_space_elevator.on_object_destroyed)
@@ -120,6 +125,7 @@ script.on_configuration_changed(function(data)
 	fork_molds.on_configuration_changed()
 	fork_power.on_configuration_changed()
 	fork_space_elevator.on_configuration_changed()
+	fork_steam_boilers.on_configuration_changed()
 end)
 
 
