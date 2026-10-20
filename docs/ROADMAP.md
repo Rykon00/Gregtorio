@@ -48,7 +48,7 @@ worked off one pull request each; this list is their status.
 | Steam | the high pressure tier (HP coal boiler, HP steam machines), the steam furnace, the solar and lava boilers | #446 | open |
 | Steam | the steam machines run the whole LV category with byproducts; GT's run recipes up to 32 EU/t, the macerator without byproducts | #447 | open |
 | LV | the LV Miner waited for the Military Science Pack technology (its LV sensor) | #443 | fixed (the sensor comes with the Circuit Assembler) |
-| LV | the LV Combustion Generator, LV Extruder and LV Laser Engraver | #449 | open |
+| LV | the LV Combustion Generator, LV Extruder and LV Laser Engraver | #449 | done (the LV categories hold GT's LV recipes; the LV extruder has one, the aluminium rod) |
 | LV, MV | energy storage before IV: battery buffers and the LV to HV batteries | #444 | open |
 | LV to HV | circuit recipe names of GTNH (Integrated Logic Circuit, Microprocessor, Integrated Processor, Processor Assembly, Workstation, Mainframe) | #445 | open |
 | ULV, HV | the ULV circuit tier; the nanoprocessor's parts at HV | #450 | open (the maintainer's decisions of 2026-10-20) |

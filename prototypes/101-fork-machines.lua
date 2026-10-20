@@ -625,7 +625,7 @@ end
 ---    LV autoclave category (the MV autoclave runs it too). Machine recipe as GT's (MTERecipeLoader.java
 ---    registerAutoclave, "IGI", "IMI", "CPC": 4 plates of the tier (steel), 2 glass, the hull, 2 circuits, a pump). Power
 ---    EU24 as the MV autoclave's class. With Extractor, the technology of the LV pump. Sprites: tools/gen_sprites.py
----    (autoclave_lv, the MV autoclave in the LV casing colours).
+---    (lv_from_mv, the MV autoclave in the LV casing colours).
 --------------------------------------------------------------------------------
 
 make_electric_machine("lv-autoclave", "lv-autoclave", "lv-autoclave", { "lv-autoclave-recipes" }, "fr-autoclave", EU24_LV, 1, 1, 0.5, 3, 3, {
@@ -649,6 +649,123 @@ create_item{
 }
 fork_add_unlock("extractor", "lv-autoclave")
 data.raw["assembling-machine"]["lv-autoclave"].next_upgrade = "mv-autoclave"
+
+
+
+--------------------------------------------------------------------------------
+--- 2k) LV COMBUSTION GENERATOR, LV EXTRUDER AND LV PRECISION LASER ENGRAVER (issue #449)
+---    GT New Horizons has them at LV (LoaderMetaTileEntities.java: "Basic Combustion Generator", 95 % efficiency;
+---    "Basic Extruder"; "Basic Precision Laser Engraver"); upstream starts them at MV. Machine recipes as GT's
+---    (MTERecipeLoader.java): the extruder "CCE", "XMP", "CCE" (4 double heating coils: 16 copper wires here as the MV
+---    one's 16 cupronickel wires, the piston, 2 circuits, the pipe, the hull; the mold upstream's MV recipe has, which
+---    gives the machine its mold slot in 150), the engraver "PEP", "CMC", "WCW" (2 pistons, the emitter, 3 circuits, 2
+---    cables, the hull), the generator "PCP", "EME", "GWG" (2 pistons, a circuit, 2 motors, the hull, a tin cable, 2 steel
+---    gears). Power half the MV machine's, speed 1.
+---    The LV categories hold the recipes GT runs at up to 32 EU/t, and every machine of the MV category runs them too
+---    (fork_lv_machine_categories(), called by 199 after every file that makes machines):
+---      * extruder: GT's extruder takes 8 x 15 = 120 EU/t (rods and wires 6 x 15) for a metal (ProcessingShaping.java:49),
+---        so no extruder recipe of the mod is LV; the LV extruder gets GT's one LV recipe of an item the mod has, the
+---        aluminium rod (2 per ingot, 10 s, 2 x 15 EU/t, ProcessingShaping.java:283-290), and comes with it (Aluminium);
+---      * laser engraver: the chipped -> flawed gem step (LV, ProcessingGem.java:313-318; 155's ENGRAVE) and the ULPIC
+---        wafer from a silicon wafer (LV, LaserEngraverRecipes.java:362-367); the engraver comes with its emitter
+---        (Circuit Assembler);
+---      * the generator burns the combustion fuel cells; it comes with the first one of LV, the Bio Diesel Cell
+---        (Fermentation).
+---    Sprites: tools/gen_sprites.py (lv_from_mv: the MV pictures in the LV casing colours; the LV extruder and generator
+---    icons are upstream's).
+--------------------------------------------------------------------------------
+
+--- (upstream defines the LV extruder category without a recipe in it, 05)
+recipe_category_and_subgroup("lv-laser-engraver-recipes")
+
+make_electric_machine("lv-extruder", "lv-extruder", "lv-extruder", { "lv-extruder-recipes" }, "fr-extruder", EU16_LV, 1, 5, 0.5, 3, 3)
+create_item{
+	name = "lv-extruder",
+	subgroup = "lv-age-production-machine",
+	ingredients = {
+		{ type = "item", name = "lv-piston", amount = 1 },
+		{ type = "item", name = "copper-wire", amount = 16 },
+		{ type = "item", name = "pipe", amount = 1 },
+		{ type = "item", name = "electronic-circuit", amount = 2 },
+		{ type = "item", name = "lv-machine-hull", amount = 1 },
+		{ type = "item", name = "mold", amount = 1 },
+	},
+	place_result = "lv-extruder",
+	stack_size = 10,
+}
+data.raw["assembling-machine"]["lv-extruder"].next_upgrade = "mv-extruder"
+create_recipe{
+	recipe_name = "aluminium-rod-extruder",
+	category = "lv-extruder-recipes",
+	energy_required = 10 * LV_SPEED,
+	ingredients = { { type = "item", name = "aluminium-ingot", amount = 1 } },
+	results = { { type = "item", name = "aluminium-rod", amount = 2 } },
+	main_product = "aluminium-rod",
+}
+fork_add_unlock("aluminium", "lv-extruder")
+fork_add_unlock("aluminium", "aluminium-rod-extruder")
+
+make_electric_machine("lv-laser-engraver", "lv-laser-engraver", "lv-laser-engraver", { "lv-laser-engraver-recipes" }, "fr-laser-engraver", EU30_LV, 1, 16, 0.5, 3, 3, {
+	fluid_port(-1, -1, "input", defines.direction.north),
+	fluid_port( 1, -1, "input", defines.direction.north)
+})
+create_item{
+	name = "lv-laser-engraver",
+	subgroup = "lv-age-production-machine",
+	ingredients = {
+		{ type = "item", name = "lv-piston", amount = 2 },
+		{ type = "item", name = "electronic-circuit", amount = 3 },
+		{ type = "item", name = "lv-emitter", amount = 1 },
+		{ type = "item", name = "tin-cable", amount = 2 },
+		{ type = "item", name = "lv-machine-hull", amount = 1 },
+	},
+	place_result = "lv-laser-engraver",
+	stack_size = 10,
+}
+data.raw["assembling-machine"]["lv-laser-engraver"].next_upgrade = "mv-laser-engraver"
+fork_add_unlock("circuit-assembler", "lv-laser-engraver")
+data.raw.recipe["ulpic-wafer-sw"].category = "lv-laser-engraver-recipes"
+
+create_burner_generator{
+	name = "lv-combustion-generator",
+	efficiency = 0.95,
+	fuel_categories = { "combustion-generator-fuel" },
+	max_power = EU32_LV,
+}
+create_item{
+	name = "lv-combustion-generator",
+	place_result = "lv-combustion-generator",
+	stack_size = 10,
+	ingredients = {
+		{ type = "item", name = "lv-piston", amount = 2 },
+		{ type = "item", name = "electronic-circuit", amount = 1 },
+		{ type = "item", name = "lv-motor", amount = 2 },
+		{ type = "item", name = "lv-machine-hull", amount = 1 },
+		{ type = "item", name = "tin-cable", amount = 1 },
+		{ type = "item", name = "steel-gear", amount = 2 },
+	},
+}
+for _, name in pairs({ "lv-combustion-generator", "mv-combustion-generator" }) do
+	data.raw["burner-generator"][name].fast_replaceable_group = "fr-combustion-generator"
+end
+data.raw["burner-generator"]["lv-combustion-generator"].next_upgrade = "mv-combustion-generator"
+--- (unlocked with Fermentation in 164, which makes that technology)
+
+--- every machine that runs an MV category of these runs its LV one too (called by 199)
+function fork_lv_machine_categories()
+	for _, t in pairs({ "assembling-machine", "furnace" }) do
+		for _, e in pairs(data.raw[t] or {}) do
+			for _, base in pairs({ "extruder", "laser-engraver" }) do
+				local mv, lv, has_mv, has_lv = "mv-" .. base .. "-recipes", "lv-" .. base .. "-recipes", false, false
+				for _, c in pairs(e.crafting_categories or {}) do
+					has_mv = has_mv or c == mv
+					has_lv = has_lv or c == lv
+				end
+				if has_mv and not has_lv then table.insert(e.crafting_categories, 1, lv) end
+			end
+		end
+	end
+end
 
 
 
