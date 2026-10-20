@@ -770,6 +770,78 @@ end
 
 
 --------------------------------------------------------------------------------
+--- 2l) THE STEAM MACHINES AS GT'S BRONZE MACHINES (issue #447)
+---    GT5-Unofficial's bronze (and high pressure) machines look a recipe up with the items of their slots only and at LV
+---    voltage, and keep its first output (MTEBasicMachineBronze.checkRecipe: findRecipeQuery().items(...).voltage(
+---    TierEU.LV), mOutputItems[0] = rollOutput(0)): a recipe of up to 32 EU/t, no fluid, no byproduct. Gregtorio's LV
+---    categories hold recipes of up to 32 EU/t, and the steam machines have no fluid box but the steam, so the alloy
+---    smelter, compressor, forge hammer and extractor keep their LV category (every item recipe there has one result).
+---    The steam macerator gets its own category, `steam-macerator-recipes`: a copy of every item recipe of the LV
+---    macerator with its first result (the main product), unlocked with the original; the LV and higher macerators keep
+---    the LV recipes with their byproducts. Recycling stays with the electric macerators. The copies are made by
+---    fork_steam_categories() at the end of data-final-fixes.lua, after every file that makes or moves a macerator
+---    recipe or its unlock, so until then the steam macerator counts as a machine of the LV category (155's unlocks). The
+---    steam category is in 198's FORK_CRAFTING_MENU_HIDDEN: the menu shows the LV recipe.
+--------------------------------------------------------------------------------
+
+data:extend({ { type = "recipe-category", name = "steam-macerator-recipes" } })
+FORK_STEAM_MACHINES = { macerator = { "steam-macerator" } }   -- (the high pressure macerator of #446 joins)
+
+function fork_steam_categories()
+	local tech_of = {}
+	for tname, t in pairs(data.raw.technology) do
+		for _, e in pairs(t.effects or {}) do
+			if e.type == "unlock-recipe" then
+				tech_of[e.recipe] = tech_of[e.recipe] or {}
+				table.insert(tech_of[e.recipe], tname)
+			end
+		end
+	end
+	local function items_only(list)
+		for _, i in pairs(list or {}) do
+			if i.type == "fluid" then return false end
+		end
+		return true
+	end
+	local names = {}
+	for name, r in pairs(data.raw.recipe) do
+		if r.category == "lv-macerator-recipes" and not r.hidden and not name:match("^recycling%-")
+			and items_only(r.ingredients) and items_only(r.results) and r.results and #r.results > 0 then
+			names[#names + 1] = name
+		end
+	end
+	table.sort(names)
+	local copies = {}
+	for _, name in pairs(names) do
+		local r = data.raw.recipe[name]
+		local first = r.results[1]
+		for _, res in pairs(r.results) do
+			if res.name == r.main_product then first = res end
+		end
+		local c = table.deepcopy(r)
+		c.name = "steam-" .. name
+		c.category = "steam-macerator-recipes"
+		c.results = { table.deepcopy(first) }
+		c.main_product = first.name
+		c.hide_from_player_crafting = true
+		c.localised_name = r.localised_name or { "?", { "recipe-name." .. name }, { "item-name." .. first.name } }
+		if data.raw.recipe[c.name] then error("101: the steam macerator's copy " .. c.name .. " exists already") end
+		copies[#copies + 1] = c
+		for _, tname in pairs(tech_of[name] or {}) do
+			table.insert(data.raw.technology[tname].effects, { type = "unlock-recipe", recipe = c.name })
+		end
+	end
+	data:extend(copies)
+	for _, m in pairs(FORK_STEAM_MACHINES.macerator) do
+		local e = data.raw["assembling-machine"][m]
+		if e then e.crafting_categories = { "steam-macerator-recipes" } end
+	end
+	log("FORK-STEAM: " .. #copies .. " LV macerator recipes copied for the steam macerators without their byproducts (issue #447)")
+end
+
+
+
+--------------------------------------------------------------------------------
 --- 2j) BREWERY AND FERMENTER, LV TO EV (issue #360, the revisit of #155's "leave for now")
 ---    GT New Horizons' Basic Brewery (LoaderMetaTileEntities.java:1910, recipe map brewingRecipes) and Basic Fermenter
 ---    (:2748, fermentingRecipes), one item and one fluid slot in and a fluid out; 164-fork-chemistry.lua makes their

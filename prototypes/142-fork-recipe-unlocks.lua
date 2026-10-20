@@ -862,6 +862,10 @@ FORK_UNLOCK_GAPS = {
 	["uev-components:uiv-circuit"] = "GT's field generator takes the next tier's circuit; kept with the components on purpose (128, phase 3 note): craftable once that circuit is",
 	["uiv-components:umv-circuit"] = "GT's field generator takes the next tier's circuit; kept with the components on purpose (128, phase 3 note): craftable once that circuit is",
 	["umv-components:uxv-circuit"] = "GT's field generator takes the next tier's circuit; kept with the components on purpose (128, phase 3 note): craftable once that circuit is",
+	-- issue #447: the steam macerator runs copies without byproducts (101); with red science the steam copies make the crushed
+	-- calcite and the impure calcite dust, the LV recipes with their andradite byproduct wait for the LV macerator
+	["steel-processing:calcite"] = "issue #447: the LV recipe (andradite byproduct) waits for the LV macerator; the steam macerator's copy makes the crushed calcite",
+	["steel-processing:impure-calcite-dust"] = "issue #447: the LV recipe (andradite byproduct) waits for the LV macerator; the steam macerator's copy makes the impure calcite dust",
 }
 
 --- issue #252: items a technology's recipes take that neither it nor its prerequisites make, kept on purpose:
