@@ -1994,11 +1994,21 @@ def bumped_working_copy(old_zip):
     info["version"] = f"{major}.{minor}.{int(patch) + 1}"
     prefix = f"{info['name']}_{info['version']}/"
     out = WORK / f"working-copy_{info['version']}.zip"
+    # the skipped folders are left out before the walk enters them: `.devcheck` holds junctions (me-network's checkout
+    # with its own `.devcheck/mods/me-network` junction to itself), which Path.rglob follows on Windows without end
+    skip = (".git", ".devcheck", ".github", "tools", "docs")
+    files = []
+    for top in sorted(ROOT.iterdir()):
+        if top.name in skip:
+            continue
+        if top.is_file():
+            files.append(top)
+            continue
+        for dirpath, _, filenames in os.walk(top):
+            files.extend(Path(dirpath) / f for f in filenames)
     with zipfile.ZipFile(out, "w", zipfile.ZIP_DEFLATED) as z:
-        for p in sorted(ROOT.rglob("*")):
+        for p in sorted(files):
             rel = p.relative_to(ROOT).as_posix()
-            if p.is_dir() or rel.split("/")[0] in (".git", ".devcheck", ".github", "tools", "docs"):
-                continue
             z.writestr(prefix + rel, json.dumps(info, indent=2) if rel == "info.json" else p.read_bytes())
     print(f"working copy has the version of the old save ({old_version}): loaded as {info['version']}, as the release "
           f"will be (on_configuration_changed with mod changes)")
