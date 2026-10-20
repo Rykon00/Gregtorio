@@ -160,7 +160,8 @@ upstream_item{
 --- and an epoxy board (HV); 256k 4 EV, 16 HV, an engineering processor and a fiberglass board (EV, SAE2:327-335). The
 --- boards are Gregtorio's printed boards (resin, phenolic, phenolic, epoxy, fiber-reinforced).
 local function component(def)
-	def.energy_required = 10 * ({ lv = LV_SPEED, mv = MV_SPEED, hv = HV_SPEED, ev = EV_SPEED })[def.tier]
+	def.energy_required = 10 * ({ lv = LV_SPEED, mv = MV_SPEED, hv = HV_SPEED, ev = EV_SPEED, iv = IV_SPEED, luv = LUV_SPEED,
+		uv = UV_SPEED })[def.tier]
 	def.category = def.tier .. "-circuit-assembler-recipes"
 	def.ingredients[#def.ingredients + 1] = { type = "fluid", name = "soldering-alloy", amount = 7.2 }
 	def.results = { { type = "item", name = def.result or def.name, amount = 1 } }
@@ -204,6 +205,28 @@ upstream_item(component{
 	ingredients = I{ "fiber-reinforced-printed-circuit-board", 1, "processing-unit", 16, "ev-circuit", 4,
 		"engineering-processor", 1 },
 })
+--- issue #454 (me-network 0.5.5, its issue #414): AE2-Unofficial's components above 256k, GTNH's recipes (SAE2:336-362,
+--- circuit assembler, 72 soldering alloy, 10 s): 1024k from 4 IV and 16 EV circuits, an engineering processor and a
+--- multifiberglass elite board (IV); 4096k 4 LuV, 16 IV, an advanced engineering processor and a wetware board (LuV);
+--- 16384k 4 UV, 16 LuV, an advanced engineering processor and a bio board (UV). Gregtorio has no advanced engineering
+--- processor: the engineering processor; the boards are its multilayered fiber-reinforced, wetware and bioware printed
+--- boards. me-network before 0.5.5 has none
+local HAS_BIG_CELLS = data.raw.item["me-1024k-storage-component"] ~= nil
+local BIG_CELLS = HAS_BIG_CELLS and {
+	{ size = "1024k", tier = "iv", board = "multilayered-fiber-reinforced-printed-circuit-board", circuits = { "iv-circuit", "ev-circuit" },
+	  pump = "iv-pump" },
+	{ size = "4096k", tier = "luv", board = "wetware-printed-circuit-board", circuits = { "luv-circuit", "iv-circuit" },
+	  pump = "luv-pump" },
+	{ size = "16384k", tier = "uv", board = "bioware-printed-circuit-board", circuits = { "uv-circuit", "luv-circuit" },
+	  pump = "uv-pump" },
+} or {}
+for _, c in ipairs(BIG_CELLS) do
+	upstream_item(component{
+		name = "me-" .. c.size .. "-storage-component",
+		tier = c.tier,
+		ingredients = I{ c.board, 1, c.circuits[2], 16, c.circuits[1], 4, "engineering-processor", 1 },
+	})
+end
 --- issue #216: upstream unlocks the 4k and the 16k component with logistic-system (and with the data technologies of
 --- the microverse, removed in issue #287). The technology that unlocks them has the technologies of their ingredients
 --- before it: logistic-system gets nand-chips (the 4k one's NAND chips), an earlier technology of the same science
@@ -245,6 +268,37 @@ for i, tier in ipairs({ "1k", "4k", "16k", "64k", "256k" }) do
 		},
 	}
 	data.raw.recipe[cell].auto_recycle = false         -- a recycler would void the contents
+end
+--- issue #454: the cells above 256k as the 256k one, in the assembler of their component's tier (GTNH, SAE2:290-310: an
+--- advanced storage housing, which Gregtorio does not have, and the component; the storage housing here, as for 256k)
+for i, c in ipairs(BIG_CELLS) do
+	local cell = "me-" .. c.size .. "-storage-cell"
+	recipe_of{
+		name = cell,
+		category = c.tier .. "-assembling-machine-recipes",
+		subgroup = "fork-me-cells",
+		order = string.format("%02d", 5 + i),
+		energy_required = 5,
+		ingredients = I{ "me-" .. c.size .. "-storage-component", 1, "basic-storage-housing", 1 },
+	}
+	data.raw.recipe[cell].auto_recycle = false
+end
+--- issue #454: the Singularity cell, GTNH's Digital Singularity ME Storage Cell (SpaceAssemblerRecipes.java:425-433, the
+--- space assembler's module tier 1, UHV, 10 s: an eternal singularity, 12 16384k components, 8 IV quantum chests, 4 infinity
+--- blocks, 4 infinity catalysts, 12 cosmic neutronium blocks, 2304 L of UEV solder). Gregtorio has no space assembler, no
+--- eternal singularity, no quantum chest and no blocks of these metals: the UHV assembler, a dense plate for a block (both
+--- 9 ingots), the infinity catalyst dust; the singularity, the chests and the solder are left out
+if data.raw["item-with-tags"]["me-singularity-storage-cell"] then
+	recipe_of{
+		name = "me-singularity-storage-cell",
+		category = "uhv-assembling-machine-recipes",
+		subgroup = "fork-me-cells",
+		order = "09",
+		energy_required = 10 * UHV_SPEED,
+		ingredients = I{ "me-16384k-storage-component", 12, "dense-infinity-plate", 4, "infinity-catalyst-dust", 4,
+			"dense-cosmic-neutronium-plate", 12 },
+	}
+	data.raw.recipe["me-singularity-storage-cell"].auto_recycle = false
 end
 
 --- GTNH (SAE2:2239-2256): a titanium plate, 2 certus quartz screws, an annihilation (import) or formation core (export),
@@ -386,6 +440,24 @@ if HAS_INTERFACE_TERMINAL then
 	}
 end
 
+--- issue #456 (me-network 0.5.5, its issue #416): the ME Pattern Terminal Ex is AE2-Unofficial's Processing Pattern Terminal,
+--- GTNH's recipe (NewHorizonsCoreMod scripts/ScriptAppliedEnergistics2.java:2280-2289): an ME Crafting Terminal, 2 LuV
+--- conveyor modules, an advanced engineering processor, 2 LuV electric motors and a LuV robot arm in the MV assembler,
+--- 10 s. me-network has no crafting terminal and Gregtorio no advanced engineering processor: the ME Pattern Terminal (the
+--- block it extends) and the engineering processor. me-network before 0.5.5 has none
+local HAS_PATTERN_TERMINAL_EX = data.raw.item["me-pattern-terminal-ex"] ~= nil
+if HAS_PATTERN_TERMINAL_EX then
+	recipe_of{
+		name = "me-pattern-terminal-ex",
+		category = "mv-assembling-machine-recipes",
+		subgroup = "fork-me-network",
+		order = "e0a",
+		energy_required = 10 * MV_SPEED,
+		ingredients = I{ "me-pattern-terminal", 1, "luv-conveyor-module", 2, "engineering-processor", 1, "luv-motor", 2,
+			"luv-robot-arm", 1 },
+	}
+end
+
 --- GTNH (ASM:4800-4809): the EV assembler, 4 titanium plates, a formation and an annihilation core, 288 molten glass
 --- (2 glass here: the HV assembler has no fluid input), HV, 5 s
 recipe_of{
@@ -453,6 +525,20 @@ if HAS_TOGGLE then
 		}
 	end
 end
+--- issue #457 (me-network 0.5.5, its issue #443): the ME Advanced Level Emitter, GTNH's recipe (NewHorizonsCoreMod
+--- scripts/ScriptAppliedEnergistics2.java:2207-2211): an EV circuit and a level emitter in the MV assembler, 15 s.
+--- me-network before 0.5.5 has none
+local HAS_ADVANCED_EMITTER = data.raw.item["me-advanced-level-emitter"] ~= nil
+if HAS_ADVANCED_EMITTER then
+	recipe_of{
+		name = "me-advanced-level-emitter",
+		category = "mv-assembling-machine-recipes",
+		subgroup = "fork-me-network",
+		order = "g8",
+		energy_required = 15 * MV_SPEED,
+		ingredients = I{ "ev-circuit", 1, "me-level-emitter", 1 },
+	}
+end
 
 --- item recipes only (no fluid boxes), crafts like an EV assembler
 ME.make_molecular_assembler{
@@ -511,6 +597,37 @@ if HAS_CRAFTING_BLOCKS then
 		I{ "me-crafting-unit", 1, "engineering-processor", 2 })
 	block("me-crafting-monitor", "mv-assembling-machine-recipes", 20 * MV_SPEED,
 		I{ "me-crafting-unit", 1, "computer-monitor", 1 })
+
+	--- issue #455 (me-network 0.5.5, its issue #415): the crafting storage above 256k as GTNH's advanced crafting storage
+	--- (SAE2:364-378: the component and a crafting unit, EV assembler, 20 s)
+	for _, c in ipairs(BIG_CELLS) do
+		if data.raw.item["me-" .. c.size .. "-crafting-storage"] then
+			block("me-" .. c.size .. "-crafting-storage", "ev-assembling-machine-recipes", 20 * EV_SPEED,
+				I{ "me-crafting-unit", 1, "me-" .. c.size .. "-storage-component", 1 })
+		end
+	end
+	--- GTNH's ME Singularity Crafting Storage (SAE2:618-649, Avaritia's extreme crafting table): 4 crafting units, a
+	--- Singularity cell, 8 Piko circuits, 12 UIV field generators, 24 dense infinity plates, 4 spacetime frames, 12 spacetime
+	--- wires, 4 transcendent metal nanites, 4 creative energy cells and 8 Draconic reactor stabilizers. Gregtorio has no
+	--- extreme crafting table, no nanites and neither of the last two: the UIV assembler (the field generators' tier), the
+	--- UMV circuit for the Piko circuit, a block of transcendent metal for its nanites; the creative cells and the
+	--- stabilizers are left out
+	if data.raw.item["me-singularity-crafting-storage"] then
+		block("me-singularity-crafting-storage", "uiv-assembling-machine-recipes", 20 * UIV_SPEED,
+			I{ "me-crafting-unit", 4, "me-singularity-storage-cell", 1, "umv-circuit", 8, "uiv-field-generator", 12,
+				"dense-infinity-plate", 24, "spacetime-frame", 4, "spacetime-wire", 12, "block-of-transcendent-metal", 4 })
+	end
+	--- GTNH's co-processing units of 4 to 4096 cores (SAE2:212-251): a crafting unit and 2 circuits of the tier above the
+	--- assembler's, 5 s: 4x IV circuits (EV), 16x LuV (IV), 64x ZPM (LuV), 256x UV (ZPM), 1024x UHV (UV), 4096x UEV (UHV);
+	--- AE2-Unofficial's (and me-network's own) are four of the one below
+	for _, a in ipairs({ { "4x", "iv-circuit", "ev", EV_SPEED }, { "16x", "luv-circuit", "iv", IV_SPEED },
+			{ "64x", "zpm-circuit", "luv", LUV_SPEED }, { "256x", "uv-circuit", "zpm", ZPM_SPEED },
+			{ "1024x", "uhv-circuit", "uv", UV_SPEED }, { "4096x", "uev-circuit", "uhv", UHV_SPEED } }) do
+		local name = "me-crafting-accelerator-" .. a[1]
+		if data.raw.item[name] then
+			block(name, a[3] .. "-assembling-machine-recipes", 5 * a[4], I{ "me-crafting-unit", 1, a[2], 2 })
+		end
+	end
 end
 
 
@@ -542,6 +659,19 @@ for i, c in ipairs(FLUID_CELLS) do
 		},
 	}
 	data.raw.recipe[cell].auto_recycle = false         -- a recycler would void the fluid
+end
+--- issue #454: the fluid cells above 256k with the pump of their tier, as the ones below
+for i, c in ipairs(BIG_CELLS) do
+	local cell = "me-" .. c.size .. "-fluid-storage-cell"
+	recipe_of{
+		name = cell,
+		category = c.tier .. "-assembling-machine-recipes",
+		subgroup = "fork-me-fluid-cells",
+		order = string.format("%02d", 5 + i),
+		energy_required = 5,
+		ingredients = I{ "me-" .. c.size .. "-storage-component", 1, "basic-storage-housing", 1, c.pump, 1 },
+	}
+	data.raw.recipe[cell].auto_recycle = false
 end
 
 
@@ -642,6 +772,15 @@ if HAS_CARDS then
 	--- world accelerator) need items Gregtorio does not have: which stand-ins they get is open (the maintainer's decision)
 	card("me-super-speed-card", "h2", I{ "me-acceleration-card", 1, "me-16k-storage-component", 1 })
 	card("me-superluminal-speed-card", "h3", I{ "me-super-speed-card", 1, "me-256k-storage-component", 4 })
+	--- issue #453 (me-network 0.5.5, its issue #411): GTNH's Crafting Card (SAE2:1297-1303, shapeless): a basic card, two 1k
+	--- storage components, a crafting table
+	card("me-crafting-card", "e6", I{ "me-basic-card", 1, "me-1k-storage-component", 2, "crafting-table", 1 })
+	--- issue #458 (me-network 0.5.5, its issue #440): GTNH's View Cell (SAE2:1749-1752, shapeless, AE2-Unofficial's own
+	--- recipe too): a storage housing and a certus quartz; GTNH's shaped recipe with plates and screws is left out
+	if data.raw["item-with-tags"]["me-view-cell"] then
+		recipe_of{ name = "me-view-cell", subgroup = "fork-me-cards", order = "y",
+			ingredients = I{ "basic-storage-housing", 1, "certus-quartz", 1 } }
+	end
 
 	--- GTNH: computer screen cover, two titanium screws (stainless steel here: Gregtorio has no titanium screw),
 	--- crafting table, two titanium plates, calculation processor
@@ -732,7 +871,11 @@ block_recipe("me-wireless-link", "hv-assembling-machine-recipes", 5 * HV_SPEED,
 --------------------------------------------------------------------------------
 
 local PACKS = { "automation-science-pack", "logistic-science-pack", "military-science-pack",
-	"chemical-science-pack", "production-science-pack", "utility-science-pack", "space-science-pack" }
+	"chemical-science-pack", "production-science-pack", "utility-science-pack", "space-science-pack",
+	"metallurgic-science-pack", "agricultural-science-pack", "electromagnetic-science-pack", "cryogenic-science-pack",
+	"promethium-science-pack" }
+--- (issues #454, #455: ZPM to UIV, the amounts of the tier files 126-132)
+local TWELVE = { SP12, SP11, SP10, SP09, SP08, SP07, SP06, SP05, SP04, SP03, SP02, SP01 }
 --- the first n packs; the amounts of the old 120 and 122 (SP06 down) or of the old 121 (SP07 down)
 local function sci(n, amounts)
 	local out = {}
@@ -790,11 +933,13 @@ local automation = { "me-level-maintainer", "me-circuit-interface" }
 if HAS_TOGGLE then
 	for _, name in ipairs({ "me-level-emitter", "me-toggle-bus", "me-inverted-toggle-bus" }) do automation[#automation + 1] = name end
 end
+if HAS_ADVANCED_EMITTER then automation[#automation + 1] = "me-advanced-level-emitter" end   -- (issue #457)
 tech("me-automation", { "me-autocrafting", "circuit-network" }, 5, 800, automation, SEVEN)
 tech("me-co-processing", { "me-autocrafting", "me-storage-256k", "iv-components" }, 6, 1200, with_blocks({},
 	{ "me-16k-crafting-storage", "me-64k-crafting-storage", "me-crafting-co-processing-unit" }), SEVEN)
+--- issue #456: the Pattern Terminal Ex with its LuV components (me-network: with the Pattern Terminal)
 tech("me-quantum-crafting", { "me-co-processing", "luv-machines" }, 7, 1500,
-	with_blocks({}, { "me-256k-crafting-storage" }), SEVEN)
+	with_blocks(HAS_PATTERN_TERMINAL_EX and { "me-pattern-terminal-ex" } or {}, { "me-256k-crafting-storage" }), SEVEN)
 
 --- EV: fluid cells up to 64k; IV: 256k fluid cells (the ME Interface and the buses move fluids from the start since
 --- me-network 0.2.0: the network stores them once fluid cells exist, or in a tank behind a storage bus)
@@ -808,12 +953,17 @@ tech("me-fluid-storage-256k", { "me-fluid-storage", "me-storage-256k" }, 6, 800,
 --- Pattern Capacity, Interface Capacity and Sticky Card (me-network 0.5.3; skipped when the loaded one lacks them); the Group
 --- Filter Card and the void cells (me-network 0.5.4): the Overflow Destruction Card is made from the item one
 if HAS_CARDS then
-	tech("me-upgrade-cards", { "me-storage-256k", "circuit-network", "turbo-transport-belt" }, 6, 1000, {
+	local cards = {
 		"me-basic-card", "me-advanced-card", "me-acceleration-card", "me-capacity-card", "me-overflow-destruction-card",
 		"me-fuzzy-card", "me-pattern-capacity-card", "me-interface-capacity-card", "me-sticky-card", "me-inverter-card",
 		"me-equal-distribution-card", "me-cell-workbench", "me-group-filter-card", "me-void-storage-cell",
 		"me-void-fluid-storage-cell", "me-super-speed-card", "me-superluminal-speed-card",
-	})
+	}
+	--- issues #453 and #458: the Crafting Card and the View Cell (me-network 0.5.5)
+	for _, name in ipairs({ "me-crafting-card", "me-view-cell" }) do
+		if data.raw.recipe[name] then cards[#cards + 1] = name end
+	end
+	tech("me-upgrade-cards", { "me-storage-256k", "circuit-network", "turbo-transport-belt" }, 6, 1000, cards)
 end
 
 --- issue #212: IV, after the cards (the Wireless Booster goes into the access point's card slots), which come after the
@@ -832,4 +982,48 @@ end
 --- needs utility science, the sixth pack here)
 if data.raw.technology["me-quantum-bridge"] then
 	tech("me-quantum-bridge", { "me-storage-256k" }, 6, 1500, { "me-quantum-bridge" })
+end
+
+--- issues #454 and #455 (me-network 0.5.5, its issues #414 and #415): the cells above 256k, the Singularity cell, their
+--- crafting storage and the crafting accelerators, each at the tier of its GT parts (the components' boards: the
+--- multilayered fiber-reinforced board with the ZPM assembly line, the wetware board at UV, the bioware board at UHV;
+--- the Singularity cell's infinity and cosmic neutronium at UHV, its crafting storage's spacetime and UMV circuits at
+--- UIV); the counts from UV on are scaled as in 138 (UV /4.5, UHV /13.9, UIV /25.3)
+if HAS_BIG_CELLS then
+	local function tech_n(name, prerequisites, packs, count, recipes)
+		if not data.raw.technology[name] then return end
+		ME.set_technology(name, { prerequisites = prerequisites, recipes = recipes,
+			unit = { count = count, ingredients = sci(packs, TWELVE), time = 30 } })
+	end
+	local STEPS = {
+		{ size = "1024k", packs = 8, count = 1500, before = "me-storage-256k", fbefore = "me-fluid-storage-256k",
+		  parts = { "zpm-assembly-line" }, fluid_count = 1000, crafting_count = 1500 },
+		{ size = "4096k", packs = 9, count = 450, before = "me-storage-1024k", fbefore = "me-fluid-storage-1024k",
+		  parts = { "wetware-processors" }, fluid_count = 300, crafting_count = 450 },
+		{ size = "16384k", packs = 10, count = 225, before = "me-storage-4096k", fbefore = "me-fluid-storage-4096k",
+		  parts = { "bio-processors", "uv-machines" }, fluid_count = 150, crafting_count = 225 },
+	}
+	local crafting_before = "me-quantum-crafting"
+	for _, s in ipairs(STEPS) do
+		local storage = "me-storage-" .. s.size
+		local prerequisites = { s.before }
+		for _, p in ipairs(s.parts) do prerequisites[#prerequisites + 1] = p end
+		tech_n(storage, prerequisites, s.packs, s.count,
+			{ "me-" .. s.size .. "-storage-component", "me-" .. s.size .. "-storage-cell" })
+		tech_n("me-fluid-storage-" .. s.size, { s.fbefore, storage }, s.packs, s.fluid_count,
+			{ "me-" .. s.size .. "-fluid-storage-cell" })
+		tech_n("me-crafting-storage-" .. s.size, { crafting_before, storage }, s.packs, s.crafting_count,
+			with_blocks({}, { "me-" .. s.size .. "-crafting-storage" }))
+		crafting_before = "me-crafting-storage-" .. s.size
+	end
+	tech_n("me-storage-singularity", { "me-storage-16384k", "me-quantum-bridge", "quantium", "uev-materials", "uhv-machines" },
+		10, 225, { "me-singularity-storage-cell" })
+	tech_n("me-crafting-storage-singularity", { "me-crafting-storage-16384k", "me-storage-singularity", "exotic-processor-mainframes",
+		"umv-materials", "uiv-components", "uiv-machines" }, 12, 120, with_blocks({}, { "me-singularity-crafting-storage" }))
+	--- the accelerators of 4 to 64 cores (IV to ZPM circuits, up to the LuV assembler) and of 256 to 4096 cores (UV to UEV
+	--- circuits, up to the UHV assembler)
+	tech_n("me-crafting-accelerators", { "me-quantum-crafting", "advanced-smds" }, 7, 1200, with_blocks({},
+		{ "me-crafting-accelerator-4x", "me-crafting-accelerator-16x", "me-crafting-accelerator-64x" }))
+	tech_n("me-crafting-accelerators-2", { "me-crafting-accelerators", "bio-processor-mainframes", "uhv-machines" }, 10, 250,
+		with_blocks({}, { "me-crafting-accelerator-256x", "me-crafting-accelerator-1024x", "me-crafting-accelerator-4096x" }))
 end
