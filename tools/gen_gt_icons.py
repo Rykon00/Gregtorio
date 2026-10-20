@@ -203,6 +203,8 @@ MATERIALS = {
     # Six-Phased Copper (MaterialsInit.java:16128: SET_SHINY, 0xff7814)
     "hypogen": ("CUSTOM/hypogen", (255, 255, 255)), "dragonblood": ("CUSTOM/hypogen", (220, 40, 20)),
     "six-phased-copper": ("SHINY", (0xff, 0x78, 0x14)),
+    # issue #355 step 5: the Nano Forge's materials (GT's Oriharukon, Melodic and Stellar Alloy, glowstone)
+    "oriharukon": "Oriharukon", "melodic-alloy": "MelodicAlloy", "stellar-alloy": "StellarAlloy", "glowstone": "Glowstone",
     # issue #356: the netherite chain's materials (bartworks' cubic zirconia, bismuth telluride and Magneto Resonatic,
     # WerkstoffLoader.java:196, 556, 625; GT's strontium, magnetic steel, crystalline alloy; GT++'s strontium oxide, its
     # components' mean colour)
@@ -763,6 +765,16 @@ def icon_table(c):
                     "medium-cadmium-battery": 527, "medium-lithium-battery": 528, "medium-sodium-battery": 529,
                     "large-cadmium-battery": 537, "large-lithium-battery": 538, "large-sodium-battery": 539}.items():
         T[name] = lambda i=i: c.gt(f"{M1}{i}")
+    # issue #355 step 5: the Nano Forge (its nanites keep the icons of Gregtorio 0.1.9; GT++'s compressed glowstone
+    # blocks; the Radiant Naquadah Alloy Casing and the controller's assembly line front, MTENanoForge.java)
+    # (Minecraft's glowstone block is not in the checkouts: a quarter of GT++'s first compression, whose pattern is the
+    # block's at half the size, scaled up)
+    T["glowstone-block"] = lambda: c.gt("gt:miscutils/textures/blocks/compressed/glowstone1").crop(
+        (0, 0, SIZE // 2, SIZE // 2)).resize((SIZE, SIZE), Image.NEAREST)
+    T["compressed-glowstone"] = lambda: c.gt("gt:miscutils/textures/blocks/compressed/glowstone1")
+    T["double-compressed-glowstone"] = lambda: c.gt("gt:miscutils/textures/blocks/compressed/glowstone2")
+    T["radiant-naquadah-alloy-casing"] = lambda: c.gt(f"{BLK}MACHINE_CASING_RADIANT_NAQUADAH_ALLOY")
+    T["nano-forge-controller"] = lambda: c.face(f"{BLK}MACHINE_CASING_RADIANT_NAQUADAH_ALLOY", f"{BLK}OVERLAY_FRONT_ASSEMBLY_LINE")
     # tier circuits of the core mod (the fork's generic UMV/UXV circuit)
     T["umv-circuit"] = lambda: c.gt(f"{CORE}itemCircuitUMV")
     T["uxv-circuit"] = lambda: c.gt(f"{CORE}itemCircuitUXV")

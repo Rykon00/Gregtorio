@@ -296,6 +296,9 @@ local NEW_ORES = {
 	--- technetium's 98), no byproducts of their own (GT: themselves)
 	["draconium"] = { dust = "draconium-dust", byproducts = {  }, mass = 98 },   -- GT Draconium: none (itself)
 	["awakened-draconium"] = { dust = "awakened-draconium-dust", byproducts = {  }, mass = 98 },   -- GT DraconiumAwakened: none (itself)
+	--- issue #355 step 5: Horus's oriharukon (Void Miner III, 160); GT's element Oh (76 protons, 125 neutrons), no
+	--- byproducts of its own
+	["oriharukon"] = { dust = "oriharukon-dust", byproducts = {  }, mass = 201 },   -- GT Oriharukon: none (itself)
 	--- issue #356: the Lutetium Asteroid's thulium and tellurium (162); GT gives them no byproducts of their own
 	["thulium"] = { dust = "thulium-dust", byproducts = {  }, mass = 168 },   -- GT Thulium: none (itself)
 	["tellurium"] = { dust = "tellurium-dust", byproducts = {  }, mass = 127 },   -- GT Tellurium: none (itself)
