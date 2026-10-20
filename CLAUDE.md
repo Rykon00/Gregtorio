@@ -220,7 +220,9 @@
     dimensions' ores, the ender air with Radon, black plutonium with the Void Miner II, the bornite chain with
     Reach Ross128 (issue #293); loads after 159 and before 156)
   - 156 circuit icons (issue #164: the circuit variant recipes up to UV keep the shared tier item and show GT's texture
-    of their GTNH item as recipe icon; devcheck fails for a tier circuit recipe without its own icon)
+    of their GTNH item as recipe icon; devcheck fails for a tier circuit recipe without its own icon; issue #450: the ULV
+    tier item `ulv-circuit`, which the vacuum tube and NAND chip recipes give and every former user of the two takes, and
+    the nanoprocessor in the HV circuit assembler with its parts at HV)
   - 157 recycling (issue #190: GTNH's material recycling into dusts, ingots and melts for the items of crafting table
     recipes and the hulls, recipes `recycling-<machine>-<item>` in `FORK_RECYCLING.recipes`, unlocked late by
     `FORK_RECYCLING.unlock()` in data-final-fixes.lua because that file replaces and disables vanilla technologies;

@@ -798,6 +798,7 @@ def icon_table(c):
     T["max-circuit"] = lambda: c.gt(f"{CORE}itemPlanckCircuit")
     # issue #164: the circuit variant recipes up to UV (prototypes/156-fork-circuit-icons.lua), the texture of their GTNH item
     for name, src in {
+            "vacuum-tube": (M1, 700), "vacuum-tube-crafting-table": (M1, 700), "nand-chip": (M3, 75),   # (issue #450: ULV)
             "electronic-circuit": (M3, 305), "basic-electronic-circuit": (M3, 305), "basic-integrated-circuit": (M1, 701),
             "microchip": (M3, 78), "microchip-smd": (M3, 78), "microchip-cheap": (M3, 78),
             "advanced-circuit": (M1, 702), "good-electronic-circuit": (M1, 702), "good-integrated-circuit": (M3, 79),
@@ -813,6 +814,7 @@ def icon_table(c):
             "quantum-processor-mainframe": (M3, 88), "crystal-processor-supercomputer": (M3, 90),
             "crystal-processor-mainframe": (M3, 91)}.items():
         T[f"circuit-recipe-{name}"] = lambda s=src: c.gt(f"{s[0]}{s[1]}")
+    T["ulv-circuit"] = lambda: c.gt(f"{M1}700")   # issue #450: the ULV tier item, GT's Vacuum Tube (Circuit_Primitive)
     T["crystal-cpu"] = lambda: c.gt(f"{M3}70")
     T["raw-crystal-chip"] = lambda: c.gt(f"{M3}69")
     T["raw-crystal-chip-part"] = lambda: c.gt(f"{M3}74")
