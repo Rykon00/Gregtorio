@@ -590,7 +590,9 @@ local KEEP = {
 	["industrial-mixer"] = { "magnalium-ingot", "magnalium-plate", "steel-turbine-casing", "titanium-turbine-casing",
 		"blue-steel-rod", "blue-steel-frame" },
 	["plasma-turbine"] = { "long-tungstensteel-rod" },
-	["military-science-pack"] = { "lv-sensor" },
+	-- issue #443: the LV sensor with the Circuit Assembler, the first LV technology with all its parts (brass rod, certus
+	-- quartz), so the LV Miner needs no Military Science Pack technology
+	["circuit-assembler"] = { "lv-sensor" },
 	["end-steel"] = { "endstone-dust" },
 	["rhodium"] = { "sulfur-dioxide", "sulfur-trioxide" },
 	-- issue #188: the forge hammer crushes raw sheldonite too, so the auto-unlock no longer places the macerator recipe
