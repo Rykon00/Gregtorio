@@ -373,10 +373,11 @@ F.tech{ name = P2, prerequisites = { P1, "hv-machines", "hv-energy-hatches" }, p
 F.tech{ name = P3, prerequisites = { P2, "ev-machines" }, packs = 5, count = 30, time = 45, recipes = { P3 } }
 F.tech{ name = P4, prerequisites = { P3, "iv-machines" }, packs = 6, count = 50, time = 60, recipes = { P4 } }
 
---- issue #337: the LV Miner after the Wiremill (its mining pipe) and the LV sensor (Military Science Pack); the MV Miner
---- with its MV sensor (Advanced MV Machines), the HV Miner with HV Machines
+--- issue #337: the LV Miner after the Wiremill (its mining pipe) and the LV sensor (issue #443: the Circuit Assembler,
+--- which 142 unlocks it with; before, the Military Science Pack technology); the MV Miner with its MV sensor (Advanced MV
+--- Machines), the HV Miner with HV Machines
 --- (issue #350: 20 units, the middle of the LV technologies' 15 to 40)
-F.tech{ name = MINER_TECH, prerequisites = { "wiremill", "military-science-pack" }, packs = 2, count = 20, time = 30,
+F.tech{ name = MINER_TECH, prerequisites = { "wiremill", "circuit-assembler" }, packs = 2, count = 20, time = 30,
 	recipes = { MINER_TECH, PIPE } }
 fork_add_unlock("advanced-mv-machines", "mv-miner")
 fork_add_unlock("hv-machines", "hv-miner")
