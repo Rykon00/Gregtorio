@@ -106,7 +106,7 @@ F.components{
 --- coil is the eternal coil of the draft in 90-uxv-age-item.lua (an optical mainframe, spacetime wire,
 --- screws and foil, an eternal singularity, a melt); here it is universium wire and screws, spacetime
 --- foil, a UMV circuit and a spacetime melt. Energy hatch as in 133-fork-umv.lua, with twice the
---- APICs (they stand in for GT's YPIC, which is not built).
+--- APICs (they stood in for GT's YPIC; since #355 step 5 GTNH's YPIC recipe is a second one, 164 section 37).
 --------------------------------------------------------------------------------
 
 create_item{
