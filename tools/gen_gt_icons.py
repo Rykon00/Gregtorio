@@ -198,6 +198,7 @@ MATERIALS = {
     # issue #356: the Lutetium Asteroid's thulium and tellurium
     "thulium": "Thulium", "tellurium": "Tellurium", "praseodymium": "Praseodymium",
     "firestone": "Firestone",   # issue #435: the Nether Ore Asteroid's firestone chain
+    "cast-iron": "CastIron",    # issue #448: GT New Horizons' Cast Iron (its Wrought Iron of before)
     # issue #356: the netherite chain's materials (bartworks' cubic zirconia, bismuth telluride and Magneto Resonatic,
     # WerkstoffLoader.java:196, 556, 625; GT's strontium, magnetic steel, crystalline alloy; GT++'s strontium oxide, its
     # components' mean colour)

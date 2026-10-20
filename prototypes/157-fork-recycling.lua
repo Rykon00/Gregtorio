@@ -74,7 +74,8 @@ local FORMS = {
 	{ "", "-wire", 1 / 2 }, { "", "-cable", 1 / 2 }, { "", "-dust", 1 },
 }
 local SPECIAL = { ["iron-stick"] = { "iron", 1 / 2 }, ["iron-gear-wheel"] = { "iron", 1 } }
---- a metal's arc smelting material (GT Materials.mArcSmeltInto; Gregtorio has no wrought iron, iron stays iron)
+--- a metal's arc smelting material (GT Materials.mArcSmeltInto; iron stays iron: GT5-Unofficial merged the wrought iron it
+--- used to arc-smelt into with Cast Iron, which arc-smelts into itself, issue #448)
 local ARC_INTO = { ["copper"] = "annealed-copper" }
 
 local function item_exists(n)
