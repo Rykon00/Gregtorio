@@ -3130,8 +3130,8 @@ end
 ---   (FL:89-103: 27 extremely unstable naquadah, 64 nether star dust, 64 awakened draconium dust, 32 orundum dust, 2000 L
 ---   MK III and 9216 L molten praseodymium into 250 L; 8 s, 46 000 000 EU/t: UMV). The fuels keep GT's litres as 136's MK1
 ---   and MK2 (their fuel value is GT's EU per litre), the melts are a tenth (their material cost stays GT's). MK IV burns at
----   GT's 88 540 000 EU/t x 100 ticks per litre in the large naquadah reactors. GT's alternative recipes (chromatic glass
----   dust, hypogen, the one-step MK IV) and MK V and VI are left for later (#356).
+---   GT's 88 540 000 EU/t x 100 ticks per litre in the large naquadah reactors. GT's alternative recipes: chromatic glass
+---   dust left out; hypogen and the one-step MK IV in section 35 (#436); MK V and VI in section 29 (#356).
 --------------------------------------------------------------------------------
 do
 	local T1, T2 = "naquadah-fuel-refinery", "naquadah-based-fuel-mk4"
@@ -3352,8 +3352,8 @@ end
 ---   UXV, 12 and 16 parallels, each the one before with 72 coils and a UXV energy hatch.
 --- * MK V and MK VI burn in the large naquadah reactors at GT's 399 576 000 EU/t x 160 ticks and 2 077 795 200 EU/t x
 ---   240 ticks per litre (GGConfigLoader.java:15-17). Their depleted fuels are left out, as section 27's.
---- * Left out: GT's MK IV from hypogen and the one-step MK IV (hypogen needs GT++'s dragon metal, a drop of the Ender
----   Dragon that the mod does not have). MK V from creon and mellion: section 29 (issue #355).
+--- * GT's MK IV from hypogen and the one-step MK IV: section 35 (issue #436, the Ender Dragon's dragonblood). MK V from
+---   creon and mellion: section 29 (issue #355).
 --------------------------------------------------------------------------------
 do
 	local NFR = "naquadah-fuel-refinery"
@@ -3963,8 +3963,8 @@ end
 ---   plasma forge's MAX recipes).
 --- * The first consumer: GT's second APIC recipe (NHC LaserEngraverRecipes.java:297-303: an APIC wafer engraved with the
 ---   gravitational lens and 15 L superfluid -> 2 chips; UIV, 5 s), next to the mod's own APIC recipe (129).
---- * Left out, named: the glass's 8 Force Field Glass (GT++: netherite and molten celestial tungsten rods) and 6 long
----   Six-Phased Copper rods (hypogen, #436).
+--- * Left out, named: the glass's 8 Force Field Glass (GT++: netherite and molten celestial tungsten rods). Its 6 long
+---   Six-Phased Copper rods come with section 35 (#436).
 --------------------------------------------------------------------------------
 do
 	local T = "gravitational-lens"
@@ -4087,4 +4087,80 @@ do
 	step(R, "charcoal-coke-oven", "coke-oven-recipes", 45, 1, { { "wood", 1 } }, { { "charcoal", 1 }, { "creosote", 25 } },
 		"charcoal")
 	for _, r in pairs(R) do fork_add_unlock("coke-oven", r) end
+end
+
+
+--------------------------------------------------------------------------------
+--- 35) DRAGONBLOOD, HYPOGEN AND SIX-PHASED COPPER (issue #436, the maintainer's decision of 2026-10-20: a dragonblood
+---   source through the Extreme Entity Crusher).
+--- * Dragonblood (GT++'s DRAGON_METAL, "Dragonblood") drops from the Ender Dragon: 25 to 50 stacks of 1 to 10 nuggets
+---   (gtPlusPlus EnderDragonDeathHandler.java:51-58), 206 on average. The crusher fights it as the mod's Wither (17): its
+---   summoning, 4 End Crystals (Minecraft: 7 glass, an eye of ender and a ghast tear each; the mod's ghast tear comes with
+---   Creon and Mellion, much later, and is left out), 120 s. The nugget melts into 1.6 (a tenth of GT's 16 L).
+--- * Hypogen (gtPlusPlus RecipesGregTech.java:303-312): 144 L molten dragonblood and 288 L molten rhugnor -> 36 L in the
+---   fusion reactor, UHV, 409.6 s, 1.2G EU to start: the MK4 reactor here (fermium's).
+--- * GoodGenerator's MK IV from hypogen (FuelRecipeLoader.java:106-119: 27 extremely unstable naquadah, 64 bedrockium,
+---   64 awakened draconium, 64 orundum dust, 2000 L MK III, 240 L hypogen -> 500 L; 8 s, coil T2) and the one-step MK IV
+---   (:121-137: 54 extremely unstable naquadah, 32 orundum, 10 high density uranium, 5 high density plutonium, 4000 L
+---   heavy and 5000 L light naquadah fuel, 120 L hypogen, 45 ingots of molten chromatic glass -> 250 L; 2 ticks, coil
+---   T4), the naquadah fuels in GT's litres as in sections 27 and 28, the melts a tenth.
+--- * Six-Phased Copper (GT's PlasmaForgeRecipes.java:143-157: 8 Avaritia copper singularities, 72 ingots of molten
+---   celestial tungsten, 288 of astral titanium, 36 of hypogen, 576 of chromatic glass, 18 of rhugnor, 72 of mellion -> 72
+---   ingots; UMV, 60 s, 12 600 K) in the plasma forge; the mod has no singularity (as the void cells of #354: left out). The
+---   melts of celestial tungsten and astral titanium from their dust (GT++'s fluid extractor, UIV), the long rods cast
+---   (143). The first consumer: the 6 long Six-Phased Copper rods of the Spatially Transcendent Gravitational Lens Block
+---   (section 32 left them out), so Gravitational Lens follows Six-Phased Copper.
+--- Technologies: Hypogen (the dragon, the melt, the fusion, MK IV from hypogen) after the refinery's T2 coils, Fusion Coil II
+---   (rhugnor), the MK4 fusion reactor, Reach the End and the crusher; the one-step MK IV with Temporal Field Restriction
+---   Coils (T4), which follows Hypogen; Six-Phased Copper after Hypogen, MK VI (astral titanium), the plasma module
+---   (celestial tungsten), Creon and Mellion and the Godforge (chromatic glass).
+--------------------------------------------------------------------------------
+do
+	local NFR = "naquadah-fuel-refinery"
+	local MK3, MK4 = "naquadah-based-fuel-mk3", "naquadah-based-fuel-mk4"
+	local EUN = "extremely-unstable-naquadah"
+	local T_HYP, T_SPC = "hypogen", "six-phased-copper"
+	local RH, RS, R1 = {}, {}, {}
+	items(SUB_PART, { "dragonblood-nugget", "long-six-phased-copper-rod" })
+	FORK_RECYCLING_BLACKLIST["dragonblood-nugget"] = "the Ender Dragon's drop: GT recycles it into its material, which the mod has as a melt only"
+	F.fluid("molten-dragonblood", "molten-dragonblood", { 220 / 255, 40 / 255, 20 / 255 })
+	F.fluid("molten-hypogen", "molten-hypogen", { 181 / 255, 102 / 255, 61 / 255 })
+	F.fluid("molten-celestial-tungsten", "molten-celestial-tungsten", { 133 / 255, 133 / 255, 133 / 255 })
+	F.fluid("molten-astral-titanium", "molten-astral-titanium", { 220 / 255, 160 / 255, 240 / 255 })
+	F.fluid("molten-six-phased-copper", "molten-six-phased-copper", { 1, 120 / 255, 20 / 255 })
+	--- dragonblood and hypogen
+	step(RH, "crushing-the-ender-dragon", "ev-extreme-entity-crusher-recipes", 120, 1,
+		{ { "glass", 28 }, { "eye-of-ender", 4 } }, { { "dragonblood-nugget", 206 } })
+	step(RH, "melt-dragonblood-nugget", "uhv-fluid-extractor-recipes", 0.2, UHV_SPEED, { { "dragonblood-nugget", 1 } },
+		{ { "molten-dragonblood", 1.6 } })
+	step(RH, "molten-hypogen", "mk4-fusion-reactor-recipes", 409.6, UHV_SPEED,
+		{ { "molten-dragonblood", 14.4 }, { "molten-rhugnor", 28.8 } }, { { "molten-hypogen", 3.6 } })
+	step(RH, MK4 .. "-hypogen", NFR .. "-t2-recipes", 8, UMV_SPEED,
+		{ { EUN .. "-dust", 27 }, { "bedrockium-dust", 64 }, { "awakened-draconium-dust", 64 }, { "orundum-dust", 64 }, { MK3, 2000 },
+			{ "molten-hypogen", 24 } }, { { MK4, 500 } })
+	step(R1, MK4 .. "-one-step", NFR .. "-t4-recipes", 0.1, UXV_SPEED,
+		{ { EUN .. "-dust", 54 }, { "orundum-dust", 32 }, { "high-density-uranium", 10 }, { "high-density-plutonium", 5 },
+			{ "heavy-naquadah-fuel", 4000 }, { "light-naquadah-fuel", 5000 }, { "molten-hypogen", 12 }, { "molten-chromatic-glass", 648 } },
+		{ { MK4, 250 } })
+	F.tech{ name = T_HYP, prerequisites = { "naquadah-based-fuel-mk4", "fusion-coil-ii", "fusion-reactor-mk4", "reach-the-end",
+		"extreme-entity-crushers" }, packs = 13, count = 95, time = 60, recipes = RH }   -- (as the MK IV technology)
+	for _, r in pairs(R1) do fork_add_unlock("temporal-field-restriction-coils", r) end
+	table.insert(data.raw.technology["temporal-field-restriction-coils"].prerequisites, T_HYP)
+	--- six-phased copper
+	step(RS, "melt-celestial-tungsten-dust", "uiv-fluid-extractor-recipes", 1.2, UIV_SPEED, { { "celestial-tungsten-dust", 1 } },
+		{ { "molten-celestial-tungsten", 14.4 } })
+	step(RS, "melt-astral-titanium-dust", "uiv-fluid-extractor-recipes", 1.2, UIV_SPEED, { { "astral-titanium-dust", 1 } },
+		{ { "molten-astral-titanium", 14.4 } })
+	step(RS, "molten-six-phased-copper", "dimensionally-transcendent-plasma-forge-recipes", 60, UMV_SPEED,
+		{ { "molten-celestial-tungsten", 1036.8 }, { "molten-astral-titanium", 4147.2 }, { "molten-hypogen", 518.4 },
+			{ "molten-chromatic-glass", 8294.4 }, { "molten-rhugnor", 259.2 }, { "molten-mellion", 1036.8 } },
+		{ { "molten-six-phased-copper", 1036.8 } })
+	F.tech{ name = T_SPC, prerequisites = { T_HYP, "naquadah-based-fuel-mk6", "godforge-plasma-module", "creon-and-mellion",
+		"godforge" }, packs = 14, count = 60, time = 60, recipes = RS }
+	FORK_CASTING.materials["six-phased-copper"] = { "umv", T_SPC }
+	FORK_CASTING.run()
+	--- the first consumer: the lens block of section 32
+	local lens = data.raw.recipe["spatially-transcendent-gravitational-lens-block"]
+	lens.ingredients[#lens.ingredients + 1] = { type = "item", name = "long-six-phased-copper-rod", amount = 6 }
+	table.insert(data.raw.technology["gravitational-lens"].prerequisites, T_SPC)
 end
