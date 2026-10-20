@@ -2507,8 +2507,9 @@ Step 2 (140, 164 section 19, 150): the quantum anomaly and the godforge at GTNH'
 - Named deviation: creon, mellion and metastable oganesson are left out of the godforge. GTNH makes them from celestial
   tungsten plasma, which the mod makes in the godforge itself, so they would close a cycle. The shielding casing's molten
   celestial tungsten is left out for the same reason.
-- GT's other godforge items the mod lacks are left out and named in 140: the singularities, hypogen, Six-Phased Copper,
-  the boson containment units and the exotic catalyst, among others.
+- GT's other godforge items the mod lacks are left out and named in 140: the singularities, the hypogen coils and
+  plates, the boson containment units and the exotic catalyst, among others. Hypogen and Six-Phased Copper themselves
+  came later with #436 (164 section 35).
 - `godforge-plasma-module` stands for GT's plasma module upgrades GPCI to TPTP (17 graviton shards). It unlocks
   celestial tungsten dust (6 tungsten dust, engraved with the anomaly as the lens at UEV), its plasma (GT's multi-step
   plasma) and raw star matter.
@@ -2614,7 +2615,7 @@ Large Hadron Collider (13 packs) and Gravitational Lens (15 packs: its Space com
   ZPIC's creon and mellion come after the UMV hatches (naquadah fuel MK IV to VI, the UMV blast furnace), so GTNH's
   recipe alone would close a cycle.
 - **Left out, named:** GT's black hole compressor (the lens runs in the UMV compressor), the glass's Force Field Glass
-  (netherite, molten celestial tungsten) and Six-Phased Copper rods (hypogen, #436), the collider casing's Naquarite
+  (netherite, molten celestial tungsten; its Six-Phased Copper rods came with #436), the collider casing's Naquarite
   foil (netherite, Thaumcraft), the LHC controller's Research Stations (no TecTech computation) and UV Neutron
   Accelerators (their inverter's plastic case takes cyan dye, which the mod has none of).
 
@@ -2681,8 +2682,8 @@ The refinery (164 section 27; GoodGenerator's RecipeLoader.java and FuelRecipeLo
   controller alone, which keeps its recycling.
 - **Technologies:** Naquadah Fuel Refinery (10 packs) and Naquadah Based Fuel MK4 (13 packs, after the UMV energy hatches
   and the thorium based liquid fuel).
-- **Left for later:** GT's alternative recipes (chromatic glass dust, hypogen, the one-step MK IV), MK V and VI and
-  coils T3 and T4.
+- **Left for later:** GT's alternative recipes (chromatic glass dust; hypogen and the one-step MK IV came with #436),
+  MK V and VI and coils T3 and T4.
 
 MK V, MK VI and the coils T3 and T4 (164 section 28; GoodGenerator's FuelRecipeLoader.java, RecipeLoader.java and
 RecipeLoader2.java, GT++'s RecipesGregTech.java):
@@ -2715,9 +2716,30 @@ RecipeLoader2.java, GT++'s RecipesGregTech.java):
   2 077 795 200 EU/t x 240 ticks per litre), in every large naquadah reactor.
 - **Units:** the fuels keep GT's litres; the melts, heavy radox, the residue and raw star matter are a tenth.
 - **Left out, with the reason:**
-  - MK IV from hypogen and the one-step MK IV: GT++'s hypogen needs dragon metal, a drop of the Ender Dragon. The mod
-    has no source of it.
+  - MK IV from hypogen and the one-step MK IV: built with #436 (below).
   - MK V from creon and mellion: built with #355 step 2 (164 section 29).
+
+### Dragonblood, hypogen and Six-Phased Copper (issue #436)
+
+Decision (the maintainer, 2026-10-20): a dragonblood source through the Extreme Entity Crusher, then hypogen, both MK IV
+recipes and Six-Phased Copper for the godforge glass (164 section 35):
+- **Dragonblood:** GT++'s dragon metal (its name in game: Dragonblood) drops from the Ender Dragon, 25 to 50 stacks of 1
+  to 10 nuggets. The EV Extreme Entity Crusher fights the dragon as it fights the Wither: Crushing The Ender Dragon takes
+  its 4 End Crystals (28 glass and 4 eyes of ender; their ghast tears come only with Creon and Mellion and are left out)
+  and gives 206 dragonblood nuggets in 120 s. A nugget melts into 1.6 molten dragonblood (UHV fluid extractor).
+- **Hypogen:** GT++'s fusion recipe, 14.4 molten dragonblood and 28.8 molten rhugnor into 3.6 molten hypogen (UHV,
+  409.6 s), in the MK4 fusion reactor.
+- **MK IV:** GoodGenerator's MK IV from hypogen (bedrockium dust instead of nether star dust, 24 hypogen, 500 instead of
+  250; T2 refinery, 8 s) and the one-step MK IV (heavy and light naquadah fuel, hypogen and molten chromatic glass
+  without MK III; T4 refinery, 2 ticks).
+- **Six-Phased Copper:** GT's plasma forge recipe (UMV, 60 s) from molten celestial tungsten, astral titanium, hypogen,
+  chromatic glass, rhugnor and mellion (their dusts melt in the UIV fluid extractor); its 8 copper singularities are left
+  out, as the mod has no singularities (#354). Molten Six-Phased Copper casts long rods (143). The Spatially Transcendent
+  Gravitational Lens Block takes GT's 6 long Six-Phased Copper rods now.
+- **Technologies:** Hypogen (13 packs) after Naquadah Based Fuel MK4, Fusion Coil II, the MK4 fusion reactor, Reach the
+  End and the crushers; Temporal Field Restriction Coils (the one-step MK IV) follows it. Six-Phased Copper (14 packs)
+  after Hypogen, MK VI, the plasma module, Creon and Mellion and the Godforge; Gravitational Lens follows it.
+- **In game:** the in-game checks are in a [Task-Ingame] issue linked in the PR.
 
 ### Nuclear depth (issue #359)
 

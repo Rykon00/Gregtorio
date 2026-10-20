@@ -50,8 +50,8 @@ local function seconds(s) return s * UMV_SPEED end
 ---     celestial tungsten plasma, which the mod makes in the godforge's plasma module, so they would close a cycle;
 ---     the shielding casing's molten celestial tungsten for the same reason
 ---   * GT items the mod does not have: the eternal and combined singularities, the ZPM4 batteries, the Stable Boson
----     Containment Units, the UIV energy tunnel and energy distributor, hypogen (coils, plates), Six-Phased Copper,
----     the Boundless Gravitationally Severed Structure Casing (AmunRa) and the Magnetic Confinement Casing (creon,
+---     Containment Units, the UIV energy tunnel and energy distributor, the hypogen coils and plates (hypogen and
+---     Six-Phased Copper themselves: 164 section 35, issue #436), the Boundless Gravitationally Severed Structure Casing (AmunRa) and the Magnetic Confinement Casing (creon,
 ---     hypogen, tengam), the Neutronium Heat Capacitors, the UV plasma generators, the Field Restriction Coil, the
 ---     Graviton Anomaly, the nanites, netherite, infinity catalyst, titansteel, proto-halkonite and abyssal, the
 ---     godforge glass (creon, mellion), and the excited exotic catalyst (GT's DTEC: the mod's plasma forge has the

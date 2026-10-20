@@ -199,6 +199,10 @@ MATERIALS = {
     "thulium": "Thulium", "tellurium": "Tellurium", "praseodymium": "Praseodymium",
     "firestone": "Firestone",   # issue #435: the Nether Ore Asteroid's firestone chain
     "cast-iron": "CastIron",    # issue #448: GT New Horizons' Cast Iron (its Wrought Iron of before)
+    # issue #436: GT++'s Hypogen and Dragonblood (MaterialsElements.java:520, 616: SET_HYPOGEN, their colours) and GT's
+    # Six-Phased Copper (MaterialsInit.java:16128: SET_SHINY, 0xff7814)
+    "hypogen": ("CUSTOM/hypogen", (255, 255, 255)), "dragonblood": ("CUSTOM/hypogen", (220, 40, 20)),
+    "six-phased-copper": ("SHINY", (0xff, 0x78, 0x14)),
     # issue #356: the netherite chain's materials (bartworks' cubic zirconia, bismuth telluride and Magneto Resonatic,
     # WerkstoffLoader.java:196, 556, 625; GT's strontium, magnetic steel, crystalline alloy; GT++'s strontium oxide, its
     # components' mean colour)
