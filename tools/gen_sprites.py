@@ -655,6 +655,8 @@ def basic_machine(gt, base, tier="IV"):
     picture, the working strip (the EV machine's frame count, the casing found frame by frame: moving parts cross it)
     and the icon (the casing: the pixels that differ between the LV, MV, HV and EV icons, those upstream has)."""
     lv, mv = upstream(base, "lv", "idle"), upstream(base, "mv", "idle")
+    if base in LV_DERIVED:
+        lv = None                # (drawn from the MV picture by lv_from_mv, not upstream's)
     src, other = (lv, mv) if lv else (mv, None)
     idle_src = load(src)
     other_idle = load(other) if other else None
@@ -681,7 +683,8 @@ def basic_machine(gt, base, tier="IV"):
               for i, f in enumerate(work)]
     save_strip(frames, OUT_ENTITY / f"{name}-working.png")
 
-    icons = [load(ICONS / f"{t}-{base}.png") for t in ("lv", "mv", "hv", "ev") if (ICONS / f"{t}-{base}.png").exists()]
+    icons = [load(ICONS / f"{t}-{base}.png") for t in ("lv", "mv", "hv", "ev") if (ICONS / f"{t}-{base}.png").exists()
+             and not (t == "lv" and base == "laser-engraver")]   # (lv_from_mv's icon; the extruder's LV icon is upstream's)
     ip = [i.load() for i in icons]
     imask = [(x, y) for y in range(TILE) for x in range(TILE)
              if ip[0][x, y][3] and len({p[x, y] for p in ip}) > 1]
@@ -888,16 +891,22 @@ def fermenter_lv_mv(gt):
     framed_overlay_lv_mv(gt, "fermenter", "fluid-solidifier", THERMAL_WINDOW, FERMENTER_OVERLAY, glow=True, crop=True)
 
 
-def autoclave_lv():
-    """Issue #193: upstream has no LV autoclave (GT's Basic Autoclave). Its picture is the MV autoclave's with the MV
-    casing colours (mv_casing_palette) in the LV extractor's casing colours, rank for rank of brightness, as the forge
-    hammer's; the icon the MV autoclave's icon with the pixels that differ from the HV and EV icons in the colours of the
-    LV extractor icon's casing."""
+# issue #449: the LV machines upstream has no picture of, drawn from the MV one (lv_from_mv); the IV and higher tiers of
+# the extruder and the laser engraver keep coming from the MV picture and the upstream icons (basic_machine skips these)
+LV_DERIVED = {"extruder", "laser-engraver"}
+
+
+def lv_from_mv(base, icon=True, icon_palette=False):
+    """Issues #193 and #449: upstream has no LV picture of the machine (GT's Basic Autoclave, Basic Extruder, Basic
+    Precision Laser Engraver, Basic Combustion Generator). Its picture is the MV one's with the MV casing colours
+    (mv_casing_palette) in the LV extractor's casing colours, rank for rank of brightness, as the forge hammer's; the icon
+    the MV icon with the pixels that differ from the HV and EV icons (those upstream has) in the colours of the LV
+    extractor icon's casing."""
     lv_pal, mv_pal = casing_palette("extractor", "lv"), mv_casing_palette()
-    dst = ENTITY / "lv-autoclave"
+    dst = ENTITY / f"lv-{base}"
     dst.mkdir(exist_ok=True)
     for kind in ("idle", "working"):
-        src = ENTITY / "mv-autoclave" / f"mv-autoclave-{kind}.png"
+        src = ENTITY / f"mv-{base}" / f"mv-{base}-{kind}.png"
         frames = strip_frames(src) if kind == "working" else [load(src)]
         masks = [casing_mask(f, None, mv_pal) for f in frames]
         cmap = quantile_map([f.getpixel(xy) for f, m in zip(frames, masks) for xy in m], lv_pal)
@@ -908,19 +917,32 @@ def autoclave_lv():
                 g.putpixel(xy, cmap[f.getpixel(xy)])
             out.append(g)
         if kind == "working":
-            save_strip(out, dst / f"lv-autoclave-{kind}.png")
+            save_strip(out, dst / f"lv-{base}-{kind}.png")
         else:
-            save(out[0], dst / f"lv-autoclave-{kind}.png")
-    icons = [load(ICONS / f"{t}-autoclave.png") for t in ("mv", "hv", "ev")]
+            save(out[0], dst / f"lv-{base}-{kind}.png")
+    if not icon:
+        return
+    icons = [load(ICONS / f"{t}-{base}.png") for t in ("mv", "hv", "ev") if (ICONS / f"{t}-{base}.png").exists()]
     ip = [i.load() for i in icons]
-    imask = [(x, y) for y in range(TILE) for x in range(TILE) if ip[0][x, y][3] and len({q[x, y] for q in ip}) > 1]
+    if icon_palette:
+        # (the laser engraver's MV, HV and EV icons differ in their front too: the casing is the MV icon's pixels in the
+        # MV casing colours of the icons, those of every basic machine whose LV and MV icons upstream has)
+        pal = set()
+        for other in BASIC_MACHINES:
+            lvi, mvi = ICONS / f"lv-{other}.png", ICONS / f"mv-{other}.png"
+            if lvi.exists() and mvi.exists() and other not in LV_DERIVED:
+                c, d = load(lvi).load(), load(mvi).load()
+                pal |= {d[x, y] for y in range(TILE) for x in range(TILE) if c[x, y] != d[x, y] and d[x, y][3]}
+        imask = [(x, y) for y in range(TILE) for x in range(TILE) if ip[0][x, y][3] and ip[0][x, y] in pal]
+    else:
+        imask = [(x, y) for y in range(TILE) for x in range(TILE) if ip[0][x, y][3] and len({q[x, y] for q in ip}) > 1]
     a, b = load(ICONS / "lv-extractor.png").load(), load(ICONS / "mv-extractor.png").load()
     ext = sorted({a[x, y] for y in range(TILE) for x in range(TILE) if a[x, y] != b[x, y] and a[x, y][3]}, key=lum)
     cmap = quantile_map([icons[0].getpixel(xy) for xy in imask], ext)
-    icon = icons[0].copy()
+    out_icon = icons[0].copy()
     for xy in imask:
-        icon.putpixel(xy, cmap[icons[0].getpixel(xy)])
-    save(icon, ICONS / "lv-autoclave.png")
+        out_icon.putpixel(xy, cmap[icons[0].getpixel(xy)])
+    save(out_icon, ICONS / f"lv-{base}.png")
 
 
 def fluid_extractor_lv_ev():
@@ -1165,7 +1187,10 @@ def main():
     electromagnetic_separator_lv_mv(a.gt)  # and the LV and MV separator of the separator's
     brewery_lv_mv(a.gt)          # issue #360: the LV and MV brewery and fermenter of their tiers
     fermenter_lv_mv(a.gt)
-    autoclave_lv()               # before the autoclave's tiers (it reads the MV autoclave)
+    lv_from_mv("autoclave")      # before the autoclave's tiers (it reads the MV autoclave)
+    lv_from_mv("extruder", icon=False)          # issue #449 (the LV extruder icon is upstream's)
+    lv_from_mv("laser-engraver", icon_palette=True)
+    lv_from_mv("combustion-generator", icon=False)   # (the LV icon is upstream's)
     for tier in ("IV", "LuV", "ZPM", "UV", "UHV", "UEV", "UIV", "UMV", "UXV", "MAX"):
         for base in BASIC_MACHINES + [FLUID_EXTRACTOR]:
             basic_machine(a.gt, base, tier)

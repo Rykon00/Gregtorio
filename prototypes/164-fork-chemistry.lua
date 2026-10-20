@@ -267,6 +267,8 @@ create_item{
 	},
 }
 RECIPES[#RECIPES + 1] = "bio-diesel-cell"
+--- issue #449: the LV Combustion Generator (101) comes with the first combustion fuel of LV
+RECIPES[#RECIPES + 1] = "lv-combustion-generator"
 --- glycerol is GT's semi-fluid fuel (164 EU per L): a cell for the semi-fluid generators like the creosote cell (65.6 MJ)
 create_item{
 	name = "glycerol-cell",

@@ -807,6 +807,17 @@ local function machine_techs(category)
 			end
 		end
 	end
+	--- issue #449: the MV machines run the LV extruder and laser engraver categories too (101's
+	--- fork_lv_machine_categories, applied in 199 after this file)
+	local base = category:match("^lv%-(.+)$")
+	if base == "extruder-recipes" or base == "laser-engraver-recipes" then
+		local t = machine_techs("mv-" .. base)
+		if t == nil then
+			machine_techs_cache[category] = false
+			return nil
+		end
+		for _, x in pairs(t) do out[#out + 1] = x end
+	end
 	machine_techs_cache[category] = out
 	return out
 end
@@ -1089,8 +1100,9 @@ local ENGRAVER_LENS = { ruby = "ruby-lens", emerald = "emerald-lens", monazite =
 	tiberium = "emerald-lens", bartimaeusnek = "emerald-lens", ["red-zircon"] = "ruby-lens", fluorspar = "ruby-lens",
 	--- issue #373: white dilithium the diamond lens (light blue vinteum has no lens of its colour in the mod)
 	dilithium = "diamond-lens" }
---- grade -> the engraver category and time of the step up (GT tier: LV, MV, HV, EV; time x the tier's speed)
-local ENGRAVE = { chipped = { "mv-laser-engraver-recipes", 30 }, flawed = { "mv-laser-engraver-recipes", 60 },
+--- grade -> the engraver category and time of the step up (GT tier: LV, MV, HV, EV; time x the tier's speed; issue #449:
+--- the chipped step in the LV engraver's category, 101)
+local ENGRAVE = { chipped = { "lv-laser-engraver-recipes", 30 }, flawed = { "mv-laser-engraver-recipes", 60 },
 	gem = { "hv-laser-engraver-recipes", 240 }, flawless = { "ev-laser-engraver-recipes", 960 } }
 
 --- issue #193: GT's dark ash, the implosion's waste
