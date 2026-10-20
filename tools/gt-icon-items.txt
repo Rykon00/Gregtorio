@@ -4490,3 +4490,23 @@ glowstone-block
 compressed-glowstone
 double-compressed-glowstone
 nano-forge-controller
+# issue #355 step 5: YPIC, its wafers and the Solar Light Splitter
+shirabon-ingot
+shirabon-dust
+uranium-238-ingot
+glowstone-plate
+fayalite-plate
+fayalite-lens
+optically-enriched-crystalline-boule
+photonically-prepared-wafer
+photonically-enhanced-wafer
+infinite-wafer
+ypic-wafer
+yocto-power-ic
+sunnarium
+irradiant-uranium
+irradiant-glass-pane
+red-component
+green-component
+blue-component
+solar-light-splitter

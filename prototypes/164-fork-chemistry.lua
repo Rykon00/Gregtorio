@@ -4276,3 +4276,118 @@ do
 	FORK_CASTING.materials["prismatic-naquadah"] = { "zpm", T1 }   -- (its rods and screws; the melt stays with the refinery)
 	FORK_CASTING.run()
 end
+
+
+--------------------------------------------------------------------------------
+--- 37) THE YOCTO POWER IC (issue #355, step 5 part 2; the maintainer's decisions of 2026-10-20). NewHorizonsCoreMod
+--- (NHC: com/dreammaster/gthandler/recipes) and GT5-Unofficial ce1c416a64.
+--- * The Optically Enriched Crystalline Boule (NHC LaserEngraverRecipes.java:167-174: an americium boule engraved with
+---   the Magneto Resonatic, Fayalite and Quite Certain (mysterious) Crystal lenses and 16 000 L UU matter; UEV, 30 s;
+---   the fayalite lens from its plate, 155), cut into Photonically Prepared Wafers (CuttingMachineRecipes.java:203-214:
+---   16 with 1000 L grade 7 water in 50 s, 24 with grade 8 in 25 s; UEV). The engraver holds three lenses at once, so
+---   they stay ingredients and results (150 slots a recipe's only lens).
+--- * The Photonically Enhanced Wafer (LaserEngraverRecipes.java:176-188: the wafer, a Glowstone Nanite (section 36), the
+---   Solar Light Splitter (kept, in the lens slot), 1000 L tin plasma, 4000 L oganesson -> the wafer and 1000 L molten
+---   tin; UEV, 10 s). The splitter (AssemblerRecipes.java:1124-1133: 3 red, green and blue components; HV, 5 s), the
+---   components (ScriptSuperSolarPanels.java:89-172: an Irradiant Glass Pane engraved with a lens; IV, 50 s; the lenses
+---   the mod has: emerald, green sapphire, olivine; sapphire; ruby, red garnet), the pane (AssemblerRecipes.java:1107-
+---   1114: 4 Irradiant Uranium, 4 reinforced glass, a glowstone plate -> 4; HV, 5 s), Irradiant Uranium (:1116-1122: a
+---   uranium ingot and a Sunnarium; EV, 30 s), Sunnarium (CompressorRecipes.java:234-242: a sunnarium dust, 15 s) and the
+---   glowstone plate (GT CuttingRecipes.java:204-209: a glowstone block with 1 L lubricant -> 4; 5 s at 16 EU/t). GT's
+---   uranium ingot is uranium 238's, solidified from its melt (136's molten uranium; GT's ingot mold: 144 L, 1.6 s; EV). SuperSolarPanels' names are not in the checkouts; the
+---   components take their colour's name.
+--- * The Infinite Wafer (BlastFurnaceRecipes.java:780-786: the wafer, 4 eternity dust, 4 shirabon dust, 576 L infinity
+---   plasma; UXV, 30 s, 22 000 K: the UXV blast furnace). Shirabon (the maintainer's decision): its ingot cast from the
+---   melt (143, UMV), the dust macerated (6.4 s: its mass 128 in ticks). Infinity plasma in the godforge's plasma module
+---   (tectech Godforge.java:300-336: 144 L molten infinity -> 144 L; 30 s, UXV), as 140's celestial tungsten plasma.
+--- * The YPIC wafer (FluidSolidifierRecipes.java:431-435: the Infinite Wafer and 1500 L quark gluon plasma; MAX, 5 s)
+---   and the chip (LaserEngraverRecipes.java:314-320: the wafer engraved with the gravitational lens and 25 L superfluid
+---   -> 2; UXV, 5 s).
+--- * GTNH's UXV energy and dynamo hatches with YPIC (tectech ResearchStationAssemblyLine.java:277-297, 396-415: the UXV
+---   hull, 4 8x UMV superconductor wires (dynamo: 16 springs), 2 YPIC, 2 UXV circuits, 2 UXV coils, 8 space coolant
+---   cells, the UXV pump, 64 000 L super coolant, 80 ingots of mutated living solder; UXV, 50 s; its UU matter left out
+---   as for the ZPIC hatches) as additional recipes. The hatches keep their APIC recipe (134, 136): the Infinite Wafer's
+---   eternity dust comes with the UXV energy hatches, so GTNH's recipe alone would be a cycle (as section 33).
+--- Fluids a tenth of GT's litres (plasmas GT's), GT's seconds x the tier speed. Everything is unlocked where it is first
+--- consumed, by the technology Yocto Power ICs.
+--------------------------------------------------------------------------------
+do
+	local T = "yocto-power-ics"
+	local R = {}
+	local function item(name, amount) return { type = "item", name = name, amount = amount } end
+	items(SUB_DUST, { "shirabon-dust" })
+	items(SUB_PART, { "shirabon-ingot", "uranium-238-ingot", "sunnarium", "irradiant-uranium", "glowstone-plate",
+		"irradiant-glass-pane", "red-component", "green-component", "blue-component", "solar-light-splitter",
+		"optically-enriched-crystalline-boule", "photonically-prepared-wafer", "photonically-enhanced-wafer", "infinite-wafer",
+		"ypic-wafer", "yocto-power-ic" })
+	F.fluid("infinity-plasma", "infinity-plasma", { 1, 1, 1 })
+	--- the Solar Light Splitter
+	step(R, "sunnarium", "lv-compressor-recipes", 15, LV_SPEED, { { "sunnarium-dust", 1 } }, { { "sunnarium", 1 } })
+	step(R, "uranium-238-ingot", "ev-fluid-solidifier-recipes", 1.6, EV_SPEED, { { "molten-uranium", 14.4 } },
+		{ { "uranium-238-ingot", 1 } })
+	step(R, "irradiant-uranium", "ev-assembling-machine-recipes", 30, EV_SPEED,
+		{ { "uranium-238-ingot", 1 }, { "sunnarium", 1 } }, { { "irradiant-uranium", 1 } })
+	step(R, "glowstone-plate", "lv-cutting-machine-recipes", 5, LV_SPEED, { { "glowstone-block", 1 }, { "lubricant", 1 } },
+		{ { "glowstone-plate", 4 } })
+	step(R, "irradiant-glass-pane", "hv-assembling-machine-recipes", 5, HV_SPEED,
+		{ { "irradiant-uranium", 4 }, { "reinforced-glass", 4 }, { "glowstone-plate", 1 } }, { { "irradiant-glass-pane", 4 } })
+	for colour, lenses in pairs({ red = { "ruby", "red-garnet" }, green = { "emerald", "green-sapphire", "olivine" },
+		blue = { "sapphire" } }) do
+		for _, l in pairs(lenses) do
+			step(R, colour .. "-component-" .. l, "iv-laser-engraver-recipes", 50, IV_SPEED,
+				{ { "irradiant-glass-pane", 1 }, { l .. "-lens", 1 } }, { { colour .. "-component", 1 }, { l .. "-lens", 1 } },
+				colour .. "-component")
+		end
+	end
+	step(R, "solar-light-splitter", "hv-assembling-machine-recipes", 5, HV_SPEED,
+		{ { "red-component", 3 }, { "green-component", 3 }, { "blue-component", 3 } }, { { "solar-light-splitter", 1 } })
+	--- the wafers
+	step(R, "optically-enriched-crystalline-boule", "uev-laser-engraver-recipes", 30, UEV_SPEED,
+		{ { "americium-doped-monocrystaline-silicon-boule", 1 }, { "magneto-resonatic-lens", 1 }, { "fayalite-lens", 1 },
+			{ "mysterious-crystal-lens", 1 }, { "uu-matter", 1600 } },
+		{ { "optically-enriched-crystalline-boule", 1 }, { "magneto-resonatic-lens", 1 }, { "fayalite-lens", 1 },
+			{ "mysterious-crystal-lens", 1 } }, "optically-enriched-crystalline-boule")
+	step(R, "photonically-prepared-wafer", "uev-cutting-machine-recipes", 50, UEV_SPEED,
+		{ { "optically-enriched-crystalline-boule", 1 }, { "grade-7-water", 100 } }, { { "photonically-prepared-wafer", 16 } })
+	step(R, "photonically-prepared-wafer-grade-8", "uev-cutting-machine-recipes", 25, UEV_SPEED,
+		{ { "optically-enriched-crystalline-boule", 1 }, { "grade-8-water", 100 } }, { { "photonically-prepared-wafer", 24 } })
+	step(R, "photonically-enhanced-wafer", "uev-laser-engraver-recipes", 10, UEV_SPEED,
+		{ { "photonically-prepared-wafer", 1 }, { "glowstone-nanites", 1 }, { "solar-light-splitter", 1 }, { "tin-plasma", 1000 },
+			{ "oganesson", 400 } },
+		{ { "photonically-enhanced-wafer", 1 }, { "solar-light-splitter", 1 }, { "molten-tin", 100 } }, "photonically-enhanced-wafer")
+	step(R, "shirabon-dust", "lv-macerator-recipes", 6.4, LV_SPEED, { { "shirabon-ingot", 1 } }, { { "shirabon-dust", 1 } })
+	create_recipe{
+		name = "infinity-plasma",
+		category = "godforge-recipes",
+		energy_required = 30 * UXV_SPEED,
+		subgroup = "subgroup-godforge-recipes",
+		ingredients = { { type = "fluid", name = "molten-infinity", amount = 14.4 },
+			{ type = "fluid", name = "raw-star-matter", amount = 30 * UXV_SPEED / UMV_SPEED * 0.25 } },
+		results = { { type = "fluid", name = "infinity-plasma", amount = 144 } },
+		main_product = "infinity-plasma",
+	}
+	data.raw.recipe["infinity-plasma"].allow_productivity = true
+	R[#R + 1] = "infinity-plasma"
+	step(R, "infinite-wafer", "uxv-electric-blast-furnace-recipes", 30, UXV_SPEED,
+		{ { "photonically-enhanced-wafer", 1 }, { "eternity-dust", 4 }, { "shirabon-dust", 4 }, { "infinity-plasma", 576 } },
+		{ { "infinite-wafer", 1 } })
+	step(R, "ypic-wafer", "max-fluid-solidifier-recipes", 5, MAX_SPEED, { { "infinite-wafer", 1 }, { "quark-gluon-plasma", 150 } },
+		{ { "ypic-wafer", 1 } })
+	step(R, "yocto-power-ic", "uxv-laser-engraver-recipes", 5, UXV_SPEED,
+		{ { "ypic-wafer", 1 }, { "gravitational-lens", 1 }, { "dimensionally-shifted-superfluid", 2.5 } },
+		{ { "yocto-power-ic", 2 }, { "gravitational-lens", 1 } }, "yocto-power-ic")
+	--- the hatches
+	for _, h in pairs({ { "uxv-energy-hatch", { "hypocosmium-superconductive-wire", 32 } }, { "uxv-dynamo-hatch", { "hypocosmium-spring", 16 } } }) do
+		step(R, h[1] .. "-ypic", "zpm-assembly-line-recipes", 50, UXV_SPEED,
+			{ { "uxv-machine-hull", 1 }, h[2], { "yocto-power-ic", 2 }, { "uxv-circuit", 2 }, { "extended-mega-ultimate-voltage-coil", 2 },
+				{ "1080k-super-coolant-cell", 8 }, { "uxv-pump", 1 }, { "super-coolant", 6400 }, { "molten-indalloy-140", 1152 } },
+			{ { h[1], 1 } })
+	end
+	F.tech{ name = T, prerequisites = { "nano-forge-t2", "zepto-power-ics", "uxv-energy-hatches", "uxv-naquadah-reactor",
+		"naquadah-based-fuel-mk6", "max-machines" }, packs = 15, count = 55, time = 60, recipes = R }   -- (as section 33)
+	FORK_CASTING.materials["shirabon"] = { "umv", T }
+	FORK_CASTING.run()
+	--- (the three lenses stay ingredients and results, see 150)
+	FORK_ENGRAVER_NO_LENS["optically-enriched-crystalline-boule"] = "GT holds three lenses at once (NHC LaserEngraverRecipes.java:"
+		.. "167-174); they stay ingredients and results, as the lens slot of 150 takes one"
+end

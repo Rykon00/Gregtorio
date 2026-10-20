@@ -205,6 +205,11 @@ MATERIALS = {
     "six-phased-copper": ("SHINY", (0xff, 0x78, 0x14)),
     # issue #355 step 5: the Nano Forge's materials (GT's Oriharukon, Melodic and Stellar Alloy, glowstone)
     "oriharukon": "Oriharukon", "melodic-alloy": "MelodicAlloy", "stellar-alloy": "StellarAlloy", "glowstone": "Glowstone",
+    # issue #355 step 5, YPIC: GT's uranium (238) ingot; SuperSolarPanels' parts are not in the checkouts: GT's ingot, plate
+    # and gem shapes in their colours (Irradiant Uranium, the Irradiant Glass Pane and its colour components, the splitter)
+    "uranium-238": "Uranium", "irradiant-uranium": ("SHINY", (190, 255, 90)), "irradiant-glass": ("GLASS", (255, 240, 150)),
+    "red-component": ("GLASS", (255, 70, 70)), "green-component": ("GLASS", (70, 255, 70)),
+    "blue-component": ("GLASS", (80, 120, 255)), "solar-light-splitter": ("DIAMOND", (255, 255, 230)),
     # issue #356: the netherite chain's materials (bartworks' cubic zirconia, bismuth telluride and Magneto Resonatic,
     # WerkstoffLoader.java:196, 556, 625; GT's strontium, magnetic steel, crystalline alloy; GT++'s strontium oxide, its
     # components' mean colour)
@@ -775,6 +780,18 @@ def icon_table(c):
     T["double-compressed-glowstone"] = lambda: c.gt("gt:miscutils/textures/blocks/compressed/glowstone2")
     T["radiant-naquadah-alloy-casing"] = lambda: c.gt(f"{BLK}MACHINE_CASING_RADIANT_NAQUADAH_ALLOY")
     T["nano-forge-controller"] = lambda: c.face(f"{BLK}MACHINE_CASING_RADIANT_NAQUADAH_ALLOY", f"{BLK}OVERLAY_FRONT_ASSEMBLY_LINE")
+    # issue #355 step 5, YPIC: GT's optical boule, the photonic and infinite wafers, the YPIC wafer and chip
+    # (IDMetaItem03: Ingot6 721, Wafer6 722, Wafer7 723, Wafer8 276, YPIC wafer 272, chip 273); IC2's sunnarium as GT's
+    # sunnarium gem; SuperSolarPanels' parts in GT's shapes (MATERIALS above)
+    for name, i in {"optically-enriched-crystalline-boule": 721, "photonically-prepared-wafer": 722,
+                    "photonically-enhanced-wafer": 723, "infinite-wafer": 276, "ypic-wafer": 272, "yocto-power-ic": 273}.items():
+        T[name] = lambda i=i: c.gt(f"{M3}{i}")
+    T["sunnarium"] = lambda: c.part("sunnarium", "gem")
+    T["irradiant-uranium"] = lambda: c.part("irradiant-uranium", "ingot")
+    T["irradiant-glass-pane"] = lambda: c.part("irradiant-glass", "plate")
+    for colour in ("red", "green", "blue"):
+        T[f"{colour}-component"] = lambda colour=colour: c.part(f"{colour}-component", "plate")
+    T["solar-light-splitter"] = lambda: c.part("solar-light-splitter", "gemExquisite")
     # tier circuits of the core mod (the fork's generic UMV/UXV circuit)
     T["umv-circuit"] = lambda: c.gt(f"{CORE}itemCircuitUMV")
     T["uxv-circuit"] = lambda: c.gt(f"{CORE}itemCircuitUXV")

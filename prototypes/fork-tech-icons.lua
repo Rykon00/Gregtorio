@@ -274,6 +274,7 @@ FORK_TECH_ICONS = {
 	["water-purification"] = true,
 	["wetware-processor-mainframes"] = true,
 	["wetware-processors"] = true,
+	["yocto-power-ics"] = true,
 	["yttrium-barium-cuprate"] = true,
 	["zepto-power-ics"] = true,
 	["zirconium-carbide"] = true,

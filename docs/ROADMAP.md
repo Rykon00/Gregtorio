@@ -1279,7 +1279,7 @@ Where the chips go (GT: 2 chips of the tier per hatch; the fork has used 4 since
 | UEV energy / dynamo hatch | 4 QPIC | 4 FPIC | 2 FPIC |
 | UIV energy / dynamo hatch | 8 QPIC | 4 APIC | 2 APIC |
 | UMV energy / dynamo hatch | 16 QPIC | 8 APIC | 2 ZPIC (#355: a second recipe; the 8 APIC one stays) |
-| UXV energy / dynamo hatch | 32 QPIC | 16 APIC | 2 YPIC (not built) |
+| UXV energy / dynamo hatch | 32 QPIC | 16 APIC | 2 YPIC (#355 step 5: a second recipe; the 16 APIC one stays) |
 | MK4 controller | 48 QPIC wafers | 48 FPIC wafers | 64 FPIC wafers |
 | MK5 controller | 64 QPIC wafers | 64 APIC wafers | 64 APIC wafers |
 
@@ -2479,7 +2479,8 @@ Not built: GT's ZPIC and YPIC. The ZPIC wafer is a beamcrafter recipe of the cor
 molten creon and mellion, 20 gravitons each beam), the YPIC wafer a MAX fluid solidifier recipe (the Bose-Einstein
 condensate wafer, GT's Wafer8, with 1500 L quark gluon plasma); the mod has no beamcrafter, creon, mellion, gravitons or
 Wafer6 to Wafer8. The UMV and UXV energy and dynamo hatches keep 133's and 134's doubled APICs. Issue #355 stays open for
-them. (2026-10-18: the ZPIC is built, see "The Large Hadron Collider and the gravitational lens" below; YPIC is open.)
+them. (2026-10-18: the ZPIC is built, see "The Large Hadron Collider and the gravitational lens" below; 2026-10-20:
+YPIC is built, see "YPIC (issue #355, step 5)".)
 
 Part 2, the godforge route (the maintainer's decision on #355: celestial tungsten from the godforge, the quantum anomaly
 through the HiC chain). Step 1 (164 section 18): GoodGenerator's Precise Auto-Assembler MT-3662 and the Hi-Computation
@@ -2643,6 +2644,30 @@ Part 1, the Nano Forge (164 section 36, technologies Nano Forge and Nano Forge T
   LV compressor.
 - **Left out, named:** GT's Nano Forge recipe for carbon nanites (bartworks' casings; the assembly line's recipe is the
   bootstrap), the nanites of tiers 3 and 4 and their structure pieces.
+
+Part 2, the wafers and YPIC (164 section 37, technology Yocto Power ICs, after Nano Forge Tier 2, Zepto Power ICs, the UXV
+energy hatches and naquadah reactor, MK VI and MAX Machines):
+- **Optically Enriched Crystalline Boule:** the americium boule engraved with the Magneto Resonatic, Fayalite (new, from
+  its plate as 155's plate lenses) and mysterious crystal lenses and 1600 UU matter (UEV, 30 s). The engraver holds the
+  three lenses at once; the lens slot of #316 takes one, so 150 keeps a recipe's lenses as ingredients and results when
+  it holds more than one.
+- **Photonically Prepared Wafer:** the boule cut with grade 7 water (16, 50 s) or grade 8 water (24, 25 s), UEV.
+- **Photonically Enhanced Wafer:** the wafer, a Glowstone Nanite, the Solar Light Splitter (kept, in the lens slot), 1000
+  tin plasma and 400 oganesson -> the wafer and 100 molten tin (UEV, 10 s). The splitter: 3 red, green and blue
+  components (HV assembler); a component is an Irradiant Glass Pane engraved with a lens of its colour (IV, 50 s:
+  ruby or red garnet, emerald, green sapphire or olivine, sapphire); the pane from 4 Irradiant Uranium, 4 reinforced
+  glass and a glowstone plate (4 per block, LV cutter with lubricant); Irradiant Uranium from a uranium 238 ingot
+  (solidified from molten uranium) and a Sunnarium (compressed sunnarium dust). SuperSolarPanels' names and textures
+  are not in the checkouts: the parts are named after their colour and drawn in GT's shapes.
+- **Infinite Wafer:** the wafer, 4 eternity dust, 4 shirabon dust, 576 infinity plasma (UXV blast furnace, 30 s; GT's
+  22 000 K). Shirabon gets its ingot (cast from the melt, UMV) and dust (the maintainer's decision); infinity plasma
+  comes from the godforge (144 molten infinity -> 144, 30 s at UXV, with raw star matter as 140's plasmas).
+- **YPIC:** the YPIC wafer from the Infinite Wafer and 150 quark gluon plasma (MAX fluid solidifier, 5 s); 2 Yocto Power
+  ICs per wafer in the UXV laser engraver with the gravitational lens and 2.5 superfluid (5 s).
+- **The hatches:** GTNH's UXV energy and dynamo hatches with 2 YPIC (32 hypocosmium superconductor wires or 16 springs,
+  8 coolant cells, 6400 super coolant, 1152 indalloy 140; UXV, 50 s; UU matter left out as for ZPIC) as second recipes.
+  The 16 APIC recipes stay: the Infinite Wafer's eternity dust comes with the UXV energy hatches, so GTNH's recipe alone
+  would close a cycle. Their recycling follows GTNH's recipe, as the ZPIC hatches' does.
 
 ### Naquadah fuel MK IV to VI and the refinery (issue #356)
 

@@ -2057,6 +2057,7 @@ plate_lens("emerald", "emerald")   -- the ULPIC wafer (MV Energy Hatches) comes 
 plate_lens("amber", "amber-gem")   -- issue #332: the lens with the simple SoC wafer (NAND Chips, the MV lathe)
 plate_lens("ruby", "ruby")         -- issue #348: instead of upstream's lens from a plain ruby (removed above)
 plate_lens("olivine", "olivine-gem")   -- issue #363: the lime lens of the dehydrator coil wires (159)
+plate_lens("fayalite", "fayalite-gem")   -- issue #355 step 5: the Optically Enriched Crystalline Boule (164 section 37)
 
 --- recipe -> its lens (the GT recipe: file, line of the output). Gregtorio's wafers: sw silicon (GT's Wafer), pd phosphorus
 --- (Wafer2), nd/qd naquadah (Wafer3), ed europium (Wafer4), ad americium (Wafer5)
