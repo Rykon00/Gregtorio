@@ -7,7 +7,8 @@
 --- are told apart by their recipe icon, GT's texture of the item the recipe makes in GTNH (tools/gen_gt_icons.py,
 --- graphics/icons/circuit-recipe-<recipe>.png). From the wetware line up the processor, assembly and supercomputer are
 --- items of their own already; their mainframes are the only recipes of their tier item and keep its icon.
---- The GTNH item per recipe, matched by the ingredients (board, chip, tier):
+--- The GTNH item per recipe, matched by the ingredients (board, chip, tier); issue #445: the recipes show these names
+--- (GT5-Unofficial en_US.lang, gt.item.circuit.*), except the three named after their tier item:
 ---   LV   electronic-circuit, basic-electronic-circuit         Basic Electronic Circuit (vacuum tubes, resin board)
 ---        basic-integrated-circuit                             Integrated Logic Circuit (ILC chip)
 ---        microchip (+ -smd, -cheap)                           Microprocessor (CPU chip, plastic board)
@@ -16,15 +17,15 @@
 ---        microprocessor (+ -smd, -cheap)                      Integrated Processor
 ---   HV   processing-unit                                      Advanced Integrated Circuit (ILC and RAM chips)
 ---        microprocessor-assembly (+ -smd)                     Processor Assembly
----        nanoprocessor                                        Nanoprocessor
+---        nanoprocessor                                        Nano Processor
 ---   EV   microprocessor-supercomputer (+ -smd)                Workstation
----        nanoprocessor-assembly                               Nanoprocessor Assembly
+---        nanoprocessor-assembly                               Nano Assembly
 ---        quantum-processor                                    Quantum Processor
 ---   IV   microprocessor-mainframe                             Mainframe
----        nanoprocessor-supercomputer                          Elite Nanocomputer
+---        nanoprocessor-supercomputer                          Nano Supercomputer
 ---        quantum-processor-assembly                           Quantum Assembly
 ---        crystal-processor                                    Crystal Processor
----   LuV  nanoprocessor-mainframe                              Nanoprocessor Mainframe
+---   LuV  nanoprocessor-mainframe                              Nano Mainframe
 ---        quantum-processor-supercomputer                      Quantum Supercomputer
 ---        crystal-processor-assembly                           Crystal Assembly
 ---   ZPM  quantum-processor-mainframe                          Quantum Mainframe
