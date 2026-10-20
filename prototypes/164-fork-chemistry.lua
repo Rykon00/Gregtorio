@@ -4164,3 +4164,115 @@ do
 	lens.ingredients[#lens.ingredients + 1] = { type = "item", name = "long-six-phased-copper-rod", amount = 6 }
 	table.insert(data.raw.technology["gravitational-lens"].prerequisites, T_SPC)
 end
+
+
+--------------------------------------------------------------------------------
+--- 36) THE NANO FORGE AND ITS NANITES (issue #355, step 5 part 1; the maintainer's decision of 2026-10-20: YPIC as GT
+--- New Horizons has it, no stand-ins, in two pull requests). GT5-Unofficial ce1c416a64 and NewHorizonsCoreMod (NHC).
+--- * Melodic Alloy and Stellar Alloy (GT's materials, MaterialsInit.java:12479-12559): Melodic Alloy dust from end steel,
+---   ender eye and oriharukon dust (NHC MixerRecipes.java:370-376; ULV, 5 s); oriharukon from Horus (160, the Void Miner
+---   III). Stellar Alloy dust from Melodic Alloy, nether star and naquadah dust (:378-384), the blast furnace (NHC
+---   BlastFurnaceRecipes.java:116-120: LuV, 200 s, 7200 K, with GT's gas variants) and the vacuum freezer
+---   (VacuumFreezerRecipes.java:40-42: IV, 50 s); its rods cast (143), its frame from 4 rods (GT's assembler,
+---   LoaderMetaPipeEntities.java:45-63). The end steel dust is the macerated ingot (4.9 s, the mass rule's 98 ticks of
+---   155 for materials whose mass the mod does not compute); the ender eye dust is 155's (the ender eye lens).
+--- * The Radiant Naquadah Alloy Casing (GT AssemblerRecipes.java:3066-3075: a prismatic naquadah frame, 12 naquadah
+---   alloy plates, 4 prismatic naquadah screws, 9 ingots of indalloy 140 -> 4; UV, 10 ticks); prismatic naquadah's rods
+---   and screws cast (143), its frame from 4 rods.
+--- * The Nano Forge (GT NaniteChain.java:38-133, MTENanoForge.java): Carbon Nanites from the assembly line (:61-76: 16 UV
+---   circuits and robot arms, 32 Stemcells, 32 naquadah alloy rings, 16 rods, 64 carbon dust, 10 000 L UU matter, 32
+---   ingots of indalloy 140 -> 2; UV, 50 s), the controller (:38-59: 16 UV hulls, 16 carbon nanites, 16 ZPM field
+---   generators, 16 UV conveyors, 32 UV motors, 16 LuV circuits, 32 8x naquadah wires (256 wires), 4 superdense naquadah
+---   alloy plates, 32 ingots each of indalloy 140 and HSS-S, 16 of osmiridium; ZPM, 5 min). The machine is the controller
+---   with its structure (the main piece: 468 Radiant Naquadah Alloy Casings, 170 Stellar Alloy frames and 59 casings or
+---   hatches: 54 casings, a UMV energy hatch, the input hatch and bus, the output bus and the maintenance hatch as LV
+---   hulls) and a carbon nanite in its slot: tier 1. Tier 2 (MTENanoForge.java:278-294, 619-633) adds 148 Radiant
+---   casings and 16 Assembly Line Casings, and a neutronium nanite instead of the carbon one.
+--- * Neutronium Nanites (:108-120: the Chromatic Lens, 8 neutronium blocks, 96 ASoC, 200 000 L UU matter -> 1; tier 1,
+---   UMV, 100 s) and Glowstone Nanites (:122-133: the Radox Polymer Lens, 8 Double Compressed Glowstone, 64 ASoC, 50 000 L
+---   UU matter -> 64; tier 2, UMV, 200 s); GT++'s compressed glowstone (RecipesGeneral.java:280-302: 9 glowstone blocks,
+---   9 of those; 15 s at 2 EU/t) and the glowstone block (GT CompressorRecipes.java:270-275: 4 dust, 15 s). The nanites
+---   GT makes in the Nano Forge (carbon nanites from bartworks' casings) are left out; the assembly line's are the
+---   bootstrap. Glowstone nanites go into GT's Photonically Enhanced Wafer (section 37).
+--- * Fluids a tenth of GT's litres, GT's seconds x the tier speed. Technologies: Nano Forge (the alloys, the casing, the
+---   carbon nanites, the controller, the machine) after the Void Miner III (oriharukon), Prismatic Naquadah and the Naquadah
+---   Fuel Refinery (the prismatic naquadah melt), the beamline (UU matter) and the UMV energy hatches; Nano Forge Tier 2 (the
+---   neutronium and glowstone nanites, compressed glowstone) after it, the Godforge (the Chromatic Lens) and the
+---   Gravitational Lens (the Radox Polymer Lens).
+--------------------------------------------------------------------------------
+do
+	local T1, T2 = "nano-forge", "nano-forge-t2"
+	local NF, NF2 = "nano-forge", "nano-forge-t2"
+	local R1, R2 = {}, {}
+	local function item(name, amount) return { type = "item", name = name, amount = amount } end
+	local function power(tier, n)
+		local p = data.raw["assembling-machine"][tier .. "-centrifuge"].energy_usage
+		return (tonumber(p:match("^[%d.]+")) * n) .. p:match("%a+$")
+	end
+	items(SUB_DUST, { "end-steel-dust", "melodic-alloy-dust", "stellar-alloy-dust" })
+	items(SUB_PART, { "hot-stellar-alloy-ingot", "stellar-alloy-ingot", "stellar-alloy-rod", "stellar-alloy-frame",
+		"prismatic-naquadah-rod", "prismatic-naquadah-screw", "prismatic-naquadah-frame", "carbon-nanites", "neutronium-nanites",
+		"glowstone-nanites", "glowstone-block", "compressed-glowstone", "double-compressed-glowstone", "nano-forge-controller" })
+	items("subgroup-uhv-age-multiblocks", { "radiant-naquadah-alloy-casing" })
+
+	--- the alloys
+	step(R1, "end-steel-dust", "lv-macerator-recipes", 4.9, LV_SPEED, { { "end-steel-ingot", 1 } }, { { "end-steel-dust", 1 } })
+	step(R1, "melodic-alloy-dust", "lv-mixer-recipes", 5, LV_SPEED,
+		{ { "end-steel-dust", 1 }, { "ender-eye-dust", 1 }, { "oriharukon-dust", 1 } }, { { "melodic-alloy-dust", 3 } })
+	step(R1, "stellar-alloy-dust", "lv-mixer-recipes", 5, LV_SPEED,
+		{ { "melodic-alloy-dust", 1 }, { "nether-star-dust", 1 }, { "naquadah-dust", 1 } }, { { "stellar-alloy-dust", 3 } })
+	blast(R1, "stellar-alloy", "luv-electric-blast-furnace-recipes", 200, LUV_SPEED)
+	step(R1, "stellar-alloy-ingot", "iv-vacuum-freezer-recipes", 50, IV_SPEED, { { "hot-stellar-alloy-ingot", 1 } },
+		{ { "stellar-alloy-ingot", 1 } })
+	step(R1, "stellar-alloy-frame", "lv-assembling-machine-recipes", 3.2, LV_SPEED, { { "stellar-alloy-rod", 4 } },
+		{ { "stellar-alloy-frame", 1 } })
+	--- the casing
+	step(R1, "prismatic-naquadah-frame", "lv-assembling-machine-recipes", 3.2, LV_SPEED, { { "prismatic-naquadah-rod", 4 } },
+		{ { "prismatic-naquadah-frame", 1 } })
+	step(R1, "radiant-naquadah-alloy-casing", "uv-assembling-machine-recipes", 0.5, UV_SPEED,
+		{ { "prismatic-naquadah-frame", 1 }, { "naquadah-alloy-plate", 12 }, { "prismatic-naquadah-screw", 4 },
+			{ "molten-indalloy-140", 129.6 } }, { { "radiant-naquadah-alloy-casing", 4 } })
+	--- the carbon nanites and the controller
+	step(R1, "carbon-nanites", "zpm-assembly-line-recipes", 50, UV_SPEED,
+		{ { "uv-circuit", 16 }, { "uv-robot-arm", 16 }, { "stem-cells", 32 }, { "naquadah-alloy-ring", 32 }, { "naquadah-alloy-rod", 16 },
+			{ "carbon", 64 }, { "uu-matter", 1000 }, { "molten-indalloy-140", 460.8 } }, { { "carbon-nanites", 2 } })
+	step(R1, "nano-forge-controller", "zpm-assembly-line-recipes", 300, ZPM_SPEED,
+		{ { "uv-machine-hull", 16 }, { "carbon-nanites", 16 }, { "zpm-field-generator", 16 }, { "uv-conveyor-module", 16 },
+			{ "uv-motor", 32 }, { "luv-circuit", 16 }, { "naquadah-wire", 256 }, { "superdense-naquadah-alloy-plate", 4 },
+			{ "molten-indalloy-140", 460.8 }, { "molten-hsss", 460.8 }, { "molten-osmiridium", 230.4 } },
+		{ { "nano-forge-controller", 1 } })
+	--- the machines
+	machine{
+		name = NF, category = "nano-forge-recipes", speed = UMV_SPEED, energy = power("umv", 1),
+		subgroup = "subgroup-uhv-age-multiblocks", ports = { port("input", N, { 0, -1 }) }, list = R1,
+		recipe = { "crafting-or-assembling-recipes", 1, { item("nano-forge-controller", 1), item("carbon-nanites", 1),
+			item("radiant-naquadah-alloy-casing", 522), item("stellar-alloy-frame", 170), item("umv-energy-hatch", 1),
+			item("lv-machine-hull", 4) } },
+	}
+	machine{
+		name = NF2, category = "nano-forge-t2-recipes", speed = UMV_SPEED, energy = power("umv", 1),
+		subgroup = "subgroup-uhv-age-multiblocks", ports = { port("input", N, { 0, -1 }) }, list = R2,
+		recipe = { "crafting-or-assembling-recipes", 1, { item(NF, 1), item("neutronium-nanites", 1),
+			item("radiant-naquadah-alloy-casing", 148), item("assembly-line-casing", 16) } },
+	}
+	data.raw["assembling-machine"][NF2].crafting_categories = { "nano-forge-recipes", "nano-forge-t2-recipes" }
+	--- the nanites
+	step(R2, "neutronium-nanites", "nano-forge-recipes", 100, UMV_SPEED,
+		{ { "chromatic-lens", 1 }, { "block-of-neutronium", 8 }, { "advanced-system-on-chip", 96 }, { "uu-matter", 20000 } },
+		{ { "neutronium-nanites", 1 }, { "chromatic-lens", 1 } }, "neutronium-nanites")
+	step(R2, "glowstone-block", "lv-compressor-recipes", 15, LV_SPEED, { { "glowstone-dust", 4 } }, { { "glowstone-block", 1 } })
+	step(R2, "compressed-glowstone", "lv-compressor-recipes", 15, LV_SPEED, { { "glowstone-block", 9 } },
+		{ { "compressed-glowstone", 1 } })
+	step(R2, "double-compressed-glowstone", "lv-compressor-recipes", 15, LV_SPEED, { { "compressed-glowstone", 9 } },
+		{ { "double-compressed-glowstone", 1 } })
+	step(R2, "glowstone-nanites", "nano-forge-t2-recipes", 200, UMV_SPEED,
+		{ { "radox-polymer-lens", 1 }, { "double-compressed-glowstone", 8 }, { "advanced-system-on-chip", 64 }, { "uu-matter", 5000 } },
+		{ { "glowstone-nanites", 64 }, { "radox-polymer-lens", 1 } }, "glowstone-nanites")
+
+	F.tech{ name = T1, prerequisites = { "void-miner-iii", "end-steel", "prismatic-naquadah", "naquadah-based-fuel-mk4", "beamline",
+		"umv-energy-hatches" }, packs = 13, count = 95, time = 60, recipes = R1 }   -- (as the UMV technologies of 138)
+	F.tech{ name = T2, prerequisites = { T1, "godforge", "gravitational-lens" }, packs = 15, count = 55, time = 60, recipes = R2 }
+	FORK_CASTING.materials["stellar-alloy"] = { "luv", T1, color = { 211, 255, 255 } }
+	FORK_CASTING.materials["prismatic-naquadah"] = { "zpm", T1 }   -- (its rods and screws; the melt stays with the refinery)
+	FORK_CASTING.run()
+end

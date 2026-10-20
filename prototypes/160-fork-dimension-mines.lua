@@ -567,7 +567,8 @@ local VOID_POOLS = {
 		{ "raw-pyrolusite", 0.00134 }, { "raw-tantalite", 0.00134 },
 	},
 	["horus"] = {
-		{ "raw-certus-quartz", 0.10275 }, { "raw-black-plutonium", 0.03052 }, { "quantium-dust", 0.02186 },
+		{ "raw-certus-quartz", 0.10275 }, { "raw-black-plutonium", 0.03052 }, { "raw-oriharukon", 0.02915 },   -- (#355 step 5)
+		{ "quantium-dust", 0.02186 },
 		{ "raw-ledox", 0.02186 }, { "raw-barite", 0.01457 }, { "raw-neutronium", 0.01093 },
 		{ "raw-cosmic-neutronium", 0.01093 }, { "raw-sulfur", 0.01002 }, { "raw-borax", 0.00364 },
 		{ "raw-realgar", 0.00364 }, { "raw-emerald", 0.00146 }, { "raw-ruby", 0.00146 }, { "raw-bedrockium", 0.00137 },
@@ -617,6 +618,10 @@ create_ore("raw-dilithium", nil, "crushed-dilithium", "dilithium-dust", nil, "cr
 create_ore("raw-mysterious-crystal", nil, "crushed-mysterious-crystal", nil, nil, "crushed-mysterious-crystal", nil, nil, 1,
 	false, false)
 create_ore("raw-vinteum", nil, "crushed-vinteum", "vinteum-dust", nil, "crushed-vinteum", nil, nil, 1, false, false)
+--- issue #355 step 5: Horus's oriharukon (GT's Oriharukon vein, OreMixes.java:773-782, Horus, Deimos and Phobos;
+--- its tanzanite, vyroxeres and mirabilite left out as before) for GT New Horizons' Melodic Alloy (164 section 36)
+create_ore("raw-oriharukon", nil, "crushed-oriharukon", "oriharukon-dust", nil, "crushed-oriharukon", nil, nil, 1, false,
+	false)
 --- issue #356: the Mehen Belt's draconium and awakened draconium (their metals in 164 section 22)
 create_ore("raw-draconium", nil, "crushed-draconium", "draconium-dust", nil, "crushed-draconium", nil, nil, 1, false, false)
 create_ore("raw-awakened-draconium", nil, "crushed-awakened-draconium", "awakened-draconium-dust", nil,
@@ -725,3 +730,4 @@ F.tech{ name = VM_TECHS[3], prerequisites = { VM_TECHS[2], "uv-components" }, pa
 	recipes = F.join({ vm3 }, vm_recipes[3]) }
 unlock_in(VM_TECHS[3], { "crushed-dilithium", "crushed-mysterious-crystal", "crushed-vinteum" })   -- issue #373: Neper
 unlock_in(VM_TECHS[3], { "crushed-draconium", "crushed-awakened-draconium" })   -- issue #356: the Mehen Belt
+unlock_in(VM_TECHS[3], { "crushed-oriharukon" })   -- issue #355 step 5: Horus's oriharukon

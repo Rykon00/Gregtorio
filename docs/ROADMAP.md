@@ -2619,6 +2619,31 @@ Large Hadron Collider (13 packs) and Gravitational Lens (15 packs: its Space com
   foil (netherite, Thaumcraft), the LHC controller's Research Stations (no TecTech computation) and UV Neutron
   Accelerators (their inverter's plastic case takes cyan dye, which the mod has none of).
 
+### YPIC (issue #355, step 5)
+
+Decision (the maintainer, 2026-10-20): YPIC as GT New Horizons has it, without stand-ins, in two pull requests. The
+UXV hatches get GTNH's YPIC recipe as a second recipe (the APIC one stays, as with ZPIC). Shirabon gets an ingot and a
+dust for the Infinite Wafer; temporal harmony stays without shirabon.
+
+Part 1, the Nano Forge (164 section 36, technologies Nano Forge and Nano Forge Tier 2):
+- **Oriharukon:** GT's Oriharukon vein (Horus, Deimos, Phobos) joins Horus's pool in the Void Miner III (0.02915 of a pick,
+  GT's weight at the pool's scale; its tanzanite, vyroxeres and mirabilite left out as before), with GT's ore chain (155).
+- **Melodic and Stellar Alloy:** Melodic Alloy dust from end steel, ender eye and oriharukon dust (ULV mixer); Stellar
+  Alloy dust from Melodic Alloy, nether star and naquadah dust, its hot ingot in the LuV blast furnace (200 s, GT's gas
+  variants), the ingot in the IV vacuum freezer (50 s), its rods cast (143), the frame from 4 rods.
+- **The Radiant Naquadah Alloy Casing:** a prismatic naquadah frame (4 cast rods), 12 naquadah alloy plates, 4 cast
+  prismatic naquadah screws and 129.6 indalloy 140 -> 4 (UV, 0.5 s).
+- **The Nano Forge:** Carbon Nanites from the assembly line (UV, 50 s), the controller from the assembly line (ZPM,
+  5 min), the machine from the controller and GT's structure (522 Radiant casings, 170 Stellar Alloy frames, a UMV
+  energy hatch, 4 LV hulls for the buses and the maintenance hatch) with a carbon nanite in its slot. Tier 2 is tier 1
+  with a neutronium nanite, 148 more Radiant casings and 16 Assembly Line Casings.
+- **The nanites:** Neutronium Nanites in tier 1 (Chromatic Lens, 8 neutronium blocks, 96 ASoC, 20 000 UU matter -> 1;
+  UMV, 100 s), Glowstone Nanites in tier 2 (Radox Polymer Lens, 8 Double Compressed Glowstone, 64 ASoC, 5000 UU matter
+  -> 64; UMV, 200 s); the glowstone block (4 dust) and GT++'s compressed and double compressed glowstone (9 each) in the
+  LV compressor.
+- **Left out, named:** GT's Nano Forge recipe for carbon nanites (bartworks' casings; the assembly line's recipe is the
+  bootstrap), the nanites of tiers 3 and 4 and their structure pieces.
+
 ### Naquadah fuel MK IV to VI and the refinery (issue #356)
 
 The refinery with MK III and MK IV comes in steps, by the maintainer's decisions on #417 and #421 (GT's sources, no

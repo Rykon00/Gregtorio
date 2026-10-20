@@ -4466,3 +4466,27 @@ circuit-recipe-nand-chip
 # issue #436: GT++'s dragonblood nugget, GT's long Six-Phased Copper rod
 dragonblood-nugget
 long-six-phased-copper-rod
+# issue #355 step 5: the Nano Forge, its alloys and nanites, Horus's oriharukon
+raw-oriharukon
+crushed-oriharukon
+purified-oriharukon
+centrifuged-oriharukon
+impure-oriharukon-dust
+pure-oriharukon-dust
+small-pile-of-oriharukon-dust
+oriharukon-dust
+end-steel-dust
+melodic-alloy-dust
+stellar-alloy-dust
+hot-stellar-alloy-ingot
+stellar-alloy-ingot
+stellar-alloy-rod
+stellar-alloy-frame
+prismatic-naquadah-rod
+prismatic-naquadah-screw
+prismatic-naquadah-frame
+radiant-naquadah-alloy-casing
+glowstone-block
+compressed-glowstone
+double-compressed-glowstone
+nano-forge-controller

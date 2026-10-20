@@ -196,7 +196,8 @@
     #274: hafnium from GT++'s ilmenite sifter, the EV-ZPM Chemical Dehydrators with their coils (technologies
     `<tier>-chemical-dehydrator`), lanthanum hexaboride's gem forms, chloromethane, gangue and the roasting's fluorine;
     loads after 158 and before 156)
-  - 164 chemistry (the GTNH gap research after 0.5.4, issues #355 to #367: GTNH's chemical lines Gregtorio lacked, GT's
+  - 164 chemistry (the GTNH gap research after 0.5.4, issues #355 to #367, and later sections: #436 dragonblood and
+    hypogen in 35, #355 step 5's Nano Forge in 36; GTNH's chemical lines Gregtorio lacked, GT's
     numbers, fluids a tenth of GT's litres, GT++'s catalysts left out; issue #362: GT++'s Rp-1 Rocket Fuel, Dense
     Hydrazine Fuel Mixture and CN3H7O3 Rocket Fuel with their cells for 145's rocket engines, the coal tar line and the
     anthraquinone process to hydrogen peroxide and hydrazine, the ExxonMobil Chemical Plant's extra fluid boxes; issue #360:
