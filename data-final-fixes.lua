@@ -618,6 +618,9 @@ FORK_UNLOCK_TREE.apply(true)
 --- Fork: the recycling recipes get their technologies now that the vanilla ones are set and disabled
 --- (prototypes/157-fork-recycling.lua, issue #190)
 FORK_RECYCLING.unlock()
+--- Fork: the steam macerator runs copies of the LV macerator recipes without their byproducts, as GT's bronze machines
+--- (prototypes/101-fork-machines.lua, issue #447); after every unlock above
+fork_steam_categories()
 --- Fork: every Gregtorio recipe named after its product unless it has its own name (prototypes/fork-locale.lua, issue #230)
 FORK_LOCALE.name_recipes()
 require("prototypes.fork-menu-simulations")
