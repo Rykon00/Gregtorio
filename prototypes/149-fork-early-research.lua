@@ -7,7 +7,7 @@
 --- `devcheck.py check --balance-out`). A smelting step takes 10 s and a steel ingot 75 s in the primitive blast furnace
 --- (15 s in an MV electric blast furnace), so a technology of 80 units needs 240 steel: 5 hours in one primitive blast
 --- furnace, 75 minutes in four, and 1520 copper ingots (4.2 hours in one furnace at 10 s). Red packs (one copper plate and a
---- gear) stay cheap, which makes the step from the red to the green technologies a wall.
+--- gear) stay cheap, which made the step from the red to the green technologies a wall before this file.
 ---
 --- LV: the unit counts of these technologies are divided by 6 (rounded to 5; #127 took a quarter, #146 a sixth after the
 --- report of a player: "DIVISOR = 6 is fine", LV to MV with seven primitive blast furnaces): 80 -> 15, 100 -> 15,
@@ -22,7 +22,8 @@
 --- (after the division) 8.8 machine-hours, MV 172, HV 461, EV 1340, IV 2264 against 17.5, 35, 70 and 140. So MV / 10,
 --- HV / 13, EV / 19, IV / 16 (the IV pack is cheaper per unit with IV machines than the EV pack with EV ones): the median
 --- counts become 30 (MV), 30 (HV), 30 (EV) and 50 (IV), rounded to 5, at least 5. The time of a unit and the packs stay.
---- LuV and ZPM are not touched; UV and up are balanced in 138. Not an exact model of a factory: untested in the game.
+--- LuV and ZPM are not touched; UV and up are balanced in 138. Not an exact model of a factory; the maintainer confirmed
+--- the divisors in the game (issue #146, 2026-10-13).
 --- data-final-fixes.lua sets the units of some vanilla technologies after this file: FORK_EARLY_RESEARCH.rescale() divides
 --- them there (issue #146; #127 missed them: circuit-network kept 160). The cheap research setting
 --- (fork-one-pack-research.lua) loads after that and wins.

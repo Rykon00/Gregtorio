@@ -34,6 +34,25 @@ UEV = cryogenic, UIV = promethium, then UMV / UXV / max (the stargate; since pha
 | 6b | MAX tier and the godforge (issue #37, part 2) | **done** (`prototypes/140-fork-godforge.lua`, `141-fork-max.lua`, see "Phase 6b: MAX tier and godforge") |
 | side | Balance of the tiers from UHV up in the real game, and a look at the new graphics there | open (in-game checks #247 balance, #248 graphics; question #249) |
 | side | Ore processing as GT New Horizons has it (issue #176): purified, centrifuged, impure and pure forms, thermal centrifuge, chemical bath washing, electromagnetic separator, gem sifting | **done** (`prototypes/155-fork-ore-chain.lua`, `docs/ORE-CHAIN.md`, phases O1 to O4: #185 to #188) |
+| side | Early game (Stone, Steam, LV, MV) as GT New Horizons has it: the gaps of the early game analysis of 2026-10-18 | open (see "Early game: Stone age to MV" below) |
+
+## Early game: Stone age to MV
+
+The Stone, Steam, LV and MV ages are upstream's with the fork's fixes (the ore chain, the vein recipes and the electric
+mines, the research counts of 149); an early game analysis against GT New Horizons (2026-10-18) found these gaps. They are
+worked off one pull request each; this list is their status.
+
+| Age | Gap | Issue | Status |
+|---|---|---|---|
+| Stone | wrought iron (ULV hull and casing, the arc furnace) and charcoal from logs in the coke oven | #448 | open |
+| Steam | the high pressure tier (HP coal boiler, HP steam machines), the steam furnace, the solar and lava boilers | #446 | open |
+| Steam | the steam machines run the whole LV category with byproducts; GT's run recipes up to 32 EU/t, the macerator without byproducts | #447 | open |
+| LV | the LV Miner waited for the Military Science Pack technology (its LV sensor) | #443 | fixed (the sensor comes with the Circuit Assembler) |
+| LV | the LV Combustion Generator, LV Extruder and LV Laser Engraver | #449 | open |
+| LV, MV | energy storage before IV: battery buffers and the LV to HV batteries | #444 | open |
+| LV to HV | circuit recipe names of GTNH (Integrated Logic Circuit, Microprocessor, Integrated Processor, Processor Assembly, Workstation, Mainframe) | #445 | open |
+| ULV, HV | the ULV circuit tier; the nanoprocessor's parts at HV | #450 | open (the maintainer's decisions of 2026-10-20) |
+| all | GTNH's veins as mixed ore patches on the map instead of the vein recipes | #451 | question (Discord poll) |
 
 ## Phase 1: LuV (done)
 

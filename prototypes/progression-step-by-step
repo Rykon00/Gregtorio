@@ -40,8 +40,8 @@
 040 - Greatly expand steel production
 041 - Automate LV Pistons, LV Sensor, LV Emitter, LV Pump, LV Conveyor, LV Robot Arm: Component Science
 042 - Black Steel production
-043 - Create some Extended Crafting Tables
-044 - Automate Tier One Microminers
+043 - Make Mining Pipes in the Wiremill
+044 - Automate the ore veins with LV Miners (the Manual Mine's twins)
 045 - Make some aluminium to start MV Era
 046 - Set up Silicon Dioxide production, Raw Silicon loop and Poly SI loop
 047 - Monosilicon Crystaline Boules
@@ -52,19 +52,19 @@
 052 - Properly automate Pyrolyse production
 053 - Greatly expand power generation via benzene
 054 - Proper Ore Processing
-055 - Fully transition to feeding ores via Microminers where possible
+055 - Fully transition to MV Miners and the Ore Drilling Plant Mk I (Drilling Fluid) where possible
 056 - Automate all MV Components
-057 - Oil Pumpjacks
+057 - Oil from the Drilling Rigs
 058 - Switch over to Diesel
 059 - Full scale aluminium production
 060 - Ruby Juice for Chrome
 061 - Kanthal for HV Coils
 062 - Upgrade EBFs to HV
-063 - Process Manganese from Microminers
+063 - Mine and process the Manganese Vein
 064 - Stainless Steel Production
 065 - Switch to Microprocessors
 066 - PVC production
-067 - Automate t2 Microminers
+067 - HV Miners and the Ore Drilling Plant Mk II
 068 - Blast Furnace Science Packs
 069 - Automate HV components
 070 - Niobium and Tantalum extraction
@@ -79,20 +79,20 @@
 079 - Upgrade to Phosphorous Doped Wafer
 080 - Titanium Processing
 081 - Radon
-082 - Helium from Monezite
+082 - Helium from End Stone Dust in the centrifuge
 083 - Neodymium Production
 084 - Automate EV Components
 085 - Cryogenic Air Distillation for Argon
-086 - Elite Extended Crafting
+086 - Ore Drilling Plant Mk III
 087 - Rocket Fuel
-088 - Automate T3 Microminers
+088 - Reach the Nether and the End: blazes, soul sand, end stone
 089 - Mainframe (IV Circ)
 090 - Advanced EV Machines
-091 - Compressed Endstone for Helium
+091 - Ender Air Distillation for Helium and Radon
 092 - Epoxy Processing
 093 - Nano CPU Wafers
 094 - Switch to Nanoprocessors
-095 - EnderIO Rabbit Hole
+095 - Ender IO alloys and capacitors
 096 - Extreme Entity Crushers
 097 - Uranium Enrichment
 098 - Nuclear Power

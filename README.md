@@ -94,7 +94,7 @@ The repository root is the mod itself (`info.json`, `data.lua`, `prototypes/`, `
 
 | Tier | State |
 |---|---|
-| Steam – EV | playable (upstream), gaps closed |
+| Steam – EV | playable (upstream), gaps closed; the early game against GT New Horizons (Stone to MV) has its status in `docs/ROADMAP.md` ("Early game") |
 | IV | playable (fork 0.2.0) |
 | LuV | playable (fork 0.2.0); naquadah line, bacterial vat, crystal processors and fusion MK1 finished (see `docs/ROADMAP.md`) |
 | ZPM | playable (fork); ZPM components, science pack, energy hatch and machines (see `docs/ROADMAP.md`) |
