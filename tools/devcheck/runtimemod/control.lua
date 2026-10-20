@@ -118,6 +118,7 @@ local function tests_running()
 	check(storage.emine and storage.emine.done, "electric mine")
 	check(storage.lftr and storage.lftr.done, "LFTR")
 	check(storage.solar and storage.solar.done, "solar boilers")
+	check(storage.battery and storage.battery.done, "battery buffers")
 	return running
 end
 
@@ -1174,6 +1175,62 @@ function solar_test()
 		st.night_steam or 0, st.day_steam or 0))
 end
 
+--- Battery buffers (issue #444, prototypes/145-fork-power-multiblocks.lua section 8): an LV Battery Buffer (1 battery)
+--- holds 33.33 MJ, takes 1.28 MW and gives 640 kW; on a network with an LV Combustion Generator on a Bio Diesel Cell it
+--- charges, and with the generator gone it feeds an LV compressor on air
+local BB_X, BB_Y, BB_WAIT = 350, 350, 120
+function setup_battery_test(s)
+	local fails, bb = {}, {}
+	storage.battery = bb
+	local ok, err = pcall(function()
+		bb.buffer = s.create_entity{ name = "lv-battery-buffer-1", position = { BB_X, BB_Y }, force = "player", raise_built = true }
+		bb.gen = s.create_entity{ name = "lv-combustion-generator", position = { BB_X + 4, BB_Y }, force = "player", raise_built = true }
+		bb.gen.insert{ name = "bio-diesel-cell", count = 5 }
+		s.create_entity{ name = "substation", position = { BB_X + 2, BB_Y + 3 }, force = "player" }
+		bb.load = s.create_entity{ name = "lv-compressor", position = { BB_X - 4, BB_Y + 4 }, force = "player" }
+		for name, r in pairs(prototypes.recipe) do
+			if r.category == "lv-compressor-recipes" and #r.ingredients == 0 then bb.load.set_recipe(name) break end
+		end
+		bb.load.disabled_by_script = true
+		bb.phase, bb.at = "charge", game.tick
+	end)
+	if not ok then fails[#fails + 1] = "battery buffer test: " .. tostring(err) end
+	return fails
+end
+
+function battery_test()
+	local bb = storage.battery
+	if not bb or bb.done or not bb.buffer then return end
+	if game.tick < bb.at + BB_WAIT then return end
+	local problems = bb.problems or {}
+	bb.problems = problems
+	local e = bb.buffer
+	if not e.valid then
+		problems[#problems + 1] = "the buffer is gone"
+	elseif bb.phase == "charge" then
+		if math.abs(e.electric_buffer_size - 100000 / 3 * 1000) > 1 then
+			problems[#problems + 1] = "capacity " .. e.electric_buffer_size .. " J, not 33.33 MJ"
+		end
+		bb.charged = e.energy
+		if not (bb.charged > 0) then problems[#problems + 1] = "it did not charge" end
+		--- at most 1.28 MW in (2 amps), the generator gives 640 kW
+		if bb.charged > 1.28e6 * BB_WAIT / 60 * 1.01 then problems[#problems + 1] = "it charged faster than 1.28 MW" end
+		if bb.gen.valid then bb.gen.destroy() end
+		bb.load.disabled_by_script = false
+		bb.phase, bb.at = "discharge", game.tick
+		return
+	else
+		bb.left = e.energy
+		if not (bb.left < bb.charged) then problems[#problems + 1] = "it did not feed the compressor" end
+		--- at most 640 kW out (1 amp)
+		if bb.charged - bb.left > 6.4e5 * BB_WAIT / 60 * 1.01 then problems[#problems + 1] = "it gave more than 640 kW" end
+	end
+	bb.done = true
+	for _, p in pairs(problems) do log("DEVCHECK-RUNTIME-FAIL battery buffer test: " .. p) end
+	log("DEVCHECK-RUNTIME-BATTERY " .. (#problems == 0 and "ok" or "failed") .. string.format(" (%.2f MJ charged in %d ticks, %.2f MJ left after feeding the compressor)",
+		(bb.charged or 0) / 1e6, BB_WAIT, (bb.left or 0) / 1e6))
+end
+
 --- Molds and lenses (prototypes/150-fork-molds.lua, issue #316): a machine with a recipe that needs one stops without it
 --- (status: the missing mold or lens), runs with it in its module slot and keeps it there (nothing in the output)
 local MOLD_Y = 120
@@ -2221,6 +2278,7 @@ script.on_nth_tick(10, function()
 	melt_test()
 	emine_test()
 	solar_test()
+	battery_test()
 	victory_test()
 end)
 
@@ -2294,6 +2352,7 @@ script.on_init(function()
 	for _, f in pairs(setup_melt_test(s)) do fails[#fails + 1] = f end
 	for _, f in pairs(setup_emine_test(s)) do fails[#fails + 1] = f end
 	for _, f in pairs(setup_solar_test(s)) do fails[#fails + 1] = f end
+	for _, f in pairs(setup_battery_test(s)) do fails[#fails + 1] = f end
 	log("DEVCHECK-RUNTIME placed=" .. placed .. " with_recipe=" .. with_recipe .. " failed=" .. #fails)
 	for _, f in pairs(fails) do log("DEVCHECK-RUNTIME-FAIL " .. f) end
 end)

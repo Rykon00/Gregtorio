@@ -753,6 +753,12 @@ def icon_table(c):
         T[f"{tier}-machine-hull"] = lambda t=tier: c.hatch(t, "OVERLAY_ENERGY_OUT_{T}")
         T[f"{tier}-energy-hatch"] = lambda t=tier: c.hatch(t, "OVERLAY_ENERGY_IN_MULTI_2A_{T}")
         T[f"{tier}-dynamo-hatch"] = lambda t=tier: c.hatch(t, "OVERLAY_ENERGY_OUT_MULTI_2A_{T}")
+    # issue #444: GT's battery hulls and batteries (IDMetaItem01: Battery_Hull_LV 500, HV 502, Battery_RE_* 517-539)
+    for name, i in {"small-battery-hull": 500, "large-battery-hull": 502,
+                    "small-cadmium-battery": 517, "small-lithium-battery": 518, "small-sodium-battery": 519,
+                    "medium-cadmium-battery": 527, "medium-lithium-battery": 528, "medium-sodium-battery": 529,
+                    "large-cadmium-battery": 537, "large-lithium-battery": 538, "large-sodium-battery": 539}.items():
+        T[name] = lambda i=i: c.gt(f"{M1}{i}")
     # tier circuits of the core mod (the fork's generic UMV/UXV circuit)
     T["umv-circuit"] = lambda: c.gt(f"{CORE}itemCircuitUMV")
     T["uxv-circuit"] = lambda: c.gt(f"{CORE}itemCircuitUXV")

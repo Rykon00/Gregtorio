@@ -4446,3 +4446,15 @@ large-cast-iron-gear
 long-cast-iron-rod
 small-cast-iron-spring
 superdense-cast-iron-plate
+# issue #444: GT's battery hulls and batteries
+small-battery-hull
+large-battery-hull
+small-cadmium-battery
+small-lithium-battery
+small-sodium-battery
+medium-cadmium-battery
+medium-lithium-battery
+medium-sodium-battery
+large-cadmium-battery
+large-lithium-battery
+large-sodium-battery

@@ -131,7 +131,8 @@
     and ZPM upgrades); issues #254 to #256: the large titanium boiler (a `boiler` in `output-to-separate-pipe` mode,
     water to superheated steam), the large combustion engine and the large gas turbine (EV burner generators on the fuel
     cells); issue #295: GT++'s EV, IV and LuV rocket engines on the H8N4C2O4 rocket fuel cell (fuel category
-    `rocket-engine-fuel`; the fuel's GTNH recipe and the Chemical Plant's move to Rocket Fuel are in 159); their technologies are named in 142's `UNLOCKS`, so it loads after 138 and **before** 142, and
+    `rocket-engine-fuel`; the fuel's GTNH recipe and the Chemical Plant's move to Rocket Fuel are in 159); issue #444: GTNH's LV to HV
+    batteries and the battery buffers (accumulators of a fixed size, the batteries in the recipe; technology Large Batteries); their technologies are named in 142's `UNLOCKS`, so it loads after 138 and **before** 142, and
     before 196 for its fluids; it takes 136's generator from the global `FORK_POWER` and adds to its mod data
     `fork-power`)
   - 144 dead fluids (issue #91: GT's uses and producers of fluids nothing made or used; the blast furnace gas variants
