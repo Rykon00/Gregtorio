@@ -4131,6 +4131,10 @@ do
 	--- dragonblood and hypogen
 	step(RH, "crushing-the-ender-dragon", "ev-extreme-entity-crusher-recipes", 120, 1,
 		{ { "glass", 28 }, { "eye-of-ender", 4 } }, { { "dragonblood-nugget", 206 } })
+	--- no recycler recipe either (Task-Ingame #477): Space Age's recycler would reverse the fight into glass and eyes, and
+	--- would make its own self-recycling recipe without the item's flag
+	data.raw.recipe["crushing-the-ender-dragon"].auto_recycle = false
+	data.raw.item["dragonblood-nugget"].auto_recycle = false
 	step(RH, "melt-dragonblood-nugget", "uhv-fluid-extractor-recipes", 0.2, UHV_SPEED, { { "dragonblood-nugget", 1 } },
 		{ { "molten-dragonblood", 1.6 } })
 	step(RH, "molten-hypogen", "mk4-fusion-reactor-recipes", 409.6, UHV_SPEED,
