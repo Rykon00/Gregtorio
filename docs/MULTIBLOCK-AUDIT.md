@@ -196,7 +196,7 @@ in `gregtech/loaders/postload/recipes/CokeAndPyrolyseOven.java`, `PyrolyseRecipe
 | Power Station Control Node, L.E.S.U. | leave: the Lapotronic Supercapacitor (145) |
 | Tree Growth Simulator | leave: the Extreme Industrial Greenhouse grows the trees (154) |
 | Algae Farm | n/a: its algae feed GT++ agrichemistry and the netherite chain, neither in Gregtorio |
-| Space Elevator and modules, Planetary Gas Siphon | n/a: no planets or asteroid ores |
+| Space Elevator and modules, Planetary Gas Siphon | built since #301-#303 (162: the elevator, the mining and pump modules, the siphon); #485: the Assembler Module Mk-I for the Singularity ME Storage Cell |
 | Drone Centre, Industrial Fishing Pond, Mega Apiary, Large Essentia Smeltery | n/a: Minecraft and other mods' content |
 | Research Station, Quantum Computer, Data Bank, network switches | n/a: research is the technology tree, the assembly line needs no data |
 | Tesla Tower, Active Transformer | n/a: Factorio's poles; no voltages |

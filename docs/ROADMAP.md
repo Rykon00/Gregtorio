@@ -2791,6 +2791,34 @@ recipes and Six-Phased Copper for the godforge glass (164 section 35):
   after Hypogen, MK VI, the plasma module, Creon and Mellion and the Godforge; Gravitational Lens follows it.
 - **In game:** the in-game checks are in a [Task-Ingame] issue linked in the PR.
 
+### The ME parts behind the stand-ins (issue #485)
+
+Decision (the maintainer, 2026-10-21): the Advanced Engineering Processor with its full chain, the Singularity cell
+as GTNH has it, and the Singularity crafting storage left for a new issue.
+- **Item Processors Tier III and IV** (120). GTNH's chain:
+  - BuildCraft's redstone chipset (its laser table recipe, 1 redstone dust, here in the LV assembler: a named stand-in);
+  - the emerald chipset (an emerald plate and the redstone chipset, forming press);
+  - the Engraved Quantum Chip (an exquisite yellow garnet, LuV engraver with the yellow garnet lens);
+  - the Item Circuits Tier III and IV (the engraved energy or quantum chip and the emerald chipset, forming press);
+  - the processors (an engineering processor and the circuit, IV and LuV assembler).
+- **Their users.** Tier IV: the 4096k and 16384k components and the Pattern Terminal Ex. Tier III: the 1024k
+  component. GTNH's 256k component takes tier III too, but here it keeps the engineering processor: the energy crystal
+  needs energium, which comes with the ZPM assembly line, after the 256k cells. The energy crystal and the engraved
+  energy chip now come with ME Storage 1024k as well.
+- **The Singularity cell** (162). GTNH's recipe in the new Space Elevator Assembler Module Mk-I (4 parallels, UHV,
+  Mk-I motors):
+  - the Eternal Singularity from 7.2 molten spacetime in the UMV compressor, a named stand-in for GT's black hole
+    compressor;
+  - 8 Quantum Chests V with their UEV chest buffers;
+  - 4 infinity and 12 cosmic neutronium blocks, and 4 Infinity Catalysts (64 dust each, the HV compressor for the
+    neutronium compressor);
+  - indalloy 140 for the UEV solder.
+
+  ME Storage Singularity moves to UMV science.
+- **Left for #487:** the Singularity crafting storage's Creative Energy Cells (AE2 dense energy cells), Draconic
+  Reactor Stabilizers (Draconic Evolution's cores and fusion crafter) and Transcendent Metal Nanites (the Energised
+  Tesseract), and the void cells' singularity (512 000 cobblestone, which Gregtorio does not have).
+
 ### Nuclear depth (issue #359)
 
 Decision (the issue's step 1, the smallest one): GT's dual and quad rods of uranium and thorium and the MOX rods (164).

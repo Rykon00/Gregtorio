@@ -2425,6 +2425,10 @@ engrave(R1, "engraved-diamond-crystal-chip", "ev-laser-engraver-recipes", 20, EV
 step(R3, "energy-crystal", "hv-autoclave-recipes", 30, HV_SPEED, { { "energium-dust", 9 }, { "molten-energetic-alloy", 28.8 } },
 	{ { "energy-crystal", 1 } })
 engrave(R3, "engraved-energy-chip", "iv-laser-engraver-recipes", 30, IV_SPEED, { { "energy-crystal", 1 } }, "ruby-lens")
+--- issue #485: the Item Circuit Tier III of the 1024k ME component (120) takes the engraved energy chip, before the HiC
+if data.raw.technology["me-storage-1024k"] then
+	for _, r in pairs({ "energy-crystal", "engraved-energy-chip" }) do fork_add_unlock("me-storage-1024k", r) end
+end
 engrave(R3, "manyullyn-crystal", "ev-laser-engraver-recipes", 60, EV_SPEED, { { "manyullyn-plate", 4 } }, "tanzanite-lens")
 engrave(R3, "engraved-manyullyn-crystal-chip", "iv-laser-engraver-recipes", 45, IV_SPEED, { { "manyullyn-crystal", 1 } },
 	"tanzanite-lens")

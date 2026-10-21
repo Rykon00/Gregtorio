@@ -91,7 +91,9 @@
     mod has, expected amounts of one operation; helium plasma only); `scripts/fork-space-elevator.lua` runs a module only
     next to an elevator with motors of its tier and a free slot (event-driven, `on_object_destroyed`, no tick handler,
     `storage.fork_space_elevator`); issue #318: GTNH's distillation of the pump modules' heavy and light oil (tall
-    distillation, distillery, lubricant), with the pump module's technology; loads after 160 and **before** 142)
+    distillation, distillery, lubricant), with the pump module's technology; issue #485: the Assembler Module Mk-I and
+    GTNH's Singularity ME Storage Cell in it (its Eternal Singularity in the UMV compressor, a named stand-in for the
+    black hole compressor); loads after 160 and **before** 142)
   - 163 electric mine (issue #335: GTNH's Ore Drilling Plants Mk I to IV (`ore-drilling-plant-mk1` to `-mk4`, MV to IV,
     the Mk changes speed and energy only) on the Manual Mine's footprint and fast replace group, the Manual Mine's
     `next_upgrade` is the Mk I; one electric twin `drilling-<vein>` of every `mining-<vein>` recipe of the Manual Mine

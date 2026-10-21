@@ -365,6 +365,12 @@ MULTIBLOCKS = {
                                                ("gregtech:iconsets/OVERLAY_FRONT_ORE_DRILL",
                                                 "gregtech:iconsets/OVERLAY_FRONT_ORE_DRILL_ACTIVE"),
                                                f"gtnhintergalactic:spaceElevator/MotorT{t}_Side") for t in range(1, 4)},
+    # issue #485: the Space Elevator Assembler Module Mk-I (the elevator's base casing, GT's assembly line front, its
+    # motor tier)
+    "space-elevator-assembler-module-mk1": ((3, 3), "gtnhintergalactic:spaceElevator/BaseCasing", None,
+                                            ("gregtech:iconsets/OVERLAY_FRONT_ASSEMBLY_LINE",
+                                             "gregtech:iconsets/OVERLAY_FRONT_ASSEMBLY_LINE_ACTIVE"),
+                                            "gtnhintergalactic:spaceElevator/MotorT1_Side"),
     # issue #303: the Planetary Gas Siphon (its siphon casing and front) and the Space Elevator Pump Modules (the elevator's
     # base casing, GT's oil drill front, the motor they need: Mk-II to Mk-IV)
     "planetary-gas-siphon": ((3, 3), "gtnhintergalactic:gasSiphon/SiphonCasing", None,
@@ -392,6 +398,7 @@ WHOLE_ICONS = {"large-titanium-boiler", "large-combustion-engine", "digester", "
                *(f"space-elevator-mk{t}" for t in range(1, 6)),
                *(f"space-elevator-mining-module-mk{t}" for t in range(1, 4)),
                "planetary-gas-siphon", *(f"space-elevator-pump-module-mk{t}" for t in range(1, 4)),
+               "space-elevator-assembler-module-mk1",
                *(f"ore-drilling-plant-mk{t}" for t in range(1, 5)), "lv-miner", "mv-miner", "hv-miner"}
 # tier versions of a generator (136-fork-power.lua): the base sprite with dynamo hatches of the tier
 # (GT hull of the tier + GT's dynamo hatch overlay) on the corner tiles; the base itself gets its own
