@@ -2819,6 +2819,27 @@ as GTNH has it, and the Singularity crafting storage left for a new issue.
   Reactor Stabilizers (Draconic Evolution's cores and fusion crafter) and Transcendent Metal Nanites (the Energised
   Tesseract), and the void cells' singularity (512 000 cobblestone, which Gregtorio does not have).
 
+### The Singularity crafting storage and the void cells (issue #487)
+
+Decision (the maintainer, 2026-10-21): the nanites with Nano Forge tier 3, the energy cells as crafting items in
+Gregtorio, stone for cobblestone; the Draconic Reactor Stabilizers go to #489. 164 section 39:
+- **Transcendent Metal Nanites:**
+  - Black Titanium: GT++'s alloy blast smelter recipe, 9 dusts and argon, UV;
+  - its plate: cast (143);
+  - the Raw Tesseract: the plasma forge, the only GTNH variant the mod has the parts for: transcendent metal rods,
+    Black Titanium plates, Zeron-100 screws, a Quantum Anomaly, the stellar catalyst;
+  - the Energised Tesseract: the neutron activator with MK V; GT's NKE window and the depleted fuel are left out;
+  - the nanites: Nano Forge tier 2, MAX, the Energised Tesseract kept.
+- **Nano Forge tier 3:** tier 2, the nanite, 228 Radiant casings, 16 Assembly Line Casings and 84 Stellar Alloy frames.
+  Its own nanites have no consumer here.
+- **Creative Energy Cell:** AE2's Energy Cell and Dense Energy Cell as crafting items with GTNH's recipes. The HV
+  battery buffer of 16 batteries stands in for GT's EV 4x4 buffer; the mod's buffers end at HV.
+- **The Singularity crafting storage:** 4 Creative Energy Cells and 4 Transcendent Metal Nanites now, for 120's
+  transcendent metal blocks. ME Crafting Storage Singularity moves to MAX science, after the nanites.
+- **AE2's Singularity:** 512 000 stone (the mod's cobblestone) as 8 Compressed Cobblestone of 64 000 each, because a
+  recipe takes at most 65 535 of an item; both steps in the IV compressor. The void cells take it with GTNH's recipes
+  (the fluid one AE2FC's), with ME Upgrade Cards.
+
 ### Nuclear depth (issue #359)
 
 Decision (the issue's step 1, the smallest one): GT's dual and quad rods of uranium and thorium and the MOX rods (164).

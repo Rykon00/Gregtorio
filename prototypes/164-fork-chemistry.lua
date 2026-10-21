@@ -4403,6 +4403,136 @@ end
 
 
 --------------------------------------------------------------------------------
+--- 39) THE SINGULARITY CRAFTING STORAGE AND THE VOID CELLS (issue #487; the maintainer's decisions of 2026-10-21). GT5-
+---   Unofficial ce1c416a64 and NewHorizonsCoreMod (NHC: gthandler/recipes and scripts).
+--- * Transcendent Metal Nanites (GT NaniteChain.java:145-157: the Energised Tesseract (kept), 8 transcendent metal
+---   blocks, 192 ASoC, 2 000 000 L UU matter -> 1; Nano Forge tier 2, 1G EU/t: MAX, 750 s), the Energised Tesseract
+---   (goodgenerator NeutronActivatorLoader.java:50-58: a Raw Tesseract and 64 L naquadah fuel MK V; 16 400 s; GT's NKE
+---   window is not modelled, as the activator's other recipes; the depleted fuel is left out, as section 27's), the Raw
+---   Tesseract (NHC DTPFRecipes.java:429-438, the only variant whose parts the mod has: 32 transcendent metal rods, 24 Black
+---   Titanium plates, 16 Zeron-100 screws, a Quantum Anomaly (GT++'s Laser_Lens_Special, used up), 1000 L excited stellar
+---   catalyst -> 16 and 2000 L residue; UXV, 20 s) and GT++'s Black Titanium (MaterialsAlloy.java:804-821, made only in the
+---   alloy blast smelter, RecipeGenBlastSmelter: 55 titanium, 12 lanthanum, 8 tungsten, 6 cobalt, 4 manganese, 4
+---   phosphorus, 4 palladium, 2 niobium dust and 5000 L argon -> 14 400 L; UV, 480 s), its plate cast (143).
+---   Nano Forge tier 3 (MTENanoForge.java:295-325, 630-634): tier 2 with the transcendent nanite in its slot, 228 more
+---   Radiant casings, 16 Assembly Line Casings and 84 Stellar Alloy frames. Its own nanites (gold, Six-Phased Copper, the
+---   dwarf matters, universium, eternity) have no consumer in the mod and are left out.
+--- * The Creative Energy Cell (NHC ScriptAppliedEnergistics2.java:664-684, Avaritia's extreme table: 32 infinity ingots,
+---   36 Dense Energy Cells, 12 Item Processors Tier IV, a cosmic neutronium block): the UEV assembler (the mod has no
+---   extreme table, as 120's crafting storages). AE2's Energy Cell (NHC AssemblerRecipes.java:4668-4677: 4 certus quartz
+---   plates, a fluix dust, 2 HV circuits, a fluix block, an 8x aluminium cable; HV, 5 s) and Dense Energy Cell (:4679-4686:
+---   5 energy cells, 2 LuV circuits, an engineering processor, GT's EV 4x4 battery buffer; HV, 5 s) are crafting items
+---   here (the maintainer's decision; me-network has no energy cells): the HV battery buffer of 16 batteries for GT's EV
+---   one (the mod's battery buffers end at HV, #444), 8 aluminium cables for the 8x one.
+--- * The Singularity crafting storage (SAE2:618-649) takes 4 Creative Energy Cells and 4 Transcendent Metal Nanites now (for
+---   120's 4 transcendent metal blocks); its 8 Draconic Reactor Stabilizers stay left out (#489).
+--- * AE2's Singularity (SAE2:903-906: 512 000 cobblestone in the neutronium compressor, IV, 3 s): the mod's stone is
+---   Minecraft's cobblestone (the maintainer's decision); a recipe takes at most 65 535 of an item, so 64 000 stone make a
+---   Compressed Cobblestone and 8 of them the Singularity, in the IV compressor (named stand-ins for the one step). The void
+---   cells take it as GTNH's (AssemblerRecipes.java:4687-4695; the fluid one AE2FC's, ScriptAE2FC.java:769-778: 2
+---   tungstensteel plates and a stainless steel plate instead of 3 tungsten plates).
+--- Technologies: Transcendent Metal Nanites (the chain and Nano Forge tier 3) after Nano Forge Tier 2, the stellar
+--- catalyst, MK V and the neutron activator; ME Crafting Storage Singularity after it (the energy cells, the creative cell);
+--- the Singularity with the void cells (ME Upgrade Cards).
+--------------------------------------------------------------------------------
+do
+	local T_NAN = "transcendent-metal-nanites"
+	local CRAFT, CARDS = "me-crafting-storage-singularity", "me-upgrade-cards"
+	local RN, RC, RV = {}, {}, {}
+	local function item(name, amount) return { type = "item", name = name, amount = amount } end
+	local function power(tier, n)
+		local p = data.raw["assembling-machine"][tier .. "-centrifuge"].energy_usage
+		return (tonumber(p:match("^[%d.]+")) * n) .. p:match("%a+$")
+	end
+	items(SUB_PART, { "black-titanium-plate", "raw-tesseract", "energised-tesseract", "transcendent-metal-nanites",
+		"energy-cell", "dense-energy-cell", "compressed-stone", "singularity" })
+	F.fluid("molten-black-titanium", "molten-black-titanium", { 137 / 255, 137 / 255, 154 / 255 })
+	--- icons without a texture of their own (AE2's are not used): me-network's creative energy cell picture (its ME charger)
+	--- in a blue and a deep blue, the eternal singularity's in grey
+	local creative = data.raw.item["me-creative-energy-cell"]
+	local charger = creative and creative.icons and creative.icons[1]
+	for name, tint in pairs({ ["energy-cell"] = { 0.55, 0.85, 1, 1 }, ["dense-energy-cell"] = { 0.3, 0.5, 1, 1 } }) do
+		if charger then
+			data.raw.item[name].icon, data.raw.item[name].icon_size = nil, nil
+			data.raw.item[name].icons = { { icon = charger.icon, icon_size = charger.icon_size, tint = tint } }
+		end
+	end
+	data.raw.item["singularity"].icon, data.raw.item["singularity"].icon_size = nil, nil
+	data.raw.item["singularity"].icons = { { icon = "__gregtorio-continued__/graphics/icons/eternal-singularity.png", icon_size = 32,
+		tint = { 0.6, 0.6, 0.65, 1 } } }
+
+	--- the nanites
+	step(RN, "molten-black-titanium", "uv-alloy-blast-smelter-recipes", 480, UV_SPEED,
+		{ { "titanium-dust", 55 }, { "lanthanum-dust", 12 }, { "tungsten-dust", 8 }, { "cobalt-dust", 6 }, { "manganese-dust", 4 },
+			{ "phosphorus", 4 }, { "palladium-dust", 4 }, { "niobium-dust", 2 }, { "argon", 500 } }, { { "molten-black-titanium", 1440 } })
+	step(RN, "raw-tesseract", "dimensionally-transcendent-plasma-forge-recipes", 20, UXV_SPEED,
+		{ { "transcendent-metal-rod", 32 }, { "black-titanium-plate", 24 }, { "zeron-100-screw", 16 }, { "quantum-anomaly", 1 },
+			{ "excited-dimensionally-transcendent-stellar-catalyst", 100 } },
+		{ { "raw-tesseract", 16 }, { "dimensionally-transcendent-residue", 200 } }, "raw-tesseract")
+	step(RN, "energised-tesseract", "neutron-activator-recipes", 16400, 1,
+		{ { "raw-tesseract", 1 }, { "naquadah-based-fuel-mk5", 64 } }, { { "energised-tesseract", 1 } })
+	step(RN, "transcendent-metal-nanites", "nano-forge-t2-recipes", 750, MAX_SPEED,
+		{ { "energised-tesseract", 1 }, { "block-of-transcendent-metal", 8 }, { "advanced-system-on-chip", 192 },
+			{ "uu-matter", 200000 } }, { { "transcendent-metal-nanites", 1 }, { "energised-tesseract", 1 } }, "transcendent-metal-nanites")
+	machine{
+		name = "nano-forge-t3", category = "nano-forge-t3-recipes", speed = UMV_SPEED, energy = power("umv", 1),
+		subgroup = "subgroup-uhv-age-multiblocks", ports = { port("input", N, { 0, -1 }) }, list = RN,
+		recipe = { "crafting-or-assembling-recipes", 1, { item("nano-forge-t2", 1), item("transcendent-metal-nanites", 1),
+			item("radiant-naquadah-alloy-casing", 228), item("assembly-line-casing", 16), item("stellar-alloy-frame", 84) } },
+	}
+	data.raw["assembling-machine"]["nano-forge-t3"].crafting_categories = { "nano-forge-recipes", "nano-forge-t2-recipes",
+		"nano-forge-t3-recipes" }
+	F.tech{ name = T_NAN, prerequisites = { "nano-forge-t2", "dtpf-stellar-catalyst", "naquadah-based-fuel-mk5" }, packs = 15,
+		count = 55, time = 60, recipes = RN }   -- (as section 33)
+	FORK_CASTING.materials["black-titanium"] = { "uv", T_NAN }
+	FORK_CASTING.run()
+
+	--- the creative energy cell and the crafting storage
+	step(RC, "energy-cell", "hv-assembling-machine-recipes", 5, HV_SPEED,
+		{ { "certus-quartz-plate", 4 }, { "fluix-dust", 1 }, { "processing-unit", 2 }, { "fluix-block", 1 }, { "aluminium-cable", 8 } },
+		{ { "energy-cell", 1 } })
+	step(RC, "dense-energy-cell", "hv-assembling-machine-recipes", 5, HV_SPEED,
+		{ { "energy-cell", 5 }, { "luv-circuit", 2 }, { "engineering-processor", 1 }, { "hv-battery-buffer-16", 1 } },
+		{ { "dense-energy-cell", 1 } })
+	if data.raw.item["me-creative-energy-cell"] then
+		step(RC, "me-creative-energy-cell", "uev-assembling-machine-recipes", 20, UEV_SPEED,
+			{ { "infinity-ingot", 32 }, { "dense-energy-cell", 36 }, { "item-processor-tier-iv", 12 }, { "block-of-cosmic-neutronium", 1 } },
+			{ { "me-creative-energy-cell", 1 } })
+	end
+	local storage = data.raw.recipe["me-singularity-crafting-storage"]
+	if storage and data.raw.technology[CRAFT] then
+		local ing = {}
+		for _, i in pairs(storage.ingredients) do
+			if i.name ~= "block-of-transcendent-metal" then ing[#ing + 1] = i end
+		end
+		ing[#ing + 1] = item("transcendent-metal-nanites", 4)
+		if data.raw.item["me-creative-energy-cell"] then ing[#ing + 1] = item("me-creative-energy-cell", 4) end
+		storage.ingredients = ing
+		local t = data.raw.technology[CRAFT]
+		table.insert(t.prerequisites, T_NAN)
+		table.insert(t.prerequisites, "large-batteries")   -- (the dense energy cell's battery buffer)
+		t.unit.ingredients = table.deepcopy(data.raw.technology[T_NAN].unit.ingredients)
+		t.unit.count = 55
+		for _, r in pairs(RC) do fork_add_unlock(CRAFT, r) end
+	end
+
+	--- the singularity and the void cells
+	step(RV, "compressed-stone", "iv-compressor-recipes", 3, IV_SPEED, { { "stone", 64000 } }, { { "compressed-stone", 1 } })
+	step(RV, "singularity", "iv-compressor-recipes", 3, IV_SPEED, { { "compressed-stone", 8 } }, { { "singularity", 1 } })
+	local void, fvoid = data.raw.recipe["me-void-storage-cell"], data.raw.recipe["me-void-fluid-storage-cell"]
+	if void and data.raw.technology[CARDS] then
+		table.insert(void.ingredients, item("singularity", 1))
+		if fvoid then
+			fvoid.ingredients = { item("certus-quartz-screw", 2), item("certus-quartz-plate", 1), item("tungstensteel-plate", 2),
+				item("stainless-steel-plate", 1), item("singularity", 1) }
+		end
+		for _, r in pairs(RV) do fork_add_unlock(CARDS, r) end
+	end
+end
+
+
+
+--------------------------------------------------------------------------------
 --- 38) GT'S PARTS OF THE METALS OF THIS FILE (issue #467). 158 makes GT New Horizons' parts of every metal of
 ---   prototypes/gt-parts-data.lua (issue #227) whose ingot exists; most metals of this file come after 158, so its
 ---   FORK_GT_PARTS.run() runs once more here (it skips what exists), then 143's casts for the new forms.
