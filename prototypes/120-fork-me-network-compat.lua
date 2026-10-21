@@ -94,6 +94,24 @@ create_item{
 	energy_required = 9.8 * LV_SPEED,
 	ingredients = { { type = "item", name = "certus-quartz", amount = 1 } },
 }
+--- Issue #459: GTNH's Advanced Storage Housing (SAE2:254-261: a glass pane, a certus quartz plate, 3 chrome plates, 2
+--- certus quartz screws; 5 s at LV / 2) of the 256k to 16384k cells (SAE2:276-303); the glass for the pane, as above. AE2's
+--- texture is not drawn: me-network's housing icon with the chromium plate as a badge
+create_item{
+	name = "advanced-storage-housing",
+	category = "lv-assembling-machine-recipes",
+	energy_required = 5 * LV_SPEED,
+	ingredients = I{ "glass", 1, "certus-quartz-plate", 1, "chromium-plate", 3, "certus-quartz-screw", 2 },
+}
+do
+	local housing, item = data.raw.item["basic-storage-housing"], data.raw.item["advanced-storage-housing"]
+	local base = housing.icons and housing.icons[1] or { icon = housing.icon, icon_size = housing.icon_size }
+	item.icon, item.icon_size = nil, nil
+	item.icons = { { icon = base.icon, icon_size = base.icon_size },
+		{ icon = "__gregtorio-continued__/graphics/icons/chromium-plate.png", icon_size = 32, scale = 0.5,
+			shift = { 8, 8 } } }
+	item.subgroup, item.order = housing.subgroup, (housing.order or "") .. "-advanced"
+end
 do
 	local t = data.raw.technology["overworld-data"]
 	local keep = {}
@@ -264,13 +282,14 @@ for i, tier in ipairs({ "1k", "4k", "16k", "64k", "256k" }) do
 		energy_required = 5,
 		ingredients = {
 			{ type = "item", name = "me-" .. tier .. "-storage-component", amount = 1 },
-			{ type = "item", name = "basic-storage-housing", amount = 1 },
+			--- issue #459: GTNH's advanced storage housing from 256k on (SAE2:276-303)
+			{ type = "item", name = tier == "256k" and "advanced-storage-housing" or "basic-storage-housing", amount = 1 },
 		},
 	}
 	data.raw.recipe[cell].auto_recycle = false         -- a recycler would void the contents
 end
 --- issue #454: the cells above 256k as the 256k one, in the assembler of their component's tier (GTNH, SAE2:290-310: an
---- advanced storage housing, which Gregtorio does not have, and the component; the storage housing here, as for 256k)
+--- advanced storage housing and the component; issue #459 added the housing)
 for i, c in ipairs(BIG_CELLS) do
 	local cell = "me-" .. c.size .. "-storage-cell"
 	recipe_of{
@@ -279,7 +298,7 @@ for i, c in ipairs(BIG_CELLS) do
 		subgroup = "fork-me-cells",
 		order = string.format("%02d", 5 + i),
 		energy_required = 5,
-		ingredients = I{ "me-" .. c.size .. "-storage-component", 1, "basic-storage-housing", 1 },
+		ingredients = I{ "me-" .. c.size .. "-storage-component", 1, "advanced-storage-housing", 1 },
 	}
 	data.raw.recipe[cell].auto_recycle = false
 end
@@ -909,7 +928,7 @@ tech("me-storage-64k", { "me-network", "nanoprocessors", "advanced-hv-machines" 
 tech("me-storage-256k", { "me-storage-64k", "industrial-precision-lathe", "ev-machines" }, 6, 1000, {
 	"me-256k-storage-component", "annealed-copper-foil",
 	"fiber-reinforced-epoxy-sheet", "fiber-reinforced-circuit-board", "fiber-reinforced-printed-circuit-board",
-	"me-256k-storage-cell",
+	"advanced-storage-housing", "me-256k-storage-cell",
 })
 
 --- the crafting blocks a technology unlocks (none with me-network 0.2.0)
