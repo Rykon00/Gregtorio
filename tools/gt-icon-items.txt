@@ -5115,3 +5115,8 @@ uev-chest-buffer
 block-of-infinity
 block-of-cosmic-neutronium
 infinity-catalyst
+# issue #487: the nanites' chain, the AE2 singularity's stone
+black-titanium-plate
+raw-tesseract
+energised-tesseract
+compressed-stone

@@ -205,6 +205,8 @@ MATERIALS = {
     "six-phased-copper": ("SHINY", (0xff, 0x78, 0x14)),
     # issue #355 step 5: the Nano Forge's materials (GT's Oriharukon, Melodic and Stellar Alloy, glowstone)
     "oriharukon": "Oriharukon", "melodic-alloy": "MelodicAlloy", "stellar-alloy": "StellarAlloy", "glowstone": "Glowstone",
+    # issue #487: GT++'s Black Titanium (MaterialsAlloy.java:804, no colour of its own: a dark titanium); GT's stone
+    "black-titanium": ("METALLIC", (64, 64, 72)), "stone": "Stone",
     # issue #355 step 5, YPIC: GT's uranium (238) ingot; SuperSolarPanels' parts are not in the checkouts: GT's ingot, plate
     # and gem shapes in their colours (Irradiant Uranium, the Irradiant Glass Pane and its colour components, the splitter)
     "uranium-238": "Uranium", "irradiant-uranium": ("SHINY", (190, 255, 90)), "irradiant-glass": ("GLASS", (255, 240, 150)),
@@ -809,6 +811,21 @@ def icon_table(c):
     T["block-of-infinity"] = lambda: c.part("infinity", "@block")
     T["block-of-cosmic-neutronium"] = lambda: c.part("cosmic-neutronium", "@block")
     T["infinity-catalyst"] = lambda: c.part("infinity-catalyst", "gem")
+    # issue #487: GT renders the Tesseract as a wire frame (WireFrameTesseractRenderer, no texture): a cube in a cube, grey
+    # raw and cyan energised; the Compressed Cobblestone of the AE2 singularity as GT's stone block
+    def tesseract(rgb):
+        img = Image.new("RGBA", (SIZE, SIZE))
+        d = ImageDraw.Draw(img)
+        o, i = (3, 3, SIZE - 4, SIZE - 4), (10, 10, SIZE - 11, SIZE - 11)
+        d.rectangle(o, outline=rgb + (255,))
+        d.rectangle(i, outline=rgb + (255,))
+        for (x0, y0), (x1, y1) in (((o[0], o[1]), (i[0], i[1])), ((o[2], o[1]), (i[2], i[1])),
+                                   ((o[0], o[3]), (i[0], i[3])), ((o[2], o[3]), (i[2], i[3]))):
+            d.line((x0, y0, x1, y1), fill=rgb + (255,))
+        return img
+    T["raw-tesseract"] = lambda: tesseract((200, 200, 210))
+    T["energised-tesseract"] = lambda: tesseract((90, 230, 255))
+    T["compressed-stone"] = lambda: c.part("stone", "@block")
     # tier circuits of the core mod (the fork's generic UMV/UXV circuit)
     T["umv-circuit"] = lambda: c.gt(f"{CORE}itemCircuitUMV")
     T["uxv-circuit"] = lambda: c.gt(f"{CORE}itemCircuitUXV")

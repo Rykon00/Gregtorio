@@ -220,6 +220,7 @@ FORK_TECH_ICONS = {
 	["the-core"] = true,
 	["thorium-based-liquid-fuel"] = true,
 	["titanium"] = true,
+	["transcendent-metal-nanites"] = true,
 	["tungstate-processing"] = true,
 	["tungsten"] = true,
 	["tungsten-carbide"] = true,
