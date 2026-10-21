@@ -4395,3 +4395,14 @@ do
 	FORK_ENGRAVER_NO_LENS["optically-enriched-crystalline-boule"] = "GT holds three lenses at once (NHC LaserEngraverRecipes.java:"
 		.. "167-174); they stay ingredients and results, as the lens slot of 150 takes one"
 end
+
+
+
+--------------------------------------------------------------------------------
+--- 38) GT'S PARTS OF THE METALS OF THIS FILE (issue #467). 158 makes GT New Horizons' parts of every metal of
+---   prototypes/gt-parts-data.lua (issue #227) whose ingot exists; most metals of this file come after 158, so its
+---   FORK_GT_PARTS.run() runs once more here (it skips what exists), then 143's casts for the new forms.
+--------------------------------------------------------------------------------
+FORK_GT_PARTS.run()
+FORK_CASTING.run()
+FORK_GT_PARTS.log("164")

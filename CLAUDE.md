@@ -183,7 +183,9 @@
   - 158 GT parts (issues #222, #223, #227 and #228: GT's parts of every metal from `prototypes/gt-parts-data.lua`
     (regenerate it with `tools/gen_gt_parts.py` after a `devcheck.py check` when a metal is added; sources: GT
     materials, GT++ alloys and elements, bartworks and goodgenerator Werkstoffe with their own recipe numbers) and GT's
-    nugget recipes, unlocked with 155's `unlock_after` through `FORK_ORE_CHAIN`; loads after 155 and before 150; #223
+    nugget recipes, unlocked with 155's `unlock_after` through `FORK_ORE_CHAIN`; loads after 155 and before 150; issue
+    #467: its sections 1 and 2 are `FORK_GT_PARTS.run()`, run again at the end of 164 (section 38) for the metals whose
+    ingot comes later; #223
     also aligned 155's raw ore smelting with GT's rule, keeping raw redstone, gypsum and calcite -> dust for the early
     game)
   - 159 lanthanides (issue #262: gtnhlanth's monazite rare earth line with the Digester and the Dissolution Tank, from
@@ -197,7 +199,7 @@
     `<tier>-chemical-dehydrator`), lanthanum hexaboride's gem forms, chloromethane, gangue and the roasting's fluorine;
     loads after 158 and before 156)
   - 164 chemistry (the GTNH gap research after 0.5.4, issues #355 to #367, and later sections: #436 dragonblood and
-    hypogen in 35, #355 step 5's Nano Forge in 36 and YPIC in 37; GTNH's chemical lines Gregtorio lacked, GT's
+    hypogen in 35, #355 step 5's Nano Forge in 36 and YPIC in 37, #467's second run of 158 in 38; GTNH's chemical lines Gregtorio lacked, GT's
     numbers, fluids a tenth of GT's litres, GT++'s catalysts left out; issue #362: GT++'s Rp-1 Rocket Fuel, Dense
     Hydrazine Fuel Mixture and CN3H7O3 Rocket Fuel with their cells for 145's rocket engines, the coal tar line and the
     anthraquinone process to hydrogen peroxide and hydrazine, the ExxonMobil Chemical Plant's extra fluid boxes; issue #360:
