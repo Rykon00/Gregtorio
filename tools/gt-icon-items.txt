@@ -5102,3 +5102,16 @@ zirconium-foil
 zirconium-nugget
 zirconium-plate
 zirconium-rod
+# issue #485: the ME processors' chain, the Singularity cell's parts
+engraved-quantum-chip
+item-circuit-tier-iii
+item-circuit-tier-iv
+item-processor-tier-iii
+item-processor-tier-iv
+redstone-chipset
+emerald-chipset
+quantum-chest-v
+uev-chest-buffer
+block-of-infinity
+block-of-cosmic-neutronium
+infinity-catalyst

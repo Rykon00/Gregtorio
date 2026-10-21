@@ -226,23 +226,49 @@ upstream_item(component{
 --- issue #454 (me-network 0.5.5, its issue #414): AE2-Unofficial's components above 256k, GTNH's recipes (SAE2:336-362,
 --- circuit assembler, 72 soldering alloy, 10 s): 1024k from 4 IV and 16 EV circuits, an engineering processor and a
 --- multifiberglass elite board (IV); 4096k 4 LuV, 16 IV, an advanced engineering processor and a wetware board (LuV);
---- 16384k 4 UV, 16 LuV, an advanced engineering processor and a bio board (UV). Gregtorio has no advanced engineering
---- processor: the engineering processor; the boards are its multilayered fiber-reinforced, wetware and bioware printed
---- boards. me-network before 0.5.5 has none
+--- 16384k 4 UV, 16 LuV, an advanced engineering processor and a bio board (UV). The boards are Gregtorio's multilayered
+--- fiber-reinforced, wetware and bioware printed boards. Issue #485: the processors are GTNH's (below); GTNH's 256k and
+--- 1024k components take the Item Processor Tier III, Gregtorio's 1024k one does, its 256k one keeps the engineering
+--- processor (the tier III circuit's energy crystal needs energium, which comes with the ZPM assembly line here, after
+--- the 256k cells). me-network before 0.5.5 has none
+---
+--- Issue #485: GTNH's Item Processor Tier III and IV (NewHorizonsCoreMod scripts/ScriptCoreMod.java:850-860: an
+--- engineering processor and the Item Circuit Tier III or IV in the IV or LuV assembler, 5 s), their circuits (:1120-1131:
+--- the engraved energy chip or the Engraved Quantum Chip and BuildCraft's emerald chipset in the forming press, 15 s at
+--- EV / 2 and IV / 2), the Engraved Quantum Chip (:951-968: an exquisite yellow garnet engraved with the yellow garnet
+--- lens, LuV, 60 s) and BuildCraft's emerald chipset (ScriptBuildCraft.java:536-541: an emerald plate and a redstone
+--- chipset in the forming press, HV, 10 s). The redstone chipset is BuildCraft's laser Assembly Table recipe (1 redstone
+--- dust), which GTNH keeps; Gregtorio has no laser table: the LV assembler, 5 s (a named stand-in). The forming press has
+--- one category here: each recipe takes its tier's time (as orundum, 164)
+create_item{ name = "redstone-chipset", category = "lv-assembling-machine-recipes", energy_required = 5 * LV_SPEED,
+	ingredients = I{ "redstone-dust", 1 } }
+create_item{ name = "emerald-chipset", category = "lv-forming-press-recipes", energy_required = 10 * HV_SPEED,
+	ingredients = I{ "emerald-plate", 1, "redstone-chipset", 1 } }
+create_item{ name = "engraved-quantum-chip", category = "luv-laser-engraver-recipes", energy_required = 60 * LUV_SPEED,
+	ingredients = I{ "exquisite-yellow-garnet", 1, "yellow-garnet-lens", 1 },
+	results = I{ "engraved-quantum-chip", 1, "yellow-garnet-lens", 1 }, main_product = "engraved-quantum-chip" }
+create_item{ name = "item-circuit-tier-iii", category = "lv-forming-press-recipes", energy_required = 15 * EV_SPEED,
+	ingredients = I{ "engraved-energy-chip", 1, "emerald-chipset", 1 } }
+create_item{ name = "item-circuit-tier-iv", category = "lv-forming-press-recipes", energy_required = 15 * IV_SPEED,
+	ingredients = I{ "engraved-quantum-chip", 1, "emerald-chipset", 1 } }
+create_item{ name = "item-processor-tier-iii", category = "iv-assembling-machine-recipes", energy_required = 5 * IV_SPEED,
+	ingredients = I{ "engineering-processor", 1, "item-circuit-tier-iii", 1 } }
+create_item{ name = "item-processor-tier-iv", category = "luv-assembling-machine-recipes", energy_required = 5 * LUV_SPEED,
+	ingredients = I{ "engineering-processor", 1, "item-circuit-tier-iv", 1 } }
 local HAS_BIG_CELLS = data.raw.item["me-1024k-storage-component"] ~= nil
 local BIG_CELLS = HAS_BIG_CELLS and {
 	{ size = "1024k", tier = "iv", board = "multilayered-fiber-reinforced-printed-circuit-board", circuits = { "iv-circuit", "ev-circuit" },
-	  pump = "iv-pump" },
+	  pump = "iv-pump", processor = "item-processor-tier-iii" },
 	{ size = "4096k", tier = "luv", board = "wetware-printed-circuit-board", circuits = { "luv-circuit", "iv-circuit" },
-	  pump = "luv-pump" },
+	  pump = "luv-pump", processor = "item-processor-tier-iv" },
 	{ size = "16384k", tier = "uv", board = "bioware-printed-circuit-board", circuits = { "uv-circuit", "luv-circuit" },
-	  pump = "uv-pump" },
+	  pump = "uv-pump", processor = "item-processor-tier-iv" },
 } or {}
 for _, c in ipairs(BIG_CELLS) do
 	upstream_item(component{
 		name = "me-" .. c.size .. "-storage-component",
 		tier = c.tier,
-		ingredients = I{ c.board, 1, c.circuits[2], 16, c.circuits[1], 4, "engineering-processor", 1 },
+		ingredients = I{ c.board, 1, c.circuits[2], 16, c.circuits[1], 4, c.processor, 1 },
 	})
 end
 --- issue #216: upstream unlocks the 4k and the 16k component with logistic-system (and with the data technologies of
@@ -303,10 +329,8 @@ for i, c in ipairs(BIG_CELLS) do
 	data.raw.recipe[cell].auto_recycle = false
 end
 --- issue #454: the Singularity cell, GTNH's Digital Singularity ME Storage Cell (SpaceAssemblerRecipes.java:425-433, the
---- space assembler's module tier 1, UHV, 10 s: an eternal singularity, 12 16384k components, 8 IV quantum chests, 4 infinity
---- blocks, 4 infinity catalysts, 12 cosmic neutronium blocks, 2304 L of UEV solder). Gregtorio has no space assembler, no
---- eternal singularity, no quantum chest and no blocks of these metals: the UHV assembler, a dense plate for a block (both
---- 9 ingots), the infinity catalyst dust; the singularity, the chests and the solder are left out
+--- space assembler's module tier 1, UHV, 10 s). The recipe here is the base: issue #485 replaces it in 162 with GTNH's, in the
+--- Space Elevator Assembler Module (162 loads after the space elevator it needs)
 if data.raw["item-with-tags"]["me-singularity-storage-cell"] then
 	recipe_of{
 		name = "me-singularity-storage-cell",
@@ -462,8 +486,8 @@ end
 --- issue #456 (me-network 0.5.5, its issue #416): the ME Pattern Terminal Ex is AE2-Unofficial's Processing Pattern Terminal,
 --- GTNH's recipe (NewHorizonsCoreMod scripts/ScriptAppliedEnergistics2.java:2280-2289): an ME Crafting Terminal, 2 LuV
 --- conveyor modules, an advanced engineering processor, 2 LuV electric motors and a LuV robot arm in the MV assembler,
---- 10 s. me-network has no crafting terminal and Gregtorio no advanced engineering processor: the ME Pattern Terminal (the
---- block it extends) and the engineering processor. me-network before 0.5.5 has none
+--- 10 s. me-network has no crafting terminal: the ME Pattern Terminal (the block it extends); the advanced engineering
+--- processor is the Item Processor Tier IV (issue #485). me-network before 0.5.5 has none
 local HAS_PATTERN_TERMINAL_EX = data.raw.item["me-pattern-terminal-ex"] ~= nil
 if HAS_PATTERN_TERMINAL_EX then
 	recipe_of{
@@ -472,7 +496,7 @@ if HAS_PATTERN_TERMINAL_EX then
 		subgroup = "fork-me-network",
 		order = "e0a",
 		energy_required = 10 * MV_SPEED,
-		ingredients = I{ "me-pattern-terminal", 1, "luv-conveyor-module", 2, "engineering-processor", 1, "luv-motor", 2,
+		ingredients = I{ "me-pattern-terminal", 1, "luv-conveyor-module", 2, "item-processor-tier-iv", 1, "luv-motor", 2,
 			"luv-robot-arm", 1 },
 	}
 end
@@ -956,9 +980,11 @@ if HAS_ADVANCED_EMITTER then automation[#automation + 1] = "me-advanced-level-em
 tech("me-automation", { "me-autocrafting", "circuit-network" }, 5, 800, automation, SEVEN)
 tech("me-co-processing", { "me-autocrafting", "me-storage-256k", "iv-components" }, 6, 1200, with_blocks({},
 	{ "me-16k-crafting-storage", "me-64k-crafting-storage", "me-crafting-co-processing-unit" }), SEVEN)
---- issue #456: the Pattern Terminal Ex with its LuV components (me-network: with the Pattern Terminal)
+--- issue #456: the Pattern Terminal Ex with its LuV components (me-network: with the Pattern Terminal); issue #485: its
+--- Item Processor Tier IV with the chipsets, the Engraved Quantum Chip and the Item Circuit Tier IV
 tech("me-quantum-crafting", { "me-co-processing", "luv-machines" }, 7, 1500,
-	with_blocks(HAS_PATTERN_TERMINAL_EX and { "me-pattern-terminal-ex" } or {}, { "me-256k-crafting-storage" }), SEVEN)
+	with_blocks(HAS_PATTERN_TERMINAL_EX and { "me-pattern-terminal-ex", "redstone-chipset", "emerald-chipset",
+		"engraved-quantum-chip", "item-circuit-tier-iv", "item-processor-tier-iv" } or {}, { "me-256k-crafting-storage" }), SEVEN)
 
 --- EV: fluid cells up to 64k; IV: 256k fluid cells (the ME Interface and the buses move fluids from the start since
 --- me-network 0.2.0: the network stores them once fluid cells exist, or in a tank behind a storage bus)
@@ -1016,9 +1042,13 @@ if HAS_BIG_CELLS then
 	end
 	local STEPS = {
 		{ size = "1024k", packs = 8, count = 1500, before = "me-storage-256k", fbefore = "me-fluid-storage-256k",
-		  parts = { "zpm-assembly-line" }, fluid_count = 1000, crafting_count = 1500 },
+		  parts = { "zpm-assembly-line" }, fluid_count = 1000, crafting_count = 1500,
+		  recipes = { "redstone-chipset", "emerald-chipset", "item-circuit-tier-iii",
+			"item-processor-tier-iii" } },   -- (issue #485: the processor's chain, also with ME Quantum Crafting's; the
+		  -- energy crystal and the engraved energy chip come from 164)
 		{ size = "4096k", packs = 9, count = 450, before = "me-storage-1024k", fbefore = "me-fluid-storage-1024k",
-		  parts = { "wetware-processors" }, fluid_count = 300, crafting_count = 450 },
+		  parts = { "wetware-processors" }, fluid_count = 300, crafting_count = 450,
+		  recipes = { "engraved-quantum-chip", "item-circuit-tier-iv", "item-processor-tier-iv" } },   -- (issue #485)
 		{ size = "16384k", packs = 10, count = 225, before = "me-storage-4096k", fbefore = "me-fluid-storage-4096k",
 		  parts = { "bio-processors", "uv-machines" }, fluid_count = 150, crafting_count = 225 },
 	}
@@ -1027,8 +1057,9 @@ if HAS_BIG_CELLS then
 		local storage = "me-storage-" .. s.size
 		local prerequisites = { s.before }
 		for _, p in ipairs(s.parts) do prerequisites[#prerequisites + 1] = p end
-		tech_n(storage, prerequisites, s.packs, s.count,
-			{ "me-" .. s.size .. "-storage-component", "me-" .. s.size .. "-storage-cell" })
+		local recipes = { "me-" .. s.size .. "-storage-component", "me-" .. s.size .. "-storage-cell" }
+		for _, r in ipairs(s.recipes or {}) do recipes[#recipes + 1] = r end
+		tech_n(storage, prerequisites, s.packs, s.count, recipes)
 		tech_n("me-fluid-storage-" .. s.size, { s.fbefore, storage }, s.packs, s.fluid_count,
 			{ "me-" .. s.size .. "-fluid-storage-cell" })
 		tech_n("me-crafting-storage-" .. s.size, { crafting_before, storage }, s.packs, s.crafting_count,

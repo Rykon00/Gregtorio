@@ -792,6 +792,23 @@ def icon_table(c):
     for colour in ("red", "green", "blue"):
         T[f"{colour}-component"] = lambda colour=colour: c.part(f"{colour}-component", "plate")
     T["solar-light-splitter"] = lambda: c.part("solar-light-splitter", "gemExquisite")
+    # issue #485: GTNH's Item Circuits and Processors Tier III and IV and the Engraved Quantum Chip (the core mod's
+    # textures); BuildCraft's redstone and emerald chipsets are not in the checkouts: GT's ILC chip (IDMetaItem03 37) in
+    # their colours; GT's Quantum Chest V and UEV Chest Buffer (the UEV hull with the chest's and the buffer's overlay);
+    # the infinity and cosmic neutronium blocks (GT's block texture of the material); Avaritia's Infinity Catalyst is not
+    # in the checkouts either: GT's gem of the material
+    for n in ("EngravedQuantumChip", "EmeraldAdvancedCoreChip", "EmeraldHighAdvancedCoreChip",
+              "EngineeringProcessorItemEmeraldCore", "EngineeringProcessorItemAdvEmeraldCore"):
+        T[{"EngravedQuantumChip": "engraved-quantum-chip", "EmeraldAdvancedCoreChip": "item-circuit-tier-iii",
+           "EmeraldHighAdvancedCoreChip": "item-circuit-tier-iv", "EngineeringProcessorItemEmeraldCore": "item-processor-tier-iii",
+           "EngineeringProcessorItemAdvEmeraldCore": "item-processor-tier-iv"}[n]] = (lambda n=n: c.gt(f"{CORE}item{n}"))
+    T["redstone-chipset"] = lambda: tint(c.gt(f"{M3}37"), (255, 90, 90))
+    T["emerald-chipset"] = lambda: tint(c.gt(f"{M3}37"), (90, 230, 140))
+    T["quantum-chest-v"] = lambda: c.hatch("uev", "OVERLAY_QCHEST")
+    T["uev-chest-buffer"] = lambda: c.hatch("uev", "AUTOMATION_CHESTBUFFER")
+    T["block-of-infinity"] = lambda: c.part("infinity", "@block")
+    T["block-of-cosmic-neutronium"] = lambda: c.part("cosmic-neutronium", "@block")
+    T["infinity-catalyst"] = lambda: c.part("infinity-catalyst", "gem")
     # tier circuits of the core mod (the fork's generic UMV/UXV circuit)
     T["umv-circuit"] = lambda: c.gt(f"{CORE}itemCircuitUMV")
     T["uxv-circuit"] = lambda: c.gt(f"{CORE}itemCircuitUXV")

@@ -196,6 +196,7 @@ FORK_TECH_ICONS = {
 	["smd-components"] = true,
 	["space-coolant-cells"] = true,
 	["space-elevator"] = true,
+	["space-elevator-assembler-module-mk1"] = true,
 	["space-elevator-mining-drones-umv"] = true,
 	["space-elevator-mining-drones-uxv"] = true,
 	["space-elevator-mining-module-mk1"] = true,
