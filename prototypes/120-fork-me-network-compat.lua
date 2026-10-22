@@ -653,8 +653,8 @@ if HAS_CRAFTING_BLOCKS then
 	--- Singularity cell, 8 Piko circuits, 12 UIV field generators, 24 dense infinity plates, 4 spacetime frames, 12 spacetime
 	--- wires, 4 transcendent metal nanites, 4 creative energy cells and 8 Draconic reactor stabilizers. Gregtorio has no
 	--- extreme crafting table, no nanites and neither of the last two: the UIV assembler (the field generators' tier), the
-	--- UMV circuit for the Piko circuit, a block of transcendent metal for its nanites; the creative cells and the
-	--- stabilizers are left out
+	--- UMV circuit for the Piko circuit, a block of transcendent metal for its nanites (164 section 39 puts in the nanites
+	--- and the creative cells, section 41 the stabilizers)
 	if data.raw.item["me-singularity-crafting-storage"] then
 		block("me-singularity-crafting-storage", "uiv-assembling-machine-recipes", 20 * UIV_SPEED,
 			I{ "me-crafting-unit", 4, "me-singularity-storage-cell", 1, "umv-circuit", 8, "uiv-field-generator", 12,

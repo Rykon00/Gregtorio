@@ -2856,7 +2856,18 @@ schematic from the space mining ruin, GTNH's numbers. Part 1 (162 and 164 sectio
 - **The sunnarium alloys** of the core mod for the energy cores: MAX science, as the sunnarium and the irradiant uranium.
 - **Stand-ins:** molten neutronium for void metal, the orundum plate for ichorium, the dense awakened draconium plate
   for the Gaia Spirit plate, the Quantum Star for the Primordial Pearl, UHV sensors and emitters for Blood Magic's parts.
-- Part 2 (chaos fragments, the Chaotic Core, the reactor parts and the stabilizers) follows.
+Part 2 (164 section 41):
+- **Chaos Shards:** the Chaos Guardian in the Extreme Entity Crusher, without an ingredient (Draconic Evolution's
+  guardian lives on its island and is not summoned): 5 shards, its Chaos Crystal's drop, in 1200 s (2000 health, ten
+  times the dragon's). GTNH's forge hammer steps to large, small and tiny fragments.
+- **The Chaotic Core** (tier 4, 2 large fragments) and its schematic (research assembly line, UMV); the Awakened
+  Draconium Fusion Casing and the crafter's tier 4 (with MK II fusion machine casings). Tier 5 is left out.
+- **The Reactor Stabilizer:** the Wyvern and Draconic Flux Capacitors, EnderIO's Vibrant Capacitor Bank (Gregtorio has
+  its parts), the Inner and Outer Rotor, the Rotor Assembly, the Focus Ring (the new Nether Star Lens) and the Frame,
+  GTNH's extreme table recipes in the assembler of their cores' tier. The Singularity crafting storage takes its 8
+  stabilizers now.
+- **Stand-ins:** the mod's UHV superconductive wire for GT's UHV superconductor, the dense draconium plate for the
+  Charged Draconium Block (charged in the world), the large lithium battery for GT's EV battery.
 
 ### Nuclear depth (issue #359)
 
