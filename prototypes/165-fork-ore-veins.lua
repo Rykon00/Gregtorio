@@ -71,8 +71,42 @@ FORK_ORE_MIX_NO_CHAIN = {
 --- 102 keeps the vanilla resources off; the vein recipes stay until V9 (#505).
 --------------------------------------------------------------------------------
 
---- the planets with map veins (DimNames -> planet); V5 to V7 add the Nether, the Twilight Forest and The End
-FORK_ORE_VEINS = { planets = { OW = "nauvis" }, start = { "Coal", "Iron", "Copper", "Cassiterite" }, resources = {} }
+--- the planets with map veins (DimNames -> planet, 163's FORK_ORE_VEINS.planets); V6 and V7 add the Twilight Forest and
+--- The End
+FORK_ORE_VEINS.start = { "Coal", "Iron", "Copper", "Cassiterite" }
+FORK_ORE_VEINS.resources = {}
+
+--------------------------------------------------------------------------------
+--- Phase V5 (issue #501): the Nether as a surface. The surface property gt-dimension (#494: 1 Overworld, 2 Nether, 3
+--- Twilight Forest, 4 End) gates recipes and buildings with surface_conditions. The planet gt-nether is a Space Age
+--- planet for its map generation and surface properties only (hidden, no space connection); scripts/fork-portals.lua
+--- makes its surface at the first portal. Its terrain is Vulcanus' without Vulcanus' resources, rocks, demolishers and
+--- chimneys: its volcanic rock stands for netherrack, its lava lakes give lava to an offshore pump (the lava boilers of
+--- #446), and it has no water (the water drilling rig gets surface_conditions in 160). No sun: solar power 0.
+--------------------------------------------------------------------------------
+
+data:extend({ { type = "surface-property", name = "gt-dimension", default_value = 1, order = "z-gt" } })
+data.raw.planet.nauvis.surface_properties["gt-dimension"] = 1
+do
+	local vulcanus = data.raw.planet.vulcanus
+	local mgs = table.deepcopy(vulcanus.map_gen_settings)
+	mgs.territory_settings = nil
+	mgs.autoplace_controls = { ["vulcanus_volcanism"] = mgs.autoplace_controls["vulcanus_volcanism"] or {} }
+	mgs.autoplace_settings.entity = { settings = {} }
+	for k in pairs(mgs.property_expression_names or {}) do
+		if k:match("^entity:") then mgs.property_expression_names[k] = nil end
+	end
+	data:extend({ {
+		type = "planet", name = "gt-nether", hidden = true,
+		icon = vulcanus.icon, icon_size = vulcanus.icon_size, starmap_icon = vulcanus.starmap_icon,
+		starmap_icon_size = vulcanus.starmap_icon_size, distance = 1, orientation = 0.99,
+		map_gen_settings = mgs,
+		surface_properties = { ["gt-dimension"] = 2, ["day-night-cycle"] = 5 * 60 * 60, ["magnetic-field"] = 90,
+			["solar-power"] = 0, pressure = 1000, gravity = 10 },
+		surface_render_parameters = vulcanus.surface_render_parameters,
+		persistent_ambient_sounds = vulcanus.persistent_ambient_sounds,
+	} })
+end
 
 local ROLES = { "primary", "secondary", "between", "sporadic" }
 local NEIGHBOUR = { primary = "between", secondary = "between", between = "secondary" }

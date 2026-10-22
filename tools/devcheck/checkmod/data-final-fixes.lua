@@ -64,6 +64,19 @@ for n, e in pairs(data.raw.resource) do
 	local m = e.minable or {}
 	D("M", n, m.result or "", names(m.results), e.category or "basic-solid")
 end
+--- P resource planet technology (issue #501): the resources a planet's map generation places and the technology that
+--- reaches the planet (FORK_ORE_VEINS of 163; "" for Nauvis and any planet without one: from the start)
+for pname, planet in pairs(data.raw.planet or {}) do
+	local mgs = planet.map_gen_settings
+	local ent = mgs and mgs.autoplace_settings and mgs.autoplace_settings.entity
+	local tech = ""
+	for dim, p in pairs(FORK_ORE_VEINS and FORK_ORE_VEINS.planets or {}) do
+		if p == pname then tech = (FORK_ORE_VEINS.techs or {})[dim] or "" end
+	end
+	for name in pairs(ent and ent.settings or {}) do
+		if data.raw.resource[name] then D("P", name, pname, tech) end
+	end
+end
 for n, e in pairs(data.raw["offshore-pump"] or {}) do D("O", n, e.fluid or "") end
 --- B item burnt_result fuel_category | U entity fuel_categories (burners: a fuel's burnt result comes out of them)
 for t, _ in pairs(defines.prototypes.item) do

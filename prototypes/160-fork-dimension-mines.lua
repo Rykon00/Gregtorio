@@ -94,6 +94,37 @@ create_recipe{
 	main_product = "nether-air",
 }
 
+--- issue #501 (plan #494, V5): the Nether is a surface (165's planet gt-nether, surface property gt-dimension 2), reached
+--- through a Nether Portal (scripts/fork-portals.lua): GTNH's obsidian frame lit with flint and steel, here one item
+--- from 10 obsidian and the Flint and Steel (flint and an iron ingot, as Minecraft's). Obsidian in the steam age comes
+--- from the Dig Site (the maintainer's choice: a stand-in for GTNH's lava pools); the LV fluid solidifier's stays.
+--- Recipes of one dimension get surface_conditions: the nether air intake only in the Nether (the recipe abstraction
+--- of #283 goes), the glowstone vein too (#494 decision 2: vanilla's Nether block), the water drilling rig not there
+--- (the Nether has no water; its lava lakes give lava to an offshore pump, the lava boilers' fuel of #446).
+local IN_NETHER = { { property = "gt-dimension", min = 2, max = 2 } }
+data.raw.recipe["nether-air-intake"].surface_conditions = IN_NETHER
+data.raw.recipe["mining-glowstone-vein"].surface_conditions = IN_NETHER
+data.raw.recipe["water-drilling-rig"].surface_conditions = { { property = "gt-dimension", max = 1 } }
+nether[#nether + 1] = manual("digging-obsidian", "manual-digsite-recipes", { PICKAXE, LABOR(8) }, { item("obsidian", 4) })
+create_item{ name = "flint-and-steel", subgroup = "stone-age-production-machine", stack_size = 10,
+	ingredients = { item("flint", 1), item("iron-ingot", 1) } }
+create_item{ name = "nether-portal", subgroup = "stone-age-production-machine", place_result = "nether-portal",
+	stack_size = 10, ingredients = { item("obsidian", 10), item("flint-and-steel", 1) } }
+nether[#nether + 1] = "flint-and-steel"
+nether[#nether + 1] = "nether-portal"
+data:extend({ {
+	type = "simple-entity-with-owner", name = "nether-portal",
+	icon = "__gregtorio-continued__/graphics/icons/nether-portal.png", icon_size = 32,
+	flags = { "placeable-player", "player-creation", "not-rotatable" },
+	minable = { mining_time = 1, result = "nether-portal" }, max_health = 500,
+	collision_box = { { -1.4, -1.4 }, { 1.4, 1.4 } }, selection_box = { { -1.5, -1.5 }, { 1.5, 1.5 } },
+	collision_mask = { layers = {} },   -- walked onto: scripts/fork-portals.lua sends whoever steps in
+	render_layer = "lower-object",
+	picture = { filename = "__gregtorio-continued__/graphics/entity/fork/nether-portal.png", width = 192, height = 192,
+		scale = 0.5 },
+	localised_description = { "entity-description.nether-portal" },
+} })
+
 --------------------------------------------------------------------------------
 --- THE END
 --------------------------------------------------------------------------------
@@ -115,7 +146,11 @@ create_recipe{
 --- TECHNOLOGIES
 --------------------------------------------------------------------------------
 
-F.tech{ name = NETHER, prerequisites = { "mv-machines", "extruder" }, packs = 3, count = 40, time = 30, recipes = nether }
+--- issue #501, the maintainer's decision: Reach the Nether in the steam age (after Iron Furnace, the first technology of
+--- automation science; before: MV Machines and Extruder, three packs), before Rubber, which takes the Nether's sulfur
+--- and sphalerite; every other first consumer of a Nether ore comes after Rubber
+F.tech{ name = NETHER, prerequisites = { "iron-furnace" }, packs = 1, count = 20, time = 30, recipes = nether }
+table.insert(data.raw.technology["rubber"].prerequisites, NETHER)
 F.tech{ name = END, prerequisites = { "eyes-of-ender", "hv-energy-hatches" }, packs = 4, count = 40, time = 30,
 	recipes = the_end }
 --- Endermen with the first use of their pearls; blaze rods come before it (161)
@@ -221,7 +256,7 @@ local VEIN_ORES_363B = {
 	{ "spinel" }, { "jade" }, { "red-garnet" }, { "yellow-garnet" },
 }
 local CRUSH_363B = { garnierite = { "invar" }, wulfenite = { "tungstate-processing" }, powellite = { "tungstate-processing" },
-	saltpeter = { "reach-the-nether", "nand-chips" } }
+	saltpeter = { "ore-crushing", "nand-chips" } }   -- issue #501: Ore Crushing, its LV macerator (Reach the Nether is a steam age technology)
 for _, o in pairs(VEIN_ORES_363B) do
 	local x = o[1]
 	create_ore("raw-" .. x, nil, "crushed-" .. x, o[2] or (x .. "-dust"), nil, "crushed-" .. x, nil, nil, o[3] or 1, false,

@@ -17,6 +17,8 @@ local fork_steam_boilers = require("scripts.fork-steam-boilers")
 local fork_ore_veins = require("scripts.fork-ore-veins")
 --- Fork: the Ore Drilling Plants drink Drilling Fluid per ore mined (issue #499, see prototypes/163-fork-electric-mine.lua)
 local fork_ore_drills = require("scripts.fork-ore-drills")
+--- Fork: the Nether Portal sends whoever steps onto it to the Nether and back (issue #501, see prototypes/160-fork-dimension-mines.lua)
+local fork_portals = require("scripts.fork-portals")
 
 local function on_built(event)
   local entity = event.entity
@@ -35,6 +37,8 @@ script.on_event({ defines.events.on_built_entity, defines.events.on_robot_built_
 script.on_event(defines.events.on_pre_build, fork_electric_mine.on_pre_build)
 --- Fork: the name of a map vein when the chunk of its centre is charted (issue #497)
 script.on_event(defines.events.on_chunk_charted, fork_ore_veins.on_chunk_charted)
+--- Fork: a player who steps onto a Nether Portal (issue #501)
+script.on_event(defines.events.on_player_changed_position, fork_portals.on_player_changed_position)
 script.on_event(defines.events.on_marked_for_upgrade, fork_electric_mine.on_marked_for_upgrade)
 script.on_event(defines.events.on_cancelled_upgrade, fork_electric_mine.on_cancelled_upgrade)
 script.on_event({ defines.events.on_pre_player_mined_item, defines.events.on_robot_pre_mined }, fork_electric_mine.on_pre_mined)

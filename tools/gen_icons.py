@@ -247,6 +247,65 @@ def draw_cauldron(frame=None):
     return out
 
 
+# --- issue #501: the Nether Portal and the Flint and Steel, drawn from scratch -----------------------------------------
+# The portal seen from above, a 3 x 3 tile pad (Minecraft's frame lies flat in Factorio's top-down view): a ring of
+# obsidian blocks with their bevels around a purple swirl. Drawn at 32 px per tile, the sprite scaled 2x (nearest).
+OBSIDIAN = [(10, 6, 16), (20, 12, 30), (32, 20, 48), (46, 32, 66), (70, 52, 96)]
+PORTAL = [(58, 10, 110), (88, 22, 156), (122, 44, 196), (160, 86, 228), (210, 160, 250)]
+STEEL = [(36, 38, 44), (70, 74, 84), (112, 118, 130), (168, 174, 186), (220, 224, 232)]
+FLINT = [(24, 24, 26), (44, 44, 48), (66, 66, 72), (96, 96, 104)]
+
+
+def draw_portal(size):
+    """size x size RGBA: the obsidian ring (a fifth of the side) and the swirl inside"""
+    img = Image.new("RGBA", (size, size), (0, 0, 0, 0))
+    px = img.load()
+    c, ring = size / 2, max(2, size // 5)
+    block = max(2, ring)
+    for y in range(size):
+        for x in range(size):
+            X, Y = x + 0.5, y + 0.5
+            inner = ring <= x < size - ring and ring <= y < size - ring
+            if not inner:
+                bx, by = x % block, y % block
+                s = 0.55 + (0.3 if bx == 0 or by == 0 else 0) - (0.35 if bx == block - 1 or by == block - 1 else 0)
+                s += 0.08 * (((x // block) * 7 + (y // block) * 3) % 3 - 1)
+                px[x, y] = tone(OBSIDIAN, s)
+            else:
+                dx, dy = (X - c) / (c - ring), (Y - c) / (c - ring)
+                r = math.hypot(dx, dy)
+                a = math.atan2(dy, dx)
+                s = 0.5 + 0.35 * math.sin(3 * a + 7 * r) - 0.25 * r
+                px[x, y] = tone(PORTAL, s)
+    for i in range(size):   # the outline
+        for x, y in ((i, 0), (i, size - 1), (0, i), (size - 1, i)):
+            px[x, y] = OBSIDIAN[0] + (255,)
+    return img
+
+
+def draw_flint_and_steel():
+    """32 x 32 RGBA: a dark flint (lower left) and a steel striker ring (upper right), each with its outline"""
+    img = Image.new("RGBA", (32, 32), (0, 0, 0, 0))
+    px = img.load()
+    for y in range(32):
+        for x in range(32):
+            X, Y = x + 0.5, y + 0.5
+            if in_ellipse(X, Y, 11, 21, 8.5, 6.5):            # the flint
+                s = 0.7 - 0.06 * (X - 6) - 0.04 * (Y - 16)
+                px[x, y] = tone(FLINT, s)
+            ring = in_ellipse(X, Y, 20, 12, 9.5, 8) and not in_ellipse(X, Y, 20, 12.5, 5.5, 4.2)
+            if ring and not (Y > 16 and 15 < X < 25):            # the striker, open at the bottom
+                px[x, y] = tone(STEEL, 0.75 - 0.05 * (X - 12) - 0.03 * (Y - 5))
+    out = img.copy()
+    o = out.load()
+    for y in range(32):
+        for x in range(32):
+            if px[x, y][3] and any(not (0 <= x + dx < 32 and 0 <= y + dy < 32) or px[x + dx, y + dy][3] == 0
+                                   for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1))):
+                o[x, y] = (12, 12, 14, 255)
+    return out
+
+
 def save_if_changed(img, path):
     if path.exists():
         old = Image.open(path).convert("RGBA")
@@ -265,6 +324,10 @@ def drawn():
     for i in range(CAULDRON_FRAMES):
         strip.paste(draw_cauldron(i), (0, 32 * i))
     save_if_changed(strip, ENTITY / "cauldron-working.png")
+    #  issue #501: the Nether Portal (icon and sprite) and the Flint and Steel
+    save_if_changed(draw_portal(32), ICONS / "nether-portal.png")
+    save_if_changed(draw_portal(96).resize((192, 192), Image.NEAREST), ENTITY / "nether-portal.png")
+    save_if_changed(draw_flint_and_steel(), ICONS / "flint-and-steel.png")
 
 
 def main():
