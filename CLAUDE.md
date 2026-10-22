@@ -201,7 +201,7 @@
     `<tier>-chemical-dehydrator`), lanthanum hexaboride's gem forms, chloromethane, gangue and the roasting's fluorine;
     loads after 158 and before 156)
   - 164 chemistry (the GTNH gap research after 0.5.4, issues #355 to #367, and later sections: #436 dragonblood and
-    hypogen in 35, #355 step 5's Nano Forge in 36 and YPIC in 37, #467's second run of 158 in 38, #487's Singularity crafting storage and void cells in 39; GTNH's chemical lines Gregtorio lacked, GT's
+    hypogen in 35, #355 step 5's Nano Forge in 36 and YPIC in 37, #467's second run of 158 in 38, #487's Singularity crafting storage and void cells in 39, #489's Draconic Evolution Fusion Crafter and cores in 40; GTNH's chemical lines Gregtorio lacked, GT's
     numbers, fluids a tenth of GT's litres, GT++'s catalysts left out; issue #362: GT++'s Rp-1 Rocket Fuel, Dense
     Hydrazine Fuel Mixture and CN3H7O3 Rocket Fuel with their cells for 145's rocket engines, the coal tar line and the
     anthraquinone process to hydrogen peroxide and hydrazine, the ExxonMobil Chemical Plant's extra fluid boxes; issue #360:

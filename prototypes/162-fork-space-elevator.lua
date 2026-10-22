@@ -428,6 +428,31 @@ for _, a in ipairs(ASTEROIDS) do
 	end
 end
 
+--- Issue #489: GTNH's Draconic Core Ruin (SpaceMiningRecipes.java:941-960, with Draconic Evolution: module tier 3, the UHV to
+--- UIV drones, one pick, 100 s at UEV; weights 100 / 100 / 9800: the Draconic Core Schematic, a draconic core, a charged
+--- ZPM, which the mod does not have: left out), the first source of the schematic (164 section 40 makes both items). Its
+--- one pick is the item itself (not 64 of an ore as above): 1 % each per operation; only the UHV drone stays at UEV
+do
+	local tier = TIER_OF["UHV"]
+	local name = "space-mining-draconic-core-ruin-uhv"
+	create_recipe{
+		name = name,
+		category = "space-mining-3-recipes",
+		energy_required = 100,
+		subgroup = "subgroup-space-mining-3-recipes",
+		ingredients = { item(drones[tier], 1), item(CONSUMABLE[tier] .. "-drill-head", 4), item(CONSUMABLE[tier] .. "-rod", 4),
+			fluid("helium-plasma", 825) },
+		results = { item(drones[tier], 1), { type = "item", name = "draconic-core-schematic", amount = 1, probability = 0.01 },
+			{ type = "item", name = "draconic-core", amount = 1, probability = 0.01 } },
+		icon = FORK_ICON .. drones[tier] .. ".png",
+	}
+	local r = data.raw.recipe[name]
+	r.main_product = nil
+	r.allow_productivity = false
+	r.localised_name = { "recipe-name.fork-space-mining", "Draconic Core Ruin", "UHV" }
+	by_module[3][#by_module[3] + 1] = { name, tier }
+end
+
 --- Technologies: a chain by GT's tiers (module Mk-I UHV, Mk-II UEV, Mk-III UIV with the UIV drone, then the UMV and UXV
 --- drones); a mining recipe comes with the later of its module's and its drone's technology
 local MTECH = { "space-elevator-mining-module-mk1", "space-elevator-mining-module-mk2", "space-elevator-mining-module-mk3",

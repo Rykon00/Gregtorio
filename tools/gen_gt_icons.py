@@ -826,6 +826,47 @@ def icon_table(c):
     T["raw-tesseract"] = lambda: tesseract((200, 200, 210))
     T["energised-tesseract"] = lambda: tesseract((90, 230, 255))
     T["compressed-stone"] = lambda: c.part("stone", "@block")
+    # issue #489: kubatech's Fusion Crafter casings (BlockDEFCCasing: meta 7 to 12 are defc_0 to defc_5) and schematics;
+    # the controller is GT's magic casing with the teleporter overlay (MTEDEFusionCrafter.getTexture); the core mod's
+    # Enriched Naquadria Sunnarium Alloy. Advanced Solar Panels' sunnarium alloys are not in the checkouts: the core mod's
+    # alloy in sunnarium's colours; Enriched Sunnarium as GT's sunnarium gem with an irradiant uranium badge. Draconic
+    # Evolution is not in the checkouts either: its cores drawn as a gem in a frame, its energy cores as a glowing cube
+    KUBA = "gt:kubatech/textures/"
+    for k, name in enumerate(("naquadah-alloy-fusion-casing", "bloody-ichorium-fusion-casing", "draconium-fusion-casing",
+                              "wyvern-fusion-casing")):
+        T[name] = lambda k=k: c.gt(f"{KUBA}blocks/casing/defc_{k}")
+    for k, name in enumerate(("draconic", "wyvern", "awakened"), 1):
+        T[f"{name}-core-schematic"] = lambda k=k: c.gt(f"{KUBA}items/defc_schematic_t{k}")
+    T["draconic-evolution-fusion-crafter-controller"] = lambda: c.face(f"{BLK}MACHINE_CASING_MAGIC", f"{BLK}OVERLAY_TELEPORTER")
+    ENSA = f"{CORE}itemEnrichedNaquadriaSunnariumAlloy"
+    T["enriched-naquadria-sunnarium-alloy"] = lambda: c.gt(ENSA)
+    T["sunnarium-alloy"] = lambda: c.recolour(ENSA, (255, 225, 80))
+    T["enriched-sunnarium-alloy"] = lambda: c.recolour(ENSA, (130, 230, 60))
+    T["enriched-sunnarium"] = lambda: c.badge(c.part("sunnarium", "gem"), c.part("irradiant-uranium", "ingot"))
+    def de_core(frame, gem):
+        img = Image.new("RGBA", (SIZE, SIZE))
+        d = ImageDraw.Draw(img)
+        m, r, q = SIZE // 2, SIZE // 2 - 2, SIZE // 4
+        d.polygon(((m, m - r), (m + r, m), (m, m + r), (m - r, m)), fill=tuple(v // 2 for v in frame) + (255,),
+                  outline=frame + (255,))
+        d.polygon(((m, m - q), (m + q, m), (m, m + q), (m - q, m)), fill=gem + (255,),
+                  outline=tuple(min(255, v + 90) for v in gem) + (255,))
+        d.line((m - q // 2, m - q // 2 + 1, m - 1, m - q + 2), fill=(255, 255, 255, 200), width=2)
+        return img
+    def de_energy_core(frame, glow):
+        img = Image.new("RGBA", (SIZE, SIZE))
+        d = ImageDraw.Draw(img)
+        d.rectangle((4, 4, SIZE - 5, SIZE - 5), fill=tuple(v // 3 for v in frame) + (255,), outline=frame + (255,), width=3)
+        d.rectangle((11, 11, SIZE - 12, SIZE - 12), fill=glow + (255,), outline=tuple(min(255, v + 80) for v in glow) + (255,))
+        for x0, y0, x1, y1 in ((4, 4, 11, 11), (SIZE - 5, 4, SIZE - 12, 11), (4, SIZE - 5, 11, SIZE - 12),
+                               (SIZE - 5, SIZE - 5, SIZE - 12, SIZE - 12)):
+            d.line((x0, y0, x1, y1), fill=frame + (255,), width=2)
+        return img
+    T["draconic-core"] = lambda: de_core((230, 180, 60), (150, 70, 220))
+    T["wyvern-core"] = lambda: de_core((150, 70, 220), (90, 30, 150))
+    T["awakened-core"] = lambda: de_core((90, 30, 150), (255, 140, 40))
+    T["draconium-energy-core"] = lambda: de_energy_core((120, 60, 190), (200, 120, 255))
+    T["wyvern-energy-core"] = lambda: de_energy_core((70, 25, 120), (255, 160, 60))
     # tier circuits of the core mod (the fork's generic UMV/UXV circuit)
     T["umv-circuit"] = lambda: c.gt(f"{CORE}itemCircuitUMV")
     T["uxv-circuit"] = lambda: c.gt(f"{CORE}itemCircuitUXV")

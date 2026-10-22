@@ -5120,3 +5120,21 @@ black-titanium-plate
 raw-tesseract
 energised-tesseract
 compressed-stone
+# issue #489: the Fusion Crafter, Draconic Evolution's cores, the sunnarium alloys
+naquadah-alloy-fusion-casing
+bloody-ichorium-fusion-casing
+draconium-fusion-casing
+wyvern-fusion-casing
+draconic-core-schematic
+wyvern-core-schematic
+awakened-core-schematic
+draconic-evolution-fusion-crafter-controller
+enriched-naquadria-sunnarium-alloy
+sunnarium-alloy
+enriched-sunnarium-alloy
+enriched-sunnarium
+draconic-core
+wyvern-core
+awakened-core
+draconium-energy-core
+wyvern-energy-core

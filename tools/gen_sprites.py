@@ -341,6 +341,12 @@ MULTIBLOCKS = {
     "nano-forge-t3": ((3, 3), "gregtech:iconsets/MACHINE_CASING_RADIANT_NAQUADAH_ALLOY", None,
                       ("gregtech:iconsets/OVERLAY_FRONT_ASSEMBLY_LINE", "gregtech:iconsets/OVERLAY_FRONT_ASSEMBLY_LINE_ACTIVE"),
                       "gregtech:materialicons/CUSTOM/stellar/frameGt"),
+    # issue #489: the Draconic Evolution Fusion Crafter per casing tier (kubatech's Naquadah Alloy Fusion Casing, the
+    # teleporter front MTEDEFusionCrafter.java shows, the tier's Fusion Casings in the middle row)
+    **{f"draconic-evolution-fusion-crafter-t{k}": ((3, 3), "kubatech:casing/defc_0", None,
+                                                    ("gregtech:iconsets/OVERLAY_TELEPORTER",
+                                                     "gregtech:iconsets/OVERLAY_TELEPORTER_ACTIVE"), f"kubatech:casing/defc_{k}")
+       for k in range(1, 4)},
     # issue #406: GT++'s ZPM tiers of the two blocks (GregtechLFTR.java: the same overlays on the ZPM machine casing)
     "cold-trap-ii": ((3, 3), "gregtech:iconsets/MACHINE_ZPM_SIDE", None,
                      ("gregtech:basicmachines/cold_trap/OVERLAY_FRONT", "gregtech:basicmachines/cold_trap/OVERLAY_FRONT_ACTIVE"),
@@ -397,7 +403,7 @@ WHOLE_ICONS = {"large-titanium-boiler", "large-combustion-engine", "digester", "
                "sparge-tower", "cold-trap-i", "reactor-processing-unit-i", "nuclear-salt-processing-plant", "cold-trap-ii", "reactor-processing-unit-ii",
                "algae-farm", "industrial-dehydrator", "naquadah-fuel-refinery", "naquadah-fuel-refinery-t2",
                "naquadah-fuel-refinery-t3", "naquadah-fuel-refinery-t4", "source-chamber", "beam-crafter",
-               "luv-mass-fabricator", "nano-forge", "nano-forge-t2", "nano-forge-t3", "large-hadron-collider", "large-hadron-collider-weak", "large-hadron-collider-lhcb",
+               "luv-mass-fabricator", "nano-forge", "nano-forge-t2", "nano-forge-t3", *(f"draconic-evolution-fusion-crafter-t{k}" for k in range(1, 4)), "large-hadron-collider", "large-hadron-collider-weak", "large-hadron-collider-lhcb",
                *(f"precise-assembler-mk{i}" for i in range(1, 4)),
                *(f"space-elevator-mk{t}" for t in range(1, 6)),
                *(f"space-elevator-mining-module-mk{t}" for t in range(1, 4)),
