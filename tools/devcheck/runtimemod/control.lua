@@ -1179,6 +1179,128 @@ end
 --- holds 33.33 MJ, takes 1.28 MW and gives 640 kW; on a network with an LV Combustion Generator on a Bio Diesel Cell it
 --- charges, and with the generator gone it feeds an LV compressor on air
 local BB_X, BB_Y, BB_WAIT = 350, 350, 120
+
+--- Map veins (issue #497, prototypes/165-fork-ore-veins.lua): on a surface with Nauvis' map generation and a fixed seed
+--- the cells' veins are read from the noise (calculate_tile_properties at the cell centres) to find a cell of every vein of
+--- Nauvis, its largest; the chunks of those veins are generated; inside each vein every tile holds one ore at most, only
+--- ores of its vein, and every ore of its layers is there; the four cells around the origin hold the start veins.
+local VT_SEED, VT_CELLS = 4242, 40
+
+function setup_veins_test()
+	local fails, vt = {}, { problems = {} }
+	storage.veins_test = vt
+	local ok, err = pcall(function()
+		local d = prototypes.mod_data["fork-ore-veins"].data
+		local nauvis = d.planets.nauvis
+		local mgs = prototypes.space_location.nauvis.map_gen_settings
+		mgs.seed = VT_SEED
+		local s = game.create_surface("devcheck-veins", mgs)
+		local size = s.calculate_tile_properties({ "gt_cell_size" }, { { 0, 0 } }).gt_cell_size[1]
+		local pos = {}
+		for cy = -VT_CELLS, VT_CELLS - 1 do
+			for cx = -VT_CELLS, VT_CELLS - 1 do pos[#pos + 1] = { x = (cx + 0.5) * size, y = (cy + 0.5) * size } end
+		end
+		local p = s.calculate_tile_properties({ "gt_vein_id", "gt_vein_cx", "gt_vein_cy", "gt_vein_r" }, pos)
+		--- a vein on land (ore is not placed on water): its centre and four points at half its radius above sea level
+		local probe = {}
+		for i in ipairs(pos) do
+			local x, y, q = p.gt_vein_cx[i], p.gt_vein_cy[i], p.gt_vein_r[i] / 2
+			for _, o in pairs({ { 0, 0 }, { q, 0 }, { -q, 0 }, { 0, q }, { 0, -q } }) do probe[#probe + 1] = { x = x + o[1], y = y + o[2] } end
+		end
+		local elevation = s.calculate_tile_properties({ "elevation" }, probe).elevation
+		local best, cells = {}, 0
+		for i in ipairs(pos) do
+			local id = math.floor(p.gt_vein_id[i] + 0.5)
+			local land = true
+			for j = 5 * i - 4, 5 * i do if elevation[j] <= 0 then land = false end end
+			if id > 0 then cells = cells + 1 end
+			if id > 0 and land and (not best[id] or p.gt_vein_r[i] > best[id].r) then
+				best[id] = { x = p.gt_vein_cx[i], y = p.gt_vein_cy[i], r = p.gt_vein_r[i] }
+			end
+		end
+		--- the start cells: north-west, north-east, south-west, south-east of the origin
+		local h = size / 2
+		local st = s.calculate_tile_properties({ "gt_vein_id" }, { { -h, -h }, { h, -h }, { -h, h }, { h, h } }).gt_vein_id
+		local got, want = {}, {}
+		for _, v in pairs(st) do got[#got + 1] = math.floor(v + 0.5) end
+		for _, v in pairs(nauvis.start) do want[#want + 1] = v end
+		table.sort(got)
+		table.sort(want)
+		if table.concat(got, ",") ~= table.concat(want, ",") then
+			vt.problems[#vt.problems + 1] = "the start cells hold the veins " .. table.concat(got, ",") .. ", not " .. table.concat(want, ",")
+		end
+		for _, b in pairs(best) do s.request_to_generate_chunks({ b.x, b.y }, math.ceil(b.r / 32) + 1) end
+		s.force_generate_chunk_requests()
+		local seen, tiles, dup = {}, 0, 0
+		for _, id in pairs(nauvis.veins) do
+			local v, b = d.veins[tostring(id)], best[id]
+			if not b then
+				vt.problems[#vt.problems + 1] = v.text .. ": no cell of " .. #pos .. " holds it"
+			else
+				local allowed, found = {}, {}
+				for _, r in pairs(v.resources) do allowed[r] = true end
+				for _, e in pairs(s.find_entities_filtered{ type = "resource", position = { b.x, b.y }, radius = b.r }) do
+					local k = e.position.x .. "," .. e.position.y
+					if seen[k] then dup = dup + 1 end
+					seen[k] = true
+					tiles = tiles + 1
+					if allowed[e.name] then
+						found[e.name] = (found[e.name] or 0) + 1
+					else
+						vt.problems[#vt.problems + 1] = v.text .. ": " .. e.name .. " at " .. k .. " is not one of its ores"
+					end
+				end
+				for _, r in pairs(v.resources) do
+					if not found[r] then
+						vt.problems[#vt.problems + 1] = string.format("%s: no %s in the vein at %.0f,%.0f (radius %.1f)", v.text, r,
+							b.x, b.y, b.r)
+					end
+				end
+			end
+		end
+		if dup > 0 then vt.problems[#vt.problems + 1] = dup .. " tiles hold a second ore" end
+		vt.summary = string.format(" (%d veins of Nauvis, %d of %d cells with a vein, %d ore tiles, start veins %s)",
+			#nauvis.veins, cells, #pos, tiles, table.concat(got, ","))
+		game.delete_surface(s)
+		--- the chart tag (scripts/fork-ore-veins.lua): chart the start veins of Nauvis, the tags are checked at VT_TAG_TICK
+		local n = game.surfaces.nauvis
+		local q = n.calculate_tile_properties({ "gt_vein_id", "gt_vein_cx", "gt_vein_cy" }, { { -h, -h }, { h, -h }, { -h, h }, { h, h } })
+		vt.tags = {}
+		for i = 1, 4 do
+			local id, x, y = math.floor(q.gt_vein_id[i] + 0.5), q.gt_vein_cx[i], q.gt_vein_cy[i]
+			vt.tags[#vt.tags + 1] = { text = d.veins[tostring(id)].text, x = x, y = y }
+			game.forces.player.chart(n, { { x - 1, y - 1 }, { x + 1, y + 1 } })
+		end
+	end)
+	if not ok then vt.problems[#vt.problems + 1] = tostring(err) end
+	return fails
+end
+local VT_TAG_TICK = 300
+
+function veins_test()
+	local vt = storage.veins_test
+	if not vt or vt.done or game.tick < VT_TAG_TICK then return end
+	vt.done = true
+	local n, tagged = game.surfaces.nauvis, 0
+	--- headless runs raise no on_chunk_charted: the remote call tags the chunk as the event would, twice (one tag only)
+	for _, t in pairs(vt.tags or {}) do
+		for _ = 1, 2 do
+			remote.call("fork-ore-veins", "tag_chunk", "player", "nauvis", { x = math.floor(t.x / 32), y = math.floor(t.y / 32) })
+		end
+	end
+	for _, t in pairs(vt.tags or {}) do
+		local found = game.forces.player.find_chart_tags(n, { { t.x - 1, t.y - 1 }, { t.x + 1, t.y + 1 } })
+		if #found == 1 and found[1].text == t.text then
+			tagged = tagged + 1
+		else
+			vt.problems[#vt.problems + 1] = string.format("no single chart tag \"%s\" at %.0f,%.0f (%d tags)", t.text, t.x, t.y, #found)
+		end
+	end
+	vt.summary = (vt.summary or "") .. ", " .. tagged .. " start veins tagged on the map"
+	for _, p in pairs(vt.problems) do log("DEVCHECK-RUNTIME-FAIL map vein test: " .. p) end
+	log("DEVCHECK-RUNTIME-VEINS " .. (#vt.problems == 0 and "ok" or "failed") .. (vt.summary or ""))
+end
+
 function setup_battery_test(s)
 	local fails, bb = {}, {}
 	storage.battery = bb
@@ -2279,6 +2401,7 @@ script.on_nth_tick(10, function()
 	emine_test()
 	solar_test()
 	battery_test()
+	veins_test()
 	victory_test()
 end)
 
@@ -2353,6 +2476,7 @@ script.on_init(function()
 	for _, f in pairs(setup_emine_test(s)) do fails[#fails + 1] = f end
 	for _, f in pairs(setup_solar_test(s)) do fails[#fails + 1] = f end
 	for _, f in pairs(setup_battery_test(s)) do fails[#fails + 1] = f end
+	for _, f in pairs(setup_veins_test()) do fails[#fails + 1] = f end
 	log("DEVCHECK-RUNTIME placed=" .. placed .. " with_recipe=" .. with_recipe .. " failed=" .. #fails)
 	for _, f in pairs(fails) do log("DEVCHECK-RUNTIME-FAIL " .. f) end
 end)

@@ -205,6 +205,8 @@ data.raw["map-gen-presets"].default["gregtorio"] = {
 			["stone"] = { size = 0 },
 			["crude-oil"] = { size = 0 },
 			["uranium-ore"] = { size = 0 },
+			--- issue #497: GTNH's map veins (prototypes/165-fork-ore-veins.lua) at the defaults of #495
+			["gt-ore-veins"] = { frequency = 1, size = 1, richness = 1 },
 		}
 	}
 }
