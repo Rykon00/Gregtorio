@@ -2840,6 +2840,24 @@ Gregtorio, stone for cobblestone; the Draconic Reactor Stabilizers go to #489. 1
   recipe takes at most 65 535 of an item; both steps in the IV compressor. The void cells take it with GTNH's recipes
   (the fluid one AE2FC's), with ME Upgrade Cards.
 
+### Draconic Evolution's cores and the Fusion Crafter (issue #489)
+
+Decision (the maintainer, 2026-10-22): the Chaos Guardian in the Extreme Entity Crusher for the chaos fragments, one
+Fusion Crafter per casing tier with named stand-ins for Thaumcraft's, Blood Magic's and Botania's items, the first
+schematic from the space mining ruin, GTNH's numbers. Part 1 (162 and 164 section 40):
+- **The Draconic Core Ruin:** GTNH's space mining target (Mining Module Mk-III, the UHV drone): 1 % a Draconic Core
+  Schematic and 1 % a Draconic Core per run; its charged ZPM is left out.
+- **The Fusion Crafter:** kubatech's controller (the research assembly line, UEV) and casings (base, Bloody Ichorium,
+  Draconium, Wyvern); tier 1 as GT's structure (43 base casings, 32 fusion machine casings, 8 fusion coils, 32 tier
+  casings), each next tier the one before with 32 casings of its tier and its energy hatch. A tier runs the recipes of
+  its tier and those below.
+- **The cores:** Draconic (tier 1), Wyvern (tier 2), Awakened (tier 3), and the Wyvern and Draconic Energy Cores; each
+  keeps its schematic. The Wyvern and Awakened Core Schematics in the research assembly line.
+- **The sunnarium alloys** of the core mod for the energy cores: MAX science, as the sunnarium and the irradiant uranium.
+- **Stand-ins:** molten neutronium for void metal, the orundum plate for ichorium, the dense awakened draconium plate
+  for the Gaia Spirit plate, the Quantum Star for the Primordial Pearl, UHV sensors and emitters for Blood Magic's parts.
+- Part 2 (chaos fragments, the Chaotic Core, the reactor parts and the stabilizers) follows.
+
 ### Nuclear depth (issue #359)
 
 Decision (the issue's step 1, the smallest one): GT's dual and quad rods of uranium and thorium and the MOX rods (164).

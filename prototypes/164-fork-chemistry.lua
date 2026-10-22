@@ -4533,6 +4533,146 @@ end
 
 
 --------------------------------------------------------------------------------
+--- 40) DRACONIC EVOLUTION'S CORES IN THE FUSION CRAFTER (issue #489 part 1; the maintainer's decisions of 2026-10-22).
+---   GT5-Unofficial ce1c416a64 (kubatech, tectech) and NewHorizonsCoreMod (NHC); the names are Draconic Evolution's (GTNH's
+---   fork 9f42531, en_US.lang: meta 0 of its energy core is the Wyvern, meta 1 the Draconic Energy Core).
+--- * The Draconic Evolution Fusion Crafter (kubatech MTEDEFusionCrafter.java:82-139): the controller (tectech
+---   ResearchStationAssemblyLine.java:951-970, UEV, 75 s), 43 Naquadah Alloy Fusion Casings (the 49 places of the top and
+---   bottom layers less the controller and 5 hatches), 32 fusion machine casings, 8 fusion coils and 32 Fusion Casings of
+---   its tier. One machine per casing tier (the maintainer's decision, as the refinery's coil tiers): tier 2 to 4 are the
+---   one before with 32 casings of the tier (tier 4 with MK II fusion casings, :139) and the tier's energy hatch; a tier
+---   runs its recipes and those below at its tier's speed (GT's perfect overclock per tier above is not modelled).
+--- * The casings (kubatech DEFCRecipes.java:66-125, assembler, 30 s): the base from 6 naquadah alloy frames and 6 dense
+---   plates, tier 1 from GTNH's Blood-Soaked Ichorium Block and 6 dense osmiridium plates, each next one from the one before
+---   and 6 dense plates of draconium, cosmic neutronium, awakened draconium, with a draconic, 2 wyvern, 3 awakened cores.
+--- * The cores (DEFCRecipes.java:169-273, the schematic kept): the Draconic Core (4 osmiridium plates, an ichorium plate, a
+---   Quantum Eye, 1440 L sunnarium; UV, 20 s, tier 1), the Wyvern Core (8 draconium and 4 neutronium plates, 4 draconic
+---   cores, a Quantum Star, 1440 L neutronium; UHV, 40 s, tier 2), the Awakened Core (12 awakened draconium and 4
+---   draconium plates, 4 wyvern cores, a manyullyn crystal (kubatech's recipe without SuperSolarPanels; GTNH's Ender
+---   Quantum Component needs a dense infinity catalyst plate the mod lacks), 1440 L infinity; UEV, 80 s, tier 3), the
+---   Wyvern and Draconic Energy Cores (8 draconium plates, 4 stellar alloy plates, 4 Sunnarium Alloy, a draconic core; UV,
+---   50 s, tier 2 / 8 awakened draconium plates, 4 energy cores, 4 Enriched Sunnarium Alloy, a wyvern core; UHV, 100 s,
+---   tier 3). The Chaotic Core follows in part 2.
+--- * The schematics (tectech ResearchStationAssemblyLine.java:972-1015, the research assembly line, 3 min): Draconic (a
+---   draconic core, a dense draconium plate, an ichorium plate, a UHV circuit, 14 400 L sunnarium, 28 800 L void; UHV),
+---   Wyvern (4 draconic cores, dense draconium and neutronium plates, a UEV circuit, 14 400 L neutronium, 57 600 L void;
+---   UEV), Awakened (4 wyvern cores, dense awakened draconium and infinity plates, a UIV circuit, 14 400 L infinity, 115 200
+---   L void; UIV). The first Draconic Core Schematic and core come from the Draconic Core Ruin (162), as in GTNH.
+--- * The sunnarium alloys (NHC AlloySmelterRecipes.java:231-248, ScriptAdvancedSolarPanel.java:136-141): Sunnarium Alloy
+---   (4 sunnarium plates, 8 iridium reinforced plates; LuV, 7.5 s), Enriched Sunnarium (a sunnarium and 8 irradiant
+---   uranium; IV assembler, 60 s), Enriched Sunnarium Alloy (the alloy and 8 enriched sunnarium; ZPM, 10 s), Enriched
+---   Naquadria Sunnarium Alloy (the enriched alloy and a dense naquadria plate; UV, 12.5 s).
+--- * Named stand-ins for Thaumcraft's, Blood Magic's and Botania's items (the maintainer's decision): molten neutronium for
+---   molten void metal, the orundum plate for the ichorium plate (9 for the Blood-Soaked Ichorium Block), the dense awakened
+---   draconium plate for the dense Gaia Spirit plate, the Quantum Star for the Primordial Pearl, 8 UHV sensors and 8 UHV
+---   emitters for Blood Magic's 8 + 8 parts, the superdense neutronium plate for the superdense void plate.
+--- Fluids a tenth of GT's litres, GT's seconds x the tier speed. Technologies by casing tier: Draconic Evolution Fusion
+--- Crafter (tier 1, the draconic core and schematic) after the Mining Module Mk-III (the ruin), Wyvern Cores, Awakened Cores;
+--- Draconic Energy Cores (the sunnarium alloys and the energy cores) at MAX, as section 37's sunnarium and irradiant uranium.
+--------------------------------------------------------------------------------
+do
+	local DEFC = "draconic-evolution-fusion-crafter"
+	local T = { "draconic-evolution-fusion-crafter", "wyvern-cores", "awakened-cores", "draconic-energy-cores" }
+	local R = { {}, {}, {}, {} }
+	local AL = "zpm-assembly-line-recipes"
+	local VOID = "molten-neutronium"
+	local function item(name, amount) return { type = "item", name = name, amount = amount } end
+	local function power(tier, n)
+		local p = data.raw["assembling-machine"][tier .. "-centrifuge"].energy_usage
+		return (tonumber(p:match("^[%d.]+")) * n) .. p:match("%a+$")
+	end
+	items(SUB_PART, { "draconic-core", "wyvern-core", "awakened-core", "wyvern-energy-core", "draconic-energy-core",
+		"draconic-core-schematic", "wyvern-core-schematic", "awakened-core-schematic", "sunnarium-alloy", "enriched-sunnarium",
+		"enriched-sunnarium-alloy", "enriched-naquadria-sunnarium-alloy", "draconic-evolution-fusion-crafter-controller" })
+	items("subgroup-uhv-age-multiblocks", { "naquadah-alloy-fusion-casing", "bloody-ichorium-fusion-casing",
+		"draconium-fusion-casing", "wyvern-fusion-casing" })
+
+	--- the sunnarium alloys
+	step(R[4], "sunnarium-alloy", "luv-alloy-smelter-recipes", 7.5, LUV_SPEED,
+		{ { "sunnarium-plate", 4 }, { "iridium-reinforced-plate", 8 } }, { { "sunnarium-alloy", 1 } })
+	step(R[4], "enriched-sunnarium", "iv-assembling-machine-recipes", 60, IV_SPEED,
+		{ { "sunnarium", 1 }, { "irradiant-uranium", 8 } }, { { "enriched-sunnarium", 1 } })
+	step(R[4], "enriched-sunnarium-alloy", "zpm-alloy-smelter-recipes", 10, ZPM_SPEED,
+		{ { "sunnarium-alloy", 1 }, { "enriched-sunnarium", 8 } }, { { "enriched-sunnarium-alloy", 1 } })
+	step(R[4], "enriched-naquadria-sunnarium-alloy", "uv-alloy-smelter-recipes", 12.5, UV_SPEED,
+		{ { "enriched-sunnarium-alloy", 1 }, { "dense-naquadria-plate", 1 } }, { { "enriched-naquadria-sunnarium-alloy", 1 } })
+
+	--- the casings and the controller
+	step(R[1], "naquadah-alloy-fusion-casing", "uv-assembling-machine-recipes", 30, UV_SPEED,
+		{ { "naquadah-alloy-frame", 6 }, { "dense-naquadah-alloy-plate", 6 }, { VOID, 115.2 } }, { { "naquadah-alloy-fusion-casing", 1 } })
+	step(R[1], "bloody-ichorium-fusion-casing", "uv-assembling-machine-recipes", 30, UV_SPEED,
+		{ { "orundum-plate", 9 }, { "dense-osmiridium-plate", 6 }, { VOID, 115.2 } }, { { "bloody-ichorium-fusion-casing", 1 } })
+	step(R[2], "draconium-fusion-casing", "uv-assembling-machine-recipes", 30, UV_SPEED,
+		{ { "bloody-ichorium-fusion-casing", 1 }, { "dense-draconium-plate", 6 }, { "draconic-core", 1 }, { VOID, 230.4 } },
+		{ { "draconium-fusion-casing", 1 } })
+	step(R[3], "wyvern-fusion-casing", "uhv-assembling-machine-recipes", 30, UHV_SPEED,
+		{ { "draconium-fusion-casing", 1 }, { "dense-cosmic-neutronium-plate", 6 }, { "wyvern-core", 2 }, { VOID, 460.8 } },
+		{ { "wyvern-fusion-casing", 1 } })
+	step(R[1], "draconic-evolution-fusion-crafter-controller", AL, 75, UEV_SPEED,
+		{ { "uhv-assembling-machine", 1 }, { "bloody-ichorium-fusion-casing", 1 }, { "dense-awakened-draconium-plate", 1 },
+			{ "awakened-draconium-coil-block", 8 }, { "uhv-motor", 8 }, { "uhv-robot-arm", 4 }, { "uhv-circuit", 4 },
+			{ "gravi-star", 4 }, { "quantum-star", 1 }, { "uhv-sensor", 8 }, { "uhv-emitter", 8 }, { "superdense-neutronium-plate", 1 },
+			{ "molten-indalloy-140", 288 }, { VOID, 288 }, { "molten-awakened-draconium", 144 } },
+		{ { "draconic-evolution-fusion-crafter-controller", 1 } })
+
+	--- the machines: tier 1, then each the one before with its casings and energy hatch
+	local PORTS = { port("input", N, { 0, -1 }) }
+	local TIERS = { { "uv", UV_SPEED }, { "uhv", UHV_SPEED }, { "uev", UEV_SPEED } }
+	local CASING = { "bloody-ichorium-fusion-casing", "draconium-fusion-casing", "wyvern-fusion-casing" }
+	local cats = {}
+	for k = 1, 3 do
+		local name = DEFC .. "-t" .. k
+		cats[#cats + 1] = DEFC .. "-t" .. k .. "-recipes"
+		local recipe = k == 1 and { item(DEFC .. "-controller", 1), item("naquadah-alloy-fusion-casing", 43),
+			item("fusion-machine-casing", 32), item("fusion-coil-block", 8), item(CASING[1], 32), item("uv-energy-hatch", 1),
+			item("lv-machine-hull", 4) }
+			or { item(DEFC .. "-t" .. (k - 1), 1), item(CASING[k], 32), item(TIERS[k][1] .. "-energy-hatch", 1) }
+		machine{
+			name = name, category = cats[#cats], speed = TIERS[k][2], energy = power(TIERS[k][1], 1),
+			subgroup = "subgroup-uhv-age-multiblocks", ports = PORTS, list = R[k],
+			recipe = { "crafting-or-assembling-recipes", 1, recipe },
+		}
+		data.raw["assembling-machine"][name].crafting_categories = table.deepcopy(cats)
+		FORK_RECYCLING_BLACKLIST[name] = "the crafter's structure; GT recycles the controller"
+	end
+	local C1, C2, C3 = DEFC .. "-t1-recipes", DEFC .. "-t2-recipes", DEFC .. "-t3-recipes"
+
+	--- the cores and the schematics (kept)
+	local function core(list, name, cat, seconds, speed, schematic, ingredients)
+		ingredients[#ingredients + 1] = { schematic, 1 }
+		step(list, name, cat, seconds, speed, ingredients, { { name, 1 }, { schematic, 1 } }, name)
+	end
+	core(R[1], "draconic-core", C1, 20, UV_SPEED, "draconic-core-schematic",
+		{ { "osmiridium-plate", 4 }, { "orundum-plate", 1 }, { "quantum-eye", 1 }, { "molten-sunnarium", 144 } })
+	core(R[2], "wyvern-core", C2, 40, UHV_SPEED, "wyvern-core-schematic",
+		{ { "draconium-plate", 8 }, { "neutronium-plate", 4 }, { "draconic-core", 4 }, { "quantum-star", 1 }, { "molten-neutronium", 144 } })
+	core(R[3], "awakened-core", C3, 80, UEV_SPEED, "awakened-core-schematic",
+		{ { "awakened-draconium-plate", 12 }, { "draconium-plate", 4 }, { "wyvern-core", 4 }, { "manyullyn-crystal", 1 },
+			{ "molten-infinity", 144 } })
+	core(R[4], "wyvern-energy-core", C2, 50, UV_SPEED, "wyvern-core-schematic",
+		{ { "draconium-plate", 8 }, { "stellar-alloy-plate", 4 }, { "sunnarium-alloy", 4 }, { "draconic-core", 1 } })
+	core(R[4], "draconic-energy-core", C3, 100, UHV_SPEED, "awakened-core-schematic",
+		{ { "awakened-draconium-plate", 8 }, { "wyvern-energy-core", 4 }, { "enriched-sunnarium-alloy", 4 }, { "wyvern-core", 1 } })
+	step(R[1], "draconic-core-schematic", AL, 180, UHV_SPEED,
+		{ { "draconic-core", 1 }, { "dense-draconium-plate", 1 }, { "orundum-plate", 1 }, { "uhv-circuit", 1 },
+			{ "molten-sunnarium", 1440 }, { VOID, 2880 } }, { { "draconic-core-schematic", 1 } })
+	step(R[2], "wyvern-core-schematic", AL, 180, UEV_SPEED,
+		{ { "draconic-core", 4 }, { "dense-draconium-plate", 1 }, { "neutronium-plate", 1 }, { "uev-circuit", 1 },
+			{ VOID, 1440 + 5760 } }, { { "wyvern-core-schematic", 1 } })
+	step(R[3], "awakened-core-schematic", AL, 180, UIV_SPEED,
+		{ { "wyvern-core", 4 }, { "dense-awakened-draconium-plate", 1 }, { "infinity-plate", 1 }, { "uiv-circuit", 1 },
+			{ "molten-infinity", 1440 }, { VOID, 11520 } }, { { "awakened-core-schematic", 1 } })
+
+	F.tech{ name = T[1], prerequisites = { "space-elevator-mining-module-mk3", "uv-machines", "naquadah-fuel-refinery",
+		"precise-electronic-unit-mk2" }, packs = 11, count = 50, time = 60, recipes = R[1] }   -- (as the mining module Mk-III)
+	F.tech{ name = T[2], prerequisites = { T[1] }, packs = 11, count = 50, time = 60, recipes = R[2] }
+	F.tech{ name = T[3], prerequisites = { T[2], "precise-electronic-unit-mk3" }, packs = 11, count = 50, time = 60, recipes = R[3] }
+	F.tech{ name = T[4], prerequisites = { T[3], "nano-forge", "yocto-power-ics" }, packs = 15, count = 55, time = 60,
+		recipes = R[4] }   -- (the sunnarium and the irradiant uranium of section 37)
+end
+
+
+--------------------------------------------------------------------------------
 --- 38) GT'S PARTS OF THE METALS OF THIS FILE (issue #467). 158 makes GT New Horizons' parts of every metal of
 ---   prototypes/gt-parts-data.lua (issue #227) whose ingot exists; most metals of this file come after 158, so its
 ---   FORK_GT_PARTS.run() runs once more here (it skips what exists), then 143's casts for the new forms.

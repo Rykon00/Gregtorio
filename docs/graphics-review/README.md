@@ -23,10 +23,12 @@ Regenerate them with `python tools/gen_review_sheet.py all`.
 All from textures of [GT5-Unofficial](https://github.com/GTNewHorizons/GT5-Unofficial) (LGPL-3.0, including
 the mods merged into it: GT++ "miscutils", GoodGenerator, bartworks) and, for the stargate parts and the
 generic UMV/UXV circuits, [NewHorizonsCoreMod](https://github.com/GTNewHorizons/NewHorizonsCoreMod)
-(GPL-3.0). Both checkouts are only needed to regenerate, not to play:
+(GPL-3.0), and for Draconic Evolution's cores its GTNH fork
+([Draconic-Evolution](https://github.com/GTNewHorizons/Draconic-Evolution), LGPL-3.0). The checkouts are only needed to
+regenerate, not to play:
 
 ```
-python tools/gen_gt_icons.py --gt <GT5-Unofficial> --core <NewHorizonsCoreMod>   # item icons (tools/gt-icon-items.txt)
+python tools/gen_gt_icons.py --gt <GT5-Unofficial> --core <NewHorizonsCoreMod> --de <Draconic-Evolution>   # item icons (tools/gt-icon-items.txt)
 python tools/gen_sprites.py --gt <GT5-Unofficial>                              # machine sprites and icons
 python tools/gen_tech_icons.py --gt <GT5-Unofficial>                           # technology icons (tools/tech-icons.tsv)
 python tools/gen_icons.py --drawn                                              # the graphics drawn as code (issue #431)
