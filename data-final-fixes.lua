@@ -199,17 +199,39 @@ data.raw["map-gen-presets"].default["gregtorio"] = {
 	basic_settings = {
 		peaceful_mode = true,
 		autoplace_controls = {
-			["iron-ore"] = { size = 0 },
-			["copper-ore"] = { size = 0 },
-			["coal"] = { size = 0 },
-			["stone"] = { size = 0 },
-			["crude-oil"] = { size = 0 },
-			["uranium-ore"] = { size = 0 },
-			--- issue #497: GTNH's map veins (prototypes/165-fork-ore-veins.lua) at the defaults of #495
+			--- issue #497: GTNH's map veins (prototypes/165-fork-ore-veins.lua) at the defaults of #495 (issue #508: the
+			--- vanilla resources' controls are gone, below)
 			["gt-ore-veins"] = { frequency = 1, size = 1, richness = 1 },
 		}
 	}
 }
+
+--- issue #508: the resource controls that nothing generates with any more (102 took the vanilla resources off every
+--- planet) are deleted with their entries in the map presets, so the map generator lists only what makes ore; the
+--- Space Age planets' controls of their own resources stay
+do
+	local used = {}
+	for _, planet in pairs(data.raw.planet or {}) do
+		for name in pairs((planet.map_gen_settings or {}).autoplace_controls or {}) do used[name] = true end
+	end
+	for _, list in pairs(data.raw) do
+		for _, proto in pairs(list) do
+			if type(proto) == "table" and type(proto.autoplace) == "table" and proto.autoplace.control then
+				used[proto.autoplace.control] = true
+			end
+		end
+	end
+	for name, control in pairs(data.raw["autoplace-control"]) do
+		if control.category == "resource" and not used[name] then
+			data.raw["autoplace-control"][name] = nil
+			for _, preset in pairs(data.raw["map-gen-presets"].default) do
+				local settings = type(preset) == "table" and preset.basic_settings
+				if settings and settings.autoplace_controls then settings.autoplace_controls[name] = nil end
+			end
+			log("FORK-REMOVED: autoplace-control " .. name)
+		end
+	end
+end
 
 
 -- Disable spawners
