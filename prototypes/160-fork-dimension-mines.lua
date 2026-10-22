@@ -179,6 +179,30 @@ create_recipe{
 	main_product = "ender-air",
 }
 
+--- issue #503 (plan #494, V7): The End is a surface (165's planet gt-end, surface property gt-dimension 4), reached through
+--- an End Portal (scripts/fork-portals.lua): Minecraft's frame of 12 portal blocks, each with an Eye of Ender, here one
+--- item from 12 Eyes of Ender. It leads to the main island (the exit portal at the origin) and back to the portal one
+--- came through. The ender air intake and the end stone of the Dig Site work only in the End (#494 decision 2); the
+--- radon route (161) stays at HV.
+local IN_END = { { property = "gt-dimension", min = 4, max = 4 } }
+data.raw.recipe["ender-air-intake"].surface_conditions = IN_END
+data.raw.recipe["mining-end-stone"].surface_conditions = IN_END
+create_item{ name = "end-portal", subgroup = "stone-age-production-machine", place_result = "end-portal",
+	stack_size = 10, ingredients = { item("eye-of-ender", 12) } }
+the_end[#the_end + 1] = "end-portal"
+data:extend({ {
+	type = "simple-entity-with-owner", name = "end-portal",
+	icon = "__gregtorio-continued__/graphics/icons/end-portal.png", icon_size = 32,
+	flags = { "placeable-player", "player-creation", "not-rotatable" },
+	minable = { mining_time = 1, result = "end-portal" }, max_health = 500,
+	collision_box = { { -2.4, -2.4 }, { 2.4, 2.4 } }, selection_box = { { -2.5, -2.5 }, { 2.5, 2.5 } },
+	collision_mask = { layers = {} },   -- walked onto: scripts/fork-portals.lua sends whoever steps in
+	render_layer = "lower-object",
+	picture = { filename = "__gregtorio-continued__/graphics/entity/fork/end-portal.png", width = 320, height = 320,
+		scale = 0.5 },
+	localised_description = { "entity-description.end-portal" },
+} })
+
 --------------------------------------------------------------------------------
 --- TECHNOLOGIES
 --------------------------------------------------------------------------------

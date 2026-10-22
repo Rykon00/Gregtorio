@@ -363,6 +363,32 @@ def draw_twilight_crystal():
     return out
 
 
+END_FRAME = [(64, 84, 70), (96, 120, 98), (150, 170, 128), (196, 204, 150), (226, 228, 182)]
+END_EYE = [(20, 60, 40), (40, 110, 70), (80, 170, 110), (160, 230, 170)]
+END_SKY = [(4, 6, 12), (10, 16, 28), (22, 34, 54)]
+
+
+def draw_end_portal(size):
+    """size x size RGBA: Minecraft's End Portal, a 5x5 grid: 12 frame blocks (3 per side, the corners empty) each with an
+    Eye of Ender, the 3x3 starry void inside"""
+    img = Image.new("RGBA", (size, size), (0, 0, 0, 0))
+    px = img.load()
+    cell = size / 5
+    for y in range(size):
+        for x in range(size):
+            i, j = int(x // cell), int(y // cell)
+            u, v = (x % cell) / cell, (y % cell) / cell
+            if 1 <= i <= 3 and 1 <= j <= 3:
+                h = (x * 73 + y * 151) % 97
+                px[x, y] = (230, 240, 255, 255) if h == 0 else tone(END_SKY, 0.3 + 0.35 * math.sin(x * 0.7 + y * 0.3))
+            elif (i in (0, 4)) != (j in (0, 4)):
+                s = 0.55 + (0.25 if u < 0.12 or v < 0.12 else 0) - (0.3 if u > 0.88 or v > 0.88 else 0)
+                px[x, y] = tone(END_FRAME, s)
+                if (u - 0.5) ** 2 + (v - 0.5) ** 2 <= 0.07:
+                    px[x, y] = tone(END_EYE, 0.85 - 1.5 * math.hypot(u - 0.45, v - 0.45))
+    return img
+
+
 def save_if_changed(img, path):
     if path.exists():
         old = Image.open(path).convert("RGBA")
@@ -389,6 +415,9 @@ def drawn():
     save_if_changed(draw_twilight_portal(32), ICONS / "twilight-portal.png")
     save_if_changed(draw_twilight_portal(128).resize((256, 256), Image.NEAREST), ENTITY / "twilight-portal.png")
     save_if_changed(draw_twilight_crystal(), ICONS / "twilight-crystal.png")
+    #  issue #503: the End Portal (icon and sprite, 5x5)
+    save_if_changed(draw_end_portal(32), ICONS / "end-portal.png")
+    save_if_changed(draw_end_portal(160).resize((320, 320), Image.NEAREST), ENTITY / "end-portal.png")
 
 
 def main():
