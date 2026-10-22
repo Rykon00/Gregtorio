@@ -2403,27 +2403,27 @@ end
 --- Issue #499: the recipe machines are the dimension mines now (the mining drills took their names); hunting moved to the
 --- Dig Site, so the recipe without a twin is the glowstone vein.
 --- Electric mine (issue #335, prototypes/163-fork-electric-mine.lua): two Manual Mines with the iron vein recipe, a
---- pickaxe and manual labor in their input slots and raw iron in their output slot (stopped by script, so the slots stay
+--- pickaxe and manual labor in their input slots and raw copper in their output slot (stopped by script, so the slots stay
 --- as they are), each with an inserter and a belt on two sides. Mine A is replaced by fast replace (no player: what the
 --- plant cannot take is spilled), mine B by the upgrade planner's mapping Manual Mine -> Mk I and the T1 construction
 --- robots of a T1 roboport (issue #336: the roboport must take them, and the T1 logistic robots) with the plant in a
 --- storage chest (the robots bring the old machine and its items back). The
 --- neighbours must stay, the items come back (on the ground, in the storage chest), and plant A drills the iron vein's
---- twin with Drilling Fluid and a mining pipe (issue #341, used up: #346, one per vein: #393): 64 raw iron in 12 s. Issue #337: the Manual Mine's upgrade chain goes through the LV, MV and
+--- twin with Drilling Fluid and a mining pipe (issue #341, used up: #346, one per vein: #393): 40 raw copper in 12 s. Issue #337: the Manual Mine's upgrade chain goes through the LV, MV and
 --- HV Miner to the plant; a third Manual Mine is replaced by fast replace with the HV Miner, which mines the iron vein's
---- Miner twin: 64 raw iron in 6 s, and its mining pipe is used up (issue #346; one per vein, #393).
+--- Miner twin: 40 raw copper in 6 s, and its mining pipe is used up (issue #346; one per vein, #393).
 local EM_X, EM_Y = 260.5, -120.5
 local EM_C = 60                                          -- mine C (the HV Miner): x offset
 local EM_CHAIN = { "dimension-mine", "lv-dimension-miner", "mv-dimension-miner", "hv-dimension-miner", "dimension-drilling-plant-mk1" }
 --- Issue #342: a replaced mine keeps its vein (scripts/fork-electric-mine.lua). E: replaced by script after the remote
 --- note_replace (what on_pre_build does for a player): Manual Mine -> LV Miner -> MV Miner -> Mk I must give
---- miner-iron-vein, miner-iron-vein, drilling-iron-vein; a Manual Mine hunting blazes replaced by a Mk I has no recipe and
+--- miner-copper-tin-vein, miner-copper-tin-vein, drilling-copper-tin-vein; a Manual Mine hunting blazes replaced by a Mk I has no recipe and
 --- spills its manual labor. D: the same by order_upgrade and the T1 robots of a second network (each step on its own
---- mine); B (the upgrade planner above) must give drilling-iron-vein too.
+--- mine); B (the upgrade planner above) must give drilling-copper-tin-vein too.
 local EM_E_Y, EM_D_Y = -105.5, -122.5
-local EM_D = { { 352.5, "dimension-mine", "mining-iron-vein", "lv-dimension-miner", "miner-iron-vein" },
-	{ 360.5, "lv-dimension-miner", "miner-iron-vein", "mv-dimension-miner", "miner-iron-vein" },
-	{ 368.5, "mv-dimension-miner", "miner-iron-vein", "dimension-drilling-plant-mk1", "drilling-iron-vein" },
+local EM_D = { { 352.5, "dimension-mine", "mining-copper-tin-vein", "lv-dimension-miner", "miner-copper-tin-vein" },
+	{ 360.5, "lv-dimension-miner", "miner-copper-tin-vein", "mv-dimension-miner", "miner-copper-tin-vein" },
+	{ 368.5, "mv-dimension-miner", "miner-copper-tin-vein", "dimension-drilling-plant-mk1", "drilling-copper-tin-vein" },
 	{ 376.5, "dimension-mine", "mining-glowstone-vein", "dimension-drilling-plant-mk1", nil } }
 local EM_LABOR = 10
 
@@ -2439,18 +2439,19 @@ local function em_mine(s, name, x, y, recipe)
 end
 local function em_recipe(e) return e and e.valid and e.get_recipe() and e.get_recipe().name or nil end
 local EM_B = 30                                          -- mine B: x offset
-local EM_ITEMS = { ["iron-pickaxe-usage"] = 1, ["manual-labor"] = 2, ["raw-iron"] = 10 }
+local EM_ITEMS = { ["iron-pickaxe-usage"] = 1, ["manual-labor"] = 2, ["raw-copper"] = 10 }
 local EM_PLANT = "dimension-drilling-plant-mk1"
+local EM_ORES = 40   -- the copper-tin vein's raw copper per operation (issue #505: the iron vein's 64 are gone)
 
 local function em_site(s, x, y)
 	local mine = s.create_entity{ name = "dimension-mine", position = { x, y }, force = "player", raise_built = true }
-	mine.set_recipe("mining-iron-vein")
+	mine.set_recipe("mining-copper-tin-vein")
 	mine.disabled_by_script = true
 	local input = mine.get_inventory(defines.inventory.assembling_machine_input)
 	assert(input.insert{ name = "iron-pickaxe-usage", count = 1 } == 1, "the manual mine took no pickaxe")
 	assert(input.insert{ name = "manual-labor", count = 2 } == 2, "the manual mine took no manual labor")
-	assert(mine.get_inventory(defines.inventory.assembling_machine_output).insert{ name = "raw-iron", count = 10 } == 10,
-		"the manual mine's output slot took no raw iron")
+	assert(mine.get_inventory(defines.inventory.assembling_machine_output).insert{ name = "raw-copper", count = 10 } == 10,
+		"the manual mine's output slot took no raw copper")
 	local around = {}
 	for _, n in pairs({ { "inserter", 0, -3, defines.direction.north }, { "transport-belt", 0, 3, defines.direction.east },
 		{ "inserter", 3, 0, defines.direction.east }, { "transport-belt", -3, 0, defines.direction.north } }) do
@@ -2482,7 +2483,7 @@ function setup_emine_test(s)
 	local ok, err = pcall(function()
 		local st = { phase = 0 }
 		storage.emine = st
-		for _, r in pairs({ "mining-iron-vein", "drilling-iron-vein", "miner-iron-vein", "mining-glowstone-vein" }) do
+		for _, r in pairs({ "mining-copper-tin-vein", "drilling-copper-tin-vein", "miner-copper-tin-vein", "mining-glowstone-vein" }) do
 			game.forces.player.recipes[r].enabled = true
 		end
 		st.a, st.a_around = em_site(s, EM_X, EM_Y)
@@ -2549,7 +2550,7 @@ function emine_test()
 		expect(okc and miner and miner.valid and miner.name == "hv-dimension-miner", "fast replace: no HV Miner built (" .. tostring(miner) .. ")")
 		if okc and miner and miner.valid then
 			st.miner = miner
-			miner.set_recipe("miner-iron-vein")
+			miner.set_recipe("miner-copper-tin-vein")
 			expect(miner.get_inventory(defines.inventory.assembling_machine_input).insert{ name = "mining-pipe", count = 1 } == 1,
 				"the HV Miner took no mining pipes")
 		end
@@ -2567,14 +2568,14 @@ function emine_test()
 			local area = { { pos.x - 6, pos.y - 6 }, { pos.x + 6, pos.y + 6 } }
 			items_back(em_items_in(s.find_entities_filtered{ area = area, type = "item-entity" }), "fast replace")
 			expect(plant.get_recipe() == nil, "fast replace: the Mk I kept a recipe")
-			plant.set_recipe("drilling-iron-vein")
+			plant.set_recipe("drilling-copper-tin-vein")
 			expect(plant.insert_fluid{ name = "drilling-fluid", amount = 400 } == 400, "the Mk I took no drilling fluid")
 			--- issue #341: the plant takes mining pipes like the miners (used up, issue #346; one per vein, #393)
 			expect(plant.get_inventory(defines.inventory.assembling_machine_input).insert{ name = "mining-pipe", count = 1 } == 1,
 				"the Mk I took no mining pipes")
 		end
 		--- issue #342, E: the chain by script, each step noted first as on_pre_build does for a player
-		local e = em_mine(s, "dimension-mine", EM_X, EM_E_Y, "mining-iron-vein")
+		local e = em_mine(s, "dimension-mine", EM_X, EM_E_Y, "mining-copper-tin-vein")
 		st.e_chain = {}
 		for _, name in pairs({ "lv-dimension-miner", "mv-dimension-miner", EM_PLANT }) do
 			remote.call("fork-electric-mine", "note_replace", e)
@@ -2582,7 +2583,7 @@ function emine_test()
 				raise_built = true }
 			st.e_chain[#st.e_chain + 1] = tostring(em_recipe(e))
 		end
-		expect(table.concat(st.e_chain, ",") == "miner-iron-vein,miner-iron-vein,drilling-iron-vein",
+		expect(table.concat(st.e_chain, ",") == "miner-copper-tin-vein,miner-copper-tin-vein,drilling-copper-tin-vein",
 			"replaced by script: the recipes were " .. table.concat(st.e_chain, ", "))
 		local h = em_mine(s, "dimension-mine", EM_X + 10, EM_E_Y, "mining-glowstone-vein")
 		remote.call("fork-electric-mine", "note_replace", h)
@@ -2612,15 +2613,15 @@ function emine_test()
 		local all_back = b and (back["dimension-mine"] or 0) == 1
 		for name, n in pairs(EM_ITEMS) do all_back = all_back and (back[name] or 0) == n end
 		local drilled = st.plant and st.plant.valid and st.plant.get_inventory(defines.inventory.assembling_machine_output)
-			.get_item_count("raw-iron") or 0
+			.get_item_count("raw-copper") or 0
 		local mout = st.miner and st.miner.valid and st.miner.get_inventory(defines.inventory.assembling_machine_output)
-		local mined = mout and mout.get_item_count("raw-iron") or 0
+		local mined = mout and mout.get_item_count("raw-copper") or 0
 		local pipes = st.miner and st.miner.valid and st.miner.get_item_count("mining-pipe") or 0
 		local d_done = true
 		for _, m in pairs(EM_D) do if not s.find_entity(m[4], { m[1], EM_D_Y }) then d_done = false end end
-		if (all_back and drilled >= 64 and mined >= 64 and d_done) or t >= st.t1 + 1200 then
+		if (all_back and drilled >= EM_ORES and mined >= EM_ORES and d_done) or t >= st.t1 + 1200 then
 			--- issue #342: the recipes after the robots' upgrades
-			expect(em_recipe(b) == "drilling-iron-vein", "upgrade planner: the Mk I's recipe is " .. tostring(em_recipe(b)))
+			expect(em_recipe(b) == "drilling-copper-tin-vein", "upgrade planner: the Mk I's recipe is " .. tostring(em_recipe(b)))
 			for _, m in pairs(EM_D) do
 				local new = s.find_entity(m[4], { m[1], EM_D_Y })
 				expect(new ~= nil and em_recipe(new) == m[5], "robots: " .. m[2] .. " with " .. m[3] .. " -> " .. m[4] .. ": "
@@ -2628,15 +2629,15 @@ function emine_test()
 			end
 			local dback = em_items_in({ st.dchest })["manual-labor"] or 0
 			expect(dback == EM_LABOR, "robots: " .. dback .. " of " .. EM_LABOR .. " manual labor of the hunting mine came back")
-			expect(mined == 64 and pipes == 0, "the HV Miner mined " .. mined .. " raw iron and kept " .. pipes
-				.. " mining pipes (64 in 6 s, the pipe used up; status " .. tostring(st.miner and st.miner.valid and st.miner.status) .. ")")
+			expect(mined == EM_ORES and pipes == 0, "the HV Miner mined " .. mined .. " raw copper and kept " .. pipes
+				.. " mining pipes (" .. EM_ORES .. " in 6 s, the pipe used up; status " .. tostring(st.miner and st.miner.valid and st.miner.status) .. ")")
 			st.mined = mined
 			expect(b ~= nil, "upgrade planner: no Mk I at the manual mine's place after " .. (t - st.t1) .. " ticks")
 			expect((back["dimension-mine"] or 0) == 1, "upgrade planner: the manual mine did not come back to the storage chest")
 			items_back(back, "upgrade planner")
 			around_kept(st.b_around, "upgrade planner")
 			st.drilled, st.ticks = drilled, t - st.t1
-			expect(drilled >= 64, "the Mk I drilled " .. drilled .. " raw iron (64 in 12 s with drilling fluid; status "
+			expect(drilled >= EM_ORES, "the Mk I drilled " .. drilled .. " raw copper (" .. EM_ORES .. " in 12 s with drilling fluid; status "
 				.. tostring(st.plant and st.plant.valid and st.plant.status) .. ")")
 			local left = st.plant and st.plant.valid and st.plant.get_item_count("mining-pipe") or 0
 			expect(left == 0, "the Mk I kept " .. left .. " of its mining pipe (issue #346: used up)")
@@ -2647,7 +2648,7 @@ function emine_test()
 		st.done = true
 		for _, p in pairs(problems) do log("DEVCHECK-RUNTIME-FAIL electric mine test: " .. p) end
 		log("DEVCHECK-RUNTIME-EMINE " .. (#problems == 0 and "ok" or "failed") .. " (fast replace and upgrade planner, "
-			.. tostring(st.drilled) .. " raw iron drilled, " .. tostring(st.mined) .. " mined by the HV Miner, "
+			.. tostring(st.drilled) .. " raw copper drilled, " .. tostring(st.mined) .. " mined by the HV Miner, "
 			.. tostring(st.ticks) .. " ticks)")
 	end
 end

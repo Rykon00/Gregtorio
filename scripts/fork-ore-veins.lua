@@ -95,6 +95,11 @@ end
 ---      stay, the Manual Mine gets the old one's manual labor as fuel, a plant its Drilling Fluid, other items go to the
 ---      ground; a drill without ore in its area is named in a message with its position;
 ---   4. the veins whose centre a force has charted get their tag.
+--- Issue #505 (V9): the vein recipes of Nauvis, the Nether and the Twilight Forest are gone; an old save's dimension mine on
+--- one of them runs a placeholder of its planet (migrations/2026-10-22-issue-505-vein-recipes.json, mod data
+--- fork-electric-mine: removed). On that planet's surface it is replaced as in 3.; elsewhere (a mine on Nauvis that ran a
+--- Nether vein) it loses the recipe, its items go to the ground and a message names it. The migration of #505 runs this
+--- again for saves that had the one of #500 (steps 1, 2 and 4 only touch a surface without the veins).
 local function migrate_surface(surface, planet)
 	local profiler = helpers.create_profiler()
 	--- 1. the map generation settings of the planet (a map made with the veins has them: its ores stay as they are)
@@ -150,13 +155,24 @@ local function migrate_surface(surface, planet)
 		for _, pr in pairs(prototypes.entity[name].mineable_properties.products or {}) do here[pr.name] = true end
 	end
 	local function ores_here(recipe)
+		if #recipe.prototype.products == 0 then return false end
 		for _, pr in pairs(recipe.prototype.products) do if not here[pr.name] then return false end end
 		return true
 	end
-	local replaced, bare = 0, {}
+	local removed = em and em.data.removed or {}
+	local replaced, bare, cleared = 0, {}, {}
 	for _, old in pairs(#list > 0 and surface.find_entities_filtered{ name = list } or {}) do
 		local recipe = old.get_recipe()
-		if recipe and recipe.prototype.hidden and ores_here(recipe) then
+		local gone = recipe and removed[recipe.name]
+		if gone and gone ~= planet then
+			--- issue #505: a vein of another planet: the mine stays without a recipe
+			for _, c in pairs(old.set_recipe(nil) or {}) do
+				surface.spill_item_stack{ position = old.position, stack = c, force = old.force, allow_belts = false }
+			end
+			cleared[#cleared + 1] = { old, gone }
+			log(string.format("FORK-ORE-VEINS: %s at %.1f,%.1f (%s) has no recipe now", old.name, old.position.x, old.position.y,
+				recipe.name))
+		elseif recipe and (gone or (recipe.prototype.hidden and ores_here(recipe))) then
 			local pos, dir, force, quality, drill = old.position, old.direction, old.force, old.quality, drills[old.name]
 			local items = {}
 			for _, inv in pairs({ defines.inventory.assembling_machine_input, defines.inventory.assembling_machine_output }) do
@@ -194,6 +210,12 @@ local function migrate_surface(surface, planet)
 		e.force.print({ "fork-message.drill-without-ore", e.localised_name,
 			string.format("[gps=%d,%d,%s]", math.floor(e.position.x), math.floor(e.position.y), surface.name) })
 	end
+	for _, c in pairs(cleared) do
+		local e = c[1]
+		e.force.print({ "fork-message.mine-vein-gone", e.localised_name,
+			string.format("[gps=%d,%d,%s]", math.floor(e.position.x), math.floor(e.position.y), surface.name),
+			{ "space-location-name." .. c[2] } })
+	end
 	--- 4. the charted veins
 	local charted, tags = 0, 0
 	for _, force in pairs(fresh and game.forces or {}) do
@@ -208,7 +230,7 @@ local function migrate_surface(surface, planet)
 	end
 	profiler.stop()
 	log({ "", "FORK-ORE-VEINS: ", surface.name, ": ", fresh and #chunks or 0, " chunks regenerated with ", #names, " ores, ", replaced,
-		" mines replaced by drills (", #bare, " without ore), ", tags, " veins tagged in ", charted, " charted chunks, ",
+		" mines replaced by drills (", #bare, " without ore), ", #cleared, " without their vein recipe, ", tags, " veins tagged in ", charted, " charted chunks, ",
 		dropped, " names of missing noise expressions dropped from the map settings; ", profiler })
 end
 
