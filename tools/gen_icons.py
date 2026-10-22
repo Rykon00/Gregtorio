@@ -306,6 +306,63 @@ def draw_flint_and_steel():
     return out
 
 
+GRASS = [(30, 62, 26), (44, 88, 36), (62, 116, 46), (88, 146, 62), (124, 176, 86)]
+TWILIGHT = [(16, 22, 60), (30, 40, 96), (52, 66, 140), (86, 104, 186), (150, 170, 232)]
+FLOWERS = [(214, 46, 46), (240, 210, 60), (236, 236, 240)]
+CRYSTAL = [(40, 30, 96), (70, 62, 156), (104, 104, 210), (150, 160, 240), (214, 224, 255)]
+
+
+def draw_twilight_portal(size):
+    """size x size RGBA: GTNH's 2x2 pool of the Twilight Portal, a grass border with 12 flowers (a quarter of the side)
+    and the lit pool inside"""
+    img = Image.new("RGBA", (size, size), (0, 0, 0, 0))
+    px = img.load()
+    c, ring = size / 2, max(2, size // 4)
+    for y in range(size):
+        for x in range(size):
+            X, Y = x + 0.5, y + 0.5
+            if ring <= x < size - ring and ring <= y < size - ring:
+                dx, dy = (X - c) / (c - ring), (Y - c) / (c - ring)
+                s = 0.45 + 0.3 * math.sin(5 * dx + 3 * dy) * math.cos(4 * dy - 2 * dx) - 0.2 * math.hypot(dx, dy)
+                px[x, y] = tone(TWILIGHT, s)
+            else:
+                px[x, y] = tone(GRASS, 0.55 + 0.12 * (((x * 5 + y * 3) % 7) / 6 - 0.5))
+    #  the 12 flowers: one in each cell of the 4x4 ring around the 2x2 pool
+    f, cell = max(1, size // 16), size / 4
+    seen = [((i + 0.5) * cell, (j + 0.5) * cell) for j in range(4) for i in range(4) if i in (0, 3) or j in (0, 3)]
+    for i, (u, t) in enumerate(seen):
+        col = FLOWERS[i % len(FLOWERS)] + (255,)
+        for y in range(int(t - f), int(t + f) + 1):
+            for x in range(int(u - f), int(u + f) + 1):
+                if 0 <= x < size and 0 <= y < size and (x - u + 0.5) ** 2 + (y - t + 0.5) ** 2 <= (f + 0.3) ** 2:
+                    px[x, y] = col
+    for i in range(size):   # the outline
+        for x, y in ((i, 0), (i, size - 1), (0, i), (size - 1, i)):
+            px[x, y] = GRASS[0] + (255,)
+    return img
+
+
+def draw_twilight_crystal():
+    """32 x 32 RGBA: an upright blue-violet crystal (a hexagon of facets), lit from the upper left, with its outline"""
+    img = Image.new("RGBA", (32, 32), (0, 0, 0, 0))
+    px = img.load()
+    for y in range(32):
+        for x in range(32):
+            X, Y = x + 0.5, y + 0.5
+            w = 9 - abs(Y - 16) * 0.55 if abs(Y - 16) > 8 else 9
+            if abs(X - 16) <= w and 2 <= Y <= 30:
+                facet = 0.85 if X < 13 else (0.55 if X < 19 else 0.3)
+                px[x, y] = tone(CRYSTAL, facet - 0.012 * (Y - 2))
+    out = img.copy()
+    o = out.load()
+    for y in range(32):
+        for x in range(32):
+            if px[x, y][3] and any(not (0 <= x + dx < 32 and 0 <= y + dy < 32) or px[x + dx, y + dy][3] == 0
+                                   for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1))):
+                o[x, y] = (14, 10, 30, 255)
+    return out
+
+
 def save_if_changed(img, path):
     if path.exists():
         old = Image.open(path).convert("RGBA")
@@ -328,6 +385,10 @@ def drawn():
     save_if_changed(draw_portal(32), ICONS / "nether-portal.png")
     save_if_changed(draw_portal(96).resize((192, 192), Image.NEAREST), ENTITY / "nether-portal.png")
     save_if_changed(draw_flint_and_steel(), ICONS / "flint-and-steel.png")
+    #  issue #502: the Twilight Portal (icon and sprite, 4x4) and the Twilight Crystal
+    save_if_changed(draw_twilight_portal(32), ICONS / "twilight-portal.png")
+    save_if_changed(draw_twilight_portal(128).resize((256, 256), Image.NEAREST), ENTITY / "twilight-portal.png")
+    save_if_changed(draw_twilight_crystal(), ICONS / "twilight-crystal.png")
 
 
 def main():

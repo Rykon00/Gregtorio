@@ -26,10 +26,11 @@ FORK_ORE_MIX_SKIPPED = {
 	["electrotine"] = "Project Red's ore, left out as in #363; its tiles fall to the neighbouring layer (#494 decision 4)",
 	["infused-air"] = THAUMCRAFT, ["infused-earth"] = THAUMCRAFT, ["infused-entropy"] = THAUMCRAFT,
 	["infused-fire"] = THAUMCRAFT, ["infused-order"] = THAUMCRAFT, ["infused-water"] = THAUMCRAFT,
-	["mix:AquaIgnis"] = "Thaumcraft vein of the Twilight Forest, dropped (#494 decision 4)",
-	["mix:TerraAer"] = "Thaumcraft vein of the Twilight Forest, dropped (#494 decision 4)",
-	["mix:PerditioOrdo"] = "Thaumcraft vein of the Twilight Forest, dropped (#494 decision 4)",
 }
+--- the Thaumcraft veins of the Twilight Forest (163's FORK_ORE_VEINS.dropped)
+for name in pairs(FORK_ORE_VEINS.dropped) do
+	FORK_ORE_MIX_SKIPPED["mix:" .. name] = "Thaumcraft vein of the Twilight Forest, dropped (#494 decision 4)"
+end
 --- the dimensions that keep their mines and the Void Miner pools for now (#494: not in this plan)
 for _, d in pairs({ "ENDASTEROID", "EVERGLADES", "MOON", "DEIMOS", "MARS", "PHOBOS", "ASTEROIDS", "CALLISTO", "CERES",
 	"EUROPA", "GANYMEDE", "ROSS128B", "IO", "MERCURY", "VENUS", "ENCELADUS", "MIRANDA", "OBERON", "TITAN", "ROSS128BA",
@@ -71,8 +72,8 @@ FORK_ORE_MIX_NO_CHAIN = {
 --- 102 keeps the vanilla resources off; the vein recipes stay until V9 (#505).
 --------------------------------------------------------------------------------
 
---- the planets with map veins (DimNames -> planet, 163's FORK_ORE_VEINS.planets); V6 and V7 add the Twilight Forest and
---- The End
+--- the planets with map veins (DimNames -> planet, 163's FORK_ORE_VEINS.planets: Nauvis, the Nether since V5, the
+--- Twilight Forest since V6); V7 adds The End
 FORK_ORE_VEINS.start = { "Coal", "Iron", "Copper", "Cassiterite" }
 FORK_ORE_VEINS.resources = {}
 
@@ -105,6 +106,40 @@ do
 			["solar-power"] = 0, pressure = 1000, gravity = 10 },
 		surface_render_parameters = vulcanus.surface_render_parameters,
 		persistent_ambient_sounds = vulcanus.persistent_ambient_sounds,
+	} })
+end
+
+--------------------------------------------------------------------------------
+--- Phase V6 (issue #502): the Twilight Forest as a surface, the planet gt-twilight (gt-dimension 3, hidden, no space
+--- connection; scripts/fork-portals.lua makes its surface at the first Twilight Portal). Its terrain is Nauvis' as a
+--- dense forest (the trees at the sliders' top, a wet climate for the green grass), without biters and vanilla
+--- resources; GTNH's 15 Twilight Forest veins (the three Thaumcraft veins left out). Permanent dusk: the script freezes
+--- the daytime at dusk, and the sun gives half of Nauvis' light.
+--------------------------------------------------------------------------------
+
+do
+	local nauvis = data.raw.planet.nauvis
+	local mgs = table.deepcopy(nauvis.map_gen_settings)
+	mgs.territory_settings = nil
+	mgs.autoplace_controls = { trees = { frequency = 6, size = 6, richness = 2 }, water = {}, nauvis_cliff = {},
+		starting_area_moisture = {} }
+	for name in pairs(mgs.autoplace_settings.entity.settings) do
+		if data.raw.resource[name] then mgs.autoplace_settings.entity.settings[name] = nil end
+	end
+	data:extend({
+		{ type = "noise-expression", name = "gt-twilight-moisture", expression = "0.7 + 0.3 * moisture_nauvis" },
+		{ type = "noise-expression", name = "gt-twilight-aux", expression = "0.25 + 0.5 * aux_nauvis" },
+	})
+	mgs.property_expression_names = { moisture = "gt-twilight-moisture", aux = "gt-twilight-aux" }
+	data:extend({ {
+		type = "planet", name = "gt-twilight", hidden = true,
+		icon = nauvis.icon, icon_size = nauvis.icon_size, starmap_icon = nauvis.starmap_icon,
+		starmap_icon_size = nauvis.starmap_icon_size, distance = 1, orientation = 0.98,
+		map_gen_settings = mgs,
+		surface_properties = { ["gt-dimension"] = 3, ["day-night-cycle"] = 5 * 60 * 60, ["magnetic-field"] = 90,
+			["solar-power"] = 50, pressure = 1000, gravity = 10 },
+		surface_render_parameters = nauvis.surface_render_parameters,
+		persistent_ambient_sounds = nauvis.persistent_ambient_sounds,
 	} })
 end
 

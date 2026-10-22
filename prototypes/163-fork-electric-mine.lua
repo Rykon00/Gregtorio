@@ -354,10 +354,13 @@ for _, name in ipairs(twins) do
 end
 
 --- the dimensions (DimNames) that are surfaces with map veins, their planet and the technology that reaches it; 165 makes
---- the planets and their veins (issue #501: the Nether; V6 and V7 add the Twilight Forest and The End)
+--- the planets and their veins (issue #501: the Nether; issue #502: the Twilight Forest; V7 adds The End)
 FORK_ORE_VEINS = FORK_ORE_VEINS or {}
-FORK_ORE_VEINS.planets = { OW = "nauvis", NETHER = "gt-nether" }
-FORK_ORE_VEINS.techs = { NETHER = "reach-the-nether" }
+FORK_ORE_VEINS.planets = { OW = "nauvis", NETHER = "gt-nether", TWILIGHT_FOREST = "gt-twilight" }
+FORK_ORE_VEINS.techs = { NETHER = "reach-the-nether", TWILIGHT_FOREST = "reach-the-twilight-forest" }
+--- GT's veins the map leaves out (#494 decision 4: Thaumcraft's; 165 lists them in FORK_ORE_MIX_SKIPPED); their
+--- ores do not count for the rule below (the amber vein stays a dimension mine's)
+FORK_ORE_VEINS.dropped = { AquaIgnis = true, TerraAer = true, PerditioOrdo = true }
 
 --- issue #499: a vein recipe whose every result is an ore of the map veins (prototypes/data/ore-mixes.lua; issue #501: of
 --- every surface with map veins) is hidden with its twins: the mining drills mine those ores now. The recipes stay, with
@@ -367,7 +370,7 @@ do
 	local overworld = {}
 	for _, m in pairs(require("prototypes.data.ore-mixes").mixes) do
 		for _, d in pairs(m.dimensions) do
-			if FORK_ORE_VEINS.planets[d] then
+			if FORK_ORE_VEINS.planets[d] and not FORK_ORE_VEINS.dropped[m.name] then
 				for _, role in pairs({ "primary", "secondary", "between", "sporadic" }) do overworld["raw-" .. m[role]] = true end
 			end
 		end

@@ -1365,7 +1365,7 @@ function setup_veins_test()
 	local ok, err = pcall(function()
 		local d = prototypes.mod_data["fork-ore-veins"].data
 		local parts, size = {}, nil
-		for _, planet in pairs({ "nauvis", "gt-nether" }) do
+		for _, planet in pairs({ "nauvis", "gt-nether", "gt-twilight" }) do
 			if d.planets[planet] then
 				local text, sz = check_planet_veins(d, planet, vt)
 				parts[#parts + 1] = text
@@ -1415,8 +1415,11 @@ end
 
 --- Nether Portal (issue #501, scripts/fork-portals.lua): a character next to a portal on Nauvis goes through it (the
 --- remote does what stepping onto it does for a player) and arrives on gt-nether next to a new portal at an eighth of the
---- position; the Nether has gt-dimension 2, no water and lava; the way back leads to the first portal, not a new one.
+--- position; the Nether has gt-dimension 2, no water and lava, no biters; the way back leads to the first portal, not a
+--- new one. Issue #502: the Twilight Portal the same way at 1:1 to gt-twilight (gt-dimension 3, the daytime frozen at
+--- dusk, a dense forest without biters).
 local PT_X, PT_Y = 200.5, 300.5
+local TT_X, TT_Y = -300, 200
 
 function setup_portal_test(s)
 	local fails, pt = {}, {}
@@ -1442,6 +1445,8 @@ function setup_portal_test(s)
 			pt.lava = n.count_tiles_filtered{ area = area, name = { "lava", "lava-hot" } }
 			expect(pt.water == 0, pt.water .. " water tiles in the Nether")
 			expect(pt.lava > 0, "no lava in the Nether")
+			local spawners = n.count_entities_filtered{ area = area, type = { "unit-spawner", "turret" } }
+			expect(spawners == 0, spawners .. " biter nests or worms in the Nether")
 		end
 		expect(c.valid and c.get_item_count("iron-plate") == 7, "the character's inventory did not come along")
 		local back = remote.call("fork-portals", "travel", c, out)
@@ -1449,6 +1454,31 @@ function setup_portal_test(s)
 			.. ", not to the first portal")
 		expect(c.valid and c.surface.name == "nauvis", "the character did not come back to Nauvis")
 		expect(s.get_property("gt-dimension") == 1, "Nauvis' gt-dimension is " .. tostring(s.get_property("gt-dimension")))
+		--- issue #502: the Twilight Portal
+		local tp = s.create_entity{ name = "twilight-portal", position = { TT_X, TT_Y }, force = "player", raise_built = true }
+		local tout = remote.call("fork-portals", "travel", c, tp)
+		expect(tout and tout.valid and tout.surface.name == "gt-twilight", "no Twilight Portal on the other side")
+		expect(c.valid and c.surface.name == "gt-twilight", "the character is not in the Twilight Forest")
+		if tout and tout.valid then
+			local t = tout.surface
+			expect(math.abs(tout.position.x - TT_X) < 40 and math.abs(tout.position.y - TT_Y) < 40,
+				string.format("the Twilight Forest's portal is at %.1f,%.1f, not near %d,%d", tout.position.x, tout.position.y, TT_X, TT_Y))
+			expect(t.get_property("gt-dimension") == 3, "the Twilight Forest's gt-dimension is " .. tostring(t.get_property("gt-dimension")))
+			expect(t.freeze_daytime and math.abs(t.daytime - 0.35) < 0.01,
+				string.format("the Twilight Forest's daytime is %.2f (frozen: %s), not dusk", t.daytime, tostring(t.freeze_daytime)))
+			t.request_to_generate_chunks({ 0, 0 }, 6)
+			t.force_generate_chunk_requests()
+			local area = { { -192, -192 }, { 192, 192 } }
+			pt.trees = t.count_entities_filtered{ area = area, type = "tree" }
+			pt.home_trees = s.count_entities_filtered{ area = area, type = "tree" }
+			local spawners = t.count_entities_filtered{ area = area, type = { "unit-spawner", "turret" } }
+			expect(spawners == 0, spawners .. " biter nests or worms in the Twilight Forest")
+			expect(pt.trees > 384 * 384 / 25, pt.trees .. " trees around the Twilight Forest's origin: no dense forest")
+		end
+		local tback = remote.call("fork-portals", "travel", c, tout)
+		expect(tback == tp, "the way back from the Twilight Forest leads to " .. tostring(tback and tback.position.x) .. ","
+			.. tostring(tback and tback.position.y) .. ", not to the first portal")
+		expect(c.valid and c.surface.name == "nauvis", "the character did not come back from the Twilight Forest")
 		pt.problems = problems
 	end)
 	if not ok then fails[#fails + 1] = "portal test: " .. tostring(err) end
@@ -1462,7 +1492,8 @@ function portal_test()
 	local problems = pt.problems or { "it did not run" }
 	for _, p in pairs(problems) do log("DEVCHECK-RUNTIME-FAIL portal test: " .. p) end
 	log("DEVCHECK-RUNTIME-PORTAL " .. (#problems == 0 and "ok" or "failed") .. string.format(" (through to the Nether and back; "
-		.. "%s water and %s lava tiles around the Nether's origin)", tostring(pt.water), tostring(pt.lava)))
+		.. "%s water and %s lava tiles around the Nether's origin; to the Twilight Forest and back, %s trees around its origin, "
+		.. "%s around Nauvis')", tostring(pt.water), tostring(pt.lava), tostring(pt.trees), tostring(pt.home_trees)))
 end
 
 function setup_battery_test(s)

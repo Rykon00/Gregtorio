@@ -1574,8 +1574,11 @@ def check_unlock_tree(m, sec):
                 out.add(burnt)
         return out
 
-    def other_maker(x, r, rs):
-        return x in m.base or any(p != r and (p in rs or p in start) for p in makers.get(x, []))
+    # issue #502: a recipe that needs a missing ore whose nearest producer is a planet's map vein (planet-mining) makes
+    # no alternative: the galena recipes of Galena made each other's products from the same missing ore
+    def other_maker(x, r, rs, lacks=frozenset()):
+        return x in m.base or any(p != r and (p in rs or p in start) and not lacks.intersection(R[p]["ing"])
+                                  for p in makers.get(x, []))
 
     def machine_items(cat):
         return [it for e in machines.get(cat, []) for it in item_of.get(e, [])]
@@ -1601,7 +1604,8 @@ def check_unlock_tree(m, sec):
             if not has_machine(v["cat"], have):
                 near = nearest(machine_items(v["cat"]))
                 miss.append((near[1] if near else "<machine for " + v["cat"] + ">", near))
-            if not miss or all(other_maker(x, r, rs) for x in v["res"]):
+            lacks = {x for x, near in miss if near and near[2].startswith("planet-mining:")}
+            if not miss or all(other_maker(x, r, rs, lacks) for x in v["res"]):
                 continue
             n_recipes += 1
             for x, near in miss:
