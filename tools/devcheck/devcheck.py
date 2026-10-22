@@ -706,6 +706,63 @@ def check_me_recipes(sec):
             sorted(problems))
 
 
+def check_ore_mixes(m, sec):
+    """Issue #496 (prototypes/165-fork-ore-veins.lua, plan #494): every ore of a GT vein in a dimension that is one of
+    Gregtorio's surfaces (FORK_ORE_MIX_SURFACES) has a raw ore raw-<material> with GTNH's ore chain (the ore washer's
+    purified-<material>), unless the material or the vein ("mix:<name>") is in FORK_ORE_MIX_SKIPPED or the material in
+    FORK_ORE_MIX_NO_CHAIN (GT processes it another way; it needs the raw ore all the same), each with its reason; every
+    dimension of GT's veins is a surface or skipped ("dimension:<DimNames>"). An entry that matches nothing fails too.
+    Returns (info line, problems)."""
+    rows = sec.get("OREMIXES", [])
+    surfaces = {r[1] for r in rows if r[0] == "surface"}
+    mixes = {r[1]: r[2].split(",") if len(r) > 2 and r[2] else [] for r in rows if r[0] == "mix"}
+    ores = [r for r in rows if r[0] == "ore"]
+    skip = {r[1]: (r[2] if len(r) > 2 else "") for r in rows if r[0] == "skip"}
+    nochain = {r[1]: (r[2] if len(r) > 2 else "") for r in rows if r[0] == "nochain"}
+    if not mixes:
+        return "no ore mixes (an older version)", []
+    on_surface = {n for n, dims in mixes.items() if set(dims) & surfaces}
+    kept = on_surface - {n for n in on_surface if f"mix:{n}" in skip}
+    problems, used, checked = [], set(), set()
+    for n, dims in sorted(mixes.items()):
+        problems += [f"{n}: dimension {d} is neither a Gregtorio surface (FORK_ORE_MIX_SURFACES) nor in "
+                     f"FORK_ORE_MIX_SKIPPED as dimension:{d}" for d in dims if d not in surfaces and f"dimension:{d}" not in skip]
+    for _, mix, role, x, raw in ores:
+        if mix not in on_surface:
+            continue
+        used.add(x)
+        if mix not in kept or x in skip or x in checked:
+            continue
+        checked.add(x)
+        if raw == "-":
+            problems.append(f"{x} ({mix} {role}): no raw ore raw-{x} (create it with GTNH's chain in 155, or add the "
+                            "material to FORK_ORE_MIX_SKIPPED with its reason)")
+        elif x not in nochain and (f"purified-{x}" not in m.R or m.R[f"purified-{x}"]["hidden"]):
+            problems.append(f"{x} ({mix} {role}): raw-{x} has no ore chain (purified-{x}; 155's NEW_ORES, or "
+                            "FORK_ORE_MIX_NO_CHAIN with the reason)")
+    dims_used = {d for dims in mixes.values() for d in dims}
+    for key, why in sorted(skip.items()):
+        kind, _, name = key.partition(":") if ":" in key else ("material", "", key)
+        if not why:
+            problems.append(f"FORK_ORE_MIX_SKIPPED: {key} has no reason")
+        if kind == "mix" and name not in on_surface:
+            problems.append(f"FORK_ORE_MIX_SKIPPED: {key} is no vein on a Gregtorio surface (remove the entry)")
+        elif kind == "dimension" and (name not in dims_used or name in surfaces):
+            problems.append(f"FORK_ORE_MIX_SKIPPED: {key} is " + ("a surface" if name in surfaces else "no dimension of GT's veins")
+                            + " (remove the entry)")
+        elif kind == "material" and key not in used:
+            problems.append(f"FORK_ORE_MIX_SKIPPED: {key} is no ore of a vein on a Gregtorio surface (remove the entry)")
+    for x, why in sorted(nochain.items()):
+        if not why:
+            problems.append(f"FORK_ORE_MIX_NO_CHAIN: {x} has no reason")
+        if x not in used or f"purified-{x}" in m.R:
+            problems.append(f"FORK_ORE_MIX_NO_CHAIN: {x} is " + ("no ore of a vein on a surface" if x not in used
+                            else "an ore with a chain") + " (remove the entry)")
+    return (f"{len(mixes)} GT veins, {len(kept)} on Gregtorio's surfaces with {len(checked)} ores, "
+            f"{len(on_surface) - len(kept)} veins and {sum(1 for k in skip if ':' not in k)} ores left out, "
+            f"{len(nochain)} without an ore chain", problems)
+
+
 ORE_CHAIN_SKIP = {"crushed-platinum", "crushed-palladium", "crushed-firestone"}   # 155-fork-ore-chain.lua's skip list
 def check_ore_chain(m):
     """Issue #185 (prototypes/155-fork-ore-chain.lua): every ore with a purified form has GTNH's whole chain (washer,
@@ -801,7 +858,8 @@ ORE_GEMS = {"ruby": ("ruby", False), "emerald": ("emerald", False), "diamond": (
             "red-zircon": ("red-zircon-gem", False), "tiberium": ("tiberium-gem", False),
             "bartimaeusnek": ("bartimaeusnek-gem", False), "prasiolite": ("prasiolite-gem", False),
             "fluorspar": ("fluorspar-gem", False),
-            "dilithium": ("dilithium-gem", True), "vinteum": ("vinteum-gem", False)}   # issue #373: Neper
+            "dilithium": ("dilithium-gem", True), "vinteum": ("vinteum-gem", False),   # issue #373: Neper
+            "quartzite": ("quartzite-gem", True)}   # issue #496: the Nether's quartzite
 # Issue #193: the laser engraver steps of the grades, with the lens of the gem's colour (red ruby, green emerald, white
 # diamond; issues #328 and #370: cyan the green sapphire lens, blue the sapphire lens; certus quartz's light gray has no lens; issue
 # #332: orange amber)
@@ -819,7 +877,7 @@ ORE_GEM_LENS = {"ruby": "ruby-lens", "emerald": "emerald-lens", "monazite": "eme
                 "chromo-alumino-povondraite": "green-sapphire-lens", "vanadio-oxy-dravite": "green-sapphire-lens",
                 "forsterite": "diamond-lens", "hedenbergite": "emerald-lens", "tiberium": "emerald-lens",
                 "bartimaeusnek": "emerald-lens", "red-zircon": "ruby-lens", "fluorspar": "ruby-lens",
-                "dilithium": "diamond-lens"}
+                "dilithium": "diamond-lens", "quartzite": "diamond-lens"}   # issue #496: white quartzite
 def check_ore_o3_o4(m):
     """Issues #187 and #188 (prototypes/155-fork-ore-chain.lua, phases O3 and O4): the electromagnetic separator works
     exactly the pure dusts of ORE_SEPARATOR (dust, small dust and nugget of the metal); every ore of ORE_GEMS is sifted
@@ -1704,6 +1762,10 @@ def check(a):
     parts_info, parts_unranked = check_material_parts(sec)
     print(f"\nmaterial parts (issue #118): {parts_info}")
     report("WARNING: materials of the material parts without a tier (prototypes/200-fork-material-parts.lua)", parts_unranked)
+    mixes_info, ore_mixes = check_ore_mixes(m, sec)
+    print(f"\nGT's ore veins (issue #496): {mixes_info}")
+    report("ores of GT's veins on Gregtorio's surfaces without a raw ore and its chain (prototypes/165-fork-ore-veins.lua)",
+           ore_mixes)
     chain_ores, ore_chain = check_ore_chain(m)
     print(f"\nore chain (issue #185): {chain_ores} ores with GTNH's chain")
     report("ore chain gaps and ore washer shortcuts (prototypes/155-fork-ore-chain.lua)", ore_chain)
@@ -1754,7 +1816,7 @@ def check(a):
         print(f"\nbalance data written to {a.balance_out} (recipes, machines, technologies as JSON)")
     ok = not (files or [s for s in sprites if not s.startswith("(")] or uncraft or menu or required or unresearchable
               or new_drafts or fluid_problems or locked or one_pack or fluid_steps or table_only or me_recipes
-              or extractor_split or ore_chain or ore_baths or ore_o34 or ore_hammer
+              or extractor_split or ore_mixes or ore_chain or ore_baths or ore_o34 or ore_hammer
               or circuit_icons or pgm_dusts or recycling or names or gaps or tree or vanilla or lenses or mine_twins
               or unplaceable or stale_unlocks)
     print("\nRESULT:", "OK" if ok else "PROBLEMS FOUND")

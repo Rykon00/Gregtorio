@@ -224,6 +224,13 @@
   - 161 dimension unlocks (issue #287: the unlock rules of 160, `ore_dimension` moves or gates the ore chains of the
     dimensions' ores, the ender air with Radon, black plutonium with the Void Miner II, the bornite chain with
     Reach Ross128 (issue #293); loads after 159 and before 156)
+  - 165 ore veins (plan #494: GTNH's veins as mixed ore patches on the map, the Nether, Twilight Forest and End as
+    surfaces; issue #496: `FORK_ORE_MIXES`, GT's 122 ore mixes from `prototypes/data/ore-mixes.lua`, which
+    `tools/gen_ore_mixes.py` writes from GT5-Unofficial's `OreMixes.java` (do not edit it), the T0 dimensions that are
+    Gregtorio's surfaces (`FORK_ORE_MIX_SURFACES`, the surface property gt-dimension); devcheck fails for an ore of a vein
+    on a surface without a raw ore and its chain unless the material, the vein (`mix:<name>`) or the dimension
+    (`dimension:<DimNames>`) is in the allow-list `FORK_ORE_MIX_SKIPPED`, or the material in `FORK_ORE_MIX_NO_CHAIN`
+    (GT processes it another way: oil sands), each with its reason; loads after 161)
   - 156 circuit icons (issue #164: the circuit variant recipes up to UV keep the shared tier item and show GT's texture
     of their GTNH item as recipe icon; devcheck fails for a tier circuit recipe without its own icon; issue #450: the ULV
     tier item `ulv-circuit`, which the vacuum tube and NAND chip recipes give and every former user of the two takes, and

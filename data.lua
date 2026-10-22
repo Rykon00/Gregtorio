@@ -150,6 +150,8 @@ require("prototypes.159-fork-lanthanides")
 require("prototypes.164-fork-chemistry")
 --- issue #287: the unlock rules of the dimension mines (160), after 159 and before 156
 require("prototypes.161-fork-dimension-unlocks")
+--- plan #494: GTNH's ore veins on the map (issue #496: the data of GT's ore mixes and the rule for their raw ores), after 161
+require("prototypes.165-fork-ore-veins")
 --- issue #164: the circuit variant recipes show the icon of their GTNH item (156)
 require("prototypes.156-fork-circuit-icons")
 --- issue #190: GTNH's material recycling (macerator, arc furnace, fluid extractor), after every file that makes recipes
