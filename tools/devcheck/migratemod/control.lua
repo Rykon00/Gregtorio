@@ -268,9 +268,9 @@ local RM_MACHINES = {
 	-- save that had the slot already, stops with "Missing lens"
 	{ "mv-laser-engraver", "simple-soc-wafer-sw", "simple-soc-wafer-sw" },
 	-- issue #335: the Manual Mine got a fast replace group and the Ore Drilling Plant as its next upgrade; issue #499: the
-	-- name went to the mining drill, a Manual Mine of an old save is a Dimension Mine (JSON migration) and keeps its vein
-	-- recipe
-	{ "manual-mine", "mining-iron-vein", "mining-iron-vein", "dimension-mine" },
+	-- name went to the mining drill, a Manual Mine of an old save is a Dimension Mine (JSON migration); issue #500: one on
+	-- an Overworld vein (hidden since #499) is replaced by the Manual Mine drill at its place, with its manual labor as fuel
+	{ "manual-mine", "mining-iron-vein", nil, "manual-mine", nil, true },
 	-- issue #348: upstream's Ruby Lens from a plain ruby is deleted; a lathe of an old save loads without the recipe
 	{ "lv-lathe", "ruby-lens", nil },
 	-- issue #370: GTNH's green sapphire and sapphire lens replace the apatite and lapis lens; an engraver of an old save
@@ -325,7 +325,7 @@ local function setup_removed()
 			--- issue #332: a slot that this version leaves empty (its recipe needs no tool here)
 			local empty_slot = md ~= nil and tool == nil and inv ~= nil and #inv > 0
 			machines[#machines + 1] = { entity = e, old = m[2], new = m[3], name = m[4], items = items,
-				empty_slot = empty_slot }
+				empty_slot = empty_slot, pos = e.position, drill = m[6] }
 		end
 	end
 	local queue
@@ -367,15 +367,32 @@ local function check_removed()
 		if got ~= count then problems[#problems + 1] = "the chest holds " .. got .. " " .. name .. " of " .. count end
 	end
 	for _, m in pairs(p.machines or {}) do
-		local r = m.entity.valid and m.entity.get_recipe()
+		--- issue #500: a mine on an Overworld vein became a mining drill at its place
+		local drill = m.drill and m.pos and game.surfaces[1].find_entity(m.name, m.pos)
+		if m.drill and not (drill and drill.type == "mining-drill") then
+			problems[#problems + 1] = "the machine with " .. m.old .. " is no " .. m.name .. " drill at its place"
+		elseif drill and m.items["manual-labor"] and drill.get_fuel_inventory().get_item_count("manual-labor") == 0 then
+			problems[#problems + 1] = "the " .. m.name .. " drill got no manual labor of the old mine as fuel"
+		end
+		local r = not m.drill and m.entity.valid and m.entity.get_recipe()
 		local got = r and r.name or nil
-		if not m.entity.valid then
+		if m.drill then
+			-- (checked above)
+		elseif not m.entity.valid then
 			problems[#problems + 1] = "the machine with " .. m.old .. " is gone"
 		elseif got ~= m.new then
 			problems[#problems + 1] = "the machine with " .. m.old .. " has " .. tostring(got) .. ", not " .. tostring(m.new)
 		elseif m.name and m.entity.name ~= m.name then
 			problems[#problems + 1] = "the machine with " .. m.old .. " is a " .. m.entity.name .. ", not a " .. m.name
 		end
+	end
+	--- issue #500: the old save's generated chunks have the map veins' ores (regenerate_entity)
+	local gt = {}
+	for name, r in pairs(prototypes.get_entity_filtered{ { filter = "type", type = "resource" } }) do
+		if r.resource_category == "gt-ore" then gt[#gt + 1] = name end
+	end
+	if #gt > 0 and game.surfaces[1].count_entities_filtered{ type = "resource", name = gt, limit = 1 } == 0 then
+		problems[#problems + 1] = "the old save's chunks have no ore of the map veins"
 	end
 	--- issues #316 and #325: a machine whose recipe needs a mold or lens in its slot has it there after the update and
 	--- runs (the old recipe took it as an ingredient, or none; fork-molds gives a machine new to the slot its tool once);
