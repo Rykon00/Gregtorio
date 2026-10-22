@@ -31,7 +31,7 @@
 --------------------------------------------------------------------------------
 
 local F = FORK5B
-local NETHER, END = "reach-the-nether", "reach-the-end"
+local NETHER, END, TWILIGHT = "reach-the-nether", "reach-the-end", "reach-the-twilight-forest"
 
 local function manual(name, category, ingredients, results)
 	create_recipe{
@@ -126,6 +126,43 @@ data:extend({ {
 } })
 
 --------------------------------------------------------------------------------
+--- THE TWILIGHT FOREST (issue #502, plan #494 V6): a surface (165's planet gt-twilight, surface property gt-dimension 3),
+--- reached through a Twilight Portal (scripts/fork-portals.lua, 1:1). GTNH's portal is a 2x2 pool of water with 12
+--- flowers around it, opened by tossing in a portal crystal (TwilightForest.cfg PortalCreationItem =
+--- dreamcraft:TwilightCrystal, "a diamond is not enough"): here one 4x4 item from 4 buckets of water and the Twilight
+--- Crystal (the mod has no flowers; the sprite draws them). The crystal is GTNH's assembler recipe (NewHorizonsCoreMod
+--- AssemblerRecipes.java:926-930: a diamond and 4 LV circuits, 30 s at LV/2).
+--------------------------------------------------------------------------------
+
+local twilight = {}
+create_item{ skip_recipe = true, name = "twilight-crystal", subgroup = "stone-age-production-machine", stack_size = 16 }
+create_recipe{
+	name = "twilight-crystal",
+	category = "lv-assembling-machine-recipes",
+	energy_required = 30 * LV_SPEED,
+	subgroup = "stone-age-production-machine",
+	ingredients = { item("diamond", 1), item("electronic-circuit", 4) },
+	results = { item("twilight-crystal", 1) },
+	main_product = "twilight-crystal",
+}
+create_item{ name = "twilight-portal", subgroup = "stone-age-production-machine", place_result = "twilight-portal",
+	stack_size = 10, ingredients = { item("bucket-of-water", 4), item("twilight-crystal", 1) } }
+twilight[#twilight + 1] = "twilight-crystal"
+twilight[#twilight + 1] = "twilight-portal"
+data:extend({ {
+	type = "simple-entity-with-owner", name = "twilight-portal",
+	icon = "__gregtorio-continued__/graphics/icons/twilight-portal.png", icon_size = 32,
+	flags = { "placeable-player", "player-creation", "not-rotatable" },
+	minable = { mining_time = 1, result = "twilight-portal" }, max_health = 500,
+	collision_box = { { -1.9, -1.9 }, { 1.9, 1.9 } }, selection_box = { { -2, -2 }, { 2, 2 } },
+	collision_mask = { layers = {} },   -- walked onto: scripts/fork-portals.lua sends whoever steps in
+	render_layer = "lower-object",
+	picture = { filename = "__gregtorio-continued__/graphics/entity/fork/twilight-portal.png", width = 256, height = 256,
+		scale = 0.5 },
+	localised_description = { "entity-description.twilight-portal" },
+} })
+
+--------------------------------------------------------------------------------
 --- THE END
 --------------------------------------------------------------------------------
 
@@ -151,6 +188,12 @@ create_recipe{
 --- and sphalerite; every other first consumer of a Nether ore comes after Rubber
 F.tech{ name = NETHER, prerequisites = { "iron-furnace" }, packs = 1, count = 20, time = 30, recipes = nether }
 table.insert(data.raw.technology["rubber"].prerequisites, NETHER)
+--- issue #502: Reach the Twilight Forest in the LV age, after its crystal's LV assembler, LV circuits and diamond; before
+--- Galena and Invar, whose galena, lead, silver and nickel veins are the Twilight Forest's now (GTNH's TFGalena is the
+--- only T0 source of galena)
+F.tech{ name = TWILIGHT, prerequisites = { "automation-2", "primitive-electronics", "steam-macerator" }, packs = 2,
+	count = 30, time = 30, recipes = twilight }
+for _, t in pairs({ "galena", "invar" }) do table.insert(data.raw.technology[t].prerequisites, TWILIGHT) end
 F.tech{ name = END, prerequisites = { "eyes-of-ender", "hv-energy-hatches" }, packs = 4, count = 40, time = 30,
 	recipes = the_end }
 --- Endermen with the first use of their pearls; blaze rods come before it (161)
