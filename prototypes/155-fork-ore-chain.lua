@@ -302,6 +302,10 @@ local NEW_ORES = {
 	--- issue #356: the Lutetium Asteroid's thulium and tellurium (162); GT gives them no byproducts of their own
 	["thulium"] = { dust = "thulium-dust", byproducts = {  }, mass = 168 },   -- GT Thulium: none (itself)
 	["tellurium"] = { dust = "tellurium-dust", byproducts = {  }, mass = 127 },   -- GT Tellurium: none (itself)
+	--- issue #496: the raw ores of GTNH's T0 veins the mod lacked (160); quartzite a crystallisable gem without
+	--- composition (GT's mass is technetium's 98, as nether quartz), native molybdenum GT's element Mo (42 + 54)
+	["quartzite"] = { dust = "quartzite-dust", byproducts = { "certus-quartz-dust", "barite" }, mass = 98 },   -- GT Quartzite: CertusQuartz, Barite
+	["molybdenum"] = { dust = "molybdenum-dust", byproducts = {  }, mass = 96, smelt = "molybdenum" },   -- GT Molybdenum: no byproducts (itself)
 }
 for x, o in pairs(NEW_ORES) do
 	ORE_CHAIN[x] = { dust = o.dust, byproducts = o.byproducts, mass = o.mass }
@@ -1252,6 +1256,24 @@ plate_lens("green-sapphire", "green-sapphire-gem")
 --- issue #373: and the yellow garnet lens (yellow bismutite and prasiolite of Ross128 engrave with it)
 plate_lens("yellow-garnet")
 
+--- PHASE O4, 2: the autoclave grows the gem from impure and pure dust of the crystallisable ores
+--- (OP/ProcessingDust.java:450-479): 200 L water (here 20) 90 % / 95 % in 100 s, 100 L distilled water (10)
+--- 95 % / 100 % in 75 s. GT's third variant with molten Void is not made: 137-fork-endgame-materials.lua
+--- removed void metal (a Thaumcraft material) on purpose (issue #193). Returns the number of recipes.
+local function autoclave_dusts(x, gem)
+	local n = 0
+	for _, d in pairs({ { "impure-" .. x .. "-dust", 0.9, 0.95 }, { "pure-" .. x .. "-dust", 0.95, 1 } }) do
+		for _, w in pairs({ { "water", 20, 100, d[2], "" }, { "distilled-water", 10, 75, d[3], "-distilled-water" } }) do
+			local name = made(recipe{ name = "autoclave-" .. d[1] .. w[5], category = "lv-autoclave-recipes", time = w[3],
+				main = gem, ingredients = { item(d[1]), fluid(w[1], w[2]) },
+				results = { item(gem, 1, w[4] < 1 and w[4] or nil) } })
+			unlock_after(name, { machine_techs("lv-autoclave-recipes"), item_techs(d[1]) })
+			n = n + 1
+		end
+	end
+	return n
+end
+
 local gem_recipes = 0
 for _, g in pairs(GEMS) do
 	local x, gem, tbl = g[1], g[2], g[3]
@@ -1280,22 +1302,7 @@ for _, g in pairs(GEMS) do
 		gem_recipes = gem_recipes + 1
 
 		gem_recipes = gem_recipes + gem_grades(x, grade, ore.dust)
-
-		--- PHASE O4, 2: the autoclave grows the gem from impure and pure dust of the crystallisable ores
-		--- (OP/ProcessingDust.java:450-479): 200 L water (here 20) 90 % / 95 % in 100 s, 100 L distilled water (10)
-		--- 95 % / 100 % in 75 s. GT's third variant with molten Void is not made: 137-fork-endgame-materials.lua
-		--- removed void metal (a Thaumcraft material) on purpose (issue #193).
-		if g[4] then
-			for _, d in pairs({ { "impure-" .. x .. "-dust", 0.9, 0.95 }, { "pure-" .. x .. "-dust", 0.95, 1 } }) do
-				for _, w in pairs({ { "water", 20, 100, d[2], "" }, { "distilled-water", 10, 75, d[3], "-distilled-water" } }) do
-					name = made(recipe{ name = "autoclave-" .. d[1] .. w[5], category = "lv-autoclave-recipes", time = w[3],
-						main = gem, ingredients = { item(d[1]), fluid(w[1], w[2]) },
-						results = { item(gem, 1, w[4] < 1 and w[4] or nil) } })
-					unlock_after(name, { machine_techs("lv-autoclave-recipes"), item_techs(d[1]) })
-					gem_recipes = gem_recipes + 1
-				end
-			end
-		end
+		if g[4] then gem_recipes = gem_recipes + autoclave_dusts(x, gem) end
 	end
 end
 do
@@ -1372,6 +1379,7 @@ FORK_ORE_HAMMER_GEM = {
 	["raw-tiberium"] = "tiberium-gem", ["raw-bartimaeusnek"] = "bartimaeusnek-gem", ["raw-prasiolite"] = "prasiolite-gem",
 	["raw-fluorspar"] = "fluorspar-gem",
 	["raw-dilithium"] = "dilithium-gem", ["raw-vinteum"] = "vinteum-gem",   -- issue #373: Neper's gems
+	["raw-quartzite"] = "quartzite-gem",   -- issue #496
 }
 --- issue #373: GT++'s ores have no forge hammer recipe for the raw ore (RecipeGenOre.java registers it for the ore block
 --- only, which Gregtorio has none of)
@@ -1493,8 +1501,11 @@ do
 end
 unlock_pending(pending)
 --- issue #363: lignite and the garnets are ores now (GTNH's LigniteCoal vein, the Twilight Forest's small ores, 160): GT
---- sifts their purified ore (lignite the default table, the garnets the precious one; their grades are #205's above)
-for _, g in pairs({ { "lignite", "default" }, { "red-garnet", "precious" }, { "yellow-garnet", "precious" } }) do
+--- sifts their purified ore (lignite the default table, the garnets the precious one; their grades are #205's above);
+--- issue #496: quartzite too (the Nether's veins, 160; the default table), crystallisable, so the autoclave grows its gem
+--- from its impure and pure dust
+for _, g in pairs({ { "lignite", "default" }, { "red-garnet", "precious" }, { "yellow-garnet", "precious" },
+		{ "quartzite", "default", true } }) do
 	local x, purified = g[1], "purified-" .. g[1]
 	if data.raw.recipe[purified] then
 		local c = SIFT[g[2]]
@@ -1504,6 +1515,7 @@ for _, g in pairs({ { "lignite", "default" }, { "red-garnet", "precious" }, { "y
 				item("flawed-" .. x, 1, c[4]), item("chipped-" .. x, 1, c[5]), item(x .. "-dust", 1, c[6]) } })
 		unlock_after(name, { machine_techs("lv-sifter-recipes"), techs_of_recipe[purified] })
 		late_gems = late_gems + 1
+		if g[3] then late_gems = late_gems + autoclave_dusts(x, x .. "-gem") end
 	end
 end
 local DUST_GEMS = {
@@ -1774,6 +1786,7 @@ local RAW_SMELT = {
 	["raw-platinum"] = { "metallic-platinum-powder", 2 }, ["raw-sheldonite"] = { "metallic-platinum-powder", 2 },
 }
 RAW_SMELT["raw-dilithium"] = { "dilithium-gem", 1 }   -- issue #373: GT smelts its raw ore into the gem
+RAW_SMELT["raw-quartzite"] = { "quartzite-gem", 1 }   -- issue #496: likewise (the raw ore ignores NO_SMELTING, as spinel)
 for x, o in pairs(NEW_ORES) do   -- issue #363: the raw ores of the new ores smelt into GT's direct smelting metal
 	if o.smelt then RAW_SMELT["raw-" .. x] = { o.smelt .. "-ingot", 1 } end
 end

@@ -446,6 +446,7 @@ MATERIALS = {
     "zeolite": "Zeolite", "glauconite-sand": "GlauconiteSand", "kyanite": "Kyanite", "mica": "Mica",
     "pollucite": "Pollucite", "dolomite": "Dolomite", "wollastonite": "Wollastonite", "trona": "Trona",
     "zirconium-carbide": ("SHINY", (222, 202, 180)),  # GT++ ZIRCONIUM_CARBIDE
+    "oilsands": "Oilsands",  # issue #496: the OilSand vein of the Overworld
 }
 
 # fork part name -> GT OrePrefix texture; "{m}" is the material

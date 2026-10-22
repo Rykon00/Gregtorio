@@ -247,6 +247,45 @@ local TF_SMALL_363 = { "olivine", "tanzanite", "amethyst", "opal", "jasper", "bl
 
 
 --------------------------------------------------------------------------------
+--- ORE VEINS V1 (issue #496, plan #494): the raw ores of GTNH's T0 veins (prototypes/data/ore-mixes.lua) the mod
+--- lacked, by #363's rules (a vein Gregtorio has gets GT's ores it lacked, 8 each; a vein without one is a new Manual
+--- Mine recipe at GT's 32, 24, 16 and 8) until the map veins of #494 give them:
+---   * quartzite (GT's NetherQuartz vein's sporadic ore, the Quartz vein's primary): a gem ore, its chain in 155; it joins
+---     the nether quartz vein (circuit assembler);
+---   * native molybdenum (the Molybdenum vein's in-between ore; GT's metal, no byproducts): it joins the Nether's
+---     molybdenum vein, crushed with Tungstate Processing like the vein's other ores;
+---   * oil sands (GT's OilSand vein, Overworld, its one ore four times): GT gives it no ore chain, the LV centrifuge turns
+---     the ore into 2000 L heavy oil and sand at 40 % (ProcessingRawOre.java:48-56, 15 s); a new mine with that
+---     centrifuge (Ore Washing).
+--------------------------------------------------------------------------------
+
+create_ore("raw-quartzite", nil, "crushed-quartzite", nil, nil, "crushed-quartzite", nil, nil, 1, false, false)
+create_ore("raw-molybdenum", nil, "crushed-molybdenum", nil, nil, "crushed-molybdenum", nil, nil, 1, false, false)
+create_item{ name = "raw-oilsands", subgroup = "subgroup-mining", skip_recipe = true }
+for name, ores in pairs({ ["mining-nether-quartz-vein"] = { "quartzite" }, ["mining-molybdenum-vein"] = { "molybdenum" } }) do
+	local r = data.raw.recipe[name]
+	if not (r.icon or r.icons or r.main_product) then r.main_product = r.results[1].name end
+	for _, x in pairs(ores) do r.results[#r.results + 1] = item("raw-" .. x, 8) end
+end
+create_recipe{
+	name = "centrifuging-raw-oilsands",
+	category = "lv-centrifuge-recipes",
+	energy_required = 15,
+	subgroup = "subgroup-lv-centrifuge-recipes",
+	ingredients = { item("raw-oilsands", 1) },
+	results = { fluid("heavy-oil", 200), { type = "item", name = "sand", amount = 1, probability = 0.4 } },
+	main_product = "heavy-oil",
+}
+unlock_in("circuit-assembler", { "crushed-quartzite" })
+unlock_in("tungstate-processing", { "crushed-molybdenum" })
+unlock_in("ore-washing", {
+	manual("mining-oil-sand-vein", "manual-mine-recipes", { PICKAXE, LABOR(8) }, { item("raw-oilsands", 80) }),
+	"centrifuging-raw-oilsands",
+})
+
+
+
+--------------------------------------------------------------------------------
 --- THE TWILIGHT FOREST (issue #332, the maintainer's decision): GTNH's T0 dimension (DimensionHelper.java:99), two
 --- recipes of the Manual Mine unlocked with NAND Chips, the first technology that needs them (the maintainer's choice: no
 --- technology of their own). Its ores the mod lacked are topaz and amber, the two materials of GT's orange lens

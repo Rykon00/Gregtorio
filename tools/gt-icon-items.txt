@@ -5157,3 +5157,14 @@ reactor-stabilizer-rotor-assembly
 reactor-stabilizer-focus-ring
 reactor-stabilizer-frame
 draconic-reactor-stabilizer
+centrifuged-molybdenum
+centrifuged-quartzite
+crushed-molybdenum
+impure-molybdenum-dust
+impure-quartzite-dust
+pure-molybdenum-dust
+pure-quartzite-dust
+purified-molybdenum
+purified-quartzite
+raw-molybdenum
+raw-oilsands
