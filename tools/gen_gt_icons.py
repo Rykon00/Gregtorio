@@ -850,6 +850,36 @@ def icon_table(c):
     for name, tex in {"draconic-core": "draconicCore", "wyvern-core": "wyvernCore", "awakened-core": "awakenedCore",
                       "wyvern-energy-core": "draconiumEnergyCore0", "draconic-energy-core": "draconiumEnergyCore1"}.items():
         T[name] = lambda tex=tex: c.gt(f"{DE}{tex}")
+    # issue #489 part 2: kubatech's Awakened Draconium Fusion Casing (defc_4) and Chaotic Core Schematic; Draconic
+    # Evolution's Chaotic Core and flux capacitors (its item textures). DE renders the chaos shard, its fragments and the
+    # stabilizer's parts as models without an item texture: the shard and fragments drawn as a dark crystal (smaller for
+    # each step), the parts as GT's parts of their materials (rotors, ring, frame) with a core or lens badge. EnderIO's
+    # Vibrant Capacitor Bank (not in the checkouts): GT's HV hull with its battery buffer overlay and a vibrant alloy badge
+    T["awakened-draconium-fusion-casing"] = lambda: c.gt(f"{KUBA}blocks/casing/defc_4")
+    T["chaotic-core-schematic"] = lambda: c.gt(f"{KUBA}items/defc_schematic_t4")
+    T["chaotic-core"] = lambda: c.gt(f"{DE}chaoticCore")
+    T["wyvern-flux-capacitor"] = lambda: c.gt(f"{DE}draconiumFluxCapacitor0")
+    T["draconic-flux-capacitor"] = lambda: c.gt(f"{DE}draconiumFluxCapacitor1")
+    def chaos_crystal(scale):
+        img = Image.new("RGBA", (SIZE, SIZE))
+        d = ImageDraw.Draw(img)
+        m, h, w = SIZE / 2, SIZE * scale / 2 - 1, SIZE * scale / 4
+        d.polygon(((m, m - h), (m + w, m - h / 3), (m + w * 0.7, m + h), (m - w * 0.7, m + h), (m - w, m - h / 3)),
+                  fill=(28, 18, 34, 255), outline=(150, 110, 170, 255))
+        d.line((m, m - h + 2, m - w * 0.4, m + h - 2), fill=(230, 220, 240, 255))
+        d.line((m + 1, m - h + 3, m + w * 0.4, m), fill=(120, 60, 150, 255))
+        return img
+    for name, scale in (("chaos-shard", 1.0), ("large-chaos-fragment", 0.8), ("small-chaos-fragment", 0.6),
+                        ("tiny-chaos-fragment", 0.42)):
+        T[name] = lambda scale=scale: chaos_crystal(scale)
+    T["vibrant-capacitor-bank"] = lambda: c.badge(c.face(f"{BLK}MACHINE_HV_SIDE", f"{BLK}OVERLAY_ENERGY_OUT_MULTI_BUFFER_HV"),
+                                                            c.part("vibrant-alloy", "plate"))
+    T["reactor-stabilizer-outer-rotor"] = lambda: c.part("draconium", "rotor")
+    T["reactor-stabilizer-inner-rotor"] = lambda: c.part("awakened-draconium", "rotor")
+    T["reactor-stabilizer-rotor-assembly"] = lambda: c.badge(c.part("draconium", "rotor"), c.part("awakened-draconium", "rotor"))
+    T["reactor-stabilizer-focus-ring"] = lambda: c.badge(c.part("rose-gold", "ring"), c.part("nether-star", "lens"))
+    T["reactor-stabilizer-frame"] = lambda: c.badge(c.part("black-plutonium", "@frame"), c.gt(f"{DE}awakenedCore"))
+    T["draconic-reactor-stabilizer"] = lambda: c.badge(c.part("black-plutonium", "@frame"), c.gt(f"{DE}chaoticCore"))
     # tier circuits of the core mod (the fork's generic UMV/UXV circuit)
     T["umv-circuit"] = lambda: c.gt(f"{CORE}itemCircuitUMV")
     T["uxv-circuit"] = lambda: c.gt(f"{CORE}itemCircuitUXV")

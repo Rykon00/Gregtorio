@@ -5138,3 +5138,22 @@ wyvern-core
 awakened-core
 wyvern-energy-core
 draconic-energy-core
+# issue #489 part 2: the chaos shards, the Chaotic Core, the Reactor Stabilizer
+nether-star-plate
+nether-star-lens
+awakened-draconium-fusion-casing
+chaotic-core-schematic
+chaotic-core
+wyvern-flux-capacitor
+draconic-flux-capacitor
+chaos-shard
+large-chaos-fragment
+small-chaos-fragment
+tiny-chaos-fragment
+vibrant-capacitor-bank
+reactor-stabilizer-outer-rotor
+reactor-stabilizer-inner-rotor
+reactor-stabilizer-rotor-assembly
+reactor-stabilizer-focus-ring
+reactor-stabilizer-frame
+draconic-reactor-stabilizer

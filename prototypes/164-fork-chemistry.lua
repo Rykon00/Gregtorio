@@ -4425,7 +4425,7 @@ end
 ---   here (the maintainer's decision; me-network has no energy cells): the HV battery buffer of 16 batteries for GT's EV
 ---   one (the mod's battery buffers end at HV, #444), 8 aluminium cables for the 8x one.
 --- * The Singularity crafting storage (SAE2:618-649) takes 4 Creative Energy Cells and 4 Transcendent Metal Nanites now (for
----   120's 4 transcendent metal blocks); its 8 Draconic Reactor Stabilizers stay left out (#489).
+---   120's 4 transcendent metal blocks); its 8 Draconic Reactor Stabilizers come in section 41 (#489).
 --- * AE2's Singularity (SAE2:903-906: 512 000 cobblestone in the neutronium compressor, IV, 3 s): the mod's stone is
 ---   Minecraft's cobblestone (the maintainer's decision); a recipe takes at most 65 535 of an item, so 64 000 stone make a
 ---   Compressed Cobblestone and 8 of them the Singularity, in the IV compressor (named stand-ins for the one step). The void
@@ -4669,6 +4669,140 @@ do
 	F.tech{ name = T[3], prerequisites = { T[2], "precise-electronic-unit-mk3" }, packs = 11, count = 50, time = 60, recipes = R[3] }
 	F.tech{ name = T[4], prerequisites = { T[3], "nano-forge", "yocto-power-ics" }, packs = 15, count = 55, time = 60,
 		recipes = R[4] }   -- (the sunnarium and the irradiant uranium of section 37)
+end
+
+
+--------------------------------------------------------------------------------
+--- 41) THE CHAOTIC CORE AND THE DRACONIC REACTOR STABILIZER (issue #489 part 2; the maintainer's decisions of 2026-10-22).
+---   GT5-Unofficial ce1c416a64 (kubatech, tectech), NewHorizonsCoreMod (NHC: ScriptDraconicEvolution, ScriptEnderIO) and
+---   Draconic Evolution (GTNH's fork 9f42531).
+--- * Chaos Shards: the Chaos Guardian in the Extreme Entity Crusher (the maintainer's decision, as the Ender Dragon of
+---   section 35). In Draconic Evolution the guardian lives on its Chaos Island and is not summoned (no ingredient here);
+---   once it is dead, its Chaos Crystal can be broken and drops 5 shards (ChaosCrystal.java:77). It has 2000 health
+---   (EntityChaosGuardian.java:117), ten times the dragon's: 1200 s for the dragon's 120 s. NHC's forge hammer steps
+---   (ScriptDraconicEvolution.java: HV; a shard -> 9 large, 5 s; a large -> 9 small, 2.5 s; a small -> 9 tiny chaos
+---   fragments, 1.25 s).
+--- * The Chaotic Core (kubatech DEFCRecipes.java:230-243: 16 awakened draconium and 4 black plutonium plates, 4 awakened
+---   cores, 2 large chaos fragments, 1440 L spacetime; UIV, 160 s, tier 4) and its schematic (tectech
+---   ResearchStationAssemblyLine.java:1020-1035: 8 awakened cores, 4 dense awakened draconium plates, a spacetime plate, a
+---   UMV circuit, 14 400 L spacetime, 230 400 L void; UMV, 3 min); the Awakened Draconium Fusion Casing
+---   (DEFCRecipes.java:106-115: a Wyvern Fusion Casing, 6 dense awakened draconium plates, 3 awakened cores, 9216 L void;
+---   UEV) and the crafter's tier 4 (the tier 3 one, 32 of these casings, 32 MK II fusion machine casings
+---   (MTEDEFusionCrafter.java:139) and a UIV energy hatch). The Chaotic Fusion Casing (tier 5) has no recipe of tier 5 to
+---   run and is left out.
+--- * The Reactor Stabilizer and its parts (ScriptDraconicEvolution.java:691-818, Avaritia's extreme table: the assembler of
+---   the tier of their cores, 20 s, as 120's crafting storages): Wyvern and Draconic Flux Capacitors (:175-196, :369-390),
+---   the Reactor Stabilizer Inner and Outer Rotor, Rotor Assembly, Focus Ring and Frame; EnderIO's Vibrant Capacitor Bank
+---   (ScriptEnderIO.java:389-399: 4 octadic capacitors, an HV circuit, 2 vibrant crystals, a machine chassis, an EV battery;
+---   the HV assembler, 5 s, as section 39's energy cells), the Nether Star Lens (155's route for lenses, plate_lens: the
+---   dust in the LV compressor, the plate in the MV lathe; here, because the nether star dust comes after 155).
+--- * Named stand-ins: the mod's UHV superconductive wire (triamerotronium) for GT's UHV superconductor, 2 for a 2x and 4 for
+---   a 4x wire; the dense draconium plate for Draconic Evolution's Charged Draconium Block (charged in the world, without a
+---   recipe); the large lithium battery for GT's EV battery hull; molten neutronium for molten void metal (section 40).
+--- * The Singularity crafting storage (SAE2:618-649) takes its 8 Reactor Stabilizers now.
+--- Technologies: Chaotic Cores (the crusher, the fragments, the casing and tier 4, the core and its schematic) after Awakened
+--- Cores; Draconic Reactor Stabilizer (the capacitors, the parts, the stabilizer) at MAX after it, Draconic Energy Cores and
+--- Large Batteries (the battery of the capacitor bank);
+--- ME Crafting Storage Singularity after it.
+--------------------------------------------------------------------------------
+do
+	local DEFC = "draconic-evolution-fusion-crafter"
+	local T_CHAOS, T_STAB, CRAFT = "chaotic-cores", "draconic-reactor-stabilizer", "me-crafting-storage-singularity"
+	local RK, RS = {}, {}
+	local VOID = "molten-neutronium"
+	local SC = "triamerotronium-superconductive-wire"
+	local function item(name, amount) return { type = "item", name = name, amount = amount } end
+	local function power(tier, n)
+		local p = data.raw["assembling-machine"][tier .. "-centrifuge"].energy_usage
+		return (tonumber(p:match("^[%d.]+")) * n) .. p:match("%a+$")
+	end
+	items(SUB_PART, { "chaos-shard", "large-chaos-fragment", "small-chaos-fragment", "tiny-chaos-fragment", "chaotic-core",
+		"chaotic-core-schematic", "wyvern-flux-capacitor", "draconic-flux-capacitor", "vibrant-capacitor-bank",
+		"reactor-stabilizer-inner-rotor", "reactor-stabilizer-outer-rotor", "reactor-stabilizer-rotor-assembly",
+		"reactor-stabilizer-focus-ring", "reactor-stabilizer-frame", "draconic-reactor-stabilizer" })
+	items("subgroup-uhv-age-multiblocks", { "awakened-draconium-fusion-casing" })
+
+	--- the chaos shards and fragments
+	step(RK, "crushing-the-chaos-guardian", "ev-extreme-entity-crusher-recipes", 1200, 1, {}, { { "chaos-shard", 5 } })
+	data.raw.recipe["crushing-the-chaos-guardian"].auto_recycle = false   -- (as the dragon's, Task-Ingame #477)
+	data.raw.item["chaos-shard"].auto_recycle = false
+	FORK_RECYCLING_BLACKLIST["chaos-shard"] = "the Chaos Guardian's drop: GT does not recycle it"
+	step(RK, "large-chaos-fragment", "lv-forge-hammer-recipes", 5, HV_SPEED, { { "chaos-shard", 1 } }, { { "large-chaos-fragment", 9 } })
+	step(RK, "small-chaos-fragment", "lv-forge-hammer-recipes", 2.5, HV_SPEED, { { "large-chaos-fragment", 1 } },
+		{ { "small-chaos-fragment", 9 } })
+	step(RK, "tiny-chaos-fragment", "lv-forge-hammer-recipes", 1.25, HV_SPEED, { { "small-chaos-fragment", 1 } },
+		{ { "tiny-chaos-fragment", 9 } })
+
+	--- the casing, tier 4, the chaotic core and its schematic
+	step(RK, "awakened-draconium-fusion-casing", "uev-assembling-machine-recipes", 30, UEV_SPEED,
+		{ { "wyvern-fusion-casing", 1 }, { "dense-awakened-draconium-plate", 6 }, { "awakened-core", 3 }, { VOID, 921.6 } },
+		{ { "awakened-draconium-fusion-casing", 1 } })
+	local cats = table.deepcopy(data.raw["assembling-machine"][DEFC .. "-t3"].crafting_categories)
+	cats[#cats + 1] = DEFC .. "-t4-recipes"
+	machine{
+		name = DEFC .. "-t4", category = DEFC .. "-t4-recipes", speed = UIV_SPEED, energy = power("uiv", 1),
+		subgroup = "subgroup-uhv-age-multiblocks", ports = { port("input", N, { 0, -1 }) }, list = RK,
+		recipe = { "crafting-or-assembling-recipes", 1, { item(DEFC .. "-t3", 1), item("awakened-draconium-fusion-casing", 32),
+			item("fusion-machine-casing-mk2", 32), item("uiv-energy-hatch", 1) } },
+	}
+	data.raw["assembling-machine"][DEFC .. "-t4"].crafting_categories = cats
+	FORK_RECYCLING_BLACKLIST[DEFC .. "-t4"] = "the crafter's structure; GT recycles the controller"
+	step(RK, "chaotic-core", DEFC .. "-t4-recipes", 160, UIV_SPEED,
+		{ { "awakened-draconium-plate", 16 }, { "black-plutonium-plate", 4 }, { "awakened-core", 4 }, { "large-chaos-fragment", 2 },
+			{ "chaotic-core-schematic", 1 }, { "molten-spacetime", 144 } }, { { "chaotic-core", 1 }, { "chaotic-core-schematic", 1 } },
+		"chaotic-core")
+	step(RK, "chaotic-core-schematic", "zpm-assembly-line-recipes", 180, UMV_SPEED,
+		{ { "awakened-core", 8 }, { "dense-awakened-draconium-plate", 4 }, { "spacetime-plate", 1 }, { "umv-circuit", 1 },
+			{ "molten-spacetime", 1440 }, { VOID, 23040 } }, { { "chaotic-core-schematic", 1 } })
+
+	--- the flux capacitors
+	step(RS, "vibrant-capacitor-bank", "hv-assembling-machine-recipes", 5, HV_SPEED,
+		{ { "octadic-capacitor", 4 }, { "processing-unit", 1 }, { "vibrant-crystal", 2 }, { "machine-chassis", 1 },
+			{ "large-lithium-battery", 1 } }, { { "vibrant-capacitor-bank", 1 } })
+	step(RS, "wyvern-flux-capacitor", "uhv-assembling-machine-recipes", 20, UHV_SPEED,
+		{ { "draconium-plate", 12 }, { SC, 16 }, { "wyvern-energy-core", 4 }, { "vibrant-capacitor-bank", 4 }, { "wyvern-core", 1 } },
+		{ { "wyvern-flux-capacitor", 1 } })
+	step(RS, "draconic-flux-capacitor", "uev-assembling-machine-recipes", 20, UEV_SPEED,
+		{ { "awakened-draconium-plate", 12 }, { SC, 32 }, { "awakened-core", 1 }, { "enriched-naquadria-sunnarium-alloy", 4 },
+			{ "draconic-energy-core", 3 }, { "wyvern-flux-capacitor", 1 } }, { { "draconic-flux-capacitor", 1 } })
+
+	--- the stabilizer's parts and the stabilizer
+	items(data.raw.item["ruby-lens"].subgroup, { "nether-star-plate", "nether-star-lens" })
+	step(RS, "nether-star-plate", "lv-compressor-recipes", 15, LV_SPEED, { { "nether-star-dust", 1 } }, { { "nether-star-plate", 1 } })
+	local lens = { { "nether-star-lens", 1 } }
+	if data.raw.item["small-pile-of-nether-star-dust"] then lens[2] = { "small-pile-of-nether-star-dust", 1 } end
+	step(RS, "nether-star-lens", "mv-lathe-recipes", 60, MV_SPEED, { { "nether-star-plate", 1 } }, lens, "nether-star-lens")
+	step(RS, "reactor-stabilizer-outer-rotor", "uv-assembling-machine-recipes", 20, UV_SPEED,
+		{ { "draconium-plate", 4 }, { "engraved-diamond-crystal-chip", 15 }, { "draconic-core", 2 } },
+		{ { "reactor-stabilizer-outer-rotor", 1 } })
+	step(RS, "reactor-stabilizer-inner-rotor", "uhv-assembling-machine-recipes", 20, UHV_SPEED,
+		{ { "awakened-draconium-plate", 4 }, { "engraved-energy-chip", 15 }, { "wyvern-core", 2 } },
+		{ { "reactor-stabilizer-inner-rotor", 1 } })
+	step(RS, "reactor-stabilizer-rotor-assembly", "uhv-assembling-machine-recipes", 20, UHV_SPEED,
+		{ { "long-draconium-rod", 6 }, { "reactor-stabilizer-outer-rotor", 10 }, { "reactor-stabilizer-inner-rotor", 10 },
+			{ "dense-draconium-plate", 1 }, { "fusion-coil-block", 4 }, { "wyvern-core", 1 }, { "draconium-plate", 1 } },
+		{ { "reactor-stabilizer-rotor-assembly", 1 } })
+	step(RS, "reactor-stabilizer-focus-ring", "uhv-assembling-machine-recipes", 20, UHV_SPEED,
+		{ { "rose-gold-rod", 20 }, { "reactor-stabilizer-outer-rotor", 4 }, { "wyvern-core", 4 },
+			{ "reactor-stabilizer-inner-rotor", 4 }, { "nether-star-lens", 4 }, { "diamond-lens", 1 } },
+		{ { "reactor-stabilizer-focus-ring", 1 } })
+	step(RS, "reactor-stabilizer-frame", "uev-assembling-machine-recipes", 20, UEV_SPEED,
+		{ { "black-plutonium-plate", 52 }, { "awakened-draconium-plate", 8 }, { "awakened-core", 1 } },
+		{ { "reactor-stabilizer-frame", 1 } })
+	step(RS, "draconic-reactor-stabilizer", "uiv-assembling-machine-recipes", 20, UIV_SPEED,
+		{ { "black-plutonium-plate", 4 }, { "awakened-draconium-plate", 17 }, { "engraved-manyullyn-crystal-chip", 4 },
+			{ "draconic-flux-capacitor", 4 }, { "reactor-stabilizer-frame", 1 }, { "chaotic-core", 2 },
+			{ "reactor-stabilizer-focus-ring", 1 }, { "block-of-cosmic-neutronium", 1 }, { "reactor-stabilizer-rotor-assembly", 1 } },
+		{ { "draconic-reactor-stabilizer", 1 } })
+
+	F.tech{ name = T_CHAOS, prerequisites = { "awakened-cores" }, packs = 13, count = 95, time = 60, recipes = RK }
+	F.tech{ name = T_STAB, prerequisites = { T_CHAOS, "draconic-energy-cores", "large-batteries" }, packs = 15, count = 55, time = 60,
+		recipes = RS }   -- (as section 39)
+	local storage = data.raw.recipe["me-singularity-crafting-storage"]
+	if storage and data.raw.technology[CRAFT] then
+		table.insert(storage.ingredients, item("draconic-reactor-stabilizer", 8))
+		table.insert(data.raw.technology[CRAFT].prerequisites, T_STAB)
+	end
 end
 
 
