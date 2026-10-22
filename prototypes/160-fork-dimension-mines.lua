@@ -80,7 +80,6 @@ create_recipe{
 
 local nether = {
 	manual("hunting-blazes", "manual-mine-recipes", { LABOR(24) }, { item("blaze-rod", 4) }),
-	manual("mining-molybdenum-vein", "manual-mine-recipes", { PICKAXE, LABOR(24) }, { item("raw-molybdenite", 32) }),
 	manual("digging-soul-sand", "manual-digsite-recipes", { item("iron-shovel-usage", 1), LABOR(2) },
 		{ item("soul-sand", 64) }),
 }
@@ -331,14 +330,9 @@ for _, o in pairs(VEIN_ORES_363) do
 		crushed_363[#crushed_363 + 1] = "crushed-" .. x
 	end
 end
---- GT's ores that join a vein Gregtorio has (8 each)
+--- GT's ores that join a vein Gregtorio has (8 each; issue #505: the copper-tin vein's is the one left, for its realgar)
 local JOIN_363 = {
-	["mining-iron-vein"] = { "brown-limonite", "yellow-limonite", "banded-iron", "malachite" },   -- GT Iron
-	["mining-magnetite-vein"] = { "magnetite" },                                                    -- GT Magnetite
-	["mining-chalcopyrite-vein"] = { "chalcopyrite", "pyrite" },                                    -- GT Copper
-	["mining-salt-vein"] = { "spodumene" },                                                         -- GT Salts
 	["mining-copper-tin-vein"] = { "chalcopyrite", "vermiculite", "cassiterite", "alunite" },       -- GT CopperTin
-	["mining-basaltic-mineral-sands-vein"] = { "basaltic-mineral-sand", "granitic-mineral-sand" },  -- GT MineralSand
 }
 for name, ores in pairs(JOIN_363) do
 	local r = data.raw.recipe[name]
@@ -346,22 +340,8 @@ for name, ores in pairs(JOIN_363) do
 	if not (r.icon or r.icons or r.main_product) then r.main_product = r.results[1].name end
 	for _, x in pairs(ores) do r.results[#r.results + 1] = item("raw-" .. x, 8) end
 end
-unlock_in("steam-forge-hammer", {
-	manual("mining-lignite-vein", "manual-mine-recipes", { PICKAXE, LABOR(8) },
-		{ item("raw-lignite", 72), item("raw-coal", 8) }),
-})
-unlock_in("ore-crushing", {
-	manual("mining-soapstone-vein", "manual-mine-recipes", { PICKAXE, LABOR(8) },
-		{ item("raw-soapstone", 32), item("raw-talc", 24), item("raw-glauconite", 16), item("raw-pentlandite", 8) }),
-	manual("mining-garnet-tin-vein", "manual-mine-recipes", { PICKAXE, LABOR(8) },
-		{ item("raw-cassiterite-sand", 32), item("raw-garnet-sand", 24), item("raw-asbestos", 16), item("raw-diatomite", 8) }),
-	manual("mining-kaolinite-zeolite-vein", "manual-mine-recipes", { PICKAXE, LABOR(8) },
-		{ item("raw-kaolinite", 32), item("raw-zeolite", 24), item("raw-fullers-earth", 16), item("raw-glauconite-sand", 8) }),
-	manual("mining-mica-vein", "manual-mine-recipes", { PICKAXE, LABOR(8) },
-		{ item("raw-kyanite", 32), item("raw-mica", 24), item("raw-cassiterite", 16), item("raw-pollucite", 8) }),
-	manual("mining-dolomite-vein", "manual-mine-recipes", { PICKAXE, LABOR(8) },
-		{ item("raw-dolomite", 32), item("raw-wollastonite", 24), item("raw-trona", 16), item("raw-andradite", 8) }),
-})
+--- (issue #505: the Lignite, Soapstone, Garnet Tin, Kaolinite Zeolite, Mica and Dolomite Vein recipes are gone, their
+--- ores are Nauvis' map veins)
 unlock_in("ore-crushing", crushed_363)
 
 
@@ -394,19 +374,8 @@ for _, o in pairs(VEIN_ORES_363B) do
 		false)
 	for _, t in pairs(CRUSH_363B[x] or { "nand-chips" }) do unlock_in(t, { "crushed-" .. x }) end
 end
-for name, ores in pairs({ ["mining-nickel-vein"] = { "garnierite" }, ["mining-molybdenum-vein"] = { "wulfenite", "powellite" } }) do
-	local r = data.raw.recipe[name]
-	if not (r.icon or r.icons or r.main_product) then r.main_product = r.results[1].name end
-	for _, x in pairs(ores) do r.results[#r.results + 1] = item("raw-" .. x, 8) end
-end
-unlock_in("nand-chips", {
-	manual("mining-olivine-vein", "manual-mine-recipes", { PICKAXE, LABOR(24) },
-		{ item("raw-bentonite", 32), item("raw-magnesite", 24), item("raw-olivine", 16), item("raw-glauconite", 8) }),
-})
-unlock_in("reach-the-nether", {
-	manual("mining-saltpeter-electrotine-vein", "manual-mine-recipes", { PICKAXE, LABOR(24) },
-		{ item("raw-saltpeter", 32), item("raw-diatomite", 24), item("raw-alunite", 8) }),
-})
+--- (issue #505: the Olivine and Saltpeter Electrotine Vein recipes are gone, their ores are the Twilight Forest's and the
+--- Nether's map veins)
 local TF_SMALL_363 = { "olivine", "tanzanite", "amethyst", "opal", "jasper", "blue-topaz", "spinel", "red-garnet",
 	"yellow-garnet", "jade", "saltpeter", "emerald", "ruby" }
 
@@ -428,11 +397,6 @@ local TF_SMALL_363 = { "olivine", "tanzanite", "amethyst", "opal", "jasper", "bl
 create_ore("raw-quartzite", nil, "crushed-quartzite", nil, nil, "crushed-quartzite", nil, nil, 1, false, false)
 create_ore("raw-molybdenum", nil, "crushed-molybdenum", nil, nil, "crushed-molybdenum", nil, nil, 1, false, false)
 create_item{ name = "raw-oilsands", subgroup = "subgroup-mining", skip_recipe = true }
-for name, ores in pairs({ ["mining-nether-quartz-vein"] = { "quartzite" }, ["mining-molybdenum-vein"] = { "molybdenum" } }) do
-	local r = data.raw.recipe[name]
-	if not (r.icon or r.icons or r.main_product) then r.main_product = r.results[1].name end
-	for _, x in pairs(ores) do r.results[#r.results + 1] = item("raw-" .. x, 8) end
-end
 create_recipe{
 	name = "centrifuging-raw-oilsands",
 	category = "lv-centrifuge-recipes",
@@ -444,10 +408,7 @@ create_recipe{
 }
 unlock_in("circuit-assembler", { "crushed-quartzite" })
 unlock_in("tungstate-processing", { "crushed-molybdenum" })
-unlock_in("ore-washing", {
-	manual("mining-oil-sand-vein", "manual-mine-recipes", { PICKAXE, LABOR(8) }, { item("raw-oilsands", 80) }),
-	"centrifuging-raw-oilsands",
-})
+unlock_in("ore-washing", { "centrifuging-raw-oilsands" })   -- (issue #505: the Oil Sand Vein recipe is gone)
 
 
 
@@ -491,12 +452,9 @@ unlock_in("nand-chips", {
 --- issue #370: the sapphire vein (issue #364) and the crushing of its ores come with the Laser Engraver, the first
 --- consumer of the sapphire and green sapphire lens (the cyan and blue gem steps; the RAM wafer of Advanced Integrated
 --- Circuits after it), no longer with NAND Chips (#252; #334 had put every Twilight Forest mine there)
-unlock_in("laser-engraver", {
-	manual("mining-sapphire-vein", "manual-mine-recipes", { PICKAXE, LABOR(24) },   -- issues #364, #373
-		{ item("raw-almandine", 32), item("raw-pyrope", 24), item("raw-sapphire", 16), item("raw-green-sapphire", 8) }),
+unlock_in("laser-engraver", {   -- (issue #505: the Sapphire Vein recipe is gone, the Twilight Forest's map vein stays)
 	"crushed-sapphire", "crushed-green-sapphire", "crushed-almandine", "crushed-pyrope",
 })
-data.raw.recipe["mining-sapphire-vein"].main_product = "raw-sapphire"   -- the vein keeps its name and icon
 --- issue #363: the Twilight Forest's other small ores (above), 8 of each
 do
 	local r = data.raw.recipe["mining-twilight-forest-small-ores"]

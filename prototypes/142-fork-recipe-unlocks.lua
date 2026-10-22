@@ -684,7 +684,6 @@ for _, m in pairs({
 	{ "mv-emitter", "advanced-mv-machines", "laser-engraver" },                -- MV Laser Engraver (ILC, RAM, NAND wafers)
 	{ "electrum-rod", "advanced-mv-machines", "laser-engraver" },
 	{ "electrum-ingot", "advanced-integrated-circuits", "laser-engraver" },
-	{ "mining-beryllium-vein", "advanced-mv-machines", "laser-engraver" },     -- emerald
 	{ "crushed-beryllium", "advanced-mv-machines", "laser-engraver" },
 	{ "chromium-ingot", "advanced-hv-machines", "hv-components" },              -- chromium rod of the HV sensor
 	{ "chromium-rod", "advanced-hv-machines", "hv-components" },

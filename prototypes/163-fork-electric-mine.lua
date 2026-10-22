@@ -84,7 +84,6 @@ FORK_ELECTRIC_MINE_EXCLUDED = {
 	["hunting-zombies"] = "a mob drop (zombie heads), no ore: the Ore Drilling Plant mines ore blocks only",
 	["cobblestone-manual-mine"] = "stone, no ore: the Ore Drilling Plant mines ore blocks only",
 	["cobblestone-manual-mine-with-wooden-pickaxe"] = "stone, no ore: the Ore Drilling Plant mines ore blocks only",
-	["mining-iron-vein-with-stone-pickaxe"] = "the stone pickaxe variant of the iron vein; its twin is drilling-iron-vein",
 	["mining-end-stone"] = "end stone is a plain block of the End, no ore: the Ore Drilling Plant mines ore blocks only",
 	["mining-glowstone-vein"] = "glowstone is vanilla's Nether block, no GT ore (07: no raw item, no ore chain): the Ore " ..
 		"Drilling Plant mines ore blocks only",
@@ -364,9 +363,10 @@ FORK_ORE_VEINS.techs = { NETHER = "reach-the-nether", TWILIGHT_FOREST = "reach-t
 FORK_ORE_VEINS.dropped = { AquaIgnis = true, TerraAer = true, PerditioOrdo = true }
 
 --- issue #499: a vein recipe whose every result is an ore of the map veins (prototypes/data/ore-mixes.lua; issue #501: of
---- every surface with map veins) is hidden with its twins: the mining drills mine those ores now. The recipes stay, with
---- their unlocks, so dimension mines of old saves keep them until V9 (#505) maps them; the other veins stay the dimension
---- mines' recipes.
+--- every surface with map veins) is hidden with its twins: the mining drills mine those ores now. Issue #505 (V9) deleted
+--- the ones of Nauvis, the Nether and the Twilight Forest (07, 09, 160); the rule still hides those of later dimensions
+--- whose ores the map veins hold (Ross128b's carbon vein, the Everglades' GTPP0), which stay until their surfaces come; the
+--- other veins stay the dimension mines' recipes.
 do
 	local overworld = {}
 	for _, m in pairs(require("prototypes.data.ore-mixes").mixes) do
@@ -391,6 +391,30 @@ do
 	end
 end
 
+--- issue #505: the deleted vein recipes of old saves (migrations/2026-10-22-issue-505-vein-recipes.json) become one
+--- placeholder per planet and machine kind, `removed-vein-<planet>-<mine|miner|drill>` (hidden, never unlocked, nothing
+--- out), so that scripts/fork-ore-veins.lua still sees which planet's vein a dimension mine ran: on that planet it
+--- becomes its mining drill, elsewhere it loses the recipe (mod data fork-electric-mine: removed, placeholder -> planet).
+--- They take the vein recipes' inputs, so that an old mine keeps them for its drill (the manual labor as fuel).
+local REMOVED_INPUTS = { mine = { item("iron-pickaxe-usage", 1), item("manual-labor", 1) },
+	miner = { item(PIPE, PIPES_PER_VEIN) }, drill = { fluid(FLUID, FLUID_PER_OP), item(PIPE, PIPES_PER_VEIN) } }
+local REMOVED = {}
+for _, planet in pairs({ "nauvis", "gt-nether", "gt-twilight" }) do
+	for kind, cat in pairs({ mine = "manual-mine-recipes", miner = MINER_CATEGORY, drill = CATEGORY }) do
+		local name = "removed-vein-" .. planet .. "-" .. kind
+		data:extend({ {
+			type = "recipe", name = name, category = cat, enabled = false, hidden = true, energy_required = 1,
+			icon = "__gregtorio-continued__/graphics/icons/manual-mine.png", icon_size = 64,
+			localised_name = { "recipe-name.removed-vein", { "space-location-name." .. planet } },
+			ingredients = REMOVED_INPUTS[kind], results = {},
+		} })
+		REMOVED[name] = planet
+		if kind == "mine" then
+			FORK_ELECTRIC_MINE_EXCLUDED[name] = "issue #505: the placeholder of an old save's deleted vein recipes, no vein"
+		end
+	end
+end
+
 --- issue #342: a replaced mine keeps its vein (scripts/fork-electric-mine.lua). The mod data names, for every recipe of a
 --- vein (the Manual Mine's, the Miners', the plants'), the vein (its Manual Mine recipe) and, per vein, its recipe of each
 --- category; `machines` are the mines that keep their vein when one of them replaces another (issue #499: the dimension
@@ -408,7 +432,7 @@ do
 	local drills = {}
 	for drill, dim in pairs(DIMENSION) do drills[dim] = drill end
 	data:extend({ { type = "mod-data", name = "fork-electric-mine",
-		data = { veins = veins, recipes = recipes, machines = machines, drills = drills } } })
+		data = { veins = veins, recipes = recipes, machines = machines, drills = drills, removed = REMOVED } } })
 end
 
 --------------------------------------------------------------------------------

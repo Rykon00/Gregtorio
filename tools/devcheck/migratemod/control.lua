@@ -271,6 +271,9 @@ local RM_MACHINES = {
 	-- name went to the mining drill, a Manual Mine of an old save is a Dimension Mine (JSON migration); issue #500: one on
 	-- an Overworld vein (hidden since #499) is replaced by the Manual Mine drill at its place, with its manual labor as fuel
 	{ "manual-mine", "mining-iron-vein", nil, "manual-mine", nil, true },
+	-- issue #505: the vein recipes of Nauvis, the Nether and the Twilight Forest are gone (JSON: a placeholder of their
+	-- planet); a mine on Nauvis on a Nether vein stays a Dimension Mine without a recipe
+	{ "manual-mine", "mining-tetrahedrite-vein", nil, "dimension-mine" },
 	-- issue #348: upstream's Ruby Lens from a plain ruby is deleted; a lathe of an old save loads without the recipe
 	{ "lv-lathe", "ruby-lens", nil },
 	-- issue #370: GTNH's green sapphire and sapphire lens replace the apatite and lapis lens; an engraver of an old save

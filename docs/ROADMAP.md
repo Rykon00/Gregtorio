@@ -52,7 +52,7 @@ worked off one pull request each; this list is their status.
 | LV, MV | energy storage before IV: battery buffers and the LV to HV batteries | #444 | done (fixed-size buffers LV to HV with the batteries in the recipe; LV and MV with Battery, HV with Large Batteries) |
 | LV to HV | circuit recipe names of GTNH (Integrated Logic Circuit, Microprocessor, Integrated Processor, Processor Assembly, Workstation, Mainframe) | #445 | open |
 | ULV, HV | the ULV circuit tier; the nanoprocessor's parts at HV | #450 | done (`ulv-circuit` from the vacuum tube and NAND chip recipes; the nanoprocessor in the HV circuit assembler, its parts at HV, the wafer EV; the MV EBF and vacuum freezer keep their names) |
-| all | GTNH's veins as mixed ore patches on the map instead of the vein recipes | #451 | question (Discord poll) |
+| all | GTNH's veins as mixed ore patches on the map instead of the vein recipes | #451 | done (plan #494, #495-#505: the map veins of Nauvis, the Nether, the Twilight Forest and The End, mining drills, portals, Ender Storage; `docs/ORE-VEINS.md`) |
 
 ## Phase 1: LuV (done)
 

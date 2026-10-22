@@ -264,7 +264,9 @@
     `FORK_ORE_VEINS.dropped` (the Thaumcraft veins) keeps their ores out of the hide rule; #252's tree rule takes no
     alternative that needs a missing ore whose nearest producer is `planet-mining`; issue #503: The End, the hidden planet
     `gt-end` (own tiles `gt-end-stone` and `gt-end-void`, a copy of out-of-map, placed by `gt_end_land`: the main island
-    and the outer islands; its `gt_vein_id` is cut by `gt_end_land`), its 7 veins; loads after 161)
+    and the outer islands; its `gt_vein_id` is cut by `gt_end_land`), its 7 veins; issue #505: the vein recipes of Nauvis,
+    the Nether and the Twilight Forest are deleted, old saves map them onto 163's placeholders `removed-vein-<planet>-<kind>`
+    (JSON) that `scripts/fork-ore-veins.lua` turns into drills or clears; `docs/ORE-VEINS.md`; loads after 161)
   - 156 circuit icons (issue #164: the circuit variant recipes up to UV keep the shared tier item and show GT's texture
     of their GTNH item as recipe icon; devcheck fails for a tier circuit recipe without its own icon; issue #450: the ULV
     tier item `ulv-circuit`, which the vacuum tube and NAND chip recipes give and every former user of the two takes, and

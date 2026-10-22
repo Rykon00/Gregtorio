@@ -779,9 +779,29 @@ for rname, r in pairs(data.raw.recipe) do
 		table.insert(makers[res.name], rname)
 	end
 end
+--- issue #505: a raw ore of the map veins (163's FORK_ORE_VEINS, the mixes of prototypes/data/ore-mixes.lua) comes from
+--- the start on Nauvis, else with the reach technology of each planet that has it
+local vein_techs = {}
+for _, m in pairs(require("prototypes.data.ore-mixes").mixes) do
+	if not FORK_ORE_VEINS.dropped[m.name] then
+		for _, d in pairs(m.dimensions) do
+			if FORK_ORE_VEINS.planets[d] then
+				for _, role in pairs({ "primary", "secondary", "between", "sporadic" }) do
+					local raw = "raw-" .. m[role]
+					local t = vein_techs[raw] or {}
+					if d == "OW" then t.start = true else t[FORK_ORE_VEINS.techs[d]] = true end
+					vein_techs[raw] = t
+				end
+			end
+		end
+	end
+end
 --- the technologies that give an item (nil: it is there from the start)
 local function item_techs(name)
+	local vt = vein_techs[name]
+	if vt and vt.start then return nil end
 	local out = {}
+	for t in pairs(vt or {}) do out[#out + 1] = t end
 	for _, rname in pairs(makers[name] or {}) do
 		local r = data.raw.recipe[rname]   -- nil: removed since (issue #223's raw ore smelting)
 		if r and r.enabled ~= false and not r.hidden then return nil end
@@ -1790,6 +1810,21 @@ RAW_SMELT["raw-quartzite"] = { "quartzite-gem", 1 }   -- issue #496: likewise (t
 for x, o in pairs(NEW_ORES) do   -- issue #363: the raw ores of the new ores smelt into GT's direct smelting metal
 	if o.smelt then RAW_SMELT["raw-" .. x] = { o.smelt .. "-ingot", 1 } end
 end
+--- issue #505: the other raw ores' furnace recipes of the same product (their technologies; nil: one is there from the
+--- start, false: there is none): a raw ore of the map veins, there from the start, smelts no earlier than they do (raw
+--- brown limonite into iron with Smelt Iron Ingots, as raw iron)
+local function smelt_techs(name, product)
+	local out = {}
+	for _, rname in pairs(makers[product] or {}) do
+		local r = data.raw.recipe[rname]
+		if rname ~= name and r and not r.hidden and r.category == "smelting" and #(r.ingredients or {}) == 1
+			and r.ingredients[1].name:match("^raw%-") then
+			if r.enabled ~= false and not techs_of_recipe[rname] then return nil end
+			for _, t in pairs(techs_of_recipe[rname] or {}) do out[#out + 1] = t end
+		end
+	end
+	return #out > 0 and out or false
+end
 local raw_changed, raw_removed = 0, 0
 for raw, out in pairs(RAW_SMELT) do
 	local name, multi = raw .. "-smelter", raw .. "-multismelter"
@@ -1808,7 +1843,7 @@ for raw, out in pairs(RAW_SMELT) do
 		else
 			recipe{ name = name, category = "smelting", subgroup = "subgroup-smelting", time = 10, main = out[1],
 				ingredients = { item(raw) }, results = { item(out[1], out[2]) } }
-			unlock_after(made(name), { item_techs(raw) })
+			unlock_after(made(name), { item_techs(raw), smelt_techs(name, out[1]) })
 		end
 		local m = data.raw.recipe[multi]
 		if m then
@@ -1817,7 +1852,7 @@ for raw, out in pairs(RAW_SMELT) do
 		else
 			recipe{ name = multi, category = "multismelter-recipes", subgroup = "subgroup-multismelter-recipes", time = 10,
 				main = out[1], ingredients = { item(raw, 64) }, results = { item(out[1], out[2] * 64) } }
-			unlock_after(made(multi), { machine_techs("multismelter-recipes"), item_techs(raw) })
+			unlock_after(made(multi), { machine_techs("multismelter-recipes"), item_techs(raw), smelt_techs(name, out[1]) })
 		end
 		raw_changed = raw_changed + 1
 	else

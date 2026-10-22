@@ -76,7 +76,6 @@ data:extend({
     icon_size = 256,
     effects = {
       { type = "unlock-recipe", recipe = "furnace-crafting-table" },
-      { type = "unlock-recipe", recipe = "mining-iron-vein-with-stone-pickaxe" },	  
       { type = "unlock-recipe", recipe = "raw-iron-smelter" },
       { type = "unlock-recipe", recipe = "charcoal-smelter" },
     },
@@ -104,8 +103,6 @@ data:extend({
 	  { type = "unlock-recipe", recipe = "iron-chest-crafting-table" },
       { type = "unlock-recipe", recipe = "iron-pickaxe-usage" },
       { type = "unlock-recipe", recipe = "cobblestone-manual-mine" },
-      { type = "unlock-recipe", recipe = "mining-iron-vein" },
-      { type = "unlock-recipe", recipe = "mining-coal-vein" },
       { type = "unlock-recipe", recipe = "raw-coal-smelter" },
       { type = "unlock-recipe", recipe = "iron-shovel-usage" },	  
       { type = "unlock-recipe", recipe = "gravel-with-shovel" }
@@ -129,7 +126,6 @@ data:extend({
     effects = {
       { type = "unlock-recipe", recipe = "smooth-stone" },
       { type = "unlock-recipe", recipe = "stone-bricks" },
-	  { type = "unlock-recipe", recipe = "mining-chalcopyrite-vein" },
 	  { type = "unlock-recipe", recipe = "raw-copper-smelter" },
       { type = "unlock-recipe", recipe = "copper-plate-crafting-table" },
       { type = "unlock-recipe", recipe = "iron-gear-crafting-table" },
@@ -244,7 +240,6 @@ data:extend({
     effects = {
       { type = "unlock-recipe", recipe = "empty-bucket" },
       { type = "unlock-recipe", recipe = "bucket-of-water" },
-	  { type = "unlock-recipe", recipe = "mining-cassiterite-vein" },
       { type = "unlock-recipe", recipe = "raw-tin-smelter" },
       { type = "unlock-recipe", recipe = "raw-cassiterite-smelter" },
 	  { type = "unlock-recipe", recipe = "mortar-and-pestle" },
@@ -303,7 +298,6 @@ data:extend({
     icon = "__gregtorio-continued__/graphics/technology/steam-compressor.png",
     icon_size = 256,
     effects = {
-      { type = "unlock-recipe", recipe = "mining-redstone-vein" },
       { type = "unlock-recipe", recipe = "raw-redstone-smelter" },
       { type = "unlock-recipe", recipe = "raw-ruby-smelter" },
       { type = "unlock-recipe", recipe = "red-alloy-ingot" },
@@ -355,7 +349,6 @@ data:extend({
     icon = "__gregtorio-continued__/graphics/technology/steam-macerator.png",
     icon_size = 256,
     effects = {
-      { type = "unlock-recipe", recipe = "mining-diamond-vein" },
       { type = "unlock-recipe", recipe = "raw-diamond-smelter" },
       { type = "unlock-recipe", recipe = "steam-macerator" },
       { type = "unlock-recipe", recipe = "wood-pulp" },
@@ -409,10 +402,8 @@ data:extend({
     icon = "__gregtorio-continued__/graphics/technology/primitive-blast-furnace.png",
     icon_size = 256,
     effects = {
-      { type = "unlock-recipe", recipe = "mining-basaltic-mineral-sands-vein" },
       { type = "unlock-recipe", recipe = "raw-gypsum-smelter" },
       { type = "unlock-recipe", recipe = "gypsum" },
-      { type = "unlock-recipe", recipe = "mining-lapis-vein" },
       { type = "unlock-recipe", recipe = "raw-lazurite-smelter" },
       { type = "unlock-recipe", recipe = "raw-sodalite-smelter" },
       { type = "unlock-recipe", recipe = "raw-lapis-smelter" },
@@ -512,7 +503,6 @@ data:extend({
     icon_size = 256,
     effects = {
       { type = "unlock-recipe", recipe = "raw-rubber-pulp-extractor" },
-      { type = "unlock-recipe", recipe = "mining-sphalerite-vein" },
       { type = "unlock-recipe", recipe = "sulfur" },
       { type = "unlock-recipe", recipe = "raw-sphalerite-smelter" },
       { type = "unlock-recipe", recipe = "rubber-sheet-alloy-smelter" }
@@ -824,7 +814,6 @@ data:extend({
     icon = "__gregtorio-continued__/graphics/technology/electrolyzer.png",
     icon_size = 256,
     effects = {
-      { type = "unlock-recipe", recipe = "mining-magnetite-vein" },
       { type = "unlock-recipe", recipe = "raw-gold-smelter" },
       { type = "unlock-recipe", recipe = "gold-wire" },
       { type = "unlock-recipe", recipe = "lv-electrolyzer" },
@@ -1113,7 +1102,6 @@ data:extend({
     icon = "__gregtorio-continued__/graphics/technology/galena-processing.png",
     icon_size = 256,
     effects = {
-      { type = "unlock-recipe", recipe = "mining-galena-vein" },
       { type = "unlock-recipe", recipe = "raw-galena-smelter" },
       { type = "unlock-recipe", recipe = "crushed-galena" },
       { type = "unlock-recipe", recipe = "galena-dust" },
@@ -1151,7 +1139,6 @@ data:extend({
     icon = "__gregtorio-continued__/graphics/technology/soldering-alloy.png",
     icon_size = 256,
     effects = {
-      { type = "unlock-recipe", recipe = "mining-tetrahedrite-vein" },
       { type = "unlock-recipe", recipe = "raw-tetrahedrite-smelter" },
       { type = "unlock-recipe", recipe = "crushed-tetrahedrite" },
       { type = "unlock-recipe", recipe = "tetrahedrite-dust" },
@@ -1282,7 +1269,6 @@ data:extend({
     icon = "__gregtorio-continued__/graphics/technology/hydrochloric-acid.png",
     icon_size = 256,
     effects = {
-      { type = "unlock-recipe", recipe = "mining-salt-vein" },
       { type = "unlock-recipe", recipe = "crushed-salt" },
       { type = "unlock-recipe", recipe = "salt" },
       { type = "unlock-recipe", recipe = "centrifuging-crushed-salt" },
@@ -1349,7 +1335,6 @@ data:extend({
     icon = "__gregtorio-continued__/graphics/technology/circuit-assembler.png",
     icon_size = 256,
     effects = {
-	  { type = "unlock-recipe", recipe = "mining-nether-quartz-vein" },
 	  { type = "unlock-recipe", recipe = "raw-nether-quartz-smelter" },
 	  { type = "unlock-recipe", recipe = "crushed-nether-quartz" },
 	  { type = "unlock-recipe", recipe = "nether-quartz-dust" },
@@ -1418,7 +1403,6 @@ data:extend({
     icon_size = 256,
     effects = {
       { type = "unlock-recipe", recipe = "lv-alloy-smelter" },
-      { type = "unlock-recipe", recipe = "mining-nickel-vein" },
       { type = "unlock-recipe", recipe = "raw-nickel-smelter" },
       { type = "unlock-recipe", recipe = "crushed-nickel" },
       { type = "unlock-recipe", recipe = "nickel-dust" },
@@ -1643,7 +1627,6 @@ data:extend({
     icon = "__gregtorio-continued__/graphics/technology/phosphorus-processing.png",
     icon_size = 256,
     effects = {
-      { type = "unlock-recipe", recipe = "mining-apatite-vein" },
       { type = "unlock-recipe", recipe = "raw-apatite-smelter" },
       { type = "unlock-recipe", recipe = "crushed-apatite" },
       { type = "unlock-recipe", recipe = "apatite" },
@@ -2429,7 +2412,6 @@ data:extend({
     icon = "__gregtorio-continued__/graphics/technology/advanced-mv-machines.png",
     icon_size = 256,
     effects = {
-      { type = "unlock-recipe", recipe = "mining-beryllium-vein" },  
       { type = "unlock-recipe", recipe = "raw-beryllium-smelter" },  
       { type = "unlock-recipe", recipe = "raw-beryllium-multismelter" },  
       { type = "unlock-recipe", recipe = "crushed-beryllium" },  
@@ -2626,7 +2608,6 @@ data:extend({
     icon = "__gregtorio-continued__/graphics/technology/manganese-processing.png",
     icon_size = 256,
     effects = {
-      { type = "unlock-recipe", recipe = "mining-manganese-vein" }, 
       { type = "unlock-recipe", recipe = "crushed-grossular" },
       { type = "unlock-recipe", recipe = "grossular-dust" },
       { type = "unlock-recipe", recipe = "centrifuging-crushed-grossular" },
