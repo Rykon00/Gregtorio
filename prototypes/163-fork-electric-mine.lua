@@ -392,8 +392,11 @@ do
 	end
 	for _, p in ipairs(MINERS) do machines[DIMENSION[p[1] .. "-miner"]] = true end
 	for _, p in ipairs(PLANTS) do machines[DIMENSION[p[1]]] = true end
+	--- issue #500: dimension mine -> the mining drill that replaces it in an old save (scripts/fork-ore-veins.lua)
+	local drills = {}
+	for drill, dim in pairs(DIMENSION) do drills[dim] = drill end
 	data:extend({ { type = "mod-data", name = "fork-electric-mine",
-		data = { veins = veins, recipes = recipes, machines = machines } } })
+		data = { veins = veins, recipes = recipes, machines = machines, drills = drills } } })
 end
 
 --------------------------------------------------------------------------------

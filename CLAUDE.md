@@ -248,7 +248,13 @@
     veins; the autoplace control `gt-ore-veins`; the start veins in the four cells around the origin; mod data
     `fork-ore-veins` for the chart tags of `scripts/fork-ore-veins.lua` and devcheck's map vein test; issue #508:
     `data-final-fixes.lua` deletes every resource autoplace control no planet and no prototype uses, and its preset
-    entries, so the map generator lists only what makes ore; loads after 161)
+    entries, so the map generator lists only what makes ore; issue #500: the Lua migration
+    `migrations/2026-10-22-issue-500-map-veins.lua` (a Lua migration runs once per save also when the version stays, as
+    in the maintainer's linked clone) calls `scripts/fork-ore-veins.lua`'s remote `migrate`: the planet's map settings,
+    `regenerate_entity` of the generated chunks, the dimension mines on hidden (Overworld) vein recipes replaced by their
+    drill, the charted veins tagged, names of missing noise expressions dropped from the map settings (each one is a
+    warning whenever `calculate_tile_properties` compiles the noise program; the tags read each cell once,
+    `storage.fork_ore_veins.cells`); loads after 161)
   - 156 circuit icons (issue #164: the circuit variant recipes up to UV keep the shared tier item and show GT's texture
     of their GTNH item as recipe icon; devcheck fails for a tier circuit recipe without its own icon; issue #450: the ULV
     tier item `ulv-circuit`, which the vacuum tube and NAND chip recipes give and every former user of the two takes, and
