@@ -94,6 +94,7 @@ FORK_ELECTRIC_MINE_EXCLUDED = {
 	["clay-ball-manual-digsite"] = "ground work at the Dig Site (clay), no ore",
 	["digging-soul-sand"] = "ground work at the Dig Site (the Nether's soul sand), no ore",
 	["digging-moon-turf"] = "ground work at the Dig Site (the Moon's turf), no ore",
+	["digging-obsidian"] = "ground work at the Dig Site (issue #501: obsidian of the lava pools, for the Nether Portal), no ore",
 }
 
 --- manual recipe -> electric recipe of the plants and of the miners (devcheck reads both)
@@ -352,14 +353,21 @@ for _, name in ipairs(twins) do
 	FORK_ELECTRIC_MINE.miner_twins[name] = miner_twin
 end
 
---- issue #499: a vein recipe whose every result is an ore of the Overworld's map veins (prototypes/data/ore-mixes.lua) is
---- hidden with its twins: the mining drills mine those ores now. The recipes stay, with their unlocks, so dimension mines
---- of old saves keep them until V9 (#505) maps them; the other veins stay the dimension mines' recipes.
+--- the dimensions (DimNames) that are surfaces with map veins, their planet and the technology that reaches it; 165 makes
+--- the planets and their veins (issue #501: the Nether; V6 and V7 add the Twilight Forest and The End)
+FORK_ORE_VEINS = FORK_ORE_VEINS or {}
+FORK_ORE_VEINS.planets = { OW = "nauvis", NETHER = "gt-nether" }
+FORK_ORE_VEINS.techs = { NETHER = "reach-the-nether" }
+
+--- issue #499: a vein recipe whose every result is an ore of the map veins (prototypes/data/ore-mixes.lua; issue #501: of
+--- every surface with map veins) is hidden with its twins: the mining drills mine those ores now. The recipes stay, with
+--- their unlocks, so dimension mines of old saves keep them until V9 (#505) maps them; the other veins stay the dimension
+--- mines' recipes.
 do
 	local overworld = {}
 	for _, m in pairs(require("prototypes.data.ore-mixes").mixes) do
 		for _, d in pairs(m.dimensions) do
-			if d == "OW" then
+			if FORK_ORE_VEINS.planets[d] then
 				for _, role in pairs({ "primary", "secondary", "between", "sporadic" }) do overworld["raw-" .. m[role]] = true end
 			end
 		end

@@ -254,7 +254,12 @@
     `regenerate_entity` of the generated chunks, the dimension mines on hidden (Overworld) vein recipes replaced by their
     drill, the charted veins tagged, names of missing noise expressions dropped from the map settings (each one is a
     warning whenever `calculate_tile_properties` compiles the noise program; the tags read each cell once,
-    `storage.fork_ore_veins.cells`); loads after 161)
+    `storage.fork_ore_veins.cells`); issue #501: the Nether is a surface: the surface property `gt-dimension` (1
+    Overworld, 2 Nether, 3 Twilight Forest, 4 End), the hidden planet `gt-nether` (Vulcanus' terrain without its
+    resources: volcanic rock for netherrack, lava lakes, no water), its 11 veins; 163's `FORK_ORE_VEINS.planets` and
+    `.techs` (planet -> its reach technology) also hide the vein recipes of the Nether's ores; devcheck counts a resource
+    that only a reached planet places (checkmod `P` rows) as obtainable with that technology only (pseudo recipes
+    `planet-mining:<resource>`), so #252's tree rule sees the Nether; loads after 161)
   - 156 circuit icons (issue #164: the circuit variant recipes up to UV keep the shared tier item and show GT's texture
     of their GTNH item as recipe icon; devcheck fails for a tier circuit recipe without its own icon; issue #450: the ULV
     tier item `ulv-circuit`, which the vacuum tube and NAND chip recipes give and every former user of the two takes, and
@@ -286,7 +291,7 @@
     unlocks count).
   The phase plan is in `docs/ROADMAP.md`. Runtime fork code lives in `scripts/` and is required from `control.lua`
   (`fork-molds.lua`, `fork-victory.lua`, `fork-power.lua`, `fork-space-elevator.lua` (#302), `fork-electric-mine.lua` (#342: a Miner or Ore Drilling Plant that replaces a mine
-  keeps its vein, from 163's mod data `fork-electric-mine`; event driven, `storage.fork_electric_mine`), `fork-ore-veins.lua` (#497: a chart tag with the vein's name when the chunk of a map vein's centre is charted, `storage.fork_ore_veins`, event driven), `fork-steam-boilers.lua` (#446: the solar boilers of 101 stop at night; every 120 ticks, `storage.fork_solar_boilers`), and `fork-me-handover.lua`: the one-time hand-over of the ME
+  keeps its vein, from 163's mod data `fork-electric-mine`; event driven, `storage.fork_electric_mine`), `fork-portals.lua` (#501: the Nether Portal sends whoever steps onto it to the Nether and back at 1:8, makes the Nether's surface at the first use and the exit portal; `on_player_changed_position`, remote `fork-portals.travel`, `storage.fork_portals`), `fork-ore-veins.lua` (#497: a chart tag with the vein's name when the chunk of a map vein's centre is charted, `storage.fork_ore_veins`, event driven), `fork-steam-boilers.lua` (#446: the solar boilers of 101 stop at night; every 120 ticks, `storage.fork_solar_boilers`), and `fork-me-handover.lua`: the one-time hand-over of the ME
   state of saves from before issue #83 to me-network through the remote interface `gregtorio-me-handover`, which
   me-network calls in its `on_init`; keep its table list and fingerprint function equal to me-network's
   `scripts/fork-me-handover.lua`). Everything else of the ME network (runtime, graphics, locale, its tests,

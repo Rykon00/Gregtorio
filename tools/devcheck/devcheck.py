@@ -307,6 +307,7 @@ class Model:
         self.burnt, self.burners = [], {}   # (fuel item, burnt result, fuel category); burner entity -> categories
         self.tools = {}                     # recipe -> the mold or lens it needs in the module slot (issue #316)
         self.base = {"water", "steam"}
+        mined, reach = {}, {}   # issue #501: resource -> its mined items; resource -> technologies of its planets
         for p in rows:
             k = p[0]
             if k == "R":
@@ -323,9 +324,9 @@ class Model:
                 self.T[p[1]] = dict(pre=[x for x in p[2].split(",") if x], eff=[x for x in p[3].split(",") if x],
                                     sci=[x for x in p[4].split(",") if x], trig=p[5], en=p[6] == "true")
             elif k == "M" and p[4] != "gregtorio-disabled":
-                if p[2]:
-                    self.base.add(p[2])
-                self.base.update(x.split(":", 1)[1] for x in p[3].split(",") if x)
+                mined[p[1]] = ([p[2]] if p[2] else []) + [x.split(":", 1)[1] for x in p[3].split(",") if x]
+            elif k == "P":
+                reach.setdefault(p[1], set()).add(p[3] if len(p) > 3 else "")
             elif k == "O" and p[2]:
                 self.base.add(p[2])
             elif k == "B":
@@ -334,6 +335,21 @@ class Model:
                 self.burners[p[1]] = p[2].split(",")
             elif k == "K":
                 self.tools[p[1]] = p[2]
+        # issue #501: a resource is there from the start unless every planet that places it is reached by a technology
+        # (the Nether's map veins); then the technology unlocks a pseudo recipe `planet-mining:<resource>` that gives its
+        # items, in the category `planet-mining` of the character
+        for res, items in mined.items():
+            techs = reach.get(res)
+            if not techs or "" in techs:
+                self.base.update(items)
+                continue
+            name = "planet-mining:" + res
+            self.R[name] = dict(cat="planet-mining", en=False, ing=[], res=items, fin=0, fout=0, hidden=False,
+                                hide_craft=False, sg="", group="", icon="")
+            for t in techs:
+                if t in self.T:
+                    self.T[t]["eff"].append(name)
+        self.C.setdefault("character", []).append("planet-mining")
         # issue #316: a recipe needs its mold or lens (150, in the module slot) as if it were an ingredient
         for r, item in self.tools.items():
             if r in self.R and item not in self.R[r]["ing"]:
@@ -583,6 +599,8 @@ def check_table_only(m, sec):
     for r in sorted(m.unlocked):
         v = m.R[r]
         if v["hidden"] or r.endswith("-recycling") or r.startswith("void-") or v["cat"] in ("recycling", "parameters"):
+            continue
+        if v["cat"] == "planet-mining":   # issue #501: the ores of a planet's map veins, mined there (no hand recipe)
             continue
         for x in v["res"]:
             if x in m.I:
@@ -1864,7 +1882,7 @@ def runtime(a):
     print(f"benchmark: {ran.group(0) if ran else 'did not run'}")
     # the ME network's runtime tests are in me-network since issue #83 (its tools/devcheck)
     tests = (("MOLD", "mold test"), ("LENS", "lens test"), ("POWER", "power test"), ("FUEL", "fuel check test"), ("COOLED", "cooled fluid test"),
-             ("TIERS", "turbine tier test"), ("RECIPES", "recipe test"), ("CRUSH", "raw ore crushing test"), ("STEAM", "steam turbine test"), ("CHAIN", "nuclear chain test"), ("LFTR", "LFTR test"), ("LSC", "supercapacitor test"), ("LSUP", "supercapacitor upgrade test"), ("ELEVATOR", "space elevator test"), ("MELT", "melt and cast test"), ("OFFER", "offered recipes test"), ("EMINE", "electric mine test"), ("SOLAR", "solar boiler test"), ("BATTERY", "battery buffer test"), ("VEINS", "map vein test"), ("DRILLS", "mining drill test"), ("VICTORY", "victory test"),
+             ("TIERS", "turbine tier test"), ("RECIPES", "recipe test"), ("CRUSH", "raw ore crushing test"), ("STEAM", "steam turbine test"), ("CHAIN", "nuclear chain test"), ("LFTR", "LFTR test"), ("LSC", "supercapacitor test"), ("LSUP", "supercapacitor upgrade test"), ("ELEVATOR", "space elevator test"), ("MELT", "melt and cast test"), ("OFFER", "offered recipes test"), ("EMINE", "electric mine test"), ("SOLAR", "solar boiler test"), ("BATTERY", "battery buffer test"), ("VEINS", "map vein test"), ("DRILLS", "mining drill test"), ("PORTAL", "portal test"), ("VICTORY", "victory test"),
              ("POSTVICTORY", "post-victory test"))
     for key, label in tests:
         m = re.search(rf"DEVCHECK-RUNTIME-{key} (.*)", log)

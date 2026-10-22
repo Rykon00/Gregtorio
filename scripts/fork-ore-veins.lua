@@ -143,10 +143,20 @@ local function migrate_surface(surface, planet)
 	local drills = em and em.data.drills or {}
 	local list = {}
 	for dim in pairs(drills) do if prototypes.entity[dim] then list[#list + 1] = dim end end
+	--- (issue #501: only a mine whose every result is an ore of this planet's veins: one on the Nether's ores stays a
+	--- dimension mine on Nauvis, its drill would find none of them)
+	local here = {}
+	for _, name in pairs(names) do
+		for _, pr in pairs(prototypes.entity[name].mineable_properties.products or {}) do here[pr.name] = true end
+	end
+	local function ores_here(recipe)
+		for _, pr in pairs(recipe.prototype.products) do if not here[pr.name] then return false end end
+		return true
+	end
 	local replaced, bare = 0, {}
 	for _, old in pairs(#list > 0 and surface.find_entities_filtered{ name = list } or {}) do
 		local recipe = old.get_recipe()
-		if recipe and recipe.prototype.hidden then
+		if recipe and recipe.prototype.hidden and ores_here(recipe) then
 			local pos, dir, force, quality, drill = old.position, old.direction, old.force, old.quality, drills[old.name]
 			local items = {}
 			for _, inv in pairs({ defines.inventory.assembling_machine_input, defines.inventory.assembling_machine_output }) do
