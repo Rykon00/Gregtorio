@@ -389,6 +389,64 @@ def draw_end_portal(size):
     return img
 
 
+ENDER_BODY = [(14, 18, 22), (26, 34, 40), (40, 54, 60), (62, 82, 86), (96, 120, 120)]
+ENDER_TRIM = [(30, 70, 60), (50, 120, 100), (90, 180, 150), (170, 230, 210)]
+ENDER_CODE = [(240, 240, 240), (230, 128, 40), (190, 70, 190)]   # white, orange, magenta: three wool colours
+
+
+def outline(img, colour):
+    out = img.copy()
+    px, o = img.load(), out.load()
+    w, h = img.size
+    for y in range(h):
+        for x in range(w):
+            if px[x, y][3] and any(not (0 <= x + dx < w and 0 <= y + dy < h) or px[x + dx, y + dy][3] == 0
+                                   for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1))):
+                o[x, y] = colour
+    return out
+
+
+def draw_ender_chest():
+    """32 x 32 RGBA: EnderStorage's Ender Chest: a dark chest with green trim and the three-colour code on its lid"""
+    img = Image.new("RGBA", (32, 32), (0, 0, 0, 0))
+    px = img.load()
+    for y in range(6, 29):
+        for x in range(3, 29):
+            lid = y < 13
+            s = 0.6 - 0.012 * (x - 3) - (0.15 if not lid else 0) + (0.2 if y in (6, 13) else 0)
+            px[x, y] = tone(ENDER_BODY, s)
+            if x in (3, 28) or y in (6, 28) or y == 13:
+                px[x, y] = tone(ENDER_TRIM, 0.55)
+    for i, c in enumerate(ENDER_CODE):   # the three colour buttons on the lid
+        for y in range(8, 11):
+            for x in range(8 + 6 * i, 12 + 6 * i):
+                px[x, y] = c + (255,)
+    for y in range(13, 18):   # the latch
+        for x in range(14, 18):
+            px[x, y] = tone(ENDER_TRIM, 0.85)
+    return outline(img, (6, 8, 10, 255))
+
+
+def draw_ender_tank():
+    """32 x 32 RGBA: EnderStorage's Ender Tank: a dark tank with a green window and the three-colour code on top"""
+    img = Image.new("RGBA", (32, 32), (0, 0, 0, 0))
+    px = img.load()
+    for y in range(3, 30):
+        for x in range(6, 26):
+            s = 0.62 - 0.018 * (x - 6)
+            px[x, y] = tone(ENDER_BODY, s)
+            if x in (6, 25) or y in (3, 29, 8):
+                px[x, y] = tone(ENDER_TRIM, 0.55)
+    for y in range(11, 27):   # the window with the fluid
+        for x in range(10, 22):
+            px[x, y] = tone(ENDER_TRIM, 0.3 + 0.03 * (y - 11) if y > 16 else 0.15)
+    for i, c in enumerate(ENDER_CODE):
+        for y in range(4, 7):
+            for x in range(9 + 5 * i, 12 + 5 * i):
+                px[x, y] = c + (255,)
+    return outline(img, (6, 8, 10, 255))
+
+
 def save_if_changed(img, path):
     if path.exists():
         old = Image.open(path).convert("RGBA")
@@ -418,6 +476,9 @@ def drawn():
     #  issue #503: the End Portal (icon and sprite, 5x5)
     save_if_changed(draw_end_portal(32), ICONS / "end-portal.png")
     save_if_changed(draw_end_portal(160).resize((320, 320), Image.NEAREST), ENTITY / "end-portal.png")
+    #  issue #504: the Ender Chest and the Ender Tank
+    save_if_changed(draw_ender_chest(), ICONS / "ender-chest.png")
+    save_if_changed(draw_ender_tank(), ICONS / "ender-tank.png")
 
 
 def main():
