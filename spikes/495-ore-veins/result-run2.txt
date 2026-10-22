@@ -1,0 +1,119 @@
+hidden planet create_surface: true gt-spike3
+time none 529 chunks: Duration: 1231.984300ms
+time vanilla 529 chunks: Duration: 1266.047700ms
+time spike3 529 chunks: Duration: 1266.360800ms
+time ow 529 chunks: Duration: 1234.973600ms
+time ow-det 529 chunks: Duration: 1232.653400ms
+time flat-none 529 chunks: Duration: 838.255000ms
+time flat-vanilla 529 chunks: Duration: 1144.913900ms
+time flat-ow 529 chunks: Duration: 1140.439900ms
+time flat-ow-det 529 chunks: Duration: 1144.912700ms
+time vanilla 529 chunks: Duration: 1228.765400ms
+time spike3 529 chunks: Duration: 1227.037100ms
+time ow 529 chunks: Duration: 1242.100300ms
+time ow-det 529 chunks: Duration: 1256.315500ms
+time flat-none 529 chunks: Duration: 843.682700ms
+time flat-vanilla 529 chunks: Duration: 1150.097300ms
+time flat-ow 529 chunks: Duration: 1147.969100ms
+time flat-ow-det 529 chunks: Duration: 1187.351400ms
+time none 529 chunks: Duration: 1294.787800ms
+time spike3 529 chunks: Duration: 1219.808200ms
+time ow 529 chunks: Duration: 1213.138500ms
+time ow-det 529 chunks: Duration: 1264.586500ms
+time flat-none 529 chunks: Duration: 796.692300ms
+time flat-vanilla 529 chunks: Duration: 1130.804700ms
+time flat-ow 529 chunks: Duration: 1168.022300ms
+time flat-ow-det 529 chunks: Duration: 1188.730800ms
+time none 529 chunks: Duration: 1301.913600ms
+time vanilla 529 chunks: Duration: 1293.190600ms
+gt_u_tile: per tile random differs for 200 of 200 positions between a batch and single queries, cell random for 0
+t1-spike3: 5370 ore tiles, 0 tiles with a second ore, 0 with a material that is not in the vein of its cell
+t1-spike3: roles primary 33.3% secondary 22.9% between 36.1% sporadic 7.2%
+t1-spike3: gt-spike-chalcopyrite=289 gt-spike-coal=1831 gt-spike-copper=78 gt-spike-iron=1195 gt-spike-lignite=121 gt-spike-magnetite=1239 gt-spike-pyrite=431 gt-spike-vanadium-magnetite=186
+t1-ow: 6754 ore tiles, 0 tiles with a second ore, 0 with a material that is not in the vein of its cell
+t1-ow: roles primary 35.3% secondary 22.8% between 34.6% sporadic 6.5%
+t1-ow: gt-spike-banded-iron=112 gt-spike-brown-limonite=88 gt-spike-chalcopyrite=215 gt-spike-cinnabar=12 gt-spike-coal=823 gt-spike-copper=50 gt-spike-fullers-earth=361 gt-spike-glauconite-sand=59 gt-spike-gold=44 gt-spike-grossular=35 gt-spike-iron=462 gt-spike-kaolinite=329 gt-spike-lepidolite=132 gt-spike-lignite=1430 gt-spike-magnetite=753 gt-spike-malachite=18 gt-spike-oilsands=442 gt-spike-pyrite=305 gt-spike-pyrolusite=63 gt-spike-redstone=66 gt-spike-rock-salt=88 gt-spike-ruby=40 gt-spike-salt=89 gt-spike-spessartine=49 gt-spike-spodumene=37 gt-spike-tantalite=17 gt-spike-vanadium-magnetite=280 gt-spike-yellow-limonite=65 gt-spike-zeolite=290
+t1-ow-det: 6834 ore tiles, 0 tiles with a second ore, 0 with a material that is not in the vein of its cell
+t1-ow-det: roles primary 34.7% secondary 22.6% between 35.4% sporadic 6.5%
+t1-ow-det: gt-spike-banded-iron=90 gt-spike-brown-limonite=92 gt-spike-chalcopyrite=213 gt-spike-cinnabar=11 gt-spike-coal=781 gt-spike-copper=47 gt-spike-fullers-earth=391 gt-spike-glauconite-sand=77 gt-spike-gold=45 gt-spike-grossular=45 gt-spike-iron=484 gt-spike-kaolinite=340 gt-spike-lepidolite=142 gt-spike-lignite=1439 gt-spike-magnetite=743 gt-spike-malachite=13 gt-spike-oilsands=432 gt-spike-pyrite=318 gt-spike-pyrolusite=67 gt-spike-redstone=68 gt-spike-rock-salt=96 gt-spike-ruby=57 gt-spike-salt=75 gt-spike-spessartine=64 gt-spike-spodumene=24 gt-spike-tantalite=15 gt-spike-vanadium-magnetite=309 gt-spike-yellow-limonite=82 gt-spike-zeolite=274
+gt_u_tile_vor: per tile random differs for 0 of 200 positions between a batch and single queries, cell random for 0
+t1-spike3: 16 cells: Coal=3 Copper=2 Magnetite=8 empty=3
+t1-spike3: label Magnetite Vein at -200,-174 r=18.8
+t1-spike3: label Magnetite Vein at -74,-216 r=35.7
+t1-spike3: label Magnetite Vein at 86,-169 r=12.2
+t1-spike3: label Magnetite Vein at -176,-36 r=10.4
+t1-spike3: label Magnetite Vein at -85,-90 r=32.8
+t1-spike3: label Copper Vein at 43,-36 r=31.5
+t1-ow: 16 cells: Coal=1 Copper=2 Gold=2 Iron=1 KaoliniteZeolite=2 LigniteCoal=2 Magnetite=2 OilSand=1 Redstone=1 Salts=1 empty=1
+t1-ow: label Copper Vein at -200,-173 r=16.1
+t1-ow: label Magnetite Vein at -74,-216 r=35.7
+t1-ow: label Iron Vein at 86,-169 r=11.2
+t1-ow: label KaoliniteZeolite Vein at 164,-195 r=20.8
+t1-ow: label Redstone Vein at -176,-36 r=9.8
+t1-ow: label Magnetite Vein at -85,-90 r=32.8
+pic-96-107: 36 cells: Coal=10 Copper=7 Magnetite=13 empty=6
+pic-96-107: label Coal Vein at -123,-238 r=14.4
+pic-96-107: label Copper Vein at -30,-228 r=22.8
+pic-96-107: label Coal Vein at 143,-232 r=36.5
+pic-96-107: label Copper Vein at 247,-228 r=23.5
+pic-96-107: label Magnetite Vein at -236,-144 r=38.1
+pic-96-107: label Magnetite Vein at -149,-133 r=18.8
+pic-96-320: 36 cells: Coal=9 Copper=6 Magnetite=7 empty=14
+pic-96-320: label Coal Vein at -123,-238 r=14.4
+pic-96-320: label Coal Vein at 143,-232 r=36.5
+pic-96-320: label Copper Vein at -233,-143 r=30.6
+pic-96-320: label Copper Vein at -149,-132 r=16.1
+pic-96-320: label Magnetite Vein at -52,-153 r=35.7
+pic-96-320: label Magnetite Vein at 63,-129 r=12.2
+pic-128-107: 16 cells: Coal=3 Copper=2 Magnetite=8 empty=3
+pic-128-107: label Magnetite Vein at -200,-174 r=18.8
+pic-128-107: label Magnetite Vein at -74,-216 r=35.7
+pic-128-107: label Magnetite Vein at 86,-169 r=12.2
+pic-128-107: label Magnetite Vein at -176,-36 r=10.4
+pic-128-107: label Magnetite Vein at -85,-90 r=32.8
+pic-128-107: label Copper Vein at 43,-36 r=31.5
+pic-128-320: 16 cells: Coal=3 Copper=2 Magnetite=5 empty=6
+pic-128-320: label Copper Vein at -200,-173 r=16.1
+pic-128-320: label Magnetite Vein at -74,-216 r=35.7
+pic-128-320: label Magnetite Vein at 86,-169 r=12.2
+pic-128-320: label Magnetite Vein at -85,-90 r=32.8
+pic-128-320: label Copper Vein at 43,-36 r=31.5
+pic-128-320: label Coal Vein at 237,-35 r=10.7
+pic-160-107: 16 cells: Coal=3 Copper=2 Magnetite=8 empty=3
+pic-160-107: label Magnetite Vein at -251,-215 r=18.8
+pic-160-107: label Magnetite Vein at -96,-279 r=35.7
+pic-160-107: label Magnetite Vein at 109,-210 r=12.2
+pic-160-107: label Magnetite Vein at -219,-43 r=10.4
+pic-160-107: label Magnetite Vein at -113,-121 r=32.8
+pic-160-107: label Copper Vein at 49,-38 r=31.5
+pic-160-320: 16 cells: Coal=3 Copper=2 Magnetite=5 empty=6
+pic-160-320: label Copper Vein at -251,-214 r=16.1
+pic-160-320: label Magnetite Vein at -96,-279 r=35.7
+pic-160-320: label Magnetite Vein at 109,-210 r=12.2
+pic-160-320: label Magnetite Vein at -113,-121 r=32.8
+pic-160-320: label Copper Vein at 49,-38 r=31.5
+pic-160-320: label Coal Vein at 299,-42 r=10.7
+pic-128-107-fill3: 16 cells: Coal=3 Copper=2 Magnetite=8 empty=3
+pic-128-107-fill3: label Magnetite Vein at -200,-174 r=18.8
+pic-128-107-fill3: label Magnetite Vein at -74,-216 r=35.7
+pic-128-107-fill3: label Magnetite Vein at 86,-169 r=12.2
+pic-128-107-fill3: label Magnetite Vein at -176,-36 r=10.4
+pic-128-107-fill3: label Magnetite Vein at -85,-90 r=32.8
+pic-128-107-fill3: label Copper Vein at 43,-36 r=31.5
+big-ow-fill1: 16 cells: Coal=1 Copper=2 Gold=2 Iron=1 KaoliniteZeolite=2 LigniteCoal=2 Magnetite=2 OilSand=1 Redstone=1 Salts=1 empty=1
+big-ow-fill1: label Copper Vein at -200,-173 r=16.1
+big-ow-fill1: label Magnetite Vein at -74,-216 r=35.7
+big-ow-fill1: label Iron Vein at 86,-169 r=11.2
+big-ow-fill1: label KaoliniteZeolite Vein at 164,-195 r=20.8
+big-ow-fill1: label Redstone Vein at -176,-36 r=9.8
+big-ow-fill1: label Magnetite Vein at -85,-90 r=32.8
+big-ow-fill3: 16 cells: Coal=1 Copper=2 Gold=2 Iron=1 KaoliniteZeolite=2 LigniteCoal=2 Magnetite=2 OilSand=1 Redstone=1 Salts=1 empty=1
+big-ow-fill3: label Copper Vein at -200,-173 r=16.1
+big-ow-fill3: label Magnetite Vein at -74,-216 r=35.7
+big-ow-fill3: label Iron Vein at 86,-169 r=11.2
+big-ow-fill3: label KaoliniteZeolite Vein at 164,-195 r=20.8
+big-ow-fill3: label Redstone Vein at -176,-36 r=9.8
+big-ow-fill3: label Magnetite Vein at -85,-90 r=32.8
+pic-128-107-fill3: 13491 ore tiles, 0 tiles with a second ore, 0 with a material that is not in the vein of its cell
+pic-128-107-fill3: roles primary 34.9% secondary 24.2% between 35.9% sporadic 4.5%
+pic-128-107-fill3: gt-spike-chalcopyrite=829 gt-spike-coal=4392 gt-spike-copper=102 gt-spike-iron=3060 gt-spike-lignite=165 gt-spike-magnetite=3599 gt-spike-pyrite=1004 gt-spike-vanadium-magnetite=340

@@ -1,0 +1,8 @@
+{
+  "name": "gt-ore-spike",
+  "version": "0.0.1",
+  "title": "GT ore spike #495",
+  "author": "spike",
+  "factorio_version": "2.0",
+  "dependencies": ["base", "space-age"]
+}
