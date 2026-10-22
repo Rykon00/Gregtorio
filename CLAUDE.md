@@ -105,7 +105,17 @@
     `hv-miner`, upgrade chain Manual Mine -> LV -> MV -> HV Miner -> Mk I) with their twins `miner-<vein>` that use up 1
     mining pipe, technology `lv-miner` (its later twins are unlocked by
     `FORK_ELECTRIC_MINE.unlock_miner_twins()`, which 142 calls after its moves); issue #342: the mod data `fork-electric-mine`
-    (recipe -> vein, vein -> recipe per category) for `scripts/fork-electric-mine.lua`; loads after 162 and **before** 142)
+    (recipe -> vein, vein -> recipe per category) for `scripts/fork-electric-mine.lua`; issue #499 (plan #494, the
+    maintainer's option A): the recipe machines are the **dimension mines** (`dimension-mine`, `lv-dimension-miner` to
+    `hv-dimension-miner`, `dimension-drilling-plant-mk1` to `-mk4`) for the vein recipes of the other dimensions, and
+    their old names are `mining-drill`s of the map veins (resource category `gt-ore`: Manual Mine burning manual labor,
+    7x7; Miners GT's radius 8/16/24 with 9 mining pipes in their recipe; Ore Drilling Plants radius 40/48/64/96, 80 % and
+    60 % drain from the Mk III) at today's rates; a vein recipe whose results are all Overworld map ores is hidden with
+    its twins (kept for old saves until V9); hunting, cobblestone and end stone are Dig Site recipes; a drill's fluid box
+    only works while its ore needs a fluid, so the plants' Drilling Fluid goes into a hidden storage tank
+    `ore-drilling-plant-fluid-input` on their tiles, which `scripts/fork-ore-drills.lua` builds and drains per ore;
+    `migrations/2026-10-22-issue-499-dimension-mines.json` renames placed mines of old saves to their dimension mine;
+    loads after 162 and **before** 142)
   - 142 recipe unlocks (issue #91: every Gregtorio recipe gets a technology from its explicit table `UNLOCKS`, the
     producers GT has and Gregtorio lacked and the component assembly line; a recipe that must stay
     locked goes into the allow-list `FORK_RECIPES_LOCKED` with its reason, devcheck fails otherwise; issue #237: a
@@ -273,7 +283,7 @@
   me-network calls in its `on_init`; keep its table list and fingerprint function equal to me-network's
   `scripts/fork-me-handover.lua`). Everything else of the ME network (runtime, graphics, locale, its tests,
   `docs/AE2.md`, `docs/ME-REWORK.md`) is in the me-network repository; an ME change goes there, Gregtorio only changes
-  the compat file when a recipe or a tier changes. Tick intervals in use: `on_nth_tick` 30 (molds), 120 (solar boilers); `on_tick`
+  the compat file when a recipe or a tier changes. Tick intervals in use: `on_nth_tick` 30 (molds), 60 (#499: the Ore Drilling Plants' Drilling Fluid, `fork-ore-drills.lua`, `storage.fork_ore_drills`), 120 (solar boilers); `on_tick`
   (fork-power: turbine energy every tick, fuel check, output hatches and the supercapacitor loss every 10th tick);
   registrations for the same interval (or a second `on_tick`) overwrite each other, so a new periodic task picks a free
   interval. The scripts keep their state lazy (`storage.fork_molds`, `storage.fork_power`).

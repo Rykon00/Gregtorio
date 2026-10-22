@@ -1180,6 +1180,89 @@ end
 --- charges, and with the generator gone it feeds an LV compressor on air
 local BB_X, BB_Y, BB_WAIT = 350, 350, 120
 
+--- Mining drills (issue #499, prototypes/163-fork-electric-mine.lua): every drill stands on a 5 x 5 patch of its own ore
+--- (the natural ores of its area removed first) with a chest at its output; at DR_TICK each chest holds its ore, the
+--- Manual Mine burnt manual labor, the plants with Drilling Fluid drank some (scripts/fork-ore-drills.lua) and the Mk II
+--- without any stopped after a few ores.
+local DR_Y, DR_TICK, DR_FLUID, DR_PER_ORE = -300.5, 600, 1000, 200 / 64
+local DR = { { "manual-mine", -330.5, "magnetite" }, { "lv-miner", -300.5, "chalcopyrite" }, { "mv-miner", -270.5, "coal" },
+	{ "hv-miner", -240.5, "pyrite" }, { "ore-drilling-plant-mk1", -150.5, "lignite", true },
+	{ "ore-drilling-plant-mk2", 0.5, "iron", false }, { "ore-drilling-plant-mk3", 150.5, "copper", true },
+	{ "ore-drilling-plant-mk4", 300.5, "gold", true } }
+
+function setup_drill_test(s)
+	local fails, dt = {}, { drills = {} }
+	storage.drill_test = dt
+	local ok, err = pcall(function()
+		for i, d in pairs(DR) do
+			local x, r = d[2], prototypes.entity[d[1]].mining_drill_radius
+			for _, e in pairs(s.find_entities_filtered{ type = "resource", area = { { x - r - 1, DR_Y - r - 1 }, { x + r + 1, DR_Y + r + 1 } } }) do
+				e.destroy()
+			end
+			for dx = -2, 2 do
+				for dy = -2, 2 do
+					s.create_entity{ name = "gt-ore-" .. d[3], position = { x + dx, DR_Y + dy }, amount = 1000 }
+				end
+			end
+			local e = s.create_entity{ name = d[1], position = { x, DR_Y }, force = "player", raise_built = true }
+			local chest = s.create_entity{ name = "iron-chest", position = { x, DR_Y - 3 }, force = "player" }
+			if d[1] == "manual-mine" then
+				assert(e.get_fuel_inventory().insert{ name = "manual-labor", count = 50 } == 50, "the Manual Mine took no manual labor")
+			else
+				s.create_entity{ name = "substation", position = { x + 4, DR_Y + 4 }, force = "player" }
+				s.create_entity{ name = "electric-energy-interface", position = { x + 7, DR_Y + 4 }, force = "player" }
+			end
+			if d[4] then
+				local tank = s.find_entity("ore-drilling-plant-fluid-input", e.position)
+				assert(tank and tank.insert_fluid{ name = "drilling-fluid", amount = DR_FLUID } > 0, d[1] .. " took no drilling fluid")
+			end
+			dt.drills[i] = { entity = e, chest = chest }
+		end
+	end)
+	if not ok then fails[#fails + 1] = "mining drill test: " .. tostring(err) end
+	return fails
+end
+
+function drill_test()
+	local dt = storage.drill_test
+	if not dt or dt.done or game.tick < DR_TICK then return end
+	dt.done = true
+	local problems, got = {}, {}
+	local function expect(ok, what) if not ok then problems[#problems + 1] = what end end
+	for i, d in pairs(DR) do
+		local rec = dt.drills[i]
+		local e = rec and rec.entity
+		if not (e and e.valid and rec.chest.valid) then
+			expect(false, d[1] .. ": the drill or its chest is gone")
+		else
+			local n = rec.chest.get_item_count("raw-" .. d[3])
+			got[#got + 1] = d[1] .. " " .. n
+			if d[4] == false then
+				expect(e.disabled_by_script, d[1] .. " without Drilling Fluid still runs (status " .. tostring(e.status) .. ")")
+				expect(n < 30, d[1] .. " without Drilling Fluid mined " .. n .. " raw " .. d[3])
+			else
+				expect(n > 0, d[1] .. " mined no raw " .. d[3] .. " (status " .. tostring(e.status) .. ")")
+			end
+			if d[4] then
+				local tank = e.surface.find_entity("ore-drilling-plant-fluid-input", e.position)
+				local left = tank and tank.get_fluid_count("drilling-fluid") or DR_FLUID
+				local per_ore = (DR_FLUID - left) / math.max(n, 1)
+				got[#got] = got[#got] .. string.format(" (%.2f fluid per ore)", per_ore)
+				expect(math.abs(per_ore - DR_PER_ORE) <= DR_PER_ORE / 2, string.format("%s drank %.2f Drilling Fluid per ore, not %.3f",
+					d[1], per_ore, DR_PER_ORE))
+				--- one that stops has drunk its tank (the Mk IV drinks 1000 in 4 s)
+				expect(not e.disabled_by_script or left < 50, d[1] .. " stopped with " .. left .. " Drilling Fluid")
+			end
+			if d[1] == "manual-mine" then
+				expect(e.get_fuel_inventory().get_item_count("manual-labor") < 50, "the Manual Mine burnt no manual labor")
+			end
+		end
+	end
+	for _, p in pairs(problems) do log("DEVCHECK-RUNTIME-FAIL mining drill test: " .. p) end
+	log("DEVCHECK-RUNTIME-DRILLS " .. (#problems == 0 and "ok" or "failed") .. " (" .. table.concat(got, ", ") .. " in "
+		.. DR_TICK .. " ticks)")
+end
+
 --- Map veins (issue #497, prototypes/165-fork-ore-veins.lua): on a surface with Nauvis' map generation and a fixed seed
 --- the cells' veins are read from the noise (calculate_tile_properties at the cell centres) to find a cell of every vein of
 --- Nauvis, its largest; the chunks of those veins are generated; inside each vein every tile holds one ore at most, only
@@ -2117,6 +2200,8 @@ function elevator_test()
 	end
 end
 
+--- Issue #499: the recipe machines are the dimension mines now (the mining drills took their names); hunting moved to the
+--- Dig Site, so the recipe without a twin is the glowstone vein.
 --- Electric mine (issue #335, prototypes/163-fork-electric-mine.lua): two Manual Mines with the iron vein recipe, a
 --- pickaxe and manual labor in their input slots and raw iron in their output slot (stopped by script, so the slots stay
 --- as they are), each with an inserter and a belt on two sides. Mine A is replaced by fast replace (no player: what the
@@ -2129,24 +2214,24 @@ end
 --- Miner twin: 64 raw iron in 6 s, and its mining pipe is used up (issue #346; one per vein, #393).
 local EM_X, EM_Y = 260.5, -120.5
 local EM_C = 60                                          -- mine C (the HV Miner): x offset
-local EM_CHAIN = { "manual-mine", "lv-miner", "mv-miner", "hv-miner", "ore-drilling-plant-mk1" }
+local EM_CHAIN = { "dimension-mine", "lv-dimension-miner", "mv-dimension-miner", "hv-dimension-miner", "dimension-drilling-plant-mk1" }
 --- Issue #342: a replaced mine keeps its vein (scripts/fork-electric-mine.lua). E: replaced by script after the remote
 --- note_replace (what on_pre_build does for a player): Manual Mine -> LV Miner -> MV Miner -> Mk I must give
 --- miner-iron-vein, miner-iron-vein, drilling-iron-vein; a Manual Mine hunting blazes replaced by a Mk I has no recipe and
 --- spills its manual labor. D: the same by order_upgrade and the T1 robots of a second network (each step on its own
 --- mine); B (the upgrade planner above) must give drilling-iron-vein too.
 local EM_E_Y, EM_D_Y = -105.5, -122.5
-local EM_D = { { 352.5, "manual-mine", "mining-iron-vein", "lv-miner", "miner-iron-vein" },
-	{ 360.5, "lv-miner", "miner-iron-vein", "mv-miner", "miner-iron-vein" },
-	{ 368.5, "mv-miner", "miner-iron-vein", "ore-drilling-plant-mk1", "drilling-iron-vein" },
-	{ 376.5, "manual-mine", "hunting-blazes", "ore-drilling-plant-mk1", nil } }
+local EM_D = { { 352.5, "dimension-mine", "mining-iron-vein", "lv-dimension-miner", "miner-iron-vein" },
+	{ 360.5, "lv-dimension-miner", "miner-iron-vein", "mv-dimension-miner", "miner-iron-vein" },
+	{ 368.5, "mv-dimension-miner", "miner-iron-vein", "dimension-drilling-plant-mk1", "drilling-iron-vein" },
+	{ 376.5, "dimension-mine", "mining-glowstone-vein", "dimension-drilling-plant-mk1", nil } }
 local EM_LABOR = 10
 
 local function em_mine(s, name, x, y, recipe)
 	local e = s.create_entity{ name = name, position = { x, y }, force = "player", raise_built = true }
 	e.set_recipe(recipe)
 	e.disabled_by_script = true
-	if recipe == "hunting-blazes" then
+	if recipe == "mining-glowstone-vein" then
 		assert(e.get_inventory(defines.inventory.assembling_machine_input).insert{ name = "manual-labor", count = EM_LABOR }
 			== EM_LABOR, "the hunting manual mine took no manual labor")
 	end
@@ -2155,10 +2240,10 @@ end
 local function em_recipe(e) return e and e.valid and e.get_recipe() and e.get_recipe().name or nil end
 local EM_B = 30                                          -- mine B: x offset
 local EM_ITEMS = { ["iron-pickaxe-usage"] = 1, ["manual-labor"] = 2, ["raw-iron"] = 10 }
-local EM_PLANT = "ore-drilling-plant-mk1"
+local EM_PLANT = "dimension-drilling-plant-mk1"
 
 local function em_site(s, x, y)
-	local mine = s.create_entity{ name = "manual-mine", position = { x, y }, force = "player", raise_built = true }
+	local mine = s.create_entity{ name = "dimension-mine", position = { x, y }, force = "player", raise_built = true }
 	mine.set_recipe("mining-iron-vein")
 	mine.disabled_by_script = true
 	local input = mine.get_inventory(defines.inventory.assembling_machine_input)
@@ -2197,7 +2282,7 @@ function setup_emine_test(s)
 	local ok, err = pcall(function()
 		local st = { phase = 0 }
 		storage.emine = st
-		for _, r in pairs({ "mining-iron-vein", "drilling-iron-vein", "miner-iron-vein", "hunting-blazes" }) do
+		for _, r in pairs({ "mining-iron-vein", "drilling-iron-vein", "miner-iron-vein", "mining-glowstone-vein" }) do
 			game.forces.player.recipes[r].enabled = true
 		end
 		st.a, st.a_around = em_site(s, EM_X, EM_Y)
@@ -2226,7 +2311,7 @@ function setup_emine_test(s)
 		s.create_entity{ name = "substation", position = { 372, -114 }, force = "player" }
 		s.create_entity{ name = "electric-energy-interface", position = { 375, -114 }, force = "player" }
 		st.dchest = s.create_entity{ name = "storage-chest", position = { 372.5, -109.5 }, force = "player", raise_built = true }
-		for _, n in pairs({ "lv-miner", "mv-miner", EM_PLANT, EM_PLANT }) do st.dchest.insert{ name = n, count = 1 } end
+		for _, n in pairs({ "lv-dimension-miner", "mv-dimension-miner", EM_PLANT, EM_PLANT }) do st.dchest.insert{ name = n, count = 1 } end
 	end)
 	if not ok then fails[#fails + 1] = "electric mine test: " .. tostring(err) end
 	return fails
@@ -2248,7 +2333,7 @@ function emine_test()
 		end
 	end
 	if st.phase == 0 and t >= 20 then
-		local mm = prototypes.entity["manual-mine"]
+		local mm = prototypes.entity["dimension-mine"]
 		for i = 1, #EM_CHAIN - 1 do
 			local e = prototypes.entity[EM_CHAIN[i]]
 			expect(e.next_upgrade and e.next_upgrade.name == EM_CHAIN[i + 1], EM_CHAIN[i] .. "'s next upgrade is "
@@ -2258,10 +2343,10 @@ function emine_test()
 		end
 		--- C (issue #337): fast replace with the HV Miner, the iron vein's Miner twin with its mining pipe (issue #393: one per vein)
 		local okc, miner = pcall(function()
-			return s.create_entity{ name = "hv-miner", position = st.c.position, force = "player", fast_replace = true,
+			return s.create_entity{ name = "hv-dimension-miner", position = st.c.position, force = "player", fast_replace = true,
 				spill = true, raise_built = true }
 		end)
-		expect(okc and miner and miner.valid and miner.name == "hv-miner", "fast replace: no HV Miner built (" .. tostring(miner) .. ")")
+		expect(okc and miner and miner.valid and miner.name == "hv-dimension-miner", "fast replace: no HV Miner built (" .. tostring(miner) .. ")")
 		if okc and miner and miner.valid then
 			st.miner = miner
 			miner.set_recipe("miner-iron-vein")
@@ -2289,9 +2374,9 @@ function emine_test()
 				"the Mk I took no mining pipes")
 		end
 		--- issue #342, E: the chain by script, each step noted first as on_pre_build does for a player
-		local e = em_mine(s, "manual-mine", EM_X, EM_E_Y, "mining-iron-vein")
+		local e = em_mine(s, "dimension-mine", EM_X, EM_E_Y, "mining-iron-vein")
 		st.e_chain = {}
-		for _, name in pairs({ "lv-miner", "mv-miner", EM_PLANT }) do
+		for _, name in pairs({ "lv-dimension-miner", "mv-dimension-miner", EM_PLANT }) do
 			remote.call("fork-electric-mine", "note_replace", e)
 			e = s.create_entity{ name = name, position = { EM_X, EM_E_Y }, force = "player", fast_replace = true, spill = true,
 				raise_built = true }
@@ -2299,7 +2384,7 @@ function emine_test()
 		end
 		expect(table.concat(st.e_chain, ",") == "miner-iron-vein,miner-iron-vein,drilling-iron-vein",
 			"replaced by script: the recipes were " .. table.concat(st.e_chain, ", "))
-		local h = em_mine(s, "manual-mine", EM_X + 10, EM_E_Y, "hunting-blazes")
+		local h = em_mine(s, "dimension-mine", EM_X + 10, EM_E_Y, "mining-glowstone-vein")
 		remote.call("fork-electric-mine", "note_replace", h)
 		h = s.create_entity{ name = EM_PLANT, position = { EM_X + 10, EM_E_Y }, force = "player", fast_replace = true,
 			spill = true, raise_built = true }
@@ -2313,7 +2398,7 @@ function emine_test()
 		local inv = game.create_inventory(1)
 		inv.insert{ name = "upgrade-planner" }
 		local planner = inv[1]
-		planner.set_mapper(1, "from", { type = "entity", name = "manual-mine" })
+		planner.set_mapper(1, "from", { type = "entity", name = "dimension-mine" })
 		planner.set_mapper(1, "to", { type = "entity", name = EM_PLANT })
 		local bp = st.b.position
 		s.upgrade_area{ area = { { bp.x - 2, bp.y - 2 }, { bp.x + 2, bp.y + 2 } }, force = "player", item = planner }
@@ -2324,7 +2409,7 @@ function emine_test()
 		local bp = { EM_X + EM_B, EM_Y }
 		local b = s.find_entity(EM_PLANT, bp)
 		local back = em_items_in({ st.chest })
-		local all_back = b and (back["manual-mine"] or 0) == 1
+		local all_back = b and (back["dimension-mine"] or 0) == 1
 		for name, n in pairs(EM_ITEMS) do all_back = all_back and (back[name] or 0) == n end
 		local drilled = st.plant and st.plant.valid and st.plant.get_inventory(defines.inventory.assembling_machine_output)
 			.get_item_count("raw-iron") or 0
@@ -2347,7 +2432,7 @@ function emine_test()
 				.. " mining pipes (64 in 6 s, the pipe used up; status " .. tostring(st.miner and st.miner.valid and st.miner.status) .. ")")
 			st.mined = mined
 			expect(b ~= nil, "upgrade planner: no Mk I at the manual mine's place after " .. (t - st.t1) .. " ticks")
-			expect((back["manual-mine"] or 0) == 1, "upgrade planner: the manual mine did not come back to the storage chest")
+			expect((back["dimension-mine"] or 0) == 1, "upgrade planner: the manual mine did not come back to the storage chest")
 			items_back(back, "upgrade planner")
 			around_kept(st.b_around, "upgrade planner")
 			st.drilled, st.ticks = drilled, t - st.t1
@@ -2402,6 +2487,7 @@ script.on_nth_tick(10, function()
 	solar_test()
 	battery_test()
 	veins_test()
+	drill_test()
 	victory_test()
 end)
 
@@ -2477,6 +2563,7 @@ script.on_init(function()
 	for _, f in pairs(setup_solar_test(s)) do fails[#fails + 1] = f end
 	for _, f in pairs(setup_battery_test(s)) do fails[#fails + 1] = f end
 	for _, f in pairs(setup_veins_test()) do fails[#fails + 1] = f end
+	for _, f in pairs(setup_drill_test(s)) do fails[#fails + 1] = f end
 	log("DEVCHECK-RUNTIME placed=" .. placed .. " with_recipe=" .. with_recipe .. " failed=" .. #fails)
 	for _, f in pairs(fails) do log("DEVCHECK-RUNTIME-FAIL " .. f) end
 end)

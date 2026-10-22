@@ -267,9 +267,10 @@ local RM_MACHINES = {
 	-- issue #332: the simple SoC wafer took no lens before (also after #325); it gets the amber lens in the slot, or, in a
 	-- save that had the slot already, stops with "Missing lens"
 	{ "mv-laser-engraver", "simple-soc-wafer-sw", "simple-soc-wafer-sw" },
-	-- issue #335: the Manual Mine got a fast replace group and the Ore Drilling Plant as its next upgrade; a Manual Mine of
-	-- an old save stays one and keeps its vein recipe
-	{ "manual-mine", "mining-iron-vein", "mining-iron-vein", "manual-mine" },
+	-- issue #335: the Manual Mine got a fast replace group and the Ore Drilling Plant as its next upgrade; issue #499: the
+	-- name went to the mining drill, a Manual Mine of an old save is a Dimension Mine (JSON migration) and keeps its vein
+	-- recipe
+	{ "manual-mine", "mining-iron-vein", "mining-iron-vein", "dimension-mine" },
 	-- issue #348: upstream's Ruby Lens from a plain ruby is deleted; a lathe of an old save loads without the recipe
 	{ "lv-lathe", "ruby-lens", nil },
 	-- issue #370: GTNH's green sapphire and sapphire lens replace the apatite and lapis lens; an engraver of an old save
