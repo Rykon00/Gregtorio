@@ -19,6 +19,8 @@ local fork_ore_veins = require("scripts.fork-ore-veins")
 local fork_ore_drills = require("scripts.fork-ore-drills")
 --- Fork: the Nether Portal sends whoever steps onto it to the Nether and back (issue #501, see prototypes/160-fork-dimension-mines.lua)
 local fork_portals = require("scripts.fork-portals")
+--- Fork: Ender Chests and Ender Tanks of one colour code share their contents on every surface (issue #504, see prototypes/160-fork-dimension-mines.lua)
+local fork_ender = require("scripts.fork-ender")
 
 local function on_built(event)
   local entity = event.entity
@@ -31,6 +33,7 @@ local function on_built(event)
   fork_space_elevator.on_built(entity)
   fork_steam_boilers.on_built(entity)
   fork_ore_drills.on_built(entity)
+  fork_ender.on_built(entity)
 end
 script.on_event({ defines.events.on_built_entity, defines.events.on_robot_built_entity }, on_built)
 --- Fork: the vein of a mine about to be replaced (issue #342)
@@ -52,18 +55,26 @@ script.on_event({ defines.events.script_raised_built, defines.events.script_rais
   fork_space_elevator.on_built(event.entity)
   fork_steam_boilers.on_built(event.entity)
   fork_ore_drills.on_built(event.entity)
+  fork_ender.on_built(event.entity)
 end)
 script.on_event(defines.events.on_entity_cloned, function(event)
   fork_power.on_built(event.destination)
   fork_space_elevator.on_built(event.destination)
   fork_steam_boilers.on_built(event.destination)
   fork_ore_drills.on_built(event.destination)
+  fork_ender.on_built(event.destination)
 end)
 --- Fork: a Space Elevator or a module removed (any way): its surface is assigned again
 script.on_event(defines.events.on_object_destroyed, function(event)
   fork_space_elevator.on_object_destroyed(event)
   fork_ore_drills.on_object_destroyed(event)   -- issue #499: an Ore Drilling Plant's hidden tank goes with it
+  fork_ender.on_object_destroyed(event)   -- issue #504: an Ender Tank leaves its group
 end)
+--- Fork: the colour code panel of the Ender Chest and Ender Tank (issue #504)
+script.on_event(defines.events.on_gui_opened, fork_ender.on_gui_opened)
+script.on_event(defines.events.on_gui_closed, fork_ender.on_gui_closed)
+script.on_event(defines.events.on_gui_selection_state_changed, fork_ender.on_gui_selection_state_changed)
+script.on_event(defines.events.on_entity_settings_pasted, fork_ender.on_entity_settings_pasted)
 
 -- Raise a custom event when the cutscene ends
 script.on_event(defines.events.on_cutscene_cancelled, function(event)

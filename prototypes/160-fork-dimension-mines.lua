@@ -204,6 +204,67 @@ data:extend({ {
 } })
 
 --------------------------------------------------------------------------------
+--- ENDER STORAGE (issue #504, plan #494 V8): EnderStorage's Ender Chest and Ender Tank, which GTNH uses to move items
+--- and fluids between dimensions before AE2. Chests and tanks of the same three-colour code (16 wool colours each, left
+--- to right) share their contents on every surface; scripts/fork-ender.lua sets the code in a panel beside the chest's
+--- or tank's window. The Ender Chest is a linked-container (27 slots as EnderStorage's), the code its link_id; the
+--- Ender Tank (1600, EnderStorage's 16 buckets in Gregtorio's tenth) is a storage tank whose group the script levels.
+--- GTNH's recipes are IV arcane recipes (NewHorizonsCoreMod ScriptTCCoreMod.java, ENDERCHEST and ENDERTANK: nether star
+--- plates or long blaze rods, dense enderium plates, the IV sensor and emitter, an obsidian chest or tank); the
+--- maintainer's decision: the same shape at MV, an MV assembler recipe with the technology Ender Storage: ender eye
+--- plates or blaze rods for the four corners, ender pearl plates for the dense enderium, the MV sensor and emitter, an
+--- iron chest or a storage tank in the middle.
+--------------------------------------------------------------------------------
+
+do
+	local function tint_layers(t, c)
+		if type(t) ~= "table" then return end
+		if t.filename or t.filenames then t.tint = c end
+		for k, v in pairs(t) do if k ~= "tint" and type(v) == "table" then tint_layers(v, c) end end
+	end
+	local TINT = { 0.45, 0.75, 0.65 }
+	local subgroup = data.raw.item["iron-chest"] and data.raw.item["iron-chest"].subgroup or "storage"
+	local chest = table.deepcopy(data.raw["linked-container"]["linked-chest"])
+	chest.name = "ender-chest"
+	chest.hidden = nil
+	chest.icon, chest.icons, chest.icon_size = "__gregtorio-continued__/graphics/icons/ender-chest.png", nil, 32
+	chest.inventory_size = 27
+	chest.gui_mode = "none"   -- the code is set in scripts/fork-ender.lua's panel
+	chest.minable = { mining_time = 0.5, result = "ender-chest" }
+	chest.fast_replaceable_group = nil
+	tint_layers(chest.picture, TINT)
+	chest.localised_description = { "entity-description.ender-chest" }
+	local tank = table.deepcopy(data.raw["storage-tank"]["storage-tank"])
+	tank.name = "ender-tank"
+	tank.icon, tank.icons, tank.icon_size = "__gregtorio-continued__/graphics/icons/ender-tank.png", nil, 32
+	tank.fluid_box.volume = 1600
+	tank.minable = { mining_time = 0.5, result = "ender-tank" }
+	tank.fast_replaceable_group = nil
+	tank.next_upgrade = nil
+	tint_layers(tank.pictures, TINT)
+	tank.localised_description = { "entity-description.ender-tank" }
+	data:extend({ chest, tank })
+	for _, n in pairs({ "ender-chest", "ender-tank" }) do
+		data:extend({ { type = "item", name = n, icon = "__gregtorio-continued__/graphics/icons/" .. n .. ".png",
+			icon_size = 32, subgroup = subgroup, order = "z[ender]-" .. n, place_result = n, stack_size = 10 } })
+	end
+	local function recipe(name, corner, middle)
+		create_recipe{
+			name = name,
+			category = "mv-assembling-machine-recipes",
+			energy_required = 20 * MV_SPEED,
+			subgroup = subgroup,
+			ingredients = { item(corner, 4), item("ender-pearl-plate", 2), item("mv-sensor", 1), item("mv-emitter", 1),
+				item(middle, 1) },
+			results = { item(name, 1) },
+			main_product = name,
+		}
+	end
+	recipe("ender-chest", "ender-eye-plate", "iron-chest")
+	recipe("ender-tank", "blaze-rod", "storage-tank")
+end
+
+--------------------------------------------------------------------------------
 --- TECHNOLOGIES
 --------------------------------------------------------------------------------
 
@@ -220,6 +281,9 @@ F.tech{ name = TWILIGHT, prerequisites = { "automation-2", "primitive-electronic
 for _, t in pairs({ "galena", "invar" }) do table.insert(data.raw.technology[t].prerequisites, TWILIGHT) end
 F.tech{ name = END, prerequisites = { "eyes-of-ender", "hv-energy-hatches" }, packs = 4, count = 40, time = 30,
 	recipes = the_end }
+--- issue #504: Ender Storage at MV, after its eyes and pearls, the MV sensor, the MV emitter and the storage tank
+F.tech{ name = "ender-storage", prerequisites = { "eyes-of-ender", "advanced-mv-machines", "laser-engraver",
+	"fluid-handling" }, packs = 3, count = 40, time = 30, recipes = { "ender-chest", "ender-tank" } }
 --- Endermen with the first use of their pearls; blaze rods come before it (161)
 unlock_in("eyes-of-ender", { enderman })
 unlock_in("extreme-entity-crushers", { "crushing-endermen" })

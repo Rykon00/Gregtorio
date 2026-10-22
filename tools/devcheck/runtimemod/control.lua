@@ -1528,6 +1528,62 @@ function portal_test()
 		tostring(pt.end_void)))
 end
 
+--- Ender Storage (issue #504, scripts/fork-ender.lua): an Ender Chest on Nauvis and one in the Nether with the same code
+--- share their slots, a third with another code does not; an Ender Tank of water on Nauvis and an empty one in the
+--- Nether with the same code hold half each after the levelling, a third with another code stays empty.
+local EN_WAIT = 61   -- three levelling intervals
+
+function setup_ender_test(s)
+	local fails, et = {}, {}
+	storage.ender_test = et
+	local ok, err = pcall(function()
+		local planet = game.planets["gt-nether"]
+		local n = planet.surface or planet.create_surface()
+		n.request_to_generate_chunks({ 0, 0 }, 2)
+		n.force_generate_chunk_requests()
+		local function place(surface, name, at)
+			local pos = surface == s and at or surface.find_non_colliding_position(name, at, 64, 1)
+			return surface.create_entity{ name = name, position = pos, force = "player", raise_built = true }
+		end
+		local a, b, c = place(s, "ender-chest", { -200.5, -250.5 }), place(n, "ender-chest", { 10, 10 }),
+			place(n, "ender-chest", { 20, 10 })
+		local t1, t2, t3 = place(s, "ender-tank", { -195.5, -250.5 }), place(n, "ender-tank", { 10, 20 }),
+			place(s, "ender-tank", { -190.5, -250.5 })
+		for e, code in pairs({ [a] = 1234, [b] = 1234, [c] = 0, [t1] = 777, [t2] = 777, [t3] = 778 }) do
+			remote.call("fork-ender", "set_code", e, code)
+		end
+		a.insert{ name = "iron-plate", count = 7 }
+		t1.insert_fluid{ name = "water", amount = 1000 }
+		et.chests, et.tanks, et.tick = { a, b, c }, { t1, t2, t3 }, game.tick
+		et.code = remote.call("fork-ender", "get_code", b)
+	end)
+	if not ok then fails[#fails + 1] = "ender storage test: " .. tostring(err) end
+	return fails
+end
+
+function ender_test()
+	local et = storage.ender_test
+	if not et or et.done or not et.tick or game.tick < et.tick + EN_WAIT then return end
+	et.done = true
+	local problems = {}
+	local function expect(ok, what) if not ok then problems[#problems + 1] = what end end
+	local a, b, c = et.chests[1], et.chests[2], et.chests[3]
+	expect(b.surface.name == "gt-nether", "the second Ender Chest is on " .. b.surface.name)
+	expect(et.code == 1234, "the Nether's chest has the code " .. tostring(et.code))
+	expect(b.get_item_count("iron-plate") == 7, "the Nether's Ender Chest holds " .. b.get_item_count("iron-plate")
+		.. " iron plates of Nauvis' 7")
+	expect(c.get_item_count("iron-plate") == 0, "the Ender Chest of another code holds iron plates")
+	local function amount(t) return t.get_fluid_count("water") end
+	local w1, w2, w3 = amount(et.tanks[1]), amount(et.tanks[2]), amount(et.tanks[3])
+	expect(math.abs(w1 - 500) < 1e-3 and math.abs(w2 - 500) < 1e-3,
+		string.format("the Ender Tanks of one code hold %.1f (Nauvis) and %.1f (Nether), not 500 each", w1, w2))
+	expect(w3 == 0, "the Ender Tank of another code holds " .. w3 .. " water")
+	for _, p in pairs(problems) do log("DEVCHECK-RUNTIME-FAIL ender storage test: " .. p) end
+	log("DEVCHECK-RUNTIME-ENDER " .. (#problems == 0 and "ok" or "failed") .. string.format(" (7 iron plates through the "
+		.. "Ender Chests to the Nether, %d there; water levelled %.0f / %.0f between Nauvis and the Nether)",
+		b.get_item_count("iron-plate"), w1, w2))
+end
+
 function setup_battery_test(s)
 	local fails, bb = {}, {}
 	storage.battery = bb
@@ -2633,6 +2689,7 @@ script.on_nth_tick(10, function()
 	veins_test()
 	drill_test()
 	portal_test()
+	ender_test()
 	victory_test()
 end)
 
@@ -2710,6 +2767,7 @@ script.on_init(function()
 	for _, f in pairs(setup_veins_test()) do fails[#fails + 1] = f end
 	for _, f in pairs(setup_drill_test(s)) do fails[#fails + 1] = f end
 	for _, f in pairs(setup_portal_test(s)) do fails[#fails + 1] = f end
+	for _, f in pairs(setup_ender_test(s)) do fails[#fails + 1] = f end
 	log("DEVCHECK-RUNTIME placed=" .. placed .. " with_recipe=" .. with_recipe .. " failed=" .. #fails)
 	for _, f in pairs(fails) do log("DEVCHECK-RUNTIME-FAIL " .. f) end
 end)
