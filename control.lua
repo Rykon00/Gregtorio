@@ -13,6 +13,8 @@ local fork_space_elevator = require("scripts.fork-space-elevator")
 local fork_electric_mine = require("scripts.fork-electric-mine")
 --- Fork: the solar boilers make steam by day only (issue #446, see prototypes/101-fork-machines.lua)
 local fork_steam_boilers = require("scripts.fork-steam-boilers")
+--- Fork: the map veins get a chart tag with their name (issue #497, see prototypes/165-fork-ore-veins.lua)
+local fork_ore_veins = require("scripts.fork-ore-veins")
 
 local function on_built(event)
   local entity = event.entity
@@ -28,6 +30,8 @@ end
 script.on_event({ defines.events.on_built_entity, defines.events.on_robot_built_entity }, on_built)
 --- Fork: the vein of a mine about to be replaced (issue #342)
 script.on_event(defines.events.on_pre_build, fork_electric_mine.on_pre_build)
+--- Fork: the name of a map vein when the chunk of its centre is charted (issue #497)
+script.on_event(defines.events.on_chunk_charted, fork_ore_veins.on_chunk_charted)
 script.on_event(defines.events.on_marked_for_upgrade, fork_electric_mine.on_marked_for_upgrade)
 script.on_event(defines.events.on_cancelled_upgrade, fork_electric_mine.on_cancelled_upgrade)
 script.on_event({ defines.events.on_pre_player_mined_item, defines.events.on_robot_pre_mined }, fork_electric_mine.on_pre_mined)

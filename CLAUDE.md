@@ -230,7 +230,13 @@
     Gregtorio's surfaces (`FORK_ORE_MIX_SURFACES`, the surface property gt-dimension); devcheck fails for an ore of a vein
     on a surface without a raw ore and its chain unless the material, the vein (`mix:<name>`) or the dimension
     (`dimension:<DimNames>`) is in the allow-list `FORK_ORE_MIX_SKIPPED`, or the material in `FORK_ORE_MIX_NO_CHAIN`
-    (GT processes it another way: oil sands), each with its reason; loads after 161)
+    (GT processes it another way: oil sands), each with its reason; issue #497: the map veins of Nauvis by noise autoplace
+    as #495's spike decided (named noise expressions `gt_*`: a grid of cells `gt_cell_size`, `voronoi_cell_id` per cell
+    and per tile, GT's nine layers as bands, `gt_vein_key` = 8 x vein id + layer, one resource `gt-ore-<material>` per ore,
+    category `gt-ore`, whose probability sums its keys, so a tile holds one ore at most; each planet sets `gt_vein_id` to
+    its own `gt-vein-id-<DimNames>` through `property_expression_names`; `FORK_ORE_VEINS.planets` lists the planets with
+    veins; the autoplace control `gt-ore-veins`; the start veins in the four cells around the origin; mod data
+    `fork-ore-veins` for the chart tags of `scripts/fork-ore-veins.lua` and devcheck's map vein test; loads after 161)
   - 156 circuit icons (issue #164: the circuit variant recipes up to UV keep the shared tier item and show GT's texture
     of their GTNH item as recipe icon; devcheck fails for a tier circuit recipe without its own icon; issue #450: the ULV
     tier item `ulv-circuit`, which the vacuum tube and NAND chip recipes give and every former user of the two takes, and
@@ -262,7 +268,7 @@
     unlocks count).
   The phase plan is in `docs/ROADMAP.md`. Runtime fork code lives in `scripts/` and is required from `control.lua`
   (`fork-molds.lua`, `fork-victory.lua`, `fork-power.lua`, `fork-space-elevator.lua` (#302), `fork-electric-mine.lua` (#342: a Miner or Ore Drilling Plant that replaces a mine
-  keeps its vein, from 163's mod data `fork-electric-mine`; event driven, `storage.fork_electric_mine`), `fork-steam-boilers.lua` (#446: the solar boilers of 101 stop at night; every 120 ticks, `storage.fork_solar_boilers`), and `fork-me-handover.lua`: the one-time hand-over of the ME
+  keeps its vein, from 163's mod data `fork-electric-mine`; event driven, `storage.fork_electric_mine`), `fork-ore-veins.lua` (#497: a chart tag with the vein's name when the chunk of a map vein's centre is charted, `storage.fork_ore_veins`, event driven), `fork-steam-boilers.lua` (#446: the solar boilers of 101 stop at night; every 120 ticks, `storage.fork_solar_boilers`), and `fork-me-handover.lua`: the one-time hand-over of the ME
   state of saves from before issue #83 to me-network through the remote interface `gregtorio-me-handover`, which
   me-network calls in its `on_init`; keep its table list and fingerprint function equal to me-network's
   `scripts/fork-me-handover.lua`). Everything else of the ME network (runtime, graphics, locale, its tests,
