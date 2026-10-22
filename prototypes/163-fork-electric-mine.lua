@@ -354,10 +354,11 @@ for _, name in ipairs(twins) do
 end
 
 --- the dimensions (DimNames) that are surfaces with map veins, their planet and the technology that reaches it; 165 makes
---- the planets and their veins (issue #501: the Nether; issue #502: the Twilight Forest; V7 adds The End)
+--- the planets and their veins (issue #501: the Nether; issue #502: the Twilight Forest; issue #503: The End)
 FORK_ORE_VEINS = FORK_ORE_VEINS or {}
-FORK_ORE_VEINS.planets = { OW = "nauvis", NETHER = "gt-nether", TWILIGHT_FOREST = "gt-twilight" }
-FORK_ORE_VEINS.techs = { NETHER = "reach-the-nether", TWILIGHT_FOREST = "reach-the-twilight-forest" }
+FORK_ORE_VEINS.planets = { OW = "nauvis", NETHER = "gt-nether", TWILIGHT_FOREST = "gt-twilight", THE_END = "gt-end" }
+FORK_ORE_VEINS.techs = { NETHER = "reach-the-nether", TWILIGHT_FOREST = "reach-the-twilight-forest",
+	THE_END = "reach-the-end" }
 --- GT's veins the map leaves out (#494 decision 4: Thaumcraft's; 165 lists them in FORK_ORE_MIX_SKIPPED); their
 --- ores do not count for the rule below (the amber vein stays a dimension mine's)
 FORK_ORE_VEINS.dropped = { AquaIgnis = true, TerraAer = true, PerditioOrdo = true }

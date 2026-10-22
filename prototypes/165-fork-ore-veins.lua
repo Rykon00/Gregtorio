@@ -73,7 +73,7 @@ FORK_ORE_MIX_NO_CHAIN = {
 --------------------------------------------------------------------------------
 
 --- the planets with map veins (DimNames -> planet, 163's FORK_ORE_VEINS.planets: Nauvis, the Nether since V5, the
---- Twilight Forest since V6); V7 adds The End
+--- Twilight Forest since V6, The End since V7)
 FORK_ORE_VEINS.start = { "Coal", "Iron", "Copper", "Cassiterite" }
 FORK_ORE_VEINS.resources = {}
 
@@ -138,6 +138,53 @@ do
 		map_gen_settings = mgs,
 		surface_properties = { ["gt-dimension"] = 3, ["day-night-cycle"] = 5 * 60 * 60, ["magnetic-field"] = 90,
 			["solar-power"] = 50, pressure = 1000, gravity = 10 },
+		surface_render_parameters = nauvis.surface_render_parameters,
+		persistent_ambient_sounds = nauvis.persistent_ambient_sounds,
+	} })
+end
+
+--------------------------------------------------------------------------------
+--- Phase V7 (issue #503): The End as a surface, the planet gt-end (gt-dimension 4, hidden, no space connection;
+--- scripts/fork-portals.lua makes its surface at the first End Portal). Minecraft's End: a main island of end stone
+--- around the origin (a radius of about 400 tiles), outer islands from about 800 tiles on, the void around them (a copy
+--- of out-of-map: nothing is built or walked there); no water, no trees, no cliffs; GTNH's 7 End veins on the land
+--- only (gt_end_land cuts gt_vein_id below). No sun: the script freezes the daytime at night, solar power 0.
+--------------------------------------------------------------------------------
+
+do
+	local function noise(seed, scale)
+		return "basis_noise{x = x, y = y, seed0 = map_seed, seed1 = " .. seed .. ", input_scale = " .. scale
+			.. ", output_scale = 1}"
+	end
+	data:extend({ { type = "noise-expression", name = "gt_end_land",
+		expression = "max(distance < 400 + 60 * " .. noise(41, "1 / 90") .. ", "
+			.. noise(42, "1 / 350") .. " + 0.4 * " .. noise(43, "1 / 90") .. " > 0.35 + clamp((900 - distance) / 100, 0, 10))" } })
+	local stone = table.deepcopy(data.raw.tile["sand-1"])
+	stone.name = "gt-end-stone"
+	stone.localised_name = { "tile-name.gt-end-stone" }
+	stone.order = "z[gt]-a[end-stone]"
+	stone.tint = { 0.95, 0.95, 0.7 }
+	stone.map_color = { 219, 222, 158 }
+	stone.autoplace = { probability_expression = "gt_end_land" }
+	local void = table.deepcopy(data.raw.tile["out-of-map"])
+	void.name = "gt-end-void"
+	void.localised_name = { "tile-name.gt-end-void" }
+	void.order = "z[gt]-b[end-void]"
+	void.autoplace = { probability_expression = "1 - gt_end_land" }
+	data:extend({ stone, void })
+	local nauvis = data.raw.planet.nauvis
+	data:extend({ {
+		type = "planet", name = "gt-end", hidden = true,
+		icon = nauvis.icon, icon_size = nauvis.icon_size, starmap_icon = nauvis.starmap_icon,
+		starmap_icon_size = nauvis.starmap_icon_size, distance = 1, orientation = 0.97,
+		map_gen_settings = {
+			autoplace_controls = {},
+			autoplace_settings = { tile = { settings = { ["gt-end-stone"] = {}, ["gt-end-void"] = {} } },
+				decorative = { settings = {} }, entity = { settings = {} } },
+			property_expression_names = { cliffiness = "0" },
+		},
+		surface_properties = { ["gt-dimension"] = 4, ["day-night-cycle"] = 5 * 60 * 60, ["magnetic-field"] = 90,
+			["solar-power"] = 0, pressure = 1000, gravity = 10 },
 		surface_render_parameters = nauvis.surface_render_parameters,
 		persistent_ambient_sounds = nauvis.persistent_ambient_sounds,
 	} })
@@ -268,6 +315,8 @@ for dim, list in pairs(planet_veins) do
 		end
 		E["gt-vein-id-" .. dim] = "if(gt_start_index > 0, " .. table.concat(start, " + ") .. ", " .. pick .. ")"
 		E["gt-vein-start-" .. dim] = "gt_start_index"
+	elseif dim == "THE_END" then
+		E["gt-vein-id-" .. dim] = "(" .. pick .. ") * gt_end_land"   -- the veins on the islands only
 	else
 		E["gt-vein-id-" .. dim] = pick
 	end

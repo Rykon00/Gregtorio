@@ -1365,7 +1365,7 @@ function setup_veins_test()
 	local ok, err = pcall(function()
 		local d = prototypes.mod_data["fork-ore-veins"].data
 		local parts, size = {}, nil
-		for _, planet in pairs({ "nauvis", "gt-nether", "gt-twilight" }) do
+		for _, planet in pairs({ "nauvis", "gt-nether", "gt-twilight", "gt-end" }) do
 			if d.planets[planet] then
 				local text, sz = check_planet_veins(d, planet, vt)
 				parts[#parts + 1] = text
@@ -1417,9 +1417,11 @@ end
 --- remote does what stepping onto it does for a player) and arrives on gt-nether next to a new portal at an eighth of the
 --- position; the Nether has gt-dimension 2, no water and lava, no biters; the way back leads to the first portal, not a
 --- new one. Issue #502: the Twilight Portal the same way at 1:1 to gt-twilight (gt-dimension 3, the daytime frozen at
---- dusk, a dense forest without biters).
+--- dusk, a dense forest without biters). Issue #503: the End Portal to gt-end (gt-dimension 4, frozen night): the exit
+--- portal at the origin on end stone, the void 600 tiles out, no water, trees or biters; the way back to the first portal.
 local PT_X, PT_Y = 200.5, 300.5
 local TT_X, TT_Y = -300, 200
+local ET_X, ET_Y = 400.5, -300.5
 
 function setup_portal_test(s)
 	local fails, pt = {}, {}
@@ -1479,6 +1481,34 @@ function setup_portal_test(s)
 		expect(tback == tp, "the way back from the Twilight Forest leads to " .. tostring(tback and tback.position.x) .. ","
 			.. tostring(tback and tback.position.y) .. ", not to the first portal")
 		expect(c.valid and c.surface.name == "nauvis", "the character did not come back from the Twilight Forest")
+		--- issue #503: the End Portal
+		local ep = s.create_entity{ name = "end-portal", position = { ET_X, ET_Y }, force = "player", raise_built = true }
+		local eout = remote.call("fork-portals", "travel", c, ep)
+		expect(eout and eout.valid and eout.surface.name == "gt-end", "no End Portal on the other side")
+		expect(c.valid and c.surface.name == "gt-end", "the character is not in The End")
+		if eout and eout.valid then
+			local e = eout.surface
+			expect(math.abs(eout.position.x) < 40 and math.abs(eout.position.y) < 40,
+				string.format("The End's portal is at %.1f,%.1f, not near the origin", eout.position.x, eout.position.y))
+			expect(e.get_property("gt-dimension") == 4, "The End's gt-dimension is " .. tostring(e.get_property("gt-dimension")))
+			expect(e.freeze_daytime, "The End's daytime is not frozen")
+			expect(e.get_tile(eout.position.x, eout.position.y).name == "gt-end-stone",
+				"The End's portal stands on " .. e.get_tile(eout.position.x, eout.position.y).name)
+			e.request_to_generate_chunks({ 0, 0 }, 6)
+			e.request_to_generate_chunks({ 600, 0 }, 1)
+			e.force_generate_chunk_requests()
+			local area = { { -192, -192 }, { 192, 192 } }
+			pt.end_stone = e.count_tiles_filtered{ area = area, name = "gt-end-stone" }
+			pt.end_void = e.count_tiles_filtered{ area = { { 584, -16 }, { 616, 16 } }, name = "gt-end-void" }
+			expect(pt.end_stone > 384 * 384 * 0.9, pt.end_stone .. " end stone tiles around The End's origin")
+			expect(pt.end_void == 32 * 32, pt.end_void .. " void tiles of 1024 at 600,0 (the main island reaches out there)")
+			local other = e.count_entities_filtered{ area = area, type = { "tree", "unit-spawner", "turret", "fish" } }
+			expect(other == 0, other .. " trees, nests or fish in The End")
+		end
+		local eback = remote.call("fork-portals", "travel", c, eout)
+		expect(eback == ep, "the way back from The End leads to " .. tostring(eback and eback.position.x) .. ","
+			.. tostring(eback and eback.position.y) .. ", not to the first portal")
+		expect(c.valid and c.surface.name == "nauvis", "the character did not come back from The End")
 		pt.problems = problems
 	end)
 	if not ok then fails[#fails + 1] = "portal test: " .. tostring(err) end
@@ -1493,7 +1523,9 @@ function portal_test()
 	for _, p in pairs(problems) do log("DEVCHECK-RUNTIME-FAIL portal test: " .. p) end
 	log("DEVCHECK-RUNTIME-PORTAL " .. (#problems == 0 and "ok" or "failed") .. string.format(" (through to the Nether and back; "
 		.. "%s water and %s lava tiles around the Nether's origin; to the Twilight Forest and back, %s trees around its origin, "
-		.. "%s around Nauvis')", tostring(pt.water), tostring(pt.lava), tostring(pt.trees), tostring(pt.home_trees)))
+		.. "%s around Nauvis'; to The End and back, %s end stone tiles around its origin, %s void tiles at 600,0)",
+		tostring(pt.water), tostring(pt.lava), tostring(pt.trees), tostring(pt.home_trees), tostring(pt.end_stone),
+		tostring(pt.end_void)))
 end
 
 function setup_battery_test(s)
