@@ -121,9 +121,23 @@ create_recipe{
 --------------------------------------------------------------------------------
 
 F.category(CATEGORY)
-local manual_mine = data.raw["assembling-machine"]["manual-mine"]
-manual_mine.fast_replaceable_group = "manual-mine"
-manual_mine.next_upgrade = "lv-miner"   -- issue #337: the miners, then the plants
+--- issue #499 (plan #494, the maintainer's option A): the recipe machines of the veins become the dimension mines, which
+--- keep the vein recipes of the other dimensions; their old names go to the mining drills of the map veins (below)
+local DIMENSION = { ["manual-mine"] = "dimension-mine", ["lv-miner"] = "lv-dimension-miner",
+	["mv-miner"] = "mv-dimension-miner", ["hv-miner"] = "hv-dimension-miner", [P1] = "dimension-drilling-plant-mk1",
+	[P2] = "dimension-drilling-plant-mk2", [P3] = "dimension-drilling-plant-mk3", [P4] = "dimension-drilling-plant-mk4" }
+FORK_ELECTRIC_MINE.dimension = DIMENSION
+local manual_mine = table.deepcopy(data.raw["assembling-machine"]["manual-mine"])
+data.raw["assembling-machine"]["manual-mine"] = nil
+manual_mine.name = DIMENSION["manual-mine"]
+manual_mine.minable = { mining_time = 0.2, result = manual_mine.name }
+manual_mine.fast_replaceable_group = "dimension-mine"
+manual_mine.next_upgrade = DIMENSION["lv-miner"]   -- issue #337: the miners, then the plants
+manual_mine.localised_description = { "entity-description." .. manual_mine.name }
+data:extend({ manual_mine })
+create_item{ name = manual_mine.name, icon = manual_mine.icon, icon_size = 64, place_result = manual_mine.name,
+	subgroup = "stone-age-production-machine", stack_size = 10,
+	ingredients = table.deepcopy(data.raw.recipe["manual-mine"].ingredients) }   -- (unlocked as the Manual Mine was, below)
 
 --- a pipe connection for the Drilling Fluid in the middle of each side
 local function fluid_input()
@@ -157,11 +171,18 @@ local PLANTS = {
 local MK1_TICKS = 960 / 2 ^ 2
 local OP_TIME = MK1_TICKS / 20 * MV_SPEED
 
+--- issue #499: the plant's recipe makes its mining drill (THE MINING DRILLS below) and, by the same recipe with the
+--- dimension mine before it, its dimension mine
+local function plant_recipe(r, first)
+	return { item(first, 1), item(r[4], 4), item(r[5], 4), item(r[6], 4), item(r[7], 4), item(r[8], 4), item(r[9], 4),
+		fluid("soldering-alloy", r[10]) }
+end
 for _, p in ipairs(PLANTS) do
-	local name, base, tier, energy, upgrade, subgroup, r = p[1], p[2], p[3], p[5], p[6], p[7], p[8]
+	local drill, base, tier, energy, upgrade, subgroup, r = p[1], p[2], p[3], p[5], p[6], p[7], p[8]
+	local name = DIMENSION[drill]
 	local m = table.deepcopy(manual_mine)
 	m.name = name
-	m.icon = "__gregtorio-continued__/graphics/icons/fork/" .. name .. ".png"
+	m.icon = "__gregtorio-continued__/graphics/icons/fork/" .. drill .. ".png"
 	m.icon_size = 32
 	m.minable = { mining_time = 1, result = name }
 	m.max_health = 400
@@ -171,13 +192,13 @@ for _, p in ipairs(PLANTS) do
 	m.energy_source = { type = "electric", usage_priority = "secondary-input", emissions_per_minute = { pollution = 1 },
 		drain = "0W" }
 	m.energy_usage = energy
-	m.fast_replaceable_group = "manual-mine"
-	m.next_upgrade = upgrade
+	m.fast_replaceable_group = "dimension-mine"
+	m.next_upgrade = upgrade and DIMENSION[upgrade]
 	m.fluid_boxes = fluid_input()
 	m.graphics_set = {
-		idle_animation = { layers = { { filename = "__gregtorio-continued__/graphics/entity/fork/" .. name .. "-idle.png",
+		idle_animation = { layers = { { filename = "__gregtorio-continued__/graphics/entity/fork/" .. drill .. "-idle.png",
 			width = 160, height = 160, frame_count = 1, shift = { 0, 0 } } } },
-		animation = { layers = { { filename = "__gregtorio-continued__/graphics/entity/fork/" .. name .. "-working.png",
+		animation = { layers = { { filename = "__gregtorio-continued__/graphics/entity/fork/" .. drill .. "-working.png",
 			width = 160, height = 160, frame_count = 1, shift = { 0, 0 } } } },
 	}
 	m.working_sound = {
@@ -190,19 +211,18 @@ for _, p in ipairs(PLANTS) do
 	m.circuit_wire_max_distance = default_circuit_wire_max_distance
 	m.localised_description = { "entity-description." .. name }
 	data:extend({ m })
-	create_item{
-		name = name,
-		icon = m.icon,
-		place_result = name,
-		subgroup = subgroup,
-		stack_size = 10,
-		category = r[1],
-		energy_required = 20 * r[2],
-		ingredients = {
-			item(r[3], 1), item(r[4], 4), item(r[5], 4), item(r[6], 4), item(r[7], 4), item(r[8], 4), item(r[9], 4),
-			fluid("soldering-alloy", r[10]),
-		},
-	}
+	for _, x in pairs({ { name, DIMENSION[r[3]] or r[3] }, { drill, r[3] } }) do
+		create_item{
+			name = x[1],
+			icon = m.icon,
+			place_result = x[1],
+			subgroup = subgroup,
+			stack_size = 10,
+			category = r[1],
+			energy_required = 20 * r[2],
+			ingredients = plant_recipe(r, x[2]),
+		}
+	end
 end
 
 --------------------------------------------------------------------------------
@@ -228,12 +248,15 @@ local MINERS = {
 --- one vein: 24 s in the LV Miner (the maintainer's choice), as a recipe of the LV tier
 local MINER_TIME = 24 * LV_SPEED
 
+--- issue #499: the miners' mining pipes go into their recipe (GTNH pulls them back up; reverses #346 and #393)
+local MINER_PIPES = 9
 for _, p in ipairs(MINERS) do
 	local tier, speed, energy, upgrade, ingredients = p[1], p[2], p[3], p[4], p[5]
-	local name = tier .. "-miner"
+	local drill = tier .. "-miner"
+	local name = DIMENSION[drill]
 	local m = table.deepcopy(manual_mine)
 	m.name = name
-	m.icon = "__gregtorio-continued__/graphics/icons/fork/" .. name .. ".png"
+	m.icon = "__gregtorio-continued__/graphics/icons/fork/" .. drill .. ".png"
 	m.icon_size = 32
 	m.minable = { mining_time = 0.5, result = name }
 	m.max_health = 300
@@ -242,12 +265,12 @@ for _, p in ipairs(MINERS) do
 	m.energy_source = { type = "electric", usage_priority = "secondary-input", emissions_per_minute = { pollution = 1 },
 		drain = "0W" }
 	m.energy_usage = energy
-	m.fast_replaceable_group = "manual-mine"
-	m.next_upgrade = upgrade
+	m.fast_replaceable_group = "dimension-mine"
+	m.next_upgrade = DIMENSION[upgrade]
 	m.graphics_set = {
-		idle_animation = { layers = { { filename = "__gregtorio-continued__/graphics/entity/fork/" .. name .. "-idle.png",
+		idle_animation = { layers = { { filename = "__gregtorio-continued__/graphics/entity/fork/" .. drill .. "-idle.png",
 			width = 160, height = 160, frame_count = 1, shift = { 0, 0 } } } },
-		animation = { layers = { { filename = "__gregtorio-continued__/graphics/entity/fork/" .. name .. "-working.png",
+		animation = { layers = { { filename = "__gregtorio-continued__/graphics/entity/fork/" .. drill .. "-working.png",
 			width = 160, height = 160, frame_count = 1, shift = { 0, 0 } } } },
 	}
 	m.working_sound = {
@@ -260,19 +283,32 @@ for _, p in ipairs(MINERS) do
 	m.circuit_wire_max_distance = default_circuit_wire_max_distance
 	m.localised_description = { "entity-description." .. name }
 	data:extend({ m })
-	create_item{
-		name = name,
-		icon = m.icon,
-		place_result = name,
-		subgroup = tier .. "-age-production-machine",
-		stack_size = 10,
-		ingredients = ingredients,
-	}
+	local with_pipes = table.deepcopy(ingredients)
+	with_pipes[#with_pipes + 1] = item(PIPE, MINER_PIPES)
+	for _, x in pairs({ { name, ingredients }, { drill, with_pipes } }) do
+		create_item{
+			name = x[1],
+			icon = m.icon,
+			place_result = x[1],
+			subgroup = tier .. "-age-production-machine",
+			stack_size = 10,
+			ingredients = x[2],
+		}
+	end
 end
 
 --------------------------------------------------------------------------------
 --- THE ELECTRIC RECIPES
 --------------------------------------------------------------------------------
+
+--- issue #499: the hunting, cobblestone and end stone recipes move from the Manual Mine to the Dig Site (#494: the Manual
+--- Mine is a mining drill of the map veins now)
+for name, r in pairs(data.raw.recipe) do
+	if r.category == "manual-mine-recipes" and (name:match("^hunting%-") or name:match("^cobblestone%-manual%-mine")
+		or name == "mining-end-stone") then
+		r.category = "manual-digsite-recipes"
+	end
+end
 
 --- every recipe of the Manual Mine (and the Dig Site, whose recipes are all ground work) gets a twin or a reason
 local twins = {}
@@ -316,18 +352,46 @@ for _, name in ipairs(twins) do
 	FORK_ELECTRIC_MINE.miner_twins[name] = miner_twin
 end
 
+--- issue #499: a vein recipe whose every result is an ore of the Overworld's map veins (prototypes/data/ore-mixes.lua) is
+--- hidden with its twins: the mining drills mine those ores now. The recipes stay, with their unlocks, so dimension mines
+--- of old saves keep them until V9 (#505) maps them; the other veins stay the dimension mines' recipes.
+do
+	local overworld = {}
+	for _, m in pairs(require("prototypes.data.ore-mixes").mixes) do
+		for _, d in pairs(m.dimensions) do
+			if d == "OW" then
+				for _, role in pairs({ "primary", "secondary", "between", "sporadic" }) do overworld["raw-" .. m[role]] = true end
+			end
+		end
+	end
+	FORK_ELECTRIC_MINE.hidden = {}
+	for name, r in pairs(data.raw.recipe) do
+		if r.category == "manual-mine-recipes" then
+			local all = #r.results > 0
+			for _, x in pairs(r.results) do if not overworld[x.name] then all = false end end
+			if all then
+				for _, n in pairs({ name, FORK_ELECTRIC_MINE.twins[name], FORK_ELECTRIC_MINE.miner_twins[name] }) do
+					data.raw.recipe[n].hidden = true
+					FORK_ELECTRIC_MINE.hidden[n] = true
+				end
+			end
+		end
+	end
+end
+
 --- issue #342: a replaced mine keeps its vein (scripts/fork-electric-mine.lua). The mod data names, for every recipe of a
 --- vein (the Manual Mine's, the Miners', the plants'), the vein (its Manual Mine recipe) and, per vein, its recipe of each
---- category; `machines` are the mines that keep their vein when one of them replaces another.
+--- category; `machines` are the mines that keep their vein when one of them replaces another (issue #499: the dimension
+--- mines).
 do
-	local veins, recipes, machines = {}, {}, { ["manual-mine"] = true }
+	local veins, recipes, machines = {}, {}, { [DIMENSION["manual-mine"]] = true }
 	for manual, drilling in pairs(FORK_ELECTRIC_MINE.twins) do
 		local miner = FORK_ELECTRIC_MINE.miner_twins[manual]
 		veins[manual], veins[drilling], veins[miner] = manual, manual, manual
 		recipes[manual] = { ["manual-mine-recipes"] = manual, [CATEGORY] = drilling, [MINER_CATEGORY] = miner }
 	end
-	for _, p in ipairs(MINERS) do machines[p[1] .. "-miner"] = true end
-	for _, p in ipairs(PLANTS) do machines[p[1]] = true end
+	for _, p in ipairs(MINERS) do machines[DIMENSION[p[1] .. "-miner"]] = true end
+	for _, p in ipairs(PLANTS) do machines[DIMENSION[p[1]]] = true end
 	data:extend({ { type = "mod-data", name = "fork-electric-mine",
 		data = { veins = veins, recipes = recipes, machines = machines } } })
 end
@@ -365,22 +429,25 @@ end
 --- the Mk I after the Mixer (its Drilling Fluid), the Drilling Rig (lubricant, vanadium steel gears), MV Machines and
 --- the technologies of the veins of its tier that are not before it (the Nether, the Twilight Forest with NAND Chips,
 --- the manganese vein), so that no vein is drilled before it is mined by hand
+--- (issue #499: each technology unlocks the mining drill and its dimension mine)
 F.tech{ name = P1, prerequisites = { "mv-machines", "oil-gathering", "mixer", "reach-the-nether", "nand-chips",
-	"manganese-processing" }, packs = 3, count = 40, time = 30, recipes = F.join({ P1, FLUID }, early) }
+	"manganese-processing" }, packs = 3, count = 40, time = 30, recipes = F.join({ P1, DIMENSION[P1], FLUID }, early) }
 --- (the Mk II's large blue steel gears come with HV Energy Hatches)
 F.tech{ name = P2, prerequisites = { P1, "hv-machines", "hv-energy-hatches" }, packs = 4, count = 40, time = 30,
-	recipes = { P2 } }
-F.tech{ name = P3, prerequisites = { P2, "ev-machines" }, packs = 5, count = 30, time = 45, recipes = { P3 } }
-F.tech{ name = P4, prerequisites = { P3, "iv-machines" }, packs = 6, count = 50, time = 60, recipes = { P4 } }
+	recipes = { P2, DIMENSION[P2] } }
+F.tech{ name = P3, prerequisites = { P2, "ev-machines" }, packs = 5, count = 30, time = 45, recipes = { P3, DIMENSION[P3] } }
+F.tech{ name = P4, prerequisites = { P3, "iv-machines" }, packs = 6, count = 50, time = 60, recipes = { P4, DIMENSION[P4] } }
 
 --- issue #337: the LV Miner after the Wiremill (its mining pipe) and the LV sensor (issue #443: the Circuit Assembler,
 --- which 142 unlocks it with; before, the Military Science Pack technology); the MV Miner with its MV sensor (Advanced MV
 --- Machines), the HV Miner with HV Machines
 --- (issue #350: 20 units, the middle of the LV technologies' 15 to 40)
 F.tech{ name = MINER_TECH, prerequisites = { "wiremill", "circuit-assembler" }, packs = 2, count = 20, time = 30,
-	recipes = { MINER_TECH, PIPE } }
-fork_add_unlock("advanced-mv-machines", "mv-miner")
-fork_add_unlock("hv-machines", "hv-miner")
+	recipes = { MINER_TECH, DIMENSION[MINER_TECH], PIPE } }
+for _, x in pairs({ { "advanced-mv-machines", "mv-miner" }, { "hv-machines", "hv-miner" } }) do
+	fork_add_unlock(x[1], x[2])
+	fork_add_unlock(x[1], DIMENSION[x[2]])
+end
 
 --- the miners' twins, called by 142 after it moved the unlocks of the veins: a vein whose technology is the LV Miner's
 --- or one of its prerequisites comes with the LV Miner, a later one with its own technology
@@ -397,3 +464,113 @@ function FORK_ELECTRIC_MINE.unlock_miner_twins()
 		fork_add_unlock(t and not before[t] and t or MINER_TECH, twin)
 	end
 end
+
+
+
+--------------------------------------------------------------------------------
+--- THE MINING DRILLS (issue #499, plan #494): the Manual Mine, the LV to HV Miner and the Ore Drilling Plants Mk I to IV
+--- mine the map veins (prototypes/165-fork-ore-veins.lua, resource category gt-ore) on the old 5x5 footprint, fast replace
+--- group and upgrade chain (Manual Mine -> LV -> MV -> HV Miner -> Mk I -> ... -> Mk IV). Their rate is today's: a vein
+--- recipe gave 64 ores (the iron vein's; most give 64 to 80), so the Manual Mine 6.4 ores a second, the Miners 64 in 24,
+--- 12, 6 s, the plants 64 in GT's base / 2^tier ticks; the energy is the machines' (the Manual Mine burns manual labor,
+--- 1 MJ: 8 of it per 64 ores, the vein recipes' average). The mining areas:
+---   * Manual Mine 7 x 7 (#494);
+---   * Miners GT's radius per tier (MTEMiner.java RADIUS: 8, 16, 24 blocks);
+---   * Ore Drilling Plants a whole vein and more (GT: 3, 4, 6, 9 chunks; a vein here is up to 80 tiles across): radius
+---     40, 48, 64, 96; GT's fortune (mTier + 3, small ores only) as a slower drain of the tiles from the Mk III: 80 % and
+---     60 % of the ore taken from a tile;
+---   * the plants drink Drilling Fluid per ore mined, today's 200 per 64 ores (scripts/fork-ore-drills.lua: out of fluid
+---     the plant stops, mod data fork-ore-drills).
+--- The Manual Mine is built with the iron pickaxe (#494) and comes with it (Smelt Iron Ingots); the Miners' recipes take
+--- their 9 mining pipes (GTNH pulls them back up: #346 and #393 reversed). The dimension mines keep the vein recipes of the
+--- other dimensions (above).
+--------------------------------------------------------------------------------
+
+local ORE_MINING_TIME = 2   -- 165's gt-ore resources
+local ORES_PER_OP = 64
+local function speed(ores_per_second) return ores_per_second * ORE_MINING_TIME end
+
+local function drill(name, icon, icon_size, health, energy_source, energy_usage, rate, radius, upgrade, graphics)
+	return {
+		type = "mining-drill", name = name, icon = icon, icon_size = icon_size,
+		flags = { "placeable-neutral", "placeable-player", "player-creation" },
+		minable = { mining_time = 0.5, result = name }, max_health = health,
+		corpse = "big-remnants", dying_explosion = "medium-explosion",
+		resistances = { { type = "fire", percent = 70 } },
+		collision_box = { { -2.3, -2.3 }, { 2.3, 2.3 } }, selection_box = { { -2.5, -2.5 }, { 2.5, 2.5 } },
+		resource_categories = { "gt-ore" },
+		mining_speed = speed(rate),
+		resource_searching_radius = radius - 0.01,
+		vector_to_place_result = { 0, -2.85 },
+		energy_source = energy_source,
+		energy_usage = energy_usage,
+		fast_replaceable_group = "manual-mine",
+		next_upgrade = upgrade,
+		graphics_set = graphics,
+		radius_visualisation_picture = { filename =
+			"__base__/graphics/entity/electric-mining-drill/electric-mining-drill-radius-visualization.png",
+			width = 10, height = 10 },
+		module_slots = 0,
+		allowed_effects = {},
+		localised_description = { "entity-description." .. name },
+	}
+end
+local function sprites(name)
+	return {
+		idle_animation = { layers = { { filename = "__gregtorio-continued__/graphics/entity/fork/" .. name .. "-idle.png",
+			width = 160, height = 160, frame_count = 1, shift = { 0, 0 } } } },
+		animation = { layers = { { filename = "__gregtorio-continued__/graphics/entity/fork/" .. name .. "-working.png",
+			width = 160, height = 160, frame_count = 1, shift = { 0, 0 } } } },
+	}
+end
+local function electric() return { type = "electric", usage_priority = "secondary-input",
+	emissions_per_minute = { pollution = 1 }, drain = "0W" } end
+
+data:extend({ drill("manual-mine", manual_mine.icon, 64, 200,
+	{ type = "burner", fuel_categories = { "manual-labor" }, effectivity = 1, fuel_inventory_size = 1,
+		emissions_per_minute = { pollution = 0 } },
+	"800kW", ORES_PER_OP / 10, 3.5, "lv-miner",
+	{ animation = { layers = { { filename = "__gregtorio-continued__/graphics/entity/manual-mine.png", width = 320,
+		height = 320, frame_count = 1, shift = { 0, 0 }, scale = 0.5 } } } }) })
+for i, p in ipairs(MINERS) do
+	local name = p[1] .. "-miner"
+	data:extend({ drill(name, "__gregtorio-continued__/graphics/icons/fork/" .. name .. ".png", 32, 300, electric(), p[3],
+		ORES_PER_OP / MINER_TIME * p[2], ({ 8.5, 16.5, 24.5 })[i], p[4], sprites(name)) })
+end
+for i, p in ipairs(PLANTS) do
+	local d = drill(p[1], "__gregtorio-continued__/graphics/icons/fork/" .. p[1] .. ".png", 32, 400, electric(), p[5],
+		ORES_PER_OP / (p[2] / 2 ^ p[3] / 20), ({ 40.5, 48.5, 64.5, 96.5 })[i], p[6], sprites(p[1]))
+	d.resource_drain_rate_percent = ({ 100, 100, 80, 60 })[i]
+	data:extend({ d })
+end
+--- a mining drill's fluid box works only while its ore needs a fluid, which the map veins must not (the hand, the Manual
+--- Mine and the Miners mine them too): the Drilling Fluid goes into a hidden tank on the plant's tiles, with a pipe
+--- connection in the middle of each side, which scripts/fork-ore-drills.lua builds and removes with the plant
+local TANK = "ore-drilling-plant-fluid-input"
+do
+	local empty = { filename = "__core__/graphics/empty.png", size = 1, frame_count = 1 }
+	local box = fluid_input()[1]
+	box.production_type, box.filter = nil, FLUID
+	for _, c in pairs(box.pipe_connections) do c.flow_direction = "input-output" end
+	data:extend({ {
+		type = "storage-tank", name = TANK, icon = "__gregtorio-continued__/graphics/icons/fork/" .. P1 .. ".png",
+		icon_size = 32, hidden = true, selectable_in_game = false, max_health = 1,
+		flags = { "not-on-map", "not-blueprintable", "not-deconstructable", "not-flammable", "not-upgradable", "no-copy-paste",
+			"hide-alt-info" },
+		collision_box = { { -2.3, -2.3 }, { 2.3, 2.3 } }, collision_mask = { layers = {} },
+		selection_box = { { -2.5, -2.5 }, { 2.5, 2.5 } },
+		fluid_box = box, window_bounding_box = { { 0, 0 }, { 0, 0 } }, flow_length_in_ticks = 360,
+		pictures = { picture = empty, fluid_background = empty, window_background = empty, flow_sprite = empty,
+			gas_flow = empty },
+	} })
+end
+data:extend({ { type = "mod-data", name = "fork-ore-drills", data = {
+	plants = { [P1] = true, [P2] = true, [P3] = true, [P4] = true }, tank = TANK, fluid = FLUID,
+	per_ore = FLUID_PER_OP / ORES_PER_OP, ore_time = ORE_MINING_TIME } } })
+
+--- the Manual Mine with the iron pickaxe (one craft: 26 uses), with Smelt Iron Ingots instead of Craft Wooden Tools
+data.raw.recipe["manual-mine"].ingredients = { item("iron-pickaxe-usage", 26), item("manual-labor", 10) }
+for _, e in pairs(data.raw.technology["craft-wooden-tools"].effects) do
+	if e.type == "unlock-recipe" and e.recipe == "manual-mine" then e.recipe = DIMENSION["manual-mine"] end
+end
+fork_add_unlock("smelt-iron-ingots", "manual-mine")

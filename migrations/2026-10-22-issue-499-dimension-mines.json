@@ -1,0 +1,12 @@
+{
+  "entity": [
+    ["manual-mine", "dimension-mine"],
+    ["lv-miner", "lv-dimension-miner"],
+    ["mv-miner", "mv-dimension-miner"],
+    ["hv-miner", "hv-dimension-miner"],
+    ["ore-drilling-plant-mk1", "dimension-drilling-plant-mk1"],
+    ["ore-drilling-plant-mk2", "dimension-drilling-plant-mk2"],
+    ["ore-drilling-plant-mk3", "dimension-drilling-plant-mk3"],
+    ["ore-drilling-plant-mk4", "dimension-drilling-plant-mk4"]
+  ]
+}

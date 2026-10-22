@@ -15,6 +15,8 @@ local fork_electric_mine = require("scripts.fork-electric-mine")
 local fork_steam_boilers = require("scripts.fork-steam-boilers")
 --- Fork: the map veins get a chart tag with their name (issue #497, see prototypes/165-fork-ore-veins.lua)
 local fork_ore_veins = require("scripts.fork-ore-veins")
+--- Fork: the Ore Drilling Plants drink Drilling Fluid per ore mined (issue #499, see prototypes/163-fork-electric-mine.lua)
+local fork_ore_drills = require("scripts.fork-ore-drills")
 
 local function on_built(event)
   local entity = event.entity
@@ -26,6 +28,7 @@ local function on_built(event)
   fork_power.on_built(entity)
   fork_space_elevator.on_built(entity)
   fork_steam_boilers.on_built(entity)
+  fork_ore_drills.on_built(entity)
 end
 script.on_event({ defines.events.on_built_entity, defines.events.on_robot_built_entity }, on_built)
 --- Fork: the vein of a mine about to be replaced (issue #342)
@@ -44,14 +47,19 @@ script.on_event({ defines.events.script_raised_built, defines.events.script_rais
   fork_power.on_built(event.entity)
   fork_space_elevator.on_built(event.entity)
   fork_steam_boilers.on_built(event.entity)
+  fork_ore_drills.on_built(event.entity)
 end)
 script.on_event(defines.events.on_entity_cloned, function(event)
   fork_power.on_built(event.destination)
   fork_space_elevator.on_built(event.destination)
   fork_steam_boilers.on_built(event.destination)
+  fork_ore_drills.on_built(event.destination)
 end)
 --- Fork: a Space Elevator or a module removed (any way): its surface is assigned again
-script.on_event(defines.events.on_object_destroyed, fork_space_elevator.on_object_destroyed)
+script.on_event(defines.events.on_object_destroyed, function(event)
+  fork_space_elevator.on_object_destroyed(event)
+  fork_ore_drills.on_object_destroyed(event)   -- issue #499: an Ore Drilling Plant's hidden tank goes with it
+end)
 
 -- Raise a custom event when the cutscene ends
 script.on_event(defines.events.on_cutscene_cancelled, function(event)
@@ -130,6 +138,7 @@ script.on_configuration_changed(function(data)
 	fork_power.on_configuration_changed()
 	fork_space_elevator.on_configuration_changed()
 	fork_steam_boilers.on_configuration_changed()
+	fork_ore_drills.on_configuration_changed()
 end)
 
 
