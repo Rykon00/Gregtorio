@@ -5136,5 +5136,5 @@ enriched-sunnarium
 draconic-core
 wyvern-core
 awakened-core
-draconium-energy-core
 wyvern-energy-core
+draconic-energy-core

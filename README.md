@@ -162,5 +162,7 @@ names the textures of every generated item icon):
   fusion coils, high density plutonium, wrapped plutonium ingot, radioactive waste), bartworks (borosilicate glass, wrap band).
 * [NewHorizonsCoreMod](https://github.com/GTNewHorizons/NewHorizonsCoreMod) by GTNewHorizons, GPL-3.0: stargate chevron,
   frame part and radiation containment plate, the UMV, UXV and MAX (Planck) circuits.
+* [Draconic Evolution](https://github.com/GTNewHorizons/Draconic-Evolution) (GTNewHorizons' fork) by brandon3055 and
+  GTNewHorizons, LGPL-3.0: the draconic, wyvern, awakened and chaotic cores and the energy cores.
 
 The ME network and its graphics are in the mod [me-network](https://github.com/Rykon00/me-network) since issue #83.

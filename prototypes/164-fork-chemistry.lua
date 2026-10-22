@@ -4534,8 +4534,8 @@ end
 
 --------------------------------------------------------------------------------
 --- 40) DRACONIC EVOLUTION'S CORES IN THE FUSION CRAFTER (issue #489 part 1; the maintainer's decisions of 2026-10-22).
----   GT5-Unofficial ce1c416a64 (kubatech, tectech) and NewHorizonsCoreMod (NHC). Draconic Evolution's own sources and
----   names are not in the checkouts; the names are its items' (Draconic Core, ...).
+---   GT5-Unofficial ce1c416a64 (kubatech, tectech) and NewHorizonsCoreMod (NHC); the names are Draconic Evolution's (GTNH's
+---   fork 9f42531, en_US.lang: meta 0 of its energy core is the Wyvern, meta 1 the Draconic Energy Core).
 --- * The Draconic Evolution Fusion Crafter (kubatech MTEDEFusionCrafter.java:82-139): the controller (tectech
 ---   ResearchStationAssemblyLine.java:951-970, UEV, 75 s), 43 Naquadah Alloy Fusion Casings (the 49 places of the top and
 ---   bottom layers less the controller and 5 hatches), 32 fusion machine casings, 8 fusion coils and 32 Fusion Casings of
@@ -4550,7 +4550,7 @@ end
 ---   cores, a Quantum Star, 1440 L neutronium; UHV, 40 s, tier 2), the Awakened Core (12 awakened draconium and 4
 ---   draconium plates, 4 wyvern cores, a manyullyn crystal (kubatech's recipe without SuperSolarPanels; GTNH's Ender
 ---   Quantum Component needs a dense infinity catalyst plate the mod lacks), 1440 L infinity; UEV, 80 s, tier 3), the
----   Draconium and Wyvern Energy Cores (8 draconium plates, 4 stellar alloy plates, 4 Sunnarium Alloy, a draconic core; UV,
+---   Wyvern and Draconic Energy Cores (8 draconium plates, 4 stellar alloy plates, 4 Sunnarium Alloy, a draconic core; UV,
 ---   50 s, tier 2 / 8 awakened draconium plates, 4 energy cores, 4 Enriched Sunnarium Alloy, a wyvern core; UHV, 100 s,
 ---   tier 3). The Chaotic Core follows in part 2.
 --- * The schematics (tectech ResearchStationAssemblyLine.java:972-1015, the research assembly line, 3 min): Draconic (a
@@ -4581,7 +4581,7 @@ do
 		local p = data.raw["assembling-machine"][tier .. "-centrifuge"].energy_usage
 		return (tonumber(p:match("^[%d.]+")) * n) .. p:match("%a+$")
 	end
-	items(SUB_PART, { "draconic-core", "wyvern-core", "awakened-core", "draconium-energy-core", "wyvern-energy-core",
+	items(SUB_PART, { "draconic-core", "wyvern-core", "awakened-core", "wyvern-energy-core", "draconic-energy-core",
 		"draconic-core-schematic", "wyvern-core-schematic", "awakened-core-schematic", "sunnarium-alloy", "enriched-sunnarium",
 		"enriched-sunnarium-alloy", "enriched-naquadria-sunnarium-alloy", "draconic-evolution-fusion-crafter-controller" })
 	items("subgroup-uhv-age-multiblocks", { "naquadah-alloy-fusion-casing", "bloody-ichorium-fusion-casing",
@@ -4649,10 +4649,10 @@ do
 	core(R[3], "awakened-core", C3, 80, UEV_SPEED, "awakened-core-schematic",
 		{ { "awakened-draconium-plate", 12 }, { "draconium-plate", 4 }, { "wyvern-core", 4 }, { "manyullyn-crystal", 1 },
 			{ "molten-infinity", 144 } })
-	core(R[4], "draconium-energy-core", C2, 50, UV_SPEED, "wyvern-core-schematic",
+	core(R[4], "wyvern-energy-core", C2, 50, UV_SPEED, "wyvern-core-schematic",
 		{ { "draconium-plate", 8 }, { "stellar-alloy-plate", 4 }, { "sunnarium-alloy", 4 }, { "draconic-core", 1 } })
-	core(R[4], "wyvern-energy-core", C3, 100, UHV_SPEED, "awakened-core-schematic",
-		{ { "awakened-draconium-plate", 8 }, { "draconium-energy-core", 4 }, { "enriched-sunnarium-alloy", 4 }, { "wyvern-core", 1 } })
+	core(R[4], "draconic-energy-core", C3, 100, UHV_SPEED, "awakened-core-schematic",
+		{ { "awakened-draconium-plate", 8 }, { "wyvern-energy-core", 4 }, { "enriched-sunnarium-alloy", 4 }, { "wyvern-core", 1 } })
 	step(R[1], "draconic-core-schematic", AL, 180, UHV_SPEED,
 		{ { "draconic-core", 1 }, { "dense-draconium-plate", 1 }, { "orundum-plate", 1 }, { "uhv-circuit", 1 },
 			{ "molten-sunnarium", 1440 }, { VOID, 2880 } }, { { "draconic-core-schematic", 1 } })

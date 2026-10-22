@@ -6,6 +6,8 @@ Sources (all redistributable, see the License section of README.md):
     bartworks, GT++ "miscutils", TecTech):            --gt   <checkout>
   * NewHorizonsCoreMod (GTNewHorizons, GPL-3.0; stargate parts, the UMV/UXV circuits):
                                                        --core <checkout>
+  * Draconic Evolution, GTNH's fork (brandon3055 and GTNewHorizons, LGPL-3.0; its cores):
+                                                       --de   <checkout>
 
 How an icon is made (first frame of animated textures, 16x16 scaled 2x to Gregtorio's 32x32, like
 the other fork icons):
@@ -19,7 +21,7 @@ the other fork icons):
 Writes graphics/icons/<name>.png for every item listed in tools/gt-icon-items.txt (the items that had a
 placeholder icon; an item without a GT source is reported and keeps its icon).
 
-    python tools/gen_gt_icons.py --gt C:/00_Repositories/GT5-Unofficial --core C:/00_Repositories/NewHorizonsCoreMod
+    python tools/gen_gt_icons.py --gt C:/00_Repositories/GT5-Unofficial --core C:/00_Repositories/NewHorizonsCoreMod         --de C:/00_Repositories/Draconic-Evolution
     python tools/gen_gt_icons.py --gt ... --core ... --only uhv-motor tritanium-plate
 """
 import argparse, re, warnings
@@ -47,6 +49,7 @@ GTPP = "gt:miscutils/textures/blocks/iconsets/"
 GTPP_TE = "gt:miscutils/textures/blocks/TileEntities/"
 GG = "gt:goodgenerator/textures/"
 CORE = "core:dreamcraft/textures/items/"
+DE = "de:draconicevolution/textures/items/"
 
 # GT component ids (gt.metaitem.01), LuV .. MAX
 COMPONENT_IDS = {
@@ -476,8 +479,9 @@ PARTS = [
 # ------------------------------------------------------------------------------------------------
 
 class Tex:
-    def __init__(self, gt, core):
-        self.roots = {"gt": gt / "src/main/resources/assets", "core": core / "src/main/resources/assets" if core else None}
+    def __init__(self, gt, core, de=None):
+        self.roots = {"gt": gt / "src/main/resources/assets", "core": core / "src/main/resources/assets" if core else None,
+                      "de": de / "src/main/resources/assets" if de else None}
         self.gt = gt
         self.used = set()
         self.trace = []
@@ -830,7 +834,7 @@ def icon_table(c):
     # the controller is GT's magic casing with the teleporter overlay (MTEDEFusionCrafter.getTexture); the core mod's
     # Enriched Naquadria Sunnarium Alloy. Advanced Solar Panels' sunnarium alloys are not in the checkouts: the core mod's
     # alloy in sunnarium's colours; Enriched Sunnarium as GT's sunnarium gem with an irradiant uranium badge. Draconic
-    # Evolution is not in the checkouts either: its cores drawn as a gem in a frame, its energy cores as a glowing cube
+    # Evolution's cores and energy cores are its own item textures (--de)
     KUBA = "gt:kubatech/textures/"
     for k, name in enumerate(("naquadah-alloy-fusion-casing", "bloody-ichorium-fusion-casing", "draconium-fusion-casing",
                               "wyvern-fusion-casing")):
@@ -843,30 +847,9 @@ def icon_table(c):
     T["sunnarium-alloy"] = lambda: c.recolour(ENSA, (255, 225, 80))
     T["enriched-sunnarium-alloy"] = lambda: c.recolour(ENSA, (130, 230, 60))
     T["enriched-sunnarium"] = lambda: c.badge(c.part("sunnarium", "gem"), c.part("irradiant-uranium", "ingot"))
-    def de_core(frame, gem):
-        img = Image.new("RGBA", (SIZE, SIZE))
-        d = ImageDraw.Draw(img)
-        m, r, q = SIZE // 2, SIZE // 2 - 2, SIZE // 4
-        d.polygon(((m, m - r), (m + r, m), (m, m + r), (m - r, m)), fill=tuple(v // 2 for v in frame) + (255,),
-                  outline=frame + (255,))
-        d.polygon(((m, m - q), (m + q, m), (m, m + q), (m - q, m)), fill=gem + (255,),
-                  outline=tuple(min(255, v + 90) for v in gem) + (255,))
-        d.line((m - q // 2, m - q // 2 + 1, m - 1, m - q + 2), fill=(255, 255, 255, 200), width=2)
-        return img
-    def de_energy_core(frame, glow):
-        img = Image.new("RGBA", (SIZE, SIZE))
-        d = ImageDraw.Draw(img)
-        d.rectangle((4, 4, SIZE - 5, SIZE - 5), fill=tuple(v // 3 for v in frame) + (255,), outline=frame + (255,), width=3)
-        d.rectangle((11, 11, SIZE - 12, SIZE - 12), fill=glow + (255,), outline=tuple(min(255, v + 80) for v in glow) + (255,))
-        for x0, y0, x1, y1 in ((4, 4, 11, 11), (SIZE - 5, 4, SIZE - 12, 11), (4, SIZE - 5, 11, SIZE - 12),
-                               (SIZE - 5, SIZE - 5, SIZE - 12, SIZE - 12)):
-            d.line((x0, y0, x1, y1), fill=frame + (255,), width=2)
-        return img
-    T["draconic-core"] = lambda: de_core((230, 180, 60), (150, 70, 220))
-    T["wyvern-core"] = lambda: de_core((150, 70, 220), (90, 30, 150))
-    T["awakened-core"] = lambda: de_core((90, 30, 150), (255, 140, 40))
-    T["draconium-energy-core"] = lambda: de_energy_core((120, 60, 190), (200, 120, 255))
-    T["wyvern-energy-core"] = lambda: de_energy_core((70, 25, 120), (255, 160, 60))
+    for name, tex in {"draconic-core": "draconicCore", "wyvern-core": "wyvernCore", "awakened-core": "awakenedCore",
+                      "wyvern-energy-core": "draconiumEnergyCore0", "draconic-energy-core": "draconiumEnergyCore1"}.items():
+        T[name] = lambda tex=tex: c.gt(f"{DE}{tex}")
     # tier circuits of the core mod (the fork's generic UMV/UXV circuit)
     T["umv-circuit"] = lambda: c.gt(f"{CORE}itemCircuitUMV")
     T["uxv-circuit"] = lambda: c.gt(f"{CORE}itemCircuitUXV")
@@ -1348,6 +1331,7 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--gt", type=Path, required=True, help="GT5-Unofficial checkout")
     ap.add_argument("--core", type=Path, help="NewHorizonsCoreMod checkout (stargate parts, tier circuits)")
+    ap.add_argument("--de", type=Path, help="Draconic Evolution checkout, GTNH's fork (its cores, issue #489)")
     ap.add_argument("--only", nargs="*", help="only these items")
     ap.add_argument("--list", type=Path, default=LIST, help="items whose icon this tool makes (default: %(default)s)")
     ap.add_argument("--sources", type=Path, help="write a TSV: item, GT textures it is made of (for the review)")
@@ -1356,7 +1340,7 @@ def main():
     ap.add_argument("--fluid", nargs="*", metavar="NAME=TEXTURE", help="issue #119: write graphics/fluids/<name>.png from"
                     " GT's fluid texture <texture> (first frame, as GT draws it)")
     a = ap.parse_args()
-    tex = Tex(a.gt, a.core)
+    tex = Tex(a.gt, a.core, a.de)
     mats = Materials(tex)
     if a.fluid:
         return fluid_icons(tex, a.fluid)

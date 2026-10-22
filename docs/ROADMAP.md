@@ -2851,7 +2851,7 @@ schematic from the space mining ruin, GTNH's numbers. Part 1 (162 and 164 sectio
   Draconium, Wyvern); tier 1 as GT's structure (43 base casings, 32 fusion machine casings, 8 fusion coils, 32 tier
   casings), each next tier the one before with 32 casings of its tier and its energy hatch. A tier runs the recipes of
   its tier and those below.
-- **The cores:** Draconic (tier 1), Wyvern (tier 2), Awakened (tier 3), and the Draconium and Wyvern Energy Cores; each
+- **The cores:** Draconic (tier 1), Wyvern (tier 2), Awakened (tier 3), and the Wyvern and Draconic Energy Cores; each
   keeps its schematic. The Wyvern and Awakened Core Schematics in the research assembly line.
 - **The sunnarium alloys** of the core mod for the energy cores: MAX science, as the sunnarium and the irradiant uranium.
 - **Stand-ins:** molten neutronium for void metal, the orundum plate for ichorium, the dense awakened draconium plate
