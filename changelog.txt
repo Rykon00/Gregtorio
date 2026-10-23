@@ -1,4 +1,8 @@
 ---------------------------------------------------------------------------------------------------
+Version: 0.5.8
+  Bugfixes:
+    - Existing saves get the ores of the GT New Horizons veins also when their map settings already named the veins (issue #534): such a save (for example after editing its map settings) kept its explored map without vein ore, and the mines that became drills found none. Every generated chunk without vein ore gets it now, once, when the save loads.
+---------------------------------------------------------------------------------------------------
 Version: 0.5.7
 Date: 2026-10-23
   Changes:

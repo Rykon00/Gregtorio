@@ -97,7 +97,8 @@ Forest's small ores and amber vein, the Copper Tin vein (realgar) and the glowst
 ## Old saves
 
 - #499: placed mines become Dimension Mines (JSON migration, the names went to the drills).
-- #500: the surfaces get the veins (`regenerate_entity` on every generated chunk), a Dimension Mine on a vein of its
+- #500: the surfaces get the veins (`regenerate_entity` on every generated chunk; #534: on every generated chunk without
+  vein ore, also when the map settings already named the veins, e.g. after a map settings editor), a Dimension Mine on a vein of its
   surface becomes its drill, names of missing noise expressions are dropped from the map settings.
 - #505: the deleted vein recipes become a placeholder of their planet (`removed-vein-<planet>-<kind>`, JSON); on that
   planet the mine becomes its drill, elsewhere it loses the recipe and a message names it.
