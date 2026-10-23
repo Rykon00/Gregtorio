@@ -8,16 +8,20 @@
 ---     shared evenly by the tanks that hold it or none (at the weighted mean temperature); a tank with another fluid
 ---     stays out until it is empty.
 --- The panel beside the chest's or tank's window (relative GUI) has three drop-downs for the colours; pasting settings
---- between two Ender Chests or two Ender Tanks copies the code.
+--- between two Ender Chests or two Ender Tanks copies the code. A blueprint (also copy and cut) keeps the code of
+--- both as the entity tag fork_ender_code, which a build restores (issue #546: a ghost a player places from a blueprint
+--- has lost the chest's link_id; a blueprint without the tag still gives the chest its link_id).
 --- State: storage.fork_ender = { tanks = unit number -> { entity, code }, reg = registration -> unit number, open =
 --- player index -> the chest or tank whose window is open };
---- remote fork-ender.set_code(entity, code) and get_code(entity) (devcheck's runtime test).
+--- remote fork-ender.set_code(entity, code), get_code(entity) and tag_blueprint(blueprint, mapping) (devcheck's runtime
+--- test).
 --------------------------------------------------------------------------------
 
 local M = {}
 local CHEST, TANK = "ender-chest", "ender-tank"
 local LEVEL_TICKS = 20   -- (free: the molds take 30, the ore drills 60, the solar boilers 120, fork-power on_tick)
 local PANEL = "fork-ender-panel"
+local TAG = "fork_ender_code"
 local COLOURS = { "white", "orange", "magenta", "light-blue", "yellow", "lime", "pink", "gray", "light-gray", "cyan",
 	"purple", "blue", "brown", "green", "red", "black" }
 
@@ -30,12 +34,18 @@ local function digits(code)
 	return { math.floor(code / 256) % 16 + 1, math.floor(code / 16) % 16 + 1, code % 16 + 1 }
 end
 
-function M.on_built(entity)
-	if not (entity and entity.valid and entity.name == TANK) then return end
-	local st = state()
-	if st.tanks[entity.unit_number] then return end
-	st.tanks[entity.unit_number] = { entity = entity, code = 0 }
-	st.reg[script.register_on_object_destroyed(entity)] = entity.unit_number
+--- `tags`: the blueprint tags of a built ghost (issue #546: the code is in TAG)
+function M.on_built(entity, tags)
+	if not (entity and entity.valid and (entity.name == CHEST or entity.name == TANK)) then return end
+	if entity.name == TANK then
+		local st = state()
+		if not st.tanks[entity.unit_number] then
+			st.tanks[entity.unit_number] = { entity = entity, code = 0 }
+			st.reg[script.register_on_object_destroyed(entity)] = entity.unit_number
+		end
+	end
+	local code = type(tags) == "table" and tonumber(tags[TAG])
+	if code and code >= 0 and code < 4096 and code % 1 == 0 then M.set_code(entity, code) end
 end
 
 function M.on_object_destroyed(event)
@@ -148,9 +158,41 @@ function M.on_entity_settings_pasted(event)
 	end
 end
 
+--- a blueprint pasted over a built chest or tank (a ghost keeps the tags itself)
+function M.on_blueprint_settings_pasted(event)
+	local e = event.entity
+	if e and e.valid and e.type ~= "entity-ghost" then M.on_built(e, event.tags) end
+end
+
+--- the code of every chest and tank as blueprint entity tag; `bp` is the blueprint (item stack or record), `mapping`
+--- blueprint entity index -> source entity
+function M.tag_blueprint(bp, mapping)
+	for index, e in pairs(mapping) do
+		if e.valid and (e.name == CHEST or e.name == TANK) then bp.set_blueprint_entity_tag(index, TAG, M.get_code(e)) end
+	end
+end
+
+local function blueprint_usable(bp)
+	if not (bp and bp.valid) then return false end
+	if bp.object_name == "LuaRecord" then return true end
+	return bp.valid_for_read and bp.is_blueprint
+end
+
+--- a new blueprint, or the blueprint of the copy and cut tools (as me-network's fork-me-autocraft.lua finds it)
+function M.on_player_setup_blueprint(event)
+	local player = game.get_player(event.player_index)
+	local bp = event.record or event.stack
+	if not blueprint_usable(bp) and player then bp = player.blueprint_to_setup end
+	if not blueprint_usable(bp) and player then bp = player.cursor_stack end
+	if not blueprint_usable(bp) then return end
+	--- the mapping can be stale when another mod changed the blueprint: never break blueprinting
+	pcall(function() M.tag_blueprint(bp, event.mapping.get()) end)
+end
+
 remote.add_interface("fork-ender", {
 	set_code = function(entity, code) M.set_code(entity, code) end,
 	get_code = function(entity) return M.get_code(entity) end,
+	tag_blueprint = function(bp, mapping) M.tag_blueprint(bp, mapping) end,
 })
 
 return M
