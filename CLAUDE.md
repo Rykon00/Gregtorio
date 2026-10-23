@@ -337,6 +337,17 @@
   noise (the Nether's copy of Vulcanus' lava reads the coal, tungsten and geyser controls; without them the load fails
   with "Unknown variable"; a noise expression cannot stand in, prototype names take no colon). The engine deletes a
   surface of a deleted planet when an old save loads (`devcheck.py migrate`: DEVCHECK-MIGRATE-PLANETS).
+- Factorio 2.1 (issue #535): the mod is for 2.1 (`factorio_version`, devcheck's `FACTORIO_VERSION`). `prototypes/fork-factorio-21.lua`
+  (required at the top of `data.lua`) has the helpers of what changed: a recipe has `categories` (a list) instead of
+  `category`, read and set with `fork_category(r)`, `fork_set_category(r, c)`, `fork_has_category(r, c)` and
+  `fork_category_in(r, set)` (never `r.category`: vanilla recipes have several categories since 2.1); a product has
+  `independent_probability` instead of `probability`, an item `fuel_categories` instead of `fuel_category` (`create_item`
+  still takes `fuel_category` and `category` as its arguments), a generator `pictures` (`fork_generator_pictures`), a pipe
+  connection `hide_connection_info`; `assembler2pipepictures()` and `assembler3pipepictures()` are kept as functions over
+  the base mod's module. Factorio refuses some removed keys and ignores the others, so `devcheck.py check` fails for every
+  removed key a prototype still has (`checkmod/removed-keys.lua`, `tools/devcheck/removed_keys.py`; other mods' leftovers
+  in `REMOVED_KEYS_OTHER_MODS`). A 2.0 version (up to 0.5.6) makes its `migrate` save in an unpacked Factorio 2.0:
+  `migrate --from-ref v0.5.6 --old-me-network v0.5.5 --old-factorio DIR --old-mods DIR` (its dependency zips).
 - Names (issue #230): the engine names a recipe after its product only when the recipe has the product's name; every
   other recipe shows `recipe-name.<recipe>`, a main product does not change that. `prototypes/fork-locale.lua` (required
   first from `data.lua`, `FORK_LOCALE.name_recipes()` at the end of `data-final-fixes.lua`) gives every Gregtorio recipe
@@ -350,7 +361,8 @@
   it on; `devcheck.py check --set <setting>=true|false` forces any bool startup setting for a run.
 - Generators (`generator` prototypes that burn fluids by fuel value, 136) are demand driven; an
   input-output fluid box keeps part of its fluid in the pipeline segment (`get_fluid_count` reports
-  only the entity's part, `fluidbox.get_fluid_segment_contents` the rest), so tests count both.
+  only the entity's part; since Factorio 2.1 `get_fluid_segment_fluid` is the whole segment with that part, where 2.0's
+  `fluidbox.get_fluid_segment_contents` was the rest), so tests count the segment (`fluid_total` of the runtime tests).
 - `199-fork-finalize.lua` hides draft recipes with missing parts (`FORK-DRAFT` in the log) and
   auto-unlocks intermediates (`FORK-AUTOUNLOCK`). Check the log after changes.
 - New machines one tier up: `fork_make_tier_machine(base, from_tier, to_tier, frames, tech)`.
