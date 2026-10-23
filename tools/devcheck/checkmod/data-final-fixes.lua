@@ -13,7 +13,8 @@ end
 
 --- R recipe category enabled ingredients results hidden hide_from_player_crafting subgroup group
 --- C crafter type categories fluid_in fluid_out
---- I item type place_result | F fluid | T tech prereqs unlocks science trigger enabled
+--- I item type place_result uses | F fluid | T tech prereqs unlocks science trigger enabled
+---   (uses, issue #547: what an item does besides being an ingredient: fuel, tile, equipment, plant)
 --- M resource result results category | O offshore-pump fluid
 local dump = {}
 local function D(...) dump[#dump + 1] = table.concat({ ... }, "\t") end
@@ -49,7 +50,14 @@ for _, t in pairs({ "assembling-machine", "furnace", "rocket-silo", "character" 
 	end
 end
 for t, _ in pairs(defines.prototypes.item) do
-	for n, it in pairs(data.raw[t] or {}) do D("I", n, t, it.place_result or "") end
+	for n, it in pairs(data.raw[t] or {}) do
+		local uses = {}
+		if it.fuel_value and not tostring(it.fuel_value):match("^0*%.?0*%a*$") then uses[#uses + 1] = "fuel" end
+		if it.place_as_tile then uses[#uses + 1] = "tile" end
+		if it.place_as_equipment_result then uses[#uses + 1] = "equipment" end
+		if it.plant_result then uses[#uses + 1] = "plant" end
+		D("I", n, t, it.place_result or "", table.concat(uses, ","))
+	end
 end
 for n, _ in pairs(data.raw.fluid) do D("F", n) end
 for n, tech in pairs(data.raw.technology) do
@@ -122,6 +130,12 @@ section("UNLOCKTREEOK", ut)
 local tk = {}
 for name, reason in pairs(FORK_RECIPES_TABLE_ONLY or {}) do tk[#tk + 1] = name .. "\t" .. reason end
 section("TABLEONLYOK", tk)
+
+--- Issue #547: the items whose only use is a technology's craft-item trigger, on purpose (FORK_TRIGGER_ONLY_ITEMS in
+--- prototypes/100-fork-fixes.lua; absent in older versions)
+local to = {}
+for name, reason in pairs(FORK_TRIGGER_ONLY_ITEMS or {}) do to[#to + 1] = name .. "\t" .. reason end
+section("TRIGGERONLYOK", to)
 
 --- Issue #318: the vanilla recipes without a technology, of items Gregtorio makes, that stay on purpose
 --- (FORK_VANILLA_RECIPES_KEPT in data-final-fixes.lua; absent in older versions)

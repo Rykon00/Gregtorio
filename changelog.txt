@@ -1,4 +1,8 @@
 ---------------------------------------------------------------------------------------------------
+Version: 0.5.9
+  Bugfixes:
+    - The Stone Pickaxe has a use again (issue #547): since the vein recipes of the mines were removed in 0.5.6, nothing took it after the 10 that research Craft Stone Tools. Craft Stone Tools unlocks a Dig Site recipe "Mining Cobblestone With Stone Pickaxe": 1 Stone Pickaxe and 4 manual labor give 64 stone in 10 s, between the Wooden Pickaxe's recipe (8 manual labor) and the Iron Pickaxe's (2 manual labor).
+---------------------------------------------------------------------------------------------------
 Version: 0.5.8
 Date: 2026-10-23
   Bugfixes:

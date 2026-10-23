@@ -5,7 +5,8 @@
 - Read `CONTRIBUTING.md` and the layout table in `README.md` first.
 - Upstream content lives in `prototypes/0*-*.lua` … `98-technology.lua`; keep changes there minimal. Fork logic lives in
   `prototypes/1xx-fork-*.lua`, loaded at the end of `data.lua` in this order:
-  - 100 fixes
+  - 100 fixes (issue #547: the allow-list `FORK_TRIGGER_ONLY_ITEMS`; devcheck fails for an item whose only use is a
+    technology's craft-item trigger: no recipe or research unit takes it, it places, fuels or plants nothing)
   - 101 machines (issue #446: the steam age of GTNH, the high pressure machines, the steam furnace, the lava and solar
     boilers; issue #447: the steam macerator's copies of the LV macerator recipes without byproducts,
     `fork_steam_categories()` at the end of data-final-fixes.lua; issue #449: the LV combustion generator, extruder and laser
@@ -111,7 +112,8 @@
     their old names are `mining-drill`s of the map veins (resource category `gt-ore`: Manual Mine burning manual labor,
     7x7; Miners GT's radius 8/16/24 with 9 mining pipes in their recipe; Ore Drilling Plants radius 40/48/64/96, 80 % and
     60 % drain from the Mk III) at today's rates; a vein recipe whose results are all Overworld map ores is hidden with
-    its twins (kept for old saves until V9); hunting, cobblestone and end stone are Dig Site recipes; a drill's fluid box
+    its twins (kept for old saves until V9); hunting, cobblestone and end stone are Dig Site recipes (issue #547: the stone
+    pickaxe's cobblestone `cobblestone-manual-mine-with-stone-pickaxe`, Craft Stone Tools); a drill's fluid box
     only works while its ore needs a fluid, so the plants' Drilling Fluid goes into a hidden storage tank
     `ore-drilling-plant-fluid-input` on their tiles, which `scripts/fork-ore-drills.lua` builds and drains per ore;
     `migrations/2026-10-22-issue-499-dimension-mines.json` renames placed mines of old saves to their dimension mine;
