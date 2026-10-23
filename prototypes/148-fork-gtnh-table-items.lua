@@ -96,17 +96,17 @@ create_recipe{
 fork_add_unlock("semifluid-generator", "bucket-of-water-canning-machine")
 
 --- Issue #126, part B (maintainer's decision): the vanilla recipes that only the character could make and that a player can
---- reach (firearm magazine, light armor, the elevated rail's ramp and support, Space Age's wood processing) become recipes
+--- reach (firearm magazine, light armor, the elevated rail's ramp and support, Space Age's tree seed (wood processing before Factorio 2.1)) become recipes
 --- of the category `crafting-or-assembling-recipes`: the crafting table, the ME Molecular Assembler, every assembling machine
 --- and the hand make them, as they do for 769 other recipes. GTNH has none of these items (no armor, magazines or elevated
 --- rails of Factorio's), so there is no GTNH recipe to follow; this is the option "also craftable in the assembling machines"
 --- of the issue, the one that automates them without inventing a tier or a recipe. The other 17 vanilla recipes of the issue's
 --- 21 (equipment, modular, power and mech armor, spidertron) are behind technologies nobody can research and stay as they
 --- are; devcheck fails for one of them once it becomes reachable.
-for _, name in pairs({ "firearm-magazine", "light-armor", "rail-ramp", "rail-support", "wood-processing" }) do
+for _, name in pairs({ "firearm-magazine", "light-armor", "rail-ramp", "rail-support", "tree-seed" }) do
 	local r = data.raw.recipe[name]
 	if r then
-		r.category = "crafting-or-assembling-recipes"
+		fork_set_category(r, "crafting-or-assembling-recipes")
 		r.hide_from_player_crafting = nil
 	end
 end

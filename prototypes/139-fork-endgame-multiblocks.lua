@@ -350,10 +350,10 @@ for _, def in pairs(QFT_RECIPES) do
 		local results = {}
 		for _, o in pairs(def.outputs) do
 			local p = o[1] == focus[1] and (n + 1) / (2 * n) or 1 / (2 * n)
-			results[#results + 1] = { type = "item", name = o[1], amount = o[2], probability = p }
+			results[#results + 1] = { type = "item", name = o[1], amount = o[2], independent_probability = p }
 		end
 		for _, e in pairs(def.extra or {}) do
-			results[#results + 1] = { type = "fluid", name = e.name, amount = e.amount, probability = 1 / (2 * n) }
+			results[#results + 1] = { type = "fluid", name = e.name, amount = e.amount, independent_probability = 1 / (2 * n) }
 		end
 		local ingredients = table.deepcopy(def.input)
 		ingredients[#ingredients + 1] = fluid(FOCUS_PLASMA, 100)

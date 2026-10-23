@@ -223,8 +223,8 @@ do
 	g.max_power_output = "20971.52MW"
 	g.fluid_usage_per_tick = g.fluid_usage_per_tick * 2
 	g.localised_description = { "entity-description." .. name }
-	for _, key in pairs({ "horizontal_animation", "vertical_animation" }) do
-		g[key].layers[1].filename = "__gregtorio-continued__/graphics/entity/fork/" .. name .. "-working.png"
+	for _, d in pairs(g.pictures) do        -- (the four directions of GeneratorPrototype::pictures, Factorio 2.1)
+		d.animation.layers[1].filename = "__gregtorio-continued__/graphics/entity/fork/" .. name .. "-working.png"
 	end
 	data:extend({ g })
 

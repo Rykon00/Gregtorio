@@ -49,7 +49,7 @@ end
 local function gt_recipe(name, ingredients, amount)
 	local r = data.raw.recipe[name]
 	if not r then log("FORK-QOL: missing recipe " .. name) return end
-	r.category = "crafting-or-assembling-recipes"
+	fork_set_category(r, "crafting-or-assembling-recipes")
 	r.surface_conditions = nil
 	r.energy_required = 1
 	r.ingredients = ingredients

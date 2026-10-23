@@ -657,10 +657,10 @@ create_recipe{
 	},
 	results = {
 		{ type = "item", name = "aluminium-hydroxide", amount = 2 },
-		{ type = "item", name = "chromium-dust", amount = 1, probability = 0.5 },
-		{ type = "item", name = "iron-dust", amount = 1, probability = 0.03 },
-		{ type = "item", name = "vanadium-dust", amount = 1, probability = 0.02 },
-		{ type = "item", name = "magnesium", amount = 1, probability = 0.02 },
+		{ type = "item", name = "chromium-dust", amount = 1, independent_probability = 0.5 },
+		{ type = "item", name = "iron-dust", amount = 1, independent_probability = 0.03 },
+		{ type = "item", name = "vanadium-dust", amount = 1, independent_probability = 0.02 },
+		{ type = "item", name = "magnesium", amount = 1, independent_probability = 0.02 },
 		{ type = "fluid", name = "hydrochloric-acid", amount = 100 },
 	},
 	main_product = "chromium-dust"
@@ -1831,7 +1831,7 @@ create_item{
 		{type = "fluid", name = "distilled-water", amount = 10},
     },
 	results = {
-		{type = "item", name = "charged-certus-quartz", probability = 0.9, amount = 1}
+		{type = "item", name = "charged-certus-quartz", independent_probability = 0.9, amount = 1}
     }
 }  
  
@@ -1893,7 +1893,7 @@ create_item{
 		{type = "fluid", name = "distilled-water", amount = 10},
     },
 	results = {
-		{type = "item", name = "pure-certus-crystal", probability = 0.9, amount = 1}
+		{type = "item", name = "pure-certus-crystal", independent_probability = 0.9, amount = 1}
     }
 } 
 
@@ -1925,7 +1925,7 @@ create_item{
 		{type = "fluid", name = "distilled-water", amount = 10},
     },
 	results = {
-		{type = "item", name = "pure-fluix-crystal", probability = 0.9, amount = 1}
+		{type = "item", name = "pure-fluix-crystal", independent_probability = 0.9, amount = 1}
     }
 } 
 

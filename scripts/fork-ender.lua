@@ -65,7 +65,7 @@ end
 local function level(group)
 	local name, total, heat, members = nil, 0, 0, {}
 	for _, e in ipairs(group) do
-		local f = e.fluidbox[1]
+		local f = e.get_fluid(1)
 		if f and not name then name = f.name end
 		if not f or f.name == name then
 			members[#members + 1] = e
@@ -78,9 +78,9 @@ local function level(group)
 	if not name or #members < 2 or total <= 0 then return end
 	local each, temp = total / #members, heat / total
 	for _, e in ipairs(members) do
-		local f = e.fluidbox[1]
+		local f = e.get_fluid(1)
 		if not f or math.abs(f.amount - each) > 1e-6 then
-			e.fluidbox[1] = { name = name, amount = each, temperature = temp }
+			e.set_fluid(1, { name = name, amount = each, temperature = temp })
 		end
 	end
 end
@@ -113,7 +113,7 @@ function M.on_gui_opened(event)
 	local frame = player.gui.relative.add{ type = "frame", name = PANEL, direction = "vertical",
 		caption = { "fork-ender.code" }, anchor = { position = defines.relative_gui_position.right,
 			gui = e.name == CHEST and defines.relative_gui_type.linked_container_gui
-				or defines.relative_gui_type.storage_tank_gui } }
+				or defines.relative_gui_type.pipe_gui } }      -- (a storage tank's window since Factorio 2.1, issue #535)
 	local items = {}
 	for _, c in ipairs(COLOURS) do items[#items + 1] = { "fork-ender.colour-" .. c } end
 	local d = digits(M.get_code(e))

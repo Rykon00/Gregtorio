@@ -319,8 +319,7 @@ local function make_generator(def)
 			},
 		},
 		energy_source = { type = "electric", usage_priority = "secondary-output" },
-		horizontal_animation = anim(),
-		vertical_animation = anim(),
+		pictures = fork_generator_pictures(anim(), anim()),
 		localised_description = { "entity-description." .. def.name },
 	} })
 end
@@ -470,12 +469,12 @@ data:extend({ {
 	fluid_box = {
 		volume = 4000,
 		pipe_covers = pipecoverspictures(),
-		hide_connection_info = true,                  -- four connections on one tile, like a pipe
-		pipe_connections = {
-			{ direction = defines.direction.north, position = { 0, 0 } },
-			{ direction = defines.direction.east, position = { 0, 0 } },
-			{ direction = defines.direction.south, position = { 0, 0 } },
-			{ direction = defines.direction.west, position = { 0, 0 } },
+		pipe_connections = {                          -- four connections on one tile, like a pipe (their info hidden; a key of
+			-- each connection since Factorio 2.1, issue #535)
+			{ direction = defines.direction.north, position = { 0, 0 }, hide_connection_info = true },
+			{ direction = defines.direction.east, position = { 0, 0 }, hide_connection_info = true },
+			{ direction = defines.direction.south, position = { 0, 0 }, hide_connection_info = true },
+			{ direction = defines.direction.west, position = { 0, 0 }, hide_connection_info = true },
 		},
 	},
 	window_bounding_box = { { -0.25, -0.25 }, { 0.25, 0.25 } },
@@ -591,9 +590,9 @@ do
 	r = data.raw.recipe["radioactive-sludge-centrifuging"]
 	if r then
 		r.results = {
-			{ type = "item", name = "enriched-naquadah-dust", amount = 1, probability = 0.8 },
-			{ type = "item", name = "uranium-238-dust", amount = 1, probability = 0.25 },
-			{ type = "item", name = "plutonium-239-dust", amount = 1, probability = 0.2 },
+			{ type = "item", name = "enriched-naquadah-dust", amount = 1, independent_probability = 0.8 },
+			{ type = "item", name = "uranium-238-dust", amount = 1, independent_probability = 0.25 },
+			{ type = "item", name = "plutonium-239-dust", amount = 1, independent_probability = 0.2 },
 			{ type = "fluid", name = "radon", amount = 2 },
 		}
 	end

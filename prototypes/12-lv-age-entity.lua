@@ -177,7 +177,7 @@ data:extend({
       type = "electric",
       usage_priority = "secondary-output"
     },
-    horizontal_animation = {
+    pictures = fork_generator_pictures({
       layers = {
         {
           filename = "__gregtorio-continued__/graphics/entity/lv-steam-turbine/lv-steam-turbine-working.png",
@@ -188,8 +188,7 @@ data:extend({
           shift = {0, 0},
         }
       }
-    },
-    vertical_animation = {
+    }, {
       layers = {
         {
           filename = "__gregtorio-continued__/graphics/entity/lv-steam-turbine/lv-steam-turbine-working.png",
@@ -200,7 +199,7 @@ data:extend({
           shift = {0, 0},
         }
       }
-    }
+    })
   }
 })
   

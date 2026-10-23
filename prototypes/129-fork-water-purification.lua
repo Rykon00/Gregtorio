@@ -225,22 +225,22 @@ grade_recipe(1, 10, {
 	{ type = "fluid", name = "water", amount = 1000 },
 	{ type = "item", name = "activated-carbon-mesh-filter", amount = 1 },
 }, {
-	{ type = "item", name = "activated-carbon-mesh-filter", amount = 1, probability = 0.9 },
-	{ type = "item", name = "stone-dust", amount = 1, probability = 0.1 },
+	{ type = "item", name = "activated-carbon-mesh-filter", amount = 1, independent_probability = 0.9 },
+	{ type = "item", name = "stone-dust", amount = 1, independent_probability = 0.1 },
 })
 grade_recipe(2, 10, {
 	{ type = "fluid", name = "grade-1-water", amount = 1000 },
 	{ type = "fluid", name = "ozone", amount = 1000 },
 }, {
-	{ type = "item", name = "manganese-dust", amount = 1, probability = 0.5 },
-	{ type = "item", name = "iron-dust", amount = 1, probability = 0.5 },
+	{ type = "item", name = "manganese-dust", amount = 1, independent_probability = 0.5 },
+	{ type = "item", name = "iron-dust", amount = 1, independent_probability = 0.5 },
 })
 grade_recipe(3, 15, {
 	{ type = "fluid", name = "grade-2-water", amount = 1000 },
 	{ type = "fluid", name = "polyaluminium-chloride", amount = 100 },
 }, {
 	{ type = "item", name = "clay-ball", amount = 1 },
-	{ type = "item", name = "quartz-sand", amount = 1, probability = 0.5 },
+	{ type = "item", name = "quartz-sand", amount = 1, independent_probability = 0.5 },
 })
 grade_recipe(4, 15, {
 	{ type = "fluid", name = "grade-3-water", amount = 1000 },
@@ -300,7 +300,7 @@ grade_recipe(8, 30, {
 	{ type = "fluid", name = "grade-7-water", amount = 1000 },
 	{ type = "item", name = "quark-creation-catalyst", amount = 1 },
 }, {
-	{ type = "item", name = "quark-creation-catalyst", amount = 1, probability = 0.9 },
+	{ type = "item", name = "quark-creation-catalyst", amount = 1, independent_probability = 0.9 },
 })
 
 --- Upstream's ingredient of the doped wafers is 10 mB of grade 4 / 6 water per cut and 10 per

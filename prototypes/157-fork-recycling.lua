@@ -136,7 +136,7 @@ for name, r in pairs(data.raw.recipe) do
 end
 local function amount(s)
 	local a = s.amount or ((s.amount_min or 0) + (s.amount_max or 0)) / 2
-	return a * (s.probability or 1)
+	return a * (s.independent_probability or 1)
 end
 
 --- the composition of an item in ingots per material: per material the least any of its recipes needs
@@ -201,7 +201,7 @@ end
 local function recipe(kind, category, item, time, ingredients, results)
 	local name = "recycling-" .. kind .. "-" .. item
 	data:extend({ {
-		type = "recipe", name = name, category = category, enabled = false, energy_required = time,
+		type = "recipe", name = name, categories = { category }, enabled = false, energy_required = time,
 		ingredients = ingredients, results = results, subgroup = "fork-recycling-" .. kind,
 		icons = icons_of(item),
 		localised_name = { "recipe-name.fork-recycling-" .. kind, FORK_LOCALE.name_of("item", item) },
@@ -224,7 +224,7 @@ local function grid(x) return math.floor(x * 16777216) / 16777216 end
 local names = {}
 for name, r in pairs(data.raw.recipe) do
 	--- the machine hulls too: GT sets their data explicitly (an assembler recipe here)
-	if (CRAFTING[r.category] or name:match("^%a+%-machine%-hull$")) and not r.hidden and item_exists(name)
+	if (fork_category_in(r, CRAFTING) or name:match("^%a+%-machine%-hull$")) and not r.hidden and item_exists(name)
 		and not parse(name) and not is_circuit(name)
 		and not FORK_RECYCLING_BLACKLIST[name] then
 		for _, s in pairs(r.results or {}) do

@@ -617,7 +617,7 @@ if HAS_CRAFTING_BLOCKS then
 		FORK_ME_RECIPES[name] = true
 		ME.replace_recipe{
 			name = name,
-			category = category,
+			categories = { category },        -- (Factorio 2.1, issue #535)
 			enabled = false,
 			energy_required = energy_required,
 			ingredients = ingredients,

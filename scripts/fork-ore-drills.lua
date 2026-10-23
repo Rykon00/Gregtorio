@@ -78,10 +78,10 @@ local function check(rec)
 	--- a running plant pays what it owes; a stopped one starts again once it can pay that and the next check's ore
 	local need = rec.debt + (e.disabled_by_script and per_check or 0)
 	if have >= need and need > 0 then
-		t.remove_fluid{ name = d.fluid, amount = rec.debt }
+		t.extract_fluid{ name = d.fluid, amount = rec.debt }
 		rec.debt = 0
 	elseif rec.debt > 0 and have > 0 then
-		rec.debt = rec.debt - t.remove_fluid{ name = d.fluid, amount = math.min(have, rec.debt) }
+		rec.debt = rec.debt - t.extract_fluid{ name = d.fluid, amount = math.min(have, rec.debt) }
 	end
 	local stop = rec.debt > 1e-9
 	e.disabled_by_script = stop

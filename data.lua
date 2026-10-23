@@ -5,6 +5,8 @@ YAFC_MODE = false
 
 --- Fork: names (issue #230): the recipes that exist before this mod, and FORK_LOCALE.name_of
 require("prototypes.fork-locale")
+--- Fork: Factorio 2.1 (issue #535): the keys that changed (fork_category, fork_set_category, fork_generator_pictures, ...)
+require("prototypes.fork-factorio-21")
 
 require("prototypes.03-helper-functions-module")
 require("prototypes.04-item-groups-module")

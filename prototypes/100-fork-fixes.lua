@@ -98,7 +98,7 @@ create_recipe{
 	},
 	results = {
 		{ type = "item", name = "zirconium-dust", amount = 1 },
-		{ type = "item", name = "yttrium-dust", amount = 1, probability = 0.25 },
+		{ type = "item", name = "yttrium-dust", amount = 1, independent_probability = 0.25 },
 	},
 	main_product = "zirconium-dust",
 }
@@ -147,13 +147,13 @@ fork_add_unlock("utility-science-pack", "iv-science-pack")
 --- Iridium required the IV chemical reactor, but every IV machine needs iridium (IV emitter).
 --- In GregTech iridium comes from the platinum line at EV -> EV category.
 if data.raw.recipe["iridium-dust"] then
-	data.raw.recipe["iridium-dust"].category = "ev-chemical-reactor-recipes"
+	fork_set_category(data.raw.recipe["iridium-dust"], "ev-chemical-reactor-recipes")
 end
 
 --- The High Powered IC is needed for the IV energy hatch but required the IV chemical reactor,
 --- which itself needs IV energy hatches -> EV category.
 if data.raw.recipe["hpic-wafer"] then
-	data.raw.recipe["hpic-wafer"].category = "ev-chemical-reactor-recipes"
+	fork_set_category(data.raw.recipe["hpic-wafer"], "ev-chemical-reactor-recipes")
 end
 
 

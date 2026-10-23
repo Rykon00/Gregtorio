@@ -442,8 +442,8 @@ do
 		subgroup = "subgroup-space-mining-3-recipes",
 		ingredients = { item(drones[tier], 1), item(CONSUMABLE[tier] .. "-drill-head", 4), item(CONSUMABLE[tier] .. "-rod", 4),
 			fluid("helium-plasma", 825) },
-		results = { item(drones[tier], 1), { type = "item", name = "draconic-core-schematic", amount = 1, probability = 0.01 },
-			{ type = "item", name = "draconic-core", amount = 1, probability = 0.01 } },
+		results = { item(drones[tier], 1), { type = "item", name = "draconic-core-schematic", amount = 1, independent_probability = 0.01 },
+			{ type = "item", name = "draconic-core", amount = 1, independent_probability = 0.01 } },
 		icon = FORK_ICON .. drones[tier] .. ".png",
 	}
 	local r = data.raw.recipe[name]
@@ -796,7 +796,7 @@ if data.raw["item-with-tags"]["me-singularity-storage-cell"] then
 
 	--- the Singularity cell
 	local cell = data.raw.recipe["me-singularity-storage-cell"]
-	cell.category = "space-assembler-recipes"
+	fork_set_category(cell, "space-assembler-recipes")
 	cell.energy_required = 10 * UHV_SPEED
 	cell.ingredients = { item("eternal-singularity", 1), item("me-16384k-storage-component", 12), item("quantum-chest-v", 8),
 		item("block-of-infinity", 4), item("infinity-catalyst", 4), item("block-of-cosmic-neutronium", 12),

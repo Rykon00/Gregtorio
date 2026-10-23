@@ -282,7 +282,7 @@ F.tech{
 
 do
 	local r = data.raw.recipe["deuterium"]
-	r.category = "lv-centrifuge-recipes"
+	fork_set_category(r, "lv-centrifuge-recipes")
 	r.energy_required = 8
 	r.ingredients = { { type = "fluid", name = "hydrogen", amount = 16 } }
 	r.results = { { type = "fluid", name = "deuterium", amount = 4 } }
