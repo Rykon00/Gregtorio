@@ -108,7 +108,7 @@ do
 
 	--- (b) the nanoprocessor at HV
 	local nano = data.raw.recipe["nanoprocessor"]
-	nano.category = "hv-circuit-assembler-recipes"
+	fork_set_category(nano, "hv-circuit-assembler-recipes")
 	nano.energy_required = 10 * HV_SPEED
 	local MOVE = {
 		["epoxy-processing"] = { "epoxy-sheet", "gold-foil", "electrum-foil", "epoxy-circuit-board", "epoxy-printed-circuit-board",

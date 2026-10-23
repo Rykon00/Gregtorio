@@ -37,15 +37,15 @@ end
 --- the recipes with a fluid result
 FORK_FLUID_EXTRACTOR = { moved = {} }
 for name, r in pairs(data.raw.recipe) do
-	local t = r.category and r.category:match("^(%a+)%-extractor%-recipes$")
+	local t = fork_category(r):match("^(%a+)%-extractor%-recipes$")
 	if t and TIER_INDEX[t] then
 		local fluid = false
 		for _, res in pairs(r.results or {}) do
 			if res.type == "fluid" then fluid = true end
 		end
 		if fluid then
-			r.category = t .. "-fluid-extractor-recipes"
-			if r.subgroup == "subgroup-" .. t .. "-extractor-recipes" then r.subgroup = "subgroup-" .. r.category end
+			fork_set_category(r, t .. "-fluid-extractor-recipes")
+			if r.subgroup == "subgroup-" .. t .. "-extractor-recipes" then r.subgroup = "subgroup-" .. fork_category(r) end
 			FORK_FLUID_EXTRACTOR.moved[name] = true
 		end
 	end
@@ -146,7 +146,7 @@ do
 	end
 	local recipe_of, techs = {}, {}
 	for name, _ in pairs(FORK_FLUID_EXTRACTOR.moved) do
-		if data.raw.recipe[name].category == "lv-fluid-extractor-recipes" then
+		if fork_has_category(data.raw.recipe[name], "lv-fluid-extractor-recipes") then
 			for _, tname in pairs(unlocked_by(name)) do
 				if not recipe_of[tname] then techs[#techs + 1] = tname end
 				if not recipe_of[tname] or name < recipe_of[tname] then recipe_of[tname] = name end

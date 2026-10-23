@@ -36,7 +36,7 @@ local function remove_fluid(name)
 	remove("recipe", "void-" .. name)
 end
 local function item(name, amount, probability)
-	return { type = "item", name = name, amount = amount, probability = probability }
+	return { type = "item", name = name, amount = amount, independent_probability = probability }
 end
 local function fluid(name, amount)
 	return { type = "fluid", name = name, amount = amount }

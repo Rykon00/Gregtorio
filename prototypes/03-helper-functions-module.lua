@@ -31,8 +31,8 @@ function create_item(def)
 		item.place_result = def.place_result
 	end
 	
-	if def.fuel_category then
-		item.fuel_category = def.fuel_category
+	if def.fuel_category then          -- (the helper's argument; the item has fuel_categories since Factorio 2.1, issue #535)
+		item.fuel_categories = { def.fuel_category }
 		item.fuel_value = def.fuel_value
 	end
 	
@@ -78,7 +78,7 @@ function create_recipe(def)
 	local recipe = {
 		type = "recipe",
 		name = name,
-		category = category,
+		categories = { category },
 		enabled = false,
 		energy_required = def.energy_required or 1,
 		ingredients = def.ingredients,
@@ -291,7 +291,7 @@ function create_ore(raw_ore, ingot, crushed, dust, raw_smelt_result, crush_resul
 			},
 			results = {
 				{type = "item", name = centrifuge_result, amount = 1},
-				{type = "item", name = byproduct, amount = 1, probability = 0.1}
+				{type = "item", name = byproduct, amount = 1, independent_probability = 0.1}
 			},
 			main_product = centrifuge_result
 		}
@@ -426,7 +426,7 @@ function create_ingot( material,
 		data:extend{{
 			type = "recipe",
 			name = "molten-" .. material,
-			category = ebf_tier .. "-alloy-blast-smelter-recipes",
+			categories = { ebf_tier .. "-alloy-blast-smelter-recipes" },
 			order = "a[molten]" .. material,
 			energy_required = abs_speed,
 			ingredients = abs_ingredients,

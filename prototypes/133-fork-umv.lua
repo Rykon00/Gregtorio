@@ -498,7 +498,7 @@ create_item{
 }
 
 F.redo("advanced-fusion-coil-ii", {
-	category = "uiv-assembling-machine-recipes",
+	categories = { "uiv-assembling-machine-recipes" },
 	energy_required = 60 * UIV_SPEED,
 	ingredients = {
 		{ type = "item", name = "energy-module", amount = 1 },
@@ -514,7 +514,7 @@ F.redo("advanced-fusion-coil-ii", {
 })
 
 F.redo("fusion-machine-casing-mk4", {
-	category = "uiv-assembling-machine-recipes",
+	categories = { "uiv-assembling-machine-recipes" },
 	energy_required = 15 * UIV_SPEED,
 	ingredients = {
 		{ type = "item", name = "fusion-machine-casing-mk3", amount = 1 },
@@ -529,7 +529,7 @@ F.redo("fusion-machine-casing-mk4", {
 })
 
 F.redo("fusion-reactor-mk5-controller", {
-	category = "zpm-assembly-line-recipes",
+	categories = { "zpm-assembly-line-recipes" },
 	energy_required = 120 * ZPM_SPEED,
 	ingredients = {
 		{ type = "item", name = "advanced-fusion-coil-ii", amount = 1 },
@@ -545,7 +545,7 @@ F.redo("fusion-reactor-mk5-controller", {
 })
 
 F.redo("fusion-reactor-mk5", {
-	category = "uiv-assembling-machine-recipes",
+	categories = { "uiv-assembling-machine-recipes" },
 	energy_required = 300 * UIV_SPEED,
 	ingredients = {
 		{ type = "item", name = "fusion-reactor-mk5-controller", amount = 1 },

@@ -83,7 +83,7 @@ data:extend({
   {
     type = "recipe",
     name = "manual-inserter-crafting-table",
-    category = "crafting-table-recipes",
+    categories = { "crafting-table-recipes" },
     enabled = false,
     energy_required = 1,
     ingredients = {
@@ -98,7 +98,7 @@ data:extend({
   {
     type = "recipe",
     name = "burner-inserter",
-    category = "lv-assembling-machine-recipes",
+    categories = { "lv-assembling-machine-recipes" },
     enabled = false,
     energy_required = 1,
     hide_from_player_crafting = true,
@@ -120,7 +120,7 @@ data:extend({
       icon = "__gregtorio-continued__/graphics/icons/coal.png",
       icon_size = 32,
 	  fuel_value = "4MJ",
-	  fuel_category = "chemical",
+	  fuel_categories = { "chemical" },
 	  fuel_emissions_multiplier = 1,
 	  subgroup = "raw-resource",
 	  order = "b[coal]",
@@ -143,7 +143,7 @@ data:extend({
   {
     type = "recipe",
     name = "inserter",
-    category = "crafting-or-assembling-recipes",
+    categories = { "crafting-or-assembling-recipes" },
     enabled = false,
     energy_required = 1,
     ingredients = {
@@ -172,7 +172,7 @@ data:extend({
   {
     type = "recipe",
     name = "fast-inserter",
-    category = "crafting-or-assembling-recipes",
+    categories = { "crafting-or-assembling-recipes" },
     enabled = false,
     energy_required = 1,
     ingredients = {
@@ -200,7 +200,7 @@ data:extend({
 	{
 		type = "recipe",
 		name = "gold-chest",
-		category = "lv-assembling-machine-recipes",
+		categories = { "lv-assembling-machine-recipes" },
 		enabled = false,
 		energy_required = 1,
 		ingredients = {
@@ -228,7 +228,7 @@ data:extend({
   {
     type = "recipe",
     name = "iron-chest-crafting-table",
-    category = "crafting-table-recipes",
+    categories = { "crafting-table-recipes" },
     enabled = false,
     energy_required = 1,
     ingredients = {
@@ -243,7 +243,7 @@ data:extend({
   {
     type = "recipe",
     name = "iron-chest",
-    category = "lv-assembling-machine-recipes",
+    categories = { "lv-assembling-machine-recipes" },
     enabled = false,
     energy_required = 1,
     hide_from_player_crafting = true,
@@ -271,7 +271,7 @@ data:extend({
   {
     type = "recipe",
     name = "iron-rod-crafting-table",
-    category = "crafting-table-recipes",
+    categories = { "crafting-table-recipes" },
     enabled = false,
     energy_required = 1,
     subgroup = "subgroup-early-game-machine-replacements",
@@ -286,7 +286,7 @@ data:extend({
   {
     type = "recipe",
     name = "iron-stick",
-    category = "lv-lathe-recipes",
+    categories = { "lv-lathe-recipes" },
     enabled = false,
     energy_required = IRON_SPEED * 2,
 	hide_from_player_crafting = true,
@@ -313,7 +313,7 @@ data:extend({
   {
     type = "recipe",
     name = "iron-gear-crafting-table",
-    category = "crafting-table-recipes",
+    categories = { "crafting-table-recipes" },
     enabled = false,
     energy_required = 1,
 	subgroup = "subgroup-early-game-machine-replacements",
@@ -329,7 +329,7 @@ data:extend({
   {
     type = "recipe",
     name = "iron-gear",
-    category = "mv-extruder-recipes",
+    categories = { "mv-extruder-recipes" },
     enabled = false,
 	subgroup = "subgroup-mv-extruder-recipes",
     energy_required = IRON_SPEED * 2,
@@ -359,7 +359,7 @@ data:extend({
   {
     type = "recipe",
     name = "pipe-crafting-table",
-    category = "crafting-or-assembling-recipes",
+    categories = { "crafting-or-assembling-recipes" },
     enabled = false,
     energy_required = 1,
     ingredients = {
@@ -372,7 +372,7 @@ data:extend({
   {
     type = "recipe",
     name = "pipe",
-    category = "mv-extruder-recipes",
+    categories = { "mv-extruder-recipes" },
     enabled = false,
     energy_required = 1.2,
     hide_from_player_crafting = true,
@@ -401,7 +401,7 @@ data:extend({
   {
     type = "recipe",
     name = "pipe-to-ground",
-    category = "crafting-or-assembling-recipes",
+    categories = { "crafting-or-assembling-recipes" },
     enabled = false,
     energy_required = 1,
     ingredients = {
@@ -419,7 +419,7 @@ data:extend({
    {
     type = "recipe",
     name = "stone-bricks",
-    category = "crafting-or-assembling-recipes",
+    categories = { "crafting-or-assembling-recipes" },
     enabled = false,
     energy_required = 1,
     ingredients = {
@@ -454,7 +454,7 @@ data:extend({
 	  subgroup = "subgroup-wood-related",
 	  order = "a[oak-log]",
 	  fuel_value = "0.5MJ",
-	  fuel_category = "chemical",
+	  fuel_categories = { "chemical" },
 	  fuel_emissions_multiplier = 1,
 	  stack_size = 64
 	},
@@ -475,7 +475,7 @@ data:extend({
   {
     type = "recipe",
     name = "chest-crafting-table",
-    category = "crafting-table-recipes",
+    categories = { "crafting-table-recipes" },
     enabled = false,
     energy_required = 1,
     ingredients = {
@@ -490,7 +490,7 @@ data:extend({
   {
     type = "recipe",
     name = "chest",
-    category = "lv-assembling-machine-recipes",
+    categories = { "lv-assembling-machine-recipes" },
     enabled = false,
     energy_required = 1,
     hide_from_player_crafting = true,
@@ -512,13 +512,13 @@ data:extend({
 	  icon_size = 32,
 	  stack_size = 200,
 	  fuel_value = "1MJ",
-	  fuel_category = "manual-labor",
+	  fuel_categories = { "manual-labor" },
 	  subgroup = "subgroup-manual-labor",
 	},
   {
     type = "recipe",
 	name = "manual-labor",
-	category = "manual-only-recipes",
+	categories = { "manual-only-recipes" },
 	subgroup = "subgroup-manual-labor",
     energy_required = 1,
     ingredients = { },
@@ -533,7 +533,7 @@ data:extend({
   {
     type = "recipe",
 	name = "punch-trees",
-	category = "manual-only-recipes",
+	categories = { "manual-only-recipes" },
 	subgroup = "subgroup-wood-related",
     energy_required = 1,
 	ingredients = {
@@ -632,7 +632,7 @@ create_item{
 	main_product = "plank"
 }
 data.raw["item"]["plank"].fuel_value = "0.5MJ"
-data.raw["item"]["plank"].fuel_category = "chemical"
+data.raw["item"]["plank"].fuel_categories = { "chemical" }
 create_recipe{
 	recipe_name = "plank-crafting-table",
 	category = "crafting-table-recipes",
@@ -660,7 +660,7 @@ create_item{
     }
 }
 data.raw["item"]["stick"].fuel_value = "0.5MJ"
-data.raw["item"]["stick"].fuel_category = "chemical"
+data.raw["item"]["stick"].fuel_categories = { "chemical" }
 create_recipe{
 	recipe_name = "stick-crafting-table",
 	category = "crafting-table-recipes",
@@ -910,7 +910,7 @@ create_recipe{
     }
 }
 data.raw["item"]["charcoal"].fuel_value = "4MJ"
-data.raw["item"]["charcoal"].fuel_category = "chemical"
+data.raw["item"]["charcoal"].fuel_categories = { "chemical" }
 
 
 ---TORCH 
@@ -1318,12 +1318,12 @@ create_item{
     },
 	results = {
 		{type = "item", name = "wood-pulp", amount = 6},
-		{type = "item", name = "wood-pulp", amount = 1, probability = 0.8},
+		{type = "item", name = "wood-pulp", amount = 1, independent_probability = 0.8},
     },
 	main_product = "wood-pulp"
 }
 data.raw["item"]["wood-pulp"].fuel_value = "1MJ"
-data.raw["item"]["wood-pulp"].fuel_category = "chemical" 
+data.raw["item"]["wood-pulp"].fuel_categories = { "chemical" } 
   
   
   
@@ -1392,7 +1392,7 @@ create_item{
     }
 }
 data.raw["item"]["coke"].fuel_value = "8MJ"
-data.raw["item"]["coke"].fuel_category = "chemical" 
+data.raw["item"]["coke"].fuel_categories = { "chemical" } 
 create_recipe{
 	recipe_name = "phenol-from-coal",
 	category = "pyrolyse-oven-recipes",
@@ -1707,7 +1707,7 @@ create_recipe{
 	results = {
 		{type = "item", name = "raw-rubber-pulp", amount = 3},
 		{type = "fluid", name = "glue", amount = 10},
-		{type = "item", name = "plant-ball", amount = 1, probability = 0.1}
+		{type = "item", name = "plant-ball", amount = 1, independent_probability = 0.1}
     },
 	main_product = "glue"
 }

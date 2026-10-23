@@ -19,7 +19,7 @@ local function step(list, name, category, seconds, speed, ingredients, results, 
 	end
 	for _, r in pairs(results) do
 		local x = { type = data.raw.fluid[r[1]] and "fluid" or "item", name = r[1], amount = r[2] }
-		if r[3] then x.probability = r[3] end
+		if r[3] then x.independent_probability = r[3] end
 		res[#res + 1] = x
 	end
 	create_recipe{
@@ -432,7 +432,7 @@ do
 	for _, name in pairs(names) do
 		local r = data.raw.recipe[name]
 		local out = r.results and r.results[1] and r.results[1].name or ""
-		if r.category == "lv-assembling-machine-recipes" and out:match("%-cable$") and #r.results == 1 then
+		if fork_has_category(r, "lv-assembling-machine-recipes") and out:match("%-cable$") and #r.results == 1 then
 			local ing, found = table.deepcopy(r.ingredients), false
 			for _, i in pairs(ing) do
 				if i.name == "liquid-rubber" then i.name, i.amount, found = SBR, i.amount * 0.75, true
@@ -442,7 +442,7 @@ do
 				local base = techs_of(name)[1]
 				local tech = base == nil and SBR or after_both(SBR, base)
 				if tech then
-					create_recipe{ name = name .. "-sbr", category = r.category, energy_required = r.energy_required,
+					create_recipe{ name = name .. "-sbr", category = fork_category(r), energy_required = r.energy_required,
 						ingredients = ing, results = table.deepcopy(r.results), main_product = out }
 					fork_add_unlock(tech, name .. "-sbr")
 					data.raw.recipe[name .. "-sbr"].enabled = false
@@ -599,7 +599,7 @@ local function fuel_cell(fluid, eu, category, like)
 		name = fluid .. "-cell",
 		category = "lv-canning-machine-recipes",
 		energy_required = 4,
-		fuel_category = category,
+		fuel_category = category,          -- (create_item's argument: the item gets fuel_categories, issue #535)
 		fuel_value = string.format("%.1fMJ", eu * 800 * 500 / 1e6),
 		burnt_result = "empty-large-steel-fluid-cell",
 		subgroup = data.raw.item[like].subgroup,
@@ -904,7 +904,7 @@ end
 local function centrifuge(depleted, results)
 	local name = depleted .. "-thermal-centrifuging"
 	local res = {}
-	for _, r in pairs(results) do res[#res + 1] = { type = "item", name = r[1], amount = r[2], probability = r[3] } end
+	for _, r in pairs(results) do res[#res + 1] = { type = "item", name = r[1], amount = r[2], independent_probability = r[3] } end
 	create_recipe{
 		name = name,
 		category = "lv-thermal-centrifuge-recipes",
@@ -2578,7 +2578,7 @@ do
 		{ { "unknown-particle", 1 }, { "chromatic-lens", 1 }, { HIC[5], 1 }, { RESPLENDENT, 9.2 }, { "molten-duranium", 14.4 } },
 		{ { "quantum-anomaly", 1 }, { "chromatic-lens", 1 }, { HIC[5], 1 } })
 	local g8 = data.raw.recipe["grade-8-water"]
-	g8.results[#g8.results + 1] = { type = "item", name = "unknown-particle", amount = 1, probability = 0.01 }
+	g8.results[#g8.results + 1] = { type = "item", name = "unknown-particle", amount = 1, independent_probability = 0.01 }
 	for _, r in pairs(AQ) do fork_add_unlock(GF, r) end
 	FORK_CASTING.materials["chromatic-glass"] = { "uev", GF }
 	FORK_CASTING.run()
@@ -3292,7 +3292,7 @@ do
 	end
 	--- the fuels
 	local mk3 = data.raw.recipe[MK3]
-	mk3.category = NFR .. "-recipes"
+	fork_set_category(mk3, NFR .. "-recipes")
 	mk3.energy_required = 5 * UHV_SPEED
 	mk3.ingredients = { item(EUN .. "-dust", 4), item("tiberium-dust", 27), item("high-density-uranium", 2),
 		item("high-density-plutonium", 1), { type = "fluid", name = "heavy-naquadah-fuel", amount = 800 },

@@ -66,7 +66,7 @@ end
 local TOP = { ["forge-hammer"] = "lv" }
 
 local function item(name, amount, probability)
-	return { type = "item", name = name, amount = amount or 1, probability = probability }
+	return { type = "item", name = name, amount = amount or 1, independent_probability = probability }
 end
 local function fluid(name, amount)
 	return { type = "fluid", name = name, amount = amount }
@@ -151,7 +151,7 @@ local function recipe(def)
 		time = (def.seconds or math.max(1, def.ticks) / 20) * SPEED[t]
 	end
 	data:extend({ {
-		type = "recipe", name = name, category = category, enabled = false, energy_required = time,
+		type = "recipe", name = name, categories = { category }, enabled = false, energy_required = time,
 		ingredients = def.ingredients, results = def.results, main_product = def.results[1].name,
 		--- the machine's row, as create_recipe (a recipe without one would follow its item into the Material parts tab)
 		subgroup = def.subgroup or (category ~= "crafting" and ("subgroup-" .. category) or nil),
@@ -204,7 +204,7 @@ if CAST_IRON then
 	add_item(CAST_IRON, sub_of("iron-ingot", "subgroup-smelting"), "z-cast-iron-0")
 	add_item("cast-iron-nugget", sub_of("iron-ingot", "subgroup-smelting"), "z-cast-iron-a")
 	data:extend({ {
-		type = "recipe", name = "cast-iron-nugget-smelting", category = "smelting", enabled = false, energy_required = 10,
+		type = "recipe", name = "cast-iron-nugget-smelting", categories = { "smelting" }, enabled = false, energy_required = 10,
 		ingredients = { item("iron-nugget") }, results = { item("cast-iron-nugget") }, main_product = "cast-iron-nugget",
 		subgroup = "subgroup-smelting",
 	} })

@@ -39,7 +39,9 @@ local function item_exists(n)
 end
 
 local function recipe_problem(r)
-	if not data.raw["recipe-category"][r.category or "crafting"] then return "category " .. tostring(r.category) end
+	for _, c in pairs(r.categories or { "crafting" }) do
+		if not data.raw["recipe-category"][c] then return "category " .. c end
+	end
 	for _, key in pairs({ "ingredients", "results" }) do
 		for _, i in pairs(r[key] or {}) do
 			if i.type == "fluid" then
@@ -138,7 +140,7 @@ end
 local producers = {}
 for name, r in pairs(data.raw.recipe) do
 	if not name:match("%-recycling$") and not name:match("^void%-") and not name:match("scrap") and not casting[name]
-		and is_gregtorio_category(r.category) and craftable_category[r.category] then
+		and is_gregtorio_category(fork_category(r)) and craftable_category[fork_category(r)] then
 		for _, p in pairs(results_of(r)) do
 			producers[p] = producers[p] or {}
 			table.insert(producers[p], name)

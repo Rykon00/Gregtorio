@@ -130,10 +130,10 @@ create_recipe{
 	},
 	results = {
 		{ type = "item", name = "rutile-dust", amount = 1 },
-		{ type = "item", name = "silicon-dioxide", amount = 1, probability = 0.9 },
-		{ type = "item", name = "iron-dust", amount = 1, probability = 0.8 },
-		{ type = "item", name = "gallium", amount = 1, probability = 0.3 },
-		{ type = "item", name = "quicklime", amount = 1, probability = 0.2 },
+		{ type = "item", name = "silicon-dioxide", amount = 1, independent_probability = 0.9 },
+		{ type = "item", name = "iron-dust", amount = 1, independent_probability = 0.8 },
+		{ type = "item", name = "gallium", amount = 1, independent_probability = 0.3 },
+		{ type = "item", name = "quicklime", amount = 1, independent_probability = 0.2 },
 	},
 	main_product = "rutile-dust"
 }
@@ -146,11 +146,11 @@ create_recipe{
 	},
 	results = {
 		{ type = "item", name = "stone-dust", amount = 1 },
-		{ type = "item", name = "iron-dust", amount = 1, probability = 0.4 },
-		{ type = "item", name = "copper-dust", amount = 1, probability = 0.2 },
-		{ type = "item", name = "tin-dust", amount = 1, probability = 0.2 },
-		{ type = "item", name = "nickel-dust", amount = 1, probability = 0.2 },
-		{ type = "item", name = "antimony", amount = 1, probability = 0.2 },
+		{ type = "item", name = "iron-dust", amount = 1, independent_probability = 0.4 },
+		{ type = "item", name = "copper-dust", amount = 1, independent_probability = 0.2 },
+		{ type = "item", name = "tin-dust", amount = 1, independent_probability = 0.2 },
+		{ type = "item", name = "nickel-dust", amount = 1, independent_probability = 0.2 },
+		{ type = "item", name = "antimony", amount = 1, independent_probability = 0.2 },
 		{ type = "fluid", name = "water", amount = 50 },
 	},
 	main_product = "stone-dust"
@@ -1325,7 +1325,7 @@ create_recipe{
 		{ type = "fluid", name = "light-fuel", amount = 10 },
 		{ type = "fluid", name = "naphtha", amount = 12.5 },
 		{ type = "fluid", name = "toluene", amount = 8 },
-		{ type = "item", name = "carbon", amount = 1 , probability = 0.33}
+		{ type = "item", name = "carbon", amount = 1 , independent_probability = 0.33}
 	},
 	main_product = "benzene"
 }
@@ -1352,7 +1352,7 @@ create_recipe{
 		{ type = "fluid", name = "heavy-fuel", amount = 5 },
 		{ type = "fluid", name = "naphtha", amount = 10 },
 		{ type = "fluid", name = "toluene", amount = 3 },
-		{ type = "item", name = "carbon", amount = 1 , probability = 0.33}
+		{ type = "item", name = "carbon", amount = 1 , independent_probability = 0.33}
 	},
 	main_product = "propene"
 }
@@ -1379,7 +1379,7 @@ create_recipe{
 		{ type = "fluid", name = "heavy-fuel", amount = 2.5 },
 		{ type = "fluid", name = "naphtha", amount = 5 },
 		{ type = "fluid", name = "toluene", amount = 2 },
-		{ type = "item", name = "carbon", amount = 1 , probability = 0.33}
+		{ type = "item", name = "carbon", amount = 1 , independent_probability = 0.33}
 	},
 	main_product = "ethylene"
 }
@@ -1400,7 +1400,7 @@ create_recipe{
 		{ type = "fluid", name = "helium", amount = 2 },
 		{ type = "fluid", name = "propene", amount = 0.8 },
 		{ type = "fluid", name = "ethane", amount = 4.5 },
-		{ type = "item", name = "carbon", amount = 1 , probability = 0.11}
+		{ type = "item", name = "carbon", amount = 1 , independent_probability = 0.11}
 	},
 	main_product = "methane"
 }
@@ -1849,7 +1849,7 @@ create_recipe{
 	},
 	results = {
 		{ type = "item", name = "coal", amount = 3 },
-		{ type = "item", name = "coal-dust", probability = 0.5, amount = 1 },
+		{ type = "item", name = "coal-dust", independent_probability = 0.5, amount = 1 },
 	},
 	main_product = "coal"
 }
@@ -1877,12 +1877,12 @@ create_recipe{
 		{ type = "item", name = "crushed-diamond", amount = 1 },
 	},
 	results = {
-		{ type = "item", name = "exquisite-diamond", probability = 0.03, amount = 1 },
-		{ type = "item", name = "flawless-diamond", probability = 0.12, amount = 1 },	
-		{ type = "item", name = "diamond", probability = 0.45, amount = 1 },
-		{ type = "item", name = "flawed-diamond", probability = 0.14, amount = 1 },
-		{ type = "item", name = "chipped-diamond", probability = 0.28, amount = 1 },
-		{ type = "item", name = "diamond-dust", probability = 0.35, amount = 1 },
+		{ type = "item", name = "exquisite-diamond", independent_probability = 0.03, amount = 1 },
+		{ type = "item", name = "flawless-diamond", independent_probability = 0.12, amount = 1 },	
+		{ type = "item", name = "diamond", independent_probability = 0.45, amount = 1 },
+		{ type = "item", name = "flawed-diamond", independent_probability = 0.14, amount = 1 },
+		{ type = "item", name = "chipped-diamond", independent_probability = 0.28, amount = 1 },
+		{ type = "item", name = "diamond-dust", independent_probability = 0.35, amount = 1 },
 	},
 	main_product = "diamond"
 }

@@ -193,7 +193,7 @@ function FORK_CASTING.run()
 	--- what is cast from a melt and which melts can be made from an ingot already
 	local cast, melted = {}, {}
 	for _, r in pairs(data.raw.recipe) do
-		local c = r.category or "crafting"
+		local c = fork_category(r)
 		local melt
 		for _, i in pairs(r.ingredients or {}) do
 			if i.type == "fluid" and i.name:sub(1, 7) == "molten-" then melt = i.name end

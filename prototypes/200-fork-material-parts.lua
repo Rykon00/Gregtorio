@@ -146,7 +146,7 @@ end
 --- the earliest tier of a recipe that makes an item (recycling recipes left out)
 local made_at = {}
 for name, r in pairs(data.raw.recipe) do
-	if r.category ~= "recycling" and not name:find("%-recycling$") and r.results then
+	if not fork_has_category(r, "recycling") and not name:find("%-recycling$") and r.results then
 		local t = unlock_tier[name]
 		if r.enabled ~= false then t = 0 end
 		if t ~= nil then

@@ -207,7 +207,7 @@ local function migrate_surface(surface, planet)
 		elseif recipe and (gone or (recipe.prototype.hidden and ores_here(recipe))) then
 			local pos, dir, force, quality, drill = old.position, old.direction, old.force, old.quality, drills[old.name]
 			local items = {}
-			for _, inv in pairs({ defines.inventory.assembling_machine_input, defines.inventory.assembling_machine_output }) do
+			for _, inv in pairs({ defines.inventory.crafter_input, defines.inventory.crafter_output }) do
 				local i = old.get_inventory(inv)
 				for _, c in pairs(i and i.get_contents() or {}) do items[#items + 1] = c end
 			end

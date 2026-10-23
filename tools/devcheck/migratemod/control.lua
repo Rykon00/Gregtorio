@@ -56,9 +56,25 @@ local PW_REACTOR = "uv-large-naquadah-reactor"
 local PW_POS = { 40.5, Y + 2.5 }
 local PW_STEAM = 500
 
+--- Issue #535: the old save is made in the Factorio of its version (2.0: LuaFluidBox) and loaded in 2.1 (the fluid methods
+--- of LuaEntity); this helper runs in both. What `e` and the pipeline segment of its first box hold of `fluid`: 2.0's
+--- get_fluid_count gave the entity's part and the segment contents the rest, 2.1's segment fluid is the whole segment
+local major, minor = (script.active_mods.base or "2.0"):match("^(%d+)%.(%d+)")
+local V21 = tonumber(major) > 2 or tonumber(minor) >= 1
+local function fluid_total(e, fluid)
+	if not V21 then
+		local seg = e.fluidbox.get_fluid_segment_contents(1)
+		return e.get_fluid_count(fluid) + ((seg and seg[fluid]) or 0)
+	end
+	if e.has_fluid_segment(1) then
+		local f = e.get_fluid_segment_fluid(1)
+		return f and f.name == fluid and f.amount or 0
+	end
+	return e.get_fluid_count(fluid)
+end
+
 local function steam_in(e)
-	local seg = e.fluidbox.get_fluid_segment_contents(1)
-	return e.get_fluid_count("steam") + ((seg and seg.steam) or 0)
+	return fluid_total(e, "steam")
 end
 
 local function setup_power()
@@ -140,8 +156,7 @@ local function check_turbine()
 	expect(t.valid and h.valid, "the turbine or its hatch is gone")
 	local burnt, back = 0, 0
 	if t.valid and h.valid then
-		local seg = t.fluidbox.get_fluid_segment_contents(1)
-		burnt = p.plasma - t.get_fluid_count("helium-plasma") - ((seg and seg["helium-plasma"]) or 0)
+		burnt = p.plasma - fluid_total(t, "helium-plasma")
 		local P = "gregtorio-power"
 		back = h.get_fluid_count("helium") + remote.call(P, "debt", t, "helium")
 			+ remote.call(P, "energy", t) / prototypes.fluid["helium-plasma"].fuel_value

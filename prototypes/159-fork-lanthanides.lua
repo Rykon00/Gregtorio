@@ -54,7 +54,7 @@ local function step(name, category, seconds, speed, ingredients, results, main)
 	end
 	for _, r in pairs(results) do
 		local x = { type = data.raw.fluid[r[1]] and "fluid" or "item", name = r[1], amount = r[2] }
-		if r[3] then x.probability = r[3] end
+		if r[3] then x.independent_probability = r[3] end
 		res[#res + 1] = x
 	end
 	create_recipe{
@@ -553,7 +553,7 @@ F.tech{
 --- producer moves up to its first consumer; the frame's black steel is MV)
 do
 	local rf = data.raw.recipe["rocket-fuel"]
-	rf.category = "chemical-plant-recipes"
+	fork_set_category(rf, "chemical-plant-recipes")
 	rf.energy_required = 60 * HV_SPEED
 	rf.ingredients = { { type = "fluid", name = "dimethylhydrazine", amount = 2000 },
 		{ type = "fluid", name = "dinitrogen-tetroxide", amount = 2000 } }

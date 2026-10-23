@@ -133,7 +133,7 @@ local function unlock(recipe, techs)
 end
 
 local function item(name, amount, probability)
-	return { type = "item", name = name, amount = amount or 1, probability = probability }
+	return { type = "item", name = name, amount = amount or 1, independent_probability = probability }
 end
 
 local function fluid(name, amount)
@@ -334,7 +334,7 @@ local function recipe(def)
 		end
 	end
 	data:extend({ {
-		type = "recipe", name = def.name, category = def.category, enabled = false, energy_required = def.time,
+		type = "recipe", name = def.name, categories = { def.category }, enabled = false, energy_required = def.time,
 		ingredients = def.ingredients, results = def.results, main_product = def.main, subgroup = def.subgroup,
 	} })
 	return def.name
@@ -388,7 +388,7 @@ do
 		local lig = data.raw.item["lignite-dust"]
 		local num, unit = coal.fuel_value:match("^([%d%.]+)(%a+)$")
 		if num then
-			lig.fuel_category = coal.fuel_category or "chemical"
+			lig.fuel_categories = coal.fuel_categories or { "chemical" }
 			lig.fuel_value = (tonumber(num) * 0.75) .. unit
 		end
 	end
@@ -478,12 +478,12 @@ for x, ore in pairs(ORE_CHAIN) do
 
 		--- the technologies of the recipes this replaces
 		local old_wash = data.raw.recipe[ore.dust]
-		local wash_ok = old_wash ~= nil and old_wash.category == "lv-ore-washer-recipes"
+		local wash_ok = old_wash ~= nil and fork_has_category(old_wash, "lv-ore-washer-recipes")
 		local old_cf = "centrifuging-" .. crushed
 		--- the macerator recipes raw ore -> this crushed ore (issue #202: Raw Tin's is macerating-raw-tin)
 		local t_crush, seen = {}, {}
 		for rname, r in pairs(data.raw.recipe) do
-			if r.category == "lv-macerator-recipes" and r.results and #r.results == 1 and r.results[1].name == crushed then
+			if fork_has_category(r, "lv-macerator-recipes") and r.results and #r.results == 1 and r.results[1].name == crushed then
 				for _, t in pairs(tech_list(rname)) do
 					if not seen[t] then seen[t] = true; t_crush[#t_crush + 1] = t end
 				end
@@ -525,7 +525,7 @@ for x, ore in pairs(ORE_CHAIN) do
 			ingredients = { item(pure) }, results = { item(ore.dust), item(byp(2), 1, 0.1111) } }, t_cf)
 		CAULDRON.washes[#CAULDRON.washes + 1] = { x, impure, pure, ore.dust }   -- issue #427 (end of the file)
 		local smelt = data.raw.recipe[ore.dust .. "-smelter"]
-		if smelt and smelt.category == "smelting" then
+		if smelt and fork_has_category(smelt, "smelting") then
 			for _, f in pairs({ { impure, t_crush }, { pure, t_wash } }) do
 				local r = table.deepcopy(smelt)
 				r.name = f[1] .. "-smelter"
@@ -539,7 +539,7 @@ for x, ore in pairs(ORE_CHAIN) do
 		--- the byproducts Gregtorio lacked come with the recipe that uses them
 		for i = 1, 3 do
 			local d = decompose_of[byp(i)]
-			if d and data.raw.recipe[d].category:sub(1, 3) == "lv-" then u(d, t_wash) end   -- MV ones: below
+			if d and fork_category(data.raw.recipe[d]):sub(1, 3) == "lv-" then u(d, t_wash) end   -- MV ones: below
 		end
 
 		--- the shortcuts go; their names are mapped by the JSON migration
@@ -567,7 +567,7 @@ do
 	end
 	local done = {}
 	for name, r in pairs(data.raw.recipe) do
-		if r.category == "lv-thermal-centrifuge-recipes" then
+		if fork_has_category(r, "lv-thermal-centrifuge-recipes") then
 			for _, tn in pairs(tech_list(name)) do
 				if not done[tn] then
 					done[tn] = true
@@ -901,7 +901,7 @@ end
 --- issue #203: the O1 recipes of the ores whose chain replaces no recipe, in the order of the chain's steps
 for _, name in pairs(o1_late) do
 	local r = data.raw.recipe[name]
-	unlock_after(name, { machine_techs(r.category), item_techs(r.ingredients[1].name) })
+	unlock_after(name, { machine_techs(fork_category(r)), item_techs(r.ingredients[1].name) })
 end
 --- issue #363: the bath recipes of the ores unlocked late, and the LV decompositions of new ores' own dusts
 for _, b in pairs(bath_late) do
@@ -909,17 +909,17 @@ for _, b in pairs(bath_late) do
 end
 for x, o in pairs(NEW_ORES) do
 	local name = decompose_of[o.dust]
-	if name and waits_for_159(data.raw.recipe[name].category) then
+	if name and waits_for_159(fork_category(data.raw.recipe[name])) then
 		after_159[name] = { o.dust }
-	elseif name and #tech_list(name) == 0 and data.raw.recipe[name].category:sub(1, 3) == "lv-" then
-		unlock_after(name, { machine_techs(data.raw.recipe[name].category), item_techs(o.dust) })
+	elseif name and #tech_list(name) == 0 and fork_category(data.raw.recipe[name]):sub(1, 3) == "lv-" then
+		unlock_after(name, { machine_techs(fork_category(data.raw.recipe[name])), item_techs(o.dust) })
 	end
 end
 --- the decompositions GT runs at MV (andradite, pyrite, malachite, uvarovite; issues #207, #223): after the MV
 --- electrolyzer and their dust
 for d, name in pairs(decompose_of) do
-	if data.raw.recipe[name].category:sub(1, 3) ~= "lv-" then
-		unlock_after(name, { machine_techs(data.raw.recipe[name].category), item_techs(d) })
+	if fork_category(data.raw.recipe[name]):sub(1, 3) ~= "lv-" then
+		unlock_after(name, { machine_techs(fork_category(data.raw.recipe[name])), item_techs(d) })
 	end
 end
 
@@ -1144,7 +1144,7 @@ end
 
 local function macerates(name)
 	for rname, r in pairs(data.raw.recipe) do
-		if r.category and r.category:match("%-macerator%-recipes$") and r.ingredients and #r.ingredients == 1
+		if fork_category(r):match("%-macerator%-recipes$") and r.ingredients and #r.ingredients == 1
 			and r.ingredients[1].name == name then return rname end
 	end
 end
@@ -1351,7 +1351,7 @@ local BYPRODUCT_GEMS = {
 for _, g in pairs(BYPRODUCT_GEMS) do
 	local sub = sub_of(g[2], "subgroup-macerator-dust")
 	local dust = data.raw.item[g[2]]
-	add_item(g[3], sub, "z-" .. g[1] .. "-c", dust.fuel_value and { fuel_category = dust.fuel_category,
+	add_item(g[3], sub, "z-" .. g[1] .. "-c", dust.fuel_value and { fuel_categories = dust.fuel_categories,
 		fuel_value = dust.fuel_value } or nil)
 	for i, k in pairs({ "chipped", "flawed", "flawless", "exquisite" }) do
 		add_item(k .. "-" .. g[1], sub, "z-" .. g[1] .. "-" .. ({ "a", "b", "d", "e" })[i])
@@ -1424,7 +1424,7 @@ local BYPRODUCT_MULT = { ["raw-apatite"] = 2, ["raw-coal"] = 2, ["raw-cryolite"]
 local hammered = 0
 local macerated = {}
 for rname, r in pairs(data.raw.recipe) do
-	if r.category == "lv-macerator-recipes" and not r.hidden and #(r.ingredients or {}) == 1 then
+	if fork_has_category(r, "lv-macerator-recipes") and not r.hidden and #(r.ingredients or {}) == 1 then
 		local raw = r.ingredients[1].name or ""
 		if raw:sub(1, 4) == "raw-" and data.raw.item[raw] and r.ingredients[1].amount == 1
 			and not FORK_ORE_HAMMER_SKIP[raw] then
@@ -1512,7 +1512,7 @@ do
 	local lig, small = data.raw.item["lignite-dust"], data.raw.item["small-pile-of-lignite-dust"]
 	local num, unit = (lig.fuel_value or ""):match("^([%d%.]+)(%a+)$")
 	if num and small then
-		small.fuel_category = lig.fuel_category
+		small.fuel_categories = lig.fuel_categories
 		small.fuel_value = (tonumber(num) * 375 / 1200) .. unit
 	end
 	local tcp = { gem = "tricalcium-phosphate-gem" }
@@ -1575,7 +1575,7 @@ for _, g in pairs(DUST_GEMS) do
 			--- upstream's autoclave recipe of the gem (MV, 5 distilled water) is GT's distilled water one
 			local upstream
 			for rname, r in pairs(data.raw.recipe) do
-				if r.category and r.category:match("%-autoclave%-recipes$") and r.ingredients and #r.ingredients == 2
+				if fork_category(r):match("%-autoclave%-recipes$") and r.ingredients and #r.ingredients == 2
 					and r.ingredients[1].name == dust and r.results and #r.results == 1 and r.results[1].name == gem then
 					upstream = rname
 				end
@@ -1585,7 +1585,8 @@ for _, g in pairs(DUST_GEMS) do
 			unlock_after(made(name), { machine_techs("lv-autoclave-recipes"), item_techs(dust) })
 			local r = upstream and data.raw.recipe[upstream]
 			if r then
-				r.category, r.energy_required = "lv-autoclave-recipes", 75
+				fork_set_category(r, "lv-autoclave-recipes")
+				r.energy_required = 75
 				r.ingredients = { item(dust), fluid("distilled-water", 10) }
 				r.results = { item(gem, 1, 0.9) }
 				r.main_product = gem
@@ -1677,7 +1678,7 @@ for _, m in pairs(SMELT_SELF) do
 end
 local function smelts(name)
 	for _, r in pairs(data.raw.recipe) do
-		if r.category == "smelting" and r.ingredients and #r.ingredients == 1 and r.ingredients[1].name == name then
+		if fork_has_category(r, "smelting") and r.ingredients and #r.ingredients == 1 and r.ingredients[1].name == name then
 			return true
 		end
 	end
@@ -1817,7 +1818,7 @@ local function smelt_techs(name, product)
 	local out = {}
 	for _, rname in pairs(makers[product] or {}) do
 		local r = data.raw.recipe[rname]
-		if rname ~= name and r and not r.hidden and r.category == "smelting" and #(r.ingredients or {}) == 1
+		if rname ~= name and r and not r.hidden and fork_has_category(r, "smelting") and #(r.ingredients or {}) == 1
 			and r.ingredients[1].name:match("^raw%-") then
 			if r.enabled ~= false and not techs_of_recipe[rname] then return nil end
 			for _, t in pairs(techs_of_recipe[rname] or {}) do out[#out + 1] = t end
@@ -1888,7 +1889,7 @@ end
 --- gem for it) says so in its description, so a player who expects vanilla's furnace finds the crushing route
 local smeltable, raw_hint = {}, {}
 for _, r in pairs(data.raw.recipe) do
-	if r.category == "smelting" then
+	if fork_has_category(r, "smelting") then
 		for _, i in pairs(r.ingredients or {}) do smeltable[i.name] = true end
 	end
 end
@@ -2040,7 +2041,7 @@ for _, fname in pairs(furnace_made) do
 		log("FORK-ORE-CHAIN: " .. name .. " exists already")
 	else
 		local results = {}
-		for _, res in pairs(f.results or {}) do results[#results + 1] = item(res.name, (res.amount or 1) * 64, res.probability) end
+		for _, res in pairs(f.results or {}) do results[#results + 1] = item(res.name, (res.amount or 1) * 64, res.independent_probability) end
 		recipe{ name = name, category = "multismelter-recipes", subgroup = "subgroup-multismelter-recipes",
 			time = f.energy_required or 10, main = f.main_product or results[1].name, ingredients = { item(input, 64) },
 			results = results }
@@ -2169,7 +2170,7 @@ do
 		for _, d in pairs({ w[2], w[3] }) do
 			local name = "cauldron-" .. d
 			data:extend({ {
-				type = "recipe", name = name, category = "cauldron-recipes", enabled = false, energy_required = CAULDRON.time,
+				type = "recipe", name = name, categories = { "cauldron-recipes" }, enabled = false, energy_required = CAULDRON.time,
 				ingredients = { item(d), fluid("water", CAULDRON.water) }, results = { item(dust) }, main_product = dust,
 				subgroup = "subgroup-cauldron-recipes", order = x .. "-" .. d,
 			} })
@@ -2209,7 +2210,7 @@ function FORK_ORE_CHAIN.unlock_after_159()
 	for name in pairs(after_159) do names[#names + 1] = name end
 	table.sort(names)
 	for _, name in pairs(names) do
-		local groups = { machines(data.raw.recipe[name].category) }
+		local groups = { machines(fork_category(data.raw.recipe[name])) }
 		for _, i in pairs(after_159[name]) do groups[#groups + 1] = item_techs(i) end
 		unlock_after(name, groups)
 	end

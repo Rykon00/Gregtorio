@@ -108,7 +108,7 @@ create_item{
 --- UXV field generators of the stargate), the chevron block takes its emitter and pistons through the
 --- chevron upgrade only, base, power unit and controller take half the parts or less.
 F.redo("stargate-ring-block", {
-	category = AL,
+	categories = { AL },
 	energy_required = minutes(5),
 	subgroup = "subgroup-stargate",
 	ingredients = {
@@ -122,7 +122,7 @@ F.redo("stargate-ring-block", {
 	},
 })
 F.redo("stargate-chevron-block", {
-	category = AL,
+	categories = { AL },
 	energy_required = minutes(5),
 	subgroup = "subgroup-stargate",
 	ingredients = {
@@ -136,7 +136,7 @@ F.redo("stargate-chevron-block", {
 	},
 })
 F.redo("stargate-chevron-upgrade", {
-	category = AL,
+	categories = { AL },
 	energy_required = minutes(3),
 	subgroup = "subgroup-stargate",
 	ingredients = {
@@ -149,7 +149,7 @@ F.redo("stargate-chevron-upgrade", {
 	},
 })
 F.redo("stargate-base", {
-	category = AL,
+	categories = { AL },
 	energy_required = minutes(10),
 	subgroup = "subgroup-stargate",
 	ingredients = {
@@ -166,7 +166,7 @@ F.redo("stargate-base", {
 	},
 })
 F.redo("stargate-power-unit", {
-	category = AL,
+	categories = { AL },
 	energy_required = minutes(10),
 	subgroup = "subgroup-stargate",
 	ingredients = {
@@ -182,7 +182,7 @@ F.redo("stargate-power-unit", {
 	},
 })
 F.redo("stargate-controller", {
-	category = AL,
+	categories = { AL },
 	energy_required = minutes(10),
 	subgroup = "subgroup-stargate",
 	ingredients = {
@@ -198,7 +198,7 @@ F.redo("stargate-controller", {
 	},
 })
 F.redo("stargate-iris-upgrade", {
-	category = AL,
+	categories = { AL },
 	energy_required = minutes(5),
 	subgroup = "subgroup-stargate",
 	ingredients = {
@@ -213,7 +213,7 @@ F.redo("stargate-iris-upgrade", {
 --- The stargate: the assembly of everything above, in the UXV assembler (the UXV machines need the UXV
 --- pack). The ingredient list of the draft is kept: 8 ring blocks, 7 chevron blocks, one of the rest.
 F.redo("stargate", {
-	category = "uxv-assembling-machine-recipes",
+	categories = { "uxv-assembling-machine-recipes" },
 	energy_required = 120 * UXV_SPEED,
 	subgroup = "subgroup-stargate",
 })

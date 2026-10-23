@@ -515,7 +515,7 @@ create_item{
 }
 
 redo("advanced-fusion-coil", {
-	category = "uhv-assembling-machine-recipes",
+	categories = { "uhv-assembling-machine-recipes" },
 	energy_required = 60 * UHV_SPEED,
 	ingredients = {
 		{ type = "item", name = "lapotronic-energy-orb-cluster", amount = 1 },
@@ -531,7 +531,7 @@ redo("advanced-fusion-coil", {
 })
 
 redo("fusion-reactor-mk3-controller", {
-	category = "zpm-assembly-line-recipes",
+	categories = { "zpm-assembly-line-recipes" },
 	energy_required = 50 * ZPM_SPEED,
 	ingredients = {
 		{ type = "item", name = "fusion-coil-block", amount = 1 },
@@ -547,7 +547,7 @@ redo("fusion-reactor-mk3-controller", {
 
 do
 	redo("fusion-reactor-mk3", {
-		category = "uv-assembling-machine-recipes",
+		categories = { "uv-assembling-machine-recipes" },
 		energy_required = 300 * UV_SPEED,
 		ingredients = {
 			{ type = "item", name = "fusion-reactor-mk3-controller", amount = 1 },
@@ -558,7 +558,7 @@ do
 		},
 	})
 	local r = data.raw.recipe["fusion-machine-casing-mk2"]
-	if r then r.category = "uv-assembling-machine-recipes" end
+	if r then fork_set_category(r, "uv-assembling-machine-recipes") end
 end
 
 --- Fusion reactor: 9x9, two fluid inputs (north) and one output (south) like the MK1 and MK2
@@ -576,7 +576,7 @@ clone_multiblock{
 --- components (neutronium plates, rods, ...) that the MK3 itself is built from stay possible.
 --- Saves that researched uv-materials get the bootstrap recipe from it, like they had the old one.
 redo("molten-neutronium", {
-	category = "mk3-fusion-reactor-recipes",
+	categories = { "mk3-fusion-reactor-recipes" },
 	energy_required = 6 * ZPM_SPEED,
 })
 create_recipe{
@@ -593,7 +593,7 @@ create_recipe{
 
 --- Iron plasma (draft in 21-luv-age-item.lua; neither the fluid nor the category existed)
 fork_fluid("iron-plasma", "spackled-orange-fluid", { 0.85, 0.50, 0.40 })
-redo("iron-plasma", { category = "mk3-fusion-reactor-recipes" })
+redo("iron-plasma", { categories = { "mk3-fusion-reactor-recipes" } })
 
 
 

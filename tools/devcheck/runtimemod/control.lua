@@ -22,6 +22,18 @@
 --- LFTR (issue #386, scripts/fork-power.lua): the reactor with fuel and coolant for two runs, a load of its 40.96 MW and
 --- a substation. At LF_TICK the reactor works, its dynamo produces 40.96 MW and the load got energy; then the reactor is
 --- destroyed and LF_GONE ticks later its dynamo must be gone.
+
+--- Issue #535 (Factorio 2.1): what `e` and the fluid segment of its first box hold of `fluid`. An input-output box keeps part
+--- of its fluid in the pipeline segment; 2.0's get_fluid_count gave the entity's part and LuaFluidBox's segment contents
+--- the rest, 2.1's segment fluid is the whole segment, the entity's part with it
+function fluid_total(e, fluid)
+	if e.has_fluid_segment(1) then
+		local f = e.get_fluid_segment_fluid(1)
+		return f and f.name == fluid and f.amount or 0
+	end
+	return e.get_fluid_count(fluid)
+end
+
 local LF_X, LF_Y = -320.5, 250.5
 local LF_TICK, LF_GONE = 600, 30
 local LF_W = 40.96e6
@@ -222,12 +234,8 @@ script.on_nth_tick(PW_TICK, function(event)
 	local function find(def) return s.find_entity(def[1], { def[2], def[3] }) end
 	local turbine, hatch, reactor = find(PW.turbine), find(PW.hatch), find(PW.reactor)
 	expect(turbine and hatch and reactor, "power test entities missing")
-	--- an input-output fluid box keeps part of its fluid in the pipeline segment, which
-	--- get_fluid_count does not report
-	local function fluid_in(e, fluid)
-		local seg = e.fluidbox.get_fluid_segment_contents(1)
-		return e.get_fluid_count(fluid) + ((seg and seg[fluid]) or 0)
-	end
+	--- an input-output fluid box keeps part of its fluid in the pipeline segment (fluid_total)
+	local function fluid_in(e, fluid) return fluid_total(e, fluid) end
 	local summary = ""
 	if #problems == 0 then
 		local seconds = event.tick / 60
@@ -273,11 +281,8 @@ local FC = {
 	{ "window",        "luv-large-plasma-turbine",   175.5, "steam",                   500,    "helium-plasma",           100,    81.92e6 },
 }
 
---- an input-output fluid box keeps part of its fluid in the pipeline segment (see the power test)
-local function fc_fluid_in(e, fluid)
-	local seg = e.fluidbox.get_fluid_segment_contents(1)
-	return e.get_fluid_count(fluid) + ((seg and seg[fluid]) or 0)
-end
+--- an input-output fluid box keeps part of its fluid in the pipeline segment (fluid_total, see the power test)
+local function fc_fluid_in(e, fluid) return fluid_total(e, fluid) end
 
 function setup_fuel_test(s)
 	local fails = {}
@@ -317,7 +322,7 @@ function fuel_window_tick()
 	local def = FC[#FC]
 	local g = st.gens.window
 	if not (g and g.valid) then return end
-	g.remove_fluid{ name = def[6], amount = 1e9 }
+	g.extract_fluid{ name = def[6], amount = 1e9 }
 	if fc_fluid_in(g, def[6]) > 0 then return end
 	local got = g.insert_fluid{ name = def[4], amount = def[5] }
 	if math.abs(got - def[5]) > 1e-6 then log("DEVCHECK-RUNTIME-FAIL fuel test: window turbine took only " .. got .. " steam") end
@@ -370,7 +375,7 @@ function fuel_test()
 		for _, def in ipairs(FC) do
 			if def[1] ~= "window" then
 				local g = st.gens[def[1]]
-				g.remove_fluid{ name = def[4], amount = 1e9 }
+				g.extract_fluid{ name = def[4], amount = 1e9 }
 				left = left + fc_fluid_in(g, def[4])
 			end
 		end
@@ -514,8 +519,7 @@ function cooled_test()
 		local def = CO[c.i]
 		local fuel = prototypes.fluid[def[3]].fuel_value
 		local out = def[3] == "helium-plasma" and "helium" or "nitrogen"
-		local seg = c.g.fluidbox.get_fluid_segment_contents(1)
-		local burnt = def[4] - c.g.get_fluid_count(def[3]) - ((seg and seg[def[3]]) or 0)
+		local burnt = def[4] - fluid_total(c.g, def[3])
 		local prefill = def[1] == "full_hatch" and CO_PREFILL or 0
 		local hatch = c.h.get_fluid_count(out) + c.removed - prefill
 		local owed = remote.call(P, "debt", c.g, out)
@@ -554,7 +558,7 @@ function cooled_test()
 			expect(owed > 1.5, "full hatch: only " .. owed .. " helium owed for " .. burnt .. " plasma burnt")
 			matches("full_hatch (full)", fh)
 			st.hatch_owed = owed
-			fh.removed = fh.removed + fh.h.remove_fluid{ name = "helium", amount = 4000 }
+			fh.removed = fh.removed + fh.h.extract_fluid{ name = "helium", amount = 4000 }
 			st.hatch_phase = tick
 		end
 	elseif st.hatch_phase ~= true and tick >= st.hatch_phase + 60 then
@@ -675,8 +679,7 @@ function tier_test()
 	for i, def in ipairs(TT) do
 		local c = st.t[i]
 		if not st.dry[i] then
-			local seg = c.g.fluidbox.get_fluid_segment_contents(1)
-			local burnt = def[4] - c.g.get_fluid_count(def[3]) - ((seg and seg[def[3]]) or 0)
+			local burnt = def[4] - fluid_total(c.g, def[3])
 			local owed = remote.call("gregtorio-power", "debt", c.g, def[5])
 			local pending = remote.call("gregtorio-power", "energy", c.g)
 			if burnt >= def[4] - 1e-9 and owed < 1e-4 and pending == 0 and c.g.disabled_by_script then
@@ -843,7 +846,7 @@ local RT = {
 	{ "lv-assembling-machine", "light-armor" },
 	{ "lv-assembling-machine", "rail-ramp" },
 	{ "lv-assembling-machine", "rail-support" },
-	{ "lv-assembling-machine", "wood-processing" },
+	{ "lv-assembling-machine", "tree-seed" },          -- (wood-processing before Factorio 2.1, issue #535)
 	{ "mv-canning-machine", "depleted-uranium-fuel-rod-centrifuging" },
 	{ "lv-compressor", "block-of-copper" },
 	{ "iv-alloy-blast-smelter", "molten-hastelloy-c276" },
@@ -984,7 +987,7 @@ function recipe_test()
 			local made = p.type == "fluid" and e.get_fluid_count(p.name) or
 				e.get_inventory(defines.inventory.crafter_output).get_item_count(p.name)
 			-- a main product with a probability (the QFT's focused output) may roll nothing: a finished craft counts
-			if made >= (p.amount or p.amount_min or 1) - 1e-6 or ((p.probability or 1) < 1 and e.products_finished > 0) then
+			if made >= (p.amount or p.amount_min or 1) - 1e-6 or (p.independent_probability < 1 and e.products_finished > 0) then
 				st.ok[i] = true
 			else
 				if e.crafting_progress > 0 and e.crafting_progress < 0.999 then e.crafting_progress = 0.999 end
@@ -1691,7 +1694,7 @@ function setup_battery_test(s)
 		s.create_entity{ name = "substation", position = { BB_X + 2, BB_Y + 3 }, force = "player" }
 		bb.load = s.create_entity{ name = "lv-compressor", position = { BB_X - 4, BB_Y + 4 }, force = "player" }
 		for name, r in pairs(prototypes.recipe) do
-			if r.category == "lv-compressor-recipes" and #r.ingredients == 0 then bb.load.set_recipe(name) break end
+			if r.categories[1] == "lv-compressor-recipes" and #r.ingredients == 0 then bb.load.set_recipe(name) break end
 		end
 		bb.load.disabled_by_script = true
 		bb.phase, bb.at = "charge", game.tick
@@ -1773,7 +1776,7 @@ end
 local function tool_test_tick(t, st, tick)
 	local m = st.machine
 	local function made()
-		return m and m.valid and m.get_inventory(defines.inventory.crafter_output or defines.inventory.assembling_machine_output).get_item_count(t.product) or 0
+		return m and m.valid and m.get_inventory(defines.inventory.crafter_output).get_item_count(t.product) or 0
 	end
 	local phase
 	if not st.phase1 and tick >= 60 then
@@ -2088,7 +2091,7 @@ function setup_lsc_test(s)
 		if got < 100 then fails[#fails + 1] = "supercapacitor test: the turbine took only " .. got .. " plasma" end
 		ls.load = s.create_entity{ name = "uiv-compressor", position = { LS_X + 6, LS_Y + 5 }, force = "player" }
 		for name, r in pairs(prototypes.recipe) do
-			if r.category == "lv-compressor-recipes" and #r.ingredients == 0 then ls.recipe = name break end
+			if r.categories[1] == "lv-compressor-recipes" and #r.ingredients == 0 then ls.recipe = name break end
 		end
 		if not ls.recipe then fails[#fails + 1] = "supercapacitor test: no compressor recipe without ingredients (air)" end
 		s.create_entity{ name = "substation", position = { LS_X + 4, LS_Y - 4 }, force = "player" }
@@ -2186,12 +2189,12 @@ function setup_offer_test(s)
 			assert(force.recipes[name].enabled, "not enabled after researching " .. tech)
 			local best
 			for mname, m in pairs(prototypes.get_entity_filtered{ { filter = "type", type = "assembling-machine" } }) do
-				if m.crafting_categories[proto.category] and m.items_to_place_this and #m.items_to_place_this > 0
+				if m.crafting_categories[proto.categories[1]] and m.items_to_place_this and #m.items_to_place_this > 0
 						and (not best or m.get_crafting_speed() < best.get_crafting_speed()) then
 					best = m
 				end
 			end
-			assert(best, "no machine for " .. proto.category)
+			assert(best, "no machine for " .. proto.categories[1])
 			local e = s.create_entity{ name = best.name, position = { -60 + 8 * #offered, 260 }, force = "player", raise_built = true }
 			e.set_recipe(name)
 			assert(e.get_recipe() and e.get_recipe().name == name, "the machine did not take it")
@@ -2226,7 +2229,7 @@ local function ct_gcd(a, b) while b ~= 0 do a, b = b, a % b end return a end
 local function melt_coverage()
 	local melts, casts = {}, {}
 	for name, r in pairs(prototypes.recipe) do
-		local c = r.category
+		local c = r.categories[1]       -- (a list since Factorio 2.1; a Gregtorio recipe has one, issue #535)
 		if c:find("extractor%-recipes$") and #r.products == 1 and r.products[1].type == "fluid" and #r.ingredients == 1
 				and r.ingredients[1].type == "item" and r.ingredients[1].name:sub(-6) == "-ingot"
 				and math.abs(r.products[1].amount - 14.4) < 1e-3 then
@@ -2313,7 +2316,7 @@ function melt_test()
 		if ex.crafting_progress > 0 and ex.crafting_progress < 0.99 then ex.crafting_progress = 0.99 end
 		if ex.products_finished > st.n then
 			st.n = ex.products_finished
-			local got = ex.remove_fluid{ name = "molten-iron", amount = 1000 }
+			local got = ex.extract_fluid{ name = "molten-iron", amount = 1000 }
 			st.taken[st.n] = got
 			st.total = st.total + got
 			if st.n <= 9 then
@@ -2529,7 +2532,7 @@ local function em_mine(s, name, x, y, recipe)
 	e.set_recipe(recipe)
 	e.disabled_by_script = true
 	if recipe == "mining-glowstone-vein" then
-		assert(e.get_inventory(defines.inventory.assembling_machine_input).insert{ name = "manual-labor", count = EM_LABOR }
+		assert(e.get_inventory(defines.inventory.crafter_input).insert{ name = "manual-labor", count = EM_LABOR }
 			== EM_LABOR, "the hunting manual mine took no manual labor")
 	end
 	return e
@@ -2544,10 +2547,10 @@ local function em_site(s, x, y)
 	local mine = s.create_entity{ name = "dimension-mine", position = { x, y }, force = "player", raise_built = true }
 	mine.set_recipe("mining-copper-tin-vein")
 	mine.disabled_by_script = true
-	local input = mine.get_inventory(defines.inventory.assembling_machine_input)
+	local input = mine.get_inventory(defines.inventory.crafter_input)
 	assert(input.insert{ name = "iron-pickaxe-usage", count = 1 } == 1, "the manual mine took no pickaxe")
 	assert(input.insert{ name = "manual-labor", count = 2 } == 2, "the manual mine took no manual labor")
-	assert(mine.get_inventory(defines.inventory.assembling_machine_output).insert{ name = "raw-copper", count = 10 } == 10,
+	assert(mine.get_inventory(defines.inventory.crafter_output).insert{ name = "raw-copper", count = 10 } == 10,
 		"the manual mine's output slot took no raw copper")
 	local around = {}
 	for _, n in pairs({ { "inserter", 0, -3, defines.direction.north }, { "transport-belt", 0, 3, defines.direction.east },
@@ -2648,7 +2651,7 @@ function emine_test()
 		if okc and miner and miner.valid then
 			st.miner = miner
 			miner.set_recipe("miner-copper-tin-vein")
-			expect(miner.get_inventory(defines.inventory.assembling_machine_input).insert{ name = "mining-pipe", count = 1 } == 1,
+			expect(miner.get_inventory(defines.inventory.crafter_input).insert{ name = "mining-pipe", count = 1 } == 1,
 				"the HV Miner took no mining pipes")
 		end
 		--- A: fast replace
@@ -2668,7 +2671,7 @@ function emine_test()
 			plant.set_recipe("drilling-copper-tin-vein")
 			expect(plant.insert_fluid{ name = "drilling-fluid", amount = 400 } == 400, "the Mk I took no drilling fluid")
 			--- issue #341: the plant takes mining pipes like the miners (used up, issue #346; one per vein, #393)
-			expect(plant.get_inventory(defines.inventory.assembling_machine_input).insert{ name = "mining-pipe", count = 1 } == 1,
+			expect(plant.get_inventory(defines.inventory.crafter_input).insert{ name = "mining-pipe", count = 1 } == 1,
 				"the Mk I took no mining pipes")
 		end
 		--- issue #342, E: the chain by script, each step noted first as on_pre_build does for a player
@@ -2709,9 +2712,9 @@ function emine_test()
 		local back = em_items_in({ st.chest })
 		local all_back = b and (back["dimension-mine"] or 0) == 1
 		for name, n in pairs(EM_ITEMS) do all_back = all_back and (back[name] or 0) == n end
-		local drilled = st.plant and st.plant.valid and st.plant.get_inventory(defines.inventory.assembling_machine_output)
+		local drilled = st.plant and st.plant.valid and st.plant.get_inventory(defines.inventory.crafter_output)
 			.get_item_count("raw-copper") or 0
-		local mout = st.miner and st.miner.valid and st.miner.get_inventory(defines.inventory.assembling_machine_output)
+		local mout = st.miner and st.miner.valid and st.miner.get_inventory(defines.inventory.crafter_output)
 		local mined = mout and mout.get_item_count("raw-copper") or 0
 		local pipes = st.miner and st.miner.valid and st.miner.get_item_count("mining-pipe") or 0
 		local d_done = true
@@ -2820,7 +2823,7 @@ script.on_init(function()
 	local removed, water = clear_test_area(s)
 	log("DEVCHECK-RUNTIME-SEED " .. s.map_gen_settings.seed .. " (test area cleared: " .. removed .. " entities, " .. water .. " water tiles)")
 	local recipe_for = {}
-	for rn, r in pairs(prototypes.recipe) do recipe_for[r.category] = recipe_for[r.category] or rn end
+	for rn, r in pairs(prototypes.recipe) do recipe_for[r.categories[1]] = recipe_for[r.categories[1]] or rn end
 	local x, y, placed, with_recipe, fails = -150, -150, 0, 0, {}
 	for name, p in pairs(prototypes.get_entity_filtered{ { filter = "type", type = "assembling-machine" } }) do
 		if p.items_to_place_this and #p.items_to_place_this > 0 then

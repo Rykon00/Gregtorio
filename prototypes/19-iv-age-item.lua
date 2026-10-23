@@ -735,7 +735,7 @@ create_item{
 	results = {
 		{ type = "item", name = "copper-dust", amount = 2 },		
 		{ type = "item", name = "raw-silicon", amount = 2 },
-		{ type = "item", name = "gold-dust", amount = 1, probability = 0.1 },
+		{ type = "item", name = "gold-dust", amount = 1, independent_probability = 0.1 },
 	},
 	main_product = "copper-dust"
 }
@@ -787,7 +787,7 @@ create_item{
 		{ type = "item", name = "crude-platinum-residue", amount = 1 },
 	},
 	results = {
-		{ type = "item", name = "metallic-platinum-powder", amount = 1, probability = 0.95 },		
+		{ type = "item", name = "metallic-platinum-powder", amount = 1, independent_probability = 0.95 },		
 	}
 }
 create_recipe{
@@ -871,7 +871,7 @@ create_item{
 		{ type = "item", name = "crude-palladium-residue", amount = 1 },
 	},
 	results = {
-		{ type = "item", name = "metallic-palladium-powder", amount = 1, probability = 0.95 },		
+		{ type = "item", name = "metallic-palladium-powder", amount = 1, independent_probability = 0.95 },		
 	}
 }
 create_item{
@@ -1441,7 +1441,7 @@ create_recipe{
 			{ type = "fluid", name = "wood-tar", amount = 250 },
 			{ type = "fluid", name = "wood-vinegar", amount = 400 },
 			{ type = "fluid", name = "wood-gas", amount = 250 },
-			{ type = "item", name = "carbon", amount = 1, probability = 0.25 },
+			{ type = "item", name = "carbon", amount = 1, independent_probability = 0.25 },
 		},
 	main_product = "dimethylbenzene"
 }
@@ -2370,7 +2370,7 @@ create_item{
 		{ type = "fluid", name = "low-quality-naquadah-emulsion", amount = 1000 },
 	},
 	results = {
-		{ type = "item", name = "gallium-hydroxide", amount = 110, probability = 0.625 },
+		{ type = "item", name = "gallium-hydroxide", amount = 110, independent_probability = 0.625 },
 		{ type = "item", name = "antimony", amount = 15 },
 		{ type = "fluid", name = "low-quality-naquadah-solution", amount = 900 },
 	},

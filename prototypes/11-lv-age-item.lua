@@ -1370,7 +1370,7 @@ create_item{
     },
 	results = {
 		{type = "item", name = "plant-mass", amount = 2},
-		{type = "item", name = "plant-mass", amount = 1, probability = 0.75 },
+		{type = "item", name = "plant-mass", amount = 1, independent_probability = 0.75 },
     },
 	main_product = "plant-mass"
 }

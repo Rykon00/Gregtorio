@@ -45,7 +45,10 @@ LOG = WORK / "last-run.log"
 # `runtime` and `migrate` create their maps with this seed, so a run is reproducible (issue #47);
 # `--seed N` or `--seed random` picks another one, the output prints the seed of every run
 DEFAULT_SEED = 3115102263
-BUILTIN = {"base", "core", "space-age", "quality", "elevated-rails"}
+# (issue #535: Factorio 2.1 adds the built-in mod recycler, which space-age and quality depend on)
+BUILTIN = {"base", "core", "space-age", "quality", "elevated-rails", "recycler"}
+# the Factorio version the mod is written for (info.json factorio_version; the dependency mods are picked by it)
+FACTORIO_VERSION = "2.1"
 
 
 # --------------------------------------------------------------------------------------------
@@ -109,7 +112,10 @@ def setup(a):
         if not user or not token:
             sys.exit(f"need {name}: set FACTORIO_USERNAME/FACTORIO_TOKEN or pass --mods-from DIR")
         meta = json.load(urlopen(f"https://mods.factorio.com/api/mods/{urllib.parse.quote(name)}"))
-        rel = [r for r in meta["releases"] if r["info_json"].get("factorio_version") == "2.0"][-1]
+        rels = [r for r in meta["releases"] if r["info_json"].get("factorio_version") == FACTORIO_VERSION]
+        if not rels:
+            sys.exit(f"{name} has no release for Factorio {FACTORIO_VERSION} on the mod portal")
+        rel = rels[-1]
         q = urllib.parse.urlencode({"username": user, "token": token})
         download(f"https://mods.factorio.com{rel['download_url']}?{q}", MODS / rel["file_name"])
     print("setup done")
@@ -136,6 +142,33 @@ def needs_me_network(info):
     return any(re.split(r"\s*[<>=]", dep.strip())[0].strip() == ME_NETWORK for dep in info.get("dependencies", []))
 
 
+def engine_version(fdir=None):
+    """issue #535: major.minor of the Factorio in `fdir` (default: .devcheck/factorio), from its data/base/info.json"""
+    try:
+        v = json.loads((Path(fdir or FACTORIO) / "data" / "base" / "info.json").read_text(encoding="utf-8"))["version"]
+    except (OSError, ValueError, KeyError):
+        return FACTORIO_VERSION
+    return ".".join(v.split(".")[:2])
+
+
+def helper_dir(src):
+    """issue #535: a helper mod (checkmod/, runtimemod/, migratemod/) as it is when the Factorio in use is the one it is
+    written for (FACTORIO_VERSION), else a copy in the work folder whose info.json says that Factorio's version: the
+    helpers run in a 2.0 Factorio too (the old save of `migrate --old-factorio`)"""
+    v = engine_version()
+    if v == FACTORIO_VERSION:
+        return src
+    dest = WORK / ("helper-" + v) / src.name
+    if dest.exists():
+        shutil.rmtree(dest)
+    shutil.copytree(src, dest)
+    f = dest / "info.json"
+    info = json.loads(f.read_text(encoding="utf-8"))
+    info["factorio_version"] = v
+    f.write_text(json.dumps(info, indent=2), encoding="utf-8")
+    return dest
+
+
 def texture_stand_in(me_info, me_dir):
     """Issue #231: me-network 0.5.3 and later require its texture mod (me-network #325, `~ me-network-ae2-textures`).
     A Gregtorio run never loads the texture mod's graphics (CC BY-NC-SA, me-network #239; me-network's own harness does
@@ -154,9 +187,10 @@ def texture_stand_in(me_info, me_dir):
         version = m.group(1) if m else "0.0.1"
     stub = MODS / TEXTURES
     stub.mkdir()
+    v = engine_version()                  # (issue #535: the Factorio in use, 2.0 for an old save)
     (stub / "info.json").write_text(json.dumps({"name": TEXTURES, "version": version, "title": STAND_IN,
-                                                "author": "devcheck", "factorio_version": "2.0",
-                                                "dependencies": ["base >= 2.0"]}), encoding="utf-8")
+                                                "author": "devcheck", "factorio_version": v,
+                                                "dependencies": [f"base >= {v}"]}), encoding="utf-8")
     return True
 
 
@@ -209,8 +243,10 @@ def prepare_mods(with_runtime=False, gregtorio_zip=None, with_migrate=False, men
     else:
         info = json.loads((ROOT / "info.json").read_text(encoding="utf-8"))
         link_dir(MODS / info["name"], ROOT)
-    link_dir(MODS / "zz-gregtorio-devcheck", HERE / "checkmod")
-    enabled = ["base", "space-age", "quality", "elevated-rails"] + ([info["name"]] if info else []) + ["zz-gregtorio-devcheck"]
+    link_dir(MODS / "zz-gregtorio-devcheck", helper_dir(HERE / "checkmod"))
+    # the built-in mods of the Factorio in use (issue #535: 2.1 adds recycler; a 2.0 Factorio for an old save has none)
+    builtin = [n for n in ("space-age", "quality", "elevated-rails", "recycler") if (FACTORIO / "data" / n).is_dir()]
+    enabled = ["base"] + builtin + ([info["name"]] if info else []) + ["zz-gregtorio-devcheck"]
     zips = [z.name.rsplit("_", 1)[0] for z in MODS.glob("*.zip") if not z.name.startswith(MOD_NAMES)]
     enabled += [n for n in zips if n != ME_NETWORK]
     disabled = []
@@ -230,10 +266,10 @@ def prepare_mods(with_runtime=False, gregtorio_zip=None, with_migrate=False, men
         # older versions of the mod (migrate) contain the ME network themselves and refuse to load next to it
         disabled.append(ME_NETWORK)
     if with_runtime:
-        link_dir(MODS / "zz-gregtorio-devcheck-runtime", HERE / "runtimemod")
+        link_dir(MODS / "zz-gregtorio-devcheck-runtime", helper_dir(HERE / "runtimemod"))
         enabled.append("zz-gregtorio-devcheck-runtime")
     if with_migrate:
-        link_dir(MODS / "zz-gregtorio-devcheck-migrate", HERE / "migratemod")
+        link_dir(MODS / "zz-gregtorio-devcheck-migrate", helper_dir(HERE / "migratemod"))
         enabled.append("zz-gregtorio-devcheck-migrate")
     if menusim:
         # a copy, not a link: config.lua names the simulation to run
@@ -246,7 +282,7 @@ def prepare_mods(with_runtime=False, gregtorio_zip=None, with_migrate=False, men
         d.mkdir()
         (d / "info.json").write_text(json.dumps({
             "name": "zz-gregtorio-devcheck-settings", "version": "1.0.0", "title": "Gregtorio devcheck settings",
-            "author": "rykon_", "factorio_version": "2.0", "dependencies": ["? " + n for n in MOD_NAMES]}))
+            "author": "rykon_", "factorio_version": engine_version(), "dependencies": ["? " + n for n in MOD_NAMES]}))
         (d / "settings-final-fixes.lua").write_text("".join(
             f"do local s = data.raw['bool-setting'][{json.dumps(n)}] "
             f"assert(s, 'devcheck --set: no bool setting ' .. {json.dumps(n)}) "
@@ -304,14 +340,16 @@ class Model:
         split = lambda s: [x.split(":", 1)[1] for x in s.split(",") if x]
         kinds = lambda s: [x.split(":", 1)[0] for x in s.split(",") if x]
         self.R, self.C, self.CF, self.I, self.T = {}, {}, {}, {}, {}
-        self.burnt, self.burners = [], {}   # (fuel item, burnt result, fuel category); burner entity -> categories
+        self.burnt, self.burners = [], {}   # (fuel item, burnt result, fuel categories); burner entity -> categories
         self.tools = {}                     # recipe -> the mold or lens it needs in the module slot (issue #316)
         self.base = {"water", "steam"}
         mined, reach = {}, {}   # issue #501: resource -> its mined items; resource -> technologies of its planets
         for p in rows:
             k = p[0]
             if k == "R":
-                self.R[p[1]] = dict(cat=p[2], en=p[3] == "true", ing=split(p[4]), res=split(p[5]),
+                # (issue #535: a recipe has a list of categories since Factorio 2.1; `cat` is the first, a Gregtorio recipe's one)
+                cats = [c for c in p[2].split(",") if c] or ["crafting"]
+                self.R[p[1]] = dict(cat=cats[0], cats=set(cats), en=p[3] == "true", ing=split(p[4]), res=split(p[5]),
                                     fin=kinds(p[4]).count("fluid"), fout=kinds(p[5]).count("fluid"),
                                     hidden=p[6] == "true", hide_craft=p[7] == "true", sg=p[8], group=p[9],
                                     icon=p[10] if len(p) > 10 else "")
@@ -330,7 +368,7 @@ class Model:
             elif k == "O" and p[2]:
                 self.base.add(p[2])
             elif k == "B":
-                self.burnt.append((p[1], p[2], p[3]))
+                self.burnt.append((p[1], p[2], set(p[3].split(","))))     # (issue #535: fuel_categories since 2.1)
             elif k == "U":
                 self.burners[p[1]] = p[2].split(",")
             elif k == "K":
@@ -344,7 +382,7 @@ class Model:
                 self.base.update(items)
                 continue
             name = "planet-mining:" + res
-            self.R[name] = dict(cat="planet-mining", en=False, ing=[], res=items, fin=0, fout=0, hidden=False,
+            self.R[name] = dict(cat="planet-mining", cats={"planet-mining"}, en=False, ing=[], res=items, fin=0, fout=0, hidden=False,
                                 hide_craft=False, sg="", group="", icon="")
             for t in techs:
                 if t in self.T:
@@ -376,7 +414,7 @@ class Model:
             cats = {c for m in self.crafters for c in C.get(m, [])}
             for r in self.unlocked:
                 v = R[r]
-                if v["cat"] in cats and all(i in self.avail for i in v["ing"]):
+                if v["cats"] & cats and all(i in self.avail for i in v["ing"]):
                     for x in v["res"]:
                         if x not in self.avail:
                             self.avail.add(x)
@@ -385,7 +423,7 @@ class Model:
             fuel_cats = {c for e, cs in self.burners.items() if any(i in self.avail for i in item_of.get(e, []))
                          for c in cs}
             for fuel, burnt, cat in self.burnt:
-                if fuel in self.avail and cat in fuel_cats and burnt not in self.avail:
+                if fuel in self.avail and cat & fuel_cats and burnt not in self.avail:
                     self.avail.add(burnt)
                     changed = True
             for t, v in T.items():
@@ -438,7 +476,7 @@ class Model:
             if r.endswith("-recycling") or r.startswith("void-") or v["cat"] in ("recycling", "parameters"):
                 continue
             missing = [i for i in v["ing"] if i not in self.avail]
-            machines = [m for m in self.crafters if v["cat"] in self.C.get(m, [])]
+            machines = [m for m in self.crafters if v["cats"] & set(self.C.get(m, []))]
             if not machines:
                 out.append((r, f"no machine for category {v['cat']}"))
             elif missing:
@@ -494,7 +532,7 @@ class Model:
         while queue or ready:
             while ready:
                 r = ready.pop()
-                if R[r]["cat"] in cats:
+                if R[r]["cats"] & cats:
                     for x in R[r]["res"]:
                         add(x)
             if not queue:
@@ -505,7 +543,7 @@ class Model:
             fuel_cats.update(burner_of.get(x, []))
             # a fuel burnt in a burner that can be built leaves its burnt result
             for fuel, burnt, cat in self.burnt:
-                if fuel in avail and cat in fuel_cats:
+                if fuel in avail and cat & fuel_cats:
                     add(burnt)
             for r in uses.get(x, []):
                 if r in need:
@@ -1366,6 +1404,14 @@ DRAFTS_OK = []
 # Technologies that stay enabled but cannot be researched on purpose: vanilla armor, equipment and
 # military techs whose vanilla prerequisites Gregtorio disables (docs/ROADMAP.md, "Final pass").
 # Every other enabled technology must be researchable.
+# issue #535: removed prototype keys of other mods (a dependency's leftover Gregtorio cannot change: Factorio ignores it),
+# by the prototype's "<type>/<name>" -> the reason; reported as information, never a failure
+REMOVED_KEYS_OTHER_MODS = {
+    "pump/configurable-valve": "configurable-valves 2.0.2 (for Factorio 2.1) still sets hide_connection_info on its fluid box",
+    "storage-tank/configurable-valve-guage-input": "configurable-valves 2.0.2, as above",
+    "storage-tank/configurable-valve-guage-output": "configurable-valves 2.0.2, as above",
+}
+
 UNRESEARCHABLE_OK = [
     "battery-equipment", "battery-mk2-equipment", "battery-mk3-equipment", "belt-immunity-equipment",
     "energy-shield-equipment", "energy-shield-mk2-equipment", "exoskeleton-equipment", "explosives",
@@ -1473,7 +1519,7 @@ def check_unlock_gaps(m, sec):
             return {(x, f"comes with {later[0] if later else 'no researchable technology'}")}
         out = set()
         for p in here:
-            if R[p]["cat"] not in cats:
+            if not R[p]["cats"] & cats:
                 out.add((x, f"no machine for {R[p]['cat']}"))
                 continue
             for i in R[p]["ing"]:
@@ -1490,13 +1536,13 @@ def check_unlock_gaps(m, sec):
                     or v["cat"] in ("recycling", "parameters"):
                 continue
             miss = [i for i in v["ing"] if i not in avail and i in m.avail]
-            if not (miss or v["cat"] not in cats) or all(x in avail for x in v["res"]):
+            if not (miss or not v["cats"] & cats) or all(x in avail for x in v["res"]):
                 continue
             n_recipes += 1
             got = set()
             for i in miss:
                 got |= causes(i, k, set())
-            if v["cat"] not in cats:
+            if not v["cats"] & cats:
                 got.add((r, f"no machine for {v['cat']}"))
             if not got:
                 got.add((r, "its inputs only come from each other at this science"))
@@ -1602,7 +1648,7 @@ def check_unlock_tree(m, sec):
                     or v["cat"] in ("recycling", "parameters"):
                 continue
             miss = [(x, nearest([x])) for x in sorted(set(v["ing"])) if x in m.avail and x not in have]
-            if not has_machine(v["cat"], have):
+            if not any(has_machine(c, have) for c in v["cats"]):
                 near = nearest(machine_items(v["cat"]))
                 miss.append((near[1] if near else "<machine for " + v["cat"] + ">", near))
             lacks = {x for x, near in miss if near and near[2].startswith("planet-mining:")}
@@ -1821,6 +1867,15 @@ def check(a):
     one_pack_info, one_pack = check_one_pack(sec)
     print(f"\ncheap research ({ONE_PACK}): {one_pack_info}")
     report("technologies that cost more than one science pack of each kind although the setting is on", one_pack)
+    # issue #535: a key Factorio removed (2.0 -> 2.1) that a prototype still carries; 2.1 ignores most of them on load
+    rows = [r for r in sec.get("REMOVEDKEYS", []) if len(r) > 1]
+    other = [r for r in rows if re.split(r"[.\[]", r[0])[0] in REMOVED_KEYS_OTHER_MODS]
+    removed_keys = [f"{r[0]}: {r[1]}" for r in rows if r not in other]
+    report("prototype keys that Factorio removed, of other mods (information: REMOVED_KEYS_OTHER_MODS)",
+           [f"{r[0]}: {r[1]} ({REMOVED_KEYS_OTHER_MODS[re.split(r'[.[]', r[0])[0]]})" for r in other])
+    print(f"\nprototype keys removed by Factorio {FACTORIO_VERSION} (checkmod/removed-keys.lua): {len(removed_keys)}")
+    report("prototype keys that Factorio removed (ignored when loaded: they fail silently; tools/devcheck/removed_keys.py)",
+           removed_keys)
     names_info, names, names_gen = check_names(sec)
     print("\nnames of the shown prototypes of this mod (issue #230):")
     for line in names_info:
@@ -1841,7 +1896,7 @@ def check(a):
               or new_drafts or fluid_problems or locked or one_pack or fluid_steps or table_only or me_recipes
               or extractor_split or ore_mixes or ore_chain or ore_baths or ore_o34 or ore_hammer
               or circuit_icons or pgm_dusts or recycling or names or gaps or tree or vanilla or lenses or mine_twins
-              or unplaceable or stale_unlocks)
+              or unplaceable or stale_unlocks or removed_keys)
     print("\nRESULT:", "OK" if ok else "PROBLEMS FOUND")
     return 0 if ok else 1
 
@@ -2100,13 +2155,46 @@ def bumped_working_copy(old_zip):
     return out
 
 
+class old_factorio:
+    """issue #535: `with old_factorio(a, old_zip):` runs Factorio from --old-factorio with a mods folder of its own
+    (.devcheck/mods-old: the dependency zips of --old-mods) when the old version is for another Factorio (2.0), so its
+    save is made as a player of that version made it; nothing changes for a version of this Factorio"""
+    def __init__(self, a, old_zip):
+        self.a, self.fv = a, zip_info(old_zip).get("factorio_version")
+
+    def __enter__(self):
+        global FACTORIO, MODS
+        self.kept = (FACTORIO, MODS)
+        if not self.fv or self.fv == engine_version():
+            return self
+        if not (self.a.old_factorio and self.a.old_mods):
+            sys.exit(f"the old version is for Factorio {self.fv}, this one is {engine_version()}: pass --old-factorio DIR "
+                     f"(an unpacked Factorio {self.fv}) and --old-mods DIR (its dependency zips), see tools/devcheck/README.md")
+        FACTORIO, MODS = Path(self.a.old_factorio).resolve(), WORK / "mods-old"
+        if engine_version() != self.fv:
+            sys.exit(f"--old-factorio {self.a.old_factorio} is Factorio {engine_version()}, the old version needs {self.fv}")
+        MODS.mkdir(exist_ok=True)
+        for z in MODS.glob("*.zip"):
+            z.unlink()
+        for z in Path(self.a.old_mods).glob("*.zip"):
+            if not z.name.startswith(MOD_NAMES + (ME_NETWORK + "_", TEXTURES)):
+                shutil.copy2(z, MODS / z.name)
+        print(f"old version for Factorio {self.fv}: {FACTORIO} with the mods of {self.a.old_mods}")
+        return self
+
+    def __exit__(self, *exc):
+        global FACTORIO, MODS
+        FACTORIO, MODS = self.kept
+
+
 def migrate(a):
     """Create a map with an older version (also "Gregtorio" before 0.3.0), then load and run it with the working copy."""
     old = a.from_zip or zip_from_ref(a.from_ref)
     old_me = old_me_network(a.old_me_network) if getattr(a, "old_me_network", None) else None
-    with me_network_from(old_me):
-        prepare_mods(gregtorio_zip=old, with_migrate=True)
-    log = factorio("--create", str(WORK / "migrate-map.zip"), *seed_args(a))
+    with old_factorio(a, old):
+        with me_network_from(old_me):
+            prepare_mods(gregtorio_zip=old, with_migrate=True)
+        log = factorio("--create", str(WORK / "migrate-map.zip"), *seed_args(a))
     print(f"map seed: {'random' if a.seed == 'random' else a.seed}")
     if load_errors(log):
         print("could not create the map with the old version:\n" + load_errors(log))
@@ -2230,7 +2318,7 @@ def handover_mods(giver=None, taker=False, skip=None):
         shutil.copytree(HANDOVER / src, d)
         shutil.copy2(HANDOVER / "shared.lua", d / "shared.lua")
         (d / "info.json").write_text(json.dumps({"name": name, "version": version, "title": name, "author": "devcheck",
-                                                 "factorio_version": "2.0", "dependencies": ["base"] + deps}))
+                                                 "factorio_version": engine_version(), "dependencies": ["base"] + deps}))
         if src == "giver":
             (d / "config.lua").write_text(f"return {{ skip = {json.dumps(skip)} }}\n" if skip else "return {}\n")
         enabled.append(name)
@@ -2386,6 +2474,10 @@ def main():
                    f"working copies directly, without the intermediate load with Gregtorio {STEP_GREGTORIO} and "
                    f"me-network {STEP_ME_NETWORK} (me-network 0.5.1 and later refuse it)")
     m.add_argument("--seed", default=str(DEFAULT_SEED), help=f"map seed or `random` (default {DEFAULT_SEED})")
+    m.add_argument("--old-factorio", metavar="DIR", help="issue #535: an unpacked Factorio of the old version's "
+                   "factorio_version (bin/ and data/), which makes the old save when it is not this one's (a 2.0 version)")
+    m.add_argument("--old-mods", metavar="DIR", help="issue #535: with --old-factorio, a folder with the old version's "
+                   "dependency zips (configurable-valves, autocraft-logistics of Factorio 2.0)")
     ms = sub.add_parser("menusim", help="run main menu simulations")
     ms.add_argument("--sim", default="nauvis_biter_base_laser_defense", help="simulation name or `all`")
     ms.add_argument("--compare", action="store_true", help="also run without Gregtorio")
