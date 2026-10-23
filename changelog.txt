@@ -2,6 +2,8 @@
 Version: 0.5.9
   Changes:
     - The colour drop-downs of the Ender Chest and the Ender Tank list the 16 colours alphabetically (issue #545). Only the order shown changed: chests and tanks of existing saves and blueprints keep their colour codes and still share with the ones built now.
+  Bugfixes:
+    - Ender Chests and Ender Tanks built from a blueprint keep their colour code (issue #546): a blueprint (also one made with copy or cut) stores the code of both, and the chest or tank built from it (by hand, by robots or when the blueprint is pasted over one) gets it. Before, a chest built from a blueprint a player placed had white, white, white and a tank never kept its code. Blueprints made before this version still give the Ender Chest its code when a script builds them; make them again to keep the codes in every case and for the tanks.
 ---------------------------------------------------------------------------------------------------
 Version: 0.5.8
 Date: 2026-10-23

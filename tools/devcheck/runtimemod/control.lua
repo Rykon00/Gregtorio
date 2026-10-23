@@ -1630,9 +1630,10 @@ end
 
 --- Ender Storage (issue #504, scripts/fork-ender.lua): an Ender Chest on Nauvis and one in the Nether with the same code
 --- share their slots, a third with another code does not; an Ender Tank of water on Nauvis and an empty one in the
---- Nether with the same code hold half each after the levelling, a third with another code stays empty. Issue #545: the
---- drop-downs list the colours alphabetically and map back to the same code; a chest of an old save with link_id 3803
---- shows red, green, blue and shares with a chest set to red, green, blue through the drop-downs.
+--- Nether with the same code hold half each after the levelling, a third with another code stays empty; a chest and a
+--- tank built from a blueprint get the codes of its tags (issue #546). Issue #545: the drop-downs list the colours
+--- alphabetically and map back to the same code; a chest of an old save with link_id 3803 shows red, green, blue and
+--- shares with a chest set to red, green, blue through the drop-downs.
 local EN_WAIT = 61   -- three levelling intervals
 
 function setup_ender_test(s)
@@ -1664,6 +1665,36 @@ function setup_ender_test(s)
 		t1.insert_fluid{ name = "water", amount = 1000 }
 		et.chests, et.tanks, et.tick = { a, b, c, old, new }, { t1, t2, t3 }, game.tick
 		et.code = remote.call("fork-ender", "get_code", b)
+		--- issue #546: a blueprint keeps the codes as entity tag; built by script with the chest's link_id taken out (a
+		--- ghost a player places has lost it), the chest and the tank get their codes from the tag; a blueprint without
+		--- the tag (made before) still gives the chest its link_id
+		local d, t4 = place(s, "ender-chest", { -200.5, -255.5 }), place(s, "ender-tank", { -195.5, -255.5 })
+		remote.call("fork-ender", "set_code", d, 2345)
+		remote.call("fork-ender", "set_code", t4, 999)
+		local inv = game.create_inventory(2)
+		inv.insert{ name = "blueprint", count = 2 }
+		local tagged, old = inv[1], inv[2]
+		local area = { { -202, -258 }, { -193, -253 } }
+		remote.call("fork-ender", "tag_blueprint", tagged,
+			tagged.create_blueprint{ surface = s, force = "player", area = area })
+		old.create_blueprint{ surface = s, force = "player", area = area }
+		local ents, bp = tagged.get_blueprint_entities() or {}, { tag = {}, ghosts = 0 }
+		for _, be in pairs(ents) do
+			bp.tag[be.name] = be.tags and be.tags.fork_ender_code
+			if be.name == "ender-chest" then be.link_id = 0 end
+		end
+		tagged.set_blueprint_entities(ents)
+		for key, y in pairs({ tagged = -263, old = -269 }) do
+			local ghosts = (key == "tagged" and tagged or old).build_blueprint{ surface = s, force = "player",
+				position = { -197, y }, build_mode = defines.build_mode.forced }
+			for _, g in pairs(ghosts) do
+				bp.ghosts = bp.ghosts + 1
+				local _, e = g.revive{ raise_revive = true }
+				if e then bp[key .. "-" .. e.name] = remote.call("fork-ender", "get_code", e) end
+			end
+		end
+		inv.destroy()
+		et.bp = bp
 	end)
 	if not ok then fails[#fails + 1] = "ender storage test: " .. tostring(err) end
 	return fails
@@ -1711,11 +1742,23 @@ function ender_test()
 	expect(new.link_id == 3803, "the chest set to red, green, blue through the drop-downs has link_id " .. new.link_id)
 	expect(new.get_item_count("copper-plate") == 3, "the new red, green, blue chest holds "
 		.. new.get_item_count("copper-plate") .. " of the old one's 3 copper plates")
+	local bp = et.bp or { tag = {}, ghosts = 0 }
+	expect(bp.tag["ender-chest"] == 2345 and bp.tag["ender-tank"] == 999, string.format("the blueprint's tags are %s "
+		.. "(chest) and %s (tank), not 2345 and 999", tostring(bp.tag["ender-chest"]), tostring(bp.tag["ender-tank"])))
+	expect(bp.ghosts == 4, bp.ghosts .. " ghosts of the two blueprints, not 4")
+	expect(bp["tagged-ender-chest"] == 2345, "the chest built from the tagged blueprint without link_id has the code "
+		.. tostring(bp["tagged-ender-chest"]) .. ", not 2345")
+	expect(bp["tagged-ender-tank"] == 999, "the tank built from the tagged blueprint has the code "
+		.. tostring(bp["tagged-ender-tank"]) .. ", not 999")
+	expect(bp["old-ender-chest"] == 2345, "the chest built from a blueprint without the tag has the code "
+		.. tostring(bp["old-ender-chest"]) .. ", not its link_id 2345")
 	for _, p in pairs(problems) do log("DEVCHECK-RUNTIME-FAIL ender storage test: " .. p) end
 	log("DEVCHECK-RUNTIME-ENDER " .. (#problems == 0 and "ok" or "failed") .. string.format(" (7 iron plates through the "
 		.. "Ender Chests to the Nether, %d there; water levelled %.0f / %.0f between Nauvis and the Nether; drop-downs "
-		.. "alphabetical, %d of 4096 codes round-trip, link_id 3803 shows %s, %s, %s)",
-		b.get_item_count("iron-plate"), w1, w2, trips, name(shown[1]), name(shown[2]), name(shown[3])))
+		.. "alphabetical, %d of 4096 codes round-trip, link_id 3803 shows %s, %s, %s; from a blueprint the codes %s "
+		.. "(chest by tag), %s (tank by tag), %s (chest of an old blueprint by link_id))",
+		b.get_item_count("iron-plate"), w1, w2, trips, name(shown[1]), name(shown[2]), name(shown[3]),
+		tostring(bp["tagged-ender-chest"]), tostring(bp["tagged-ender-tank"]), tostring(bp["old-ender-chest"])))
 end
 
 function setup_battery_test(s)
