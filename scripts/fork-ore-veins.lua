@@ -111,6 +111,47 @@ end
 --- Issue #534 (migrations/2026-10-23-issue-534-vein-ores.lua): 2. and 4. take every generated chunk without an ore of the
 --- veins, not only a surface whose map settings lacked the veins: a save can have them (from a map settings editor) while
 --- its chunks have no ore. A chunk of an empty cell gets none; one whose ore was mined out completely gets it again.
+--- Issue #540 (migrations/2026-10-23-issue-540-foreign-map-gen.lua): a map made with Space Age keeps one table of every
+--- planet's sliders on its Nauvis surface; since #529 (the planets deleted, the controls their terrain reads kept hidden)
+--- and Factorio 2.1 these place Gleba's plants and the other planets' tiles in Nauvis' new chunks. 1. leaves the surface
+--- only its planet's controls (the save's values of these), no default for the others, the planet's autoplace settings and
+--- its expression names (and the ones the map generator's presets and climate sliders write: a player's island map stays
+--- one), and notes a surface whose settings were not its planet's in storage.fork_ore_veins.foreign, for clean_chunks.
+local function same(a, b)
+	if type(a) ~= "table" or type(b) ~= "table" then return a == b end
+	for k, v in pairs(a) do if not same(v, b[k]) then return false end end
+	for k in pairs(b) do if a[k] == nil then return false end end
+	return true
+end
+
+local function gt_ore(name)
+	local p = prototypes.entity[name]
+	return p and p.type == "resource" and p.resource_category == "gt-ore"
+end
+
+--- the autoplace settings without the vein ores (which #500 adds to an old save: no sign of a foreign map)
+local function without_veins(settings)
+	local out = {}
+	for kind, s in pairs(settings or {}) do
+		out[kind] = { treat_missing_as_default = s.treat_missing_as_default, settings = {} }
+		for name, v in pairs(s.settings or {}) do
+			if not (kind == "entity" and gt_ore(name)) then out[kind].settings[name] = v end
+		end
+	end
+	return out
+end
+
+--- the expression names the map generator writes for a planet's own options: its presets' (lakes, island) and the
+--- climate sliders (control:moisture:*, control:aux:*)
+local function own_expression_names()
+	local keep = {}
+	for _, preset in pairs(prototypes.map_gen_preset) do
+		local ok, basic = pcall(function() return preset.basic_settings end)
+		for k in pairs(ok and basic and basic.property_expression_names or {}) do keep[k] = true end
+	end
+	return keep
+end
+
 local function migrate_surface(surface, planet)
 	local profiler = helpers.create_profiler()
 	--- 1. the map generation settings of the planet (a map made with the veins has them: its ores stay as they are)
@@ -122,6 +163,30 @@ local function migrate_surface(surface, planet)
 	local grid = mgs.autoplace_controls["gt-ore-veins"]
 	local old_size = grid and tonumber(grid.size)
 	local added = 0
+	--- issue #540: the controls, autoplace settings and expression names of other planets
+	local foreign = {}
+	for control in pairs(mgs.autoplace_controls) do
+		if not (proto.autoplace_controls or {})[control] then
+			mgs.autoplace_controls[control] = nil
+			foreign[#foreign + 1] = control
+		end
+	end
+	if mgs.default_enable_all_autoplace_controls ~= false then
+		mgs.default_enable_all_autoplace_controls = false
+		foreign[#foreign + 1] = "default_enable_all_autoplace_controls"
+	end
+	if not same(without_veins(mgs.autoplace_settings), without_veins(proto.autoplace_settings)) then
+		foreign[#foreign + 1] = "autoplace_settings"
+	end
+	mgs.autoplace_settings = proto.autoplace_settings
+	local own, stale = own_expression_names(), 0
+	for k in pairs(mgs.property_expression_names or {}) do
+		if (proto.property_expression_names or {})[k] == nil and not own[k] and not k:match("^control:") then
+			mgs.property_expression_names[k] = nil
+			--- (a vein name of an older version is no sign of a foreign map)
+			if k:match("^gt_") then stale = stale + 1 else foreign[#foreign + 1] = "property_expression_names." .. k end
+		end
+	end
 	for control, v in pairs(proto.autoplace_controls or {}) do
 		if prototypes.autoplace_control[control] and not mgs.autoplace_controls[control] then
 			if old_size and old_size ~= 1 and control:match("^gt%-vein%-") then
@@ -133,15 +198,8 @@ local function migrate_surface(surface, planet)
 	end
 	local resized = old_size and old_size ~= 1 and added > 0
 	if resized then grid.size = 1 end
-	mgs.autoplace_settings = mgs.autoplace_settings or {}
-	mgs.autoplace_settings.entity = mgs.autoplace_settings.entity or { settings = {} }
-	mgs.autoplace_settings.entity.settings = mgs.autoplace_settings.entity.settings or {}
-	for name, v in pairs(proto.autoplace_settings.entity.settings) do
-		local p = prototypes.entity[name]
-		if p and p.type == "resource" and p.resource_category == "gt-ore" then
-			mgs.autoplace_settings.entity.settings[name] = v
-			names[#names + 1] = name
-		end
+	for name in pairs(proto.autoplace_settings.entity.settings) do
+		if gt_ore(name) then names[#names + 1] = name end
 	end
 	mgs.property_expression_names = mgs.property_expression_names or {}
 	for k, v in pairs(proto.property_expression_names or {}) do
@@ -152,17 +210,22 @@ local function migrate_surface(surface, planet)
 	end
 	--- names of noise expressions that no longer exist (a mod of the map's start removed since): the game ignores them,
 	--- but warns about each one whenever it compiles the surface's noise program, i.e. on every calculate_tile_properties
-	local dropped = 0
+	local dropped = stale
 	for k, v in pairs(mgs.property_expression_names) do
 		if type(v) == "string" and not tonumber(v) and not prototypes.named_noise_expression[v] then
 			mgs.property_expression_names[k] = nil
 			dropped = dropped + 1
 		end
 	end
+	local st = storage.fork_ore_veins
+	if #foreign > 0 then
+		st.foreign = st.foreign or {}
+		st.foreign[surface.index] = true
+		log("FORK-ORE-VEINS: " .. surface.name .. ": map settings of other planets removed: " .. table.concat(foreign, ", "))
+	end
 	--- 2. the ores of the generated chunks that have none (once per load: every migration file of a load calls this in the
 	--- same tick, storage.fork_ore_veins.ores_tick)
 	local chunks = {}
-	local st = storage.fork_ore_veins
 	st.ores_tick = st.ores_tick or {}
 	local again = st.ores_tick[surface.index] == game.tick
 	st.ores_tick[surface.index] = game.tick
@@ -174,7 +237,7 @@ local function migrate_surface(surface, planet)
 			end
 		end
 	end
-	if fresh or dropped > 0 or added > 0 then surface.map_gen_settings = mgs end
+	if fresh or dropped > 0 or added > 0 or #foreign > 0 then surface.map_gen_settings = mgs end
 	if #chunks > 0 then surface.regenerate_entity(names, chunks) end
 	--- 3. the dimension mines on the Overworld's veins
 	local em = prototypes.mod_data["fork-electric-mine"]
@@ -298,8 +361,86 @@ function M.migrate()
 	end
 end
 
+--- Issue #540: the chunks of a surface whose map settings were another planet's (storage.fork_ore_veins.foreign, noted by
+--- migrate_surface) hold what those settings placed. A chunk without an entity of a player's force and without a
+--- tile a player placed is deleted, so the game generates it anew with the right settings (also one that was generated but
+--- never charted); a kept chunk loses the trees, plants, rocks and cliffs of Space Age and its decoratives that the planet
+--- does not place itself; its tiles stay.
+local function clean_surface(surface, planet)
+	local profiler = helpers.create_profiler()
+	local forces = {}
+	for _, f in pairs(game.forces) do
+		if f.name ~= "enemy" and f.name ~= "neutral" then forces[#forces + 1] = f end
+	end
+	local placed = {}
+	for name, t in pairs(prototypes.tile) do
+		if t.items_to_place_this and #t.items_to_place_this > 0 then placed[#placed + 1] = name end
+	end
+	local own = prototypes.space_location[planet].map_gen_settings.autoplace_settings or {}
+	local own_entities = own.entity and own.entity.settings or {}
+	local own_decoratives = own.decorative and own.decorative.settings or {}
+	local function space_age(kind, name)
+		local h = prototypes.get_history(kind, name)
+		return h ~= nil and h.created == "space-age"
+	end
+	local entities, decoratives = {}, {}
+	for name, p in pairs(prototypes.get_entity_filtered{ { filter = "type", type = { "tree", "plant", "simple-entity", "cliff" } } }) do
+		if not own_entities[name] and space_age(p.type, name) then entities[#entities + 1] = name end
+	end
+	for name in pairs(prototypes.decorative) do
+		if not own_decoratives[name] and space_age("optimized-decorative", name) then decoratives[#decoratives + 1] = name end
+	end
+	local gone, kept, total = {}, {}, 0
+	--- (every chunk the surface has: one around the generated area is generated in part and holds decoratives that spill
+	--- over from its neighbours)
+	for c in surface.get_chunks() do
+		total = total + 1
+		if surface.count_entities_filtered{ area = c.area, force = forces, limit = 1 } == 0
+			and (#placed == 0 or surface.count_tiles_filtered{ area = c.area, name = placed, limit = 1 } == 0) then
+			gone[#gone + 1] = { x = c.x, y = c.y }
+		else
+			kept[#kept + 1] = c.area
+		end
+	end
+	local removed, decorations = 0, 0
+	for _, area in pairs(kept) do
+		if #entities > 0 then
+			for _, e in pairs(surface.find_entities_filtered{ area = area, name = entities }) do
+				if e.valid then
+					e.destroy()
+					removed = removed + 1
+				end
+			end
+		end
+		if #decoratives > 0 then
+			local n = #surface.find_decoratives_filtered{ area = area, name = decoratives }
+			if n > 0 then
+				surface.destroy_decoratives{ area = area, name = decoratives }
+				decorations = decorations + n
+			end
+		end
+	end
+	for _, c in pairs(gone) do surface.delete_chunk(c) end
+	profiler.stop()
+	log({ "", string.format("FORK-ORE-VEINS: %s: %d of %d chunks deleted (no building: generated anew with the "
+		.. "planet's settings), %d kept: %d trees, plants, rocks and cliffs and %d decoratives of other planets removed, "
+		.. "their tiles kept; ", surface.name, #gone, total, #kept, removed, decorations), profiler })
+end
+
+function M.clean_chunks()
+	local d = vein_data()
+	local st = storage.fork_ore_veins
+	if not (d and st and st.foreign) then return end
+	for planet in pairs(d.planets) do
+		local p = game.planets[planet]
+		if p and p.surface and st.foreign[p.surface.index] then clean_surface(p.surface, planet) end
+	end
+	st.foreign = nil
+end
+
 remote.add_interface("fork-ore-veins", {
 	migrate = M.migrate,
+	clean_chunks = M.clean_chunks,
 	tag_chunk = function(force, surface, chunk)
 		local x, y = chunk.x * 32, chunk.y * 32
 		return tag(game.forces[force] or force, game.surfaces[surface] or surface,
