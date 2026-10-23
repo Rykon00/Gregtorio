@@ -1,0 +1,13 @@
+{
+  "recipe": [
+    ["hunting-blazes", "moved-hunting-blazes"],
+    ["hunting-endermen", "moved-hunting-endermen"],
+    ["hunting-zombies", "moved-hunting-zombies"],
+    ["hunting-ghasts", "moved-hunting-ghasts"],
+    ["hunting-the-ur-ghast", "moved-hunting-the-ur-ghast"],
+    ["cobblestone-manual-mine", "moved-cobblestone-manual-mine"],
+    ["cobblestone-manual-mine-with-wooden-pickaxe", "moved-cobblestone-manual-mine-with-wooden-pickaxe"],
+    ["mining-end-stone", "moved-mining-end-stone"],
+    ["mining-glowstone-vein", "moved-mining-glowstone-vein"]
+  ]
+}
