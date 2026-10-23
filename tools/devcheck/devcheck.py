@@ -1149,7 +1149,8 @@ def check_fluid_steps(sec):
     return [f"{r} ({kind}) {fluid}: {amount}" for r, kind, fluid, amount in sec.get("FLUIDSTEPS", [])]
 
 
-NAME_CLASSES = ("item", "fluid", "recipe", "technology", "entity", "equipment", "tile", "item-group", "item-subgroup")
+NAME_CLASSES = ("item", "fluid", "recipe", "technology", "entity", "equipment", "tile", "item-group", "item-subgroup",
+                "autoplace-control")
 
 
 def locale_keys():
@@ -1229,7 +1230,7 @@ def check_placeable(sec):
 
 def check_names(sec):
     """Issue #230: every prototype this mod creates that a player can see (item, fluid, recipe, technology, entity,
-    equipment, tile, item group and subgroup; section NAMES of checkmod/control.lua: the runtime prototypes, so the name
+    equipment, tile, item group and subgroup, issue #529: autoplace control; section NAMES of checkmod/control.lua: the runtime prototypes, so the name
     is the one the engine resolves from the final data stage) must have a name: every key of its localised name must be
     in a locale file. The engine names a recipe after its product only when the recipe has the product's name;
     any other recipe shows `recipe-name.<recipe>`, with a main product or not (prototypes/fork-locale.lua gives
@@ -2136,6 +2137,10 @@ def migrate(a):
     print(f"old save with researched technologies (issue #91): {setup.group(1) if setup else 'no result'}")
     setup = re.search(r"DEVCHECK-MIGRATE-SETUP-REMOVED (.*)", log)
     print(f"old save with removed fluids and items (issues #98, #96): {setup.group(1) if setup else 'no result'}")
+    setup = re.search(r"DEVCHECK-MIGRATE-SETUP-PLANETS (.*)", log)
+    print(f"old save with surfaces of the Space Age planets (issue #529): {setup.group(1) if setup else 'no result'}")
+    setup = re.search(r"DEVCHECK-MIGRATE-SETUP-VEINGRID (.*)", log)
+    print(f"old save with the size of gt-ore-veins at 1.5 (issue #529): {setup.group(1) if setup else 'no result'}")
     # issue #209: a save from before me-network 0.5.0 goes through the intermediate load first (--direct: not)
     save_me = save_me_network(old, old_me)
     step_log = ""
@@ -2178,6 +2183,10 @@ def migrate(a):
     print(f"technology effects of the old save (issue #91): {techs.group(1) if techs else 'no result'}")
     removed = re.search(r"DEVCHECK-MIGRATE-REMOVED (.*)", log)
     print(f"removed fluids and items of the old save (issues #98, #96): {removed.group(1) if removed else 'no result'}")
+    planets = re.search(r"DEVCHECK-MIGRATE-PLANETS (.*)", log)
+    print(f"surfaces of the deleted Space Age planets (issue #529): {planets.group(1) if planets else 'no result'}")
+    veingrid = re.search(r"DEVCHECK-MIGRATE-VEINGRID (.*)", log)
+    print(f"vein controls of the old save (issue #529): {veingrid.group(1) if veingrid else 'no result'}")
     # issue #83: the fingerprints of what gregtorio-continued gave and what me-network got must be equal (issue #209:
     # the hand-over and the conversions of me-network 0.5.0 happen in the intermediate load)
     both = step_log + log
@@ -2197,7 +2206,7 @@ def migrate(a):
         and patterns and not patterns.group(1).startswith("failed") and job and not job.group(1).startswith("failed") \
         and items and not items.group(1).startswith("failed") and handover_ok \
         and techs and not techs.group(1).startswith("failed") \
-        and removed and not removed.group(1).startswith("failed")
+        and removed and not removed.group(1).startswith("failed")         and planets and not planets.group(1).startswith("failed")         and veingrid and not veingrid.group(1).startswith("failed")
     return 0 if ok else 1
 
 

@@ -23,11 +23,11 @@ Noise autoplace, one resource `gt-ore-<material>` per ore (category `gt-ore`, mi
 
 | Setting | Value | Noise expression |
 |---|---|---|
-| cell size | 128 tiles / sqrt(frequency), at least 88 x size | `gt_cell_base`, `gt_cell_size` |
-| empty cells | 25 % | `gt_empty_share` |
-| vein radius | 8 + 0..1 x GT's size tiles (x size slider) | `gt_vein_r` |
+| cell size | 128 tiles / sqrt(grid frequency), at least 88 x the largest vein size of the planet | `gt_cell_base`, `gt_cell_size`, `gt_size_max` |
+| cells with a vein | 75 % x grid size (at most all) | `gt_empty_share`, `gt_fill_share` |
+| vein radius | 8 + 0..1 x GT's size tiles, x the vein's size slider | `gt_vein_r`, `gt_vein_scale` |
 | fill | GT's chance x 3 | `gt_fill` |
-| ore per tile | 1000 x richness slider | `gt_ore_amount`, `gt_ore_richness` |
+| ore per tile | 1000 x grid richness x the vein's richness | `gt_ore_amount`, `gt_ore_richness`, `gt_vein_rich` |
 
 - Each cell's values come from `voronoi_cell_id` at the cell (jitter 0, seeded by the map); a tile's roll from a voronoi
   cell per tile (`random_penalty` is not position-deterministic, #495).
@@ -39,7 +39,29 @@ Noise autoplace, one resource `gt-ore-<material>` per ore (category `gt-ore`, mi
   chunks from the centre as GT's.
 - `gt_vein_key = 8 x vein id + layer`; a tile holds one ore at most. An ore left out gives its layer to the neighbouring
   layer's ore.
-- The autoplace control `gt-ore-veins` (frequency, size, richness); the vanilla resource controls are deleted.
+- The vanilla resource controls are deleted, the Space Age planets' hidden (#508, #529).
+
+## The map generator's controls (#529)
+
+The Resources tab lists the grid control first, then one control per vein, `gt-vein-<GT's mix name>` (32: Nauvis 21,
+the Nether 11, the Twilight Forest 15, The End 7, a vein on several surfaces once), named as the vein's chart tag with
+its primary ore's icon, by surface and then by GT's weight. A vein's control is listed on the planets that place it.
+
+| Control | Frequency | Size | Richness |
+|---|---|---|---|
+| `gt-ore-veins` "GT New Horizons vein grid" (every surface) | cell size: 128 / sqrt(frequency) | share of cells with a vein: 75 % x size | ore per tile of every vein |
+| `gt-vein-<name>` | its weight in the pick (GT's weight x frequency) | magnifies it: radius x size, about size² the ore tiles; the cells of its planet keep room for it (88 x size) | its ore per tile |
+
+Decisions (the maintainer's, 2026-10-23):
+- The grid stays one control and keeps the name `gt-ore-veins` (not the map settings or a startup setting): it is per map,
+  visible, and old saves keep their cells. Its size slider means coverage, as vanilla's.
+- A vein whose checkbox is off (size or frequency 0) has weight 0: the other veins fill its cells, as GTNH leaves a
+  disabled vein out of its weighted list; the share of empty cells stays.
+- The four start veins of Nauvis ignore their frequency and take size and richness. A start vein that is off is not
+  placed; its start cell takes a vein by the normal pick (or stays empty at the empty share).
+- A size above 1.45 on one vein makes every cell of its planet larger (the cell keeps room for the largest vein), so the
+  planet has fewer veins.
+- Turning the grid control off removes every GT vein: the ores' autoplace names it.
 - `scripts/fork-ore-veins.lua` tags a vein with GT's name when the chunk of its centre is charted.
 
 ## Surfaces
@@ -52,7 +74,8 @@ Noise autoplace, one resource `gt-ore-<material>` per ore (category `gt-ore`, mi
 | The End | `gt-end` | End Portal (12 Eyes of Ender), Reach the End | HV | 7 | islands of end stone in the void, permanent night |
 
 The planets are Space Age planets without a space connection; `scripts/fork-portals.lua` makes a surface at its first
-portal. Recipes of one dimension carry `surface_conditions` on `gt-dimension` (nether air, glowstone, ender air, end stone;
+portal. Space Age's own planets are deleted (#529, `data-final-fixes.lua`); the Nether keeps Vulcanus' terrain, and the
+controls of Vulcanus' resources stay hidden because its lava reads their sliders. Recipes of one dimension carry `surface_conditions` on `gt-dimension` (nether air, glowstone, ender air, end stone;
 the water drilling rig on Nauvis only). devcheck counts an ore placed only on a planet behind its reach technology as
 obtainable from that technology on (`planet-mining:<resource>`).
 
@@ -78,3 +101,6 @@ Forest's small ores and amber vein, the Copper Tin vein (realgar) and the glowst
   surface becomes its drill, names of missing noise expressions are dropped from the map settings.
 - #505: the deleted vein recipes become a placeholder of their planet (`removed-vein-<planet>-<kind>`, JSON); on that
   planet the mine becomes its drill, elsewhere it loses the recipe and a message names it.
+- #529: the surfaces get the veins' controls at their defaults (`migrations/2026-10-23-issue-529-vein-controls.lua`); a
+  save whose `gt-ore-veins` size is not 1 gets that size on every vein and 1 on the grid, so its cells and veins stay.
+  A surface of a deleted Space Age planet is deleted by the engine on load.

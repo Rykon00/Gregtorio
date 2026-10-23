@@ -61,9 +61,10 @@ FORK_ORE_MIX_NO_CHAIN = {
 ---   * gt_vein_key = 8 x vein id + layer (1 primary, 2 secondary, 3 between, 4 sporadic); a resource's probability is the
 ---     sum of (gt_vein_key == k) over its keys, so a tile holds one ore at most; an ore left out (FORK_ORE_MIX_SKIPPED)
 ---     gives its layer to the neighbouring layer's ore (#494 decision 4);
----   * the sliders of the autoplace control gt-ore-veins: frequency shrinks the cells (128 / sqrt(frequency)), size
----     scales the veins (the cells grow with them), richness the ore per tile; gt_empty_share, gt_fill and gt_ore_amount
----     are named constants a map's property_expression_names can override;
+---   * issue #529: one autoplace control per vein (below) and the grid control gt-ore-veins: its frequency shrinks the
+---     cells (128 / sqrt(frequency)), its size sets the share of cells with a vein, its richness the ore per tile of
+---     every vein; gt_empty_share, gt_fill and gt_ore_amount are named constants a map's property_expression_names can
+---     override;
 ---   * gt_vein_id is each planet's own expression (property_expression_names, gt-vein-id-<DimNames>); on Nauvis the four
 ---     cells around the origin hold the Coal, Iron, Copper and Cassiterite veins (their order by the map seed, at least
 ---     half GT's size);
@@ -192,9 +193,23 @@ end
 
 local ROLES = { "primary", "secondary", "between", "sporadic" }
 local NEIGHBOUR = { primary = "between", secondary = "between", between = "secondary" }
-local CONTROL = "gt-ore-veins"
-local FREQ, SIZE, RICH = "var('control:" .. CONTROL .. ":frequency')", "var('control:" .. CONTROL .. ":size')",
-	"var('control:" .. CONTROL .. ":richness')"
+--------------------------------------------------------------------------------
+--- Issue #529 (the maintainer's request and decisions of 2026-10-23): one autoplace control per vein a planet places,
+--- gt-vein-<GT's mix name>, named as its chart tag with the primary ore's icon ([autoplace-control-names]), listed on the
+--- planets that place the vein, ordered by surface and then by GT's weight. Per vein:
+---   * frequency multiplies its weight in its planet's pick; with its checkbox off (frequency or size 0) its weight is 0
+---     and the other veins fill its cells, as GTNH leaves a disabled vein out of its weighted list;
+---   * size magnifies it (its radius, the fall of its density and GT's chance of a tile); the cells keep room for the
+---     largest vein (88 tiles x the largest size), so a vein above size 1.45 makes every cell of its planet larger;
+---   * richness scales its ore per tile, on top of the grid control's richness.
+--- The four start veins of Nauvis ignore their frequency and take size and richness; a start vein that is off leaves its
+--- cell to the normal pick. The grid control keeps the name gt-ore-veins, so old saves keep their cells (a save whose
+--- old size slider is not 1 gets it on every vein: migrations/2026-10-23-issue-529-vein-controls.lua).
+--------------------------------------------------------------------------------
+local GRID = "gt-ore-veins"
+local function slider(control, name) return "var('control:" .. control .. ":" .. name .. "')" end
+local FREQ, SIZE, RICH = slider(GRID, "frequency"), slider(GRID, "size"), slider(GRID, "richness")
+local function vein_control(m) return "gt-vein-" .. m.name end
 
 local by_name, planet_veins, used = {}, {}, {}
 for _, m in ipairs(FORK_ORE_MIXES.mixes) do by_name[m.name] = m end
@@ -249,8 +264,10 @@ local E = {
 	gt_empty_share = "0.25",
 	gt_fill = "3",
 	gt_ore_amount = "1000",
-	--- a vein is 8 + 0..32 tiles in radius at size 1: the cell keeps room for the largest one
-	gt_cell_size = "max(gt_cell_base / pow(" .. FREQ .. ", 0.5), 88 * " .. SIZE .. ")",
+	--- a vein is 8 + 0..32 tiles in radius at size 1: the cell keeps room for the largest one (issue #529: of the largest
+	--- size slider of the planet's veins, gt_size_max, which each planet sets)
+	gt_size_max = "1",
+	gt_cell_size = "max(gt_cell_base / pow(" .. FREQ .. ", 0.5), 88 * gt_size_max)",
 	gt_cell_x = "floor(x / gt_cell_size)",
 	gt_cell_y = "floor(y / gt_cell_size)",
 	gt_u_pick = cell_value(1),
@@ -268,7 +285,12 @@ local E = {
 		.. "distance_type = 'euclidean', jitter = 0} * 3.999)",
 	gt_vein_size = sum(used_ids, function(id) return "(gt_vein_id == " .. id .. ") * " .. used[id].size end),
 	gt_vein_density = sum(used_ids, function(id) return "(gt_vein_id == " .. id .. ") * " .. used[id].density end),
-	gt_vein_r = "(8 + if(gt_vein_start > 0, 0.5 + 0.5 * gt_u_radius, gt_u_radius) * gt_vein_size) * " .. SIZE,
+	--- issue #529: the vein's own size and richness sliders
+	gt_vein_scale = sum(used_ids, function(id) return "(gt_vein_id == " .. id .. ") * " .. slider(vein_control(used[id]), "size") end),
+	gt_vein_rich = sum(used_ids, function(id) return "(gt_vein_id == " .. id .. ") * " .. slider(vein_control(used[id]), "richness") end),
+	--- the share of the cells that hold a vein: the grid control's size (1: three in four)
+	gt_fill_share = "clamp((1 - gt_empty_share) * " .. SIZE .. ", 0, 1)",
+	gt_vein_r = "(8 + if(gt_vein_start > 0, 0.5 + 0.5 * gt_u_radius, gt_u_radius) * gt_vein_size) * gt_vein_scale",
 	gt_vein_free = "max(0, gt_cell_size / 2 - gt_vein_r - 2)",
 	gt_vein_cx = "(gt_cell_x + 0.5) * gt_cell_size + (gt_u_ox * 2 - 1) * gt_vein_free",
 	gt_vein_cy = "(gt_cell_y + 0.5) * gt_cell_size + (gt_u_oy * 2 - 1) * gt_vein_free",
@@ -278,10 +300,11 @@ local E = {
 	gt_t = "gt_dx * sin(gt_u_angle * pi + pi / 2) + gt_dy * sin(gt_u_angle * pi)",
 	gt_band = "clamp(floor((gt_t + gt_vein_r) / (2 * gt_vein_r) * 9), 0, 8) + 1",
 	--- GT: localDensity = density / floor(sqrt(2 + chunks from the seed ^ 2)), chance = max(1, far-edge distance /
-	--- localDensity) per axis, a tile takes the layer's ore at 1 / chance of either axis
-	gt_dens_local = "max(1, floor(gt_vein_density / floor(pow(2 + pow(gt_d / (16 * " .. SIZE .. "), 2), 0.5))))",
-	gt_px = "1 / max(1, floor((gt_vein_r + abs(gt_dx)) / gt_dens_local))",
-	gt_py = "1 / max(1, floor((gt_vein_r + abs(gt_dy)) / gt_dens_local))",
+	--- localDensity) per axis, a tile takes the layer's ore at 1 / chance of either axis; issue #529: a vein's size slider
+	--- magnifies it as a whole (the distances divided by gt_vein_scale), so a vein at size 2 has four times the ore tiles
+	gt_dens_local = "max(1, floor(gt_vein_density / floor(pow(2 + pow(gt_d / (16 * max(gt_vein_scale, 0.01)), 2), 0.5))))",
+	gt_px = "1 / max(1, floor((gt_vein_r + abs(gt_dx)) / (gt_dens_local * max(gt_vein_scale, 0.01))))",
+	gt_py = "1 / max(1, floor((gt_vein_r + abs(gt_dy)) / (gt_dens_local * max(gt_vein_scale, 0.01))))",
 	gt_p = "min(1, gt_fill * (1 - (1 - gt_px) * (1 - gt_py)))",
 	gt_u_tile = "voronoi_cell_id{x = x + 0.25, y = y + 0.25, seed0 = map_seed, seed1 = 7, grid_size = 1, "
 		.. "distance_type = 'euclidean', jitter = 0}",
@@ -293,40 +316,68 @@ local E = {
 		.. "if(gt_u_tile < gt_p + (1 - gt_p) * gt_p / 7, 4, 0)))",
 	gt_role = "gt_role_raw * (gt_d < gt_vein_r) * (gt_vein_id > 0)",
 	gt_vein_key = "gt_vein_id * 8 + gt_role",
-	gt_ore_richness = "gt_ore_amount * " .. RICH,
+	gt_ore_richness = "gt_ore_amount * " .. RICH .. " * gt_vein_rich",
 }
+--- issue #529: a vein's weight in the pick (GT's weight x its frequency, 0 with its checkbox off) and whether it is on
+for _, id in ipairs(used_ids) do
+	local c = vein_control(used[id])
+	E["gt_vein_weight_" .. id] = used[id].weight .. " * " .. slider(c, "frequency") .. " * (" .. slider(c, "size") .. " > 0)"
+	E["gt_vein_on_" .. id] = "(" .. slider(c, "frequency") .. " > 0) * (" .. slider(c, "size") .. " > 0)"
+end
 
---- each planet's vein: the start cells (Nauvis), else the pick by GT's weights and the empty share
+--- each planet's vein: the start cells (Nauvis), else the pick by the veins' weights (issue #529: x their frequency) and
+--- the share of cells with a vein; the largest size slider of its veins (gt-size-max-<DimNames>)
 for dim, list in pairs(planet_veins) do
-	local total, acc, parts = 0, 0, {}
-	for _, m in ipairs(list) do total = total + m.weight end
+	local weights, parts, sizes = {}, {}, {}
 	for _, m in ipairs(list) do
-		acc = acc + m.weight
-		parts[#parts + 1] = { acc, m.id }
+		weights[#weights + 1] = "gt_vein_weight_" .. m.id
+		parts[#parts + 1] = { table.concat(weights, " + "), m.id }
+		sizes[#sizes + 1] = slider(vein_control(m), "size")
 	end
 	local pick = "0"
 	for i = #parts, 1, -1 do
-		pick = "if(gt_u_pick * " .. total .. " / (1 - gt_empty_share) < " .. parts[i][1] .. ", " .. parts[i][2] .. ", " .. pick .. ")"
+		pick = "if(gt_u_pick * gt_vein_total_" .. dim .. " / gt_fill_share < " .. parts[i][1] .. ", " .. parts[i][2] .. ", "
+			.. pick .. ")"
 	end
+	E["gt_vein_total_" .. dim] = table.concat(weights, " + ")
+	E["gt_vein_pick_" .. dim] = pick
+	local size_max = sizes[1]
+	for i = 2, #sizes do size_max = "max(" .. size_max .. ", " .. sizes[i] .. ")" end
+	E["gt-size-max-" .. dim] = size_max
 	if dim == "OW" then
-		local start = {}
+		--- the start vein of a start cell, and whether it is on
+		local start, on = {}, {}
 		for j, n in ipairs(FORK_ORE_VEINS.start) do
-			start[#start + 1] = "((gt_start_index + gt_start_turn - 1) % 4 == " .. (j - 1) .. ") * " .. by_name[n].id
+			local here = "((gt_start_index + gt_start_turn - 1) % 4 == " .. (j - 1) .. ")"
+			start[#start + 1] = here .. " * " .. by_name[n].id
+			on[#on + 1] = here .. " * gt_vein_on_" .. by_name[n].id
 		end
-		E["gt-vein-id-" .. dim] = "if(gt_start_index > 0, " .. table.concat(start, " + ") .. ", " .. pick .. ")"
-		E["gt-vein-start-" .. dim] = "gt_start_index"
+		E.gt_start_on = "(gt_start_index > 0) * (" .. table.concat(on, " + ") .. ")"
+		E["gt-vein-id-" .. dim] = "if(gt_start_on > 0, " .. table.concat(start, " + ") .. ", gt_vein_pick_" .. dim .. ")"
+		E["gt-vein-start-" .. dim] = "gt_start_index * gt_start_on"
 	elseif dim == "THE_END" then
-		E["gt-vein-id-" .. dim] = "(" .. pick .. ") * gt_end_land"   -- the veins on the islands only
+		E["gt-vein-id-" .. dim] = "gt_vein_pick_" .. dim .. " * gt_end_land"   -- the veins on the islands only
 	else
-		E["gt-vein-id-" .. dim] = pick
+		E["gt-vein-id-" .. dim] = "gt_vein_pick_" .. dim
 	end
 end
 for name, expr in pairs(E) do data:extend({ { type = "noise-expression", name = name, expression = expr } }) end
 
 data:extend({
 	{ type = "resource-category", name = "gt-ore" },
-	{ type = "autoplace-control", name = CONTROL, category = "resource", richness = true, order = "a-a" },
+	{ type = "autoplace-control", name = GRID, category = "resource", richness = true, order = "a-a" },
 })
+--- issue #529: the veins' controls, by surface and then by GT's weight (the first surface of a vein on several)
+for _, id in ipairs(used_ids) do
+	local m, first = used[id], 9
+	for dim, planet in pairs(FORK_ORE_VEINS.planets) do
+		for _, v in ipairs(planet_veins[dim]) do
+			if v.id == id then first = math.min(first, FORK_ORE_MIX_SURFACES[dim] or 9) end
+		end
+	end
+	data:extend({ { type = "autoplace-control", name = vein_control(m), category = "resource", richness = true,
+		order = string.format("b-%d-%04d-%s", first, 9999 - m.weight, m.name) } })
+end
 --- every ore can be mined by hand (#494 decision 8)
 for _, c in pairs(data.raw.character) do
 	c.mining_categories = c.mining_categories or { "basic-solid" }
@@ -348,7 +399,7 @@ for _, x in ipairs(ores) do
 	r.category = "gt-ore"
 	r.order = "g-" .. x
 	r.minable = { mining_time = 2, result = "raw-" .. x }   -- slower than vanilla ore by hand (1)
-	r.autoplace = { control = CONTROL, order = "g-" .. x, probability_expression = table.concat(terms, " + "),
+	r.autoplace = { control = GRID, order = "g-" .. x, probability_expression = table.concat(terms, " + "),
 		richness_expression = "gt_ore_richness" }
 	r.stage_counts = { 1000, 750, 500, 300, 150, 75, 30, 1 }
 	r.stages.sheet.tint = color
@@ -359,14 +410,16 @@ for _, x in ipairs(ores) do
 	FORK_ORE_VEINS.resources[x] = r.name
 end
 
---- the planets: the control, their resources and their vein expressions
+--- the planets: the controls (the grid's and their veins'), their resources and their vein expressions
 for dim, planet in pairs(FORK_ORE_VEINS.planets) do
 	local mgs = data.raw.planet[planet].map_gen_settings
-	mgs.autoplace_controls[CONTROL] = {}
+	mgs.autoplace_controls[GRID] = {}
 	mgs.property_expression_names = mgs.property_expression_names or {}
 	mgs.property_expression_names.gt_vein_id = "gt-vein-id-" .. dim
+	mgs.property_expression_names.gt_size_max = "gt-size-max-" .. dim
 	if E["gt-vein-start-" .. dim] then mgs.property_expression_names.gt_vein_start = "gt-vein-start-" .. dim end
 	for _, m in ipairs(planet_veins[dim]) do
+		mgs.autoplace_controls[vein_control(m)] = {}
 		for _, role in ipairs(ROLES) do
 			local x = ore_of(m, role)
 			if x then mgs.autoplace_settings.entity.settings["gt-ore-" .. x] = {} end
@@ -384,7 +437,7 @@ for _, id in ipairs(used_ids) do
 		if x and not seen[x] then seen[x] = true; res[#res + 1] = "gt-ore-" .. x end
 	end
 	labels[tostring(id)] = { text = used[id].label .. " Vein", icon = "raw-" .. (ore_of(used[id], "primary") or used[id].primary),
-		resources = res }
+		resources = res, control = vein_control(used[id]) }
 end
 local planets = {}
 for dim, planet in pairs(FORK_ORE_VEINS.planets) do

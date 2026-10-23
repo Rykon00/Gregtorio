@@ -245,7 +245,14 @@
     and per tile, GT's nine layers as bands, `gt_vein_key` = 8 x vein id + layer, one resource `gt-ore-<material>` per ore,
     category `gt-ore`, whose probability sums its keys, so a tile holds one ore at most; each planet sets `gt_vein_id` to
     its own `gt-vein-id-<DimNames>` through `property_expression_names`; `FORK_ORE_VEINS.planets` lists the planets with
-    veins; the autoplace control `gt-ore-veins`; the start veins in the four cells around the origin; mod data
+    veins; the autoplace control `gt-ore-veins` (issue #529: the grid: frequency the cell size, size the share of cells
+    with a vein, richness every vein's ore; plus one control `gt-vein-<mix name>` per placed vein on the planets that place
+    it, named in `[autoplace-control-names]` with the primary ore's icon, ordered by surface and GT's weight: frequency x
+    its weight in the pick `gt_vein_pick_<DimNames>` (off = weight 0, the other veins fill its cells), size magnifies it
+    (`gt_vein_scale`; the cells keep room for the planet's largest, `gt-size-max-<DimNames>`), richness its ore; a start
+    vein ignores frequency, one that is off leaves its cell to the pick; old saves get the controls from
+    `migrations/2026-10-23-issue-529-vein-controls.lua`, an old grid size moves onto every vein; devcheck's names check
+    covers autoplace controls); the start veins in the four cells around the origin; mod data
     `fork-ore-veins` for the chart tags of `scripts/fork-ore-veins.lua` and devcheck's map vein test; issue #508:
     `data-final-fixes.lua` deletes every resource autoplace control no planet and no prototype uses, and its preset
     entries, so the map generator lists only what makes ore; issue #500: the Lua migration
@@ -256,7 +263,8 @@
     warning whenever `calculate_tile_properties` compiles the noise program; the tags read each cell once,
     `storage.fork_ore_veins.cells`); issue #501: the Nether is a surface: the surface property `gt-dimension` (1
     Overworld, 2 Nether, 3 Twilight Forest, 4 End), the hidden planet `gt-nether` (Vulcanus' terrain without its
-    resources: volcanic rock for netherrack, lava lakes, no water), its 11 veins; 163's `FORK_ORE_VEINS.planets` and
+    resources: volcanic rock for netherrack, lava lakes, no water; issue #529 deletes Vulcanus in data-final-fixes.lua
+    and keeps the controls its terrain reads, hidden), its 11 veins; 163's `FORK_ORE_VEINS.planets` and
     `.techs` (planet -> its reach technology) also hide the vein recipes of the Nether's ores; devcheck counts a resource
     that only a reached planet places (checkmod `P` rows) as obtainable with that technology only (pseudo recipes
     `planet-mining:<resource>`), so #252's tree rule sees the Nether; issue #502: the Twilight Forest, the hidden planet
@@ -318,6 +326,17 @@
   allow-list `FORK_VANILLA_RECIPES_KEPT` with its reason. Issue #323 added every other vanilla recipe without a
   technology (`VANILLA_RECIPES_UNUSED`, by group); the nested tips-and-tricks triggers lose the branches that need a
   deleted recipe (`FORK-TIP` in the log), and machines lose a deleted fixed recipe (captive biter spawner, rocket silo).
+  Issue #529 (its section "SPACE AGE PLANETS AND SPACE PLATFORMS" after #323's):
+  the Space Age planets and space locations (`REMOVED_LOCATIONS`), their space connections, the planet discovery and space
+  platform technologies (`REMOVED_TECHS`, the maintainer's decision: Gregtorio has no space platforms) and the platform
+  starter pack are deleted with every reference a load fails on (achievements, ambient sounds, tips and the tips that
+  depend on them, main menu simulations on a deleted planet, Factoriopedia simulations, import locations, prerequisites);
+  165 copies Vulcanus' terrain for the Nether before. #508's control rule (after the map presets) deletes every autoplace
+  control no planet lists, unless a noise expression or an autoplace reads its sliders (`control:<name>:size`): such a
+  control stays with `hidden = true`, because a surface keeps its map generation in the save and the load compiles its
+  noise (the Nether's copy of Vulcanus' lava reads the coal, tungsten and geyser controls; without them the load fails
+  with "Unknown variable"; a noise expression cannot stand in, prototype names take no colon). The engine deletes a
+  surface of a deleted planet when an old save loads (`devcheck.py migrate`: DEVCHECK-MIGRATE-PLANETS).
 - Names (issue #230): the engine names a recipe after its product only when the recipe has the product's name; every
   other recipe shows `recipe-name.<recipe>`, a main product does not change that. `prototypes/fork-locale.lua` (required
   first from `data.lua`, `FORK_LOCALE.name_recipes()` at the end of `data-final-fixes.lua`) gives every Gregtorio recipe

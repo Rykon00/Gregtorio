@@ -72,6 +72,10 @@ local function names_rows()
 	for _, g in pairs(prototypes.item_subgroup) do
 		row("item-subgroup", g, in_subgroup[g.name] and "has a shown prototype" or nil)
 	end
+	--- issue #529: the map generator's controls
+	for _, p in pairs(prototypes.autoplace_control) do
+		row("autoplace-control", p, not get(p, "hidden") and "in the map generator" or nil)
+	end
 	for _, g in pairs(prototypes.item_group) do
 		local shown
 		for _, sg in pairs(g.subgroups) do if in_subgroup[sg.name] then shown = "has a shown prototype" end end

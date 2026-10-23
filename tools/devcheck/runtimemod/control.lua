@@ -1359,6 +1359,103 @@ local function check_planet_veins(d, planet, vt)
 		tiles, #got > 0 and (", start veins " .. table.concat(got, ",")) or ""), size
 end
 
+--- Issue #529: the veins' own controls. Two surfaces with Nauvis' map generation and the test's seed: the default one and
+--- one with the Coal Vein off (size 0, as the map generator's checkbox) and the Iron Vein at size 2, both start veins.
+--- The noise counts the cells of each vein in VC_CELLS x VC_CELLS cells around the origin, and the chunks of a fixed square
+--- (VC_AREA tiles around the origin) are generated to count the ore tiles of each vein (its vein by gt_vein_id there):
+--- the vein that is off has no cell and no tile, its start cell holds another vein or none, the other veins fill its
+--- cells (the share of cells with a vein stays), the vein at size 2 has twice the mean radius, its start vein more ore
+--- tiles at the same coverage (ore tiles per pi r^2 of its start cell: a magnified copy), and the cells keep room for it
+--- (88 x 2 tiles).
+local VC_CELLS, VC_AREA, VC_OFF, VC_BIG = 60, 192, "Coal", "Iron"
+local function vein_counts(s, off_id, big_id)
+	local size = s.calculate_tile_properties({ "gt_cell_size" }, { { 0, 0 } }).gt_cell_size[1]
+	local pos = {}
+	for cy = -VC_CELLS / 2, VC_CELLS / 2 - 1 do
+		for cx = -VC_CELLS / 2, VC_CELLS / 2 - 1 do pos[#pos + 1] = { x = (cx + 0.5) * size, y = (cy + 0.5) * size } end
+	end
+	local p = s.calculate_tile_properties({ "gt_vein_id", "gt_vein_r" }, pos)
+	local c = { size = size, with = 0, off = 0, big = 0, big_r = 0, tiles = 0, off_tiles = 0, big_tiles = 0 }
+	for i in ipairs(pos) do
+		local id = math.floor(p.gt_vein_id[i] + 0.5)
+		if id > 0 then c.with = c.with + 1 end
+		if id == off_id then c.off = c.off + 1 end
+		if id == big_id then c.big = c.big + 1; c.big_r = c.big_r + p.gt_vein_r[i] end
+	end
+	c.big_r = c.big_r / math.max(c.big, 1)
+	s.request_to_generate_chunks({ 0, 0 }, math.ceil(VC_AREA / 32))
+	s.force_generate_chunk_requests()
+	local ores = s.find_entities_filtered{ type = "resource", area = { { -VC_AREA, -VC_AREA }, { VC_AREA, VC_AREA } } }
+	local at = {}
+	for i, e in ipairs(ores) do at[i] = e.position end
+	local ids = #at > 0 and s.calculate_tile_properties({ "gt_vein_id" }, at).gt_vein_id or {}
+	for i in ipairs(at) do
+		local id = math.floor(ids[i] + 0.5)
+		c.tiles = c.tiles + 1
+		if id == off_id then c.off_tiles = c.off_tiles + 1 end
+		--- the big vein's start vein: its tiles in the four start cells
+		if id == big_id and math.abs(at[i].x) < size and math.abs(at[i].y) < size then c.big_tiles = c.big_tiles + 1 end
+	end
+	local h = size / 2
+	local q = s.calculate_tile_properties({ "gt_vein_id", "gt_vein_r" }, { { -h, -h }, { h, -h }, { -h, h }, { h, h } })
+	c.start, c.big_start_r = {}, 0
+	for i, v in pairs(q.gt_vein_id) do
+		c.start[#c.start + 1] = math.floor(v + 0.5)
+		if c.start[#c.start] == big_id then c.big_start_r = q.gt_vein_r[i] end
+	end
+	c.cover = c.big_tiles / math.max(math.pi * c.big_start_r * c.big_start_r, 1)
+	return c
+end
+
+local function check_vein_controls(d, vt)
+	local off_id, big_id
+	for id, v in pairs(d.veins) do
+		if v.control == "gt-vein-" .. VC_OFF then off_id = tonumber(id) end
+		if v.control == "gt-vein-" .. VC_BIG then big_id = tonumber(id) end
+	end
+	if not (off_id and big_id) then
+		vt.problems[#vt.problems + 1] = "controls: no vein with the control gt-vein-" .. VC_OFF .. " or gt-vein-" .. VC_BIG
+		return ""
+	end
+	local function surface(name, controls)
+		local mgs = prototypes.space_location.nauvis.map_gen_settings
+		mgs.seed = VT_SEED
+		for k, v in pairs(controls) do mgs.autoplace_controls[k] = v end
+		return game.create_surface(name, mgs)
+	end
+	local sd = surface("devcheck-controls-default", {})
+	local sm = surface("devcheck-controls-set", { ["gt-vein-" .. VC_OFF] = { frequency = 1, size = 0, richness = 1 },
+		["gt-vein-" .. VC_BIG] = { frequency = 1, size = 2, richness = 1 } })
+	local a, b = vein_counts(sd, off_id, big_id), vein_counts(sm, off_id, big_id)
+	game.delete_surface(sd)
+	game.delete_surface(sm)
+	local n = VC_CELLS * VC_CELLS
+	local function expect(ok, what) if not ok then vt.problems[#vt.problems + 1] = "controls: " .. what end end
+	expect(a.off > 0 and a.off_tiles > 0, VC_OFF .. " has no cell or tile on the default map")
+	expect(b.off == 0 and b.off_tiles == 0, string.format("%s is off but has %d cells and %d ore tiles", VC_OFF, b.off, b.off_tiles))
+	expect(math.abs(b.with / n - a.with / n) < 0.03, string.format("%d of %d cells with a vein, %d on the default map: the other "
+		.. "veins do not fill the cells of %s", b.with, n, a.with, VC_OFF))
+	local ratio = b.big_r / math.max(a.big_r, 1)
+	expect(ratio > 1.7 and ratio < 2.3, string.format("%s at size 2 has %.2f times the mean radius", VC_BIG, ratio))
+	expect(b.big_tiles > a.big_tiles and b.cover / math.max(a.cover, 1e-6) > 0.75 and b.cover / math.max(a.cover, 1e-6) < 1.33,
+		string.format("%s at size 2: its start vein (radius %.1f) has %d ore tiles, %.2f per tile of its area; on the default map "
+		.. "(radius %.1f) %d, %.2f", VC_BIG, b.big_start_r, b.big_tiles, b.cover, a.big_start_r, a.big_tiles, a.cover))
+	expect(math.abs(a.size - 128) < 1e-6 and math.abs(b.size - 176) < 1e-6, string.format("cells of %.0f and %.0f tiles, not 128 "
+		.. "and 176", a.size, b.size))
+	local start_big, start_off = false, false
+	for _, id in pairs(b.start) do
+		if id == big_id then start_big = true end
+		if id == off_id then start_off = true end
+	end
+	expect(start_big and not start_off, "the start cells hold " .. table.concat(b.start, ",") .. " with " .. VC_OFF .. " off and "
+		.. VC_BIG .. " at size 2")
+	return string.format("; controls: %s off: %d of %d cells (default %d), %d ore tiles in %d x %d tiles (default %d), the start "
+		.. "cells hold veins %s; %s at size 2: %.2f times the mean radius, its start vein radius %.1f with %d ore tiles, %.2f per "
+		.. "tile of its area (default radius %.1f, %d, %.2f); cells of %.0f tiles, %d with a vein (default %d)", VC_OFF, b.off, n, a.off,
+		b.off_tiles, 2 * VC_AREA, 2 * VC_AREA, a.off_tiles, table.concat(b.start, ","), VC_BIG, ratio, b.big_start_r, b.big_tiles,
+		b.cover, a.big_start_r, a.big_tiles, a.cover, b.size, b.with, a.with)
+end
+
 function setup_veins_test()
 	local fails, vt = {}, { problems = {} }
 	storage.veins_test = vt
@@ -1372,7 +1469,7 @@ function setup_veins_test()
 				if planet == "nauvis" then size = sz end
 			end
 		end
-		vt.summary = " (" .. table.concat(parts, "; ") .. ")"
+		vt.summary = " (" .. table.concat(parts, "; ") .. check_vein_controls(d, vt) .. ")"
 		local h = size / 2
 		--- the chart tag (scripts/fork-ore-veins.lua): chart the start veins of Nauvis, the tags are checked at VT_TAG_TICK
 		local n = game.surfaces.nauvis

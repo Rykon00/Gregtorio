@@ -103,6 +103,10 @@ end
 --- Issue #527: an old Manual Mine's recipe that moved to the Dig Site (#499, #526) or that needs another surface (the
 --- glowstone vein, #501) is a placeholder too (migrations/2026-10-23-issue-527-moved-mine-recipes.json, mod data
 --- fork-electric-mine: moved): on its planet the mine gets the recipe back, elsewhere it loses it with a message.
+--- Issue #529 (migrations/2026-10-23-issue-529-vein-controls.lua): 1. also gives the surface the veins' own controls and
+--- the planet's gt_size_max; the size slider of gt-ore-veins scaled every vein before and sets the share of cells with a
+--- vein now, so a save whose old size is not 1 gets it on every vein's control and 1 on the grid's: its cells and veins
+--- stay as they were.
 local function migrate_surface(surface, planet)
 	local profiler = helpers.create_profiler()
 	--- 1. the map generation settings of the planet (a map made with the veins has them: its ores stay as they are)
@@ -111,11 +115,20 @@ local function migrate_surface(surface, planet)
 	local fresh = not (mgs.property_expression_names or {}).gt_vein_id
 	local names = {}
 	mgs.autoplace_controls = mgs.autoplace_controls or {}
+	local grid = mgs.autoplace_controls["gt-ore-veins"]
+	local old_size = grid and tonumber(grid.size)
+	local added = 0
 	for control, v in pairs(proto.autoplace_controls or {}) do
 		if prototypes.autoplace_control[control] and not mgs.autoplace_controls[control] then
+			if old_size and old_size ~= 1 and control:match("^gt%-vein%-") then
+				v = { frequency = 1, size = old_size, richness = 1 }
+			end
 			mgs.autoplace_controls[control] = v
+			added = added + 1
 		end
 	end
+	local resized = old_size and old_size ~= 1 and added > 0
+	if resized then grid.size = 1 end
 	mgs.autoplace_settings = mgs.autoplace_settings or {}
 	mgs.autoplace_settings.entity = mgs.autoplace_settings.entity or { settings = {} }
 	mgs.autoplace_settings.entity.settings = mgs.autoplace_settings.entity.settings or {}
@@ -128,7 +141,10 @@ local function migrate_surface(surface, planet)
 	end
 	mgs.property_expression_names = mgs.property_expression_names or {}
 	for k, v in pairs(proto.property_expression_names or {}) do
-		if k:match("^gt_") then mgs.property_expression_names[k] = v end
+		if k:match("^gt_") then
+			if mgs.property_expression_names[k] ~= v then added = added + 1 end
+			mgs.property_expression_names[k] = v
+		end
 	end
 	--- names of noise expressions that no longer exist (a mod of the map's start removed since): the game ignores them,
 	--- but warns about each one whenever it compiles the surface's noise program, i.e. on every calculate_tile_properties
@@ -144,7 +160,7 @@ local function migrate_surface(surface, planet)
 	for c in surface.get_chunks() do
 		if surface.is_chunk_generated(c) then chunks[#chunks + 1] = { x = c.x, y = c.y } end
 	end
-	if fresh or dropped > 0 then surface.map_gen_settings = mgs end
+	if fresh or dropped > 0 or added > 0 then surface.map_gen_settings = mgs end
 	if fresh and #names > 0 and #chunks > 0 then surface.regenerate_entity(names, chunks) end
 	--- 3. the dimension mines on the Overworld's veins
 	local em = prototypes.mod_data["fork-electric-mine"]
@@ -253,8 +269,9 @@ local function migrate_surface(surface, planet)
 	profiler.stop()
 	log({ "", string.format("FORK-ORE-VEINS: %s: %d chunks regenerated with %d ores, %d mines replaced by drills (%d without ore), "
 		.. "%d without their recipe, %d with their recipe back, %d veins tagged in %d charted chunks, %d names of missing noise "
-		.. "expressions dropped from the map settings; ", surface.name, fresh and #chunks or 0, #names, replaced, #bare, #cleared,
-		restored, tags, charted, dropped), profiler })
+		.. "expressions dropped from the map settings, %d controls and expression names added%s; ", surface.name,
+		fresh and #chunks or 0, #names, replaced, #bare, #cleared, restored, tags, charted, dropped, added,
+		resized and (" (the old size " .. old_size .. " on every vein)") or ""), profiler })
 end
 
 function M.migrate()
