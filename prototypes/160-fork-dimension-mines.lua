@@ -403,7 +403,7 @@ create_recipe{
 	energy_required = 15,
 	subgroup = "subgroup-lv-centrifuge-recipes",
 	ingredients = { item("raw-oilsands", 1) },
-	results = { fluid("heavy-oil", 200), { type = "item", name = "sand", amount = 1, probability = 0.4 } },
+	results = { fluid("heavy-oil", 200), { type = "item", name = "sand", amount = 1, independent_probability = 0.4 } },
 	main_product = "heavy-oil",
 }
 unlock_in("circuit-assembler", { "crushed-quartzite" })
@@ -517,12 +517,12 @@ create_recipe{
 	energy_required = HV_SPEED * 5,
 	ingredients = { item("moon-dust", 1) },
 	results = {
-		{ type = "item", name = "stone-dust", amount = 1, probability = 0.25 },
-		{ type = "item", name = "bauxite-dust", amount = 1, probability = 0.23 },
-		{ type = "item", name = "silicon-dioxide", amount = 1, probability = 0.2 },
-		{ type = "item", name = "quicklime", amount = 1, probability = 0.14 },
-		{ type = "item", name = "molybdenum-dust", amount = 1, probability = 0.1 },
-		{ type = "item", name = "extraterrestrial-metal-mixture", amount = 1, probability = 0.08 },
+		{ type = "item", name = "stone-dust", amount = 1, independent_probability = 0.25 },
+		{ type = "item", name = "bauxite-dust", amount = 1, independent_probability = 0.23 },
+		{ type = "item", name = "silicon-dioxide", amount = 1, independent_probability = 0.2 },
+		{ type = "item", name = "quicklime", amount = 1, independent_probability = 0.14 },
+		{ type = "item", name = "molybdenum-dust", amount = 1, independent_probability = 0.1 },
+		{ type = "item", name = "extraterrestrial-metal-mixture", amount = 1, independent_probability = 0.08 },
 		fluid("deuterium", 10),
 	},
 	main_product = "deuterium",
@@ -533,12 +533,12 @@ create_recipe{
 	energy_required = HV_SPEED * 50,
 	ingredients = { item("extraterrestrial-metal-mixture", 1) },
 	results = {
-		{ type = "item", name = "ilmenite-dust", amount = 1, probability = 0.6 },
-		{ type = "item", name = "chromium-dust", amount = 1, probability = 0.4 },
-		{ type = "item", name = "pyrolusite-dust", amount = 1, probability = 0.35 },
-		{ type = "item", name = "molybdenum-dust", amount = 1, probability = 0.22 },
-		{ type = "item", name = "tungstate-dust", amount = 1, probability = 0.17 },
-		{ type = "item", name = "mysterious-crystal-dust", amount = 1, probability = 0.1 },
+		{ type = "item", name = "ilmenite-dust", amount = 1, independent_probability = 0.6 },
+		{ type = "item", name = "chromium-dust", amount = 1, independent_probability = 0.4 },
+		{ type = "item", name = "pyrolusite-dust", amount = 1, independent_probability = 0.35 },
+		{ type = "item", name = "molybdenum-dust", amount = 1, independent_probability = 0.22 },
+		{ type = "item", name = "tungstate-dust", amount = 1, independent_probability = 0.17 },
+		{ type = "item", name = "mysterious-crystal-dust", amount = 1, independent_probability = 0.1 },
 	},
 	main_product = "mysterious-crystal-dust",
 }
@@ -793,7 +793,7 @@ local VM_TECHS = { "void-miner-i", "void-miner-ii", "void-miner-iii" }
 
 --- an output of the expected amount `e`
 local function expected(name, e)
-	if e < 1 then return { type = "item", name = name, amount = 1, probability = e } end
+	if e < 1 then return { type = "item", name = name, amount = 1, independent_probability = e } end
 	local n = math.floor(e)
 	local r = { type = "item", name = name, amount = n }
 	if e - n > 0.001 then r.extra_count_fraction = e - n end

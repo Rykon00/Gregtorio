@@ -35,7 +35,7 @@ end
 for n, r in pairs(data.raw.recipe) do
 	local sg = recipe_subgroup(r)
 	local g = data.raw["item-subgroup"][sg] and data.raw["item-subgroup"][sg].group or "other"
-	D("R", n, r.category or "crafting", tostring(r.enabled ~= false), names(r.ingredients), names(r.results),
+	D("R", n, table.concat(r.categories or { "crafting" }, ","), tostring(r.enabled ~= false), names(r.ingredients), names(r.results),
 		tostring(r.hidden == true), tostring(r.hide_from_player_crafting == true), sg, g, r.icon or "")
 end
 for _, t in pairs({ "assembling-machine", "furnace", "rocket-silo", "character" }) do
@@ -78,17 +78,17 @@ for pname, planet in pairs(data.raw.planet or {}) do
 	end
 end
 for n, e in pairs(data.raw["offshore-pump"] or {}) do D("O", n, e.fluid or "") end
---- B item burnt_result fuel_category | U entity fuel_categories (burners: a fuel's burnt result comes out of them)
+--- B item burnt_result fuel_categories | U entity fuel_categories (burners: a fuel's burnt result comes out of them)
 for t, _ in pairs(defines.prototypes.item) do
 	for n, it in pairs(data.raw[t] or {}) do
-		if it.burnt_result and it.fuel_category then D("B", n, it.burnt_result, it.fuel_category) end
+		if it.burnt_result and it.fuel_categories then D("B", n, it.burnt_result, table.concat(it.fuel_categories, ",")) end
 	end
 end
 for t, _ in pairs(defines.prototypes.entity) do
 	for n, e in pairs(data.raw[t] or {}) do
 		for _, src in pairs({ e.energy_source, e.burner }) do
 			if type(src) == "table" and src.type == "burner" and (src.burnt_inventory_size or 0) > 0 then
-				D("U", n, table.concat(src.fuel_categories or { src.fuel_category or "chemical" }, ","))
+				D("U", n, table.concat(src.fuel_categories or { "chemical" }, ","))
 			end
 		end
 	end
@@ -145,12 +145,14 @@ local function em_row(name)
 	em_seen[name] = true
 	local fem = FORK_ELECTRIC_MINE or {}
 	local r, twin, miner = data.raw.recipe[name], (fem.twins or {})[name], (fem.miner_twins or {})[name]
-	local manual = r and (r.category == "manual-mine-recipes" or r.category == "manual-digsite-recipes")
+	local cat = r and r.categories and r.categories[1]
+	local manual = cat == "manual-mine-recipes" or cat == "manual-digsite-recipes"
 	em[#em + 1] = table.concat({ name, manual and "manual" or "-", (twin and data.raw.recipe[twin]) and twin or "-",
 		(FORK_ELECTRIC_MINE_EXCLUDED or {})[name] or "", (miner and data.raw.recipe[miner]) and miner or "-" }, "\t")
 end
 for name, r in pairs(data.raw.recipe) do
-	if r.category == "manual-mine-recipes" or r.category == "manual-digsite-recipes" then em_row(name) end
+	local cat = r.categories and r.categories[1]
+	if cat == "manual-mine-recipes" or cat == "manual-digsite-recipes" then em_row(name) end
 end
 for name in pairs(FORK_ELECTRIC_MINE_EXCLUDED or {}) do em_row(name) end
 section("ELECTRICMINE", em)
@@ -319,7 +321,8 @@ local function stacks(list)
 	for _, x in pairs(list or {}) do
 		t[#t + 1] = {
 			name = x.name or x[1], type = x.type or "item", amount = x.amount or x[2],
-			amount_min = x.amount_min, amount_max = x.amount_max, probability = x.probability,
+			amount_min = x.amount_min, amount_max = x.amount_max, probability = x.independent_probability,
+			shared_probability = x.shared_probability,
 			catalyst = x.ignored_by_productivity,
 		}
 	end
@@ -327,7 +330,10 @@ local function stacks(list)
 end
 for n, r in pairs(data.raw.recipe) do
 	bal[#bal + 1] = helpers.table_to_json({
-		kind = "recipe", name = n, category = r.category or "crafting", time = r.energy_required or 0.5,
+		-- (issue #535: `category` is the first of Factorio 2.1's `categories`, the one of a Gregtorio recipe, as 2.0's files
+		-- have it; `categories` all of them)
+		kind = "recipe", name = n, category = (r.categories or { "crafting" })[1], categories = r.categories or { "crafting" },
+		time = r.energy_required or 0.5,
 		enabled = r.enabled ~= false, hidden = r.hidden == true,
 		ingredients = stacks(r.ingredients), results = stacks(r.results),
 	})
@@ -359,3 +365,35 @@ for name, v in pairs(settings.startup) do
 	if name:find("^gregtorio%-continued%-") then st[#st + 1] = name .. "\t" .. tostring(v.value) end
 end
 section("SETTINGS", st)
+
+--- Issue #535 (the port to Factorio 2.1): every key a prototype still carries that Factorio removed (removed-keys.lua,
+--- written by tools/devcheck/removed_keys.py from the API of both versions, as me-network's devcheck does). Factorio 2.1
+--- refuses a few of them with an error (a recipe's `category`, a product's `probability`, an item's `fuel_category`, a
+--- fluid box's temperatures) and ignores the others (a generator's `horizontal_animation`, a crafting machine's
+--- `forced_symmetry`, a fluid box's `hide_connection_info`, ...), which fail silently. One row per key:
+--- <data.raw type>/<name><path>, the key.
+local K = require("removed-keys")
+local found = {}
+local function walk(v, node, path, seen)
+	local spec = K.nodes[node]
+	if type(v) ~= "table" or not spec then return end
+	if spec.tag and type(v.type) == "string" and v.type ~= spec.tag then return end    -- (another option of a union)
+	seen[v] = seen[v] or {}
+	if seen[v][node] then return end
+	seen[v][node] = true
+	for i, x in ipairs(v) do walk(x, node, path .. "[" .. i .. "]", seen) end
+	for k, x in pairs(v) do
+		if type(k) == "string" then
+			if spec.removed[k] then found[#found + 1] = path .. "\t" .. k end
+			for _, n in ipairs(spec.fields[k] or {}) do walk(x, n, path .. "." .. k, seen) end
+		end
+	end
+end
+for t, list in pairs(data.raw) do
+	local node = K.prototypes[t]
+	if node then
+		for n, p in pairs(list) do walk(p, node, t .. "/" .. n, {}) end
+	end
+end
+table.sort(found)
+section("REMOVEDKEYS", found)

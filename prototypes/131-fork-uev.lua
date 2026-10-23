@@ -601,7 +601,7 @@ create_item{
 }
 
 redo("fusion-machine-casing-mk3", {
-	category = "uhv-assembling-machine-recipes",
+	categories = { "uhv-assembling-machine-recipes" },
 	energy_required = 15 * UHV_SPEED,
 	ingredients = {
 		{ type = "item", name = "fusion-machine-casing-mk2", amount = 1 },
@@ -616,7 +616,7 @@ redo("fusion-machine-casing-mk3", {
 })
 
 redo("fusion-reactor-mk4-controller", {
-	category = "zpm-assembly-line-recipes",
+	categories = { "zpm-assembly-line-recipes" },
 	energy_required = 60 * ZPM_SPEED,
 	ingredients = {
 		{ type = "item", name = "advanced-fusion-coil", amount = 1 },
@@ -631,7 +631,7 @@ redo("fusion-reactor-mk4-controller", {
 })
 
 redo("fusion-reactor-mk4", {
-	category = "uhv-assembling-machine-recipes",
+	categories = { "uhv-assembling-machine-recipes" },
 	energy_required = 300 * UHV_SPEED,
 	ingredients = {
 		{ type = "item", name = "fusion-reactor-mk4-controller", amount = 1 },

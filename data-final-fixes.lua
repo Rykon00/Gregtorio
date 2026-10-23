@@ -45,8 +45,9 @@ local VANILLA_RECIPES_REMOVED = {
 	["lithium"] = "Aquilo; Gregtorio's lithium dust comes from lepidolite and the other ores",
 	["lithium-plate"] = "Aquilo; Gregtorio casts the plate from molten lithium (solidify-lithium-plate)",
 	["tungsten-plate"] = "Vulcanus foundry; Gregtorio casts the plate from molten tungsten (solidify-tungsten-plate)",
-	["molten-iron"] = "Vulcanus foundry; Gregtorio melts iron in the fluid extractor",
-	["molten-copper"] = "Vulcanus foundry; Gregtorio melts copper in the fluid extractor",
+	-- (the recipes molten-iron and molten-copper of Factorio 2.0, renamed by 2.1: issue #535)
+	["iron-ore-melting"] = "Vulcanus foundry; Gregtorio melts iron in the fluid extractor",
+	["copper-ore-melting"] = "Vulcanus foundry; Gregtorio melts copper in the fluid extractor",
 	["carbon"] = "Space Age chemical plant; Gregtorio's carbon dust comes from electrolysis and the centrifuge",
 	-- alternative recipes of items Gregtorio makes
 	["molten-iron-from-lava"] = "Vulcanus foundry, from lava",
@@ -98,6 +99,7 @@ local VANILLA_RECIPES_UNUSED = {
 		"asteroid-collector", "biochamber", "bioflux", "bioplastic", "biter-egg", "captive-biter-spawner",
 		"carbon-fiber", "carbonic-asteroid-crushing", "carbonic-asteroid-reprocessing", "cargo-bay",
 		"cargo-landing-pad", "casting-low-density-structure", "copper-bacteria", "copper-bacteria-cultivation",
+		"landing-pad-unloading-bay",       -- (Factorio 2.1, issue #535)
 		"crusher", "electrolyte", "fish-breeding", "fluoroketone", "fluoroketone-cooling", "foundation",
 		"heating-tower", "holmium-plate", "holmium-solution", "ice-platform", "iron-bacteria",
 		"iron-bacteria-cultivation", "jellynut-processing", "lightning-collector", "lightning-rod",
@@ -211,6 +213,9 @@ local REMOVED_LOCATIONS = {
 local REMOVED_TECHS = {
 	"planet-discovery-vulcanus", "planet-discovery-gleba", "planet-discovery-fulgora", "planet-discovery-aquilo",
 	"space-platform", "space-platform-thruster", "rocket-silo",
+	-- (issue #535: Factorio 2.1's technologies of the solar system edge, a location deleted above, and of the landing pad's
+	-- unloading bay, a part of the space platforms' cargo)
+	"stellar-discovery-solar-system-edge", "landing-pad-unloading-bay",
 }
 local removed = {}   -- every deleted name a reference may hold: locations, connections, technologies
 for name, t in pairs(REMOVED_LOCATIONS) do
@@ -278,10 +283,20 @@ for t, list in pairs(data.raw) do
 		end
 	end
 end
+--- (issue #535: since Factorio 2.1 a sound names its planets in a list, and the ones it skips in another: a sound whose every
+--- planet is deleted goes, the others lose the deleted ones)
+local function kept_planets(list)
+	local out = {}
+	for _, p in pairs(list or {}) do if not removed[p] then out[#out + 1] = p end end
+	return out
+end
 for name, s in pairs(data.raw["ambient-sound"] or {}) do
-	if removed[s.planet] then
+	if s.planets and #s.planets > 0 and #kept_planets(s.planets) == 0 then
 		data.raw["ambient-sound"][name] = nil
 		log("FORK-REMOVED: ambient-sound " .. name)
+	else
+		if s.planets then s.planets = kept_planets(s.planets) end
+		if s.exclude_planets then s.exclude_planets = kept_planets(s.exclude_planets) end
 	end
 end
 for _, list in pairs(data.raw) do
@@ -808,3 +823,18 @@ FORK_LOCALE.name_recipes()
 require("prototypes.fork-menu-simulations")
 --- Fork: cheap research (startup setting, default off); after every change to the technologies above
 require("prototypes.fork-one-pack-research")
+--- Fork: Factorio 2.1 (issue #535): the recycler mod's technology `recycling` unlocks every recycling recipe with a hidden
+--- effect; the ones of recipes deleted above (the burner mining drill's, the electric furnace's, ...) go too (a technology
+--- that names a missing recipe fails the load). A shown effect of a missing recipe stays an error.
+for tname, tech in pairs(data.raw.technology) do
+	local kept, dropped = {}, false
+	for _, e in pairs(tech.effects or {}) do
+		if e.type == "unlock-recipe" and e.hidden and not data.raw.recipe[e.recipe] then
+			dropped = true
+			log("FORK-REMOVED: hidden unlock of " .. e.recipe .. " in technology " .. tname)
+		else
+			kept[#kept + 1] = e
+		end
+	end
+	if dropped then tech.effects = kept end
+end

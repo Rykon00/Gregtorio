@@ -48,7 +48,7 @@ end
 local function set_category(recipe_name, category)
 	local r = data.raw.recipe[recipe_name]
 	if not r then log("FORK-UV: missing recipe: " .. recipe_name) return end
-	r.category = category
+	fork_set_category(r, category)
 end
 
 local function category(name)
@@ -210,7 +210,7 @@ create_recipe{
 	},
 	results = {
 		{ type = "item", name = "lutetium-dust", amount = 1 },
-		{ type = "item", name = "yttrium-dust", amount = 1, probability = 0.25 },
+		{ type = "item", name = "yttrium-dust", amount = 1, independent_probability = 0.25 },
 	},
 	main_product = "lutetium-dust",
 }
@@ -597,13 +597,13 @@ category("mk2-fusion-reactor-recipes")
 do
 	local r = data.raw.recipe["fusion-reactor-mk2-controller"]
 	if r then
-		r.category = "zpm-assembly-line-recipes"
+		fork_set_category(r, "zpm-assembly-line-recipes")
 		r.energy_required = 50 * ZPM_SPEED
 		replace_ingredient(r.name, "ppic-wafer", "uhpic-wafer", 48)
 	end
 	set_ingredient("fusion-reactor-mk2", "fusion-reactor-computer-mk2", "fusion-reactor-mk2-controller")
 	r = data.raw.recipe["fusion-reactor-mk2"]
-	if r then r.category = "zpm-assembling-machine-recipes"; r.energy_required = 300 * ZPM_SPEED end
+	if r then fork_set_category(r, "zpm-assembling-machine-recipes"); r.energy_required = 300 * ZPM_SPEED end
 end
 
 --- Fusion reactor: 9x9, two fluid inputs (north) and one output (south) like the MK1

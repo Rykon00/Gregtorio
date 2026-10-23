@@ -304,9 +304,9 @@ end
 --- issue #499: the hunting, cobblestone and end stone recipes move from the Manual Mine to the Dig Site (#494: the Manual
 --- Mine is a mining drill of the map veins now)
 for name, r in pairs(data.raw.recipe) do
-	if r.category == "manual-mine-recipes" and (name:match("^hunting%-") or name:match("^cobblestone%-manual%-mine")
+	if fork_has_category(r, "manual-mine-recipes") and (name:match("^hunting%-") or name:match("^cobblestone%-manual%-mine")
 		or name == "mining-end-stone") then
-		r.category = "manual-digsite-recipes"
+		fork_set_category(r, "manual-digsite-recipes")
 	end
 end
 
@@ -321,7 +321,7 @@ function FORK_ELECTRIC_MINE.moved_placeholder(name, planet)
 	local r = data.raw.recipe[name]
 	local p = "moved-" .. name
 	data:extend({ {
-		type = "recipe", name = p, category = "manual-mine-recipes", enabled = false, hidden = true, energy_required = 1,
+		type = "recipe", name = p, categories = { "manual-mine-recipes" }, enabled = false, hidden = true, energy_required = 1,
 		icon = "__gregtorio-continued__/graphics/icons/manual-mine.png", icon_size = 64,
 		localised_name = { "recipe-name.moved-mine-recipe" },
 		ingredients = table.deepcopy(r.ingredients), results = {},
@@ -338,7 +338,7 @@ FORK_ELECTRIC_MINE.moved_placeholder("mining-glowstone-vein", "gt-nether")
 --- every recipe of the Manual Mine (and the Dig Site, whose recipes are all ground work) gets a twin or a reason
 local twins = {}
 for name, r in pairs(data.raw.recipe) do
-	if (r.category == "manual-mine-recipes" or r.category == "manual-digsite-recipes")
+	if (fork_has_category(r, "manual-mine-recipes") or fork_has_category(r, "manual-digsite-recipes"))
 		and not FORK_ELECTRIC_MINE_EXCLUDED[name] then
 		if not name:match("^mining%-") then
 			error("163-fork-electric-mine: " .. name .. " has no twin name (mining-<vein>); add it to FORK_ELECTRIC_MINE_EXCLUDED")
@@ -403,7 +403,7 @@ do
 	end
 	FORK_ELECTRIC_MINE.hidden = {}
 	for name, r in pairs(data.raw.recipe) do
-		if r.category == "manual-mine-recipes" then
+		if fork_has_category(r, "manual-mine-recipes") then
 			local all = #r.results > 0
 			for _, x in pairs(r.results) do if not overworld[x.name] then all = false end end
 			if all then
@@ -428,7 +428,7 @@ for _, planet in pairs({ "nauvis", "gt-nether", "gt-twilight" }) do
 	for kind, cat in pairs({ mine = "manual-mine-recipes", miner = MINER_CATEGORY, drill = CATEGORY }) do
 		local name = "removed-vein-" .. planet .. "-" .. kind
 		data:extend({ {
-			type = "recipe", name = name, category = cat, enabled = false, hidden = true, energy_required = 1,
+			type = "recipe", name = name, categories = { cat }, enabled = false, hidden = true, energy_required = 1,
 			icon = "__gregtorio-continued__/graphics/icons/manual-mine.png", icon_size = 64,
 			localised_name = { "recipe-name.removed-vein", { "space-location-name." .. planet } },
 			ingredients = REMOVED_INPUTS[kind], results = {},

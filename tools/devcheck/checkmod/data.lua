@@ -8,7 +8,9 @@ local function is_item(n)
 	return false
 end
 for n, r in pairs(data.raw.recipe) do
-	if not data.raw["recipe-category"][r.category or "crafting"] then L("BADCAT", n, tostring(r.category)) end
+	for _, c in pairs(r.categories or { "crafting" }) do    -- (issue #535: Factorio 2.1's list of categories)
+		if not data.raw["recipe-category"][c] then L("BADCAT", n, tostring(c)) end
+	end
 	for _, key in pairs({ "ingredients", "results" }) do
 		for _, i in pairs(r[key] or {}) do
 			local nm = i.name or i[1]

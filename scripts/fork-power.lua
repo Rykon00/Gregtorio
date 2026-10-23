@@ -121,17 +121,14 @@ end
 --- The fluid in the generator (its own part of the fluid box, else its pipeline segment) and, with
 --- `amount`, how much of it the generator and its segment hold
 local function fluid_of(entity, amount)
-	local fb = entity.fluidbox
-	local f = fb[1]
-	local seg = (amount or not f) and fb.get_fluid_segment_contents(1)
+	local f = entity.get_fluid(1)
+	--- (issue #535: LuaFluidBox is gone since Factorio 2.1; a segment holds one fluid, and its amount is the whole segment's,
+	--- the generator's part with it, where 2.0's segment contents were the rest besides get_fluid_count)
+	local seg = (amount or not f) and entity.has_fluid_segment(1) and entity.get_fluid_segment_fluid(1)
 	if f then
-		return f.name, amount and f.amount + (seg and seg[f.name] or 0)
+		return f.name, amount and (seg and seg.name == f.name and seg.amount or f.amount)
 	end
-	if seg then
-		for name, n in pairs(seg) do
-			if n > 0 then return name, n end
-		end
-	end
+	if seg and seg.amount > 0 then return seg.name, seg.amount end
 	return nil, 0
 end
 

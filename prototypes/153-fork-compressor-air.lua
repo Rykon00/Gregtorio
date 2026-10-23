@@ -25,7 +25,7 @@ local ports = AM["lv-air-collector"] and table.deepcopy(AM["lv-air-collector"].f
 --- the air recipe in the compressor
 local air = data.raw.recipe["air-collection"]
 if air then
-	air.category = "lv-compressor-recipes"
+	fork_set_category(air, "lv-compressor-recipes")
 	air.subgroup = "subgroup-lv-compressor-recipes"
 end
 

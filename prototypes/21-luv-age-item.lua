@@ -548,7 +548,7 @@ create_recipe{
 		{ type = "fluid", name = "mutagen", amount = 25 },
 	},
 	results = {
-		{ type = "item", name = "raw-crystal-chip", amount = 1, probability = 0.8 }
+		{ type = "item", name = "raw-crystal-chip", amount = 1, independent_probability = 0.8 }
 	}
 }
 
@@ -2382,7 +2382,7 @@ create_item{
     },
     results = {
 		{type = "item", name = "high-density-plutonium-nugget", amount = 1 },
-		{type = "item", name = "hsss-dust", amount = 1, probability = 0.888 },
+		{type = "item", name = "hsss-dust", amount = 1, independent_probability = 0.888 },
     },
 	main_product = "high-density-plutonium-nugget"
 }
@@ -2695,11 +2695,11 @@ create_recipe{
 	},
 	results = {
 		{ type = "item", name = "calcium-dust", amount = 2 },
-		{ type = "item", name = "calcium-dust", amount = 1, probability = 0.95 },
-		{ type = "item", name = "enriched-naquadah-dust", amount = 1, probability = 0.8 },
-		{ type = "item", name = "uranium-238-dust", amount = 1, probability = 0.25 },
-		{ type = "item", name = "plutonium-239-dust", amount = 1, probability = 0.2 },
-		{ type = "item", name = "tiberium-dust", amount = 1, probability = 0.2 },
+		{ type = "item", name = "calcium-dust", amount = 1, independent_probability = 0.95 },
+		{ type = "item", name = "enriched-naquadah-dust", amount = 1, independent_probability = 0.8 },
+		{ type = "item", name = "uranium-238-dust", amount = 1, independent_probability = 0.25 },
+		{ type = "item", name = "plutonium-239-dust", amount = 1, independent_probability = 0.2 },
+		{ type = "item", name = "tiberium-dust", amount = 1, independent_probability = 0.2 },
 		{ type = "fluid", name = "radon", amount = 2 },
 	},
 	main_product = "radon",
@@ -2713,7 +2713,7 @@ create_recipe{
 		{ type = "fluid", name = "acid-naquadah-emulsion", amount = 100 },
 	},
 	results = {
-		{ type = "item", name = "antimony-trioxide", amount = 1, probability = 0.25 },
+		{ type = "item", name = "antimony-trioxide", amount = 1, independent_probability = 0.25 },
 		{ type = "item", name = "fluorspar", amount = 4 },
 		{ type = "fluid", name = "naquadah-emulsion", amount = 100 },
 	},
@@ -2728,7 +2728,7 @@ create_recipe{
 	},
 	results = {
 		{ type = "item", name = "radioactive-sludge", amount = 5 },
-		{ type = "item", name = "radioactive-sludge", amount = 1, probability = 0.46 },
+		{ type = "item", name = "radioactive-sludge", amount = 1, independent_probability = 0.46 },
 		{ type = "fluid", name = "naquadah-solution", amount = 50 },
 	},
 	main_product = "naquadah-solution",
@@ -2779,7 +2779,7 @@ create_recipe{
 		{ type = "fluid", name = "naquadah-gas", amount = 54.0 },
 		{ type = "fluid", name = "naquadah-asphalt", amount = 19.2 },
 		{ type = "fluid", name = "molten-lutetium", amount = 55 },
-		{ type = "item", name = "plutonium-239-dust", amount = 1, probability = 0.11 },
+		{ type = "item", name = "plutonium-239-dust", amount = 1, independent_probability = 0.11 },
 	},
 	main_product = "molten-lutetium",
 }
@@ -2813,7 +2813,7 @@ create_recipe{
 		{ type = "fluid", name = "naquadah-heavy-fuel", amount = 28 },
 		{ type = "fluid", name = "molten-thulium", amount = 18.3 },
 		{ type = "fluid", name = "molten-thorium", amount = 95 },
-		{ type = "item", name = "naquadria-dust", amount = 1, probability = 0.11 },
+		{ type = "item", name = "naquadria-dust", amount = 1, independent_probability = 0.11 },
 	},
 	main_product = "molten-thulium",
 }

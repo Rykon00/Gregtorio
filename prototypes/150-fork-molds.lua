@@ -90,7 +90,7 @@ local function tools_held(r, rcat)
 	return n
 end
 for rname, r in pairs(data.raw.recipe) do
-	local rcat = r.category or "crafting"
+	local rcat = fork_category(r)
 	local held = tools_held(r, rcat)
 	if held > 1 then log("FORK-MOLD: " .. rname .. " holds " .. held .. " lenses at once, they stay ingredients and results") end
 	for mold, category in pairs(tool_of) do
@@ -136,11 +136,11 @@ for rname, r in pairs(data.raw.recipe) do
 	end
 end
 for rname, r in pairs(data.raw.recipe) do
-	local mold = machine_mold_categories[r.category or "crafting"]
+	local mold = machine_mold_categories[fork_category(r)]
 	if mold and not mold_recipes[rname] then
 		r.localised_description = needs_text(mold)
 		mold_recipes[rname] = mold
-		mold_categories[r.category or "crafting"] = tool_of[mold]
+		mold_categories[fork_category(r)] = tool_of[mold]
 	end
 end
 for c, _ in pairs(machine_mold_categories) do log("FORK-MOLD: every recipe of " .. c .. " needs a mold") end

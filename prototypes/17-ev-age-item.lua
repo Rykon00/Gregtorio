@@ -1369,7 +1369,7 @@ create_item{
 		},
 	results = {
 		{ type = "item", name = "rutile-dust", amount = 2 },
-		{ type = "item", name = "ilmenite-slag", amount = 1, probability = 0.6 },
+		{ type = "item", name = "ilmenite-slag", amount = 1, independent_probability = 0.6 },
 		{ type = "fluid", name = "sulfuric-iron-solution", amount = 200 }
 	},
 	main_product = "rutile-dust"
@@ -1382,11 +1382,11 @@ create_recipe{
 		{ type = "item", name = "ilmenite-slag", amount = 1 },
 	},
 	results = {
-		{ type = "item", name = "iron-dust", amount = 1, probability = 0.6 },
-		{ type = "item", name = "magnesium", amount = 1, probability = 0.6 },
-		{ type = "item", name = "manganese-dust", amount = 1, probability = 0.5 },
-		{ type = "item", name = "tantalum-dust", amount = 1, probability = 0.2 },
-		{ type = "item", name = "niobium-dust", amount = 1, probability = 0.05 },
+		{ type = "item", name = "iron-dust", amount = 1, independent_probability = 0.6 },
+		{ type = "item", name = "magnesium", amount = 1, independent_probability = 0.6 },
+		{ type = "item", name = "manganese-dust", amount = 1, independent_probability = 0.5 },
+		{ type = "item", name = "tantalum-dust", amount = 1, independent_probability = 0.2 },
+		{ type = "item", name = "niobium-dust", amount = 1, independent_probability = 0.05 },
 	},
 	main_product = "tantalum-dust"
 }
@@ -1467,7 +1467,7 @@ create_item{
 	},
 	results = {
 		{ type = "item", name = "rare-earth-1-dust", amount = 1 },
-		{ type = "item", name = "yttrium-dust", amount = 1, probability = 0.11 },
+		{ type = "item", name = "yttrium-dust", amount = 1, independent_probability = 0.11 },
 	}
 }
 
@@ -1616,9 +1616,9 @@ create_recipe{
 		{ type = "item", name = "endstone-dust", amount = 1 },
 	},
 	results = {
-		{ type = "item", name = "sand", amount = 1, probability = 0.9 },
-		{ type = "item", name = "tungstate-dust", amount = 1, probability = 0.032 },
-		{ type = "item", name = "platinum-dust", amount = 1, probability = 0.007 },
+		{ type = "item", name = "sand", amount = 1, independent_probability = 0.9 },
+		{ type = "item", name = "tungstate-dust", amount = 1, independent_probability = 0.032 },
+		{ type = "item", name = "platinum-dust", amount = 1, independent_probability = 0.007 },
 		{ type = "fluid", name = "helium", amount = 12 },
 	},
 	main_product = "helium"
@@ -2361,7 +2361,7 @@ create_item{
 	results = {
 		{ type = "item", name = "uranium-238-dust", amount = 4 },
 		{ type = "item", name = "iron-dust", amount = 1 },
-		{ type = "item", name = "plutonium-239-dust", amount = 1, probability = 0.11 },
+		{ type = "item", name = "plutonium-239-dust", amount = 1, independent_probability = 0.11 },
 	},
 } 
 
@@ -2395,7 +2395,7 @@ create_item{
 	results = {
 		{ type = "item", name = "thorium-dust", amount = 1 },
 		{ type = "item", name = "iron-dust", amount = 1 },
-		{ type = "item", name = "lutetium-dust", amount = 1, probability = 0.5 },
+		{ type = "item", name = "lutetium-dust", amount = 1, independent_probability = 0.5 },
 	},
 } 
    

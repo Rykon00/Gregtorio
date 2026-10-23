@@ -56,7 +56,7 @@ end
 
 local shown, kept = 0, 0
 for name, r in pairs(data.raw.recipe) do
-	local category = r.category or "crafting"
+	local category = fork_category(r)
 	if r.hide_from_player_crafting and not r.hidden and machine_category[category] then
 		if keep.categories[category] or keep.subgroups[r.subgroup or ""] or keep.recipes[name] then
 			kept = kept + 1

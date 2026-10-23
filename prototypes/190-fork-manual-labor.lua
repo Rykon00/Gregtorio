@@ -32,7 +32,6 @@ data:extend({
 
 local function uses_manual_labor(es)
 	if not (es and es.type == "burner") then return false end
-	if es.fuel_category == "manual-labor" then return true end
 	for _, c in pairs(es.fuel_categories or {}) do
 		if c == "manual-labor" then return true end
 	end

@@ -30,7 +30,7 @@ end
 local function set_category(recipe_name, category)
 	local r = data.raw.recipe[recipe_name]
 	if not r then log("FORK-LUV2: missing recipe: " .. recipe_name) return end
-	r.category = category
+	fork_set_category(r, category)
 end
 
 --- Fluid like the ones in 06-fluids-module.lua (whose helper is local), colors given directly
@@ -264,7 +264,7 @@ local NQ_RECIPES = {
 for _, d in pairs(NQ_RECIPES) do
 	local function stacks(list)
 		local out = {}
-		for _, x in pairs(list) do out[#out + 1] = { type = x[1], name = x[2], amount = x[3], probability = x[4] } end
+		for _, x in pairs(list) do out[#out + 1] = { type = x[1], name = x[2], amount = x[3], independent_probability = x[4] } end
 		return out
 	end
 	create_recipe{ name = d[1], category = d[2], energy_required = d[3], ingredients = stacks(d[4]), results = stacks(d[5]),
@@ -309,7 +309,8 @@ end
 for _, f in pairs({ { "naquadah", 16 }, { "enriched-naquadah", 14.7 }, { "naquadria", 14.7 } }) do
 	local r = data.raw.recipe[f[1] .. "-ingot"]
 	if r then
-		r.category, r.energy_required = "iv-vacuum-freezer-recipes", f[2] * IV_SPEED
+		fork_set_category(r, "iv-vacuum-freezer-recipes")
+		r.energy_required = f[2] * IV_SPEED
 		r.ingredients = { { type = "item", name = "hot-" .. f[1] .. "-ingot", amount = 1 } }
 		r.results = { { type = "item", name = f[1] .. "-ingot", amount = 1 } }
 		r.main_product = f[1] .. "-ingot"
@@ -390,9 +391,9 @@ create_item{
 --- The draft had no category/energy
 do
 	local r = data.raw.recipe["bacterial-vat"]
-	if r then r.category = "iv-assembling-machine-recipes"; r.energy_required = 120 * IV_SPEED end
+	if r then fork_set_category(r, "iv-assembling-machine-recipes"); r.energy_required = 120 * IV_SPEED end
 	r = data.raw.recipe["bacterial-vat-controller"]
-	if r then r.category = "ev-assembling-machine-recipes"; r.energy_required = 60 * EV_SPEED end
+	if r then fork_set_category(r, "ev-assembling-machine-recipes"); r.energy_required = 60 * EV_SPEED end
 end
 
 make_multiblock{
@@ -473,7 +474,7 @@ do
 	local c = data.raw.recipe["circuit-assembly-line-controller"]
 	if c then c.energy_required = 120 * LUV_SPEED end
 	local r = data.raw.recipe["luv-circuit-assembly-line"]
-	if r then r.category = "luv-assembling-machine-recipes"; r.energy_required = 120 * LUV_SPEED end
+	if r then fork_set_category(r, "luv-assembling-machine-recipes"); r.energy_required = 120 * LUV_SPEED end
 end
 
 --- Draft typo: "hv-maceration-recipes" -> the macerator category
@@ -519,9 +520,9 @@ set_ingredient("fusion-reactor-mk1-controller", "barium-titanate-cuproxide-super
 set_ingredient("fusion-reactor-mk1", "fusion-reactor-computer-mk1", "fusion-reactor-mk1-controller")
 do
 	local r = data.raw.recipe["fusion-reactor-mk1"]
-	if r then r.category = "luv-assembling-machine-recipes"; r.energy_required = 300 * LUV_SPEED end
+	if r then fork_set_category(r, "luv-assembling-machine-recipes"); r.energy_required = 300 * LUV_SPEED end
 	r = data.raw.recipe["fusion-coil-block"]
-	if r then r.category = "luv-assembling-machine-recipes"; r.energy_required = 50 * LUV_SPEED end
+	if r then fork_set_category(r, "luv-assembling-machine-recipes"); r.energy_required = 50 * LUV_SPEED end
 end
 
 --- Fusion reactor: 9x9, two fluid inputs (north) and one output (south)
@@ -553,7 +554,7 @@ create_recipe{
 	results = {
 		{ type = "fluid", name = "helium-3", amount = 100 },
 		{ type = "item", name = "stone-dust", amount = 4 },
-		{ type = "item", name = "tungstate-dust", amount = 1, probability = 0.1 },
+		{ type = "item", name = "tungstate-dust", amount = 1, independent_probability = 0.1 },
 	},
 	main_product = "helium-3",
 }

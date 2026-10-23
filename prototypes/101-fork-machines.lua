@@ -360,7 +360,7 @@ do
 	data.raw["assembling-machine"]["hv-arc-furnace"].next_upgrade = "ev-arc-furnace"
 
 	local r = data.raw.recipe["annealed-copper-ingot"]
-	r.category = "lv-arc-furnace-recipes"
+	fork_set_category(r, "lv-arc-furnace-recipes")
 	r.subgroup = "subgroup-lv-arc-furnace-recipes"
 end
 
@@ -427,7 +427,7 @@ do
 
 	for _, n in pairs(PRINTED) do
 		local r = data.raw.recipe[n]
-		r.category = "lv-forming-press-recipes"
+		fork_set_category(r, "lv-forming-press-recipes")
 		r.subgroup = "subgroup-lv-forming-press-recipes"
 	end
 end
@@ -724,7 +724,7 @@ create_item{
 }
 data.raw["assembling-machine"]["lv-laser-engraver"].next_upgrade = "mv-laser-engraver"
 fork_add_unlock("circuit-assembler", "lv-laser-engraver")
-data.raw.recipe["ulpic-wafer-sw"].category = "lv-laser-engraver-recipes"
+fork_set_category(data.raw.recipe["ulpic-wafer-sw"], "lv-laser-engraver-recipes")
 
 create_burner_generator{
 	name = "lv-combustion-generator",
@@ -805,7 +805,7 @@ function fork_steam_categories()
 	end
 	local names = {}
 	for name, r in pairs(data.raw.recipe) do
-		if r.category == "lv-macerator-recipes" and not r.hidden and not name:match("^recycling%-")
+		if fork_has_category(r, "lv-macerator-recipes") and not r.hidden and not name:match("^recycling%-")
 			and items_only(r.ingredients) and items_only(r.results) and r.results and #r.results > 0 then
 			names[#names + 1] = name
 		end
@@ -820,7 +820,7 @@ function fork_steam_categories()
 		end
 		local c = table.deepcopy(r)
 		c.name = "steam-" .. name
-		c.category = "steam-macerator-recipes"
+		fork_set_category(c, "steam-macerator-recipes")
 		c.results = { table.deepcopy(first) }
 		c.main_product = first.name
 		c.hide_from_player_crafting = true

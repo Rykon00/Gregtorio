@@ -1,4 +1,12 @@
 ---------------------------------------------------------------------------------------------------
+Version: 0.5.7
+Date: 2026-10-23
+  Changes:
+    - autocraft-logistics is an optional dependency now: it has no release for Factorio 2.1 yet (its last one is for 2.0). Gregtorio's own code never used it; once it has a 2.1 version, it is loaded again with Gregtorio.
+    - The technologies Stellar Discovery: Solar System Edge and Landing Pad Unloading Bay of Space Age (new in Factorio 2.1) are removed like the other planet and space platform technologies, and so is the Landing Pad Unloading Bay's recipe.
+  Info:
+    - Gregtorio Continued is for Factorio 2.1 (issue #535) and needs ME Network's version for 2.1; its versions up to 0.5.6 stay on the mod portal for Factorio 2.0. A save of 0.5.6 made in Factorio 2.0 loads. Every recipe of Gregtorio (machines, ingredients, results and their chances, times) and every technology is the same as in 0.5.6; what changed is Factorio's own: the vanilla recipe categories (a vanilla recipe may have several now), the Space Age recipe Wood Processing is called Tree Seed, steam is at most 500 °C (so is superheated steam, which no machine makes above 465 °C), and the Ender Tank's code panel sits beside the tank's window of Factorio 2.1.
+---------------------------------------------------------------------------------------------------
 Version: 0.5.6
 Date: 2026-10-23
   Features:

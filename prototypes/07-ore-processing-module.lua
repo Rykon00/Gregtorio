@@ -224,7 +224,7 @@ create_recipe{
 	results = {
 		{type = "item", name = "zinc-dust", amount = 1},
 		{type = "item", name = "sulfur", amount = 1},
-		{type = "item", name = "gallium", amount = 1, probability = 0.1}
+		{type = "item", name = "gallium", amount = 1, independent_probability = 0.1}
 	},
 	main_product = "zinc-dust"
 }
@@ -250,7 +250,7 @@ create_recipe{
 	results = {
 		{type = "item", name = "zinc-dust", amount = 1},
 		{type = "item", name = "sulfur", amount = 1},
-		{type = "item", name = "gallium", amount = 1, probability = 0.1},
+		{type = "item", name = "gallium", amount = 1, independent_probability = 0.1},
 	},
 	main_product = "zinc-dust"
 }
@@ -398,14 +398,14 @@ create_recipe{
 ---COAL ORE
 create_ore("raw-coal", nil, "crushed-coal", "coal-dust", "coal", "crushed-coal", "coal-dust", "thorium-dust", 2, true, false )
 data.raw["item"]["raw-coal"].fuel_value = "3MJ"
-data.raw["item"]["raw-coal"].fuel_category = "chemical"
+data.raw["item"]["raw-coal"].fuel_categories = { "chemical" }
 data.raw["item"]["coal-dust"].fuel_value = "3MJ"
-data.raw["item"]["coal-dust"].fuel_category = "chemical"
+data.raw["item"]["coal-dust"].fuel_categories = { "chemical" }
 
 ---GRAPHITE ORE
 create_ore("raw-graphite", nil, "crushed-graphite", "graphite", "graphite", "crushed-graphite", "graphite", "carbon", 1, true, false )
 data.raw["item"]["carbon"].fuel_value = "2MJ"
-data.raw["item"]["carbon"].fuel_category = "chemical"
+data.raw["item"]["carbon"].fuel_categories = { "chemical" }
 
 ---DIAMOND ORE
 create_ore("raw-diamond", "diamond", "crushed-diamond", "diamond-dust", "diamond", "crushed-diamond", "diamond-dust", "graphite", 1, false, false )
