@@ -258,7 +258,13 @@
     entries, so the map generator lists only what makes ore; issue #500: the Lua migration
     `migrations/2026-10-22-issue-500-map-veins.lua` (a Lua migration runs once per save also when the version stays, as
     in the maintainer's linked clone) calls `scripts/fork-ore-veins.lua`'s remote `migrate`: the planet's map settings,
-    `regenerate_entity` of the generated chunks, the dimension mines on hidden (Overworld) vein recipes replaced by their
+    `regenerate_entity` of the generated chunks (issue #534: of every generated chunk without a vein ore, once per load,
+    `storage.fork_ore_veins.ores_tick`; `migrations/2026-10-23-issue-534-vein-ores.lua`; issue #540: a map made with Space
+    Age kept every planet's controls on Nauvis, so the surface keeps only its planet's controls, autoplace settings and
+    expression names (and the presets' and climate sliders' names), `storage.fork_ore_veins.foreign` notes a surface that had
+    others, and the remote `clean_chunks` of `migrations/2026-10-23-issue-540-foreign-map-gen.lua` deletes its chunks
+    without a building of a player's force or a placed tile and removes Space Age's trees, plants, rocks, cliffs and
+    decoratives from the kept ones, their tiles stay; devcheck's DEVCHECK-MIGRATE-MAPGEN), the dimension mines on hidden (Overworld) vein recipes replaced by their
     drill, the charted veins tagged, names of missing noise expressions dropped from the map settings (each one is a
     warning whenever `calculate_tile_properties` compiles the noise program; the tags read each cell once,
     `storage.fork_ore_veins.cells`); issue #501: the Nether is a surface: the surface property `gt-dimension` (1

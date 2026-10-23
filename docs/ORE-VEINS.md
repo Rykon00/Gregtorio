@@ -97,10 +97,19 @@ Forest's small ores and amber vein, the Copper Tin vein (realgar) and the glowst
 ## Old saves
 
 - #499: placed mines become Dimension Mines (JSON migration, the names went to the drills).
-- #500: the surfaces get the veins (`regenerate_entity` on every generated chunk), a Dimension Mine on a vein of its
+- #500: the surfaces get the veins (`regenerate_entity` on every generated chunk; #534: on every generated chunk without
+  vein ore, also when the map settings already named the veins, e.g. after a map settings editor), a Dimension Mine on a vein of its
   surface becomes its drill, names of missing noise expressions are dropped from the map settings.
 - #505: the deleted vein recipes become a placeholder of their planet (`removed-vein-<planet>-<kind>`, JSON); on that
   planet the mine becomes its drill, elsewhere it loses the recipe and a message names it.
 - #529: the surfaces get the veins' controls at their defaults (`migrations/2026-10-23-issue-529-vein-controls.lua`); a
   save whose `gt-ore-veins` size is not 1 gets that size on every vein and 1 on the grid, so its cells and veins stay.
   A surface of a deleted Space Age planet is deleted by the engine on load.
+- #540: a map made with Space Age kept every planet's autoplace controls on its Nauvis surface; since #529 and Factorio
+  2.1 they placed Gleba's plants and decoratives in Nauvis' new chunks. The surfaces with veins keep only their planet's
+  controls (the save's values), autoplace settings and expression names (and the ones of the map presets and climate
+  sliders); a surface that had others gets its chunks without a building of a player (and without a placed tile) deleted,
+  so they are generated anew, and the trees, plants, rocks, cliffs and decoratives of Space Age that its planet does not
+  place removed from the kept chunks; their tiles stay (`migrations/2026-10-23-issue-540-foreign-map-gen.lua`). The
+  Nether, Twilight Forest and End surfaces take their planet's settings when they are made (also in Factorio 2.0 and with
+  a map whose settings list every control), and a map started with 0.5.7 is not touched.

@@ -1257,13 +1257,375 @@ local function check_vein_grid()
 		.. VG_SIZE .. ", cells of " .. after.size .. " tiles, " .. #VG_CELLS .. " cells with the same vein and radius)")
 end
 
+--- Issue #534: a save whose map settings name the veins while its chunks have no ore of them (the maintainer's, from a map
+--- settings editor). An old save with the map veins gets its generated chunks' vein ore (regenerated first, to match a
+--- changed grid above) counted and then deleted; after the update the same chunks must hold the same ore again
+--- (DEVCHECK-MIGRATE-VEINORES)
+local function vein_ores()
+	local names = {}
+	for name, p in pairs(prototypes.get_entity_filtered{ { filter = "type", type = "resource" } }) do
+		if p.resource_category == "gt-ore" then names[#names + 1] = name end
+	end
+	return names
+end
+local function setup_vein_ores()
+	local s = game.surfaces.nauvis
+	if not (s.map_gen_settings.property_expression_names or {}).gt_vein_id then
+		log("DEVCHECK-MIGRATE-SETUP-VEINORES skipped (no map veins in this version)")
+		return
+	end
+	local names, chunks = vein_ores(), {}
+	for c in s.get_chunks() do
+		if s.is_chunk_generated(c) then chunks[#chunks + 1] = { x = c.x, y = c.y } end
+	end
+	s.regenerate_entity(names, chunks)
+	local ores = s.find_entities_filtered{ type = "resource", name = names }
+	storage.vein_ores = { tiles = #ores, chunks = #chunks, list = chunks }
+	for _, e in pairs(ores) do e.destroy() end
+	log("DEVCHECK-MIGRATE-SETUP-VEINORES ok (" .. #ores .. " ore tiles in " .. #chunks .. " chunks deleted, the map settings "
+		.. "keep the veins)")
+end
+
+local function check_vein_ores()
+	local before = storage.vein_ores
+	if not before then
+		log("DEVCHECK-MIGRATE-VEINORES skipped")
+		return
+	end
+	local s = game.surfaces.nauvis
+	--- (issue #540: the update deletes the chunks of a Space Age save without buildings; they are generated again here)
+	for _, c in pairs(before.list or {}) do s.request_to_generate_chunks({ c.x * 32 + 16, c.y * 32 + 16 }, 0) end
+	s.force_generate_chunk_requests()
+	local tiles = s.count_entities_filtered{ type = "resource", name = vein_ores() }
+	--- the landfill the helper puts over water after this count gets ore too
+	local ok = tiles >= before.tiles and math.abs(tiles - before.tiles) <= before.tiles * 0.02 + 50
+	if not ok then
+		log("DEVCHECK-MIGRATE-FAIL vein ores: " .. tiles .. " ore tiles after the update, " .. before.tiles .. " before the deletion")
+	end
+	log("DEVCHECK-MIGRATE-VEINORES " .. (ok and "ok" or "failed") .. " (" .. tiles .. " ore tiles of the veins after the update, "
+		.. before.tiles .. " before they were deleted, in " .. before.chunks .. " chunks)")
+end
+
+--- Issue #540: a map made with Space Age keeps every planet's autoplace controls on its Nauvis surface; since #529 (the
+--- planets deleted, their controls hidden) and Factorio 2.1 they place Gleba's plants and other planets' tiles in Nauvis'
+--- new chunks. An old save of Factorio 2.0 (mode "space-age") gets every control on Nauvis, as such a map has them, a
+--- chunk with a chest and a Space Age plant, rock, decorative and tile (a chunk generated with the wrong settings) and
+--- one with a plant and no building; its Nether surface is made in 2.0. After the update Nauvis may keep only the
+--- controls of its prototype, new chunks far away must hold nothing of Space Age (tiles, trees, plants, rocks, cliffs,
+--- decoratives), the chunk without a building must be generated anew, the one with the chest must keep its tile, its
+--- chest and its trees and lose the rest. A save of Factorio 2.1 (mode "fresh": 0.5.7, made without the cause) must stay
+--- as it was: an area near the spawn and a far one the same after the load, the far one and an area of the Nether,
+--- Twilight Forest and End (3 x 3 chunks) deleted and generated anew, the middle chunk the same as in the old save (the
+--- outer ones meet chunks of the old save at their edges, whose tile transitions differ a few tiles: also without #540). The Nether, Twilight Forest and End
+--- surfaces (made now when the old save has none) must have their planet's settings (DEVCHECK-MIGRATE-MAPGEN)
+local MG_KEPT, MG_GONE, MG_FAR = { -10, -10 }, { 10, -10 }, { { 100, 0 }, { -100, 60 } }        -- chunk positions
+local MG_NEAR, MG_FRESH = { -12, 10 }, { 60, -60 }     -- (MG_NEAR outside the map's first chunks: VEINORES deletes their ore)
+local MG_PLANETS = { "gt-nether", "gt-twilight", "gt-end" }
+local MG_TYPES = { "tree", "plant", "simple-entity", "cliff" }
+local function from_space_age(kind, name)
+	local h = prototypes.get_history(kind, name)
+	return h ~= nil and h.created == "space-age"
+end
+local function chunk_area(c, r)
+	r = r or 0
+	return { { (c[1] - r) * 32, (c[2] - r) * 32 }, { (c[1] + r + 1) * 32, (c[2] + r + 1) * 32 } }
+end
+local function generate(s, c, r)
+	s.request_to_generate_chunks({ c[1] * 32 + 16, c[2] * 32 + 16 }, r or 0)
+	s.force_generate_chunk_requests()
+end
+--- what of Space Age the area holds, as sorted "kind name=count"
+local function space_age_in(s, area)
+	local found = {}
+	local function add(key) found[key] = (found[key] or 0) + 1 end
+	for name in pairs(prototypes.tile) do
+		if from_space_age("tile", name) then
+			local n = s.count_tiles_filtered{ area = area, name = name }
+			if n > 0 then found["tile " .. name] = n end
+		end
+	end
+	for _, e in pairs(s.find_entities_filtered{ area = area, type = MG_TYPES }) do
+		if from_space_age(e.type, e.name) then add(e.type .. " " .. e.name) end
+	end
+	for _, d in pairs(s.find_decoratives_filtered{ area = area }) do
+		if from_space_age("optimized-decorative", d.decorative.name) then add("decorative " .. d.decorative.name) end
+	end
+	local list = {}
+	for k, n in pairs(found) do list[#list + 1] = k .. "=" .. n end
+	table.sort(list)
+	return list
+end
+--- tiles, entities (no units and fish: they move) and decoratives of the area: per name the count and sums of the positions
+local function snapshot(s, area)
+	local sums = {}
+	local function add(key, p)
+		local x, y = math.floor(p.x * 2), math.floor(p.y * 2)
+		local t = sums[key] or { 0, 0, 0, 0 }
+		t[1], t[2], t[3], t[4] = t[1] + 1, t[2] + x, t[3] + y, t[4] + x * y
+		sums[key] = t
+	end
+	for _, t in pairs(s.find_tiles_filtered{ area = area }) do add("tile " .. t.name, t.position) end
+	for _, e in pairs(s.find_entities_filtered{ area = area }) do
+		if e.type ~= "unit" and e.type ~= "fish" then add(e.type .. " " .. e.name, e.position) end
+	end
+	for _, d in pairs(s.find_decoratives_filtered{ area = area }) do add("decorative " .. d.decorative.name, d.position) end
+	local out = {}
+	for k, t in pairs(sums) do out[k] = table.concat(t, ":") end
+	return out
+end
+local function snapshot_diff(a, b)
+	local diff = {}
+	for k, v in pairs(a) do if b[k] ~= v then diff[#diff + 1] = k .. " " .. v .. " -> " .. (b[k] or "none") end end
+	for k, v in pairs(b) do if a[k] == nil then diff[#diff + 1] = k .. " none -> " .. v end end
+	table.sort(diff)
+	return diff
+end
+local function pick(kind, preferred, ok)
+	for _, name in pairs(preferred) do
+		if prototypes[kind][name] and ok(name) then return name end
+	end
+	local names = {}
+	for name in pairs(prototypes[kind]) do if ok(name) then names[#names + 1] = name end end
+	table.sort(names)
+	return names[1]
+end
+--- Nauvis' trees in the chunk, 2 tiles from its edges (deleting a neighbour also deletes a tree whose box reaches into it)
+local function own_trees(s, c)
+	local n = 0
+	for _, e in pairs(s.find_entities_filtered{ area = { { c[1] * 32 + 2, c[2] * 32 + 2 }, { c[1] * 32 + 30, c[2] * 32 + 30 } },
+		type = "tree" }) do
+		if not from_space_age("tree", e.name) then n = n + 1 end
+	end
+	return n
+end
+local function planet_area(p) return p == "gt-end" and { 0, 2 } or { 3, 3 } end
+
+local function setup_mapgen()
+	local s = game.surfaces.nauvis
+	if not (prototypes.space_location and prototypes.space_location.nauvis and prototypes.autoplace_control["gt-ore-veins"]) then
+		log("DEVCHECK-MIGRATE-SETUP-MAPGEN skipped (no map veins in this version)")
+		return
+	end
+	local mg = { mode = script.active_mods.base:match("^2%.0%.") and "space-age" or "fresh" }
+	storage.mapgen = mg
+	if mg.mode == "fresh" then
+		generate(s, MG_NEAR, 1)
+		generate(s, MG_FRESH, 1)
+		mg.near, mg.fresh, mg.planets = snapshot(s, chunk_area(MG_NEAR, 1)), snapshot(s, chunk_area(MG_FRESH, 1)), {}
+		mg.fresh_centre, mg.centres = snapshot(s, chunk_area(MG_FRESH)), {}
+		for _, p in pairs(MG_PLANETS) do
+			local planet = game.planets[p]
+			if planet then
+				local ps = planet.surface or planet.create_surface()
+				generate(ps, planet_area(p), 1)
+				mg.planets[p] = snapshot(ps, chunk_area(planet_area(p), 1))
+				mg.centres[p] = snapshot(ps, chunk_area(planet_area(p)))
+			end
+		end
+		log("DEVCHECK-MIGRATE-SETUP-MAPGEN ok (a save of Factorio 2.1: two areas of Nauvis and one of the Nether, Twilight "
+			.. "Forest and End noted)")
+		return
+	end
+	local mgs = s.map_gen_settings
+	local added = 0
+	for name in pairs(prototypes.autoplace_control) do
+		if not mgs.autoplace_controls[name] then
+			mgs.autoplace_controls[name] = { frequency = 1, size = 1, richness = 1 }
+			added = added + 1
+		end
+	end
+	mgs.default_enable_all_autoplace_controls = false
+	s.map_gen_settings = mgs
+	--- (the chunks on land: the first one without water from MG_KEPT and MG_GONE on)
+	local function land(c)
+		for i = 0, 20 do
+			local at = { c[1] - i, c[2] - i }
+			generate(s, at, 0)
+			if s.count_tiles_filtered{ area = chunk_area(at), collision_mask = "water_tile" } == 0 then return at end
+		end
+	end
+	local kept_at, gone_at = land(MG_KEPT), land(MG_GONE)
+	mg.kept, mg.gone = kept_at, gone_at
+	local plant = pick("entity", { "stingfrond", "funneltrunk" }, function(n)
+		local t = prototypes.entity[n].type
+		return (t == "tree" or t == "plant") and from_space_age(t, n)
+	end)
+	local rock = pick("entity", { "big-volcanic-rock" }, function(n)
+		return prototypes.entity[n].type == "simple-entity" and n:find("rock") ~= nil and from_space_age("simple-entity", n)
+	end)
+	local dec = pick("decorative", { "knobbly-roots-orange" }, function(n) return from_space_age("optimized-decorative", n) end)
+	local tile = pick("tile", { "natural-yumako-soil", "lowland-olive-blubber" }, function(n)
+		return from_space_age("tile", n) and not n:find("platform") and not n:find("foundation") and not n:find("space")
+	end)
+	local function place(name, c, dx, dy, force)
+		local at = s.find_non_colliding_position(name, { c[1] * 32 + dx, c[2] * 32 + dy }, 12, 0.5, true)
+		return at and s.create_entity{ name = name, position = at, force = force or "neutral" }
+	end
+	local chest = kept_at and place("iron-chest", kept_at, 16, 16, "player")
+	--- a radar of the chunk that reaches into its east neighbour, which has no building of its own: the neighbour stays
+	local radar_at = kept_at and { kept_at[1] * 32 + 31.5, kept_at[2] * 32 + 8.5 }
+	if radar_at then
+		for _, e in pairs(s.find_entities_filtered{ area = { { radar_at[1] - 2, radar_at[2] - 2 }, { radar_at[1] + 2, radar_at[2] + 2 } } }) do
+			if e.type == "tree" or e.type == "simple-entity" then e.destroy() end
+		end
+		local radar = s.create_entity{ name = "radar", position = radar_at, force = "player" }
+		mg.radar = radar and radar.position
+	end
+	local placed = { kept_at and place(plant, kept_at, 8, 24), kept_at and place(rock, kept_at, 24, 8),
+		gone_at and place(plant, gone_at, 16, 16) }
+	local x0, y0 = (kept_at or MG_KEPT)[1] * 32, (kept_at or MG_KEPT)[2] * 32
+	s.create_decoratives{ check_collision = false, decoratives = { { name = dec, position = { x0 + 26, y0 + 26 }, amount = 1 } } }
+	s.set_tiles({ { name = tile, position = { x0 + 2, y0 + 2 } } }, false)
+	local trees = own_trees(s, kept_at or MG_KEPT)
+	mg.chest, mg.tile, mg.trees = chest and chest.position, tile, trees
+	--- the Nether of a save of Factorio 2.0
+	local nether = game.planets["gt-nether"]
+	if nether and not nether.surface then nether.create_surface() end
+	local ok = chest and placed[1] and placed[2] and placed[3] and tile and dec
+	if not ok then
+		mg.mode = "setup-failed"
+		log("DEVCHECK-MIGRATE-SETUP-MAPGEN-DEBUG chest " .. tostring(chest ~= nil) .. ", plant " .. tostring(placed[1] ~= nil)
+			.. ", rock " .. tostring(placed[2] ~= nil) .. ", plant without a building " .. tostring(placed[3] ~= nil))
+	end
+	log("DEVCHECK-MIGRATE-SETUP-MAPGEN " .. (ok and "ok" or "failed") .. " (a save of Factorio 2.0: " .. added
+		.. " controls added to Nauvis, " .. tostring(plant) .. ", " .. tostring(rock) .. ", " .. tostring(dec) .. " and "
+		.. tostring(tile) .. " next to a chest, " .. tostring(plant) .. " in a chunk without a building)")
+end
+
+local function planet_settings(parts, problems)
+	for _, p in pairs(MG_PLANETS) do
+		local planet = game.planets[p]
+		if planet then
+			local made = not planet.surface
+			local pm = (planet.surface or planet.create_surface()).map_gen_settings
+			local pp = prototypes.space_location[p].map_gen_settings
+			local diff = {}
+			for name in pairs(pm.autoplace_controls or {}) do
+				if not (pp.autoplace_controls or {})[name] then diff[#diff + 1] = "+control " .. name end
+			end
+			for name in pairs(pp.autoplace_controls or {}) do
+				if not (pm.autoplace_controls or {})[name] then diff[#diff + 1] = "-control " .. name end
+			end
+			for _, kind in pairs({ "tile", "entity", "decorative" }) do
+				local a = ((pm.autoplace_settings or {})[kind] or {}).settings or {}
+				local b = ((pp.autoplace_settings or {})[kind] or {}).settings or {}
+				for n in pairs(a) do if not b[n] then diff[#diff + 1] = "+" .. kind .. " " .. n end end
+				for n in pairs(b) do if not a[n] then diff[#diff + 1] = "-" .. kind .. " " .. n end end
+			end
+			table.sort(diff)
+			if #diff > 0 then
+				problems[#problems + 1] = p .. "'s surface differs from its planet: " .. table.concat(diff, ", ")
+			end
+			parts[#parts + 1] = p .. (made and " made now" or " of the old save") .. (#diff == 0 and " as its planet" or " differs")
+		end
+	end
+end
+
+local function check_mapgen()
+	local mg = storage.mapgen
+	if not mg then
+		log("DEVCHECK-MIGRATE-MAPGEN skipped")
+		return
+	end
+	local parts, problems = {}, {}
+	local s = game.surfaces.nauvis
+	local proto = prototypes.space_location.nauvis.map_gen_settings
+	local extra = {}
+	for name in pairs(s.map_gen_settings.autoplace_controls or {}) do
+		if not (proto.autoplace_controls or {})[name] then extra[#extra + 1] = name end
+	end
+	table.sort(extra)
+	if #extra > 0 then
+		problems[#problems + 1] = "Nauvis has " .. #extra .. " autoplace controls its planet does not list: " .. table.concat(extra, ", ")
+	end
+	parts[#parts + 1] = #extra .. " foreign controls on Nauvis"
+	if mg.mode == "fresh" then
+		local d = snapshot_diff(mg.near, snapshot(s, chunk_area(MG_NEAR, 1)))
+		if #d > 0 then problems[#problems + 1] = "the area near the spawn changed: " .. table.concat(d, "; ") end
+		d = snapshot_diff(mg.fresh, snapshot(s, chunk_area(MG_FRESH, 1)))
+		if #d > 0 then problems[#problems + 1] = "the far area changed: " .. table.concat(d, "; ") end
+		for p, snap in pairs(mg.planets) do
+			local ps = game.surfaces[p]
+			d = ps and snapshot_diff(snap, snapshot(ps, chunk_area(planet_area(p), 1))) or { "surface gone" }
+			if #d > 0 then problems[#problems + 1] = p .. "'s area changed: " .. table.concat(d, "; ") end
+		end
+		--- generated anew in the next check (deleting a chunk takes effect at the end of the tick)
+		local function delete(ps, c)
+			for dx = -1, 1 do for dy = -1, 1 do ps.delete_chunk({ c[1] + dx, c[2] + dy }) end end
+		end
+		delete(s, MG_FRESH)
+		for p in pairs(mg.planets) do if game.surfaces[p] then delete(game.surfaces[p], planet_area(p)) end end
+		mg.phase = { parts = parts, problems = problems }
+		return
+	elseif mg.mode == "space-age" then
+		local new = {}
+		for _, c in pairs(MG_FAR) do
+			generate(s, c, 2)
+			local found = space_age_in(s, chunk_area(c, 2))
+			if #found > 0 then
+				problems[#problems + 1] = "new chunks around chunk " .. c[1] .. "," .. c[2] .. " hold " .. table.concat(found, ", ")
+			end
+			new[#new + 1] = #found
+		end
+		parts[#parts + 1] = "Space Age kinds in 2 x 25 new chunks: " .. table.concat(new, " and ")
+		generate(s, mg.gone, 0)
+		local gone = space_age_in(s, chunk_area(mg.gone))
+		if #gone > 0 then
+			problems[#problems + 1] = "the chunk without a building was not generated anew, it holds " .. table.concat(gone, ", ")
+		end
+		local kept = space_age_in(s, chunk_area(mg.kept))
+		if #kept ~= 1 or kept[1] ~= "tile " .. mg.tile .. "=1" then
+			problems[#problems + 1] = "the chunk with the chest holds " .. (#kept > 0 and table.concat(kept, ", ") or "nothing of Space Age")
+				.. ", only its tile " .. mg.tile .. " should stay"
+		end
+		if not s.find_entity("iron-chest", mg.chest) then problems[#problems + 1] = "the chest is gone" end
+		if not (mg.radar and s.find_entity("radar", mg.radar)) then
+			problems[#problems + 1] = "the radar that reaches into the next chunk is gone"
+		end
+		local trees = own_trees(s, mg.kept)
+		if trees ~= mg.trees then problems[#problems + 1] = "the chunk with the chest has " .. trees .. " trees, " .. mg.trees .. " before" end
+		parts[#parts + 1] = "chunk without a building " .. (#gone == 0 and "generated anew" or "kept")
+			.. ", chunk with the chest: " .. (#kept > 0 and table.concat(kept, ", ") or "nothing of Space Age") .. ", " .. trees .. " trees"
+	else
+		problems[#problems + 1] = "the old save's set-up failed"
+	end
+	planet_settings(parts, problems)
+	for _, m in pairs(problems) do log("DEVCHECK-MIGRATE-FAIL map generation: " .. m) end
+	log("DEVCHECK-MIGRATE-MAPGEN " .. (#problems == 0 and "ok" or "failed") .. " (" .. table.concat(parts, "; ") .. ")")
+end
+
+--- the fresh save's deleted areas generated anew: the same as in the old save
+local function check_mapgen_fresh()
+	local mg = storage.mapgen
+	local parts, problems = mg.phase.parts, mg.phase.problems
+	mg.phase = nil
+	local s = game.surfaces.nauvis
+	generate(s, MG_FRESH, 1)
+	local far = snapshot_diff(mg.fresh_centre, snapshot(s, chunk_area(MG_FRESH)))
+	if #far > 0 then problems[#problems + 1] = "the far area generated anew differs: " .. table.concat(far, "; ") end
+	local same = 0
+	for p, snap in pairs(mg.centres) do
+		local ps = game.surfaces[p]
+		generate(ps, planet_area(p), 1)
+		local d = snapshot_diff(snap, snapshot(ps, chunk_area(planet_area(p))))
+		if #d > 0 then problems[#problems + 1] = p .. "'s area generated anew differs: " .. table.concat(d, "; ") else same = same + 1 end
+	end
+	parts[#parts + 1] = "Nauvis near the spawn the same, far area generated anew " .. (#far == 0 and "the same" or "differs")
+		.. ", " .. same .. " of " .. table_size(mg.planets) .. " dimension areas generated anew the same"
+	planet_settings(parts, problems)
+	for _, m in pairs(problems) do log("DEVCHECK-MIGRATE-FAIL map generation: " .. m) end
+	log("DEVCHECK-MIGRATE-MAPGEN " .. (#problems == 0 and "ok" or "failed") .. " (" .. table.concat(parts, "; ") .. ")")
+end
+
 script.on_init(function()
 	setup_vein_grid()
+	setup_vein_ores()
 	setup_power()
 	setup_turbine()
 	setup_techs()
 	setup_removed()
 	setup_planets()
+	setup_mapgen()
 	storage.items = "skipped"
 	storage.patterns = "skipped"
 	storage.state = "skipped"
@@ -1374,7 +1736,10 @@ script.on_nth_tick(30, function(event)
 		check_removed()
 		check_planets()
 		check_vein_grid()
+		check_vein_ores()
+		check_mapgen()
 	end
+	if storage.mapgen and storage.mapgen.phase and event.tick >= TT_CHECK_TICK + 30 then check_mapgen_fresh() end
 	if not storage.handover_checked and event.tick >= HO_CHECK_TICK then
 		storage.handover_checked = true
 		check_handover()
