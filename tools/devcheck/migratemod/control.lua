@@ -313,7 +313,9 @@ local function setup_removed()
 	local machines = {}
 	for i, m in pairs(RM_MACHINES) do
 		local r = prototypes.recipe[m[2]]
-		if prototypes.entity[m[1]] and r and not (m[5] and prototypes.entity[m[5]]) then
+		--- (a version after #499, whose mines are mining drills, skips the rows of the old recipe machines)
+		if prototypes.entity[m[1]] and prototypes.entity[m[1]].type == "assembling-machine" and r
+			and not (m[5] and prototypes.entity[m[5]]) then
 			local e = s.create_entity{ name = m[1], position = { RM_AT[1] + 8 * (i - 1), RM_AT[2] + 12 }, force = "player",
 				raise_built = true }
 			game.forces.player.recipes[m[2]].enabled = true
@@ -1182,7 +1184,66 @@ local function check_planets()
 	log("DEVCHECK-MIGRATE-PLANETS " .. (#problems == 0 and "ok" or "failed") .. " (" .. table.concat(parts, "; ") .. ")")
 end
 
+--- Issue #529: one control per vein; the size slider of gt-ore-veins scaled every vein before and is the share of cells
+--- with a vein now. An old save with the map veins (before #529) gets size 1.5 on gt-ore-veins and notes the cell size
+--- and the veins of a few cells; after the update every vein control of Nauvis must have size 1.5, the grid's 1, and
+--- the cells and veins must be the same (DEVCHECK-MIGRATE-VEINGRID)
+local VG_SIZE, VG_CELLS = 1.5, { { 300, 300 }, { -700, 500 }, { 900, -1100 }, { -1500, -1300 }, { 2100, 1700 } }
+local function vein_grid(s)
+	local p = s.calculate_tile_properties({ "gt_cell_size", "gt_vein_id", "gt_vein_r" }, VG_CELLS)
+	return { size = p.gt_cell_size[1], ids = p.gt_vein_id, r = p.gt_vein_r }
+end
+local function setup_vein_grid()
+	local s = game.surfaces.nauvis
+	if not prototypes.autoplace_control["gt-ore-veins"] or prototypes.autoplace_control["gt-vein-Coal"] then
+		log("DEVCHECK-MIGRATE-SETUP-VEINGRID skipped (" .. (prototypes.autoplace_control["gt-vein-Coal"]
+			and "the veins have their own controls in this version" or "no map veins in this version") .. ")")
+		return
+	end
+	local mgs = s.map_gen_settings
+	mgs.autoplace_controls["gt-ore-veins"] = { frequency = 1, size = VG_SIZE, richness = 1 }
+	s.map_gen_settings = mgs
+	storage.vein_grid = vein_grid(s)
+	log("DEVCHECK-MIGRATE-SETUP-VEINGRID ok (size " .. VG_SIZE .. ", cells of " .. storage.vein_grid.size .. " tiles)")
+end
+
+local function check_vein_grid()
+	local before = storage.vein_grid
+	if not before then
+		log("DEVCHECK-MIGRATE-VEINGRID skipped")
+		return
+	end
+	local problems = {}
+	local s = game.surfaces.nauvis
+	local controls = s.map_gen_settings.autoplace_controls
+	local n = 0
+	for name, c in pairs(controls) do
+		if name:match("^gt%-vein%-") then
+			n = n + 1
+			if math.abs(c.size - VG_SIZE) > 1e-6 then problems[#problems + 1] = name .. " has size " .. c.size end
+		end
+	end
+	if n == 0 then problems[#problems + 1] = "no vein control in the map settings of Nauvis" end
+	if math.abs(controls["gt-ore-veins"].size - 1) > 1e-6 then
+		problems[#problems + 1] = "gt-ore-veins has size " .. controls["gt-ore-veins"].size .. ", not 1"
+	end
+	local after = vein_grid(s)
+	if math.abs(after.size - before.size) > 1e-6 then
+		problems[#problems + 1] = "cells of " .. after.size .. " tiles, " .. before.size .. " before"
+	end
+	for i in ipairs(VG_CELLS) do
+		if math.abs(after.ids[i] - before.ids[i]) > 1e-6 or math.abs(after.r[i] - before.r[i]) > 1e-3 then
+			problems[#problems + 1] = string.format("cell %d: vein %d radius %.2f, before %d radius %.2f", i, after.ids[i],
+				after.r[i], before.ids[i], before.r[i])
+		end
+	end
+	for _, m in pairs(problems) do log("DEVCHECK-MIGRATE-FAIL vein grid: " .. m) end
+	log("DEVCHECK-MIGRATE-VEINGRID " .. (#problems == 0 and "ok" or "failed") .. " (" .. n .. " vein controls at size "
+		.. VG_SIZE .. ", cells of " .. after.size .. " tiles, " .. #VG_CELLS .. " cells with the same vein and radius)")
+end
+
 script.on_init(function()
+	setup_vein_grid()
 	setup_power()
 	setup_turbine()
 	setup_techs()
@@ -1297,6 +1358,7 @@ script.on_nth_tick(30, function(event)
 		check_techs()
 		check_removed()
 		check_planets()
+		check_vein_grid()
 	end
 	if not storage.handover_checked and event.tick >= HO_CHECK_TICK then
 		storage.handover_checked = true

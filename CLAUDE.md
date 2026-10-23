@@ -245,7 +245,14 @@
     and per tile, GT's nine layers as bands, `gt_vein_key` = 8 x vein id + layer, one resource `gt-ore-<material>` per ore,
     category `gt-ore`, whose probability sums its keys, so a tile holds one ore at most; each planet sets `gt_vein_id` to
     its own `gt-vein-id-<DimNames>` through `property_expression_names`; `FORK_ORE_VEINS.planets` lists the planets with
-    veins; the autoplace control `gt-ore-veins`; the start veins in the four cells around the origin; mod data
+    veins; the autoplace control `gt-ore-veins` (issue #529: the grid: frequency the cell size, size the share of cells
+    with a vein, richness every vein's ore; plus one control `gt-vein-<mix name>` per placed vein on the planets that place
+    it, named in `[autoplace-control-names]` with the primary ore's icon, ordered by surface and GT's weight: frequency x
+    its weight in the pick `gt_vein_pick_<DimNames>` (off = weight 0, the other veins fill its cells), size magnifies it
+    (`gt_vein_scale`; the cells keep room for the planet's largest, `gt-size-max-<DimNames>`), richness its ore; a start
+    vein ignores frequency, one that is off leaves its cell to the pick; old saves get the controls from
+    `migrations/2026-10-23-issue-529-vein-controls.lua`, an old grid size moves onto every vein; devcheck's names check
+    covers autoplace controls); the start veins in the four cells around the origin; mod data
     `fork-ore-veins` for the chart tags of `scripts/fork-ore-veins.lua` and devcheck's map vein test; issue #508:
     `data-final-fixes.lua` deletes every resource autoplace control no planet and no prototype uses, and its preset
     entries, so the map generator lists only what makes ore; issue #500: the Lua migration
