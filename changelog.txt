@@ -1,6 +1,8 @@
 ---------------------------------------------------------------------------------------------------
 Version: 0.5.8
+Date: 2026-10-23
   Bugfixes:
+    - The cursor on an ME Cable that lies on vein ore selects the cable, not the ore under it (issue #541): its tooltip, mining and pipette work on the cable again. The fix is in ME Network 0.5.7, which Gregtorio Continued requires now.
     - Existing saves get the ores of the GT New Horizons veins also when their map settings already named the veins (issue #534): such a save (for example after editing its map settings) kept its explored map without vein ore, and the mines that became drills found none. Every generated chunk without vein ore gets it now, once, when the save loads.
     - Existing saves no longer get other planets' plants, decoratives and tiles in Nauvis' new chunks (issue #540): a map started while Space Age's planets were still in the game (before 0.5.6) kept the map generator settings of every planet on Nauvis, which since 0.5.7 placed Gleba's plants (stingfrond, funneltrunk and others) and other planets' ground in newly explored land. When the save loads (also one already played with 0.5.7), Nauvis gets only its own settings back, every chunk without a building or a placed floor is generated anew as soon as it is explored again (trees, rocks and ore there come back as on a new map), and the chunks with buildings lose the Space Age trees, plants, rocks and decoratives; their tiles stay as they are, so explored land with buildings keeps the foreign ground it has. A map started with 0.5.7 is not touched.
 ---------------------------------------------------------------------------------------------------
