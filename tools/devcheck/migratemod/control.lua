@@ -1135,11 +1135,59 @@ local function check_handover()
 		.. " item and fluid kinds equal, settings of 7 blocks kept, drive behind the underground pair connected)")
 end
 
+--- Issue #529: the Space Age planets are deleted. The old save gets a surface of each (a few chunks, an iron chest with
+--- iron plates); after the update the save must load, and the check reports what became of each surface and generates
+--- new chunks on one that is left (DEVCHECK-MIGRATE-PLANETS)
+local REMOVED_PLANETS = { "vulcanus", "gleba", "fulgora", "aquilo" }
+local function setup_planets()
+	local made = {}
+	for _, name in pairs(REMOVED_PLANETS) do
+		local planet = game.planets[name]
+		if planet then
+			local s = planet.surface or planet.create_surface()
+			s.request_to_generate_chunks({ 0, 0 }, 1)
+			s.force_generate_chunk_requests()
+			local at = s.find_non_colliding_position("iron-chest", { 0, 0 }, 64, 1)
+			local chest = at and s.create_entity{ name = "iron-chest", position = at, force = "player" }
+			if chest then chest.insert{ name = "iron-plate", count = 10 } end
+			made[#made + 1] = name
+		end
+	end
+	storage.planets = made
+	log("DEVCHECK-MIGRATE-SETUP-PLANETS " .. (#made > 0 and "ok (" .. table.concat(made, ", ") .. ")" or "skipped"))
+end
+
+local function check_planets()
+	if type(storage.planets) ~= "table" or #storage.planets == 0 then
+		log("DEVCHECK-MIGRATE-PLANETS skipped")
+		return
+	end
+	local parts, problems = {}, {}
+	for _, name in pairs(storage.planets) do
+		if game.planets[name] then problems[#problems + 1] = name .. " is still a planet" end
+		local s = game.surfaces[name]
+		if not s then
+			parts[#parts + 1] = name .. ": surface deleted"
+		else
+			local chests = s.count_entities_filtered{ name = "iron-chest" }
+			local ok = pcall(function()
+				s.request_to_generate_chunks({ 320, 320 }, 0)
+				s.force_generate_chunk_requests()
+			end)
+			parts[#parts + 1] = name .. ": surface kept (planet " .. (s.planet and s.planet.name or "none") .. ", " .. chests
+				.. " chest, new chunks " .. (ok and s.is_chunk_generated({ 10, 10 }) and "generated" or "not generated") .. ")"
+		end
+	end
+	for _, m in pairs(problems) do log("DEVCHECK-MIGRATE-FAIL planets: " .. m) end
+	log("DEVCHECK-MIGRATE-PLANETS " .. (#problems == 0 and "ok" or "failed") .. " (" .. table.concat(parts, "; ") .. ")")
+end
+
 script.on_init(function()
 	setup_power()
 	setup_turbine()
 	setup_techs()
 	setup_removed()
+	setup_planets()
 	storage.items = "skipped"
 	storage.patterns = "skipped"
 	storage.state = "skipped"
@@ -1248,6 +1296,7 @@ script.on_nth_tick(30, function(event)
 		storage.techs_checked = true
 		check_techs()
 		check_removed()
+		check_planets()
 	end
 	if not storage.handover_checked and event.tick >= HO_CHECK_TICK then
 		storage.handover_checked = true

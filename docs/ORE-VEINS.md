@@ -52,7 +52,8 @@ Noise autoplace, one resource `gt-ore-<material>` per ore (category `gt-ore`, mi
 | The End | `gt-end` | End Portal (12 Eyes of Ender), Reach the End | HV | 7 | islands of end stone in the void, permanent night |
 
 The planets are Space Age planets without a space connection; `scripts/fork-portals.lua` makes a surface at its first
-portal. Recipes of one dimension carry `surface_conditions` on `gt-dimension` (nether air, glowstone, ender air, end stone;
+portal. Space Age's own planets are deleted (#529, `data-final-fixes.lua`); the Nether keeps Vulcanus' terrain, and the
+controls of Vulcanus' resources stay hidden because its lava reads their sliders. Recipes of one dimension carry `surface_conditions` on `gt-dimension` (nether air, glowstone, ender air, end stone;
 the water drilling rig on Nauvis only). devcheck counts an ore placed only on a planet behind its reach technology as
 obtainable from that technology on (`planet-mining:<resource>`).
 

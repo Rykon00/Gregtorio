@@ -2136,6 +2136,8 @@ def migrate(a):
     print(f"old save with researched technologies (issue #91): {setup.group(1) if setup else 'no result'}")
     setup = re.search(r"DEVCHECK-MIGRATE-SETUP-REMOVED (.*)", log)
     print(f"old save with removed fluids and items (issues #98, #96): {setup.group(1) if setup else 'no result'}")
+    setup = re.search(r"DEVCHECK-MIGRATE-SETUP-PLANETS (.*)", log)
+    print(f"old save with surfaces of the Space Age planets (issue #529): {setup.group(1) if setup else 'no result'}")
     # issue #209: a save from before me-network 0.5.0 goes through the intermediate load first (--direct: not)
     save_me = save_me_network(old, old_me)
     step_log = ""
@@ -2178,6 +2180,8 @@ def migrate(a):
     print(f"technology effects of the old save (issue #91): {techs.group(1) if techs else 'no result'}")
     removed = re.search(r"DEVCHECK-MIGRATE-REMOVED (.*)", log)
     print(f"removed fluids and items of the old save (issues #98, #96): {removed.group(1) if removed else 'no result'}")
+    planets = re.search(r"DEVCHECK-MIGRATE-PLANETS (.*)", log)
+    print(f"surfaces of the deleted Space Age planets (issue #529): {planets.group(1) if planets else 'no result'}")
     # issue #83: the fingerprints of what gregtorio-continued gave and what me-network got must be equal (issue #209:
     # the hand-over and the conversions of me-network 0.5.0 happen in the intermediate load)
     both = step_log + log
@@ -2197,7 +2201,7 @@ def migrate(a):
         and patterns and not patterns.group(1).startswith("failed") and job and not job.group(1).startswith("failed") \
         and items and not items.group(1).startswith("failed") and handover_ok \
         and techs and not techs.group(1).startswith("failed") \
-        and removed and not removed.group(1).startswith("failed")
+        and removed and not removed.group(1).startswith("failed")         and planets and not planets.group(1).startswith("failed")
     return 0 if ok else 1
 
 
