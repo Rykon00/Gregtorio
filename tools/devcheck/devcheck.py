@@ -342,6 +342,7 @@ class Model:
         self.R, self.C, self.CF, self.I, self.T = {}, {}, {}, {}, {}
         self.burnt, self.burners = [], {}   # (fuel item, burnt result, fuel categories); burner entity -> categories
         self.tools = {}                     # recipe -> the mold or lens it needs in the module slot (issue #316)
+        self.itype, self.uses = {}, {}      # item -> its prototype type; item -> its uses besides recipes (issue #547)
         self.base = {"water", "steam"}
         mined, reach = {}, {}   # issue #501: resource -> its mined items; resource -> technologies of its planets
         for p in rows:
@@ -357,7 +358,9 @@ class Model:
                 self.C[p[1]] = p[3].split(",") if p[3] else []
                 self.CF[p[1]] = (int(p[4]), int(p[5]))
             elif k == "I":
-                self.I[p[1]] = p[3]
+                self.I[p[1]] = p[3] if len(p) > 3 else ""
+                self.itype[p[1]] = p[2]
+                self.uses[p[1]] = [x for x in p[4].split(",") if x] if len(p) > 4 else []
             elif k == "T":
                 self.T[p[1]] = dict(pre=[x for x in p[2].split(",") if x], eff=[x for x in p[3].split(",") if x],
                                     sci=[x for x in p[4].split(",") if x], trig=p[5], en=p[6] == "true")
@@ -654,6 +657,38 @@ def check_table_only(m, sec):
     stale = [f"{r} (allow-list entry: not a recipe of an item that only the crafting table or the hand makes)"
              for r in sorted(allow) if r not in flagged]
     return f"{only_items} reachable items with only crafting table or hand recipes, {len(allow)} recipes in the allow-list", problems + stale
+
+
+def check_trigger_items(m, sec):
+    """Issue #547: an item that a technology's craft-item trigger asks for and that has no use besides it fails: no recipe
+    (enabled or unlocked by a researchable technology, not hidden, not a recycling recipe) takes it, no technology's
+    research unit takes it (science packs), it places nothing,
+    it is a plain `item` (tools, armor, capsules, modules and the like have their own use) and no fuel, tile, equipment
+    or plant; unless it is in the allow-list FORK_TRIGGER_ONLY_ITEMS of prototypes/100-fork-fixes.lua with its reason
+    (section TRIGGERONLYOK); an entry that is no such item fails too. Returns (info line, problems)."""
+    allow = {r[0]: (r[1] if len(r) > 1 else "") for r in sec.get("TRIGGERONLYOK", [])}
+    triggers = {}
+    for t, v in sorted(m.T.items()):
+        mt = re.search(r'item = "([^"]+)"', v["trig"])
+        if v["en"] and mt and 'type = "craft-item"' in v["trig"]:
+            triggers.setdefault(mt.group(1), []).append(t)
+    taken = set()
+    for r in m.unlocked:
+        v = m.R[r]
+        if v["hidden"] or r.endswith("-recycling") or r.startswith("recycling-") or v["cat"] in ("recycling", "parameters"):
+            continue
+        taken.update(v["ing"])
+    taken.update(s for v in m.T.values() if v["en"] for s in v["sci"])   # science packs: research units of a lab
+    dead ={i: ts for i, ts in triggers.items() if i not in taken and not m.I.get(i) and m.itype.get(i) == "item"
+            and not m.uses.get(i)}
+    problems = [f"{i}: no recipe takes it and it has no other use than the craft trigger of {', '.join(ts)} (give it a "
+                "consumer, or add it to FORK_TRIGGER_ONLY_ITEMS with its reason)" for i, ts in sorted(dead.items())
+                if i not in allow]
+    problems += [f"FORK_TRIGGER_ONLY_ITEMS: {i} has no reason" for i, why in sorted(allow.items()) if not why]
+    problems += [f"FORK_TRIGGER_ONLY_ITEMS: {i} is not an item whose only use is a craft trigger (remove the entry)"
+                 for i in sorted(allow) if i not in dead]
+    return f"{len(triggers)} items of craft-item triggers, {len(dead)} without another use, {len(allow)} of them on " \
+           f"purpose (FORK_TRIGGER_ONLY_ITEMS)", problems
 
 
 VANILLA_MODS = {"base", "space-age", "quality", "elevated-rails"}
@@ -1810,6 +1845,9 @@ def check(a):
     table_info, table_only = check_table_only(m, sec)
     print(f"\ncrafting table and hand only items (issue #126): {table_info}")
     report("items that only the crafting table or the hand can make, without an entry in FORK_RECIPES_TABLE_ONLY", table_only)
+    trigger_info, trigger_only = check_trigger_items(m, sec)
+    print(f"\nitems of craft triggers (issue #547): {trigger_info}")
+    report("items whose only use is a technology's craft trigger (prototypes/100-fork-fixes.lua)", trigger_only)
     lens_info, lenses = check_engraver_lenses(m, sec)
     print(f"\nlaser engraver lenses (issue #325): {lens_info}")
     report("laser engraver recipes without a lens (prototypes/155-fork-ore-chain.lua)", lenses)
@@ -1896,7 +1934,7 @@ def check(a):
               or new_drafts or fluid_problems or locked or one_pack or fluid_steps or table_only or me_recipes
               or extractor_split or ore_mixes or ore_chain or ore_baths or ore_o34 or ore_hammer
               or circuit_icons or pgm_dusts or recycling or names or gaps or tree or vanilla or lenses or mine_twins
-              or unplaceable or stale_unlocks or removed_keys)
+              or unplaceable or stale_unlocks or removed_keys or trigger_only)
     print("\nRESULT:", "OK" if ok else "PROBLEMS FOUND")
     return 0 if ok else 1
 

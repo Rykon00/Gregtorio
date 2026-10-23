@@ -206,3 +206,13 @@ end
 for _, name in pairs({ "t1-construction-robot", "t1-logistic-robot" }) do
 	data.raw.item[name].place_result = name
 end
+
+
+
+--------------------------------------------------------------------------------
+--- TRIGGER ITEMS (issue #547): an item that a technology's craft-item trigger asks for needs a use of its own after it
+--- (the stone pickaxe had none once the vein recipes were gone, #505): devcheck fails for a plain item that no recipe
+--- or research unit takes and that places, fuels or plants nothing, unless it is in this allow-list (item -> reason)
+--------------------------------------------------------------------------------
+
+FORK_TRIGGER_ONLY_ITEMS = {}

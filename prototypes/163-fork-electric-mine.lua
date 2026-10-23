@@ -84,6 +84,7 @@ FORK_ELECTRIC_MINE_EXCLUDED = {
 	["hunting-zombies"] = "a mob drop (zombie heads), no ore: the Ore Drilling Plant mines ore blocks only",
 	["cobblestone-manual-mine"] = "stone, no ore: the Ore Drilling Plant mines ore blocks only",
 	["cobblestone-manual-mine-with-wooden-pickaxe"] = "stone, no ore: the Ore Drilling Plant mines ore blocks only",
+	["cobblestone-manual-mine-with-stone-pickaxe"] = "stone, no ore: the Ore Drilling Plant mines ore blocks only (issue #547)",
 	["mining-end-stone"] = "end stone is a plain block of the End, no ore: the Ore Drilling Plant mines ore blocks only",
 	["mining-glowstone-vein"] = "glowstone is vanilla's Nether block, no GT ore (07: no raw item, no ore chain): the Ore " ..
 		"Drilling Plant mines ore blocks only",
@@ -309,6 +310,22 @@ for name, r in pairs(data.raw.recipe) do
 		fork_set_category(r, "manual-digsite-recipes")
 	end
 end
+
+--- issue #547: the stone pickaxe's cobblestone, between the wooden pickaxe's (8 labor) and the iron pickaxe's (2 labor);
+--- its only use, the iron vein recipe with the stone pickaxe, went with the vein recipes (#505). Craft Stone Tools, which
+--- the pickaxe researches, unlocks it; the three recipes stand in the order of their pickaxes.
+create_recipe{
+	name = "cobblestone-manual-mine-with-stone-pickaxe",
+	category = "manual-digsite-recipes",
+	energy_required = 10,
+	subgroup = "subgroup-mining-poor",
+	order = "a[cobblestone]-b[stone-pickaxe]",
+	ingredients = { item("stone-pickaxe", 1), item("manual-labor", 4) },
+	results = { item("stone", 64) },
+}
+fork_add_unlock("craft-stone-tools", "cobblestone-manual-mine-with-stone-pickaxe")
+data.raw.recipe["cobblestone-manual-mine-with-wooden-pickaxe"].order = "a[cobblestone]-a[wooden-pickaxe]"
+data.raw.recipe["manually-digging-gravel"].order = "b[gravel]"
 
 --- issue #527: an old save's Manual Mine on such a recipe (or on the glowstone vein, which needs the Nether since #501)
 --- would lose it silently: the engine drops a recipe of another category or surface on load, before any Lua migration.
