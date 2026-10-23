@@ -801,7 +801,6 @@ if data.raw["item-with-tags"]["me-singularity-storage-cell"] then
 	cell.ingredients = { item("eternal-singularity", 1), item("me-16384k-storage-component", 12), item("quantum-chest-v", 8),
 		item("block-of-infinity", 4), item("infinity-catalyst", 4), item("block-of-cosmic-neutronium", 12),
 		fluid("molten-indalloy-140", 230.4) }
-	cell.subgroup = "fork-me-cells"
 	local t = data.raw.technology[T_CELL]
 	for _, p in pairs({ T_MOD, "umv-machines", "fusion-plasmas-mk5", "uev-components", "bio-processor-mainframes" }) do
 		table.insert(t.prerequisites, p)

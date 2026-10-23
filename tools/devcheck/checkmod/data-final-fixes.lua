@@ -173,6 +173,36 @@ for _, name in pairs(ME_NETWORK and ME_NETWORK.recipes or {}) do me_row(name) en
 for name in pairs(FORK_ME_RECIPES_STANDALONE or {}) do me_row(name) end
 section("MERECIPES", mr)
 
+--- Issue #519: the ME items (ME_NETWORK.items and Gregtorio's own FORK_ME_TAB_ITEMS) with their subgroup and its item
+--- group, the allow-list FORK_ME_TAB_OUTSIDE, and the Gregtorio recipes of ME items (FORK_ME_RECIPES) that sit in a row
+--- of the tab, with the row of their item; rows "group" name, "item" name subgroup group, "allow" name reason, "recipe"
+--- name subgroup item-subgroup (absent in older versions)
+local function any_item(name)
+	for t in pairs(defines.prototypes.item) do
+		if data.raw[t] and data.raw[t][name] then return data.raw[t][name] end
+	end
+end
+local function group_of(subgroup)
+	local sg = subgroup and data.raw["item-subgroup"][subgroup]
+	return sg and sg.group or "-"
+end
+local mt = { "group\t" .. (ME_NETWORK and ME_NETWORK.GROUP or "-") }
+for _, list in pairs({ ME_NETWORK and ME_NETWORK.items or {}, FORK_ME_TAB_ITEMS or {} }) do
+	for _, name in pairs(list) do
+		local item = any_item(name)
+		if item then mt[#mt + 1] = table.concat({ "item", name, item.subgroup or "-", group_of(item.subgroup) }, "\t") end
+	end
+end
+for name, reason in pairs(FORK_ME_TAB_OUTSIDE or {}) do mt[#mt + 1] = "allow\t" .. name .. "\t" .. reason end
+for name in pairs(FORK_ME_RECIPES or {}) do
+	local r = data.raw.recipe[name]
+	if r and ME_NETWORK and group_of(r.subgroup) == ME_NETWORK.GROUP then
+		local item = any_item(r.main_product or (r.results and r.results[1] and r.results[1].name) or name)
+		mt[#mt + 1] = table.concat({ "recipe", name, r.subgroup, item and item.subgroup or "-" }, "\t")
+	end
+end
+section("METAB", mt)
+
 --- Issue #496: GT's ore mixes (FORK_ORE_MIXES of prototypes/165-fork-ore-veins.lua) with Gregtorio's surfaces, the ores
 --- left out (FORK_ORE_MIX_SKIPPED) and those without an ore chain (FORK_ORE_MIX_NO_CHAIN); rows "surface" dimension,
 --- "mix" name dimensions, "ore" mix role material raw-item-or-"-", "skip" key reason, "nochain" material reason

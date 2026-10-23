@@ -762,6 +762,30 @@ def check_me_recipes(sec):
             sorted(problems))
 
 
+def check_me_tab(sec):
+    """Issue #519: every ME item (ME_NETWORK.items, Gregtorio's own FORK_ME_TAB_ITEMS of the compat file) sits in a row of
+    me-network's tab "ME Network" (the item group ME_NETWORK.GROUP), unless it is in the allow-list FORK_ME_TAB_OUTSIDE
+    with its reason; a Gregtorio recipe of an ME item (FORK_ME_RECIPES) that sits in the tab sits in its item's row (the
+    other ones keep their machine rows). An allow-list entry that is no ME item or sits in the tab fails too. Returns
+    (info line, problems)."""
+    rows = sec.get("METAB", [])
+    group = next((r[1] for r in rows if r[0] == "group"), "-")
+    items = {r[1]: r for r in rows if r[0] == "item"}
+    allow = {r[1]: (r[2] if len(r) > 2 else "") for r in rows if r[0] == "allow"}
+    recipes = [r for r in rows if r[0] == "recipe"]
+    outside = {n: r for n, r in items.items() if r[3] != group}
+    problems = [f"{n}: subgroup {r[2]}, group {r[3]}: not in the tab {group} (move it into a row of the tab or add it to "
+                "FORK_ME_TAB_OUTSIDE)" for n, r in outside.items() if n not in allow]
+    problems += [f"FORK_ME_TAB_OUTSIDE: {n} has no reason" for n, why in allow.items() if not why]
+    problems += [f"FORK_ME_TAB_OUTSIDE: {n} is " + ("no ME item" if n not in items else "in the tab") + " (remove the entry)"
+                 for n in allow if n not in outside]
+    problems += [f"recipe {r[1]}: row {r[2]} of the tab, its item's row is {r[3]}" for r in recipes if r[2] != r[3]]
+    if rows and group == "-":
+        problems.append("no ME_NETWORK.GROUP (me-network before 0.5.7?)")
+    return (f"{len(items) - len(outside)} of {len(items)} ME items in the tab {group}, {len(allow)} outside on purpose; "
+            f"{len(recipes)} recipes in the tab", sorted(problems))
+
+
 def check_ore_mixes(m, sec):
     """Issue #496 (prototypes/165-fork-ore-veins.lua, plan #494): every ore of a GT vein in a dimension that is one of
     Gregtorio's surfaces (FORK_ORE_MIX_SURFACES) has a raw ore raw-<material> with GTNH's ore chain (the ore washer's
@@ -1828,6 +1852,9 @@ def check(a):
     me_info, me_recipes = check_me_recipes(sec)
     print(f"\nME recipes (issue #214): {me_info}")
     report("me-network recipes without a Gregtorio recipe (prototypes/120-fork-me-network-compat.lua)", me_recipes)
+    tab_info, me_tab = check_me_tab(sec)
+    print(f"\nME tab (issue #519): {tab_info}")
+    report("ME items outside the tab ME Network, or ME recipes outside their item's row", me_tab)
     parts_info, parts_unranked = check_material_parts(sec)
     print(f"\nmaterial parts (issue #118): {parts_info}")
     report("WARNING: materials of the material parts without a tier (prototypes/200-fork-material-parts.lua)", parts_unranked)
@@ -1893,7 +1920,7 @@ def check(a):
         Path(a.balance_out).write_text("[\n" + ",\n".join(rows) + "\n]\n", encoding="utf-8")
         print(f"\nbalance data written to {a.balance_out} (recipes, machines, technologies as JSON)")
     ok = not (files or [s for s in sprites if not s.startswith("(")] or uncraft or menu or required or unresearchable
-              or new_drafts or fluid_problems or locked or one_pack or fluid_steps or table_only or me_recipes
+              or new_drafts or fluid_problems or locked or one_pack or fluid_steps or table_only or me_recipes or me_tab
               or extractor_split or ore_mixes or ore_chain or ore_baths or ore_o34 or ore_hammer
               or circuit_icons or pgm_dusts or recycling or names or gaps or tree or vanilla or lenses or mine_twins
               or unplaceable or stale_unlocks or removed_keys)
