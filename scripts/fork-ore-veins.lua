@@ -89,7 +89,8 @@ end
 --- migrations/2026-10-22-issue-500-map-veins.lua (remote "migrate"; the game runs a migration once per save, whatever
 --- the version, and never for a map made with it):
 ---   1. the surface's map generation settings take its planet's control, resources and vein expressions (new chunks);
----   2. every generated chunk gets the veins' ores (regenerate_entity, also under buildings, like vanilla ore);
+---   2. every generated chunk gets the veins' ores (regenerate_entity, also under buildings, like vanilla ore; issue #534:
+---      every one without an ore of the veins);
 ---   3. a dimension mine that runs a hidden vein recipe (the Overworld's: 163 hides them, the drills mine those ores) is
 ---      replaced by its mining drill at its place (mod data fork-electric-mine: drills); the inserters, belts and poles
 ---      stay, the Manual Mine gets the old one's manual labor as fuel, a plant its Drilling Fluid, other items go to the
@@ -107,6 +108,9 @@ end
 --- the planet's gt_size_max; the size slider of gt-ore-veins scaled every vein before and sets the share of cells with a
 --- vein now, so a save whose old size is not 1 gets it on every vein's control and 1 on the grid's: its cells and veins
 --- stay as they were.
+--- Issue #534 (migrations/2026-10-23-issue-534-vein-ores.lua): 2. and 4. take every generated chunk without an ore of the
+--- veins, not only a surface whose map settings lacked the veins: a save can have them (from a map settings editor) while
+--- its chunks have no ore. A chunk of an empty cell gets none; one whose ore was mined out completely gets it again.
 local function migrate_surface(surface, planet)
 	local profiler = helpers.create_profiler()
 	--- 1. the map generation settings of the planet (a map made with the veins has them: its ores stay as they are)
@@ -155,13 +159,23 @@ local function migrate_surface(surface, planet)
 			dropped = dropped + 1
 		end
 	end
-	--- 2. the ores of the generated chunks
+	--- 2. the ores of the generated chunks that have none (once per load: every migration file of a load calls this in the
+	--- same tick, storage.fork_ore_veins.ores_tick)
 	local chunks = {}
-	for c in surface.get_chunks() do
-		if surface.is_chunk_generated(c) then chunks[#chunks + 1] = { x = c.x, y = c.y } end
+	local st = storage.fork_ore_veins
+	st.ores_tick = st.ores_tick or {}
+	local again = st.ores_tick[surface.index] == game.tick
+	st.ores_tick[surface.index] = game.tick
+	if not again then
+		for c in surface.get_chunks() do
+			if surface.is_chunk_generated(c) and #names > 0 and surface.count_entities_filtered{ type = "resource", name = names,
+				area = { { c.x * 32, c.y * 32 }, { c.x * 32 + 32, c.y * 32 + 32 } }, limit = 1 } == 0 then
+				chunks[#chunks + 1] = { x = c.x, y = c.y }
+			end
+		end
 	end
 	if fresh or dropped > 0 or added > 0 then surface.map_gen_settings = mgs end
-	if fresh and #names > 0 and #chunks > 0 then surface.regenerate_entity(names, chunks) end
+	if #chunks > 0 then surface.regenerate_entity(names, chunks) end
 	--- 3. the dimension mines on the Overworld's veins
 	local em = prototypes.mod_data["fork-electric-mine"]
 	local drills = em and em.data.drills or {}
@@ -256,7 +270,7 @@ local function migrate_surface(surface, planet)
 	end
 	--- 4. the charted veins
 	local charted, tags = 0, 0
-	for _, force in pairs(fresh and game.forces or {}) do
+	for _, force in pairs(#chunks > 0 and game.forces or {}) do
 		local areas = {}
 		for _, c in pairs(chunks) do
 			if force.is_chunk_charted(surface, c) then
@@ -270,7 +284,7 @@ local function migrate_surface(surface, planet)
 	log({ "", string.format("FORK-ORE-VEINS: %s: %d chunks regenerated with %d ores, %d mines replaced by drills (%d without ore), "
 		.. "%d without their recipe, %d with their recipe back, %d veins tagged in %d charted chunks, %d names of missing noise "
 		.. "expressions dropped from the map settings, %d controls and expression names added%s; ", surface.name,
-		fresh and #chunks or 0, #names, replaced, #bare, #cleared, restored, tags, charted, dropped, added,
+		#chunks, #names, replaced, #bare, #cleared, restored, tags, charted, dropped, added,
 		resized and (" (the old size " .. old_size .. " on every vein)") or ""), profiler })
 end
 

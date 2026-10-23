@@ -2229,6 +2229,8 @@ def migrate(a):
     print(f"old save with surfaces of the Space Age planets (issue #529): {setup.group(1) if setup else 'no result'}")
     setup = re.search(r"DEVCHECK-MIGRATE-SETUP-VEINGRID (.*)", log)
     print(f"old save with the size of gt-ore-veins at 1.5 (issue #529): {setup.group(1) if setup else 'no result'}")
+    setup = re.search(r"DEVCHECK-MIGRATE-SETUP-VEINORES (.*)", log)
+    print(f"old save whose vein ores are deleted (issue #534): {setup.group(1) if setup else 'no result'}")
     # issue #209: a save from before me-network 0.5.0 goes through the intermediate load first (--direct: not)
     save_me = save_me_network(old, old_me)
     step_log = ""
@@ -2275,6 +2277,8 @@ def migrate(a):
     print(f"surfaces of the deleted Space Age planets (issue #529): {planets.group(1) if planets else 'no result'}")
     veingrid = re.search(r"DEVCHECK-MIGRATE-VEINGRID (.*)", log)
     print(f"vein controls of the old save (issue #529): {veingrid.group(1) if veingrid else 'no result'}")
+    veinores = re.search(r"DEVCHECK-MIGRATE-VEINORES (.*)", log)
+    print(f"vein ores of the old save regenerated (issue #534): {veinores.group(1) if veinores else 'no result'}")
     # issue #83: the fingerprints of what gregtorio-continued gave and what me-network got must be equal (issue #209:
     # the hand-over and the conversions of me-network 0.5.0 happen in the intermediate load)
     both = step_log + log
@@ -2294,7 +2298,7 @@ def migrate(a):
         and patterns and not patterns.group(1).startswith("failed") and job and not job.group(1).startswith("failed") \
         and items and not items.group(1).startswith("failed") and handover_ok \
         and techs and not techs.group(1).startswith("failed") \
-        and removed and not removed.group(1).startswith("failed")         and planets and not planets.group(1).startswith("failed")         and veingrid and not veingrid.group(1).startswith("failed")
+        and removed and not removed.group(1).startswith("failed")         and planets and not planets.group(1).startswith("failed")         and veingrid and not veingrid.group(1).startswith("failed")         and veinores and not veinores.group(1).startswith("failed")
     return 0 if ok else 1
 
 

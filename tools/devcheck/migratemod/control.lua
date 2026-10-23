@@ -1257,8 +1257,55 @@ local function check_vein_grid()
 		.. VG_SIZE .. ", cells of " .. after.size .. " tiles, " .. #VG_CELLS .. " cells with the same vein and radius)")
 end
 
+--- Issue #534: a save whose map settings name the veins while its chunks have no ore of them (the maintainer's, from a map
+--- settings editor). An old save with the map veins gets its generated chunks' vein ore (regenerated first, to match a
+--- changed grid above) counted and then deleted; after the update the same chunks must hold the same ore again
+--- (DEVCHECK-MIGRATE-VEINORES)
+local function vein_ores()
+	local names = {}
+	for name, p in pairs(prototypes.get_entity_filtered{ { filter = "type", type = "resource" } }) do
+		if p.resource_category == "gt-ore" then names[#names + 1] = name end
+	end
+	return names
+end
+local function setup_vein_ores()
+	local s = game.surfaces.nauvis
+	if not (s.map_gen_settings.property_expression_names or {}).gt_vein_id then
+		log("DEVCHECK-MIGRATE-SETUP-VEINORES skipped (no map veins in this version)")
+		return
+	end
+	local names, chunks = vein_ores(), {}
+	for c in s.get_chunks() do
+		if s.is_chunk_generated(c) then chunks[#chunks + 1] = { x = c.x, y = c.y } end
+	end
+	s.regenerate_entity(names, chunks)
+	local ores = s.find_entities_filtered{ type = "resource", name = names }
+	storage.vein_ores = { tiles = #ores, chunks = #chunks }
+	for _, e in pairs(ores) do e.destroy() end
+	log("DEVCHECK-MIGRATE-SETUP-VEINORES ok (" .. #ores .. " ore tiles in " .. #chunks .. " chunks deleted, the map settings "
+		.. "keep the veins)")
+end
+
+local function check_vein_ores()
+	local before = storage.vein_ores
+	if not before then
+		log("DEVCHECK-MIGRATE-VEINORES skipped")
+		return
+	end
+	local s = game.surfaces.nauvis
+	local tiles = s.count_entities_filtered{ type = "resource", name = vein_ores() }
+	--- the landfill the helper puts over water after this count gets ore too
+	local ok = tiles >= before.tiles and math.abs(tiles - before.tiles) <= before.tiles * 0.02 + 50
+	if not ok then
+		log("DEVCHECK-MIGRATE-FAIL vein ores: " .. tiles .. " ore tiles after the update, " .. before.tiles .. " before the deletion")
+	end
+	log("DEVCHECK-MIGRATE-VEINORES " .. (ok and "ok" or "failed") .. " (" .. tiles .. " ore tiles of the veins after the update, "
+		.. before.tiles .. " before they were deleted, in " .. before.chunks .. " chunks)")
+end
+
 script.on_init(function()
 	setup_vein_grid()
+	setup_vein_ores()
 	setup_power()
 	setup_turbine()
 	setup_techs()
@@ -1374,6 +1421,7 @@ script.on_nth_tick(30, function(event)
 		check_removed()
 		check_planets()
 		check_vein_grid()
+		check_vein_ores()
 	end
 	if not storage.handover_checked and event.tick >= HO_CHECK_TICK then
 		storage.handover_checked = true
