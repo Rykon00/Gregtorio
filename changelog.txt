@@ -1,4 +1,8 @@
 ---------------------------------------------------------------------------------------------------
+Version: 0.5.9
+  Changes:
+    - The colour drop-downs of the Ender Chest and the Ender Tank list the 16 colours alphabetically (issue #545). Only the order shown changed: chests and tanks of existing saves and blueprints keep their colour codes and still share with the ones built now.
+---------------------------------------------------------------------------------------------------
 Version: 0.5.8
 Date: 2026-10-23
   Bugfixes:

@@ -1630,7 +1630,9 @@ end
 
 --- Ender Storage (issue #504, scripts/fork-ender.lua): an Ender Chest on Nauvis and one in the Nether with the same code
 --- share their slots, a third with another code does not; an Ender Tank of water on Nauvis and an empty one in the
---- Nether with the same code hold half each after the levelling, a third with another code stays empty.
+--- Nether with the same code hold half each after the levelling, a third with another code stays empty. Issue #545: the
+--- drop-downs list the colours alphabetically and map back to the same code; a chest of an old save with link_id 3803
+--- shows red, green, blue and shares with a chest set to red, green, blue through the drop-downs.
 local EN_WAIT = 61   -- three levelling intervals
 
 function setup_ender_test(s)
@@ -1652,9 +1654,15 @@ function setup_ender_test(s)
 		for e, code in pairs({ [a] = 1234, [b] = 1234, [c] = 0, [t1] = 777, [t2] = 777, [t3] = 778 }) do
 			remote.call("fork-ender", "set_code", e, code)
 		end
+		-- issue #545: a chest of an old save (red, green, blue: link_id 3803) and one set through the drop-downs
+		local old, new = place(s, "ender-chest", { -200.5, -245.5 }), place(n, "ender-chest", { 30, 10 })
+		old.link_id = 3803
+		et.old_shown = remote.call("fork-ender", "shown_of", remote.call("fork-ender", "get_code", old))
+		remote.call("fork-ender", "set_code", new, remote.call("fork-ender", "code_of", et.old_shown))
+		old.insert{ name = "copper-plate", count = 3 }
 		a.insert{ name = "iron-plate", count = 7 }
 		t1.insert_fluid{ name = "water", amount = 1000 }
-		et.chests, et.tanks, et.tick = { a, b, c }, { t1, t2, t3 }, game.tick
+		et.chests, et.tanks, et.tick = { a, b, c, old, new }, { t1, t2, t3 }, game.tick
 		et.code = remote.call("fork-ender", "get_code", b)
 	end)
 	if not ok then fails[#fails + 1] = "ender storage test: " .. tostring(err) end
@@ -1678,10 +1686,36 @@ function ender_test()
 	expect(math.abs(w1 - 500) < 1e-3 and math.abs(w2 - 500) < 1e-3,
 		string.format("the Ender Tanks of one code hold %.1f (Nauvis) and %.1f (Nether), not 500 each", w1, w2))
 	expect(w3 == 0, "the Ender Tank of another code holds " .. w3 .. " water")
+	-- the drop-downs (issue #545): alphabetical, every code survives a round trip, an old chest shows its colours
+	local names = remote.call("fork-ender", "shown_colours")
+	local seen = {}
+	for i, name in ipairs(names) do
+		seen[name] = true
+		if i > 1 then expect(names[i - 1] < name, "the drop-down lists " .. names[i - 1] .. " before " .. name) end
+	end
+	expect(#names == 16 and table_size(seen) == 16, "the drop-down has " .. #names .. " items, " .. table_size(seen)
+		.. " different")
+	local trips = 0
+	for code = 0, 4095 do
+		if remote.call("fork-ender", "code_of", remote.call("fork-ender", "shown_of", code)) == code then
+			trips = trips + 1
+		end
+	end
+	expect(trips == 4096, (4096 - trips) .. " codes change on the way through the drop-downs")
+	local shown = et.old_shown
+	local function name(i) return names[i] or tostring(i) end
+	expect(name(shown[1]) == "red" and name(shown[2]) == "green" and name(shown[3]) == "blue",
+		"the chest with link_id 3803 shows " .. name(shown[1]) .. ", " .. name(shown[2]) .. ", " .. name(shown[3])
+		.. ", not red, green, blue")
+	local new = et.chests[5]
+	expect(new.link_id == 3803, "the chest set to red, green, blue through the drop-downs has link_id " .. new.link_id)
+	expect(new.get_item_count("copper-plate") == 3, "the new red, green, blue chest holds "
+		.. new.get_item_count("copper-plate") .. " of the old one's 3 copper plates")
 	for _, p in pairs(problems) do log("DEVCHECK-RUNTIME-FAIL ender storage test: " .. p) end
 	log("DEVCHECK-RUNTIME-ENDER " .. (#problems == 0 and "ok" or "failed") .. string.format(" (7 iron plates through the "
-		.. "Ender Chests to the Nether, %d there; water levelled %.0f / %.0f between Nauvis and the Nether)",
-		b.get_item_count("iron-plate"), w1, w2))
+		.. "Ender Chests to the Nether, %d there; water levelled %.0f / %.0f between Nauvis and the Nether; drop-downs "
+		.. "alphabetical, %d of 4096 codes round-trip, link_id 3803 shows %s, %s, %s)",
+		b.get_item_count("iron-plate"), w1, w2, trips, name(shown[1]), name(shown[2]), name(shown[3])))
 end
 
 function setup_battery_test(s)

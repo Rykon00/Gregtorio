@@ -7,11 +7,13 @@
 ---   * the Ender Tanks of a code are levelled every LEVEL_TICKS: the fluid of the group's first tank that holds one is
 ---     shared evenly by the tanks that hold it or none (at the weighted mean temperature); a tank with another fluid
 ---     stays out until it is empty.
---- The panel beside the chest's or tank's window (relative GUI) has three drop-downs for the colours; pasting settings
+--- The panel beside the chest's or tank's window (relative GUI) has three drop-downs for the colours (listed
+--- alphabetically, issue #545; the code keeps EnderStorage's wool order, so saves keep their codes); pasting settings
 --- between two Ender Chests or two Ender Tanks copies the code.
 --- State: storage.fork_ender = { tanks = unit number -> { entity, code }, reg = registration -> unit number, open =
 --- player index -> the chest or tank whose window is open };
---- remote fork-ender.set_code(entity, code) and get_code(entity) (devcheck's runtime test).
+--- remote fork-ender.set_code(entity, code), get_code(entity), shown_of(code), code_of(shown) and shown_colours()
+--- (devcheck's runtime test).
 --------------------------------------------------------------------------------
 
 local M = {}
@@ -19,7 +21,11 @@ local CHEST, TANK = "ender-chest", "ender-tank"
 local LEVEL_TICKS = 20   -- (free: the molds take 30, the ore drills 60, the solar boilers 120, fork-power on_tick)
 local PANEL = "fork-ender-panel"
 local COLOURS = { "white", "orange", "magenta", "light-blue", "yellow", "lime", "pink", "gray", "light-gray", "cyan",
-	"purple", "blue", "brown", "green", "red", "black" }
+	"purple", "blue", "brown", "green", "red", "black" }   -- the index is the code's digit + 1: never reorder (saves)
+--- the drop-downs' order (issue #545): alphabetical by the English names; index into COLOURS per drop-down item
+local SHOWN = { 16, 12, 13, 10, 8, 14, 4, 9, 6, 3, 2, 7, 11, 15, 1, 5 }
+local SHOWN_AT = {}   -- index into COLOURS -> drop-down item
+for i, c in ipairs(SHOWN) do SHOWN_AT[c] = i end
 
 local function state()
 	storage.fork_ender = storage.fork_ender or { tanks = {}, reg = {}, open = {} }
@@ -28,6 +34,18 @@ end
 
 local function digits(code)
 	return { math.floor(code / 256) % 16 + 1, math.floor(code / 16) % 16 + 1, code % 16 + 1 }
+end
+
+--- the three drop-downs' selected items of a code, and the code of three selected items
+function M.shown_of(code)
+	local d = digits(code)
+	return { SHOWN_AT[d[1]], SHOWN_AT[d[2]], SHOWN_AT[d[3]] }
+end
+
+function M.code_of(shown)
+	local c = {}
+	for i = 1, 3 do c[i] = SHOWN[shown[i]] - 1 end
+	return c[1] * 256 + c[2] * 16 + c[3]
 end
 
 function M.on_built(entity)
@@ -115,8 +133,8 @@ function M.on_gui_opened(event)
 			gui = e.name == CHEST and defines.relative_gui_type.linked_container_gui
 				or defines.relative_gui_type.pipe_gui } }      -- (a storage tank's window since Factorio 2.1, issue #535)
 	local items = {}
-	for _, c in ipairs(COLOURS) do items[#items + 1] = { "fork-ender.colour-" .. c } end
-	local d = digits(M.get_code(e))
+	for _, c in ipairs(SHOWN) do items[#items + 1] = { "fork-ender.colour-" .. COLOURS[c] } end
+	local d = M.shown_of(M.get_code(e))
 	for i = 1, 3 do
 		frame.add{ type = "drop-down", name = "fork-ender-colour-" .. i, items = items, selected_index = d[i],
 			tags = { unit = e.unit_number } }
@@ -136,9 +154,9 @@ function M.on_gui_selection_state_changed(event)
 	local e = storage.fork_ender and storage.fork_ender.open[event.player_index]
 	if not (e and e.valid) then return end
 	local p = el.parent
-	local c = {}
-	for i = 1, 3 do c[i] = p["fork-ender-colour-" .. i].selected_index - 1 end
-	M.set_code(e, c[1] * 256 + c[2] * 16 + c[3])
+	local shown = {}
+	for i = 1, 3 do shown[i] = p["fork-ender-colour-" .. i].selected_index end
+	M.set_code(e, M.code_of(shown))
 end
 
 function M.on_entity_settings_pasted(event)
@@ -151,6 +169,13 @@ end
 remote.add_interface("fork-ender", {
 	set_code = function(entity, code) M.set_code(entity, code) end,
 	get_code = function(entity) return M.get_code(entity) end,
+	shown_of = function(code) return M.shown_of(code) end,
+	code_of = function(shown) return M.code_of(shown) end,
+	shown_colours = function()
+		local names = {}
+		for i, c in ipairs(SHOWN) do names[i] = COLOURS[c] end
+		return names
+	end,
 })
 
 return M
