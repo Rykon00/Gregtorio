@@ -274,6 +274,11 @@ local RM_MACHINES = {
 	-- issue #505: the vein recipes of Nauvis, the Nether and the Twilight Forest are gone (JSON: a placeholder of their
 	-- planet); a mine on Nauvis on a Nether vein stays a Dimension Mine without a recipe
 	{ "manual-mine", "mining-tetrahedrite-vein", nil, "dimension-mine" },
+	-- issue #527: a Manual Mine's recipe that moved to the Dig Site (#499) or needs the Nether (#501) is a placeholder on
+	-- load (JSON), which the migration clears with a message
+	{ "manual-mine", "hunting-blazes", nil, "dimension-mine" },
+	{ "manual-mine", "cobblestone-manual-mine", nil, "dimension-mine" },
+	{ "manual-mine", "mining-glowstone-vein", nil, "dimension-mine" },
 	-- issue #348: upstream's Ruby Lens from a plain ruby is deleted; a lathe of an old save loads without the recipe
 	{ "lv-lathe", "ruby-lens", nil },
 	-- issue #370: GTNH's green sapphire and sapphire lens replace the apatite and lapis lens; an engraver of an old save

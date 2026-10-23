@@ -310,6 +310,31 @@ for name, r in pairs(data.raw.recipe) do
 	end
 end
 
+--- issue #527: an old save's Manual Mine on such a recipe (or on the glowstone vein, which needs the Nether since #501)
+--- would lose it silently: the engine drops a recipe of another category or surface on load, before any Lua migration.
+--- migrations/2026-10-23-issue-527-moved-mine-recipes.json maps the recipe onto a placeholder `moved-<recipe>` of the
+--- Manual Mine's category (hidden, never unlocked, the recipe's inputs, nothing out; no Dig Site of 0.5.5 ran these
+--- recipes), and scripts/fork-ore-veins.lua clears it with a message, or gives the recipe back on its planet (mod data
+--- fork-electric-mine: moved, placeholder -> { recipe, planet }).
+FORK_ELECTRIC_MINE.moved = {}
+function FORK_ELECTRIC_MINE.moved_placeholder(name, planet)
+	local r = data.raw.recipe[name]
+	local p = "moved-" .. name
+	data:extend({ {
+		type = "recipe", name = p, category = "manual-mine-recipes", enabled = false, hidden = true, energy_required = 1,
+		icon = "__gregtorio-continued__/graphics/icons/manual-mine.png", icon_size = 64,
+		localised_name = { "recipe-name.moved-mine-recipe" },
+		ingredients = table.deepcopy(r.ingredients), results = {},
+	} })
+	FORK_ELECTRIC_MINE.moved[p] = { recipe = name, planet = planet }
+	FORK_ELECTRIC_MINE_EXCLUDED[p] = "issue #527: the placeholder of an old save's moved Manual Mine recipe, no vein"
+end
+for _, n in pairs({ "hunting-blazes", "hunting-endermen", "hunting-zombies", "cobblestone-manual-mine",
+	"cobblestone-manual-mine-with-wooden-pickaxe", "mining-end-stone" }) do
+	FORK_ELECTRIC_MINE.moved_placeholder(n)
+end
+FORK_ELECTRIC_MINE.moved_placeholder("mining-glowstone-vein", "gt-nether")
+
 --- every recipe of the Manual Mine (and the Dig Site, whose recipes are all ground work) gets a twin or a reason
 local twins = {}
 for name, r in pairs(data.raw.recipe) do
@@ -432,7 +457,8 @@ do
 	local drills = {}
 	for drill, dim in pairs(DIMENSION) do drills[dim] = drill end
 	data:extend({ { type = "mod-data", name = "fork-electric-mine",
-		data = { veins = veins, recipes = recipes, machines = machines, drills = drills, removed = REMOVED } } })
+		data = { veins = veins, recipes = recipes, machines = machines, drills = drills, removed = REMOVED,
+			moved = FORK_ELECTRIC_MINE.moved } } })
 end
 
 --------------------------------------------------------------------------------

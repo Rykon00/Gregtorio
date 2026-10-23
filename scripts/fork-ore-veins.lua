@@ -100,6 +100,9 @@ end
 --- fork-electric-mine: removed). On that planet's surface it is replaced as in 3.; elsewhere (a mine on Nauvis that ran a
 --- Nether vein) it loses the recipe, its items go to the ground and a message names it. The migration of #505 runs this
 --- again for saves that had the one of #500 (steps 1, 2 and 4 only touch a surface without the veins).
+--- Issue #527: an old Manual Mine's recipe that moved to the Dig Site (#499, #526) or that needs another surface (the
+--- glowstone vein, #501) is a placeholder too (migrations/2026-10-23-issue-527-moved-mine-recipes.json, mod data
+--- fork-electric-mine: moved): on its planet the mine gets the recipe back, elsewhere it loses it with a message.
 local function migrate_surface(surface, planet)
 	local profiler = helpers.create_profiler()
 	--- 1. the map generation settings of the planet (a map made with the veins has them: its ores stay as they are)
@@ -160,11 +163,24 @@ local function migrate_surface(surface, planet)
 		return true
 	end
 	local removed = em and em.data.removed or {}
-	local replaced, bare, cleared = 0, {}, {}
+	local moved = em and em.data.moved or {}
+	local replaced, bare, cleared, restored = 0, {}, {}, 0
 	for _, old in pairs(#list > 0 and surface.find_entities_filtered{ name = list } or {}) do
 		local recipe = old.get_recipe()
 		local gone = recipe and removed[recipe.name]
-		if gone and gone ~= planet then
+		local mv = recipe and moved[recipe.name]
+		if mv and mv.planet == planet then
+			--- issue #527: the recipe works here (the glowstone vein in the Nether)
+			old.set_recipe(mv.recipe)
+			restored = restored + 1
+		elseif mv then
+			for _, c in pairs(old.set_recipe(nil) or {}) do
+				surface.spill_item_stack{ position = old.position, stack = c, force = old.force, allow_belts = false }
+			end
+			cleared[#cleared + 1] = { old, mv.planet, mv.recipe }
+			log(string.format("FORK-ORE-VEINS: %s at %.1f,%.1f (%s) has no recipe now", old.name, old.position.x, old.position.y,
+				mv.recipe))
+		elseif gone and gone ~= planet then
 			--- issue #505: a vein of another planet: the mine stays without a recipe
 			for _, c in pairs(old.set_recipe(nil) or {}) do
 				surface.spill_item_stack{ position = old.position, stack = c, force = old.force, allow_belts = false }
@@ -212,9 +228,15 @@ local function migrate_surface(surface, planet)
 	end
 	for _, c in pairs(cleared) do
 		local e = c[1]
-		e.force.print({ "fork-message.mine-vein-gone", e.localised_name,
-			string.format("[gps=%d,%d,%s]", math.floor(e.position.x), math.floor(e.position.y), surface.name),
-			{ "space-location-name." .. c[2] } })
+		local at = string.format("[gps=%d,%d,%s]", math.floor(e.position.x), math.floor(e.position.y), surface.name)
+		if c[3] and c[2] then
+			e.force.print({ "fork-message.mine-recipe-elsewhere", e.localised_name, at, prototypes.recipe[c[3]].localised_name,
+				{ "space-location-name." .. c[2] } })
+		elseif c[3] then
+			e.force.print({ "fork-message.mine-recipe-dig-site", e.localised_name, at, prototypes.recipe[c[3]].localised_name })
+		else
+			e.force.print({ "fork-message.mine-vein-gone", e.localised_name, at, { "space-location-name." .. c[2] } })
+		end
 	end
 	--- 4. the charted veins
 	local charted, tags = 0, 0
@@ -229,9 +251,10 @@ local function migrate_surface(surface, planet)
 		if #areas > 0 then tags = tags + tag(force, surface, areas) end
 	end
 	profiler.stop()
-	log({ "", "FORK-ORE-VEINS: ", surface.name, ": ", fresh and #chunks or 0, " chunks regenerated with ", #names, " ores, ", replaced,
-		" mines replaced by drills (", #bare, " without ore), ", #cleared, " without their vein recipe, ", tags, " veins tagged in ", charted, " charted chunks, ",
-		dropped, " names of missing noise expressions dropped from the map settings; ", profiler })
+	log({ "", string.format("FORK-ORE-VEINS: %s: %d chunks regenerated with %d ores, %d mines replaced by drills (%d without ore), "
+		.. "%d without their recipe, %d with their recipe back, %d veins tagged in %d charted chunks, %d names of missing noise "
+		.. "expressions dropped from the map settings; ", surface.name, fresh and #chunks or 0, #names, replaced, #bare, #cleared,
+		restored, tags, charted, dropped), profiler })
 end
 
 function M.migrate()

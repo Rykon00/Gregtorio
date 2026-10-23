@@ -3532,15 +3532,16 @@ do
 	items(SUB_DUST, { "fiery-steel-dust", "transcendent-metal-dust", "mellion-dust" })
 	items(SUB_PART, { "fiery-tears", "harmonic-compound", "mellion-ingot" })
 
-	--- the hunts (160's)
+	--- the hunts (160's; issue #526: Dig Site recipes, as the other hunts since #499)
 	for _, h in pairs({ { "hunting-ghasts", "ghast-tear", 4 }, { "hunting-the-ur-ghast", "ur-ghast-trophy", 1 } }) do
 		create_recipe{
-			name = h[1], category = "manual-mine-recipes", energy_required = 10, subgroup = "subgroup-mining",
+			name = h[1], category = "manual-digsite-recipes", energy_required = 10, subgroup = "subgroup-mining",
 			ingredients = { { type = "item", name = "manual-labor", amount = 24 } },
 			results = { { type = "item", name = h[2], amount = h[3] } }, main_product = h[2],
 		}
 		R[#R + 1] = h[1]
 		FORK_ELECTRIC_MINE_EXCLUDED[h[1]] = "a mob drop (" .. h[2] .. "), no ore: the Ore Drilling Plant mines ore blocks only"
+		FORK_ELECTRIC_MINE.moved_placeholder(h[1])   -- issue #527: a Dimension Mine of a save made before #526
 	end
 	--- fiery steel
 	step(R, "fiery-tears", "hv-assembling-machine-recipes", 75, HV_SPEED, { { "ghast-tear", 1 }, { "ur-ghast-trophy", 1 } },
