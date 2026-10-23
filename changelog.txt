@@ -1,5 +1,6 @@
 ---------------------------------------------------------------------------------------------------
 Version: 0.5.7
+Date: 2026-10-23
   Changes:
     - autocraft-logistics is an optional dependency now: it has no release for Factorio 2.1 yet (its last one is for 2.0). Gregtorio's own code never used it; once it has a 2.1 version, it is loaded again with Gregtorio.
     - The technologies Stellar Discovery: Solar System Edge and Landing Pad Unloading Bay of Space Age (new in Factorio 2.1) are removed like the other planet and space platform technologies, and so is the Landing Pad Unloading Bay's recipe.
