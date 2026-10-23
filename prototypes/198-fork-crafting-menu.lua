@@ -20,6 +20,7 @@
 FORK_CRAFTING_MENU_HIDDEN = {
 	categories = {
 		["fluid-voiding-recipes"] = "void-<fluid>: one trash recipe per fluid (data.lua), also hidden in Factoriopedia",
+		["steam-macerator-recipes"] = "issue #447: the steam macerators' copies of the LV macerator recipes without byproducts (101, made at the end of data-final-fixes.lua); the menu shows the LV recipe",
 	},
 	subgroups = {
 		["fill-barrel"] = "vanilla barrel filling recipes, hidden in vanilla",

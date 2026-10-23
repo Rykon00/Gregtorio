@@ -218,6 +218,9 @@ def werkstoffe(gt, gtmats):
             tier = GT_TIER.get(x.group(1)) if x else None
             x = re.search(r"setMass\(Element\.(\w+)\.getMass\(\)\)", body)
             mass = elem.get(x.group(1)) if x else None
+            x = re.search(r"setMass\((\d+)\)", body)        # issue #467: a mass given as a number (shirabon 128)
+            if mass is None and x:
+                mass = int(x.group(1))
             comps = [(re.sub(r"^(Materials|WerkstoffLoader|GGMaterial)\.", "", a), int(n))
                      for a, n in re.findall(r"Pair\.of\(\s*([\w.]+),\s*(\d+)\)", body)]
             defs[var] = {"name": name.group(1), "bits": bits, "melt": melt, "tier": tier, "mass": mass, "comps": comps}

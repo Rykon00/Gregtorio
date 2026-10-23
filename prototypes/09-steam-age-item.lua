@@ -729,23 +729,6 @@ create_item{
   
   
   
----MINING IRON VEIN WITH STONE PICKAXE
-create_recipe{
-	recipe_name = "mining-iron-vein-with-stone-pickaxe",
-	category = "manual-mine-recipes",
-	energy_required = 10,
-    subgroup = "subgroup-mining-poor",
-	ingredients = {
-      {type = "item", name = "stone-pickaxe", amount = 1},
-      {type = "item", name = "manual-labor", amount = 12},
-    },
-	results = {
-      {type = "item", name = "raw-iron", amount = 32},
-    }
-}
-
-
-  
 ---IRON PLATE
 create_recipe{
 	recipe_name = "iron-plate-crafting-table",

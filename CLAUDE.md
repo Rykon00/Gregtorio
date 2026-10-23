@@ -6,7 +6,10 @@
 - Upstream content lives in `prototypes/0*-*.lua` … `98-technology.lua`; keep changes there minimal. Fork logic lives in
   `prototypes/1xx-fork-*.lua`, loaded at the end of `data.lua` in this order:
   - 100 fixes
-  - 101 machines
+  - 101 machines (issue #446: the steam age of GTNH, the high pressure machines, the steam furnace, the lava and solar
+    boilers; issue #447: the steam macerator's copies of the LV macerator recipes without byproducts,
+    `fork_steam_categories()` at the end of data-final-fixes.lua; issue #449: the LV combustion generator, extruder and laser
+    engraver, the LV categories run by every MV machine through `fork_lv_machine_categories()` in 199)
   - 102 resources
   - 103 QoL techs (re-gates the vanilla inserter, belt and worker robot techs of issue #29 onto Gregtorio techs, GT
     recipes for bulk/stack inserters and express/turbo belts)
@@ -32,7 +35,7 @@
   - 133 UMV (fusion MK5, spacetime, exotic line, UMV components; also the shared helpers, global table `FORK5B`)
   - 134 UXV (universium, temporal line, UXV components)
   - 135 endgame (stargate, MAX science pack; researching `victory` wins the game via `scripts/fork-victory.lua`)
-  - 136 power (plasma fuel values, plasma balance of issue #32, large plasma turbines with turbine output hatches,
+  - 136 power (plasma fuel values, plasma balance of issue #32, issue #375: GTNH's fusion transmutations (section 1c) and its other plasmas (section 1d; issue #397: lead plasma), large plasma turbines with turbine output hatches,
     naquadah fuel line, large naquadah reactors, dynamo hatches LuV to UXV; runtime in `scripts/fork-power.lua`: fuel
     check, turbine output hatch with a ratio per fluid and the generator's effectivity from the mod data, used by 145's
     steam turbines, and the passive loss of 145's supercapacitors, mod data `capacitors`, and the carry-over of their
@@ -46,7 +49,8 @@
     and **before** 138, which sets the
     unit counts of its technologies; phase 6b hooks are marked `6b hook`)
   - 140 godforge (phase 6b: the godforge, raw star matter, magmatter, the stellar catalyst of the plasma forge, the
-    infinite `godforge-upgrades`; issue #249: quark gluon plasma and GT's rhugnor MK5 recipe)
+    infinite `godforge-upgrades`; issue #249: quark gluon plasma and GT's rhugnor MK5 recipe; issue #355: the godforge between
+    the UIV and UMV energy hatches with GT's recipes, the plasma module technology with celestial tungsten)
   - 141 MAX tier (phase 6b: magmatter parts, the Planck line and MAX circuit, MAX components, hatches, machines and
     turbine; needs 140's magmatter and adds its turbine to 136's mod data; issue #249: the MAX recipes of the plasma
     forge and the QFT with substitutes); 140 and 141 load after 139 and **before** 138
@@ -65,7 +69,19 @@
     Asteroid Belt, the Jovian Moons and Venus; issue #286: Void Miners I-III, `VOID_POOLS` from GT's veins and small
     ores (tools: none, generated once from OreMixes/SmallOres); issue #293: Reach Ross128 with the copper sulfide vein
     (bornite); issue #332: the Twilight Forest's Manual Mine recipes, unlocked with NAND Chips (no technology of
-    their own): the amber vein and the topaz and amber small ores, the raw ores of GT's orange lens (155 makes the amber lens); loads after 146 and **before** 142 (issue #287: the
+    their own): the amber vein and the topaz and amber small ores, the raw ores of GT's orange lens (155 makes the amber lens), and
+    (issue #364) the sapphire vein and the sapphire small ore (sapphire, green sapphire; 155 their chain and juice; issue
+    #370: the sapphire vein with the Laser Engraver, the first consumer of GTNH's sapphire and green sapphire lens;
+    issue #373: its almandine and pyrope ores, GT's byproducts basalt, black granite and rubidium, chalcopyrite's
+    bricked blast furnace recipes with ferrosilite);
+    issue #363: GTNH's Overworld veins (new Manual Mine recipes, or GT's missing ores joining upstream's vein of the same
+    name) with 30 raw ores, 155's `NEW_ORES` gives them GTNH's chain, decomposition and smelting; part 2: the Twilight
+    Forest's olivine vein, the Nether's saltpeter vein, garnierite, wulfenite and powellite in upstream's veins, the
+    Twilight Forest's small ores (16 more ores; the olivine, tanzanite and amethyst lenses); issue #365: Mars's desh vein; issue #373:
+    every vein of Ross128b (Reach Ross128) and Ross128ba (Reach Ross128ba, ZPM) with bartworks' ores (155's `NEW_ORES`);
+    the Toxic Everglades' veins GTPP0-19 (Reach the Toxic Everglades, LuV) with GT++'s ores, whose dehydrator
+    decompositions 161 unlocks through `FORK_ORE_CHAIN.unlock_after_159` (159 makes the dehydrators after 155); Neper's
+    pool for the Void Miner III (dilithium, mysterious crystal, vinteum); loads after 146 and **before** 142 (issue #287: the
     unlock table of 142 and the ore chains of 155 see the mines; the rules are in 161))
   - 162 space elevator (issue #301, part 1 of #292's decision: gtnhintergalactic's Space Elevator in GTNH's full scope:
     controller, casings, nanotube spool, cable, motors Mk-I to Mk-V; one 11 x 11 entity per motor tier
@@ -75,19 +91,31 @@
     mod has, expected amounts of one operation; helium plasma only); `scripts/fork-space-elevator.lua` runs a module only
     next to an elevator with motors of its tier and a free slot (event-driven, `on_object_destroyed`, no tick handler,
     `storage.fork_space_elevator`); issue #318: GTNH's distillation of the pump modules' heavy and light oil (tall
-    distillation, distillery, lubricant), with the pump module's technology; loads after 160 and **before** 142)
+    distillation, distillery, lubricant), with the pump module's technology; issue #485: the Assembler Module Mk-I and
+    GTNH's Singularity ME Storage Cell in it (its Eternal Singularity in the UMV compressor, a named stand-in for the
+    black hole compressor); loads after 160 and **before** 142)
   - 163 electric mine (issue #335: GTNH's Ore Drilling Plants Mk I to IV (`ore-drilling-plant-mk1` to `-mk4`, MV to IV,
     the Mk changes speed and energy only) on the Manual Mine's footprint and fast replace group, the Manual Mine's
     `next_upgrade` is the Mk I; one electric twin `drilling-<vein>` of every `mining-<vein>` recipe of the Manual Mine
-    (category `electric-mine-recipes`, the same results, Drilling Fluid and (issues #341, #346) 9 mining pipes, consumed,
+    (category `electric-mine-recipes`, the same results, Drilling Fluid and (issues #341, #346, #393) 1 mining pipe, consumed,
     instead of the pickaxe and manual labor); GTNH's
     Drilling Fluid from the mixer with the Mk I's technology; the twins of veins before the Mk I come with its technology,
     the later ones with their vein's technology; devcheck fails for a Manual Mine or Dig Site recipe without a twin unless
     it is in the allow-list `FORK_ELECTRIC_MINE_EXCLUDED` with its reason; issue #337: GT's Miners LV to HV (`lv-miner` to
-    `hv-miner`, upgrade chain Manual Mine -> LV -> MV -> HV Miner -> Mk I) with their twins `miner-<vein>` that use up 9
-    mining pipes, technology `lv-miner` (its later twins are unlocked by
+    `hv-miner`, upgrade chain Manual Mine -> LV -> MV -> HV Miner -> Mk I) with their twins `miner-<vein>` that use up 1
+    mining pipe, technology `lv-miner` (its later twins are unlocked by
     `FORK_ELECTRIC_MINE.unlock_miner_twins()`, which 142 calls after its moves); issue #342: the mod data `fork-electric-mine`
-    (recipe -> vein, vein -> recipe per category) for `scripts/fork-electric-mine.lua`; loads after 162 and **before** 142)
+    (recipe -> vein, vein -> recipe per category) for `scripts/fork-electric-mine.lua`; issue #499 (plan #494, the
+    maintainer's option A): the recipe machines are the **dimension mines** (`dimension-mine`, `lv-dimension-miner` to
+    `hv-dimension-miner`, `dimension-drilling-plant-mk1` to `-mk4`) for the vein recipes of the other dimensions, and
+    their old names are `mining-drill`s of the map veins (resource category `gt-ore`: Manual Mine burning manual labor,
+    7x7; Miners GT's radius 8/16/24 with 9 mining pipes in their recipe; Ore Drilling Plants radius 40/48/64/96, 80 % and
+    60 % drain from the Mk III) at today's rates; a vein recipe whose results are all Overworld map ores is hidden with
+    its twins (kept for old saves until V9); hunting, cobblestone and end stone are Dig Site recipes; a drill's fluid box
+    only works while its ore needs a fluid, so the plants' Drilling Fluid goes into a hidden storage tank
+    `ore-drilling-plant-fluid-input` on their tiles, which `scripts/fork-ore-drills.lua` builds and drains per ore;
+    `migrations/2026-10-22-issue-499-dimension-mines.json` renames placed mines of old saves to their dimension mine;
+    loads after 162 and **before** 142)
   - 142 recipe unlocks (issue #91: every Gregtorio recipe gets a technology from its explicit table `UNLOCKS`, the
     producers GT has and Gregtorio lacked and the component assembly line; a recipe that must stay
     locked goes into the allow-list `FORK_RECIPES_LOCKED` with its reason, devcheck fails otherwise; issue #237: a
@@ -115,7 +143,8 @@
     and ZPM upgrades); issues #254 to #256: the large titanium boiler (a `boiler` in `output-to-separate-pipe` mode,
     water to superheated steam), the large combustion engine and the large gas turbine (EV burner generators on the fuel
     cells); issue #295: GT++'s EV, IV and LuV rocket engines on the H8N4C2O4 rocket fuel cell (fuel category
-    `rocket-engine-fuel`; the fuel's GTNH recipe and the Chemical Plant's move to Rocket Fuel are in 159); their technologies are named in 142's `UNLOCKS`, so it loads after 138 and **before** 142, and
+    `rocket-engine-fuel`; the fuel's GTNH recipe and the Chemical Plant's move to Rocket Fuel are in 159); issue #444: GTNH's LV to HV
+    batteries and the battery buffers (accumulators of a fixed size, the batteries in the recipe; technology Large Batteries); their technologies are named in 142's `UNLOCKS`, so it loads after 138 and **before** 142, and
     before 196 for its fluids; it takes 136's generator from the global `FORK_POWER` and adds to its mod data
     `fork-power`)
   - 144 dead fluids (issue #91: GT's uses and producers of fluids nothing made or used; the blast furnace gas variants
@@ -156,14 +185,19 @@
     recipe for every furnace recipe of the chain, GT's garnet minerals (pyrope, almandine, uvarovite), crushed platinum
     smelting, the melts of #205's ingots; devcheck fails for a gap in an ore's chain or a washer shortcut; issue #325: every
     laser engraver recipe takes GTNH's lens (150 turns it into the lens slot), devcheck fails for one without a lens unless
-    it is in the allow-list `FORK_ENGRAVER_NO_LENS` with its reason; issue #427: GTNH's cauldron (machine in 101, with Rubber) washes every ore's impure and pure dust
+    it is in the allow-list `FORK_ENGRAVER_NO_LENS` with its reason; issue #388: a technology that still names a recipe
+    155 removes for good fails devcheck (`FORK-STALE-UNLOCK`; the washer and centrifuge shortcuts the chain replaces stay
+    in 98 and 142 as the anchors 155 takes the chain's technologies from), the raw ores without a furnace recipe say so
+    in their description; issue #427: GTNH's cauldron (machine in 101, with Rubber) washes every ore's impure and pure dust
     into its dust (`cauldron-impure-<ore>-dust`, `cauldron-pure-<ore>-dust`, with the technology of the dust recipe it
     takes), checked by devcheck's ore chain rule; GT's crushed -> purified cauldron recipe is left out on purpose; loads
     after 154 and before 150)
   - 158 GT parts (issues #222, #223, #227 and #228: GT's parts of every metal from `prototypes/gt-parts-data.lua`
     (regenerate it with `tools/gen_gt_parts.py` after a `devcheck.py check` when a metal is added; sources: GT
     materials, GT++ alloys and elements, bartworks and goodgenerator Werkstoffe with their own recipe numbers) and GT's
-    nugget recipes, unlocked with 155's `unlock_after` through `FORK_ORE_CHAIN`; loads after 155 and before 150; #223
+    nugget recipes, unlocked with 155's `unlock_after` through `FORK_ORE_CHAIN`; loads after 155 and before 150; issue
+    #467: its sections 1 and 2 are `FORK_GT_PARTS.run()`, run again at the end of 164 (section 38) for the metals whose
+    ingot comes later; #223
     also aligned 155's raw ore smelting with GT's rule, keeping raw redstone, gypsum and calcite -> dust for the early
     game)
   - 159 lanthanides (issue #262: gtnhlanth's monazite rare earth line with the Digester and the Dissolution Tank, from
@@ -176,11 +210,75 @@
     #274: hafnium from GT++'s ilmenite sifter, the EV-ZPM Chemical Dehydrators with their coils (technologies
     `<tier>-chemical-dehydrator`), lanthanum hexaboride's gem forms, chloromethane, gangue and the roasting's fluorine;
     loads after 158 and before 156)
+  - 164 chemistry (the GTNH gap research after 0.5.4, issues #355 to #367, and later sections: #436 dragonblood and
+    hypogen in 35, #355 step 5's Nano Forge in 36 and YPIC in 37, #467's second run of 158 in 38, #487's Singularity crafting storage and void cells in 39, #489's Draconic Evolution Fusion Crafter and cores in 40 and its Chaotic Core and Reactor Stabilizer in 41; GTNH's chemical lines Gregtorio lacked, GT's
+    numbers, fluids a tenth of GT's litres, GT++'s catalysts left out; issue #362: GT++'s Rp-1 Rocket Fuel, Dense
+    Hydrazine Fuel Mixture and CN3H7O3 Rocket Fuel with their cells for 145's rocket engines, the coal tar line and the
+    anthraquinone process to hydrogen peroxide and hydrazine, the ExxonMobil Chemical Plant's extra fluid boxes; issue #360:
+    the recipes of 101's Brewery and Fermenter (technology Fermentation), fermented biomass, seed oil from the
+    greenhouse's wheat seeds, bio diesel, glycerol and its epichlorohydrin; issue #358: the bisphenol A route to epoxy,
+    polystyrene, styrene-butadiene rubber (with its cable recipes) and polycaprolactam; issue #361: the drilling rigs'
+    Overworld fluids of GTNH (light, raw and heavy oil, natural gas), raw oil's distillation, natural gas, LPG and the MTBE
+    route; issue #366: trichlorosilane, GTNH's second route to poly-si; issue #357: GoodGenerator's liquid fuels (ether,
+    ethanol gasoline, cyclopentadiene and naquadah gas cells, the ferrocene line to Jet Fuel No.3 and Jet Fuel A, the
+    combustion promoter), the Universal Chemical Fuel Engine and the thorium based liquid fuel; issue #355: the ASoC wafer
+    and chip with their circuit variants, the energy module's ASoC wafers; issue #359: GT's dual and quad fuel rods and
+    the MOX rods; issue #378: the Kevlar line's side chemicals (section 10, technology Kevlar) and the Kevlar line (section 11;
+    the UXV pump, conveyor and hull take Kevlar, 143's casting runs once more for the Kevlar ring) and radox polymer
+    (section 12, technology Radox Polymer, stand-ins named there and in ROADMAP); issue #386: the naquadah fuel rods
+    (section 13, technology Naquadah Fuel Rods), the isotopes, the LFTR fuels, Hastelloy-N and the Reactor Fuel
+    Processing Plant (section 14, technology Liquid Fluoride Thorium Reactor), the LFTR, the Reactor Processing Unit I,
+    the Cold Trap I and the Sparge Tower (section 15; the LFTR's power comes from scripts/fork-power.lua) and the LFTR
+    loop (section 16); issue #406: the Nuclear Salt Processing Plant (section 17); issue #355: the Precise Assembler and the HiCs (section 18), the quantum anomaly and chromatic glass (section 19), the plasma forge's residue and Dimensionally Shifted Superfluid with the oganessons (section 20); issue #406: the Cold Trap II and RPU II with Pikyonium 64B (section 21); issue #356: the Mehen Belt's draconium (section 22), the depleted thorium fuel and praseodymium (section 23), the netherite chain's materials (section 24), GT++'s Algae Farm and Industrial Dehydrator (section 25), the netherite chain to the prismatic naquadah sheet (section 26), the Naquadah Fuel Refinery with MK III and MK IV (section 27), MK V and MK VI with coils T3 and T4 (section 28); issue #355 step 2: creon and mellion with fiery steel, fermium plasma and MK V's alternative (section 29); issue #355 step 4: the beamline with mu-metal, the Source Chamber, the Beam Crafter and UU matter (section 30), the Large Hadron Collider with its particles (section 31), the gravitational lens (section 32), the ZPIC with a second UMV hatch recipe (section 33); loads after 159 and
+    before 161)
   - 161 dimension unlocks (issue #287: the unlock rules of 160, `ore_dimension` moves or gates the ore chains of the
     dimensions' ores, the ender air with Radon, black plutonium with the Void Miner II, the bornite chain with
     Reach Ross128 (issue #293); loads after 159 and before 156)
+  - 165 ore veins (plan #494: GTNH's veins as mixed ore patches on the map, the Nether, Twilight Forest and End as
+    surfaces; issue #496: `FORK_ORE_MIXES`, GT's 122 ore mixes from `prototypes/data/ore-mixes.lua`, which
+    `tools/gen_ore_mixes.py` writes from GT5-Unofficial's `OreMixes.java` (do not edit it), the T0 dimensions that are
+    Gregtorio's surfaces (`FORK_ORE_MIX_SURFACES`, the surface property gt-dimension); devcheck fails for an ore of a vein
+    on a surface without a raw ore and its chain unless the material, the vein (`mix:<name>`) or the dimension
+    (`dimension:<DimNames>`) is in the allow-list `FORK_ORE_MIX_SKIPPED`, or the material in `FORK_ORE_MIX_NO_CHAIN`
+    (GT processes it another way: oil sands), each with its reason; issue #497: the map veins of Nauvis by noise autoplace
+    as #495's spike decided (named noise expressions `gt_*`: a grid of cells `gt_cell_size`, `voronoi_cell_id` per cell
+    and per tile, GT's nine layers as bands, `gt_vein_key` = 8 x vein id + layer, one resource `gt-ore-<material>` per ore,
+    category `gt-ore`, whose probability sums its keys, so a tile holds one ore at most; each planet sets `gt_vein_id` to
+    its own `gt-vein-id-<DimNames>` through `property_expression_names`; `FORK_ORE_VEINS.planets` lists the planets with
+    veins; the autoplace control `gt-ore-veins` (issue #529: the grid: frequency the cell size, size the share of cells
+    with a vein, richness every vein's ore; plus one control `gt-vein-<mix name>` per placed vein on the planets that place
+    it, named in `[autoplace-control-names]` with the primary ore's icon, ordered by surface and GT's weight: frequency x
+    its weight in the pick `gt_vein_pick_<DimNames>` (off = weight 0, the other veins fill its cells), size magnifies it
+    (`gt_vein_scale`; the cells keep room for the planet's largest, `gt-size-max-<DimNames>`), richness its ore; a start
+    vein ignores frequency, one that is off leaves its cell to the pick; old saves get the controls from
+    `migrations/2026-10-23-issue-529-vein-controls.lua`, an old grid size moves onto every vein; devcheck's names check
+    covers autoplace controls); the start veins in the four cells around the origin; mod data
+    `fork-ore-veins` for the chart tags of `scripts/fork-ore-veins.lua` and devcheck's map vein test; issue #508:
+    `data-final-fixes.lua` deletes every resource autoplace control no planet and no prototype uses, and its preset
+    entries, so the map generator lists only what makes ore; issue #500: the Lua migration
+    `migrations/2026-10-22-issue-500-map-veins.lua` (a Lua migration runs once per save also when the version stays, as
+    in the maintainer's linked clone) calls `scripts/fork-ore-veins.lua`'s remote `migrate`: the planet's map settings,
+    `regenerate_entity` of the generated chunks, the dimension mines on hidden (Overworld) vein recipes replaced by their
+    drill, the charted veins tagged, names of missing noise expressions dropped from the map settings (each one is a
+    warning whenever `calculate_tile_properties` compiles the noise program; the tags read each cell once,
+    `storage.fork_ore_veins.cells`); issue #501: the Nether is a surface: the surface property `gt-dimension` (1
+    Overworld, 2 Nether, 3 Twilight Forest, 4 End), the hidden planet `gt-nether` (Vulcanus' terrain without its
+    resources: volcanic rock for netherrack, lava lakes, no water; issue #529 deletes Vulcanus in data-final-fixes.lua
+    and keeps the controls its terrain reads, hidden), its 11 veins; 163's `FORK_ORE_VEINS.planets` and
+    `.techs` (planet -> its reach technology) also hide the vein recipes of the Nether's ores; devcheck counts a resource
+    that only a reached planet places (checkmod `P` rows) as obtainable with that technology only (pseudo recipes
+    `planet-mining:<resource>`), so #252's tree rule sees the Nether; issue #502: the Twilight Forest, the hidden planet
+    `gt-twilight` (Nauvis' terrain as a dense forest, no biters, no vanilla resources), its 15 veins; 163's
+    `FORK_ORE_VEINS.dropped` (the Thaumcraft veins) keeps their ores out of the hide rule; #252's tree rule takes no
+    alternative that needs a missing ore whose nearest producer is `planet-mining`; issue #503: The End, the hidden planet
+    `gt-end` (own tiles `gt-end-stone` and `gt-end-void`, a copy of out-of-map, placed by `gt_end_land`: the main island
+    and the outer islands; its `gt_vein_id` is cut by `gt_end_land`), its 7 veins; issue #505: the vein recipes of Nauvis,
+    the Nether and the Twilight Forest are deleted, old saves map them onto 163's placeholders `removed-vein-<planet>-<kind>`
+    (JSON) that `scripts/fork-ore-veins.lua` turns into drills or clears; `docs/ORE-VEINS.md`; loads after 161)
   - 156 circuit icons (issue #164: the circuit variant recipes up to UV keep the shared tier item and show GT's texture
-    of their GTNH item as recipe icon; devcheck fails for a tier circuit recipe without its own icon)
+    of their GTNH item as recipe icon; devcheck fails for a tier circuit recipe without its own icon; issue #450: the ULV
+    tier item `ulv-circuit`, which the vacuum tube and NAND chip recipes give and every former user of the two takes, and
+    the nanoprocessor in the HV circuit assembler with its parts at HV)
   - 157 recycling (issue #190: GTNH's material recycling into dusts, ingots and melts for the items of crafting table
     recipes and the hulls, recipes `recycling-<machine>-<item>` in `FORK_RECYCLING.recipes`, unlocked late by
     `FORK_RECYCLING.unlock()` in data-final-fixes.lua because that file replaces and disables vanilla technologies;
@@ -208,12 +306,12 @@
     unlocks count).
   The phase plan is in `docs/ROADMAP.md`. Runtime fork code lives in `scripts/` and is required from `control.lua`
   (`fork-molds.lua`, `fork-victory.lua`, `fork-power.lua`, `fork-space-elevator.lua` (#302), `fork-electric-mine.lua` (#342: a Miner or Ore Drilling Plant that replaces a mine
-  keeps its vein, from 163's mod data `fork-electric-mine`; event driven, `storage.fork_electric_mine`), and `fork-me-handover.lua`: the one-time hand-over of the ME
+  keeps its vein, from 163's mod data `fork-electric-mine`; event driven, `storage.fork_electric_mine`), `fork-portals.lua` (#501: the Nether Portal sends whoever steps onto it to the Nether and back at 1:8, makes the Nether's surface at the first use and the exit portal; #502: the Twilight Portal the same at 1:1 to the Twilight Forest, whose daytime it freezes at dusk; #503: the End Portal to The End's main island (exit portal at the origin) and back to the portal one came through (`storage.fork_portals.came_from`), night frozen; `on_player_changed_position`, remote `fork-portals.travel`, `storage.fork_portals`), `fork-ender.lua` (#504: Ender Chests (linked-container, link_id = the three-colour code) and Ender Tanks (levelled per force and code every 20 ticks) share their contents across surfaces; the code panel is a relative GUI beside the window; `storage.fork_ender`, remote `fork-ender`), `fork-ore-veins.lua` (#497: a chart tag with the vein's name when the chunk of a map vein's centre is charted, `storage.fork_ore_veins`, event driven), `fork-steam-boilers.lua` (#446: the solar boilers of 101 stop at night; every 120 ticks, `storage.fork_solar_boilers`), and `fork-me-handover.lua`: the one-time hand-over of the ME
   state of saves from before issue #83 to me-network through the remote interface `gregtorio-me-handover`, which
   me-network calls in its `on_init`; keep its table list and fingerprint function equal to me-network's
   `scripts/fork-me-handover.lua`). Everything else of the ME network (runtime, graphics, locale, its tests,
   `docs/AE2.md`, `docs/ME-REWORK.md`) is in the me-network repository; an ME change goes there, Gregtorio only changes
-  the compat file when a recipe or a tier changes. Tick intervals in use: `on_nth_tick` 30 (molds); `on_tick`
+  the compat file when a recipe or a tier changes. Tick intervals in use: `on_nth_tick` 30 (molds), 60 (#499: the Ore Drilling Plants' Drilling Fluid, `fork-ore-drills.lua`, `storage.fork_ore_drills`), 120 (solar boilers); `on_tick`
   (fork-power: turbine energy every tick, fuel check, output hatches and the supercapacitor loss every 10th tick);
   registrations for the same interval (or a second `on_tick`) overwrite each other, so a new periodic task picks a free
   interval. The scripts keep their state lazy (`storage.fork_molds`, `storage.fork_power`).
@@ -228,6 +326,17 @@
   allow-list `FORK_VANILLA_RECIPES_KEPT` with its reason. Issue #323 added every other vanilla recipe without a
   technology (`VANILLA_RECIPES_UNUSED`, by group); the nested tips-and-tricks triggers lose the branches that need a
   deleted recipe (`FORK-TIP` in the log), and machines lose a deleted fixed recipe (captive biter spawner, rocket silo).
+  Issue #529 (its section "SPACE AGE PLANETS AND SPACE PLATFORMS" after #323's):
+  the Space Age planets and space locations (`REMOVED_LOCATIONS`), their space connections, the planet discovery and space
+  platform technologies (`REMOVED_TECHS`, the maintainer's decision: Gregtorio has no space platforms) and the platform
+  starter pack are deleted with every reference a load fails on (achievements, ambient sounds, tips and the tips that
+  depend on them, main menu simulations on a deleted planet, Factoriopedia simulations, import locations, prerequisites);
+  165 copies Vulcanus' terrain for the Nether before. #508's control rule (after the map presets) deletes every autoplace
+  control no planet lists, unless a noise expression or an autoplace reads its sliders (`control:<name>:size`): such a
+  control stays with `hidden = true`, because a surface keeps its map generation in the save and the load compiles its
+  noise (the Nether's copy of Vulcanus' lava reads the coal, tungsten and geyser controls; without them the load fails
+  with "Unknown variable"; a noise expression cannot stand in, prototype names take no colon). The engine deletes a
+  surface of a deleted planet when an old save loads (`devcheck.py migrate`: DEVCHECK-MIGRATE-PLANETS).
 - Names (issue #230): the engine names a recipe after its product only when the recipe has the product's name; every
   other recipe shows `recipe-name.<recipe>`, a main product does not change that. `prototypes/fork-locale.lua` (required
   first from `data.lua`, `FORK_LOCALE.name_recipes()` at the end of `data-final-fixes.lua`) gives every Gregtorio recipe
@@ -247,7 +356,8 @@
 - New machines one tier up: `fork_make_tier_machine(base, from_tier, to_tier, frames, tech)`.
   Their sprites/icons come from `tools/gen_sprites.py --gt <GT5-Unofficial checkout>`;
   missing item icons from `tools/gen_icons.py` (a placeholder; the real icon from GT textures with
-  `tools/gen_gt_icons.py` after adding the item to `tools/gt-icon-items.txt`), technology icons from
+  `tools/gen_gt_icons.py` after adding the item to `tools/gt-icon-items.txt`; `tools/gen_icons.py --drawn` writes the graphics
+  drawn as code where GT has no texture, issue #431: the cauldron), technology icons from
   `tools/gen_tech_icons.py` (`tools/tech-icons.tsv`), missing names from `tools/gen_locale.py`.
   Check graphics changes with the contact sheets of `tools/gen_review_sheet.py`.
 - **Machine names are GTNH's** (issue #156): a new machine, multiblock or controller takes the name GT New Horizons

@@ -64,6 +64,19 @@ for n, e in pairs(data.raw.resource) do
 	local m = e.minable or {}
 	D("M", n, m.result or "", names(m.results), e.category or "basic-solid")
 end
+--- P resource planet technology (issue #501): the resources a planet's map generation places and the technology that
+--- reaches the planet (FORK_ORE_VEINS of 163; "" for Nauvis and any planet without one: from the start)
+for pname, planet in pairs(data.raw.planet or {}) do
+	local mgs = planet.map_gen_settings
+	local ent = mgs and mgs.autoplace_settings and mgs.autoplace_settings.entity
+	local tech = ""
+	for dim, p in pairs(FORK_ORE_VEINS and FORK_ORE_VEINS.planets or {}) do
+		if p == pname then tech = (FORK_ORE_VEINS.techs or {})[dim] or "" end
+	end
+	for name in pairs(ent and ent.settings or {}) do
+		if data.raw.resource[name] then D("P", name, pname, tech) end
+	end
+end
 for n, e in pairs(data.raw["offshore-pump"] or {}) do D("O", n, e.fluid or "") end
 --- B item burnt_result fuel_category | U entity fuel_categories (burners: a fuel's burnt result comes out of them)
 for t, _ in pairs(defines.prototypes.item) do
@@ -157,6 +170,23 @@ end
 for _, name in pairs(ME_NETWORK and ME_NETWORK.recipes or {}) do me_row(name) end
 for name in pairs(FORK_ME_RECIPES_STANDALONE or {}) do me_row(name) end
 section("MERECIPES", mr)
+
+--- Issue #496: GT's ore mixes (FORK_ORE_MIXES of prototypes/165-fork-ore-veins.lua) with Gregtorio's surfaces, the ores
+--- left out (FORK_ORE_MIX_SKIPPED) and those without an ore chain (FORK_ORE_MIX_NO_CHAIN); rows "surface" dimension,
+--- "mix" name dimensions, "ore" mix role material raw-item-or-"-", "skip" key reason, "nochain" material reason
+--- (absent in older versions)
+local om = {}
+for d in pairs(FORK_ORE_MIX_SURFACES or {}) do om[#om + 1] = "surface\t" .. d end
+for _, mix in pairs(FORK_ORE_MIXES and FORK_ORE_MIXES.mixes or {}) do
+	om[#om + 1] = "mix\t" .. mix.name .. "\t" .. table.concat(mix.dimensions, ",")
+	for _, role in pairs({ "primary", "secondary", "between", "sporadic" }) do
+		local raw = "raw-" .. mix[role]
+		om[#om + 1] = table.concat({ "ore", mix.name, role, mix[role], data.raw.item[raw] and raw or "-" }, "\t")
+	end
+end
+for key, reason in pairs(FORK_ORE_MIX_SKIPPED or {}) do om[#om + 1] = "skip\t" .. key .. "\t" .. reason end
+for key, reason in pairs(FORK_ORE_MIX_NO_CHAIN or {}) do om[#om + 1] = "nochain\t" .. key .. "\t" .. reason end
+section("OREMIXES", om)
 
 --- Issue #202: the raw ores without a forge hammer recipe on purpose (FORK_ORE_HAMMER_SKIP in
 --- prototypes/155-fork-ore-chain.lua; absent in older versions)

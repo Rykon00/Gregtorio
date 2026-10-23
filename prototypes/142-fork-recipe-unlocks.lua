@@ -282,8 +282,7 @@ local UNLOCKS = {
 		"block-of-black-steel",
 	},
 	["aluminium"] = { -- MV
-		"aluminium-wire-16x", "bauxite-dust-electrolysis", "dense-aluminium-plate", "raw-aluminium-smelter",
-		"raw-bauxite-smelter",
+		"aluminium-wire-16x", "bauxite-dust-electrolysis", "dense-aluminium-plate",
 	},
 	["extruder"] = { -- MV
 		"large-black-steel-gear", "long-brass-rod", "long-iron-rod", "long-magnetic-iron-rod", "long-magnetic-steel-rod",
@@ -308,8 +307,8 @@ local UNLOCKS = {
 		"lapis-bolt", "lapis-screw",
 	},
 	["multismelter"] = { -- MV
-		"cobalt-brass-ingot-multismelter", "pentlandite-dust-multismelter", "raw-aluminium-multismelter",
-		"raw-barite-multismelter", "raw-cassiterite-multismelter", "raw-sodalite-multismelter",
+		"cobalt-brass-ingot-multismelter", "pentlandite-dust-multismelter", "raw-cassiterite-multismelter",
+		"raw-sodalite-multismelter",
 	},
 	["stainless-steel"] = { -- MV
 		"dense-stainless-steel-plate", "long-stainless-steel-rod",
@@ -319,7 +318,7 @@ local UNLOCKS = {
 	},
 	["neodymium"] = { -- HV
 		"bastnasite-dust", "bastnasite-dust-electrolysis", "centrifuging-crushed-bastnasite", "crushed-bastnasite",
-		"long-magnetic-neodymium-rod", "long-neodymium-rod", "raw-bastnasite-multismelter", "raw-bastnasite-smelter",
+		"long-magnetic-neodymium-rod", "long-neodymium-rod",
 	},
 	["hv-components"] = { -- HV
 		"hv-sensor",
@@ -352,9 +351,7 @@ local UNLOCKS = {
 	},
 	["titanium"] = { -- EV
 		"block-of-titanium", "centrifuging-crushed-chromite", "chromium-dust", "crushed-chromite", "ilmenite-processing",
-		"ilmenite-slag-processing", "long-titanium-rod", "raw-chromite-multismelter",
-		"raw-chromite-smelter", "raw-ilmenite-multismelter", "raw-ilmenite-smelter", "sulfuric-iron-solution-electrolysis",
-		"titanium-pipe-casing",
+		"ilmenite-slag-processing", "long-titanium-rod", "sulfuric-iron-solution-electrolysis", "titanium-pipe-casing",
 	},
 	["end-steel"] = { -- EV
 		"block-of-dark-steel", "block-of-electrical-steel", "end-steel-wire-16x", "ender-air-distillation",
@@ -593,7 +590,9 @@ local KEEP = {
 	["industrial-mixer"] = { "magnalium-ingot", "magnalium-plate", "steel-turbine-casing", "titanium-turbine-casing",
 		"blue-steel-rod", "blue-steel-frame" },
 	["plasma-turbine"] = { "long-tungstensteel-rod" },
-	["military-science-pack"] = { "lv-sensor" },
+	-- issue #443: the LV sensor with the Circuit Assembler, the first LV technology with all its parts (brass rod, certus
+	-- quartz), so the LV Miner needs no Military Science Pack technology
+	["circuit-assembler"] = { "lv-sensor" },
 	["end-steel"] = { "endstone-dust" },
 	["rhodium"] = { "sulfur-dioxide", "sulfur-trioxide" },
 	-- issue #188: the forge hammer crushes raw sheldonite too, so the auto-unlock no longer places the macerator recipe
@@ -685,7 +684,6 @@ for _, m in pairs({
 	{ "mv-emitter", "advanced-mv-machines", "laser-engraver" },                -- MV Laser Engraver (ILC, RAM, NAND wafers)
 	{ "electrum-rod", "advanced-mv-machines", "laser-engraver" },
 	{ "electrum-ingot", "advanced-integrated-circuits", "laser-engraver" },
-	{ "mining-beryllium-vein", "advanced-mv-machines", "laser-engraver" },     -- emerald
 	{ "crushed-beryllium", "advanced-mv-machines", "laser-engraver" },
 	{ "chromium-ingot", "advanced-hv-machines", "hv-components" },              -- chromium rod of the HV sensor
 	{ "chromium-rod", "advanced-hv-machines", "hv-components" },
@@ -750,6 +748,8 @@ FORK_UNLOCK_TREE = { prerequisites = {
 	["ev-machines"] = { "nichrome-coils" },   -- nichrome-wire
 	["extreme-entity-crushers"] = { "ev-energy-hatches" },   -- ev-energy-hatch
 	["fusion-reactor-mk1"] = { "advanced-smds" },   -- zpm-circuit
+	["fusion-plasmas-mk2"] = { "nuclear-fuel-rods" },   -- plutonium-239-dust (issue #375: the naquadah transmutation)
+	["fusion-plasmas-mk5"] = { "reach-the-everglades" },   -- tellurium-dust (issue #397: lead plasma)
 	["fusion-reactor-mk2"] = { "zpm-assembly-line" },   -- machine zpm-assembly-line
 	["galena"] = { "concrete" },   -- machine lv-fluid-solidifier
 	["gas-turbine"] = { "semifluid-generator", "sulfuric-acid" },   -- machine lv-canning-machine; machine lv-distillation
@@ -861,6 +861,10 @@ FORK_UNLOCK_GAPS = {
 	["uev-components:uiv-circuit"] = "GT's field generator takes the next tier's circuit; kept with the components on purpose (128, phase 3 note): craftable once that circuit is",
 	["uiv-components:umv-circuit"] = "GT's field generator takes the next tier's circuit; kept with the components on purpose (128, phase 3 note): craftable once that circuit is",
 	["umv-components:uxv-circuit"] = "GT's field generator takes the next tier's circuit; kept with the components on purpose (128, phase 3 note): craftable once that circuit is",
+	-- issue #447: the steam macerator runs copies without byproducts (101); with red science the steam copies make the crushed
+	-- calcite and the impure calcite dust, the LV recipes with their andradite byproduct wait for the LV macerator
+	["steel-processing:calcite"] = "issue #447: the LV recipe (andradite byproduct) waits for the LV macerator; the steam macerator's copy makes the crushed calcite",
+	["steel-processing:impure-calcite-dust"] = "issue #447: the LV recipe (andradite byproduct) waits for the LV macerator; the steam macerator's copy makes the impure calcite dust",
 }
 
 --- issue #252: items a technology's recipes take that neither it nor its prerequisites make, kept on purpose:
@@ -880,11 +884,6 @@ FORK_RECIPES_LOCKED = {
 	["calcium"] = "upstream placeholder without ingredients (an item from nothing); calcium comes from fluorspar",
 	["cerium-rich-mixture"] = "upstream placeholder without ingredients; the mixture comes from bastnasite",
 	["phosphorus"] = "upstream placeholder without ingredients; phosphorus comes from the phosphorus line",
-	["crushed-firestone"] = "no source of firestone ore: GT has no firestone vein (Railcraft's nether ore)",
-	["firestone-dust"] = "needs crushed firestone",
-	["centrifuging-crushed-firestone"] = "needs crushed firestone",
-	["raw-firestone-ore-smelter"] = "no source of firestone ore",
-	["raw-firestone-ore-multismelter"] = "no source of firestone ore",
 	--- issue #215 (the maintainer's decision): armour equipment that needs an armour with an equipment grid and a power
 	--- source in it, which Gregtorio does not have (the vanilla armour and equipment technologies are disabled)
 	["me-wireless-module"] = "armour equipment; Gregtorio has no armour with an equipment grid (the Wireless ME Terminal item does the same)",

@@ -19,6 +19,72 @@
 --- issue #97 can be blueprinted and mined.
 --- Nuclear chain (issue #97): fluid nuclear reactor -> large heat exchanger -> high pressure steam turbine -> large
 --- steam turbine makes power from fuel rods; depleted rods come out; the steam recipe of the heat exchanger is exact.
+--- LFTR (issue #386, scripts/fork-power.lua): the reactor with fuel and coolant for two runs, a load of its 40.96 MW and
+--- a substation. At LF_TICK the reactor works, its dynamo produces 40.96 MW and the load got energy; then the reactor is
+--- destroyed and LF_GONE ticks later its dynamo must be gone.
+local LF_X, LF_Y = -320.5, 250.5
+local LF_TICK, LF_GONE = 600, 30
+local LF_W = 40.96e6
+
+function setup_lftr_test(s)
+	local fails = {}
+	local lf = {}
+	storage.lftr = lf
+	local ok, err = pcall(function()
+		lf.reactor = s.create_entity{ name = "liquid-fluoride-thorium-reactor", position = { LF_X, LF_Y }, force = "player",
+			raise_built = true }
+		game.forces.player.recipes["lftr-fuel-1-burning"].enabled = true
+		lf.reactor.set_recipe("lftr-fuel-1-burning")
+		for _, f in pairs({ { "lftr-fuel-1", 20 }, { "lithium-tetrafluoroberyllate", 40 } }) do
+			local got = lf.reactor.insert_fluid{ name = f[1], amount = f[2] }
+			if math.abs(got - f[2]) > 1e-6 then fails[#fails + 1] = "LFTR test: the reactor took only " .. got .. " " .. f[1] end
+		end
+		lf.load = s.create_entity{ name = "electric-energy-interface", position = { LF_X, LF_Y + 6 }, force = "player" }
+		lf.load.power_production = 0
+		lf.load.power_usage = LF_W / 60
+		lf.load.electric_buffer_size = 1e9
+		lf.load.energy = 0
+		s.create_entity{ name = "substation", position = { LF_X + 4, LF_Y + 3 }, force = "player" }
+	end)
+	if not ok then fails[#fails + 1] = "LFTR test: " .. tostring(err) end
+	return fails
+end
+
+function lftr_test()
+	local lf = storage.lftr
+	if not lf or lf.done or game.tick < LF_TICK then return end
+	local s = game.surfaces[1]
+	local problems = {}
+	local function expect(ok, what) if not ok then problems[#problems + 1] = what end end
+	if not lf.destroyed_at then
+		expect(lf.reactor and lf.reactor.valid, "the reactor is missing")
+		if #problems == 0 then
+			local r = lf.reactor
+			local d = s.find_entity("lftr-dynamo", r.position)
+			expect(r.status == defines.entity_status.working, "the reactor does not work (status " .. tostring(r.status) .. ")")
+			expect(d ~= nil, "no dynamo under the reactor")
+			if d then
+				expect(math.abs(d.power_production * 60 - LF_W) < 1, "the dynamo produces " .. d.power_production * 60 .. " W, not 40.96 MW")
+			end
+			expect(lf.load.valid and lf.load.energy > 0, "the load got no energy")
+			lf.summary = string.format(" (dynamo %.2f MW, load %.1f MJ in its buffer)", d and d.power_production * 60 / 1e6 or 0,
+				lf.load.valid and lf.load.energy / 1e6 or 0)
+			lf.position = r.position
+			r.destroy{ raise_destroy = true }
+			lf.destroyed_at = game.tick
+		end
+		if #problems > 0 then lf.done = true end
+	elseif game.tick >= lf.destroyed_at + LF_GONE then
+		expect(s.find_entity("lftr-dynamo", lf.position) == nil, "the dynamo stayed after the reactor was destroyed")
+		lf.done = true
+	else
+		return
+	end
+	if not lf.done then return end
+	for _, p in pairs(problems) do log("DEVCHECK-RUNTIME-FAIL LFTR test: " .. p) end
+	log("DEVCHECK-RUNTIME-LFTR " .. (#problems == 0 and "ok" or "failed") .. (lf.summary or ""))
+end
+
 --- Lapotronic supercapacitor (issue #97): charges and discharges at two amps of its tier, holds its capacity by tier
 --- and loses GT's 1 % per day.
 --- Offered recipes (issue #126): the machine recipes that were hidden from the crafting menu are offered by the machines.
@@ -27,6 +93,8 @@
 --- Electric mine (issue #335): a Manual Mine replaced by the Ore Drilling Plant Mk I by fast replace and by the upgrade
 --- planner (construction robots) keeps its neighbouring inserters and belts, the items of its slots come back, and the
 --- plant drills a vein with Drilling Fluid.
+--- LFTR (issue #386): the Liquid Fluoride Thorium Reactor on LFTR Fuel 1 runs without power and its hidden dynamo gives
+--- 40.96 MW into a network with a load; mined, the dynamo goes with it.
 --- Victory: when the other tests have reported, `victory` is researched by script and must win the game.
 
 local VICTORY_DEADLINE = 1450
@@ -48,6 +116,9 @@ local function tests_running()
 	check(storage.offer and storage.offer.done, "recipes offered by machines")
 	check(storage.melt and storage.melt.done, "melts and casts")
 	check(storage.emine and storage.emine.done, "electric mine")
+	check(storage.lftr and storage.lftr.done, "LFTR")
+	check(storage.solar and storage.solar.done, "solar boilers")
+	check(storage.battery and storage.battery.done, "battery buffers")
 	return running
 end
 
@@ -1056,6 +1127,612 @@ function crush_test()
 		.. game.tick .. ", " .. st.hammers .. " forge hammers; researched " .. table.concat(techs, ", ") .. ")")
 end
 
+--- Solar boilers (issue #446, scripts/fork-steam-boilers.lua): on a surface of their own with the time of day frozen, a
+--- Simple Solar Boiler stops at midnight (status "No sunlight") and makes steam at noon
+local SB_WAIT = 150
+function setup_solar_test(_)
+	local ss = game.create_surface("devcheck-solar")
+	ss.always_day = false
+	ss.freeze_daytime = true
+	ss.daytime = 0.5
+	ss.request_to_generate_chunks({ 0, 0 }, 1)
+	ss.force_generate_chunk_requests()
+	local e = ss.create_entity{ name = "simple-solar-boiler", position = { 0, 0 }, force = "player", raise_built = true }
+	if not e then return { "solar boiler test: could not place the Simple Solar Boiler" } end
+	e.insert_fluid{ name = "water", amount = 100 }
+	storage.solar = { e = e, surface = ss, phase = "night", at = game.tick }
+	return {}
+end
+
+function solar_test()
+	local st = storage.solar
+	if not st or st.done then return end
+	if game.tick < st.at + SB_WAIT then return end
+	local problems = st.problems or {}
+	st.problems = problems
+	local e = st.e
+	if not (e and e.valid) then
+		problems[#problems + 1] = "the boiler is gone"
+	elseif st.phase == "night" then
+		local cs = e.custom_status
+		if not e.disabled_by_script then problems[#problems + 1] = "it runs at midnight" end
+		if not (cs and type(cs.label) == "table" and cs.label[1] == "entity-status.fork-no-sunlight") then
+			problems[#problems + 1] = "no status 'No sunlight' at midnight"
+		end
+		st.night_steam = e.get_fluid_count("steam")
+		st.surface.daytime = 0
+		e.insert_fluid{ name = "water", amount = 100 }
+		st.phase, st.at = "day", game.tick
+		return
+	else
+		if e.disabled_by_script then problems[#problems + 1] = "it is stopped at noon" end
+		st.day_steam = e.get_fluid_count("steam")
+		if not (st.day_steam > (st.night_steam or 0)) then problems[#problems + 1] = "no steam at noon" end
+	end
+	st.done = true
+	for _, p in pairs(problems) do log("DEVCHECK-RUNTIME-FAIL solar boiler test: " .. p) end
+	log("DEVCHECK-RUNTIME-SOLAR " .. (#problems == 0 and "ok" or "failed") .. string.format(" (steam %.1f at midnight, %.1f at noon)",
+		st.night_steam or 0, st.day_steam or 0))
+end
+
+--- Battery buffers (issue #444, prototypes/145-fork-power-multiblocks.lua section 8): an LV Battery Buffer (1 battery)
+--- holds 33.33 MJ, takes 1.28 MW and gives 640 kW; on a network with an LV Combustion Generator on a Bio Diesel Cell it
+--- charges, and with the generator gone it feeds an LV compressor on air
+local BB_X, BB_Y, BB_WAIT = 350, 350, 120
+
+--- Mining drills (issue #499, prototypes/163-fork-electric-mine.lua): every drill stands on a 5 x 5 patch of its own ore
+--- (the natural ores of its area removed first) with a chest at its output; at DR_TICK each chest holds its ore, the
+--- Manual Mine burnt manual labor, the plants with Drilling Fluid drank some (scripts/fork-ore-drills.lua) and the Mk II
+--- without any stopped after a few ores.
+local DR_Y, DR_TICK, DR_FLUID, DR_PER_ORE = -300.5, 600, 1000, 200 / 64
+local DR = { { "manual-mine", -330.5, "magnetite" }, { "lv-miner", -300.5, "chalcopyrite" }, { "mv-miner", -270.5, "coal" },
+	{ "hv-miner", -240.5, "pyrite" }, { "ore-drilling-plant-mk1", -150.5, "lignite", true },
+	{ "ore-drilling-plant-mk2", 0.5, "iron", false }, { "ore-drilling-plant-mk3", 150.5, "copper", true },
+	{ "ore-drilling-plant-mk4", 300.5, "gold", true } }
+
+function setup_drill_test(s)
+	local fails, dt = {}, { drills = {} }
+	storage.drill_test = dt
+	local ok, err = pcall(function()
+		for i, d in pairs(DR) do
+			local x, r = d[2], prototypes.entity[d[1]].mining_drill_radius
+			for _, e in pairs(s.find_entities_filtered{ type = "resource", area = { { x - r - 1, DR_Y - r - 1 }, { x + r + 1, DR_Y + r + 1 } } }) do
+				e.destroy()
+			end
+			for dx = -2, 2 do
+				for dy = -2, 2 do
+					s.create_entity{ name = "gt-ore-" .. d[3], position = { x + dx, DR_Y + dy }, amount = 1000 }
+				end
+			end
+			local e = s.create_entity{ name = d[1], position = { x, DR_Y }, force = "player", raise_built = true }
+			local chest = s.create_entity{ name = "iron-chest", position = { x, DR_Y - 3 }, force = "player" }
+			if d[1] == "manual-mine" then
+				assert(e.get_fuel_inventory().insert{ name = "manual-labor", count = 50 } == 50, "the Manual Mine took no manual labor")
+			else
+				s.create_entity{ name = "substation", position = { x + 4, DR_Y + 4 }, force = "player" }
+				s.create_entity{ name = "electric-energy-interface", position = { x + 7, DR_Y + 4 }, force = "player" }
+			end
+			if d[4] then
+				local tank = s.find_entity("ore-drilling-plant-fluid-input", e.position)
+				assert(tank and tank.insert_fluid{ name = "drilling-fluid", amount = DR_FLUID } > 0, d[1] .. " took no drilling fluid")
+			end
+			dt.drills[i] = { entity = e, chest = chest }
+		end
+	end)
+	if not ok then fails[#fails + 1] = "mining drill test: " .. tostring(err) end
+	return fails
+end
+
+function drill_test()
+	local dt = storage.drill_test
+	if not dt or dt.done or game.tick < DR_TICK then return end
+	dt.done = true
+	local problems, got = {}, {}
+	local function expect(ok, what) if not ok then problems[#problems + 1] = what end end
+	for i, d in pairs(DR) do
+		local rec = dt.drills[i]
+		local e = rec and rec.entity
+		if not (e and e.valid and rec.chest.valid) then
+			expect(false, d[1] .. ": the drill or its chest is gone")
+		else
+			local n = rec.chest.get_item_count("raw-" .. d[3])
+			got[#got + 1] = d[1] .. " " .. n
+			if d[4] == false then
+				expect(e.disabled_by_script, d[1] .. " without Drilling Fluid still runs (status " .. tostring(e.status) .. ")")
+				expect(n < 30, d[1] .. " without Drilling Fluid mined " .. n .. " raw " .. d[3])
+			else
+				expect(n > 0, d[1] .. " mined no raw " .. d[3] .. " (status " .. tostring(e.status) .. ")")
+			end
+			if d[4] then
+				local tank = e.surface.find_entity("ore-drilling-plant-fluid-input", e.position)
+				local left = tank and tank.get_fluid_count("drilling-fluid") or DR_FLUID
+				local per_ore = (DR_FLUID - left) / math.max(n, 1)
+				got[#got] = got[#got] .. string.format(" (%.2f fluid per ore)", per_ore)
+				expect(math.abs(per_ore - DR_PER_ORE) <= DR_PER_ORE / 2, string.format("%s drank %.2f Drilling Fluid per ore, not %.3f",
+					d[1], per_ore, DR_PER_ORE))
+				--- one that stops has drunk its tank (the Mk IV drinks 1000 in 4 s)
+				expect(not e.disabled_by_script or left < 50, d[1] .. " stopped with " .. left .. " Drilling Fluid")
+			end
+			if d[1] == "manual-mine" then
+				expect(e.get_fuel_inventory().get_item_count("manual-labor") < 50, "the Manual Mine burnt no manual labor")
+			end
+		end
+	end
+	for _, p in pairs(problems) do log("DEVCHECK-RUNTIME-FAIL mining drill test: " .. p) end
+	log("DEVCHECK-RUNTIME-DRILLS " .. (#problems == 0 and "ok" or "failed") .. " (" .. table.concat(got, ", ") .. " in "
+		.. DR_TICK .. " ticks)")
+end
+
+--- Map veins (issue #497, prototypes/165-fork-ore-veins.lua): on a surface with Nauvis' map generation and a fixed seed
+--- the cells' veins are read from the noise (calculate_tile_properties at the cell centres) to find a cell of every vein of
+--- Nauvis, its largest; the chunks of those veins are generated; inside each vein every tile holds one ore at most, only
+--- ores of its vein, and every ore of its layers is there; the four cells around the origin hold the start veins.
+local VT_SEED, VT_CELLS, VT_TRIES = 4242, 40, 3
+
+--- issue #501: one planet's veins: per vein its VT_TRIES largest cells (on Nauvis on land: ore is not placed on water;
+--- on the Nether lava lakes may hold a vein), generated one after the other until one holds every ore of the vein;
+--- returns the summary and, on Nauvis, the cell size and the start cells' veins
+local function check_planet_veins(d, planet, vt)
+	local info = d.planets[planet]
+	local mgs = prototypes.space_location[planet].map_gen_settings
+	mgs.seed = VT_SEED
+	local s = game.create_surface("devcheck-veins-" .. planet, mgs)
+	local size = s.calculate_tile_properties({ "gt_cell_size" }, { { 0, 0 } }).gt_cell_size[1]
+	local pos = {}
+	for cy = -VT_CELLS, VT_CELLS - 1 do
+		for cx = -VT_CELLS, VT_CELLS - 1 do pos[#pos + 1] = { x = (cx + 0.5) * size, y = (cy + 0.5) * size } end
+	end
+	local p = s.calculate_tile_properties({ "gt_vein_id", "gt_vein_cx", "gt_vein_cy", "gt_vein_r" }, pos)
+	local land = {}
+	if planet == "nauvis" then
+		--- its centre and four points at half its radius above sea level
+		local probe = {}
+		for i in ipairs(pos) do
+			local x, y, q = p.gt_vein_cx[i], p.gt_vein_cy[i], p.gt_vein_r[i] / 2
+			for _, o in pairs({ { 0, 0 }, { q, 0 }, { -q, 0 }, { 0, q }, { 0, -q } }) do probe[#probe + 1] = { x = x + o[1], y = y + o[2] } end
+		end
+		local elevation = s.calculate_tile_properties({ "elevation" }, probe).elevation
+		for i in ipairs(pos) do
+			land[i] = true
+			for j = 5 * i - 4, 5 * i do if elevation[j] <= 0 then land[i] = false end end
+		end
+	end
+	local cands, cells = {}, 0
+	for i in ipairs(pos) do
+		local id = math.floor(p.gt_vein_id[i] + 0.5)
+		if id > 0 then cells = cells + 1 end
+		if id > 0 and (planet ~= "nauvis" or land[i]) then
+			cands[id] = cands[id] or {}
+			table.insert(cands[id], { x = p.gt_vein_cx[i], y = p.gt_vein_cy[i], r = p.gt_vein_r[i] })
+		end
+	end
+	local seen, tiles, dup = {}, 0, 0
+	for _, id in pairs(info.veins) do
+		local v, list = d.veins[tostring(id)], cands[id] or {}
+		table.sort(list, function(a, b) return a.r > b.r end)
+		local missing = "no cell of " .. #pos .. " holds it"
+		for k = 1, math.min(VT_TRIES, #list) do
+			local b = list[k]
+			s.request_to_generate_chunks({ b.x, b.y }, math.ceil(b.r / 32) + 1)
+			s.force_generate_chunk_requests()
+			local allowed, found = {}, {}
+			for _, r in pairs(v.resources) do allowed[r] = true end
+			for _, e in pairs(s.find_entities_filtered{ type = "resource", position = { b.x, b.y }, radius = b.r }) do
+				local key = e.position.x .. "," .. e.position.y
+				if seen[key] then dup = dup + 1 end
+				seen[key] = true
+				tiles = tiles + 1
+				if allowed[e.name] then
+					found[e.name] = (found[e.name] or 0) + 1
+				else
+					vt.problems[#vt.problems + 1] = v.text .. ": " .. e.name .. " at " .. key .. " is not one of its ores"
+				end
+			end
+			missing = nil
+			for _, r in pairs(v.resources) do
+				if not found[r] then
+					missing = string.format("no %s in the vein at %.0f,%.0f (radius %.1f)", r, b.x, b.y, b.r)
+				end
+			end
+			if not missing then break end
+		end
+		if missing then vt.problems[#vt.problems + 1] = planet .. ": " .. v.text .. ": " .. missing end
+	end
+	if dup > 0 then vt.problems[#vt.problems + 1] = planet .. ": " .. dup .. " tiles hold a second ore" end
+	local got = {}
+	if #info.start > 0 then
+		--- the start cells: north-west, north-east, south-west, south-east of the origin
+		local h = size / 2
+		for _, v in pairs(s.calculate_tile_properties({ "gt_vein_id" }, { { -h, -h }, { h, -h }, { -h, h }, { h, h } }).gt_vein_id) do
+			got[#got + 1] = math.floor(v + 0.5)
+		end
+		local want = {}
+		for _, v in pairs(info.start) do want[#want + 1] = v end
+		table.sort(got)
+		table.sort(want)
+		if table.concat(got, ",") ~= table.concat(want, ",") then
+			vt.problems[#vt.problems + 1] = "the start cells hold the veins " .. table.concat(got, ",") .. ", not " .. table.concat(want, ",")
+		end
+	end
+	game.delete_surface(s)
+	return string.format("%d veins of %s, %d of %d cells with a vein, %d ore tiles%s", #info.veins, planet, cells, #pos,
+		tiles, #got > 0 and (", start veins " .. table.concat(got, ",")) or ""), size
+end
+
+--- Issue #529: the veins' own controls. Two surfaces with Nauvis' map generation and the test's seed: the default one and
+--- one with the Coal Vein off (size 0, as the map generator's checkbox) and the Iron Vein at size 2, both start veins.
+--- The noise counts the cells of each vein in VC_CELLS x VC_CELLS cells around the origin, and the chunks of a fixed square
+--- (VC_AREA tiles around the origin) are generated to count the ore tiles of each vein (its vein by gt_vein_id there):
+--- the vein that is off has no cell and no tile, its start cell holds another vein or none, the other veins fill its
+--- cells (the share of cells with a vein stays), the vein at size 2 has twice the mean radius, its start vein more ore
+--- tiles at the same coverage (ore tiles per pi r^2 of its start cell: a magnified copy), and the cells keep room for it
+--- (88 x 2 tiles).
+local VC_CELLS, VC_AREA, VC_OFF, VC_BIG = 60, 192, "Coal", "Iron"
+local function vein_counts(s, off_id, big_id)
+	local size = s.calculate_tile_properties({ "gt_cell_size" }, { { 0, 0 } }).gt_cell_size[1]
+	local pos = {}
+	for cy = -VC_CELLS / 2, VC_CELLS / 2 - 1 do
+		for cx = -VC_CELLS / 2, VC_CELLS / 2 - 1 do pos[#pos + 1] = { x = (cx + 0.5) * size, y = (cy + 0.5) * size } end
+	end
+	local p = s.calculate_tile_properties({ "gt_vein_id", "gt_vein_r" }, pos)
+	local c = { size = size, with = 0, off = 0, big = 0, big_r = 0, tiles = 0, off_tiles = 0, big_tiles = 0 }
+	for i in ipairs(pos) do
+		local id = math.floor(p.gt_vein_id[i] + 0.5)
+		if id > 0 then c.with = c.with + 1 end
+		if id == off_id then c.off = c.off + 1 end
+		if id == big_id then c.big = c.big + 1; c.big_r = c.big_r + p.gt_vein_r[i] end
+	end
+	c.big_r = c.big_r / math.max(c.big, 1)
+	s.request_to_generate_chunks({ 0, 0 }, math.ceil(VC_AREA / 32))
+	s.force_generate_chunk_requests()
+	local ores = s.find_entities_filtered{ type = "resource", area = { { -VC_AREA, -VC_AREA }, { VC_AREA, VC_AREA } } }
+	local at = {}
+	for i, e in ipairs(ores) do at[i] = e.position end
+	local ids = #at > 0 and s.calculate_tile_properties({ "gt_vein_id" }, at).gt_vein_id or {}
+	for i in ipairs(at) do
+		local id = math.floor(ids[i] + 0.5)
+		c.tiles = c.tiles + 1
+		if id == off_id then c.off_tiles = c.off_tiles + 1 end
+		--- the big vein's start vein: its tiles in the four start cells
+		if id == big_id and math.abs(at[i].x) < size and math.abs(at[i].y) < size then c.big_tiles = c.big_tiles + 1 end
+	end
+	local h = size / 2
+	local q = s.calculate_tile_properties({ "gt_vein_id", "gt_vein_r" }, { { -h, -h }, { h, -h }, { -h, h }, { h, h } })
+	c.start, c.big_start_r = {}, 0
+	for i, v in pairs(q.gt_vein_id) do
+		c.start[#c.start + 1] = math.floor(v + 0.5)
+		if c.start[#c.start] == big_id then c.big_start_r = q.gt_vein_r[i] end
+	end
+	c.cover = c.big_tiles / math.max(math.pi * c.big_start_r * c.big_start_r, 1)
+	return c
+end
+
+local function check_vein_controls(d, vt)
+	local off_id, big_id
+	for id, v in pairs(d.veins) do
+		if v.control == "gt-vein-" .. VC_OFF then off_id = tonumber(id) end
+		if v.control == "gt-vein-" .. VC_BIG then big_id = tonumber(id) end
+	end
+	if not (off_id and big_id) then
+		vt.problems[#vt.problems + 1] = "controls: no vein with the control gt-vein-" .. VC_OFF .. " or gt-vein-" .. VC_BIG
+		return ""
+	end
+	local function surface(name, controls)
+		local mgs = prototypes.space_location.nauvis.map_gen_settings
+		mgs.seed = VT_SEED
+		for k, v in pairs(controls) do mgs.autoplace_controls[k] = v end
+		return game.create_surface(name, mgs)
+	end
+	local sd = surface("devcheck-controls-default", {})
+	local sm = surface("devcheck-controls-set", { ["gt-vein-" .. VC_OFF] = { frequency = 1, size = 0, richness = 1 },
+		["gt-vein-" .. VC_BIG] = { frequency = 1, size = 2, richness = 1 } })
+	local a, b = vein_counts(sd, off_id, big_id), vein_counts(sm, off_id, big_id)
+	game.delete_surface(sd)
+	game.delete_surface(sm)
+	local n = VC_CELLS * VC_CELLS
+	local function expect(ok, what) if not ok then vt.problems[#vt.problems + 1] = "controls: " .. what end end
+	expect(a.off > 0 and a.off_tiles > 0, VC_OFF .. " has no cell or tile on the default map")
+	expect(b.off == 0 and b.off_tiles == 0, string.format("%s is off but has %d cells and %d ore tiles", VC_OFF, b.off, b.off_tiles))
+	expect(math.abs(b.with / n - a.with / n) < 0.03, string.format("%d of %d cells with a vein, %d on the default map: the other "
+		.. "veins do not fill the cells of %s", b.with, n, a.with, VC_OFF))
+	local ratio = b.big_r / math.max(a.big_r, 1)
+	expect(ratio > 1.7 and ratio < 2.3, string.format("%s at size 2 has %.2f times the mean radius", VC_BIG, ratio))
+	expect(b.big_tiles > a.big_tiles and b.cover / math.max(a.cover, 1e-6) > 0.75 and b.cover / math.max(a.cover, 1e-6) < 1.33,
+		string.format("%s at size 2: its start vein (radius %.1f) has %d ore tiles, %.2f per tile of its area; on the default map "
+		.. "(radius %.1f) %d, %.2f", VC_BIG, b.big_start_r, b.big_tiles, b.cover, a.big_start_r, a.big_tiles, a.cover))
+	expect(math.abs(a.size - 128) < 1e-6 and math.abs(b.size - 176) < 1e-6, string.format("cells of %.0f and %.0f tiles, not 128 "
+		.. "and 176", a.size, b.size))
+	local start_big, start_off = false, false
+	for _, id in pairs(b.start) do
+		if id == big_id then start_big = true end
+		if id == off_id then start_off = true end
+	end
+	expect(start_big and not start_off, "the start cells hold " .. table.concat(b.start, ",") .. " with " .. VC_OFF .. " off and "
+		.. VC_BIG .. " at size 2")
+	return string.format("; controls: %s off: %d of %d cells (default %d), %d ore tiles in %d x %d tiles (default %d), the start "
+		.. "cells hold veins %s; %s at size 2: %.2f times the mean radius, its start vein radius %.1f with %d ore tiles, %.2f per "
+		.. "tile of its area (default radius %.1f, %d, %.2f); cells of %.0f tiles, %d with a vein (default %d)", VC_OFF, b.off, n, a.off,
+		b.off_tiles, 2 * VC_AREA, 2 * VC_AREA, a.off_tiles, table.concat(b.start, ","), VC_BIG, ratio, b.big_start_r, b.big_tiles,
+		b.cover, a.big_start_r, a.big_tiles, a.cover, b.size, b.with, a.with)
+end
+
+function setup_veins_test()
+	local fails, vt = {}, { problems = {} }
+	storage.veins_test = vt
+	local ok, err = pcall(function()
+		local d = prototypes.mod_data["fork-ore-veins"].data
+		local parts, size = {}, nil
+		for _, planet in pairs({ "nauvis", "gt-nether", "gt-twilight", "gt-end" }) do
+			if d.planets[planet] then
+				local text, sz = check_planet_veins(d, planet, vt)
+				parts[#parts + 1] = text
+				if planet == "nauvis" then size = sz end
+			end
+		end
+		vt.summary = " (" .. table.concat(parts, "; ") .. check_vein_controls(d, vt) .. ")"
+		local h = size / 2
+		--- the chart tag (scripts/fork-ore-veins.lua): chart the start veins of Nauvis, the tags are checked at VT_TAG_TICK
+		local n = game.surfaces.nauvis
+		local q = n.calculate_tile_properties({ "gt_vein_id", "gt_vein_cx", "gt_vein_cy" }, { { -h, -h }, { h, -h }, { -h, h }, { h, h } })
+		vt.tags = {}
+		for i = 1, 4 do
+			local id, x, y = math.floor(q.gt_vein_id[i] + 0.5), q.gt_vein_cx[i], q.gt_vein_cy[i]
+			vt.tags[#vt.tags + 1] = { text = d.veins[tostring(id)].text, x = x, y = y }
+			game.forces.player.chart(n, { { x - 1, y - 1 }, { x + 1, y + 1 } })
+		end
+	end)
+	if not ok then vt.problems[#vt.problems + 1] = tostring(err) end
+	return fails
+end
+local VT_TAG_TICK = 300
+
+function veins_test()
+	local vt = storage.veins_test
+	if not vt or vt.done or game.tick < VT_TAG_TICK then return end
+	vt.done = true
+	local n, tagged = game.surfaces.nauvis, 0
+	--- headless runs raise no on_chunk_charted: the remote call tags the chunk as the event would, twice (one tag only)
+	for _, t in pairs(vt.tags or {}) do
+		for _ = 1, 2 do
+			remote.call("fork-ore-veins", "tag_chunk", "player", "nauvis", { x = math.floor(t.x / 32), y = math.floor(t.y / 32) })
+		end
+	end
+	for _, t in pairs(vt.tags or {}) do
+		local found = game.forces.player.find_chart_tags(n, { { t.x - 1, t.y - 1 }, { t.x + 1, t.y + 1 } })
+		if #found == 1 and found[1].text == t.text then
+			tagged = tagged + 1
+		else
+			vt.problems[#vt.problems + 1] = string.format("no single chart tag \"%s\" at %.0f,%.0f (%d tags)", t.text, t.x, t.y, #found)
+		end
+	end
+	vt.summary = (vt.summary or "") .. ", " .. tagged .. " start veins tagged on the map"
+	for _, p in pairs(vt.problems) do log("DEVCHECK-RUNTIME-FAIL map vein test: " .. p) end
+	log("DEVCHECK-RUNTIME-VEINS " .. (#vt.problems == 0 and "ok" or "failed") .. (vt.summary or ""))
+end
+
+--- Nether Portal (issue #501, scripts/fork-portals.lua): a character next to a portal on Nauvis goes through it (the
+--- remote does what stepping onto it does for a player) and arrives on gt-nether next to a new portal at an eighth of the
+--- position; the Nether has gt-dimension 2, no water and lava, no biters; the way back leads to the first portal, not a
+--- new one. Issue #502: the Twilight Portal the same way at 1:1 to gt-twilight (gt-dimension 3, the daytime frozen at
+--- dusk, a dense forest without biters). Issue #503: the End Portal to gt-end (gt-dimension 4, frozen night): the exit
+--- portal at the origin on end stone, the void 600 tiles out, no water, trees or biters; the way back to the first portal.
+local PT_X, PT_Y = 200.5, 300.5
+local TT_X, TT_Y = -300, 200
+local ET_X, ET_Y = 400.5, -300.5
+
+function setup_portal_test(s)
+	local fails, pt = {}, {}
+	storage.portal_test = pt
+	local ok, err = pcall(function()
+		local portal = s.create_entity{ name = "nether-portal", position = { PT_X, PT_Y }, force = "player", raise_built = true }
+		local c = s.create_entity{ name = "character", position = { PT_X, PT_Y + 3 }, force = "player" }
+		c.insert{ name = "iron-plate", count = 7 }
+		local out = remote.call("fork-portals", "travel", c, portal)
+		local problems = {}
+		local function expect(ok2, what) if not ok2 then problems[#problems + 1] = what end end
+		expect(out and out.valid and out.surface.name == "gt-nether", "no portal on the other side")
+		expect(c.valid and c.surface.name == "gt-nether", "the character is not in the Nether")
+		if out and out.valid then
+			expect(math.abs(out.position.x - PT_X / 8) < 40 and math.abs(out.position.y - PT_Y / 8) < 40,
+				string.format("the Nether's portal is at %.1f,%.1f, not near %.1f,%.1f", out.position.x, out.position.y, PT_X / 8, PT_Y / 8))
+			local n = out.surface
+			expect(n.get_property("gt-dimension") == 2, "the Nether's gt-dimension is " .. tostring(n.get_property("gt-dimension")))
+			n.request_to_generate_chunks({ 0, 0 }, 6)
+			n.force_generate_chunk_requests()
+			local area = { { -192, -192 }, { 192, 192 } }
+			pt.water = n.count_tiles_filtered{ area = area, name = { "water", "deepwater", "water-green", "deepwater-green", "water-shallow", "water-mud", "water-wube" } }   -- (lava has the water_tile layer too)
+			pt.lava = n.count_tiles_filtered{ area = area, name = { "lava", "lava-hot" } }
+			expect(pt.water == 0, pt.water .. " water tiles in the Nether")
+			expect(pt.lava > 0, "no lava in the Nether")
+			local spawners = n.count_entities_filtered{ area = area, type = { "unit-spawner", "turret" } }
+			expect(spawners == 0, spawners .. " biter nests or worms in the Nether")
+		end
+		expect(c.valid and c.get_item_count("iron-plate") == 7, "the character's inventory did not come along")
+		local back = remote.call("fork-portals", "travel", c, out)
+		expect(back == portal, "the way back leads to " .. tostring(back and back.position.x) .. "," .. tostring(back and back.position.y)
+			.. ", not to the first portal")
+		expect(c.valid and c.surface.name == "nauvis", "the character did not come back to Nauvis")
+		expect(s.get_property("gt-dimension") == 1, "Nauvis' gt-dimension is " .. tostring(s.get_property("gt-dimension")))
+		--- issue #502: the Twilight Portal
+		local tp = s.create_entity{ name = "twilight-portal", position = { TT_X, TT_Y }, force = "player", raise_built = true }
+		local tout = remote.call("fork-portals", "travel", c, tp)
+		expect(tout and tout.valid and tout.surface.name == "gt-twilight", "no Twilight Portal on the other side")
+		expect(c.valid and c.surface.name == "gt-twilight", "the character is not in the Twilight Forest")
+		if tout and tout.valid then
+			local t = tout.surface
+			expect(math.abs(tout.position.x - TT_X) < 40 and math.abs(tout.position.y - TT_Y) < 40,
+				string.format("the Twilight Forest's portal is at %.1f,%.1f, not near %d,%d", tout.position.x, tout.position.y, TT_X, TT_Y))
+			expect(t.get_property("gt-dimension") == 3, "the Twilight Forest's gt-dimension is " .. tostring(t.get_property("gt-dimension")))
+			expect(t.freeze_daytime and math.abs(t.daytime - 0.35) < 0.01,
+				string.format("the Twilight Forest's daytime is %.2f (frozen: %s), not dusk", t.daytime, tostring(t.freeze_daytime)))
+			t.request_to_generate_chunks({ 0, 0 }, 6)
+			t.force_generate_chunk_requests()
+			local area = { { -192, -192 }, { 192, 192 } }
+			pt.trees = t.count_entities_filtered{ area = area, type = "tree" }
+			pt.home_trees = s.count_entities_filtered{ area = area, type = "tree" }
+			local spawners = t.count_entities_filtered{ area = area, type = { "unit-spawner", "turret" } }
+			expect(spawners == 0, spawners .. " biter nests or worms in the Twilight Forest")
+			expect(pt.trees > 384 * 384 / 25, pt.trees .. " trees around the Twilight Forest's origin: no dense forest")
+		end
+		local tback = remote.call("fork-portals", "travel", c, tout)
+		expect(tback == tp, "the way back from the Twilight Forest leads to " .. tostring(tback and tback.position.x) .. ","
+			.. tostring(tback and tback.position.y) .. ", not to the first portal")
+		expect(c.valid and c.surface.name == "nauvis", "the character did not come back from the Twilight Forest")
+		--- issue #503: the End Portal
+		local ep = s.create_entity{ name = "end-portal", position = { ET_X, ET_Y }, force = "player", raise_built = true }
+		local eout = remote.call("fork-portals", "travel", c, ep)
+		expect(eout and eout.valid and eout.surface.name == "gt-end", "no End Portal on the other side")
+		expect(c.valid and c.surface.name == "gt-end", "the character is not in The End")
+		if eout and eout.valid then
+			local e = eout.surface
+			expect(math.abs(eout.position.x) < 40 and math.abs(eout.position.y) < 40,
+				string.format("The End's portal is at %.1f,%.1f, not near the origin", eout.position.x, eout.position.y))
+			expect(e.get_property("gt-dimension") == 4, "The End's gt-dimension is " .. tostring(e.get_property("gt-dimension")))
+			expect(e.freeze_daytime, "The End's daytime is not frozen")
+			expect(e.get_tile(eout.position.x, eout.position.y).name == "gt-end-stone",
+				"The End's portal stands on " .. e.get_tile(eout.position.x, eout.position.y).name)
+			e.request_to_generate_chunks({ 0, 0 }, 6)
+			e.request_to_generate_chunks({ 600, 0 }, 1)
+			e.force_generate_chunk_requests()
+			local area = { { -192, -192 }, { 192, 192 } }
+			pt.end_stone = e.count_tiles_filtered{ area = area, name = "gt-end-stone" }
+			pt.end_void = e.count_tiles_filtered{ area = { { 584, -16 }, { 616, 16 } }, name = "gt-end-void" }
+			expect(pt.end_stone > 384 * 384 * 0.9, pt.end_stone .. " end stone tiles around The End's origin")
+			expect(pt.end_void == 32 * 32, pt.end_void .. " void tiles of 1024 at 600,0 (the main island reaches out there)")
+			local other = e.count_entities_filtered{ area = area, type = { "tree", "unit-spawner", "turret", "fish" } }
+			expect(other == 0, other .. " trees, nests or fish in The End")
+		end
+		local eback = remote.call("fork-portals", "travel", c, eout)
+		expect(eback == ep, "the way back from The End leads to " .. tostring(eback and eback.position.x) .. ","
+			.. tostring(eback and eback.position.y) .. ", not to the first portal")
+		expect(c.valid and c.surface.name == "nauvis", "the character did not come back from The End")
+		pt.problems = problems
+	end)
+	if not ok then fails[#fails + 1] = "portal test: " .. tostring(err) end
+	return fails
+end
+
+function portal_test()
+	local pt = storage.portal_test
+	if not pt or pt.done then return end
+	pt.done = true
+	local problems = pt.problems or { "it did not run" }
+	for _, p in pairs(problems) do log("DEVCHECK-RUNTIME-FAIL portal test: " .. p) end
+	log("DEVCHECK-RUNTIME-PORTAL " .. (#problems == 0 and "ok" or "failed") .. string.format(" (through to the Nether and back; "
+		.. "%s water and %s lava tiles around the Nether's origin; to the Twilight Forest and back, %s trees around its origin, "
+		.. "%s around Nauvis'; to The End and back, %s end stone tiles around its origin, %s void tiles at 600,0)",
+		tostring(pt.water), tostring(pt.lava), tostring(pt.trees), tostring(pt.home_trees), tostring(pt.end_stone),
+		tostring(pt.end_void)))
+end
+
+--- Ender Storage (issue #504, scripts/fork-ender.lua): an Ender Chest on Nauvis and one in the Nether with the same code
+--- share their slots, a third with another code does not; an Ender Tank of water on Nauvis and an empty one in the
+--- Nether with the same code hold half each after the levelling, a third with another code stays empty.
+local EN_WAIT = 61   -- three levelling intervals
+
+function setup_ender_test(s)
+	local fails, et = {}, {}
+	storage.ender_test = et
+	local ok, err = pcall(function()
+		local planet = game.planets["gt-nether"]
+		local n = planet.surface or planet.create_surface()
+		n.request_to_generate_chunks({ 0, 0 }, 2)
+		n.force_generate_chunk_requests()
+		local function place(surface, name, at)
+			local pos = surface == s and at or surface.find_non_colliding_position(name, at, 64, 1)
+			return surface.create_entity{ name = name, position = pos, force = "player", raise_built = true }
+		end
+		local a, b, c = place(s, "ender-chest", { -200.5, -250.5 }), place(n, "ender-chest", { 10, 10 }),
+			place(n, "ender-chest", { 20, 10 })
+		local t1, t2, t3 = place(s, "ender-tank", { -195.5, -250.5 }), place(n, "ender-tank", { 10, 20 }),
+			place(s, "ender-tank", { -190.5, -250.5 })
+		for e, code in pairs({ [a] = 1234, [b] = 1234, [c] = 0, [t1] = 777, [t2] = 777, [t3] = 778 }) do
+			remote.call("fork-ender", "set_code", e, code)
+		end
+		a.insert{ name = "iron-plate", count = 7 }
+		t1.insert_fluid{ name = "water", amount = 1000 }
+		et.chests, et.tanks, et.tick = { a, b, c }, { t1, t2, t3 }, game.tick
+		et.code = remote.call("fork-ender", "get_code", b)
+	end)
+	if not ok then fails[#fails + 1] = "ender storage test: " .. tostring(err) end
+	return fails
+end
+
+function ender_test()
+	local et = storage.ender_test
+	if not et or et.done or not et.tick or game.tick < et.tick + EN_WAIT then return end
+	et.done = true
+	local problems = {}
+	local function expect(ok, what) if not ok then problems[#problems + 1] = what end end
+	local a, b, c = et.chests[1], et.chests[2], et.chests[3]
+	expect(b.surface.name == "gt-nether", "the second Ender Chest is on " .. b.surface.name)
+	expect(et.code == 1234, "the Nether's chest has the code " .. tostring(et.code))
+	expect(b.get_item_count("iron-plate") == 7, "the Nether's Ender Chest holds " .. b.get_item_count("iron-plate")
+		.. " iron plates of Nauvis' 7")
+	expect(c.get_item_count("iron-plate") == 0, "the Ender Chest of another code holds iron plates")
+	local function amount(t) return t.get_fluid_count("water") end
+	local w1, w2, w3 = amount(et.tanks[1]), amount(et.tanks[2]), amount(et.tanks[3])
+	expect(math.abs(w1 - 500) < 1e-3 and math.abs(w2 - 500) < 1e-3,
+		string.format("the Ender Tanks of one code hold %.1f (Nauvis) and %.1f (Nether), not 500 each", w1, w2))
+	expect(w3 == 0, "the Ender Tank of another code holds " .. w3 .. " water")
+	for _, p in pairs(problems) do log("DEVCHECK-RUNTIME-FAIL ender storage test: " .. p) end
+	log("DEVCHECK-RUNTIME-ENDER " .. (#problems == 0 and "ok" or "failed") .. string.format(" (7 iron plates through the "
+		.. "Ender Chests to the Nether, %d there; water levelled %.0f / %.0f between Nauvis and the Nether)",
+		b.get_item_count("iron-plate"), w1, w2))
+end
+
+function setup_battery_test(s)
+	local fails, bb = {}, {}
+	storage.battery = bb
+	local ok, err = pcall(function()
+		bb.buffer = s.create_entity{ name = "lv-battery-buffer-1", position = { BB_X, BB_Y }, force = "player", raise_built = true }
+		bb.gen = s.create_entity{ name = "lv-combustion-generator", position = { BB_X + 4, BB_Y }, force = "player", raise_built = true }
+		bb.gen.insert{ name = "bio-diesel-cell", count = 5 }
+		s.create_entity{ name = "substation", position = { BB_X + 2, BB_Y + 3 }, force = "player" }
+		bb.load = s.create_entity{ name = "lv-compressor", position = { BB_X - 4, BB_Y + 4 }, force = "player" }
+		for name, r in pairs(prototypes.recipe) do
+			if r.category == "lv-compressor-recipes" and #r.ingredients == 0 then bb.load.set_recipe(name) break end
+		end
+		bb.load.disabled_by_script = true
+		bb.phase, bb.at = "charge", game.tick
+	end)
+	if not ok then fails[#fails + 1] = "battery buffer test: " .. tostring(err) end
+	return fails
+end
+
+function battery_test()
+	local bb = storage.battery
+	if not bb or bb.done or not bb.buffer then return end
+	if game.tick < bb.at + BB_WAIT then return end
+	local problems = bb.problems or {}
+	bb.problems = problems
+	local e = bb.buffer
+	if not e.valid then
+		problems[#problems + 1] = "the buffer is gone"
+	elseif bb.phase == "charge" then
+		if math.abs(e.electric_buffer_size - 100000 / 3 * 1000) > 1 then
+			problems[#problems + 1] = "capacity " .. e.electric_buffer_size .. " J, not 33.33 MJ"
+		end
+		bb.charged = e.energy
+		if not (bb.charged > 0) then problems[#problems + 1] = "it did not charge" end
+		--- at most 1.28 MW in (2 amps), the generator gives 640 kW
+		if bb.charged > 1.28e6 * BB_WAIT / 60 * 1.01 then problems[#problems + 1] = "it charged faster than 1.28 MW" end
+		if bb.gen.valid then bb.gen.destroy() end
+		bb.load.disabled_by_script = false
+		bb.phase, bb.at = "discharge", game.tick
+		return
+	else
+		bb.left = e.energy
+		if not (bb.left < bb.charged) then problems[#problems + 1] = "it did not feed the compressor" end
+		--- at most 640 kW out (1 amp)
+		if bb.charged - bb.left > 6.4e5 * BB_WAIT / 60 * 1.01 then problems[#problems + 1] = "it gave more than 640 kW" end
+	end
+	bb.done = true
+	for _, p in pairs(problems) do log("DEVCHECK-RUNTIME-FAIL battery buffer test: " .. p) end
+	log("DEVCHECK-RUNTIME-BATTERY " .. (#problems == 0 and "ok" or "failed") .. string.format(" (%.2f MJ charged in %d ticks, %.2f MJ left after feeding the compressor)",
+		(bb.charged or 0) / 1e6, BB_WAIT, (bb.left or 0) / 1e6))
+end
+
 --- Molds and lenses (prototypes/150-fork-molds.lua, issue #316): a machine with a recipe that needs one stops without it
 --- (status: the missing mold or lens), runs with it in its module slot and keeps it there (nothing in the output)
 local MOLD_Y = 120
@@ -1820,36 +2497,38 @@ function elevator_test()
 	end
 end
 
+--- Issue #499: the recipe machines are the dimension mines now (the mining drills took their names); hunting moved to the
+--- Dig Site, so the recipe without a twin is the glowstone vein.
 --- Electric mine (issue #335, prototypes/163-fork-electric-mine.lua): two Manual Mines with the iron vein recipe, a
---- pickaxe and manual labor in their input slots and raw iron in their output slot (stopped by script, so the slots stay
+--- pickaxe and manual labor in their input slots and raw copper in their output slot (stopped by script, so the slots stay
 --- as they are), each with an inserter and a belt on two sides. Mine A is replaced by fast replace (no player: what the
 --- plant cannot take is spilled), mine B by the upgrade planner's mapping Manual Mine -> Mk I and the T1 construction
 --- robots of a T1 roboport (issue #336: the roboport must take them, and the T1 logistic robots) with the plant in a
 --- storage chest (the robots bring the old machine and its items back). The
 --- neighbours must stay, the items come back (on the ground, in the storage chest), and plant A drills the iron vein's
---- twin with Drilling Fluid and 9 mining pipes (issue #341, used up: #346): 64 raw iron in 12 s. Issue #337: the Manual Mine's upgrade chain goes through the LV, MV and
+--- twin with Drilling Fluid and a mining pipe (issue #341, used up: #346, one per vein: #393): 40 raw copper in 12 s. Issue #337: the Manual Mine's upgrade chain goes through the LV, MV and
 --- HV Miner to the plant; a third Manual Mine is replaced by fast replace with the HV Miner, which mines the iron vein's
---- Miner twin: 64 raw iron in 6 s, and its 9 mining pipes are used up (issue #346).
+--- Miner twin: 40 raw copper in 6 s, and its mining pipe is used up (issue #346; one per vein, #393).
 local EM_X, EM_Y = 260.5, -120.5
 local EM_C = 60                                          -- mine C (the HV Miner): x offset
-local EM_CHAIN = { "manual-mine", "lv-miner", "mv-miner", "hv-miner", "ore-drilling-plant-mk1" }
+local EM_CHAIN = { "dimension-mine", "lv-dimension-miner", "mv-dimension-miner", "hv-dimension-miner", "dimension-drilling-plant-mk1" }
 --- Issue #342: a replaced mine keeps its vein (scripts/fork-electric-mine.lua). E: replaced by script after the remote
 --- note_replace (what on_pre_build does for a player): Manual Mine -> LV Miner -> MV Miner -> Mk I must give
---- miner-iron-vein, miner-iron-vein, drilling-iron-vein; a Manual Mine hunting blazes replaced by a Mk I has no recipe and
+--- miner-copper-tin-vein, miner-copper-tin-vein, drilling-copper-tin-vein; a Manual Mine hunting blazes replaced by a Mk I has no recipe and
 --- spills its manual labor. D: the same by order_upgrade and the T1 robots of a second network (each step on its own
---- mine); B (the upgrade planner above) must give drilling-iron-vein too.
+--- mine); B (the upgrade planner above) must give drilling-copper-tin-vein too.
 local EM_E_Y, EM_D_Y = -105.5, -122.5
-local EM_D = { { 352.5, "manual-mine", "mining-iron-vein", "lv-miner", "miner-iron-vein" },
-	{ 360.5, "lv-miner", "miner-iron-vein", "mv-miner", "miner-iron-vein" },
-	{ 368.5, "mv-miner", "miner-iron-vein", "ore-drilling-plant-mk1", "drilling-iron-vein" },
-	{ 376.5, "manual-mine", "hunting-blazes", "ore-drilling-plant-mk1", nil } }
+local EM_D = { { 352.5, "dimension-mine", "mining-copper-tin-vein", "lv-dimension-miner", "miner-copper-tin-vein" },
+	{ 360.5, "lv-dimension-miner", "miner-copper-tin-vein", "mv-dimension-miner", "miner-copper-tin-vein" },
+	{ 368.5, "mv-dimension-miner", "miner-copper-tin-vein", "dimension-drilling-plant-mk1", "drilling-copper-tin-vein" },
+	{ 376.5, "dimension-mine", "mining-glowstone-vein", "dimension-drilling-plant-mk1", nil } }
 local EM_LABOR = 10
 
 local function em_mine(s, name, x, y, recipe)
 	local e = s.create_entity{ name = name, position = { x, y }, force = "player", raise_built = true }
 	e.set_recipe(recipe)
 	e.disabled_by_script = true
-	if recipe == "hunting-blazes" then
+	if recipe == "mining-glowstone-vein" then
 		assert(e.get_inventory(defines.inventory.assembling_machine_input).insert{ name = "manual-labor", count = EM_LABOR }
 			== EM_LABOR, "the hunting manual mine took no manual labor")
 	end
@@ -1857,18 +2536,19 @@ local function em_mine(s, name, x, y, recipe)
 end
 local function em_recipe(e) return e and e.valid and e.get_recipe() and e.get_recipe().name or nil end
 local EM_B = 30                                          -- mine B: x offset
-local EM_ITEMS = { ["iron-pickaxe-usage"] = 1, ["manual-labor"] = 2, ["raw-iron"] = 10 }
-local EM_PLANT = "ore-drilling-plant-mk1"
+local EM_ITEMS = { ["iron-pickaxe-usage"] = 1, ["manual-labor"] = 2, ["raw-copper"] = 10 }
+local EM_PLANT = "dimension-drilling-plant-mk1"
+local EM_ORES = 40   -- the copper-tin vein's raw copper per operation (issue #505: the iron vein's 64 are gone)
 
 local function em_site(s, x, y)
-	local mine = s.create_entity{ name = "manual-mine", position = { x, y }, force = "player", raise_built = true }
-	mine.set_recipe("mining-iron-vein")
+	local mine = s.create_entity{ name = "dimension-mine", position = { x, y }, force = "player", raise_built = true }
+	mine.set_recipe("mining-copper-tin-vein")
 	mine.disabled_by_script = true
 	local input = mine.get_inventory(defines.inventory.assembling_machine_input)
 	assert(input.insert{ name = "iron-pickaxe-usage", count = 1 } == 1, "the manual mine took no pickaxe")
 	assert(input.insert{ name = "manual-labor", count = 2 } == 2, "the manual mine took no manual labor")
-	assert(mine.get_inventory(defines.inventory.assembling_machine_output).insert{ name = "raw-iron", count = 10 } == 10,
-		"the manual mine's output slot took no raw iron")
+	assert(mine.get_inventory(defines.inventory.assembling_machine_output).insert{ name = "raw-copper", count = 10 } == 10,
+		"the manual mine's output slot took no raw copper")
 	local around = {}
 	for _, n in pairs({ { "inserter", 0, -3, defines.direction.north }, { "transport-belt", 0, 3, defines.direction.east },
 		{ "inserter", 3, 0, defines.direction.east }, { "transport-belt", -3, 0, defines.direction.north } }) do
@@ -1900,7 +2580,7 @@ function setup_emine_test(s)
 	local ok, err = pcall(function()
 		local st = { phase = 0 }
 		storage.emine = st
-		for _, r in pairs({ "mining-iron-vein", "drilling-iron-vein", "miner-iron-vein", "hunting-blazes" }) do
+		for _, r in pairs({ "mining-copper-tin-vein", "drilling-copper-tin-vein", "miner-copper-tin-vein", "mining-glowstone-vein" }) do
 			game.forces.player.recipes[r].enabled = true
 		end
 		st.a, st.a_around = em_site(s, EM_X, EM_Y)
@@ -1929,7 +2609,7 @@ function setup_emine_test(s)
 		s.create_entity{ name = "substation", position = { 372, -114 }, force = "player" }
 		s.create_entity{ name = "electric-energy-interface", position = { 375, -114 }, force = "player" }
 		st.dchest = s.create_entity{ name = "storage-chest", position = { 372.5, -109.5 }, force = "player", raise_built = true }
-		for _, n in pairs({ "lv-miner", "mv-miner", EM_PLANT, EM_PLANT }) do st.dchest.insert{ name = n, count = 1 } end
+		for _, n in pairs({ "lv-dimension-miner", "mv-dimension-miner", EM_PLANT, EM_PLANT }) do st.dchest.insert{ name = n, count = 1 } end
 	end)
 	if not ok then fails[#fails + 1] = "electric mine test: " .. tostring(err) end
 	return fails
@@ -1951,7 +2631,7 @@ function emine_test()
 		end
 	end
 	if st.phase == 0 and t >= 20 then
-		local mm = prototypes.entity["manual-mine"]
+		local mm = prototypes.entity["dimension-mine"]
 		for i = 1, #EM_CHAIN - 1 do
 			local e = prototypes.entity[EM_CHAIN[i]]
 			expect(e.next_upgrade and e.next_upgrade.name == EM_CHAIN[i + 1], EM_CHAIN[i] .. "'s next upgrade is "
@@ -1959,16 +2639,16 @@ function emine_test()
 			expect(e.fast_replaceable_group == mm.fast_replaceable_group, EM_CHAIN[i + 1] .. " is not in the manual mine's"
 				.. " fast replace group")
 		end
-		--- C (issue #337): fast replace with the HV Miner, the iron vein's Miner twin with its 9 mining pipes
+		--- C (issue #337): fast replace with the HV Miner, the iron vein's Miner twin with its mining pipe (issue #393: one per vein)
 		local okc, miner = pcall(function()
-			return s.create_entity{ name = "hv-miner", position = st.c.position, force = "player", fast_replace = true,
+			return s.create_entity{ name = "hv-dimension-miner", position = st.c.position, force = "player", fast_replace = true,
 				spill = true, raise_built = true }
 		end)
-		expect(okc and miner and miner.valid and miner.name == "hv-miner", "fast replace: no HV Miner built (" .. tostring(miner) .. ")")
+		expect(okc and miner and miner.valid and miner.name == "hv-dimension-miner", "fast replace: no HV Miner built (" .. tostring(miner) .. ")")
 		if okc and miner and miner.valid then
 			st.miner = miner
-			miner.set_recipe("miner-iron-vein")
-			expect(miner.get_inventory(defines.inventory.assembling_machine_input).insert{ name = "mining-pipe", count = 9 } == 9,
+			miner.set_recipe("miner-copper-tin-vein")
+			expect(miner.get_inventory(defines.inventory.assembling_machine_input).insert{ name = "mining-pipe", count = 1 } == 1,
 				"the HV Miner took no mining pipes")
 		end
 		--- A: fast replace
@@ -1985,24 +2665,24 @@ function emine_test()
 			local area = { { pos.x - 6, pos.y - 6 }, { pos.x + 6, pos.y + 6 } }
 			items_back(em_items_in(s.find_entities_filtered{ area = area, type = "item-entity" }), "fast replace")
 			expect(plant.get_recipe() == nil, "fast replace: the Mk I kept a recipe")
-			plant.set_recipe("drilling-iron-vein")
+			plant.set_recipe("drilling-copper-tin-vein")
 			expect(plant.insert_fluid{ name = "drilling-fluid", amount = 400 } == 400, "the Mk I took no drilling fluid")
-			--- issue #341: the plant takes mining pipes like the miners (used up, issue #346)
-			expect(plant.get_inventory(defines.inventory.assembling_machine_input).insert{ name = "mining-pipe", count = 9 } == 9,
+			--- issue #341: the plant takes mining pipes like the miners (used up, issue #346; one per vein, #393)
+			expect(plant.get_inventory(defines.inventory.assembling_machine_input).insert{ name = "mining-pipe", count = 1 } == 1,
 				"the Mk I took no mining pipes")
 		end
 		--- issue #342, E: the chain by script, each step noted first as on_pre_build does for a player
-		local e = em_mine(s, "manual-mine", EM_X, EM_E_Y, "mining-iron-vein")
+		local e = em_mine(s, "dimension-mine", EM_X, EM_E_Y, "mining-copper-tin-vein")
 		st.e_chain = {}
-		for _, name in pairs({ "lv-miner", "mv-miner", EM_PLANT }) do
+		for _, name in pairs({ "lv-dimension-miner", "mv-dimension-miner", EM_PLANT }) do
 			remote.call("fork-electric-mine", "note_replace", e)
 			e = s.create_entity{ name = name, position = { EM_X, EM_E_Y }, force = "player", fast_replace = true, spill = true,
 				raise_built = true }
 			st.e_chain[#st.e_chain + 1] = tostring(em_recipe(e))
 		end
-		expect(table.concat(st.e_chain, ",") == "miner-iron-vein,miner-iron-vein,drilling-iron-vein",
+		expect(table.concat(st.e_chain, ",") == "miner-copper-tin-vein,miner-copper-tin-vein,drilling-copper-tin-vein",
 			"replaced by script: the recipes were " .. table.concat(st.e_chain, ", "))
-		local h = em_mine(s, "manual-mine", EM_X + 10, EM_E_Y, "hunting-blazes")
+		local h = em_mine(s, "dimension-mine", EM_X + 10, EM_E_Y, "mining-glowstone-vein")
 		remote.call("fork-electric-mine", "note_replace", h)
 		h = s.create_entity{ name = EM_PLANT, position = { EM_X + 10, EM_E_Y }, force = "player", fast_replace = true,
 			spill = true, raise_built = true }
@@ -2016,7 +2696,7 @@ function emine_test()
 		local inv = game.create_inventory(1)
 		inv.insert{ name = "upgrade-planner" }
 		local planner = inv[1]
-		planner.set_mapper(1, "from", { type = "entity", name = "manual-mine" })
+		planner.set_mapper(1, "from", { type = "entity", name = "dimension-mine" })
 		planner.set_mapper(1, "to", { type = "entity", name = EM_PLANT })
 		local bp = st.b.position
 		s.upgrade_area{ area = { { bp.x - 2, bp.y - 2 }, { bp.x + 2, bp.y + 2 } }, force = "player", item = planner }
@@ -2027,18 +2707,18 @@ function emine_test()
 		local bp = { EM_X + EM_B, EM_Y }
 		local b = s.find_entity(EM_PLANT, bp)
 		local back = em_items_in({ st.chest })
-		local all_back = b and (back["manual-mine"] or 0) == 1
+		local all_back = b and (back["dimension-mine"] or 0) == 1
 		for name, n in pairs(EM_ITEMS) do all_back = all_back and (back[name] or 0) == n end
 		local drilled = st.plant and st.plant.valid and st.plant.get_inventory(defines.inventory.assembling_machine_output)
-			.get_item_count("raw-iron") or 0
+			.get_item_count("raw-copper") or 0
 		local mout = st.miner and st.miner.valid and st.miner.get_inventory(defines.inventory.assembling_machine_output)
-		local mined = mout and mout.get_item_count("raw-iron") or 0
+		local mined = mout and mout.get_item_count("raw-copper") or 0
 		local pipes = st.miner and st.miner.valid and st.miner.get_item_count("mining-pipe") or 0
 		local d_done = true
 		for _, m in pairs(EM_D) do if not s.find_entity(m[4], { m[1], EM_D_Y }) then d_done = false end end
-		if (all_back and drilled >= 64 and mined >= 64 and d_done) or t >= st.t1 + 1200 then
+		if (all_back and drilled >= EM_ORES and mined >= EM_ORES and d_done) or t >= st.t1 + 1200 then
 			--- issue #342: the recipes after the robots' upgrades
-			expect(em_recipe(b) == "drilling-iron-vein", "upgrade planner: the Mk I's recipe is " .. tostring(em_recipe(b)))
+			expect(em_recipe(b) == "drilling-copper-tin-vein", "upgrade planner: the Mk I's recipe is " .. tostring(em_recipe(b)))
 			for _, m in pairs(EM_D) do
 				local new = s.find_entity(m[4], { m[1], EM_D_Y })
 				expect(new ~= nil and em_recipe(new) == m[5], "robots: " .. m[2] .. " with " .. m[3] .. " -> " .. m[4] .. ": "
@@ -2046,18 +2726,18 @@ function emine_test()
 			end
 			local dback = em_items_in({ st.dchest })["manual-labor"] or 0
 			expect(dback == EM_LABOR, "robots: " .. dback .. " of " .. EM_LABOR .. " manual labor of the hunting mine came back")
-			expect(mined == 64 and pipes == 0, "the HV Miner mined " .. mined .. " raw iron and kept " .. pipes
-				.. " mining pipes (64 in 6 s, the 9 pipes used up; status " .. tostring(st.miner and st.miner.valid and st.miner.status) .. ")")
+			expect(mined == EM_ORES and pipes == 0, "the HV Miner mined " .. mined .. " raw copper and kept " .. pipes
+				.. " mining pipes (" .. EM_ORES .. " in 6 s, the pipe used up; status " .. tostring(st.miner and st.miner.valid and st.miner.status) .. ")")
 			st.mined = mined
 			expect(b ~= nil, "upgrade planner: no Mk I at the manual mine's place after " .. (t - st.t1) .. " ticks")
-			expect((back["manual-mine"] or 0) == 1, "upgrade planner: the manual mine did not come back to the storage chest")
+			expect((back["dimension-mine"] or 0) == 1, "upgrade planner: the manual mine did not come back to the storage chest")
 			items_back(back, "upgrade planner")
 			around_kept(st.b_around, "upgrade planner")
 			st.drilled, st.ticks = drilled, t - st.t1
-			expect(drilled >= 64, "the Mk I drilled " .. drilled .. " raw iron (64 in 12 s with drilling fluid; status "
+			expect(drilled >= EM_ORES, "the Mk I drilled " .. drilled .. " raw copper (" .. EM_ORES .. " in 12 s with drilling fluid; status "
 				.. tostring(st.plant and st.plant.valid and st.plant.status) .. ")")
 			local left = st.plant and st.plant.valid and st.plant.get_item_count("mining-pipe") or 0
-			expect(left == 0, "the Mk I kept " .. left .. " of its 9 mining pipes (issue #346: used up)")
+			expect(left == 0, "the Mk I kept " .. left .. " of its mining pipe (issue #346: used up)")
 			st.done = true
 		end
 	end
@@ -2065,7 +2745,7 @@ function emine_test()
 		st.done = true
 		for _, p in pairs(problems) do log("DEVCHECK-RUNTIME-FAIL electric mine test: " .. p) end
 		log("DEVCHECK-RUNTIME-EMINE " .. (#problems == 0 and "ok" or "failed") .. " (fast replace and upgrade planner, "
-			.. tostring(st.drilled) .. " raw iron drilled, " .. tostring(st.mined) .. " mined by the HV Miner, "
+			.. tostring(st.drilled) .. " raw copper drilled, " .. tostring(st.mined) .. " mined by the HV Miner, "
 			.. tostring(st.ticks) .. " ticks)")
 	end
 end
@@ -2095,12 +2775,19 @@ script.on_nth_tick(10, function()
 	crush_test()
 	steam_test()
 	chain_test()
+	lftr_test()
 	lsc_test()
 	lsup_test()
 	elevator_test()
 	offer_test()
 	melt_test()
 	emine_test()
+	solar_test()
+	battery_test()
+	veins_test()
+	drill_test()
+	portal_test()
+	ender_test()
 	victory_test()
 end)
 
@@ -2166,12 +2853,19 @@ script.on_init(function()
 	for _, f in pairs(setup_crush_test(s)) do fails[#fails + 1] = f end
 	for _, f in pairs(setup_steam_test(s)) do fails[#fails + 1] = f end
 	for _, f in pairs(setup_chain_test(s)) do fails[#fails + 1] = f end
+	for _, f in pairs(setup_lftr_test(s)) do fails[#fails + 1] = f end
 	for _, f in pairs(setup_lsc_test(s)) do fails[#fails + 1] = f end
 	for _, f in pairs(setup_lsup_test(s)) do fails[#fails + 1] = f end
 	for _, f in pairs(setup_elevator_test(s)) do fails[#fails + 1] = f end
 	for _, f in pairs(setup_offer_test(s)) do fails[#fails + 1] = f end
 	for _, f in pairs(setup_melt_test(s)) do fails[#fails + 1] = f end
 	for _, f in pairs(setup_emine_test(s)) do fails[#fails + 1] = f end
+	for _, f in pairs(setup_solar_test(s)) do fails[#fails + 1] = f end
+	for _, f in pairs(setup_battery_test(s)) do fails[#fails + 1] = f end
+	for _, f in pairs(setup_veins_test()) do fails[#fails + 1] = f end
+	for _, f in pairs(setup_drill_test(s)) do fails[#fails + 1] = f end
+	for _, f in pairs(setup_portal_test(s)) do fails[#fails + 1] = f end
+	for _, f in pairs(setup_ender_test(s)) do fails[#fails + 1] = f end
 	log("DEVCHECK-RUNTIME placed=" .. placed .. " with_recipe=" .. with_recipe .. " failed=" .. #fails)
 	for _, f in pairs(fails) do log("DEVCHECK-RUNTIME-FAIL " .. f) end
 end)

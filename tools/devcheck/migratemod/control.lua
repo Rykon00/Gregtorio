@@ -221,6 +221,7 @@ local RM_ITEMS = { ["ammonia-hexachloroplatinate"] = "platinum-salt", ["crude-pl
 	["ammonia-hexachloroiridiate"] = "iridium-chloride",
 	["advanced-card"] = "me-advanced-card",           -- issue #121
 	["acceleration-card"] = "me-acceleration-card",   -- issue #195 (an item becomes me-network's module)
+	["apatite-lens"] = "green-sapphire-lens", ["lapis-lens"] = "sapphire-lens",   -- issue #370
 	["lv-air-collector"] = "lv-compressor", ["ev-air-collector"] = "ev-compressor",   -- issue #153
 	["ev-greenhouse"] = "lv-greenhouse" }   -- issue #165
 local RM_MACHINES = {
@@ -266,11 +267,25 @@ local RM_MACHINES = {
 	-- issue #332: the simple SoC wafer took no lens before (also after #325); it gets the amber lens in the slot, or, in a
 	-- save that had the slot already, stops with "Missing lens"
 	{ "mv-laser-engraver", "simple-soc-wafer-sw", "simple-soc-wafer-sw" },
-	-- issue #335: the Manual Mine got a fast replace group and the Ore Drilling Plant as its next upgrade; a Manual Mine of
-	-- an old save stays one and keeps its vein recipe
-	{ "manual-mine", "mining-iron-vein", "mining-iron-vein", "manual-mine" },
+	-- issue #335: the Manual Mine got a fast replace group and the Ore Drilling Plant as its next upgrade; issue #499: the
+	-- name went to the mining drill, a Manual Mine of an old save is a Dimension Mine (JSON migration); issue #500: one on
+	-- an Overworld vein (hidden since #499) is replaced by the Manual Mine drill at its place, with its manual labor as fuel
+	{ "manual-mine", "mining-iron-vein", nil, "manual-mine", nil, true },
+	-- issue #505: the vein recipes of Nauvis, the Nether and the Twilight Forest are gone (JSON: a placeholder of their
+	-- planet); a mine on Nauvis on a Nether vein stays a Dimension Mine without a recipe
+	{ "manual-mine", "mining-tetrahedrite-vein", nil, "dimension-mine" },
+	-- issue #527: a Manual Mine's recipe that moved to the Dig Site (#499) or needs the Nether (#501) is a placeholder on
+	-- load (JSON), which the migration clears with a message
+	{ "manual-mine", "hunting-blazes", nil, "dimension-mine" },
+	{ "manual-mine", "cobblestone-manual-mine", nil, "dimension-mine" },
+	{ "manual-mine", "mining-glowstone-vein", nil, "dimension-mine" },
 	-- issue #348: upstream's Ruby Lens from a plain ruby is deleted; a lathe of an old save loads without the recipe
 	{ "lv-lathe", "ruby-lens", nil },
+	-- issue #370: GTNH's green sapphire and sapphire lens replace the apatite and lapis lens; an engraver of an old save
+	-- has the new lens in its slot (JSON migration), a lathe loads without the old lens recipe
+	{ "mv-laser-engraver", "ram-wafer-sw", "ram-wafer-sw" },
+	{ "mv-laser-engraver", "engraving-chipped-lapis-to-flawed", "engraving-chipped-lapis-to-flawed" },
+	{ "lv-lathe", "apatite-lens-from-exquisite", nil },
 }
 --- Issue #317: a character of the old save has a hand craft of a deleted vanilla recipe in its queue; after the update the
 --- save loads, the character is there and its queue is empty. The game drops the craft with its ingredients (they are
@@ -298,7 +313,9 @@ local function setup_removed()
 	local machines = {}
 	for i, m in pairs(RM_MACHINES) do
 		local r = prototypes.recipe[m[2]]
-		if prototypes.entity[m[1]] and r and not (m[5] and prototypes.entity[m[5]]) then
+		--- (a version after #499, whose mines are mining drills, skips the rows of the old recipe machines)
+		if prototypes.entity[m[1]] and prototypes.entity[m[1]].type == "assembling-machine" and r
+			and not (m[5] and prototypes.entity[m[5]]) then
 			local e = s.create_entity{ name = m[1], position = { RM_AT[1] + 8 * (i - 1), RM_AT[2] + 12 }, force = "player",
 				raise_built = true }
 			game.forces.player.recipes[m[2]].enabled = true
@@ -318,7 +335,7 @@ local function setup_removed()
 			--- issue #332: a slot that this version leaves empty (its recipe needs no tool here)
 			local empty_slot = md ~= nil and tool == nil and inv ~= nil and #inv > 0
 			machines[#machines + 1] = { entity = e, old = m[2], new = m[3], name = m[4], items = items,
-				empty_slot = empty_slot }
+				empty_slot = empty_slot, pos = e.position, drill = m[6] }
 		end
 	end
 	local queue
@@ -360,15 +377,32 @@ local function check_removed()
 		if got ~= count then problems[#problems + 1] = "the chest holds " .. got .. " " .. name .. " of " .. count end
 	end
 	for _, m in pairs(p.machines or {}) do
-		local r = m.entity.valid and m.entity.get_recipe()
+		--- issue #500: a mine on an Overworld vein became a mining drill at its place
+		local drill = m.drill and m.pos and game.surfaces[1].find_entity(m.name, m.pos)
+		if m.drill and not (drill and drill.type == "mining-drill") then
+			problems[#problems + 1] = "the machine with " .. m.old .. " is no " .. m.name .. " drill at its place"
+		elseif drill and m.items["manual-labor"] and drill.get_fuel_inventory().get_item_count("manual-labor") == 0 then
+			problems[#problems + 1] = "the " .. m.name .. " drill got no manual labor of the old mine as fuel"
+		end
+		local r = not m.drill and m.entity.valid and m.entity.get_recipe()
 		local got = r and r.name or nil
-		if not m.entity.valid then
+		if m.drill then
+			-- (checked above)
+		elseif not m.entity.valid then
 			problems[#problems + 1] = "the machine with " .. m.old .. " is gone"
 		elseif got ~= m.new then
 			problems[#problems + 1] = "the machine with " .. m.old .. " has " .. tostring(got) .. ", not " .. tostring(m.new)
 		elseif m.name and m.entity.name ~= m.name then
 			problems[#problems + 1] = "the machine with " .. m.old .. " is a " .. m.entity.name .. ", not a " .. m.name
 		end
+	end
+	--- issue #500: the old save's generated chunks have the map veins' ores (regenerate_entity)
+	local gt = {}
+	for name, r in pairs(prototypes.get_entity_filtered{ { filter = "type", type = "resource" } }) do
+		if r.resource_category == "gt-ore" then gt[#gt + 1] = name end
+	end
+	if #gt > 0 and game.surfaces[1].count_entities_filtered{ type = "resource", name = gt, limit = 1 } == 0 then
+		problems[#problems + 1] = "the old save's chunks have no ore of the map veins"
 	end
 	--- issues #316 and #325: a machine whose recipe needs a mold or lens in its slot has it there after the update and
 	--- runs (the old recipe took it as an ingredient, or none; fork-molds gives a machine new to the slot its tool once);
@@ -1103,11 +1137,118 @@ local function check_handover()
 		.. " item and fluid kinds equal, settings of 7 blocks kept, drive behind the underground pair connected)")
 end
 
+--- Issue #529: the Space Age planets are deleted. The old save gets a surface of each (a few chunks, an iron chest with
+--- iron plates); after the update the save must load, and the check reports what became of each surface and generates
+--- new chunks on one that is left (DEVCHECK-MIGRATE-PLANETS)
+local REMOVED_PLANETS = { "vulcanus", "gleba", "fulgora", "aquilo" }
+local function setup_planets()
+	local made = {}
+	for _, name in pairs(REMOVED_PLANETS) do
+		local planet = game.planets[name]
+		if planet then
+			local s = planet.surface or planet.create_surface()
+			s.request_to_generate_chunks({ 0, 0 }, 1)
+			s.force_generate_chunk_requests()
+			local at = s.find_non_colliding_position("iron-chest", { 0, 0 }, 64, 1)
+			local chest = at and s.create_entity{ name = "iron-chest", position = at, force = "player" }
+			if chest then chest.insert{ name = "iron-plate", count = 10 } end
+			made[#made + 1] = name
+		end
+	end
+	storage.planets = made
+	log("DEVCHECK-MIGRATE-SETUP-PLANETS " .. (#made > 0 and "ok (" .. table.concat(made, ", ") .. ")" or "skipped"))
+end
+
+local function check_planets()
+	if type(storage.planets) ~= "table" or #storage.planets == 0 then
+		log("DEVCHECK-MIGRATE-PLANETS skipped")
+		return
+	end
+	local parts, problems = {}, {}
+	for _, name in pairs(storage.planets) do
+		if game.planets[name] then problems[#problems + 1] = name .. " is still a planet" end
+		local s = game.surfaces[name]
+		if not s then
+			parts[#parts + 1] = name .. ": surface deleted"
+		else
+			local chests = s.count_entities_filtered{ name = "iron-chest" }
+			local ok = pcall(function()
+				s.request_to_generate_chunks({ 320, 320 }, 0)
+				s.force_generate_chunk_requests()
+			end)
+			parts[#parts + 1] = name .. ": surface kept (planet " .. (s.planet and s.planet.name or "none") .. ", " .. chests
+				.. " chest, new chunks " .. (ok and s.is_chunk_generated({ 10, 10 }) and "generated" or "not generated") .. ")"
+		end
+	end
+	for _, m in pairs(problems) do log("DEVCHECK-MIGRATE-FAIL planets: " .. m) end
+	log("DEVCHECK-MIGRATE-PLANETS " .. (#problems == 0 and "ok" or "failed") .. " (" .. table.concat(parts, "; ") .. ")")
+end
+
+--- Issue #529: one control per vein; the size slider of gt-ore-veins scaled every vein before and is the share of cells
+--- with a vein now. An old save with the map veins (before #529) gets size 1.5 on gt-ore-veins and notes the cell size
+--- and the veins of a few cells; after the update every vein control of Nauvis must have size 1.5, the grid's 1, and
+--- the cells and veins must be the same (DEVCHECK-MIGRATE-VEINGRID)
+local VG_SIZE, VG_CELLS = 1.5, { { 300, 300 }, { -700, 500 }, { 900, -1100 }, { -1500, -1300 }, { 2100, 1700 } }
+local function vein_grid(s)
+	local p = s.calculate_tile_properties({ "gt_cell_size", "gt_vein_id", "gt_vein_r" }, VG_CELLS)
+	return { size = p.gt_cell_size[1], ids = p.gt_vein_id, r = p.gt_vein_r }
+end
+local function setup_vein_grid()
+	local s = game.surfaces.nauvis
+	if not prototypes.autoplace_control["gt-ore-veins"] or prototypes.autoplace_control["gt-vein-Coal"] then
+		log("DEVCHECK-MIGRATE-SETUP-VEINGRID skipped (" .. (prototypes.autoplace_control["gt-vein-Coal"]
+			and "the veins have their own controls in this version" or "no map veins in this version") .. ")")
+		return
+	end
+	local mgs = s.map_gen_settings
+	mgs.autoplace_controls["gt-ore-veins"] = { frequency = 1, size = VG_SIZE, richness = 1 }
+	s.map_gen_settings = mgs
+	storage.vein_grid = vein_grid(s)
+	log("DEVCHECK-MIGRATE-SETUP-VEINGRID ok (size " .. VG_SIZE .. ", cells of " .. storage.vein_grid.size .. " tiles)")
+end
+
+local function check_vein_grid()
+	local before = storage.vein_grid
+	if not before then
+		log("DEVCHECK-MIGRATE-VEINGRID skipped")
+		return
+	end
+	local problems = {}
+	local s = game.surfaces.nauvis
+	local controls = s.map_gen_settings.autoplace_controls
+	local n = 0
+	for name, c in pairs(controls) do
+		if name:match("^gt%-vein%-") then
+			n = n + 1
+			if math.abs(c.size - VG_SIZE) > 1e-6 then problems[#problems + 1] = name .. " has size " .. c.size end
+		end
+	end
+	if n == 0 then problems[#problems + 1] = "no vein control in the map settings of Nauvis" end
+	if math.abs(controls["gt-ore-veins"].size - 1) > 1e-6 then
+		problems[#problems + 1] = "gt-ore-veins has size " .. controls["gt-ore-veins"].size .. ", not 1"
+	end
+	local after = vein_grid(s)
+	if math.abs(after.size - before.size) > 1e-6 then
+		problems[#problems + 1] = "cells of " .. after.size .. " tiles, " .. before.size .. " before"
+	end
+	for i in ipairs(VG_CELLS) do
+		if math.abs(after.ids[i] - before.ids[i]) > 1e-6 or math.abs(after.r[i] - before.r[i]) > 1e-3 then
+			problems[#problems + 1] = string.format("cell %d: vein %d radius %.2f, before %d radius %.2f", i, after.ids[i],
+				after.r[i], before.ids[i], before.r[i])
+		end
+	end
+	for _, m in pairs(problems) do log("DEVCHECK-MIGRATE-FAIL vein grid: " .. m) end
+	log("DEVCHECK-MIGRATE-VEINGRID " .. (#problems == 0 and "ok" or "failed") .. " (" .. n .. " vein controls at size "
+		.. VG_SIZE .. ", cells of " .. after.size .. " tiles, " .. #VG_CELLS .. " cells with the same vein and radius)")
+end
+
 script.on_init(function()
+	setup_vein_grid()
 	setup_power()
 	setup_turbine()
 	setup_techs()
 	setup_removed()
+	setup_planets()
 	storage.items = "skipped"
 	storage.patterns = "skipped"
 	storage.state = "skipped"
@@ -1216,6 +1357,8 @@ script.on_nth_tick(30, function(event)
 		storage.techs_checked = true
 		check_techs()
 		check_removed()
+		check_planets()
+		check_vein_grid()
 	end
 	if not storage.handover_checked and event.tick >= HO_CHECK_TICK then
 		storage.handover_checked = true

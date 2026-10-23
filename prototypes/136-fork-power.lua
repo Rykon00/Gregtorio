@@ -48,6 +48,23 @@ end
 --- exists here; zinc and niobium have no molten fluid, boron, calcium and sulfur none at all.
 --------------------------------------------------------------------------------
 
+--- issue #375: the plasmas of section 1d (thorium plasma is 140's, made here for its fuel value; issue #397: lead plasma too)
+for _, p in pairs({
+	{ "nickel-plasma", "silver-blue-spackled-fluid", { 0.67, 0.67, 0.86 } },
+	{ "silver-plasma", "spackled-gray-fluid", { 0.86, 0.86, 1.00 } },
+	{ "bismuth-plasma", "spackled-medium-blue-fluid", { 0.39, 0.63, 0.63 } },
+	{ "radon-plasma", "spackled-purple-fluid", { 1.00, 0.00, 1.00 } },
+	{ "plutonium-241-plasma", "spackled-orange-fluid", { 0.98, 0.27, 0.27 } },
+	{ "thorium-plasma", "dark-gray-spackled-fluid", { 0.35, 0.30, 0.30 } },
+	--- issue #386 (2): americium plasma from the melt of plutonium 241 (its dust comes from 164's isotopes)
+	{ "americium-plasma", "spackled-medium-gray-fluid", { 0.78, 0.78, 0.78 } },
+	{ "molten-plutonium-241", "molten-plutonium-241", { 0.94, 0.20, 0.20 } },
+	--- issue #397: lead plasma (140's colour) and the melt of tellurium (GT's colour, gen_gt_icons --molten)
+	{ "lead-plasma", "medium-gray-fluid", { 0.55, 0.50, 0.65 } },
+	{ "molten-tellurium", "molten-tellurium", { 0.81, 1.00, 0.34 } },
+}) do
+	F.fluid(p[1], p[2], p[3])
+end
 local PLASMAS = {
 	--  plasma              EU per unit  cooled fluid
 	{ "helium-plasma",     81920,   "helium" },
@@ -63,6 +80,16 @@ local PLASMAS = {
 	{ "oxygen-plasma",    131072,   "oxygen" },
 	{ "krypton-plasma",    86016,   "krypton" },
 	{ "iron-plasma",      206438,   "molten-iron" },
+	--- issue #375, part B: GTNH's other plasmas of FusionReactorRecipes.java (their recipes: section 1d); thorium plasma
+	--- was the godforge's only (140)
+	{ "nickel-plasma",          213811, "molten-nickel" },
+	{ "silver-plasma",          282685, "molten-silver" },
+	{ "bismuth-plasma",         425984, nil },
+	{ "radon-plasma",           450560, "radon" },
+	{ "plutonium-241-plasma",   497664, nil },
+	{ "americium-plasma",       501760, "molten-americium" },   -- issue #386 (2)
+	{ "thorium-plasma",         471040, "molten-thorium" },
+	{ "lead-plasma",            423936, "molten-lead" },   -- issue #397
 }
 local cooled = {}
 for _, p in pairs(PLASMAS) do
@@ -115,6 +142,118 @@ for name, b in pairs(PLASMA_BALANCE) do
 	else
 		log(LOG .. "missing plasma recipe: " .. name)
 	end
+end
+
+
+
+--------------------------------------------------------------------------------
+--- 1c) GTNH'S TRANSMUTATIONS (issue #375, part A; the maintainer's decision: as GTNH has them, the shortcuts around
+--- the platinum line (#96), the naquadah line (#205) and the ore chains accepted, docs/ROADMAP.md)
+--- GT5-Unofficial gregtech/loaders/postload/recipes/FusionReactorRecipes.java: one nugget (GT 16 L, here a tenth, 1.6) of
+--- each input -> one nugget of the product, GT's time at the reactor's tier speed (MK1 LuV, MK2 ZPM, MK3 UV), the
+--- reactor by GT's FUSION_THRESHOLD (MK1 up to 160M EU, MK2 320M, MK3 640M). The melts the mod lacked are melted
+--- from the dust in the IV fluid extractor (as molten lutetium); uranium, plutonium and indium have no ingot in the mod,
+--- so their melts solidify into the dust (GT: the ingot), the stand-in named here and in docs/ROADMAP.md.
+--------------------------------------------------------------------------------
+
+local TRANSMUTE_MELTS = {
+	--  melt                dust                   colour (gen_gt_icons --molten) technology (first consumer or maker)
+	{ "molten-plutonium", "plutonium-239-dust", { 0.98, 0.27, 0.27 }, "fusion-plasmas-mk2", solidify = "fusion-plasmas-mk3" },
+	{ "molten-manganese", "manganese-dust",     { 0.98, 0.98, 0.98 }, "fusion-plasmas-mk1" },
+	{ "molten-uranium",   "uranium-238-dust",   { 0.20, 0.94, 0.20 }, "fusion-plasmas-mk3", solidify = "fusion-plasmas-mk2" },
+	{ "molten-vanadium",  "vanadium-dust",      { 0.56, 0.56, 0.56 }, "fusion-plasmas-mk1" },
+	{ "molten-indium",    "indium",             { 0.36, 0.00, 0.73 }, nil,                  solidify = "fusion-plasmas-mk3" },
+}
+for _, m in pairs(TRANSMUTE_MELTS) do
+	F.fluid(m[1], m[1], m[3])
+	if m[4] then
+		create_recipe{
+			name = "melt-" .. m[2], category = "iv-fluid-extractor-recipes", energy_required = 1.2 * IV_SPEED,
+			ingredients = { { type = "item", name = m[2], amount = 1 } },
+			results = { { type = "fluid", name = m[1], amount = 14.4 } }, main_product = m[1],
+		}
+		fork_add_unlock(m[4], "melt-" .. m[2])
+	end
+	if m.solidify then
+		create_recipe{
+			name = "solidify-" .. m[2], category = "iv-fluid-solidifier-recipes", energy_required = 1.6 * IV_SPEED,
+			ingredients = { { type = "fluid", name = m[1], amount = 14.4 } },
+			results = { { type = "item", name = m[2], amount = 1 } }, main_product = m[2],
+		}
+		fork_add_unlock(m.solidify, "solidify-" .. m[2])
+	end
+end
+
+local TRANSMUTATIONS = {
+	--  name                     reactor  GT s  speed       inputs (name, amount)                         product
+	{ "iridium-transmutation",    2, 3.2,  ZPM_SPEED, { { "molten-lithium", 1.6 }, { "molten-tungsten", 1.6 } }, "molten-iridium" },
+	{ "platinum-transmutation",   1, 1.6,  LUV_SPEED, { { "molten-beryllium", 1.6 }, { "molten-tungsten", 1.6 } }, "molten-platinum" },
+	{ "naquadah-transmutation",   2, 3.2,  ZPM_SPEED, { { "molten-plutonium", 1.6 }, { "molten-thorium", 1.6 } }, "molten-naquadah" },
+	{ "osmium-transmutation",     1, 12.8, LUV_SPEED, { { "molten-tungsten", 1.6 }, { "helium", 1.6 } }, "molten-osmium" },
+	{ "iron-transmutation",       1, 3.2,  LUV_SPEED, { { "molten-manganese", 1.6 }, { "hydrogen", 1.6 } }, "molten-iron" },
+	{ "uranium-from-mercury-transmutation", 2, 3.2, ZPM_SPEED, { { "mercury", 1.6 }, { "molten-magnesium", 1.6 } }, "molten-uranium" },
+	{ "uranium-from-gold-transmutation",    2, 3.2, ZPM_SPEED, { { "molten-gold", 1.6 }, { "molten-aluminium", 1.6 } }, "molten-uranium" },
+	{ "plutonium-transmutation",  3, 6.4,  UV_SPEED,  { { "molten-uranium", 1.6 }, { "helium", 1.6 } }, "molten-plutonium" },
+	{ "chrome-transmutation",     1, 3.2,  LUV_SPEED, { { "molten-vanadium", 1.6 }, { "hydrogen", 12.5 } }, "molten-chrome" },
+	{ "tungsten-transmutation",   2, 0.8,  ZPM_SPEED, { { "molten-tantalum", 1.6 }, { "tritium", 1.6 } }, "molten-tungsten" },
+	{ "indium-transmutation",     3, 1.6,  UV_SPEED,  { { "molten-silver", 1.6 }, { "molten-lithium", 1.6 } }, "molten-indium" },
+}
+for _, t in pairs(TRANSMUTATIONS) do
+	local ing = {}
+	for _, i in pairs(t[5]) do ing[#ing + 1] = { type = "fluid", name = i[1], amount = i[2] } end
+	create_recipe{
+		name = t[1], category = "mk" .. t[2] .. "-fusion-reactor-recipes", energy_required = t[3] * t[4],
+		ingredients = ing, results = { { type = "fluid", name = t[6], amount = 1.6 } }, main_product = t[6],
+	}
+	fork_add_unlock("fusion-plasmas-mk" .. t[2], t[1])
+end
+
+
+
+--------------------------------------------------------------------------------
+--- 1d) GTNH'S OTHER PLASMAS (issue #375, part B; the maintainer's decision: GT's fuel values above, a place in #32's gain
+--- table of docs/ROADMAP.md). GT's inputs and outputs (FusionReactorRecipes.java:77, 254, 270, 278, 304, 320) in GT
+--- litres like the other plasmas of section 1b, the reactor by GT's FUSION_THRESHOLD (MK3 up to 640M EU, the 6G ones the
+--- MK5); the time balanced like #32: about 25x plasma energy out per reactor energy in (GT's own times give 160 to 240x).
+--- Issue #386 (2): americium plasma (FusionReactorRecipes.java:286; the melt of plutonium 241 and hydrogen, MK3), the
+--- dust from 164's isotopes. Issue #397: lead plasma (FusionReactorRecipes.java:311-317, tellurium + zinc, MK5), now that
+--- the mod has tellurium (the Toxic Everglades' ores and the Lutetium Asteroid); molten tellurium from the dust in the IV
+--- fluid extractor, as molten arsenic (GT: the dust or ingot, 144 L).
+--------------------------------------------------------------------------------
+
+F.fluid("molten-arsenic", "molten-arsenic", { 1, 1, 1 })   -- GT's colour (gen_gt_icons --molten)
+create_recipe{
+	name = "melt-arsenic", category = "iv-fluid-extractor-recipes", energy_required = 1.2 * IV_SPEED,
+	ingredients = { { type = "item", name = "arsenic", amount = 1 } },
+	results = { { type = "fluid", name = "molten-arsenic", amount = 14.4 } }, main_product = "molten-arsenic",
+}
+fork_add_unlock("fusion-plasmas-mk3", "melt-arsenic")
+create_recipe{
+	name = "melt-tellurium-dust", category = "iv-fluid-extractor-recipes", energy_required = 1.2 * IV_SPEED,
+	ingredients = { { type = "item", name = "tellurium-dust", amount = 1 } },
+	results = { { type = "fluid", name = "molten-tellurium", amount = 14.4 } }, main_product = "molten-tellurium",
+}
+fork_add_unlock("fusion-plasmas-mk5", "melt-tellurium-dust")
+local OTHER_PLASMAS = {
+	--  plasma                  reactor  s     speed      inputs                                                  amount
+	{ "nickel-plasma",           3, 7.5,  UV_SPEED,  { { "molten-potassium", 16 }, { "fluorine", 144 } }, 144 },
+	{ "silver-plasma",           3, 10,   UV_SPEED,  { { "molten-gold", 144 }, { "molten-arsenic", 144 } }, 144 },
+	{ "bismuth-plasma",          3, 15,   UV_SPEED,  { { "molten-tantalum", 144 }, { "zinc-plasma", 72 } }, 144 },
+	{ "radon-plasma",            3, 16,   UV_SPEED,  { { "molten-iridium", 144 }, { "fluorine", 500 } }, 144 },
+	{ "plutonium-241-plasma",    5, 17.5, UIV_SPEED, { { "molten-lutetium", 576 }, { "molten-vanadium", 576 } }, 576 },
+	{ "americium-plasma",        3, 17.5, UV_SPEED,  { { "molten-plutonium-241", 144 }, { "hydrogen", 2000 } }, 144 },
+	{ "thorium-plasma-fusion",   5, 16.5, UIV_SPEED, { { "molten-osmium", 576 }, { "molten-silicon", 576 } }, 576 },
+	{ "lead-plasma-fusion",      5, 15,   UIV_SPEED, { { "molten-tellurium", 576 }, { "molten-zinc", 576 } }, 576 },   -- #397
+}
+for _, p in pairs(OTHER_PLASMAS) do
+	local ing = {}
+	for _, i in pairs(p[5]) do ing[#ing + 1] = { type = "fluid", name = i[1], amount = i[2] } end
+	local product = p[1]:gsub("%-fusion$", "")
+	create_recipe{
+		name = p[1], category = "mk" .. p[2] .. "-fusion-reactor-recipes", energy_required = p[3] * p[4],
+		ingredients = ing, results = { { type = "fluid", name = product, amount = p[6] } }, main_product = product,
+	}
+	fork_add_unlock("fusion-plasmas-mk" .. p[2], p[1])
 end
 
 

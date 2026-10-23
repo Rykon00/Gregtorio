@@ -55,10 +55,10 @@ FORK_RECYCLING_MASS = {
 local DEFAULT_MASS = 98   -- GT: a material without element and composition (technetium)
 
 --- items never recycled, with the reason (devcheck fails for an entry without one or for an item that does not exist)
-FORK_RECYCLING_BLACKLIST = {
-	["blaze-rod"] = "GT: registerMaterialRecycling skips the blaze rod (GTRecipeRegistrator.java 185)",
-	["obsidian"] = "GT: registerMaterialRecycling skips obsidian (GTRecipeRegistrator.java 188)",
-}
+--- (data.lua's files before this one may already have listed theirs)
+FORK_RECYCLING_BLACKLIST = FORK_RECYCLING_BLACKLIST or {}
+FORK_RECYCLING_BLACKLIST["blaze-rod"] = "GT: registerMaterialRecycling skips the blaze rod (GTRecipeRegistrator.java 185)"
+FORK_RECYCLING_BLACKLIST["obsidian"] = "GT: registerMaterialRecycling skips obsidian (GTRecipeRegistrator.java 188)"
 
 FORK_RECYCLING = { recipes = {}, pending = {}, items = 0, by_kind = { macerator = 0, ["arc-furnace"] = 0, ["fluid-extractor"] = 0 } }
 
@@ -74,7 +74,8 @@ local FORMS = {
 	{ "", "-wire", 1 / 2 }, { "", "-cable", 1 / 2 }, { "", "-dust", 1 },
 }
 local SPECIAL = { ["iron-stick"] = { "iron", 1 / 2 }, ["iron-gear-wheel"] = { "iron", 1 } }
---- a metal's arc smelting material (GT Materials.mArcSmeltInto; Gregtorio has no wrought iron, iron stays iron)
+--- a metal's arc smelting material (GT Materials.mArcSmeltInto; iron stays iron: GT5-Unofficial merged the wrought iron it
+--- used to arc-smelt into with Cast Iron, which arc-smelts into itself, issue #448)
 local ARC_INTO = { ["copper"] = "annealed-copper" }
 
 local function item_exists(n)
@@ -106,16 +107,30 @@ local function is_circuit(name)
 	return false
 end
 
+--- the item a recipe makes: its main product, else its only item, else the item of its own name, else none. The items
+--- a recipe gives back do not count (issue #423): a machine upgrade returns the old energy hatch, and counting it as a
+--- producer of the hatch put loops into the sums, which then depended on the order of the items
+local function main_item(name, r)
+	if r.main_product then return r.main_product ~= "" and r.main_product or nil end
+	local only
+	for _, res in pairs(r.results) do
+		if res.type ~= "fluid" then
+			if res.name == name then return name end
+			only = only == nil and res.name or false
+		end
+	end
+	return only or nil
+end
+
 --- the producers of every item (not the casts and melts of 143, not recycling)
 local casting = FORK_CASTING and FORK_CASTING.recipes or {}
 local producers = {}
 for name, r in pairs(data.raw.recipe) do
 	if not casting[name] and not name:find("recycling", 1, true) and not name:find("^void%-") and r.results then
-		for _, res in pairs(r.results) do
-			if res.type ~= "fluid" then
-				producers[res.name] = producers[res.name] or {}
-				table.insert(producers[res.name], r)
-			end
+		local item = main_item(name, r)
+		if item then
+			producers[item] = producers[item] or {}
+			table.insert(producers[item], r)
 		end
 	end
 end

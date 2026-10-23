@@ -307,6 +307,7 @@ class Model:
         self.burnt, self.burners = [], {}   # (fuel item, burnt result, fuel category); burner entity -> categories
         self.tools = {}                     # recipe -> the mold or lens it needs in the module slot (issue #316)
         self.base = {"water", "steam"}
+        mined, reach = {}, {}   # issue #501: resource -> its mined items; resource -> technologies of its planets
         for p in rows:
             k = p[0]
             if k == "R":
@@ -323,9 +324,9 @@ class Model:
                 self.T[p[1]] = dict(pre=[x for x in p[2].split(",") if x], eff=[x for x in p[3].split(",") if x],
                                     sci=[x for x in p[4].split(",") if x], trig=p[5], en=p[6] == "true")
             elif k == "M" and p[4] != "gregtorio-disabled":
-                if p[2]:
-                    self.base.add(p[2])
-                self.base.update(x.split(":", 1)[1] for x in p[3].split(",") if x)
+                mined[p[1]] = ([p[2]] if p[2] else []) + [x.split(":", 1)[1] for x in p[3].split(",") if x]
+            elif k == "P":
+                reach.setdefault(p[1], set()).add(p[3] if len(p) > 3 else "")
             elif k == "O" and p[2]:
                 self.base.add(p[2])
             elif k == "B":
@@ -334,6 +335,21 @@ class Model:
                 self.burners[p[1]] = p[2].split(",")
             elif k == "K":
                 self.tools[p[1]] = p[2]
+        # issue #501: a resource is there from the start unless every planet that places it is reached by a technology
+        # (the Nether's map veins); then the technology unlocks a pseudo recipe `planet-mining:<resource>` that gives its
+        # items, in the category `planet-mining` of the character
+        for res, items in mined.items():
+            techs = reach.get(res)
+            if not techs or "" in techs:
+                self.base.update(items)
+                continue
+            name = "planet-mining:" + res
+            self.R[name] = dict(cat="planet-mining", en=False, ing=[], res=items, fin=0, fout=0, hidden=False,
+                                hide_craft=False, sg="", group="", icon="")
+            for t in techs:
+                if t in self.T:
+                    self.T[t]["eff"].append(name)
+        self.C.setdefault("character", []).append("planet-mining")
         # issue #316: a recipe needs its mold or lens (150, in the module slot) as if it were an ingredient
         for r, item in self.tools.items():
             if r in self.R and item not in self.R[r]["ing"]:
@@ -584,6 +600,8 @@ def check_table_only(m, sec):
         v = m.R[r]
         if v["hidden"] or r.endswith("-recycling") or r.startswith("void-") or v["cat"] in ("recycling", "parameters"):
             continue
+        if v["cat"] == "planet-mining":   # issue #501: the ores of a planet's map veins, mined there (no hand recipe)
+            continue
         for x in v["res"]:
             if x in m.I:
                 makers.setdefault(x, []).append(r)
@@ -706,6 +724,63 @@ def check_me_recipes(sec):
             sorted(problems))
 
 
+def check_ore_mixes(m, sec):
+    """Issue #496 (prototypes/165-fork-ore-veins.lua, plan #494): every ore of a GT vein in a dimension that is one of
+    Gregtorio's surfaces (FORK_ORE_MIX_SURFACES) has a raw ore raw-<material> with GTNH's ore chain (the ore washer's
+    purified-<material>), unless the material or the vein ("mix:<name>") is in FORK_ORE_MIX_SKIPPED or the material in
+    FORK_ORE_MIX_NO_CHAIN (GT processes it another way; it needs the raw ore all the same), each with its reason; every
+    dimension of GT's veins is a surface or skipped ("dimension:<DimNames>"). An entry that matches nothing fails too.
+    Returns (info line, problems)."""
+    rows = sec.get("OREMIXES", [])
+    surfaces = {r[1] for r in rows if r[0] == "surface"}
+    mixes = {r[1]: r[2].split(",") if len(r) > 2 and r[2] else [] for r in rows if r[0] == "mix"}
+    ores = [r for r in rows if r[0] == "ore"]
+    skip = {r[1]: (r[2] if len(r) > 2 else "") for r in rows if r[0] == "skip"}
+    nochain = {r[1]: (r[2] if len(r) > 2 else "") for r in rows if r[0] == "nochain"}
+    if not mixes:
+        return "no ore mixes (an older version)", []
+    on_surface = {n for n, dims in mixes.items() if set(dims) & surfaces}
+    kept = on_surface - {n for n in on_surface if f"mix:{n}" in skip}
+    problems, used, checked = [], set(), set()
+    for n, dims in sorted(mixes.items()):
+        problems += [f"{n}: dimension {d} is neither a Gregtorio surface (FORK_ORE_MIX_SURFACES) nor in "
+                     f"FORK_ORE_MIX_SKIPPED as dimension:{d}" for d in dims if d not in surfaces and f"dimension:{d}" not in skip]
+    for _, mix, role, x, raw in ores:
+        if mix not in on_surface:
+            continue
+        used.add(x)
+        if mix not in kept or x in skip or x in checked:
+            continue
+        checked.add(x)
+        if raw == "-":
+            problems.append(f"{x} ({mix} {role}): no raw ore raw-{x} (create it with GTNH's chain in 155, or add the "
+                            "material to FORK_ORE_MIX_SKIPPED with its reason)")
+        elif x not in nochain and (f"purified-{x}" not in m.R or m.R[f"purified-{x}"]["hidden"]):
+            problems.append(f"{x} ({mix} {role}): raw-{x} has no ore chain (purified-{x}; 155's NEW_ORES, or "
+                            "FORK_ORE_MIX_NO_CHAIN with the reason)")
+    dims_used = {d for dims in mixes.values() for d in dims}
+    for key, why in sorted(skip.items()):
+        kind, _, name = key.partition(":") if ":" in key else ("material", "", key)
+        if not why:
+            problems.append(f"FORK_ORE_MIX_SKIPPED: {key} has no reason")
+        if kind == "mix" and name not in on_surface:
+            problems.append(f"FORK_ORE_MIX_SKIPPED: {key} is no vein on a Gregtorio surface (remove the entry)")
+        elif kind == "dimension" and (name not in dims_used or name in surfaces):
+            problems.append(f"FORK_ORE_MIX_SKIPPED: {key} is " + ("a surface" if name in surfaces else "no dimension of GT's veins")
+                            + " (remove the entry)")
+        elif kind == "material" and key not in used:
+            problems.append(f"FORK_ORE_MIX_SKIPPED: {key} is no ore of a vein on a Gregtorio surface (remove the entry)")
+    for x, why in sorted(nochain.items()):
+        if not why:
+            problems.append(f"FORK_ORE_MIX_NO_CHAIN: {x} has no reason")
+        if x not in used or f"purified-{x}" in m.R:
+            problems.append(f"FORK_ORE_MIX_NO_CHAIN: {x} is " + ("no ore of a vein on a surface" if x not in used
+                            else "an ore with a chain") + " (remove the entry)")
+    return (f"{len(mixes)} GT veins, {len(kept)} on Gregtorio's surfaces with {len(checked)} ores, "
+            f"{len(on_surface) - len(kept)} veins and {sum(1 for k in skip if ':' not in k)} ores left out, "
+            f"{len(nochain)} without an ore chain", problems)
+
+
 ORE_CHAIN_SKIP = {"crushed-platinum", "crushed-palladium", "crushed-firestone"}   # 155-fork-ore-chain.lua's skip list
 def check_ore_chain(m):
     """Issue #185 (prototypes/155-fork-ore-chain.lua): every ore with a purified form has GTNH's whole chain (washer,
@@ -740,6 +815,10 @@ ORE_BATHS = {
                           "tetrahedrite": "tetrahedrite-dust", "sphalerite": "zinc-dust", "nickel": "nickel-dust",
                           "pentlandite": "cobalt-dust", "cobaltite": "cobalt-dust", "sheldonite": "nickel-dust"},
 }
+# issue #363: the new ores of GTNH's Overworld veins (their first byproduct tagged for the bath)
+ORE_BATHS["mercury"].update({"magnetite": "gold-dust", "chalcopyrite": "gold-dust"})
+ORE_BATHS["sodium-persulfate"].update({"yellow-limonite": "nickel-dust", "malachite": "copper-dust",
+                                       "chalcopyrite": "cobalt-dust", "garnierite": "nickel-dust"})
 def check_ore_baths(m):
     """Issue #186 (prototypes/155-fork-ore-chain.lua, phase O2): the chemical bath washes exactly the ores of ORE_BATHS
     with mercury or sodium persulfate into purified ore and the tagged material's dust, as in GTNH. Returns (number of
@@ -767,7 +846,11 @@ def check_ore_baths(m):
     return n, out
 # Issue #187: GTNH's electromagnetic separator per ore (docs/ORE-CHAIN.md appendix B, column EM separator)
 ORE_SEPARATOR = {"vanadium-magnetite": "gold", "tin": "iron", "ilmenite": "iron", "nickel": "iron", "pentlandite": "iron",
-                 "chromite": "iron", "bornite": "iron", "bastnasite": "neodymium", "monazite": "neodymium"}
+                 "chromite": "iron", "bornite": "iron", "bastnasite": "neodymium", "monazite": "neodymium",
+                 # issue #363: the new ores of GTNH's Overworld veins
+                 "brown-limonite": "iron", "yellow-limonite": "iron", "banded-iron": "iron", "magnetite": "gold",
+                 "pyrite": "iron", "glauconite": "iron", "vermiculite": "iron", "basaltic-mineral-sand": "gold",
+                 "granitic-mineral-sand": "gold", "glauconite-sand": "iron", "yellow-garnet": "iron"}
 # Issue #262: the other separator recipes of GTNH (gtnhlanth's monazite line, prototypes/159-fork-lanthanides.lua)
 SEPARATOR_OTHER = {"monazite-rarer-earth-sediment"}
 # Issue #188: the gem ores of GTNH's sifter (table, crystallisable for the autoclave) and their gem items
@@ -776,13 +859,43 @@ ORE_GEMS = {"ruby": ("ruby", False), "emerald": ("emerald", False), "diamond": (
             "apatite": ("apatite-gem", True), "tricalcium-phosphate": ("tricalcium-phosphate-gem", False),
             "lazurite": ("lazurite-gem", True), "sodalite": ("sodalite-gem", True), "lapis": ("lapis-lazuli", True),
             "monazite": ("monazite-gem", True),
-            "amber": ("amber-gem", False), "topaz": ("topaz-gem", False)}   # issue #332: the Twilight Forest's gems
+            "amber": ("amber-gem", False), "topaz": ("topaz-gem", False),   # issue #332: the Twilight Forest's gems
+            "sapphire": ("sapphire-gem", False), "green-sapphire": ("green-sapphire-gem", False),   # issue #364
+            "lignite": ("lignite-gem", False),   # issue #363: GTNH's LigniteCoal vein
+            # issue #363, part 2: the Twilight Forest's olivine vein and small ores
+            "olivine": ("olivine-gem", False), "tanzanite": ("tanzanite-gem", False), "amethyst": ("amethyst-gem", False),
+            "opal": ("opal-gem", False), "jasper": ("jasper-gem", False), "blue-topaz": ("blue-topaz-gem", False),
+            "spinel": ("spinel-gem", False), "jade": ("jade-gem", True), "red-garnet": ("red-garnet-gem", False),
+            "yellow-garnet": ("yellow-garnet-gem", False),
+            # issue #373: bartworks' gem ores of Ross128b and Ross128ba
+            "bismutite": ("bismutite-gem", False), "olenite": ("olenite-gem", False),
+            "fluor-buergerite": ("fluor-buergerite-gem", False),
+            "chromo-alumino-povondraite": ("chromo-alumino-povondraite-gem", False),
+            "vanadio-oxy-dravite": ("vanadio-oxy-dravite-gem", False), "forsterite": ("forsterite-gem", False),
+            "fayalite": ("fayalite-gem", False), "hedenbergite": ("hedenbergite-gem", False),
+            "red-zircon": ("red-zircon-gem", False), "tiberium": ("tiberium-gem", False),
+            "bartimaeusnek": ("bartimaeusnek-gem", False), "prasiolite": ("prasiolite-gem", False),
+            "fluorspar": ("fluorspar-gem", False),
+            "dilithium": ("dilithium-gem", True), "vinteum": ("vinteum-gem", False),   # issue #373: Neper
+            "quartzite": ("quartzite-gem", True)}   # issue #496: the Nether's quartzite
 # Issue #193: the laser engraver steps of the grades, with the lens of the gem's colour (red ruby, green emerald, white
-# diamond; issue #328: cyan apatite and blue lapis, #325's substitutes; certus quartz's light gray has no lens; issue
+# diamond; issues #328 and #370: cyan the green sapphire lens, blue the sapphire lens; certus quartz's light gray has no lens; issue
 # #332: orange amber)
 ORE_GEM_LENS = {"ruby": "ruby-lens", "emerald": "emerald-lens", "monazite": "emerald-lens", "diamond": "diamond-lens",
-                "nether-quartz": "diamond-lens", "apatite": "apatite-lens", "lazurite": "apatite-lens",
-                "sodalite": "lapis-lens", "lapis": "lapis-lens", "amber": "amber-lens", "topaz": "amber-lens"}
+                "nether-quartz": "diamond-lens", "apatite": "green-sapphire-lens", "lazurite": "green-sapphire-lens",
+                "sodalite": "sapphire-lens", "lapis": "sapphire-lens", "amber": "amber-lens", "topaz": "amber-lens",
+                "sapphire": "sapphire-lens", "green-sapphire": "green-sapphire-lens",   # issue #370: blue and cyan
+                # issue #363: lime, purple and pink their own lenses, the other colours the mod's lens of the colour
+                "olivine": "olivine-lens", "tanzanite": "tanzanite-lens", "amethyst": "amethyst-lens",
+                "jasper": "ruby-lens", "spinel": "ruby-lens", "opal": "sapphire-lens", "blue-topaz": "sapphire-lens",
+                "jade": "emerald-lens", "red-garnet": "ruby-lens", "yellow-garnet": "yellow-garnet-lens",
+                # issue #373: bartworks' gems, the lens of their dye (none for light gray olenite, black
+                # fluor-buergerite and fayalite)
+                "bismutite": "yellow-garnet-lens", "prasiolite": "yellow-garnet-lens",
+                "chromo-alumino-povondraite": "green-sapphire-lens", "vanadio-oxy-dravite": "green-sapphire-lens",
+                "forsterite": "diamond-lens", "hedenbergite": "emerald-lens", "tiberium": "emerald-lens",
+                "bartimaeusnek": "emerald-lens", "red-zircon": "ruby-lens", "fluorspar": "ruby-lens",
+                "dilithium": "diamond-lens", "quartzite": "diamond-lens"}   # issue #496: white quartzite
 def check_ore_o3_o4(m):
     """Issues #187 and #188 (prototypes/155-fork-ore-chain.lua, phases O3 and O4): the electromagnetic separator works
     exactly the pure dusts of ORE_SEPARATOR (dust, small dust and nugget of the metal); every ore of ORE_GEMS is sifted
@@ -1036,7 +1149,8 @@ def check_fluid_steps(sec):
     return [f"{r} ({kind}) {fluid}: {amount}" for r, kind, fluid, amount in sec.get("FLUIDSTEPS", [])]
 
 
-NAME_CLASSES = ("item", "fluid", "recipe", "technology", "entity", "equipment", "tile", "item-group", "item-subgroup")
+NAME_CLASSES = ("item", "fluid", "recipe", "technology", "entity", "equipment", "tile", "item-group", "item-subgroup",
+                "autoplace-control")
 
 
 def locale_keys():
@@ -1116,7 +1230,7 @@ def check_placeable(sec):
 
 def check_names(sec):
     """Issue #230: every prototype this mod creates that a player can see (item, fluid, recipe, technology, entity,
-    equipment, tile, item group and subgroup; section NAMES of checkmod/control.lua: the runtime prototypes, so the name
+    equipment, tile, item group and subgroup, issue #529: autoplace control; section NAMES of checkmod/control.lua: the runtime prototypes, so the name
     is the one the engine resolves from the final data stage) must have a name: every key of its localised name must be
     in a locale file. The engine names a recipe after its product only when the recipe has the product's name;
     any other recipe shows `recipe-name.<recipe>`, with a main product or not (prototypes/fork-locale.lua gives
@@ -1461,8 +1575,11 @@ def check_unlock_tree(m, sec):
                 out.add(burnt)
         return out
 
-    def other_maker(x, r, rs):
-        return x in m.base or any(p != r and (p in rs or p in start) for p in makers.get(x, []))
+    # issue #502: a recipe that needs a missing ore whose nearest producer is a planet's map vein (planet-mining) makes
+    # no alternative: the galena recipes of Galena made each other's products from the same missing ore
+    def other_maker(x, r, rs, lacks=frozenset()):
+        return x in m.base or any(p != r and (p in rs or p in start) and not lacks.intersection(R[p]["ing"])
+                                  for p in makers.get(x, []))
 
     def machine_items(cat):
         return [it for e in machines.get(cat, []) for it in item_of.get(e, [])]
@@ -1488,7 +1605,8 @@ def check_unlock_tree(m, sec):
             if not has_machine(v["cat"], have):
                 near = nearest(machine_items(v["cat"]))
                 miss.append((near[1] if near else "<machine for " + v["cat"] + ">", near))
-            if not miss or all(other_maker(x, r, rs) for x in v["res"]):
+            lacks = {x for x, near in miss if near and near[2].startswith("planet-mining:")}
+            if not miss or all(other_maker(x, r, rs, lacks) for x in v["res"]):
                 continue
             n_recipes += 1
             for x, near in miss:
@@ -1585,6 +1703,7 @@ def check(a):
     print(f"draft recipes hidden by the draft guard: {len(drafts)} (FORK-DRAFT in .devcheck/last-run.log)")
     removed = re.findall(r"FORK-REMOVED: (\S+ \S+)", log)
     print(f"drafts removed for good: {len(removed)} prototypes (FORK-REMOVED)")
+    stale_unlocks = [f"{t} names {r}" for t, r in re.findall(r"FORK-STALE-UNLOCK: (\S+) (\S+)", log)]
     new_drafts = [d for d in drafts if d not in DRAFTS_OK]
     m = Model(sec["DUMP"])
     files, sprites, uncraft = check_files(sec), check_sprites(sec), m.uncraftable()
@@ -1628,6 +1747,8 @@ def check(a):
            "producer; unlock the producer there or earlier, make the producer's technology a prerequisite, or add "
            "<technology>:<item> to FORK_UNLOCK_TREE_GAPS of prototypes/142-fork-recipe-unlocks.lua)", tree, limit=400)
     report("draft recipes outside DRAFTS_OK (issue #39)", new_drafts)
+    report("technologies that unlock a recipe the ore chain removes (issue #388: delete the unlock from "
+           "prototypes/98-technology.lua or the table of 142; FORK-STALE-UNLOCK in the log)", stale_unlocks)
     menu_info, menu = check_crafting_menu(m, sec)
     print("\ncrafting menu (issue #49):")
     for line in menu_info:
@@ -1664,6 +1785,10 @@ def check(a):
     parts_info, parts_unranked = check_material_parts(sec)
     print(f"\nmaterial parts (issue #118): {parts_info}")
     report("WARNING: materials of the material parts without a tier (prototypes/200-fork-material-parts.lua)", parts_unranked)
+    mixes_info, ore_mixes = check_ore_mixes(m, sec)
+    print(f"\nGT's ore veins (issue #496): {mixes_info}")
+    report("ores of GT's veins on Gregtorio's surfaces without a raw ore and its chain (prototypes/165-fork-ore-veins.lua)",
+           ore_mixes)
     chain_ores, ore_chain = check_ore_chain(m)
     print(f"\nore chain (issue #185): {chain_ores} ores with GTNH's chain")
     report("ore chain gaps and ore washer shortcuts (prototypes/155-fork-ore-chain.lua)", ore_chain)
@@ -1714,9 +1839,9 @@ def check(a):
         print(f"\nbalance data written to {a.balance_out} (recipes, machines, technologies as JSON)")
     ok = not (files or [s for s in sprites if not s.startswith("(")] or uncraft or menu or required or unresearchable
               or new_drafts or fluid_problems or locked or one_pack or fluid_steps or table_only or me_recipes
-              or extractor_split or ore_chain or ore_baths or ore_o34 or ore_hammer
+              or extractor_split or ore_mixes or ore_chain or ore_baths or ore_o34 or ore_hammer
               or circuit_icons or pgm_dusts or recycling or names or gaps or tree or vanilla or lenses or mine_twins
-              or unplaceable)
+              or unplaceable or stale_unlocks)
     print("\nRESULT:", "OK" if ok else "PROBLEMS FOUND")
     return 0 if ok else 1
 
@@ -1762,7 +1887,7 @@ def runtime(a):
     print(f"benchmark: {ran.group(0) if ran else 'did not run'}")
     # the ME network's runtime tests are in me-network since issue #83 (its tools/devcheck)
     tests = (("MOLD", "mold test"), ("LENS", "lens test"), ("POWER", "power test"), ("FUEL", "fuel check test"), ("COOLED", "cooled fluid test"),
-             ("TIERS", "turbine tier test"), ("RECIPES", "recipe test"), ("CRUSH", "raw ore crushing test"), ("STEAM", "steam turbine test"), ("CHAIN", "nuclear chain test"), ("LSC", "supercapacitor test"), ("LSUP", "supercapacitor upgrade test"), ("ELEVATOR", "space elevator test"), ("MELT", "melt and cast test"), ("OFFER", "offered recipes test"), ("EMINE", "electric mine test"), ("VICTORY", "victory test"),
+             ("TIERS", "turbine tier test"), ("RECIPES", "recipe test"), ("CRUSH", "raw ore crushing test"), ("STEAM", "steam turbine test"), ("CHAIN", "nuclear chain test"), ("LFTR", "LFTR test"), ("LSC", "supercapacitor test"), ("LSUP", "supercapacitor upgrade test"), ("ELEVATOR", "space elevator test"), ("MELT", "melt and cast test"), ("OFFER", "offered recipes test"), ("EMINE", "electric mine test"), ("SOLAR", "solar boiler test"), ("BATTERY", "battery buffer test"), ("VEINS", "map vein test"), ("DRILLS", "mining drill test"), ("PORTAL", "portal test"), ("ENDER", "ender storage test"), ("VICTORY", "victory test"),
              ("POSTVICTORY", "post-victory test"))
     for key, label in tests:
         m = re.search(rf"DEVCHECK-RUNTIME-{key} (.*)", log)
@@ -1954,11 +2079,21 @@ def bumped_working_copy(old_zip):
     info["version"] = f"{major}.{minor}.{int(patch) + 1}"
     prefix = f"{info['name']}_{info['version']}/"
     out = WORK / f"working-copy_{info['version']}.zip"
+    # the skipped folders are left out before the walk enters them: `.devcheck` holds junctions (me-network's checkout
+    # with its own `.devcheck/mods/me-network` junction to itself), which Path.rglob follows on Windows without end
+    skip = (".git", ".devcheck", ".github", "tools", "docs")
+    files = []
+    for top in sorted(ROOT.iterdir()):
+        if top.name in skip:
+            continue
+        if top.is_file():
+            files.append(top)
+            continue
+        for dirpath, _, filenames in os.walk(top):
+            files.extend(Path(dirpath) / f for f in filenames)
     with zipfile.ZipFile(out, "w", zipfile.ZIP_DEFLATED) as z:
-        for p in sorted(ROOT.rglob("*")):
+        for p in sorted(files):
             rel = p.relative_to(ROOT).as_posix()
-            if p.is_dir() or rel.split("/")[0] in (".git", ".devcheck", ".github", "tools", "docs"):
-                continue
             z.writestr(prefix + rel, json.dumps(info, indent=2) if rel == "info.json" else p.read_bytes())
     print(f"working copy has the version of the old save ({old_version}): loaded as {info['version']}, as the release "
           f"will be (on_configuration_changed with mod changes)")
@@ -2002,6 +2137,10 @@ def migrate(a):
     print(f"old save with researched technologies (issue #91): {setup.group(1) if setup else 'no result'}")
     setup = re.search(r"DEVCHECK-MIGRATE-SETUP-REMOVED (.*)", log)
     print(f"old save with removed fluids and items (issues #98, #96): {setup.group(1) if setup else 'no result'}")
+    setup = re.search(r"DEVCHECK-MIGRATE-SETUP-PLANETS (.*)", log)
+    print(f"old save with surfaces of the Space Age planets (issue #529): {setup.group(1) if setup else 'no result'}")
+    setup = re.search(r"DEVCHECK-MIGRATE-SETUP-VEINGRID (.*)", log)
+    print(f"old save with the size of gt-ore-veins at 1.5 (issue #529): {setup.group(1) if setup else 'no result'}")
     # issue #209: a save from before me-network 0.5.0 goes through the intermediate load first (--direct: not)
     save_me = save_me_network(old, old_me)
     step_log = ""
@@ -2044,6 +2183,10 @@ def migrate(a):
     print(f"technology effects of the old save (issue #91): {techs.group(1) if techs else 'no result'}")
     removed = re.search(r"DEVCHECK-MIGRATE-REMOVED (.*)", log)
     print(f"removed fluids and items of the old save (issues #98, #96): {removed.group(1) if removed else 'no result'}")
+    planets = re.search(r"DEVCHECK-MIGRATE-PLANETS (.*)", log)
+    print(f"surfaces of the deleted Space Age planets (issue #529): {planets.group(1) if planets else 'no result'}")
+    veingrid = re.search(r"DEVCHECK-MIGRATE-VEINGRID (.*)", log)
+    print(f"vein controls of the old save (issue #529): {veingrid.group(1) if veingrid else 'no result'}")
     # issue #83: the fingerprints of what gregtorio-continued gave and what me-network got must be equal (issue #209:
     # the hand-over and the conversions of me-network 0.5.0 happen in the intermediate load)
     both = step_log + log
@@ -2063,7 +2206,7 @@ def migrate(a):
         and patterns and not patterns.group(1).startswith("failed") and job and not job.group(1).startswith("failed") \
         and items and not items.group(1).startswith("failed") and handover_ok \
         and techs and not techs.group(1).startswith("failed") \
-        and removed and not removed.group(1).startswith("failed")
+        and removed and not removed.group(1).startswith("failed")         and planets and not planets.group(1).startswith("failed")         and veingrid and not veingrid.group(1).startswith("failed")
     return 0 if ok else 1
 
 

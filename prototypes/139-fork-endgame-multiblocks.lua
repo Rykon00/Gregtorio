@@ -1,9 +1,10 @@
 --------------------------------------------------------------------------------
 --- FORK ENDGAME MULTIBLOCKS (roadmap phase 6a, issue #37)
---- Two GT endgame multiblocks on top of the UMV tier (133-fork-umv.lua):
----   * the dimensionally transcendent plasma forge (DTPF): GT's MTEPlasmaForge. Here a UMV multiblock
----     with its own recipe category that makes the endgame metals more efficiently than the fusion
----     reactors (the MK3 to MK5 recipes stay as the entry route), and the catalysts it burns
+--- Two GT endgame multiblocks:
+---   * the dimensionally transcendent plasma forge (DTPF): GT's MTEPlasmaForge. A UIV multiblock (issue #355, the
+---     maintainer's decision: at GTNH's place, before the UIV energy hatch; before, one tier up at UMV) with its own
+---     recipe category that makes the endgame metals more efficiently than the fusion reactors (the MK3 to MK5
+---     recipes stay as the entry route), and the catalysts it burns
 ---   * the quantum force transformer (QFT): GT++'s MTEQuantumForceTransformer. A UMV multiblock that
 ---     runs GT's QFT recipes whose materials exist in the mod: the platinum line and the naquadah line
 --- The drafts are in 29-uev-age-item.lua and 31-uiv-age-item.lua (never loaded, not valid Lua; removed in issue #249); the
@@ -14,7 +15,8 @@
 ---   * DTPF: no coil heat, no runtime discount and no convergence. GT's five catalysts (made from up to
 ---     20 plasmas in the transcendent plasma mixer) are two fluids made in the forge itself: crude (GT's
 ---     four plasmas) and resplendent (crude + boron, sulfur, nitrogen, zinc and titanium plasma; GT's
----     radon, nickel and silver plasma do not exist here). No residue.
+---     radon, nickel and silver plasma do not exist here). Issue #355: GT's residue (DTR) and the prosaic catalyst in 164
+---     section 20.
 ---   * DTPF metals: GT makes them from carrier melts (copper -> cosmic neutronium) and tesseracts, which
 ---     would skip the whole fusion chain. Here each DTPF recipe is the fusion recipe of the metal with
 ---     two thirds of the inputs per output and in a third of the reactor time (see DTPF_INPUT and
@@ -37,7 +39,7 @@ local function multiblock(def)
 	F.clone_multiblock{
 		name = def.name, source = "fusion-reactor-mk5", size = def.size, categories = def.categories,
 		speed = def.speed, energy = def.energy, icon = data.raw.item[def.name].icon,
-		subgroup = "subgroup-umv-age-multiblocks",
+		subgroup = def.subgroup or "subgroup-umv-age-multiblocks",
 	}
 	local m = data.raw["assembling-machine"][def.name]
 	m.fluid_boxes = def.ports
@@ -53,13 +55,17 @@ end
 --------------------------------------------------------------------------------
 --- 1) DIMENSIONALLY TRANSCENDENT PLASMA FORGE
 --- GT: 33x24x33, 2121 dimensionally transcendent casings, 2112 coils, 120 dimensional bridges, one or
---- two energy hatches; the controller from the research station assembly line (UIV) with UEV parts.
---- Here 11x11, one UMV amp (1310.72 MW, like each fusion reactor takes one amp of its tier), the parts
---- one tier up (UIV), the UMV coil, two UMV energy hatches (GT: up to two).
---- Part recipes as in GT where the mod has the part: the microwave energy transmitter is a UV emitter,
---- laurenium screws are spacetime screws, mutated living solder is indalloy 140, enriched naquadah is
---- naquadah, oganesson and californium are left out; the controller takes no eternal singularity,
---- quantum anomaly, ZPM battery and teleporter (GT items the mod does not have).
+--- two energy hatches; the controller from the research station assembly line (UIV) with UEV parts
+--- (tectech/loader/recipe/ResearchStationAssemblyLine.java:617-701). Issue #355 (the maintainer's decision): at
+--- GTNH's tier, UIV, before the UIV energy hatch. Here 11x11, one UIV amp (655.36 MW, like each fusion reactor
+--- takes one amp of its tier), GT's UIV recipes of the parts, the Awakened Draconium coil (GT's lowest recipes
+--- ask 10 800 K, its heat), two UEV energy hatches (GT: up to two; four UEV amps carry its UIV amp).
+--- Part recipes as in GT where the mod has the part, fluids a tenth of GT's litres: the microwave energy
+--- transmitter is a UV emitter, mutated living solder is indalloy 140, laurenium screws are infinity screws (the
+--- mod has no laurenium: no dysprosium), the FPIC is the FPIC wafer. Left out (GT items the mod does not have):
+--- oganesson and californium, the Avaritia singularities of the bridge; in the controller the 16 Exothermic
+--- Hearths (GT's mega blast furnace), the eternal singularities, the quantum anomaly (in the mod it comes from
+--- the forge itself, #355), the ZPM battery and the teleporter.
 --------------------------------------------------------------------------------
 
 local DTPF = "dimensionally-transcendent-plasma-forge"
@@ -68,71 +74,71 @@ F.category(DTPF_CAT)
 
 create_item{
 	name = "dimensionally-transcendent-casing",
-	category = "umv-assembling-machine-recipes",
-	energy_required = 20 * UMV_SPEED,
+	category = "zpm-assembly-line-recipes",
+	energy_required = 20 * ZPM_SPEED,
 	ingredients = {
 		item("osmiridium-plate", 6),
-		item("spacetime-screw", 12),
+		item("infinity-screw", 12),
 		item("1080k-super-coolant-cell", 1),
-		item("uv-emitter", 1),
 		item("triamerotronium-superconductive-wire", 1),
 		fluid("molten-indalloy-140", 28.8),
-		fluid("molten-naquadah", 14.4),
+		fluid("molten-enriched-naquadah", 14.4),
 	},
 }
 create_item{
 	name = "dimensional-bridge",
 	category = "zpm-assembly-line-recipes",
-	energy_required = 4 * 30 * ZPM_SPEED,
+	energy_required = 240 * ZPM_SPEED,
 	ingredients = {
 		item("dimensionally-transcendent-casing", 1),
 		item("uv-emitter", 1),
 		item("uv-circuit", 2),
-		item("ppic-wafer", 2),
+		item("fpic-wafer", 4),
 		item("triamerotronium-superconductive-wire", 6),
 		item("uhv-field-generator", 1),
-		fluid("molten-indalloy-140", 576),
-		fluid("molten-naquadah", 129.6),
+		fluid("molten-indalloy-140", 921.6),
+		fluid("molten-enriched-naquadah", 129.6),
 	},
 }
 create_item{
 	name = DTPF .. "-controller",
 	category = "zpm-assembly-line-recipes",
-	energy_required = 5 * 30 * ZPM_SPEED,
+	energy_required = 300 * ZPM_SPEED,
 	ingredients = {
 		item("dimensional-bridge", 4),
-		item("uiv-energy-hatch", 4),
-		item("chromnorox-superconductive-wire", 24),
+		item("uev-energy-hatch", 4),
+		item("dracofinium-superconductive-wire", 24),
 		item("1080k-super-coolant-cell", 4),
-		item("umv-circuit", 20),
-		item("uiv-field-generator", 4),
-		item("superdense-neutronium-plate", 4),
-		item("uiv-pump", 4),
-		fluid("molten-indalloy-140", 576),
-		fluid("molten-naquadah", 576),
+		item("uiv-circuit", 20),
+		item("uev-field-generator", 4),
+		item("superdense-osmiridium-plate", 4),
+		item("uev-pump", 4),
+		fluid("molten-indalloy-140", 7372.8),
+		fluid("molten-enriched-naquadah", 3686.4),
 	},
 }
 create_item{
 	name = DTPF,
-	category = "umv-assembling-machine-recipes",
-	energy_required = 300 * UMV_SPEED,
-	subgroup = "subgroup-umv-age-multiblocks",
+	category = "zpm-assembly-line-recipes",
+	energy_required = 300 * ZPM_SPEED,
+	subgroup = "subgroup-uiv-age-multiblocks",
 	stack_size = 10,
 	place_result = DTPF,
 	ingredients = {
 		item(DTPF .. "-controller", 1),
 		item("dimensionally-transcendent-casing", 48),
 		item("dimensional-bridge", 16),
-		item("spacetime-coil-block", 32),
-		item("umv-energy-hatch", 2),
-		item("umv-machine-hull", 8),
+		item("awakened-draconium-coil-block", 32),
+		item("uev-energy-hatch", 2),
+		item("uev-machine-hull", 8),
 	},
 }
 
 --- 11x11: five fluid inputs north and one west (the resplendent catalyst takes six fluids), two
 --- outputs south
 multiblock{
-	name = DTPF, size = { 11, 11 }, categories = { DTPF_CAT }, speed = UMV_SPEED, energy = "1310.72MW",
+	name = DTPF, size = { 11, 11 }, categories = { DTPF_CAT }, speed = UIV_SPEED, energy = "655.36MW",
+	subgroup = "subgroup-uiv-age-multiblocks",
 	ports = {
 		fluid_port(-4, -5, "input", defines.direction.north),
 		fluid_port(-2, -5, "input", defines.direction.north),
@@ -370,17 +376,27 @@ end
 --------------------------------------------------------------------------------
 --- TECHNOLOGIES (the unit counts are set in 138-fork-research-balance.lua, which loads after this file:
 --- about 8 hours of pack production in the reference factory of the tier, like the other UMV and UXV techs)
----   * the DTPF and the crude tier: UMV science, after the UMV multiblocks (the UMV energy hatch) and
----     the MK5 plasmas
+---   * the DTPF and the crude tier: UIV science, before the UIV energy hatch (issue #355: GTNH's place), after the
+---     UEV energy hatch (its coil, hatches and superconductor); the crude spacetime and universium recipes, whose
+---     inputs come with the MK5 plasmas, come with Fusion Plasmas MK5, which then needs the DTPF
 ---   * the resplendent tier: UXV science, after the UXV multiblocks
 ---   * the QFT: UMV science, after the UMV multiblocks
 --------------------------------------------------------------------------------
 
+local MK5_CRUDE = { ["molten-spacetime-dtpf-crude"] = true, ["molten-universium-dtpf-crude"] = true }
+local crude_now, crude_mk5 = {}, {}
+for _, r in pairs(dtpf_recipes.crude) do
+	local list = MK5_CRUDE[r] and crude_mk5 or crude_now
+	list[#list + 1] = r
+end
 F.tech{
-	name = DTPF, prerequisites = { "umv-multiblocks", "fusion-plasmas-mk5" }, packs = 13, count = 1,
+	name = DTPF, prerequisites = { "uev-energy-hatches", "femto-power-ics", "optical-processor-mainframes",
+		"uev-materials", "naquadah-alloy", "fusion-plasmas-mk4" }, packs = 12, count = 1,
 	recipes = F.join({ "dimensionally-transcendent-casing", "dimensional-bridge", DTPF .. "-controller", DTPF, CRUDE },
-		dtpf_recipes.crude),
+		crude_now),
 }
+for _, r in pairs(crude_mk5) do fork_add_unlock("fusion-plasmas-mk5", r) end
+table.insert(data.raw.technology["fusion-plasmas-mk5"].prerequisites, DTPF)
 F.tech{
 	name = "dtpf-resplendent-catalyst", prerequisites = { DTPF, "uxv-multiblocks" }, packs = 14, count = 1,
 	recipes = F.join({ RESPLENDENT }, dtpf_recipes.resplendent),

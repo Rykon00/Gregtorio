@@ -192,215 +192,269 @@ local function piles(d, m)
 end
 
 --------------------------------------------------------------------------------
---- 1) THE NUGGETS (issue #223 B5 for every metal; the new nuggets of #227 first, the round takes one)
+--- 0) CAST IRON (issue #448). GT New Horizons' Wrought Iron, which GT5-Unofficial merged into Cast Iron in May 2026
+---    (b22dc69: Materials.WroughtIron = Materials.CastIron, "Cast Iron"); the name is GTNH's of today. GT's routes: an
+---    iron nugget smelts into a cast iron nugget in the furnace (SmelterRecipes.java:60-62), 3 iron ingots or dusts and a
+---    carbon dust give 3 ingots in the arc furnace (ArcFurnaceRecipes.java:522-530: 9 s, LV; Gregtorio's carbon dust is
+---    the coal dust). Its parts come from the data like every metal's (1 and 2); GT casts none (ProcessingIngot.java:60
+---    and the others leave CastIron out of the fluid solidifier). Iron arc-smelts into iron in GT now (157's ARC_INTO).
 --------------------------------------------------------------------------------
---- the GT mass of metals with a nugget and no entry in the data
-local FALLBACK_MASS = { iron = 56, gold = 196, copper = 63, tin = 118, lead = 207, silver = 107, nickel = 58,
-	beryllium = 9, thorium = 230, ledox = 98, realgar = 53, neodymium = 144, naquadah = 330, antimony = 121,
-	molybdenum = 95 }
+local CAST_IRON = "cast-iron-ingot"
+if CAST_IRON then
+	add_item(CAST_IRON, sub_of("iron-ingot", "subgroup-smelting"), "z-cast-iron-0")
+	add_item("cast-iron-nugget", sub_of("iron-ingot", "subgroup-smelting"), "z-cast-iron-a")
+	data:extend({ {
+		type = "recipe", name = "cast-iron-nugget-smelting", category = "smelting", enabled = false, energy_required = 10,
+		ingredients = { item("iron-nugget") }, results = { item("cast-iron-nugget") }, main_product = "cast-iron-nugget",
+		subgroup = "subgroup-smelting",
+	} })
+	OC.made("cast-iron-nugget-smelting")
+	FORK_GT_PARTS.recipes["cast-iron-nugget-smelting"] = true
+	OC.unlock_after("cast-iron-nugget-smelting", { item_techs("iron-nugget") })
+	for _, from in pairs({ "iron-ingot", "iron-dust" }) do
+		recipe{ name = "cast-iron-ingot-from-" .. from, machine = "arc-furnace", tier = "lv", seconds = 9,
+			ingredients = { item(from, 3), item("coal-dust") }, results = { item(CAST_IRON, 3) } }
+	end
+end
+
+--------------------------------------------------------------------------------
+--- Issue #467: sections 1 and 2 are FORK_GT_PARTS.run(), called here and again at the end of 164: most metals of the
+--- GTNH gap work (#355, #356, #386, ...) get their ingot in 164, after this file. A second run makes only what is
+--- missing (an existing item or recipe is skipped) and reads the technologies anew.
+--------------------------------------------------------------------------------
 local new_parts, nuggets = 0, 0
-local metals = {}
-for m in pairs(DATA) do metals[#metals + 1] = m end
-for m in pairs(FALLBACK_MASS) do
-	if not DATA[m] then metals[#metals + 1] = m end
-end
-table.sort(metals)
-for _, m in pairs(metals) do
-	local d = DATA[m] or { source = "gt", mass = FALLBACK_MASS[m], dust = (m == "antimony") and "antimony" or (m .. "-dust") }
-	if d.dust and not data.raw.item[d.dust] then d.dust = nil end
-	local ingot, nugget = m .. "-ingot", m .. "-nugget"
-	for _, f in pairs(d.forms or {}) do
-		if f == "nugget" and data.raw.item[ingot] and add_item(nugget, sub_of(ingot, "subgroup-smelting"), "z-" .. m .. "-a") then
-			new_parts = new_parts + 1
-		end
+function FORK_GT_PARTS.run()
+	tech_effects, ancestor_memo = nil, {}
+	--------------------------------------------------------------------------------
+	--- 1) THE NUGGETS (issue #223 B5 for every metal; the new nuggets of #227 first, the round takes one)
+	--------------------------------------------------------------------------------
+	--- the GT mass of metals with a nugget and no entry in the data
+	local FALLBACK_MASS = { iron = 56, gold = 196, copper = 63, tin = 118, lead = 207, silver = 107, nickel = 58,
+		beryllium = 9, thorium = 230, ledox = 98, realgar = 53, neodymium = 144, naquadah = 330, antimony = 121,
+		molybdenum = 95 }
+	local metals = {}
+	for m in pairs(DATA) do metals[#metals + 1] = m end
+	for m in pairs(FALLBACK_MASS) do
+		if not DATA[m] then metals[#metals + 1] = m end
 	end
-	if data.raw.item[nugget] and data.raw.item[ingot] then
-		local gtpp = d.source == "gtpp"
-		if not data.raw.recipe[m .. "-nugget-from-ingot"] then
-			recipe{ name = m .. "-nugget-from-ingot", machine = "alloy-smelter", tier = d.tier, seconds = not gtpp and 5 or nil,
-				ticks = 2 * d.mass, subgroup = "subgroup-lv-alloy-smelter-recipes",
-				ingredients = { item(ingot), item("mold") }, results = { item(nugget, 9), item("mold") } }
-		end
-		if not data.raw.recipe[m .. "-ingot-from-nuggets"] then
-			recipe{ name = m .. "-ingot-from-nuggets", machine = "alloy-smelter", tier = d.tier, seconds = not gtpp and 10 or nil,
-				ticks = 2 * d.mass, subgroup = "subgroup-lv-alloy-smelter-recipes",
-				ingredients = { item(nugget, 9), item("mold") }, results = { item(ingot), item("mold") } }
-		end
-		local _, tiny = piles(d, m)
-		if tiny and not data.raw.recipe[m .. "-nugget-maceration"] then
-			add_item(tiny, sub_of(d.dust, "subgroup-macerator-dust"), "z-" .. tiny)
-			recipe{ name = m .. "-nugget-maceration", machine = "macerator", ticks = math.max(16, math.floor(d.mass / 9)),
-				ingredients = { item(nugget) }, results = { item(tiny) } }
-			if not data.raw.recipe[d.dust .. "-from-tiny-piles"] then
-				recipe{ name = d.dust .. "-from-tiny-piles", ingredients = { item(tiny, 9) }, results = { item(d.dust) } }
+	table.sort(metals)
+	for _, m in pairs(metals) do
+		local d = DATA[m] or { source = "gt", mass = FALLBACK_MASS[m], dust = (m == "antimony") and "antimony" or (m .. "-dust") }
+		if d.dust and not data.raw.item[d.dust] then d.dust = nil end
+		local ingot, nugget = m .. "-ingot", m .. "-nugget"
+		for _, f in pairs(d.forms or {}) do
+			if f == "nugget" and data.raw.item[ingot] and add_item(nugget, sub_of(ingot, "subgroup-smelting"), "z-" .. m .. "-a") then
+				new_parts = new_parts + 1
 			end
 		end
-		nuggets = nuggets + 1
+		if data.raw.item[nugget] and data.raw.item[ingot] then
+			local gtpp = d.source == "gtpp"
+			if not data.raw.recipe[m .. "-nugget-from-ingot"] then
+				nuggets = nuggets + 1
+				recipe{ name = m .. "-nugget-from-ingot", machine = "alloy-smelter", tier = d.tier, seconds = not gtpp and 5 or nil,
+					ticks = 2 * d.mass, subgroup = "subgroup-lv-alloy-smelter-recipes",
+					ingredients = { item(ingot), item("mold") }, results = { item(nugget, 9), item("mold") } }
+			end
+			if not data.raw.recipe[m .. "-ingot-from-nuggets"] then
+				recipe{ name = m .. "-ingot-from-nuggets", machine = "alloy-smelter", tier = d.tier, seconds = not gtpp and 10 or nil,
+					ticks = 2 * d.mass, subgroup = "subgroup-lv-alloy-smelter-recipes",
+					ingredients = { item(nugget, 9), item("mold") }, results = { item(ingot), item("mold") } }
+			end
+			local _, tiny = piles(d, m)
+			if tiny and not data.raw.recipe[m .. "-nugget-maceration"] then
+				add_item(tiny, sub_of(d.dust, "subgroup-macerator-dust"), "z-" .. tiny)
+				recipe{ name = m .. "-nugget-maceration", machine = "macerator", ticks = math.max(16, math.floor(d.mass / 9)),
+					ingredients = { item(nugget) }, results = { item(tiny) } }
+				if not data.raw.recipe[d.dust .. "-from-tiny-piles"] then
+					recipe{ name = d.dust .. "-from-tiny-piles", ingredients = { item(tiny, 9) }, results = { item(d.dust) } }
+				end
+			end
+		end
 	end
-end
 
---------------------------------------------------------------------------------
---- 2) THE PARTS (issues #222 and #227), each part before the parts made from it
---------------------------------------------------------------------------------
-local ORDER = { plate = "c", ["double-plate"] = "d1", ["triple-plate"] = "d2", ["quadruple-plate"] = "d3",
-	["quintuple-plate"] = "d4", ["dense-plate"] = "e", ["superdense-plate"] = "f", foil = "g", rod = "h",
-	["long-rod"] = "i", round = "j", bolt = "k", screw = "l", ring = "m", gear = "n", ["large-gear"] = "o",
-	["item-casing"] = "p", ["small-spring"] = "q", spring = "r", ["fine-wire"] = "s", frame = "t", block = "u", rotor = "v" }
-local MULTI = { ["double-plate"] = 2, ["triple-plate"] = 3, ["quadruple-plate"] = 4, ["quintuple-plate"] = 5 }
-local NAME = { plate = "%s-plate", ["double-plate"] = "double-%s-plate", ["triple-plate"] = "triple-%s-plate",
-	["quadruple-plate"] = "quadruple-%s-plate", ["quintuple-plate"] = "quintuple-%s-plate",
-	["dense-plate"] = "dense-%s-plate", ["superdense-plate"] = "superdense-%s-plate", foil = "%s-foil", rod = "%s-rod",
-	["long-rod"] = "long-%s-rod", bolt = "%s-bolt", screw = "%s-screw", round = "%s-round", ring = "%s-ring",
-	["fine-wire"] = "fine-%s-wire", ["small-spring"] = "small-%s-spring", spring = "%s-spring",
-	["item-casing"] = "%s-item-casing", frame = "%s-frame", block = "block-of-%s", gear = "%s-gear",
-	["large-gear"] = "large-%s-gear", rotor = "%s-rotor" }
---- vanilla items that are a form of a material (200's SPECIAL)
-local ALIAS = { ["iron-rod"] = "iron-stick", ["iron-gear"] = "iron-gear-wheel" }
+	--------------------------------------------------------------------------------
+	--- 2) THE PARTS (issues #222 and #227), each part before the parts made from it
+	--------------------------------------------------------------------------------
+	local ORDER = { plate = "c", ["double-plate"] = "d1", ["triple-plate"] = "d2", ["quadruple-plate"] = "d3",
+		["quintuple-plate"] = "d4", ["dense-plate"] = "e", ["superdense-plate"] = "f", foil = "g", rod = "h",
+		["long-rod"] = "i", round = "j", bolt = "k", screw = "l", ring = "m", gear = "n", ["large-gear"] = "o",
+		["item-casing"] = "p", ["small-spring"] = "q", spring = "r", ["fine-wire"] = "s", frame = "t", block = "u", rotor = "v" }
+	local MULTI = { ["double-plate"] = 2, ["triple-plate"] = 3, ["quadruple-plate"] = 4, ["quintuple-plate"] = 5 }
+	local NAME = { plate = "%s-plate", ["double-plate"] = "double-%s-plate", ["triple-plate"] = "triple-%s-plate",
+		["quadruple-plate"] = "quadruple-%s-plate", ["quintuple-plate"] = "quintuple-%s-plate",
+		["dense-plate"] = "dense-%s-plate", ["superdense-plate"] = "superdense-%s-plate", foil = "%s-foil", rod = "%s-rod",
+		["long-rod"] = "long-%s-rod", bolt = "%s-bolt", screw = "%s-screw", round = "%s-round", ring = "%s-ring",
+		["fine-wire"] = "fine-%s-wire", ["small-spring"] = "small-%s-spring", spring = "%s-spring",
+		["item-casing"] = "%s-item-casing", frame = "%s-frame", block = "block-of-%s", gear = "%s-gear",
+		["large-gear"] = "large-%s-gear", rotor = "%s-rotor" }
+	--- vanilla items that are a form of a material (200's SPECIAL)
+	local ALIAS = { ["iron-rod"] = "iron-stick", ["iron-gear"] = "iron-gear-wheel" }
 
-for _, m in pairs(metals) do
-	local d = DATA[m]
-	if d and data.raw.item[m .. "-ingot"] then
-		local wanted = {}
-		for _, f in pairs(d.forms) do wanted[f] = true end
-		local ingot = m .. "-ingot"
-		local sub = sub_of(ingot, "subgroup-smelting")
-		local gtpp, bw = d.source == "gtpp", d.source == "bw"
-		local M = d.mass
-		local small = piles(d, m)
-		--- GT: the material's processing voltage, else the recipe's own; GT++: the alloy's voltage (at least "low")
-		local function tier(eu, low)
-			if gtpp then
-				local t = d.tier
-				if low and TIER_INDEX[low] > TIER_INDEX[t] then t = low end
-				return t
+	for _, m in pairs(metals) do
+		local d = DATA[m]
+		if d and data.raw.item[m .. "-ingot"] then
+			local wanted = {}
+			for _, f in pairs(d.forms) do wanted[f] = true end
+			local ingot = m .. "-ingot"
+			local sub = sub_of(ingot, "subgroup-smelting")
+			local gtpp, bw = d.source == "gtpp", d.source == "bw"
+			local M = d.mass
+			local small = piles(d, m)
+			--- GT: the material's processing voltage, else the recipe's own; GT++: the alloy's voltage (at least "low")
+			local function tier(eu, low)
+				if gtpp then
+					local t = d.tier
+					if low and TIER_INDEX[low] > TIER_INDEX[t] then t = low end
+					return t
+				end
+				return d.tier or tier_of(eu)
 			end
-			return d.tier or tier_of(eu)
-		end
-		local vm = (d.temp or 0) >= 2800 and 60 or 15
-		--- the item of a form (a vanilla item where it is one)
-		local function form(f)
-			local name = string.format(NAME[f], m)
-			return ALIAS[name] or name
-		end
-		local function part(f)
-			local name = form(f)
-			if not wanted[f] or data.raw.item[name] then return nil end
-			add_item(name, sub, "z-" .. m .. "-" .. ORDER[f])
-			new_parts = new_parts + 1
-			return name
-		end
-		local n = part("plate")
-		if n then recipe{ name = n, machine = "bending-machine", tier = tier(24), ticks = M,
-			ingredients = { item(ingot) }, results = { item(n) } } end
-		for _, f in pairs({ "double-plate", "triple-plate", "quadruple-plate", "quintuple-plate" }) do
-			n = part(f)
-			if n then recipe{ name = n, machine = "bending-machine", tier = tier(96, "mv"), ticks = M * MULTI[f],
-				ingredients = { item(ingot, MULTI[f]) }, results = { item(n) } } end
-		end
-		n = part("dense-plate")
-		if n then recipe{ name = n, machine = "bending-machine", tier = tier(96, "mv"), ticks = gtpp and 2 * M or 9 * M,
-			ingredients = { item(ingot, 9) }, results = { item(n) } } end
-		n = part("superdense-plate")
-		if n then recipe{ name = n, machine = "compressor", tier = tier(96), ticks = gtpp and 4 * M or 32 * M,
-			ingredients = { item(form("plate"), 64) }, results = { item(n) } } end
-		n = part("foil")
-		if n then recipe{ name = n, machine = "bending-machine", tier = tier(24), ticks = 2 * M,
-			ingredients = { item(ingot) }, results = { item(n, 4) } } end
-		n = part("rod")
-		if n then
-			local results = { item(n) }
-			if small then
-				add_item(small, sub_of(d.dust, "subgroup-macerator-dust"), "z-" .. small)
-				results[2] = item(small, 2)
+			local vm = (d.temp or 0) >= 2800 and 60 or 15
+			--- the item of a form (a vanilla item where it is one)
+			local function form(f)
+				local name = string.format(NAME[f], m)
+				return ALIAS[name] or name
 			end
-			recipe{ name = n, machine = "lathe", tier = tier(16), ticks = gtpp and math.max(1, math.floor(M / 8)) or 5 * M,
-				ingredients = { item(ingot) }, results = results }
-			if small and not data.raw.recipe[d.dust .. "-from-small-piles"] then
-				recipe{ name = d.dust .. "-from-small-piles", ingredients = { item(small, 4) }, results = { item(d.dust) } }
+			local function part(f)
+				local name = form(f)
+				if not wanted[f] or data.raw.item[name] then return nil end
+				add_item(name, sub, "z-" .. m .. "-" .. ORDER[f])
+				new_parts = new_parts + 1
+				return name
 			end
-		end
-		n = part("long-rod")
-		if n then recipe{ name = n, machine = "forge-hammer", tier = gtpp and "lv" or tier(16), ticks = M,
-			ingredients = { item(form("rod"), 2) }, results = { item(n) } } end
-		n = part("bolt")
-		if n then
-			if gtpp and not wanted["rod"] and not data.raw.item[form("rod")] then
-				--- a GT++ element without a rod (rhugnor): the extruder's bolt recipe
-				recipe{ name = n, machine = "extruder", tier = tier(0), ticks = 2 * M,
-					ingredients = { item(ingot) }, results = { item(n, 8) } }
-			elseif gtpp or bw then
-				recipe{ name = n, machine = "cutting-machine", tier = tier(4), ticks = 2 * M,
-					ingredients = { item(form("rod")) }, results = { item(n, 4) } }
-			else
-				recipe{ name = n, machine = "cutting-machine", tier = tier(4), ticks = 4 * M,
-					ingredients = { item(form("rod")), fluid("water", 0.4) }, results = { item(n, 4) } }
+			local n = part("plate")
+			if n then recipe{ name = n, machine = "bending-machine", tier = tier(24), ticks = M,
+				ingredients = { item(ingot) }, results = { item(n) } } end
+			for _, f in pairs({ "double-plate", "triple-plate", "quadruple-plate", "quintuple-plate" }) do
+				n = part(f)
+				if n then recipe{ name = n, machine = "bending-machine", tier = tier(96, "mv"), ticks = M * MULTI[f],
+					ingredients = { item(ingot, MULTI[f]) }, results = { item(n) } } end
 			end
-		end
-		n = part("screw")
-		if n then recipe{ name = n, machine = "lathe", tier = gtpp and "lv" or tier(4), ticks = math.max(1, math.floor(M / 8)),
-			ingredients = { item(form("bolt")) }, results = { item(n) } } end
-		n = part("round")
-		if n then recipe{ name = n, machine = "lathe", tier = "lv", ticks = math.max(1, math.floor(M / 4)),
-			ingredients = { item(m .. "-nugget") }, results = { item(n) } } end
-		n = part("ring")
-		if n then recipe{ name = n, machine = "extruder", tier = tier(6 * vm), ticks = 2 * M,
-			ingredients = { item(ingot) }, results = { item(n, 4) } } end
-		n = part("fine-wire")
-		if n then
-			if bw then
-				recipe{ name = n, machine = "wiremill", tier = tier(8 * vm), ticks = M,
-					ingredients = { item(ingot) }, results = { item(n, 8) } }
-			elseif gtpp then
-				recipe{ name = n, machine = "wiremill", tier = "lv", seconds = 5,
-					ingredients = { item(ingot) }, results = { item(n, 8) } }
-			else
-				recipe{ name = n, machine = "wiremill", tier = "lv", ticks = 100,
-					ingredients = { item(ingot) }, results = { item(n, 4) } }
+			n = part("dense-plate")
+			if n then recipe{ name = n, machine = "bending-machine", tier = tier(96, "mv"), ticks = gtpp and 2 * M or 9 * M,
+				ingredients = { item(ingot, 9) }, results = { item(n) } } end
+			n = part("superdense-plate")
+			if n then recipe{ name = n, machine = "compressor", tier = tier(96), ticks = gtpp and 4 * M or 32 * M,
+				ingredients = { item(form("plate"), 64) }, results = { item(n) } } end
+			n = part("foil")
+			if n then recipe{ name = n, machine = "bending-machine", tier = tier(24), ticks = 2 * M,
+				ingredients = { item(ingot) }, results = { item(n, 4) } } end
+			n = part("rod")
+			if n then
+				local results = { item(n) }
+				if small then
+					add_item(small, sub_of(d.dust, "subgroup-macerator-dust"), "z-" .. small)
+					results[2] = item(small, 2)
+				end
+				recipe{ name = n, machine = "lathe", tier = tier(16), ticks = gtpp and math.max(1, math.floor(M / 8)) or 5 * M,
+					ingredients = { item(ingot) }, results = results }
+				if small and not data.raw.recipe[d.dust .. "-from-small-piles"] then
+					recipe{ name = d.dust .. "-from-small-piles", ingredients = { item(small, 4) }, results = { item(d.dust) } }
+				end
 			end
-		end
-		n = part("small-spring")
-		if n then recipe{ name = n, machine = "bending-machine", tier = tier(8), seconds = 5,
-			ingredients = { item(form("rod")) }, results = { item(n, 2) } } end
-		n = part("spring")
-		if n then recipe{ name = n, machine = "bending-machine", tier = tier(16), seconds = 10,
-			ingredients = { item(form("long-rod")) }, results = { item(n) } } end
-		n = part("item-casing")
-		if n then recipe{ name = n, machine = "alloy-smelter", tier = tier(15), seconds = 6.4,
-			subgroup = "subgroup-lv-alloy-smelter-recipes",
-			ingredients = { item(ingot, 2), item("mold") }, results = { item(n, 3), item("mold") } } end
-		n = part("frame")
-		if n then recipe{ name = n, machine = "assembling-machine", tier = tier(7), seconds = gtpp and 3 or 3.2,
-			ingredients = { item(form("rod"), 4) }, results = { item(n) } } end
-		n = part("block")
-		if n then
-			if bw then
-				recipe{ name = n, machine = "extruder", tier = tier(8 * vm), ticks = 9 * M,
-					ingredients = { item(ingot, 9) }, results = { item(n) } }
-			else
-				recipe{ name = n, machine = "compressor", tier = tier(2), seconds = 15,
-					ingredients = { item(ingot, 9) }, results = { item(n) } }
+			n = part("long-rod")
+			if n then recipe{ name = n, machine = "forge-hammer", tier = gtpp and "lv" or tier(16), ticks = M,
+				ingredients = { item(form("rod"), 2) }, results = { item(n) } } end
+			n = part("bolt")
+			if n then
+				if gtpp and not wanted["rod"] and not data.raw.item[form("rod")] then
+					--- a GT++ element without a rod (rhugnor): the extruder's bolt recipe
+					recipe{ name = n, machine = "extruder", tier = tier(0), ticks = 2 * M,
+						ingredients = { item(ingot) }, results = { item(n, 8) } }
+				elseif gtpp or bw then
+					recipe{ name = n, machine = "cutting-machine", tier = tier(4), ticks = 2 * M,
+						ingredients = { item(form("rod")) }, results = { item(n, 4) } }
+				else
+					recipe{ name = n, machine = "cutting-machine", tier = tier(4), ticks = 4 * M,
+						ingredients = { item(form("rod")), fluid("water", 0.4) }, results = { item(n, 4) } }
+				end
 			end
-		end
-		n = part("gear")
-		if n then recipe{ name = n, machine = "extruder", tier = tier(8 * vm), ticks = M,
-			ingredients = { item(ingot) }, results = { item(n) } } end
-		n = part("large-gear")
-		if n then recipe{ name = n, machine = "extruder", tier = tier(8 * vm), ticks = 5 * M,
-			ingredients = { item(ingot, 4) }, results = { item(n) } } end
-		n = part("rotor")
-		if n then
-			if gtpp then
-				recipe{ name = n, machine = "extruder", tier = tier(0), ticks = 5 * M,
-					ingredients = { item(ingot, 5) }, results = { item(n) } }
-			else
-				recipe{ name = n, machine = "assembling-machine", tier = tier(24), ticks = M,
-					ingredients = { item(form("plate"), 4), item(form("ring")), fluid("soldering-alloy", 1.6) },
-					results = { item(n) } }
+			n = part("screw")
+			if n then recipe{ name = n, machine = "lathe", tier = gtpp and "lv" or tier(4), ticks = math.max(1, math.floor(M / 8)),
+				ingredients = { item(form("bolt")) }, results = { item(n) } } end
+			n = part("round")
+			if n then recipe{ name = n, machine = "lathe", tier = "lv", ticks = math.max(1, math.floor(M / 4)),
+				ingredients = { item(m .. "-nugget") }, results = { item(n) } } end
+			n = part("ring")
+			if n then recipe{ name = n, machine = "extruder", tier = tier(6 * vm), ticks = 2 * M,
+				ingredients = { item(ingot) }, results = { item(n, 4) } } end
+			n = part("fine-wire")
+			if n then
+				if bw then
+					recipe{ name = n, machine = "wiremill", tier = tier(8 * vm), ticks = M,
+						ingredients = { item(ingot) }, results = { item(n, 8) } }
+				elseif gtpp then
+					recipe{ name = n, machine = "wiremill", tier = "lv", seconds = 5,
+						ingredients = { item(ingot) }, results = { item(n, 8) } }
+				else
+					recipe{ name = n, machine = "wiremill", tier = "lv", ticks = 100,
+						ingredients = { item(ingot) }, results = { item(n, 4) } }
+				end
+			end
+			n = part("small-spring")
+			if n then recipe{ name = n, machine = "bending-machine", tier = tier(8), seconds = 5,
+				ingredients = { item(form("rod")) }, results = { item(n, 2) } } end
+			n = part("spring")
+			if n then recipe{ name = n, machine = "bending-machine", tier = tier(16), seconds = 10,
+				ingredients = { item(form("long-rod")) }, results = { item(n) } } end
+			n = part("item-casing")
+			if n then recipe{ name = n, machine = "alloy-smelter", tier = tier(15), seconds = 6.4,
+				subgroup = "subgroup-lv-alloy-smelter-recipes",
+				ingredients = { item(ingot, 2), item("mold") }, results = { item(n, 3), item("mold") } } end
+			n = part("frame")
+			if n then recipe{ name = n, machine = "assembling-machine", tier = tier(7), seconds = gtpp and 3 or 3.2,
+				ingredients = { item(form("rod"), 4) }, results = { item(n) } } end
+			n = part("block")
+			if n then
+				if bw then
+					recipe{ name = n, machine = "extruder", tier = tier(8 * vm), ticks = 9 * M,
+						ingredients = { item(ingot, 9) }, results = { item(n) } }
+				else
+					recipe{ name = n, machine = "compressor", tier = tier(2), seconds = 15,
+						ingredients = { item(ingot, 9) }, results = { item(n) } }
+				end
+			end
+			n = part("gear")
+			if n then recipe{ name = n, machine = "extruder", tier = tier(8 * vm), ticks = M,
+				ingredients = { item(ingot) }, results = { item(n) } } end
+			n = part("large-gear")
+			if n then recipe{ name = n, machine = "extruder", tier = tier(8 * vm), ticks = 5 * M,
+				ingredients = { item(ingot, 4) }, results = { item(n) } } end
+			n = part("rotor")
+			if n then
+				if gtpp then
+					recipe{ name = n, machine = "extruder", tier = tier(0), ticks = 5 * M,
+						ingredients = { item(ingot, 5) }, results = { item(n) } }
+				else
+					recipe{ name = n, machine = "assembling-machine", tier = tier(24), ticks = M,
+						ingredients = { item(form("plate"), 4), item(form("ring")), fluid("soldering-alloy", 1.6) },
+						results = { item(n) } }
+				end
 			end
 		end
 	end
+
+end
+FORK_GT_PARTS.run()
+
+--- issue #448: GTNH's ULV machine casing and hull of cast iron (AssemblerRecipes.java:2580-2586: 8 plates; MTERecipeLoader
+--- registerHulls "PHP", "CMC": 2 wood plates, a cast iron plate, the casing, 2 lead cables). Gregtorio keeps its planks
+--- and red alloy cables (it has no lead cable); the iron plates become cast iron ones
+if CAST_IRON and data.raw.item["cast-iron-plate"] then
+	for _, name in pairs({ "ulv-machine-casing", "ulv-machine-hull" }) do
+		for _, i in pairs(data.raw.recipe[name].ingredients) do
+			if i.name == "iron-plate" then i.name = "cast-iron-plate" end
+		end
+	end
+	--- issue #446: GT's forge hammer plate (ProcessingIngot.java:107-116: 3 ingots -> 2 plates, mass ticks, 16 EU/t), so the
+	--- steam forge hammer makes the cast iron plates of the high pressure steam machines (101) in the steam age
+	recipe{ name = "cast-iron-plate-forge-hammer", machine = "forge-hammer", tier = "lv", ticks = 56,
+		ingredients = { item(CAST_IRON, 3) }, results = { item("cast-iron-plate", 2) } }
 end
 
 FORK_CASTING.run()
-log("FORK-GT-PARTS: " .. new_parts .. " new parts and nuggets (issues #222, #227), GT's nugget recipes of " .. nuggets
-	.. " metals (issue #223), " .. made .. " recipes; casting: " .. FORK_CASTING.casts .. " casts")
+function FORK_GT_PARTS.log(when)
+	log("FORK-GT-PARTS (" .. when .. "): " .. new_parts .. " new parts and nuggets (issues #222, #227), GT's nugget recipes of "
+		.. nuggets .. " metals (issue #223), " .. made .. " recipes; casting: " .. FORK_CASTING.casts .. " casts")
+end
+FORK_GT_PARTS.log("158")

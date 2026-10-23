@@ -30,6 +30,10 @@ local TOOLS = {
 for name, _ in pairs(data.raw.item) do
 	if name:match("%-lens$") then table.insert(TOOLS.lens.items, name) end
 end
+--- issue #355: GT++'s quantum anomaly (Laser_Lens_Special) is a lens of the laser engraver too (celestial tungsten dust)
+if data.raw.item["quantum-anomaly"] then table.insert(TOOLS.lens.items, "quantum-anomaly") end
+--- issue #355 step 5: SuperSolarPanels' Solar Light Splitter stays in the engraver too (the Photonically Enhanced Wafer)
+if data.raw.item["solar-light-splitter"] then table.insert(TOOLS.lens.items, "solar-light-splitter") end
 table.sort(TOOLS.lens.items)
 
 local tool_of = {}   -- item -> module category
@@ -75,11 +79,23 @@ local function without(list, name)
 	end
 	return out
 end
-for rname, r in pairs(data.raw.recipe) do
-	local rcat = r.category or "crafting"
+--- issue #355 step 5: a recipe that holds more than one lens at once (GT's Optically Enriched Crystalline Boule: three)
+--- does not fit the one lens slot; its lenses stay ingredients and results, as before #316
+local function tools_held(r, rcat)
+	local n = 0
 	for mold, category in pairs(tool_of) do
 		local used = count(r.ingredients, mold)
-		if used > 0 and used == count(r.results, mold) and counts_in(category, rcat) then
+		if used > 0 and used == count(r.results, mold) and counts_in(category, rcat) then n = n + 1 end
+	end
+	return n
+end
+for rname, r in pairs(data.raw.recipe) do
+	local rcat = r.category or "crafting"
+	local held = tools_held(r, rcat)
+	if held > 1 then log("FORK-MOLD: " .. rname .. " holds " .. held .. " lenses at once, they stay ingredients and results") end
+	for mold, category in pairs(tool_of) do
+		local used = count(r.ingredients, mold)
+		if held == 1 and used > 0 and used == count(r.results, mold) and counts_in(category, rcat) then
 			r.ingredients = without(r.ingredients, mold)
 			r.results = without(r.results, mold)
 			if r.main_product == mold then r.main_product = nil end

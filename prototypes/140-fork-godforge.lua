@@ -1,12 +1,15 @@
 --------------------------------------------------------------------------------
 --- FORK GODFORGE (roadmap phase 6b, issue #37)
---- GT's Forge of the Gods (TecTech MTEForgeOfGods and its modules) as one entity, after the stargate:
----   * the godforge: a 13x13 UXV multiblock (two UXV energy hatches, one UXV amp) built from UXV parts,
----     the stellar energy siphon casing, the singularity reinforced stellar shielding casing and the
----     remote graviton flow modulator
+--- GT's Forge of the Gods (TecTech MTEForgeOfGods and its modules) as one entity. Issue #355 (the maintainer's
+--- decision): at GT New Horizons' place, between the UIV and UMV energy hatches (before: after the stargate):
+---   * the godforge: a 13x13 UMV multiblock (two UIV energy hatches, one UMV amp) with GT's recipes of the stellar
+---     energy siphon casing, the singularity reinforced stellar shielding casing, the remote graviton flow modulator
+---     (it takes the quantum anomaly of 164 section 19) and the controller
 ---   * raw star matter (GT: condensed raw stellar plasma mixture), the forge's fuel: every godforge
 ---     recipe burns some, the way GT's star drains fuel while the modules run
----   * the plasma module: lead, thorium and naquadria plasma for the stellar catalyst of the plasma forge
+---   * the plasma module: celestial tungsten plasma (GT's multi-step plasma) with the technology of GT's upgrades
+---     that allow it; after the stargate, lead, thorium and naquadria plasma for the stellar catalyst
+---   * after the stargate as before:
 ---   * the molten module: universium (GT makes it in the eye of harmony, see "6b hook" in 139)
 ---   * the exotic module: tachyon rich temporal and spatially enlarged fluid from spacetime, and magmatter,
 ---     the MAX metal (141-fork-max.lua)
@@ -14,8 +17,8 @@
 ---   * the infinite technology `godforge-upgrades` (GT's graviton shard upgrades): productivity for the
 ---     godforge's products, the long-term sink after `victory` together with the further victory levels
 --- Simplified, on purpose (see "Phase 6b: MAX tier and godforge" in docs/ROADMAP.md):
----   * one entity runs every module's recipes; GT's modules, rings and 31 upgrades become three
----     technologies (forge with the plasma module, molten module, exotic module) and the infinite one
+---   * one entity runs every module's recipes; GT's modules, rings and 31 upgrades become technologies (the forge,
+---     the plasma module, the molten module, the exotic module) and the infinite one
 ---   * no heat, fuel factor, milestones or graviton shards; no random exotic challenges: one magmatter
 ---     recipe per input metal (GT draws the metal at random), the plasma GT returns is the metal's melt
 ---   * no wireless EU: power through the energy hatches in the recipe, like the plasma forge
@@ -31,83 +34,99 @@ local function fluid(name, amount) return { type = "fluid", name = name, amount 
 local GODFORGE = "godforge"
 local GODFORGE_CAT = "godforge-recipes"
 F.category(GODFORGE_CAT)
-local function seconds(s) return s * UXV_SPEED end
+local function seconds(s) return s * UMV_SPEED end
 
 
 
 --------------------------------------------------------------------------------
 --- 1) PARTS AND THE GODFORGE
---- GT (ResearchStationAssemblyLine, addGodforgeRecipes): the controller takes stellar energy siphon
---- casings, 64 dimensional bridges, eternal singularities, dense mellion, six-phased copper, creon and
---- metastable oganesson, UIV sensors and circuits, 8 million litres of excited DTEC; the casings take
---- hypogen coils, UV plasma generators, transcendent metal and infinity catalyst frames. Here, one tier up
---- like the plasma forge (the godforge comes after the stargate): UXV parts, the eternal coil (hypogen
---- coils), the eternity superconductor, universium and spacetime, the resplendent catalyst (GT's DTEC).
---- GT items the mod does not have are left out (eternal singularity, mellion, creon, oganesson, boson
---- containment units, the laser target and energy distributor).
+--- GT (tectech/loader/recipe/ResearchStationAssemblyLine.java, addGodforgeRecipes 2393-2544 and runLateRecipes
+--- 2998-3029): research station assembly line recipes at UIV (the casings and the flow modulator) and UMV (the
+--- controller), here in the assembly line with GT's seconds, fluids a tenth of GT's litres, plasmas GT's litres.
+--- GT's wireGt08 and wireGt16 superconductors are 2 and 4 wires (as the plasma forge's controller in 139), GT++'s
+--- Quantum is transcendent metal (as 133), the item of the godforge is the mod's (the controller with its casings,
+--- hatches and hulls). Left out:
+---   * creon, mellion and metastable oganesson (a named deviation, issue #355): GT New Horizons makes them from
+---     celestial tungsten plasma, which the mod makes in the godforge's plasma module, so they would close a cycle;
+---     the shielding casing's molten celestial tungsten for the same reason
+---   * GT items the mod does not have: the eternal and combined singularities, the ZPM4 batteries, the Stable Boson
+---     Containment Units, the UIV energy tunnel and energy distributor, the hypogen coils and plates (hypogen and
+---     Six-Phased Copper themselves: 164 section 35, issue #436), the Boundless Gravitationally Severed Structure Casing (AmunRa) and the Magnetic Confinement Casing (creon,
+---     hypogen, tengam), the Neutronium Heat Capacitors, the UV plasma generators, the Field Restriction Coil, the
+---     Graviton Anomaly, the nanites, netherite, infinity catalyst, titansteel, proto-halkonite and abyssal, the
+---     godforge glass (creon, mellion), and the excited exotic catalyst (GT's DTEC: the mod's plasma forge has the
+---     crude and resplendent tiers)
+--- GT's godforge draws wireless EU; here two UIV energy hatches (four UIV amps carry its one UMV amp, as the plasma
+--- forge's UEV hatches carry its UIV amp).
 --------------------------------------------------------------------------------
 
-local SUBGROUP = "subgroup-uxv-age-multiblocks"
+local SUBGROUP = "subgroup-umv-age-multiblocks"
+--- GT++'s quantum anomaly (Laser_Lens_Special): its recipe is in 164 section 19 (it needs the Hi-Computation Station
+--- Mk-V); 150 puts it in the laser engraver's lens slot like GT's lenses
+create_item{ skip_recipe = true, name = "quantum-anomaly", subgroup = data.raw.item["gravi-star"].subgroup,
+	stack_size = 64 }
 
 create_item{
 	name = "stellar-energy-siphon-casing",
-	category = "uxv-assembling-machine-recipes",
-	energy_required = 60 * UXV_SPEED,
+	category = "zpm-assembly-line-recipes",
+	energy_required = 10 * ZPM_SPEED,
 	ingredients = {
-		item("eternal-coil-block", 4),
-		item("1080k-super-coolant-cell", 4),
-		item("uxv-emitter", 1),
-		item("eternity-superconductive-wire", 8),
-		fluid("molten-universium", 144),
-		fluid("excited-dimensionally-transcendent-resplendent-catalyst", 100),
+		item("chromnorox-superconductive-wire", 64),
+		item("1080k-super-coolant-cell", 2),
+		fluid("molten-indalloy-140", 230.4),
+		fluid("molten-chromnorox", 460.8),
 	},
 }
 create_item{
 	name = "singularity-reinforced-stellar-shielding-casing",
-	category = "uxv-assembling-machine-recipes",
-	energy_required = 20 * UXV_SPEED,
+	category = "zpm-assembly-line-recipes",
+	energy_required = 30 * ZPM_SPEED,
+	results = { item("singularity-reinforced-stellar-shielding-casing", 4) },
 	ingredients = {
-		item("superdense-neutronium-plate", 1),
-		item("universium-plate", 6),
-		item("transcendent-metal-plate", 4),
-		item("spacetime-frame", 1),
-		fluid("molten-universium", 72),
+		item("superdense-infinity-plate", 2),
+		item("transcendent-metal-plate", 16),
+		item("long-chromnorox-rod", 8),
+		item("long-dracofinium-rod", 8),
+		item("superdense-transcendent-metal-plate", 2),
+		item("superdense-cosmic-neutronium-plate", 2),
+		fluid("molten-indalloy-140", 1843.2),
+		fluid("molten-bedrockium", 235929.6),
+		fluid("molten-neutronium", 29491.2),
 	},
 }
 create_item{
 	name = "remote-graviton-flow-modulator",
 	category = "zpm-assembly-line-recipes",
-	energy_required = 2 * 30 * ZPM_SPEED,
+	energy_required = 10 * ZPM_SPEED,
+	results = { item("remote-graviton-flow-modulator", 2) },
 	ingredients = {
-		item("uxv-field-generator", 1),
-		item("uxv-emitter", 2),
-		item("uxv-circuit", 4),
-		item("eternity-superconductive-wire", 16),
-		item("gravi-star", 8),
-		fluid("molten-indalloy-140", 576),
-		fluid("molten-universium", 288),
+		item("quantum-anomaly", 4),
+		item("uiv-emitter", 4),
+		item("uev-circuit", 16),
+		fluid("molten-indalloy-140", 460.8),
+		fluid("molten-chromnorox", 460.8),
+		fluid("molten-infinity", 460.8),
 	},
 }
 create_item{
 	name = GODFORGE .. "-controller",
 	category = "zpm-assembly-line-recipes",
-	energy_required = 5 * 30 * ZPM_SPEED,
+	energy_required = 300 * ZPM_SPEED,
 	ingredients = {
 		item("stellar-energy-siphon-casing", 4),
-		item("dimensional-bridge", 16),
-		item("uxv-circuit", 16),
-		item("uxv-sensor", 8),
-		item("eternity-superconductive-wire", 16),
-		item("superdense-neutronium-plate", 8),
-		fluid("molten-indalloy-140", 1000),
-		fluid("molten-universium", 576),
-		fluid("excited-dimensionally-transcendent-resplendent-catalyst", 1000),
+		item("dimensional-bridge", 64),
+		item("chromnorox-superconductive-wire", 64),
+		item("uiv-sensor", 32),
+		item("uiv-circuit", 64),
+		fluid("molten-indalloy-140", 29491.2),
+		fluid("thorium-plasma", 36864),
+		fluid("molten-transcendent-metal", 29491.2),
 	},
 }
 create_item{
 	name = GODFORGE,
-	category = "uxv-assembling-machine-recipes",
-	energy_required = 300 * UXV_SPEED,
+	category = "umv-assembling-machine-recipes",
+	energy_required = 300 * UMV_SPEED,
 	subgroup = SUBGROUP,
 	stack_size = 10,
 	place_result = GODFORGE,
@@ -116,16 +135,16 @@ create_item{
 		item("singularity-reinforced-stellar-shielding-casing", 64),
 		item("stellar-energy-siphon-casing", 8),
 		item("remote-graviton-flow-modulator", 4),
-		item("uxv-energy-hatch", 2),
-		item("uxv-machine-hull", 8),
+		item("uiv-energy-hatch", 2),
+		item("uiv-machine-hull", 8),
 	},
 }
 
---- 13x13, one UXV amp (2621.44 MW; the plasma forge takes one UMV amp), cloned from the MK5 like the
+--- 13x13, one UMV amp (1310.72 MW, as each fusion reactor takes one amp of its tier), cloned from the MK5 like the
 --- plasma forge: five fluid inputs north and one west, two outputs south
 F.clone_multiblock{
 	name = GODFORGE, source = "fusion-reactor-mk5", size = { 13, 13 }, categories = { GODFORGE_CAT },
-	speed = UXV_SPEED, energy = "2621.44MW", icon = data.raw.item[GODFORGE].icon, subgroup = SUBGROUP,
+	speed = UMV_SPEED, energy = "1310.72MW", icon = data.raw.item[GODFORGE].icon, subgroup = SUBGROUP,
 }
 do
 	local m = data.raw["assembling-machine"][GODFORGE]
@@ -154,9 +173,14 @@ end
 --- godforge burns it (or residue, or MHDCSM) as long as its modules run. Here the godforge makes it
 --- itself from hydrogen and helium with crude catalyst to ignite the star, and every godforge recipe
 --- burns STAR_FUEL per second of its time.
---- Plasma module (GT: 1 dust or 144 L of melt -> 144 L of plasma, 1 s for the first tier, 10 s for
---- naquadria): the three plasmas of the stellar catalyst. They have no fuel value (the turbines do not
---- burn them).
+--- Plasma module (GT: tectech/loader/recipe/Godforge.java, 1 dust or 144 L of melt -> 144 L of plasma): celestial
+--- tungsten (issue #355: GT's multi-step plasma of tier 0, 4 s at UXV, 184-225), which needs GT's module upgrades
+--- GPCI (the module connects) and TPTP (multi-step plasmas; godforge/util/GodforgeMath.java:295, 302-322; 17
+--- graviton shards on the cheapest path): the technology `godforge-plasma-module`. Its dust is GT++'s laser engraver
+--- recipe (gtPlusPlus/core/recipe/RecipesGregTech.java:809-818): 6 tungsten dust with the quantum anomaly as the lens,
+--- 3 min at UEV. After the stargate, the three plasmas of the stellar catalyst (GT's tier 1, which needs the SEDS
+--- upgrade: 1 s, 10 s for naquadria). Thorium and lead plasma
+--- have GT's fuel values (136, issues #375 and #397), naquadria plasma none.
 --------------------------------------------------------------------------------
 
 local STAR = "raw-star-matter"
@@ -166,7 +190,7 @@ F.fluid("lead-plasma", "medium-gray-fluid", { 0.55, 0.50, 0.65 })
 F.fluid("thorium-plasma", "dark-gray-spackled-fluid", { 0.35, 0.30, 0.30 })
 F.fluid("naquadria-plasma", "rich-green-fluid", { 0.30, 0.85, 0.40 })
 
-local godforge_recipes = { forge = {}, molten = {}, exotic = {} }
+local godforge_recipes = { plasma = {}, tier1 = {}, molten = {}, exotic = {} }
 --- A godforge recipe: `time` seconds in the godforge, plus its star fuel
 local function godforge_recipe(module, def)
 	local ingredients = def.ingredients
@@ -185,26 +209,41 @@ local function godforge_recipe(module, def)
 	godforge_recipes[module][#godforge_recipes[module] + 1] = def.name
 end
 
-godforge_recipe("forge", {
+godforge_recipe("plasma", {
 	name = STAR, time = 20, fuel = false,
 	ingredients = { fluid("hydrogen", 1000), fluid("helium", 1000),
 		fluid("excited-dimensionally-transcendent-crude-catalyst", 10) },
 	results = { fluid(STAR, 100) },
 })
-godforge_recipe("forge", {
+godforge_recipe("tier1", {
 	name = "lead-plasma", time = 1,
 	ingredients = { item("lead-ingot", 1) },
 	results = { fluid("lead-plasma", 144) },
 })
-godforge_recipe("forge", {
+godforge_recipe("tier1", {
 	name = "thorium-plasma", time = 1,
 	ingredients = { item("thorium-dust", 1) },
 	results = { fluid("thorium-plasma", 144) },
 })
-godforge_recipe("forge", {
+godforge_recipe("tier1", {
 	name = "naquadria-plasma", time = 10,
 	ingredients = { fluid("molten-naquadria", 144) },
 	results = { fluid("naquadria-plasma", 144) },
+})
+create_item{ skip_recipe = true, name = "celestial-tungsten-dust", subgroup = "subgroup-macerator-dust" }
+F.fluid("celestial-tungsten-plasma", "celestial-tungsten-plasma", { 0.53, 0.55, 0.55 })   -- (GT++'s plasma texture, lifted)
+create_recipe{
+	name = "celestial-tungsten-dust",
+	category = "uev-laser-engraver-recipes",
+	energy_required = 180 * UEV_SPEED,
+	ingredients = { item("tungsten-dust", 6), item("quantum-anomaly", 1) },
+	results = { item("celestial-tungsten-dust", 1), item("quantum-anomaly", 1) },
+	main_product = "celestial-tungsten-dust",
+}
+godforge_recipe("plasma", {
+	name = "celestial-tungsten-plasma", time = 4 * UXV_SPEED / UMV_SPEED,
+	ingredients = { item("celestial-tungsten-dust", 1) },
+	results = { fluid("celestial-tungsten-plasma", 144) },
 })
 
 
@@ -362,19 +401,41 @@ end
 
 
 --------------------------------------------------------------------------------
---- TECHNOLOGIES (MAX science, after the stargate; the unit counts are set in 138-fork-research-balance.lua)
+--- TECHNOLOGIES (the unit counts are set in 138-fork-research-balance.lua)
+---   * the godforge and its plasma module: UMV science, between the UIV and UMV energy hatches (issue #355); the
+---     godforge also unlocks the quantum anomaly, the chromatic lens and the resplendent catalyst (164 section 19),
+---     their first consumer
+---   * the molten and exotic modules, the stellar catalyst and the upgrades: MAX science, after the stargate
 --- `victory` is no prerequisite: it is an infinite technology, and Factorio counts those as researched for
 --- prerequisites only at their last level. The MAX packs come from the stargate, whose first 15 packs research
 --- the first level of `victory`.
 --------------------------------------------------------------------------------
 
 F.tech{
-	name = GODFORGE, prerequisites = { "stargate", "dtpf-resplendent-catalyst" }, packs = 15, count = 1,
-	recipes = F.join({ "stellar-energy-siphon-casing", "singularity-reinforced-stellar-shielding-casing",
-		"remote-graviton-flow-modulator", GODFORGE .. "-controller", GODFORGE }, godforge_recipes.forge),
+	--- (the UMV machines come after the UIV energy hatch and the plasma forge; the Mk-III precise assembler makes
+	--- the Hi-Computation Station Mk-V of the quantum anomaly)
+	name = GODFORGE, prerequisites = { "precise-electronic-unit-mk3", "umv-machines" }, packs = 13, count = 1,
+	recipes = { "stellar-energy-siphon-casing", "singularity-reinforced-stellar-shielding-casing",
+		"remote-graviton-flow-modulator", GODFORGE .. "-controller", GODFORGE },
 }
 F.tech{
-	name = "godforge-molten-module", prerequisites = { GODFORGE }, packs = 15, count = 1,
+	name = "godforge-plasma-module", prerequisites = { GODFORGE }, packs = 13, count = 1,
+	recipes = F.join({ "celestial-tungsten-dust" }, godforge_recipes.plasma),
+}
+--- the resplendent catalyst goes to the godforge (the quantum anomaly, 164); its tier of the forge's metals stays
+--- after the UXV multiblocks
+do
+	local t = data.raw.technology["dtpf-resplendent-catalyst"]
+	local keep = {}
+	for _, e in pairs(t.effects) do
+		if e.recipe ~= "excited-dimensionally-transcendent-resplendent-catalyst" then keep[#keep + 1] = e end
+	end
+	t.effects = keep
+	t.prerequisites[#t.prerequisites + 1] = GODFORGE
+	fork_add_unlock(GODFORGE, "excited-dimensionally-transcendent-resplendent-catalyst")
+end
+F.tech{
+	name = "godforge-molten-module", prerequisites = { "godforge-plasma-module", "stargate" }, packs = 15, count = 1,
 	recipes = godforge_recipes.molten,
 }
 F.tech{
@@ -382,8 +443,8 @@ F.tech{
 	recipes = F.join(F.join({}, godforge_recipes.exotic), { "molten-rhugnor-from-quark-gluon-plasma" }),
 }
 F.tech{
-	name = "dtpf-stellar-catalyst", prerequisites = { GODFORGE }, packs = 15, count = 1,
-	recipes = stellar_recipes,
+	name = "dtpf-stellar-catalyst", prerequisites = { "godforge-plasma-module", "stargate", "dtpf-resplendent-catalyst" },
+	packs = 15, count = 1, recipes = F.join(F.join({}, stellar_recipes), godforge_recipes.tier1),
 }
 
 --- GT's graviton shard upgrades (31 of them, 112 shards) as one infinite technology: each level gives the

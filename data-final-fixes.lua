@@ -191,6 +191,146 @@ for _, t in pairs({ "assembling-machine", "furnace", "rocket-silo" }) do
 	end
 end
 
+---SPACE AGE PLANETS AND SPACE PLATFORMS (issue #529)
+--- The maintainer's request: the Space Age planets are not part of Gregtorio's game. Its surfaces are Nauvis and the
+--- hidden planets of 165 (gt-nether, gt-twilight, gt-end), which copied what they take (Vulcanus' map generation for the
+--- Nether) before this file runs; the tiles, decoratives, noise expressions and the control vulcanus_volcanism stay.
+--- Deleted for good (FORK-REMOVED in the log): the planets and space locations below, every space connection that
+--- touches one, the technologies that only lead to them or to a space platform, and the platform starter pack (the
+--- maintainer's decision on #529: Gregtorio has no space platforms, #323 already deleted their recipes; the rocket silo no
+--- longer launches to one, the platform prototypes the engine and Space Age's other prototypes name stay, like #323's
+--- items); with them every reference a load would fail on: the achievements, tips and ambient sounds of a deleted
+--- location (a tip that depends on a deleted tip goes too), the main menu simulations on a deleted planet, a Factoriopedia
+--- simulation there (the entity keeps its page), an item's import location (Nauvis instead), a deleted technology as a
+--- prerequisite. #508's rule below then deletes the autoplace controls only the planets used. space-age stays a
+--- dependency: Gregtorio uses its prototypes (surface properties and conditions, quality, tiles, noise, items).
+local REMOVED_LOCATIONS = {
+	["vulcanus"] = "planet", ["gleba"] = "planet", ["fulgora"] = "planet", ["aquilo"] = "planet",
+	["solar-system-edge"] = "space-location", ["shattered-planet"] = "space-location",
+}
+local REMOVED_TECHS = {
+	"planet-discovery-vulcanus", "planet-discovery-gleba", "planet-discovery-fulgora", "planet-discovery-aquilo",
+	"space-platform", "space-platform-thruster", "rocket-silo",
+}
+local removed = {}   -- every deleted name a reference may hold: locations, connections, technologies
+for name, t in pairs(REMOVED_LOCATIONS) do
+	if data.raw[t] and data.raw[t][name] then
+		data.raw[t][name] = nil
+		removed[name] = true
+		log("FORK-REMOVED: " .. t .. " " .. name)
+	end
+end
+for name, c in pairs(data.raw["space-connection"] or {}) do
+	if removed[c.from] or removed[c.to] then
+		data.raw["space-connection"][name] = nil
+		removed[name] = true
+		log("FORK-REMOVED: space-connection " .. name)
+	end
+end
+for _, name in pairs(REMOVED_TECHS) do
+	local tech = data.raw.technology[name]
+	if tech and not (tech.icon and tech.icon:sub(1, 24) == "__gregtorio-continued__/") then
+		data.raw.technology[name] = nil
+		removed[name] = true
+		log("FORK-REMOVED: technology " .. name)
+	end
+end
+for _, tech in pairs(data.raw.technology) do
+	if tech.prerequisites then
+		local keep = {}
+		for _, p in pairs(tech.prerequisites) do if not removed[p] then keep[#keep + 1] = p end end
+		tech.prerequisites = keep
+	end
+	if tech.effects then
+		local keep = {}
+		for _, e in pairs(tech.effects) do if not removed[e.space_location] then keep[#keep + 1] = e end end
+		tech.effects = keep
+	end
+end
+--- the platform starter pack (no recipe since #323) and its recycling recipe; the rocket silo's rocket stays on Nauvis
+if data.raw["space-platform-starter-pack"] then
+	for name in pairs(data.raw["space-platform-starter-pack"]) do
+		data.raw["space-platform-starter-pack"][name] = nil
+		log("FORK-REMOVED: space-platform-starter-pack " .. name)
+		if data.raw.recipe[name .. "-recycling"] then
+			data.raw.recipe[name .. "-recycling"] = nil
+			log("FORK-REMOVED: recipe " .. name .. "-recycling")
+		end
+	end
+end
+for _, silo in pairs(data.raw["rocket-silo"] or {}) do silo.launch_to_space_platforms = false end
+--- true when a trigger (nested) names a deleted location, connection or technology
+local REFERENCE_KEYS = { surface = true, planet = true, technology = true, space_location = true, space_connection = true }
+local function names_removed(v)
+	if type(v) ~= "table" then return false end
+	for k, x in pairs(v) do
+		if (REFERENCE_KEYS[k] and removed[x]) or names_removed(x) then return true end
+	end
+	return false
+end
+for t, list in pairs(data.raw) do
+	if t:find("achievement", 1, true) then
+		for name, a in pairs(list) do
+			if removed[a.surface] or removed[a.tracked_connection] or removed[a.technology] then
+				list[name] = nil
+				log("FORK-REMOVED: " .. t .. " " .. name)
+			end
+		end
+	end
+end
+for name, s in pairs(data.raw["ambient-sound"] or {}) do
+	if removed[s.planet] then
+		data.raw["ambient-sound"][name] = nil
+		log("FORK-REMOVED: ambient-sound " .. name)
+	end
+end
+for _, list in pairs(data.raw) do
+	for _, proto in pairs(list) do
+		if type(proto) == "table" then
+			if removed[proto.default_import_location] then proto.default_import_location = nil end
+			if type(proto.factoriopedia_simulation) == "table" and removed[proto.factoriopedia_simulation.planet] then
+				proto.factoriopedia_simulation = nil
+			end
+		end
+	end
+end
+--- tips: those about a deleted location or technology and the space platform tips, then every tip that depends on one
+do
+	local tips = data.raw["tips-and-tricks-item"] or {}
+	local gone = {}
+	for name, tip in pairs(tips) do
+		if tip.category == "space-platform" or names_removed(tip.trigger) or names_removed(tip.skip_trigger)
+			or (tip.simulation and removed[tip.simulation.planet]) then
+			gone[name] = true
+		end
+	end
+	local more = true
+	while more do
+		more = false
+		for name, tip in pairs(tips) do
+			for _, dep in pairs(tip.dependencies or {}) do
+				if gone[dep] and not gone[name] then gone[name] = true; more = true end
+			end
+		end
+	end
+	for name in pairs(gone) do
+		tips[name] = nil
+		log("FORK-REMOVED: tips-and-tricks-item " .. name)
+	end
+	if data.raw["tips-and-tricks-item-category"] then data.raw["tips-and-tricks-item-category"]["space-platform"] = nil end
+end
+--- the main menu simulations that play on a deleted planet (their save holds its surface)
+do
+	local sims = data.raw["utility-constants"].default.main_menu_simulations or {}
+	for name, sim in pairs(sims) do
+		local planet = type(sim.init) == "string" and sim.init:match('game%.surfaces%["([^"]+)"%]')
+		if planet and removed[planet] then
+			sims[name] = nil
+			log("FORK-REMOVED: main menu simulation " .. name)
+		end
+	end
+end
+
 
 
 
@@ -199,15 +339,64 @@ data.raw["map-gen-presets"].default["gregtorio"] = {
 	basic_settings = {
 		peaceful_mode = true,
 		autoplace_controls = {
-			["iron-ore"] = { size = 0 },
-			["copper-ore"] = { size = 0 },
-			["coal"] = { size = 0 },
-			["stone"] = { size = 0 },
-			["crude-oil"] = { size = 0 },
-			["uranium-ore"] = { size = 0 },
+			--- issue #497: GTNH's map veins (prototypes/165-fork-ore-veins.lua) at the defaults of #495 (issue #508: the
+			--- vanilla resources' controls are gone, below)
+			["gt-ore-veins"] = { frequency = 1, size = 1, richness = 1 },
 		}
 	}
 }
+
+--- issue #508: the resource controls that nothing generates with any more (102 took the vanilla resources off every
+--- planet) are deleted with their entries in the map presets, so the map generator lists only what makes ore; issue
+--- #529: every control no planet lists any more (the deleted Space Age planets' resources, terrain, cliffs and enemies)
+--- goes the same way, and the prototypes that only those planets placed with it (Gleba's plants and spawners) lose
+--- their autoplace. A control whose sliders a noise expression or an autoplace still reads (var('control:<name>:size'):
+--- Vulcanus' lava keeps clear of its coal, tungsten and geyser regions) stays, hidden from the map generator: a surface
+--- keeps its map generation in the save and the load compiles its noise, so the Nether's copy of Vulcanus' terrain and a
+--- surface of a deleted planet in an old save fail to load ("Unknown variable") without it
+do
+	local used, read = {}, {}
+	for _, planet in pairs(data.raw.planet or {}) do
+		for name in pairs((planet.map_gen_settings or {}).autoplace_controls or {}) do used[name] = true end
+	end
+	local function scan(v)
+		if type(v) == "string" then
+			for name in v:gmatch("control:([%w_%-]+):") do read[name] = true end
+		elseif type(v) == "table" then
+			for _, x in pairs(v) do scan(x) end
+		end
+	end
+	scan(data.raw["noise-expression"] or {})
+	scan(data.raw["noise-function"] or {})
+	for _, list in pairs(data.raw) do
+		for _, proto in pairs(list) do
+			if type(proto) == "table" and type(proto.autoplace) == "table" then scan(proto.autoplace) end
+		end
+	end
+	for name, control in pairs(data.raw["autoplace-control"]) do
+		if not used[name] then
+			for _, preset in pairs(data.raw["map-gen-presets"].default) do
+				local settings = type(preset) == "table" and preset.basic_settings
+				if settings and settings.autoplace_controls then settings.autoplace_controls[name] = nil end
+			end
+			if read[name] then
+				control.hidden = true
+				log("FORK-HIDDEN: autoplace-control " .. name .. " (its sliders are read by noise)")
+			else
+				data.raw["autoplace-control"][name] = nil
+				log("FORK-REMOVED: autoplace-control " .. name)
+			end
+		end
+	end
+	for _, list in pairs(data.raw) do
+		for _, proto in pairs(list) do
+			if type(proto) == "table" and type(proto.autoplace) == "table" and proto.autoplace.control
+				and not data.raw["autoplace-control"][proto.autoplace.control] then
+				proto.autoplace = nil
+			end
+		end
+	end
+end
 
 
 -- Disable spawners
@@ -284,7 +473,6 @@ disable_trigger_tech("biochamber")
 disable_trigger_tech("bacteria-cultivation")
 disable_trigger_tech("artificial-soil")
 disable_trigger_tech("agriculture")
-disable_trigger_tech("space-platform")
 disable_trigger_tech("biter-egg-handling")
 
 
@@ -326,9 +514,7 @@ disable_tech("robotics")
 disable_tech("laser")
 disable_tech("uranium-mining")
 disable_tech("processing-unit")
-disable_tech("rocket-silo")
 disable_tech("nuclear-fuel-reprocessing")
-disable_tech("space-platform-thruster")
 disable_tech("kovarex-enrichment-process")
 disable_tech("asteroid-reprocessing")
 disable_tech("coal-liquefaction")
@@ -354,10 +540,6 @@ disable_tech("scrap-recycling-productivity")
 disable_tech("processing-unit-productivity")
 disable_tech("rocket-part-productivity")
 disable_tech("railgun")
-disable_tech("planet-discovery-fulgora")
-disable_tech("planet-discovery-gleba")
-disable_tech("planet-discovery-vulcanus")
-disable_tech("planet-discovery-aquilo")
 disable_tech("captivity")
 disable_tech("fish-breeding")
 disable_tech("carbon-fiber")
@@ -618,6 +800,9 @@ FORK_UNLOCK_TREE.apply(true)
 --- Fork: the recycling recipes get their technologies now that the vanilla ones are set and disabled
 --- (prototypes/157-fork-recycling.lua, issue #190)
 FORK_RECYCLING.unlock()
+--- Fork: the steam macerator runs copies of the LV macerator recipes without their byproducts, as GT's bronze machines
+--- (prototypes/101-fork-machines.lua, issue #447); after every unlock above
+fork_steam_categories()
 --- Fork: every Gregtorio recipe named after its product unless it has its own name (prototypes/fork-locale.lua, issue #230)
 FORK_LOCALE.name_recipes()
 require("prototypes.fork-menu-simulations")

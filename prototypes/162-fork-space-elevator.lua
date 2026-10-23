@@ -204,6 +204,11 @@ end
 ---     a 4x superconductor wire -> 4 wires; GT's Ore Drilling Plant IV -> the IV drilling rig (as the Void Miner I).
 --------------------------------------------------------------------------------
 
+--- issue #356: GT's thulium and tellurium ores of the Lutetium Asteroid, the mod's only GT source of them (thulium for the
+--- Naquadah Fuel Refinery, tellurium for lead plasma, #397); its tantalum and lutetium ores stay left out
+create_ore("raw-thulium", nil, "crushed-thulium", "thulium-dust", nil, "crushed-thulium", nil, nil, 1, false, false)
+create_ore("raw-tellurium", nil, "crushed-tellurium", "tellurium-dust", nil, "crushed-tellurium", nil, nil, 1, false, false)
+
 local TIERS = { "LV", "MV", "HV", "EV", "IV", "LuV", "ZPM", "UV", "UHV", "UEV", "UIV", "UMV", "UXV" }
 local TIER_OF = {}
 for i, t in ipairs(TIERS) do TIER_OF[t] = i end
@@ -350,7 +355,7 @@ local ASTEROIDS = {
 	{ "quartzAsteroid", "Quartz Asteroid", 1, "MV", "ZPM", 20, 80, 500, 7680, 10000, -- L358
 		{ { "raw-certus-quartz", 2250 }, { "raw-nether-quartz", 2250 } } },
 	{ "lutetiumAsteroid", "Lutetium Asteroid", 1, "IV", "UHV", 20, 80, 500, 30720, 10000, -- L378
-		{ { "raw-redstone", 5500 } } },
+		{ { "raw-tellurium", 1500 }, { "raw-thulium", 1000 }, { "raw-redstone", 5500 } } },   -- tellurium, thulium: #356
 	{ "siliconAsteroid", "Silicon Asteroid", 2, "HV", "LuV", 20, 80, 500, 30720, 9000, -- L399
 		{ { "raw-silicon", 4500 } } },
 	{ "phosphateAsteroid", "Phosphate Asteroid", 1, "IV", "UIV", 20, 150, 500, 30720, 13000, -- L419
@@ -368,7 +373,7 @@ local ASTEROIDS = {
 	{ "aluminiumLanthlineAsteroid", "Aluminium Lanthanide Asteroid", 1, "MV", "ZPM", 10, 80, 500, 7680, 10000, -- L543
 		{ { "raw-aluminium", 3500 }, { "raw-bauxite", 1500 }, { "raw-monazite", 2500 }, { "raw-bastnasite", 2500 } } },
 	{ "NetherOreAsteroid", "Nether Ore Asteroid", 1, "EV", "ZPM", 30, 110, 1000, 7680, 10000, -- L646
-		{ { "raw-nether-quartz", 3000 }, { "raw-sulfur", 3000 }, { "raw-certus-quartz", 2000 }, { "raw-firestone", 500 } } },
+		{ { "raw-nether-quartz", 3000 }, { "raw-sulfur", 3000 }, { "raw-certus-quartz", 2000 }, { "raw-firestone-ore", 500 } } },
 	{ "europiumAsteroid", "Europium Asteroid", 2, "ZPM", "UXV", 40, 120, 1000, 122880, 10000, -- L667
 		{ { "raw-ledox", 4000 }, { "callisto-ice-dust", 4000 }, { "raw-borax", 1500 } } },
 	{ "cosmicAsteroid", "Cosmic Asteroid", 2, "ZPM", "UXV", 10, 70, 500, 491520, 10000, -- L687
@@ -423,6 +428,31 @@ for _, a in ipairs(ASTEROIDS) do
 	end
 end
 
+--- Issue #489: GTNH's Draconic Core Ruin (SpaceMiningRecipes.java:941-960, with Draconic Evolution: module tier 3, the UHV to
+--- UIV drones, one pick, 100 s at UEV; weights 100 / 100 / 9800: the Draconic Core Schematic, a draconic core, a charged
+--- ZPM, which the mod does not have: left out), the first source of the schematic (164 section 40 makes both items). Its
+--- one pick is the item itself (not 64 of an ore as above): 1 % each per operation; only the UHV drone stays at UEV
+do
+	local tier = TIER_OF["UHV"]
+	local name = "space-mining-draconic-core-ruin-uhv"
+	create_recipe{
+		name = name,
+		category = "space-mining-3-recipes",
+		energy_required = 100,
+		subgroup = "subgroup-space-mining-3-recipes",
+		ingredients = { item(drones[tier], 1), item(CONSUMABLE[tier] .. "-drill-head", 4), item(CONSUMABLE[tier] .. "-rod", 4),
+			fluid("helium-plasma", 825) },
+		results = { item(drones[tier], 1), { type = "item", name = "draconic-core-schematic", amount = 1, probability = 0.01 },
+			{ type = "item", name = "draconic-core", amount = 1, probability = 0.01 } },
+		icon = FORK_ICON .. drones[tier] .. ".png",
+	}
+	local r = data.raw.recipe[name]
+	r.main_product = nil
+	r.allow_productivity = false
+	r.localised_name = { "recipe-name.fork-space-mining", "Draconic Core Ruin", "UHV" }
+	by_module[3][#by_module[3] + 1] = { name, tier }
+end
+
 --- Technologies: a chain by GT's tiers (module Mk-I UHV, Mk-II UEV, Mk-III UIV with the UIV drone, then the UMV and UXV
 --- drones); a mining recipe comes with the later of its module's and its drone's technology
 local MTECH = { "space-elevator-mining-module-mk1", "space-elevator-mining-module-mk2", "space-elevator-mining-module-mk3",
@@ -452,6 +482,9 @@ for i, name in ipairs(MTECH) do
 	for _, p in ipairs(MPRE[i]) do pre[#pre + 1] = p end
 	F.tech{ name = name, prerequisites = pre, packs = MPACKS[i], count = 50, time = 60, recipes = unlocks[i] }
 end
+--- issue #356: the crushing of the Lutetium Asteroid's new ores with its module (the rest of their chain follows, 155);
+--- issue #435: the Nether Ore Asteroid's firestone ore the same way
+for _, r in pairs({ "crushed-thulium", "crushed-tellurium", "crushed-firestone" }) do fork_add_unlock(MTECH[1], r) end
 
 
 --------------------------------------------------------------------------------
@@ -628,7 +661,8 @@ end
 --- (GT per 100: heavy oil 100, 45, 15, 60 in 40 ticks; light oil 7, 13, 20, 160 in 10 ticks; crude 30, 100, 40, 120 in 30;
 --- GT's naphthenic acid of the tower is left out, the mod has none), the distillery into one of the fuels, and the distillery
 --- into lubricant (GT: 12 L of heavy oil into 9, of light oil into 3, 16 ticks). They come with the pump module, the only
---- producer of these oils (#252's rule).
+--- producer of these oils (#252's rule); issue #361: the drilling rigs pump them too (164), so 164 moves them to crude
+--- oil's technologies (Oil Processing, Diesel).
 local CRUDE_TIME = 20   -- oil-distillation (crude oil, GT's 30 ticks)
 local OILS = {
 	--  fluid        GT ticks  heavy fuel  light fuel  naphtha  gas   lubricant per 40
@@ -669,4 +703,110 @@ for k, name in ipairs(pumps) do
 	for _, x in ipairs(PPRE[k]) do pre[#pre + 1] = x end
 	F.tech{ name = name, prerequisites = pre, packs = PPACKS[k], count = 50, time = 60,
 		recipes = k == 1 and F.join(F.join({ name }, pump_recipes), oil_recipes) or { name } }
+end
+
+
+--------------------------------------------------------------------------------
+--- Issue #485 (the maintainer's decision of 2026-10-21): GTNH's Singularity cell in the Space Elevator Assembler Module
+--- Mk-I. GT5-Unofficial ce1c416a64 and NewHorizonsCoreMod (NHC: com/dreammaster/gthandler/recipes).
+---   * The module (gtnhintergalactic recipe/MachineRecipes.java:354-373, the research assembly line, UEV, 120 s: a base
+---     casing, 4 UV assemblers, 4 UV circuit assemblers, 8 cosmic neutronium gears, 16 small ones, 8 UHV robot arms, 16 UHV
+---     conveyors, 32 HiC Mk-III, 16 UV circuits, 8 neutronium frames, 32 neutronium screws, 1296 L each of indalloy 140
+---     and naquadria, 16 000 L lubricant; GT's gear is the large gear here, its small gear the gear); module tier 1 at UHV,
+---     4 parallels (TileEntityModuleAssembler.java:271-292), with Mk-I motors like the mining module Mk-I.
+---   * The Singularity cell (SpaceAssemblerRecipes.java:422-434, module tier 1, UHV, 10 s): an eternal singularity, 12
+---     16384k components, 8 Quantum Chests V (GT's Quantum_Chest_IV, its tier 10), 4 infinity blocks, 4 infinity
+---     catalysts, 12 cosmic neutronium blocks, 2304 L UEV solder (GTNH's mutated living solder is indalloy 140 here, as in
+---     the module recipes above). It replaces 120's UHV assembler recipe.
+---   * The Quantum Chest V (NHC AssemblerRecipes.java:2525-2533: 4 UEV circuits, 3 americium plates, a UV field
+---     generator, the UEV chest buffer; LV, 5 s) and the UEV Chest Buffer (:2545-2553: the UEV conveyor, circuit and hull
+---     and a chest; HV, 5 s).
+---   * The blocks: GT's compressor, 9 ingots, 15 s at the material's tier (158's rule; Avaritia's infinity block and GT's
+---     cosmic neutronium block). The Infinity Catalyst: 64 of its dust in the neutronium compressor (NeutroniumCompressor
+---     Recipes.java:421-424, HV, 3 s): the HV compressor here, Gregtorio has no neutronium compressor.
+---   * The Eternal Singularity: GTNH's only recipe is the black hole compressor, 72 L molten spacetime, UMV, 100 s
+---     (NeutroniumCompressorRecipes.java:430-433); Gregtorio has no black hole compressor: the UMV compressor (a named
+---     stand-in, the maintainer's decision; the compressor's fluid input of #441).
+--- Technologies: the module after the Space Elevator, the HiC Mk-III, the UEV components, the UV machines and quantium
+--- (cosmic neutronium); ME Storage Singularity after it, the UMV machines and Fusion Plasmas MK5 (molten spacetime), the
+--- UEV components and bio processor mainframes (UEV circuits), with UMV science.
+--------------------------------------------------------------------------------
+if data.raw["item-with-tags"]["me-singularity-storage-cell"] then
+	local MOD = "space-elevator-assembler-module-mk1"
+	local T_MOD, T_CELL = MOD, "me-storage-singularity"
+	local R = {}
+	local function step(name, category, seconds, ingredients, results, main)
+		create_recipe{ name = name, category = category, energy_required = seconds, ingredients = ingredients,
+			results = results or { item(name, 1) }, main_product = main or name }
+		R[#R + 1] = name
+	end
+	for _, n in pairs({ "quantum-chest-v", "uev-chest-buffer", "block-of-infinity", "block-of-cosmic-neutronium",
+		"infinity-catalyst", "eternal-singularity" }) do
+		if not data.raw.item[n] then create_item{ skip_recipe = true, name = n, subgroup = SUBGROUP } end
+	end
+	step("uev-chest-buffer", "hv-assembling-machine-recipes", 5 * HV_SPEED,
+		{ item("uev-conveyor-module", 1), item("uev-circuit", 1), item("uev-machine-hull", 1), item("wooden-chest", 1) })
+	step("quantum-chest-v", "lv-assembling-machine-recipes", 5 * LV_SPEED,
+		{ item("uev-circuit", 4), item("americium-plate", 3), item("uv-field-generator", 1), item("uev-chest-buffer", 1) })
+	step("block-of-infinity", "uv-compressor-recipes", 15 * UV_SPEED, { item("infinity-ingot", 9) })
+	step("block-of-cosmic-neutronium", "zpm-compressor-recipes", 15 * ZPM_SPEED, { item("cosmic-neutronium-ingot", 9) })
+	step("infinity-catalyst", "hv-compressor-recipes", 3 * HV_SPEED, { item("infinity-catalyst-dust", 64) })
+	step("eternal-singularity", "umv-compressor-recipes", 100 * UMV_SPEED, { fluid("molten-spacetime", 7.2) })
+
+	--- the module (as the mining modules above: a fluid input north)
+	F.category("space-assembler-recipes")
+	local e = table.deepcopy(data.raw["assembling-machine"]["hv-chemical-reactor"])
+	e.name = MOD
+	e.icons = nil
+	e.icon = FORK_ICON .. MOD .. ".png"
+	e.icon_size = 32
+	e.minable = { mining_time = 1, result = MOD }
+	e.crafting_categories = { "space-assembler-recipes" }
+	e.crafting_speed = 4
+	e.energy_usage = EU16_UHV
+	e.next_upgrade = nil
+	e.fast_replaceable_group = nil
+	e.collision_box = { { -1.3, -1.3 }, { 1.3, 1.3 } }
+	e.selection_box = { { -1.5, -1.5 }, { 1.5, 1.5 } }
+	e.fluid_boxes = { {
+		production_type = "input", volume = 1000, pipe_covers = pipecoverspictures(), pipe_picture = assembler2pipepictures(),
+		pipe_connections = { { flow_direction = "input", direction = defines.direction.north, position = { 0, -1 } } },
+	} }
+	e.fluid_boxes_off_when_no_fluid_recipe = true
+	e.graphics_set = {
+		idle_animation = { layers = { { filename = SPRITE_PATH .. MOD .. "-idle.png", width = 96, height = 96,
+			frame_count = 1, shift = { 0, 0 } } } },
+		animation = { layers = { { filename = SPRITE_PATH .. MOD .. "-working.png", width = 96, height = 96,
+			frame_count = 1, shift = { 0, 0 } } } },
+	}
+	e.localised_description = { "entity-description." .. MOD }
+	data:extend({ e })
+	create_item{
+		name = MOD, icon = e.icon, place_result = MOD, subgroup = SUBGROUP, stack_size = 10,
+		category = AL, energy_required = 120 * UEV_SPEED,
+		ingredients = { item("space-elevator-base-casing", 1), item("uv-assembling-machine", 4), item("uv-circuit-assembler", 4),
+			item("large-cosmic-neutronium-gear", 8), item("cosmic-neutronium-gear", 16), item("uhv-robot-arm", 8),
+			item("uhv-conveyor-module", 16), item("hi-computation-station-mk3", 32), item("uv-circuit", 16),
+			item("neutronium-frame", 8), item("neutronium-screw", 32), fluid("molten-indalloy-140", 129.6),
+			fluid("molten-naquadria", 129.6), fluid("lubricant", 1600) },
+	}
+	data.raw["mod-data"]["fork-space-elevator"].data.modules[MOD] = { motor = 1 }
+	F.tech{ name = T_MOD, prerequisites = { "space-elevator", "precise-electronic-unit-mk2", "uev-components", "uv-machines",
+		"quantium" }, packs = 10, count = 50, time = 60, recipes = { MOD } }   -- (as the mining module Mk-I)
+
+	--- the Singularity cell
+	local cell = data.raw.recipe["me-singularity-storage-cell"]
+	cell.category = "space-assembler-recipes"
+	cell.energy_required = 10 * UHV_SPEED
+	cell.ingredients = { item("eternal-singularity", 1), item("me-16384k-storage-component", 12), item("quantum-chest-v", 8),
+		item("block-of-infinity", 4), item("infinity-catalyst", 4), item("block-of-cosmic-neutronium", 12),
+		fluid("molten-indalloy-140", 230.4) }
+	cell.subgroup = "fork-me-cells"
+	local t = data.raw.technology[T_CELL]
+	for _, p in pairs({ T_MOD, "umv-machines", "fusion-plasmas-mk5", "uev-components", "bio-processor-mainframes" }) do
+		table.insert(t.prerequisites, p)
+	end
+	t.unit.ingredients = table.deepcopy(data.raw.technology["umv-machines"].unit.ingredients)
+	t.unit.count = 95   -- (as the UMV technologies of 138)
+	for _, r in pairs(R) do fork_add_unlock(T_CELL, r) end
 end

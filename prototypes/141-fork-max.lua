@@ -288,10 +288,10 @@ F.tech{
 --- left out (139: the forge has none). Their materials do not exist in the mod; the substitutes:
 ---   space-time bending core, continuum ripper (kept)   the QFT coil casing, which the recipe returns
 ---   dense dark iron plate                               dense dark steel plate
----   32 dilithium                                        32 diamonds
 ---   universium nanite / magmatter nanite (kept)         superdense universium / magmatter plate
 ---   hexanite round                                      universium round
----   exquisite jasper, sapphire, opal                    exquisite red garnet, sodalite, lapis
+---   (issue #365: GT's exquisite jasper, sapphire and opal since #363 and #364; before, red garnet, sodalite, lapis;
+---   issue #373: GT's 32 dilithium since Neper's ores come from the Void Miner III; before, 32 diamonds)
 ---   stargate crystal slurry, primordial matter          raw star matter
 ---   energised tesseract, quantum anomaly                MAX field generator, gravi-star
 ---   chronic singularity                                 block of universium
@@ -316,7 +316,7 @@ local function max_recipe(name, category, seconds, ingredients, results)
 end
 local dtpf_max = {
 	max_recipe("timepiece", DTPF_CAT, 80,
-		{ item(CORE, 1), item("dense-dark-steel-plate", 1), item("diamond", 32), item("superdense-universium-plate", 1),
+		{ item(CORE, 1), item("dense-dark-steel-plate", 1), item("dilithium-gem", 32), item("superdense-universium-plate", 1),
 		  fluid(TIME, 14745.6), fluid(STELLAR, 10000) },
 		{ item("timepiece", 3), item(CORE, 1), fluid(SPACE, 14745.6) }),
 	max_recipe("time-to-space-conversion", DTPF_CAT, 10,
@@ -329,8 +329,8 @@ local dtpf_max = {
 		{ fluid(TIME, 58982.4), item(CORE, 1) }),
 	max_recipe("chipped-amalgatite", DTPF_CAT, 420,
 		{ item("superdense-magmatter-plate", 1), item("eternity-round", 64), item("magmatter-round", 64),
-		  item("universium-round", 64), item("exquisite-ruby", 64), item("exquisite-red-garnet", 64),
-		  item("exquisite-sodalite", 64), item("exquisite-lapis", 64), fluid("raw-star-matter", 500), fluid(STELLAR, 7200) },
+		  item("universium-round", 64), item("exquisite-ruby", 64), item("exquisite-jasper", 64),
+		  item("exquisite-sapphire", 64), item("exquisite-opal", 64), fluid("raw-star-matter", 500), fluid(STELLAR, 7200) },
 		{ item("chipped-amalgatite", 64), item("superdense-magmatter-plate", 1) }),
 }
 local harmony = max_recipe("temporal-harmony", QFT_CAT, 20,

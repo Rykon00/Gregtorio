@@ -157,6 +157,38 @@ for name, m in pairs(data.raw["assembling-machine"]) do
 	end
 end
 
+--- Issue #356: GT's chemical bath and laser engraver maps take 2 fluids in and give 2 out (gregtech/api/recipe/
+--- RecipeMaps.java: chemicalBathRecipes maxIO(2, 6, 2, 2), laserEngraverRecipes maxIO(4, 4, 2, 2); the netherite chain's
+--- extraction and crystallization use them): the 3x3 baths get a second input (north) and output (south), the 3x3
+--- laser engravers two outputs (south), on the free tiles of their sides.
+local function add_port(m, src, kind, direction, x, y)
+	local b = table.deepcopy(src)
+	b.production_type = kind
+	for _, pc in pairs(b.pipe_connections) do
+		pc.flow_direction = kind
+		pc.direction = direction
+		pc.position = { x, y }
+	end
+	m.fluid_boxes[#m.fluid_boxes + 1] = b
+end
+for _, m in pairs(data.raw["assembling-machine"]) do
+	local bath, engraver = false, false
+	for _, c in pairs(m.crafting_categories or {}) do
+		if c:match("%-chemical%-bath%-recipes$") then bath = true end
+		if c:match("%-laser%-engraver%-recipes$") then engraver = true end
+	end
+	local h = m.selection_box and m.selection_box[2][2]
+	if h == 1.5 and m.fluid_boxes and #m.fluid_boxes == 2 then
+		if bath then
+			add_port(m, m.fluid_boxes[1], "input", defines.direction.north, 1, -1)
+			add_port(m, m.fluid_boxes[2], "output", defines.direction.south, -1, 1)
+		elseif engraver then
+			add_port(m, m.fluid_boxes[1], "output", defines.direction.south, -1, 1)
+			add_port(m, m.fluid_boxes[1], "output", defines.direction.south, 1, 1)
+		end
+	end
+end
+
 
 
 --------------------------------------------------------------------------------
@@ -593,7 +625,7 @@ end
 ---    LV autoclave category (the MV autoclave runs it too). Machine recipe as GT's (MTERecipeLoader.java
 ---    registerAutoclave, "IGI", "IMI", "CPC": 4 plates of the tier (steel), 2 glass, the hull, 2 circuits, a pump). Power
 ---    EU24 as the MV autoclave's class. With Extractor, the technology of the LV pump. Sprites: tools/gen_sprites.py
----    (autoclave_lv, the MV autoclave in the LV casing colours).
+---    (lv_from_mv, the MV autoclave in the LV casing colours).
 --------------------------------------------------------------------------------
 
 make_electric_machine("lv-autoclave", "lv-autoclave", "lv-autoclave", { "lv-autoclave-recipes" }, "fr-autoclave", EU24_LV, 1, 1, 0.5, 3, 3, {
@@ -621,14 +653,451 @@ data.raw["assembling-machine"]["lv-autoclave"].next_upgrade = "mv-autoclave"
 
 
 --------------------------------------------------------------------------------
+--- 2k) LV COMBUSTION GENERATOR, LV EXTRUDER AND LV PRECISION LASER ENGRAVER (issue #449)
+---    GT New Horizons has them at LV (LoaderMetaTileEntities.java: "Basic Combustion Generator", 95 % efficiency;
+---    "Basic Extruder"; "Basic Precision Laser Engraver"); upstream starts them at MV. Machine recipes as GT's
+---    (MTERecipeLoader.java): the extruder "CCE", "XMP", "CCE" (4 double heating coils: 16 copper wires here as the MV
+---    one's 16 cupronickel wires, the piston, 2 circuits, the pipe, the hull; the mold upstream's MV recipe has, which
+---    gives the machine its mold slot in 150), the engraver "PEP", "CMC", "WCW" (2 pistons, the emitter, 3 circuits, 2
+---    cables, the hull), the generator "PCP", "EME", "GWG" (2 pistons, a circuit, 2 motors, the hull, a tin cable, 2 steel
+---    gears). Power half the MV machine's, speed 1.
+---    The LV categories hold the recipes GT runs at up to 32 EU/t, and every machine of the MV category runs them too
+---    (fork_lv_machine_categories(), called by 199 after every file that makes machines):
+---      * extruder: GT's extruder takes 8 x 15 = 120 EU/t (rods and wires 6 x 15) for a metal (ProcessingShaping.java:49),
+---        so no extruder recipe of the mod is LV; the LV extruder gets GT's one LV recipe of an item the mod has, the
+---        aluminium rod (2 per ingot, 10 s, 2 x 15 EU/t, ProcessingShaping.java:283-290), and comes with it (Aluminium);
+---      * laser engraver: the chipped -> flawed gem step (LV, ProcessingGem.java:313-318; 155's ENGRAVE) and the ULPIC
+---        wafer from a silicon wafer (LV, LaserEngraverRecipes.java:362-367); the engraver comes with its emitter
+---        (Circuit Assembler);
+---      * the generator burns the combustion fuel cells; it comes with the first one of LV, the Bio Diesel Cell
+---        (Fermentation).
+---    Sprites: tools/gen_sprites.py (lv_from_mv: the MV pictures in the LV casing colours; the LV extruder and generator
+---    icons are upstream's).
+--------------------------------------------------------------------------------
+
+--- (upstream defines the LV extruder category without a recipe in it, 05)
+recipe_category_and_subgroup("lv-laser-engraver-recipes")
+
+make_electric_machine("lv-extruder", "lv-extruder", "lv-extruder", { "lv-extruder-recipes" }, "fr-extruder", EU16_LV, 1, 5, 0.5, 3, 3)
+create_item{
+	name = "lv-extruder",
+	subgroup = "lv-age-production-machine",
+	ingredients = {
+		{ type = "item", name = "lv-piston", amount = 1 },
+		{ type = "item", name = "copper-wire", amount = 16 },
+		{ type = "item", name = "pipe", amount = 1 },
+		{ type = "item", name = "electronic-circuit", amount = 2 },
+		{ type = "item", name = "lv-machine-hull", amount = 1 },
+		{ type = "item", name = "mold", amount = 1 },
+	},
+	place_result = "lv-extruder",
+	stack_size = 10,
+}
+data.raw["assembling-machine"]["lv-extruder"].next_upgrade = "mv-extruder"
+create_recipe{
+	recipe_name = "aluminium-rod-extruder",
+	category = "lv-extruder-recipes",
+	energy_required = 10 * LV_SPEED,
+	ingredients = { { type = "item", name = "aluminium-ingot", amount = 1 } },
+	results = { { type = "item", name = "aluminium-rod", amount = 2 } },
+	main_product = "aluminium-rod",
+}
+fork_add_unlock("aluminium", "lv-extruder")
+fork_add_unlock("aluminium", "aluminium-rod-extruder")
+
+make_electric_machine("lv-laser-engraver", "lv-laser-engraver", "lv-laser-engraver", { "lv-laser-engraver-recipes" }, "fr-laser-engraver", EU30_LV, 1, 16, 0.5, 3, 3, {
+	fluid_port(-1, -1, "input", defines.direction.north),
+	fluid_port( 1, -1, "input", defines.direction.north)
+})
+create_item{
+	name = "lv-laser-engraver",
+	subgroup = "lv-age-production-machine",
+	ingredients = {
+		{ type = "item", name = "lv-piston", amount = 2 },
+		{ type = "item", name = "electronic-circuit", amount = 3 },
+		{ type = "item", name = "lv-emitter", amount = 1 },
+		{ type = "item", name = "tin-cable", amount = 2 },
+		{ type = "item", name = "lv-machine-hull", amount = 1 },
+	},
+	place_result = "lv-laser-engraver",
+	stack_size = 10,
+}
+data.raw["assembling-machine"]["lv-laser-engraver"].next_upgrade = "mv-laser-engraver"
+fork_add_unlock("circuit-assembler", "lv-laser-engraver")
+data.raw.recipe["ulpic-wafer-sw"].category = "lv-laser-engraver-recipes"
+
+create_burner_generator{
+	name = "lv-combustion-generator",
+	efficiency = 0.95,
+	fuel_categories = { "combustion-generator-fuel" },
+	max_power = EU32_LV,
+}
+create_item{
+	name = "lv-combustion-generator",
+	place_result = "lv-combustion-generator",
+	stack_size = 10,
+	ingredients = {
+		{ type = "item", name = "lv-piston", amount = 2 },
+		{ type = "item", name = "electronic-circuit", amount = 1 },
+		{ type = "item", name = "lv-motor", amount = 2 },
+		{ type = "item", name = "lv-machine-hull", amount = 1 },
+		{ type = "item", name = "tin-cable", amount = 1 },
+		{ type = "item", name = "steel-gear", amount = 2 },
+	},
+}
+for _, name in pairs({ "lv-combustion-generator", "mv-combustion-generator" }) do
+	data.raw["burner-generator"][name].fast_replaceable_group = "fr-combustion-generator"
+end
+data.raw["burner-generator"]["lv-combustion-generator"].next_upgrade = "mv-combustion-generator"
+--- (unlocked with Fermentation in 164, which makes that technology)
+
+--- every machine that runs an MV category of these runs its LV one too (called by 199)
+function fork_lv_machine_categories()
+	for _, t in pairs({ "assembling-machine", "furnace" }) do
+		for _, e in pairs(data.raw[t] or {}) do
+			for _, base in pairs({ "extruder", "laser-engraver" }) do
+				local mv, lv, has_mv, has_lv = "mv-" .. base .. "-recipes", "lv-" .. base .. "-recipes", false, false
+				for _, c in pairs(e.crafting_categories or {}) do
+					has_mv = has_mv or c == mv
+					has_lv = has_lv or c == lv
+				end
+				if has_mv and not has_lv then table.insert(e.crafting_categories, 1, lv) end
+			end
+		end
+	end
+end
+
+
+
+--------------------------------------------------------------------------------
+--- 2l) THE STEAM MACHINES AS GT'S BRONZE MACHINES (issue #447)
+---    GT5-Unofficial's bronze (and high pressure) machines look a recipe up with the items of their slots only and at LV
+---    voltage, and keep its first output (MTEBasicMachineBronze.checkRecipe: findRecipeQuery().items(...).voltage(
+---    TierEU.LV), mOutputItems[0] = rollOutput(0)): a recipe of up to 32 EU/t, no fluid, no byproduct. Gregtorio's LV
+---    categories hold recipes of up to 32 EU/t, and the steam machines have no fluid box but the steam, so the alloy
+---    smelter, compressor, forge hammer and extractor keep their LV category (every item recipe there has one result).
+---    The steam macerator gets its own category, `steam-macerator-recipes`: a copy of every item recipe of the LV
+---    macerator with its first result (the main product), unlocked with the original; the LV and higher macerators keep
+---    the LV recipes with their byproducts. Recycling stays with the electric macerators. The copies are made by
+---    fork_steam_categories() at the end of data-final-fixes.lua, after every file that makes or moves a macerator
+---    recipe or its unlock, so until then the steam macerator counts as a machine of the LV category (155's unlocks). The
+---    steam category is in 198's FORK_CRAFTING_MENU_HIDDEN: the menu shows the LV recipe.
+--------------------------------------------------------------------------------
+
+data:extend({ { type = "recipe-category", name = "steam-macerator-recipes" } })
+FORK_STEAM_MACHINES = { macerator = { "steam-macerator" } }   -- (the high pressure macerator of #446 joins)
+
+function fork_steam_categories()
+	local tech_of = {}
+	for tname, t in pairs(data.raw.technology) do
+		for _, e in pairs(t.effects or {}) do
+			if e.type == "unlock-recipe" then
+				tech_of[e.recipe] = tech_of[e.recipe] or {}
+				table.insert(tech_of[e.recipe], tname)
+			end
+		end
+	end
+	local function items_only(list)
+		for _, i in pairs(list or {}) do
+			if i.type == "fluid" then return false end
+		end
+		return true
+	end
+	local names = {}
+	for name, r in pairs(data.raw.recipe) do
+		if r.category == "lv-macerator-recipes" and not r.hidden and not name:match("^recycling%-")
+			and items_only(r.ingredients) and items_only(r.results) and r.results and #r.results > 0 then
+			names[#names + 1] = name
+		end
+	end
+	table.sort(names)
+	local copies = {}
+	for _, name in pairs(names) do
+		local r = data.raw.recipe[name]
+		local first = r.results[1]
+		for _, res in pairs(r.results) do
+			if res.name == r.main_product then first = res end
+		end
+		local c = table.deepcopy(r)
+		c.name = "steam-" .. name
+		c.category = "steam-macerator-recipes"
+		c.results = { table.deepcopy(first) }
+		c.main_product = first.name
+		c.hide_from_player_crafting = true
+		c.localised_name = r.localised_name or { "?", { "recipe-name." .. name }, { "item-name." .. first.name } }
+		if data.raw.recipe[c.name] then error("101: the steam macerator's copy " .. c.name .. " exists already") end
+		copies[#copies + 1] = c
+		for _, tname in pairs(tech_of[name] or {}) do
+			table.insert(data.raw.technology[tname].effects, { type = "unlock-recipe", recipe = c.name })
+		end
+	end
+	data:extend(copies)
+	for _, m in pairs(FORK_STEAM_MACHINES.macerator) do
+		local e = data.raw["assembling-machine"][m]
+		if e then e.crafting_categories = { "steam-macerator-recipes" } end
+	end
+	log("FORK-STEAM: " .. #copies .. " LV macerator recipes copied for the steam macerators without their byproducts (issue #447)")
+end
+
+
+
+--------------------------------------------------------------------------------
+--- 2m) GT NEW HORIZONS' STEAM AGE (issue #446): the high pressure tier, the steam furnace, the lava and solar boilers.
+---    Names of GT5-Unofficial's en_US.lang (gt.blockmachines.boiler.*, bronzemachine.furnace, hpmachine.*); recipes of
+---    MTERecipeLoader.java:2786-2885 with Gregtorio's parts: the mod's pipe for GT's small bronze, cast iron and steel
+---    pipes (its steam machines take it for the bronze one), the hulls as their plates (Hull_Bronze_Bricks: 5 bronze
+---    plates and 3 bricks; Hull_HP: 8 steel plates), its storage tank for BuildCraft's tank, the iron furnace for the
+---    blast furnace of the boilers (as the small coal boiler's recipe).
+---    Units: a steam unit is 100 GT litres (100 kJ; the small coal boiler's 36 kW give 1.2 a second = GT's 120 L/s), 1
+---    EU/t is 40 kW of steam (GT: 2 L of steam per EU; Gregtorio's steam machines: "2 MB/t" = 40 kW).
+---    * High pressure machines (MTEBasicMachineSteel, SteamOverclockDescriber(STEEL, 2, 1)): twice the EU of the bronze
+---      machine at its full speed, so speed 1 and twice its power here; the bronze machine, cast iron plates, a steel
+---      plate and pipes. The macerator runs the steam category of #447 (FORK_STEAM_MACHINES).
+---    * Steam Furnace (MTESteamFurnaceBronze: furnace recipes, 4 EU/t, 256 ticks; Steel: 8 EU/t, 128 ticks): a furnace
+---      of the smelting category at 10 s / 12.8 s = 0.78125 (1.5625), 160 kW (320 kW).
+---    * Large Coal Boiler (MTEBoilerSteel: 300 L/s against the small coal boiler's 120): the small coal boiler with 90 kW.
+---    * Reinforced Lava Boiler (MTEBoilerLava: 600 L/s from 9 L of lava a second, 1 energy per litre, 3 per heat-up every
+---      20 ticks): 6 steam a second from 6 water and 0.9 lava (a tenth of GT's litres).
+---    * Simple and Advanced Solar Boiler (MachineStats: 120 and 360 L/s at most): 1.2 and 3.6 steam a second from water
+---      while the sun shines; scripts/fork-steam-boilers.lua stops them at night (the sun is there: Gregtorio removed the
+---      solar panel, not the day). GT's calcification (the output falls after 15 hours of work) is left out.
+---    Technologies: the high pressure machines and the Large Coal Boiler with the new High Pressure Steam (after Steel
+---    Processing: steel and cast iron plates, and the steam machines), the Steam Furnace with Steam Alloy Smelter, the
+---    lava boiler with Oil Gathering (its lava), the Simple Solar Boiler with MV Machines (double silver plates), the
+---    Advanced one with Reinforced Glass. Sprites: tools/gen_sprites.py (steam_age).
+--------------------------------------------------------------------------------
+
+do
+	--- the high pressure steam machines and the steam furnaces
+	local HP = {   -- bronze machine, category, fast replace group, bronze power, frames, animation speed, cast iron plates, pipes
+		{ "alloy-smelter", "lv-alloy-smelter-recipes", "fr-alloy-smelter", 320, 1, 1, 6, 1 },
+		{ "compressor", "lv-compressor-recipes", "fr-compressor", 40, 9, 0.5, 2, 5 },
+		{ "forge-hammer", "lv-forge-hammer-recipes", "fr-forge-hammer", 320, 5, 0.5, 5, 2 },
+		{ "macerator", "lv-macerator-recipes", "fr-macerator", 40, 6, 0.5, 5, 2 },
+		{ "extractor", "lv-extractor-recipes", "fr-extractor", 40, 5, 0.5, 2, 5 },
+		{ "furnace", "smelting", "fr-steam-furnace", 160, 1, 0.5, 2, 5 },
+	}
+	make_steam_machine("steam-furnace", "steam-furnace", "smelting", "fr-steam-furnace", "160kW", 1, 0.5)
+	create_item{
+		name = "steam-furnace",
+		subgroup = "steam-age-production-machine",
+		place_result = "steam-furnace",
+		stack_size = 10,
+		ingredients = {
+			{ type = "item", name = "pipe", amount = 7 },
+			{ type = "item", name = "bronze-plate", amount = 5 },
+			{ type = "item", name = "brick-block", amount = 3 },
+			{ type = "item", name = "stone-furnace", amount = 1 },
+		},
+	}
+	fork_add_unlock("steam-alloy-smelter", "steam-furnace")
+	local hp_recipes = {}
+	for _, m in pairs(HP) do
+		local bronze, name = "steam-" .. m[1], "hp-steam-" .. m[1]
+		make_steam_machine(name, name, m[2], m[3], (2 * m[4]) .. "kW", m[5], m[6])
+		data.raw["assembling-machine"][name].crafting_speed = 1
+		data.raw["assembling-machine"][bronze].next_upgrade = name
+		create_item{
+			name = name,
+			subgroup = "steam-age-production-machine",
+			place_result = name,
+			stack_size = 10,
+			ingredients = {
+				{ type = "item", name = bronze, amount = 1 },
+				{ type = "item", name = "cast-iron-plate", amount = m[7] },
+				{ type = "item", name = "steel-plate", amount = 1 },
+				{ type = "item", name = "pipe", amount = m[8] },
+			},
+		}
+		hp_recipes[#hp_recipes + 1] = name
+	end
+	table.insert(FORK_STEAM_MACHINES.macerator, "hp-steam-macerator")
+	--- upgrades of the bronze machines, never the first machine of a category: 155's unlocks leave them out
+	FORK_MACHINES_NOT_FIRST = FORK_MACHINES_NOT_FIRST or {}
+	for _, r in pairs(hp_recipes) do FORK_MACHINES_NOT_FIRST[r] = true end
+	--- the furnaces are furnaces (they pick the smelting recipe themselves)
+	for _, f in pairs({ { "steam-furnace", 0.78125 }, { "hp-steam-furnace", 1.5625 } }) do
+		local e = data.raw["assembling-machine"][f[1]]
+		data.raw["assembling-machine"][f[1]] = nil
+		e.type = "furnace"
+		e.crafting_speed = f[2]
+		e.source_inventory_size = 1
+		e.result_inventory_size = 1
+		data:extend({ e })
+	end
+	data.raw.furnace["steam-furnace"].next_upgrade = "hp-steam-furnace"
+
+	--- the Large Coal Boiler
+	local b = table.deepcopy(data.raw.boiler["small-coal-boiler"])
+	b.name = "large-coal-boiler"
+	b.icon = "__gregtorio-continued__/graphics/icons/large-coal-boiler.png"
+	b.minable = { mining_time = 0.3, result = "large-coal-boiler" }
+	b.energy_consumption = "90kW"
+	b.fluid_box.volume = 500
+	b.output_fluid_box.volume = 500
+	for _, dir in pairs({ "north", "east", "south", "west" }) do
+		for _, layer in pairs(b.pictures[dir].structure.layers) do
+			layer.filename = "__gregtorio-continued__/graphics/entity/large-coal-boiler/large-coal-boiler.png"
+		end
+	end
+	b.fast_replaceable_group = "fr-coal-boiler"
+	data.raw.boiler["small-coal-boiler"].fast_replaceable_group = "fr-coal-boiler"
+	data.raw.boiler["small-coal-boiler"].next_upgrade = "large-coal-boiler"
+	data:extend({ b })
+	create_item{
+		name = "large-coal-boiler",
+		subgroup = "energy",
+		place_result = "large-coal-boiler",
+		stack_size = 10,
+		ingredients = {
+			{ type = "item", name = "steel-plate", amount = 5 },
+			{ type = "item", name = "brick-block", amount = 2 },
+			{ type = "item", name = "iron-furnace", amount = 1 },
+		},
+	}
+	hp_recipes[#hp_recipes + 1] = "large-coal-boiler"
+	data:extend({ {
+		type = "technology",
+		name = "high-pressure-steam",
+		icon = "__gregtorio-continued__/graphics/technology/nyi.png",
+		icon_size = 256,
+		effects = {},
+		prerequisites = { "steel-processing", "steam-extractor", "steam-alloy-smelter" },
+		unit = { count = 40, ingredients = { { "automation-science-pack", 1 } }, time = 30 },
+	} })
+	for _, r in pairs(hp_recipes) do fork_add_unlock("high-pressure-steam", r) end
+
+	--- the lava and solar boilers: machines with their one recipe and no power (GT's boilers burn lava or take sunlight)
+	local function boiler_machine(name, category, ports, ingredients, steam, tech, item_ingredients)
+		recipe_category_and_subgroup(category)
+		make_electric_machine(name, name, name, { category }, "fr-" .. name, "1kW", 1, 1, 0.5, 3, 3, ports)
+		local e = data.raw["assembling-machine"][name]
+		e.energy_source = { type = "void" }
+		e.fixed_recipe = name .. "-steam"
+		create_recipe{
+			recipe_name = name .. "-steam",
+			category = category,
+			energy_required = 1,
+			ingredients = ingredients,
+			results = { { type = "fluid", name = "steam", amount = steam, temperature = 165 } },
+			main_product = "steam",
+		}
+		create_item{
+			name = name,
+			subgroup = "energy",
+			place_result = name,
+			stack_size = 10,
+			ingredients = item_ingredients,
+		}
+		fork_add_unlock(tech, name)
+		fork_add_unlock(tech, name .. "-steam")
+	end
+	local function water_in() return fluid_port(-1, 1, "input", defines.direction.south) end
+	local function steam_out() return fluid_port(0, -1, "output", defines.direction.north) end
+	boiler_machine("reinforced-lava-boiler", "lava-boiler-recipes",
+		{ water_in(), fluid_port(1, 1, "input", defines.direction.south), steam_out() },
+		{ { type = "fluid", name = "water", amount = 6 }, { type = "fluid", name = "lava", amount = 0.9 } }, 6, "oil-gathering",
+		{ { type = "item", name = "steel-plate", amount = 15 }, { type = "item", name = "storage-tank", amount = 1 } })
+	boiler_machine("simple-solar-boiler", "simple-solar-boiler-recipes", { water_in(), steam_out() },
+		{ { type = "fluid", name = "water", amount = 1.2 } }, 1.2, "mv-machines",
+		{ { type = "item", name = "glass", amount = 3 }, { type = "item", name = "double-silver-plate", amount = 3 },
+			{ type = "item", name = "pipe", amount = 2 }, { type = "item", name = "bronze-plate", amount = 5 },
+			{ type = "item", name = "brick-block", amount = 3 } })
+	boiler_machine("advanced-solar-boiler", "advanced-solar-boiler-recipes", { water_in(), steam_out() },
+		{ { type = "fluid", name = "water", amount = 3.6 } }, 3.6, "reinforced-glass",
+		{ { type = "item", name = "simple-solar-boiler", amount = 1 }, { type = "item", name = "reinforced-glass", amount = 3 },
+			{ type = "item", name = "double-cast-iron-plate", amount = 2 }, { type = "item", name = "triple-silver-plate", amount = 1 },
+			{ type = "item", name = "pipe", amount = 2 } })
+	data.raw["assembling-machine"]["advanced-solar-boiler"].fast_replaceable_group = "fr-simple-solar-boiler"
+	data.raw["assembling-machine"]["simple-solar-boiler"].next_upgrade = "advanced-solar-boiler"
+	data:extend({ { type = "mod-data", name = "fork-solar-boilers", data = { names = { "simple-solar-boiler", "advanced-solar-boiler" } } } })
+end
+
+
+
+--------------------------------------------------------------------------------
+--- 2j) BREWERY AND FERMENTER, LV TO EV (issue #360, the revisit of #155's "leave for now")
+---    GT New Horizons' Basic Brewery (LoaderMetaTileEntities.java:1910, recipe map brewingRecipes) and Basic Fermenter
+---    (:2748, fermentingRecipes), one item and one fluid slot in and a fluid out; 164-fork-chemistry.lua makes their
+---    recipes (lubricant and biomass in the brewery, fermented biomass in the fermenter; GT's potions are n/a). Machine
+---    recipes as GT's: the Brewery "GPG", "WMW", "CBC" (MTERecipeLoader.java:3366-3400: 2 glass, the pump, 2 cables, the
+---    hull, 2 circuits; GT's brewing stand, Minecraft's, is left out), the Fermenter "WPW", "GMG", "WCW"
+---    (registerFermenter: 4 cables, the pump, 2 glass, the hull, a circuit). Power: GT's 4 and 2 EU/t at LV, doubled per
+---    tier like the other machines. LV with Fermentation (164), MV to EV with the machines of their tier. Sprites:
+---    tools/gen_sprites.py (brewery_lv_mv: the assembling machine's frame with GT's potion brewer front; fermenter_lv_mv: the
+---    fluid solidifier's frame with GT's fermenter front); IV to MAX through IV_BASIC_MACHINES.
+--------------------------------------------------------------------------------
+
+recipe_category_and_subgroup("lv-brewery-recipes")
+recipe_category_and_subgroup("lv-fermenter-recipes")
+do
+	local TIERS_360 = {
+		--  tier  path tier  brewery   fermenter  speed  cable             circuit
+		{ "lv", "lv",  "80kW",  "40kW",  1, "tin-cable",       "electronic-circuit" },
+		{ "mv", "mv",  "160kW", "80kW",  2, "copper-cable",    "advanced-circuit" },
+		{ "hv", "mv",  "320kW", "160kW", 4, "gold-cable",      "processing-unit" },
+		{ "ev", "mv",  "640kW", "320kW", 8, "aluminium-cable", "ev-circuit" },
+	}
+	local TECH_OF = { lv = "fermentation", mv = "mv-machines", hv = "hv-machines", ev = "ev-machines" }
+	for _, a in ipairs(TIERS_360) do
+		local t, pt, e_brew, e_ferm, speed, cable, circuit = table.unpack(a)
+		local ports = {
+			fluid_port(0, -1, "input", defines.direction.north),
+			fluid_port(0, 1, "output", defines.direction.south),
+		}
+		make_electric_machine(t .. "-brewery", t .. "-brewery", pt .. "-brewery", { "lv-brewery-recipes" }, "fr-brewery",
+			e_brew, speed, 1, 0.5, 3, 3, ports)
+		make_electric_machine(t .. "-fermenter", t .. "-fermenter", pt .. "-fermenter", { "lv-fermenter-recipes" },
+			"fr-fermenter", e_ferm, speed, 1, 0.5, 3, 3, ports)
+		create_item{
+			name = t .. "-brewery",
+			subgroup = t .. "-age-production-machine",
+			ingredients = {
+				{ type = "item", name = "glass", amount = 2 },
+				{ type = "item", name = t .. "-pump", amount = 1 },
+				{ type = "item", name = cable, amount = 2 },
+				{ type = "item", name = t .. "-machine-hull", amount = 1 },
+				{ type = "item", name = circuit, amount = 2 },
+			},
+			place_result = t .. "-brewery",
+			stack_size = 10,
+		}
+		create_item{
+			name = t .. "-fermenter",
+			subgroup = t .. "-age-production-machine",
+			ingredients = {
+				{ type = "item", name = cable, amount = 4 },
+				{ type = "item", name = t .. "-pump", amount = 1 },
+				{ type = "item", name = "glass", amount = 2 },
+				{ type = "item", name = t .. "-machine-hull", amount = 1 },
+				{ type = "item", name = circuit, amount = 1 },
+			},
+			place_result = t .. "-fermenter",
+			stack_size = 10,
+		}
+		if TECH_OF[t] ~= "fermentation" then
+			fork_add_unlock(TECH_OF[t], t .. "-brewery")
+			fork_add_unlock(TECH_OF[t], t .. "-fermenter")
+		end
+	end
+	for _, m in pairs({ "brewery", "fermenter" }) do
+		data.raw["assembling-machine"]["lv-" .. m].next_upgrade = "mv-" .. m
+		data.raw["assembling-machine"]["mv-" .. m].next_upgrade = "hv-" .. m
+		data.raw["assembling-machine"]["hv-" .. m].next_upgrade = "ev-" .. m
+	end
+end
+
+
+
+--------------------------------------------------------------------------------
 --- 2k) CAULDRON (issue #427)
 ---    GT New Horizons' early, byproduct-free washing: an impure or pure dust dropped into a filled cauldron becomes the
 ---    dust (MetaGeneratedItem01.getCauldronWashingResult, recipe map cauldronRecipe of GTPostLoad.addCauldronRecipe:
 ---    333 L of water, no energy, no time). Here a 1x1 machine without energy and one water input, category
 ---    cauldron-recipes; 155-fork-ore-chain.lua makes its recipes. Its recipe is Minecraft's cauldron, 7 iron ingots (GT
 ---    keeps it and adds an assembler recipe of 7 iron plates, AssemblerRecipes.java), unlocked with Rubber, the first
----    technology with an impure dust (sulfur's). Sprite and icon are placeholders (tools/gen_icons.py,
----    tools/gen_sprites.py).
+---    technology with an impure dust (sulfur's). Issue #431: icon and sprites are drawn as code
+---    (`tools/gen_icons.py --drawn`): the empty pot, and while it works the water surface (a 4-frame strip).
 --------------------------------------------------------------------------------
 
 recipe_category_and_subgroup("cauldron-recipes")
@@ -682,6 +1151,21 @@ data:extend({
 						height = 32,
 						frame_count = 1,
 						line_length = 1,
+					},
+				},
+			},
+			-- issue #431: the water and its glints, drawn over the empty pot while a recipe runs
+			working_visualisations = {
+				{
+					constant_speed = true,
+					animation = {
+						filename = "__gregtorio-continued__/graphics/entity/fork/cauldron-working.png",
+						width = 32,
+						height = 32,
+						frame_count = 4,
+						line_length = 1,
+						animation_speed = 0.125,
+						run_mode = "forward-then-backward",
 					},
 				},
 			},
@@ -795,6 +1279,7 @@ IV_BASIC_MACHINES = {
 	"extractor", "electrolyzer", "assembling-machine", "cutting-machine",
 	"canning-machine", "mixer", "ore-washer", "laser-engraver", "fluid-solidifier", "chemical-bath",
 	"polarizer", "circuit-assembler", "autoclave", "alloy-smelter", "compressor", "forge-hammer", "arc-furnace", "forming-press", "electric-furnace", "sifting-machine", "thermal-centrifuge", "electromagnetic-separator",
+	"brewery", "fermenter",   -- issue #360
 }
 --- Multiblocks that come as an upgrade of the EV version (graphics of the EV version with energy hatches of the tier)
 IV_UPGRADE_MACHINES = {

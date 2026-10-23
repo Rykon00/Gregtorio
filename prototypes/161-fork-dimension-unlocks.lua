@@ -114,7 +114,7 @@ ore_dimension(NETHER, { "molybdenite" })
 --- before issue #287
 move_unlocks({ "engraving-flawless-monazite-to-exquisite" }, "advanced-ev-machines")
 ore_dimension(MOON, { "ilmenite", "chromite", "bauxite", "aluminium", "bastnasite", "monazite", "neodymium" })
-ore_dimension(MARS, { "scheelite", "tungstate", "pitchblende", "uraninite" })
+ore_dimension(MARS, { "scheelite", "tungstate", "pitchblende", "uraninite", "desh" }, { "desh-dust" })   -- issue #365: desh
 --- bauxite dust's electrolysis was aluminium's MV route; aluminium has its others (fuller's earth, lazurite, cryolite)
 move_unlocks({ "bauxite-dust-electrolysis" }, MOON)
 --- the implosion of monazite dust into gems belongs to the gem grades of the monazite from the Moon
@@ -180,3 +180,6 @@ ore_dimension(VM_TECHS[3], { "cosmic-neutronium", "infinity-catalyst" })
 --------------------------------------------------------------------------------
 
 ore_dimension(ROSS, { "bornite" })
+
+--- issue #373: 155's recipes of the chemical dehydrators, which 159 makes (the Everglades ores' decompositions)
+FORK_ORE_CHAIN.unlock_after_159()

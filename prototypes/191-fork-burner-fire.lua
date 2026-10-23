@@ -31,13 +31,17 @@ for _, def in pairs({ { "stone-furnace", "furnace-fire.png" }, { "iron-furnace",
 	end
 end
 
-local boiler = data.raw.boiler["small-coal-boiler"]
-if boiler and boiler.pictures then
-	for _, dir in pairs({ "north", "east", "south", "west" }) do
-		local pic = boiler.pictures[dir]
-		if pic and pic.structure and pic.structure.layers then
-			pic.structure.layers[1].filename = P .. "small-coal-boiler/steam-boiler-off.png"
-			pic.fire = fire("small-coal-boiler/small-coal-boiler-fire.png", 96, 1)
+--- (issue #446: the Large Coal Boiler of 101, the small one in steel, the same way with the same fire)
+for name, off in pairs({ ["small-coal-boiler"] = "small-coal-boiler/steam-boiler-off.png",
+		["large-coal-boiler"] = "large-coal-boiler/large-coal-boiler-off.png" }) do
+	local boiler = data.raw.boiler[name]
+	if boiler and boiler.pictures then
+		for _, dir in pairs({ "north", "east", "south", "west" }) do
+			local pic = boiler.pictures[dir]
+			if pic and pic.structure and pic.structure.layers then
+				pic.structure.layers[1].filename = P .. off
+				pic.fire = fire("small-coal-boiler/small-coal-boiler-fire.png", 96, 1)
+			end
 		end
 	end
 end

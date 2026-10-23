@@ -20,8 +20,10 @@
 ---                          chemical bath). -> the chemical bath recipe here (the distilled water variant of GT is the
 ---                          same recipe with another fluid: not made)
 ---   bucket-of-water        GT/GTNH: filled in the world or in the fluid canner (every FluidContainerRegistry container,
----                          GT GTPostLoad.java:111: empty bucket + 1000 L, 16 ticks, 1 EU/t). Gregtorio has no canner and no water in the
----                          world: filling it by hand (manual labor) is the stand-in. Stays crafting table only.
+---                          GT GTPostLoad.java:111: empty bucket + 1000 L, 16 ticks, 1 EU/t). Gregtorio's Canning Machine
+---                          runs GT's canner map (docs/MACHINE-AUDIT.md: it fills the fluid cells), and the offshore pump
+---                          gives water from the first technology on (issue #452). Filling it by hand (manual labor) stays
+---                          the stand-in for filling it in the world. -> the canning machine recipe here
 ---   liquid-concrete-bucket GTNH: crafting table only, calcite, stone, clay, quartz sand dust, water bucket and empty
 ---                          bucket (NHC GT_CraftingRecipeLoader.java:1226); the fluid itself has its mixer recipe
 ---                          (liquid concrete). Stays crafting table only.
@@ -82,6 +84,17 @@ create_recipe{
 }
 fork_add_unlock("chemical-reactor", "paper-chemical-bath")
 
+--- bucket of water: the LV canning machine (GT: an empty bucket and 1000 L water, 16 ticks, 1 EU/t), with the canner
+create_recipe{
+	recipe_name = "bucket-of-water-canning-machine",
+	category = "lv-canning-machine-recipes",
+	energy_required = 0.8 * LV_SPEED,
+	ingredients = { { type = "item", name = "empty-bucket", amount = 1 }, { type = "fluid", name = "water", amount = 100 } },
+	results = { { type = "item", name = "bucket-of-water", amount = 1 } },
+	main_product = "bucket-of-water",
+}
+fork_add_unlock("semifluid-generator", "bucket-of-water-canning-machine")
+
 --- Issue #126, part B (maintainer's decision): the vanilla recipes that only the character could make and that a player can
 --- reach (firearm magazine, light armor, the elevated rail's ramp and support, Space Age's wood processing) become recipes
 --- of the category `crafting-or-assembling-recipes`: the crafting table, the ME Molecular Assembler, every assembling machine
@@ -99,8 +112,8 @@ for _, name in pairs({ "firearm-magazine", "light-armor", "rail-ramp", "rail-sup
 end
 
 FORK_RECIPES_TABLE_ONLY = {
-	["bucket-of-water"] = "GTNH: filled in the world or in the fluid canner (GT GTPostLoad.java:111); Gregtorio has neither, filling it by hand is the stand-in",
 	["liquid-concrete-bucket"] = "GTNH: crafting table only (NHC GT_CraftingRecipeLoader.java:1226)",
 	["mortar-and-pestle"] = "GTNH: the mortar is a tool made at the crafting table, no machine recipe (GT ProcessingIngot.java:101 uses it as a crafting tool)",
 	-- (issue #223: dark ash dust has machine recipes since GT's raw iron blast furnace recipe, no entry needed)
+	["ferrosilite-dust-from-small-piles"] = "GTNH: 4 small piles make a dust at the crafting table or in the packager (GT ProcessingDust.java:572-578); Gregtorio has no packager, and ferrosilite comes only as small piles of chalcopyrite's bricked blast furnace recipes (issue #373)",
 }

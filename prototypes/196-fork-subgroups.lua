@@ -32,6 +32,7 @@ local ROWS = {
 	"coolants",         -- coolants and cryogenic fluids
 	"purified-water",   -- water grades 1-8
 	"plasmas",          -- *-plasma
+	"particles",        -- the beamline's particles (issue #355)
 	"molten-elements",  -- molten elements and glass, mercury
 	"molten-alloys",    -- molten steels and conductor alloys (and any other molten-*)
 	"molten-superalloys",
@@ -104,7 +105,7 @@ put("molten-exotic", { "molten-naquadah", "molten-naquadah-alloy", "molten-naqua
 	"molten-infinity", "molten-transcendent-metal", "molten-spacetime", "molten-universium", "molten-magmatter",
 	"molten-rhugnor", "molten-quantium", "molten-sunnarium", "molten-enderium",
 	"molten-glowstone", "molten-vibrant-alloy", "molten-grisium", "molten-indovanadium", "molten-ruridit",
-	"liquid-blaze",
+	"liquid-blaze", "fiery-blood",   -- (issue #355: GT's fiery blood, the fiery steel bath)
 	-- issue #91: the new melts of the endgame materials and the superconductor bases
 	"molten-bedrockium", "molten-eternity", "molten-enriched-naquadah", "molten-ledox",
 	"molten-itbtc-alloy", "molten-palladium-naqindium", "molten-naquamiridium", "molten-triamerotronium",
@@ -136,14 +137,69 @@ put("gases", { "phosgene", "boron-trichloride", "chloromethane" })
 put("molten-elements", { "calcium-fluoride" })
 --- issue #335: the Drilling Fluid of the Ore Drilling Plants (163), water with stone dust and lubricant
 put("basic", { "drilling-fluid" })
+--- issue #362: GT++'s rocket fuels and the chains behind them (164)
+put("fuels", { "kerosene", "rp-1", "rp-1-rocket-fuel", "dense-hydrazine-fuel-mixture", "cn3h7o3-rocket-fuel", "coal-tar",
+	"coal-tar-oil", "sulfuric-coal-tar-oil" })
+put("organic", { "naphthalene", "ethylbenzene", "anthracene", "2-ethylanthraquinone", "2-ethylanthrahydroquinone", "hydrazine",
+	"monomethylhydrazine" })
+put("acids", { "hydrogen-peroxide", "prismarine-contaminated-hydrogen-peroxide" })   -- the second: #356
+put("gases", { "prismatic-gas" })   -- #356
+put("coolants", { "liquid-oxygen", "liquid-nitrogen" })   -- liquid nitrogen: #356
+--- issue #360: the bio fuels (164)
+put("fuels", { "seed-oil", "bio-diesel" })
+put("organic", { "glycerol", "fermented-biomass" })
+--- issue #358: the polymer ladder (164)
+put("organic", { "cumene", "bisphenol-a", "styrene" })
+put("polymers", { "polystyrene", "styrene-butadiene-rubber", "polycaprolactam" })
+--- issue #361: the oil variety (164)
+put("fuels", { "medium-oil", "natural-gas", "lpg" })
+put("organic", { "mtbe-reaction-mixture" })
+--- issue #366: trichlorosilane (164)
+put("acids", { "trichlorosilane" })
+--- issue #357: goodgenerator's fuels (164)
+put("fuels", { "ethanol-gasoline", "cyclopentadiene", "jet-fuel-no-3", "jet-fuel-a", "combustion-promoter" })
+put("organic", { "iron-ii-chloride", "diethylamine", "impure-ferrocene-mixture", "ferrocene-solution", "ferrocene-waste" })
+put("nuclear", { "thorium-based-liquid-fuel", "excited-thorium-based-liquid-fuel", "depleted-thorium-based-liquid-fuel" })
+--- issue #378: the Kevlar line (164)
+put("organic", { "acetylene", "acetaldehyde", "ethylene-oxide", "ethylene-glycol", "methylamine", "nickel-tetracarbonyl",
+	"nitrobenzene", "aniline" })
+put("organic", { "1-4-dimethylbenzene", "naphthenic-acid", "terephthalic-acid", "dimethyl-terephthalate", "1-4-butanediol",
+	"gamma-butyrolactone", "n-methyl-2-pyrrolidone", "acetic-anhydride", "4-nitroaniline", "diaminodiphenylmethane-mixture",
+	"diphenylmethane-diisocyanate-mixture", "dimethyldichlorosilane", "silicon-oil", "propionic-acid", "trimethyl-borate",
+	"butyraldehyde", "isobutyraldehyde", "butanol" })
+put("acids", { "sulfur-dichloride", "thionyl-chloride", "phosphorus-trichloride" })
+put("polymers", { "polyurethane-resin", "liquid-crystal-kevlar" })
+put("fuels", { "xenoxene", "diluted-xenoxene", "raw-radox", "super-heavy-radox", "heavy-radox", "light-radox",
+	"super-light-radox", "cracked-radox", "radox-gas" })
+--- issue #386: the LFTR's fluorides and fuels (164 section 14)
+put("acids", { "lithium-hydroxide", "beryllium-hydroxide", "ammonium-bifluoride", "ammonium-tetrafluoroberyllate",
+	"thorium-nitrate" })
+put("nuclear", { "lithium-fluoride", "beryllium-fluoride", "zirconium-tetrafluoride", "thorium-tetrafluoride",
+	"uranium-tetrafluoride", "lftr-fuel-1", "lftr-fuel-2", "lftr-fuel-3" })
+put("molten-elements", { "molten-uranium-235", "molten-plutonium-241", "molten-uranium-233", "molten-rhenium" })
+put("molten-superalloys", { "molten-hastelloy-n", "molten-hs188-a" })
+put("nuclear", { "lithium-tetrafluoroberyllate", "uranium-depleted-molten-salt", "thorium-depleted-molten-salt",
+	"thorium-beryllium-depleted-molten-salt", "helium-sparged-u-salt", "fluorine-sparged-t-salt", "fluorine-sparged-tb-salt",
+	"fluorinated-uranium-hexafluoride", "phosphorous-uranium-hexafluoride", "impure-molten-salt-base", "sodium-fluoride",
+	"stable-molten-salt-base", "lftr-fuel-base" })
+put("gases", { "neptunium-hexafluoride", "technetium-hexafluoride", "selenium-hexafluoride" })
+--- issue #364: GTNH's sapphire and green sapphire juice (155)
+put("ore-solutions", { "sapphire-juice", "green-sapphire-juice" })
 --- issue #119: Space Age's melts, restyled below, are rows of the Fluids tab like the other melts
 put("molten-elements", { "molten-iron", "molten-copper" })
 put("molten-alloys", { "molten-potassium-disulfate" })
---- tiered: the plasma forge catalysts crude < resplendent < stellar, then the godforge fluids
+--- tiered: the plasma forge catalysts crude < prosaic < resplendent < stellar, then the godforge fluids
 FLUID_SUBGROUP["excited-dimensionally-transcendent-crude-catalyst"] = { "endgame", 1 }
-FLUID_SUBGROUP["excited-dimensionally-transcendent-resplendent-catalyst"] = { "endgame", 2 }
-FLUID_SUBGROUP["excited-dimensionally-transcendent-stellar-catalyst"] = { "endgame", 3 }
+FLUID_SUBGROUP["excited-dimensionally-transcendent-prosaic-catalyst"] = { "endgame", 2 }   -- issue #355
+FLUID_SUBGROUP["excited-dimensionally-transcendent-resplendent-catalyst"] = { "endgame", 3 }
+FLUID_SUBGROUP["excited-dimensionally-transcendent-stellar-catalyst"] = { "endgame", 4 }
 put("endgame", { "raw-star-matter", "spatially-enlarged-fluid", "tachyon-rich-temporal-fluid", "quark-gluon-plasma" })
+--- issue #355: the plasma forge's residue and superfluid, grade 8 water's baryonic matter, oganesson
+put("endgame", { "dimensionally-transcendent-residue", "stable-baryonic-matter", "dimensionally-shifted-superfluid" })
+put("gases", { "oganesson" })
+--- issue #355 step 4: the beamline's particles and UU matter
+put("particles", { "electron", "proton", "tau", "omega", "upsilon", "graviton" })
+put("endgame", { "uu-matter" })
 
 --- patterns for whole lines (and for new fluids of a known kind); rank = a capture that orders the line by tier
 local FLUID_PATTERNS = {

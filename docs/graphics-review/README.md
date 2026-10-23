@@ -14,6 +14,7 @@ Regenerate them with `python tools/gen_review_sheet.py all`.
 | `phase-6b/` | phase 6b (issue #37): the item icons (MAX tier and godforge group), technology icons, the godforge sprite, the MAX basic machines, the MAX upgrade multiblocks and the MAX large plasma turbine (`python tools/gen_review_sheet.py all --ref <6a head> --out <dir>`, the sheets of the new group) |
 | `issue-99/` | issue #99: the component assembly line and the two ender tanks (`sprites-*.png`, before: none of their own), the 13 melts of issue #91 that were too dark or had the wrong colour (`fluid-icons.png`, `python tools/gen_review_sheet.py fluid-icons --out <dir>`), and the item icon sheets with the gasoline cell and the component assembly line (`icons-*.png`) |
 | `issue-97/` | issue #97: the sprites of the steam, nuclear and storage multiblocks (`sprites-*.png`, before: none; GT's large turbine faces of steel and titanium with the EV and IV dynamo hatches on the corners, GT's large heat exchanger, the fluid nuclear reactor in GT's radiation proof casing, the IV to ZPM lapotronic supercapacitors from kekztech's casing and capacitor blocks with GT's energy and dynamo hatches of the tier, and the icons of the new capacitor blocks and upgrades) and their technology icons (`techs-1.png`) |
+| `issue-431/` | issue #431: the Cauldron drawn as code (`python tools/gen_icons.py --drawn`; GTNH's cauldron is Minecraft's block, whose texture is not used, and GT has none): `small-machines.png` next to the other 1x1 machines and the LV machine icons (`python tools/gen_review_sheet.py small`), `sprites-cauldron.png` before (the tinted water bucket) and after |
 | `fluids-tab.png` | the Fluids tab of the signal and fluid choosers: one block per subgroup (a row in the game), the fluid icons with their names (`python tools/devcheck/devcheck.py check --fluids-out fluids.tsv`, then `python tools/gen_review_sheet.py fluids --fluids fluids.tsv`) |
 | `icon-sources.tsv` | for every item, the textures it is made of (`tools/gen_gt_icons.py --sources`) |
 
@@ -22,12 +23,15 @@ Regenerate them with `python tools/gen_review_sheet.py all`.
 All from textures of [GT5-Unofficial](https://github.com/GTNewHorizons/GT5-Unofficial) (LGPL-3.0, including
 the mods merged into it: GT++ "miscutils", GoodGenerator, bartworks) and, for the stargate parts and the
 generic UMV/UXV circuits, [NewHorizonsCoreMod](https://github.com/GTNewHorizons/NewHorizonsCoreMod)
-(GPL-3.0). Both checkouts are only needed to regenerate, not to play:
+(GPL-3.0), and for Draconic Evolution's cores its GTNH fork
+([Draconic-Evolution](https://github.com/GTNewHorizons/Draconic-Evolution), LGPL-3.0). The checkouts are only needed to
+regenerate, not to play:
 
 ```
-python tools/gen_gt_icons.py --gt <GT5-Unofficial> --core <NewHorizonsCoreMod>   # item icons (tools/gt-icon-items.txt)
+python tools/gen_gt_icons.py --gt <GT5-Unofficial> --core <NewHorizonsCoreMod> --de <Draconic-Evolution>   # item icons (tools/gt-icon-items.txt)
 python tools/gen_sprites.py --gt <GT5-Unofficial>                              # machine sprites and icons
 python tools/gen_tech_icons.py --gt <GT5-Unofficial>                           # technology icons (tools/tech-icons.tsv)
+python tools/gen_icons.py --drawn                                              # the graphics drawn as code (issue #431)
 python tools/gen_review_sheet.py all                                           # these sheets
 ```
 

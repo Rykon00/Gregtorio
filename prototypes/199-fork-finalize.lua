@@ -10,6 +10,10 @@
 ---    Every addition is logged ("FORK-AUTOUNLOCK").
 --------------------------------------------------------------------------------
 
+--- issue #449: every machine of an MV extruder or laser engraver category runs the LV one (101), after every file that
+--- makes machines
+fork_lv_machine_categories()
+
 local function is_gregtorio_category(c)
 	return c and (c:sub(-8) == "-recipes" or c == "smelting") and c ~= "fluid-voiding-recipes"
 end

@@ -34,6 +34,25 @@ UEV = cryogenic, UIV = promethium, then UMV / UXV / max (the stargate; since pha
 | 6b | MAX tier and the godforge (issue #37, part 2) | **done** (`prototypes/140-fork-godforge.lua`, `141-fork-max.lua`, see "Phase 6b: MAX tier and godforge") |
 | side | Balance of the tiers from UHV up in the real game, and a look at the new graphics there | open (in-game checks #247 balance, #248 graphics; question #249) |
 | side | Ore processing as GT New Horizons has it (issue #176): purified, centrifuged, impure and pure forms, thermal centrifuge, chemical bath washing, electromagnetic separator, gem sifting | **done** (`prototypes/155-fork-ore-chain.lua`, `docs/ORE-CHAIN.md`, phases O1 to O4: #185 to #188) |
+| side | Early game (Stone, Steam, LV, MV) as GT New Horizons has it: the gaps of the early game analysis of 2026-10-18 | open (see "Early game: Stone age to MV" below) |
+
+## Early game: Stone age to MV
+
+The Stone, Steam, LV and MV ages are upstream's with the fork's fixes (the ore chain, the vein recipes and the electric
+mines, the research counts of 149); an early game analysis against GT New Horizons (2026-10-18) found these gaps. They are
+worked off one pull request each; this list is their status.
+
+| Age | Gap | Issue | Status |
+|---|---|---|---|
+| Stone | wrought iron (ULV hull and casing, the arc furnace) and charcoal from logs in the coke oven | #448 | done (as Cast Iron, GTNH's name since 2026; the coke oven's charcoal) |
+| Steam | the high pressure tier (HP coal boiler, HP steam machines), the steam furnace, the solar and lava boilers | #446 | done (technology High Pressure Steam; the solar boilers by day only, without calcification) |
+| Steam | the steam machines run the whole LV category with byproducts; GT's run recipes up to 32 EU/t, the macerator without byproducts | #447 | done (the steam macerator's own category: the LV recipes without byproducts; 32 EU/t is every LV recipe) |
+| LV | the LV Miner waited for the Military Science Pack technology (its LV sensor) | #443 | fixed (the sensor comes with the Circuit Assembler) |
+| LV | the LV Combustion Generator, LV Extruder and LV Laser Engraver | #449 | done (the LV categories hold GT's LV recipes; the LV extruder has one, the aluminium rod) |
+| LV, MV | energy storage before IV: battery buffers and the LV to HV batteries | #444 | done (fixed-size buffers LV to HV with the batteries in the recipe; LV and MV with Battery, HV with Large Batteries) |
+| LV to HV | circuit recipe names of GTNH (Integrated Logic Circuit, Microprocessor, Integrated Processor, Processor Assembly, Workstation, Mainframe) | #445 | open |
+| ULV, HV | the ULV circuit tier; the nanoprocessor's parts at HV | #450 | done (`ulv-circuit` from the vacuum tube and NAND chip recipes; the nanoprocessor in the HV circuit assembler, its parts at HV, the wafer EV; the MV EBF and vacuum freezer keep their names) |
+| all | GTNH's veins as mixed ore patches on the map instead of the vein recipes | #451 | done (plan #494, #495-#505: the map veins of Nauvis, the Nether, the Twilight Forest and The End, mining drills, portals, Ender Storage; `docs/ORE-VEINS.md`) |
 
 ## Phase 1: LuV (done)
 
@@ -761,6 +780,8 @@ Not switched, on purpose:
 - **UU matter is not built.** Its magic consumers are removed. The rest are the MK4 fusion parts, where it is one of four fluids
   (with cinobite, octiron and astral titanium, none of them in the mod; tritanium and cosmic neutronium melt stand in for all four)
   and the UEV to UXV hatches (which leave it out). It needs GT's mass fabricator, a machine the fork does not have. Open point.
+  Issue #355 step 4 built it (164 section 30): the LuV Mass Fabricator makes it for the Beam Crafter and the beamline.
+  The MK4 fusion parts and the hatches keep leaving it out.
 
 ### Numbers
 
@@ -931,6 +952,22 @@ the new ones are in the table of `prototypes/136-fork-power.lua` (section 1b, pl
 | oxygen | 131.07 MJ | 144 in 120 s (MK2) | 9830 MJ | 18 874 MJ | 1.3x (1.9x without its boron plasma) | 1.2x | 1.2 | 157 MW |
 | krypton | 86.02 MJ | 144 in 16 s (MK2) | 1311 MJ | 12 386 MJ | 3.8x (9.4x without its niobium and zinc plasma) | 1.3x (before 1.5x) | 9 | 774 MW |
 | iron | 206.44 MJ | 72 silicon + 72 magnesium melt -> 144 in 8 s (MK3; before 16 + 16 in 2 s) | 1311 MJ | 29 727 MJ | 22.7x (before 91x) | 17.2x (before 70.9x) | 18 (before 72) | 3.72 GW (before 14.9) |
+| nickel (#375) | 213.81 MJ | 16 potassium melt + 144 fluorine -> 144 in 7.5 s (MK3; GT 0.8 s) | 1229 MJ | 30 789 MJ | 25.1x | - | 19.2 | 4.1 GW |
+| silver (#375) | 282.69 MJ | 144 gold + 144 arsenic melt -> 144 in 10 s (MK3; GT 0.8 s) | 1638 MJ | 40 707 MJ | 24.8x | - | 14.4 | 4.07 GW |
+| bismuth (#375) | 425.98 MJ | 144 tantalum melt + 72 zinc plasma -> 144 in 15 s (MK3; GT 0.8 s) | 2458 MJ | 61 342 MJ | 25.0x (18.3x with its zinc plasma) | - | 9.6 | 4.09 GW |
+| radon (#375) | 450.56 MJ | 144 iridium melt + 500 fluorine -> 144 in 16 s (MK3; GT 1.6 s) | 2621 MJ | 64 881 MJ | 24.8x | - | 9 | 4.06 GW |
+| plutonium 241 (#375) | 497.66 MJ | 576 lutetium + 576 vanadium melt -> 576 in 17.5 s (MK5; GT 0.2 s) | 11 469 MJ | 286 654 MJ | 25.0x | - | 32.9 | 16.4 GW |
+| americium (#386) | 501.76 MJ | 144 plutonium 241 melt + 2000 hydrogen -> 144 in 17.5 s (MK3; GT 3.2 s) | 2867 MJ | 72 253 MJ | 25.2x | - | 8.2 | 4.13 GW |
+| thorium (#375) | 471.04 MJ | 576 osmium + 576 silicon melt -> 576 in 16.5 s (MK5; GT 0.2 s) | 10 813 MJ | 271 319 MJ | 25.1x | - | 34.9 | 16.4 GW |
+| lead (#397) | 423.94 MJ | 576 tellurium + 576 zinc melt -> 576 in 15 s (MK5; GT 0.2 s) | 9830 MJ | 244 187 MJ | 24.8x | - | 38.4 | 16.3 GW |
+
+Issue #375's plasmas (part B, the maintainer's decision: GT's fuel values, a place in this table): GT's inputs and outputs
+in GT litres like the plasmas above, the reactor by GT's threshold (MK3, the 6G ones MK5); GT's times would give 160x
+to 240x, so the times are set for about 25x like the balanced cheap plasmas (full chain not computed). Americium plasma
+(plutonium 241 + hydrogen) came with issue #386's isotopes (step 2: the MOX rods' plutonium 241 from GT's IV centrifuge,
+melted in the IV fluid extractor). Lead plasma (tellurium + zinc, #397) came once the mod had tellurium (the Toxic
+Everglades' ores, the Lutetium Asteroid): molten tellurium from the dust in the IV fluid extractor, Fusion Plasmas MK5 gets
+Reach the Toxic Everglades as a prerequisite for it (#252).
 
 Helium-3 (issue #32): `end-stone-centrifuging` makes 50 helium-3 per compressed end stone in 200 s (before 100 in 40 s),
 1.92 MJ per unit like deuterium (before 0.19 MJ). The fuel values are unchanged (GT's). The recipes that use a plasma as an
@@ -1241,8 +1278,8 @@ Where the chips go (GT: 2 chips of the tier per hatch; the fork has used 4 since
 |---|---|---|---|
 | UEV energy / dynamo hatch | 4 QPIC | 4 FPIC | 2 FPIC |
 | UIV energy / dynamo hatch | 8 QPIC | 4 APIC | 2 APIC |
-| UMV energy / dynamo hatch | 16 QPIC | 8 APIC | 2 ZPIC (not built) |
-| UXV energy / dynamo hatch | 32 QPIC | 16 APIC | 2 YPIC (not built) |
+| UMV energy / dynamo hatch | 16 QPIC | 8 APIC | 2 ZPIC (#355: a second recipe; the 8 APIC one stays) |
+| UXV energy / dynamo hatch | 32 QPIC | 16 APIC | 2 YPIC (#355 step 5: a second recipe; the 16 APIC one stays) |
 | MK4 controller | 48 QPIC wafers | 48 FPIC wafers | 64 FPIC wafers |
 | MK5 controller | 64 QPIC wafers | 64 APIC wafers | 64 APIC wafers |
 
@@ -1690,7 +1727,7 @@ in `29-uev-age-item.lua`, `31-uiv-age-item.lua`, `80-umv-age-item.lua`, `90-uxv-
 
 | Technology | Science | Prerequisites | Units | Unlocks |
 |---|---|---|---|---|
-| `dimensionally-transcendent-plasma-forge` | UMV | `umv-multiblocks`, `fusion-plasmas-mk5` | 95 (8.3 h) | dimensionally transcendent casing, dimensional bridge, DTPF controller, the DTPF, crude catalyst, the six crude metal recipes |
+| `dimensionally-transcendent-plasma-forge` | UIV (since #355; before UMV) | `uev-energy-hatches`, `femto-power-ics`, `optical-processor-mainframes`, `uev-materials`, `naquadah-alloy`, `fusion-plasmas-mk4` | 120 | dimensionally transcendent casing, dimensional bridge, DTPF controller, the DTPF, crude catalyst, four crude metal recipes (spacetime and universium with `fusion-plasmas-mk5`, which needs the DTPF) |
 | `dtpf-resplendent-catalyst` | UXV | `dimensionally-transcendent-plasma-forge`, `uxv-multiblocks` | 50 (8.0 h) | resplendent catalyst, the six resplendent metal recipes |
 | `quantum-force-transformer` | UMV | `umv-multiblocks` | 95 (8.3 h) | QFT coil casing, QFT controller, the QFT, its 29 recipes |
 
@@ -1702,18 +1739,20 @@ reactors, one amp of their tier):
 
 | Machine | Size | Tier | Power | Speed | Fluid ports | Recipe (UMV assembler, 5 min) |
 |---|---|---|---|---|---|---|
-| dimensionally transcendent plasma forge | 11x11 | UMV | 1310.72 MW | 2048 | 6 in (5 north, 1 west), 2 out (south) | controller, 48 dimensionally transcendent casings, 16 dimensional bridges, 32 spacetime coils, 2 UMV energy hatches, 8 UMV hulls |
+| dimensionally transcendent plasma forge | 11x11 | UIV (since #355) | 655.36 MW | 1024 | 6 in (5 north, 1 west), 2 out (south) | controller, 48 dimensionally transcendent casings, 16 dimensional bridges, 32 Awakened Draconium coils, 2 UEV energy hatches, 8 UEV hulls (ZPM assembly line) |
 | quantum force transformer | 9x9 | UMV | 1310.72 MW | 2048 | 4 in (north), 2 out (south) | controller, 16 QFT coil casings, 32 titanium reinforced borosilicate glass, 2 UMV energy hatches, 8 UMV hulls |
 
-Parts: the DTPF casing (UMV assembler: osmiridium plates, spacetime screws, a 1080k super coolant cell, a UV emitter, a
-triamerotronium superconductor wire), the dimensional bridge (ZPM assembly line: casing, UHV field generator, UV emitter and
-circuits, PPIC wafers, triamerotronium wire), the DTPF controller (ZPM assembly line: 4 bridges, 4 UIV energy hatches, chromnorox
-wire, 4 super coolant cells, 20 UMV circuits, 4 UIV field generators and pumps, superdense neutronium); the QFT coil casing (UMV
+Parts (issue #355: GT's UIV recipes, fluids a tenth of GT's litres): the DTPF casing (ZPM assembly line: osmiridium plates,
+infinity screws for GT's laurenium screws (no dysprosium in the mod), a 1080k super coolant cell, a triamerotronium
+superconductor wire), the dimensional bridge (casing, UHV field generator, UV emitter for GT's microwave energy transmitter, UV
+circuits, 4 FPIC wafers, triamerotronium wire), the DTPF controller (4 bridges, 4 UEV energy hatches, dracofinium wire, 4 super
+coolant cells, 20 UIV circuits, 4 UEV field generators and pumps, superdense osmiridium; indalloy 140 for GT's mutated living
+solder and molten enriched naquadah, GT's amounts); before #355 the DTPF and its parts were one tier up (UMV). The QFT coil casing (UMV
 assembler: infinity coil, 4 super coolant cells, transcendent metal, a superconducting coil block) and the QFT controller (ZPM
-assembly line: UIV circuits, pumps, field generators and robot arms). GT builds both at UIV with UEV parts; here they are UMV
-machines (the techs are UMV science), so the parts are one tier up. GT items the mod does not have are left out (eternal singularity,
-quantum anomaly, the ZPM battery, oganesson and californium; mutated living solder is indalloy 140, enriched naquadah is naquadah,
-laurenium screws are spacetime screws, the microwave energy transmitter is a UV emitter).
+assembly line: UIV circuits, pumps, field generators and robot arms). GT builds both at UIV with UEV parts; the QFT here is a UMV
+machine (UMV science), so its parts are one tier up. GT items the mod does not have are left out of the DTPF (the 16 Exothermic
+Hearths, eternal singularities, the quantum anomaly, which comes from the forge itself in #355, the ZPM battery, the teleporter,
+oganesson and californium, the Avaritia singularities of the bridge).
 
 **DTPF recipes** (2 catalysts, 12 metal recipes). The catalysts are made in the forge (5 s and 10 s):
 
@@ -1898,10 +1937,11 @@ drafts `80-umv-age-item.lua` and `90-uxv-age-item.lua` (never loaded, removed in
 
 | Technology | Prerequisites | Units | Unlocks |
 |---|---|---|---|
-| `godforge` | `stargate`, `dtpf-resplendent-catalyst` | 55 | stellar energy siphon casing, singularity reinforced stellar shielding casing, remote graviton flow modulator, godforge controller, the godforge; raw star matter; lead, thorium and naquadria plasma (plasma module) |
-| `godforge-molten-module` | `godforge` | 55 | universium in the godforge |
+| `godforge` (UMV science since issue #355, see "Circuit rungs") | `precise-electronic-unit-mk3`, `umv-machines` | 95 | stellar energy siphon casing, singularity reinforced stellar shielding casing, remote graviton flow modulator, godforge controller, the godforge; the quantum anomaly, chromatic glass and lens, the resplendent catalyst |
+| `godforge-plasma-module` (UMV science, issue #355) | `godforge` | 95 | celestial tungsten dust and plasma, raw star matter |
+| `godforge-molten-module` | `godforge-plasma-module`, `stargate` | 55 | universium in the godforge |
 | `godforge-exotic-module` | `godforge-molten-module` | 55 | time and space from spacetime, the 7 magmatter recipes |
-| `dtpf-stellar-catalyst` | `godforge` | 55 | stellar catalyst, the six stellar metal recipes of the plasma forge |
+| `dtpf-stellar-catalyst` | `godforge-plasma-module`, `stargate`, `dtpf-resplendent-catalyst` | 55 | stellar catalyst, the six stellar metal recipes of the plasma forge; lead, thorium and naquadria plasma (plasma module) |
 | `godforge-upgrades` (infinite) | `godforge-exotic-module` | `55 * 2^(L-1)` | +5 % productivity per level for raw star matter, godforge universium and magmatter |
 | `max-materials` | `godforge-exotic-module` | 55 | magmatter parts (ingot, plate, rods, frame, gears, ring, round, screw, rotor, wires, foil), magmatter cable |
 | `planck-processors` | `max-materials` | 55 | Planck board, processing unit, processor, assembly, supercomputer |
@@ -1916,7 +1956,7 @@ All with the 15 packs up to MAX, 60 s per unit. Machines:
 
 | Machine | Size | Tier | Power | Speed | Technology | Recipe |
 |---|---|---|---|---|---|---|
-| godforge | 13x13 | UXV | 2621.44 MW (one UXV amp) | 4096 | `godforge` | UXV assembler, 5 min: controller, 64 shielding casings, 8 siphon casings, 4 graviton flow modulators, 2 UXV energy hatches, 8 UXV hulls |
+| godforge | 13x13 | UMV (since issue #355) | 1310.72 MW (one UMV amp) | 2048 | `godforge` | UMV assembler, 5 min: controller, 64 shielding casings, 8 siphon casings, 4 graviton flow modulators, 2 UIV energy hatches, 8 UIV hulls |
 | MAX basic machines (23) | 3x3 | MAX | twice the UXV machine (MAX assembler 1.97 GW) | 8192 | `max-machines` | the UXV recipe with every tiered part one tier up (`fork_make_tier_machine`) |
 | MAX multiblock upgrades (13) | as the EV version | MAX | twice the UXV one (MAX EBF 4.92 GW) | 8192 | `max-multiblocks` | the UXV multiblock with MAX parts |
 | MAX large plasma turbine | 3x3 | MAX | makes up to 20 971.52 MW (four MAX amps) | - | `max-plasma-turbine` | upgrade of the UXV turbine with the MAX dynamo hatch and a MAX hull (the old hatch and hull come back) |
@@ -1930,7 +1970,8 @@ time, GT's star fuel):
 | Recipe | Inputs | Output | Time | Module (GT) |
 |---|---|---|---|---|
 | raw star matter | 1000 hydrogen, 1000 helium, 10 crude catalyst | 100 raw star matter | 20 s | eye of harmony in GT |
-| lead / thorium plasma | 1 lead ingot / 1 thorium dust | 144 plasma | 1 s | plasma module, tier 0 |
+| celestial tungsten plasma (issue #355) | 1 celestial tungsten dust | 144 plasma | 8 s (GT: 4 s at UXV) | plasma module, tier 0 multi-step |
+| lead / thorium plasma | 1 lead ingot / 1 thorium dust | 144 plasma | 1 s | plasma module, tier 1 |
 | naquadria plasma | 144 molten naquadria | 144 plasma | 10 s | plasma module, tier 1 |
 | universium | 144 spacetime, 144 flerovium | 288 universium | 1.25 s | eye of harmony in GT |
 | time and space | 288 molten spacetime | 144 tachyon rich temporal fluid, 144 spatially enlarged fluid | 10 s | GT: centrifuge from tesseracts |
@@ -1994,8 +2035,8 @@ and the godforge, the 36 MAX machines and the MAX turbine.
   QFT's temporal harmony needs eternal singularities, energised tesseracts, primordial matter and shirabon. None exists in the mod:
   the QFT coil casing stands in for the space-time bending core and continuum ripper (returned), dense dark steel for dark iron,
   diamonds for dilithium, superdense universium and magmatter plates for the nanites, MAX field generators for energised
-  tesseracts, gravi-stars for quantum anomalies, the universium round for hexanite, red garnet, sodalite and lapis for jasper,
-  sapphire and opal, raw star matter for the slurry and primordial matter, a block of universium for the chronic singularity. GT's
+  tesseracts, gravi-stars for quantum anomalies, the universium round for hexanite (issue #365: GT's exquisite jasper,
+  sapphire and opal since #363 and #364 instead of red garnet, sodalite and lapis), raw star matter for the slurry and primordial matter, a block of universium for the chronic singularity. GT's
   returned tesseract and the shirabon are left out. Nothing takes the timepiece and chipped amalgatite but these recipes, and with
   equal amounts of time and space in the magmatter recipe the conversions have no job.
 
@@ -2235,3 +2276,696 @@ effectivity.
 * The LuV capacitor block takes osmiridium plates and rods instead of GT's frames and screws (Gregtorio has none).
 * The supercapacitor has 27 blocks of one tier and one pair of hatches; no mixed tiers, no glass rule, no wireless, no
   UV and higher blocks (Gregtorio has no energy cluster; UHV and up are GT's Long.MAX blocks).
+
+## GTNH gap research after 0.5.4 (issues #355 to #367)
+
+A research against GT5-Unofficial 638b3f37ca after release 0.5.4 listed GTNH content Gregtorio lacks, one issue per area.
+Each issue first checks its claims against the code; the chemical lines go into `prototypes/164-fork-chemistry.lua`
+(GT's numbers, fluids a tenth of GT's litres, times GT's seconds x the tier's speed).
+
+### Rocket fuels (issue #362)
+
+GT++'s three rocket fuels next to #295's H8N4C2O4 Rocket Fuel, with GTNH's recipes and fuel values (EU per L: Rp-1 512,
+Dense Hydrazine Fuel Mixture 1024, CN3H7O3 2048) and a cell each for the rocket engines of 145 (800 L at 500 J per EU, as
+the H8N4C2O4 cell: 204.8, 409.6 and 819.2 MJ). Two technologies: Rp-1 Rocket Fuel (kerosene from diesel, RP-1, liquid
+oxygen from the HV vacuum freezer) and Hydrazine Rocket Fuels (GT++'s coal tar line and anthraquinone process to hydrogen
+peroxide, hydrazine, monomethylhydrazine).
+
+Deviations from GT:
+* GT++'s catalysts (the orange metal catalyst of the hydroquinone step) are left out, as in the glue line and 159.
+* GT's small piles of ash and dark ash from the coal tar of the pyrolyse oven: Gregtorio has no small piles of them, so a
+  dust at the piles' chance (2 small piles: 50 %, 3: 75 %).
+* Coal tar is distilled only in the distillation tower (GT's tower recipe with its five outputs); GT's five single-output
+  distillery recipes are left out.
+* The ExxonMobil Chemical Plant gets a third fluid input and two more outputs for the hydrogen peroxide recipes (three
+  fluids in, two out); the new boxes come after the old ones, so the old recipes keep their boxes.
+* #295's H8N4C2O4 recipe uses GT's litres (2000 + 2000 -> 5000), the new recipes a tenth like the rest of 159; the ratios
+  are GT's either way, only the chemical plant's throughput of the H8N4C2O4 recipe is ten times that of the others.
+
+### Ore veins (issue #363)
+
+Part 1: GTNH's Overworld veins (`OreMixes.java`) whose ores the mod lacked, 30 raw ores with GTNH's chain (155's
+`NEW_ORES`, 160's mines). Decisions and deviations:
+* Upstream's veins that stand for a GT vein (iron, magnetite, chalcopyrite = GT's Copper, salt, copper-tin, basaltic
+  mineral sands) keep their yields; GT's ores they lacked join them at 8 each. A GT vein without such a counterpart is a
+  new Manual Mine recipe at 32/24/16/8 (primary to sporadic).
+* GT's byproducts basalt, black granite and rubidium are items since #373; the mineral sands' centrifuge gives basalt
+  or black granite (black granite's own decomposition leaves out its biotite, which the mod lacks).
+* Trona and vermiculite decompose without their water (the electrolyzers have two fluid outputs).
+* Chalcopyrite's bricked blast furnace recipes with sand, glass or the quartzes are built since #373, with GT's
+  ferrosilite (its small piles make a dust at the crafting table: Gregtorio has no packager).
+
+Part 2: the Twilight Forest's olivine vein and small ores and the Nether's saltpeter electrotine vein (16 more ores).
+* Electrotine (Project Red's) is left out of its vein.
+* GT's lime, purple and pink lenses (olivine, tanzanite, amethyst) are new; the dehydrator coil wires' emerald lens, a
+  stand-in of #274, becomes the olivine lens. The blue and cyan lenses are GTNH's sapphire and green sapphire lens
+  since #370 (#325's lapis and apatite lens before).
+* #373: the Sapphire vein's almandine and pyrope ores (GT's 32/24/16/8 with sapphire and green sapphire); every vein of
+  Ross128b and of Ross128ba (Reach Ross128ba at ZPM, GTNH's T5) with bartworks' Werkstoff ores: bartworks' byproducts,
+  mass, decomposition and sifter table; the gems engrave with the mod's lens of their colour (BWColorUtil's dye;
+  olenite, fluor-buergerite and fayalite have no lens of theirs here); BArTiMaEuSNeK's decomposition leaves out its
+  Magic (GT has no dust of it); GT's bismuth has no ingot in the mod, so raw bismuth does not smelt.
+* #373, the Toxic Everglades: Reach the Toxic Everglades at LuV (GT++'s portal frame is a LuV assembler recipe; GTNH
+  lists the dimension as T0), its veins GTPP0-19 with GT++'s 39 ores (RecipeGenOre.java). Deviations: the mod's generic
+  chain with GT++'s two byproducts (GT++ uses byproduct B in the thermal centrifuge of the crushed ore and the
+  centrifuge of the impure dust, the mod's chain its usual order); no forge hammer recipe for the raw ore (GT++ hammers
+  only the ore block); elements the mod lacks are left out of byproducts and decompositions (germanium, tellurium,
+  thallium, bromine, iodine, radium, selenium, strontium oxide, samarium ore concentrate; erbium, ytterbium and
+  dysprosium are GT's dusts since #355, which needs them); the LV chemical dehydrator has one fluid output, so cerite, fluorcaphite and lepersonnite give only
+  their oxygen; fluorite (F)'s hydrogen chemical bath is left out; runite gets its ore chain to runite dust, GT++'s
+  alloy blast smelter melt and ingot are not built (no consumer). Agardite (Cd), yttrialite and lanthanite (Ce) are
+  the mod's rare earth dusts of the same names.
+* #373, Neper: a Void Miner III recipe (T9, as Horus and Anubis), see Dilithium below.
+* #356 (the maintainer's decision on #417): the Mehen Belt, AmunRa's T9 asteroid belt, as a Void Miner III recipe with
+  its full pool (12 veins, 7 small ores). It is GT New Horizons' source of awakened draconium (the vein of draconium,
+  draconium, awakened draconium and nether star). Draconium and awakened draconium are new ores with GTNH's chain
+  (155). Draconium also gets GTNH's blast furnace (7200 K, LuV) and vacuum freezer route beside the fusion recipe of
+  131. Titanium, iridium, chrome, osmium, uranium, nether star, perlite, uvarovite and mithril ore are left out (no ore
+  of them in the mod).
+* #356: the space elevator's Lutetium Asteroid gives GT's thulium (1000) and tellurium (1500) ores again, new ores with
+  GTNH's chain (155). It is the mod's only GT source of them: thulium for the Naquadah Fuel Refinery's controller and
+  casing, tellurium for lead plasma (#397). Its tantalum and lutetium ores stay left out.
+
+### Elements and the fusion recipes (issue #365)
+
+GT5-Unofficial's `gregtech/loaders/postload/recipes/FusionReactorRecipes.java` (38 recipes) against Gregtorio's fusion
+recipes (MK1 to MK5, 110 to 134 and the plasma balance of #32 above, which also has GT++'s and the endgame's plasmas that
+file lacks):
+
+| GT recipe (FUSION_THRESHOLD) | In Gregtorio |
+|---|---|
+| D + T and D + He-3 -> helium plasma (40M, 60M) | yes (`helium-plasma-first`, `-second`, #32's numbers) |
+| Al + Li -> sulfur, Be + D -> nitrogen, Si + Mg -> iron, Cu + T -> zinc, Co + Si -> niobium, Ag + He-3 -> tin plasma, Mg + O -> calcium plasma | yes (#32's numbers) |
+| Nd + H, Nd + Pm -> europium; Lu + Cr, Lu + Pm -> americium; Am + naquadria -> neutronium; glowstone + He -> sunnarium; Ga + Rn -> duranium; Ti + duranium -> tritanium | yes (promethium routes: Gregtorio has no promethium, the other route of each) |
+| Li + W -> iridium, Be + W -> platinum, Pu + Th -> naquadah, W + He -> osmium, Mn + H -> iron, Hg + Mg and Au + Al -> uranium, U + He -> plutonium, V + H -> chrome, Ta + T -> tungsten, Ag + Li -> indium | yes since #375 part A (136 section 1c; the maintainer's decision: as GTNH has them), see "Accepted shortcuts" below |
+| K + F -> nickel, Au + As -> silver, Ta + Zn plasma -> bismuth, Ir + F -> radon, Pu-241 + H -> americium, Lu + V -> Pu-241, Os + Si -> thorium plasma | yes since #375 part B (136 section 1d, balanced like #32); americium since #386 step 2 |
+| Co + neon -> rubidium (500M); Te + Zn -> lead plasma (6G) | no: rubidium and tellurium have no consumer in Gregtorio (the issue's two elements), lead plasma none either |
+| redstone plasma + ichorium -> unformed hexanite (6G) | no: Thaumcraft's ichorium (#39 removed it) |
+
+Accepted shortcuts (#375, the maintainer's decision): the transmutations are real and cheap late routes in GTNH and
+here too. From fusion MK1 on (LuV) platinum (beryllium + tungsten), osmium (tungsten + helium) and iron and chrome come
+without their ore lines; from MK2 iridium, naquadah (plutonium + thorium, past the naquadah line of #205), uranium and
+tungsten; from MK3 plutonium and indium. Platinum and iridium skip the platinum line of #96 (its sludge, the residues,
+the leaching steps), naquadah the goodgenerator line of #205, the others their ore chains. Amounts: GT's nugget (16 L)
+of each input for a nugget of the product, at Gregtorio's tenth (1.6); GT's times at the reactor's tier speed. The melts
+of plutonium, manganese, uranium, vanadium and indium are melted from the dust (IV fluid extractor, as molten
+lutetium); uranium, plutonium and indium have no ingot in the mod, so their melts solidify into the dust instead of
+GT's ingot (a stand-in). Fusion Plasmas MK2 needs Nuclear Fuel Rods now (the plutonium 239 dust of the naquadah
+transmutation, #252).
+
+The elements of #365 by consumer in Gregtorio's lines:
+* **Desh** (built): Mars's Desh vein (`OreMixes.java:707-717`; desh twice, scheelite, tungstate) as a Manual Mine recipe
+  with Reach Mars, GT's ore chain, the core mod's blast furnace (hot ingot at 2500 K) and vacuum freezer, GT's parts (158);
+  the Digester's 4 rotors are desh rotors (gtnhlanth `RecipeLoader.java:3266`) instead of #262's tungstensteel stand-in.
+  GT's other desh uses (Galacticraft's heavy plates, Thaumcraft combs) have no Gregtorio counterpart.
+* **Jasper, sapphire, opal** (since #363/#364): the MAX recipes of 141 take GT's exquisite jasper, sapphire and opal
+  instead of #249's red garnet, sodalite and lapis.
+* **Praseodymium**: its GTNH consumers are the naquadah fuel MK4 (goodgenerator `FuelRecipeLoader.java:98`, #356) and the
+  depleted thorium fuel (#357): built with those.
+* **Dilithium** (built in #373): GTNH's only vein is Neper's (`OreMixes.java:1025`). Neper is GTNH's T9, and #154/#286
+  give the T7 to T9 dimensions to the Void Miner, so Neper is a Void Miner III recipe (its full pool: dilithium,
+  mysterious crystal and vinteum are new ores, the shards, arsenic, tungsten, antimony, quartz sand, charged certus and
+  the irons have no ore in the mod and are left out); 141's timepiece takes GT's 32 dilithium instead of 32 diamonds.
+* **Mithril, rubidium, tellurium, dysprosium, scandium, strontium, radium, polonium, curium, neptunium, technetium,
+  rhenium, thallium, germanium, selenium**: no consumer in Gregtorio's lines (strontium's GTNH use is the netherite
+  chain, scandium's and strontium's their plasmas' fuel values), so not built.
+
+### Bio fuels, Brewery and Fermenter (issue #360)
+
+#155's "leave for now" of the Brewery and the Fermenter is revisited (#165 is done): both are added LV to MAX, with
+GTNH's non-potion recipes, the fermented biomass line, seed oil, bio diesel and glycerol (164). Deviations:
+* The brewery's light, medium and heavy oil lubricant recipes are left out (the pump modules' oils come at IV with their
+  own lubricant, #318; medium oil is #361's); GT's brewing stand is not in the Brewery's recipe (a Minecraft block).
+* Wheat seeds come from the Extreme Industrial Greenhouse's wheat (one per wheat); GT's melon and pumpkin seeds and fish
+  oil are left out.
+* Bio diesel's chemical reactor recipe is GT's x9 one (a sodium hydroxide dust; Gregtorio has no tiny piles of it).
+* The fermented biomass distillation leaves out GT's CropsNH fertilizer and IC2's biogas.
+
+### Polymers (issue #358)
+
+Built: the epoxy route through bisphenol A (cumene, phenol and acetone from cumene, bisphenol A, epoxy from it and
+epichlorohydrin), polystyrene, styrene-butadiene rubber and polycaprolactam with GT's recipes (164). Notes:
+* Upstream's one-step epoxy recipe is GT's large chemical reactor recipe (`ChemicalRecipes.java:5327-5337`) in the small
+  reactor; it stays (Gregtorio has no large-reactor-only category).
+* SBR cable insulation (GT: SBR at three quarters of rubber, one and a half of silicone rubber) is a twin of a cable recipe
+  only where the cable's technology and Styrene-Butadiene Rubber are ordered (5 of 27); the others would need new
+  prerequisite edges for an optional recipe and are left out.
+* Polystyrene and polycaprolactam have no Gregtorio consumer (GT's: the Bio Lab's petri dish, the QFT's plastics recipe,
+  vanilla string, goodgenerator's fluid storage cores).
+* Polyurethane does not exist in GTNH (its polyurethane resin is the Kevlar line's).
+
+### Kevlar (issue #378 (b))
+
+Built in 164 section 11 with GT's recipes (the technology Kevlar, UV): p-xylene, naphthenic acid (GT's circuit 9 oil
+distillations at the mod's oil scale), the cobalt naphthenate catalyst, terephthalic acid to terephthaloyl chloride,
+the butanediol route to N-methyl-2-pyrrolidone with Raney nickel, 4-nitroaniline to p-phenylenediamine, MDI, the
+organorhodium catalyst route to butanol, polyurethane catalyst A, polyurethane resin, liquid crystal Kevlar, the fiber,
+woven Kevlar and the Kevlar plate. Deviations:
+* GT's spinneret (the solidifier's tool for the fiber) is the solidifier's generic mold (a stand-in).
+* Where GT's single reactor recipe needs a tiny pile (butyraldehyde, butanol), GT's x9 large reactor recipe is used.
+* Acetic anhydride's water is left out (the dehydrator has one fluid output).
+* Users: the UXV pump's 64 rings and the UXV conveyor's 80 plates are Kevlar (GTNH: Kevlar and radox; the silicone
+  rubber stand-ins before), the UXV hull takes molten Kevlar (GT's 576 L at the mod's tenth) instead of
+  polybenzimidazole. GTNH's other users (PCB factory tier 7, neutron accelerators, black hole compressor, solar factory,
+  nanochips) are machines the mod does not have. UXV Components needs Kevlar now.
+
+### Radox polymer (issue #378 (c))
+
+Built in 164 section 12 with GTNH's chain (the core mod's BacteriaRegistry.java and CrackingRecipes.java; technology
+Radox Polymer, UEV): antimony trioxide, xenoxene in the bacterial vat, raw radox in the pyrolyse oven, its distillation
+(UHV), the cracking of super light, light and heavy radox with silver plasma (#375), cracked and diluted xenoxene's
+distillation, super heavy radox in the centrifuge, and radox polymer from radox gas with oxygen and titanium plasma.
+The stand-ins (the maintainer's decision: named, never silent):
+* **The Xenoxsis culture** (a petri dish from GTNH's bio lab or beamcrafter; the mod has neither): the mod's mutagen
+  (125's vat line), 100 per vat run, used up.
+* **Xenoxene in the bacterial vat:** the vat's glass tier and radiation are not modelled; its output multiplier is taken
+  at the maximum (x1001 with a half full output hatch, bartworks MTEBioVat.java), so one run turns 2002 crude oil (GT's
+  Oil) into 2002 xenoxene with GT's 16 antimony trioxide and 16 osmium dust.
+* **GalaxySpace's Barnarda C logs** (GTNH's T8 world): the mod's wood, 64 per pyrolysis.
+* Left out: the fermented bacterial sludge of the distillation (no such fluid) and the low gravity autoclave recipes
+  (enriched naquadah and naquadria from radox; no low gravity).
+Users: the UXV pump's 64 and the UXV conveyor's 80 radox rings and plates next to the Kevlar ones (GTNH). GTNH's other
+users (PCB factory tier 8, UEV to MAX fluid hatches, the Dyson swarm, nanochips, the core mod's APIC route) are machines
+or recipes the mod does not have; heavy radox (naquadah fuel MK V/VI, #356) exists now.
+
+### Oil variety (issue #361)
+
+Decision (the issue left it open): GTNH's Overworld pool of underground fluids becomes recipes of the drilling rigs next
+to crude oil (light oil, raw oil, heavy oil, natural gas, at their share of GT's maximum amounts), not a fluid vein per
+rig: Gregtorio's rigs have no veins, the player picks the fluid. #318's light and heavy oil recipes move from the pump
+module to crude oil's technologies. Built with them: raw oil's distillation, natural gas desulfurization, LPG, GT's MTBE
+route to the anti-knock agent, the natural gas and LPG cells. Not built: GT's butane variant of MTBE (no butane), extra
+heavy oil (no Overworld fluid), GT's naphthenic acid of the oil towers (no consumer). The issue's "regular and premium
+gasoline" are GT's gasoline and high octane gasoline, which the mod has.
+
+### Side-chain chemistry (issue #366)
+
+Each piece comes with the line that needs it. Gregtorio has a consumer for trichlorosilane only (poly-si dust of the
+boules): built (164). The rest of the issue's list belongs to lines the mod does not have: acetylene, acetaldehyde,
+ethylene oxide and glycol, the methylamines, nickel tetracarbonyl and aniline to the Kevlar chain (#378, built in 164 section 10 with
+the Kevlar technology; GT's EV methylamine route is left out, its dimethyl- and trimethylamine have no consumer),
+nitrobenzene and aniline to GT's netherite chain, chlorosulfonic acid and the phosphorus chlorides to GT's toxic slurry
+chain and bartworks' acid generator (#367: leave).
+
+### Circuit rungs (issue #355)
+
+Part 1 (164): GT's ASoC wafer and chip with GTNH's recipes (GT's engraver steps with the green lens, here the emerald
+lens; the core mod's cutter; the core mod's ASoC variants of the nanoprocessor and the quantum processor, which run in
+the IV circuit assembler, the mod's last). The energy module takes GTNH's 2 x 64 ASoC wafers instead of 133's 64 UHPIC
+wafers. GTNH's other ASoC users (the Really and Extremely Ultimate Batteries, goodgenerator's HiC components, the nanites,
+the raw pico wafer) are not in the mod.
+
+Not built: GT's ZPIC and YPIC. The ZPIC wafer is a beamcrafter recipe of the core mod (APIC wafer, spacetime dust,
+molten creon and mellion, 20 gravitons each beam), the YPIC wafer a MAX fluid solidifier recipe (the Bose-Einstein
+condensate wafer, GT's Wafer8, with 1500 L quark gluon plasma); the mod has no beamcrafter, creon, mellion, gravitons or
+Wafer6 to Wafer8. The UMV and UXV energy and dynamo hatches keep 133's and 134's doubled APICs. Issue #355 stays open for
+them. (2026-10-18: the ZPIC is built, see "The Large Hadron Collider and the gravitational lens" below; 2026-10-20:
+YPIC is built, see "YPIC (issue #355, step 5)".)
+
+Part 2, the godforge route (the maintainer's decision on #355: celestial tungsten from the godforge, the quantum anomaly
+through the HiC chain). Step 1 (164 section 18): GoodGenerator's Precise Auto-Assembler MT-3662 and the Hi-Computation
+Stations Mk-I to Mk-V. GT's one multiblock whose casing tier caps the recipes is three machines here (Mk-I to Mk-III, the
+casing swap as the upgrade: each one is the one below with 42 casings of its tier, 21 machine casings of its voltage and
+its energy hatch); precise mode only (GT's normal assembler mode with more parallels is left out). The HiCs as GT, with
+both recipes where GT takes an IC2 vent or rotors (the mod has no Reactor Heat Vent: the HiC Mk-II takes the rotors).
+Their alloys from GoodGenerator's Werkstoffe with bartworks' generated mixer and vacuum freezer recipes and GT's gas
+variants; their leaves: GT's tin alloy, manyullyn (cobalt and ardite; ardite as the sporadic ore of GT's quantium mix: 8
+with each quantium vein), orundum, lithium chloride from purified lepidolite, the cerium ingot, sunnarium dust (the mod's
+molten sunnarium, without IC2's glowstone rods), the core mod's engraved chips, IC2's energy crystal (autoclave of
+energium), GT's Crystal SoC and Raw Advanced Crystal Chip. GT's 4x and 8x cables are 4 and 8 cables, as elsewhere in the
+mod. Left out: GT's oganesson gas variant of the blast furnace.
+
+Step 2 (140, 164 section 19, 150): the quantum anomaly and the godforge at GTNH's place.
+- The quantum anomaly is GT's deterministic plasma forge recipe: an Unknown Particle (the 1 % output of GT's grade 8 water
+  unit; an item, as GT++'s particle) with the Chromatic Lens and the HiC Mk-V (both come back), the excited
+  resplendent catalyst and molten duranium. Its residue (DTR) comes with step 3.
+- The Chromatic Lens is cut in the UHV lathe from a Chromatic Glass plate. The glass comes from the plasma forge with
+  NewHorizonsCoreMod's numbers for the crude and resplendent tiers (the mod has no prosaic and exotic catalyst).
+- The resplendent catalyst recipe moves to the godforge, its first consumer. Its tier of the forge's metals stays after the
+  UXV multiblocks.
+- The godforge comes between the UIV and UMV energy hatches with UMV science, at UMV (one UMV amp through two UIV
+  hatches). Its parts take GT's UIV and UMV recipes with what the mod has.
+- Named deviation: creon, mellion and metastable oganesson are left out of the godforge. GTNH makes them from celestial
+  tungsten plasma, which the mod makes in the godforge itself, so they would close a cycle. The shielding casing's molten
+  celestial tungsten is left out for the same reason.
+- GT's other godforge items the mod lacks are left out and named in 140: the singularities, the hypogen coils and
+  plates, the boson containment units and the exotic catalyst, among others. Hypogen and Six-Phased Copper themselves
+  came later with #436 (164 section 35).
+- `godforge-plasma-module` stands for GT's plasma module upgrades GPCI to TPTP (17 graviton shards). It unlocks
+  celestial tungsten dust (6 tungsten dust, engraved with the anomaly as the lens at UEV), its plasma (GT's multi-step
+  plasma) and raw star matter.
+- The tier 1 plasmas (lead, thorium, naquadria) go with the stellar catalyst after the stargate. The molten and exotic
+  modules stay after the stargate.
+
+Step 3 (164 section 20): the shared foundation.
+- **The residue.** GT's Dimensionally Transcendent Residue (DTR) is the plasma forge's byproduct. Where GT has a plasma
+  forge recipe for the same product and catalyst tier, the mod's recipe gives GT's residue per litre of product
+  (NewHorizonsCoreMod's DTPF calculator):
+  - the crude and resplendent neutronium and cosmic neutronium;
+  - the resplendent and stellar infinity;
+  - the stellar transcendent metal;
+  - the MAX recipes of 141;
+  - the quantum anomaly;
+  - chromatic glass.
+
+  The other forge recipes have no GT counterpart and give none. Nothing takes the residue yet: it goes to the fluid
+  voider until mellion, creon and the godforge's fuel come.
+- **Stabilised baryonic matter.** Grade 8 water now also gives GT's net 500 L of it (50 here) per 1000 L.
+- **The oganessons.**
+  - Californium (MK3, plutonium and beryllium).
+  - Oganesson (MK3, californium and molten calcium). Bartworks' calcium ingot comes from the blast furnace with gas.
+  - Metastable oganesson by GT's route A (MK4: GoodGenerator's enriched naquadah alloy and oganesson). Route B takes
+    copper plasma, which only the godforge makes.
+  - The fusion recipes follow 136's transmutations. The alloy's mixer and freezer times come from bartworks' mass rule.
+- **The prosaic catalyst.** The crude one with radon, nickel, boron and sulfur plasma.
+- **Dimensionally Shifted Superfluid.** GT's tiers 2 (prosaic, UIV) and 3 (resplendent, UMV) come with the technology
+  Dimensionally Shifted Superfluid, after the plasma module (celestial tungsten plasma). Tier 5 (stellar) comes with
+  the stellar catalyst after the stargate. Tier 4 needs the exotic catalyst, which the mod lacks.
+- **Left for later:** fermium plasma (nothing takes it before creon) and the godforge burning residue as fuel.
+
+Next: creon and mellion, the gravitational lens, ZPIC and YPIC.
+
+Creon and mellion (the plan's step 2; 164 section 29, technology Creon and Mellion after Naquadah Based Fuel MK6, the
+godforge's plasma module and the first mining module; the maintainer's decisions of 2026-10-18):
+- **Fiery steel:** GT's chemical bath of iron dust with 250 L fiery blood. The fiery blood comes from the canner and a
+  Twilight Forest Fiery Tears vial (GT's empty bottle is left out: the mod has none). The core mod assembles the vial from
+  a ghast tear and the Ur-Ghast trophy, which stays (HV, 75 s). Both are hunted, as 160's blazes: Hunting Ghasts (4 tears)
+  and Hunting the Ur-Ghast (its trophy). The other vial (fiery blood from Thaumcraft's salis mundis) is left out.
+- **Firestone dust** from the Nether Ore Asteroid's ore (#435).
+- **Fermium plasma:** GT++'s fusion of americium and boron plasma (MK4, 30 s at UHV).
+- **Creon plasma:** GT's Transcendent Plasma Mixer recipe (fermium, thorium, celestial tungsten and calcium plasma and the
+  residue, 100 each into 500) in the plasma forge, as the catalysts of 139 and 164. The mixer itself needs GT parts the
+  mod lacks (laser target hatch, proto-halkonite, energised tesseracts, the exotic catalyst).
+- **Mellion dust** (UMV mixer: tritanium, orundum, rubidium, fiery steel, firestone and catalyst dust, 500 residue into
+  63), the **harmonic compound** (UMV blast furnace with 14.4 creon plasma) and the UIV vacuum freezer with 14.4 molten
+  catalyst into a mellion ingot and 14.4 molten creon; molten mellion from the ingot (UEV).
+- **First consumer (#252):** naquadah fuel MK V from creon and mellion (16 transcendent metal dust, 48 catalyst dust,
+  2000 MK IV, 25 heavy radox, 28.8 molten mellion and creon into 750; 2.5 s, UXV, refinery T3), and GT's firestone
+  variants of the raw catalyst.
+- **Still left out:** creon and mellion in the godforge's parts (the named deviation above: their celestial tungsten
+  plasma comes from the godforge). Fluids are a tenth, as the plasma forge's other mixer recipes.
+
+The beamline (the plan's step 4, part 1; 164 section 30, technology Beamline after the Naquadah Fuel Refinery and ME
+Autocrafting; the maintainer's decisions of 2026-10-18):
+- **Particles are fluids, one unit per particle.** GT's beam moves `rate` particles once a second, so a Source Chamber
+  recipe of 1 s gives `rate` units. GT's beam energy and focus are not modelled; the recipes keep GT's times.
+- **Mu-metal:** gtnhlanth's permalloy (mixer) and mu-metal (EV blast furnace, 4500 K), its plate, dense plate and fine
+  wire by bartworks' rules.
+- **The parts, with gtnhlanth's recipes:** Shielded Accelerator Casing and Glass, Mu-Metal Lattice, Electrode Casing
+  (bartworks' Rebolted Silver Casing), Capillary Exchange (the core mod's Mica Insulator Sheet: pulp, sheet, insulator
+  sheet; GT's tiny tungstensteel pipe), Beam Pipe, the LuV Beam Input and Output Hatches. Their 1x LuV superconductor
+  wires come from GT's 16x bundle split on the crafting table.
+- **Source Chamber** (ZPM): a tungsten rod gives 20 electrons, a long lanthanum hexaboride rod 60, 1000 L hydrogen 40
+  protons, each in 1 s. Its item is the controller with GT's structure (56 casings, 52 glass, 16 electrode casings, the
+  beam output hatch).
+- **Beam Crafter** (UV): GT's controller (the Target Chamber, GT's Large Molecular Assemblers, 8000 L UU matter) with
+  its structure (224 casings, 26 glass, 16 grate casings, 2 beam input hatches). Its first recipe: GT's unknown
+  particle from hydrogen, 120 protons and 720 electrons (20.85 %), which the quantum anomaly takes.
+- **UU matter:** GT's Elite Mass Fabricator as the LuV Mass Fabricator, 1 L per 3200 ticks at 256 EU/t (HV), without
+  the UU amplifier (the mod has no IC2 scrap).
+- **Not built:** the Target Chamber as a machine (only its controller, an ingredient), the Synchrotron and the LINAC
+  (GT's LHC accelerates the beam itself).
+
+The Large Hadron Collider and the gravitational lens (step 4 part 2 with step 3; 164 sections 31 and 32, technologies
+Large Hadron Collider (13 packs) and Gravitational Lens (15 packs: its Space comes from the godforge's exotic module)):
+- **One machine, upgraded module by module** (as the refinery's coils): the LHC with the EM module, then the Weak
+  module, then the LHCb module. Its recipes are GT's operating points as expected amounts:
+  - EM: 400 protons -> 28 taus + 16.8 omegas in 10 s (1 GeV protons, no acceleration; UIV);
+  - Weak: 2000 electrons -> 45.2 upsilons, 113.2 taus, 68 omegas in 100 s (electrons accelerated past 4.73 GeV;
+    6.55G EU/t: MAX);
+  - LHCb: 20 electrons -> 40 gravitons in 1 s (UIV).
+  The other particles are voided, as GT's hatch filters would. One UIV energy hatch (GT: exactly one).
+- **Structure scaled** like the plasma forge and the godforge (GT's counts / 44): the main ring 129 collider casings
+  (GT 5664), each module 12 collider casings and 4 of its own casings (GT 144 to 160).
+- **Parts with GT's recipes:** the UV, UHV and UIV Solenoid Superconductor Coils (GT's cyclotron coils; their large
+  fluid cells, medium pipes, the long metastable oganesson rod), the CMS, ATLAS and LHCb casings in the Beam Crafter,
+  niobium and the Niobium Cavity Casing, the Collider Casing, neonite, the Filtered Beam Output Hatch, the Samarium
+  Electromagnet, the Compact and Advanced Compact Fusion Coils with GoodGenerator's quartz crystal resonator, GT++'s
+  Advanced Nitinol (two nitinol-60 blocks engraved with the quantum anomaly) and its melt.
+- **The lens:** the Stable Boson Containment Unit (40 gravitons in the Beam Crafter), the Spatially Transcendent
+  Gravitational Lens Block (Quantum Glass with its Molecular and High Power Casings, TM-reinforced glass, the radox
+  polymer, chromatic, mysterious crystal (UU matter) and magneto resonatic lenses, dense chromatic glass plates, long
+  creon and mellion rods, rhugnor, creon and advanced nitinol melts), then the Gravitational Lens in the UMV
+  compressor with 576 Space. The UMV, UXV and MAX compressors get a fluid input for it.
+- **First consumer:** GT's second APIC recipe (an APIC wafer engraved with the lens and 1.5 superfluid -> 2 chips, UIV),
+  next to the mod's own APIC recipe.
+- **ZPIC** (step 4 part 3; 164 section 33, technology Zepto Power ICs): the ZPIC wafer in the Beam Crafter (APIC wafer,
+  spacetime dust, 57.6 molten creon and mellion, 40 gravitons; UIV, 2 s), 2 chips per wafer in the UMV laser engraver
+  with the lens and 2 superfluid. GTNH's UMV energy and dynamo hatches with 2 ZPIC (8 superconductor wires or springs,
+  3200 super coolant, UMV, 50 s; UU matter left out as before) are second recipes: the 8 APIC recipes stay, because the
+  ZPIC's creon and mellion come after the UMV hatches (naquadah fuel MK IV to VI, the UMV blast furnace), so GTNH's
+  recipe alone would close a cycle.
+- **Left out, named:** GT's black hole compressor (the lens runs in the UMV compressor), the glass's Force Field Glass
+  (netherite, molten celestial tungsten; its Six-Phased Copper rods came with #436), the collider casing's Naquarite
+  foil (netherite, Thaumcraft), the LHC controller's Research Stations (no TecTech computation) and UV Neutron
+  Accelerators (their inverter's plastic case takes cyan dye, which the mod has none of).
+
+### YPIC (issue #355, step 5)
+
+Decision (the maintainer, 2026-10-20): YPIC as GT New Horizons has it, without stand-ins, in two pull requests. The
+UXV hatches get GTNH's YPIC recipe as a second recipe (the APIC one stays, as with ZPIC). Shirabon gets an ingot and a
+dust for the Infinite Wafer; temporal harmony stays without shirabon.
+
+Part 1, the Nano Forge (164 section 36, technologies Nano Forge and Nano Forge Tier 2):
+- **Oriharukon:** GT's Oriharukon vein (Horus, Deimos, Phobos) joins Horus's pool in the Void Miner III (0.02915 of a pick,
+  GT's weight at the pool's scale; its tanzanite, vyroxeres and mirabilite left out as before), with GT's ore chain (155).
+- **Melodic and Stellar Alloy:** Melodic Alloy dust from end steel, ender eye and oriharukon dust (ULV mixer); Stellar
+  Alloy dust from Melodic Alloy, nether star and naquadah dust, its hot ingot in the LuV blast furnace (200 s, GT's gas
+  variants), the ingot in the IV vacuum freezer (50 s), its rods cast (143), the frame from 4 rods.
+- **The Radiant Naquadah Alloy Casing:** a prismatic naquadah frame (4 cast rods), 12 naquadah alloy plates, 4 cast
+  prismatic naquadah screws and 129.6 indalloy 140 -> 4 (UV, 0.5 s).
+- **The Nano Forge:** Carbon Nanites from the assembly line (UV, 50 s), the controller from the assembly line (ZPM,
+  5 min), the machine from the controller and GT's structure (522 Radiant casings, 170 Stellar Alloy frames, a UMV
+  energy hatch, 4 LV hulls for the buses and the maintenance hatch) with a carbon nanite in its slot. Tier 2 is tier 1
+  with a neutronium nanite, 148 more Radiant casings and 16 Assembly Line Casings.
+- **The nanites:** Neutronium Nanites in tier 1 (Chromatic Lens, 8 neutronium blocks, 96 ASoC, 20 000 UU matter -> 1;
+  UMV, 100 s), Glowstone Nanites in tier 2 (Radox Polymer Lens, 8 Double Compressed Glowstone, 64 ASoC, 5000 UU matter
+  -> 64; UMV, 200 s); the glowstone block (4 dust) and GT++'s compressed and double compressed glowstone (9 each) in the
+  LV compressor.
+- **Left out, named:** GT's Nano Forge recipe for carbon nanites (bartworks' casings; the assembly line's recipe is the
+  bootstrap), the nanites of tiers 3 and 4 and their structure pieces.
+
+Part 2, the wafers and YPIC (164 section 37, technology Yocto Power ICs, after Nano Forge Tier 2, Zepto Power ICs, the UXV
+energy hatches and naquadah reactor, MK VI and MAX Machines):
+- **Optically Enriched Crystalline Boule:** the americium boule engraved with the Magneto Resonatic, Fayalite (new, from
+  its plate as 155's plate lenses) and mysterious crystal lenses and 1600 UU matter (UEV, 30 s). The engraver holds the
+  three lenses at once; the lens slot of #316 takes one, so 150 keeps a recipe's lenses as ingredients and results when
+  it holds more than one.
+- **Photonically Prepared Wafer:** the boule cut with grade 7 water (16, 50 s) or grade 8 water (24, 25 s), UEV.
+- **Photonically Enhanced Wafer:** the wafer, a Glowstone Nanite, the Solar Light Splitter (kept, in the lens slot), 1000
+  tin plasma and 400 oganesson -> the wafer and 100 molten tin (UEV, 10 s). The splitter: 3 red, green and blue
+  components (HV assembler); a component is an Irradiant Glass Pane engraved with a lens of its colour (IV, 50 s:
+  ruby or red garnet, emerald, green sapphire or olivine, sapphire); the pane from 4 Irradiant Uranium, 4 reinforced
+  glass and a glowstone plate (4 per block, LV cutter with lubricant); Irradiant Uranium from a uranium 238 ingot
+  (solidified from molten uranium) and a Sunnarium (compressed sunnarium dust). SuperSolarPanels' names and textures
+  are not in the checkouts: the parts are named after their colour and drawn in GT's shapes.
+- **Infinite Wafer:** the wafer, 4 eternity dust, 4 shirabon dust, 576 infinity plasma (UXV blast furnace, 30 s; GT's
+  22 000 K). Shirabon gets its ingot (cast from the melt, UMV) and dust (the maintainer's decision); infinity plasma
+  comes from the godforge (144 molten infinity -> 144, 30 s at UXV, with raw star matter as 140's plasmas).
+- **YPIC:** the YPIC wafer from the Infinite Wafer and 150 quark gluon plasma (MAX fluid solidifier, 5 s); 2 Yocto Power
+  ICs per wafer in the UXV laser engraver with the gravitational lens and 2.5 superfluid (5 s).
+- **The hatches:** GTNH's UXV energy and dynamo hatches with 2 YPIC (32 hypocosmium superconductor wires or 16 springs,
+  8 coolant cells, 6400 super coolant, 1152 indalloy 140; UXV, 50 s; UU matter left out as for ZPIC) as second recipes.
+  The 16 APIC recipes stay: the Infinite Wafer's eternity dust comes with the UXV energy hatches, so GTNH's recipe alone
+  would close a cycle. Their recycling follows GTNH's recipe, as the ZPIC hatches' does.
+
+### Naquadah fuel MK IV to VI and the refinery (issue #356)
+
+The refinery with MK III and MK IV comes in steps, by the maintainer's decisions on #417 and #421 (GT's sources, no
+stand-ins). Research notes: GoodGenerator's live refinery is GT's `MTENaquadahFuelRefinery` (27x27x5, field restriction
+coils T1 for MK III, T2 for MK IV).
+- Awakened draconium: the Mehen Belt in the Void Miner III (see the Void Miner pools above).
+- Thulium (the controller's screws, the casing's frame) and tellurium: the Lutetium Asteroid.
+- Praseodymium (MK IV): the depleted thorium based liquid fuel's centrifuge (164 section 23).
+- The Radiation Proof Prismatic Naquadah Composite Sheet (the advanced radiation protection plate, the Europium
+  reinforced casing, the steel frame box): GT's netherite chain (NetheriteRecipes.java:66-224). Part 1, its materials
+  (164 section 24):
+  - liquid nitrogen;
+  - cubic zirconia (bartworks' blast furnace, flawed gems into small piles) and YSZ;
+  - strontium from GT++'s fluorcaphite (its strontium oxide is back in 155) through the alloy blast smelter;
+  - tellurium back in three Everglades ores' decompositions;
+  - bismuth telluride, magnetic steel dust;
+  - the Magneto Resonatic gem (autoclave only) and its lens (pink lens, lathe);
+  - Ender IO's pulsating crystal and crystalline alloy.
+
+  Part 2 (164 section 25): GT++'s Algae Farm and Industrial Dehydrator.
+  - The Algae Farm is an IV multiblock. Its recipes take no inputs, and the tier of its energy hatch picks the recipe:
+    GT's tier 5 gives 4 red algae at 90 % in 50 s, and with 16 compost tier 6 gives 3 + 12 at 90 % in 25.6 s.
+  - GT's IV glass is bartworks' tungstensteel reinforced borosilicate glass.
+  - GT's other algae are left out: nothing in the mod takes them but compost.
+  - The farm's item is GT++'s controller with Integral Encasement I, rose gold and wood plates, plus the structure.
+  - The Industrial Dehydrator (Utupu-Tanuri) is a ZPM machine with naquadah coils (the prismatic gas needs 7200 K). It
+    has the vacuum furnace and the multiblock dehydrator modes, 4 parallels at 2.2 times the speed, and twice a ZPM
+    machine's power.
+  - Left out: the vacuum casing's GT++ Energy Crystal alloy, which is made of Thaumcraft's aspects.
+  - Issue #423: 157's recycling sums count only a recipe's main product, so the energy hatch a machine upgrade gives
+    back no longer makes loops, and a new item cannot change the sums of others.
+
+  Part 3 (164 section 26): the chain itself, from red algae prismarine to the sheet, with GT's recipes.
+  - The baths' and engravers' extra fluid ports follow GT's maps (2 fluids in, 2 out; 101).
+  - The loops run as in GT: contaminated hydrogen peroxide and contaminated nitrobenzene. The crystal step gives the
+    strontium back.
+  - Left out: GT's prismatic bee comb, the raw fluorophlogopite slurry and the netherite Naquarite foil.
+
+The refinery (164 section 27; GoodGenerator's RecipeLoader.java and FuelRecipeLoader.java):
+- **Two machines**, as the mod builds tiered casings: the Naquadah Fuel Refinery with T1 coils (UHV, 4 parallels: MK III)
+  and the one with T2 coils (UMV, 8 parallels: MK III and MK IV). Each runs at its tier's speed times its parallels and
+  draws that many amps of its tier. The second is the first plus 72 T2 coils and a UMV energy hatch.
+- **Their items:** GT's controller with the structure (483 casings, 192 field restriction glass, 124 Europium reinforced
+  radiation proof casings, 72 coils, 64 radiation proof steel frame boxes), the energy hatch and hulls for the buses and
+  hatches. Every part has GT's recipe.
+- **New materials for the parts:**
+  - extremely unstable naquadah (dust, hot ingot, ingot, melt);
+  - high density uranium (the graphite-uranium mixture, wrapped ingots, nuggets);
+  - nether star dust;
+  - mysterious crystal and awakened draconium ingots and melts;
+  - thulium ingots, rods, bolts, screws and frames;
+  - fine manyullyn wire;
+  - GT's tiny naquadah, medium black plutonium and neutronium, and huge mysterious crystal pipes;
+  - the borosilicate glass rods and frame, the reinforced glass plates and long prismatic naquadah rods.
+- **MK III** replaces 136's stand-in in the UEV mixer, with GT's recipe: 4 extremely unstable naquadah, 27 tiberium dust,
+  2 high density uranium, 1 high density plutonium, 800 heavy and 1000 light naquadah fuel into 100, 5 s, UHV.
+- **MK IV:** 27 extremely unstable naquadah, 64 nether star dust, 64 awakened draconium dust, 32 orundum dust, 2000 MK III
+  and 921.6 molten praseodymium into 250, 8 s, UMV. It burns at GT's 8854 GJ per unit in the large naquadah reactors.
+- **Units:** the fuels keep GT's litres, as MK1 and MK2 do (their fuel value is GT's EU per litre). The melts are a tenth.
+- **Not recycled:** the two machines. Their structure's sum passes Factorio's 65 535 per result. GT recycles the
+  controller alone, which keeps its recycling.
+- **Technologies:** Naquadah Fuel Refinery (10 packs) and Naquadah Based Fuel MK4 (13 packs, after the UMV energy hatches
+  and the thorium based liquid fuel).
+- **Left for later:** GT's alternative recipes (chromatic glass dust; hypogen and the one-step MK IV came with #436),
+  MK V and VI and coils T3 and T4.
+
+MK V, MK VI and the coils T3 and T4 (164 section 28; GoodGenerator's FuelRecipeLoader.java, RecipeLoader.java and
+RecipeLoader2.java, GT++'s RecipesGregTech.java):
+- **MK V:** 8 infinity dust, 32 atomic separation catalyst dust, 2000 MK IV and 25 heavy radox into 500, 10 s, UMV. GT
+  gates it with coil T2, so the T2 refinery makes it. Technology Naquadah Based Fuel MK5 (13 packs).
+  - Infinity dust from the infinity ingot in the macerator.
+  - GoodGenerator's atomic separation catalyst: the raw catalyst from 32 blaze powder (the blaze rod macerated), 4
+    draconium or quantium dust, 4 ardite or manyullyn dust and 28.8 molten naquadah (HV mixer, 63); the hot ingot from 2
+    orundum plates, 4 raw catalyst and 14.4 molten plutonium (HV blast furnace); the vacuum freezer; the dust.
+  - Left out: GT's firestone variants of the raw catalyst. The mod has no source of firestone.
+- **MK VI:** 64 astral titanium dust, 32 tritanium dust, 2000 MK V and 36 molten shirabon into 750, 12 s, UXV, coil T3.
+  Technology Naquadah Based Fuel MK6 (14 packs).
+  - Astral titanium dust: 8 titanium dust engraved with the quantum anomaly as the lens (UHV).
+  - Shirabon: the plasma forge with the Hi-Computation Station Mk-V (kept), 115.2 molten metastable oganesson, 230.4
+    molten precious metals alloy, 28.8 molten spacetime and 500 residue into 14.4. GT's 1.5G EU/t is above UXV, so the
+    recipe runs at MAX speed.
+  - GoodGenerator's precious metals alloy: one dust of each platinum group metal into 6 (UHV mixer), the blast furnace
+    with gas (UEV), the vacuum freezer and the melt (UHV).
+- **MK VI from celestial tungsten:** 64 celestial tungsten dust, 48 tritanium dust, 2000 MK V, 36 shirabon and 6 raw star
+  matter into 1250, 3 s, UXV, coil T4. Technology Temporal Field Restriction Coils (14 packs, after the plasma module).
+- **MK III from chromatic glass:** 8 extremely unstable naquadah, 9 chromatic glass dust, 2 high density uranium, 1
+  high density plutonium, 800 heavy and 1000 light naquadah fuel into 200, 5 s at UEV speed, coil T1. Chromatic glass
+  dust is 64 glass dust engraved with the quantum anomaly (UHV). It comes with Naquadah Based Fuel MK6, which has the
+  anomaly.
+- **Coils T3 and T4:** GT's Ultimate and Temporal Field Restriction Coils with GT's parts; the medium infinity and
+  spacetime fluid pipes from the extruder (UV, UEV). Like T1 and T2 they are made in the ZPM assembly line in 60 s.
+- **Two more machines:** the refinery with T3 coils (UXV, 12 parallels) and with T4 coils (UXV, 16 parallels), each the
+  one before plus 72 coils and a UXV energy hatch. Like the first two, they are not recycled.
+- **Fuel values:** MK V 63 932.16 GJ and MK VI 498 670.848 GJ per unit (GT's 399 576 000 EU/t x 160 ticks and
+  2 077 795 200 EU/t x 240 ticks per litre), in every large naquadah reactor.
+- **Units:** the fuels keep GT's litres; the melts, heavy radox, the residue and raw star matter are a tenth.
+- **Left out, with the reason:**
+  - MK IV from hypogen and the one-step MK IV: built with #436 (below).
+  - MK V from creon and mellion: built with #355 step 2 (164 section 29).
+
+### Dragonblood, hypogen and Six-Phased Copper (issue #436)
+
+Decision (the maintainer, 2026-10-20): a dragonblood source through the Extreme Entity Crusher, then hypogen, both MK IV
+recipes and Six-Phased Copper for the godforge glass (164 section 35):
+- **Dragonblood:** GT++'s dragon metal (its name in game: Dragonblood) drops from the Ender Dragon, 25 to 50 stacks of 1
+  to 10 nuggets. The EV Extreme Entity Crusher fights the dragon as it fights the Wither: Crushing The Ender Dragon takes
+  its 4 End Crystals (28 glass and 4 eyes of ender; their ghast tears come only with Creon and Mellion and are left out)
+  and gives 206 dragonblood nuggets in 120 s. A nugget melts into 1.6 molten dragonblood (UHV fluid extractor).
+- **Hypogen:** GT++'s fusion recipe, 14.4 molten dragonblood and 28.8 molten rhugnor into 3.6 molten hypogen (UHV,
+  409.6 s), in the MK4 fusion reactor.
+- **MK IV:** GoodGenerator's MK IV from hypogen (bedrockium dust instead of nether star dust, 24 hypogen, 500 instead of
+  250; T2 refinery, 8 s) and the one-step MK IV (heavy and light naquadah fuel, hypogen and molten chromatic glass
+  without MK III; T4 refinery, 2 ticks).
+- **Six-Phased Copper:** GT's plasma forge recipe (UMV, 60 s) from molten celestial tungsten, astral titanium, hypogen,
+  chromatic glass, rhugnor and mellion (their dusts melt in the UIV fluid extractor); its 8 copper singularities are left
+  out, as the mod has no singularities (#354). Molten Six-Phased Copper casts long rods (143). The Spatially Transcendent
+  Gravitational Lens Block takes GT's 6 long Six-Phased Copper rods now.
+- **Technologies:** Hypogen (13 packs) after Naquadah Based Fuel MK4, Fusion Coil II, the MK4 fusion reactor, Reach the
+  End and the crushers; Temporal Field Restriction Coils (the one-step MK IV) follows it. Six-Phased Copper (14 packs)
+  after Hypogen, MK VI, the plasma module, Creon and Mellion and the Godforge; Gravitational Lens follows it.
+- **In game:** the in-game checks are in a [Task-Ingame] issue linked in the PR.
+
+### The ME parts behind the stand-ins (issue #485)
+
+Decision (the maintainer, 2026-10-21): the Advanced Engineering Processor with its full chain, the Singularity cell
+as GTNH has it, and the Singularity crafting storage left for a new issue.
+- **Item Processors Tier III and IV** (120). GTNH's chain:
+  - BuildCraft's redstone chipset (its laser table recipe, 1 redstone dust, here in the LV assembler: a named stand-in);
+  - the emerald chipset (an emerald plate and the redstone chipset, forming press);
+  - the Engraved Quantum Chip (an exquisite yellow garnet, LuV engraver with the yellow garnet lens);
+  - the Item Circuits Tier III and IV (the engraved energy or quantum chip and the emerald chipset, forming press);
+  - the processors (an engineering processor and the circuit, IV and LuV assembler).
+- **Their users.** Tier IV: the 4096k and 16384k components and the Pattern Terminal Ex. Tier III: the 1024k
+  component. GTNH's 256k component takes tier III too, but here it keeps the engineering processor: the energy crystal
+  needs energium, which comes with the ZPM assembly line, after the 256k cells. The energy crystal and the engraved
+  energy chip now come with ME Storage 1024k as well.
+- **The Singularity cell** (162). GTNH's recipe in the new Space Elevator Assembler Module Mk-I (4 parallels, UHV,
+  Mk-I motors):
+  - the Eternal Singularity from 7.2 molten spacetime in the UMV compressor, a named stand-in for GT's black hole
+    compressor;
+  - 8 Quantum Chests V with their UEV chest buffers;
+  - 4 infinity and 12 cosmic neutronium blocks, and 4 Infinity Catalysts (64 dust each, the HV compressor for the
+    neutronium compressor);
+  - indalloy 140 for the UEV solder.
+
+  ME Storage Singularity moves to UMV science.
+- **Left for #487:** the Singularity crafting storage's Creative Energy Cells (AE2 dense energy cells), Draconic
+  Reactor Stabilizers (Draconic Evolution's cores and fusion crafter) and Transcendent Metal Nanites (the Energised
+  Tesseract), and the void cells' singularity (512 000 cobblestone, which Gregtorio does not have).
+
+### The Singularity crafting storage and the void cells (issue #487)
+
+Decision (the maintainer, 2026-10-21): the nanites with Nano Forge tier 3, the energy cells as crafting items in
+Gregtorio, stone for cobblestone; the Draconic Reactor Stabilizers go to #489. 164 section 39:
+- **Transcendent Metal Nanites:**
+  - Black Titanium: GT++'s alloy blast smelter recipe, 9 dusts and argon, UV;
+  - its plate: cast (143);
+  - the Raw Tesseract: the plasma forge, the only GTNH variant the mod has the parts for: transcendent metal rods,
+    Black Titanium plates, Zeron-100 screws, a Quantum Anomaly, the stellar catalyst;
+  - the Energised Tesseract: the neutron activator with MK V; GT's NKE window and the depleted fuel are left out;
+  - the nanites: Nano Forge tier 2, MAX, the Energised Tesseract kept.
+- **Nano Forge tier 3:** tier 2, the nanite, 228 Radiant casings, 16 Assembly Line Casings and 84 Stellar Alloy frames.
+  Its own nanites have no consumer here.
+- **Creative Energy Cell:** AE2's Energy Cell and Dense Energy Cell as crafting items with GTNH's recipes. The HV
+  battery buffer of 16 batteries stands in for GT's EV 4x4 buffer; the mod's buffers end at HV.
+- **The Singularity crafting storage:** 4 Creative Energy Cells and 4 Transcendent Metal Nanites now, for 120's
+  transcendent metal blocks. ME Crafting Storage Singularity moves to MAX science, after the nanites.
+- **AE2's Singularity:** 512 000 stone (the mod's cobblestone) as 8 Compressed Cobblestone of 64 000 each, because a
+  recipe takes at most 65 535 of an item; both steps in the IV compressor. The void cells take it with GTNH's recipes
+  (the fluid one AE2FC's), with ME Upgrade Cards.
+
+### Draconic Evolution's cores and the Fusion Crafter (issue #489)
+
+Decision (the maintainer, 2026-10-22): the Chaos Guardian in the Extreme Entity Crusher for the chaos fragments, one
+Fusion Crafter per casing tier with named stand-ins for Thaumcraft's, Blood Magic's and Botania's items, the first
+schematic from the space mining ruin, GTNH's numbers. Part 1 (162 and 164 section 40):
+- **The Draconic Core Ruin:** GTNH's space mining target (Mining Module Mk-III, the UHV drone): 1 % a Draconic Core
+  Schematic and 1 % a Draconic Core per run; its charged ZPM is left out.
+- **The Fusion Crafter:** kubatech's controller (the research assembly line, UEV) and casings (base, Bloody Ichorium,
+  Draconium, Wyvern); tier 1 as GT's structure (43 base casings, 32 fusion machine casings, 8 fusion coils, 32 tier
+  casings), each next tier the one before with 32 casings of its tier and its energy hatch. A tier runs the recipes of
+  its tier and those below.
+- **The cores:** Draconic (tier 1), Wyvern (tier 2), Awakened (tier 3), and the Wyvern and Draconic Energy Cores; each
+  keeps its schematic. The Wyvern and Awakened Core Schematics in the research assembly line.
+- **The sunnarium alloys** of the core mod for the energy cores: MAX science, as the sunnarium and the irradiant uranium.
+- **Stand-ins:** molten neutronium for void metal, the orundum plate for ichorium, the dense awakened draconium plate
+  for the Gaia Spirit plate, the Quantum Star for the Primordial Pearl, UHV sensors and emitters for Blood Magic's parts.
+Part 2 (164 section 41):
+- **Chaos Shards:** the Chaos Guardian in the Extreme Entity Crusher, without an ingredient (Draconic Evolution's
+  guardian lives on its island and is not summoned): 5 shards, its Chaos Crystal's drop, in 1200 s (2000 health, ten
+  times the dragon's). GTNH's forge hammer steps to large, small and tiny fragments.
+- **The Chaotic Core** (tier 4, 2 large fragments) and its schematic (research assembly line, UMV); the Awakened
+  Draconium Fusion Casing and the crafter's tier 4 (with MK II fusion machine casings). Tier 5 is left out.
+- **The Reactor Stabilizer:** the Wyvern and Draconic Flux Capacitors, EnderIO's Vibrant Capacitor Bank (Gregtorio has
+  its parts), the Inner and Outer Rotor, the Rotor Assembly, the Focus Ring (the new Nether Star Lens) and the Frame,
+  GTNH's extreme table recipes in the assembler of their cores' tier. The Singularity crafting storage takes its 8
+  stabilizers now.
+- **Stand-ins:** the mod's UHV superconductive wire for GT's UHV superconductor, the dense draconium plate for the
+  Charged Draconium Block (charged in the world), the large lithium battery for GT's EV battery.
+
+### Nuclear depth (issue #359)
+
+Decision (the issue's step 1, the smallest one): GT's dual and quad rods of uranium and thorium and the MOX rods (164).
+A rod of n cells gives n x (1 + n / 2) pulses (IC2), so a dual rod holds 4 and a quad rod 12 times the single rod's
+value; MOX is half a uranium rod (GT's lifetime), without IC2's heat bonus (no hull heat in the mod's reactors). The
+depleted rods go into GT's thermal centrifuge. Left for later: GT's IV centrifuge of 8 depleted rods with the isotopes
+(plutonium 238 and 241, uranium 232 and 233, thorium 232; nothing takes them before the LFTR), the naquadah rods (GT
+cans them into a large tungstensteel fluid cell, which the mod lacks), the LFTR with its salt loop, the Cold Trap and the
+Reactor Processing Unit, and the Reactor Fuel Processing Plant (issue #386).
+
+### Nuclear depth, part 2 (issue #386)
+
+The maintainer's decision: all four steps of the issue. Step 1, the naquadah rods (164 section 13, technology Naquadah
+Fuel Rods): GT's Large Tungstensteel Fluid Cell canned with enriched naquadah dust, the dual and quad rods, the depleted
+rods in GT's EV centrifuge. Value by #359's rule (the rod's energy over its life against the uranium rod's): 10 times,
+60 000 MJ; dual and quad 4 and 12 times. GT's quad naquadah rod heats less than the others; the mod's reactors have no
+hull heat, so that difference is lost. GT's fifth rod, The Core (issue #402, after the Ross128b veins of #392 brought
+bartworks' tiberium): GT's LuV assembler recipe, 10 880 times a uranium rod (65 280 000 MJ), the depleted Core in GT's IV
+centrifuge. Its tiberium comes with Reach Ross128ba (ZPM): #252 would make that technology a prerequisite of Naquadah Fuel
+Rods, but its higher science would hold the other rods back, so The Core has its own technology after both.
+
+Step 2 (164 section 14, technology Liquid Fluoride Thorium Reactor; the plan on #386: GT++'s LFTR fuels are recipes of
+the Reactor Fuel Processing Plant only, so the plant comes here, not in step 4):
+- the isotopes: GT's IV centrifuge of 8 depleted thorium, uranium or MOX rods (4 dual, 2 quad) with GT's chances;
+  small and tiny piles make their dust at the crafting table (GT's packager is not in the mod; FORK_RECIPES_TABLE_ONLY
+  names the dusts nothing else makes). The MOX isotopes come with Fusion Plasmas MK3, where their plutonium 241 is first
+  used (americium plasma, 136 section 1d); thorium 232 also goes into GoodGenerator's uranium carbide-thorium mixture
+  (11 thorium + 1 thorium 232 as in GTNH, before 12 thorium).
+- GT++'s fluorides and GoodGenerator's thorium tetrafluoride with GT's recipes; the mod's zirconium tetrachloride of 159
+  serves as GT++'s (the same chemical). GT++'s industrial strength hydrofluoric acid is its own fluid; its first source is
+  the beryllium fluoride recipe, as in GTNH. Left out: the lithium carbonate routes (the mod has no lithium carbonate)
+  and the beryllium fluoride dehydrator (two fluid outputs).
+- Hastelloy-N (GT++'s alloy blast smelter recipe, cast by 143) and the Reactor Fuel Processing Plant: a 3x3 machine with
+  four fluid inputs at IV speed, its item the controller with the structure's casings (17 sealant, 7 structural, 5
+  fluid containment, 4 reactor shield) and hatches as hulls. Its parts with GT's and the core mod's recipes: the
+  Gregtech Computer Cube and the Data Orb, GT++'s huge Staballoy pipe and GT's large titanium pipe (as parts: the mod
+  has no fluid pipe items), the Hermetic Casing V and the Super Tank IV. GT's Computer Monitor Cover is the mod's
+  computer monitor; GT's crafting table recipes are crafting-or-assembling recipes.
+
+Step 3 (164 section 15, scripts/fork-power.lua; technologies Liquid Fluoride Thorium Reactor, Nuclear Salt Processing,
+Sparge Tower):
+- The LFTR (GT++'s Thorium Reactor, IV) is a 3x3 machine that needs no power and burns 10 fuel and 20 lithium
+  tetrafluoroberyllate a run into GT++'s depleted salts, uranium hexafluoride (the mod's, the same chemical) and molten
+  uranium 233. Power: GT's energy per run at 1 EU = 1 kJ (as the fusion fuels of 136): 65.5, 262 and 1049 GJ per 10
+  units of Fuel 1, 2, 3, given at four amps of IV, LuV and ZPM (40.96, 81.92, 163.84 MW), so a run takes 1600, 3200 and
+  6400 s (GT: 100 s at GT's power, which the mod's tier scale does not have). A hidden electric energy interface under
+  the reactor gives that power while it works (the script). GT's random uranium 233 (1 to 10 L at 1 in 300 ticks) is
+  its mean, 3.67 a run; GT's warm-up of 250 s and its explosion are not modelled.
+- Its item: GT++'s controller with the structure (83 Hastelloy-N Reactor Casings, 48 Reactor Shield Casings, 4 dynamo
+  hatches, hulls for the other hatches). GT's 12x naquadah cable is 3 of the mod's naquadah cables (by wire count); the
+  mod's naquadah cable comes with ZPM Materials, so the LFTR and its fuels (#252) need it: LuV science (GT: IV). The
+  IC2 reactor platings of the reactor casing are NewHorizonsCoreMod's assembler recipes; thorium 232 makes the
+  controller's plates (bartworks' blast furnace and bender).
+- The Reactor Processing Unit I and Cold Trap I (GT++'s IV single blocks, 3x3 here) with GT++'s recipes; GT's cells
+  are fluids, so a recipe that takes and returns sodium fluoride in cells takes the difference. The RPU's controller
+  takes GT's IV chemical reactor as its parts (the mod has no single block IV chemical reactor; its 2 huge polyethylene
+  pipes as 12 polyethylene sheets, as the mod's HV chemical reactor does for GT's pipe). Sodium fluoride melts in the
+  fluid extractor (GT: the fluid heater, which the mod does not have). Uranium 233's melt solidifies into its dust
+  (GT++: the ingot), as 136 does for uranium and plutonium.
+- The Sparge Tower (LuV) with GT++'s recipes; GT gives each of the five sparged gases a random amount: here the mean.
+  Its controller is GT++'s assembly line recipe without GT's research item (the mod's assembly lines take none); GT's
+  IV distillery is the mod's IV short distillation tower. HS188-A: GT++'s alloy blast smelter recipe; its rhenium from
+  GT++'s roasting of purified scheelite and molybdenite (the alloy blast smelter), talonite and niobium carbide dust
+  from GT++'s mixer, Hastelloy-X dust from the ingot.
+- The Cold Trap II and RPU II came with #406 once ytterbium existed (#355; 164 section 21). They are GT++'s ZPM tiers of
+  the two blocks, with the same recipes at four times the speed, and each is the upgrade of its IV block. Their controllers
+  take Pikyonium 64B: GT++'s alloy blast smelter melts its eight dusts in their smallest ratio (29 x 144 L) at its tier 7
+  (ZPM, 420 s), and 143 casts it. The RPU I takes GT's 3 double Hastelloy-N plates (pattern FRP/DCD/PDF; it took 2).
+- The Nuclear Salt Processing Plant came with
+  #406 (164 section 17): the RPU's and the cold trap's recipes in one machine; GT's 2 parallels per tier are limited by
+  its 2 energy hatches to 4 of GT's IV recipes at IV, so it runs at 4 x 2.5 = 10 times the IV single blocks' speed at 4
+  times their power (one speed for all its recipes: GT's HV ones could run 10 parallels). Its item is GT++'s controller
+  with the structure (58 IV machine casings, 32 Thermally Insulated Casings with GT++'s recipe, hatches as hulls).
+
+Step 4 (164 section 16, with Nuclear Salt Processing): the loop closes in the Reactor Fuel Processing Plant, GT++'s
+recipes. The RPU's impure molten salt base distils into the stable molten salt base (IV tall distillation tower); with the
+cold trap's uranium hexafluoride and hydrogen it becomes the LFTR Fuel Base (the IV blast furnace, GT's cells as fluids,
+or the chemical plant with industrial strength HF back), and the plant mixes it with zirconium or thorium tetrafluoride
+into Fuel 2 and 3. The blast furnace's 5400 K are not modelled (the mod's blast furnaces have tiers, no heat).
+
+### GoodGenerator's fuels (issue #357)
+
+Part 1 (164): the liquid fuels with GoodGenerator's recipes and fuel values. Ether and naquadah gas already existed
+without a cell; ethanol gasoline, cyclopentadiene, the ferrocene line, Jet Fuel No.3 and Jet Fuel A are new. GT's large
+chemical reactor recipes run in Gregtorio's chemical reactor of their tier (Jet Fuel A, five fluids, in the IV large
+chemical reactor). The combustion promoter is made; it goes into Jet Fuel A.
+
+Part 2 (164): the Universal Chemical Fuel Engine and the thorium based liquid fuel. Decisions:
+- The engine is a burner generator on the combustion and gas turbine fuel cells at GT's ceiling of 150 %, one LuV amp
+  (the one dynamo hatch of its structure). GT's efficiency exp(-c x fuel / promoter) x 150 % needs the combustion
+  promoter beside the fuel, which a burner cannot take: left out, as #255 and #304 leave their engines' extras out.
+  Rocket fuel cells are left out too (one efficiency per burner; the Large Rocket Engine burns them at 3 times).
+- GT's Extreme Combustion Engine, an ingredient of the controller, stays "leave" (multiblock audit); a second large
+  combustion engine stands in. The structure's 72 PTFE frames are 144 PTFE sheets (no PTFE frame in the mod).
+- The thorium fuel follows GoodGenerator's chain with 12 thorium dust for GT's 11 thorium and 1 thorium-232 (no thorium
+  isotopes) and draconium ingots for the dust. Gregtorio's draconium comes with UEV Materials, so the fuel does too,
+  later than in GT New Horizons. As 136's uranium and plutonium fuels, the reactor leaves no depleted fuel. #356 adds
+  GoodGenerator's neutron activator recipe for it (200 L excited -> 200 L depleted, 500 s) and its centrifuge
+  (thorium-232, praseodymium, boron, indium). That centrifuge is the mod's only source of praseodymium (fuel MK IV;
+  164 section 23).

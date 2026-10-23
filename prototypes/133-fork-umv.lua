@@ -424,7 +424,7 @@ end
 ---     line makes); molten flerovium: americium + calcium plasma (the draft: plutonium-241);
 ---     both are MK4 recipes, so nothing the MK5 makes is needed to build it
 ---   * energy module: the ZPM assembly line recipe of 23-zpm-age-item.lua (never loaded, removed in issue #249), with UHPIC
----     wafers instead of the ASOC wafers (not built)
+---     wafers instead of the ASOC wafers (issue #355: 164 makes them GT's 128 ASoC wafers)
 ---   * advanced fusion coil II: UEV emitter and sensor (a UIV field generator or emitter would need
 ---     UMV circuits, which need spacetime, which the MK5 makes), the compact fusion coil of the
 ---     draft is the advanced fusion coil, rhugnor plates
@@ -671,7 +671,8 @@ F.components{
 --- GT: the UMV coil is a magnetic samarium rod with 16 fine spacetime wires. The UMV blast furnace
 --- coil is built like the infinity coil (spacetime wire and screws, transcendent metal foil, a UIV
 --- circuit and a melt). Energy hatch as in 132-fork-uiv.lua: cryogenic helium, APICs (twice as many as
---- in the UIV hatch: they stand in for GT's ZPIC, which is not built), no UU matter.
+--- in the UIV hatch: they stand in for GT's ZPIC; issue #355 added GT's ZPIC recipe as a second one in 164 section 33,
+--- this one stays because the ZPIC comes after the UMV hatches), no UU matter.
 --------------------------------------------------------------------------------
 
 create_item{
