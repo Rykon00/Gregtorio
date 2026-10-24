@@ -380,7 +380,9 @@
   laser defense simulation's character died without them and its script stopped the menu); after changing the disabled
   techs or the character, run `python tools/devcheck/devcheck.py menusim --sim all --compare`. Issue #588: Gregtorio's
   own main menu scenes are the first section of that file (`gregtorio_steam_age`, save `menu-simulations/gregtech-steam-age.zip`,
-  built by achilles155; vanilla's Nauvis scenes stay next to them, the maintainer's choice). A scene's save is changed
+  built by achilles155; vanilla's Nauvis scenes stay next to them, the maintainer's choice; issue #591: the menu picks at
+  random and has no order, so each Gregtorio scene is registered `SCENE_WEIGHT` = 5 times, the copies `<name>_copy2` to
+  `_copy5`, which `menusim` does not run again but checks against the scene). A scene's save is changed
   only by `devcheck.py menusim --sim <name> --rebuild` (the headless game with today's mods runs `tools/menusim/resave.lua`:
   chunks cut to the factory, the builder's blueprint library (the largest part of a map made in the editor) and the replay
   removed; `--save-from <ref> --made-with <gregtorio ref>:<me-network ref>` starts from the builder's save and compares
