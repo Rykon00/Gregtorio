@@ -17,7 +17,7 @@
     the ore forms with the later of Steam Macerator and the first technology that makes their input (only into the
     prerequisites of the original's technology, only when something takes each product there) and moves the furnace
     recipes of their products with them; Steam Macerator needs Steam Forge Hammer (142); devcheck fails for a later copy
-    unless it is in `FORK_STEAM_LATE` (empty: issue #573 made Reach the Nether need Steam Macerator); issue #449: the LV combustion generator, extruder and laser
+    unless it is in `FORK_STEAM_LATE` (empty: issue #573 made Reach the Nether need Steam Macerator); issue #586: `nugget_ingot_unlocks()` right after it unlocks every `<metal>-ingot-from-nuggets` with the first technology that has its nugget (an ore form's furnace recipe) and its ingot mold (Steel Processing), only into the prerequisites of where it was (GTNH: the steam alloy smelter with the steel ingot mold is the only way, the table recipe is removed); devcheck fails for a technology whose ore form smelting gives a nugget without a nugget -> ingot recipe there or before unless `<technology>:<nugget>` is in `FORK_NUGGETS_BEFORE_INGOTS` with its reason, and for a nugget -> ingot recipe later than its nugget and mold; issue #449: the LV combustion generator, extruder and laser
     engraver, the LV categories run by every MV machine through `fork_lv_machine_categories()` in 199; issue #560, section
     2n: every machine whose categories are all of the ore line (macerator, ore washer, thermal centrifuge, centrifuge, the
     steam macerators' copies) becomes a `furnace` that picks its recipe from its input, by `fork_furnace_machines()` at the

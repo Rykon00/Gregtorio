@@ -1003,6 +1003,171 @@ local function steam_ore_unlocks(copies)
 		.. " furnace recipes with them (issue #571)")
 end
 
+--------------------------------------------------------------------------------
+--- issue #586: the furnace smelts a crushed, purified or centrifuged ore into 10 nuggets (GT's
+--- ProcessingOreSmelting.java), and the alloy smelter turns 9 nuggets back into an ingot with the ingot mold
+--- (ProcessingNugget.java: 2 EU/t, so GT's steam alloy smelter runs it; here category lv-alloy-smelter-recipes, which the
+--- Steam Alloy Smelter runs). GTNH has no other way before LV (NHCore's RecipeRemover deletes the crafting table's
+--- 9 nuggets -> ingot) and casts the ingot mold from molten steel; Gregtorio makes the mold from 4 steel plates (Steel
+--- Processing, 142). So every <metal>-ingot-from-nuggets comes with the first technology that has its nugget (an ore
+--- form's furnace recipe) and its mold in its prerequisites, and only earlier than where it was (into the prerequisites
+--- of its technologies). A nugget that comes before the mold (Steam Forge Hammer's crushed ore smelting, the Nether's ores)
+--- waits for it; the steam age smelts the impure dust of the steam macerator into an ingot instead. Here, after
+--- steam_ore_unlocks moved the furnace recipes, so 142 and 199 do not move it back. devcheck: check_nugget_ingots
+--- (allow-list FORK_NUGGETS_BEFORE_INGOTS).
+--------------------------------------------------------------------------------
+
+FORK_NUGGET_ORES = { "^crushed%-", "^purified%-", "^centrifuged%-" }
+--- "<technology>:<nugget>" -> reason: the technology makes the nugget by an ore form's furnace recipe, but no nugget ->
+--- ingot recipe comes with it or its prerequisites (devcheck's section NUGGETINGOTOK)
+local BEFORE_MOLD = "the ingot mold needs steel (Steel Processing), as GTNH casts it from molten steel; the nugget -> "
+	.. "ingot recipe comes with "
+local function steam_dust(tech) return "; until then the steam macerator's impure dust smelts into an ingot (" .. tech .. ")" end
+FORK_NUGGETS_BEFORE_INGOTS = {
+	["steam-forge-hammer:copper-nugget"] = BEFORE_MOLD .. "Steel Processing" .. steam_dust("Steam Macerator"),
+	["steam-forge-hammer:gold-nugget"] = BEFORE_MOLD .. "Steel Processing" .. steam_dust("Steam Macerator"),
+	["steam-forge-hammer:iron-nugget"] = BEFORE_MOLD .. "Steel Processing" .. steam_dust("Steam Macerator"),
+	["steam-forge-hammer:tin-nugget"] = BEFORE_MOLD .. "Steel Processing" .. steam_dust("Steam Macerator"),
+	--- Steel Processing is not among Reach the Nether's prerequisites; Rubber is the first technology with both
+	["reach-the-nether:beryllium-nugget"] = BEFORE_MOLD .. "Rubber" .. steam_dust("Reach the Nether"),
+	["reach-the-nether:molybdenum-nugget"] = BEFORE_MOLD .. "Rubber" .. steam_dust("Reach the Nether"),
+	["reach-the-nether:thorium-nugget"] = BEFORE_MOLD .. "Rubber" .. steam_dust("Reach the Nether"),
+}
+--- issue #563: in classic ore mode realgar is an ore of the start (a vein recipe), so its steam copies and crushed ore
+--- smelting come with Steam Macerator (in map vein mode with its vein's technology, after the mold)
+if FORK_CLASSIC_ORES then
+	FORK_NUGGETS_BEFORE_INGOTS["steam-macerator:realgar-nugget"] = BEFORE_MOLD .. "Steel Processing"
+		.. steam_dust("Steam Macerator")
+end
+
+local function nugget_ingot_unlocks()
+	local techs, recipes = data.raw.technology, data.raw.recipe
+	local memo = {}
+	local function closure(t)
+		if not memo[t] then
+			local s = { [t] = true }
+			memo[t] = s
+			for _, p in pairs(techs[t] and techs[t].prerequisites or {}) do
+				for x in pairs(closure(p)) do s[x] = true end
+			end
+		end
+		return memo[t]
+	end
+	local function size(s)
+		local n = 0
+		for _ in pairs(s) do n = n + 1 end
+		return n
+	end
+	local unl = {}   -- recipe -> { [technology] = true }
+	for tname, t in pairs(techs) do
+		for _, e in pairs(t.effects or {}) do
+			if e.type == "unlock-recipe" then
+				unl[e.recipe] = unl[e.recipe] or {}
+				unl[e.recipe][tname] = true
+			end
+		end
+	end
+	--- the technologies of the recipes that make `item`, or false when one is enabled from the start
+	local function techs_making(item)
+		local out = {}
+		for name, r in pairs(recipes) do
+			if not r.hidden and not name:match("recycling") then
+				for _, res in pairs(r.results or {}) do
+					if res.name == item then
+						if r.enabled ~= false then return false end
+						for t in pairs(unl[name] or {}) do out[t] = true end
+					end
+				end
+			end
+		end
+		return out
+	end
+	local function is_ore_form(item)
+		for _, p in pairs(FORK_NUGGET_ORES) do
+			if item:match(p) then return true end
+		end
+		return false
+	end
+	local made = {}   -- nugget -> technologies of the ore forms' furnace recipes that make it
+	for name, r in pairs(recipes) do
+		if not r.hidden and fork_has_category(r, "smelting") and #(r.ingredients or {}) == 1
+				and is_ore_form(r.ingredients[1].name) then
+			for _, res in pairs(r.results or {}) do
+				if res.name:match("%-nugget$") then
+					made[res.name] = made[res.name] or {}
+					for t in pairs(unl[name] or {}) do made[res.name][t] = true end
+				end
+			end
+		end
+	end
+	local function has(t, set)
+		if set == false then return true end
+		for x in pairs(set) do
+			if closure(t)[x] then return true end
+		end
+		return false
+	end
+	local molds = data.raw["mod-data"] and data.raw["mod-data"]["fork-mold-recipes"]
+	molds = molds and molds.data or {}
+	local nuggets, n = {}, 0
+	for nugget in pairs(made) do nuggets[#nuggets + 1] = nugget end
+	table.sort(nuggets)
+	for _, nugget in pairs(nuggets) do
+		local name = nugget:gsub("%-nugget$", "") .. "-ingot-from-nuggets"
+		local r = recipes[name]
+		local from = r and not r.hidden and r.enabled == false and unl[name] or {}
+		local mold = molds[name] and techs_making(molds[name])
+		if mold == nil then mold = false end
+		--- the technologies in the prerequisites of every current one that have the nugget and the mold
+		local cands = {}
+		if next(from) and next(made[nugget]) then
+			local common
+			for t in pairs(from) do
+				if not common then
+					common = {}
+					for x in pairs(closure(t)) do common[x] = true end
+				else
+					for x in pairs(common) do
+						if not closure(t)[x] then common[x] = nil end
+					end
+				end
+			end
+			for t in pairs(common) do
+				if has(t, made[nugget]) and has(t, mold) then cands[#cands + 1] = t end
+			end
+		end
+		--- the first of them: none of the others in its prerequisites (the fewest prerequisites, then the name)
+		local best
+		for _, t in pairs(cands) do
+			local first = true
+			for _, u in pairs(cands) do
+				if u ~= t and closure(t)[u] then first = false end
+			end
+			if first and (not best or size(closure(t)) < size(closure(best))
+					or (size(closure(t)) == size(closure(best)) and t < best)) then
+				best = t
+			end
+		end
+		if best and not from[best] then
+			for t in pairs(from) do
+				local kept = {}
+				for _, e in pairs(techs[t].effects or {}) do
+					if not (e.type == "unlock-recipe" and e.recipe == name) then kept[#kept + 1] = e end
+				end
+				techs[t].effects = kept
+			end
+			fork_add_unlock(best, name)
+			n = n + 1
+			local old = {}
+			for t in pairs(from) do old[#old + 1] = t end
+			table.sort(old)
+			log("FORK-NUGGET-INGOT: " .. name .. " moves from " .. table.concat(old, ", ") .. " to " .. best)
+		end
+	end
+	log("FORK-NUGGET-INGOT: " .. n .. " nugget -> ingot recipes moved to the first technology with the nugget and the mold "
+		.. "(issue #586)")
+end
+
 function fork_steam_categories()
 	local tech_of = {}
 	for tname, t in pairs(data.raw.technology) do
@@ -1053,6 +1218,7 @@ function fork_steam_categories()
 		if e then e.crafting_categories = { "steam-macerator-recipes" } end
 	end
 	steam_ore_unlocks(copies)
+	nugget_ingot_unlocks()
 	log("FORK-STEAM: " .. #copies .. " LV macerator recipes copied for the steam macerators without their byproducts (issue #447)")
 end
 
