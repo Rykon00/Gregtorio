@@ -154,6 +154,12 @@ Classic mode:
 | 0.5.6 or later (converted) | unchanged | the surfaces lose the veins in their map settings (new chunks get none; the veins' controls are no sign of a foreign map for #540); the ore on the map and the drills on it stay and keep mining; drill items build the classic mines |
 | switched from classic to map veins | as a 0.5.5 save: veins in the generated chunks, mines on their planet's veins become drills, the others lose the recipe | - |
 
+- #569: a save of 0.5.5 that researched Rubber, Galena or Invar lacked the reach technology they need since 0.5.6, so
+  its Twilight Forest vein recipes stopped with "Recipe not researched"; `migrations/2026-10-24-issue-569-reach-techs.lua`
+  researches every reach technology a researched technology has as a prerequisite (with its own missing prerequisites).
+- A blueprint with a mining drill (Manual Mine, Miner, Ore Drilling Plant) shows it as unknown in classic mode and
+  builds the rest: no item builds a drill there (the maintainer's decision in #567).
+
 The engine applies a JSON migration that renames a recipe also when the old name still exists (tested headless for
 #563), so V9's JSON migration onto `removed-vein-<planet>-<kind>` is gone: it would have taken every mine's recipe in
 classic mode. Its placeholders stay hidden prototypes. devcheck: `migrate --set

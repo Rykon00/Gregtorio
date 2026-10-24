@@ -416,7 +416,9 @@
   in classic mode that no planet has vein ore. `scripts/fork-ore-veins.lua` notes a save's mode in
   `storage.fork_ore_veins.mode` (`on_init`, its remote `migrate`, `migrations/2026-10-24-issue-563-ore-mode.lua`) and
   migrates it in `on_configuration_changed` when the setting changed; a save of 0.5.6 or later has had its mines turned
-  into drills, which classic mode keeps (`docs/ORE-VEINS.md`, "Old saves and switching"). The last release with the
+  into drills, which classic mode keeps (`docs/ORE-VEINS.md`, "Old saves and switching"); issue #569: a save that
+  researched a technology before its reach technology became its prerequisite gets the reach technology researched
+  (`migrations/2026-10-24-issue-569-reach-techs.lua`; `migrate` checks it, `TT_REACH` of `migratemod/`). The last release with the
   classic system is v0.5.5 (Factorio 2.0): `migrate --from-ref v0.5.5 --old-me-network v0.5.4 --old-factorio DIR
   --old-mods DIR` with and without `--set gregtorio-continued-ore-mode=vein-recipes`.
 - Generators (`generator` prototypes that burn fluids by fuel value, 136) are demand driven; an
