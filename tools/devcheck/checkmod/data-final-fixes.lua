@@ -146,6 +146,14 @@ if FORK_STEAM_ORE_TECH then so[#so + 1] = "tech\t" .. FORK_STEAM_ORE_TECH end
 for name, reason in pairs(FORK_STEAM_ORE_LATE or {}) do so[#so + 1] = "late\t" .. name .. "\t" .. reason end
 section("STEAMORE", so)
 
+--- Issue #564: steam per second of the boilers and steam machines (FORK_STEAM_RATES of prototypes/fork-steam-rates.lua);
+--- one row per entity: name, kind (boiler, solar, uses), fluid, rate, Small Coal Boilers or "" (absent in older versions)
+local sr = {}
+for name, s in pairs(FORK_STEAM_RATES or {}) do
+	sr[#sr + 1] = table.concat({ name, s.kind, s.fluid, tostring(s.rate), s.boilers and tostring(s.boilers) or "" }, "\t")
+end
+section("STEAMRATES", sr)
+
 --- Issue #126: the recipes of items only the crafting table, the ME Molecular Assembler or the hand can make, on purpose
 --- (FORK_RECIPES_TABLE_ONLY in prototypes/148-fork-gtnh-table-items.lua; absent in older versions)
 local tk = {}

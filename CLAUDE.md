@@ -426,6 +426,12 @@
   (`migrations/2026-10-24-issue-569-reach-techs.lua`; `migrate` checks it, `TT_REACH` of `migratemod/`). The last release with the
   classic system is v0.5.5 (Factorio 2.0): `migrate --from-ref v0.5.5 --old-me-network v0.5.4 --old-factorio DIR
   --old-mods DIR` with and without `--set gregtorio-continued-ore-mode=vein-recipes`.
+- Steam per second (issue #564): `prototypes/fork-steam-rates.lua` (required from `data-final-fixes.lua` after everything
+  that makes or changes the machines) computes, from the prototypes, the steam per second of every boiler (also the
+  fixed-recipe lava and solar boilers of 101) and of every machine whose fluid energy source burns steam, and appends it
+  to the entity's description (`[fork-steam]` locale keys; a steam age machine also names its Small Coal Boilers);
+  `FORK_STEAM_RATES` is devcheck's section STEAMRATES, which checks the Small Coal Boiler (1.2), the Large Bronze Boiler
+  (160) and the Steam Alloy Smelter (3.2).
 - Generators (`generator` prototypes that burn fluids by fuel value, 136) are demand driven; an
   input-output fluid box keeps part of its fluid in the pipeline segment (`get_fluid_count` reports
   only the entity's part; since Factorio 2.1 `get_fluid_segment_fluid` is the whole segment with that part, where 2.0's

@@ -10,6 +10,19 @@ default: GT New Horizons' ore veins as ore patches on Nauvis, in the Nether, the
 Manual Mine, the Miners and the Ore Drilling Plants) or *Classic vein recipes* (the ore system up to 0.5.5: no patches,
 the mines run a vein recipe anywhere). `docs/ORE-VEINS.md` describes both and what happens to a save that switches.
 
+**Steam** (issue #564): the descriptions of the boilers and the steam machines say how much steam they make or use per
+second (one steam is GT's 100 L, worth 100 kJ). A steam machine needs about as many boilers as its steam per second
+divided by the boiler's; the steam age machines' descriptions also say how many Small Coal Boilers that is.
+
+| Boiler | Steam/s | | Steam machine | Steam/s while it works |
+|---|---|---|---|---|
+| Small Coal Boiler | 1.2 | | Steam Macerator, Compressor, Extractor | 0.4 |
+| Large Coal Boiler | 3 | | Steam Furnace | 1.6 |
+| Simple / Advanced Solar Boiler (by day) | 1.2 / 3.6 | | Steam Alloy Smelter, Forge Hammer | 3.2 |
+| Reinforced Lava Boiler | 6 | | High Pressure Macerator, Compressor, Extractor | 0.8 |
+| Large Bronze Boiler | 160 | | High Pressure Steam Furnace | 3.2 |
+| Large Steel Boiler | 360 | | High Pressure Alloy Smelter, Forge Hammer | 6.4 |
+
 The upstream repository ([Damien-Reave/Gregtorio](https://github.com/Damien-Reave/Gregtorio)) only contains the LICENSE; the code was only published as zip files. This fork therefore starts from the unmodified **0.1.9** release from the mod portal (tag `v0.1.9-upstream`). Every change after that is a regular git commit.
 
 ## Layout
