@@ -18,7 +18,7 @@
     Macerator) and the first technology of its input when that one is red-only and before the original's (Nauvis' veins
     from the start, another planet's with its reach technology), and moves the furnace smelting of its product with it;
     devcheck fails for a copy of a start ore that comes with a higher science unless it is in `FORK_STEAM_ORE_LATE` with its
-    reason; issue #449: the LV combustion generator, extruder and laser
+    reason (issue #573: Reach the Nether needs Steam Macerator, so the Nether's ores follow the same rule); issue #449: the LV combustion generator, extruder and laser
     engraver, the LV categories run by every MV machine through `fork_lv_machine_categories()` in 199; issue #560, section
     2n: every machine whose categories are all of the ore line (macerator, ore washer, thermal centrifuge, centrifuge, the
     steam macerators' copies) becomes a `furnace` that picks its recipe from its input, by `fork_furnace_machines()` at the
