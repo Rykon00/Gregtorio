@@ -266,9 +266,6 @@ local UNLOCKS = {
 	["galena"] = { -- LV
 		"block-of-lead", "block-of-silver", "silver-wire-16x",
 	},
-	["ore-centrifuging"] = { -- LV
-		"centrifuge-cinnabar-dust",
-	},
 	["invar"] = { -- LV
 		"block-of-invar",
 	},

@@ -820,6 +820,9 @@ FORK_RECYCLING.unlock()
 --- Fork: the steam macerator runs copies of the LV macerator recipes without their byproducts, as GT's bronze machines
 --- (prototypes/101-fork-machines.lua, issue #447); after every unlock above
 fork_steam_categories()
+--- Fork: the ore machines are furnaces that pick their recipe from the input (prototypes/101-fork-machines.lua, issue
+--- #560); after the steam macerators' categories above
+fork_furnace_machines()
 --- Fork: every Gregtorio recipe named after its product unless it has its own name (prototypes/fork-locale.lua, issue #230)
 FORK_LOCALE.name_recipes()
 require("prototypes.fork-menu-simulations")

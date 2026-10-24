@@ -956,17 +956,21 @@ function setup_recipe_test(s)
 			s.create_entity{ name = "electric-energy-interface", position = { x, RT_Y + 7 }, force = "player" }
 			s.create_entity{ name = "substation", position = { x + 5, RT_Y + 7 }, force = "player" }
 			e.force.recipes[def[2]].enabled = true
-			e.set_recipe(def[2])
+			-- issue #560: a furnace (the ore machines) picks the recipe from the ingredients
+			if e.type ~= "furnace" then e.set_recipe(def[2]) end
 			-- a recipe that needs a mold (prototypes/150-fork-molds.lua) gets one in the mold slot
 			local molds = prototypes.mod_data["fork-mold-recipes"]
 			if molds and molds.data[def[2]] then e.get_module_inventory().insert{ name = molds.data[def[2]] } end
-			for _, ing in pairs(prototypes.recipe[def[2]].ingredients) do
-				if ing.type == "item" then
-					local n = e.insert{ name = ing.name, count = ing.amount }
-					assert(n == ing.amount, "only " .. n .. " of " .. ing.amount .. " " .. ing.name .. " fit")
-				else
-					local n = e.insert_fluid{ name = ing.name, amount = ing.amount }
-					assert(math.abs(n - ing.amount) < 1e-6, "only " .. n .. " of " .. ing.amount .. " " .. ing.name .. " fit")
+			-- (fluids first: a furnace takes the item of an item and fluid recipe only with the fluid in it, issue #560)
+			for _, kind in pairs({ "fluid", "item" }) do
+				for _, ing in pairs(prototypes.recipe[def[2]].ingredients) do
+					if ing.type == "item" and kind == "item" then
+						local n = e.insert{ name = ing.name, count = ing.amount }
+						assert(n == ing.amount, "only " .. n .. " of " .. ing.amount .. " " .. ing.name .. " fit")
+					elseif ing.type == "fluid" and kind == "fluid" then
+						local n = e.insert_fluid{ name = ing.name, amount = ing.amount }
+						assert(math.abs(n - ing.amount) < 1e-6, "only " .. n .. " of " .. ing.amount .. " " .. ing.name .. " fit")
+					end
 				end
 			end
 			storage.recipe_test.m[i] = e
@@ -1078,7 +1082,7 @@ function setup_crush_test(s)
 					s.create_entity{ name = "electric-energy-interface", position = { x, CR_Y + 7 }, force = "player" }
 					s.create_entity{ name = "substation", position = { x + 3, CR_Y + 7 }, force = "player" }
 				end
-				e.set_recipe(m[2])
+				if e.type ~= "furnace" then e.set_recipe(m[2]) end      -- (issue #560: the macerator picks it)
 				assert(e.insert{ name = def[1], count = 1 } == 1, m[1] .. " took no " .. def[1])
 				st.m[#st.m + 1] = { e = e, recipe = m[2], machine = m[1], product = prototypes.recipe[m[2]].products[1] }
 				x = x + 9
@@ -1129,6 +1133,108 @@ function crush_test()
 	for _, p in pairs(problems) do log("DEVCHECK-RUNTIME-FAIL crush test: " .. p) end
 	log("DEVCHECK-RUNTIME-CRUSH " .. (#problems == 0 and "ok" or "failed") .. " (" .. n .. " of " .. #st.m .. " crushed by tick "
 		.. game.tick .. ", " .. st.hammers .. " forge hammers; researched " .. table.concat(techs, ", ") .. ")")
+end
+
+--- The ore line as furnaces (issue #560, prototypes/101-fork-machines.lua section 2n): GTNH's iron chain from raw ore to dust
+--- in LV machines that get no recipe set. Raw iron goes into a macerator; the script carries each machine's main product
+--- into the next one (as inserters would) and keeps the ore washer's water up; once a machine crafts, its progress is set
+--- close to the end. Each machine must be a furnace, pick the expected recipe from its input, have an output slot for every
+--- result of it (the byproducts) and make the product; both iron dust routes must end in iron dust.
+local OL_X, OL_Y = 180.5, -60.5
+local OL_DEADLINE = 1500
+local OL = {
+	--  machine                  recipe it must pick              input (from station)  the product it passes on
+	{ "lv-macerator",          "crushed-iron",                  { "raw-iron", 2 },     "crushed-iron" },
+	{ "lv-ore-washer",         "purified-iron",                 { from = 1, take = 1 }, "purified-iron", water = true },
+	{ "lv-thermal-centrifuge", "centrifuged-iron",              { from = 2, take = 1 }, "centrifuged-iron" },
+	{ "lv-macerator",          "centrifuged-iron-maceration",   { from = 3, take = 1 }, "iron-dust" },
+	{ "lv-macerator",          "impure-iron-dust",              { from = 1, take = 1 }, "impure-iron-dust" },
+	{ "lv-centrifuge",         "centrifuging-impure-iron-dust", { from = 5, take = 1 }, "iron-dust" },
+}
+
+local function furnace_recipe_name(e)
+	local r = e.get_recipe()
+	if r then return r.name end
+	local p = e.previous_recipe
+	local n = p and p.name
+	return n and (type(n) == "string" and n or n.name) or nil
+end
+
+function setup_orefurnace_test(s)
+	local fails = {}
+	local st = { m = {}, taken = {}, picked = {} }
+	storage.orefurnace = st
+	local ok, err = pcall(function()
+		for i, def in ipairs(OL) do
+			local x = OL_X + 9 * (i - 1)
+			local e = s.create_entity{ name = def[1], position = { x, OL_Y }, force = "player", raise_built = true }
+			s.create_entity{ name = "electric-energy-interface", position = { x, OL_Y + 7 }, force = "player" }
+			s.create_entity{ name = "substation", position = { x + 3, OL_Y + 7 }, force = "player" }
+			e.force.recipes[def[2]].enabled = true
+			if def[3][1] then assert(e.insert{ name = def[3][1], count = def[3][2] } == def[3][2], def[1] .. " took no " .. def[3][1]) end
+			st.m[i] = e
+			st.taken[i] = 0
+		end
+	end)
+	if not ok then
+		fails[#fails + 1] = "ore furnace test setup: " .. tostring(err)
+		st.done = true
+		log("DEVCHECK-RUNTIME-OREFURNACE failed (setup)")
+	end
+	return fails
+end
+
+function orefurnace_test()
+	local st = storage.orefurnace
+	if not st or st.done then return end
+	local pending = {}
+	for i, def in ipairs(OL) do
+		local e = st.m[i]
+		if e and e.valid then
+			st.picked[i] = st.picked[i] or (e.get_recipe() and e.get_recipe().name)
+			--- (the water first: the washer takes crushed ore only with water in it)
+			local water = def.water and 200 - e.get_fluid_count("water") or 0
+			if water > 0 then e.insert_fluid{ name = "water", amount = water } end
+			local src = def[3].from and st.m[def[3].from]
+			if src and src.valid and st.taken[i] < def[3].take then
+				local out = src.get_inventory(defines.inventory.crafter_output)
+				local item = OL[def[3].from][4]
+				local n = math.min(out.get_item_count(item), def[3].take - st.taken[i])
+				if n > 0 then
+					local put = e.insert{ name = item, count = n }
+					if put > 0 then out.remove{ name = item, count = put } end
+					st.taken[i] = st.taken[i] + put
+				end
+			end
+			if e.crafting_progress > 0 and e.crafting_progress < 0.999 then e.crafting_progress = 0.999 end
+			if e.products_finished == 0 then pending[#pending + 1] = def[2] .. " in " .. def[1] end
+		end
+	end
+	if #pending > 0 and game.tick <= OL_DEADLINE then return end
+	st.done = true
+	local problems = {}
+	for i, def in ipairs(OL) do
+		local e = st.m[i]
+		if not (e and e.valid) then
+			problems[#problems + 1] = def[1] .. " (station " .. i .. ") is gone"
+		else
+			if e.type ~= "furnace" then problems[#problems + 1] = def[1] .. " is a " .. e.type .. ", not a furnace" end
+			local picked = st.picked[i] or furnace_recipe_name(e)
+			if picked ~= def[2] then
+				problems[#problems + 1] = def[1] .. " (station " .. i .. ") picked " .. tostring(picked) .. ", not " .. def[2]
+			end
+			local slots = #e.get_inventory(defines.inventory.crafter_output)
+			local items = 0
+			for _, p in pairs(prototypes.recipe[def[2]].products) do if p.type == "item" then items = items + 1 end end
+			if slots < items then
+				problems[#problems + 1] = def[1] .. " has " .. slots .. " output slots for the " .. items .. " results of " .. def[2]
+			end
+		end
+	end
+	if #pending > 0 then problems[#problems + 1] = "made nothing: " .. table.concat(pending, ", ") end
+	for _, p in pairs(problems) do log("DEVCHECK-RUNTIME-FAIL ore furnace test: " .. p) end
+	log("DEVCHECK-RUNTIME-OREFURNACE " .. (#problems == 0 and "ok" or "failed") .. " (" .. #OL .. " furnaces from raw iron to "
+		.. "iron dust without a recipe set, by tick " .. game.tick .. ")")
 end
 
 --- Solar boilers (issue #446, scripts/fork-steam-boilers.lua): on a surface of their own with the time of day frozen, a
@@ -2901,6 +3007,7 @@ script.on_nth_tick(10, function()
 	if not (storage.tiers and storage.tiers.done) then tier_test() end
 	if not (storage.recipe_test and storage.recipe_test.done) then recipe_test() end
 	crush_test()
+	orefurnace_test()
 	steam_test()
 	chain_test()
 	lftr_test()
@@ -2951,7 +3058,8 @@ script.on_init(function()
 	local recipe_for = {}
 	for rn, r in pairs(prototypes.recipe) do recipe_for[r.categories[1]] = recipe_for[r.categories[1]] or rn end
 	local x, y, placed, with_recipe, fails = -150, -150, 0, 0, {}
-	for name, p in pairs(prototypes.get_entity_filtered{ { filter = "type", type = "assembling-machine" } }) do
+	--- (issue #560: the ore machines are furnaces; placed too, without a recipe)
+	for name, p in pairs(prototypes.get_entity_filtered{ { filter = "type", type = { "assembling-machine", "furnace" } } }) do
 		if p.items_to_place_this and #p.items_to_place_this > 0 then
 			local ok, e = pcall(function()
 				return s.create_entity{ name = name, position = { x, y }, force = "player", raise_built = true }
@@ -2980,6 +3088,7 @@ script.on_init(function()
 	for _, f in pairs(setup_tier_test(s)) do fails[#fails + 1] = f end
 	for _, f in pairs(setup_recipe_test(s)) do fails[#fails + 1] = f end
 	for _, f in pairs(setup_crush_test(s)) do fails[#fails + 1] = f end
+	for _, f in pairs(setup_orefurnace_test(s)) do fails[#fails + 1] = f end
 	for _, f in pairs(setup_steam_test(s)) do fails[#fails + 1] = f end
 	for _, f in pairs(setup_chain_test(s)) do fails[#fails + 1] = f end
 	for _, f in pairs(setup_lftr_test(s)) do fails[#fails + 1] = f end

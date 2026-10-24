@@ -843,6 +843,132 @@ end
 
 
 --------------------------------------------------------------------------------
+--- 2n) THE ORE MACHINES AS FURNACES (issue #560, phase 1 of the test "GT machines without a recipe")
+---    GT's machines find their recipe from what is put in. Factorio's furnace does the same for recipes with one item,
+---    one fluid, or one item and one fluid (auxiliary docs "Furnace Recipe Selection", 2.1.23): it takes the first
+---    enabled recipe of its categories by subgroup and order that matches the input; it has one input slot. Every
+---    machine whose categories all belong to the ore line (macerator, ore washer, thermal centrifuge, centrifuge, the
+---    steam macerators' copies of #447) becomes a `furnace` of the same name with everything else kept: graphics, fluid
+---    boxes, energy source, speed, upgrades. Its output slots are the most item results of a recipe it runs.
+---    fork_furnace_machines() runs at the end of data-final-fixes.lua, after fork_steam_categories(), so every file
+---    before it (fork_make_tier_machine, the multiblocks, 150's slots, 199's categories) still sees assembling
+---    machines. devcheck fails for two recipes a furnace machine runs with the same inputs unless they are in the
+---    allow-list FORK_FURNACE_SAME_INPUTS with the one that wins, and for a recipe in a furnace's category that a
+---    furnace cannot run (two items or two fluids).
+--------------------------------------------------------------------------------
+
+FORK_FURNACE_MACHINES = {
+	families = { "macerator", "ore-washer", "thermal-centrifuge", "centrifuge" },
+	extra = { ["steam-macerator-recipes"] = true },
+	legacy = {},   -- filled by fork_furnace_machines(): legacy-<name> -> name (mod data `fork-ore-furnaces`)
+}
+--- recipe groups with the same inputs in one furnace machine ("<recipe>+<recipe>", sorted) -> { wins = <the recipe that
+--- comes first by subgroup and order>, reason = ... } (devcheck's section FURNACESAMEOK); none today
+FORK_FURNACE_SAME_INPUTS = {}
+
+--- the ore machines' recipes with the same inputs, the maintainer's choice of #560: as in GTNH the forge hammer makes gravel
+--- from stone (ForgeHammerRecipes.java: cobblestone -> gravel, 10 ticks; Gregtorio's stone is GT's cobblestone) and sand
+--- from gravel (sand-forge-hammer of 2b), the macerator stone dust from stone and flint from gravel; the macerator's
+--- gravel -> sand goes, and so does centrifuge-cinnabar-dust, a copy of cinnabar-centrifuging (old saves:
+--- migrations/2026-10-24-issue-560-ore-furnaces.json). The steam macerators' copies follow (fork_steam_categories copies
+--- the LV macerator recipes).
+local function drop_unlock(recipe)
+	for _, t in pairs(data.raw.technology) do
+		for i = #(t.effects or {}), 1, -1 do
+			if t.effects[i].type == "unlock-recipe" and t.effects[i].recipe == recipe then table.remove(t.effects, i) end
+		end
+	end
+end
+fork_set_category(data.raw.recipe["gravel"], "lv-forge-hammer-recipes")
+drop_unlock("gravel")
+fork_add_unlock("steam-forge-hammer", "gravel")
+for _, name in pairs({ "sand", "centrifuge-cinnabar-dust" }) do
+	data.raw.recipe[name] = nil
+	drop_unlock(name)
+	log("FORK-REMOVED: recipe " .. name .. " (issue #560: the same inputs as another recipe of a furnace machine)")
+end
+
+--- keys an assembling machine has and a furnace does not
+local ASSEMBLER_ONLY_KEYS = { "fixed_recipe", "fixed_quality", "gui_title_key", "ingredient_count", "max_item_product_count",
+	"fluid_boxes_off_when_no_fluid_recipe", "disabled_when_recipe_not_researched" }
+
+local function furnace_category(c)
+	if FORK_FURNACE_MACHINES.extra[c] then return true end
+	local rest = c:match("^%a+%-(.+)%-recipes$")
+	for _, f in pairs(FORK_FURNACE_MACHINES.families) do
+		if rest == f then return true end
+	end
+	return false
+end
+
+function fork_furnace_machines()
+	local results = {}   -- category -> most item results of one of its recipes
+	for _, r in pairs(data.raw.recipe) do
+		local n = 0
+		for _, res in pairs(r.results or {}) do
+			if res.type == "item" then n = n + 1 end
+		end
+		for _, c in pairs(r.categories or {}) do results[c] = math.max(results[c] or 0, n) end
+	end
+	local names = {}
+	for name, e in pairs(data.raw["assembling-machine"]) do
+		local ok = e.crafting_categories and #e.crafting_categories > 0
+		for _, c in pairs(e.crafting_categories or {}) do ok = ok and furnace_category(c) end
+		if ok then names[#names + 1] = name end
+	end
+	table.sort(names)
+	local legacy = {}
+	for _, name in pairs(names) do
+		local e = data.raw["assembling-machine"][name]
+		data.raw["assembling-machine"][name] = nil
+		--- old saves: the engine deletes a placed machine whose prototype changed its type, so the machine of an old save
+		--- becomes the hidden assembling machine `legacy-<name>` (migrations/2026-10-24-issue-560-ore-furnaces.json), and
+		--- scripts/fork-ore-furnaces.lua builds the furnace in its place with its contents (the Lua migration of the same
+		--- name)
+		local old = table.deepcopy(e)
+		old.name = "legacy-" .. name
+		old.hidden = true
+		--- (no player-creation: no item places it; mined it still gives the machine's item)
+		old.flags = { "placeable-neutral", "placeable-player" }
+		old.localised_name = { "entity-name." .. name }
+		old.next_upgrade = nil
+		old.fast_replaceable_group = nil
+		legacy[#legacy + 1] = old
+		FORK_FURNACE_MACHINES.legacy[old.name] = name
+		e.type = "furnace"
+		for _, k in pairs(ASSEMBLER_ONLY_KEYS) do e[k] = nil end
+		local slots = 1
+		for _, c in pairs(e.crafting_categories) do slots = math.max(slots, results[c] or 0) end
+		e.source_inventory_size = 1
+		e.result_inventory_size = slots
+		e.cant_insert_at_source_message_key = "inventory-restriction.fork-cant-be-processed"
+		--- a furnace takes one input fluid box at most (2.1.23 refuses the load: "Fluidbox input count can't be larger
+		--- than 1"), and its recipes have one fluid at most: the input ports become connections of the first input box
+		local boxes, input = {}, nil
+		for _, box in pairs(e.fluid_boxes or {}) do
+			if box.production_type == "input" or box.production_type == "input-output" then
+				if input then
+					for _, pc in pairs(box.pipe_connections or {}) do table.insert(input.pipe_connections, pc) end
+					input.volume = math.max(input.volume or 1000, box.volume or 1000)
+				else
+					input = box
+					boxes[#boxes + 1] = box
+				end
+			else
+				boxes[#boxes + 1] = box
+			end
+		end
+		if e.fluid_boxes then e.fluid_boxes = boxes end
+		data.raw.furnace[name] = e
+	end
+	data:extend(legacy)
+	data:extend({ { type = "mod-data", name = "fork-ore-furnaces", data = { legacy = FORK_FURNACE_MACHINES.legacy } } })
+	log("FORK-FURNACE: " .. #names .. " ore machines are furnaces (issue #560): " .. table.concat(names, ", "))
+end
+
+
+
+--------------------------------------------------------------------------------
 --- 2m) GT NEW HORIZONS' STEAM AGE (issue #446): the high pressure tier, the steam furnace, the lava and solar boilers.
 ---    Names of GT5-Unofficial's en_US.lang (gt.blockmachines.boiler.*, bronzemachine.furnace, hpmachine.*); recipes of
 ---    MTERecipeLoader.java:2786-2885 with Gregtorio's parts: the mod's pipe for GT's small bronze, cast iron and steel
