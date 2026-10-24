@@ -30,7 +30,8 @@ local NOBLE = { { "neon", 0.6, 0.55 }, { "krypton", 0.5, 0.4 }, { "xenon", 0.4, 
 FORK_GAS_VARIANTS = {}
 local EBF_GASES = {
 	["neodymium-ingot"] = "end-steel",
-	["hot-titanium-ingot"] = "end-steel",
+	-- issue #517: EV Machines has titanium, End Steel (neon) and Radon (the ender air's krypton and xenon) before it
+	["hot-titanium-ingot"] = "ev-machines",
 	["hot-staballoy-ingot"] = "staballoy",
 	["hot-tungsten-ingot"] = "tungsten",
 	["hot-tungstensteel-ingot"] = "tungstensteel",

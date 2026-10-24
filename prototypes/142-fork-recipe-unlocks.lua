@@ -697,6 +697,8 @@ for _, m in pairs({
 	{ "platinum-wire", "nuclear-power", "platinum" },                           -- EV Electrolyzer
 	{ "indium-gallium-phosphide", "qubit-cpus", "iv-energy-hatches" },          -- HPIC wafer, advanced SMD diode
 	{ "robust-tungstensteel-machine-casing", "large-extractor", "space-science-pack" },   -- LuV science pack
+	-- issue #517: the hot iridium ingot of the IV sensor's and emitter's iridium rods (GT's 4500 K, the RTM alloy coils)
+	{ "iv-electric-blast-furnace", "iv-machines", "iv-components" },
 }) do
 	move_unlock(m[1], m[2], m[3])
 end
@@ -741,6 +743,7 @@ FORK_UNLOCK_TREE = { prerequisites = {
 	["black-steel"] = { "electric-blast-furnace", "galena", "rare-earth-processing" },   -- machine mv-electric-blast-furnace; silver-ingot; nether-quartz
 	["bio-processors"] = { "qubit-cpus" },   -- qubit-cpu-chip
 	["cetane-boosted-diesel"] = { "implosion-compressor" },   -- nitric-acid
+	["dimensionally-shifted-superfluid"] = { "radox-polymer" },   -- super-heavy-radox (issue #517)
 	["concrete"] = { "automation-2" },   -- machine lv-assembling-machine
 	["crystal-processors"] = { "advanced-smds" },   -- advanced-smd-capacitor
 	["elevated-rail"] = { "railway" },   -- rail
@@ -761,7 +764,7 @@ FORK_UNLOCK_TREE = { prerequisites = {
 	["industrial-centrifuge"] = { "industrial-extrusion-machine", "large-sifter" },   -- inconel-reinforced-casing; tumbaga-rod
 	["industrial-wire-factory"] = { "large-sifter", "large-steam-turbine" },   -- long-tumbaga-rod; blue-steel-frame
 	["iridium"] = { "ev-energy-hatches" },   -- machine ev-chemical-reactor
-	["iv-components"] = { "extreme-entity-crushers", "nuclear-power", "tungstensteel" },   -- nether-star; platinum-cable; tungstensteel-rod
+	["iv-components"] = { "extreme-entity-crushers", "nuclear-power", "tungstensteel", "iridium", "rtm-alloy-coils" },   -- nether-star; platinum-cable; tungstensteel-rod; iridium-dust, rtm-alloy-coil-block of the IV EBF (issue #517)
 	["iv-energy-hatches"] = { "large-steel-boiler", "vanadium-gallium" },   -- steel-pipe-casing; molten-vanadium-gallium
 	["iv-machines"] = { "nanoprocessors", "rtm-alloy-coils" },   -- luv-circuit; rtm-alloy-coil-block
 	["kanthal-coils"] = { "multismelter" },   -- mv-multismelter
@@ -788,6 +791,7 @@ FORK_UNLOCK_TREE = { prerequisites = {
 	-- every later vein, whose technologies all follow Phosphorus Processing)
 	["plasma-turbine"] = { "industrial-mixer" },   -- titanium-turbine-casing
 	["polybenzimidazole"] = { "alloy-blast-smelter" },   -- machine hv-alloy-blast-smelter
+	["precise-electronic-unit-mk3"] = { "bio-processors" },   -- bio-processing-unit, qubit-cpu-chip (Qubit CPUs before it; issue #517)
 	["production-science-pack"] = { "radon" },   -- quantum-eye
 	["qubit-cpus"] = { "iv-energy-hatches" },   -- indium-gallium-phosphide
 	["radar"] = { "circuit-assembler" },   -- brass-rod
