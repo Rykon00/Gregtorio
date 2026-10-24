@@ -3240,7 +3240,7 @@ def menusim_rebuild(a):
         "save": rel, "rebuilt_from": a.save_from or "working copy", "made_with": a.made_with, "margin": a.margin,
         "chunks": {"before": resave["chunks"], "kept": resaved["chunks"]},
         "size": {"before": src.stat().st_size, "after": out.stat().st_size},
-        "entities": dict(sorted(after.items()))}, indent=2) + "\n", encoding="utf-8")
+        "entities": dict(sorted(after.items()))}, indent=2) + "\n", encoding="utf-8", newline="\n")
     print(f"wrote {rel} and {scene.relative_to(ROOT).as_posix()}\n")
     result, lines = run_menusim(a.sim, save, length, True)
     print(f"{a.sim}: {result}")
