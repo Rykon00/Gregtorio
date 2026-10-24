@@ -3,7 +3,8 @@
 --- per second looked like a bug next to a steam machine that needs 3.2. Required from data-final-fixes.lua after every
 --- file that makes or changes these machines; every number is computed from the prototypes:
 ---   * a `boiler` that makes steam or superheated steam: energy_consumption / (the output fluid's heat_capacity x (its
----     target_temperature - the input fluid's default_temperature)), also in output-to-separate-pipe mode;
+---     target_temperature - the input fluid's default_temperature)), also in output-to-separate-pipe mode; no line, the
+---     game shows it ("Generates Steam: Output 1.2/s"); the rate is the boiler count's unit and devcheck's reference;
 ---   * a machine with a fixed recipe that makes steam (101's lava and solar boilers): the recipe's steam / (its time /
 ---     the crafting speed); the solar boilers (mod data fork-solar-boilers) by day;
 ---   * a machine whose fluid energy source burns steam or superheated steam: energy_usage / (the fluid's fuel_value x the
@@ -87,7 +88,8 @@ for name, b in pairs(data.raw.boiler or {}) do
 		local heat = amount(out.heat_capacity or "1kJ")
 		local from = input and input.default_temperature or 15
 		local rate = watts / (heat * (b.target_temperature - from))
-		FORK_STEAM_RATES[name] = { kind = "boiler", type = "boiler", fluid = out.name, rate = rate }
+		--- (no line: the game shows a boiler's output per second itself, "Generates Steam: Output", checked in game for #564)
+		FORK_STEAM_RATES[name] = { kind = "boiler", type = "boiler", fluid = out.name, rate = rate, line = false }
 	end
 end
 
@@ -130,6 +132,7 @@ end
 --- of the same name only, which a placed machine's tooltip does not show). An item without a description of its own
 --- keeps showing the entity's.
 for name, s in pairs(FORK_STEAM_RATES) do
+	if s.line == false then goto next end
 	local fluid = { "fluid-name." .. s.fluid }
 	local line
 	if s.kind == "uses" and s.boilers then
@@ -149,4 +152,5 @@ for name, s in pairs(FORK_STEAM_RATES) do
 		local item_desc = it.localised_description or { "item-description." .. item }
 		it.localised_description = { "?", { "", item_desc, "\n", line }, { "", entity_desc, "\n", line }, line }
 	end
+	::next::
 end

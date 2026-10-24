@@ -155,11 +155,11 @@ for name, s in pairs(FORK_STEAM_RATES or {}) do
 	local lacking = {}
 	for _, kind in pairs({ "item", "item-with-entity-data" }) do
 		for iname, it in pairs(data.raw[kind] or {}) do
-			if it.place_result == name and not has_line(it) then lacking[#lacking + 1] = iname end
+			if it.place_result == name and s.line ~= false and not has_line(it) then lacking[#lacking + 1] = iname end
 		end
 	end
 	sr[#sr + 1] = table.concat({ name, s.kind, s.fluid, tostring(s.rate), s.boilers and tostring(s.boilers) or "",
-		has_line(e) and "entity" or "-", table.concat(lacking, ",") }, "\t")
+		(s.line == false and "game") or (has_line(e) and "entity") or "-", table.concat(lacking, ",") }, "\t")
 end
 section("STEAMRATES", sr)
 

@@ -1630,7 +1630,7 @@ def check_steam_rates(sec):
             problems.append(f"{name}: {got} steam/s, not {want}")
     problems += [f"{n}: rate {r[3]}" for n, r in sorted(rows.items()) if not float(r[3]) > 0]
     for n, r in sorted(rows.items()):
-        if len(r) > 5 and r[5] != "entity":
+        if len(r) > 5 and r[5] not in ("entity", "game"):   # (game: a boiler, whose output the game shows)
             problems.append(f"{n}: the entity's description lacks the steam line")
         if len(r) > 6 and r[6]:
             problems.append(f"{n}: the description of its item {r[6]} lacks the steam line")
