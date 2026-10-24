@@ -811,6 +811,9 @@ FORK_UNLOCK_TREE = { prerequisites = {
 	["semifluid-generator"] = { "lathe" },   -- bronze-rod
 	["smd-components"] = { "polyvinyl-chloride" },   -- thin-pvc-sheet
 	["staballoy"] = { "titanium" },   -- titanium-ingot
+	-- issue #571: the steam macerator's copies make crushed ore from the steam age on, whose furnace recipe comes with the
+	-- forge hammer (the other half of the rule: a product has its consumer at its technology or earlier)
+	["steam-macerator"] = { "steam-forge-hammer" },   -- crushed-copper-smelter and the other crushed ore smelting
 	["super-glue"] = { "iv-energy-hatches" },   -- machine iv-chemical-reactor
 	["tungstate-processing"] = { "ev-machines" },   -- machine ev-autoclave
 	["tungsten"] = { "ev-energy-hatches" },   -- machine ev-chemical-reactor
