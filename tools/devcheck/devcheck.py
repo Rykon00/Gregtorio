@@ -1605,6 +1605,27 @@ def check_steam_ores(m, sec):
     return f"{n} steam macerator copies of start ores, {len(allow)} late on purpose (FORK_STEAM_ORE_LATE)", problems + stale
 
 
+STEAM_RATES_EXPECTED = {"small-coal-boiler": 1.2, "large-bronze-boiler": 160, "steam-alloy-smelter": 3.2}
+
+
+def check_steam_rates(sec):
+    """Issue #564 (prototypes/fork-steam-rates.lua): the descriptions say steam per second; the computed rates of the Small
+    Coal Boiler (1.2), the Large Bronze Boiler (160) and the Steam Alloy Smelter (3.2) must be GTNH's, and every rate is
+    positive. Returns (info line, problems)."""
+    rows = {r[0]: r for r in sec.get("STEAMRATES", []) if len(r) >= 4}
+    problems = []
+    for name, want in STEAM_RATES_EXPECTED.items():
+        got = float(rows[name][3]) if name in rows else None
+        if got is None or abs(got - want) > want * 1e-6:
+            problems.append(f"{name}: {got} steam/s, not {want}")
+    problems += [f"{n}: rate {r[3]}" for n, r in sorted(rows.items()) if not float(r[3]) > 0]
+    kinds = {}
+    for r in rows.values():
+        kinds[r[1]] = kinds.get(r[1], 0) + 1
+    return (f"{len(rows)} entities with steam per second (" + ", ".join(f"{k} {v}" for k, v in sorted(kinds.items()))
+            + ")", problems)
+
+
 def check_required(m):
     out = []
     for r in REQUIRED_RECIPES:
@@ -2120,6 +2141,9 @@ def check(a):
     print(f"\nGT's ore veins (issue #496): {mixes_info}")
     report("ores of GT's veins on Gregtorio's surfaces without a raw ore and its chain (prototypes/165-fork-ore-veins.lua)",
            ore_mixes)
+    rates_info, steam_rates = check_steam_rates(sec)
+    print(f"\nsteam per second in the descriptions (issue #564): {rates_info}")
+    report("steam per second that differs from GTNH's (prototypes/fork-steam-rates.lua)", steam_rates)
     steam_info, steam_ores = check_steam_ores(m, sec)
     print(f"\nsteam macerator ore doubling (issue #571): {steam_info}")
     report("steam macerator copies of start ores that come after the steam age (prototypes/101-fork-machines.lua)",
@@ -2189,7 +2213,8 @@ def check(a):
               or new_drafts or fluid_problems or locked or one_pack or fluid_steps or table_only or me_recipes or me_tab
               or extractor_split or ore_mixes or ore_chain or ore_baths or ore_o34 or ore_hammer
               or circuit_icons or pgm_dusts or recycling or names or gaps or tree or vanilla or lenses or mine_twins
-              or unplaceable or stale_unlocks or removed_keys or trigger_only or classic_veins or steam_ores)
+              or unplaceable or stale_unlocks or removed_keys or trigger_only or classic_veins or steam_ores
+              or steam_rates)
     print("\nRESULT:", "OK" if ok else "PROBLEMS FOUND")
     return 0 if ok else 1
 

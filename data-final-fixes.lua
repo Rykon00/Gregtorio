@@ -831,6 +831,9 @@ FORK_LOCALE.name_recipes()
 require("prototypes.fork-menu-simulations")
 --- Fork: cheap research (startup setting, default off); after every change to the technologies above
 require("prototypes.fork-one-pack-research")
+--- Fork: steam per second in the descriptions of the boilers and the steam machines (issue #564), after every file that
+--- makes or changes them
+require("prototypes.fork-steam-rates")
 --- Fork: Factorio 2.1 (issue #535): the recycler mod's technology `recycling` unlocks every recycling recipe with a hidden
 --- effect; the ones of recipes deleted above (the burner mining drill's, the electric furnace's, ...) go too (a technology
 --- that names a missing recipe fails the load). A shown effect of a missing recipe stays an error.
