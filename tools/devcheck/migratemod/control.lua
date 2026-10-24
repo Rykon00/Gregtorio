@@ -212,6 +212,7 @@ local function setup_techs()
 	for _, name in pairs(TT_STEAM_TECHS) do research(steam, name) end
 	storage.tt_steam_enabled = {}
 	for name, r in pairs(steam.recipes) do if r.enabled then storage.tt_steam_enabled[name] = true end end
+	storage.tt_factorio = script.active_mods.base               -- (issue #584: the Factorio of the old save)
 	log("DEVCHECK-MIGRATE-SETUP-TECHS ok (" .. n .. " technologies researched)")
 end
 
@@ -248,11 +249,40 @@ local function check_techs()
 	check(game.forces.player, storage.tt_enabled, "")
 	--- issue #571: the steam age force keeps every recipe it had and gets the steam macerator's ore recipes
 	local steam = storage.tt_steam_enabled and game.forces[TT_STEAM_FORCE]
+	local later, recycling, veins = {}, 0, 0
 	if steam then
 		check(steam, storage.tt_steam_enabled, TT_STEAM_FORCE .. ": ")
+		--- issue #584: recipes the force loses by the update on purpose, not by Gregtorio's unlocks. A save of Factorio 2.0 had
+		--- every recycling recipe enabled; 2.1's recycler unlocks them with its technology Recycling (hidden effects), which
+		--- the steam age force has not researched. In map-vein mode (issue #563) the classic vein recipes are hidden and never
+		--- unlocked (mod-data fork-electric-mine: classic, legacy); in classic mode a vein recipe of 0.5.5 whose name is no
+		--- generated one (legacy) is a hidden copy too, and its generated recipe must be enabled instead.
+		local function minor(v) return (v or ""):match("^(%d+%.%d+)") end
+		local tech = steam.technologies["recycling"]
+		if minor(storage.tt_factorio) ~= minor(script.active_mods.base) and tech and not tech.researched then
+			for _, e in pairs(tech.prototype.effects) do
+				if e.type == "unlock-recipe" then later[e.recipe] = "recycling" end
+			end
+		end
+		local ok, em = pcall(function() return prototypes.mod_data["fork-electric-mine"] end)
+		local legacy = ok and em and em.data.legacy or {}
+		if ok and em and not classic_mode() then
+			for _, list in pairs({ em.data.classic or {}, legacy }) do
+				for name in pairs(list) do later[name] = "vein" end
+			end
+		end
 		for name in pairs(storage.tt_steam_enabled) do
 			if steam.recipes[name] and not steam.recipes[name].enabled and not TT_STEAM_MOVED[name] then
-				problems[#problems + 1] = TT_STEAM_FORCE .. ": " .. name .. " was enabled before the update and is not now"
+				local gen = classic_mode() and legacy[name]
+				if later[name] == "recycling" then recycling = recycling + 1
+				elseif later[name] == "vein" then veins = veins + 1
+				elseif gen and steam.recipes[gen] and steam.recipes[gen].enabled then veins = veins + 1
+				elseif gen then
+					problems[#problems + 1] = TT_STEAM_FORCE .. ": " .. name .. " was enabled before the update, its generated recipe "
+						.. gen .. " is not now"
+				else
+					problems[#problems + 1] = TT_STEAM_FORCE .. ": " .. name .. " was enabled before the update and is not now"
+				end
 			end
 		end
 		for _, name in pairs({ "steam-crushed-copper", "steam-impure-copper-dust", "impure-copper-dust-smelter" }) do
@@ -266,7 +296,10 @@ local function check_techs()
 		log("DEVCHECK-MIGRATE-FAIL techs: " .. m)
 	end
 	log("DEVCHECK-MIGRATE-TECHS " .. (#problems == 0 and "ok" or "failed") .. " (" .. recipes .. " recipes of " .. techs
-		.. " researched technologies enabled, " .. new .. " of them new; " .. #problems .. " not enabled)")
+		.. " researched technologies enabled, " .. new .. " of them new; " .. #problems .. " not enabled"
+		.. ((recycling + veins > 0) and ("; the steam age force lost " .. recycling .. " recycling recipes of Factorio "
+			.. tostring(storage.tt_factorio) .. " (2.1: with Recycling) and " .. veins .. " vein recipes of 0.5.5 (hidden in "
+			.. "map-vein mode, a renamed one replaced), as the update does") or "") .. ")")
 end
 
 --- Issues #98 and #96: fluids and items that an update removes are mapped to their nearest counterpart by the
