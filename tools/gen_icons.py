@@ -447,6 +447,32 @@ def draw_ender_tank():
     return outline(img, (6, 8, 10, 255))
 
 
+# --- issue #555: the torch, drawn from scratch (GTNH's is Minecraft's own, whose texture is not used): a wooden stick with
+# a coal head and its flame, standing upright; the entity sprite is the icon scaled 2x (nearest), drawn at scale 0.5
+WOOD = [(66, 42, 20), (96, 64, 32), (128, 88, 46), (158, 114, 64)]
+COAL_HEAD = [(20, 18, 16), (40, 36, 32), (62, 56, 50)]
+FLAME = [(196, 70, 14), (238, 128, 24), (252, 190, 48), (255, 236, 150), (255, 252, 226)]
+
+
+def draw_torch():
+    """32 x 32 RGBA: the stick (x 14..17, y 13..30), the coal head (y 10..12) and the flame above it"""
+    img = Image.new("RGBA", (32, 32), (0, 0, 0, 0))
+    px = img.load()
+    for y in range(13, 31):
+        for x in range(14, 18):
+            px[x, y] = tone(WOOD, 0.85 - 0.25 * (x - 14) - 0.01 * (y - 13))
+    for y in range(10, 13):
+        for x in range(14, 18):
+            px[x, y] = tone(COAL_HEAD, 0.8 - 0.3 * (x - 14))
+    for y in range(1, 11):
+        for x in range(10, 22):
+            X, Y = x + 0.5, y + 0.5
+            if in_ellipse(X, Y, 16, 7.5, 4.2, 6.0) and not (Y < 4 and abs(X - 16) > 2.2):
+                core = 1 - math.hypot((X - 16) / 4.2, (Y - 8.5) / 6.0)
+                px[x, y] = tone(FLAME, 0.15 + 0.95 * core)
+    return outline(img, (24, 14, 6, 255))
+
+
 def save_if_changed(img, path):
     if path.exists():
         old = Image.open(path).convert("RGBA")
@@ -479,6 +505,9 @@ def drawn():
     #  issue #504: the Ender Chest and the Ender Tank
     save_if_changed(draw_ender_chest(), ICONS / "ender-chest.png")
     save_if_changed(draw_ender_tank(), ICONS / "ender-tank.png")
+    #  issue #555: the torch (icon and sprite)
+    save_if_changed(draw_torch(), ICONS / "gt-torch.png")
+    save_if_changed(draw_torch().resize((64, 64), Image.NEAREST), ENTITY / "gt-torch.png")
 
 
 def main():

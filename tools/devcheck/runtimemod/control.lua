@@ -130,6 +130,7 @@ local function tests_running()
 	check(storage.emine and storage.emine.done, "electric mine")
 	check(storage.lftr and storage.lftr.done, "LFTR")
 	check(storage.solar and storage.solar.done, "solar boilers")
+	check(storage.torch and storage.torch.done, "torch")
 	check(storage.battery and storage.battery.done, "battery buffers")
 	return running
 end
@@ -1176,6 +1177,53 @@ function solar_test()
 	for _, p in pairs(problems) do log("DEVCHECK-RUNTIME-FAIL solar boiler test: " .. p) end
 	log("DEVCHECK-RUNTIME-SOLAR " .. (#problems == 0 and "ok" or "failed") .. string.format(" (steam %.1f at midnight, %.1f at noon)",
 		st.night_steam or 0, st.day_steam or 0))
+end
+
+--- The torch (issue #555, prototypes/100-fork-fixes.lua): on a surface of its own frozen at midnight, without any power,
+--- a torch works (lit) while vanilla's electric lamp next to it does not; a character can stand on the torch's tile, not
+--- on the lamp's
+local TORCH_WAIT = 60
+function setup_torch_test(_)
+	local ts = game.create_surface("devcheck-torch")
+	ts.always_day = false
+	ts.freeze_daytime = true
+	ts.daytime = 0.5
+	ts.request_to_generate_chunks({ 0, 0 }, 1)
+	ts.force_generate_chunk_requests()
+	local tiles = {}
+	for x = -3, 7 do for y = -3, 3 do tiles[#tiles + 1] = { name = "landfill", position = { x, y } } end end
+	ts.set_tiles(tiles)
+	for _, e in pairs(ts.find_entities{ { -3, -3 }, { 8, 4 } }) do e.destroy() end
+	local t = ts.create_entity{ name = "gt-torch", position = { 0.5, 0.5 }, force = "player", raise_built = true }
+	local l = ts.create_entity{ name = "small-lamp", position = { 4.5, 0.5 }, force = "player", raise_built = true }
+	if not (t and l) then return { "torch test: could not place the torch and the lamp" } end
+	storage.torch = { torch = t, lamp = l, surface = ts, at = game.tick }
+	return {}
+end
+
+function torch_test()
+	local st = storage.torch
+	if not st or st.done or game.tick < st.at + TORCH_WAIT then return end
+	local problems, t, l = {}, st.torch, st.lamp
+	local name = function(s) for k, v in pairs(defines.entity_status) do if v == s then return k end end return tostring(s) end
+	if not (t.valid and l.valid) then
+		problems[#problems + 1] = "the torch or the lamp is gone"
+	else
+		if t.status ~= defines.entity_status.working then
+			problems[#problems + 1] = "the torch is not lit at midnight without power (" .. name(t.status) .. ")"
+		end
+		if l.status == defines.entity_status.working then problems[#problems + 1] = "the electric lamp works without power" end
+		if not st.surface.can_place_entity{ name = "character", position = t.position } then
+			problems[#problems + 1] = "a character cannot stand on the torch's tile"
+		end
+		if st.surface.can_place_entity{ name = "character", position = l.position } then
+			problems[#problems + 1] = "a character can stand on the lamp's tile (the walk test sees nothing)"
+		end
+	end
+	st.done = true
+	for _, p in pairs(problems) do log("DEVCHECK-RUNTIME-FAIL torch test: " .. p) end
+	log("DEVCHECK-RUNTIME-TORCH " .. (#problems == 0 and "ok" or "failed") .. " (torch " .. name(t.valid and t.status)
+		.. ", electric lamp " .. name(l.valid and l.status) .. " at midnight without power)")
 end
 
 --- Battery buffers (issue #444, prototypes/145-fork-power-multiblocks.lua section 8): an LV Battery Buffer (1 battery)
@@ -2863,6 +2911,7 @@ script.on_nth_tick(10, function()
 	melt_test()
 	emine_test()
 	solar_test()
+	torch_test()
 	battery_test()
 	veins_test()
 	drill_test()
@@ -2941,6 +2990,7 @@ script.on_init(function()
 	for _, f in pairs(setup_melt_test(s)) do fails[#fails + 1] = f end
 	for _, f in pairs(setup_emine_test(s)) do fails[#fails + 1] = f end
 	for _, f in pairs(setup_solar_test(s)) do fails[#fails + 1] = f end
+	for _, f in pairs(setup_torch_test(s)) do fails[#fails + 1] = f end
 	for _, f in pairs(setup_battery_test(s)) do fails[#fails + 1] = f end
 	for _, f in pairs(setup_veins_test()) do fails[#fails + 1] = f end
 	for _, f in pairs(setup_drill_test(s)) do fails[#fails + 1] = f end
