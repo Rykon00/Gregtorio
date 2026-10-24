@@ -269,8 +269,11 @@ end
 
 --- issue #501, the maintainer's decision: Reach the Nether in the steam age (after Iron Furnace, the first technology of
 --- automation science; before: MV Machines and Extruder, three packs), before Rubber, which takes the Nether's sulfur
---- and sphalerite; every other first consumer of a Nether ore comes after Rubber
-F.tech{ name = NETHER, prerequisites = { "iron-furnace" }, packs = 1, count = 20, time = 30, recipes = nether }
+--- and sphalerite; every other first consumer of a Nether ore comes after Rubber; issue #573, the maintainer's choice: after
+--- Steam Macerator too, so the steam macerator doubles the Nether's ores from Reach the Nether on (101's
+--- fork_steam_ore_unlocks: the later of Steam Macerator and the ore's first technology)
+F.tech{ name = NETHER, prerequisites = { "iron-furnace", "steam-macerator" }, packs = 1, count = 20, time = 30,
+	recipes = nether }
 table.insert(data.raw.technology["rubber"].prerequisites, NETHER)
 --- issue #502: Reach the Twilight Forest in the LV age, after its crystal's LV assembler, LV circuits and diamond; before
 --- Galena and Invar, whose galena, lead, silver and nickel veins are the Twilight Forest's now (GTNH's TFGalena is the
