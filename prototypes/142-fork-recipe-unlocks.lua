@@ -831,6 +831,13 @@ FORK_UNLOCK_TREE.keep = {
 	-- so the hammering of the Moon's crushed ores would go to Titanium (EV); the Moon's hammer makes them
 	["hammering-crushed-chromite"] = "reach-the-moon",
 	["hammering-crushed-ilmenite"] = "reach-the-moon",
+	-- issues #571/#573: Steam Macerator needs Steam Forge Hammer and Reach the Nether needs Steam Macerator, so 155 sends
+	-- the molybdenum dust (the macerated ingot) to Reach the Nether, a prerequisite of Bending Machine, and the primitive
+	-- blast furnace's molybdenum would go to Gas Turbine, Multismelter and Pyrolyse Oven (LV and MV); it stays with
+	-- Bending Machine, as before
+	["molybdenum-dust-pbf-coal"] = "bending-machine",
+	["molybdenum-dust-pbf-charcoal"] = "bending-machine",
+	["molybdenum-dust-pbf-coke"] = "bending-machine",
 }
 function FORK_UNLOCK_TREE.apply(final)
 	for tech, pres in pairs(FORK_UNLOCK_TREE.prerequisites) do
