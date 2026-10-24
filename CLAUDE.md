@@ -38,7 +38,10 @@
     their recipes are in the compat file; plan and record: `docs/SPLIT.md`; issue #214: every recipe of
     `ME_NETWORK.recipes` gets a GT recipe there, as in GTNH's AE2 where it has one, registered in `FORK_ME_RECIPES`, and
     devcheck fails for one that keeps me-network's standalone recipe unless it is in the allow-list
-    `FORK_ME_RECIPES_STANDALONE` with its reason)
+    `FORK_ME_RECIPES_STANDALONE` with its reason; issue #580: every item rename of a JSON migration is told to the network
+    with `ME_NETWORK.replace_item`, from `prototypes/data/item-renames.lua`, which `devcheck.py check --item-renames`
+    writes from `migrations/*.json`: after a new item rename in a JSON migration run it, `check` fails until the table
+    matches)
   - 125 LuV endgame (naquadah: upstream's goodgenerator line with GTNH's numbers and missing recipes, issue #205;
     bacterial vat, crystal processors, fusion MK1)
   - 126 ZPM
