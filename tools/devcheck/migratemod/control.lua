@@ -186,19 +186,32 @@ local TT_TECHS = { "steam-compressor", "extruder", "end-steel", "alloy-blast-sme
 	"tier-three-microminers", "naquadah-processing", "uv-multiblocks", "osmium", "galena", "invar", "rubber" }
 local TT_REACH = { ["reach-the-nether"] = true, ["reach-the-twilight-forest"] = true, ["reach-the-end"] = true }
 local TT_CHECK_TICK = 60
+--- issue #571: a second force of the steam age, which researched Steam Macerator (and its prerequisites of the old
+--- version) but not Ore Crushing: after the update it keeps every recipe it had (the player's force has Ore Crushing)
+local TT_STEAM_FORCE, TT_STEAM_TECHS = "devcheck-steam-age", { "steam-macerator" }
+--- recipes that 0.5.9 moved to a later technology on purpose (in the changelog), so the steam age force loses them
+local TT_STEAM_MOVED = {
+	["dimension-mine"] = true,   -- issue #556: with Primitive Electronic Circuit Assemblies (before: Craft Wooden Tools)
+	["gravel"] = true,           -- issue #560: the forge hammer's, with Steam Forge Hammer (before: Steam Macerator)
+}
 
 local function setup_techs()
-	local force, n = game.forces.player, 0
-	local function research(name)
+	local n = 0
+	local function research(force, name)
 		local t = force.technologies[name]
 		if not t or t.researched then return end
-		for p, _ in pairs(t.prerequisites) do research(p) end
+		for p, _ in pairs(t.prerequisites) do research(force, p) end
 		t.researched = true
 		n = n + 1
 	end
-	for _, name in pairs(TT_TECHS) do research(name) end
+	local force = game.forces.player
+	for _, name in pairs(TT_TECHS) do research(force, name) end
 	storage.tt_enabled = {}
 	for name, r in pairs(force.recipes) do if r.enabled then storage.tt_enabled[name] = true end end
+	local steam = game.forces[TT_STEAM_FORCE] or game.create_force(TT_STEAM_FORCE)
+	for _, name in pairs(TT_STEAM_TECHS) do research(steam, name) end
+	storage.tt_steam_enabled = {}
+	for name, r in pairs(steam.recipes) do if r.enabled then storage.tt_steam_enabled[name] = true end end
 	log("DEVCHECK-MIGRATE-SETUP-TECHS ok (" .. n .. " technologies researched)")
 end
 
@@ -207,26 +220,44 @@ local function check_techs()
 		log("DEVCHECK-MIGRATE-TECHS skipped")
 		return
 	end
-	local force, problems, recipes, techs, new = game.forces.player, {}, 0, 0, 0
-	for name, t in pairs(force.technologies) do
-		if t.researched then
-			techs = techs + 1
-			--- issue #569: a researched technology has its reach technologies researched
-			for p in pairs(t.prerequisites) do
-				if TT_REACH[p] and not force.technologies[p].researched then
-					problems[#problems + 1] = "the researched technology " .. name .. " needs " .. p .. ", which is not researched"
-				end
-			end
-			for _, e in pairs(t.prototype.effects) do
-				if e.type == "unlock-recipe" then
-					local r = force.recipes[e.recipe]
-					recipes = recipes + 1
-					if not r.enabled then
-						problems[#problems + 1] = e.recipe .. " of the researched technology " .. name .. " is not enabled"
-					elseif not storage.tt_enabled[e.recipe] then
-						new = new + 1
+	local problems, recipes, techs, new = {}, 0, 0, 0
+	local function check(force, enabled, who)
+		for name, t in pairs(force.technologies) do
+			if t.researched then
+				techs = techs + 1
+				--- issue #569: a researched technology has its reach technologies researched
+				for p in pairs(t.prerequisites) do
+					if TT_REACH[p] and not force.technologies[p].researched then
+						problems[#problems + 1] = who .. "the researched technology " .. name .. " needs " .. p .. ", which is not researched"
 					end
 				end
+				for _, e in pairs(t.prototype.effects) do
+					if e.type == "unlock-recipe" then
+						local r = force.recipes[e.recipe]
+						recipes = recipes + 1
+						if not r.enabled then
+							problems[#problems + 1] = who .. e.recipe .. " of the researched technology " .. name .. " is not enabled"
+						elseif not enabled[e.recipe] then
+							new = new + 1
+						end
+					end
+				end
+			end
+		end
+	end
+	check(game.forces.player, storage.tt_enabled, "")
+	--- issue #571: the steam age force keeps every recipe it had and gets the steam macerator's ore recipes
+	local steam = storage.tt_steam_enabled and game.forces[TT_STEAM_FORCE]
+	if steam then
+		check(steam, storage.tt_steam_enabled, TT_STEAM_FORCE .. ": ")
+		for name in pairs(storage.tt_steam_enabled) do
+			if steam.recipes[name] and not steam.recipes[name].enabled and not TT_STEAM_MOVED[name] then
+				problems[#problems + 1] = TT_STEAM_FORCE .. ": " .. name .. " was enabled before the update and is not now"
+			end
+		end
+		for _, name in pairs({ "steam-crushed-copper", "steam-impure-copper-dust", "impure-copper-dust-smelter" }) do
+			if steam.recipes[name] and not steam.recipes[name].enabled then
+				problems[#problems + 1] = TT_STEAM_FORCE .. ": " .. name .. " is not enabled with Steam Macerator"
 			end
 		end
 	end
