@@ -1260,7 +1260,12 @@ end
 --- Issue #534: a save whose map settings name the veins while its chunks have no ore of them (the maintainer's, from a map
 --- settings editor). An old save with the map veins gets its generated chunks' vein ore (regenerated first, to match a
 --- changed grid above) counted and then deleted; after the update the same chunks must hold the same ore again
---- (DEVCHECK-MIGRATE-VEINORES)
+--- (DEVCHECK-MIGRATE-VEINORES). Issue #552: an old version that has #534's Lua migration ran it already (Factorio runs a Lua
+--- migration once per save, and marks every one of a new map's version as done), so nothing would bring the ores back
+--- and the setup is skipped; devcheck writes the old version's migrations into old-version.lua
+local ok_old, OLD = pcall(require, "old-version")
+local OLD_MIGRATIONS = ok_old and OLD.migrations or {}
+local VEINORES_MIGRATION = "2026-10-23-issue-534-vein-ores.lua"
 local function vein_ores()
 	local names = {}
 	for name, p in pairs(prototypes.get_entity_filtered{ { filter = "type", type = "resource" } }) do
@@ -1272,6 +1277,11 @@ local function setup_vein_ores()
 	local s = game.surfaces.nauvis
 	if not (s.map_gen_settings.property_expression_names or {}).gt_vein_id then
 		log("DEVCHECK-MIGRATE-SETUP-VEINORES skipped (no map veins in this version)")
+		return
+	end
+	if OLD_MIGRATIONS[VEINORES_MIGRATION] then
+		storage.vein_ores_skipped = "the old version has #534's migration " .. VEINORES_MIGRATION .. ", which a save runs once"
+		log("DEVCHECK-MIGRATE-SETUP-VEINORES skipped (" .. storage.vein_ores_skipped .. ")")
 		return
 	end
 	local names, chunks = vein_ores(), {}
@@ -1289,7 +1299,7 @@ end
 local function check_vein_ores()
 	local before = storage.vein_ores
 	if not before then
-		log("DEVCHECK-MIGRATE-VEINORES skipped")
+		log("DEVCHECK-MIGRATE-VEINORES skipped" .. (storage.vein_ores_skipped and " (" .. storage.vein_ores_skipped .. ")" or ""))
 		return
 	end
 	local s = game.surfaces.nauvis

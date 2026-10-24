@@ -151,22 +151,35 @@ def engine_version(fdir=None):
     return ".".join(v.split(".")[:2])
 
 
-def helper_dir(src):
+def helper_dir(src, files=None):
     """issue #535: a helper mod (checkmod/, runtimemod/, migratemod/) as it is when the Factorio in use is the one it is
     written for (FACTORIO_VERSION), else a copy in the work folder whose info.json says that Factorio's version: the
-    helpers run in a 2.0 Factorio too (the old save of `migrate --old-factorio`)"""
+    helpers run in a 2.0 Factorio too (the old save of `migrate --old-factorio`). files: {name: text} written into a
+    copy (also for this Factorio), e.g. the old version's migrations for the migrate helper (issue #552)"""
     v = engine_version()
-    if v == FACTORIO_VERSION:
+    if v == FACTORIO_VERSION and not files:
         return src
     dest = WORK / ("helper-" + v) / src.name
     if dest.exists():
         shutil.rmtree(dest)
     shutil.copytree(src, dest)
-    f = dest / "info.json"
-    info = json.loads(f.read_text(encoding="utf-8"))
-    info["factorio_version"] = v
-    f.write_text(json.dumps(info, indent=2), encoding="utf-8")
+    if v != FACTORIO_VERSION:
+        f = dest / "info.json"
+        info = json.loads(f.read_text(encoding="utf-8"))
+        info["factorio_version"] = v
+        f.write_text(json.dumps(info, indent=2), encoding="utf-8")
+    for name, text in (files or {}).items():
+        (dest / name).write_text(text, encoding="utf-8")
     return dest
+
+
+def zip_migrations(path):
+    """the file names in migrations/ of a mod zip (issue #552: Factorio runs a Lua migration once per save, so the
+    migrate helper skips the check of a migration the old version already ran)"""
+    import zipfile
+    with zipfile.ZipFile(path) as z:
+        return sorted(n.split("/")[-1] for n in z.namelist() if n.count("/") == 2 and n.split("/")[1] == "migrations"
+                      and n.split("/")[-1])
 
 
 def texture_stand_in(me_info, me_dir):
@@ -221,9 +234,10 @@ def remove_path(p):
 
 
 def prepare_mods(with_runtime=False, gregtorio_zip=None, with_migrate=False, menusim=None, gregtorio=True,
-                 settings=None):
+                 settings=None, old_migrations=()):
     """mods/ = dependency zips + the mod (working copy or a zip) + devcheck helper mods.
     menusim: name of a main menu simulation for the menusim helper mod; gregtorio=False leaves the mod out.
+    old_migrations: the migration files of the old save's version, for the migrate helper (`old-version.lua`).
     settings: {startup setting name: bool} forced for this run (`check --set`); without it every setting has its
     default, because mod-settings.dat is removed (a value stored by an earlier run would win over the default)."""
     remove_path(MODS / "mod-settings.dat")
@@ -269,7 +283,8 @@ def prepare_mods(with_runtime=False, gregtorio_zip=None, with_migrate=False, men
         link_dir(MODS / "zz-gregtorio-devcheck-runtime", helper_dir(HERE / "runtimemod"))
         enabled.append("zz-gregtorio-devcheck-runtime")
     if with_migrate:
-        link_dir(MODS / "zz-gregtorio-devcheck-migrate", helper_dir(HERE / "migratemod"))
+        lua = "return { migrations = {" + "".join(f" [{json.dumps(n)}] = true," for n in old_migrations) + " } }\n"
+        link_dir(MODS / "zz-gregtorio-devcheck-migrate", helper_dir(HERE / "migratemod", {"old-version.lua": lua}))
         enabled.append("zz-gregtorio-devcheck-migrate")
     if menusim:
         # a copy, not a link: config.lua names the simulation to run
@@ -2255,10 +2270,11 @@ class old_factorio:
 def migrate(a):
     """Create a map with an older version (also "Gregtorio" before 0.3.0), then load and run it with the working copy."""
     old = a.from_zip or zip_from_ref(a.from_ref)
+    old_migs = zip_migrations(old)
     old_me = old_me_network(a.old_me_network) if getattr(a, "old_me_network", None) else None
     with old_factorio(a, old):
         with me_network_from(old_me):
-            prepare_mods(gregtorio_zip=old, with_migrate=True)
+            prepare_mods(gregtorio_zip=old, with_migrate=True, old_migrations=old_migs)
         log = factorio("--create", str(WORK / "migrate-map.zip"), *seed_args(a))
     print(f"map seed: {'random' if a.seed == 'random' else a.seed}")
     if load_errors(log):
@@ -2308,7 +2324,7 @@ def migrate(a):
         step_me = old_me_network(STEP_ME_NETWORK, "intermediate load with")
         old = zip_from_ref(STEP_GREGTORIO)
         with me_network_from(step_me):
-            prepare_mods(gregtorio_zip=old, with_migrate=True)
+            prepare_mods(gregtorio_zip=old, with_migrate=True, old_migrations=old_migs)
         step_log, why = load_and_save(WORK / "migrate-map.zip", WORK / "migrate-step.log")
         if why:
             print(f"intermediate load: FAILED, {why}: "
@@ -2318,7 +2334,7 @@ def migrate(a):
     elif save_me is not None and version_tuple(save_me) < ME_CUT_OFF:
         print(f"--direct: the old save of me-network {save_me} is loaded with the working copies (me-network 0.5.1 and "
               f"later refuse it)")
-    prepare_mods(with_migrate=True, gregtorio_zip=bumped_working_copy(old))
+    prepare_mods(with_migrate=True, gregtorio_zip=bumped_working_copy(old), old_migrations=old_migs)
     log = factorio("--benchmark", str(WORK / "migrate-map.zip"), "--benchmark-ticks", str(a.ticks))
     ran = re.search(r"Performed (\d+) updates", log)
     fluids = re.search(r"DEVCHECK-MIGRATE-FLUIDS (.*)", log)
