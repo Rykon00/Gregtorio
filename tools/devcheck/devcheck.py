@@ -234,7 +234,7 @@ def remove_path(p):
 
 
 def prepare_mods(with_runtime=False, gregtorio_zip=None, with_migrate=False, menusim=None, gregtorio=True,
-                 settings=None, old_migrations=()):
+                 settings=None, old_migrations=(), with_switch=False):
     """mods/ = dependency zips + the mod (working copy or a zip) + devcheck helper mods.
     menusim: name of a main menu simulation for the menusim helper mod; gregtorio=False leaves the mod out.
     old_migrations: the migration files of the old save's version, for the migrate helper (`old-version.lua`).
@@ -286,6 +286,9 @@ def prepare_mods(with_runtime=False, gregtorio_zip=None, with_migrate=False, men
         lua = "return { migrations = {" + "".join(f" [{json.dumps(n)}] = true," for n in old_migrations) + " } }\n"
         link_dir(MODS / "zz-gregtorio-devcheck-migrate", helper_dir(HERE / "migratemod", {"old-version.lua": lua}))
         enabled.append("zz-gregtorio-devcheck-migrate")
+    if with_switch:
+        link_dir(MODS / "zz-gregtorio-devcheck-switch", helper_dir(HERE / "switchmod"))
+        enabled.append("zz-gregtorio-devcheck-switch")
     if menusim:
         # a copy, not a link: config.lua names the simulation to run
         shutil.copytree(HERE / "menusimmod", MODS / "zz-gregtorio-devcheck-menusim")
@@ -298,10 +301,15 @@ def prepare_mods(with_runtime=False, gregtorio_zip=None, with_migrate=False, men
         (d / "info.json").write_text(json.dumps({
             "name": "zz-gregtorio-devcheck-settings", "version": "1.0.0", "title": "Gregtorio devcheck settings",
             "author": "rykon_", "factorio_version": engine_version(), "dependencies": ["? " + n for n in MOD_NAMES]}))
+        # (issue #563: a string setting takes its value as the only allowed one)
         (d / "settings-final-fixes.lua").write_text("".join(
-            f"do local s = data.raw['bool-setting'][{json.dumps(n)}] "
-            f"assert(s, 'devcheck --set: no bool setting ' .. {json.dumps(n)}) "
-            f"s.hidden = true s.forced_value = {'true' if v else 'false'} s.default_value = s.forced_value end\n"
+            (f"do local s = data.raw['bool-setting'][{json.dumps(n)}] "
+             f"assert(s, 'devcheck --set: no bool setting ' .. {json.dumps(n)}) "
+             f"s.hidden = true s.forced_value = {'true' if v else 'false'} s.default_value = s.forced_value end\n")
+            if isinstance(v, bool) else
+            (f"do local s = data.raw['string-setting'][{json.dumps(n)}] "
+             f"assert(s, 'devcheck --set: no string setting ' .. {json.dumps(n)}) "
+             f"s.hidden = true s.allowed_values = {{ {json.dumps(v)} }} s.default_value = {json.dumps(v)} end\n")
             for n, v in settings.items()))
         enabled.append("zz-gregtorio-devcheck-settings")
     (MODS / "mod-list.json").write_text(json.dumps({"mods": [{"name": n, "enabled": True} for n in enabled]
@@ -360,6 +368,7 @@ class Model:
         self.itype, self.uses = {}, {}      # item -> its prototype type; item -> its uses besides recipes (issue #547)
         self.base = {"water", "steam"}
         mined, reach = {}, {}   # issue #501: resource -> its mined items; resource -> technologies of its planets
+        gt_ores = set()         # issue #563: the resources of the map veins (category gt-ore)
         for p in rows:
             k = p[0]
             if k == "R":
@@ -381,6 +390,8 @@ class Model:
                                     sci=[x for x in p[4].split(",") if x], trig=p[5], en=p[6] == "true")
             elif k == "M" and p[4] != "gregtorio-disabled":
                 mined[p[1]] = ([p[2]] if p[2] else []) + [x.split(":", 1)[1] for x in p[3].split(",") if x]
+                if p[4] == "gt-ore":
+                    gt_ores.add(p[1])
             elif k == "P":
                 reach.setdefault(p[1], set()).add(p[3] if len(p) > 3 else "")
             elif k == "O" and p[2]:
@@ -394,8 +405,11 @@ class Model:
         # issue #501: a resource is there from the start unless every planet that places it is reached by a technology
         # (the Nether's map veins); then the technology unlocks a pseudo recipe `planet-mining:<resource>` that gives its
         # items, in the category `planet-mining` of the character
+        # (issue #563: an ore of the map veins that no planet places, classic mode, gives nothing)
         for res, items in mined.items():
             techs = reach.get(res)
+            if not techs and res in gt_ores:
+                continue
             if not techs or "" in techs:
                 self.base.update(items)
                 continue
@@ -834,6 +848,32 @@ def check_me_tab(sec):
         problems.append("no ME_NETWORK.GROUP (me-network before 0.5.7?)")
     return (f"{len(items) - len(outside)} of {len(items)} ME items in the tab {group}, {len(allow)} outside on purpose; "
             f"{len(recipes)} recipes in the tab", sorted(problems))
+
+
+ORE_MODE = "gregtorio-continued-ore-mode"
+
+
+def check_classic_veins(m, sec):
+    """Issue #563 (prototypes/166-fork-classic-veins.lua): every vein the map places (GT's mixes on a planet with map
+    veins, read by checkmod from FORK_ORE_MIXES) has its classic vein recipe and both twins, and the recipe gives the
+    vein's ores (a kept recipe, upstream's Copper Tin Vein, at least them); in classic mode (the startup setting
+    gregtorio-continued-ore-mode = vein-recipes) a researchable technology unlocks the three, in map-vein mode they are
+    hidden. Returns (info line, problems)."""
+    mode = next((r[1] for r in sec.get("SETTINGS", []) if r[0] == ORE_MODE), "absent")
+    rows = [r + [""] * (7 - len(r)) for r in sec.get("CLASSICVEINS", [])]
+    problems = []
+    for mix, recipe, twin, miner, ores, res, kept in rows:
+        for kind, name in (("recipe", recipe), ("twin", twin), ("Miner twin", miner)):
+            if name == "-":
+                problems.append(f"{mix}: no classic {kind}")
+            elif mode == "vein-recipes" and name not in m.unlocked:
+                problems.append(f"{mix}: {name} is not unlocked in classic mode")
+            elif mode != "vein-recipes" and not kept and name in m.R and not m.R[name]["hidden"]:
+                problems.append(f"{mix}: {name} is not hidden in map-vein mode")
+        want, got = set(filter(None, ores.split(","))), set(filter(None, res.split(",")))
+        if recipe != "-" and (not want <= got if kept else want != got):
+            problems.append(f"{mix}: {recipe} gives {', '.join(sorted(got))}, the vein holds {', '.join(sorted(want))}")
+    return f"{len(rows)} placed veins, {sum(1 for r in rows if r[1] != '-')} with their classic recipe (mode {mode})", problems
 
 
 def check_ore_mixes(m, sec):
@@ -1858,12 +1898,13 @@ def check_one_pack(sec):
 
 
 def parse_settings(pairs):
+    """--set NAME=VALUE: true or false for a bool startup setting, any other value for a string setting (issue #563)."""
     out = {}
     for p in pairs or []:
         name, _, value = p.partition("=")
-        if value not in ("true", "false"):
-            sys.exit(f"--set {p}: expected <bool startup setting>=true|false")
-        out[name] = value == "true"
+        if not value:
+            sys.exit(f"--set {p}: expected <startup setting>=<value>")
+        out[name] = value == "true" if value in ("true", "false") else value
     return out
 
 
@@ -1980,6 +2021,10 @@ def check(a):
     print(f"\nGT's ore veins (issue #496): {mixes_info}")
     report("ores of GT's veins on Gregtorio's surfaces without a raw ore and its chain (prototypes/165-fork-ore-veins.lua)",
            ore_mixes)
+    classic_info, classic_veins = check_classic_veins(m, sec)
+    print(f"\nclassic vein recipes (issue #563): {classic_info}")
+    report("placed veins without their classic vein recipe and twins, or with other ores (prototypes/166-fork-classic-veins.lua)",
+           classic_veins)
     chain_ores, ore_chain = check_ore_chain(m)
     print(f"\nore chain (issue #185): {chain_ores} ores with GTNH's chain")
     report("ore chain gaps and ore washer shortcuts (prototypes/155-fork-ore-chain.lua)", ore_chain)
@@ -2041,7 +2086,7 @@ def check(a):
               or new_drafts or fluid_problems or locked or one_pack or fluid_steps or table_only or me_recipes or me_tab
               or extractor_split or ore_mixes or ore_chain or ore_baths or ore_o34 or ore_hammer
               or circuit_icons or pgm_dusts or recycling or names or gaps or tree or vanilla or lenses or mine_twins
-              or unplaceable or stale_unlocks or removed_keys or trigger_only)
+              or unplaceable or stale_unlocks or removed_keys or trigger_only or classic_veins)
     print("\nRESULT:", "OK" if ok else "PROBLEMS FOUND")
     return 0 if ok else 1
 
@@ -2060,6 +2105,44 @@ def one_pack(a):
     return 1 if problems else 0
 
 
+def classic(a):
+    """Part of `all` (issue #563): check and runtime once more with the classic ore mode (gregtorio-continued-ore-mode =
+    vein-recipes), as the one-pack research setting is loaded a second time."""
+    c = argparse.Namespace(**vars(a))
+    c.set, c.balance_out, c.fluids_out, c.locale_out, c.techs = [f"{ORE_MODE}=vein-recipes"], None, None, None, None
+    print(f"\n=== classic ore mode ({ORE_MODE}=vein-recipes): check ===")
+    if check(c):
+        return 1
+    print(f"\n=== classic ore mode ({ORE_MODE}=vein-recipes): runtime ===")
+    if runtime(c):
+        return 1
+    print("\n=== switching the ore mode of a save ===")
+    return switch(a)
+
+
+def switch(a):
+    """Issue #563: a map made in one ore mode, loaded in the other, both ways (switchmod/control.lua: the scene and its
+    checks; scripts/fork-ore-veins.lua migrates the save in on_configuration_changed)."""
+    failed = False
+    for frm, to in (("map-veins", "vein-recipes"), ("vein-recipes", "map-veins")):
+        prepare_mods(with_switch=True, settings={ORE_MODE: frm})
+        log = factorio("--create", str(WORK / "switch-map.zip"), *seed_args(a))
+        setup = re.search(r"DEVCHECK-SWITCH-SETUP (.*)", log)
+        if load_errors(log) or not setup or not setup.group(1).startswith("ok"):
+            print(f"{frm} -> {to}: the map was not made: {load_errors(log) or (setup.group(1) if setup else 'no set-up')}")
+            failed = True
+            continue
+        prepare_mods(with_switch=True, settings={ORE_MODE: to})
+        log = factorio("--benchmark", str(WORK / "switch-map.zip"), "--benchmark-ticks", "400")
+        res = re.search(r"DEVCHECK-SWITCH (.*)", log)
+        print(f"{frm} -> {to}: {res.group(1) if res else 'no result ' + (load_errors(log) or script_error(log) or '')}")
+        for f in re.findall(r"DEVCHECK-SWITCH-FAIL (.*)", log):
+            print("  - " + f)
+        failed |= not (res and res.group(1).startswith("ok"))
+    print("\nRESULT: " + ("PROBLEMS FOUND" if failed else "OK"))
+    return 1 if failed else 0
+
+
 def seed_args(a):
     if a.seed == "random":
         return []
@@ -2067,7 +2150,7 @@ def seed_args(a):
 
 
 def runtime(a):
-    prepare_mods(with_runtime=True)
+    prepare_mods(with_runtime=True, settings=parse_settings(getattr(a, "set", None)))
     log = factorio("--create", str(WORK / "runtime-map.zip"), *seed_args(a))
     if load_errors(log):
         print(load_errors(log))
@@ -2087,7 +2170,7 @@ def runtime(a):
     print(f"benchmark: {ran.group(0) if ran else 'did not run'}")
     # the ME network's runtime tests are in me-network since issue #83 (its tools/devcheck)
     tests = (("MOLD", "mold test"), ("LENS", "lens test"), ("POWER", "power test"), ("FUEL", "fuel check test"), ("COOLED", "cooled fluid test"),
-             ("TIERS", "turbine tier test"), ("RECIPES", "recipe test"), ("CRUSH", "raw ore crushing test"), ("STEAM", "steam turbine test"), ("CHAIN", "nuclear chain test"), ("LFTR", "LFTR test"), ("LSC", "supercapacitor test"), ("LSUP", "supercapacitor upgrade test"), ("ELEVATOR", "space elevator test"), ("MELT", "melt and cast test"), ("OFFER", "offered recipes test"), ("EMINE", "electric mine test"), ("SOLAR", "solar boiler test"), ("TORCH", "torch test"), ("BATTERY", "battery buffer test"), ("VEINS", "map vein test"), ("DRILLS", "mining drill test"), ("PORTAL", "portal test"), ("ENDER", "ender storage test"), ("VICTORY", "victory test"),
+             ("TIERS", "turbine tier test"), ("RECIPES", "recipe test"), ("CRUSH", "raw ore crushing test"), ("STEAM", "steam turbine test"), ("CHAIN", "nuclear chain test"), ("LFTR", "LFTR test"), ("LSC", "supercapacitor test"), ("LSUP", "supercapacitor upgrade test"), ("ELEVATOR", "space elevator test"), ("MELT", "melt and cast test"), ("OFFER", "offered recipes test"), ("EMINE", "electric mine test"), ("SOLAR", "solar boiler test"), ("TORCH", "torch test"), ("BATTERY", "battery buffer test"), ("VEINS", "map vein test"), ("CLASSIC", "classic vein test"), ("DRILLS", "mining drill test"), ("PORTAL", "portal test"), ("ENDER", "ender storage test"), ("VICTORY", "victory test"),
              ("POSTVICTORY", "post-victory test"))
     for key, label in tests:
         m = re.search(rf"DEVCHECK-RUNTIME-{key} (.*)", log)
@@ -2399,7 +2482,9 @@ def migrate(a):
     elif save_me is not None and version_tuple(save_me) < ME_CUT_OFF:
         print(f"--direct: the old save of me-network {save_me} is loaded with the working copies (me-network 0.5.1 and "
               f"later refuse it)")
-    prepare_mods(with_migrate=True, gregtorio_zip=bumped_working_copy(old), old_migrations=old_migs)
+    # (issue #563: --set forces a startup setting of the working copy's load, e.g. the classic ore mode)
+    prepare_mods(with_migrate=True, gregtorio_zip=bumped_working_copy(old), old_migrations=old_migs,
+                 settings=parse_settings(getattr(a, "set", None)))
     log = factorio("--benchmark", str(WORK / "migrate-map.zip"), "--benchmark-ticks", str(a.ticks))
     ran = re.search(r"Performed (\d+) updates", log)
     fluids = re.search(r"DEVCHECK-MIGRATE-FLUIDS (.*)", log)
@@ -2619,6 +2704,7 @@ def main():
     r = sub.add_parser("runtime")
     r.add_argument("--ticks", type=int, default=1500)
     r.add_argument("--seed", default=str(DEFAULT_SEED), help=f"map seed or `random` (default {DEFAULT_SEED})")
+    r.add_argument("--set", action="append", metavar="SETTING=VALUE", help="force a startup setting, as for check")
     m = sub.add_parser("migrate")
     src = m.add_mutually_exclusive_group(required=True)
     src.add_argument("--from-zip", help="older Gregtorio_x.y.z.zip to create the save with")
@@ -2631,6 +2717,9 @@ def main():
                    f"working copies directly, without the intermediate load with Gregtorio {STEP_GREGTORIO} and "
                    f"me-network {STEP_ME_NETWORK} (me-network 0.5.1 and later refuse it)")
     m.add_argument("--seed", default=str(DEFAULT_SEED), help=f"map seed or `random` (default {DEFAULT_SEED})")
+    m.add_argument("--set", action="append", metavar="SETTING=VALUE",
+                   help="issue #563: force a startup setting of the working copy's load, e.g. "
+                   "gregtorio-continued-ore-mode=vein-recipes")
     m.add_argument("--old-factorio", metavar="DIR", help="issue #535: an unpacked Factorio of the old version's "
                    "factorio_version (bin/ and data/), which makes the old save when it is not this one's (a 2.0 version)")
     m.add_argument("--old-mods", metavar="DIR", help="issue #535: with --old-factorio, a folder with the old version's "
@@ -2641,6 +2730,8 @@ def main():
     ms.add_argument("--ticks", type=int, help="ticks to run (default: the simulation's length)")
     ms.add_argument("--verbose", action="store_true", help="print the log lines with --sim all too")
     sub.add_parser("handover", help="issue #83: prototype of the ME state hand-over to me-network")
+    sw = sub.add_parser("switch", help="issue #563: a save switches its ore mode, both ways")
+    sw.add_argument("--seed", default=str(DEFAULT_SEED), help=f"map seed or `random` (default {DEFAULT_SEED})")
     al = sub.add_parser("all")
     al.add_argument("--ticks", type=int, default=1500)
     al.add_argument("--locale-out")
@@ -2659,7 +2750,9 @@ def main():
         return menusim(a)
     if a.cmd == "handover":
         return handover(a)
-    return check(a) or one_pack(a) or runtime(a)
+    if a.cmd == "switch":
+        return switch(a)
+    return check(a) or one_pack(a) or runtime(a) or classic(a)
 
 
 if __name__ == "__main__":

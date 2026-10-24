@@ -140,7 +140,8 @@ end
 local producers = {}
 for name, r in pairs(data.raw.recipe) do
 	if not name:match("%-recycling$") and not name:match("^void%-") and not name:match("scrap") and not casting[name]
-		and is_gregtorio_category(fork_category(r)) and craftable_category[fork_category(r)] then
+		and is_gregtorio_category(fork_category(r)) and craftable_category[fork_category(r)]
+		and not (FORK_CLASSIC_VEINS and FORK_CLASSIC_VEINS.hidden[name]) then   -- (issue #563: never unlocked)
 		for _, p in pairs(results_of(r)) do
 			producers[p] = producers[p] or {}
 			table.insert(producers[p], name)

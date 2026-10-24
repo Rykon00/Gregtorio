@@ -39,6 +39,12 @@ local NET = "gregtorio-me-network"
 --- has already is skipped
 local ok_old, OLD = pcall(require, "old-version")
 local OLD_MIGRATIONS = ok_old and OLD.migrations or {}
+--- issue #563: the ore mode of the load (the startup setting of the new version; an old version has none: map veins or,
+--- before 0.5.6, the vein recipes it had); a check of the update reads it, its set-up of the old save does not
+local function classic_mode()
+	local ok, s = pcall(function() return settings.startup["gregtorio-continued-ore-mode"] end)
+	return ok and s ~= nil and s.value == "vein-recipes"
+end
 local DRIVE = "me-fluid-drive-1k"
 local Y = 40
 local TOTAL = { water = 40000, chlorine = 10000 }      -- drive 1: 32000 water, drive 2: 8000 water + 10000 chlorine
@@ -294,10 +300,13 @@ local RM_MACHINES = {
 	-- issue #335: the Manual Mine got a fast replace group and the Ore Drilling Plant as its next upgrade; issue #499: the
 	-- name went to the mining drill, a Manual Mine of an old save is a Dimension Mine (JSON migration); issue #500: one on
 	-- an Overworld vein (hidden since #499) is replaced by the Manual Mine drill at its place, with its manual labor as fuel
-	{ "manual-mine", "mining-iron-vein", nil, "manual-mine", nil, true },
-	-- issue #505: the vein recipes of Nauvis, the Nether and the Twilight Forest are gone (JSON: a placeholder of their
-	-- planet); a mine on Nauvis on a Nether vein stays a Dimension Mine without a recipe
-	{ "manual-mine", "mining-tetrahedrite-vein", nil, "dimension-mine" },
+	-- (issue #563: in classic mode the Dimension Mine keeps the recipe, the 7th field)
+	{ "manual-mine", "mining-iron-vein", nil, "manual-mine", nil, true, { "mining-iron-vein", "dimension-mine" } },
+	-- issue #505: the vein recipes of Nauvis, the Nether and the Twilight Forest left map-vein mode; a mine on Nauvis on a
+	-- Nether vein stays a Dimension Mine without a recipe (issue #563: classic mode keeps the recipe)
+	{ "manual-mine", "mining-tetrahedrite-vein", nil, "dimension-mine", nil, nil, { "mining-tetrahedrite-vein", "dimension-mine" } },
+	-- issue #563: 0.5.5's chalcopyrite vein is GT's Copper: the drill in map-vein mode, mining-copper-vein in classic mode
+	{ "manual-mine", "mining-chalcopyrite-vein", nil, "manual-mine", nil, true, { "mining-copper-vein", "dimension-mine" } },
 	-- issue #527: a Manual Mine's recipe that moved to the Dig Site (#499) or needs the Nether (#501) is a placeholder on
 	-- load (JSON), which the migration clears with a message
 	{ "manual-mine", "hunting-blazes", nil, "dimension-mine" },
@@ -366,7 +375,7 @@ local function setup_removed()
 			--- issue #332: a slot that this version leaves empty (its recipe needs no tool here)
 			local empty_slot = md ~= nil and tool == nil and inv ~= nil and #inv > 0
 			machines[#machines + 1] = { entity = e, old = m[2], new = m[3], name = m[4], items = items,
-				empty_slot = empty_slot, pos = e.position, drill = m[6] }
+				empty_slot = empty_slot, pos = e.position, drill = m[6], classic = m[7] }
 		end
 	end
 	local queue
@@ -382,7 +391,8 @@ local function setup_removed()
 		log("DEVCHECK-MIGRATE-SETUP-REMOVED skipped (none of the removed fluids or items in this version)")
 		return
 	end
-	storage.removed = { tanks = list, chest = chest, items = items, machines = machines, queue = queue, lamp = lamp }
+	storage.removed = { tanks = list, chest = chest, items = items, machines = machines, queue = queue, lamp = lamp,
+		had_veins = (s.map_gen_settings.property_expression_names or {}).gt_vein_id ~= nil }
 	log("DEVCHECK-MIGRATE-SETUP-REMOVED ok (" .. #list .. " fluids in tanks, " .. #items .. " items in a chest, "
 		.. #machines .. " machines with recipes of the old line"
 		.. (queue and (", " .. queue.queued .. " hand crafts of " .. RM_QUEUED.recipe .. " queued") or "") .. ")")
@@ -408,6 +418,9 @@ local function check_removed()
 		if got ~= count then problems[#problems + 1] = "the chest holds " .. got .. " " .. name .. " of " .. count end
 	end
 	for _, m in pairs(p.machines or {}) do
+		if classic_mode() and m.classic then
+			m = { entity = m.entity, old = m.old, new = m.classic[1], name = m.classic[2], items = m.items, pos = m.pos }
+		end
 		--- issue #500: a mine on an Overworld vein became a mining drill at its place
 		local drill = m.drill and m.pos and game.surfaces[1].find_entity(m.name, m.pos)
 		if m.drill and not (drill and drill.type == "mining-drill") then
@@ -432,7 +445,11 @@ local function check_removed()
 	for name, r in pairs(prototypes.get_entity_filtered{ { filter = "type", type = "resource" } }) do
 		if r.resource_category == "gt-ore" then gt[#gt + 1] = name end
 	end
-	if #gt > 0 and game.surfaces[1].count_entities_filtered{ type = "resource", name = gt, limit = 1 } == 0 then
+	local vein_tiles = #gt > 0 and game.surfaces[1].count_entities_filtered{ type = "resource", name = gt, limit = 1 } or 0
+	if classic_mode() and not p.had_veins then
+		--- issue #563: a save without the veins gets none in classic mode
+		if vein_tiles > 0 then problems[#problems + 1] = "the old save's chunks got ore of the map veins in classic mode" end
+	elseif #gt > 0 and vein_tiles == 0 then
 		problems[#problems + 1] = "the old save's chunks have no ore of the map veins"
 	end
 	--- issues #316 and #325: a machine whose recipe needs a mold or lens in its slot has it there after the update and
@@ -1248,8 +1265,8 @@ end
 
 local function check_vein_grid()
 	local before = storage.vein_grid
-	if not before then
-		log("DEVCHECK-MIGRATE-VEINGRID skipped")
+	if not before or classic_mode() then   -- (issue #563: classic mode has no veins on the map)
+		log("DEVCHECK-MIGRATE-VEINGRID skipped" .. (before and " (classic ore mode)" or ""))
 		return
 	end
 	local problems = {}
@@ -1322,6 +1339,19 @@ local function check_vein_ores()
 	local before = storage.vein_ores
 	if not before then
 		log("DEVCHECK-MIGRATE-VEINORES skipped" .. (storage.vein_ores_skipped and " (" .. storage.vein_ores_skipped .. ")" or ""))
+		return
+	end
+	if classic_mode() then
+		--- issue #563: classic mode brings no vein ore back into the chunks whose ore was deleted (the ore the old save
+		--- has elsewhere, in chunks generated after the set-up, stays)
+		local tiles, names, ns = 0, vein_ores(), game.surfaces.nauvis
+		for _, c in pairs(before.list or {}) do
+			tiles = tiles + ns.count_entities_filtered{ type = "resource", name = names,
+				area = { { c.x * 32, c.y * 32 }, { c.x * 32 + 32, c.y * 32 + 32 } } }
+		end
+		if tiles > 0 then log("DEVCHECK-MIGRATE-FAIL vein ores: " .. tiles .. " ore tiles regenerated in classic mode") end
+		log("DEVCHECK-MIGRATE-VEINORES " .. (tiles == 0 and "ok" or "failed") .. " (classic ore mode: " .. tiles
+			.. " ore tiles of the veins in the " .. before.chunks .. " chunks after the update, " .. before.tiles .. " deleted before)")
 		return
 	end
 	local s = game.surfaces.nauvis
@@ -1405,10 +1435,12 @@ local function snapshot(s, area)
 	for k, t in pairs(sums) do out[k] = table.concat(t, ":") end
 	return out
 end
-local function snapshot_diff(a, b)
+--- (issue #563: without_veins leaves out the vein ores, which an area generated anew in classic mode lacks)
+local function snapshot_diff(a, b, without_veins)
 	local diff = {}
-	for k, v in pairs(a) do if b[k] ~= v then diff[#diff + 1] = k .. " " .. v .. " -> " .. (b[k] or "none") end end
-	for k, v in pairs(b) do if a[k] == nil then diff[#diff + 1] = k .. " none -> " .. v end end
+	local function skip(k) return without_veins and k:match("^resource gt%-ore%-") end
+	for k, v in pairs(a) do if b[k] ~= v and not skip(k) then diff[#diff + 1] = k .. " " .. v .. " -> " .. (b[k] or "none") end end
+	for k, v in pairs(b) do if a[k] == nil and not skip(k) then diff[#diff + 1] = k .. " none -> " .. v end end
 	table.sort(diff)
 	return diff
 end
@@ -1633,13 +1665,13 @@ local function check_mapgen_fresh()
 	mg.phase = nil
 	local s = game.surfaces.nauvis
 	generate(s, MG_FRESH, 1)
-	local far = snapshot_diff(mg.fresh_centre, snapshot(s, chunk_area(MG_FRESH)))
+	local far = snapshot_diff(mg.fresh_centre, snapshot(s, chunk_area(MG_FRESH)), classic_mode())
 	if #far > 0 then problems[#problems + 1] = "the far area generated anew differs: " .. table.concat(far, "; ") end
 	local same = 0
 	for p, snap in pairs(mg.centres) do
 		local ps = game.surfaces[p]
 		generate(ps, planet_area(p), 1)
-		local d = snapshot_diff(snap, snapshot(ps, chunk_area(planet_area(p))))
+		local d = snapshot_diff(snap, snapshot(ps, chunk_area(planet_area(p))), classic_mode())
 		if #d > 0 then problems[#problems + 1] = p .. "'s area generated anew differs: " .. table.concat(d, "; ") else same = same + 1 end
 	end
 	parts[#parts + 1] = "Nauvis near the spawn the same, far area generated anew " .. (#far == 0 and "the same" or "differs")
