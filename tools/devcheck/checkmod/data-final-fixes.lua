@@ -229,6 +229,16 @@ if FORK_ORE_MIXES and FORK_CLASSIC_VEINS then
 end
 section("CLASSICVEINS", cv)
 
+--- Issue #574: the placed veins for the vein table of docs/ORE-VEINS.md (FORK_ORE_VEINS.table of 165); one row per vein:
+--- mix, label, planets, primary, secondary, between, sporadic ("" left out), weight, density, size (absent in older
+--- versions)
+local vt = {}
+for _, v in ipairs(FORK_ORE_VEINS and FORK_ORE_VEINS.table or {}) do
+	vt[#vt + 1] = table.concat({ v.mix, v.label, table.concat(v.planets, ","), v.primary, v.secondary, v.between,
+		v.sporadic, tostring(v.weight), tostring(v.density), tostring(v.size) }, "\t")
+end
+section("VEINTABLE", vt)
+
 --- Issue #214: the recipes of me-network (ME_NETWORK.recipes) and which of them prototypes/120-fork-me-network-compat.lua
 --- gives a Gregtorio recipe (FORK_ME_RECIPES) or keeps standalone on purpose (FORK_ME_RECIPES_STANDALONE); one row per
 --- name: name, "me" (a recipe of me-network) or "-", "gregtorio" or "-", the allow-list reason (absent in older versions)

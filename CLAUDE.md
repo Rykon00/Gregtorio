@@ -315,7 +315,12 @@
     engine applied it in classic mode too; the script decides by the ore mode); issue #563: in classic mode the planets
     get no vein resources, controls or `gt_*` expressions (the prototypes stay for saves that switch), the mod data
     `fork-ore-veins` names the `mode`, and `FORK_ORE_VEINS.placed` (each placed vein once, with its surfaces),
-    `FORK_ORE_VEINS.ore_of` and `FORK_ORE_VEINS.fill` are 166's input; `docs/ORE-VEINS.md`; loads after 161)
+    `FORK_ORE_VEINS.ore_of` and `FORK_ORE_VEINS.fill` are 166's input; issue #574: every vein control's description
+    (generated: its ores with icons and layers, GT's weight, density and size, its share of the cells per surface;
+    `[fork-vein]` locale keys), in map-vein mode a raw ore's "Found in" line, the planet icons of gt-nether, gt-twilight and
+    gt-end (`tools/gen_icons.py --drawn`); `FORK_ORE_VEINS.table` is devcheck's section VEINTABLE, `check --vein-table`
+    writes the vein table of `docs/ORE-VEINS.md` and `check` fails when it differs; the names check fails for a vein control
+    without its description; `docs/ORE-VEINS.md`; loads after 161)
   - 166 classic veins (issue #563, the maintainer's addendum of 2026-10-24: the vein recipes of the classic ore mode,
     generated from 165's placed veins, never copied from git: one Manual Mine recipe `mining-<GT's mix name in kebab
     case>-vein` per vein with 163's twins, 64 ores per operation shared out by the expected ore tiles of GT's layers as 165
