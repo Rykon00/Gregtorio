@@ -1,0 +1,32 @@
+{
+  "save": "menu-simulations/gregtech-steam-age.zip",
+  "rebuilt_from": "d6296dee",
+  "made_with": "v0.5.8:v0.5.8",
+  "margin": 0,
+  "chunks": {
+    "before": 511,
+    "kept": 29
+  },
+  "size": {
+    "before": 7092364,
+    "after": 692947
+  },
+  "entities": {
+    "burner-inserter": 1093,
+    "crafting-table": 39,
+    "iron-chest": 5,
+    "iron-furnace": 176,
+    "manual-mine": 14,
+    "manual-research-lab": 6,
+    "offshore-pump": 1,
+    "pipe": 318,
+    "pipe-to-ground": 90,
+    "small-coal-boiler": 192,
+    "splitter": 60,
+    "steam-alloy-smelter": 16,
+    "steam-forge-hammer": 96,
+    "steam-macerator": 120,
+    "transport-belt": 4199,
+    "underground-belt": 180
+  }
+}

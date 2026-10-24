@@ -10,6 +10,8 @@
     python tools/devcheck/devcheck.py all       # check + runtime
     python tools/devcheck/devcheck.py menusim --sim all --compare
                                                 # run the main menu simulations with and without the mod
+    python tools/devcheck/devcheck.py menusim --sim gregtorio_steam_age --rebuild
+                                                # issue #588: save a Gregtorio menu scene again, shrunk, with today's mods
     python tools/devcheck/devcheck.py handover  # issue #83: prototype of the ME state hand-over to me-network
 
 Everything is kept in .devcheck/ in the repository root (git-ignored).
@@ -234,9 +236,11 @@ def remove_path(p):
 
 
 def prepare_mods(with_runtime=False, gregtorio_zip=None, with_migrate=False, menusim=None, gregtorio=True,
-                 settings=None, old_migrations=(), with_switch=False):
+                 settings=None, old_migrations=(), with_switch=False, helper=True):
     """mods/ = dependency zips + the mod (working copy or a zip) + devcheck helper mods.
-    menusim: name of a main menu simulation for the menusim helper mod; gregtorio=False leaves the mod out.
+    menusim: name of a main menu simulation for the menusim helper mod, or {"name": ..., more config} (written into the
+    helper's config.lua); gregtorio=False leaves the mod out; helper=False leaves out the check helper too (issue #588:
+    a menu scene's save is saved with the players' mods only).
     old_migrations: the migration files of the old save's version, for the migrate helper (`old-version.lua`).
     settings: {startup setting name: bool} forced for this run (`check --set`); without it every setting has its
     default, because mod-settings.dat is removed (a value stored by an earlier run would win over the default)."""
@@ -257,10 +261,11 @@ def prepare_mods(with_runtime=False, gregtorio_zip=None, with_migrate=False, men
     else:
         info = json.loads((ROOT / "info.json").read_text(encoding="utf-8"))
         link_dir(MODS / info["name"], ROOT)
-    link_dir(MODS / "zz-gregtorio-devcheck", helper_dir(HERE / "checkmod"))
+    if helper:
+        link_dir(MODS / "zz-gregtorio-devcheck", helper_dir(HERE / "checkmod"))
     # the built-in mods of the Factorio in use (issue #535: 2.1 adds recycler; a 2.0 Factorio for an old save has none)
     builtin = [n for n in ("space-age", "quality", "elevated-rails", "recycler") if (FACTORIO / "data" / n).is_dir()]
-    enabled = ["base"] + builtin + ([info["name"]] if info else []) + ["zz-gregtorio-devcheck"]
+    enabled = ["base"] + builtin + ([info["name"]] if info else []) + (["zz-gregtorio-devcheck"] if helper else [])
     zips = [z.name.rsplit("_", 1)[0] for z in MODS.glob("*.zip") if not z.name.startswith(MOD_NAMES)]
     enabled += [n for n in zips if n != ME_NETWORK]
     disabled = []
@@ -292,7 +297,8 @@ def prepare_mods(with_runtime=False, gregtorio_zip=None, with_migrate=False, men
     if menusim:
         # a copy, not a link: config.lua names the simulation to run
         shutil.copytree(HERE / "menusimmod", MODS / "zz-gregtorio-devcheck-menusim")
-        (MODS / "zz-gregtorio-devcheck-menusim" / "config.lua").write_text(f"return {{ name = {json.dumps(menusim)} }}\n")
+        config = menusim if isinstance(menusim, dict) else {"name": menusim}
+        (MODS / "zz-gregtorio-devcheck-menusim" / "config.lua").write_text(f"return {lua_literal(config)}\n")
         enabled.append("zz-gregtorio-devcheck-menusim")
     if settings:
         # a generated mod: forces the settings in the settings stage, after the mod defined them
@@ -314,6 +320,17 @@ def prepare_mods(with_runtime=False, gregtorio_zip=None, with_migrate=False, men
         enabled.append("zz-gregtorio-devcheck-settings")
     (MODS / "mod-list.json").write_text(json.dumps({"mods": [{"name": n, "enabled": True} for n in enabled]
                                                     + [{"name": n, "enabled": False} for n in disabled]}))
+
+
+def lua_literal(v):
+    """a Lua literal of a JSON-like value (dict with string keys, list, str, number, bool, None)"""
+    if isinstance(v, dict):
+        return "{ " + " ".join(f"[{json.dumps(str(k))}] = {lua_literal(x)}," for k, x in v.items()) + " }"
+    if isinstance(v, (list, tuple)):
+        return "{ " + " ".join(f"{lua_literal(x)}," for x in v) + " }"
+    if isinstance(v, bool):
+        return "true" if v else "false"
+    return "nil" if v is None else json.dumps(v)
 
 
 def factorio(*args):
@@ -2674,8 +2691,24 @@ def load_and_save(mapfile, log_path):
     """Loads `mapfile` in a headless server with nobody connected and `auto_pause`, so no tick runs: only the load with
     the mods' on_init / on_configuration_changed and the migrations. Quits through RCON at once (a Lua command would run
     a tick, and the helper mod's checks with it): the server saves the map when it quits (`--benchmark` cannot save),
-    the save is copied over `mapfile`. Returns the server log and None, or the log and a reason. The ports are free
-    ones (another devcheck may run a server at the same time)."""
+    the save is copied over `mapfile`. Returns the server log and None, or the log and a reason."""
+    step = WORK / "migrate-step.zip"                   # the server saves the map back into this file when it quits
+    shutil.copy2(mapfile, step)
+    log, reason, _ = server_session(step, log_path, "devcheck migrate: the intermediate load")
+    if not reason and re.search(r"DEVCHECK-MIGRATE-(?!SETUP)[A-Z]+ ", log):
+        reason = "a tick ran in the intermediate load (the helper mod's checks ran there)"
+    ticks = re.findall(r"updateTick\((\d+)\) changing state from\(InGame\)", log)
+    if not reason:
+        shutil.copy2(step, mapfile)
+        print(f"  saved when the server quit (tick {ticks[-1] if ticks else '?'}, no tick run)")
+    return log, reason
+
+
+def server_session(step, log_path, description, commands=()):
+    """Loads the save `step` in a headless server with nobody connected and `auto_pause`, sends `commands` through RCON
+    (each Lua command runs one tick), quits through RCON: the server saves the map back into `step` when it quits.
+    Returns the server log, None or a reason, and the RCON answers of the commands. The ports are free ones (another
+    devcheck may run a server at the same time)."""
     import socket, time
 
     def free_port(kind):
@@ -2685,12 +2718,10 @@ def load_and_save(mapfile, log_path):
     rcon_port, game_port = free_port(socket.SOCK_STREAM), free_port(socket.SOCK_DGRAM)
     binary = FACTORIO / ("bin/x64/factorio.exe" if os.name == "nt" else "bin/x64/factorio")
     settings = WORK / "server-settings.json"
-    settings.write_text(json.dumps({"name": "devcheck", "description": "devcheck migrate: the intermediate load",
+    settings.write_text(json.dumps({"name": "devcheck", "description": description,
                                     "visibility": {"public": False, "lan": False}, "auto_pause": True,
                                     "require_user_verification": False, "max_players": 1}), encoding="utf-8")
-    step = WORK / "migrate-step.zip"                   # the server saves the map back into this file when it quits
-    shutil.copy2(mapfile, step)
-    reason = None
+    reason, answers = None, []
     with open(log_path, "w", encoding="utf-8") as out:
         proc = subprocess.Popen([str(binary), "--mod-directory", str(MODS), "--start-server", str(step),
                                  "--server-settings", str(settings), "--bind", f"127.0.0.1:{game_port}",
@@ -2710,6 +2741,8 @@ def load_and_save(mapfile, log_path):
             if not sock:
                 reason = "the server did not load the save or answer RCON"
             else:
+                for i, command in enumerate(commands):
+                    answers.append(rcon(sock, 2, command, 10 + i))
                 try:
                     rcon(sock, 2, "/quit", 2)
                 except OSError:
@@ -2731,13 +2764,7 @@ def load_and_save(mapfile, log_path):
     log = log_path.read_text(encoding="utf-8", errors="replace")
     if not reason and not re.search(r"Saving map as .*\n(?:.*\n)*?.*Saving progress: 100", log):
         reason = "the server did not save the map when it quit"
-    if not reason and re.search(r"DEVCHECK-MIGRATE-(?!SETUP)[A-Z]+ ", log):
-        reason = "a tick ran in the intermediate load (the helper mod's checks ran there)"
-    ticks = re.findall(r"updateTick\((\d+)\) changing state from\(InGame\)", log)
-    if not reason:
-        shutil.copy2(step, mapfile)
-        print(f"  saved when the server quit (tick {ticks[-1] if ticks else '?'}, no tick run)")
-    return log, reason
+    return log, reason, answers
 
 
 def bumped_working_copy(old_zip):
@@ -3044,46 +3071,182 @@ def save_path(path):
     return ROOT / m.group(2) if m.group(1) in MOD_NAMES else None
 
 
+MENUSIM_TOOLS = ROOT / "tools" / "menusim"     # issue #588: resave.lua and a <name>.json per Gregtorio scene
+REPLAY_FILES = ("level-init.dat", "script-init.dat")
+
+
+def own_scene(save):
+    """issue #588: a scene of Gregtorio's own (its save is in this mod)"""
+    return bool(re.match(r"__(%s)__/" % "|".join(MOD_NAMES), save or ""))
+
+
 def run_menusim(name, save, length, gregtorio):
-    """Load the simulation's save with --benchmark for its length; the helper mod runs its init and update chunks"""
-    prepare_mods(menusim=name, gregtorio=gregtorio)
+    """Load the simulation's save with --benchmark for its length; the helper mod runs its init and update chunks.
+    Issue #588: a scene of Gregtorio's own also has its save's entities checked against tools/menusim/<name>.json and
+    the machines in the camera's view watched (menusimmod/control.lua)."""
     path = save_path(save)
+    own = own_scene(save)
     if not path or not path.exists():
-        return f"skipped (no save file: {save or 'none'})", []
+        return (f"ERROR no save file: {save}" if own else f"skipped (no save file: {save or 'none'})"), []
+    config = {"name": name, "ticks": length}
+    if own:
+        scene = MENUSIM_TOOLS / f"{name}.json"
+        if not scene.exists():
+            return f"ERROR {scene.relative_to(ROOT).as_posix()} is missing: run `menusim --sim {name} --rebuild`", []
+        config["expect"] = json.loads(scene.read_text(encoding="utf-8"))["entities"]
+    prepare_mods(menusim=config, gregtorio=gregtorio)
     log = factorio("--benchmark", str(path), "--benchmark-ticks", str(length))
     lines = re.findall(r"DEVCHECK-MENUSIM (.*)", log)
     ran = re.search(r"Performed (\d+) updates", log)
     err = re.search(r"(Error while running.*|non-recoverable.*|Error.*)(\n.*){0,3}", log)
     if any(l.startswith("FAIL") for l in lines):
-        return next(l for l in lines if l.startswith("FAIL")), lines
+        fails = [l for l in lines if l.startswith("FAIL")]
+        return fails[0] + (f" (and {len(fails) - 1} more FAIL lines)" if len(fails) > 1 else ""), lines
     if err and not ran:
         return "ERROR " + " ".join(x.strip() for x in err.group(0).splitlines()), lines
     if not any(l == "init done" for l in lines):
         return "ERROR init did not run", lines
+    if own and not any(l.startswith("view ") for l in lines):
+        return "ERROR the machines in view were not checked to the end", lines
     deaths = sum(1 for l in lines if l.startswith("DIED"))
-    return f"ok ({ran.group(1)} ticks{f', {deaths} characters died' if deaths else ''})", lines
+    facts = "".join(f"; {l}" for l in lines if l.startswith(("entities:", "view ")))
+    return f"ok ({ran.group(1)} ticks{f', {deaths} characters died' if deaths else ''}{facts})", lines
 
 
 def menusim(a):
-    """Run main menu simulations with the mod (and with --compare also without it) and report errors."""
+    """Run main menu simulations with the mod (and with --compare also without it) and report errors.
+    `--sim own` (part of `all`): Gregtorio's own scenes only. `--rebuild`: issue #588, menusim_rebuild."""
+    if getattr(a, "rebuild", False):
+        return menusim_rebuild(a)
     variants = [True, False] if a.compare else [True]
     failed = False
     for gregtorio in variants:
         label = "with Gregtorio" if gregtorio else "without Gregtorio"
         sims = menusim_list(gregtorio)
-        names = sorted(sims) if a.sim == "all" else [a.sim]
-        print(f"== {label}: {len(sims)} menu simulations{'' if a.sim == 'all' else ', running ' + a.sim}")
+        if a.sim == "all":
+            names = sorted(sims)
+        elif a.sim == "own":
+            names = sorted(n for n, (save, _) in sims.items() if own_scene(save))
+        else:
+            names = [a.sim]
+        print(f"== {label}: {len(sims)} menu simulations{'' if a.sim in ('all', 'own') else ', running ' + a.sim}")
         for name in names:
             if name not in sims:
                 print(f"{name}: not in main_menu_simulations")
+                failed |= gregtorio
                 continue
             save, length = sims[name]
             result, lines = run_menusim(name, save, a.ticks or length, gregtorio)
             print(f"{name}: {result}")
-            if a.sim != "all" or a.verbose:
+            if a.sim not in ("all", "own") or a.verbose:
                 for l in lines:
                     print("    " + l)
             failed |= result.startswith(("ERROR", "FAIL"))
+    print("\nRESULT: " + ("PROBLEMS FOUND" if failed else "OK"))
+    return 1 if failed else 0
+
+
+def menusim_own(a):
+    """Part of `all` (issue #588): Gregtorio's own menu scenes"""
+    print("\n=== Gregtorio's main menu scenes ===")
+    return menusim(argparse.Namespace(sim="own", compare=False, ticks=None, verbose=False, rebuild=False))
+
+
+def player_entities(answer, what):
+    try:
+        return json.loads(answer)
+    except ValueError:
+        sys.exit(f"{what}: no answer from the server's Lua command: {answer!r}")
+
+
+def menusim_rebuild(a):
+    """Issue #588: saves a Gregtorio scene's save again with today's mods and shrinks it, in the headless game.
+    1. --made-with GREGTORIO_REF[:ME_NETWORK_REF]: loads the save with the versions it was made with and counts the
+       player force's entities by name (the menusim helper's count mode).
+    2. Loads it in a headless server with today's mods (no helper mod: the save keeps the players' mod list), runs
+       tools/menusim/resave.lua over RCON (chunks cut to the factory, the blueprint library and the replay off) and
+       saves it when the server quits; the replay's start state (REPLAY_FILES), which the engine keeps in every save, is
+       left out of the zip.
+    3. Fails when an entity name has fewer entities after the load or the resave than with the save's own versions;
+       otherwise the save replaces the one in menu-simulations/ and tools/menusim/<name>.json gets today's counts (what
+       `menusim` checks every load against) and the facts of the rebuild. The source is the save of the working copy
+       or, with --save-from, the one of a git ref (the save as its builder made it)."""
+    import zipfile
+    sims = menusim_list(True)
+    if a.sim not in sims or not own_scene(sims[a.sim][0]):
+        sys.exit(f"--rebuild: {a.sim} is not a main menu simulation of Gregtorio's own")
+    save, length = sims[a.sim]
+    path = save_path(save)
+    rel = path.relative_to(ROOT).as_posix()
+    work = WORK / "menusim"
+    work.mkdir(exist_ok=True)
+    src = work / "source.zip"
+    if a.save_from:
+        src.write_bytes(subprocess.run(["git", "-C", str(ROOT), "show", f"{a.save_from}:{rel}"],
+                                       capture_output=True, check=True).stdout)
+    else:
+        shutil.copy2(path, src)
+    print(f"== {a.sim}: {rel} from {a.save_from or 'the working copy'}, {src.stat().st_size / 1e6:.2f} MB")
+    baseline = None
+    if a.made_with:
+        g_ref, _, me_ref = a.made_with.partition(":")
+        g_zip = zip_from_ref(g_ref)
+        me_dir = old_me_network(me_ref, "the save's own versions:") if me_ref else None
+        with me_network_from(me_dir):
+            prepare_mods(gregtorio_zip=g_zip, menusim={"name": a.sim, "count_only": True})
+            log = factorio("--benchmark", str(src), "--benchmark-ticks", "2")
+        m = re.search(r"DEVCHECK-MENUSIM COUNTS (.*)", log)
+        if not m:
+            sys.exit("the load with the save's own versions failed:\n" + (load_errors(log) or script_error(log) or log[-2000:]))
+        baseline = json.loads(m.group(1))
+        print(f"loaded with Gregtorio {g_ref}{' and me-network ' + me_ref if me_ref else ''}: "
+              f"{sum(baseline.values())} entities of the player force")
+    prepare_mods(helper=False)
+    step = work / path.name                      # the zip's folder takes the file's name
+    shutil.copy2(src, step)
+    count = ("/sc local by, n = {}, 0 for _, e in pairs(game.surfaces.nauvis.find_entities_filtered({ force = 'player' }))"
+             " do if e.type ~= 'character' then by[e.name] = (by[e.name] or 0) + 1 end end"
+             " for _ in game.surfaces.nauvis.get_chunks() do n = n + 1 end"
+             " rcon.print(helpers.table_to_json({ entities = by, chunks = n }))")
+    lua = (MENUSIM_TOOLS / "resave.lua").read_text(encoding="utf-8")
+    log, reason, answers = server_session(step, work / "server.log", f"devcheck menusim --rebuild {a.sim}", [
+        "/sc rcon.print('ready')",            # (the first Lua command of a session may get the achievements warning)
+        f"/sc local MARGIN = {a.margin}\n{lua}", count])
+    if reason:
+        sys.exit(f"the headless save failed: {reason}\n{load_errors(log) or log[-2000:]}")
+    resave, resaved = player_entities(answers[1], "resave.lua"), player_entities(answers[2], "count")
+    after = resaved["entities"]
+    out = work / "rebuilt.zip"
+    with zipfile.ZipFile(step) as zin, zipfile.ZipFile(out, "w", zipfile.ZIP_DEFLATED) as zout:
+        for info in zin.infolist():
+            if info.filename.rsplit("/", 1)[-1] not in REPLAY_FILES:
+                zout.writestr(info, zin.read(info.filename))
+    before = resave["entities"]
+    names = sorted(set(before) | set(after) | set(baseline or {}))
+    lost = [n for n in names if after.get(n, 0) < before.get(n, 0) or (baseline and before.get(n, 0) < baseline.get(n, 0))]
+    print(f"{'entity':32} {'own versions':>12} {'today':>8} {'resaved':>8}")
+    for n in names:
+        print(f"{n:32} {baseline.get(n, '-') if baseline else '-':>12} {before.get(n, '-'):>8} {after.get(n, '-'):>8}"
+              f"{'   LOST' if n in lost else ''}")
+    print(f"chunks: {resave['chunks']} -> {resaved['chunks']} (margin {a.margin}); blueprint library records deleted: "
+          f"{resave['blueprint_records']}; replay files left out: {', '.join(REPLAY_FILES)}")
+    print(f"size: {src.stat().st_size / 1e6:.2f} MB -> {out.stat().st_size / 1e6:.2f} MB")
+    if lost:
+        print("\nRESULT: PROBLEMS FOUND (entities lost; the save was not replaced)")
+        return 1
+    shutil.copy2(out, path)
+    scene = MENUSIM_TOOLS / f"{a.sim}.json"
+    scene.write_text(json.dumps({
+        "save": rel, "rebuilt_from": a.save_from or "working copy", "made_with": a.made_with, "margin": a.margin,
+        "chunks": {"before": resave["chunks"], "kept": resaved["chunks"]},
+        "size": {"before": src.stat().st_size, "after": out.stat().st_size},
+        "entities": dict(sorted(after.items()))}, indent=2) + "\n", encoding="utf-8")
+    print(f"wrote {rel} and {scene.relative_to(ROOT).as_posix()}\n")
+    result, lines = run_menusim(a.sim, save, length, True)
+    print(f"{a.sim}: {result}")
+    for l in lines:
+        print("    " + l)
+    failed = result.startswith(("ERROR", "FAIL"))
     print("\nRESULT: " + ("PROBLEMS FOUND" if failed else "OK"))
     return 1 if failed else 0
 
@@ -3130,10 +3293,20 @@ def main():
     m.add_argument("--old-mods", metavar="DIR", help="issue #535: with --old-factorio, a folder with the old version's "
                    "dependency zips (configurable-valves, autocraft-logistics of Factorio 2.0)")
     ms = sub.add_parser("menusim", help="run main menu simulations")
-    ms.add_argument("--sim", default="nauvis_biter_base_laser_defense", help="simulation name or `all`")
+    ms.add_argument("--sim", default="nauvis_biter_base_laser_defense",
+                    help="simulation name, `all` or `own` (Gregtorio's own scenes, part of `all`)")
     ms.add_argument("--compare", action="store_true", help="also run without Gregtorio")
     ms.add_argument("--ticks", type=int, help="ticks to run (default: the simulation's length)")
     ms.add_argument("--verbose", action="store_true", help="print the log lines with --sim all too")
+    ms.add_argument("--rebuild", action="store_true", help="issue #588: save a Gregtorio scene's save again with "
+                    "today's mods in the headless game, cut to the chunks of its factory (tools/menusim/resave.lua), "
+                    "and write tools/menusim/<sim>.json")
+    ms.add_argument("--save-from", metavar="REF", help="with --rebuild: take the save of this git ref (e.g. the commit "
+                    "that added it as its builder made it) instead of the working copy's")
+    ms.add_argument("--made-with", metavar="GREGTORIO_REF[:ME_NETWORK_REF]", help="with --rebuild: also load the save "
+                    "with the versions it was made with and fail when the load with today's mods loses an entity, "
+                    "e.g. v0.5.8:v0.5.8")
+    ms.add_argument("--margin", type=int, default=0, help="with --rebuild: chunks kept around the factory's chunks")
     sub.add_parser("handover", help="issue #83: prototype of the ME state hand-over to me-network")
     sw = sub.add_parser("switch", help="issue #563: a save switches its ore mode, both ways")
     sw.add_argument("--seed", default=str(DEFAULT_SEED), help=f"map seed or `random` (default {DEFAULT_SEED})")
@@ -3157,7 +3330,7 @@ def main():
         return handover(a)
     if a.cmd == "switch":
         return switch(a)
-    return check(a) or one_pack(a) or runtime(a) or classic(a)
+    return check(a) or one_pack(a) or runtime(a) or classic(a) or menusim_own(a)
 
 
 if __name__ == "__main__":

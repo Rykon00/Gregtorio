@@ -378,7 +378,16 @@
 - `data-final-fixes.lua` disables vanilla techs (`disable_tech`: hidden, no effects). The main menu simulations that call
   `research_all_technologies()` get the bonuses of those techs from `prototypes/fork-menu-simulations.lua` (PR #65: the
   laser defense simulation's character died without them and its script stopped the menu); after changing the disabled
-  techs or the character, run `python tools/devcheck/devcheck.py menusim --sim all --compare`. Its section "VANILLA ITEM
+  techs or the character, run `python tools/devcheck/devcheck.py menusim --sim all --compare`. Issue #588: Gregtorio's
+  own main menu scenes are the first section of that file (`gregtorio_steam_age`, save `menu-simulations/gregtech-steam-age.zip`,
+  built by achilles155; vanilla's Nauvis scenes stay next to them, the maintainer's choice). A scene's save is changed
+  only by `devcheck.py menusim --sim <name> --rebuild` (the headless game with today's mods runs `tools/menusim/resave.lua`:
+  chunks cut to the factory, the builder's blueprint library (the largest part of a map made in the editor) and the replay
+  removed; `--save-from <ref> --made-with <gregtorio ref>:<me-network ref>` starts from the builder's save and compares
+  the entity counts with its own versions), never by hand; it writes `tools/menusim/<name>.json`, whose entity counts
+  `menusim` (`--sim own` is part of `all`) checks after every load, with the machines in the camera's view. When a
+  change of the game makes the load of a scene lose entities or its machines stop, fix the scene's `init`/`update` or
+  rebuild its save. The section "VANILLA ITEM
   REMOVAL" deletes vanilla prototypes for good; issue #317's `VANILLA_RECIPES_REMOVED` there holds the vanilla and Space
   Age recipes that no technology unlocks, of items Gregtorio makes its own way. They are deleted with the technology effects
   and tips-and-tricks triggers that name them (a tip's trigger naming a missing recipe fails the load), and logged as `FORK-REMOVED`;
