@@ -13,12 +13,11 @@
     (`migrations/2026-10-24-issue-555-torch.json`); graphics from `tools/gen_icons.py --drawn`)
   - 101 machines (issue #446: the steam age of GTNH, the high pressure machines, the steam furnace, the lava and solar
     boilers; issue #447: the steam macerator's copies of the LV macerator recipes without byproducts,
-    `fork_steam_categories()` at the end of data-final-fixes.lua; issue #571: `fork_steam_ore_unlocks()` right after it
-    gives the copy of every ore form (raw, crushed, purified, centrifuged) the later of `FORK_STEAM_ORE_TECH` (Steam
-    Macerator) and the first technology of its input when that one is red-only and before the original's (Nauvis' veins
-    from the start, another planet's with its reach technology), and moves the furnace smelting of its product with it;
-    devcheck fails for a copy of a start ore that comes with a higher science unless it is in `FORK_STEAM_ORE_LATE` with its
-    reason; issue #449: the LV combustion generator, extruder and laser
+    `fork_steam_categories()` at the end of data-final-fixes.lua; issue #571: its `steam_ore_unlocks()` unlocks the copies of
+    the ore forms with the later of Steam Macerator and the first technology that makes their input (only into the
+    prerequisites of the original's technology, only when something takes each product there) and moves the furnace
+    recipes of their products with them; Steam Macerator needs Steam Forge Hammer (142); devcheck fails for a later copy
+    unless it is in `FORK_STEAM_LATE` (the Nether's ores, issue #573); issue #449: the LV combustion generator, extruder and laser
     engraver, the LV categories run by every MV machine through `fork_lv_machine_categories()` in 199; issue #560, section
     2n: every machine whose categories are all of the ore line (macerator, ore washer, thermal centrifuge, centrifuge, the
     steam macerators' copies) becomes a `furnace` that picks its recipe from its input, by `fork_furnace_machines()` at the

@@ -138,13 +138,12 @@ local fs = {}
 for key, v in pairs(FORK_FURNACE_SAME_INPUTS or {}) do fs[#fs + 1] = key .. "\t" .. tostring(v.wins) .. "\t" .. tostring(v.reason) end
 section("FURNACESAMEOK", fs)
 
---- Issue #571: the technology the steam macerator's ore copies come with (FORK_STEAM_ORE_TECH of
---- prototypes/101-fork-machines.lua) and the allow-list FORK_STEAM_ORE_LATE; rows "tech" name, "late" recipe reason
---- (absent in older versions)
-local so = {}
-if FORK_STEAM_ORE_TECH then so[#so + 1] = "tech\t" .. FORK_STEAM_ORE_TECH end
-for name, reason in pairs(FORK_STEAM_ORE_LATE or {}) do so[#so + 1] = "late\t" .. name .. "\t" .. reason end
-section("STEAMORE", so)
+--- Issue #571: steam macerator copies that come with a technology of a higher science than Steam Macerator although their
+--- input is there at its science, kept on purpose (FORK_STEAM_LATE in prototypes/101-fork-machines.lua, recipe -> reason;
+--- absent in older versions)
+local sl = {}
+for name, reason in pairs(FORK_STEAM_LATE or {}) do sl[#sl + 1] = name .. "\t" .. reason end
+section("STEAMLATEOK", sl)
 
 --- Issue #564: steam per second of the boilers and steam machines (FORK_STEAM_RATES of prototypes/fork-steam-rates.lua);
 --- one row per entity: name, kind (boiler, solar, uses), fluid, rate, Small Coal Boilers or "" (absent in older versions)

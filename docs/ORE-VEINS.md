@@ -113,7 +113,7 @@ that hold it. The table of every placed vein, generated from the mod's data (`pr
 | Dimension | Planet | Reached by | Tier | Veins | Terrain |
 |---|---|---|---|---|---|
 | Overworld | `nauvis` | - | - | 21 | Nauvis |
-| Nether | `gt-nether` | Nether Portal (10 obsidian, Flint and Steel), Reach the Nether | Steam | 11 | Vulcanus' volcanic rock and lava, no water, no sun; 1:8 |
+| Nether | `gt-nether` | Nether Portal (10 obsidian, Flint and Steel), Reach the Nether (after Iron Furnace and, #573, Steam Macerator) | Steam | 11 | Vulcanus' volcanic rock and lava, no water, no sun; 1:8 |
 | Twilight Forest | `gt-twilight` | Twilight Portal (4 buckets of water, Twilight Crystal), Reach the Twilight Forest | LV | 15 | Nauvis as a dense forest, permanent dusk, half the sun; 1:1 |
 | The End | `gt-end` | End Portal (12 Eyes of Ender), Reach the End | HV | 7 | islands of end stone in the void, permanent night |
 

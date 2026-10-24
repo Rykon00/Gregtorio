@@ -1614,48 +1614,6 @@ def check_unresearchable(m):
     return out
 
 
-STEAM_ORE_REQUIRED = ("steam-crushed-copper", "steam-crushed-iron", "steam-macerating-raw-tin")
-
-
-def check_steam_ores(m, sec):
-    """Issue #571 (prototypes/101-fork-machines.lua, fork_steam_ore_unlocks): the steam macerator doubles ores in the steam
-    age. Every steam macerator copy whose one input is a raw ore there from the start (Nauvis' map veins) comes with a
-    technology of no higher science than the Steam Macerator's (FORK_STEAM_ORE_TECH), unless it is in the allow-list
-    FORK_STEAM_ORE_LATE with its reason; the copper, iron and tin copies must be unlocked by a red-only researchable
-    technology. Returns (info line, problems)."""
-    rows = sec.get("STEAMORE", [])
-    tech = next((r[1] for r in rows if r[0] == "tech" and len(r) > 1), None)
-    allow = {r[1]: r[2] for r in rows if r[0] == "late" and len(r) > 2}
-    if not tech or tech not in m.T:
-        return "skipped (no FORK_STEAM_ORE_TECH)", []
-    base_sci = set(m.T[tech]["sci"])
-    by = {}
-    for t, v in m.T.items():
-        if v["en"]:
-            for r in v["eff"]:
-                by.setdefault(r, []).append(t)
-    problems, n = [], 0
-    for r, v in sorted(m.R.items()):
-        if v["cat"] != "steam-macerator-recipes" or v["hidden"] or len(v["ing"]) != 1:
-            continue
-        item = v["ing"][0]
-        if not item.startswith("raw-") or item not in m.base:
-            continue
-        n += 1
-        techs = by.get(r, [])
-        late = [t for t in techs if set(m.T[t]["sci"]) - base_sci]
-        if techs and len(late) == len(techs) and r not in allow:
-            problems.append(f"{r}: {item} is there from the start, but the recipe comes with {', '.join(sorted(techs))}, a "
-                            f"higher science than {tech} (or add it to FORK_STEAM_ORE_LATE with its reason)")
-    for r in STEAM_ORE_REQUIRED:
-        red = [t for t in by.get(r, []) if t in m.researched and set(m.T[t]["sci"]) <= {"automation-science-pack"}]
-        if not red:
-            problems.append(f"{r}: not unlocked by a researchable red-only technology")
-    stale = [f"FORK_STEAM_ORE_LATE: {r} is no steam copy of a start ore that comes late (remove the entry)" for r in allow
-             if r not in m.R]
-    return f"{n} steam macerator copies of start ores, {len(allow)} late on purpose (FORK_STEAM_ORE_LATE)", problems + stale
-
-
 STEAM_RATES_EXPECTED = {"small-coal-boiler": 1.2, "large-bronze-boiler": 160, "steam-alloy-smelter": 3.2}
 
 
@@ -2013,6 +1971,97 @@ def check_furnace_inputs(m, sec):
     return info, problems
 
 
+STEAM_ORE_HOME = "steam-macerator"
+STEAM_ORE_INPUTS = r"(raw|crushed|purified|centrifuged)-"   # the ore forms (FORK_STEAM_ORE.inputs of 101)
+# issue #571: the steam macerator doubles these ores in the steam age (Raw Tin's copy is named after its LV recipe
+# macerating-raw-tin), and so does its crushed ore -> impure dust
+STEAM_ORE_TEST = ["steam-crushed-copper", "steam-crushed-iron", "steam-macerating-raw-tin",
+                  "steam-impure-copper-dust", "steam-impure-iron-dust", "steam-impure-tin-dust"]
+
+
+def check_steam_ores(m, sec):
+    """Issue #571: the steam macerator's copies of the ore recipes (prototypes/101-fork-machines.lua) come with the steam
+    age. The recipes of STEAM_ORE_TEST must be unlocked by a technology of red science only (its own and its
+    prerequisites' packs), and each product must have a furnace recipe (category smelting, the product alone) enabled from
+    the start or unlocked by that technology or one of its prerequisites. Rule: a copy of an ore form (category
+    steam-macerator-recipes, input STEAM_ORE_INPUTS) whose technologies all have a higher effective science than Steam
+    Macerator, while its input
+    can be obtained at Steam Macerator's science (as #237) and a recipe of that science takes each of its products (#252's
+    rule the other way round: the impure dust of an ore without a furnace recipe waits for the LV cauldron, washer and
+    centrifuge, and so does its copy), fails unless it is in the allow-list FORK_STEAM_LATE with its
+    reason (section STEAMLATEOK; an entry that matches nothing fails too). Returns (info line, problems)."""
+    rank = {p + "-science-pack": i for i, p in enumerate(SCIENCE_ORDER)}
+    T, R = m.T, m.R
+    allowed = {r[0]: r[1] if len(r) > 1 else "" for r in sec.get("STEAMLATEOK", [])}
+    unl, memo, eff_memo = {}, {}, {}
+    for t, v in T.items():
+        for r in v["eff"]:
+            unl.setdefault(r, []).append(t)
+
+    def closure(t):
+        if t not in memo:
+            memo[t] = frozenset({t}).union(*[closure(p) for p in T[t]["pre"] if p in T])
+        return memo[t]
+
+    def tier(t):
+        return max((rank.get(p, len(SCIENCE_ORDER)) for p in T[t]["sci"]), default=-1)
+
+    def effective(t):
+        if t not in eff_memo:
+            eff_memo[t] = max([tier(t)] + [effective(p) for p in T[t]["pre"] if p in T])
+        return eff_memo[t]
+    if STEAM_ORE_HOME not in T:
+        return "no technology " + STEAM_ORE_HOME, [f"{STEAM_ORE_HOME}: no such technology"]
+    smelting = {}
+    for r, v in R.items():
+        if v["cat"] == "smelting" and not v["hidden"] and len(v["ing"]) == 1:
+            smelting.setdefault(v["ing"][0], []).append(r)
+    problems = []
+    red = rank["automation-science-pack"]
+    for r in STEAM_ORE_TEST:
+        techs = [t for t in unl.get(r, []) if t in m.researched]
+        if r not in R or not techs:
+            problems.append(f"{r}: no such recipe or no researchable technology unlocks it")
+            continue
+        ok = [t for t in techs if effective(t) == red]
+        if not ok:
+            problems.append(f"{r}: unlocked by {', '.join(sorted(techs))}, not by a technology of red science only")
+            continue
+        for x in R[r]["res"]:
+            if not any(R[s]["en"] or any(u in closure(ok[0]) for u in unl.get(s, [])) for s in smelting.get(x, [])):
+                problems.append(f"{r}: {x} has no furnace recipe at {ok[0]} or before "
+                                f"(furnace recipes: {', '.join(sorted(smelting.get(x, []))) or 'none'})")
+    home = effective(STEAM_ORE_HOME)
+    avail, _ = m.obtainable({t for t in m.researched if tier(t) <= home})
+    takers = {}
+    for r, v in R.items():
+        if not v["hidden"] and "recycling" not in r:
+            for i in set(v["ing"]):
+                takers.setdefault(i, []).append(r)
+
+    def taken(x):
+        """something takes x at Steam Macerator's science"""
+        return any(R[c]["en"] or any(t in m.researched and effective(t) <= home for t in unl.get(c, []))
+                   for c in takers.get(x, []))
+    found, n = {}, 0
+    for r, v in sorted(R.items()):
+        if v["cat"] != "steam-macerator-recipes" or v["hidden"] or r not in m.unlocked \
+                or not re.match(STEAM_ORE_INPUTS, v["ing"][0] if v["ing"] else ""):
+            continue
+        n += 1
+        techs = [t for t in unl.get(r, []) if t in m.researched]
+        if techs and min(effective(t) for t in techs) > home and all(i in avail for i in v["ing"]) \
+                and all(taken(x) for x in v["res"]):
+            found[r] = sorted(techs)
+    problems += [f"{r}: unlocked by {', '.join(ts)} ({SCIENCE_ORDER[min(effective(t) for t in ts)]} science), but "
+                 f"{', '.join(R[r]['ing'])} is there at {STEAM_ORE_HOME}'s science" for r, ts in found.items()
+                 if r not in allowed]
+    problems += [f"{r}: in FORK_STEAM_LATE but no such copy (remove the entry)" for r in sorted(allowed) if r not in found]
+    info = (f"{len(STEAM_ORE_TEST)} test recipes, {n} steam macerator recipes of ore forms, {len(found)} later than their input, "
+            f"{sum(1 for r in found if r in allowed)} kept on purpose (FORK_STEAM_LATE)")
+    return info, problems
+
+
 def check_locked(m, sec):
     """Issue #91: every recipe of Gregtorio (created or changed by it: prototypes.get_history, logged by
     checkmod/control.lua) that is not hidden must be enabled or unlocked by a researchable technology, unless it is in
@@ -2143,6 +2192,11 @@ def check(a):
     report("recipes of a furnace machine with the same inputs, or that a furnace cannot run (a furnace runs the first "
            "matching recipe by subgroup and order; remove or move one, or add the group with its winner to "
            "FORK_FURNACE_SAME_INPUTS of prototypes/101-fork-machines.lua)", furnace, limit=200)
+    steam_info, steam = check_steam_ores(m, sec)
+    print(f"\nsteam macerator ore recipes (issue #571): {steam_info}")
+    report("steam macerator copies later than the steam age that has their input, or test recipes off the steam age "
+           "(fix the unlock in steam_ore_unlocks of prototypes/101-fork-machines.lua, or add the copy to "
+           "FORK_STEAM_LATE there with its reason)", steam, limit=200)
     report("draft recipes outside DRAFTS_OK (issue #39)", new_drafts)
     report("technologies that unlock a recipe the ore chain removes (issue #388: delete the unlock from "
            "prototypes/98-technology.lua or the table of 142; FORK-STALE-UNLOCK in the log)", stale_unlocks)
@@ -2195,10 +2249,6 @@ def check(a):
     rates_info, steam_rates = check_steam_rates(sec)
     print(f"\nsteam per second in the descriptions (issue #564): {rates_info}")
     report("steam per second that differs from GTNH's (prototypes/fork-steam-rates.lua)", steam_rates)
-    steam_info, steam_ores = check_steam_ores(m, sec)
-    print(f"\nsteam macerator ore doubling (issue #571): {steam_info}")
-    report("steam macerator copies of start ores that come after the steam age (prototypes/101-fork-machines.lua)",
-           steam_ores)
     classic_info, classic_veins = check_classic_veins(m, sec)
     print(f"\nclassic vein recipes (issue #563): {classic_info}")
     report("placed veins without their classic vein recipe and twins, or with other ores (prototypes/166-fork-classic-veins.lua)",
@@ -2267,8 +2317,8 @@ def check(a):
               or new_drafts or fluid_problems or locked or one_pack or fluid_steps or table_only or me_recipes or me_tab
               or extractor_split or ore_mixes or ore_chain or ore_baths or ore_o34 or ore_hammer
               or circuit_icons or pgm_dusts or recycling or names or gaps or tree or vanilla or lenses or mine_twins
-              or unplaceable or stale_unlocks or removed_keys or trigger_only or classic_veins or steam_ores or vein_doc
-              or steam_rates)
+              or unplaceable or stale_unlocks or removed_keys or trigger_only or classic_veins or early or furnace
+              or steam or steam_rates or vein_doc)
     print("\nRESULT:", "OK" if ok else "PROBLEMS FOUND")
     return 0 if ok else 1
 
