@@ -17,7 +17,7 @@ ROOT = Path(__file__).resolve().parent.parent
 INCLUDE = ["info.json", "changelog.txt", "thumbnail.png", "LICENSE",
            "data.lua", "data-updates.lua", "data-final-fixes.lua", "control.lua",
            "settings.lua", "settings-updates.lua", "settings-final-fixes.lua",
-           "prototypes", "graphics", "locale", "scripts", "migrations"]
+           "prototypes", "graphics", "locale", "scripts", "migrations", "menu-simulations"]
 
 def default_mods_dir():
     if sys.platform.startswith("win"):
