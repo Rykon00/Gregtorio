@@ -10,7 +10,7 @@
 ---     source's effectivity) while it works; one of the steam age (its item comes with a technology of red science only,
 ---     or from the start) also says how many Small Coal Boilers that is.
 --- The line goes after the entity's description ("?" keeps the description when it has none). FORK_STEAM_RATES (entity
---- -> { kind, fluid, rate, boilers }) is devcheck's section STEAMRATES; devcheck checks the Small Coal Boiler (1.2), the
+--- -> { kind, type, fluid, rate, boilers }) is devcheck's section STEAMRATES (with whether the entity's description has the line); devcheck checks the Small Coal Boiler (1.2), the
 --- Large Bronze Boiler (160) and the Steam Alloy Smelter (3.2).
 --------------------------------------------------------------------------------
 
@@ -87,7 +87,7 @@ for name, b in pairs(data.raw.boiler or {}) do
 		local heat = amount(out.heat_capacity or "1kJ")
 		local from = input and input.default_temperature or 15
 		local rate = watts / (heat * (b.target_temperature - from))
-		FORK_STEAM_RATES[name] = { kind = "boiler", fluid = out.name, rate = rate }
+		FORK_STEAM_RATES[name] = { kind = "boiler", type = "boiler", fluid = out.name, rate = rate }
 	end
 end
 
@@ -101,7 +101,8 @@ for name, m in pairs(data.raw["assembling-machine"] or {}) do
 		for _, res in pairs(r.results or {}) do
 			if res.type == "fluid" and STEAM[res.name] and res.amount then
 				local rate = res.amount / ((r.energy_required or 0.5) / (m.crafting_speed or 1))
-				FORK_STEAM_RATES[name] = { kind = solar[name] and "solar" or "boiler", fluid = res.name, rate = rate }
+				FORK_STEAM_RATES[name] = { kind = solar[name] and "solar" or "boiler", type = "assembling-machine", fluid = res.name,
+					rate = rate }
 			end
 		end
 	end
@@ -112,12 +113,12 @@ local small = FORK_STEAM_RATES[SMALL_BOILER]
 for kind, list in pairs(data.raw) do
 	for name, e in pairs(list) do
 		local src = type(e) == "table" and e.energy_source
-		if type(src) == "table" and src.type == "fluid" and src.burns_fluid and not FORK_STEAM_RATES[name] then
+		if type(src) == "table" and e.type == kind and src.type == "fluid" and src.burns_fluid and not FORK_STEAM_RATES[name] then
 			local f = fluid_of(src.fluid_box)
 			local watts, fuel = amount(e.energy_usage), f and amount(f.fuel_value)
 			if f and STEAM[f.name] and watts and fuel and fuel > 0 then
 				local rate = watts / (fuel * (src.effectivity or 1))
-				local entry = { kind = "uses", fluid = f.name, rate = rate }
+				local entry = { kind = "uses", type = kind, fluid = f.name, rate = rate }
 				if f.name == "steam" and small and steam_age(name) then entry.boilers = rate / small.rate end
 				FORK_STEAM_RATES[name] = entry
 			end
@@ -125,26 +126,27 @@ for kind, list in pairs(data.raw) do
 	end
 end
 
---- the descriptions
-for kind, list in pairs(data.raw) do
-	for name, e in pairs(list) do
-		local s = type(e) == "table" and e.type == kind and FORK_STEAM_RATES[name]
-		if s and not s.done then
-			s.done = true
-			local fluid = { "fluid-name." .. s.fluid }
-			local line
-			if s.kind == "uses" and s.boilers then
-				line = { "fork-steam.uses-boilers", fmt(s.rate), fluid, fmt(s.boilers) }
-			elseif s.kind == "uses" then
-				line = { "fork-steam.uses", fmt(s.rate), fluid }
-			elseif s.kind == "solar" then
-				line = { "fork-steam.produces-by-day", fmt(s.rate), fluid }
-			else
-				line = { "fork-steam.produces", fmt(s.rate), fluid }
-			end
-			local desc = e.localised_description or { "entity-description." .. name }
-			e.localised_description = { "?", { "", desc, "\n", line }, line }
-		end
+--- the descriptions: the entity's and those of the items that place it (issue #564's first version reached the item
+--- of the same name only, which a placed machine's tooltip does not show). An item without a description of its own
+--- keeps showing the entity's.
+for name, s in pairs(FORK_STEAM_RATES) do
+	local fluid = { "fluid-name." .. s.fluid }
+	local line
+	if s.kind == "uses" and s.boilers then
+		line = { "fork-steam.uses-boilers", fmt(s.rate), fluid, fmt(s.boilers) }
+	elseif s.kind == "uses" then
+		line = { "fork-steam.uses", fmt(s.rate), fluid }
+	elseif s.kind == "solar" then
+		line = { "fork-steam.produces-by-day", fmt(s.rate), fluid }
+	else
+		line = { "fork-steam.produces", fmt(s.rate), fluid }
+	end
+	local e = data.raw[s.type][name]
+	local entity_desc = e.localised_description or { "entity-description." .. name }
+	e.localised_description = { "?", { "", entity_desc, "\n", line }, line }
+	for _, item in pairs(placers[name] or {}) do
+		local it = data.raw.item[item] or data.raw["item-with-entity-data"][item]
+		local item_desc = it.localised_description or { "item-description." .. item }
+		it.localised_description = { "?", { "", item_desc, "\n", line }, { "", entity_desc, "\n", line }, line }
 	end
 end
-for _, s in pairs(FORK_STEAM_RATES) do s.done = nil end

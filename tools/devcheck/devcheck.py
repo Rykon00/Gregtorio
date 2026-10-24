@@ -1620,7 +1620,8 @@ STEAM_RATES_EXPECTED = {"small-coal-boiler": 1.2, "large-bronze-boiler": 160, "s
 def check_steam_rates(sec):
     """Issue #564 (prototypes/fork-steam-rates.lua): the descriptions say steam per second; the computed rates of the Small
     Coal Boiler (1.2), the Large Bronze Boiler (160) and the Steam Alloy Smelter (3.2) must be GTNH's, and every rate is
-    positive. Returns (info line, problems)."""
+    positive; the line is in the description of the entity and of every item that places it (the first version reached
+    only the item of the same name). Returns (info line, problems)."""
     rows = {r[0]: r for r in sec.get("STEAMRATES", []) if len(r) >= 4}
     problems = []
     for name, want in STEAM_RATES_EXPECTED.items():
@@ -1628,6 +1629,11 @@ def check_steam_rates(sec):
         if got is None or abs(got - want) > want * 1e-6:
             problems.append(f"{name}: {got} steam/s, not {want}")
     problems += [f"{n}: rate {r[3]}" for n, r in sorted(rows.items()) if not float(r[3]) > 0]
+    for n, r in sorted(rows.items()):
+        if len(r) > 5 and r[5] != "entity":
+            problems.append(f"{n}: the entity's description lacks the steam line")
+        if len(r) > 6 and r[6]:
+            problems.append(f"{n}: the description of its item {r[6]} lacks the steam line")
     kinds = {}
     for r in rows.values():
         kinds[r[1]] = kinds.get(r[1], 0) + 1
