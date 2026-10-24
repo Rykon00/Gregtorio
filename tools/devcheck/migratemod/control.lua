@@ -34,6 +34,11 @@
 --- (DEVCHECK-MIGRATE-ITEMS).
 local F = "gregtorio-me-fluids"
 local NET = "gregtorio-me-network"
+--- issue #552: the migration files of the old save's version (devcheck writes them into old-version.lua): Factorio runs a
+--- migration once per save and marks every one of a new map's version as done, so a check of a migration the old version
+--- has already is skipped
+local ok_old, OLD = pcall(require, "old-version")
+local OLD_MIGRATIONS = ok_old and OLD.migrations or {}
 local DRIVE = "me-fluid-drive-1k"
 local Y = 40
 local TOTAL = { water = 40000, chlorine = 10000 }      -- drive 1: 32000 water, drive 2: 8000 water + 10000 chlorine
@@ -238,7 +243,11 @@ local RM_ITEMS = { ["ammonia-hexachloroplatinate"] = "platinum-salt", ["crude-pl
 	["acceleration-card"] = "me-acceleration-card",   -- issue #195 (an item becomes me-network's module)
 	["apatite-lens"] = "green-sapphire-lens", ["lapis-lens"] = "sapphire-lens",   -- issue #370
 	["lv-air-collector"] = "lv-compressor", ["ev-air-collector"] = "ev-compressor",   -- issue #153
-	["ev-greenhouse"] = "lv-greenhouse" }   -- issue #165
+	["ev-greenhouse"] = "lv-greenhouse",   -- issue #165
+	["small-lamp"] = "gt-torch" }   -- issue #555 (the item stays: mapped by its migration, RM_MIGRATION)
+--- an item that stays in the game and is mapped only by its JSON migration: skipped when the old version has it (a save of
+--- that version ran it); issue #555 also places a lamp, which must be a torch after the update
+local RM_MIGRATION = { ["small-lamp"] = "2026-10-24-issue-555-torch.json" }
 local RM_MACHINES = {
 	{ "lv-chemical-reactor", "platinum-palladium-leachate-processing", nil },
 	{ "lv-electrolyzer", "chloroplatinic-acid", nil },
@@ -323,7 +332,14 @@ local function setup_removed()
 	local chest = s.create_entity{ name = "iron-chest", position = { RM_AT[1], RM_AT[2] + 4 }, force = "player" }
 	local items = {}
 	for old, new in pairs(RM_ITEMS) do
-		if prototypes.item[old] then items[#items + 1] = { old = old, new = new, count = chest.insert{ name = old, count = 5 } } end
+		if prototypes.item[old] and not OLD_MIGRATIONS[RM_MIGRATION[old] or ""] then
+			items[#items + 1] = { old = old, new = new, count = chest.insert{ name = old, count = 5 } }
+		end
+	end
+	local lamp
+	if prototypes.entity["small-lamp"] and not OLD_MIGRATIONS[RM_MIGRATION["small-lamp"]] then
+		lamp = { 2 + RM_AT[1], RM_AT[2] + 4 }
+		s.create_entity{ name = "small-lamp", position = lamp, force = "player" }
 	end
 	local machines = {}
 	for i, m in pairs(RM_MACHINES) do
@@ -361,12 +377,12 @@ local function setup_removed()
 		for _, ing in pairs(qr.ingredients) do c.insert{ name = ing.name, count = ing.amount * RM_QUEUED.count } end
 		queue = { character = c, queued = c.begin_crafting{ recipe = RM_QUEUED.recipe, count = RM_QUEUED.count } }
 	end
-	if #list == 0 and #items == 0 and #machines == 0 and not queue then
+	if #list == 0 and #items == 0 and #machines == 0 and not queue and not lamp then
 		storage.removed = "skipped"
 		log("DEVCHECK-MIGRATE-SETUP-REMOVED skipped (none of the removed fluids or items in this version)")
 		return
 	end
-	storage.removed = { tanks = list, chest = chest, items = items, machines = machines, queue = queue }
+	storage.removed = { tanks = list, chest = chest, items = items, machines = machines, queue = queue, lamp = lamp }
 	log("DEVCHECK-MIGRATE-SETUP-REMOVED ok (" .. #list .. " fluids in tanks, " .. #items .. " items in a chest, "
 		.. #machines .. " machines with recipes of the old line"
 		.. (queue and (", " .. queue.queued .. " hand crafts of " .. RM_QUEUED.recipe .. " queued") or "") .. ")")
@@ -447,6 +463,13 @@ local function check_removed()
 			end
 		end
 	end
+	--- issue #555: the placed small lamp is a torch at its place
+	if p.lamp then
+		local s = game.surfaces[1]
+		if not s.find_entity("gt-torch", p.lamp) or s.find_entity("small-lamp", p.lamp) then
+			problems[#problems + 1] = "the old save's small lamp is no torch at its place"
+		end
+	end
 	local q = p.queue
 	if q then
 		local c = q.character
@@ -459,6 +482,7 @@ local function check_removed()
 	for _, m in pairs(problems) do log("DEVCHECK-MIGRATE-FAIL removed: " .. m) end
 	log("DEVCHECK-MIGRATE-REMOVED " .. (#problems == 0 and "ok" or "failed") .. " (" .. #p.tanks .. " fluids, "
 		.. #p.items .. " items mapped, " .. #(p.machines or {}) .. " machines checked, " .. stopped .. " stopped for their tool"
+		.. (p.lamp and ", the small lamp a torch" or "")
 		.. (q and (", queued " .. RM_QUEUED.recipe .. " dropped") or "") .. ")")
 end
 
@@ -1262,9 +1286,7 @@ end
 --- changed grid above) counted and then deleted; after the update the same chunks must hold the same ore again
 --- (DEVCHECK-MIGRATE-VEINORES). Issue #552: an old version that has #534's Lua migration ran it already (Factorio runs a Lua
 --- migration once per save, and marks every one of a new map's version as done), so nothing would bring the ores back
---- and the setup is skipped; devcheck writes the old version's migrations into old-version.lua
-local ok_old, OLD = pcall(require, "old-version")
-local OLD_MIGRATIONS = ok_old and OLD.migrations or {}
+--- and the setup is skipped (OLD_MIGRATIONS, at the top)
 local VEINORES_MIGRATION = "2026-10-23-issue-534-vein-ores.lua"
 local function vein_ores()
 	local names = {}

@@ -216,3 +216,84 @@ end
 --------------------------------------------------------------------------------
 
 FORK_TRIGGER_ONLY_ITEMS = {}
+
+
+
+--------------------------------------------------------------------------------
+--- THE TORCH (issue #555): upstream's recipe torch made vanilla's electric lamp, dark until there is power. GTNH's torch
+--- (a stick and coal or charcoal, from the start) gives light without power: `gt-torch`, a lamp with a void energy source
+--- (Factorio 2.1's LampPrototype takes one), always on, a small warm light, 1x1, walked past like a Minecraft torch;
+--- graphics drawn by tools/gen_icons.py --drawn. The recipe torch and the technology Torches (vanilla's lamp,
+--- data-final-fixes.lua) stay where they were; the charcoal recipe is new. The maintainer's decisions: vanilla's
+--- electric lamp stays as the Lamp with an LV assembler recipe of its own, and the small lamps of old saves (all from the
+--- torch recipe) become torches (migrations/2026-10-24-issue-555-torch.json).
+--------------------------------------------------------------------------------
+
+local TORCH = "gt-torch"
+local TORCH_ICON = "__gregtorio-continued__/graphics/icons/gt-torch.png"
+local torch_picture = {
+	filename = "__gregtorio-continued__/graphics/entity/fork/gt-torch.png",
+	priority = "high", width = 64, height = 64, scale = 0.5, shift = { 0, -0.25 },
+}
+data:extend({
+	{
+		type = "lamp",
+		name = TORCH,
+		icon = TORCH_ICON,
+		icon_size = 32,
+		flags = { "placeable-neutral", "player-creation" },
+		minable = { mining_time = 0.1, result = TORCH },
+		max_health = 20,
+		corpse = "small-remnants",
+		collision_box = { { -0.15, -0.15 }, { 0.15, 0.15 } },
+		--- without the player layer (and is_object): a character walks past it (me-network's WALKABLE)
+		collision_mask = { layers = { item = true, meltable = true, object = true, water_tile = true, is_lower_object = true } },
+		selection_box = { { -0.5, -0.5 }, { 0.5, 0.5 } },
+		energy_source = { type = "void" },
+		energy_usage_per_tick = "1W",
+		always_on = true,
+		darkness_for_all_lamps_on = 0.5,
+		darkness_for_all_lamps_off = 0.3,
+		light = { intensity = 0.8, size = 14, color = { 1, 0.78, 0.48 } },
+		glow_size = 2,
+		glow_color_intensity = 0.6,
+		picture_off = torch_picture,
+		picture_on = torch_picture,
+	},
+	{
+		type = "item",
+		name = TORCH,
+		icon = TORCH_ICON,
+		icon_size = 32,
+		subgroup = "circuit-network",
+		order = "a[light]-0[torch]",
+		place_result = TORCH,
+		stack_size = 64,
+	},
+})
+local torch = data.raw.recipe["torch"]
+torch.results = { { type = "item", name = TORCH, amount = 4 } }
+torch.main_product = TORCH
+local charcoal = table.deepcopy(torch)
+charcoal.name = "torch-from-charcoal"
+charcoal.ingredients = { { type = "item", name = "stick", amount = 1 }, { type = "item", name = "charcoal", amount = 1 } }
+charcoal.order = "a[light]-0[torch]-b"
+data:extend({ charcoal })
+--- vanilla's electric lamp: an LV assembler recipe with the LV assembler (Automation 2); vanilla's own recipe is deleted
+--- (data-final-fixes.lua, VANILLA_RECIPES_REMOVED)
+create_recipe{
+	name = "small-lamp-lv-assembler",
+	category = "lv-assembling-machine-recipes",
+	energy_required = 5 * LV_SPEED,
+	subgroup = "circuit-network",
+	order = "a[light]-a[small-lamp]",
+	ingredients = {
+		{ type = "item", name = "electronic-circuit", amount = 1 },
+		{ type = "item", name = "glass", amount = 1 },
+		{ type = "item", name = "steel-plate", amount = 1 },
+		{ type = "item", name = "tin-cable", amount = 2 },
+	},
+	results = { { type = "item", name = "small-lamp", amount = 1 } },
+	main_product = "small-lamp",
+}
+fork_add_unlock("automation-2", "small-lamp-lv-assembler")

@@ -34,7 +34,7 @@ data.raw["item"]["electric-furnace"] = nil
 local VANILLA_RECIPES_REMOVED = {
 	-- the item's own recipe, replaced by Gregtorio's
 	["battery"] = "GTNH fills a battery hull in the canning machine (filling-assorted-batteries)",
-	["small-lamp"] = "the technology lamp unlocks Gregtorio's recipe torch of the item",
+	["small-lamp"] = "Gregtorio's LV assembler recipe small-lamp-lv-assembler (issue #555; the recipe torch makes the torch)",
 	["chemical-science-pack"] = "Gregtorio's recipe hv-science-pack",
 	["space-science-pack"] = "Gregtorio's recipe luv-science-pack",
 	["metallurgic-science-pack"] = "Gregtorio's recipe zpm-science-pack",
@@ -605,7 +605,9 @@ data.raw.technology["landfill"].prerequisites = { "rock-crusher" }
 
 
 ---LAMP
-data.raw.technology["lamp"].effects = { { type = "unlock-recipe", recipe = "torch" } }
+--- (issue #555: the torch from coal and from charcoal, 100)
+data.raw.technology["lamp"].effects = { { type = "unlock-recipe", recipe = "torch" },
+	{ type = "unlock-recipe", recipe = "torch-from-charcoal" } }
 data.raw.technology["lamp"].unit = {count = 5, ingredients = {{"automation-science-pack", SP01 }}, time = 5 }
 data.raw.technology["lamp"].icon = "__gregtorio-continued__/graphics/technology/torches.png"
 data.raw.technology["lamp"].prerequisites = { "craft-automation-science-packs" }

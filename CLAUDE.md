@@ -6,7 +6,11 @@
 - Upstream content lives in `prototypes/0*-*.lua` … `98-technology.lua`; keep changes there minimal. Fork logic lives in
   `prototypes/1xx-fork-*.lua`, loaded at the end of `data.lua` in this order:
   - 100 fixes (issue #547: the allow-list `FORK_TRIGGER_ONLY_ITEMS`; devcheck fails for an item whose only use is a
-    technology's craft-item trigger: no recipe or research unit takes it, it places, fuels or plants nothing)
+    technology's craft-item trigger: no recipe or research unit takes it, it places, fuels or plants nothing; issue #555: the torch
+    `gt-torch`, a lamp with a void energy source, always on, walkable, from the recipes `torch` (coal) and
+    `torch-from-charcoal` of the technology Torches (vanilla's `lamp`); vanilla's electric lamp keeps its name Lamp with
+    the LV assembler recipe `small-lamp-lv-assembler` (Automation 2), placed lamps of old saves become torches
+    (`migrations/2026-10-24-issue-555-torch.json`); graphics from `tools/gen_icons.py --drawn`)
   - 101 machines (issue #446: the steam age of GTNH, the high pressure machines, the steam furnace, the lava and solar
     boilers; issue #447: the steam macerator's copies of the LV macerator recipes without byproducts,
     `fork_steam_categories()` at the end of data-final-fixes.lua; issue #449: the LV combustion generator, extruder and laser
