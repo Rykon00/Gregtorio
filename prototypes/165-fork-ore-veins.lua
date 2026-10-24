@@ -465,3 +465,112 @@ for _, id in ipairs(used_ids) do
 end
 FORK_ORE_VEINS.ore_of = ore_of
 FORK_ORE_VEINS.fill = tonumber(E.gt_fill)   -- GT's chance of a tile x this (the maintainer's 3, #495)
+
+
+--------------------------------------------------------------------------------
+--- Issue #574: a player looking for an ore found no slider for it (diamond is the in-between layer of the "Graphite &
+--- Diamond Vein"), and the planets' icons in the map generator were Nauvis' and Vulcanus'. Generated from the data above,
+--- no list by hand:
+---   * every vein control gets a description: one line per ore with its icon and the layers it holds (primary,
+---     secondary, in between, sporadic; an ore of two layers once), GT's weight, density and size, and per surface its
+---     share of the cells with a vein (`[fork-vein]` locale keys, the numbers as parameters);
+---   * in map-vein mode a raw ore of a vein says in its description which veins hold it and in which layers;
+---   * gt-nether, gt-twilight and gt-end have icons of their own (graphics/icons/<planet>.png, drawn by
+---     tools/gen_icons.py --drawn).
+--- FORK_ORE_VEINS.table (one row per placed vein) is devcheck's section VEINTABLE for the vein table of
+--- docs/ORE-VEINS.md; devcheck's names check fails for a vein control without its description.
+--------------------------------------------------------------------------------
+
+local ROLE_KEYS = { primary = "primary", secondary = "secondary", between = "between", sporadic = "sporadic" }
+--- a list as one localised string of nested concatenations (a localised string takes 20 parameters at most)
+local function join(list, sep)
+	if #list == 0 then return "" end
+	if #list <= 9 then
+		local out = { "" }
+		for i, x in ipairs(list) do
+			if i > 1 then out[#out + 1] = sep end
+			out[#out + 1] = x
+		end
+		return out
+	end
+	local half = math.floor(#list / 2)
+	local a, b = {}, {}
+	for i, x in ipairs(list) do if i <= half then a[#a + 1] = x else b[#b + 1] = x end end
+	return { "", join(a, sep), sep, join(b, sep) }
+end
+local function item_name(name)
+	local it = data.raw.item[name]
+	return it and it.localised_name or { "item-name." .. name }
+end
+--- the ores of a vein in GT's order, each with its layers: { { ore = x, roles = { "primary", ... } }, ... }
+local function vein_ores(m)
+	local out, at = {}, {}
+	for _, role in ipairs(ROLES) do
+		local x = ore_of(m, role)
+		if x then
+			if not at[x] then
+				at[x] = { ore = x, roles = {} }
+				out[#out + 1] = at[x]
+			end
+			table.insert(at[x].roles, role)
+		end
+	end
+	return out
+end
+local function roles_text(roles)
+	local parts = {}
+	for _, r in ipairs(roles) do parts[#parts + 1] = { "fork-vein.role-" .. ROLE_KEYS[r] } end
+	local out = { "fork-vein.roles-" .. #parts }
+	for _, p in ipairs(parts) do out[#out + 1] = p end
+	return out
+end
+local totals = {}
+for dim, list in pairs(planet_veins) do
+	local w = 0
+	for _, m in ipairs(list) do w = w + m.weight end
+	totals[dim] = w
+end
+
+FORK_ORE_VEINS.table = {}
+local found = {}   -- raw ore -> { localised vein lines }
+for _, v in ipairs(FORK_ORE_VEINS.placed) do
+	local m = v.mix
+	local ores, lines = vein_ores(m), {}
+	for _, o in ipairs(ores) do
+		local raw = "raw-" .. o.ore
+		lines[#lines + 1] = { "fork-vein.ore", raw, item_name(raw), roles_text(o.roles) }
+		found[raw] = found[raw] or {}
+		table.insert(found[raw], { "fork-vein.found-in-vein", m.label, roles_text(o.roles) })
+	end
+	local surfaces, planets = {}, {}
+	for _, dim in ipairs(v.dimensions) do
+		local planet = FORK_ORE_VEINS.planets[dim]
+		planets[#planets + 1] = planet
+		local share = totals[dim] > 0 and m.weight / totals[dim] * (1 - tonumber(E.gt_empty_share)) * 100 or 0
+		surfaces[#surfaces + 1] = { "fork-vein.surface", { "space-location-name." .. planet }, string.format("%.1f", share) }
+	end
+	local control = data.raw["autoplace-control"][vein_control(m)]
+	control.localised_description = { "", join(lines, "\n"), "\n",
+		{ "fork-vein.stats", tostring(m.weight), tostring(m.density), tostring(m.size) }, "\n", join(surfaces, "\n") }
+	local row = { mix = m.name, label = m.label, planets = planets, weight = m.weight, density = m.density, size = m.size }
+	for _, role in ipairs(ROLES) do row[role] = ore_of(m, role) or "" end
+	FORK_ORE_VEINS.table[#FORK_ORE_VEINS.table + 1] = row
+end
+--- (classic mode has no veins on the map: the raw ores say nothing there)
+if not FORK_CLASSIC_ORES then
+	for raw, list in pairs(found) do
+		local it = data.raw.item[raw]
+		if it then
+			local line = { "fork-vein.found-in", join(list, ", ") }
+			local desc = it.localised_description or { "item-description." .. raw }
+			it.localised_description = { "?", { "", desc, "\n", line }, line }
+		end
+	end
+end
+
+--- the planets' own icons
+for _, planet in pairs({ "gt-nether", "gt-twilight", "gt-end" }) do
+	local p = data.raw.planet[planet]
+	p.icon, p.icon_size = "__gregtorio-continued__/graphics/icons/" .. planet .. ".png", 64
+	p.starmap_icon, p.starmap_icon_size = p.icon, 64
+end

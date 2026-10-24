@@ -473,6 +473,59 @@ def draw_torch():
     return outline(img, (24, 14, 6, 255))
 
 
+# --- issue #574: the planet icons of the Nether, the Twilight Forest and The End (the map generator shows one per surface
+# a vein is on; they had Vulcanus' and Nauvis' globes): a lit globe with the surface's ground and its spots
+NETHERRACK = [(40, 10, 12), (70, 18, 20), (104, 32, 30), (138, 52, 44), (170, 78, 62)]
+NETHER_LAVA = [(200, 70, 10), (236, 120, 20), (255, 180, 60), (255, 230, 140)]
+FOREST = [(12, 34, 18), (22, 58, 28), (36, 84, 40), (58, 112, 54), (92, 142, 72)]
+FOREST_TREE = [(8, 22, 12), (16, 40, 20), (28, 62, 30)]
+END_VOID = [(10, 6, 18), (22, 12, 36), (38, 22, 58), (58, 36, 84)]
+END_STONE = [(150, 150, 96), (190, 190, 128), (219, 222, 158), (240, 242, 196)]
+
+
+def spot(x, y, seed, scale):
+    """a value in [0, 1) per cell of a grid of `scale` pixels, the same for a seed"""
+    cx, cy = int(x // scale), int(y // scale)
+    return ((cx * 73856093) ^ (cy * 19349663) ^ (seed * 83492791)) % 1000 / 1000
+
+
+def draw_planet(kind):
+    """64 x 64 RGBA: a globe lit from the upper left, its ground and spots by kind (nether, twilight, end)"""
+    size = 64
+    img = Image.new("RGBA", (size, size), (0, 0, 0, 0))
+    px = img.load()
+    c, r = size / 2, size / 2 - 2
+    for y in range(size):
+        for x in range(size):
+            X, Y = x + 0.5, y + 0.5
+            dx, dy = (X - c) / r, (Y - c) / r
+            d2 = dx * dx + dy * dy
+            if d2 > 1:
+                continue
+            light = 0.55 + 0.45 * (-0.6 * dx - 0.6 * dy + 0.53 * math.sqrt(1 - d2))
+            if kind == "nether":
+                if spot(x, y, 1, 6) > 0.84 and d2 < 0.9:
+                    px[x, y] = tone(NETHER_LAVA, light)
+                else:
+                    px[x, y] = tone(NETHERRACK, light + 0.15 * (spot(x, y, 2, 3) - 0.5))
+            elif kind == "twilight":
+                if spot(x, y, 3, 4) > 0.55:
+                    px[x, y] = tone(FOREST_TREE, light * 0.9)
+                else:
+                    px[x, y] = tone(FOREST, light)
+            else:
+                land = math.hypot(dx + 0.15, dy + 0.1) < 0.55 or spot(x, y, 5, 9) > 0.8
+                px[x, y] = tone(END_STONE if land else END_VOID, light)
+    out = img.copy()
+    o = out.load()
+    for y in range(size):   # a dark outline
+        for x in range(size):
+            if px[x, y][3] == 0 and any(0 <= x + a < size and 0 <= y + b < size and px[x + a, y + b][3] > 0
+                                         for a, b in ((1, 0), (-1, 0), (0, 1), (0, -1))):
+                o[x, y] = (10, 10, 12, 255)
+    return out
+
+
 def save_if_changed(img, path):
     if path.exists():
         old = Image.open(path).convert("RGBA")
@@ -508,6 +561,9 @@ def drawn():
     #  issue #555: the torch (icon and sprite)
     save_if_changed(draw_torch(), ICONS / "gt-torch.png")
     save_if_changed(draw_torch().resize((64, 64), Image.NEAREST), ENTITY / "gt-torch.png")
+    #  issue #574: the planet icons of the Nether, the Twilight Forest and The End
+    for planet, kind in (("gt-nether", "nether"), ("gt-twilight", "twilight"), ("gt-end", "end")):
+        save_if_changed(draw_planet(kind), ICONS / (planet + ".png"))
 
 
 def main():

@@ -856,6 +856,51 @@ def check_me_tab(sec):
 ORE_MODE = "gregtorio-continued-ore-mode"
 
 
+VEIN_TABLE_BEGIN = "<!-- vein table: written by `devcheck.py check --vein-table` (issue #574), do not edit -->"
+VEIN_TABLE_END = "<!-- end of the vein table -->"
+VEIN_TABLE_DOC = ROOT / "docs" / "ORE-VEINS.md"
+PLANET_NAMES = {"nauvis": "Nauvis", "gt-nether": "Nether", "gt-twilight": "Twilight Forest", "gt-end": "The End"}
+
+
+def vein_table(sec):
+    """Issue #574: the placed veins (section VEINTABLE) as a markdown table, by surface and GT's weight."""
+    order = list(PLANET_NAMES)
+    rows = [r + [""] * (10 - len(r)) for r in sec.get("VEINTABLE", [])]
+
+    def key(r):
+        first = min((order.index(p) if p in order else 9) for p in r[2].split(","))
+        return first, -int(r[7]), r[1]
+    out = ["| Vein | Surfaces | Primary | Secondary | In between | Sporadic | Weight | Density | Size |",
+           "|---|---|---|---|---|---|---|---|---|"]
+    for r in sorted(rows, key=key):
+        ores = [x.replace("-", " ") if x else "-" for x in r[3:7]]
+        out.append(f"| {r[1]} Vein | {', '.join(PLANET_NAMES.get(p, p) for p in r[2].split(','))} | "
+                   + " | ".join(ores) + f" | {r[7]} | {r[8]} | {r[9]} |")
+    return "\n".join(out)
+
+
+def check_vein_table(sec, write=False):
+    """Issue #574: docs/ORE-VEINS.md holds the table of the placed veins between its markers; `check --vein-table`
+    writes it, `check` fails when it differs from the mod's veins. Returns (info line, problems)."""
+    if "VEINTABLE" not in sec:
+        return "skipped (no VEINTABLE section)", []
+    table = vein_table(sec)
+    text = VEIN_TABLE_DOC.read_text(encoding="utf-8")
+    nl = "\r\n" if "\r\n" in text else "\n"
+    i, j = text.find(VEIN_TABLE_BEGIN), text.find(VEIN_TABLE_END)
+    if i < 0 or j < i:
+        return "no markers", [f"{VEIN_TABLE_DOC.name}: the markers of the vein table are missing"]
+    current = text[i + len(VEIN_TABLE_BEGIN):j].strip().replace("\r\n", "\n")
+    if current == table:
+        return f"{len(sec['VEINTABLE'])} veins, the table is up to date", []
+    if write:
+        new = text[:i + len(VEIN_TABLE_BEGIN)] + nl + table.replace("\n", nl) + nl + text[j:]
+        VEIN_TABLE_DOC.write_bytes(new.encode("utf-8"))
+        return f"{len(sec['VEINTABLE'])} veins, the table written", []
+    return "differs", [f"{VEIN_TABLE_DOC.name}: the vein table differs from the mod's veins (run `devcheck.py check "
+                       f"--vein-table`)"]
+
+
 def check_classic_veins(m, sec):
     """Issue #563 (prototypes/166-fork-classic-veins.lua): every vein the map places (GT's mixes on a planet with map
     veins, read by checkmod from FORK_ORE_MIXES) has its classic vein recipe and both twins, and the recipe gives the
@@ -1409,6 +1454,12 @@ def check_names(sec):
             continue
         c = counts.setdefault(cls, [0, 0])
         c[0] += 1
+        if cls == "autoplace-control" and name.startswith("gt-vein-"):
+            # issue #574: a vein's control lists its ores in its description (prototypes/165-fork-ore-veins.lua)
+            desc = json.loads(extra).get("d") if extra.startswith("{") else None
+            if not desc or missing_keys(desc, keys):
+                problems.append(f"{cls} {name}: no description of its ores"
+                                + (f" (unknown key {', '.join(missing_keys(desc, keys))})" if desc else ""))
         miss = missing_keys(ls, keys)
         if not miss or f"{cls}:{name}" in allowed:
             continue
@@ -2249,6 +2300,9 @@ def check(a):
         print("  " + line)
     report("prototypes without a name (\"Unknown key\" in the game; add the locale entry, a main product or the "
            "allow-list FORK_LOCALE_MISSING of prototypes/fork-locale.lua)", names, limit=60)
+    table_info, vein_doc = check_vein_table(sec, getattr(a, "vein_table", False))
+    print(f"\nvein table of docs/ORE-VEINS.md (issue #574): {table_info}")
+    report("the vein table of docs/ORE-VEINS.md", vein_doc)
     if getattr(a, "fluids_out", None):
         Path(a.fluids_out).write_text("\n".join("\t".join(r) for r in sec.get("FLUIDS", [])) + "\n", encoding="utf-8")
         print(f"\nfluid list written to {a.fluids_out} (input for tools/gen_review_sheet.py fluids)")
@@ -2264,7 +2318,7 @@ def check(a):
               or extractor_split or ore_mixes or ore_chain or ore_baths or ore_o34 or ore_hammer
               or circuit_icons or pgm_dusts or recycling or names or gaps or tree or vanilla or lenses or mine_twins
               or unplaceable or stale_unlocks or removed_keys or trigger_only or classic_veins or early or furnace
-              or steam or steam_rates)
+              or steam or steam_rates or vein_doc)
     print("\nRESULT:", "OK" if ok else "PROBLEMS FOUND")
     return 0 if ok else 1
 
@@ -2883,6 +2937,8 @@ def main():
     c.add_argument("--techs", help="regex: list matching technologies and whether they are researchable")
     c.add_argument("--balance-out", help="also write recipes (amounts, times), machine speeds and technology counts as JSON")
     c.add_argument("--fluids-out", help="also write the fluids with subgroup, order and icon (for gen_review_sheet.py fluids)")
+    c.add_argument("--vein-table", action="store_true",
+                   help="issue #574: write the vein table of docs/ORE-VEINS.md from the mod's placed veins")
     c.add_argument("--set", action="append", metavar="SETTING=true|false",
                    help="force a bool startup setting for this run, e.g. gregtorio-continued-one-pack-research=true")
     r = sub.add_parser("runtime")

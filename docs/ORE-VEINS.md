@@ -65,6 +65,49 @@ Decisions (the maintainer's, 2026-10-23):
 - Turning the grid control off removes every GT vein: the ores' autoplace names it.
 - `scripts/fork-ore-veins.lua` tags a vein with GT's name when the chunk of its centre is charted.
 
+## Which vein holds an ore (#574)
+
+Each vein's slider in the map generator has a description with its four ores (an ore of two layers once), GT's weight,
+density and size and its share of the cells on each surface; in map-vein mode a raw ore's description names the veins
+that hold it. The table of every placed vein, generated from the mod's data (`prototypes/data/ore-mixes.lua`, 165):
+
+<!-- vein table: written by `devcheck.py check --vein-table` (issue #574), do not edit -->
+| Vein | Surfaces | Primary | Secondary | In between | Sporadic | Weight | Density | Size |
+|---|---|---|---|---|---|---|---|---|
+| Lignite Coal Vein | Nauvis | lignite | lignite | lignite | coal | 160 | 7 | 32 |
+| Magnetite Vein | Nauvis, Twilight Forest | magnetite | magnetite | iron | vanadium magnetite | 160 | 2 | 32 |
+| Magnetite & Gold Vein | Nauvis, Twilight Forest, The End | magnetite | magnetite | vanadium magnetite | gold | 160 | 2 | 32 |
+| Brown Limonite & Iron Vein | Nauvis, Nether, Twilight Forest | brown limonite | yellow limonite | banded iron | malachite | 120 | 3 | 24 |
+| Basaltic Mineral Sand Vein | Nauvis | basaltic mineral sand | granitic mineral sand | fullers earth | gypsum | 80 | 3 | 24 |
+| Cassiterite Sand & Tin Vein | Nauvis | cassiterite sand | garnet sand | asbestos | diatomite | 80 | 3 | 24 |
+| Chalcopyrite & Copper Vein | Nauvis, Nether, The End | chalcopyrite | iron | pyrite | copper | 80 | 3 | 24 |
+| Chalcopyrite & Vermiculite Vein | Nauvis | chalcopyrite | vermiculite | cassiterite | alunite | 80 | 3 | 24 |
+| Coal Vein | Nauvis, Twilight Forest | coal | coal | coal | lignite | 80 | 5 | 32 |
+| Apatite Vein | Nauvis, Twilight Forest | apatite | apatite | tricalcium phosphate | pyrochlore | 60 | 2 | 16 |
+| Kaolinite Vein | Nauvis | kaolinite | zeolite | fullers earth | glauconite sand | 60 | 4 | 16 |
+| Redstone Vein | Nauvis, Nether | redstone | redstone | ruby | cinnabar | 60 | 2 | 24 |
+| Rock Salt & Salt Vein | Nauvis, Twilight Forest | rock salt | salt | lepidolite | spodumene | 50 | 2 | 24 |
+| Tin & Cassiterite Vein | Nauvis, Twilight Forest, The End | tin | tin | cassiterite | tin | 50 | 4 | 24 |
+| Dolomite Vein | Nauvis | dolomite | wollastonite | trona | andradite | 40 | 4 | 24 |
+| Graphite & Diamond Vein | Nauvis, Twilight Forest | graphite | graphite | diamond | coal | 40 | 1 | 16 |
+| Lazurite & Lapis Vein | Nauvis, Twilight Forest | lazurite | sodalite | lapis | calcite | 40 | 4 | 16 |
+| Oilsands Vein | Nauvis | oilsands | oilsands | oilsands | oilsands | 40 | 5 | 16 |
+| Soapstone Vein | Nauvis, Twilight Forest | soapstone | talc | glauconite | pentlandite | 40 | 2 | 16 |
+| Grossular & Manganese Vein | Nauvis, Nether | grossular | spessartine | pyrolusite | tantalite | 20 | 2 | 16 |
+| Kyanite & Mica Vein | Nauvis | kyanite | mica | cassiterite | pollucite | 20 | 2 | 16 |
+| Sulfur Vein | Nether | sulfur | sulfur | pyrite | sphalerite | 100 | 4 | 24 |
+| Nether Quartz Vein | Nether | nether quartz | nether quartz | nether quartz | quartzite | 80 | 4 | 24 |
+| Tetrahedrite Vein | Nether, The End | tetrahedrite | tetrahedrite | copper | stibnite | 70 | 3 | 24 |
+| Saltpeter & Electrotine Vein | Nether | saltpeter | diatomite | diatomite | alunite | 40 | 3 | 16 |
+| Beryllium Vein | Nether, The End | beryllium | beryllium | emerald | thorium | 30 | 2 | 16 |
+| Quartzite Vein | Nether | quartzite | barite | certus quartz | certus quartz | 20 | 2 | 16 |
+| Wulfenite & Molybdenum Vein | Nether, Twilight Forest, The End | wulfenite | molybdenite | molybdenum | powellite | 5 | 2 | 16 |
+| Almandine & Sapphire Vein | Twilight Forest | almandine | pyrope | sapphire | green sapphire | 60 | 2 | 16 |
+| Bentonite & Olivine Vein | Twilight Forest | bentonite | magnesite | olivine | glauconite | 60 | 2 | 16 |
+| Galena & Cryolite Vein | Twilight Forest | galena | silver | lead | cryolite | 40 | 4 | 16 |
+| Garnierite & Nickel Vein | Twilight Forest, The End | garnierite | nickel | cobaltite | pentlandite | 40 | 2 | 16 |
+<!-- end of the vein table -->
+
 ## Surfaces
 
 | Dimension | Planet | Reached by | Tier | Veins | Terrain |

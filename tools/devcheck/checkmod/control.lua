@@ -74,7 +74,9 @@ local function names_rows()
 	end
 	--- issue #529: the map generator's controls
 	for _, p in pairs(prototypes.autoplace_control) do
-		row("autoplace-control", p, not get(p, "hidden") and "in the map generator" or nil)
+		--- (issue #574: with its description, which a vein's control must have)
+		row("autoplace-control", p, not get(p, "hidden") and "in the map generator" or nil,
+			helpers.table_to_json({ d = p.localised_description }))
 	end
 	for _, g in pairs(prototypes.item_group) do
 		local shown
