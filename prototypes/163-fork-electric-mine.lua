@@ -365,7 +365,8 @@ for name, r in pairs(data.raw.recipe) do
 end
 table.sort(twins)
 local twin_of = {}
-for _, name in ipairs(twins) do
+--- the two twins of a Manual Mine recipe (issue #563: 166 makes those of its classic vein recipes with it)
+function FORK_ELECTRIC_MINE.make_twins(name)
 	local r = data.raw.recipe[name]
 	local twin = name:gsub("^mining%-", "drilling-")
 	create_recipe{
@@ -392,7 +393,9 @@ for _, name in ipairs(twins) do
 		main_product = r.main_product or r.results[1].name,
 	}
 	FORK_ELECTRIC_MINE.miner_twins[name] = miner_twin
+	return twin, miner_twin
 end
+for _, name in ipairs(twins) do FORK_ELECTRIC_MINE.make_twins(name) end
 
 --- the dimensions (DimNames) that are surfaces with map veins, their planet and the technology that reaches it; 165 makes
 --- the planets and their veins (issue #501: the Nether; issue #502: the Twilight Forest; issue #503: The End)
@@ -723,3 +726,34 @@ for _, e in pairs(data.raw.technology["craft-wooden-tools"].effects) do
 	if e.type == "unlock-recipe" and e.recipe == "manual-mine" then e.recipe = DIMENSION["manual-mine"] end
 end
 fork_add_unlock("smelt-iron-ingots", "manual-mine")
+
+--- for 166 (issue #563): the technologies of the first plant and miner, which their twins come with
+FORK_ELECTRIC_MINE.plant_tech, FORK_ELECTRIC_MINE.miner_tech = P1, MINER_TECH
+
+--- issue #563, classic mode (the startup setting gregtorio-continued-ore-mode = vein-recipes, prototypes/166): no map
+--- veins, so the mining drills are hidden, without a recipe or an unlock; their items (in the chests of a save of 0.5.5 or
+--- of one that switches) place the dimension mine of their tier, so a drill picked up comes back as that mine; placed
+--- drills keep mining the ore they stand on (the maintainer's decision). The dimension mines take the names the mines had
+--- in 0.5.5 (Manual Mine, LV to HV Miner, Ore Drilling Plant Mk I to IV), and the technologies their classic texts.
+if FORK_CLASSIC_ORES then
+	for drill, dim in pairs(DIMENSION) do
+		data.raw["mining-drill"][drill].hidden = true
+		data.raw["mining-drill"][drill].next_upgrade = nil   -- (no item builds a drill: the engine refuses the target)
+		local it = data.raw.item[drill]
+		it.place_result, it.hidden = dim, true
+		data.raw.recipe[drill] = nil
+		for _, t in pairs(data.raw.technology) do
+			local keep = {}
+			for _, e in pairs(t.effects or {}) do
+				if not (e.type == "unlock-recipe" and e.recipe == drill) then keep[#keep + 1] = e end
+			end
+			if t.effects and #keep < #t.effects then t.effects = keep end
+		end
+		data.raw["assembling-machine"][dim].localised_name = { "entity-name." .. drill }
+		data.raw["assembling-machine"][dim].localised_description = { "entity-description.classic-" .. drill }
+		data.raw.item[dim].localised_name = { "entity-name." .. drill }
+	end
+	for _, t in pairs({ MINER_TECH, P1, P2, P3, P4 }) do
+		data.raw.technology[t].localised_description = { "technology-description.classic-" .. t }
+	end
+end

@@ -860,7 +860,8 @@ FORK_UNLOCK_TREE.apply()
 --- Miner comes with it, a later one with its own technology)
 FORK_ELECTRIC_MINE.unlock_miner_twins()
 --- issue #556 (163): each dimension mine with the first technology of a recipe it runs, or its own when that is later
-FORK_ELECTRIC_MINE.unlock_dimension_mines()
+--- (issue #563: in classic mode 166 calls it after its vein recipes have their technologies)
+if not FORK_CLASSIC_ORES then FORK_ELECTRIC_MINE.unlock_dimension_mines() end
 
 
 

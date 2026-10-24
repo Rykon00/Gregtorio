@@ -3,6 +3,11 @@ ICON_PATH = "__gregtorio-continued__/graphics/icons/"
 
 YAFC_MODE = false
 
+--- Fork: the ore mode (issue #563, startup setting): "map-veins" (plan #494, 165) or "vein-recipes" (the classic vein
+--- recipes of 166, no veins on the map)
+FORK_ORE_MODE = settings.startup["gregtorio-continued-ore-mode"].value
+FORK_CLASSIC_ORES = FORK_ORE_MODE == "vein-recipes"
+
 --- Fork: names (issue #230): the recipes that exist before this mod, and FORK_LOCALE.name_of
 require("prototypes.fork-locale")
 --- Fork: Factorio 2.1 (issue #535): the keys that changed (fork_category, fork_set_category, fork_generator_pictures, ...)
@@ -154,6 +159,8 @@ require("prototypes.164-fork-chemistry")
 require("prototypes.161-fork-dimension-unlocks")
 --- plan #494: GTNH's ore veins on the map (issue #496: the data of GT's ore mixes and the rule for their raw ores), after 161
 require("prototypes.165-fork-ore-veins")
+--- issue #563: the classic vein recipes, generated from 165's veins, unlocked by the ore chains of 155 and 161 (after 165)
+require("prototypes.166-fork-classic-veins")
 --- issue #164: the circuit variant recipes show the icon of their GTNH item (156)
 require("prototypes.156-fork-circuit-icons")
 --- issue #190: GTNH's material recycling (macerator, arc furnace, fluid extractor), after every file that makes recipes
