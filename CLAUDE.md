@@ -94,8 +94,9 @@
     every vein of Ross128b (Reach Ross128) and Ross128ba (Reach Ross128ba, ZPM) with bartworks' ores (155's `NEW_ORES`);
     the Toxic Everglades' veins GTPP0-19 (Reach the Toxic Everglades, LuV) with GT++'s ores, whose dehydrator
     decompositions 161 unlocks through `FORK_ORE_CHAIN.unlock_after_159` (159 makes the dehydrators after 155); Neper's
-    pool for the Void Miner III (dilithium, mysterious crystal, vinteum); loads after 146 and **before** 142 (issue #287: the
-    unlock table of 142 and the ore chains of 155 see the mines; the rules are in 161))
+    pool for the Void Miner III (dilithium, mysterious crystal, vinteum); issue #563: the veins of Nauvis, the Nether and
+    the Twilight Forest that #505 deleted here are 166's generated classic recipes, not 160's; loads after 146 and
+    **before** 142 (issue #287: the unlock table of 142 and the ore chains of 155 see the mines; the rules are in 161))
   - 162 space elevator (issue #301, part 1 of #292's decision: gtnhintergalactic's Space Elevator in GTNH's full scope:
     controller, casings, nanotube spool, cable, motors Mk-I to Mk-V; one 11 x 11 entity per motor tier
     (`space-elevator-mk1` to `-mk5`), the mod data `fork-space-elevator` with each tier's motor tier and module slots for
@@ -129,7 +130,11 @@
     only works while its ore needs a fluid, so the plants' Drilling Fluid goes into a hidden storage tank
     `ore-drilling-plant-fluid-input` on their tiles, which `scripts/fork-ore-drills.lua` builds and drains per ore;
     `migrations/2026-10-22-issue-499-dimension-mines.json` renames placed mines of old saves to their dimension mine;
-    loads after 162 and **before** 142)
+    issue #563: `FORK_ELECTRIC_MINE.make_twins(name)` makes the two twins (also of 166's classic recipes); in classic mode
+    (`FORK_CLASSIC_ORES`) the mining drills are hidden, without a recipe, unlock or next upgrade, their items place the
+    dimension mine of their tier, the dimension mines and their technologies take the names and texts of 0.5.5 (Manual
+    Mine, LV-HV Miner, Ore Drilling Plant Mk I-IV, `classic-*` locale keys), and 142 leaves `unlock_dimension_mines` to
+    166; loads after 162 and **before** 142)
   - 142 recipe unlocks (issue #91: every Gregtorio recipe gets a technology from its explicit table `UNLOCKS`, the
     producers GT has and Gregtorio lacked and the component assembly line; a recipe that must stay
     locked goes into the allow-list `FORK_RECIPES_LOCKED` with its reason, devcheck fails otherwise; issue #237: a
@@ -252,7 +257,8 @@
     before 161)
   - 161 dimension unlocks (issue #287: the unlock rules of 160, `ore_dimension` moves or gates the ore chains of the
     dimensions' ores, the ender air with Radon, black plutonium with the Void Miner II, the bornite chain with
-    Reach Ross128 (issue #293); loads after 159 and before 156)
+    Reach Ross128 (issue #293); issue #563: the same in both ore modes, the chains of the map veins' ores come from 155's
+    `vein_techs` and 166's classic recipes follow them; loads after 159 and before 156)
   - 165 ore veins (plan #494: GTNH's veins as mixed ore patches on the map, the Nether, Twilight Forest and End as
     surfaces; issue #496: `FORK_ORE_MIXES`, GT's 122 ore mixes from `prototypes/data/ore-mixes.lua`, which
     `tools/gen_ore_mixes.py` writes from GT5-Unofficial's `OreMixes.java` (do not edit it), the T0 dimensions that are
@@ -300,7 +306,23 @@
     `gt-end` (own tiles `gt-end-stone` and `gt-end-void`, a copy of out-of-map, placed by `gt_end_land`: the main island
     and the outer islands; its `gt_vein_id` is cut by `gt_end_land`), its 7 veins; issue #505: the vein recipes of Nauvis,
     the Nether and the Twilight Forest are deleted, old saves map them onto 163's placeholders `removed-vein-<planet>-<kind>`
-    (JSON) that `scripts/fork-ore-veins.lua` turns into drills or clears; `docs/ORE-VEINS.md`; loads after 161)
+    (JSON) that `scripts/fork-ore-veins.lua` turns into drills or clears (issue #563: that JSON migration is gone, the
+    engine applied it in classic mode too; the script decides by the ore mode); issue #563: in classic mode the planets
+    get no vein resources, controls or `gt_*` expressions (the prototypes stay for saves that switch), the mod data
+    `fork-ore-veins` names the `mode`, and `FORK_ORE_VEINS.placed` (each placed vein once, with its surfaces),
+    `FORK_ORE_VEINS.ore_of` and `FORK_ORE_VEINS.fill` are 166's input; `docs/ORE-VEINS.md`; loads after 161)
+  - 166 classic veins (issue #563, the maintainer's addendum of 2026-10-24: the vein recipes of the classic ore mode,
+    generated from 165's placed veins, never copied from git: one Manual Mine recipe `mining-<GT's mix name in kebab
+    case>-vein` per vein with 163's twins, 64 ores per operation shared out by the expected ore tiles of GT's layers as 165
+    places the vein, 8 or 24 manual labor; a name that is a recipe already keeps that recipe (CopperTin); the stone
+    pickaxe's `mining-iron-vein-with-stone-pickaxe` with Craft Stone Tools; 0.5.5's seven other names (`LEGACY`) as hidden
+    recipes for old saves (mod data `fork-electric-mine`: `classic`, `legacy`); the prototypes exist in both modes and are
+    hidden in map-vein mode (`FORK_CLASSIC_VEINS.hidden`, which 199's auto-unlock skips); in classic mode a vein of the
+    Overworld comes with every first technology that unlocks a recipe taking one of its raw ores (no start recipe; a
+    technology without the iron pickaxe gives way to the pickaxe's), one of the other surfaces with their reach
+    technology, the twins with the first plant's and the LV Miner's technology unless every vein technology is later, then
+    163's `unlock_dimension_mines()`; devcheck fails for a placed vein of `FORK_ORE_MIXES` without its recipe and twins or
+    with other ores (section CLASSICVEINS); `docs/ORE-VEINS.md`; loads after 165)
   - 156 circuit icons (issue #164: the circuit variant recipes up to UV keep the shared tier item and show GT's texture
     of their GTNH item as recipe icon; devcheck fails for a tier circuit recipe without its own icon; issue #450: the ULV
     tier item `ulv-circuit`, which the vacuum tube and NAND chip recipes give and every former user of the two takes, and
@@ -384,7 +406,19 @@
 - Cheap research: the startup setting `gregtorio-continued-one-pack-research` (default off) makes every technology with
   science packs cost one research unit with one pack of each kind (`prototypes/fork-one-pack-research.lua`, required last
   in `data-final-fixes.lua`, after everything that sets unit counts). `devcheck.py all` loads the mod a second time with
-  it on; `devcheck.py check --set <setting>=true|false` forces any bool startup setting for a run.
+  it on; `devcheck.py check --set <setting>=true|false` forces any bool startup setting for a run (issue #563: any other
+  value a string setting's, also for `runtime` and for `migrate`'s load of the working copy).
+- Ore mode (issue #563): the startup setting `gregtorio-continued-ore-mode` (default `map-veins`; `vein-recipes` is the
+  classic ore system of 0.5.5, `FORK_CLASSIC_ORES` in the data stage, defined at the top of `data.lua`) is chosen per
+  game. `devcheck.py all` loads the mod a second time in classic mode (`check` and `runtime` with
+  `--set gregtorio-continued-ore-mode=vein-recipes`) and then runs `switch`, a map made in one mode and loaded in the
+  other, both ways (`tools/devcheck/switchmod`); every check passes in both modes, the map vein test of `runtime` checks
+  in classic mode that no planet has vein ore. `scripts/fork-ore-veins.lua` notes a save's mode in
+  `storage.fork_ore_veins.mode` (`on_init`, its remote `migrate`, `migrations/2026-10-24-issue-563-ore-mode.lua`) and
+  migrates it in `on_configuration_changed` when the setting changed; a save of 0.5.6 or later has had its mines turned
+  into drills, which classic mode keeps (`docs/ORE-VEINS.md`, "Old saves and switching"). The last release with the
+  classic system is v0.5.5 (Factorio 2.0): `migrate --from-ref v0.5.5 --old-me-network v0.5.4 --old-factorio DIR
+  --old-mods DIR` with and without `--set gregtorio-continued-ore-mode=vein-recipes`.
 - Generators (`generator` prototypes that burn fluids by fuel value, 136) are demand driven; an
   input-output fluid box keeps part of its fluid in the pipeline segment (`get_fluid_count` reports
   only the entity's part; since Factorio 2.1 `get_fluid_segment_fluid` is the whole segment with that part, where 2.0's

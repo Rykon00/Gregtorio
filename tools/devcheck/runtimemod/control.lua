@@ -1613,9 +1613,24 @@ local function check_vein_controls(d, vt)
 		b.cover, a.big_start_r, a.big_tiles, a.cover, b.size, b.with, a.with)
 end
 
+--- issue #563: the startup setting gregtorio-continued-ore-mode; classic mode (vein-recipes) has no map veins
+local CLASSIC = settings.startup["gregtorio-continued-ore-mode"].value == "vein-recipes"
+function gt_ore_names()
+	local names = {}
+	for name, e in pairs(prototypes.get_entity_filtered{ { filter = "type", type = "resource" } }) do
+		if e.resource_category == "gt-ore" then names[#names + 1] = name end
+	end
+	return names
+end
+
 function setup_veins_test()
 	local fails, vt = {}, { problems = {} }
 	storage.veins_test = vt
+	if CLASSIC then
+		--- (veins_test checks that no planet's surface has vein ore; Nauvis now, before the drill test places its patches)
+		vt.nauvis = game.surfaces.nauvis.count_entities_filtered{ type = "resource", name = gt_ore_names() }
+		return fails
+	end
 	local ok, err = pcall(function()
 		local d = prototypes.mod_data["fork-ore-veins"].data
 		local parts, size = {}, nil
@@ -1647,6 +1662,24 @@ function veins_test()
 	local vt = storage.veins_test
 	if not vt or vt.done or game.tick < VT_TAG_TICK then return end
 	vt.done = true
+	if CLASSIC then
+		--- issue #563: no surface has an ore of the map veins (Nauvis' test area, the Nether, Twilight Forest and End of the
+		--- portal test), and their map settings name no vein
+		local parts = {}
+		for _, surface in pairs(game.surfaces) do
+			if surface.planet then
+				local n = surface.name == "nauvis" and vt.nauvis
+					or surface.count_entities_filtered{ type = "resource", name = gt_ore_names() }
+				local mgs = surface.map_gen_settings
+				parts[#parts + 1] = surface.name .. " " .. n
+				if n > 0 then vt.problems[#vt.problems + 1] = n .. " vein ores on " .. surface.name .. " in classic mode" end
+				if (mgs.property_expression_names or {}).gt_vein_id or (mgs.autoplace_controls or {})["gt-ore-veins"] then
+					vt.problems[#vt.problems + 1] = surface.name .. "'s map settings name the veins in classic mode"
+				end
+			end
+		end
+		vt.summary = " (classic ore mode: vein ores " .. table.concat(parts, ", ") .. ")"
+	end
 	local n, tagged = game.surfaces.nauvis, 0
 	--- headless runs raise no on_chunk_charted: the remote call tags the chunk as the event would, twice (one tag only)
 	for _, t in pairs(vt.tags or {}) do
@@ -1655,7 +1688,7 @@ function veins_test()
 		end
 	end
 	for _, t in pairs(vt.tags or {}) do
-		local found = game.forces.player.find_chart_tags(n, { { t.x - 1, t.y - 1 }, { t.x + 1, t.y + 1 } })
+		local found = game.forces.player.find_chart_tags(n, { { t.x - 1, t.y - 1 }, { t.x + 1, t.y + 1 } })   -- (none in classic mode)
 		if #found == 1 and found[1].text == t.text then
 			tagged = tagged + 1
 		else
@@ -1665,6 +1698,72 @@ function veins_test()
 	vt.summary = (vt.summary or "") .. ", " .. tagged .. " start veins tagged on the map"
 	for _, p in pairs(vt.problems) do log("DEVCHECK-RUNTIME-FAIL map vein test: " .. p) end
 	log("DEVCHECK-RUNTIME-VEINS " .. (#vt.problems == 0 and "ok" or "failed") .. (vt.summary or ""))
+end
+
+--- Classic vein recipes (issue #563, prototypes/166-fork-classic-veins.lua): in classic mode a Dimension Mine (called
+--- Manual Mine there) on plain ground, without any ore under it, runs Nauvis' iron vein recipe with an iron pickaxe use and
+--- manual labor: after CV_TICK its output holds the recipe's results of two operations; the recipe and its twins are not
+--- hidden. In map-vein mode the recipe is hidden (the test only says so).
+local CV_X, CV_Y, CV_TICK, CV_RECIPE = -360.5, -180.5, 1300, "mining-iron-vein"
+
+function setup_classic_test(s)
+	local fails, ct = {}, {}
+	storage.classic_test = ct
+	if not CLASSIC then return fails end
+	local ok, err = pcall(function()
+		for _, e in pairs(s.find_entities_filtered{ area = { { CV_X - 4, CV_Y - 4 }, { CV_X + 4, CV_Y + 4 } } }) do
+			if e.valid and e.type ~= "character" then e.destroy() end
+		end
+		game.forces.player.recipes[CV_RECIPE].enabled = true
+		local mine = s.create_entity{ name = "dimension-mine", position = { CV_X, CV_Y }, force = "player", raise_built = true }
+		mine.set_recipe(CV_RECIPE)
+		local labor = 0
+		for _, i in pairs(prototypes.recipe[CV_RECIPE].ingredients) do
+			if i.name == "manual-labor" then labor = i.amount end
+		end
+		local input = mine.get_inventory(defines.inventory.crafter_input)
+		assert(input.insert{ name = "iron-pickaxe-usage", count = 2 } == 2, "the mine took no pickaxe")
+		assert(input.insert{ name = "manual-labor", count = 2 * labor } == 2 * labor, "the mine took no manual labor")
+		ct.mine = mine
+		ct.ores = s.count_entities_filtered{ type = "resource", area = { { CV_X - 3, CV_Y - 3 }, { CV_X + 3, CV_Y + 3 } } }
+	end)
+	if not ok then fails[#fails + 1] = "classic vein test: " .. tostring(err) end
+	return fails
+end
+
+function classic_test()
+	local ct = storage.classic_test
+	if not ct or ct.done then return end
+	if not CLASSIC then
+		ct.done = true
+		local r = prototypes.recipe[CV_RECIPE]
+		local hidden = r and r.hidden
+		if not hidden then log("DEVCHECK-RUNTIME-FAIL classic vein test: " .. CV_RECIPE .. " is not hidden in map-vein mode") end
+		log("DEVCHECK-RUNTIME-CLASSIC " .. (hidden and "ok" or "failed") .. " (map-vein mode: " .. CV_RECIPE .. " hidden)")
+		return
+	end
+	if game.tick < CV_TICK then return end
+	ct.done = true
+	local problems, got = {}, {}
+	local function expect(c, what) if not c then problems[#problems + 1] = what end end
+	local mine = ct.mine
+	expect(mine and mine.valid, "the Dimension Mine is gone")
+	expect(ct.ores == 0, ct.ores .. " ore tiles under the mine")
+	if mine and mine.valid then
+		local out = mine.get_inventory(defines.inventory.crafter_output)
+		for _, r in pairs(prototypes.recipe[CV_RECIPE].products) do
+			local n = out.get_item_count(r.name)
+			got[#got + 1] = n .. " " .. r.name
+			expect(n == 2 * r.amount, string.format("%d %s in the output, not %d (status %s)", n, r.name, 2 * r.amount,
+				tostring(mine.status)))
+		end
+	end
+	for _, n in pairs({ CV_RECIPE, "drilling-iron-vein", "miner-iron-vein", "mining-iron-vein-with-stone-pickaxe" }) do
+		expect(prototypes.recipe[n] and not prototypes.recipe[n].hidden, n .. " is hidden in classic mode")
+	end
+	for _, p in pairs(problems) do log("DEVCHECK-RUNTIME-FAIL classic vein test: " .. p) end
+	log("DEVCHECK-RUNTIME-CLASSIC " .. (#problems == 0 and "ok" or "failed") .. " (a Dimension Mine on plain ground ran "
+		.. CV_RECIPE .. " twice: " .. table.concat(got, ", ") .. ")")
 end
 
 --- Nether Portal (issue #501, scripts/fork-portals.lua): a character next to a portal on Nauvis goes through it (the
@@ -3021,6 +3120,7 @@ script.on_nth_tick(10, function()
 	torch_test()
 	battery_test()
 	veins_test()
+	classic_test()
 	drill_test()
 	portal_test()
 	ender_test()
@@ -3102,6 +3202,7 @@ script.on_init(function()
 	for _, f in pairs(setup_torch_test(s)) do fails[#fails + 1] = f end
 	for _, f in pairs(setup_battery_test(s)) do fails[#fails + 1] = f end
 	for _, f in pairs(setup_veins_test()) do fails[#fails + 1] = f end
+	for _, f in pairs(setup_classic_test(s)) do fails[#fails + 1] = f end
 	for _, f in pairs(setup_drill_test(s)) do fails[#fails + 1] = f end
 	for _, f in pairs(setup_portal_test(s)) do fails[#fails + 1] = f end
 	for _, f in pairs(setup_ender_test(s)) do fails[#fails + 1] = f end

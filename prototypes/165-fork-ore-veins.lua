@@ -410,8 +410,10 @@ for _, x in ipairs(ores) do
 	FORK_ORE_VEINS.resources[x] = r.name
 end
 
---- the planets: the controls (the grid's and their veins'), their resources and their vein expressions
-for dim, planet in pairs(FORK_ORE_VEINS.planets) do
+--- the planets: the controls (the grid's and their veins'), their resources and their vein expressions (issue #563: not in
+--- classic mode, whose vein recipes come from 166; the resources, expressions and controls stay for the saves that switch,
+--- and data-final-fixes.lua hides the controls no planet lists)
+for dim, planet in pairs(FORK_CLASSIC_ORES and {} or FORK_ORE_VEINS.planets) do
 	local mgs = data.raw.planet[planet].map_gen_settings
 	mgs.autoplace_controls[GRID] = {}
 	mgs.property_expression_names = mgs.property_expression_names or {}
@@ -447,4 +449,19 @@ for dim, planet in pairs(FORK_ORE_VEINS.planets) do
 	if dim == "OW" then for _, n in ipairs(FORK_ORE_VEINS.start) do start[#start + 1] = by_name[n].id end end
 	planets[planet] = { dimension = dim, veins = ids, start = start }
 end
-data:extend({ { type = "mod-data", name = "fork-ore-veins", data = { veins = labels, planets = planets } } })
+data:extend({ { type = "mod-data", name = "fork-ore-veins", data = { veins = labels, planets = planets,
+	mode = FORK_ORE_MODE } } })
+
+--- issue #563: for 166's classic vein recipes, the veins the map places (each once, in GT's order) with the planets that
+--- place them, and the ore of a layer
+FORK_ORE_VEINS.placed = {}
+for _, id in ipairs(used_ids) do
+	local m, on = used[id], {}
+	for dim in pairs(FORK_ORE_VEINS.planets) do
+		for _, v in ipairs(planet_veins[dim]) do if v.id == id then on[#on + 1] = dim end end
+	end
+	table.sort(on, function(a, b) return FORK_ORE_MIX_SURFACES[a] < FORK_ORE_MIX_SURFACES[b] end)
+	FORK_ORE_VEINS.placed[#FORK_ORE_VEINS.placed + 1] = { mix = m, dimensions = on }
+end
+FORK_ORE_VEINS.ore_of = ore_of
+FORK_ORE_VEINS.fill = tonumber(E.gt_fill)   -- GT's chance of a tile x this (the maintainer's 3, #495)

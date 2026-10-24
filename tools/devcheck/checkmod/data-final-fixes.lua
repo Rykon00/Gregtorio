@@ -184,6 +184,35 @@ end
 for name in pairs(FORK_ELECTRIC_MINE_EXCLUDED or {}) do em_row(name) end
 section("ELECTRICMINE", em)
 
+--- Issue #563: every vein the map places (GT's mixes of FORK_ORE_MIXES on a planet of FORK_ORE_VEINS, not skipped),
+--- read here from the data, not from 166's list, with its classic recipe and twins (prototypes/166-fork-classic-veins.lua)
+--- and the ores the vein holds; one row per mix: name, recipe, twin, miner ("-": none), the vein's ores, the recipe's
+--- results (absent in older versions)
+local cv = {}
+if FORK_ORE_MIXES and FORK_CLASSIC_VEINS then
+	local by_mix = {}
+	for _, v in pairs(FORK_CLASSIC_VEINS.veins) do by_mix[v.mix] = v end
+	for _, m in ipairs(FORK_ORE_MIXES.mixes) do
+		local placed = false
+		for _, d in pairs(m.dimensions) do if FORK_ORE_VEINS.planets[d] then placed = true end end
+		if placed and not (FORK_ORE_MIX_SKIPPED or {})["mix:" .. m.name] then
+			local v = by_mix[m.name] or {}
+			local function have(n) return (n and data.raw.recipe[n]) and n or "-" end
+			local ores, seen = {}, {}
+			for _, role in pairs({ "primary", "secondary", "between", "sporadic" }) do
+				local x = FORK_ORE_VEINS.ore_of(m, role)
+				if x and not seen[x] then seen[x] = true; ores[#ores + 1] = "raw-" .. x end
+			end
+			local res = {}
+			local r = v.recipe and data.raw.recipe[v.recipe]
+			for _, x in pairs(r and r.results or {}) do res[#res + 1] = x.name end
+			cv[#cv + 1] = table.concat({ m.name, have(v.recipe), have(v.twin), have(v.miner), table.concat(ores, ","),
+				table.concat(res, ","), v.kept and "kept" or "" }, "\t")
+		end
+	end
+end
+section("CLASSICVEINS", cv)
+
 --- Issue #214: the recipes of me-network (ME_NETWORK.recipes) and which of them prototypes/120-fork-me-network-compat.lua
 --- gives a Gregtorio recipe (FORK_ME_RECIPES) or keeps standalone on purpose (FORK_ME_RECIPES_STANDALONE); one row per
 --- name: name, "me" (a recipe of me-network) or "-", "gregtorio" or "-", the allow-list reason (absent in older versions)

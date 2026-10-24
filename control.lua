@@ -159,6 +159,12 @@ script.on_configuration_changed(function(data)
 	fork_space_elevator.on_configuration_changed()
 	fork_steam_boilers.on_configuration_changed()
 	fork_ore_drills.on_configuration_changed()
+	fork_ore_veins.on_configuration_changed()   -- issue #563: a save whose ore mode changed
+end)
+
+--- Fork: a new map notes its ore mode (issue #563, scripts/fork-ore-veins.lua)
+script.on_init(function()
+	fork_ore_veins.on_init()
 end)
 
 

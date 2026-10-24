@@ -355,8 +355,8 @@ data.raw["map-gen-presets"].default["gregtorio"] = {
 		peaceful_mode = true,
 		autoplace_controls = {
 			--- issue #497: GTNH's map veins (prototypes/165-fork-ore-veins.lua) at the defaults of #495 (issue #508: the
-			--- vanilla resources' controls are gone, below)
-			["gt-ore-veins"] = { frequency = 1, size = 1, richness = 1 },
+			--- vanilla resources' controls are gone, below; issue #563: none in classic mode, whose planets have no veins)
+			["gt-ore-veins"] = (not FORK_CLASSIC_ORES) and { frequency = 1, size = 1, richness = 1 } or nil,
 		}
 	}
 }

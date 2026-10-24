@@ -13,6 +13,9 @@ local function vein_data()
 	return md and md.data
 end
 
+--- issue #563: the ore mode of this load (startup setting): "map-veins" or "vein-recipes" (classic, no veins)
+local function ore_mode() return settings.startup["gregtorio-continued-ore-mode"].value end
+
 local function tagged(force, surface)
 	storage.fork_ore_veins = storage.fork_ore_veins or { tagged = {} }
 	local t = storage.fork_ore_veins.tagged
@@ -38,7 +41,7 @@ end
 --- tag, for the force, the veins whose centre lies in one of these areas (chunks); returns the number of tags
 local function tag(force, surface, areas)
 	local d = vein_data()
-	if not (d and surface and surface.planet and d.planets[surface.planet.name]) then return 0 end
+	if not (d and surface and surface.planet and d.planets[surface.planet.name]) or ore_mode() ~= "map-veins" then return 0 end
 	storage.fork_ore_veins = storage.fork_ore_veins or { tagged = {} }
 	local cells = cells_of(surface)
 	local size = cells.size
@@ -117,6 +120,11 @@ end
 --- only its planet's controls (the save's values of these), no default for the others, the planet's autoplace settings and
 --- its expression names (and the ones the map generator's presets and climate sliders write: a player's island map stays
 --- one), and notes a surface whose settings were not its planet's in storage.fork_ore_veins.foreign, for clean_chunks.
+--- Issue #563 (migrations/2026-10-24-issue-563-ore-mode.lua, and on_configuration_changed when the startup setting
+--- gregtorio-continued-ore-mode changed): 3. converts the mines on 166's classic vein recipes (hidden in map-vein mode) and
+--- on 0.5.5's old names of them (mod data fork-electric-mine: classic, legacy) by their veins' planets, as #505 did; in
+--- classic mode the planets have no veins, so 1. takes them out of a surface's map settings (not a foreign map), 2. adds
+--- no ore, 3. is classic_mines.
 local function same(a, b)
 	if type(a) ~= "table" or type(b) ~= "table" then return a == b end
 	for k, v in pairs(a) do if not same(v, b[k]) then return false end end
@@ -168,7 +176,8 @@ local function migrate_surface(surface, planet)
 	for control in pairs(mgs.autoplace_controls) do
 		if not (proto.autoplace_controls or {})[control] then
 			mgs.autoplace_controls[control] = nil
-			foreign[#foreign + 1] = control
+			--- (issue #563: the veins' controls of a save that switches to classic mode are no sign of a foreign map)
+			if not (control == "gt-ore-veins" or control:match("^gt%-vein%-")) then foreign[#foreign + 1] = control end
 		end
 	end
 	if mgs.default_enable_all_autoplace_controls ~= false then
@@ -198,7 +207,9 @@ local function migrate_surface(surface, planet)
 	end
 	local resized = old_size and old_size ~= 1 and added > 0
 	if resized then grid.size = 1 end
-	for name in pairs(proto.autoplace_settings.entity.settings) do
+	--- (issue #563: a planet without vein ores in classic mode, The End, has no entity settings at runtime)
+	local entity = proto.autoplace_settings and proto.autoplace_settings.entity
+	for name in pairs(entity and entity.settings or {}) do
 		if gt_ore(name) then names[#names + 1] = name end
 	end
 	mgs.property_expression_names = mgs.property_expression_names or {}
@@ -257,10 +268,20 @@ local function migrate_surface(surface, planet)
 	end
 	local removed = em and em.data.removed or {}
 	local moved = em and em.data.moved or {}
+	--- issue #563: the classic vein recipes (prototypes/166, hidden in this mode) and 0.5.5's names of them: a mine on one
+	--- becomes the drill when the vein is on this planet, else it loses the recipe
+	local classic, legacy = em and em.data.classic or {}, em and em.data.legacy or {}
+	local function classic_planet(recipe)
+		local cv = recipe and classic[legacy[recipe.name] or recipe.name]
+		if not cv then return nil end
+		for _, p in pairs(cv.planets) do if p == planet then return p end end
+		return cv.planets[1] or false
+	end
 	local replaced, bare, cleared, restored = 0, {}, {}, 0
-	for _, old in pairs(#list > 0 and surface.find_entities_filtered{ name = list } or {}) do
+	--- (issue #563: classic mode keeps the mines, classic_mines below)
+	for _, old in pairs(#list > 0 and ore_mode() == "map-veins" and surface.find_entities_filtered{ name = list } or {}) do
 		local recipe = old.get_recipe()
-		local gone = recipe and removed[recipe.name]
+		local gone = recipe and (removed[recipe.name] or classic_planet(recipe))
 		local mv = recipe and moved[recipe.name]
 		if mv and mv.planet == planet then
 			--- issue #527: the recipe works here (the glowstone vein in the Nether)
@@ -351,6 +372,60 @@ local function migrate_surface(surface, planet)
 		resized and (" (the old size " .. old_size .. " on every vein)") or ""), profiler })
 end
 
+--- Issue #563, classic mode (the startup setting gregtorio-continued-ore-mode = vein-recipes, prototypes/166): the planets
+--- have no veins, so migrate_surface gives a surface with veins in its map settings (a save of 0.5.6 or later, or one that
+--- switches) its planet's settings without them: its new chunks get no vein ore, the ore already there stays, and so do
+--- the drills on it (the maintainer's decision); it keeps the mines. On every surface, a dimension mine on one of 0.5.5's
+--- vein recipe names that is no generated name (mod data fork-electric-mine: legacy) gets the generated recipe of the
+--- vein, with its inputs back in its slots; one on a moved recipe of #527 as in migrate_surface.
+local function classic_mines(surface)
+	local em = prototypes.mod_data["fork-electric-mine"]
+	local legacy, moved = em and em.data.legacy or {}, em and em.data.moved or {}
+	local list = {}
+	for dim in pairs(em and em.data.drills or {}) do if prototypes.entity[dim] then list[#list + 1] = dim end end
+	local mapped, restored, cleared = 0, 0, {}
+	for _, mine in pairs(#list > 0 and surface.find_entities_filtered{ name = list } or {}) do
+		local recipe = mine.get_recipe()
+		local new = recipe and legacy[recipe.name]
+		local mv = recipe and moved[recipe.name]
+		if new then
+			for _, c in pairs(mine.set_recipe(new) or {}) do
+				local left = c.count - mine.insert{ name = c.name, count = c.count, quality = c.quality }
+				if left > 0 then
+					surface.spill_item_stack{ position = mine.position, stack = { name = c.name, count = left, quality = c.quality },
+						force = mine.force, allow_belts = false }
+				end
+			end
+			mapped = mapped + 1
+		elseif mv and mv.planet and surface.planet and mv.planet == surface.planet.name then
+			mine.set_recipe(mv.recipe)
+			restored = restored + 1
+		elseif mv then
+			for _, c in pairs(mine.set_recipe(nil) or {}) do
+				surface.spill_item_stack{ position = mine.position, stack = c, force = mine.force, allow_belts = false }
+			end
+			cleared[#cleared + 1] = { mine, mv }
+		end
+	end
+	for _, c in pairs(cleared) do
+		local e, mv = c[1], c[2]
+		local at = string.format("[gps=%d,%d,%s]", math.floor(e.position.x), math.floor(e.position.y), surface.name)
+		if mv.planet then
+			e.force.print({ "fork-message.mine-recipe-elsewhere", e.localised_name, at, prototypes.recipe[mv.recipe].localised_name,
+				{ "space-location-name." .. mv.planet } })
+		else
+			e.force.print({ "fork-message.mine-recipe-dig-site", e.localised_name, at, prototypes.recipe[mv.recipe].localised_name })
+		end
+	end
+	if mapped + restored + #cleared > 0 then
+		log(string.format("FORK-ORE-VEINS: %s (classic ore mode): %d mines on 0.5.5's vein recipes given the generated one, "
+			.. "%d with their recipe back, %d without their recipe", surface.name, mapped, restored, #cleared))
+	end
+end
+
+--- issue #563: the migration in the ore mode of this load, the planets' surfaces as above (in classic mode without veins)
+--- and in classic mode the mines of every surface; the mode is noted in storage.fork_ore_veins.mode, so
+--- on_configuration_changed sees a save that switches
 function M.migrate()
 	local d = vein_data()
 	if not d then return end
@@ -358,6 +433,25 @@ function M.migrate()
 	for planet in pairs(d.planets) do
 		local p = game.planets[planet]
 		if p and p.surface then migrate_surface(p.surface, planet) end
+	end
+	if ore_mode() == "vein-recipes" then
+		for _, surface in pairs(game.surfaces) do classic_mines(surface) end
+	end
+	storage.fork_ore_veins.mode = ore_mode()
+end
+
+--- issue #563: a new map notes its mode; a save whose startup setting changed since its last load migrates to the new
+--- mode (a save from before #563 got its mode from migrations/2026-10-24-issue-563-ore-mode.lua)
+function M.on_init()
+	storage.fork_ore_veins = storage.fork_ore_veins or { tagged = {} }
+	storage.fork_ore_veins.mode = ore_mode()
+end
+
+function M.on_configuration_changed()
+	local st = storage.fork_ore_veins
+	if st and st.mode and st.mode ~= ore_mode() then
+		log("FORK-ORE-VEINS: the ore mode changed from " .. st.mode .. " to " .. ore_mode())
+		M.migrate()
 	end
 end
 
