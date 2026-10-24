@@ -14,7 +14,15 @@
   - 101 machines (issue #446: the steam age of GTNH, the high pressure machines, the steam furnace, the lava and solar
     boilers; issue #447: the steam macerator's copies of the LV macerator recipes without byproducts,
     `fork_steam_categories()` at the end of data-final-fixes.lua; issue #449: the LV combustion generator, extruder and laser
-    engraver, the LV categories run by every MV machine through `fork_lv_machine_categories()` in 199)
+    engraver, the LV categories run by every MV machine through `fork_lv_machine_categories()` in 199; issue #560, section
+    2n: every machine whose categories are all of the ore line (macerator, ore washer, thermal centrifuge, centrifuge, the
+    steam macerators' copies) becomes a `furnace` that picks its recipe from its input, by `fork_furnace_machines()` at the
+    end of data-final-fixes.lua after `fork_steam_categories()`, so every file before it sees assembling machines; a
+    furnace takes one input fluid box at most (the inputs are merged) and an item of an item and fluid recipe only with
+    the fluid in it; devcheck fails for two recipes with the same inputs in a furnace machine's categories unless the
+    group is in the allow-list `FORK_FURNACE_SAME_INPUTS` with the recipe that wins, and for a recipe there a furnace
+    cannot run; old saves: the engine deletes a machine whose type changed, so the JSON migration makes them hidden
+    `legacy-<name>` assemblers and `scripts/fork-ore-furnaces.lua` rebuilds them)
   - 102 resources
   - 103 QoL techs (re-gates the vanilla inserter, belt and worker robot techs of issue #29 onto Gregtorio techs, GT
     recipes for bulk/stack inserters and express/turbo belts)
@@ -346,7 +354,7 @@
     unlocks count).
   The phase plan is in `docs/ROADMAP.md`. Runtime fork code lives in `scripts/` and is required from `control.lua`
   (`fork-molds.lua`, `fork-victory.lua`, `fork-power.lua`, `fork-space-elevator.lua` (#302), `fork-electric-mine.lua` (#342: a Miner or Ore Drilling Plant that replaces a mine
-  keeps its vein, from 163's mod data `fork-electric-mine`; event driven, `storage.fork_electric_mine`), `fork-portals.lua` (#501: the Nether Portal sends whoever steps onto it to the Nether and back at 1:8, makes the Nether's surface at the first use and the exit portal; #502: the Twilight Portal the same at 1:1 to the Twilight Forest, whose daytime it freezes at dusk; #503: the End Portal to The End's main island (exit portal at the origin) and back to the portal one came through (`storage.fork_portals.came_from`), night frozen; `on_player_changed_position`, remote `fork-portals.travel`, `storage.fork_portals`), `fork-ender.lua` (#504: Ender Chests (linked-container, link_id = the three-colour code) and Ender Tanks (levelled per force and code every 20 ticks) share their contents across surfaces; the code panel is a relative GUI beside the window; `storage.fork_ender`, remote `fork-ender`), `fork-ore-veins.lua` (#497: a chart tag with the vein's name when the chunk of a map vein's centre is charted, `storage.fork_ore_veins`, event driven), `fork-steam-boilers.lua` (#446: the solar boilers of 101 stop at night; every 120 ticks, `storage.fork_solar_boilers`), and `fork-me-handover.lua`: the one-time hand-over of the ME
+  keeps its vein, from 163's mod data `fork-electric-mine`; event driven, `storage.fork_electric_mine`), `fork-portals.lua` (#501: the Nether Portal sends whoever steps onto it to the Nether and back at 1:8, makes the Nether's surface at the first use and the exit portal; #502: the Twilight Portal the same at 1:1 to the Twilight Forest, whose daytime it freezes at dusk; #503: the End Portal to The End's main island (exit portal at the origin) and back to the portal one came through (`storage.fork_portals.came_from`), night frozen; `on_player_changed_position`, remote `fork-portals.travel`, `storage.fork_portals`), `fork-ender.lua` (#504: Ender Chests (linked-container, link_id = the three-colour code) and Ender Tanks (levelled per force and code every 20 ticks) share their contents across surfaces; the code panel is a relative GUI beside the window; `storage.fork_ender`, remote `fork-ender`), `fork-ore-veins.lua` (#497: a chart tag with the vein's name when the chunk of a map vein's centre is charted, `storage.fork_ore_veins`, event driven), `fork-steam-boilers.lua` (#446: the solar boilers of 101 stop at night; every 120 ticks, `storage.fork_solar_boilers`), `fork-ore-furnaces.lua` (#560: the remote `migrate` that rebuilds the ore machines of old saves as furnaces; no events, no state), and `fork-me-handover.lua`: the one-time hand-over of the ME
   state of saves from before issue #83 to me-network through the remote interface `gregtorio-me-handover`, which
   me-network calls in its `on_init`; keep its table list and fingerprint function equal to me-network's
   `scripts/fork-me-handover.lua`). Everything else of the ME network (runtime, graphics, locale, its tests,

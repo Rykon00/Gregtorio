@@ -375,7 +375,7 @@ local function setup_removed()
 			--- issue #332: a slot that this version leaves empty (its recipe needs no tool here)
 			local empty_slot = md ~= nil and tool == nil and inv ~= nil and #inv > 0
 			machines[#machines + 1] = { entity = e, old = m[2], new = m[3], name = m[4], items = items,
-				empty_slot = empty_slot, pos = e.position, drill = m[6], classic = m[7] }
+				empty_slot = empty_slot, pos = e.position, drill = m[6], machine = m[1], classic = m[7] }
 		end
 	end
 	local queue
@@ -428,8 +428,17 @@ local function check_removed()
 		elseif drill and m.items["manual-labor"] and drill.get_fuel_inventory().get_item_count("manual-labor") == 0 then
 			problems[#problems + 1] = "the " .. m.name .. " drill got no manual labor of the old mine as fuel"
 		end
+		--- issue #560: an ore machine of an old save is a furnace now, built in its place (scripts/fork-ore-furnaces.lua); it
+		--- has no recipe set but picks the new recipe from the old one's ingredients it holds
+		local furnace = not m.drill and not m.entity.valid and m.pos and game.surfaces[1].find_entity(m.name or m.machine, m.pos)
+		if furnace and furnace.type == "furnace" then m.entity = furnace else furnace = nil end
 		local r = not m.drill and m.entity.valid and m.entity.get_recipe()
 		local got = r and r.name or nil
+		if furnace and not got and m.new then
+			for _, ing in pairs(prototypes.recipe[m.new].ingredients) do
+				if ing.type == "item" and m.items[ing.name] and furnace.get_item_count(ing.name) > 0 then got = m.new end
+			end
+		end
 		if m.drill then
 			-- (checked above)
 		elseif not m.entity.valid then
@@ -1681,7 +1690,163 @@ local function check_mapgen_fresh()
 	log("DEVCHECK-MIGRATE-MAPGEN " .. (#problems == 0 and "ok" or "failed") .. " (" .. table.concat(parts, "; ") .. ")")
 end
 
+--- Issue #560: the ore machines (macerators, ore washers, thermal centrifuges, centrifuges and their multiblocks) are
+--- furnaces since 0.5.9. The old save has every one of them placed, unpowered, with a recipe of one item (and one fluid
+--- where it takes one), twice its ingredients in the input, three of its main product in the output, a craft at half
+--- progress, and the first one wired to a constant combinator. After the update each must be a furnace of its name at its
+--- place (scripts/fork-ore-furnaces.lua rebuilds them) that holds the input items (with the craft's ingredients given back),
+--- the output and the input fluid, and the wire must be there (DEVCHECK-MIGRATE-FURNACES). A version whose ore machines
+--- are furnaces already is skipped.
+local FU_AT, FU_ROW = { 200.5, Y + 80.5 }, 20
+local function ore_machine(p)
+	if p.type ~= "assembling-machine" or not (p.items_to_place_this and #p.items_to_place_this > 0) then return false end
+	local any = false
+	for c in pairs(p.crafting_categories or {}) do
+		local rest = c:match("^%a+%-(.+)%-recipes$")
+		if c == "parameters" then
+			-- (the engine's category of every crafting machine)
+		elseif not (c == "steam-macerator-recipes" or rest == "macerator" or rest == "ore-washer" or rest == "thermal-centrifuge"
+			or rest == "centrifuge") then return false
+		else
+			any = true
+		end
+	end
+	return any
+end
+--- a recipe's categories (Factorio 2.1: a list; 2.0, the versions up to 0.5.6: one)
+local function recipe_categories(r)
+	local ok, cats = pcall(function() return r.categories end)
+	return ok and cats or { r.category }
+end
+local function furnace_recipe(p)
+	local names = {}
+	for name, r in pairs(prototypes.recipe) do
+		if not r.hidden and p.crafting_categories[recipe_categories(r)[1]] then names[#names + 1] = name end
+	end
+	table.sort(names)
+	for _, name in pairs(names) do
+		local items, fluids = 0, 0
+		for _, ing in pairs(prototypes.recipe[name].ingredients) do
+			if ing.type == "item" then items = items + 1 else fluids = fluids + 1 end
+		end
+		if items == 1 and fluids <= 1 then return prototypes.recipe[name] end
+	end
+end
+
+local function setup_furnaces()
+	local names = {}
+	for name, p in pairs(prototypes.get_entity_filtered{ { filter = "type", type = "assembling-machine" } }) do
+		if ore_machine(p) then names[#names + 1] = name end
+	end
+	table.sort(names)
+	if #names == 0 then
+		log("DEVCHECK-MIGRATE-SETUP-FURNACES skipped (the ore machines are furnaces in this version)")
+		return
+	end
+	local s = game.surfaces[1]
+	local area = { { FU_AT[1] - 6, FU_AT[2] - 6 }, { FU_AT[1] + 8 * FU_ROW + 6, FU_AT[2] + 8 * math.ceil(#names / FU_ROW) + 6 } }
+	s.request_to_generate_chunks({ FU_AT[1] + 80, FU_AT[2] + 16 }, 4)
+	s.force_generate_chunk_requests()
+	local land = {}
+	for _, t in pairs(s.find_tiles_filtered{ area = area, collision_mask = "water_tile" }) do
+		land[#land + 1] = { name = "landfill", position = t.position }
+	end
+	s.set_tiles(land)
+	for _, e in pairs(s.find_entities_filtered{ area = area, type = { "tree", "simple-entity", "cliff", "resource" } }) do e.destroy() end
+	local list, wired = {}, nil
+	for i, name in pairs(names) do
+		local r = furnace_recipe(prototypes.entity[name])
+		local pos = { FU_AT[1] + 8 * ((i - 1) % FU_ROW), FU_AT[2] + 8 * math.floor((i - 1) / FU_ROW) }
+		local e = r and s.create_entity{ name = name, position = pos, force = "player", raise_built = true }
+		if e then
+			game.forces.player.recipes[r.name].enabled = true
+			e.set_recipe(r.name)
+			local m = { name = name, pos = e.position, recipe = r.name }
+			for _, ing in pairs(r.ingredients) do
+				if ing.type == "item" then
+					m.item, m.count, m.per_craft = ing.name, e.insert{ name = ing.name, count = ing.amount * 2 }, ing.amount
+				else
+					m.fluid = { name = ing.name, amount = e.insert_fluid{ name = ing.name, amount = ing.amount * 2 }, per_craft = ing.amount }
+				end
+			end
+			for _, pr in pairs(r.products) do
+				if pr.type == "item" and not m.product then
+					m.product = pr.name
+					m.product_count = e.get_inventory(defines.inventory.crafter_output).insert{ name = pr.name, count = 3 }
+				end
+			end
+			m.progress = pcall(function() e.crafting_progress = 0.5 end) and e.crafting_progress or 0
+			if not wired then
+				local cc = s.create_entity{ name = "constant-combinator", position = { pos[1], pos[2] - 3 }, force = "player" }
+				if cc then
+					cc.get_wire_connector(defines.wire_connector_id.circuit_red, true).connect_to(
+						e.get_wire_connector(defines.wire_connector_id.circuit_red, true), false, defines.wire_origin.player)
+					wired = true
+					m.wired = true
+				end
+			end
+			list[#list + 1] = m
+		end
+	end
+	storage.furnaces = { list = list }
+	local mid = 0
+	for _, m in pairs(list) do if m.progress > 0 then mid = mid + 1 end end
+	log("DEVCHECK-MIGRATE-SETUP-FURNACES ok (" .. #list .. " of " .. #names .. " ore machines placed with a recipe, " .. mid
+		.. " of them mid-craft)")
+end
+
+local function check_furnaces()
+	local st = storage.furnaces
+	if not st then
+		log("DEVCHECK-MIGRATE-FURNACES skipped")
+		return
+	end
+	local s = game.surfaces[1]
+	local problems, furnaces, back = {}, 0, 0
+	for _, m in pairs(st.list) do
+		local f = s.find_entity(m.name, m.pos)
+		if not f then
+			problems[#problems + 1] = m.name .. " (" .. m.recipe .. ") is gone"
+		elseif f.type ~= "furnace" then
+			problems[#problems + 1] = m.name .. " is a " .. f.type .. ", not a furnace"
+		else
+			furnaces = furnaces + 1
+			--- the input items, on the ground too (what fits nowhere is spilled), with the craft's ingredients given back; a
+			--- furnace that picked its recipe at once has taken one craft's ingredients (and holds twice a craft's fluid at most)
+			local crafting = f.is_crafting()
+			local n = f.get_item_count(m.item) + (crafting and m.per_craft or 0)
+			for _, it in pairs(s.find_entities_filtered{ position = m.pos, radius = 4, name = "item-on-ground" }) do
+				if it.stack.name == m.item then n = n + it.stack.count end
+			end
+			local had = m.count + (m.product == m.item and m.product_count or 0)
+			if n < had then
+				problems[#problems + 1] = m.name .. " holds " .. n .. " " .. m.item .. " of " .. had
+			elseif m.progress > 0 and n >= had + m.per_craft then
+				back = back + 1
+			end
+			local out = f.get_inventory(defines.inventory.crafter_output).get_item_count(m.product)
+			if m.product ~= m.item and out < m.product_count then
+				problems[#problems + 1] = m.name .. "'s output holds " .. out .. " " .. m.product .. " of " .. m.product_count
+			end
+			if m.fluid and m.fluid.amount > 0 then
+				local got = f.get_fluid_count(m.fluid.name) + (crafting and m.fluid.per_craft or 0)
+				if got < m.fluid.amount - 1e-3 then
+					problems[#problems + 1] = m.name .. " holds " .. got .. " " .. m.fluid.name .. " of " .. m.fluid.amount
+				end
+			end
+			if m.wired then
+				local c = f.get_wire_connector(defines.wire_connector_id.circuit_red, false)
+				if not (c and c.connection_count > 0) then problems[#problems + 1] = m.name .. " lost its red wire" end
+			end
+		end
+	end
+	for _, p in pairs(problems) do log("DEVCHECK-MIGRATE-FAIL furnaces: " .. p) end
+	log("DEVCHECK-MIGRATE-FURNACES " .. (#problems == 0 and "ok" or "failed") .. " (" .. furnaces .. " of " .. #st.list
+		.. " ore machines are furnaces with their contents, " .. back .. " got the ingredients of their craft back)")
+end
+
 script.on_init(function()
+	setup_furnaces()
 	setup_vein_grid()
 	setup_vein_ores()
 	setup_power()
@@ -1798,6 +1963,7 @@ script.on_nth_tick(30, function(event)
 		storage.techs_checked = true
 		check_techs()
 		check_removed()
+		check_furnaces()
 		check_planets()
 		check_vein_grid()
 		check_vein_ores()

@@ -21,6 +21,8 @@ local fork_ore_drills = require("scripts.fork-ore-drills")
 local fork_portals = require("scripts.fork-portals")
 --- Fork: Ender Chests and Ender Tanks of one colour code share their contents on every surface (issue #504, see prototypes/160-fork-dimension-mines.lua)
 local fork_ender = require("scripts.fork-ender")
+--- Fork: the ore machines of old saves rebuilt as furnaces (issue #560, see prototypes/101-fork-machines.lua; remote only)
+require("scripts.fork-ore-furnaces")
 
 local function on_built(event)
   local entity = event.entity

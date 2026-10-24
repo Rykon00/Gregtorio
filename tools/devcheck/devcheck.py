@@ -363,6 +363,7 @@ class Model:
         split = lambda s: [x.split(":", 1)[1] for x in s.split(",") if x]
         kinds = lambda s: [x.split(":", 1)[0] for x in s.split(",") if x]
         self.R, self.C, self.CF, self.I, self.T = {}, {}, {}, {}, {}
+        self.ctype = {}                     # crafter -> its prototype type (issue #560: furnaces pick their recipe)
         self.burnt, self.burners = [], {}   # (fuel item, burnt result, fuel categories); burner entity -> categories
         self.tools = {}                     # recipe -> the mold or lens it needs in the module slot (issue #316)
         self.itype, self.uses = {}, {}      # item -> its prototype type; item -> its uses besides recipes (issue #547)
@@ -374,12 +375,14 @@ class Model:
             if k == "R":
                 # (issue #535: a recipe has a list of categories since Factorio 2.1; `cat` is the first, a Gregtorio recipe's one)
                 cats = [c for c in p[2].split(",") if c] or ["crafting"]
-                self.R[p[1]] = dict(cat=cats[0], cats=set(cats), en=p[3] == "true", ing=split(p[4]), res=split(p[5]),
+                self.R[p[1]] = dict(cat=cats[0], cats=set(cats), en=p[3] == "true", ing=split(p[4]), ingk=kinds(p[4]),
+                                    res=split(p[5]),
                                     fin=kinds(p[4]).count("fluid"), fout=kinds(p[5]).count("fluid"),
                                     hidden=p[6] == "true", hide_craft=p[7] == "true", sg=p[8], group=p[9],
                                     icon=p[10] if len(p) > 10 else "")
             elif k == "C":
                 self.C[p[1]] = p[3].split(",") if p[3] else []
+                self.ctype[p[1]] = p[2]
                 self.CF[p[1]] = (int(p[4]), int(p[5]))
             elif k == "I":
                 self.I[p[1]] = p[3] if len(p) > 3 else ""
@@ -1847,6 +1850,55 @@ def check_machines_early(m, sec):
     return info, problems
 
 
+def check_furnace_inputs(m, sec):
+    """Issue #560: a furnace picks the first enabled recipe of its categories (by subgroup and order) that matches its
+    input, so two recipes a furnace machine runs with the same inputs (the same item and fluid names; amounts do not
+    count) leave all but one unreachable. Counted are the recipes enabled from the start or unlocked by a technology,
+    hidden or not. A group fails unless it is in the allow-list FORK_FURNACE_SAME_INPUTS of
+    prototypes/101-fork-machines.lua ("<recipe>+<recipe>", sorted, -> the recipe that wins and why; section
+    FURNACESAMEOK; an entry that matches no group, or names a winner outside it, fails too). A recipe in a furnace's
+    category that a furnace cannot run (two item or two fluid ingredients) fails as well. Returns (info line,
+    problems)."""
+    R = m.R
+    allowed = {r[0]: (r[1] if len(r) > 1 else "", r[2] if len(r) > 2 else "") for r in sec.get("FURNACESAMEOK", [])}
+    furnaces = sorted(e for e, t in m.ctype.items() if t == "furnace")
+    by_cat = {}
+    for r, v in R.items():
+        if v["en"] or r in m.unlocked:
+            for c in v["cats"]:
+                by_cat.setdefault(c, []).append(r)
+    groups, unrunnable, n = {}, {}, set()
+    for e in furnaces:
+        sig = {}
+        for r in sorted({x for c in m.C[e] for x in by_cat.get(c, [])}):
+            v = R[r]
+            kinds = v.get("ingk", [])
+            items = tuple(sorted(i for i, k in zip(v["ing"], kinds) if k == "item"))
+            fluids = tuple(sorted(i for i, k in zip(v["ing"], kinds) if k == "fluid"))
+            n.add(r)
+            if len(items) > 1 or len(fluids) > 1:
+                unrunnable.setdefault(r, []).append(e)
+                continue
+            sig.setdefault((items, fluids), []).append(r)
+        for (items, fluids), rs in sig.items():
+            if len(rs) > 1:
+                groups.setdefault("+".join(sorted(rs)), (items + fluids, []))[1].append(e)
+    problems = []
+    for key, (inputs, es) in sorted(groups.items()):
+        if key not in allowed:
+            problems.append(f"{key}: the same inputs ({', '.join(inputs) or 'none'}) in {len(es)} furnace machine(s) "
+                            f"({', '.join(es[:3])}{', ...' if len(es) > 3 else ''}); only the first by subgroup and order runs")
+        elif allowed[key][0] not in key.split("+"):
+            problems.append(f"{key}: FORK_FURNACE_SAME_INPUTS names {allowed[key][0]} as the winner, which is not in the group")
+    problems += [f"{r}: two item or two fluid ingredients, the furnace machine(s) {', '.join(es[:3])} cannot run it"
+                 for r, es in sorted(unrunnable.items())]
+    problems += [f"{k}: in FORK_FURNACE_SAME_INPUTS but no such group (remove the entry)" for k in sorted(allowed)
+                 if k not in groups]
+    info = (f"{len(furnaces)} furnace machines, {len(n)} recipes they run, {len(groups)} groups with the same inputs, "
+            f"{sum(1 for k in groups if k in allowed)} kept on purpose (FORK_FURNACE_SAME_INPUTS)")
+    return info, problems
+
+
 def check_locked(m, sec):
     """Issue #91: every recipe of Gregtorio (created or changed by it: prototypes.get_history, logged by
     checkmod/control.lua) that is not hidden must be enabled or unlocked by a researchable technology, unless it is in
@@ -1972,6 +2024,11 @@ def check(a):
     report("technologies that unlock a machine before any recipe it can run (the technology, the machine, the first "
            "technologies of a recipe it runs; unlock the machine there, or add <technology>:<machine> to "
            "FORK_MACHINES_BEFORE_RECIPES of prototypes/142-fork-recipe-unlocks.lua)", early, limit=200)
+    furnace_info, furnace = check_furnace_inputs(m, sec)
+    print(f"\nfurnace machines (issue #560): {furnace_info}")
+    report("recipes of a furnace machine with the same inputs, or that a furnace cannot run (a furnace runs the first "
+           "matching recipe by subgroup and order; remove or move one, or add the group with its winner to "
+           "FORK_FURNACE_SAME_INPUTS of prototypes/101-fork-machines.lua)", furnace, limit=200)
     report("draft recipes outside DRAFTS_OK (issue #39)", new_drafts)
     report("technologies that unlock a recipe the ore chain removes (issue #388: delete the unlock from "
            "prototypes/98-technology.lua or the table of 142; FORK-STALE-UNLOCK in the log)", stale_unlocks)
@@ -2170,7 +2227,7 @@ def runtime(a):
     print(f"benchmark: {ran.group(0) if ran else 'did not run'}")
     # the ME network's runtime tests are in me-network since issue #83 (its tools/devcheck)
     tests = (("MOLD", "mold test"), ("LENS", "lens test"), ("POWER", "power test"), ("FUEL", "fuel check test"), ("COOLED", "cooled fluid test"),
-             ("TIERS", "turbine tier test"), ("RECIPES", "recipe test"), ("CRUSH", "raw ore crushing test"), ("STEAM", "steam turbine test"), ("CHAIN", "nuclear chain test"), ("LFTR", "LFTR test"), ("LSC", "supercapacitor test"), ("LSUP", "supercapacitor upgrade test"), ("ELEVATOR", "space elevator test"), ("MELT", "melt and cast test"), ("OFFER", "offered recipes test"), ("EMINE", "electric mine test"), ("SOLAR", "solar boiler test"), ("TORCH", "torch test"), ("BATTERY", "battery buffer test"), ("VEINS", "map vein test"), ("CLASSIC", "classic vein test"), ("DRILLS", "mining drill test"), ("PORTAL", "portal test"), ("ENDER", "ender storage test"), ("VICTORY", "victory test"),
+             ("TIERS", "turbine tier test"), ("RECIPES", "recipe test"), ("CRUSH", "raw ore crushing test"), ("OREFURNACE", "ore furnace line test"), ("STEAM", "steam turbine test"), ("CHAIN", "nuclear chain test"), ("LFTR", "LFTR test"), ("LSC", "supercapacitor test"), ("LSUP", "supercapacitor upgrade test"), ("ELEVATOR", "space elevator test"), ("MELT", "melt and cast test"), ("OFFER", "offered recipes test"), ("EMINE", "electric mine test"), ("SOLAR", "solar boiler test"), ("TORCH", "torch test"), ("BATTERY", "battery buffer test"), ("VEINS", "map vein test"), ("CLASSIC", "classic vein test"), ("DRILLS", "mining drill test"), ("PORTAL", "portal test"), ("ENDER", "ender storage test"), ("VICTORY", "victory test"),
              ("POSTVICTORY", "post-victory test"))
     for key, label in tests:
         m = re.search(rf"DEVCHECK-RUNTIME-{key} (.*)", log)
@@ -2454,6 +2511,8 @@ def migrate(a):
     print(f"old save with researched technologies (issue #91): {setup.group(1) if setup else 'no result'}")
     setup = re.search(r"DEVCHECK-MIGRATE-SETUP-REMOVED (.*)", log)
     print(f"old save with removed fluids and items (issues #98, #96): {setup.group(1) if setup else 'no result'}")
+    setup = re.search(r"DEVCHECK-MIGRATE-SETUP-FURNACES (.*)", log)
+    print(f"old save with every ore machine placed, loaded and mid-craft (issue #560): {setup.group(1) if setup else 'no result'}")
     setup = re.search(r"DEVCHECK-MIGRATE-SETUP-PLANETS (.*)", log)
     print(f"old save with surfaces of the Space Age planets (issue #529): {setup.group(1) if setup else 'no result'}")
     setup = re.search(r"DEVCHECK-MIGRATE-SETUP-VEINGRID (.*)", log)
@@ -2506,6 +2565,10 @@ def migrate(a):
     print(f"technology effects of the old save (issue #91): {techs.group(1) if techs else 'no result'}")
     removed = re.search(r"DEVCHECK-MIGRATE-REMOVED (.*)", log)
     print(f"removed fluids and items of the old save (issues #98, #96): {removed.group(1) if removed else 'no result'}")
+    furnaces = re.search(r"DEVCHECK-MIGRATE-FURNACES (.*)", log)
+    print(f"ore machines of the old save as furnaces (issue #560): {furnaces.group(1) if furnaces else 'no result'}")
+    for line in re.findall(r"FORK-ORE-FURNACES: (.*)", log):
+        print("  migration: " + line)
     planets = re.search(r"DEVCHECK-MIGRATE-PLANETS (.*)", log)
     print(f"surfaces of the deleted Space Age planets (issue #529): {planets.group(1) if planets else 'no result'}")
     veingrid = re.search(r"DEVCHECK-MIGRATE-VEINGRID (.*)", log)
@@ -2535,7 +2598,7 @@ def migrate(a):
         and patterns and not patterns.group(1).startswith("failed") and job and not job.group(1).startswith("failed") \
         and items and not items.group(1).startswith("failed") and handover_ok \
         and techs and not techs.group(1).startswith("failed") \
-        and removed and not removed.group(1).startswith("failed")         and planets and not planets.group(1).startswith("failed")         and veingrid and not veingrid.group(1).startswith("failed")         and veinores and not veinores.group(1).startswith("failed") \
+        and removed and not removed.group(1).startswith("failed")         and furnaces and not furnaces.group(1).startswith("failed")         and planets and not planets.group(1).startswith("failed")         and veingrid and not veingrid.group(1).startswith("failed")         and veinores and not veinores.group(1).startswith("failed") \
         and mapgen and not mapgen.group(1).startswith("failed")
     return 0 if ok else 1
 
