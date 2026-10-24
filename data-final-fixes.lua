@@ -820,6 +820,9 @@ FORK_RECYCLING.unlock()
 --- Fork: the steam macerator runs copies of the LV macerator recipes without their byproducts, as GT's bronze machines
 --- (prototypes/101-fork-machines.lua, issue #447); after every unlock above
 fork_steam_categories()
+--- Fork: the steam macerator's copies of the ore forms come in the steam age, with the smelting of what they make (issue
+--- #571, prototypes/101-fork-machines.lua)
+fork_steam_ore_unlocks()
 --- Fork: the ore machines are furnaces that pick their recipe from the input (prototypes/101-fork-machines.lua, issue
 --- #560); after the steam macerators' categories above
 fork_furnace_machines()
