@@ -17,7 +17,8 @@ if not simulations then return end
 -- `devcheck.py menusim --sim <name> --rebuild` with today's mods (tools/menusim/: its chunks cut to the factory, the
 -- builder's blueprint library and the replay removed). The menu loads the save with the mods as they are, runs `init`
 -- once and `update` every tick, and loads the save again after `length` ticks. Vanilla's Nauvis scenes stay in the
--- rotation next to these (the maintainer's choice in #588).
+-- rotation next to these (the maintainer's choice in #588); Gregtorio's are registered more than once (end of this
+-- section, issue #591).
 
 -- The steam age, built in the map editor by achilles155: coal boilers, steam macerators, forge hammers, alloy smelters,
 -- furnaces and crafting tables on one bus. The camera looks at the bus junction east of the forge hammers (the save's
@@ -66,6 +67,19 @@ simulations.gregtorio_steam_age = {
     end
   ]],
 }
+
+-- Issue #591: the menu picks its next scene at random (main_menu_simulations has no order or priority), so the
+-- maintainer's wish "Gregtorio's scenes first" cannot be set; instead every scene of this mod is in the list
+-- SCENE_WEIGHT times, as `<name>_copy2` and so on (the steam age: 5 of 39 entries, about every eighth scene).
+-- devcheck.py menusim runs a scene once and checks that its copies are the same.
+local SCENE_WEIGHT = 5
+local own = {}
+for name, sim in pairs(simulations) do
+	if type(sim.save) == "string" and sim.save:find("^__gregtorio%-continued__/") then own[name] = sim end
+end
+for name, sim in pairs(own) do
+	for n = 2, SCENE_WEIGHT do simulations[name .. "_copy" .. n] = table.deepcopy(sim) end
+end
 
 -- VANILLA SCENES: the bonuses of the disabled techs (PR #65)
 
