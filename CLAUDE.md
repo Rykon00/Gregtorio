@@ -17,7 +17,7 @@
     the ore forms with the later of Steam Macerator and the first technology that makes their input (only into the
     prerequisites of the original's technology, only when something takes each product there) and moves the furnace
     recipes of their products with them; Steam Macerator needs Steam Forge Hammer (142); devcheck fails for a later copy
-    unless it is in `FORK_STEAM_LATE` (the Nether's ores, issue #573); issue #449: the LV combustion generator, extruder and laser
+    unless it is in `FORK_STEAM_LATE` (empty: issue #573 made Reach the Nether need Steam Macerator); issue #449: the LV combustion generator, extruder and laser
     engraver, the LV categories run by every MV machine through `fork_lv_machine_categories()` in 199; issue #560, section
     2n: every machine whose categories are all of the ore line (macerator, ore washer, thermal centrifuge, centrifuge, the
     steam macerators' copies) becomes a `furnace` that picks its recipe from its input, by `fork_furnace_machines()` at the
