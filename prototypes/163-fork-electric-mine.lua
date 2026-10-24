@@ -547,6 +547,73 @@ function FORK_ELECTRIC_MINE.unlock_miner_twins()
 	end
 end
 
+--- issue #556 (#252's rule: unlocked where first used): every dimension mine comes with the first technology that unlocks
+--- a recipe it can run, or with its own technology when that one is later (the Dimension Mine came with Craft Wooden Tools,
+--- its first vein recipe much later); called by 142 after its moves, so it follows the vein recipes when they move. The
+--- first technology is one that has no other of them before it (the one with the fewest before it when there are
+--- several); a first technology on another branch than the mine's own is a load error: decide that one by hand
+function FORK_ELECTRIC_MINE.unlock_dimension_mines()
+	local unl = {}
+	for tname, t in pairs(data.raw.technology) do
+		for _, e in pairs(t.effects or {}) do
+			if e.type == "unlock-recipe" then
+				unl[e.recipe] = unl[e.recipe] or {}
+				table.insert(unl[e.recipe], tname)
+			end
+		end
+	end
+	local memo, size = {}, {}
+	local function before(t)   -- t and its prerequisites, recursively
+		if not memo[t] then
+			local s, n = { [t] = true }, 1
+			for _, p in pairs(data.raw.technology[t].prerequisites or {}) do
+				if data.raw.technology[p] then
+					for x in pairs(before(p)) do
+						if not s[x] then s[x], n = true, n + 1 end
+					end
+				end
+			end
+			memo[t], size[t] = s, n
+		end
+		return memo[t]
+	end
+	for _, name in pairs(DIMENSION) do
+		local cats = data.raw["assembling-machine"][name].crafting_categories
+		local techs, start = {}, false
+		for rname, r in pairs(data.raw.recipe) do
+			local runs = false
+			for _, c in pairs(cats) do if fork_has_category(r, c) then runs = true end end
+			if runs and not r.hidden then
+				if r.enabled ~= false then start = true end
+				for _, t in pairs(unl[rname] or {}) do techs[t] = true end
+			end
+		end
+		local first
+		for t in pairs(techs) do
+			local later, b = false, before(t)
+			for u in pairs(techs) do if u ~= t and b[u] then later = true end end
+			if not later and (not first or size[t] < size[first] or (size[t] == size[first] and t < first)) then first = t end
+		end
+		local own = unl[name] or {}
+		if #own ~= 1 then error("163-fork-electric-mine: " .. name .. " is unlocked by " .. #own .. " technologies, not one") end
+		if first and not start and first ~= own[1] then
+			if before(first)[own[1]] then
+				local t = data.raw.technology[own[1]]
+				local keep = {}
+				for _, e in pairs(t.effects) do
+					if not (e.type == "unlock-recipe" and e.recipe == name) then keep[#keep + 1] = e end
+				end
+				t.effects = keep
+				fork_add_unlock(first, name)
+				log("FORK-DIMENSION-MINE: " .. name .. " moves from " .. own[1] .. " to " .. first .. ", the technology of its first recipe")
+			elseif not before(own[1])[first] then
+				error("163-fork-electric-mine: " .. name .. "'s technology " .. own[1] .. " and its first recipe's " .. first
+					.. " are on other branches (issue #556): decide where it comes")
+			end
+		end
+	end
+end
+
 
 
 --------------------------------------------------------------------------------

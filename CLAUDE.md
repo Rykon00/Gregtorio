@@ -134,7 +134,12 @@
     only when the producer's own chain is late (platinum, a tier's energy hatch, the advanced SMDs) by moving the
     consumer to the producer's technology; `FORK_UNLOCK_TREE.keep` pins recipes of 155/158 that would otherwise land on
     a technology of higher science; `KEEP` pins what the auto-unlock of 199 placed before, so new unlocks do not move
-    it)
+    it; issue #556, the other half of the rule: a machine comes with its first recipe, so devcheck fails for a
+    technology that unlocks a machine before any recipe the machine runs is enabled or unlocked by it or its prerequisites,
+    unless `<technology>:<machine>` is in the allow-list `FORK_MACHINES_BEFORE_RECIPES` with its reason (a machine
+    technology right before its recipes' one, the tier copies of the LV brewery, fermenter and rock crusher); 163's
+    `FORK_ELECTRIC_MINE.unlock_dimension_mines()`, which 142 calls after its moves, unlocks each dimension mine with the
+    first technology of a recipe it runs or its own technology, whichever is later)
   - 143 casting (issue #91: solidifier casts of every form and extractor melts of every ingot from its table `MATERIALS`
     (tier, technology, the colour of a new melt); 199's auto-unlock ignores these recipes (`FORK_CASTING.recipes`), else
     an ingot would count as its own producer; must load before 150, whose molds it needs, and before 196, 198 and 199;

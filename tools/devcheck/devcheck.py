@@ -1748,6 +1748,65 @@ def check_unlock_tree(m, sec):
     return info, problems, found
 
 
+def check_machines_early(m, sec):
+    """Issue #556, the other half of #252's rule: a machine comes with the technology where it is first used, so a
+    technology that unlocks a machine (a Gregtorio recipe of an item that places a crafting machine) must have a recipe
+    the machine can run (one of its categories, not hidden, not recycling) enabled from the start or unlocked by itself
+    or a technology in its prerequisite closure; else the machine stands there without a recipe. One row per technology
+    and machine, naming the first technologies of a recipe it runs; allow-list FORK_MACHINES_BEFORE_RECIPES
+    ("<technology>:<machine>" -> reason, section MACHINEEARLYOK; an entry that matches nothing fails). Returns (info
+    line, problems)."""
+    T, R = m.T, m.R
+    mod = MOD_NAMES[1]
+    greg = {r[0] for r in sec.get("OWNERS", [])
+            if len(r) > 1 and (r[1] == mod or mod in (r[2] if len(r) > 2 else "").split(","))}
+    allowed = {r[0]: r[1] if len(r) > 1 else "" for r in sec.get("MACHINEEARLYOK", [])}
+    unl, memo = {}, {}
+    for t, v in T.items():
+        for r in v["eff"]:
+            unl.setdefault(r, []).append(t)
+
+    def closure(t):
+        if t not in memo:
+            memo[t] = frozenset({t}).union(*[closure(p) for p in T[t]["pre"] if p in T])
+        return memo[t]
+
+    def runs(r, v):
+        return not v["hidden"] and "recycling" not in r and v["cat"] not in ("recycling", "parameters")
+    by_cat = {}
+    for r, v in R.items():
+        if runs(r, v) and r in m.unlocked:
+            for c in v["cats"]:
+                by_cat.setdefault(c, []).append(r)
+    entity_of = {it: pr for it, pr in m.I.items() if pr in m.C and pr != "character"}
+    found, n = {}, 0
+    for r, v in R.items():
+        if r not in greg or v["hidden"] or r not in m.unlocked or "recycling" in r:
+            continue
+        for e in sorted({entity_of[x] for x in v["res"] if x in entity_of}):
+            recipes = sorted({x for c in m.C[e] for x in by_cat.get(c, [])})
+            if any(R[x]["en"] for x in recipes):
+                continue
+            techs = {t for x in recipes for t in unl.get(x, []) if t in m.researched}
+            first = sorted(u for u in techs if not any(w != u and w in closure(u) for w in techs))
+            if v["en"]:
+                n += 1
+                found.setdefault(f"start:{e}", (r, first))
+            for t in unl.get(r, []):
+                if t not in m.researched:
+                    continue
+                n += 1
+                if not techs & closure(t):
+                    found.setdefault(f"{t}:{e}", (r, first))
+    problems = [f"{k}: {r} unlocks it before any recipe it can run (first: {', '.join(first[:4]) or 'none'})"
+                for k, (r, first) in sorted(found.items()) if k not in allowed]
+    problems += [f"{k}: in FORK_MACHINES_BEFORE_RECIPES but no such machine (remove the entry)" for k in sorted(allowed)
+                 if k not in found]
+    info = (f"{n} unlocks of a machine checked, {len(found)} before any recipe the machine runs, "
+            f"{sum(1 for k in found if k in allowed)} kept on purpose (FORK_MACHINES_BEFORE_RECIPES)")
+    return info, problems
+
+
 def check_locked(m, sec):
     """Issue #91: every recipe of Gregtorio (created or changed by it: prototypes.get_history, logged by
     checkmod/control.lua) that is not hidden must be enabled or unlocked by a researchable technology, unless it is in
@@ -1867,6 +1926,11 @@ def check(a):
     report("items a technology's recipes take that its prerequisites do not make (the technology, the item, the nearest "
            "producer; unlock the producer there or earlier, make the producer's technology a prerequisite, or add "
            "<technology>:<item> to FORK_UNLOCK_TREE_GAPS of prototypes/142-fork-recipe-unlocks.lua)", tree, limit=400)
+    early_info, early = check_machines_early(m, sec)
+    print(f"\nmachines unlocked before their first recipe (issue #556): {early_info}")
+    report("technologies that unlock a machine before any recipe it can run (the technology, the machine, the first "
+           "technologies of a recipe it runs; unlock the machine there, or add <technology>:<machine> to "
+           "FORK_MACHINES_BEFORE_RECIPES of prototypes/142-fork-recipe-unlocks.lua)", early, limit=200)
     report("draft recipes outside DRAFTS_OK (issue #39)", new_drafts)
     report("technologies that unlock a recipe the ore chain removes (issue #388: delete the unlock from "
            "prototypes/98-technology.lua or the table of 142; FORK-STALE-UNLOCK in the log)", stale_unlocks)
