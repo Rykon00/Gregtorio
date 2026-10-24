@@ -138,6 +138,14 @@ local fs = {}
 for key, v in pairs(FORK_FURNACE_SAME_INPUTS or {}) do fs[#fs + 1] = key .. "\t" .. tostring(v.wins) .. "\t" .. tostring(v.reason) end
 section("FURNACESAMEOK", fs)
 
+--- Issue #571: the technology the steam macerator's ore copies come with (FORK_STEAM_ORE_TECH of
+--- prototypes/101-fork-machines.lua) and the allow-list FORK_STEAM_ORE_LATE; rows "tech" name, "late" recipe reason
+--- (absent in older versions)
+local so = {}
+if FORK_STEAM_ORE_TECH then so[#so + 1] = "tech\t" .. FORK_STEAM_ORE_TECH end
+for name, reason in pairs(FORK_STEAM_ORE_LATE or {}) do so[#so + 1] = "late\t" .. name .. "\t" .. reason end
+section("STEAMORE", so)
+
 --- Issue #126: the recipes of items only the crafting table, the ME Molecular Assembler or the hand can make, on purpose
 --- (FORK_RECIPES_TABLE_ONLY in prototypes/148-fork-gtnh-table-items.lua; absent in older versions)
 local tk = {}

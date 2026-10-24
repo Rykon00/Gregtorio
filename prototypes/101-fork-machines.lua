@@ -841,6 +841,177 @@ function fork_steam_categories()
 end
 
 
+--- Issue #571: GT's bronze macerator doubles ores from the steam age on (ore -> 2 crushed ore, no byproduct), but the copies
+--- above came with their LV originals, the ore forms with Ore Crushing (red + green). fork_steam_ore_unlocks(), right
+--- after fork_steam_categories(): the copy of every ore form recipe (its one input raw-, crushed-, purified- or
+--- centrifuged-<ore>) comes with the later of the Steam Macerator's technology and the first technology that gives its
+--- input (a recipe's, or a resource's: Nauvis' map veins are there from the start, another planet's with its reach
+--- technology), when that one is a red-only technology before the original's; else it stays with the original (an ore of
+--- another dimension, a form only the LV washer or centrifuge makes, a vein whose recipe comes later). Raw ores go first,
+--- so the crushed ore the new copies make counts for the next forms. Then the furnace smelting (category smelting, the
+--- product as its one ingredient) of each moved copy's product comes with it, so the steam age can smelt what it crushes
+--- (#252: unlocked where it is first used); the cauldron, washer and centrifuge stay. FORK_STEAM_ORE_TECH names the
+--- technology; devcheck fails for a steam copy of a start ore that comes with a higher science than it.
+FORK_STEAM_ORE_TECH = "steam-macerator"
+--- steam copies of a start ore (Nauvis' veins) that may come with a higher science than the Steam Macerator: recipe ->
+--- reason (devcheck's section STEAMORE); none today
+FORK_STEAM_ORE_LATE = {}
+local STEAM_ORE_FORMS = { "raw", "crushed", "purified", "centrifuged" }
+
+function fork_steam_ore_unlocks()
+	local techs_of, makers = {}, {}
+	local function index()
+		techs_of, makers = {}, {}
+		for name, r in pairs(data.raw.recipe) do
+			if not r.hidden then
+				for _, res in pairs(r.results or {}) do
+					makers[res.name] = makers[res.name] or {}
+					table.insert(makers[res.name], name)
+				end
+			end
+		end
+		for tname, t in pairs(data.raw.technology) do
+			for _, e in pairs(t.effects or {}) do
+				if e.type == "unlock-recipe" then
+					techs_of[e.recipe] = techs_of[e.recipe] or {}
+					techs_of[e.recipe][tname] = true
+				end
+			end
+		end
+	end
+	local memo = {}
+	local function before(t)   -- t and its prerequisites, recursively
+		if not memo[t] then
+			local s = { [t] = true }
+			memo[t] = s
+			for _, p in pairs(data.raw.technology[t].prerequisites or {}) do
+				if data.raw.technology[p] then for x in pairs(before(p)) do s[x] = true end end
+			end
+		end
+		return memo[t]
+	end
+	local function packs(t)
+		local u = data.raw.technology[t].unit
+		local out = {}
+		for _, i in pairs(u and u.ingredients or {}) do out[i[1] or i.name] = true end
+		return out
+	end
+	local function red_only(t)
+		for p in pairs(packs(t)) do if p ~= "automation-science-pack" then return false end end
+		return true
+	end
+	--- resource products: from the start when Nauvis places the resource, else the reach technology of its planets
+	local planet_tech = {}
+	for dim, planet in pairs(FORK_ORE_VEINS and FORK_ORE_VEINS.planets or {}) do
+		planet_tech[planet] = (FORK_ORE_VEINS.techs or {})[dim] or false
+	end
+	local mined = {}   -- item -> "start" or { tech = true }
+	for pname, planet in pairs(data.raw.planet or {}) do
+		local ent = planet.map_gen_settings and planet.map_gen_settings.autoplace_settings
+			and planet.map_gen_settings.autoplace_settings.entity
+		for res in pairs(ent and ent.settings or {}) do
+			local r = data.raw.resource[res]
+			local m = r and r.minable or {}
+			local items = m.result and { m.result } or {}
+			for _, x in pairs(m.results or {}) do items[#items + 1] = x.name end
+			for _, item in pairs(items) do
+				local t = planet_tech[pname]
+				if pname == "nauvis" or t == false then mined[item] = "start"
+				elseif t and mined[item] ~= "start" then
+					mined[item] = mined[item] or {}
+					mined[item][t] = true
+				end
+			end
+		end
+	end
+	--- the first technologies that give an item (nil: there from the start)
+	local function first_techs(item)
+		if mined[item] == "start" then return nil end
+		local set = {}
+		for t in pairs(type(mined[item]) == "table" and mined[item] or {}) do set[t] = true end
+		for _, name in pairs(makers[item] or {}) do
+			if data.raw.recipe[name].enabled ~= false and not techs_of[name] then return nil end
+			for t in pairs(techs_of[name] or {}) do set[t] = true end
+		end
+		local out = {}
+		for t in pairs(set) do
+			local later = false
+			for u in pairs(set) do if u ~= t and before(t)[u] then later = true end end
+			if not later then out[#out + 1] = t end
+		end
+		return out
+	end
+	local S = FORK_STEAM_ORE_TECH
+	local moved, smelters = {}, 0
+	for _, form in ipairs(STEAM_ORE_FORMS) do
+		index()
+		local list = {}
+		for name, r in pairs(data.raw.recipe) do
+			if name:match("^steam%-") and fork_has_category(r, "steam-macerator-recipes") and #(r.ingredients or {}) == 1
+				and r.ingredients[1].name:match("^" .. form .. "%-") then
+				list[#list + 1] = name
+			end
+		end
+		table.sort(list)
+		for _, name in ipairs(list) do
+			local r = data.raw.recipe[name]
+			local own = {}
+			for t in pairs(techs_of[name] or {}) do own[#own + 1] = t end
+			--- the later of S and the input's first technology (one of them after the other; incomparable ones: no move)
+			local first = first_techs(r.ingredients[1].name)
+			local at = S
+			if first then
+				local here = false
+				for _, t in ipairs(first) do if before(S)[t] then here = true end end
+				if not here then
+					at = nil
+					for _, t in ipairs(first) do
+						if before(t)[S] and (not at or before(at)[t]) then at = t end
+					end
+				end
+			end
+			local earlier = at and red_only(at) and #own > 0
+			for _, t in ipairs(own) do
+				if not (before(t)[at or ""] and t ~= at) then earlier = false end
+			end
+			if earlier then
+				for _, t in ipairs(own) do
+					local effects = data.raw.technology[t].effects
+					for i = #effects, 1, -1 do
+						if effects[i].type == "unlock-recipe" and effects[i].recipe == name then table.remove(effects, i) end
+					end
+				end
+				fork_add_unlock(at, name)
+				moved[#moved + 1] = name .. "@" .. at
+				--- the furnace smelting of its product
+				local product = r.results[1].name
+				for sname, sr in pairs(data.raw.recipe) do
+					if not sr.hidden and #(sr.ingredients or {}) == 1 and sr.ingredients[1].name == product
+						and fork_has_category(sr, "smelting") then
+						local stechs = techs_of[sname] or {}
+						local later = next(stechs) ~= nil
+						for t in pairs(stechs) do if not before(t)[at] then later = false end end
+						if later and not stechs[at] then
+							for t in pairs(stechs) do
+								local effects = data.raw.technology[t].effects
+								for i = #effects, 1, -1 do
+									if effects[i].type == "unlock-recipe" and effects[i].recipe == sname then table.remove(effects, i) end
+								end
+							end
+							fork_add_unlock(at, sname)
+							smelters = smelters + 1
+							log("FORK-STEAM: " .. sname .. " moves to " .. at .. " with " .. name .. " (issue #571)")
+						end
+					end
+				end
+			end
+		end
+	end
+	log("FORK-STEAM: " .. #moved .. " steam macerator copies of ore forms unlocked in the steam age, " .. smelters
+		.. " smelting recipes with them (issue #571): " .. table.concat(moved, ", "))
+end
+
+
 
 --------------------------------------------------------------------------------
 --- 2n) THE ORE MACHINES AS FURNACES (issue #560, phase 1 of the test "GT machines without a recipe")

@@ -1563,6 +1563,48 @@ def check_unresearchable(m):
     return out
 
 
+STEAM_ORE_REQUIRED = ("steam-crushed-copper", "steam-crushed-iron", "steam-macerating-raw-tin")
+
+
+def check_steam_ores(m, sec):
+    """Issue #571 (prototypes/101-fork-machines.lua, fork_steam_ore_unlocks): the steam macerator doubles ores in the steam
+    age. Every steam macerator copy whose one input is a raw ore there from the start (Nauvis' map veins) comes with a
+    technology of no higher science than the Steam Macerator's (FORK_STEAM_ORE_TECH), unless it is in the allow-list
+    FORK_STEAM_ORE_LATE with its reason; the copper, iron and tin copies must be unlocked by a red-only researchable
+    technology. Returns (info line, problems)."""
+    rows = sec.get("STEAMORE", [])
+    tech = next((r[1] for r in rows if r[0] == "tech" and len(r) > 1), None)
+    allow = {r[1]: r[2] for r in rows if r[0] == "late" and len(r) > 2}
+    if not tech or tech not in m.T:
+        return "skipped (no FORK_STEAM_ORE_TECH)", []
+    base_sci = set(m.T[tech]["sci"])
+    by = {}
+    for t, v in m.T.items():
+        if v["en"]:
+            for r in v["eff"]:
+                by.setdefault(r, []).append(t)
+    problems, n = [], 0
+    for r, v in sorted(m.R.items()):
+        if v["cat"] != "steam-macerator-recipes" or v["hidden"] or len(v["ing"]) != 1:
+            continue
+        item = v["ing"][0]
+        if not item.startswith("raw-") or item not in m.base:
+            continue
+        n += 1
+        techs = by.get(r, [])
+        late = [t for t in techs if set(m.T[t]["sci"]) - base_sci]
+        if techs and len(late) == len(techs) and r not in allow:
+            problems.append(f"{r}: {item} is there from the start, but the recipe comes with {', '.join(sorted(techs))}, a "
+                            f"higher science than {tech} (or add it to FORK_STEAM_ORE_LATE with its reason)")
+    for r in STEAM_ORE_REQUIRED:
+        red = [t for t in by.get(r, []) if t in m.researched and set(m.T[t]["sci"]) <= {"automation-science-pack"}]
+        if not red:
+            problems.append(f"{r}: not unlocked by a researchable red-only technology")
+    stale = [f"FORK_STEAM_ORE_LATE: {r} is no steam copy of a start ore that comes late (remove the entry)" for r in allow
+             if r not in m.R]
+    return f"{n} steam macerator copies of start ores, {len(allow)} late on purpose (FORK_STEAM_ORE_LATE)", problems + stale
+
+
 def check_required(m):
     out = []
     for r in REQUIRED_RECIPES:
@@ -2078,6 +2120,10 @@ def check(a):
     print(f"\nGT's ore veins (issue #496): {mixes_info}")
     report("ores of GT's veins on Gregtorio's surfaces without a raw ore and its chain (prototypes/165-fork-ore-veins.lua)",
            ore_mixes)
+    steam_info, steam_ores = check_steam_ores(m, sec)
+    print(f"\nsteam macerator ore doubling (issue #571): {steam_info}")
+    report("steam macerator copies of start ores that come after the steam age (prototypes/101-fork-machines.lua)",
+           steam_ores)
     classic_info, classic_veins = check_classic_veins(m, sec)
     print(f"\nclassic vein recipes (issue #563): {classic_info}")
     report("placed veins without their classic vein recipe and twins, or with other ores (prototypes/166-fork-classic-veins.lua)",
@@ -2143,7 +2189,7 @@ def check(a):
               or new_drafts or fluid_problems or locked or one_pack or fluid_steps or table_only or me_recipes or me_tab
               or extractor_split or ore_mixes or ore_chain or ore_baths or ore_o34 or ore_hammer
               or circuit_icons or pgm_dusts or recycling or names or gaps or tree or vanilla or lenses or mine_twins
-              or unplaceable or stale_unlocks or removed_keys or trigger_only or classic_veins)
+              or unplaceable or stale_unlocks or removed_keys or trigger_only or classic_veins or steam_ores)
     print("\nRESULT:", "OK" if ok else "PROBLEMS FOUND")
     return 0 if ok else 1
 
