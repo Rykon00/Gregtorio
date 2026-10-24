@@ -181,8 +181,10 @@ end
 --- Issue #91: an update that adds recipes to technologies (or moves them) reaches existing saves through the
 --- technology effect reset of Gregtorio's on_configuration_changed. The old save researches these technologies (and
 --- their prerequisites); after the update every recipe that a researched technology unlocks must be enabled.
+--- (issue #569: galena, invar and rubber need a reach technology since 0.5.6, which a save of 0.5.5 lacks)
 local TT_TECHS = { "steam-compressor", "extruder", "end-steel", "alloy-blast-smelter", "industrial-mixer",
-	"tier-three-microminers", "naquadah-processing", "uv-multiblocks", "osmium" }
+	"tier-three-microminers", "naquadah-processing", "uv-multiblocks", "osmium", "galena", "invar", "rubber" }
+local TT_REACH = { ["reach-the-nether"] = true, ["reach-the-twilight-forest"] = true, ["reach-the-end"] = true }
 local TT_CHECK_TICK = 60
 
 local function setup_techs()
@@ -209,6 +211,12 @@ local function check_techs()
 	for name, t in pairs(force.technologies) do
 		if t.researched then
 			techs = techs + 1
+			--- issue #569: a researched technology has its reach technologies researched
+			for p in pairs(t.prerequisites) do
+				if TT_REACH[p] and not force.technologies[p].researched then
+					problems[#problems + 1] = "the researched technology " .. name .. " needs " .. p .. ", which is not researched"
+				end
+			end
 			for _, e in pairs(t.prototype.effects) do
 				if e.type == "unlock-recipe" then
 					local r = force.recipes[e.recipe]
@@ -307,6 +315,9 @@ local RM_MACHINES = {
 	{ "manual-mine", "mining-tetrahedrite-vein", nil, "dimension-mine", nil, nil, { "mining-tetrahedrite-vein", "dimension-mine" } },
 	-- issue #563: 0.5.5's chalcopyrite vein is GT's Copper: the drill in map-vein mode, mining-copper-vein in classic mode
 	{ "manual-mine", "mining-chalcopyrite-vein", nil, "manual-mine", nil, true, { "mining-copper-vein", "dimension-mine" } },
+	-- issue #569: 0.5.5's galena vein (Galena) is the Twilight Forest's: in map-vein mode its mine loses the recipe, in
+	-- classic mode it runs GT's TFGalena vein, unlocked by Reach the Twilight Forest, which the update researches
+	{ "manual-mine", "mining-galena-vein", nil, "dimension-mine", nil, nil, { "mining-tf-galena-vein", "dimension-mine", true } },
 	-- issue #527: a Manual Mine's recipe that moved to the Dig Site (#499) or needs the Nether (#501) is a placeholder on
 	-- load (JSON), which the migration clears with a message
 	{ "manual-mine", "hunting-blazes", nil, "dimension-mine" },
@@ -419,7 +430,12 @@ local function check_removed()
 	end
 	for _, m in pairs(p.machines or {}) do
 		if classic_mode() and m.classic then
-			m = { entity = m.entity, old = m.old, new = m.classic[1], name = m.classic[2], items = m.items, pos = m.pos }
+			m = { entity = m.entity, old = m.old, new = m.classic[1], name = m.classic[2], items = m.items, pos = m.pos,
+				researched = m.classic[3] }
+			--- issue #569: the mine runs, its recipe is unlocked for the force
+			if m.researched and not game.forces.player.recipes[m.new].enabled then
+				problems[#problems + 1] = "the machine with " .. m.old .. " has " .. m.new .. ", which is not researched"
+			end
 		end
 		--- issue #500: a mine on an Overworld vein became a mining drill at its place
 		local drill = m.drill and m.pos and game.surfaces[1].find_entity(m.name, m.pos)
