@@ -730,6 +730,11 @@ for _, r in pairs({ "luv-alloy-blast-smelter", "luv-cracker", "luv-implosion-com
 	"luv-short-distillation-tower", "luv-tall-distillation-tower", "luv-vacuum-freezer" }) do
 	move_unlock(r, "luv-machines", "luv-energy-hatches")
 end
+--- issue #556: a machine comes with its first recipe: the HV Cracker (and its controller, which only the cracker takes)
+--- with Oil Processing, since 161 sends the heated bauxite slurry of Bauxite Slurry Process to Reach the Moon
+for _, r in pairs({ "cracker-controller", "hv-cracker" }) do
+	move_unlock(r, "bauxite-slurry-process", "oil-processing")
+end
 --- the producer's technology as a prerequisite, where the producer is in another branch of no higher science (the
 --- technology: its new prerequisites; the comment: what the technology's recipes take from them, "machine" for the machine
 --- of a recipe category). Applied here, so the unlocks of 155 and 158 (unlock_after) see them, and once more by
@@ -744,9 +749,15 @@ FORK_UNLOCK_TREE = { prerequisites = {
 	["bio-processors"] = { "qubit-cpus" },   -- qubit-cpu-chip
 	["cetane-boosted-diesel"] = { "implosion-compressor" },   -- nitric-acid
 	["dimensionally-shifted-superfluid"] = { "radox-polymer" },   -- super-heavy-radox (issue #517)
-	["concrete"] = { "automation-2" },   -- machine lv-assembling-machine
+	["concrete"] = { "automation-2", "extractor" },   -- machine lv-assembling-machine; lv-pump (the LV Fluid Extractor, issue #556)
 	["crystal-processors"] = { "advanced-smds" },   -- advanced-smd-capacitor
 	["elevated-rail"] = { "railway" },   -- rail
+	-- issue #556 (the maintainer's decision): the EV to ZPM Dehydrators run the LV to HV dehydrator recipes only (their own
+	-- categories are empty, as in GT++), the first of which come with Hydrazine Rocket Fuels (EV)
+	["ev-chemical-dehydrator"] = { "hydrazine-rocket-fuels" },   -- a recipe for the machine
+	["iv-chemical-dehydrator"] = { "hydrazine-rocket-fuels" },
+	["luv-chemical-dehydrator"] = { "hydrazine-rocket-fuels" },
+	["zpm-chemical-dehydrator"] = { "hydrazine-rocket-fuels" },
 	["ev-energy-hatches"] = { "platinum" },   -- fine-platinum-wire
 	["ev-machines"] = { "nichrome-coils" },   -- nichrome-wire
 	["extreme-entity-crushers"] = { "ev-energy-hatches" },   -- ev-energy-hatch
@@ -782,7 +793,6 @@ FORK_UNLOCK_TREE = { prerequisites = {
 	["niobium-and-tantalum-extraction"] = { "ptfe" },   -- hydrofluoric-acid
 	["niobium-titanium"] = { "titanium" },   -- titanium-ingot
 	["nuclear-fuel-rods"] = { "uranium-processing" },   -- uraninite-dust
-	["oil-processing"] = { "bauxite-slurry-process" },   -- machine hv-cracker
 	["ore-centrifuging"] = { "concrete" },   -- machine lv-fluid-solidifier
 	["ore-crushing"] = { "electrolyzer" },   -- raw-vanadium-magnetite
 	["ore-washing"] = { "automation-2" },   -- lv-conveyor-module
@@ -795,7 +805,7 @@ FORK_UNLOCK_TREE = { prerequisites = {
 	["production-science-pack"] = { "radon" },   -- quantum-eye
 	["qubit-cpus"] = { "iv-energy-hatches" },   -- indium-gallium-phosphide
 	["radar"] = { "circuit-assembler" },   -- brass-rod
-	["reach-the-moon"] = { "ore-drilling-plant-mk1" },   -- machine ore-drilling-plant-mk1 (issue #335: the Moon's twins)
+	["reach-the-moon"] = { "ore-drilling-plant-mk1", "bauxite-slurry-process" },   -- machine ore-drilling-plant-mk1 (issue #335: the Moon's twins); bauxite-slurry (issue #556: before through Oil Processing, whose HV Cracker needed it)
 	["rare-earth-processing"] = { "ore-washing" },   -- rare-earth
 	["rhodium-plated-palladium"] = { "iv-machines" },   -- machine iv-fluid-extractor
 	["rocket-fuel"] = { "implosion-compressor" },   -- ammonia
@@ -849,6 +859,8 @@ FORK_UNLOCK_TREE.apply()
 --- issue #337 (163): the miners' twins of the veins, after the moves above and the prerequisites (a vein before the LV
 --- Miner comes with it, a later one with its own technology)
 FORK_ELECTRIC_MINE.unlock_miner_twins()
+--- issue #556 (163): each dimension mine with the first technology of a recipe it runs, or its own when that is later
+FORK_ELECTRIC_MINE.unlock_dimension_mines()
 
 
 
@@ -883,6 +895,25 @@ FORK_UNLOCK_TREE_GAPS = {
 	["uiv-components:umv-circuit"] = FIELD_GENERATOR,
 	["umv-components:uxv-circuit"] = FIELD_GENERATOR,
 }
+
+--- issue #556: machines a technology unlocks before any recipe they can run, kept on purpose: "<technology>:<machine>" ->
+--- reason; devcheck fails for any other such machine and for an entry that matches nothing
+local NEXT_TECH = "the machine's own technology; its first recipes come with the technology right after it, "
+FORK_MACHINES_BEFORE_RECIPES = {
+	["assembly-line:luv-assembly-line"] = NEXT_TECH .. "LuV Components (GT: the assembly line makes the LuV parts)",
+	["fusion-reactor-mk1:fusion-reactor-mk1"] = NEXT_TECH .. "Fusion Plasmas Mk1",
+	["godforge:godforge"] = NEXT_TECH .. "the godforge's plasma module",
+	["nano-forge:nano-forge"] = NEXT_TECH .. "Nano Forge Tier 2 (neutronium nanites)",
+	["space-elevator-assembler-module-mk1:space-elevator-assembler-module-mk1"] = NEXT_TECH .. "ME Storage Singularity",
+	["mv-machines:mv-rock-crusher"] = "a tier machine comes with its tier's Machines technology like the others of the tier; "
+		.. "it runs the LV Rock Crusher's recipe, which comes with Rock Crusher (LV)",
+}
+for _, t in pairs({ "mv", "hv", "ev", "iv", "luv", "zpm", "uv", "uhv", "uev", "uiv", "umv", "uxv", "max" }) do
+	for _, m in pairs({ "brewery", "fermenter" }) do
+		FORK_MACHINES_BEFORE_RECIPES[t .. "-machines:" .. t .. "-" .. m] = "a tier machine comes with its tier's Machines "
+			.. "technology like the others of the tier; it runs the LV " .. m .. "'s recipes, which come with Fermentation (LV, 164)"
+	end
+end
 
 FORK_RECIPES_LOCKED = {
 	["calcium"] = "upstream placeholder without ingredients (an item from nothing); calcium comes from fluorspar",

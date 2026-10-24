@@ -667,8 +667,8 @@ data.raw["assembling-machine"]["lv-autoclave"].next_upgrade = "mv-autoclave"
 ---        so no extruder recipe of the mod is LV; the LV extruder gets GT's one LV recipe of an item the mod has, the
 ---        aluminium rod (2 per ingot, 10 s, 2 x 15 EU/t, ProcessingShaping.java:283-290), and comes with it (Aluminium);
 ---      * laser engraver: the chipped -> flawed gem step (LV, ProcessingGem.java:313-318; 155's ENGRAVE) and the ULPIC
----        wafer from a silicon wafer (LV, LaserEngraverRecipes.java:362-367); the engraver comes with its emitter
----        (Circuit Assembler);
+---        wafer from a silicon wafer (LV, LaserEngraverRecipes.java:362-367); the engraver came with its emitter
+---        (Circuit Assembler), since issue #556 with MV Machines, where its first recipes are;
 ---      * the generator burns the combustion fuel cells; it comes with the first one of LV, the Bio Diesel Cell
 ---        (Fermentation).
 ---    Sprites: tools/gen_sprites.py (lv_from_mv: the MV pictures in the LV casing colours; the LV extruder and generator
@@ -723,7 +723,8 @@ create_item{
 	stack_size = 10,
 }
 data.raw["assembling-machine"]["lv-laser-engraver"].next_upgrade = "mv-laser-engraver"
-fork_add_unlock("circuit-assembler", "lv-laser-engraver")
+--- (issue #556, the maintainer's decision: with MV Machines, its first recipes; the gems of the LV engravings come at MV)
+fork_add_unlock("mv-machines", "lv-laser-engraver")
 fork_set_category(data.raw.recipe["ulpic-wafer-sw"], "lv-laser-engraver-recipes")
 
 create_burner_generator{

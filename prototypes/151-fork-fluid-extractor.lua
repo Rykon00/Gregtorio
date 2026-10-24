@@ -131,6 +131,18 @@ for _, t in ipairs(TIERS) do
 	end
 end
 
+--- issue #556: a machine comes with its first recipe; no LV fluid recipe comes before Concrete (the tin and red alloy melts,
+--- 142), so the LV Fluid Extractor comes with Concrete, not with Extractor (a prerequisite of Concrete for the LV pump)
+do
+	local ext = data.raw.technology["extractor"]
+	local keep = {}
+	for _, e in pairs(ext.effects) do
+		if not (e.type == "unlock-recipe" and e.recipe == "lv-fluid-extractor") then keep[#keep + 1] = e end
+	end
+	ext.effects = keep
+	fork_add_unlock("concrete", "lv-fluid-extractor")
+end
+
 --- The Steam Extractor ran the LV fluid recipes before, so a technology could unlock a melt without leading to an
 --- electric extractor. Such a technology gets the LV Fluid Extractor's technology as a prerequisite (concrete, galena,
 --- invar and gas-turbine: their melts and wood tar; the parts of the machine, the LV pump, come with that technology).

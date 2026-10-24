@@ -125,6 +125,13 @@ local ut = {}
 for key, reason in pairs(FORK_UNLOCK_TREE_GAPS or {}) do ut[#ut + 1] = key .. "\t" .. reason end
 section("UNLOCKTREEOK", ut)
 
+--- Issue #556: machines a technology unlocks before any recipe they can run, kept on purpose
+--- (FORK_MACHINES_BEFORE_RECIPES in prototypes/142-fork-recipe-unlocks.lua, "<technology>:<machine>" -> reason; absent in
+--- older versions)
+local me = {}
+for key, reason in pairs(FORK_MACHINES_BEFORE_RECIPES or {}) do me[#me + 1] = key .. "\t" .. reason end
+section("MACHINEEARLYOK", me)
+
 --- Issue #126: the recipes of items only the crafting table, the ME Molecular Assembler or the hand can make, on purpose
 --- (FORK_RECIPES_TABLE_ONLY in prototypes/148-fork-gtnh-table-items.lua; absent in older versions)
 local tk = {}
