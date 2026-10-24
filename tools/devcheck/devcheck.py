@@ -1638,7 +1638,7 @@ def check_unlock_tree(m, sec):
     the start or unlocked by T or a technology in T's prerequisite closure, or X is a raw resource (mining, offshore,
     the burnt result of a fuel that is there); the recipe's category needs a machine whose item is made that way (the
     character for hand recipes). A recipe whose products all come from other recipes of that closure is an alternative
-    and passes (as in #237). One row per technology and missing item (for a machine: its item with the nearest
+    and passes (as in #237), unless those recipes need an item the recipe misses (issues #502, #517). One row per technology and missing item (for a machine: its item with the nearest
     producer), naming the nearest producer and its technology; allow-list FORK_UNLOCK_TREE_GAPS
     ("<technology>:<item>" -> reason, section UNLOCKTREEOK; an entry that matches nothing fails). Returns (info line,
     problems, findings as {key: (recipes, nearest)})."""
@@ -1696,7 +1696,8 @@ def check_unlock_tree(m, sec):
         return out
 
     # issue #502: a recipe that needs a missing ore whose nearest producer is a planet's map vein (planet-mining) makes
-    # no alternative: the galena recipes of Galena made each other's products from the same missing ore
+    # no alternative: the galena recipes of Galena made each other's products from the same missing ore; issue #517:
+    # the same for every item the recipe misses
     def other_maker(x, r, rs, lacks=frozenset()):
         return x in m.base or any(p != r and (p in rs or p in start) and not lacks.intersection(R[p]["ing"])
                                   for p in makers.get(x, []))
@@ -1725,7 +1726,7 @@ def check_unlock_tree(m, sec):
             if not any(has_machine(c, have) for c in v["cats"]):
                 near = nearest(machine_items(v["cat"]))
                 miss.append((near[1] if near else "<machine for " + v["cat"] + ">", near))
-            lacks = {x for x, near in miss if near and near[2].startswith("planet-mining:")}
+            lacks = {x for x, _ in miss}
             if not miss or all(other_maker(x, r, rs, lacks) for x in v["res"]):
                 continue
             n_recipes += 1
