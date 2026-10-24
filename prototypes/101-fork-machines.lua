@@ -794,9 +794,10 @@ FORK_STEAM_MACHINES = { macerator = { "steam-macerator" } }   -- (the high press
 --- (ProcessingOreSmelting.java). The copies of the ore form recipes (input a raw, crushed, purified or centrifuged ore)
 --- come with the later of the technology Steam Macerator and the first technology that makes their input: Steam
 --- Macerator for an ore of the start (raw -> crushed, then crushed -> impure dust), the reach technology or vein of an
---- ore that comes later. A copy moves only to a technology in the prerequisites of its original's (never later, never
---- into another branch): an ore whose first technology is a sibling of Steam Macerator (the Nether's ores, Reach the
---- Nether) keeps the original's, and so does a purified or centrifuged ore (their washer and centrifuge are LV). The LV
+--- ore that comes later (issue #573: Reach the Nether comes after Steam Macerator, so the Nether's ores come with it). A
+--- copy moves only to a technology in the prerequisites of its original's (never later, never into another branch): an
+--- ore whose first technology is a sibling of Steam Macerator keeps the original's, and so does a purified or centrifuged
+--- ore (their washer and centrifuge are LV). The LV
 --- originals with their byproducts stay with Ore Crushing. #252's rule the other way round: each product of a moved copy
 --- needs a consumer at its new technology or earlier, so a furnace recipe (category smelting) of the product that comes
 --- later moves there too (the impure dust smelting of Ore Crushing), and a copy whose product nothing takes there stays
@@ -809,14 +810,9 @@ FORK_STEAM_MACHINES = { macerator = { "steam-macerator" } }   -- (the high press
 FORK_STEAM_ORE = { tech = "steam-macerator", inputs = { "^raw%-", "^crushed%-", "^purified%-", "^centrifuged%-" } }
 --- steam copies that come with a technology of a higher science than Steam Macerator although their input is there at
 --- its science (devcheck's section STEAMLATEOK; recipe -> reason)
+--- (issue #573, the maintainer's choice: Reach the Nether needs Steam Macerator, so the Nether's ores are no exception any
+--- more; none today)
 FORK_STEAM_LATE = {}
---- the Nether's ores (Reach the Nether, red science, map veins or planet mining) whose raw ore comes later in the
---- Overworld: Reach the Nether and Steam Macerator are siblings and no red technology has both, so the copy keeps its
---- original's technology (issue #573: the maintainer's choice whether that changes)
-for _, ore in pairs({ "barite", "beryllium", "molybdenite", "molybdenum", "powellite", "saltpeter", "sphalerite", "stibnite",
-	"tetrahedrite", "thorium", "wulfenite" }) do
-	FORK_STEAM_LATE["steam-crushed-" .. ore] = "Nether ore: Reach the Nether is a sibling of Steam Macerator"
-end
 
 local function steam_ore_unlocks(copies)
 	local techs = data.raw.technology
