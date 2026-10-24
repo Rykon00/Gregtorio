@@ -433,7 +433,7 @@
 - Steam per second (issue #564): `prototypes/fork-steam-rates.lua` (required from `data-final-fixes.lua` after everything
   that makes or changes the machines) computes, from the prototypes, the steam per second of every boiler (also the
   fixed-recipe lava and solar boilers of 101) and of every machine whose fluid energy source burns steam, and appends it
-  to the entity's description (`[fork-steam]` locale keys; a steam age machine also names its Small Coal Boilers);
+  to the description of the entity and of its items (not for a `boiler`: the game shows its output itself) (`[fork-steam]` locale keys; a steam age machine also names its Small Coal Boilers);
   `FORK_STEAM_RATES` is devcheck's section STEAMRATES, which checks the Small Coal Boiler (1.2), the Large Bronze Boiler
   (160) and the Steam Alloy Smelter (3.2).
 - Generators (`generator` prototypes that burn fluids by fuel value, 136) are demand driven; an

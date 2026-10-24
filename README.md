@@ -10,9 +10,10 @@ default: GT New Horizons' ore veins as ore patches on Nauvis, in the Nether, the
 Manual Mine, the Miners and the Ore Drilling Plants) or *Classic vein recipes* (the ore system up to 0.5.5: no patches,
 the mines run a vein recipe anywhere). `docs/ORE-VEINS.md` describes both and what happens to a save that switches.
 
-**Steam** (issue #564): the descriptions of the boilers and the steam machines say how much steam they make or use per
-second (one steam is GT's 100 L, worth 100 kJ). A steam machine needs about as many boilers as its steam per second
-divided by the boiler's; the steam age machines' descriptions also say how many Small Coal Boilers that is.
+**Steam** (issue #564): a boiler's tooltip shows its steam per second ("Output"); the descriptions of the steam machines
+and of the lava and solar boilers say how much steam they use or make per second (one steam is GT's 100 L, worth
+100 kJ). A steam machine needs about as many boilers as its steam per second divided by the boiler's; the steam age
+machines' descriptions also say how many Small Coal Boilers that is.
 
 | Boiler | Steam/s | | Steam machine | Steam/s while it works |
 |---|---|---|---|---|

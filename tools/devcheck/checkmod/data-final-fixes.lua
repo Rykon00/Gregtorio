@@ -146,10 +146,20 @@ for name, reason in pairs(FORK_STEAM_LATE or {}) do sl[#sl + 1] = name .. "\t" .
 section("STEAMLATEOK", sl)
 
 --- Issue #564: steam per second of the boilers and steam machines (FORK_STEAM_RATES of prototypes/fork-steam-rates.lua);
---- one row per entity: name, kind (boiler, solar, uses), fluid, rate, Small Coal Boilers or "" (absent in older versions)
+--- one row per entity: name, kind (boiler, solar, uses), fluid, rate, Small Coal Boilers or "", then whether the line is in
+--- the entity's description and in its items' ("entity", "items": the ones that lack it) (absent in older versions)
 local sr = {}
+local function has_line(p) return p and serpent.line(p.localised_description or ""):find("fork%-steam%.") ~= nil end
 for name, s in pairs(FORK_STEAM_RATES or {}) do
-	sr[#sr + 1] = table.concat({ name, s.kind, s.fluid, tostring(s.rate), s.boilers and tostring(s.boilers) or "" }, "\t")
+	local e = s.type and data.raw[s.type] and data.raw[s.type][name]
+	local lacking = {}
+	for _, kind in pairs({ "item", "item-with-entity-data" }) do
+		for iname, it in pairs(data.raw[kind] or {}) do
+			if it.place_result == name and s.line ~= false and not has_line(it) then lacking[#lacking + 1] = iname end
+		end
+	end
+	sr[#sr + 1] = table.concat({ name, s.kind, s.fluid, tostring(s.rate), s.boilers and tostring(s.boilers) or "",
+		(s.line == false and "game") or (has_line(e) and "entity") or "-", table.concat(lacking, ",") }, "\t")
 end
 section("STEAMRATES", sr)
 
