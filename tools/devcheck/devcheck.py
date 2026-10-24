@@ -2133,6 +2133,87 @@ def check_steam_ores(m, sec):
     return info, problems
 
 
+NUGGET_ORE_FORMS = r"(crushed|purified|centrifuged)-"   # the ore forms whose furnace recipe gives nuggets (FORK_NUGGET_ORES)
+
+
+def check_nugget_ingots(m, sec):
+    """Issue #586: the furnace smelts an ore form (crushed, purified, centrifuged ore) into nuggets, so each technology
+    that unlocks such a furnace recipe (category smelting, the ore form alone; enabled from the start counts as "start")
+    must have a recipe that turns the nugget into an ingot (it takes the nugget and gives an ingot, not hidden) enabled
+    from the start or unlocked by itself or a technology in its prerequisite closure. A row "<technology>:<nugget>" fails
+    unless it is in the allow-list FORK_NUGGETS_BEFORE_INGOTS of prototypes/101-fork-machines.lua with its reason
+    (section NUGGETINGOTOK; an entry that matches nothing fails too). The other half (nugget_ingot_unlocks of 101): a
+    nugget -> ingot recipe whose technologies all have a prerequisite that already has the nugget and the recipe's mold
+    (its producer's technology) comes later than it must and fails. Returns (info line, problems)."""
+    T, R = m.T, m.R
+    allowed = {r[0]: r[1] if len(r) > 1 else "" for r in sec.get("NUGGETINGOTOK", [])}
+    unl, memo = {}, {}
+    for t, v in T.items():
+        for r in v["eff"]:
+            unl.setdefault(r, []).append(t)
+
+    def closure(t):
+        if t not in memo:
+            memo[t] = frozenset({t}).union(*[closure(p) for p in T[t]["pre"] if p in T])
+        return memo[t]
+
+    def techs(r):
+        return {t for t in unl.get(r, []) if t in m.researched}
+    furnace, producers = {}, {}
+    for r, v in R.items():
+        if v["hidden"] or "recycling" in r:
+            continue
+        for x in v["res"]:
+            producers.setdefault(x, []).append(r)
+        if v["cat"] == "smelting" and len(v["ing"]) == 1 and re.match(NUGGET_ORE_FORMS, v["ing"][0]):
+            for x in v["res"]:
+                if x.endswith("-nugget"):
+                    furnace.setdefault(x, []).append(r)
+    ingots = {}
+    for r, v in R.items():
+        if not v["hidden"] and "recycling" not in r and any(x.endswith("-ingot") for x in v["res"]):
+            for i in set(v["ing"]):
+                if i in furnace:
+                    ingots.setdefault(i, []).append(r)
+    found, late, n = {}, [], 0
+    for nug in sorted(furnace):
+        made = {t for s in furnace[nug] for t in techs(s)}
+        start = any(R[s]["en"] for s in furnace[nug])
+        rs = ingots.get(nug, [])
+        ing_t = {t for r in rs for t in techs(r)}
+        first = sorted(u for u in ing_t if not any(w != u and w in closure(u) for w in ing_t))
+        for f in sorted(made) + (["start"] if start else []):
+            n += 1
+            if any(R[r]["en"] for r in rs) or (f != "start" and ing_t & closure(f)):
+                continue
+            found[f"{f}:{nug}"] = ", ".join(sorted(s for s in furnace[nug] if R[s]["en"] or f in techs(s))) + \
+                f"; nugget -> ingot: {', '.join(sorted(rs)) or 'none'} ({', '.join(first) or 'no technology'})"
+        for r in rs:
+            mold = m.tools.get(r)
+            mold_t = {t for p in producers.get(mold, []) for t in techs(p)} if mold else set()
+            mold_en = not mold or any(R[p]["en"] for p in producers.get(mold, []))
+            us = techs(r)
+            if R[r]["en"] or not us:
+                continue
+
+            def ready(p):
+                return (start or made & closure(p)) and (mold_en or mold_t & closure(p))
+            early = {u: sorted(p for p in closure(u) if p != u and ready(p)) for u in us}
+            if all(early[u] for u in us):
+                u = sorted(us)[0]
+                ps = [p for p in early[u] if not any(q != p and q in closure(p) for q in early[u])]
+                late.append(f"{r}: comes with {', '.join(sorted(us))}, but {', '.join(ps[:3])} already has {nug}"
+                            + (f" and the mold {mold}" if mold else "") + " (nugget_ingot_unlocks of 101)")
+    problems = [f"{k}: {why}" for k, why in sorted(found.items()) if k not in allowed]
+    problems += late
+    problems += [f"{k}: in FORK_NUGGETS_BEFORE_INGOTS but no such technology and nugget (remove the entry)"
+                 for k in sorted(allowed) if k not in found]
+    info = (f"{len(furnace)} nuggets of ore forms' furnace recipes, {n} technologies that make one, {len(found)} before "
+            f"a nugget -> ingot recipe, {sum(1 for k in found if k in allowed)} kept on purpose (FORK_NUGGETS_BEFORE_INGOTS), "
+            f"{len(late)} nugget -> ingot recipes later than the nugget and the mold")
+    return info, problems
+
+
 def check_locked(m, sec):
     """Issue #91: every recipe of Gregtorio (created or changed by it: prototypes.get_history, logged by
     checkmod/control.lua) that is not hidden must be enabled or unlocked by a researchable technology, unless it is in
@@ -2268,6 +2349,12 @@ def check(a):
     report("steam macerator copies later than the steam age that has their input, or test recipes off the steam age "
            "(fix the unlock in steam_ore_unlocks of prototypes/101-fork-machines.lua, or add the copy to "
            "FORK_STEAM_LATE there with its reason)", steam, limit=200)
+    nugget_info, nugget = check_nugget_ingots(m, sec)
+    print(f"\nnuggets of ore forms back into ingots (issue #586): {nugget_info}")
+    report("technologies whose ore form furnace recipes give a nugget that no nugget -> ingot recipe of theirs or of their "
+           "prerequisites takes, or nugget -> ingot recipes later than the nugget and the mold (fix the unlock in "
+           "nugget_ingot_unlocks of prototypes/101-fork-machines.lua, or add <technology>:<nugget> to "
+           "FORK_NUGGETS_BEFORE_INGOTS there with its reason)", nugget, limit=200)
     report("draft recipes outside DRAFTS_OK (issue #39)", new_drafts)
     report("technologies that unlock a recipe the ore chain removes (issue #388: delete the unlock from "
            "prototypes/98-technology.lua or the table of 142; FORK-STALE-UNLOCK in the log)", stale_unlocks)
@@ -2392,7 +2479,7 @@ def check(a):
               or extractor_split or ore_mixes or ore_chain or ore_baths or ore_o34 or ore_hammer
               or circuit_icons or pgm_dusts or recycling or names or gaps or tree or vanilla or lenses or mine_twins
               or unplaceable or stale_unlocks or removed_keys or trigger_only or classic_veins or early or furnace
-              or steam or steam_rates or vein_doc or renames)
+              or steam or nugget or steam_rates or vein_doc or renames)
     print("\nRESULT:", "OK" if ok else "PROBLEMS FOUND")
     return 0 if ok else 1
 

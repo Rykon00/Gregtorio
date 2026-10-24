@@ -145,6 +145,13 @@ local sl = {}
 for name, reason in pairs(FORK_STEAM_LATE or {}) do sl[#sl + 1] = name .. "\t" .. reason end
 section("STEAMLATEOK", sl)
 
+--- Issue #586: technologies that make a nugget by an ore form's furnace recipe before any nugget -> ingot recipe, kept on
+--- purpose (FORK_NUGGETS_BEFORE_INGOTS in prototypes/101-fork-machines.lua, "<technology>:<nugget>" -> reason; absent in
+--- older versions)
+local ni = {}
+for key, reason in pairs(FORK_NUGGETS_BEFORE_INGOTS or {}) do ni[#ni + 1] = key .. "\t" .. reason end
+section("NUGGETINGOTOK", ni)
+
 --- Issue #564: steam per second of the boilers and steam machines (FORK_STEAM_RATES of prototypes/fork-steam-rates.lua);
 --- one row per entity: name, kind (boiler, solar, uses), fluid, rate, Small Coal Boilers or "", then whether the line is in
 --- the entity's description and in its items' ("entity", "items": the ones that lack it) (absent in older versions)
