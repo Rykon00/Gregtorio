@@ -19,6 +19,14 @@
 
 local ME = ME_NETWORK
 
+--- Issue #580: every item that a JSON migration of this mod renames (prototypes/data/item-renames.lua, written by devcheck
+--- from migrations/*.json) is renamed for the ME network too: the engine renames it in inventories only, the network keeps
+--- its contents in script storage and maps them when it loads a save without the old item (me-network issue #503;
+--- ME_NETWORK.replace_item exists since me-network 0.5.10)
+if ME.replace_item then
+	for _, pair in ipairs(require("prototypes.data.item-renames")) do ME.replace_item(pair[1], pair[2]) end
+end
+
 --- Issue #214: every recipe of me-network (ME_NETWORK.recipes) gets its Gregtorio recipe in this file. FORK_ME_RECIPES
 --- holds the names this file gives a recipe (recipe_of and the crafting blocks fill it); a recipe that keeps me-network's
 --- standalone ingredients on purpose goes into the allow-list FORK_ME_RECIPES_STANDALONE with its reason. devcheck fails

@@ -669,6 +669,13 @@ local function setup_patterns(place)
 		inv.destroy()
 		remote.call(NET, "store_in_drive", drive, "iron-plate", 50)
 		remote.call(NET, "store_in_drive", drive, "iron-stick", 50)
+		--- issue #580 (me-network #503): lenses that issue #370 renamed (apatite -> green sapphire, lapis -> sapphire) in the
+		--- network: its storage keeps them under their old names, which a JSON migration does not reach
+		if prototypes.item["apatite-lens"] and prototypes.item["lapis-lens"] then
+			remote.call(NET, "store_in_drive", drive, "apatite-lens", ME_LENSES[1])
+			remote.call(NET, "store_in_drive", drive, "lapis-lens", ME_LENSES[2])
+			storage.me_lenses = { drive = drive }
+		end
 		local ctrl = game.surfaces[1].find_entity("me-network-controller", { 6, Y })
 		local members = { ctrl, drive, p, game.surfaces[1].find_entity("me-pattern-provider", PT_PROVIDER_A) }
 		for _, c in pairs(cpus) do members[#members + 1] = c end
@@ -698,6 +705,50 @@ local function setup_patterns(place)
 		storage.job.maintainer = ok and m or nil
 		log("DEVCHECK-MIGRATE-SETUP-MAINTAINER " .. (ok and "ok" or "failed"))
 	end
+end
+
+--- issue #580: the lenses of the old save are green sapphire and sapphire lenses in the network now (ME_NETWORK.replace_item
+--- with prototypes/data/item-renames.lua), none under the old names, and a circuit interface built on it writes their signals
+--- (the crash of me-network #503 was the first write of one)
+ME_LENSES = { 7, 3 }
+local function check_me_lenses()
+	local st = storage.me_lenses
+	if not st then
+		log("DEVCHECK-MIGRATE-MELENSES skipped (no apatite or lapis lens in this version, or no cable network)")
+		return
+	end
+	local problems = {}
+	local function expect(ok, what) if not ok then problems[#problems + 1] = what end end
+	local d = st.drive
+	local contents = d.valid and remote.call(NET, "contents", d) or {}
+	local old = {}
+	for key, n in pairs(contents) do
+		local name = key:match("^[^@#]*")
+		if name == "apatite-lens" or name == "lapis-lens" then old[#old + 1] = key .. " " .. n end
+	end
+	expect(#old == 0, "the network still holds the old lenses: " .. table.concat(old, ", "))
+	expect(contents["green-sapphire-lens"] == ME_LENSES[1] and contents["sapphire-lens"] == ME_LENSES[2],
+		"green sapphire and sapphire lenses in the network: " .. tostring(contents["green-sapphire-lens"]) .. ", "
+		.. tostring(contents["sapphire-lens"]) .. " (want " .. ME_LENSES[1] .. ", " .. ME_LENSES[2] .. ")")
+	local s, ci = d.surface, nil
+	for _, off in ipairs({ { 0, 1 }, { 0, -1 }, { 1, 0 }, { -1, 0 } }) do
+		local pos = { d.position.x + off[1], d.position.y + off[2] }
+		if s.can_place_entity{ name = "me-circuit-interface", position = pos, force = "player" } then
+			ci = s.create_entity{ name = "me-circuit-interface", position = pos, force = "player", raise_built = true }
+			break
+		end
+	end
+	local info = ci and remote.call("gregtorio-me-circuit", "get_circuit", ci)
+	local lens
+	for _, f in pairs(ci and ci.get_or_create_control_behavior().get_section(1).filters or {}) do
+		if f.value and f.value.name == "green-sapphire-lens" then lens = f.min end
+	end
+	expect(info and info.signals and info.signals > 0 and lens == ME_LENSES[1], "a circuit interface built next to the drive: "
+		.. serpent.line(info) .. ", its green sapphire lens signal " .. tostring(lens))
+	for _, p in pairs(problems) do log("DEVCHECK-MIGRATE-FAIL ME lenses: " .. p) end
+	log("DEVCHECK-MIGRATE-MELENSES " .. (#problems == 0 and "ok" or "failed") .. " (" .. ME_LENSES[1] .. " apatite and "
+		.. ME_LENSES[2] .. " lapis lenses of the old save are green sapphire and sapphire lenses in the network, a circuit "
+		.. "interface built on it writes their signals)")
 end
 
 local function check_job()
@@ -2030,6 +2081,7 @@ script.on_nth_tick(30, function(event)
 	check_power()
 	check_patterns()
 	check_items()
+	check_me_lenses()
 	if storage.state ~= "ready" then
 		log("DEVCHECK-MIGRATE-FLUIDS " .. (storage.state == "skipped" and "skipped" or "failed (" .. tostring(storage.state) .. ")"))
 		return
