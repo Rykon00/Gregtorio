@@ -2,14 +2,15 @@
   "save": "menu-simulations/gregtech-steam-age.zip",
   "rebuilt_from": "d6296dee",
   "made_with": "v0.5.8:v0.5.8",
-  "margin": 0,
+  "margin": 1,
   "chunks": {
     "before": 511,
-    "kept": 29
+    "kept": 59
   },
+  "players_removed": 1,
   "size": {
     "before": 7092364,
-    "after": 692947
+    "after": 737751
   },
   "entities": {
     "burner-inserter": 1093,

@@ -21,13 +21,15 @@ if not simulations then return end
 -- these (end of this section).
 
 -- The steam age, built in the map editor by achilles155: coal boilers, steam macerators, forge hammers, alloy smelters,
--- furnaces and crafting tables on one bus. The camera looks at the bus junction east of the forge hammers (the save's
--- player-built entities span -91,-78 to 126,68; zoom 1 shows 60 x 34 tiles at 1920 x 1080). `update` keeps the
--- machines near the camera busy: once a second it tops up the fuel of a burner that burnt its last item, empties a
--- crafting machine whose output is full and gives a crafting machine short of its ingredients one craft's worth (the
--- factory has more forge hammers than its macerators feed). The camera is written into both chunks from `camera`:
+-- furnaces and crafting tables on one bus. The camera looks at the forge hammers, the bus below them and the crafting
+-- tables to the right (the maintainer's pick in issue #599; the save's player-built entities span -91,-78 to 126,68;
+-- zoom 1 shows 60 x 34 tiles at 1920 x 1080, 80 x 45 at 2560 x 1440). `update` keeps the
+-- machines near the camera busy: twice a second it tops up the fuel of a burner that burnt its last item, empties a
+-- crafting machine whose output holds two crafts or more (some forge hammers' output belts are full: they would block)
+-- and gives a crafting machine short of its ingredients one craft's worth (the factory has more forge hammers than its
+-- macerators feed). The camera is written into both chunks from `camera`:
 -- `game.simulation.camera_zoom` can only be written, a read stops the scene (issue #597).
-local camera = { x = 58, y = -3, zoom = 1 }
+local camera = { x = 70, y = -12, zoom = 1 }
 local near = { { camera.x - 48 / camera.zoom, camera.y - 27 / camera.zoom },
 	{ camera.x + 48 / camera.zoom, camera.y + 27 / camera.zoom } }
 simulations.gregtorio_steam_age = {
@@ -43,7 +45,7 @@ simulations.gregtorio_steam_age = {
     game.surfaces.nauvis.daytime = 0
   ]],
 	update = [[
-    if game.tick % 60 ~= 0 then return end
+    if game.tick % 30 ~= 0 then return end
     local crafter = { ["assembling-machine"] = true, furnace = true }
     for _, e in pairs(game.surfaces.nauvis.find_entities_filtered({ force = "player",
       area = ]] .. serpent.line(near, { comment = false }) .. [[,
@@ -53,18 +55,21 @@ simulations.gregtorio_steam_age = {
         burner.inventory.insert({ name = burner.currently_burning.name.name, count = 5 })
       end
       if crafter[e.type] then
+        local recipe = e.get_recipe()
+        if not recipe and e.type == "furnace" and e.previous_recipe then recipe = e.previous_recipe.name end
+        local output, made = e.get_output_inventory(), 0
+        for _, p in pairs(recipe and recipe.products or {}) do
+          if p.type == "item" then made = made + (p.amount or p.amount_max or 1) end
+        end
         local status = e.status
-        if status == defines.entity_status.full_output then
-          e.get_output_inventory().clear()
-        elseif status == defines.entity_status.item_ingredient_shortage or status == defines.entity_status.no_ingredients then
-          local recipe = e.get_recipe()
-          if not recipe and e.type == "furnace" and e.previous_recipe then recipe = e.previous_recipe.name end
-          if recipe then
-            local input = e.get_inventory(defines.inventory.crafter_input)
-            for _, i in pairs(recipe.ingredients) do
-              local missing = i.type == "item" and i.amount - input.get_item_count(i.name) or 0
-              if missing > 0 then input.insert({ name = i.name, count = missing }) end
-            end
+        if status == defines.entity_status.full_output or (made > 0 and output.get_item_count() >= 2 * made) then
+          output.clear()
+        elseif recipe and (status == defines.entity_status.item_ingredient_shortage
+            or status == defines.entity_status.no_ingredients) then
+          local input = e.get_inventory(defines.inventory.crafter_input)
+          for _, i in pairs(recipe.ingredients) do
+            local missing = i.type == "item" and i.amount - input.get_item_count(i.name) or 0
+            if missing > 0 then input.insert({ name = i.name, count = missing }) end
           end
         end
       end

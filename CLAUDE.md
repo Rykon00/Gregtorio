@@ -384,8 +384,9 @@
   Gregtorio's own scenes, every other one is removed once one of Gregtorio's is in the list, and `menusim` fails when
   another is left; it replaced #591's five copies per scene next to Factorio's). A scene's save is changed
   only by `devcheck.py menusim --sim <name> --rebuild` (the headless game with today's mods runs `tools/menusim/resave.lua`:
-  chunks cut to the factory, the builder's blueprint library (the largest part of a map made in the editor) and the replay
-  removed; `--save-from <ref> --made-with <gregtorio ref>:<me-network ref>` starts from the builder's save and compares
+  chunks cut to the factory plus `--margin` chunks (issue #599: 1, a large screen sees past the factory), the builder's
+  blueprint library (the largest part of a map made in the editor), its player (the menu draws a player's GUI over the
+  scene) and the replay removed; `--save-from <ref> --made-with <gregtorio ref>:<me-network ref>` starts from the builder's save and compares
   the entity counts with its own versions), never by hand; it writes `tools/menusim/<name>.json`, whose entity counts
   `menusim` (`--sim own` is part of `all`) checks after every load, with the machines in the camera's view. When a
   change of the game makes the load of a scene lose entities or its machines stop, fix the scene's `init`/`update` or
