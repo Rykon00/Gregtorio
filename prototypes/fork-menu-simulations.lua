@@ -1,5 +1,6 @@
 --- Fork: main menu simulations (PR #65), loaded from data-final-fixes.lua after the vanilla techs are disabled.
---- Issue #588 adds Gregtorio's own scenes (first section). Several vanilla menu simulations call
+--- Issue #588 adds Gregtorio's own scenes (first section); since issue #595 they are the only ones. Several vanilla
+--- menu simulations call
 --- research_all_technologies() and rely on the bonuses it gives:
 --- "nauvis_biter_base_laser_defense" walks a character in power armor through a biter base and survives
 --- on the laser damage (+300 %), laser shooting speed (+220 %) and health (+50) bonuses. Gregtorio disables
@@ -16,9 +17,8 @@ if not simulations then return end
 -- GREGTORIO'S OWN SCENES (issue #588). A scene's save is a map of this mod, saved again by
 -- `devcheck.py menusim --sim <name> --rebuild` with today's mods (tools/menusim/: its chunks cut to the factory, the
 -- builder's blueprint library and the replay removed). The menu loads the save with the mods as they are, runs `init`
--- once and `update` every tick, and loads the save again after `length` ticks. Vanilla's Nauvis scenes stay in the
--- rotation next to these (the maintainer's choice in #588); Gregtorio's are registered more than once (end of this
--- section, issue #591).
+-- once and `update` every tick, and loads the save again after `length` ticks. Since issue #595 the menu shows only
+-- these (end of this section).
 
 -- The steam age, built in the map editor by achilles155: coal boilers, steam macerators, forge hammers, alloy smelters,
 -- furnaces and crafting tables on one bus. The camera looks at the bus junction east of the forge hammers (the save's
@@ -68,20 +68,23 @@ simulations.gregtorio_steam_age = {
   ]],
 }
 
--- Issue #591: the menu picks its next scene at random (main_menu_simulations has no order or priority), so the
--- maintainer's wish "Gregtorio's scenes first" cannot be set; instead every scene of this mod is in the list
--- SCENE_WEIGHT times, as `<name>_copy2` and so on (the steam age: 5 of 39 entries, about every eighth scene).
--- devcheck.py menusim runs a scene once and checks that its copies are the same.
-local SCENE_WEIGHT = 5
-local own = {}
-for name, sim in pairs(simulations) do
-	if type(sim.save) == "string" and sim.save:find("^__gregtorio%-continued__/") then own[name] = sim end
+-- Issue #595, the maintainer's decision: the menu shows only Gregtorio's own scenes, also while there is one (the menu
+-- then plays it in a loop). Every other scene is removed once one of this mod is in the list: Factorio's Nauvis, Space
+-- Age and platform scenes and those of mods whose data stage ran before this file. (It replaces #591, which listed each
+-- Gregtorio scene five times next to Factorio's.) devcheck.py menusim fails when another scene is left.
+local function own_scene(sim)
+	return type(sim.save) == "string" and sim.save:find("^__gregtorio%-continued__/") ~= nil
 end
-for name, sim in pairs(own) do
-	for n = 2, SCENE_WEIGHT do simulations[name .. "_copy" .. n] = table.deepcopy(sim) end
+local has_own = false
+for _, sim in pairs(simulations) do has_own = has_own or own_scene(sim) end
+if has_own then
+	for name, sim in pairs(simulations) do
+		if not own_scene(sim) then simulations[name] = nil end
+	end
 end
 
--- VANILLA SCENES: the bonuses of the disabled techs (PR #65)
+-- VANILLA SCENES: the bonuses of the disabled techs (PR #65). Since issue #595 no vanilla scene is left in the menu;
+-- the code stays for the case that they come back (or a mod adds them again after this file).
 
 -- effect type -> LuaForce field for the plain modifiers
 local FORCE_FIELDS = {
