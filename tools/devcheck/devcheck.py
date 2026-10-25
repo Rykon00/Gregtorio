@@ -3275,7 +3275,7 @@ def menusim_rebuild(a):
     count = ("/sc local by, n = {}, 0 for _, e in pairs(game.surfaces.nauvis.find_entities_filtered({ force = 'player' }))"
              " do if e.type ~= 'character' then by[e.name] = (by[e.name] or 0) + 1 end end"
              " for _ in game.surfaces.nauvis.get_chunks() do n = n + 1 end"
-             " rcon.print(helpers.table_to_json({ entities = by, chunks = n }))")
+             " rcon.print(helpers.table_to_json({ entities = by, chunks = n, players = #game.players }))")
     lua = (MENUSIM_TOOLS / "resave.lua").read_text(encoding="utf-8")
     log, reason, answers = server_session(step, work / "server.log", f"devcheck menusim --rebuild {a.sim}", [
         "/sc rcon.print('ready')",            # (the first Lua command of a session may get the achievements warning)
@@ -3297,16 +3297,19 @@ def menusim_rebuild(a):
         print(f"{n:32} {baseline.get(n, '-') if baseline else '-':>12} {before.get(n, '-'):>8} {after.get(n, '-'):>8}"
               f"{'   LOST' if n in lost else ''}")
     print(f"chunks: {resave['chunks']} -> {resaved['chunks']} (margin {a.margin}); blueprint library records deleted: "
-          f"{resave['blueprint_records']}; replay files left out: {', '.join(REPLAY_FILES)}")
+          f"{resave['blueprint_records']}; players removed: {resave['players']} ({resaved['players']} left); "
+          f"replay files left out: {', '.join(REPLAY_FILES)}")
     print(f"size: {src.stat().st_size / 1e6:.2f} MB -> {out.stat().st_size / 1e6:.2f} MB")
+    if resaved["players"]:
+        lost.append(f"{resaved['players']} players")       # (issue #599: the menu draws a player's GUI over the scene)
     if lost:
-        print("\nRESULT: PROBLEMS FOUND (entities lost; the save was not replaced)")
+        print("\nRESULT: PROBLEMS FOUND (entities lost or players left: " + ", ".join(lost) + "; the save was not replaced)")
         return 1
     shutil.copy2(out, path)
     scene = MENUSIM_TOOLS / f"{a.sim}.json"
     scene.write_text(json.dumps({
         "save": rel, "rebuilt_from": a.save_from or "working copy", "made_with": a.made_with, "margin": a.margin,
-        "chunks": {"before": resave["chunks"], "kept": resaved["chunks"]},
+        "chunks": {"before": resave["chunks"], "kept": resaved["chunks"]}, "players_removed": resave["players"],
         "size": {"before": src.stat().st_size, "after": out.stat().st_size},
         "entities": dict(sorted(after.items()))}, indent=2) + "\n", encoding="utf-8", newline="\n")
     print(f"wrote {rel} and {scene.relative_to(ROOT).as_posix()}\n")

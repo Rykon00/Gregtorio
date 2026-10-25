@@ -8,7 +8,9 @@
 --- Issue #588, for Gregtorio's own scenes (config.expect, from tools/menusim/<name>.json): the entities of the save that
 --- the load lost (FAIL), and every 30 ticks the machines in the camera's view (the init chunk sets the camera; the view
 --- of 1920 x 1080 pixels): FAIL for a machine that runs out of fuel, water or steam or blocks on a full output, and for
---- a scene whose machines in view work less than half as much in its last 5 seconds as in its first.
+--- a scene whose machines in view work less than half as much in its last 5 seconds as in its first. Issue #599: FAIL
+--- when the save has a player (the menu draws its GUI over the scene) or a chunk in the view of a 3840 x 2160 screen is
+--- not generated (the menu shows it black).
 --- config.count_only: only log the counts by name of the player force's entities (DEVCHECK-MENUSIM COUNTS <json>), for
 --- `devcheck.py menusim --rebuild` with the mod versions the save was made with.
 local config = require("config")
@@ -58,6 +60,16 @@ local function start_view(t0)
   local w, h = 30 / z, 16.875 / z
   view = { t0 = t0, area = { { p.x - w, p.y - h }, { p.x + w, p.y + h } }, centre = p, zoom = z,
     first = { 0, 0 }, last = { 0, 0 }, worked = {}, failed = {}, machines = 0, done = false }
+  -- issue #599: the chunks a 3840 x 2160 screen shows must be in the save
+  local surface, missing = game.surfaces[camera_values.camera_surface_index], {}
+  for cx = math.floor((p.x - 2 * w) / 32), math.floor((p.x + 2 * w) / 32) do
+    for cy = math.floor((p.y - 2 * h) / 32), math.floor((p.y + 2 * h) / 32) do
+      if not surface.is_chunk_generated({ cx, cy }) then missing[#missing + 1] = cx .. "," .. cy end
+    end
+  end
+  if #missing > 0 then
+    out("FAIL chunks in the view of a 3840 x 2160 screen are not in the save (black in the menu): " .. table.concat(missing, " "))
+  end
 end
 
 local function sample_view()
@@ -206,7 +218,11 @@ local function start()
   __menusim_camera = camera_stub()
   local init = compile(sim.init, "init")
   update = compile(sim.update, "update")
-  if config.expect then check_entities() end
+  if config.expect then
+    check_entities()
+    -- issue #599: the menu draws a player's GUI (quickbar, shortcut bar) over the scene
+    if #game.players > 0 then out(string.format("FAIL the save has %d players: rebuild it (resave.lua removes them)", #game.players)) end
+  end
   if init then init() end
   if config.expect then start_view(game.tick) end
   if game.finished or game.finished_but_continuing then
