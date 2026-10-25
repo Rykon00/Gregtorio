@@ -16,6 +16,12 @@ local sim = prototypes.mod_data["zz-gregtorio-devcheck-menusim"].data[config.nam
 
 local function out(s) log("DEVCHECK-MENUSIM " .. s) end
 
+-- the camera the chunks set (this mod reads it here; the chunks read it through the stand-in, camera_stub)
+local camera_values
+-- LuaSimulation keys a chunk can write but not read (Factorio 2.1 API): a read stops the scene in the menu (issue #597)
+local WRITE_ONLY = { camera_zoom = true, camera_alt_info = true, camera_player = true,
+  camera_player_cursor_direction = true }
+
 local function player_counts()
   local by = {}
   for _, surface in pairs(game.surfaces) do
@@ -48,7 +54,7 @@ local VIEW_TYPES = { "assembling-machine", "furnace", "boiler", "mining-drill", 
 local view
 
 local function start_view(t0)
-  local p, z = __menusim_camera.camera_position, __menusim_camera.camera_zoom
+  local p, z = camera_values.camera_position, camera_values.camera_zoom
   local w, h = 30 / z, 16.875 / z
   view = { t0 = t0, area = { { p.x - w, p.y - h }, { p.x + w, p.y + h } }, centre = p, zoom = z,
     first = { 0, 0 }, last = { 0, 0 }, worked = {}, failed = {}, machines = 0, done = false }
@@ -57,7 +63,7 @@ end
 local function sample_view()
   local t = game.tick - view.t0
   local working, n, never = 0, 0, 0
-  for _, e in pairs(game.surfaces[__menusim_camera.camera_surface_index].find_entities_filtered({ area = view.area,
+  for _, e in pairs(game.surfaces[camera_values.camera_surface_index].find_entities_filtered({ area = view.area,
       force = "player", type = VIEW_TYPES })) do
     n = n + 1
     local st = STATUS[e.status] or tostring(e.status)
@@ -85,12 +91,15 @@ local function sample_view()
 end
 
 local function camera_stub()
-  local values = { camera_position = { x = 0, y = 0 }, camera_zoom = 1, camera_surface_index = 1 }
+  camera_values = { camera_position = { x = 0, y = 0 }, camera_zoom = 1, camera_surface_index = 1 }
   return setmetatable({}, {
-    __index = values,
+    __index = function(_, k)
+      if WRITE_ONLY[k] then error("LuaSimulation doesn't contain key " .. k .. ".", 2) end
+      return camera_values[k]
+    end,
     __newindex = function(_, k, v)
       if k == "camera_position" then v = { x = v.x or v[1], y = v.y or v[2] } end
-      values[k] = v
+      camera_values[k] = v
     end,
   })
 end
