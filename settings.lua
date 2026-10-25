@@ -24,5 +24,15 @@ data:extend({
 		default_value = "map-veins",
 		allowed_values = { "map-veins", "vein-recipes" },
 		order = "c"
+	},
+	--- Fork: the boiler output (issue #593, prototypes/fork-boiler-output.lua): every steam boiler makes this many times its
+	--- steam per second and burns its fuel as much faster; 1 is GT New Horizons. A list, so the steps stay round numbers
+	{
+		type = "double-setting",
+		name = "gregtorio-continued-boiler-output",
+		setting_type = "startup",
+		default_value = 1,
+		allowed_values = { 1, 1.5, 2, 3, 4, 6, 8, 16 },
+		order = "d"
 	}
 })

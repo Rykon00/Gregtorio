@@ -11,8 +11,9 @@
 ---     source's effectivity) while it works; one of the steam age (its item comes with a technology of red science only,
 ---     or from the start) also says how many Small Coal Boilers that is.
 --- The line goes after the entity's description ("?" keeps the description when it has none). FORK_STEAM_RATES (entity
---- -> { kind, type, fluid, rate, boilers }) is devcheck's section STEAMRATES (with whether the entity's description has the line); devcheck checks the Small Coal Boiler (1.2), the
---- Large Bronze Boiler (160) and the Steam Alloy Smelter (3.2).
+--- -> { kind, type, fluid, rate, boilers, watts }) is devcheck's section STEAMRATES (with whether the entity's description has the line); devcheck checks the Small Coal Boiler (1.2), the
+--- Large Bronze Boiler (160) and the Steam Alloy Smelter (3.2); the boilers' rates times the boiler output setting
+--- (issue #593, prototypes/fork-boiler-output.lua, which runs before this file).
 --------------------------------------------------------------------------------
 
 local STEAM = { steam = true, ["superheated-steam"] = true }
@@ -89,7 +90,9 @@ for name, b in pairs(data.raw.boiler or {}) do
 		local from = input and input.default_temperature or 15
 		local rate = watts / (heat * (b.target_temperature - from))
 		--- (no line: the game shows a boiler's output per second itself, "Generates Steam: Output", checked in game for #564)
-		FORK_STEAM_RATES[name] = { kind = "boiler", type = "boiler", fluid = out.name, rate = rate, line = false }
+		--- (watts: what it burns per second, issue #593's check of the fuel)
+		FORK_STEAM_RATES[name] = { kind = "boiler", type = "boiler", fluid = out.name, rate = rate, line = false,
+			watts = watts }
 	end
 end
 
