@@ -74,7 +74,9 @@ local function names_rows()
 	end
 	--- issue #529: the map generator's controls
 	for _, p in pairs(prototypes.autoplace_control) do
-		row("autoplace-control", p, not get(p, "hidden") and "in the map generator" or nil)
+		--- (issue #574: with its description, which a vein's control must have)
+		row("autoplace-control", p, not get(p, "hidden") and "in the map generator" or nil,
+			helpers.table_to_json({ d = p.localised_description }))
 	end
 	for _, g in pairs(prototypes.item_group) do
 		local shown
@@ -85,14 +87,15 @@ local function names_rows()
 end
 
 --- Issue #336: the player-built entities of this mod (flag player-creation) that give an item when mined, with the items
---- they give and the items that place them; devcheck.py fails for one that no item it gives can place again
+--- they give and the items that place them; devcheck.py fails for one that no item it gives can place again (issue #563:
+--- not a hidden one, the mining drills of the classic ore mode, whose items place the dimension mines)
 --- type, name, mined items, items that place it
 local function placeable_rows()
 	local rows = {}
 	for _, p in pairs(prototypes.entity) do
 		local h = prototypes.get_history(p.type, p.name) or {}
 		local mp = p.mineable_properties
-		if h.created == "gregtorio-continued" and p.flags and p.flags["player-creation"] and mp and mp.minable then
+		if h.created == "gregtorio-continued" and p.flags and p.flags["player-creation"] and mp and mp.minable and not p.hidden then
 			local mined, placers = {}, {}
 			for _, x in pairs(mp.products or {}) do if x.type == "item" then mined[#mined + 1] = x.name end end
 			for _, it in pairs(p.items_to_place_this or {}) do placers[#placers + 1] = it.name end

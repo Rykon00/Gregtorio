@@ -13,7 +13,8 @@ end
 
 --- R recipe category enabled ingredients results hidden hide_from_player_crafting subgroup group
 --- C crafter type categories fluid_in fluid_out
---- I item type place_result | F fluid | T tech prereqs unlocks science trigger enabled
+--- I item type place_result uses | F fluid | T tech prereqs unlocks science trigger enabled
+---   (uses, issue #547: what an item does besides being an ingredient: fuel, tile, equipment, plant)
 --- M resource result results category | O offshore-pump fluid
 local dump = {}
 local function D(...) dump[#dump + 1] = table.concat({ ... }, "\t") end
@@ -49,7 +50,14 @@ for _, t in pairs({ "assembling-machine", "furnace", "rocket-silo", "character" 
 	end
 end
 for t, _ in pairs(defines.prototypes.item) do
-	for n, it in pairs(data.raw[t] or {}) do D("I", n, t, it.place_result or "") end
+	for n, it in pairs(data.raw[t] or {}) do
+		local uses = {}
+		if it.fuel_value and not tostring(it.fuel_value):match("^0*%.?0*%a*$") then uses[#uses + 1] = "fuel" end
+		if it.place_as_tile then uses[#uses + 1] = "tile" end
+		if it.place_as_equipment_result then uses[#uses + 1] = "equipment" end
+		if it.plant_result then uses[#uses + 1] = "plant" end
+		D("I", n, t, it.place_result or "", table.concat(uses, ","))
+	end
 end
 for n, _ in pairs(data.raw.fluid) do D("F", n) end
 for n, tech in pairs(data.raw.technology) do
@@ -117,11 +125,74 @@ local ut = {}
 for key, reason in pairs(FORK_UNLOCK_TREE_GAPS or {}) do ut[#ut + 1] = key .. "\t" .. reason end
 section("UNLOCKTREEOK", ut)
 
+--- Issue #556: machines a technology unlocks before any recipe they can run, kept on purpose
+--- (FORK_MACHINES_BEFORE_RECIPES in prototypes/142-fork-recipe-unlocks.lua, "<technology>:<machine>" -> reason; absent in
+--- older versions)
+local me = {}
+for key, reason in pairs(FORK_MACHINES_BEFORE_RECIPES or {}) do me[#me + 1] = key .. "\t" .. reason end
+section("MACHINEEARLYOK", me)
+
+--- Issue #560: recipes with the same inputs in a furnace machine's categories, kept on purpose (FORK_FURNACE_SAME_INPUTS in
+--- prototypes/101-fork-machines.lua, "<recipe>+<recipe>" -> { wins = <recipe>, reason = ... }; absent in older versions)
+local fs = {}
+for key, v in pairs(FORK_FURNACE_SAME_INPUTS or {}) do fs[#fs + 1] = key .. "\t" .. tostring(v.wins) .. "\t" .. tostring(v.reason) end
+section("FURNACESAMEOK", fs)
+
+--- Issue #571: steam macerator copies that come with a technology of a higher science than Steam Macerator although their
+--- input is there at its science, kept on purpose (FORK_STEAM_LATE in prototypes/101-fork-machines.lua, recipe -> reason;
+--- absent in older versions)
+local sl = {}
+for name, reason in pairs(FORK_STEAM_LATE or {}) do sl[#sl + 1] = name .. "\t" .. reason end
+section("STEAMLATEOK", sl)
+
+--- Issue #586: technologies that make a nugget by an ore form's furnace recipe before any nugget -> ingot recipe, kept on
+--- purpose (FORK_NUGGETS_BEFORE_INGOTS in prototypes/101-fork-machines.lua, "<technology>:<nugget>" -> reason; absent in
+--- older versions)
+local ni = {}
+for key, reason in pairs(FORK_NUGGETS_BEFORE_INGOTS or {}) do ni[#ni + 1] = key .. "\t" .. reason end
+section("NUGGETINGOTOK", ni)
+
+--- Issue #564: steam per second of the boilers and steam machines (FORK_STEAM_RATES of prototypes/fork-steam-rates.lua);
+--- one row per entity: name, kind (boiler, solar, uses), fluid, rate, Small Coal Boilers or "", then whether the line is in
+--- the entity's description and in its items' ("entity", "items": the ones that lack it), then a boiler's watts (issue
+--- #593, "" for the others) (absent in older versions)
+local sr = {}
+local function has_line(p) return p and serpent.line(p.localised_description or ""):find("fork%-steam%.") ~= nil end
+for name, s in pairs(FORK_STEAM_RATES or {}) do
+	local e = s.type and data.raw[s.type] and data.raw[s.type][name]
+	local lacking = {}
+	for _, kind in pairs({ "item", "item-with-entity-data" }) do
+		for iname, it in pairs(data.raw[kind] or {}) do
+			if it.place_result == name and s.line ~= false and not has_line(it) then lacking[#lacking + 1] = iname end
+		end
+	end
+	sr[#sr + 1] = table.concat({ name, s.kind, s.fluid, tostring(s.rate), s.boilers and tostring(s.boilers) or "",
+		(s.line == false and "game") or (has_line(e) and "entity") or "-", table.concat(lacking, ","),
+		s.watts and tostring(s.watts) or "" }, "\t")
+end
+section("STEAMRATES", sr)
+
+--- Issue #593: the boiler output setting (FORK_BOILER_OUTPUT of prototypes/fork-boiler-output.lua): a row with the factor,
+--- then one per entity: name, "changed" or "left", its kind or the reason (absent in older versions)
+local bo = {}
+if FORK_BOILER_OUTPUT then
+	bo[1] = "factor\t" .. tostring(FORK_BOILER_OUTPUT.factor)
+	for name, what in pairs(FORK_BOILER_OUTPUT.changed) do bo[#bo + 1] = name .. "\tchanged\t" .. what end
+	for name, why in pairs(FORK_BOILER_OUTPUT.left_out) do bo[#bo + 1] = name .. "\tleft\t" .. why end
+end
+section("BOILEROUTPUT", bo)
+
 --- Issue #126: the recipes of items only the crafting table, the ME Molecular Assembler or the hand can make, on purpose
 --- (FORK_RECIPES_TABLE_ONLY in prototypes/148-fork-gtnh-table-items.lua; absent in older versions)
 local tk = {}
 for name, reason in pairs(FORK_RECIPES_TABLE_ONLY or {}) do tk[#tk + 1] = name .. "\t" .. reason end
 section("TABLEONLYOK", tk)
+
+--- Issue #547: the items whose only use is a technology's craft-item trigger, on purpose (FORK_TRIGGER_ONLY_ITEMS in
+--- prototypes/100-fork-fixes.lua; absent in older versions)
+local to = {}
+for name, reason in pairs(FORK_TRIGGER_ONLY_ITEMS or {}) do to[#to + 1] = name .. "\t" .. reason end
+section("TRIGGERONLYOK", to)
 
 --- Issue #318: the vanilla recipes without a technology, of items Gregtorio makes, that stay on purpose
 --- (FORK_VANILLA_RECIPES_KEPT in data-final-fixes.lua; absent in older versions)
@@ -157,6 +228,45 @@ end
 for name in pairs(FORK_ELECTRIC_MINE_EXCLUDED or {}) do em_row(name) end
 section("ELECTRICMINE", em)
 
+--- Issue #563: every vein the map places (GT's mixes of FORK_ORE_MIXES on a planet of FORK_ORE_VEINS, not skipped),
+--- read here from the data, not from 166's list, with its classic recipe and twins (prototypes/166-fork-classic-veins.lua)
+--- and the ores the vein holds; one row per mix: name, recipe, twin, miner ("-": none), the vein's ores, the recipe's
+--- results (absent in older versions)
+local cv = {}
+if FORK_ORE_MIXES and FORK_CLASSIC_VEINS then
+	local by_mix = {}
+	for _, v in pairs(FORK_CLASSIC_VEINS.veins) do by_mix[v.mix] = v end
+	for _, m in ipairs(FORK_ORE_MIXES.mixes) do
+		local placed = false
+		for _, d in pairs(m.dimensions) do if FORK_ORE_VEINS.planets[d] then placed = true end end
+		if placed and not (FORK_ORE_MIX_SKIPPED or {})["mix:" .. m.name] then
+			local v = by_mix[m.name] or {}
+			local function have(n) return (n and data.raw.recipe[n]) and n or "-" end
+			local ores, seen = {}, {}
+			for _, role in pairs({ "primary", "secondary", "between", "sporadic" }) do
+				local x = FORK_ORE_VEINS.ore_of(m, role)
+				if x and not seen[x] then seen[x] = true; ores[#ores + 1] = "raw-" .. x end
+			end
+			local res = {}
+			local r = v.recipe and data.raw.recipe[v.recipe]
+			for _, x in pairs(r and r.results or {}) do res[#res + 1] = x.name end
+			cv[#cv + 1] = table.concat({ m.name, have(v.recipe), have(v.twin), have(v.miner), table.concat(ores, ","),
+				table.concat(res, ","), v.kept and "kept" or "" }, "\t")
+		end
+	end
+end
+section("CLASSICVEINS", cv)
+
+--- Issue #574: the placed veins for the vein table of docs/ORE-VEINS.md (FORK_ORE_VEINS.table of 165); one row per vein:
+--- mix, label, planets, primary, secondary, between, sporadic ("" left out), weight, density, size (absent in older
+--- versions)
+local vt = {}
+for _, v in ipairs(FORK_ORE_VEINS and FORK_ORE_VEINS.table or {}) do
+	vt[#vt + 1] = table.concat({ v.mix, v.label, table.concat(v.planets, ","), v.primary, v.secondary, v.between,
+		v.sporadic, tostring(v.weight), tostring(v.density), tostring(v.size) }, "\t")
+end
+section("VEINTABLE", vt)
+
 --- Issue #214: the recipes of me-network (ME_NETWORK.recipes) and which of them prototypes/120-fork-me-network-compat.lua
 --- gives a Gregtorio recipe (FORK_ME_RECIPES) or keeps standalone on purpose (FORK_ME_RECIPES_STANDALONE); one row per
 --- name: name, "me" (a recipe of me-network) or "-", "gregtorio" or "-", the allow-list reason (absent in older versions)
@@ -172,6 +282,36 @@ end
 for _, name in pairs(ME_NETWORK and ME_NETWORK.recipes or {}) do me_row(name) end
 for name in pairs(FORK_ME_RECIPES_STANDALONE or {}) do me_row(name) end
 section("MERECIPES", mr)
+
+--- Issue #519: the ME items (ME_NETWORK.items and Gregtorio's own FORK_ME_TAB_ITEMS) with their subgroup and its item
+--- group, the allow-list FORK_ME_TAB_OUTSIDE, and the Gregtorio recipes of ME items (FORK_ME_RECIPES) that sit in a row
+--- of the tab, with the row of their item; rows "group" name, "item" name subgroup group, "allow" name reason, "recipe"
+--- name subgroup item-subgroup (absent in older versions)
+local function any_item(name)
+	for t in pairs(defines.prototypes.item) do
+		if data.raw[t] and data.raw[t][name] then return data.raw[t][name] end
+	end
+end
+local function group_of(subgroup)
+	local sg = subgroup and data.raw["item-subgroup"][subgroup]
+	return sg and sg.group or "-"
+end
+local mt = { "group\t" .. (ME_NETWORK and ME_NETWORK.GROUP or "-") }
+for _, list in pairs({ ME_NETWORK and ME_NETWORK.items or {}, FORK_ME_TAB_ITEMS or {} }) do
+	for _, name in pairs(list) do
+		local item = any_item(name)
+		if item then mt[#mt + 1] = table.concat({ "item", name, item.subgroup or "-", group_of(item.subgroup) }, "\t") end
+	end
+end
+for name, reason in pairs(FORK_ME_TAB_OUTSIDE or {}) do mt[#mt + 1] = "allow\t" .. name .. "\t" .. reason end
+for name in pairs(FORK_ME_RECIPES or {}) do
+	local r = data.raw.recipe[name]
+	if r and ME_NETWORK and group_of(r.subgroup) == ME_NETWORK.GROUP then
+		local item = any_item(r.main_product or (r.results and r.results[1] and r.results[1].name) or name)
+		mt[#mt + 1] = table.concat({ "recipe", name, r.subgroup, item and item.subgroup or "-" }, "\t")
+	end
+end
+section("METAB", mt)
 
 --- Issue #496: GT's ore mixes (FORK_ORE_MIXES of prototypes/165-fork-ore-veins.lua) with Gregtorio's surfaces, the ores
 --- left out (FORK_ORE_MIX_SKIPPED) and those without an ore chain (FORK_ORE_MIX_NO_CHAIN); rows "surface" dimension,

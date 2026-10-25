@@ -5,11 +5,28 @@
 - Read `CONTRIBUTING.md` and the layout table in `README.md` first.
 - Upstream content lives in `prototypes/0*-*.lua` … `98-technology.lua`; keep changes there minimal. Fork logic lives in
   `prototypes/1xx-fork-*.lua`, loaded at the end of `data.lua` in this order:
-  - 100 fixes
+  - 100 fixes (issue #547: the allow-list `FORK_TRIGGER_ONLY_ITEMS`; devcheck fails for an item whose only use is a
+    technology's craft-item trigger: no recipe or research unit takes it, it places, fuels or plants nothing; issue #555: the torch
+    `gt-torch`, a lamp with a void energy source, always on, walkable, from the recipes `torch` (coal) and
+    `torch-from-charcoal` of the technology Torches (vanilla's `lamp`); vanilla's electric lamp keeps its name Lamp with
+    the LV assembler recipe `small-lamp-lv-assembler` (Automation 2), placed lamps of old saves become torches
+    (`migrations/2026-10-24-issue-555-torch.json`); graphics from `tools/gen_icons.py --drawn`)
   - 101 machines (issue #446: the steam age of GTNH, the high pressure machines, the steam furnace, the lava and solar
     boilers; issue #447: the steam macerator's copies of the LV macerator recipes without byproducts,
-    `fork_steam_categories()` at the end of data-final-fixes.lua; issue #449: the LV combustion generator, extruder and laser
-    engraver, the LV categories run by every MV machine through `fork_lv_machine_categories()` in 199)
+    `fork_steam_categories()` at the end of data-final-fixes.lua; issue #571: its `steam_ore_unlocks()` unlocks the copies of
+    the ore forms with the later of Steam Macerator and the first technology that makes their input (only into the
+    prerequisites of the original's technology, only when something takes each product there) and moves the furnace
+    recipes of their products with them; Steam Macerator needs Steam Forge Hammer (142); devcheck fails for a later copy
+    unless it is in `FORK_STEAM_LATE` (empty: issue #573 made Reach the Nether need Steam Macerator); issue #586: `nugget_ingot_unlocks()` right after it unlocks every `<metal>-ingot-from-nuggets` with the first technology that has its nugget (an ore form's furnace recipe) and its ingot mold (Steel Processing), only into the prerequisites of where it was (GTNH: the steam alloy smelter with the steel ingot mold is the only way, the table recipe is removed); devcheck fails for a technology whose ore form smelting gives a nugget without a nugget -> ingot recipe there or before unless `<technology>:<nugget>` is in `FORK_NUGGETS_BEFORE_INGOTS` with its reason, and for a nugget -> ingot recipe later than its nugget and mold; issue #449: the LV combustion generator, extruder and laser
+    engraver, the LV categories run by every MV machine through `fork_lv_machine_categories()` in 199; issue #560, section
+    2n: every machine whose categories are all of the ore line (macerator, ore washer, thermal centrifuge, centrifuge, the
+    steam macerators' copies) becomes a `furnace` that picks its recipe from its input, by `fork_furnace_machines()` at the
+    end of data-final-fixes.lua after `fork_steam_categories()`, so every file before it sees assembling machines; a
+    furnace takes one input fluid box at most (the inputs are merged) and an item of an item and fluid recipe only with
+    the fluid in it; devcheck fails for two recipes with the same inputs in a furnace machine's categories unless the
+    group is in the allow-list `FORK_FURNACE_SAME_INPUTS` with the recipe that wins, and for a recipe there a furnace
+    cannot run; old saves: the engine deletes a machine whose type changed, so the JSON migration makes them hidden
+    `legacy-<name>` assemblers and `scripts/fork-ore-furnaces.lua` rebuilds them)
   - 102 resources
   - 103 QoL techs (re-gates the vanilla inserter, belt and worker robot techs of issue #29 onto Gregtorio techs, GT
     recipes for bulk/stack inserters and express/turbo belts)
@@ -21,7 +38,10 @@
     their recipes are in the compat file; plan and record: `docs/SPLIT.md`; issue #214: every recipe of
     `ME_NETWORK.recipes` gets a GT recipe there, as in GTNH's AE2 where it has one, registered in `FORK_ME_RECIPES`, and
     devcheck fails for one that keeps me-network's standalone recipe unless it is in the allow-list
-    `FORK_ME_RECIPES_STANDALONE` with its reason)
+    `FORK_ME_RECIPES_STANDALONE` with its reason; issue #580: every item rename of a JSON migration is told to the network
+    with `ME_NETWORK.replace_item`, from `prototypes/data/item-renames.lua`, which `devcheck.py check --item-renames`
+    writes from `migrations/*.json`: after a new item rename in a JSON migration run it, `check` fails until the table
+    matches)
   - 125 LuV endgame (naquadah: upstream's goodgenerator line with GTNH's numbers and missing recipes, issue #205;
     bacterial vat, crystal processors, fusion MK1)
   - 126 ZPM
@@ -81,8 +101,9 @@
     every vein of Ross128b (Reach Ross128) and Ross128ba (Reach Ross128ba, ZPM) with bartworks' ores (155's `NEW_ORES`);
     the Toxic Everglades' veins GTPP0-19 (Reach the Toxic Everglades, LuV) with GT++'s ores, whose dehydrator
     decompositions 161 unlocks through `FORK_ORE_CHAIN.unlock_after_159` (159 makes the dehydrators after 155); Neper's
-    pool for the Void Miner III (dilithium, mysterious crystal, vinteum); loads after 146 and **before** 142 (issue #287: the
-    unlock table of 142 and the ore chains of 155 see the mines; the rules are in 161))
+    pool for the Void Miner III (dilithium, mysterious crystal, vinteum); issue #563: the veins of Nauvis, the Nether and
+    the Twilight Forest that #505 deleted here are 166's generated classic recipes, not 160's; loads after 146 and
+    **before** 142 (issue #287: the unlock table of 142 and the ore chains of 155 see the mines; the rules are in 161))
   - 162 space elevator (issue #301, part 1 of #292's decision: gtnhintergalactic's Space Elevator in GTNH's full scope:
     controller, casings, nanotube spool, cable, motors Mk-I to Mk-V; one 11 x 11 entity per motor tier
     (`space-elevator-mk1` to `-mk5`), the mod data `fork-space-elevator` with each tier's motor tier and module slots for
@@ -111,11 +132,16 @@
     their old names are `mining-drill`s of the map veins (resource category `gt-ore`: Manual Mine burning manual labor,
     7x7; Miners GT's radius 8/16/24 with 9 mining pipes in their recipe; Ore Drilling Plants radius 40/48/64/96, 80 % and
     60 % drain from the Mk III) at today's rates; a vein recipe whose results are all Overworld map ores is hidden with
-    its twins (kept for old saves until V9); hunting, cobblestone and end stone are Dig Site recipes; a drill's fluid box
+    its twins (kept for old saves until V9); hunting, cobblestone and end stone are Dig Site recipes (issue #547: the stone
+    pickaxe's cobblestone `cobblestone-manual-mine-with-stone-pickaxe`, Craft Stone Tools); a drill's fluid box
     only works while its ore needs a fluid, so the plants' Drilling Fluid goes into a hidden storage tank
     `ore-drilling-plant-fluid-input` on their tiles, which `scripts/fork-ore-drills.lua` builds and drains per ore;
     `migrations/2026-10-22-issue-499-dimension-mines.json` renames placed mines of old saves to their dimension mine;
-    loads after 162 and **before** 142)
+    issue #563: `FORK_ELECTRIC_MINE.make_twins(name)` makes the two twins (also of 166's classic recipes); in classic mode
+    (`FORK_CLASSIC_ORES`) the mining drills are hidden, without a recipe, unlock or next upgrade, their items place the
+    dimension mine of their tier, the dimension mines and their technologies take the names and texts of 0.5.5 (Manual
+    Mine, LV-HV Miner, Ore Drilling Plant Mk I-IV, `classic-*` locale keys), and 142 leaves `unlock_dimension_mines` to
+    166; loads after 162 and **before** 142)
   - 142 recipe unlocks (issue #91: every Gregtorio recipe gets a technology from its explicit table `UNLOCKS`, the
     producers GT has and Gregtorio lacked and the component assembly line; a recipe that must stay
     locked goes into the allow-list `FORK_RECIPES_LOCKED` with its reason, devcheck fails otherwise; issue #237: a
@@ -132,7 +158,12 @@
     only when the producer's own chain is late (platinum, a tier's energy hatch, the advanced SMDs) by moving the
     consumer to the producer's technology; `FORK_UNLOCK_TREE.keep` pins recipes of 155/158 that would otherwise land on
     a technology of higher science; `KEEP` pins what the auto-unlock of 199 placed before, so new unlocks do not move
-    it)
+    it; issue #556, the other half of the rule: a machine comes with its first recipe, so devcheck fails for a
+    technology that unlocks a machine before any recipe the machine runs is enabled or unlocked by it or its prerequisites,
+    unless `<technology>:<machine>` is in the allow-list `FORK_MACHINES_BEFORE_RECIPES` with its reason (a machine
+    technology right before its recipes' one, the tier copies of the LV brewery, fermenter and rock crusher); 163's
+    `FORK_ELECTRIC_MINE.unlock_dimension_mines()`, which 142 calls after its moves, unlocks each dimension mine with the
+    first technology of a recipe it runs or its own technology, whichever is later)
   - 143 casting (issue #91: solidifier casts of every form and extractor melts of every ingot from its table `MATERIALS`
     (tier, technology, the colour of a new melt); 199's auto-unlock ignores these recipes (`FORK_CASTING.recipes`), else
     an ingot would count as its own producer; must load before 150, whose molds it needs, and before 196, 198 and 199;
@@ -233,7 +264,8 @@
     before 161)
   - 161 dimension unlocks (issue #287: the unlock rules of 160, `ore_dimension` moves or gates the ore chains of the
     dimensions' ores, the ender air with Radon, black plutonium with the Void Miner II, the bornite chain with
-    Reach Ross128 (issue #293); loads after 159 and before 156)
+    Reach Ross128 (issue #293); issue #563: the same in both ore modes, the chains of the map veins' ores come from 155's
+    `vein_techs` and 166's classic recipes follow them; loads after 159 and before 156)
   - 165 ore veins (plan #494: GTNH's veins as mixed ore patches on the map, the Nether, Twilight Forest and End as
     surfaces; issue #496: `FORK_ORE_MIXES`, GT's 122 ore mixes from `prototypes/data/ore-mixes.lua`, which
     `tools/gen_ore_mixes.py` writes from GT5-Unofficial's `OreMixes.java` (do not edit it), the T0 dimensions that are
@@ -276,11 +308,33 @@
     `planet-mining:<resource>`), so #252's tree rule sees the Nether; issue #502: the Twilight Forest, the hidden planet
     `gt-twilight` (Nauvis' terrain as a dense forest, no biters, no vanilla resources), its 15 veins; 163's
     `FORK_ORE_VEINS.dropped` (the Thaumcraft veins) keeps their ores out of the hide rule; #252's tree rule takes no
-    alternative that needs a missing ore whose nearest producer is `planet-mining`; issue #503: The End, the hidden planet
+    alternative that needs a missing ore whose nearest producer is `planet-mining` (issue #517: no alternative that needs
+    any item the recipe misses); issue #503: The End, the hidden planet
     `gt-end` (own tiles `gt-end-stone` and `gt-end-void`, a copy of out-of-map, placed by `gt_end_land`: the main island
     and the outer islands; its `gt_vein_id` is cut by `gt_end_land`), its 7 veins; issue #505: the vein recipes of Nauvis,
     the Nether and the Twilight Forest are deleted, old saves map them onto 163's placeholders `removed-vein-<planet>-<kind>`
-    (JSON) that `scripts/fork-ore-veins.lua` turns into drills or clears; `docs/ORE-VEINS.md`; loads after 161)
+    (JSON) that `scripts/fork-ore-veins.lua` turns into drills or clears (issue #563: that JSON migration is gone, the
+    engine applied it in classic mode too; the script decides by the ore mode); issue #563: in classic mode the planets
+    get no vein resources, controls or `gt_*` expressions (the prototypes stay for saves that switch), the mod data
+    `fork-ore-veins` names the `mode`, and `FORK_ORE_VEINS.placed` (each placed vein once, with its surfaces),
+    `FORK_ORE_VEINS.ore_of` and `FORK_ORE_VEINS.fill` are 166's input; issue #574: every vein control's description
+    (generated: its ores with icons and layers, GT's weight, density and size, its share of the cells per surface;
+    `[fork-vein]` locale keys), in map-vein mode a raw ore's "Found in" line, the planet icons of gt-nether, gt-twilight and
+    gt-end (`tools/gen_icons.py --drawn`); `FORK_ORE_VEINS.table` is devcheck's section VEINTABLE, `check --vein-table`
+    writes the vein table of `docs/ORE-VEINS.md` and `check` fails when it differs; the names check fails for a vein control
+    without its description; `docs/ORE-VEINS.md`; loads after 161)
+  - 166 classic veins (issue #563, the maintainer's addendum of 2026-10-24: the vein recipes of the classic ore mode,
+    generated from 165's placed veins, never copied from git: one Manual Mine recipe `mining-<GT's mix name in kebab
+    case>-vein` per vein with 163's twins, 64 ores per operation shared out by the expected ore tiles of GT's layers as 165
+    places the vein, 8 or 24 manual labor; a name that is a recipe already keeps that recipe (CopperTin); the stone
+    pickaxe's `mining-iron-vein-with-stone-pickaxe` with Craft Stone Tools; 0.5.5's seven other names (`LEGACY`) as hidden
+    recipes for old saves (mod data `fork-electric-mine`: `classic`, `legacy`); the prototypes exist in both modes and are
+    hidden in map-vein mode (`FORK_CLASSIC_VEINS.hidden`, which 199's auto-unlock skips); in classic mode a vein of the
+    Overworld comes with every first technology that unlocks a recipe taking one of its raw ores (no start recipe; a
+    technology without the iron pickaxe gives way to the pickaxe's), one of the other surfaces with their reach
+    technology, the twins with the first plant's and the LV Miner's technology unless every vein technology is later, then
+    163's `unlock_dimension_mines()`; devcheck fails for a placed vein of `FORK_ORE_MIXES` without its recipe and twins or
+    with other ores (section CLASSICVEINS); `docs/ORE-VEINS.md`; loads after 165)
   - 156 circuit icons (issue #164: the circuit variant recipes up to UV keep the shared tier item and show GT's texture
     of their GTNH item as recipe icon; devcheck fails for a tier circuit recipe without its own icon; issue #450: the ULV
     tier item `ulv-circuit`, which the vacuum tube and NAND chip recipes give and every former user of the two takes, and
@@ -312,7 +366,7 @@
     unlocks count).
   The phase plan is in `docs/ROADMAP.md`. Runtime fork code lives in `scripts/` and is required from `control.lua`
   (`fork-molds.lua`, `fork-victory.lua`, `fork-power.lua`, `fork-space-elevator.lua` (#302), `fork-electric-mine.lua` (#342: a Miner or Ore Drilling Plant that replaces a mine
-  keeps its vein, from 163's mod data `fork-electric-mine`; event driven, `storage.fork_electric_mine`), `fork-portals.lua` (#501: the Nether Portal sends whoever steps onto it to the Nether and back at 1:8, makes the Nether's surface at the first use and the exit portal; #502: the Twilight Portal the same at 1:1 to the Twilight Forest, whose daytime it freezes at dusk; #503: the End Portal to The End's main island (exit portal at the origin) and back to the portal one came through (`storage.fork_portals.came_from`), night frozen; `on_player_changed_position`, remote `fork-portals.travel`, `storage.fork_portals`), `fork-ender.lua` (#504: Ender Chests (linked-container, link_id = the three-colour code) and Ender Tanks (levelled per force and code every 20 ticks) share their contents across surfaces; the code panel is a relative GUI beside the window; `storage.fork_ender`, remote `fork-ender`), `fork-ore-veins.lua` (#497: a chart tag with the vein's name when the chunk of a map vein's centre is charted, `storage.fork_ore_veins`, event driven), `fork-steam-boilers.lua` (#446: the solar boilers of 101 stop at night; every 120 ticks, `storage.fork_solar_boilers`), and `fork-me-handover.lua`: the one-time hand-over of the ME
+  keeps its vein, from 163's mod data `fork-electric-mine`; event driven, `storage.fork_electric_mine`), `fork-portals.lua` (#501: the Nether Portal sends whoever steps onto it to the Nether and back at 1:8, makes the Nether's surface at the first use and the exit portal; #502: the Twilight Portal the same at 1:1 to the Twilight Forest, whose daytime it freezes at dusk; #503: the End Portal to The End's main island (exit portal at the origin) and back to the portal one came through (`storage.fork_portals.came_from`), night frozen; `on_player_changed_position`, remote `fork-portals.travel`, `storage.fork_portals`), `fork-ender.lua` (#504: Ender Chests (linked-container, link_id = the three-colour code) and Ender Tanks (levelled per force and code every 20 ticks) share their contents across surfaces; the code panel is a relative GUI beside the window; `storage.fork_ender`, remote `fork-ender`), `fork-ore-veins.lua` (#497: a chart tag with the vein's name when the chunk of a map vein's centre is charted, `storage.fork_ore_veins`, event driven), `fork-steam-boilers.lua` (#446: the solar boilers of 101 stop at night; every 120 ticks, `storage.fork_solar_boilers`), `fork-ore-furnaces.lua` (#560: the remote `migrate` that rebuilds the ore machines of old saves as furnaces; no events, no state), and `fork-me-handover.lua`: the one-time hand-over of the ME
   state of saves from before issue #83 to me-network through the remote interface `gregtorio-me-handover`, which
   me-network calls in its `on_init`; keep its table list and fingerprint function equal to me-network's
   `scripts/fork-me-handover.lua`). Everything else of the ME network (runtime, graphics, locale, its tests,
@@ -324,7 +378,19 @@
 - `data-final-fixes.lua` disables vanilla techs (`disable_tech`: hidden, no effects). The main menu simulations that call
   `research_all_technologies()` get the bonuses of those techs from `prototypes/fork-menu-simulations.lua` (PR #65: the
   laser defense simulation's character died without them and its script stopped the menu); after changing the disabled
-  techs or the character, run `python tools/devcheck/devcheck.py menusim --sim all --compare`. Its section "VANILLA ITEM
+  techs or the character, run `python tools/devcheck/devcheck.py menusim --sim all --compare`. Issue #588: Gregtorio's
+  own main menu scenes are the first section of that file (`gregtorio_steam_age`, save `menu-simulations/gregtech-steam-age.zip`,
+  built by achilles155; issue #595, the maintainer's decision: the menu shows only
+  Gregtorio's own scenes, every other one is removed once one of Gregtorio's is in the list, and `menusim` fails when
+  another is left; it replaced #591's five copies per scene next to Factorio's). A scene's save is changed
+  only by `devcheck.py menusim --sim <name> --rebuild` (the headless game with today's mods runs `tools/menusim/resave.lua`:
+  chunks cut to the factory plus `--margin` chunks (issue #599: 1, a large screen sees past the factory), the builder's
+  blueprint library (the largest part of a map made in the editor), its player (the menu draws a player's GUI over the
+  scene) and the replay removed; `--save-from <ref> --made-with <gregtorio ref>:<me-network ref>` starts from the builder's save and compares
+  the entity counts with its own versions), never by hand; it writes `tools/menusim/<name>.json`, whose entity counts
+  `menusim` (`--sim own` is part of `all`) checks after every load, with the machines in the camera's view. When a
+  change of the game makes the load of a scene lose entities or its machines stop, fix the scene's `init`/`update` or
+  rebuild its save. The section "VANILLA ITEM
   REMOVAL" deletes vanilla prototypes for good; issue #317's `VANILLA_RECIPES_REMOVED` there holds the vanilla and Space
   Age recipes that no technology unlocks, of items Gregtorio makes its own way. They are deleted with the technology effects
   and tips-and-tricks triggers that name them (a tip's trigger naming a missing recipe fails the load), and logged as `FORK-REMOVED`;
@@ -364,7 +430,35 @@
 - Cheap research: the startup setting `gregtorio-continued-one-pack-research` (default off) makes every technology with
   science packs cost one research unit with one pack of each kind (`prototypes/fork-one-pack-research.lua`, required last
   in `data-final-fixes.lua`, after everything that sets unit counts). `devcheck.py all` loads the mod a second time with
-  it on; `devcheck.py check --set <setting>=true|false` forces any bool startup setting for a run.
+  it on; `devcheck.py check --set <setting>=true|false` forces any bool startup setting for a run (issue #563: any other
+  value a string setting's, also for `runtime` and for `migrate`'s load of the working copy).
+- Ore mode (issue #563): the startup setting `gregtorio-continued-ore-mode` (default `map-veins`; `vein-recipes` is the
+  classic ore system of 0.5.5, `FORK_CLASSIC_ORES` in the data stage, defined at the top of `data.lua`) is chosen per
+  game. `devcheck.py all` loads the mod a second time in classic mode (`check` and `runtime` with
+  `--set gregtorio-continued-ore-mode=vein-recipes`) and then runs `switch`, a map made in one mode and loaded in the
+  other, both ways (`tools/devcheck/switchmod`); every check passes in both modes, the map vein test of `runtime` checks
+  in classic mode that no planet has vein ore. `scripts/fork-ore-veins.lua` notes a save's mode in
+  `storage.fork_ore_veins.mode` (`on_init`, its remote `migrate`, `migrations/2026-10-24-issue-563-ore-mode.lua`) and
+  migrates it in `on_configuration_changed` when the setting changed; a save of 0.5.6 or later has had its mines turned
+  into drills, which classic mode keeps (`docs/ORE-VEINS.md`, "Old saves and switching"); issue #569: a save that
+  researched a technology before its reach technology became its prerequisite gets the reach technology researched
+  (`migrations/2026-10-24-issue-569-reach-techs.lua`; `migrate` checks it, `TT_REACH` of `migratemod/`). The last release with the
+  classic system is v0.5.5 (Factorio 2.0): `migrate --from-ref v0.5.5 --old-me-network v0.5.4 --old-factorio DIR
+  --old-mods DIR` with and without `--set gregtorio-continued-ore-mode=vein-recipes`.
+- Steam per second (issue #564): `prototypes/fork-steam-rates.lua` (required from `data-final-fixes.lua` after everything
+  that makes or changes the machines) computes, from the prototypes, the steam per second of every boiler (also the
+  fixed-recipe lava and solar boilers of 101) and of every machine whose fluid energy source burns steam, and appends it
+  to the description of the entity and of its items (not for a `boiler`: the game shows its output itself) (`[fork-steam]` locale keys; a steam age machine also names its Small Coal Boilers);
+  `FORK_STEAM_RATES` is devcheck's section STEAMRATES, which checks the Small Coal Boiler (1.2), the Large Bronze Boiler
+  (160) and the Steam Alloy Smelter (3.2).
+- Boiler output (issue #593): the startup setting `gregtorio-continued-boiler-output` (a double from the list 1, 1.5, 2,
+  3, 4, 6, 8, 16; default 1, GTNH) makes every steam boiler bigger, not more efficient: `prototypes/fork-boiler-output.lua`
+  (required from `data-final-fixes.lua` before `fork-steam-rates.lua`) multiplies a burner or fluid `boiler`'s
+  `energy_consumption` and the fixed recipes of the lava and solar boilers (steam and fluid ingredients, on 197's grid
+  with `FORK_FLUID_STEPS.round_up`); heat exchangers stay (section BOILEROUTPUT). devcheck's expected boiler rates and
+  watts follow the setting; `devcheck.py all` loads `check` and `runtime` once more with `--set
+  gregtorio-continued-boiler-output=4` (`--set` takes numbers for double and int settings); the runtime's coal boiler and
+  solar boiler tests measure steam per second against the setting. At 16 every fluid box carries the flow (probed).
 - Generators (`generator` prototypes that burn fluids by fuel value, 136) are demand driven; an
   input-output fluid box keeps part of its fluid in the pipeline segment (`get_fluid_count` reports
   only the entity's part; since Factorio 2.1 `get_fluid_segment_fluid` is the whole segment with that part, where 2.0's

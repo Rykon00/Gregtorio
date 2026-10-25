@@ -34,6 +34,17 @@
 --- (DEVCHECK-MIGRATE-ITEMS).
 local F = "gregtorio-me-fluids"
 local NET = "gregtorio-me-network"
+--- issue #552: the migration files of the old save's version (devcheck writes them into old-version.lua): Factorio runs a
+--- migration once per save and marks every one of a new map's version as done, so a check of a migration the old version
+--- has already is skipped
+local ok_old, OLD = pcall(require, "old-version")
+local OLD_MIGRATIONS = ok_old and OLD.migrations or {}
+--- issue #563: the ore mode of the load (the startup setting of the new version; an old version has none: map veins or,
+--- before 0.5.6, the vein recipes it had); a check of the update reads it, its set-up of the old save does not
+local function classic_mode()
+	local ok, s = pcall(function() return settings.startup["gregtorio-continued-ore-mode"] end)
+	return ok and s ~= nil and s.value == "vein-recipes"
+end
 local DRIVE = "me-fluid-drive-1k"
 local Y = 40
 local TOTAL = { water = 40000, chlorine = 10000 }      -- drive 1: 32000 water, drive 2: 8000 water + 10000 chlorine
@@ -170,22 +181,38 @@ end
 --- Issue #91: an update that adds recipes to technologies (or moves them) reaches existing saves through the
 --- technology effect reset of Gregtorio's on_configuration_changed. The old save researches these technologies (and
 --- their prerequisites); after the update every recipe that a researched technology unlocks must be enabled.
+--- (issue #569: galena, invar and rubber need a reach technology since 0.5.6, which a save of 0.5.5 lacks)
 local TT_TECHS = { "steam-compressor", "extruder", "end-steel", "alloy-blast-smelter", "industrial-mixer",
-	"tier-three-microminers", "naquadah-processing", "uv-multiblocks", "osmium" }
+	"tier-three-microminers", "naquadah-processing", "uv-multiblocks", "osmium", "galena", "invar", "rubber" }
+local TT_REACH = { ["reach-the-nether"] = true, ["reach-the-twilight-forest"] = true, ["reach-the-end"] = true }
 local TT_CHECK_TICK = 60
+--- issue #571: a second force of the steam age, which researched Steam Macerator (and its prerequisites of the old
+--- version) but not Ore Crushing: after the update it keeps every recipe it had (the player's force has Ore Crushing)
+local TT_STEAM_FORCE, TT_STEAM_TECHS = "devcheck-steam-age", { "steam-macerator" }
+--- recipes that 0.5.9 moved to a later technology on purpose (in the changelog), so the steam age force loses them
+local TT_STEAM_MOVED = {
+	["dimension-mine"] = true,   -- issue #556: with Primitive Electronic Circuit Assemblies (before: Craft Wooden Tools)
+	["gravel"] = true,           -- issue #560: the forge hammer's, with Steam Forge Hammer (before: Steam Macerator)
+}
 
 local function setup_techs()
-	local force, n = game.forces.player, 0
-	local function research(name)
+	local n = 0
+	local function research(force, name)
 		local t = force.technologies[name]
 		if not t or t.researched then return end
-		for p, _ in pairs(t.prerequisites) do research(p) end
+		for p, _ in pairs(t.prerequisites) do research(force, p) end
 		t.researched = true
 		n = n + 1
 	end
-	for _, name in pairs(TT_TECHS) do research(name) end
+	local force = game.forces.player
+	for _, name in pairs(TT_TECHS) do research(force, name) end
 	storage.tt_enabled = {}
 	for name, r in pairs(force.recipes) do if r.enabled then storage.tt_enabled[name] = true end end
+	local steam = game.forces[TT_STEAM_FORCE] or game.create_force(TT_STEAM_FORCE)
+	for _, name in pairs(TT_STEAM_TECHS) do research(steam, name) end
+	storage.tt_steam_enabled = {}
+	for name, r in pairs(steam.recipes) do if r.enabled then storage.tt_steam_enabled[name] = true end end
+	storage.tt_factorio = script.active_mods.base               -- (issue #584: the Factorio of the old save)
 	log("DEVCHECK-MIGRATE-SETUP-TECHS ok (" .. n .. " technologies researched)")
 end
 
@@ -194,20 +221,73 @@ local function check_techs()
 		log("DEVCHECK-MIGRATE-TECHS skipped")
 		return
 	end
-	local force, problems, recipes, techs, new = game.forces.player, {}, 0, 0, 0
-	for name, t in pairs(force.technologies) do
-		if t.researched then
-			techs = techs + 1
-			for _, e in pairs(t.prototype.effects) do
-				if e.type == "unlock-recipe" then
-					local r = force.recipes[e.recipe]
-					recipes = recipes + 1
-					if not r.enabled then
-						problems[#problems + 1] = e.recipe .. " of the researched technology " .. name .. " is not enabled"
-					elseif not storage.tt_enabled[e.recipe] then
-						new = new + 1
+	local problems, recipes, techs, new = {}, 0, 0, 0
+	local function check(force, enabled, who)
+		for name, t in pairs(force.technologies) do
+			if t.researched then
+				techs = techs + 1
+				--- issue #569: a researched technology has its reach technologies researched
+				for p in pairs(t.prerequisites) do
+					if TT_REACH[p] and not force.technologies[p].researched then
+						problems[#problems + 1] = who .. "the researched technology " .. name .. " needs " .. p .. ", which is not researched"
 					end
 				end
+				for _, e in pairs(t.prototype.effects) do
+					if e.type == "unlock-recipe" then
+						local r = force.recipes[e.recipe]
+						recipes = recipes + 1
+						if not r.enabled then
+							problems[#problems + 1] = who .. e.recipe .. " of the researched technology " .. name .. " is not enabled"
+						elseif not enabled[e.recipe] then
+							new = new + 1
+						end
+					end
+				end
+			end
+		end
+	end
+	check(game.forces.player, storage.tt_enabled, "")
+	--- issue #571: the steam age force keeps every recipe it had and gets the steam macerator's ore recipes
+	local steam = storage.tt_steam_enabled and game.forces[TT_STEAM_FORCE]
+	local later, recycling, veins = {}, 0, 0
+	if steam then
+		check(steam, storage.tt_steam_enabled, TT_STEAM_FORCE .. ": ")
+		--- issue #584: recipes the force loses by the update on purpose, not by Gregtorio's unlocks. A save of Factorio 2.0 had
+		--- every recycling recipe enabled; 2.1's recycler unlocks them with its technology Recycling (hidden effects), which
+		--- the steam age force has not researched. In map-vein mode (issue #563) the classic vein recipes are hidden and never
+		--- unlocked (mod-data fork-electric-mine: classic, legacy); in classic mode a vein recipe of 0.5.5 whose name is no
+		--- generated one (legacy) is a hidden copy too, and its generated recipe must be enabled instead.
+		local function minor(v) return (v or ""):match("^(%d+%.%d+)") end
+		local tech = steam.technologies["recycling"]
+		if minor(storage.tt_factorio) ~= minor(script.active_mods.base) and tech and not tech.researched then
+			for _, e in pairs(tech.prototype.effects) do
+				if e.type == "unlock-recipe" then later[e.recipe] = "recycling" end
+			end
+		end
+		local ok, em = pcall(function() return prototypes.mod_data["fork-electric-mine"] end)
+		local legacy = ok and em and em.data.legacy or {}
+		if ok and em and not classic_mode() then
+			for _, list in pairs({ em.data.classic or {}, legacy }) do
+				for name in pairs(list) do later[name] = "vein" end
+			end
+		end
+		for name in pairs(storage.tt_steam_enabled) do
+			if steam.recipes[name] and not steam.recipes[name].enabled and not TT_STEAM_MOVED[name] then
+				local gen = classic_mode() and legacy[name]
+				if later[name] == "recycling" then recycling = recycling + 1
+				elseif later[name] == "vein" then veins = veins + 1
+				elseif gen and steam.recipes[gen] and steam.recipes[gen].enabled then veins = veins + 1
+				elseif gen then
+					problems[#problems + 1] = TT_STEAM_FORCE .. ": " .. name .. " was enabled before the update, its generated recipe "
+						.. gen .. " is not now"
+				else
+					problems[#problems + 1] = TT_STEAM_FORCE .. ": " .. name .. " was enabled before the update and is not now"
+				end
+			end
+		end
+		for _, name in pairs({ "steam-crushed-copper", "steam-impure-copper-dust", "impure-copper-dust-smelter" }) do
+			if steam.recipes[name] and not steam.recipes[name].enabled then
+				problems[#problems + 1] = TT_STEAM_FORCE .. ": " .. name .. " is not enabled with Steam Macerator"
 			end
 		end
 	end
@@ -216,7 +296,10 @@ local function check_techs()
 		log("DEVCHECK-MIGRATE-FAIL techs: " .. m)
 	end
 	log("DEVCHECK-MIGRATE-TECHS " .. (#problems == 0 and "ok" or "failed") .. " (" .. recipes .. " recipes of " .. techs
-		.. " researched technologies enabled, " .. new .. " of them new; " .. #problems .. " not enabled)")
+		.. " researched technologies enabled, " .. new .. " of them new; " .. #problems .. " not enabled"
+		.. ((recycling + veins > 0) and ("; the steam age force lost " .. recycling .. " recycling recipes of Factorio "
+			.. tostring(storage.tt_factorio) .. " (2.1: with Recycling) and " .. veins .. " vein recipes of 0.5.5 (hidden in "
+			.. "map-vein mode, a renamed one replaced), as the update does") or "") .. ")")
 end
 
 --- Issues #98 and #96: fluids and items that an update removes are mapped to their nearest counterpart by the
@@ -238,7 +321,11 @@ local RM_ITEMS = { ["ammonia-hexachloroplatinate"] = "platinum-salt", ["crude-pl
 	["acceleration-card"] = "me-acceleration-card",   -- issue #195 (an item becomes me-network's module)
 	["apatite-lens"] = "green-sapphire-lens", ["lapis-lens"] = "sapphire-lens",   -- issue #370
 	["lv-air-collector"] = "lv-compressor", ["ev-air-collector"] = "ev-compressor",   -- issue #153
-	["ev-greenhouse"] = "lv-greenhouse" }   -- issue #165
+	["ev-greenhouse"] = "lv-greenhouse",   -- issue #165
+	["small-lamp"] = "gt-torch" }   -- issue #555 (the item stays: mapped by its migration, RM_MIGRATION)
+--- an item that stays in the game and is mapped only by its JSON migration: skipped when the old version has it (a save of
+--- that version ran it); issue #555 also places a lamp, which must be a torch after the update
+local RM_MIGRATION = { ["small-lamp"] = "2026-10-24-issue-555-torch.json" }
 local RM_MACHINES = {
 	{ "lv-chemical-reactor", "platinum-palladium-leachate-processing", nil },
 	{ "lv-electrolyzer", "chloroplatinic-acid", nil },
@@ -285,10 +372,16 @@ local RM_MACHINES = {
 	-- issue #335: the Manual Mine got a fast replace group and the Ore Drilling Plant as its next upgrade; issue #499: the
 	-- name went to the mining drill, a Manual Mine of an old save is a Dimension Mine (JSON migration); issue #500: one on
 	-- an Overworld vein (hidden since #499) is replaced by the Manual Mine drill at its place, with its manual labor as fuel
-	{ "manual-mine", "mining-iron-vein", nil, "manual-mine", nil, true },
-	-- issue #505: the vein recipes of Nauvis, the Nether and the Twilight Forest are gone (JSON: a placeholder of their
-	-- planet); a mine on Nauvis on a Nether vein stays a Dimension Mine without a recipe
-	{ "manual-mine", "mining-tetrahedrite-vein", nil, "dimension-mine" },
+	-- (issue #563: in classic mode the Dimension Mine keeps the recipe, the 7th field)
+	{ "manual-mine", "mining-iron-vein", nil, "manual-mine", nil, true, { "mining-iron-vein", "dimension-mine" } },
+	-- issue #505: the vein recipes of Nauvis, the Nether and the Twilight Forest left map-vein mode; a mine on Nauvis on a
+	-- Nether vein stays a Dimension Mine without a recipe (issue #563: classic mode keeps the recipe)
+	{ "manual-mine", "mining-tetrahedrite-vein", nil, "dimension-mine", nil, nil, { "mining-tetrahedrite-vein", "dimension-mine" } },
+	-- issue #563: 0.5.5's chalcopyrite vein is GT's Copper: the drill in map-vein mode, mining-copper-vein in classic mode
+	{ "manual-mine", "mining-chalcopyrite-vein", nil, "manual-mine", nil, true, { "mining-copper-vein", "dimension-mine" } },
+	-- issue #569: 0.5.5's galena vein (Galena) is the Twilight Forest's: in map-vein mode its mine loses the recipe, in
+	-- classic mode it runs GT's TFGalena vein, unlocked by Reach the Twilight Forest, which the update researches
+	{ "manual-mine", "mining-galena-vein", nil, "dimension-mine", nil, nil, { "mining-tf-galena-vein", "dimension-mine", true } },
 	-- issue #527: a Manual Mine's recipe that moved to the Dig Site (#499) or needs the Nether (#501) is a placeholder on
 	-- load (JSON), which the migration clears with a message
 	{ "manual-mine", "hunting-blazes", nil, "dimension-mine" },
@@ -323,7 +416,14 @@ local function setup_removed()
 	local chest = s.create_entity{ name = "iron-chest", position = { RM_AT[1], RM_AT[2] + 4 }, force = "player" }
 	local items = {}
 	for old, new in pairs(RM_ITEMS) do
-		if prototypes.item[old] then items[#items + 1] = { old = old, new = new, count = chest.insert{ name = old, count = 5 } } end
+		if prototypes.item[old] and not OLD_MIGRATIONS[RM_MIGRATION[old] or ""] then
+			items[#items + 1] = { old = old, new = new, count = chest.insert{ name = old, count = 5 } }
+		end
+	end
+	local lamp
+	if prototypes.entity["small-lamp"] and not OLD_MIGRATIONS[RM_MIGRATION["small-lamp"]] then
+		lamp = { 2 + RM_AT[1], RM_AT[2] + 4 }
+		s.create_entity{ name = "small-lamp", position = lamp, force = "player" }
 	end
 	local machines = {}
 	for i, m in pairs(RM_MACHINES) do
@@ -350,7 +450,7 @@ local function setup_removed()
 			--- issue #332: a slot that this version leaves empty (its recipe needs no tool here)
 			local empty_slot = md ~= nil and tool == nil and inv ~= nil and #inv > 0
 			machines[#machines + 1] = { entity = e, old = m[2], new = m[3], name = m[4], items = items,
-				empty_slot = empty_slot, pos = e.position, drill = m[6] }
+				empty_slot = empty_slot, pos = e.position, drill = m[6], machine = m[1], classic = m[7] }
 		end
 	end
 	local queue
@@ -361,12 +461,13 @@ local function setup_removed()
 		for _, ing in pairs(qr.ingredients) do c.insert{ name = ing.name, count = ing.amount * RM_QUEUED.count } end
 		queue = { character = c, queued = c.begin_crafting{ recipe = RM_QUEUED.recipe, count = RM_QUEUED.count } }
 	end
-	if #list == 0 and #items == 0 and #machines == 0 and not queue then
+	if #list == 0 and #items == 0 and #machines == 0 and not queue and not lamp then
 		storage.removed = "skipped"
 		log("DEVCHECK-MIGRATE-SETUP-REMOVED skipped (none of the removed fluids or items in this version)")
 		return
 	end
-	storage.removed = { tanks = list, chest = chest, items = items, machines = machines, queue = queue }
+	storage.removed = { tanks = list, chest = chest, items = items, machines = machines, queue = queue, lamp = lamp,
+		had_veins = (s.map_gen_settings.property_expression_names or {}).gt_vein_id ~= nil }
 	log("DEVCHECK-MIGRATE-SETUP-REMOVED ok (" .. #list .. " fluids in tanks, " .. #items .. " items in a chest, "
 		.. #machines .. " machines with recipes of the old line"
 		.. (queue and (", " .. queue.queued .. " hand crafts of " .. RM_QUEUED.recipe .. " queued") or "") .. ")")
@@ -392,6 +493,14 @@ local function check_removed()
 		if got ~= count then problems[#problems + 1] = "the chest holds " .. got .. " " .. name .. " of " .. count end
 	end
 	for _, m in pairs(p.machines or {}) do
+		if classic_mode() and m.classic then
+			m = { entity = m.entity, old = m.old, new = m.classic[1], name = m.classic[2], items = m.items, pos = m.pos,
+				researched = m.classic[3] }
+			--- issue #569: the mine runs, its recipe is unlocked for the force
+			if m.researched and not game.forces.player.recipes[m.new].enabled then
+				problems[#problems + 1] = "the machine with " .. m.old .. " has " .. m.new .. ", which is not researched"
+			end
+		end
 		--- issue #500: a mine on an Overworld vein became a mining drill at its place
 		local drill = m.drill and m.pos and game.surfaces[1].find_entity(m.name, m.pos)
 		if m.drill and not (drill and drill.type == "mining-drill") then
@@ -399,8 +508,17 @@ local function check_removed()
 		elseif drill and m.items["manual-labor"] and drill.get_fuel_inventory().get_item_count("manual-labor") == 0 then
 			problems[#problems + 1] = "the " .. m.name .. " drill got no manual labor of the old mine as fuel"
 		end
+		--- issue #560: an ore machine of an old save is a furnace now, built in its place (scripts/fork-ore-furnaces.lua); it
+		--- has no recipe set but picks the new recipe from the old one's ingredients it holds
+		local furnace = not m.drill and not m.entity.valid and m.pos and game.surfaces[1].find_entity(m.name or m.machine, m.pos)
+		if furnace and furnace.type == "furnace" then m.entity = furnace else furnace = nil end
 		local r = not m.drill and m.entity.valid and m.entity.get_recipe()
 		local got = r and r.name or nil
+		if furnace and not got and m.new then
+			for _, ing in pairs(prototypes.recipe[m.new].ingredients) do
+				if ing.type == "item" and m.items[ing.name] and furnace.get_item_count(ing.name) > 0 then got = m.new end
+			end
+		end
 		if m.drill then
 			-- (checked above)
 		elseif not m.entity.valid then
@@ -416,7 +534,11 @@ local function check_removed()
 	for name, r in pairs(prototypes.get_entity_filtered{ { filter = "type", type = "resource" } }) do
 		if r.resource_category == "gt-ore" then gt[#gt + 1] = name end
 	end
-	if #gt > 0 and game.surfaces[1].count_entities_filtered{ type = "resource", name = gt, limit = 1 } == 0 then
+	local vein_tiles = #gt > 0 and game.surfaces[1].count_entities_filtered{ type = "resource", name = gt, limit = 1 } or 0
+	if classic_mode() and not p.had_veins then
+		--- issue #563: a save without the veins gets none in classic mode
+		if vein_tiles > 0 then problems[#problems + 1] = "the old save's chunks got ore of the map veins in classic mode" end
+	elseif #gt > 0 and vein_tiles == 0 then
 		problems[#problems + 1] = "the old save's chunks have no ore of the map veins"
 	end
 	--- issues #316 and #325: a machine whose recipe needs a mold or lens in its slot has it there after the update and
@@ -447,6 +569,13 @@ local function check_removed()
 			end
 		end
 	end
+	--- issue #555: the placed small lamp is a torch at its place
+	if p.lamp then
+		local s = game.surfaces[1]
+		if not s.find_entity("gt-torch", p.lamp) or s.find_entity("small-lamp", p.lamp) then
+			problems[#problems + 1] = "the old save's small lamp is no torch at its place"
+		end
+	end
 	local q = p.queue
 	if q then
 		local c = q.character
@@ -459,6 +588,7 @@ local function check_removed()
 	for _, m in pairs(problems) do log("DEVCHECK-MIGRATE-FAIL removed: " .. m) end
 	log("DEVCHECK-MIGRATE-REMOVED " .. (#problems == 0 and "ok" or "failed") .. " (" .. #p.tanks .. " fluids, "
 		.. #p.items .. " items mapped, " .. #(p.machines or {}) .. " machines checked, " .. stopped .. " stopped for their tool"
+		.. (p.lamp and ", the small lamp a torch" or "")
 		.. (q and (", queued " .. RM_QUEUED.recipe .. " dropped") or "") .. ")")
 end
 
@@ -572,6 +702,13 @@ local function setup_patterns(place)
 		inv.destroy()
 		remote.call(NET, "store_in_drive", drive, "iron-plate", 50)
 		remote.call(NET, "store_in_drive", drive, "iron-stick", 50)
+		--- issue #580 (me-network #503): lenses that issue #370 renamed (apatite -> green sapphire, lapis -> sapphire) in the
+		--- network: its storage keeps them under their old names, which a JSON migration does not reach
+		if prototypes.item["apatite-lens"] and prototypes.item["lapis-lens"] then
+			remote.call(NET, "store_in_drive", drive, "apatite-lens", ME_LENSES[1])
+			remote.call(NET, "store_in_drive", drive, "lapis-lens", ME_LENSES[2])
+			storage.me_lenses = { drive = drive }
+		end
 		local ctrl = game.surfaces[1].find_entity("me-network-controller", { 6, Y })
 		local members = { ctrl, drive, p, game.surfaces[1].find_entity("me-pattern-provider", PT_PROVIDER_A) }
 		for _, c in pairs(cpus) do members[#members + 1] = c end
@@ -601,6 +738,50 @@ local function setup_patterns(place)
 		storage.job.maintainer = ok and m or nil
 		log("DEVCHECK-MIGRATE-SETUP-MAINTAINER " .. (ok and "ok" or "failed"))
 	end
+end
+
+--- issue #580: the lenses of the old save are green sapphire and sapphire lenses in the network now (ME_NETWORK.replace_item
+--- with prototypes/data/item-renames.lua), none under the old names, and a circuit interface built on it writes their signals
+--- (the crash of me-network #503 was the first write of one)
+ME_LENSES = { 7, 3 }
+local function check_me_lenses()
+	local st = storage.me_lenses
+	if not st then
+		log("DEVCHECK-MIGRATE-MELENSES skipped (no apatite or lapis lens in this version, or no cable network)")
+		return
+	end
+	local problems = {}
+	local function expect(ok, what) if not ok then problems[#problems + 1] = what end end
+	local d = st.drive
+	local contents = d.valid and remote.call(NET, "contents", d) or {}
+	local old = {}
+	for key, n in pairs(contents) do
+		local name = key:match("^[^@#]*")
+		if name == "apatite-lens" or name == "lapis-lens" then old[#old + 1] = key .. " " .. n end
+	end
+	expect(#old == 0, "the network still holds the old lenses: " .. table.concat(old, ", "))
+	expect(contents["green-sapphire-lens"] == ME_LENSES[1] and contents["sapphire-lens"] == ME_LENSES[2],
+		"green sapphire and sapphire lenses in the network: " .. tostring(contents["green-sapphire-lens"]) .. ", "
+		.. tostring(contents["sapphire-lens"]) .. " (want " .. ME_LENSES[1] .. ", " .. ME_LENSES[2] .. ")")
+	local s, ci = d.surface, nil
+	for _, off in ipairs({ { 0, 1 }, { 0, -1 }, { 1, 0 }, { -1, 0 } }) do
+		local pos = { d.position.x + off[1], d.position.y + off[2] }
+		if s.can_place_entity{ name = "me-circuit-interface", position = pos, force = "player" } then
+			ci = s.create_entity{ name = "me-circuit-interface", position = pos, force = "player", raise_built = true }
+			break
+		end
+	end
+	local info = ci and remote.call("gregtorio-me-circuit", "get_circuit", ci)
+	local lens
+	for _, f in pairs(ci and ci.get_or_create_control_behavior().get_section(1).filters or {}) do
+		if f.value and f.value.name == "green-sapphire-lens" then lens = f.min end
+	end
+	expect(info and info.signals and info.signals > 0 and lens == ME_LENSES[1], "a circuit interface built next to the drive: "
+		.. serpent.line(info) .. ", its green sapphire lens signal " .. tostring(lens))
+	for _, p in pairs(problems) do log("DEVCHECK-MIGRATE-FAIL ME lenses: " .. p) end
+	log("DEVCHECK-MIGRATE-MELENSES " .. (#problems == 0 and "ok" or "failed") .. " (" .. ME_LENSES[1] .. " apatite and "
+		.. ME_LENSES[2] .. " lapis lenses of the old save are green sapphire and sapphire lenses in the network, a circuit "
+		.. "interface built on it writes their signals)")
 end
 
 local function check_job()
@@ -1224,8 +1405,8 @@ end
 
 local function check_vein_grid()
 	local before = storage.vein_grid
-	if not before then
-		log("DEVCHECK-MIGRATE-VEINGRID skipped")
+	if not before or classic_mode() then   -- (issue #563: classic mode has no veins on the map)
+		log("DEVCHECK-MIGRATE-VEINGRID skipped" .. (before and " (classic ore mode)" or ""))
 		return
 	end
 	local problems = {}
@@ -1260,7 +1441,10 @@ end
 --- Issue #534: a save whose map settings name the veins while its chunks have no ore of them (the maintainer's, from a map
 --- settings editor). An old save with the map veins gets its generated chunks' vein ore (regenerated first, to match a
 --- changed grid above) counted and then deleted; after the update the same chunks must hold the same ore again
---- (DEVCHECK-MIGRATE-VEINORES)
+--- (DEVCHECK-MIGRATE-VEINORES). Issue #552: an old version that has #534's Lua migration ran it already (Factorio runs a Lua
+--- migration once per save, and marks every one of a new map's version as done), so nothing would bring the ores back
+--- and the setup is skipped (OLD_MIGRATIONS, at the top)
+local VEINORES_MIGRATION = "2026-10-23-issue-534-vein-ores.lua"
 local function vein_ores()
 	local names = {}
 	for name, p in pairs(prototypes.get_entity_filtered{ { filter = "type", type = "resource" } }) do
@@ -1272,6 +1456,11 @@ local function setup_vein_ores()
 	local s = game.surfaces.nauvis
 	if not (s.map_gen_settings.property_expression_names or {}).gt_vein_id then
 		log("DEVCHECK-MIGRATE-SETUP-VEINORES skipped (no map veins in this version)")
+		return
+	end
+	if OLD_MIGRATIONS[VEINORES_MIGRATION] then
+		storage.vein_ores_skipped = "the old version has #534's migration " .. VEINORES_MIGRATION .. ", which a save runs once"
+		log("DEVCHECK-MIGRATE-SETUP-VEINORES skipped (" .. storage.vein_ores_skipped .. ")")
 		return
 	end
 	local names, chunks = vein_ores(), {}
@@ -1289,7 +1478,20 @@ end
 local function check_vein_ores()
 	local before = storage.vein_ores
 	if not before then
-		log("DEVCHECK-MIGRATE-VEINORES skipped")
+		log("DEVCHECK-MIGRATE-VEINORES skipped" .. (storage.vein_ores_skipped and " (" .. storage.vein_ores_skipped .. ")" or ""))
+		return
+	end
+	if classic_mode() then
+		--- issue #563: classic mode brings no vein ore back into the chunks whose ore was deleted (the ore the old save
+		--- has elsewhere, in chunks generated after the set-up, stays)
+		local tiles, names, ns = 0, vein_ores(), game.surfaces.nauvis
+		for _, c in pairs(before.list or {}) do
+			tiles = tiles + ns.count_entities_filtered{ type = "resource", name = names,
+				area = { { c.x * 32, c.y * 32 }, { c.x * 32 + 32, c.y * 32 + 32 } } }
+		end
+		if tiles > 0 then log("DEVCHECK-MIGRATE-FAIL vein ores: " .. tiles .. " ore tiles regenerated in classic mode") end
+		log("DEVCHECK-MIGRATE-VEINORES " .. (tiles == 0 and "ok" or "failed") .. " (classic ore mode: " .. tiles
+			.. " ore tiles of the veins in the " .. before.chunks .. " chunks after the update, " .. before.tiles .. " deleted before)")
 		return
 	end
 	local s = game.surfaces.nauvis
@@ -1373,10 +1575,12 @@ local function snapshot(s, area)
 	for k, t in pairs(sums) do out[k] = table.concat(t, ":") end
 	return out
 end
-local function snapshot_diff(a, b)
+--- (issue #563: without_veins leaves out the vein ores, which an area generated anew in classic mode lacks)
+local function snapshot_diff(a, b, without_veins)
 	local diff = {}
-	for k, v in pairs(a) do if b[k] ~= v then diff[#diff + 1] = k .. " " .. v .. " -> " .. (b[k] or "none") end end
-	for k, v in pairs(b) do if a[k] == nil then diff[#diff + 1] = k .. " none -> " .. v end end
+	local function skip(k) return without_veins and k:match("^resource gt%-ore%-") end
+	for k, v in pairs(a) do if b[k] ~= v and not skip(k) then diff[#diff + 1] = k .. " " .. v .. " -> " .. (b[k] or "none") end end
+	for k, v in pairs(b) do if a[k] == nil and not skip(k) then diff[#diff + 1] = k .. " none -> " .. v end end
 	table.sort(diff)
 	return diff
 end
@@ -1601,13 +1805,13 @@ local function check_mapgen_fresh()
 	mg.phase = nil
 	local s = game.surfaces.nauvis
 	generate(s, MG_FRESH, 1)
-	local far = snapshot_diff(mg.fresh_centre, snapshot(s, chunk_area(MG_FRESH)))
+	local far = snapshot_diff(mg.fresh_centre, snapshot(s, chunk_area(MG_FRESH)), classic_mode())
 	if #far > 0 then problems[#problems + 1] = "the far area generated anew differs: " .. table.concat(far, "; ") end
 	local same = 0
 	for p, snap in pairs(mg.centres) do
 		local ps = game.surfaces[p]
 		generate(ps, planet_area(p), 1)
-		local d = snapshot_diff(snap, snapshot(ps, chunk_area(planet_area(p))))
+		local d = snapshot_diff(snap, snapshot(ps, chunk_area(planet_area(p))), classic_mode())
 		if #d > 0 then problems[#problems + 1] = p .. "'s area generated anew differs: " .. table.concat(d, "; ") else same = same + 1 end
 	end
 	parts[#parts + 1] = "Nauvis near the spawn the same, far area generated anew " .. (#far == 0 and "the same" or "differs")
@@ -1617,7 +1821,163 @@ local function check_mapgen_fresh()
 	log("DEVCHECK-MIGRATE-MAPGEN " .. (#problems == 0 and "ok" or "failed") .. " (" .. table.concat(parts, "; ") .. ")")
 end
 
+--- Issue #560: the ore machines (macerators, ore washers, thermal centrifuges, centrifuges and their multiblocks) are
+--- furnaces since 0.5.9. The old save has every one of them placed, unpowered, with a recipe of one item (and one fluid
+--- where it takes one), twice its ingredients in the input, three of its main product in the output, a craft at half
+--- progress, and the first one wired to a constant combinator. After the update each must be a furnace of its name at its
+--- place (scripts/fork-ore-furnaces.lua rebuilds them) that holds the input items (with the craft's ingredients given back),
+--- the output and the input fluid, and the wire must be there (DEVCHECK-MIGRATE-FURNACES). A version whose ore machines
+--- are furnaces already is skipped.
+local FU_AT, FU_ROW = { 200.5, Y + 80.5 }, 20
+local function ore_machine(p)
+	if p.type ~= "assembling-machine" or not (p.items_to_place_this and #p.items_to_place_this > 0) then return false end
+	local any = false
+	for c in pairs(p.crafting_categories or {}) do
+		local rest = c:match("^%a+%-(.+)%-recipes$")
+		if c == "parameters" then
+			-- (the engine's category of every crafting machine)
+		elseif not (c == "steam-macerator-recipes" or rest == "macerator" or rest == "ore-washer" or rest == "thermal-centrifuge"
+			or rest == "centrifuge") then return false
+		else
+			any = true
+		end
+	end
+	return any
+end
+--- a recipe's categories (Factorio 2.1: a list; 2.0, the versions up to 0.5.6: one)
+local function recipe_categories(r)
+	local ok, cats = pcall(function() return r.categories end)
+	return ok and cats or { r.category }
+end
+local function furnace_recipe(p)
+	local names = {}
+	for name, r in pairs(prototypes.recipe) do
+		if not r.hidden and p.crafting_categories[recipe_categories(r)[1]] then names[#names + 1] = name end
+	end
+	table.sort(names)
+	for _, name in pairs(names) do
+		local items, fluids = 0, 0
+		for _, ing in pairs(prototypes.recipe[name].ingredients) do
+			if ing.type == "item" then items = items + 1 else fluids = fluids + 1 end
+		end
+		if items == 1 and fluids <= 1 then return prototypes.recipe[name] end
+	end
+end
+
+local function setup_furnaces()
+	local names = {}
+	for name, p in pairs(prototypes.get_entity_filtered{ { filter = "type", type = "assembling-machine" } }) do
+		if ore_machine(p) then names[#names + 1] = name end
+	end
+	table.sort(names)
+	if #names == 0 then
+		log("DEVCHECK-MIGRATE-SETUP-FURNACES skipped (the ore machines are furnaces in this version)")
+		return
+	end
+	local s = game.surfaces[1]
+	local area = { { FU_AT[1] - 6, FU_AT[2] - 6 }, { FU_AT[1] + 8 * FU_ROW + 6, FU_AT[2] + 8 * math.ceil(#names / FU_ROW) + 6 } }
+	s.request_to_generate_chunks({ FU_AT[1] + 80, FU_AT[2] + 16 }, 4)
+	s.force_generate_chunk_requests()
+	local land = {}
+	for _, t in pairs(s.find_tiles_filtered{ area = area, collision_mask = "water_tile" }) do
+		land[#land + 1] = { name = "landfill", position = t.position }
+	end
+	s.set_tiles(land)
+	for _, e in pairs(s.find_entities_filtered{ area = area, type = { "tree", "simple-entity", "cliff", "resource" } }) do e.destroy() end
+	local list, wired = {}, nil
+	for i, name in pairs(names) do
+		local r = furnace_recipe(prototypes.entity[name])
+		local pos = { FU_AT[1] + 8 * ((i - 1) % FU_ROW), FU_AT[2] + 8 * math.floor((i - 1) / FU_ROW) }
+		local e = r and s.create_entity{ name = name, position = pos, force = "player", raise_built = true }
+		if e then
+			game.forces.player.recipes[r.name].enabled = true
+			e.set_recipe(r.name)
+			local m = { name = name, pos = e.position, recipe = r.name }
+			for _, ing in pairs(r.ingredients) do
+				if ing.type == "item" then
+					m.item, m.count, m.per_craft = ing.name, e.insert{ name = ing.name, count = ing.amount * 2 }, ing.amount
+				else
+					m.fluid = { name = ing.name, amount = e.insert_fluid{ name = ing.name, amount = ing.amount * 2 }, per_craft = ing.amount }
+				end
+			end
+			for _, pr in pairs(r.products) do
+				if pr.type == "item" and not m.product then
+					m.product = pr.name
+					m.product_count = e.get_inventory(defines.inventory.crafter_output).insert{ name = pr.name, count = 3 }
+				end
+			end
+			m.progress = pcall(function() e.crafting_progress = 0.5 end) and e.crafting_progress or 0
+			if not wired then
+				local cc = s.create_entity{ name = "constant-combinator", position = { pos[1], pos[2] - 3 }, force = "player" }
+				if cc then
+					cc.get_wire_connector(defines.wire_connector_id.circuit_red, true).connect_to(
+						e.get_wire_connector(defines.wire_connector_id.circuit_red, true), false, defines.wire_origin.player)
+					wired = true
+					m.wired = true
+				end
+			end
+			list[#list + 1] = m
+		end
+	end
+	storage.furnaces = { list = list }
+	local mid = 0
+	for _, m in pairs(list) do if m.progress > 0 then mid = mid + 1 end end
+	log("DEVCHECK-MIGRATE-SETUP-FURNACES ok (" .. #list .. " of " .. #names .. " ore machines placed with a recipe, " .. mid
+		.. " of them mid-craft)")
+end
+
+local function check_furnaces()
+	local st = storage.furnaces
+	if not st then
+		log("DEVCHECK-MIGRATE-FURNACES skipped")
+		return
+	end
+	local s = game.surfaces[1]
+	local problems, furnaces, back = {}, 0, 0
+	for _, m in pairs(st.list) do
+		local f = s.find_entity(m.name, m.pos)
+		if not f then
+			problems[#problems + 1] = m.name .. " (" .. m.recipe .. ") is gone"
+		elseif f.type ~= "furnace" then
+			problems[#problems + 1] = m.name .. " is a " .. f.type .. ", not a furnace"
+		else
+			furnaces = furnaces + 1
+			--- the input items, on the ground too (what fits nowhere is spilled), with the craft's ingredients given back; a
+			--- furnace that picked its recipe at once has taken one craft's ingredients (and holds twice a craft's fluid at most)
+			local crafting = f.is_crafting()
+			local n = f.get_item_count(m.item) + (crafting and m.per_craft or 0)
+			for _, it in pairs(s.find_entities_filtered{ position = m.pos, radius = 4, name = "item-on-ground" }) do
+				if it.stack.name == m.item then n = n + it.stack.count end
+			end
+			local had = m.count + (m.product == m.item and m.product_count or 0)
+			if n < had then
+				problems[#problems + 1] = m.name .. " holds " .. n .. " " .. m.item .. " of " .. had
+			elseif m.progress > 0 and n >= had + m.per_craft then
+				back = back + 1
+			end
+			local out = f.get_inventory(defines.inventory.crafter_output).get_item_count(m.product)
+			if m.product ~= m.item and out < m.product_count then
+				problems[#problems + 1] = m.name .. "'s output holds " .. out .. " " .. m.product .. " of " .. m.product_count
+			end
+			if m.fluid and m.fluid.amount > 0 then
+				local got = f.get_fluid_count(m.fluid.name) + (crafting and m.fluid.per_craft or 0)
+				if got < m.fluid.amount - 1e-3 then
+					problems[#problems + 1] = m.name .. " holds " .. got .. " " .. m.fluid.name .. " of " .. m.fluid.amount
+				end
+			end
+			if m.wired then
+				local c = f.get_wire_connector(defines.wire_connector_id.circuit_red, false)
+				if not (c and c.connection_count > 0) then problems[#problems + 1] = m.name .. " lost its red wire" end
+			end
+		end
+	end
+	for _, p in pairs(problems) do log("DEVCHECK-MIGRATE-FAIL furnaces: " .. p) end
+	log("DEVCHECK-MIGRATE-FURNACES " .. (#problems == 0 and "ok" or "failed") .. " (" .. furnaces .. " of " .. #st.list
+		.. " ore machines are furnaces with their contents, " .. back .. " got the ingredients of their craft back)")
+end
+
 script.on_init(function()
+	setup_furnaces()
 	setup_vein_grid()
 	setup_vein_ores()
 	setup_power()
@@ -1734,6 +2094,7 @@ script.on_nth_tick(30, function(event)
 		storage.techs_checked = true
 		check_techs()
 		check_removed()
+		check_furnaces()
 		check_planets()
 		check_vein_grid()
 		check_vein_ores()
@@ -1753,6 +2114,7 @@ script.on_nth_tick(30, function(event)
 	check_power()
 	check_patterns()
 	check_items()
+	check_me_lenses()
 	if storage.state ~= "ready" then
 		log("DEVCHECK-MIGRATE-FLUIDS " .. (storage.state == "skipped" and "skipped" or "failed (" .. tostring(storage.state) .. ")"))
 		return

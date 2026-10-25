@@ -1,5 +1,7 @@
 --- Fork: main menu simulations (PR #65), loaded from data-final-fixes.lua after the vanilla techs are disabled.
---- Several vanilla menu simulations call research_all_technologies() and rely on the bonuses it gives:
+--- Issue #588 adds Gregtorio's own scenes (first section); since issue #595 they are the only ones. Several vanilla
+--- menu simulations call
+--- research_all_technologies() and rely on the bonuses it gives:
 --- "nauvis_biter_base_laser_defense" walks a character in power armor through a biter base and survives
 --- on the laser damage (+300 %), laser shooting speed (+220 %) and health (+50) bonuses. Gregtorio disables
 --- those vanilla techs (disable_tech in data-final-fixes.lua: hidden, no effects) and
@@ -11,6 +13,87 @@
 
 local simulations = data.raw["utility-constants"]["default"].main_menu_simulations
 if not simulations then return end
+
+-- GREGTORIO'S OWN SCENES (issue #588). A scene's save is a map of this mod, saved again by
+-- `devcheck.py menusim --sim <name> --rebuild` with today's mods (tools/menusim/: its chunks cut to the factory, the
+-- builder's blueprint library and the replay removed). The menu loads the save with the mods as they are, runs `init`
+-- once and `update` every tick, and loads the save again after `length` ticks. Since issue #595 the menu shows only
+-- these (end of this section).
+
+-- The steam age, built in the map editor by achilles155: coal boilers, steam macerators, forge hammers, alloy smelters,
+-- furnaces and crafting tables on one bus. The camera looks at the forge hammers, the bus below them and the crafting
+-- tables to the right (the maintainer's pick in issue #599; the save's player-built entities span -91,-78 to 126,68;
+-- zoom 1 shows 60 x 34 tiles at 1920 x 1080, 80 x 45 at 2560 x 1440). `update` keeps the
+-- machines near the camera busy: twice a second it tops up the fuel of a burner that burnt its last item, empties a
+-- crafting machine whose output holds two crafts or more (some forge hammers' output belts are full: they would block)
+-- and gives a crafting machine short of its ingredients one craft's worth (the factory has more forge hammers than its
+-- macerators feed). The camera is written into both chunks from `camera`:
+-- `game.simulation.camera_zoom` can only be written, a read stops the scene (issue #597).
+local camera = { x = 70, y = -12, zoom = 1 }
+local near = { { camera.x - 48 / camera.zoom, camera.y - 27 / camera.zoom },
+	{ camera.x + 48 / camera.zoom, camera.y + 27 / camera.zoom } }
+simulations.gregtorio_steam_age = {
+	checkboard = false,
+	save = "__gregtorio-continued__/menu-simulations/gregtech-steam-age.zip",
+	length = 60 * 20,
+	init = [[
+    game.simulation.camera_position = ]] .. serpent.line({ camera.x, camera.y }, { comment = false }) .. [[
+
+    game.simulation.camera_zoom = ]] .. camera.zoom .. [[
+
+    game.tick_paused = false
+    game.surfaces.nauvis.daytime = 0
+  ]],
+	update = [[
+    if game.tick % 30 ~= 0 then return end
+    local crafter = { ["assembling-machine"] = true, furnace = true }
+    for _, e in pairs(game.surfaces.nauvis.find_entities_filtered({ force = "player",
+      area = ]] .. serpent.line(near, { comment = false }) .. [[,
+      type = { "assembling-machine", "furnace", "inserter", "lab", "boiler", "mining-drill" } })) do
+      local burner = e.burner
+      if burner and burner.currently_burning and burner.inventory.is_empty() then
+        burner.inventory.insert({ name = burner.currently_burning.name.name, count = 5 })
+      end
+      if crafter[e.type] then
+        local recipe = e.get_recipe()
+        if not recipe and e.type == "furnace" and e.previous_recipe then recipe = e.previous_recipe.name end
+        local output, made = e.get_output_inventory(), 0
+        for _, p in pairs(recipe and recipe.products or {}) do
+          if p.type == "item" then made = made + (p.amount or p.amount_max or 1) end
+        end
+        local status = e.status
+        if status == defines.entity_status.full_output or (made > 0 and output.get_item_count() >= 2 * made) then
+          output.clear()
+        elseif recipe and (status == defines.entity_status.item_ingredient_shortage
+            or status == defines.entity_status.no_ingredients) then
+          local input = e.get_inventory(defines.inventory.crafter_input)
+          for _, i in pairs(recipe.ingredients) do
+            local missing = i.type == "item" and i.amount - input.get_item_count(i.name) or 0
+            if missing > 0 then input.insert({ name = i.name, count = missing }) end
+          end
+        end
+      end
+    end
+  ]],
+}
+
+-- Issue #595, the maintainer's decision: the menu shows only Gregtorio's own scenes, also while there is one (the menu
+-- then plays it in a loop). Every other scene is removed once one of this mod is in the list: Factorio's Nauvis, Space
+-- Age and platform scenes and those of mods whose data stage ran before this file. (It replaces #591, which listed each
+-- Gregtorio scene five times next to Factorio's.) devcheck.py menusim fails when another scene is left.
+local function own_scene(sim)
+	return type(sim.save) == "string" and sim.save:find("^__gregtorio%-continued__/") ~= nil
+end
+local has_own = false
+for _, sim in pairs(simulations) do has_own = has_own or own_scene(sim) end
+if has_own then
+	for name, sim in pairs(simulations) do
+		if not own_scene(sim) then simulations[name] = nil end
+	end
+end
+
+-- VANILLA SCENES: the bonuses of the disabled techs (PR #65). Since issue #595 no vanilla scene is left in the menu;
+-- the code stays for the case that they come back (or a mod adds them again after this file).
 
 -- effect type -> LuaForce field for the plain modifiers
 local FORCE_FIELDS = {

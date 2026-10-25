@@ -46,6 +46,9 @@ local function round_up(p, field, gives)
 	return true
 end
 
+--- (issue #593: a later file that changes an amount sets it on the grid with the same rule, gives = whether it is a product)
+FORK_FLUID_STEPS.round_up = round_up
+
 for _, r in pairs(data.raw.recipe) do
 	local changed = false
 	for _, i in pairs(r.ingredients or {}) do

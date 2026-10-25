@@ -84,6 +84,7 @@ FORK_ELECTRIC_MINE_EXCLUDED = {
 	["hunting-zombies"] = "a mob drop (zombie heads), no ore: the Ore Drilling Plant mines ore blocks only",
 	["cobblestone-manual-mine"] = "stone, no ore: the Ore Drilling Plant mines ore blocks only",
 	["cobblestone-manual-mine-with-wooden-pickaxe"] = "stone, no ore: the Ore Drilling Plant mines ore blocks only",
+	["cobblestone-manual-mine-with-stone-pickaxe"] = "stone, no ore: the Ore Drilling Plant mines ore blocks only (issue #547)",
 	["mining-end-stone"] = "end stone is a plain block of the End, no ore: the Ore Drilling Plant mines ore blocks only",
 	["mining-glowstone-vein"] = "glowstone is vanilla's Nether block, no GT ore (07: no raw item, no ore chain): the Ore " ..
 		"Drilling Plant mines ore blocks only",
@@ -310,6 +311,22 @@ for name, r in pairs(data.raw.recipe) do
 	end
 end
 
+--- issue #547: the stone pickaxe's cobblestone, between the wooden pickaxe's (8 labor) and the iron pickaxe's (2 labor);
+--- its only use, the iron vein recipe with the stone pickaxe, went with the vein recipes (#505). Craft Stone Tools, which
+--- the pickaxe researches, unlocks it; the three recipes stand in the order of their pickaxes.
+create_recipe{
+	name = "cobblestone-manual-mine-with-stone-pickaxe",
+	category = "manual-digsite-recipes",
+	energy_required = 10,
+	subgroup = "subgroup-mining-poor",
+	order = "a[cobblestone]-b[stone-pickaxe]",
+	ingredients = { item("stone-pickaxe", 1), item("manual-labor", 4) },
+	results = { item("stone", 64) },
+}
+fork_add_unlock("craft-stone-tools", "cobblestone-manual-mine-with-stone-pickaxe")
+data.raw.recipe["cobblestone-manual-mine-with-wooden-pickaxe"].order = "a[cobblestone]-a[wooden-pickaxe]"
+data.raw.recipe["manually-digging-gravel"].order = "b[gravel]"
+
 --- issue #527: an old save's Manual Mine on such a recipe (or on the glowstone vein, which needs the Nether since #501)
 --- would lose it silently: the engine drops a recipe of another category or surface on load, before any Lua migration.
 --- migrations/2026-10-23-issue-527-moved-mine-recipes.json maps the recipe onto a placeholder `moved-<recipe>` of the
@@ -348,7 +365,8 @@ for name, r in pairs(data.raw.recipe) do
 end
 table.sort(twins)
 local twin_of = {}
-for _, name in ipairs(twins) do
+--- the two twins of a Manual Mine recipe (issue #563: 166 makes those of its classic vein recipes with it)
+function FORK_ELECTRIC_MINE.make_twins(name)
 	local r = data.raw.recipe[name]
 	local twin = name:gsub("^mining%-", "drilling-")
 	create_recipe{
@@ -375,7 +393,9 @@ for _, name in ipairs(twins) do
 		main_product = r.main_product or r.results[1].name,
 	}
 	FORK_ELECTRIC_MINE.miner_twins[name] = miner_twin
+	return twin, miner_twin
 end
+for _, name in ipairs(twins) do FORK_ELECTRIC_MINE.make_twins(name) end
 
 --- the dimensions (DimNames) that are surfaces with map veins, their planet and the technology that reaches it; 165 makes
 --- the planets and their veins (issue #501: the Nether; issue #502: the Twilight Forest; issue #503: The End)
@@ -530,6 +550,73 @@ function FORK_ELECTRIC_MINE.unlock_miner_twins()
 	end
 end
 
+--- issue #556 (#252's rule: unlocked where first used): every dimension mine comes with the first technology that unlocks
+--- a recipe it can run, or with its own technology when that one is later (the Dimension Mine came with Craft Wooden Tools,
+--- its first vein recipe much later); called by 142 after its moves, so it follows the vein recipes when they move. The
+--- first technology is one that has no other of them before it (the one with the fewest before it when there are
+--- several); a first technology on another branch than the mine's own is a load error: decide that one by hand
+function FORK_ELECTRIC_MINE.unlock_dimension_mines()
+	local unl = {}
+	for tname, t in pairs(data.raw.technology) do
+		for _, e in pairs(t.effects or {}) do
+			if e.type == "unlock-recipe" then
+				unl[e.recipe] = unl[e.recipe] or {}
+				table.insert(unl[e.recipe], tname)
+			end
+		end
+	end
+	local memo, size = {}, {}
+	local function before(t)   -- t and its prerequisites, recursively
+		if not memo[t] then
+			local s, n = { [t] = true }, 1
+			for _, p in pairs(data.raw.technology[t].prerequisites or {}) do
+				if data.raw.technology[p] then
+					for x in pairs(before(p)) do
+						if not s[x] then s[x], n = true, n + 1 end
+					end
+				end
+			end
+			memo[t], size[t] = s, n
+		end
+		return memo[t]
+	end
+	for _, name in pairs(DIMENSION) do
+		local cats = data.raw["assembling-machine"][name].crafting_categories
+		local techs, start = {}, false
+		for rname, r in pairs(data.raw.recipe) do
+			local runs = false
+			for _, c in pairs(cats) do if fork_has_category(r, c) then runs = true end end
+			if runs and not r.hidden then
+				if r.enabled ~= false then start = true end
+				for _, t in pairs(unl[rname] or {}) do techs[t] = true end
+			end
+		end
+		local first
+		for t in pairs(techs) do
+			local later, b = false, before(t)
+			for u in pairs(techs) do if u ~= t and b[u] then later = true end end
+			if not later and (not first or size[t] < size[first] or (size[t] == size[first] and t < first)) then first = t end
+		end
+		local own = unl[name] or {}
+		if #own ~= 1 then error("163-fork-electric-mine: " .. name .. " is unlocked by " .. #own .. " technologies, not one") end
+		if first and not start and first ~= own[1] then
+			if before(first)[own[1]] then
+				local t = data.raw.technology[own[1]]
+				local keep = {}
+				for _, e in pairs(t.effects) do
+					if not (e.type == "unlock-recipe" and e.recipe == name) then keep[#keep + 1] = e end
+				end
+				t.effects = keep
+				fork_add_unlock(first, name)
+				log("FORK-DIMENSION-MINE: " .. name .. " moves from " .. own[1] .. " to " .. first .. ", the technology of its first recipe")
+			elseif not before(own[1])[first] then
+				error("163-fork-electric-mine: " .. name .. "'s technology " .. own[1] .. " and its first recipe's " .. first
+					.. " are on other branches (issue #556): decide where it comes")
+			end
+		end
+	end
+end
+
 
 
 --------------------------------------------------------------------------------
@@ -639,3 +726,34 @@ for _, e in pairs(data.raw.technology["craft-wooden-tools"].effects) do
 	if e.type == "unlock-recipe" and e.recipe == "manual-mine" then e.recipe = DIMENSION["manual-mine"] end
 end
 fork_add_unlock("smelt-iron-ingots", "manual-mine")
+
+--- for 166 (issue #563): the technologies of the first plant and miner, which their twins come with
+FORK_ELECTRIC_MINE.plant_tech, FORK_ELECTRIC_MINE.miner_tech = P1, MINER_TECH
+
+--- issue #563, classic mode (the startup setting gregtorio-continued-ore-mode = vein-recipes, prototypes/166): no map
+--- veins, so the mining drills are hidden, without a recipe or an unlock; their items (in the chests of a save of 0.5.5 or
+--- of one that switches) place the dimension mine of their tier, so a drill picked up comes back as that mine; placed
+--- drills keep mining the ore they stand on (the maintainer's decision). The dimension mines take the names the mines had
+--- in 0.5.5 (Manual Mine, LV to HV Miner, Ore Drilling Plant Mk I to IV), and the technologies their classic texts.
+if FORK_CLASSIC_ORES then
+	for drill, dim in pairs(DIMENSION) do
+		data.raw["mining-drill"][drill].hidden = true
+		data.raw["mining-drill"][drill].next_upgrade = nil   -- (no item builds a drill: the engine refuses the target)
+		local it = data.raw.item[drill]
+		it.place_result, it.hidden = dim, true
+		data.raw.recipe[drill] = nil
+		for _, t in pairs(data.raw.technology) do
+			local keep = {}
+			for _, e in pairs(t.effects or {}) do
+				if not (e.type == "unlock-recipe" and e.recipe == drill) then keep[#keep + 1] = e end
+			end
+			if t.effects and #keep < #t.effects then t.effects = keep end
+		end
+		data.raw["assembling-machine"][dim].localised_name = { "entity-name." .. drill }
+		data.raw["assembling-machine"][dim].localised_description = { "entity-description.classic-" .. drill }
+		data.raw.item[dim].localised_name = { "entity-name." .. drill }
+	end
+	for _, t in pairs({ MINER_TECH, P1, P2, P3, P4 }) do
+		data.raw.technology[t].localised_description = { "technology-description.classic-" .. t }
+	end
+end

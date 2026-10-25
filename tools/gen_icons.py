@@ -447,6 +447,85 @@ def draw_ender_tank():
     return outline(img, (6, 8, 10, 255))
 
 
+# --- issue #555: the torch, drawn from scratch (GTNH's is Minecraft's own, whose texture is not used): a wooden stick with
+# a coal head and its flame, standing upright; the entity sprite is the icon scaled 2x (nearest), drawn at scale 0.5
+WOOD = [(66, 42, 20), (96, 64, 32), (128, 88, 46), (158, 114, 64)]
+COAL_HEAD = [(20, 18, 16), (40, 36, 32), (62, 56, 50)]
+FLAME = [(196, 70, 14), (238, 128, 24), (252, 190, 48), (255, 236, 150), (255, 252, 226)]
+
+
+def draw_torch():
+    """32 x 32 RGBA: the stick (x 14..17, y 13..30), the coal head (y 10..12) and the flame above it"""
+    img = Image.new("RGBA", (32, 32), (0, 0, 0, 0))
+    px = img.load()
+    for y in range(13, 31):
+        for x in range(14, 18):
+            px[x, y] = tone(WOOD, 0.85 - 0.25 * (x - 14) - 0.01 * (y - 13))
+    for y in range(10, 13):
+        for x in range(14, 18):
+            px[x, y] = tone(COAL_HEAD, 0.8 - 0.3 * (x - 14))
+    for y in range(1, 11):
+        for x in range(10, 22):
+            X, Y = x + 0.5, y + 0.5
+            if in_ellipse(X, Y, 16, 7.5, 4.2, 6.0) and not (Y < 4 and abs(X - 16) > 2.2):
+                core = 1 - math.hypot((X - 16) / 4.2, (Y - 8.5) / 6.0)
+                px[x, y] = tone(FLAME, 0.15 + 0.95 * core)
+    return outline(img, (24, 14, 6, 255))
+
+
+# --- issue #574: the planet icons of the Nether, the Twilight Forest and The End (the map generator shows one per surface
+# a vein is on; they had Vulcanus' and Nauvis' globes): a lit globe with the surface's ground and its spots
+NETHERRACK = [(40, 10, 12), (70, 18, 20), (104, 32, 30), (138, 52, 44), (170, 78, 62)]
+NETHER_LAVA = [(200, 70, 10), (236, 120, 20), (255, 180, 60), (255, 230, 140)]
+FOREST = [(12, 34, 18), (22, 58, 28), (36, 84, 40), (58, 112, 54), (92, 142, 72)]
+FOREST_TREE = [(8, 22, 12), (16, 40, 20), (28, 62, 30)]
+END_VOID = [(10, 6, 18), (22, 12, 36), (38, 22, 58), (58, 36, 84)]
+END_STONE = [(150, 150, 96), (190, 190, 128), (219, 222, 158), (240, 242, 196)]
+
+
+def spot(x, y, seed, scale):
+    """a value in [0, 1) per cell of a grid of `scale` pixels, the same for a seed"""
+    cx, cy = int(x // scale), int(y // scale)
+    return ((cx * 73856093) ^ (cy * 19349663) ^ (seed * 83492791)) % 1000 / 1000
+
+
+def draw_planet(kind):
+    """64 x 64 RGBA: a globe lit from the upper left, its ground and spots by kind (nether, twilight, end)"""
+    size = 64
+    img = Image.new("RGBA", (size, size), (0, 0, 0, 0))
+    px = img.load()
+    c, r = size / 2, size / 2 - 2
+    for y in range(size):
+        for x in range(size):
+            X, Y = x + 0.5, y + 0.5
+            dx, dy = (X - c) / r, (Y - c) / r
+            d2 = dx * dx + dy * dy
+            if d2 > 1:
+                continue
+            light = 0.55 + 0.45 * (-0.6 * dx - 0.6 * dy + 0.53 * math.sqrt(1 - d2))
+            if kind == "nether":
+                if spot(x, y, 1, 6) > 0.84 and d2 < 0.9:
+                    px[x, y] = tone(NETHER_LAVA, light)
+                else:
+                    px[x, y] = tone(NETHERRACK, light + 0.15 * (spot(x, y, 2, 3) - 0.5))
+            elif kind == "twilight":
+                if spot(x, y, 3, 4) > 0.55:
+                    px[x, y] = tone(FOREST_TREE, light * 0.9)
+                else:
+                    px[x, y] = tone(FOREST, light)
+            else:
+                land = math.hypot(dx + 0.15, dy + 0.1) < 0.55 or spot(x, y, 5, 9) > 0.8
+                px[x, y] = tone(END_STONE if land else END_VOID, light)
+    out = img.copy()
+    o = out.load()
+    for y in range(size):   # a dark outline
+        for x in range(size):
+            if px[x, y][3] == 0 and any(0 <= x + a < size and 0 <= y + b < size and px[x + a, y + b][3] > 0
+                                         for a, b in ((1, 0), (-1, 0), (0, 1), (0, -1))):
+                o[x, y] = (10, 10, 12, 255)
+    return out
+
+
 def save_if_changed(img, path):
     if path.exists():
         old = Image.open(path).convert("RGBA")
@@ -479,6 +558,12 @@ def drawn():
     #  issue #504: the Ender Chest and the Ender Tank
     save_if_changed(draw_ender_chest(), ICONS / "ender-chest.png")
     save_if_changed(draw_ender_tank(), ICONS / "ender-tank.png")
+    #  issue #555: the torch (icon and sprite)
+    save_if_changed(draw_torch(), ICONS / "gt-torch.png")
+    save_if_changed(draw_torch().resize((64, 64), Image.NEAREST), ENTITY / "gt-torch.png")
+    #  issue #574: the planet icons of the Nether, the Twilight Forest and The End
+    for planet, kind in (("gt-nether", "nether"), ("gt-twilight", "twilight"), ("gt-end", "end")):
+        save_if_changed(draw_planet(kind), ICONS / (planet + ".png"))
 
 
 def main():

@@ -130,6 +130,8 @@ local function tests_running()
 	check(storage.emine and storage.emine.done, "electric mine")
 	check(storage.lftr and storage.lftr.done, "LFTR")
 	check(storage.solar and storage.solar.done, "solar boilers")
+	check(storage.coal_boiler and storage.coal_boiler.done, "coal boiler")
+	check(storage.torch and storage.torch.done, "torch")
 	check(storage.battery and storage.battery.done, "battery buffers")
 	return running
 end
@@ -955,17 +957,21 @@ function setup_recipe_test(s)
 			s.create_entity{ name = "electric-energy-interface", position = { x, RT_Y + 7 }, force = "player" }
 			s.create_entity{ name = "substation", position = { x + 5, RT_Y + 7 }, force = "player" }
 			e.force.recipes[def[2]].enabled = true
-			e.set_recipe(def[2])
+			-- issue #560: a furnace (the ore machines) picks the recipe from the ingredients
+			if e.type ~= "furnace" then e.set_recipe(def[2]) end
 			-- a recipe that needs a mold (prototypes/150-fork-molds.lua) gets one in the mold slot
 			local molds = prototypes.mod_data["fork-mold-recipes"]
 			if molds and molds.data[def[2]] then e.get_module_inventory().insert{ name = molds.data[def[2]] } end
-			for _, ing in pairs(prototypes.recipe[def[2]].ingredients) do
-				if ing.type == "item" then
-					local n = e.insert{ name = ing.name, count = ing.amount }
-					assert(n == ing.amount, "only " .. n .. " of " .. ing.amount .. " " .. ing.name .. " fit")
-				else
-					local n = e.insert_fluid{ name = ing.name, amount = ing.amount }
-					assert(math.abs(n - ing.amount) < 1e-6, "only " .. n .. " of " .. ing.amount .. " " .. ing.name .. " fit")
+			-- (fluids first: a furnace takes the item of an item and fluid recipe only with the fluid in it, issue #560)
+			for _, kind in pairs({ "fluid", "item" }) do
+				for _, ing in pairs(prototypes.recipe[def[2]].ingredients) do
+					if ing.type == "item" and kind == "item" then
+						local n = e.insert{ name = ing.name, count = ing.amount }
+						assert(n == ing.amount, "only " .. n .. " of " .. ing.amount .. " " .. ing.name .. " fit")
+					elseif ing.type == "fluid" and kind == "fluid" then
+						local n = e.insert_fluid{ name = ing.name, amount = ing.amount }
+						assert(math.abs(n - ing.amount) < 1e-6, "only " .. n .. " of " .. ing.amount .. " " .. ing.name .. " fit")
+					end
 				end
 			end
 			storage.recipe_test.m[i] = e
@@ -1077,7 +1083,7 @@ function setup_crush_test(s)
 					s.create_entity{ name = "electric-energy-interface", position = { x, CR_Y + 7 }, force = "player" }
 					s.create_entity{ name = "substation", position = { x + 3, CR_Y + 7 }, force = "player" }
 				end
-				e.set_recipe(m[2])
+				if e.type ~= "furnace" then e.set_recipe(m[2]) end      -- (issue #560: the macerator picks it)
 				assert(e.insert{ name = def[1], count = 1 } == 1, m[1] .. " took no " .. def[1])
 				st.m[#st.m + 1] = { e = e, recipe = m[2], machine = m[1], product = prototypes.recipe[m[2]].products[1] }
 				x = x + 9
@@ -1130,9 +1136,115 @@ function crush_test()
 		.. game.tick .. ", " .. st.hammers .. " forge hammers; researched " .. table.concat(techs, ", ") .. ")")
 end
 
+--- The ore line as furnaces (issue #560, prototypes/101-fork-machines.lua section 2n): GTNH's iron chain from raw ore to dust
+--- in LV machines that get no recipe set. Raw iron goes into a macerator; the script carries each machine's main product
+--- into the next one (as inserters would) and keeps the ore washer's water up; once a machine crafts, its progress is set
+--- close to the end. Each machine must be a furnace, pick the expected recipe from its input, have an output slot for every
+--- result of it (the byproducts) and make the product; both iron dust routes must end in iron dust.
+local OL_X, OL_Y = 180.5, -60.5
+local OL_DEADLINE = 1500
+local OL = {
+	--  machine                  recipe it must pick              input (from station)  the product it passes on
+	{ "lv-macerator",          "crushed-iron",                  { "raw-iron", 2 },     "crushed-iron" },
+	{ "lv-ore-washer",         "purified-iron",                 { from = 1, take = 1 }, "purified-iron", water = true },
+	{ "lv-thermal-centrifuge", "centrifuged-iron",              { from = 2, take = 1 }, "centrifuged-iron" },
+	{ "lv-macerator",          "centrifuged-iron-maceration",   { from = 3, take = 1 }, "iron-dust" },
+	{ "lv-macerator",          "impure-iron-dust",              { from = 1, take = 1 }, "impure-iron-dust" },
+	{ "lv-centrifuge",         "centrifuging-impure-iron-dust", { from = 5, take = 1 }, "iron-dust" },
+}
+
+local function furnace_recipe_name(e)
+	local r = e.get_recipe()
+	if r then return r.name end
+	local p = e.previous_recipe
+	local n = p and p.name
+	return n and (type(n) == "string" and n or n.name) or nil
+end
+
+function setup_orefurnace_test(s)
+	local fails = {}
+	local st = { m = {}, taken = {}, picked = {} }
+	storage.orefurnace = st
+	local ok, err = pcall(function()
+		for i, def in ipairs(OL) do
+			local x = OL_X + 9 * (i - 1)
+			local e = s.create_entity{ name = def[1], position = { x, OL_Y }, force = "player", raise_built = true }
+			s.create_entity{ name = "electric-energy-interface", position = { x, OL_Y + 7 }, force = "player" }
+			s.create_entity{ name = "substation", position = { x + 3, OL_Y + 7 }, force = "player" }
+			e.force.recipes[def[2]].enabled = true
+			if def[3][1] then assert(e.insert{ name = def[3][1], count = def[3][2] } == def[3][2], def[1] .. " took no " .. def[3][1]) end
+			st.m[i] = e
+			st.taken[i] = 0
+		end
+	end)
+	if not ok then
+		fails[#fails + 1] = "ore furnace test setup: " .. tostring(err)
+		st.done = true
+		log("DEVCHECK-RUNTIME-OREFURNACE failed (setup)")
+	end
+	return fails
+end
+
+function orefurnace_test()
+	local st = storage.orefurnace
+	if not st or st.done then return end
+	local pending = {}
+	for i, def in ipairs(OL) do
+		local e = st.m[i]
+		if e and e.valid then
+			st.picked[i] = st.picked[i] or (e.get_recipe() and e.get_recipe().name)
+			--- (the water first: the washer takes crushed ore only with water in it)
+			local water = def.water and 200 - e.get_fluid_count("water") or 0
+			if water > 0 then e.insert_fluid{ name = "water", amount = water } end
+			local src = def[3].from and st.m[def[3].from]
+			if src and src.valid and st.taken[i] < def[3].take then
+				local out = src.get_inventory(defines.inventory.crafter_output)
+				local item = OL[def[3].from][4]
+				local n = math.min(out.get_item_count(item), def[3].take - st.taken[i])
+				if n > 0 then
+					local put = e.insert{ name = item, count = n }
+					if put > 0 then out.remove{ name = item, count = put } end
+					st.taken[i] = st.taken[i] + put
+				end
+			end
+			if e.crafting_progress > 0 and e.crafting_progress < 0.999 then e.crafting_progress = 0.999 end
+			if e.products_finished == 0 then pending[#pending + 1] = def[2] .. " in " .. def[1] end
+		end
+	end
+	if #pending > 0 and game.tick <= OL_DEADLINE then return end
+	st.done = true
+	local problems = {}
+	for i, def in ipairs(OL) do
+		local e = st.m[i]
+		if not (e and e.valid) then
+			problems[#problems + 1] = def[1] .. " (station " .. i .. ") is gone"
+		else
+			if e.type ~= "furnace" then problems[#problems + 1] = def[1] .. " is a " .. e.type .. ", not a furnace" end
+			local picked = st.picked[i] or furnace_recipe_name(e)
+			if picked ~= def[2] then
+				problems[#problems + 1] = def[1] .. " (station " .. i .. ") picked " .. tostring(picked) .. ", not " .. def[2]
+			end
+			local slots = #e.get_inventory(defines.inventory.crafter_output)
+			local items = 0
+			for _, p in pairs(prototypes.recipe[def[2]].products) do if p.type == "item" then items = items + 1 end end
+			if slots < items then
+				problems[#problems + 1] = def[1] .. " has " .. slots .. " output slots for the " .. items .. " results of " .. def[2]
+			end
+		end
+	end
+	if #pending > 0 then problems[#problems + 1] = "made nothing: " .. table.concat(pending, ", ") end
+	for _, p in pairs(problems) do log("DEVCHECK-RUNTIME-FAIL ore furnace test: " .. p) end
+	log("DEVCHECK-RUNTIME-OREFURNACE " .. (#problems == 0 and "ok" or "failed") .. " (" .. #OL .. " furnaces from raw iron to "
+		.. "iron dust without a recipe set, by tick " .. game.tick .. ")")
+end
+
 --- Solar boilers (issue #446, scripts/fork-steam-boilers.lua): on a surface of their own with the time of day frozen, a
---- Simple Solar Boiler stops at midnight (status "No sunlight") and makes steam at noon
+--- Simple Solar Boiler stops at midnight (status "No sunlight") and makes steam at noon, 1.2 per second times the boiler
+--- output setting (issue #593)
 local SB_WAIT = 150
+--- issue #593: the boiler output setting of this load (1: GT New Horizons)
+BOILER_FACTOR = settings.startup["gregtorio-continued-boiler-output"] and settings.startup["gregtorio-continued-boiler-output"].value
+	or 1
 function setup_solar_test(_)
 	local ss = game.create_surface("devcheck-solar")
 	ss.always_day = false
@@ -1171,11 +1283,116 @@ function solar_test()
 		if e.disabled_by_script then problems[#problems + 1] = "it is stopped at noon" end
 		st.day_steam = e.get_fluid_count("steam")
 		if not (st.day_steam > (st.night_steam or 0)) then problems[#problems + 1] = "no steam at noon" end
+		-- issue #593: one craft a second, its steam is 1.2 times the boiler output setting
+		st.crafts = e.products_finished
+		st.per_craft = st.crafts > 0 and (st.day_steam - (st.night_steam or 0)) / st.crafts or 0
+		if math.abs(st.per_craft - 1.2 * BOILER_FACTOR) > 1e-3 then
+			problems[#problems + 1] = string.format("%.4f steam per second by day, not %.4f (boiler output %g)", st.per_craft,
+				1.2 * BOILER_FACTOR, BOILER_FACTOR)
+		end
 	end
 	st.done = true
 	for _, p in pairs(problems) do log("DEVCHECK-RUNTIME-FAIL solar boiler test: " .. p) end
-	log("DEVCHECK-RUNTIME-SOLAR " .. (#problems == 0 and "ok" or "failed") .. string.format(" (steam %.1f at midnight, %.1f at noon)",
-		st.night_steam or 0, st.day_steam or 0))
+	log("DEVCHECK-RUNTIME-SOLAR " .. (#problems == 0 and "ok" or "failed") .. string.format(" (steam %.1f at midnight, %.1f at noon"
+		.. " from %d crafts of 1 s: %.2f steam/s by day)", st.night_steam or 0, st.day_steam or 0, st.crafts or 0, st.per_craft or 0))
+end
+
+--- Coal boiler (issue #593, prototypes/fork-boiler-output.lua): a Small Coal Boiler with water and coal, on the solar test's
+--- surface, makes 1.2 steam per second times the boiler output setting and burns 36 kW of coal times the setting, measured
+--- over CB_TICKS after CB_WARM ticks (the fuel is the coal in its inventory and what still burns)
+CB_WARM, CB_TICKS = 60, 300   -- (globals: the main chunk is near Lua's 200 locals)
+function setup_coal_boiler_test(_)
+	local ss = game.surfaces["devcheck-solar"]
+	if not ss then return { "coal boiler test: no surface (the solar boiler test makes it)" } end
+	local e = ss.create_entity{ name = "small-coal-boiler", position = { 10.5, 0.5 }, force = "player", raise_built = true }
+	if not e then return { "coal boiler test: could not place the Small Coal Boiler" } end
+	e.insert_fluid{ name = "water", amount = 150 }
+	e.insert{ name = "coal", count = 10 }
+	storage.coal_boiler = { e = e, at = game.tick }
+	return {}
+end
+
+function coal_boiler_fuel(e)
+	return e.get_item_count("coal") * prototypes.item["coal"].fuel_value + e.burner.remaining_burning_fuel
+end
+
+function coal_boiler_test()
+	local st = storage.coal_boiler
+	if not st or st.done then return end
+	local e = st.e
+	local problems = {}
+	if not (e and e.valid) then
+		problems[#problems + 1] = "the boiler is gone"
+	elseif not st.t1 then
+		if game.tick < st.at + CB_WARM then return end
+		e.insert_fluid{ name = "water", amount = 150 }
+		st.t1, st.s1, st.f1 = game.tick, e.get_fluid_count("steam"), coal_boiler_fuel(e)
+		return
+	else
+		if game.tick < st.t1 + CB_TICKS then return end
+		local secs = (game.tick - st.t1) / 60
+		st.steam = (e.get_fluid_count("steam") - st.s1) / secs
+		st.watts = (st.f1 - coal_boiler_fuel(e)) / secs
+		st.coal = st.watts / prototypes.item["coal"].fuel_value
+		local want_steam, want_watts = 1.2 * BOILER_FACTOR, 36e3 * BOILER_FACTOR
+		if math.abs(st.steam - want_steam) > want_steam * 0.02 then
+			problems[#problems + 1] = string.format("%.3f steam/s, not %.3f", st.steam, want_steam)
+		end
+		if math.abs(st.watts - want_watts) > want_watts * 0.05 then
+			problems[#problems + 1] = string.format("burns %.0f W of coal, not %.0f", st.watts, want_watts)
+		end
+	end
+	st.done = true
+	for _, p in pairs(problems) do log("DEVCHECK-RUNTIME-FAIL coal boiler test: " .. p) end
+	log("DEVCHECK-RUNTIME-COALBOILER " .. (#problems == 0 and "ok" or "failed") .. string.format(" (boiler output %g: %.3f steam/s, "
+		.. "%.4f coal/s = %.1f kW)", BOILER_FACTOR, st.steam or 0, st.coal or 0, (st.watts or 0) / 1e3))
+end
+
+--- The torch (issue #555, prototypes/100-fork-fixes.lua): on a surface of its own frozen at midnight, without any power,
+--- a torch works (lit) while vanilla's electric lamp next to it does not; a character can stand on the torch's tile, not
+--- on the lamp's
+local TORCH_WAIT = 60
+function setup_torch_test(_)
+	local ts = game.create_surface("devcheck-torch")
+	ts.always_day = false
+	ts.freeze_daytime = true
+	ts.daytime = 0.5
+	ts.request_to_generate_chunks({ 0, 0 }, 1)
+	ts.force_generate_chunk_requests()
+	local tiles = {}
+	for x = -3, 7 do for y = -3, 3 do tiles[#tiles + 1] = { name = "landfill", position = { x, y } } end end
+	ts.set_tiles(tiles)
+	for _, e in pairs(ts.find_entities{ { -3, -3 }, { 8, 4 } }) do e.destroy() end
+	local t = ts.create_entity{ name = "gt-torch", position = { 0.5, 0.5 }, force = "player", raise_built = true }
+	local l = ts.create_entity{ name = "small-lamp", position = { 4.5, 0.5 }, force = "player", raise_built = true }
+	if not (t and l) then return { "torch test: could not place the torch and the lamp" } end
+	storage.torch = { torch = t, lamp = l, surface = ts, at = game.tick }
+	return {}
+end
+
+function torch_test()
+	local st = storage.torch
+	if not st or st.done or game.tick < st.at + TORCH_WAIT then return end
+	local problems, t, l = {}, st.torch, st.lamp
+	local name = function(s) for k, v in pairs(defines.entity_status) do if v == s then return k end end return tostring(s) end
+	if not (t.valid and l.valid) then
+		problems[#problems + 1] = "the torch or the lamp is gone"
+	else
+		if t.status ~= defines.entity_status.working then
+			problems[#problems + 1] = "the torch is not lit at midnight without power (" .. name(t.status) .. ")"
+		end
+		if l.status == defines.entity_status.working then problems[#problems + 1] = "the electric lamp works without power" end
+		if not st.surface.can_place_entity{ name = "character", position = t.position } then
+			problems[#problems + 1] = "a character cannot stand on the torch's tile"
+		end
+		if st.surface.can_place_entity{ name = "character", position = l.position } then
+			problems[#problems + 1] = "a character can stand on the lamp's tile (the walk test sees nothing)"
+		end
+	end
+	st.done = true
+	for _, p in pairs(problems) do log("DEVCHECK-RUNTIME-FAIL torch test: " .. p) end
+	log("DEVCHECK-RUNTIME-TORCH " .. (#problems == 0 and "ok" or "failed") .. " (torch " .. name(t.valid and t.status)
+		.. ", electric lamp " .. name(l.valid and l.status) .. " at midnight without power)")
 end
 
 --- Battery buffers (issue #444, prototypes/145-fork-power-multiblocks.lua section 8): an LV Battery Buffer (1 battery)
@@ -1459,9 +1676,24 @@ local function check_vein_controls(d, vt)
 		b.cover, a.big_start_r, a.big_tiles, a.cover, b.size, b.with, a.with)
 end
 
+--- issue #563: the startup setting gregtorio-continued-ore-mode; classic mode (vein-recipes) has no map veins
+local CLASSIC = settings.startup["gregtorio-continued-ore-mode"].value == "vein-recipes"
+function gt_ore_names()
+	local names = {}
+	for name, e in pairs(prototypes.get_entity_filtered{ { filter = "type", type = "resource" } }) do
+		if e.resource_category == "gt-ore" then names[#names + 1] = name end
+	end
+	return names
+end
+
 function setup_veins_test()
 	local fails, vt = {}, { problems = {} }
 	storage.veins_test = vt
+	if CLASSIC then
+		--- (veins_test checks that no planet's surface has vein ore; Nauvis now, before the drill test places its patches)
+		vt.nauvis = game.surfaces.nauvis.count_entities_filtered{ type = "resource", name = gt_ore_names() }
+		return fails
+	end
 	local ok, err = pcall(function()
 		local d = prototypes.mod_data["fork-ore-veins"].data
 		local parts, size = {}, nil
@@ -1493,6 +1725,24 @@ function veins_test()
 	local vt = storage.veins_test
 	if not vt or vt.done or game.tick < VT_TAG_TICK then return end
 	vt.done = true
+	if CLASSIC then
+		--- issue #563: no surface has an ore of the map veins (Nauvis' test area, the Nether, Twilight Forest and End of the
+		--- portal test), and their map settings name no vein
+		local parts = {}
+		for _, surface in pairs(game.surfaces) do
+			if surface.planet then
+				local n = surface.name == "nauvis" and vt.nauvis
+					or surface.count_entities_filtered{ type = "resource", name = gt_ore_names() }
+				local mgs = surface.map_gen_settings
+				parts[#parts + 1] = surface.name .. " " .. n
+				if n > 0 then vt.problems[#vt.problems + 1] = n .. " vein ores on " .. surface.name .. " in classic mode" end
+				if (mgs.property_expression_names or {}).gt_vein_id or (mgs.autoplace_controls or {})["gt-ore-veins"] then
+					vt.problems[#vt.problems + 1] = surface.name .. "'s map settings name the veins in classic mode"
+				end
+			end
+		end
+		vt.summary = " (classic ore mode: vein ores " .. table.concat(parts, ", ") .. ")"
+	end
 	local n, tagged = game.surfaces.nauvis, 0
 	--- headless runs raise no on_chunk_charted: the remote call tags the chunk as the event would, twice (one tag only)
 	for _, t in pairs(vt.tags or {}) do
@@ -1501,7 +1751,7 @@ function veins_test()
 		end
 	end
 	for _, t in pairs(vt.tags or {}) do
-		local found = game.forces.player.find_chart_tags(n, { { t.x - 1, t.y - 1 }, { t.x + 1, t.y + 1 } })
+		local found = game.forces.player.find_chart_tags(n, { { t.x - 1, t.y - 1 }, { t.x + 1, t.y + 1 } })   -- (none in classic mode)
 		if #found == 1 and found[1].text == t.text then
 			tagged = tagged + 1
 		else
@@ -1511,6 +1761,72 @@ function veins_test()
 	vt.summary = (vt.summary or "") .. ", " .. tagged .. " start veins tagged on the map"
 	for _, p in pairs(vt.problems) do log("DEVCHECK-RUNTIME-FAIL map vein test: " .. p) end
 	log("DEVCHECK-RUNTIME-VEINS " .. (#vt.problems == 0 and "ok" or "failed") .. (vt.summary or ""))
+end
+
+--- Classic vein recipes (issue #563, prototypes/166-fork-classic-veins.lua): in classic mode a Dimension Mine (called
+--- Manual Mine there) on plain ground, without any ore under it, runs Nauvis' iron vein recipe with an iron pickaxe use and
+--- manual labor: after CV_TICK its output holds the recipe's results of two operations; the recipe and its twins are not
+--- hidden. In map-vein mode the recipe is hidden (the test only says so).
+local CV_X, CV_Y, CV_TICK, CV_RECIPE = -360.5, -180.5, 1300, "mining-iron-vein"
+
+function setup_classic_test(s)
+	local fails, ct = {}, {}
+	storage.classic_test = ct
+	if not CLASSIC then return fails end
+	local ok, err = pcall(function()
+		for _, e in pairs(s.find_entities_filtered{ area = { { CV_X - 4, CV_Y - 4 }, { CV_X + 4, CV_Y + 4 } } }) do
+			if e.valid and e.type ~= "character" then e.destroy() end
+		end
+		game.forces.player.recipes[CV_RECIPE].enabled = true
+		local mine = s.create_entity{ name = "dimension-mine", position = { CV_X, CV_Y }, force = "player", raise_built = true }
+		mine.set_recipe(CV_RECIPE)
+		local labor = 0
+		for _, i in pairs(prototypes.recipe[CV_RECIPE].ingredients) do
+			if i.name == "manual-labor" then labor = i.amount end
+		end
+		local input = mine.get_inventory(defines.inventory.crafter_input)
+		assert(input.insert{ name = "iron-pickaxe-usage", count = 2 } == 2, "the mine took no pickaxe")
+		assert(input.insert{ name = "manual-labor", count = 2 * labor } == 2 * labor, "the mine took no manual labor")
+		ct.mine = mine
+		ct.ores = s.count_entities_filtered{ type = "resource", area = { { CV_X - 3, CV_Y - 3 }, { CV_X + 3, CV_Y + 3 } } }
+	end)
+	if not ok then fails[#fails + 1] = "classic vein test: " .. tostring(err) end
+	return fails
+end
+
+function classic_test()
+	local ct = storage.classic_test
+	if not ct or ct.done then return end
+	if not CLASSIC then
+		ct.done = true
+		local r = prototypes.recipe[CV_RECIPE]
+		local hidden = r and r.hidden
+		if not hidden then log("DEVCHECK-RUNTIME-FAIL classic vein test: " .. CV_RECIPE .. " is not hidden in map-vein mode") end
+		log("DEVCHECK-RUNTIME-CLASSIC " .. (hidden and "ok" or "failed") .. " (map-vein mode: " .. CV_RECIPE .. " hidden)")
+		return
+	end
+	if game.tick < CV_TICK then return end
+	ct.done = true
+	local problems, got = {}, {}
+	local function expect(c, what) if not c then problems[#problems + 1] = what end end
+	local mine = ct.mine
+	expect(mine and mine.valid, "the Dimension Mine is gone")
+	expect(ct.ores == 0, ct.ores .. " ore tiles under the mine")
+	if mine and mine.valid then
+		local out = mine.get_inventory(defines.inventory.crafter_output)
+		for _, r in pairs(prototypes.recipe[CV_RECIPE].products) do
+			local n = out.get_item_count(r.name)
+			got[#got + 1] = n .. " " .. r.name
+			expect(n == 2 * r.amount, string.format("%d %s in the output, not %d (status %s)", n, r.name, 2 * r.amount,
+				tostring(mine.status)))
+		end
+	end
+	for _, n in pairs({ CV_RECIPE, "drilling-iron-vein", "miner-iron-vein", "mining-iron-vein-with-stone-pickaxe" }) do
+		expect(prototypes.recipe[n] and not prototypes.recipe[n].hidden, n .. " is hidden in classic mode")
+	end
+	for _, p in pairs(problems) do log("DEVCHECK-RUNTIME-FAIL classic vein test: " .. p) end
+	log("DEVCHECK-RUNTIME-CLASSIC " .. (#problems == 0 and "ok" or "failed") .. " (a Dimension Mine on plain ground ran "
+		.. CV_RECIPE .. " twice: " .. table.concat(got, ", ") .. ")")
 end
 
 --- Nether Portal (issue #501, scripts/fork-portals.lua): a character next to a portal on Nauvis goes through it (the
@@ -1630,7 +1946,10 @@ end
 
 --- Ender Storage (issue #504, scripts/fork-ender.lua): an Ender Chest on Nauvis and one in the Nether with the same code
 --- share their slots, a third with another code does not; an Ender Tank of water on Nauvis and an empty one in the
---- Nether with the same code hold half each after the levelling, a third with another code stays empty.
+--- Nether with the same code hold half each after the levelling, a third with another code stays empty; a chest and a
+--- tank built from a blueprint get the codes of its tags (issue #546). Issue #545: the drop-downs list the colours
+--- alphabetically and map back to the same code; a chest of an old save with link_id 3803 shows red, green, blue and
+--- shares with a chest set to red, green, blue through the drop-downs.
 local EN_WAIT = 61   -- three levelling intervals
 
 function setup_ender_test(s)
@@ -1652,10 +1971,46 @@ function setup_ender_test(s)
 		for e, code in pairs({ [a] = 1234, [b] = 1234, [c] = 0, [t1] = 777, [t2] = 777, [t3] = 778 }) do
 			remote.call("fork-ender", "set_code", e, code)
 		end
+		-- issue #545: a chest of an old save (red, green, blue: link_id 3803) and one set through the drop-downs
+		local old, new = place(s, "ender-chest", { -200.5, -245.5 }), place(n, "ender-chest", { 30, 10 })
+		old.link_id = 3803
+		et.old_shown = remote.call("fork-ender", "shown_of", remote.call("fork-ender", "get_code", old))
+		remote.call("fork-ender", "set_code", new, remote.call("fork-ender", "code_of", et.old_shown))
+		old.insert{ name = "copper-plate", count = 3 }
 		a.insert{ name = "iron-plate", count = 7 }
 		t1.insert_fluid{ name = "water", amount = 1000 }
-		et.chests, et.tanks, et.tick = { a, b, c }, { t1, t2, t3 }, game.tick
+		et.chests, et.tanks, et.tick = { a, b, c, old, new }, { t1, t2, t3 }, game.tick
 		et.code = remote.call("fork-ender", "get_code", b)
+		--- issue #546: a blueprint keeps the codes as entity tag; built by script with the chest's link_id taken out (a
+		--- ghost a player places has lost it), the chest and the tank get their codes from the tag; a blueprint without
+		--- the tag (made before) still gives the chest its link_id
+		local d, t4 = place(s, "ender-chest", { -200.5, -255.5 }), place(s, "ender-tank", { -195.5, -255.5 })
+		remote.call("fork-ender", "set_code", d, 2345)
+		remote.call("fork-ender", "set_code", t4, 999)
+		local inv = game.create_inventory(2)
+		inv.insert{ name = "blueprint", count = 2 }
+		local tagged, old = inv[1], inv[2]
+		local area = { { -202, -258 }, { -193, -253 } }
+		remote.call("fork-ender", "tag_blueprint", tagged,
+			tagged.create_blueprint{ surface = s, force = "player", area = area })
+		old.create_blueprint{ surface = s, force = "player", area = area }
+		local ents, bp = tagged.get_blueprint_entities() or {}, { tag = {}, ghosts = 0 }
+		for _, be in pairs(ents) do
+			bp.tag[be.name] = be.tags and be.tags.fork_ender_code
+			if be.name == "ender-chest" then be.link_id = 0 end
+		end
+		tagged.set_blueprint_entities(ents)
+		for key, y in pairs({ tagged = -263, old = -269 }) do
+			local ghosts = (key == "tagged" and tagged or old).build_blueprint{ surface = s, force = "player",
+				position = { -197, y }, build_mode = defines.build_mode.forced }
+			for _, g in pairs(ghosts) do
+				bp.ghosts = bp.ghosts + 1
+				local _, e = g.revive{ raise_revive = true }
+				if e then bp[key .. "-" .. e.name] = remote.call("fork-ender", "get_code", e) end
+			end
+		end
+		inv.destroy()
+		et.bp = bp
 	end)
 	if not ok then fails[#fails + 1] = "ender storage test: " .. tostring(err) end
 	return fails
@@ -1678,10 +2033,48 @@ function ender_test()
 	expect(math.abs(w1 - 500) < 1e-3 and math.abs(w2 - 500) < 1e-3,
 		string.format("the Ender Tanks of one code hold %.1f (Nauvis) and %.1f (Nether), not 500 each", w1, w2))
 	expect(w3 == 0, "the Ender Tank of another code holds " .. w3 .. " water")
+	-- the drop-downs (issue #545): alphabetical, every code survives a round trip, an old chest shows its colours
+	local names = remote.call("fork-ender", "shown_colours")
+	local seen = {}
+	for i, name in ipairs(names) do
+		seen[name] = true
+		if i > 1 then expect(names[i - 1] < name, "the drop-down lists " .. names[i - 1] .. " before " .. name) end
+	end
+	expect(#names == 16 and table_size(seen) == 16, "the drop-down has " .. #names .. " items, " .. table_size(seen)
+		.. " different")
+	local trips = 0
+	for code = 0, 4095 do
+		if remote.call("fork-ender", "code_of", remote.call("fork-ender", "shown_of", code)) == code then
+			trips = trips + 1
+		end
+	end
+	expect(trips == 4096, (4096 - trips) .. " codes change on the way through the drop-downs")
+	local shown = et.old_shown
+	local function name(i) return names[i] or tostring(i) end
+	expect(name(shown[1]) == "red" and name(shown[2]) == "green" and name(shown[3]) == "blue",
+		"the chest with link_id 3803 shows " .. name(shown[1]) .. ", " .. name(shown[2]) .. ", " .. name(shown[3])
+		.. ", not red, green, blue")
+	local new = et.chests[5]
+	expect(new.link_id == 3803, "the chest set to red, green, blue through the drop-downs has link_id " .. new.link_id)
+	expect(new.get_item_count("copper-plate") == 3, "the new red, green, blue chest holds "
+		.. new.get_item_count("copper-plate") .. " of the old one's 3 copper plates")
+	local bp = et.bp or { tag = {}, ghosts = 0 }
+	expect(bp.tag["ender-chest"] == 2345 and bp.tag["ender-tank"] == 999, string.format("the blueprint's tags are %s "
+		.. "(chest) and %s (tank), not 2345 and 999", tostring(bp.tag["ender-chest"]), tostring(bp.tag["ender-tank"])))
+	expect(bp.ghosts == 4, bp.ghosts .. " ghosts of the two blueprints, not 4")
+	expect(bp["tagged-ender-chest"] == 2345, "the chest built from the tagged blueprint without link_id has the code "
+		.. tostring(bp["tagged-ender-chest"]) .. ", not 2345")
+	expect(bp["tagged-ender-tank"] == 999, "the tank built from the tagged blueprint has the code "
+		.. tostring(bp["tagged-ender-tank"]) .. ", not 999")
+	expect(bp["old-ender-chest"] == 2345, "the chest built from a blueprint without the tag has the code "
+		.. tostring(bp["old-ender-chest"]) .. ", not its link_id 2345")
 	for _, p in pairs(problems) do log("DEVCHECK-RUNTIME-FAIL ender storage test: " .. p) end
 	log("DEVCHECK-RUNTIME-ENDER " .. (#problems == 0 and "ok" or "failed") .. string.format(" (7 iron plates through the "
-		.. "Ender Chests to the Nether, %d there; water levelled %.0f / %.0f between Nauvis and the Nether)",
-		b.get_item_count("iron-plate"), w1, w2))
+		.. "Ender Chests to the Nether, %d there; water levelled %.0f / %.0f between Nauvis and the Nether; drop-downs "
+		.. "alphabetical, %d of 4096 codes round-trip, link_id 3803 shows %s, %s, %s; from a blueprint the codes %s "
+		.. "(chest by tag), %s (tank by tag), %s (chest of an old blueprint by link_id))",
+		b.get_item_count("iron-plate"), w1, w2, trips, name(shown[1]), name(shown[2]), name(shown[3]),
+		tostring(bp["tagged-ender-chest"]), tostring(bp["tagged-ender-tank"]), tostring(bp["old-ender-chest"])))
 end
 
 function setup_battery_test(s)
@@ -2776,6 +3169,7 @@ script.on_nth_tick(10, function()
 	if not (storage.tiers and storage.tiers.done) then tier_test() end
 	if not (storage.recipe_test and storage.recipe_test.done) then recipe_test() end
 	crush_test()
+	orefurnace_test()
 	steam_test()
 	chain_test()
 	lftr_test()
@@ -2786,8 +3180,11 @@ script.on_nth_tick(10, function()
 	melt_test()
 	emine_test()
 	solar_test()
+	coal_boiler_test()
+	torch_test()
 	battery_test()
 	veins_test()
+	classic_test()
 	drill_test()
 	portal_test()
 	ender_test()
@@ -2825,7 +3222,8 @@ script.on_init(function()
 	local recipe_for = {}
 	for rn, r in pairs(prototypes.recipe) do recipe_for[r.categories[1]] = recipe_for[r.categories[1]] or rn end
 	local x, y, placed, with_recipe, fails = -150, -150, 0, 0, {}
-	for name, p in pairs(prototypes.get_entity_filtered{ { filter = "type", type = "assembling-machine" } }) do
+	--- (issue #560: the ore machines are furnaces; placed too, without a recipe)
+	for name, p in pairs(prototypes.get_entity_filtered{ { filter = "type", type = { "assembling-machine", "furnace" } } }) do
 		if p.items_to_place_this and #p.items_to_place_this > 0 then
 			local ok, e = pcall(function()
 				return s.create_entity{ name = name, position = { x, y }, force = "player", raise_built = true }
@@ -2854,6 +3252,7 @@ script.on_init(function()
 	for _, f in pairs(setup_tier_test(s)) do fails[#fails + 1] = f end
 	for _, f in pairs(setup_recipe_test(s)) do fails[#fails + 1] = f end
 	for _, f in pairs(setup_crush_test(s)) do fails[#fails + 1] = f end
+	for _, f in pairs(setup_orefurnace_test(s)) do fails[#fails + 1] = f end
 	for _, f in pairs(setup_steam_test(s)) do fails[#fails + 1] = f end
 	for _, f in pairs(setup_chain_test(s)) do fails[#fails + 1] = f end
 	for _, f in pairs(setup_lftr_test(s)) do fails[#fails + 1] = f end
@@ -2864,8 +3263,11 @@ script.on_init(function()
 	for _, f in pairs(setup_melt_test(s)) do fails[#fails + 1] = f end
 	for _, f in pairs(setup_emine_test(s)) do fails[#fails + 1] = f end
 	for _, f in pairs(setup_solar_test(s)) do fails[#fails + 1] = f end
+	for _, f in pairs(setup_coal_boiler_test(s)) do fails[#fails + 1] = f end
+	for _, f in pairs(setup_torch_test(s)) do fails[#fails + 1] = f end
 	for _, f in pairs(setup_battery_test(s)) do fails[#fails + 1] = f end
 	for _, f in pairs(setup_veins_test()) do fails[#fails + 1] = f end
+	for _, f in pairs(setup_classic_test(s)) do fails[#fails + 1] = f end
 	for _, f in pairs(setup_drill_test(s)) do fails[#fails + 1] = f end
 	for _, f in pairs(setup_portal_test(s)) do fails[#fails + 1] = f end
 	for _, f in pairs(setup_ender_test(s)) do fails[#fails + 1] = f end

@@ -34,7 +34,7 @@ data.raw["item"]["electric-furnace"] = nil
 local VANILLA_RECIPES_REMOVED = {
 	-- the item's own recipe, replaced by Gregtorio's
 	["battery"] = "GTNH fills a battery hull in the canning machine (filling-assorted-batteries)",
-	["small-lamp"] = "the technology lamp unlocks Gregtorio's recipe torch of the item",
+	["small-lamp"] = "Gregtorio's LV assembler recipe small-lamp-lv-assembler (issue #555; the recipe torch makes the torch)",
 	["chemical-science-pack"] = "Gregtorio's recipe hv-science-pack",
 	["space-science-pack"] = "Gregtorio's recipe luv-science-pack",
 	["metallurgic-science-pack"] = "Gregtorio's recipe zpm-science-pack",
@@ -355,8 +355,8 @@ data.raw["map-gen-presets"].default["gregtorio"] = {
 		peaceful_mode = true,
 		autoplace_controls = {
 			--- issue #497: GTNH's map veins (prototypes/165-fork-ore-veins.lua) at the defaults of #495 (issue #508: the
-			--- vanilla resources' controls are gone, below)
-			["gt-ore-veins"] = { frequency = 1, size = 1, richness = 1 },
+			--- vanilla resources' controls are gone, below; issue #563: none in classic mode, whose planets have no veins)
+			["gt-ore-veins"] = (not FORK_CLASSIC_ORES) and { frequency = 1, size = 1, richness = 1 } or nil,
 		}
 	}
 }
@@ -605,7 +605,9 @@ data.raw.technology["landfill"].prerequisites = { "rock-crusher" }
 
 
 ---LAMP
-data.raw.technology["lamp"].effects = { { type = "unlock-recipe", recipe = "torch" } }
+--- (issue #555: the torch from coal and from charcoal, 100)
+data.raw.technology["lamp"].effects = { { type = "unlock-recipe", recipe = "torch" },
+	{ type = "unlock-recipe", recipe = "torch-from-charcoal" } }
 data.raw.technology["lamp"].unit = {count = 5, ingredients = {{"automation-science-pack", SP01 }}, time = 5 }
 data.raw.technology["lamp"].icon = "__gregtorio-continued__/graphics/technology/torches.png"
 data.raw.technology["lamp"].prerequisites = { "craft-automation-science-packs" }
@@ -816,13 +818,23 @@ FORK_UNLOCK_TREE.apply(true)
 --- (prototypes/157-fork-recycling.lua, issue #190)
 FORK_RECYCLING.unlock()
 --- Fork: the steam macerator runs copies of the LV macerator recipes without their byproducts, as GT's bronze machines
---- (prototypes/101-fork-machines.lua, issue #447); after every unlock above
+--- (prototypes/101-fork-machines.lua, issue #447); after every unlock above; the copies of the ore forms come in the steam
+--- age, with the smelting of what they make (issue #571)
 fork_steam_categories()
+--- Fork: the ore machines are furnaces that pick their recipe from the input (prototypes/101-fork-machines.lua, issue
+--- #560); after the steam macerators' categories above
+fork_furnace_machines()
 --- Fork: every Gregtorio recipe named after its product unless it has its own name (prototypes/fork-locale.lua, issue #230)
 FORK_LOCALE.name_recipes()
 require("prototypes.fork-menu-simulations")
 --- Fork: cheap research (startup setting, default off); after every change to the technologies above
 require("prototypes.fork-one-pack-research")
+--- Fork: the boiler output setting (issue #593): every steam boiler makes its steam and burns its fuel that many times
+--- faster; after every file that makes or changes a boiler and before the steam per second of the descriptions below
+require("prototypes.fork-boiler-output")
+--- Fork: steam per second in the descriptions of the boilers and the steam machines (issue #564), after every file that
+--- makes or changes them
+require("prototypes.fork-steam-rates")
 --- Fork: Factorio 2.1 (issue #535): the recycler mod's technology `recycling` unlocks every recycling recipe with a hidden
 --- effect; the ones of recipes deleted above (the burner mining drill's, the electric furnace's, ...) go too (a technology
 --- that names a missing recipe fails the load). A shown effect of a missing recipe stays an error.

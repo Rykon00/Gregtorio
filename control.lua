@@ -21,6 +21,8 @@ local fork_ore_drills = require("scripts.fork-ore-drills")
 local fork_portals = require("scripts.fork-portals")
 --- Fork: Ender Chests and Ender Tanks of one colour code share their contents on every surface (issue #504, see prototypes/160-fork-dimension-mines.lua)
 local fork_ender = require("scripts.fork-ender")
+--- Fork: the ore machines of old saves rebuilt as furnaces (issue #560, see prototypes/101-fork-machines.lua; remote only)
+require("scripts.fork-ore-furnaces")
 
 local function on_built(event)
   local entity = event.entity
@@ -33,7 +35,7 @@ local function on_built(event)
   fork_space_elevator.on_built(entity)
   fork_steam_boilers.on_built(entity)
   fork_ore_drills.on_built(entity)
-  fork_ender.on_built(entity)
+  fork_ender.on_built(entity, event.tags)   -- issue #546: the code of a blueprint
 end
 script.on_event({ defines.events.on_built_entity, defines.events.on_robot_built_entity }, on_built)
 --- Fork: the vein of a mine about to be replaced (issue #342)
@@ -55,7 +57,7 @@ script.on_event({ defines.events.script_raised_built, defines.events.script_rais
   fork_space_elevator.on_built(event.entity)
   fork_steam_boilers.on_built(event.entity)
   fork_ore_drills.on_built(event.entity)
-  fork_ender.on_built(event.entity)
+  fork_ender.on_built(event.entity, event.tags)
 end)
 script.on_event(defines.events.on_entity_cloned, function(event)
   fork_power.on_built(event.destination)
@@ -75,6 +77,9 @@ script.on_event(defines.events.on_gui_opened, fork_ender.on_gui_opened)
 script.on_event(defines.events.on_gui_closed, fork_ender.on_gui_closed)
 script.on_event(defines.events.on_gui_selection_state_changed, fork_ender.on_gui_selection_state_changed)
 script.on_event(defines.events.on_entity_settings_pasted, fork_ender.on_entity_settings_pasted)
+--- Fork: blueprints keep the colour code of the Ender Chest and Ender Tank (issue #546)
+script.on_event(defines.events.on_player_setup_blueprint, fork_ender.on_player_setup_blueprint)
+script.on_event(defines.events.on_blueprint_settings_pasted, fork_ender.on_blueprint_settings_pasted)
 
 -- Raise a custom event when the cutscene ends
 script.on_event(defines.events.on_cutscene_cancelled, function(event)
@@ -154,6 +159,12 @@ script.on_configuration_changed(function(data)
 	fork_space_elevator.on_configuration_changed()
 	fork_steam_boilers.on_configuration_changed()
 	fork_ore_drills.on_configuration_changed()
+	fork_ore_veins.on_configuration_changed()   -- issue #563: a save whose ore mode changed
+end)
+
+--- Fork: a new map notes its ore mode (issue #563, scripts/fork-ore-veins.lua)
+script.on_init(function()
+	fork_ore_veins.on_init()
 end)
 
 

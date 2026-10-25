@@ -1,0 +1,11 @@
+{
+  "name": "zz-gregtorio-devcheck-switch",
+  "version": "1.0.0",
+  "title": "Gregtorio devcheck ore mode switch",
+  "author": "rykon_",
+  "factorio_version": "2.1",
+  "description": "Test helper for tools/devcheck (issue #563): a map made in one ore mode, checked after a load in the other. Not meant for normal play.",
+  "dependencies": [
+    "? gregtorio-continued"
+  ]
+}

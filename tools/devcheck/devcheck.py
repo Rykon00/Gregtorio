@@ -10,6 +10,8 @@
     python tools/devcheck/devcheck.py all       # check + runtime
     python tools/devcheck/devcheck.py menusim --sim all --compare
                                                 # run the main menu simulations with and without the mod
+    python tools/devcheck/devcheck.py menusim --sim gregtorio_steam_age --rebuild
+                                                # issue #588: save a Gregtorio menu scene again, shrunk, with today's mods
     python tools/devcheck/devcheck.py handover  # issue #83: prototype of the ME state hand-over to me-network
 
 Everything is kept in .devcheck/ in the repository root (git-ignored).
@@ -151,22 +153,35 @@ def engine_version(fdir=None):
     return ".".join(v.split(".")[:2])
 
 
-def helper_dir(src):
+def helper_dir(src, files=None):
     """issue #535: a helper mod (checkmod/, runtimemod/, migratemod/) as it is when the Factorio in use is the one it is
     written for (FACTORIO_VERSION), else a copy in the work folder whose info.json says that Factorio's version: the
-    helpers run in a 2.0 Factorio too (the old save of `migrate --old-factorio`)"""
+    helpers run in a 2.0 Factorio too (the old save of `migrate --old-factorio`). files: {name: text} written into a
+    copy (also for this Factorio), e.g. the old version's migrations for the migrate helper (issue #552)"""
     v = engine_version()
-    if v == FACTORIO_VERSION:
+    if v == FACTORIO_VERSION and not files:
         return src
     dest = WORK / ("helper-" + v) / src.name
     if dest.exists():
         shutil.rmtree(dest)
     shutil.copytree(src, dest)
-    f = dest / "info.json"
-    info = json.loads(f.read_text(encoding="utf-8"))
-    info["factorio_version"] = v
-    f.write_text(json.dumps(info, indent=2), encoding="utf-8")
+    if v != FACTORIO_VERSION:
+        f = dest / "info.json"
+        info = json.loads(f.read_text(encoding="utf-8"))
+        info["factorio_version"] = v
+        f.write_text(json.dumps(info, indent=2), encoding="utf-8")
+    for name, text in (files or {}).items():
+        (dest / name).write_text(text, encoding="utf-8")
     return dest
+
+
+def zip_migrations(path):
+    """the file names in migrations/ of a mod zip (issue #552: Factorio runs a Lua migration once per save, so the
+    migrate helper skips the check of a migration the old version already ran)"""
+    import zipfile
+    with zipfile.ZipFile(path) as z:
+        return sorted(n.split("/")[-1] for n in z.namelist() if n.count("/") == 2 and n.split("/")[1] == "migrations"
+                      and n.split("/")[-1])
 
 
 def texture_stand_in(me_info, me_dir):
@@ -221,9 +236,12 @@ def remove_path(p):
 
 
 def prepare_mods(with_runtime=False, gregtorio_zip=None, with_migrate=False, menusim=None, gregtorio=True,
-                 settings=None):
+                 settings=None, old_migrations=(), with_switch=False, helper=True):
     """mods/ = dependency zips + the mod (working copy or a zip) + devcheck helper mods.
-    menusim: name of a main menu simulation for the menusim helper mod; gregtorio=False leaves the mod out.
+    menusim: name of a main menu simulation for the menusim helper mod, or {"name": ..., more config} (written into the
+    helper's config.lua); gregtorio=False leaves the mod out; helper=False leaves out the check helper too (issue #588:
+    a menu scene's save is saved with the players' mods only).
+    old_migrations: the migration files of the old save's version, for the migrate helper (`old-version.lua`).
     settings: {startup setting name: bool} forced for this run (`check --set`); without it every setting has its
     default, because mod-settings.dat is removed (a value stored by an earlier run would win over the default)."""
     remove_path(MODS / "mod-settings.dat")
@@ -243,10 +261,11 @@ def prepare_mods(with_runtime=False, gregtorio_zip=None, with_migrate=False, men
     else:
         info = json.loads((ROOT / "info.json").read_text(encoding="utf-8"))
         link_dir(MODS / info["name"], ROOT)
-    link_dir(MODS / "zz-gregtorio-devcheck", helper_dir(HERE / "checkmod"))
+    if helper:
+        link_dir(MODS / "zz-gregtorio-devcheck", helper_dir(HERE / "checkmod"))
     # the built-in mods of the Factorio in use (issue #535: 2.1 adds recycler; a 2.0 Factorio for an old save has none)
     builtin = [n for n in ("space-age", "quality", "elevated-rails", "recycler") if (FACTORIO / "data" / n).is_dir()]
-    enabled = ["base"] + builtin + ([info["name"]] if info else []) + ["zz-gregtorio-devcheck"]
+    enabled = ["base"] + builtin + ([info["name"]] if info else []) + (["zz-gregtorio-devcheck"] if helper else [])
     zips = [z.name.rsplit("_", 1)[0] for z in MODS.glob("*.zip") if not z.name.startswith(MOD_NAMES)]
     enabled += [n for n in zips if n != ME_NETWORK]
     disabled = []
@@ -269,12 +288,17 @@ def prepare_mods(with_runtime=False, gregtorio_zip=None, with_migrate=False, men
         link_dir(MODS / "zz-gregtorio-devcheck-runtime", helper_dir(HERE / "runtimemod"))
         enabled.append("zz-gregtorio-devcheck-runtime")
     if with_migrate:
-        link_dir(MODS / "zz-gregtorio-devcheck-migrate", helper_dir(HERE / "migratemod"))
+        lua = "return { migrations = {" + "".join(f" [{json.dumps(n)}] = true," for n in old_migrations) + " } }\n"
+        link_dir(MODS / "zz-gregtorio-devcheck-migrate", helper_dir(HERE / "migratemod", {"old-version.lua": lua}))
         enabled.append("zz-gregtorio-devcheck-migrate")
+    if with_switch:
+        link_dir(MODS / "zz-gregtorio-devcheck-switch", helper_dir(HERE / "switchmod"))
+        enabled.append("zz-gregtorio-devcheck-switch")
     if menusim:
         # a copy, not a link: config.lua names the simulation to run
         shutil.copytree(HERE / "menusimmod", MODS / "zz-gregtorio-devcheck-menusim")
-        (MODS / "zz-gregtorio-devcheck-menusim" / "config.lua").write_text(f"return {{ name = {json.dumps(menusim)} }}\n")
+        config = menusim if isinstance(menusim, dict) else {"name": menusim}
+        (MODS / "zz-gregtorio-devcheck-menusim" / "config.lua").write_text(f"return {lua_literal(config)}\n")
         enabled.append("zz-gregtorio-devcheck-menusim")
     if settings:
         # a generated mod: forces the settings in the settings stage, after the mod defined them
@@ -283,14 +307,35 @@ def prepare_mods(with_runtime=False, gregtorio_zip=None, with_migrate=False, men
         (d / "info.json").write_text(json.dumps({
             "name": "zz-gregtorio-devcheck-settings", "version": "1.0.0", "title": "Gregtorio devcheck settings",
             "author": "rykon_", "factorio_version": engine_version(), "dependencies": ["? " + n for n in MOD_NAMES]}))
+        # (issue #563: a string setting takes its value as the only allowed one; issue #593: a number setting too)
         (d / "settings-final-fixes.lua").write_text("".join(
-            f"do local s = data.raw['bool-setting'][{json.dumps(n)}] "
-            f"assert(s, 'devcheck --set: no bool setting ' .. {json.dumps(n)}) "
-            f"s.hidden = true s.forced_value = {'true' if v else 'false'} s.default_value = s.forced_value end\n"
+            (f"do local s = data.raw['bool-setting'][{json.dumps(n)}] "
+             f"assert(s, 'devcheck --set: no bool setting ' .. {json.dumps(n)}) "
+             f"s.hidden = true s.forced_value = {'true' if v else 'false'} s.default_value = s.forced_value end\n")
+            if isinstance(v, bool) else
+            (f"do local s = data.raw['double-setting'][{json.dumps(n)}] or data.raw['int-setting'][{json.dumps(n)}] "
+             f"assert(s, 'devcheck --set: no double or int setting ' .. {json.dumps(n)}) "
+             f"s.hidden = true s.minimum_value = nil s.maximum_value = nil s.allowed_values = {{ {v!r} }} "
+             f"s.default_value = {v!r} end\n")
+            if isinstance(v, (int, float)) else
+            (f"do local s = data.raw['string-setting'][{json.dumps(n)}] "
+             f"assert(s, 'devcheck --set: no string setting ' .. {json.dumps(n)}) "
+             f"s.hidden = true s.allowed_values = {{ {json.dumps(v)} }} s.default_value = {json.dumps(v)} end\n")
             for n, v in settings.items()))
         enabled.append("zz-gregtorio-devcheck-settings")
     (MODS / "mod-list.json").write_text(json.dumps({"mods": [{"name": n, "enabled": True} for n in enabled]
                                                     + [{"name": n, "enabled": False} for n in disabled]}))
+
+
+def lua_literal(v):
+    """a Lua literal of a JSON-like value (dict with string keys, list, str, number, bool, None)"""
+    if isinstance(v, dict):
+        return "{ " + " ".join(f"[{json.dumps(str(k))}] = {lua_literal(x)}," for k, x in v.items()) + " }"
+    if isinstance(v, (list, tuple)):
+        return "{ " + " ".join(f"{lua_literal(x)}," for x in v) + " }"
+    if isinstance(v, bool):
+        return "true" if v else "false"
+    return "nil" if v is None else json.dumps(v)
 
 
 def factorio(*args):
@@ -340,29 +385,38 @@ class Model:
         split = lambda s: [x.split(":", 1)[1] for x in s.split(",") if x]
         kinds = lambda s: [x.split(":", 1)[0] for x in s.split(",") if x]
         self.R, self.C, self.CF, self.I, self.T = {}, {}, {}, {}, {}
+        self.ctype = {}                     # crafter -> its prototype type (issue #560: furnaces pick their recipe)
         self.burnt, self.burners = [], {}   # (fuel item, burnt result, fuel categories); burner entity -> categories
         self.tools = {}                     # recipe -> the mold or lens it needs in the module slot (issue #316)
+        self.itype, self.uses = {}, {}      # item -> its prototype type; item -> its uses besides recipes (issue #547)
         self.base = {"water", "steam"}
         mined, reach = {}, {}   # issue #501: resource -> its mined items; resource -> technologies of its planets
+        gt_ores = set()         # issue #563: the resources of the map veins (category gt-ore)
         for p in rows:
             k = p[0]
             if k == "R":
                 # (issue #535: a recipe has a list of categories since Factorio 2.1; `cat` is the first, a Gregtorio recipe's one)
                 cats = [c for c in p[2].split(",") if c] or ["crafting"]
-                self.R[p[1]] = dict(cat=cats[0], cats=set(cats), en=p[3] == "true", ing=split(p[4]), res=split(p[5]),
+                self.R[p[1]] = dict(cat=cats[0], cats=set(cats), en=p[3] == "true", ing=split(p[4]), ingk=kinds(p[4]),
+                                    res=split(p[5]),
                                     fin=kinds(p[4]).count("fluid"), fout=kinds(p[5]).count("fluid"),
                                     hidden=p[6] == "true", hide_craft=p[7] == "true", sg=p[8], group=p[9],
                                     icon=p[10] if len(p) > 10 else "")
             elif k == "C":
                 self.C[p[1]] = p[3].split(",") if p[3] else []
+                self.ctype[p[1]] = p[2]
                 self.CF[p[1]] = (int(p[4]), int(p[5]))
             elif k == "I":
-                self.I[p[1]] = p[3]
+                self.I[p[1]] = p[3] if len(p) > 3 else ""
+                self.itype[p[1]] = p[2]
+                self.uses[p[1]] = [x for x in p[4].split(",") if x] if len(p) > 4 else []
             elif k == "T":
                 self.T[p[1]] = dict(pre=[x for x in p[2].split(",") if x], eff=[x for x in p[3].split(",") if x],
                                     sci=[x for x in p[4].split(",") if x], trig=p[5], en=p[6] == "true")
             elif k == "M" and p[4] != "gregtorio-disabled":
                 mined[p[1]] = ([p[2]] if p[2] else []) + [x.split(":", 1)[1] for x in p[3].split(",") if x]
+                if p[4] == "gt-ore":
+                    gt_ores.add(p[1])
             elif k == "P":
                 reach.setdefault(p[1], set()).add(p[3] if len(p) > 3 else "")
             elif k == "O" and p[2]:
@@ -376,8 +430,11 @@ class Model:
         # issue #501: a resource is there from the start unless every planet that places it is reached by a technology
         # (the Nether's map veins); then the technology unlocks a pseudo recipe `planet-mining:<resource>` that gives its
         # items, in the category `planet-mining` of the character
+        # (issue #563: an ore of the map veins that no planet places, classic mode, gives nothing)
         for res, items in mined.items():
             techs = reach.get(res)
+            if not techs and res in gt_ores:
+                continue
             if not techs or "" in techs:
                 self.base.update(items)
                 continue
@@ -656,6 +713,38 @@ def check_table_only(m, sec):
     return f"{only_items} reachable items with only crafting table or hand recipes, {len(allow)} recipes in the allow-list", problems + stale
 
 
+def check_trigger_items(m, sec):
+    """Issue #547: an item that a technology's craft-item trigger asks for and that has no use besides it fails: no recipe
+    (enabled or unlocked by a researchable technology, not hidden, not a recycling recipe) takes it, no technology's
+    research unit takes it (science packs), it places nothing,
+    it is a plain `item` (tools, armor, capsules, modules and the like have their own use) and no fuel, tile, equipment
+    or plant; unless it is in the allow-list FORK_TRIGGER_ONLY_ITEMS of prototypes/100-fork-fixes.lua with its reason
+    (section TRIGGERONLYOK); an entry that is no such item fails too. Returns (info line, problems)."""
+    allow = {r[0]: (r[1] if len(r) > 1 else "") for r in sec.get("TRIGGERONLYOK", [])}
+    triggers = {}
+    for t, v in sorted(m.T.items()):
+        mt = re.search(r'item = "([^"]+)"', v["trig"])
+        if v["en"] and mt and 'type = "craft-item"' in v["trig"]:
+            triggers.setdefault(mt.group(1), []).append(t)
+    taken = set()
+    for r in m.unlocked:
+        v = m.R[r]
+        if v["hidden"] or r.endswith("-recycling") or r.startswith("recycling-") or v["cat"] in ("recycling", "parameters"):
+            continue
+        taken.update(v["ing"])
+    taken.update(s for v in m.T.values() if v["en"] for s in v["sci"])   # science packs: research units of a lab
+    dead ={i: ts for i, ts in triggers.items() if i not in taken and not m.I.get(i) and m.itype.get(i) == "item"
+            and not m.uses.get(i)}
+    problems = [f"{i}: no recipe takes it and it has no other use than the craft trigger of {', '.join(ts)} (give it a "
+                "consumer, or add it to FORK_TRIGGER_ONLY_ITEMS with its reason)" for i, ts in sorted(dead.items())
+                if i not in allow]
+    problems += [f"FORK_TRIGGER_ONLY_ITEMS: {i} has no reason" for i, why in sorted(allow.items()) if not why]
+    problems += [f"FORK_TRIGGER_ONLY_ITEMS: {i} is not an item whose only use is a craft trigger (remove the entry)"
+                 for i in sorted(allow) if i not in dead]
+    return f"{len(triggers)} items of craft-item triggers, {len(dead)} without another use, {len(allow)} of them on " \
+           f"purpose (FORK_TRIGGER_ONLY_ITEMS)", problems
+
+
 VANILLA_MODS = {"base", "space-age", "quality", "elevated-rails"}
 
 
@@ -760,6 +849,166 @@ def check_me_recipes(sec):
                  for r in rows if r[3] and (r[1] != "me" or r[2] == "gregtorio")]
     return (f"{len(me)} recipes of me-network, {greg} with a Gregtorio recipe, {allowed} standalone in the allow-list",
             sorted(problems))
+
+
+def check_me_tab(sec):
+    """Issue #519: every ME item (ME_NETWORK.items, Gregtorio's own FORK_ME_TAB_ITEMS of the compat file) sits in a row of
+    me-network's tab "ME Network" (the item group ME_NETWORK.GROUP), unless it is in the allow-list FORK_ME_TAB_OUTSIDE
+    with its reason; a Gregtorio recipe of an ME item (FORK_ME_RECIPES) that sits in the tab sits in its item's row (the
+    other ones keep their machine rows). An allow-list entry that is no ME item or sits in the tab fails too. Returns
+    (info line, problems)."""
+    rows = sec.get("METAB", [])
+    group = next((r[1] for r in rows if r[0] == "group"), "-")
+    items = {r[1]: r for r in rows if r[0] == "item"}
+    allow = {r[1]: (r[2] if len(r) > 2 else "") for r in rows if r[0] == "allow"}
+    recipes = [r for r in rows if r[0] == "recipe"]
+    outside = {n: r for n, r in items.items() if r[3] != group}
+    problems = [f"{n}: subgroup {r[2]}, group {r[3]}: not in the tab {group} (move it into a row of the tab or add it to "
+                "FORK_ME_TAB_OUTSIDE)" for n, r in outside.items() if n not in allow]
+    problems += [f"FORK_ME_TAB_OUTSIDE: {n} has no reason" for n, why in allow.items() if not why]
+    problems += [f"FORK_ME_TAB_OUTSIDE: {n} is " + ("no ME item" if n not in items else "in the tab") + " (remove the entry)"
+                 for n in allow if n not in outside]
+    problems += [f"recipe {r[1]}: row {r[2]} of the tab, its item's row is {r[3]}" for r in recipes if r[2] != r[3]]
+    if rows and group == "-":
+        problems.append("no ME_NETWORK.GROUP (me-network before 0.5.7?)")
+    return (f"{len(items) - len(outside)} of {len(items)} ME items in the tab {group}, {len(allow)} outside on purpose; "
+            f"{len(recipes)} recipes in the tab", sorted(problems))
+
+
+ORE_MODE = "gregtorio-continued-ore-mode"
+
+
+VEIN_TABLE_BEGIN = "<!-- vein table: written by `devcheck.py check --vein-table` (issue #574), do not edit -->"
+VEIN_TABLE_END = "<!-- end of the vein table -->"
+VEIN_TABLE_DOC = ROOT / "docs" / "ORE-VEINS.md"
+PLANET_NAMES = {"nauvis": "Nauvis", "gt-nether": "Nether", "gt-twilight": "Twilight Forest", "gt-end": "The End"}
+
+
+def vein_table(sec):
+    """Issue #574: the placed veins (section VEINTABLE) as a markdown table, by surface and GT's weight."""
+    order = list(PLANET_NAMES)
+    rows = [r + [""] * (10 - len(r)) for r in sec.get("VEINTABLE", [])]
+
+    def key(r):
+        first = min((order.index(p) if p in order else 9) for p in r[2].split(","))
+        return first, -int(r[7]), r[1]
+    out = ["| Vein | Surfaces | Primary | Secondary | In between | Sporadic | Weight | Density | Size |",
+           "|---|---|---|---|---|---|---|---|---|"]
+    for r in sorted(rows, key=key):
+        ores = [x.replace("-", " ") if x else "-" for x in r[3:7]]
+        out.append(f"| {r[1]} Vein | {', '.join(PLANET_NAMES.get(p, p) for p in r[2].split(','))} | "
+                   + " | ".join(ores) + f" | {r[7]} | {r[8]} | {r[9]} |")
+    return "\n".join(out)
+
+
+def check_vein_table(sec, write=False):
+    """Issue #574: docs/ORE-VEINS.md holds the table of the placed veins between its markers; `check --vein-table`
+    writes it, `check` fails when it differs from the mod's veins. Returns (info line, problems)."""
+    if "VEINTABLE" not in sec:
+        return "skipped (no VEINTABLE section)", []
+    table = vein_table(sec)
+    text = VEIN_TABLE_DOC.read_text(encoding="utf-8")
+    nl = "\r\n" if "\r\n" in text else "\n"
+    i, j = text.find(VEIN_TABLE_BEGIN), text.find(VEIN_TABLE_END)
+    if i < 0 or j < i:
+        return "no markers", [f"{VEIN_TABLE_DOC.name}: the markers of the vein table are missing"]
+    current = text[i + len(VEIN_TABLE_BEGIN):j].strip().replace("\r\n", "\n")
+    if current == table:
+        return f"{len(sec['VEINTABLE'])} veins, the table is up to date", []
+    if write:
+        new = text[:i + len(VEIN_TABLE_BEGIN)] + nl + table.replace("\n", nl) + nl + text[j:]
+        VEIN_TABLE_DOC.write_bytes(new.encode("utf-8"))
+        return f"{len(sec['VEINTABLE'])} veins, the table written", []
+    return "differs", [f"{VEIN_TABLE_DOC.name}: the vein table differs from the mod's veins (run `devcheck.py check "
+                       f"--vein-table`)"]
+
+
+ITEM_RENAMES = ROOT / "prototypes" / "data" / "item-renames.lua"
+
+
+def item_renames(m):
+    """Issue #580: the item renames of the JSON migrations (migrations/*.json, "item": [[old, new], ...]) in file and row
+    order, as (old, new, file); and the ones whose target is no item of the loaded game (the engine drops those items, so
+    the ME network does too)"""
+    rows, skipped = [], []
+    for f in sorted((ROOT / "migrations").glob("*.json")):
+        for pair in json.loads(f.read_text(encoding="utf-8")).get("item", []):
+            old, new = pair[0], pair[1]
+            (rows if new in m.I else skipped).append((old, new, f.name))
+    return rows, skipped
+
+
+def item_renames_lua(rows):
+    out = ["--- Generated by `tools/devcheck/devcheck.py check --item-renames` from the JSON migrations (migrations/*.json, issue",
+           "--- #580); do not edit, run it again. Every item rename of them whose target is an item of the game, in file order:",
+           "--- { old, new }. prototypes/120-fork-me-network-compat.lua tells the ME network each (ME_NETWORK.replace_item): a JSON",
+           "--- migration renames items in the engine's inventories only, the ME network keeps its contents in script storage.",
+           "return {"]
+    last = None
+    for old, new, f in rows:
+        if f != last:
+            out.append(f"\t-- {f}")
+            last = f
+        out.append(f'\t{{ "{old}", "{new}" }},')
+    out.append("}")
+    return "\n".join(out) + "\n"
+
+
+def read_item_renames():
+    """the pairs of prototypes/data/item-renames.lua (None: no file)"""
+    if not ITEM_RENAMES.exists():
+        return None
+    return re.findall(r'\{ "([^"]+)", "([^"]+)" \}', ITEM_RENAMES.read_text(encoding="utf-8"))
+
+
+def check_item_renames(m, write=False):
+    """Issue #580: prototypes/data/item-renames.lua holds every item rename of the JSON migrations whose target is an item
+    (`check --item-renames` writes it); `check` fails for a migration's item rename that the table lacks and for a pair of
+    the table that no migration has. Returns (info line, problems)."""
+    rows, skipped = item_renames(m)
+    want = [(o, n) for o, n, _ in rows]
+    info = (f"{len(want)} item renames of {len({f for _, _, f in rows})} JSON migrations"
+            + (f"; {len(skipped)} whose target is no item, left out: "
+               + ", ".join(f"{o} -> {n} ({f})" for o, n, f in skipped) if skipped else ""))
+    have = read_item_renames()
+    text = item_renames_lua(rows)
+    if have == want and ITEM_RENAMES.read_text(encoding="utf-8").replace("\r\n", "\n") == text:
+        return info + ", the table is up to date", []
+    if write:
+        ITEM_RENAMES.write_bytes(text.encode("utf-8"))
+        return info + ", the table written", []
+    if have is None:
+        return info + ", no table", [f"{ITEM_RENAMES.name} is missing (run `devcheck.py check --item-renames`)"]
+    problems = [f"{o} -> {n}: a JSON migration renames this item, {ITEM_RENAMES.name} does not have it" for o, n in want
+                if (o, n) not in have]
+    problems += [f"{o} -> {n}: in {ITEM_RENAMES.name}, but no JSON migration renames the item so (or its target is no item)"
+                 for o, n in have if (o, n) not in want]
+    if not problems:
+        problems = [f"{ITEM_RENAMES.name} is not what `devcheck.py check --item-renames` writes (order or text)"]
+    return info, problems
+
+
+def check_classic_veins(m, sec):
+    """Issue #563 (prototypes/166-fork-classic-veins.lua): every vein the map places (GT's mixes on a planet with map
+    veins, read by checkmod from FORK_ORE_MIXES) has its classic vein recipe and both twins, and the recipe gives the
+    vein's ores (a kept recipe, upstream's Copper Tin Vein, at least them); in classic mode (the startup setting
+    gregtorio-continued-ore-mode = vein-recipes) a researchable technology unlocks the three, in map-vein mode they are
+    hidden. Returns (info line, problems)."""
+    mode = next((r[1] for r in sec.get("SETTINGS", []) if r[0] == ORE_MODE), "absent")
+    rows = [r + [""] * (7 - len(r)) for r in sec.get("CLASSICVEINS", [])]
+    problems = []
+    for mix, recipe, twin, miner, ores, res, kept in rows:
+        for kind, name in (("recipe", recipe), ("twin", twin), ("Miner twin", miner)):
+            if name == "-":
+                problems.append(f"{mix}: no classic {kind}")
+            elif mode == "vein-recipes" and name not in m.unlocked:
+                problems.append(f"{mix}: {name} is not unlocked in classic mode")
+            elif mode != "vein-recipes" and not kept and name in m.R and not m.R[name]["hidden"]:
+                problems.append(f"{mix}: {name} is not hidden in map-vein mode")
+        want, got = set(filter(None, ores.split(","))), set(filter(None, res.split(",")))
+        if recipe != "-" and (not want <= got if kept else want != got):
+            problems.append(f"{mix}: {recipe} gives {', '.join(sorted(got))}, the vein holds {', '.join(sorted(want))}")
+    return f"{len(rows)} placed veins, {sum(1 for r in rows if r[1] != '-')} with their classic recipe (mode {mode})", problems
 
 
 def check_ore_mixes(m, sec):
@@ -1292,6 +1541,12 @@ def check_names(sec):
             continue
         c = counts.setdefault(cls, [0, 0])
         c[0] += 1
+        if cls == "autoplace-control" and name.startswith("gt-vein-"):
+            # issue #574: a vein's control lists its ores in its description (prototypes/165-fork-ore-veins.lua)
+            desc = json.loads(extra).get("d") if extra.startswith("{") else None
+            if not desc or missing_keys(desc, keys):
+                problems.append(f"{cls} {name}: no description of its ores"
+                                + (f" (unknown key {', '.join(missing_keys(desc, keys))})" if desc else ""))
         miss = missing_keys(ls, keys)
         if not miss or f"{cls}:{name}" in allowed:
             continue
@@ -1446,6 +1701,69 @@ def check_unresearchable(m):
     return out
 
 
+STEAM_RATES_EXPECTED = {"small-coal-boiler": 1.2, "large-bronze-boiler": 160, "steam-alloy-smelter": 3.2,
+                        "simple-solar-boiler": 1.2}
+# issue #593: what these boilers burn per second at the boiler output setting's default (GTNH); both rise by the factor
+STEAM_WATTS_EXPECTED = {"small-coal-boiler": 36e3, "large-bronze-boiler": 4.8e6}
+BOILER_OUTPUT = "gregtorio-continued-boiler-output"
+BOILERS_SET = 4   # the factor of `all`'s extra load (issue #593)
+
+
+def boiler_factor(sec):
+    """the boiler output setting the mod was loaded with (section BOILEROUTPUT, issue #593; 1 in older versions)"""
+    for r in sec.get("BOILEROUTPUT", []):
+        if r[0] == "factor" and len(r) > 1:
+            return float(r[1])
+    return 1.0
+
+
+def check_steam_rates(sec):
+    """Issue #564 (prototypes/fork-steam-rates.lua): the descriptions say steam per second; the computed rates of the Small
+    Coal Boiler (1.2), the Large Bronze Boiler (160), the Simple Solar Boiler (1.2 by day) and the Steam Alloy Smelter
+    (3.2) must be GTNH's, and every rate is positive; the line is in the description of the entity and of every item that
+    places it (the first version reached only the item of the same name). Issue #593: the boilers' rates and what the
+    coal and bronze boiler burn per second times the boiler output setting, the smelter's unchanged. Returns (info line,
+    problems)."""
+    rows = {r[0]: r for r in sec.get("STEAMRATES", []) if len(r) >= 4}
+    factor = boiler_factor(sec)
+    problems = []
+    for name, want in STEAM_RATES_EXPECTED.items():
+        got = float(rows[name][3]) if name in rows else None
+        want = want * factor if name in rows and rows[name][1] != "uses" else want
+        # (1e-5: a solar boiler's steam is on the grid of 2^-24, issue #117)
+        if got is None or abs(got - want) > want * 1e-5:
+            problems.append(f"{name}: {got} steam/s, not {want}")
+    for name, want in STEAM_WATTS_EXPECTED.items():
+        got = float(rows[name][7]) if name in rows and len(rows[name]) > 7 and rows[name][7] else None
+        if got is None or abs(got - want * factor) > want * factor * 1e-6:
+            problems.append(f"{name}: burns {got} W, not {want * factor} (the boiler output setting is {factor})")
+    problems += [f"{n}: rate {r[3]}" for n, r in sorted(rows.items()) if not float(r[3]) > 0]
+    for n, r in sorted(rows.items()):
+        if len(r) > 5 and r[5] not in ("entity", "game"):   # (game: a boiler, whose output the game shows)
+            problems.append(f"{n}: the entity's description lacks the steam line")
+        if len(r) > 6 and r[6]:
+            problems.append(f"{n}: the description of its item {r[6]} lacks the steam line")
+    kinds = {}
+    for r in rows.values():
+        kinds[r[1]] = kinds.get(r[1], 0) + 1
+    return (f"{len(rows)} entities with steam per second (" + ", ".join(f"{k} {v}" for k, v in sorted(kinds.items()))
+            + ")", problems)
+
+
+def check_boiler_output(sec):
+    """Issue #593 (prototypes/fork-boiler-output.lua): every entity that makes steam by itself (a STEAMRATES row of kind
+    boiler or solar) is multiplied by the boiler output setting or left out with a reason. Returns (info line, problems)."""
+    rows = sec.get("BOILEROUTPUT", [])
+    changed = sorted(r[0] for r in rows if len(r) > 2 and r[1] == "changed")
+    left = {r[0]: r[2] for r in rows if len(r) > 2 and r[1] == "left"}
+    problems = [f"{r[0]}: makes steam ({r[1]}) but is neither multiplied nor left out with a reason"
+                for r in sec.get("STEAMRATES", []) if len(r) > 1 and r[1] != "uses" and r[0] not in changed
+                and r[0] not in left]
+    info = (f"factor {boiler_factor(sec):g}, {len(changed)} multiplied ({', '.join(changed)}), {len(left)} left out ("
+            + "; ".join(f"{n}: {why}" for n, why in sorted(left.items())) + ")")
+    return info, problems
+
+
 def check_required(m):
     out = []
     for r in REQUIRED_RECIPES:
@@ -1564,7 +1882,7 @@ def check_unlock_tree(m, sec):
     the start or unlocked by T or a technology in T's prerequisite closure, or X is a raw resource (mining, offshore,
     the burnt result of a fuel that is there); the recipe's category needs a machine whose item is made that way (the
     character for hand recipes). A recipe whose products all come from other recipes of that closure is an alternative
-    and passes (as in #237). One row per technology and missing item (for a machine: its item with the nearest
+    and passes (as in #237), unless those recipes need an item the recipe misses (issues #502, #517). One row per technology and missing item (for a machine: its item with the nearest
     producer), naming the nearest producer and its technology; allow-list FORK_UNLOCK_TREE_GAPS
     ("<technology>:<item>" -> reason, section UNLOCKTREEOK; an entry that matches nothing fails). Returns (info line,
     problems, findings as {key: (recipes, nearest)})."""
@@ -1622,7 +1940,8 @@ def check_unlock_tree(m, sec):
         return out
 
     # issue #502: a recipe that needs a missing ore whose nearest producer is a planet's map vein (planet-mining) makes
-    # no alternative: the galena recipes of Galena made each other's products from the same missing ore
+    # no alternative: the galena recipes of Galena made each other's products from the same missing ore; issue #517:
+    # the same for every item the recipe misses
     def other_maker(x, r, rs, lacks=frozenset()):
         return x in m.base or any(p != r and (p in rs or p in start) and not lacks.intersection(R[p]["ing"])
                                   for p in makers.get(x, []))
@@ -1651,7 +1970,7 @@ def check_unlock_tree(m, sec):
             if not any(has_machine(c, have) for c in v["cats"]):
                 near = nearest(machine_items(v["cat"]))
                 miss.append((near[1] if near else "<machine for " + v["cat"] + ">", near))
-            lacks = {x for x, near in miss if near and near[2].startswith("planet-mining:")}
+            lacks = {x for x, _ in miss}
             if not miss or all(other_maker(x, r, rs, lacks) for x in v["res"]):
                 continue
             n_recipes += 1
@@ -1671,6 +1990,286 @@ def check_unlock_tree(m, sec):
     info = (f"{n_recipes} recipes need something their technology's prerequisites do not make, {len(found)} items, "
             f"{sum(1 for k in found if k in allowed)} kept on purpose (FORK_UNLOCK_TREE_GAPS)")
     return info, problems, found
+
+
+def check_machines_early(m, sec):
+    """Issue #556, the other half of #252's rule: a machine comes with the technology where it is first used, so a
+    technology that unlocks a machine (a Gregtorio recipe of an item that places a crafting machine) must have a recipe
+    the machine can run (one of its categories, not hidden, not recycling) enabled from the start or unlocked by itself
+    or a technology in its prerequisite closure; else the machine stands there without a recipe. One row per technology
+    and machine, naming the first technologies of a recipe it runs; allow-list FORK_MACHINES_BEFORE_RECIPES
+    ("<technology>:<machine>" -> reason, section MACHINEEARLYOK; an entry that matches nothing fails). Returns (info
+    line, problems)."""
+    T, R = m.T, m.R
+    mod = MOD_NAMES[1]
+    greg = {r[0] for r in sec.get("OWNERS", [])
+            if len(r) > 1 and (r[1] == mod or mod in (r[2] if len(r) > 2 else "").split(","))}
+    allowed = {r[0]: r[1] if len(r) > 1 else "" for r in sec.get("MACHINEEARLYOK", [])}
+    unl, memo = {}, {}
+    for t, v in T.items():
+        for r in v["eff"]:
+            unl.setdefault(r, []).append(t)
+
+    def closure(t):
+        if t not in memo:
+            memo[t] = frozenset({t}).union(*[closure(p) for p in T[t]["pre"] if p in T])
+        return memo[t]
+
+    def runs(r, v):
+        return not v["hidden"] and "recycling" not in r and v["cat"] not in ("recycling", "parameters")
+    by_cat = {}
+    for r, v in R.items():
+        if runs(r, v) and r in m.unlocked:
+            for c in v["cats"]:
+                by_cat.setdefault(c, []).append(r)
+    entity_of = {it: pr for it, pr in m.I.items() if pr in m.C and pr != "character"}
+    found, n = {}, 0
+    for r, v in R.items():
+        if r not in greg or v["hidden"] or r not in m.unlocked or "recycling" in r:
+            continue
+        for e in sorted({entity_of[x] for x in v["res"] if x in entity_of}):
+            recipes = sorted({x for c in m.C[e] for x in by_cat.get(c, [])})
+            if any(R[x]["en"] for x in recipes):
+                continue
+            techs = {t for x in recipes for t in unl.get(x, []) if t in m.researched}
+            first = sorted(u for u in techs if not any(w != u and w in closure(u) for w in techs))
+            if v["en"]:
+                n += 1
+                found.setdefault(f"start:{e}", (r, first))
+            for t in unl.get(r, []):
+                if t not in m.researched:
+                    continue
+                n += 1
+                if not techs & closure(t):
+                    found.setdefault(f"{t}:{e}", (r, first))
+    problems = [f"{k}: {r} unlocks it before any recipe it can run (first: {', '.join(first[:4]) or 'none'})"
+                for k, (r, first) in sorted(found.items()) if k not in allowed]
+    problems += [f"{k}: in FORK_MACHINES_BEFORE_RECIPES but no such machine (remove the entry)" for k in sorted(allowed)
+                 if k not in found]
+    info = (f"{n} unlocks of a machine checked, {len(found)} before any recipe the machine runs, "
+            f"{sum(1 for k in found if k in allowed)} kept on purpose (FORK_MACHINES_BEFORE_RECIPES)")
+    return info, problems
+
+
+def check_furnace_inputs(m, sec):
+    """Issue #560: a furnace picks the first enabled recipe of its categories (by subgroup and order) that matches its
+    input, so two recipes a furnace machine runs with the same inputs (the same item and fluid names; amounts do not
+    count) leave all but one unreachable. Counted are the recipes enabled from the start or unlocked by a technology,
+    hidden or not. A group fails unless it is in the allow-list FORK_FURNACE_SAME_INPUTS of
+    prototypes/101-fork-machines.lua ("<recipe>+<recipe>", sorted, -> the recipe that wins and why; section
+    FURNACESAMEOK; an entry that matches no group, or names a winner outside it, fails too). A recipe in a furnace's
+    category that a furnace cannot run (two item or two fluid ingredients) fails as well. Returns (info line,
+    problems)."""
+    R = m.R
+    allowed = {r[0]: (r[1] if len(r) > 1 else "", r[2] if len(r) > 2 else "") for r in sec.get("FURNACESAMEOK", [])}
+    furnaces = sorted(e for e, t in m.ctype.items() if t == "furnace")
+    by_cat = {}
+    for r, v in R.items():
+        if v["en"] or r in m.unlocked:
+            for c in v["cats"]:
+                by_cat.setdefault(c, []).append(r)
+    groups, unrunnable, n = {}, {}, set()
+    for e in furnaces:
+        sig = {}
+        for r in sorted({x for c in m.C[e] for x in by_cat.get(c, [])}):
+            v = R[r]
+            kinds = v.get("ingk", [])
+            items = tuple(sorted(i for i, k in zip(v["ing"], kinds) if k == "item"))
+            fluids = tuple(sorted(i for i, k in zip(v["ing"], kinds) if k == "fluid"))
+            n.add(r)
+            if len(items) > 1 or len(fluids) > 1:
+                unrunnable.setdefault(r, []).append(e)
+                continue
+            sig.setdefault((items, fluids), []).append(r)
+        for (items, fluids), rs in sig.items():
+            if len(rs) > 1:
+                groups.setdefault("+".join(sorted(rs)), (items + fluids, []))[1].append(e)
+    problems = []
+    for key, (inputs, es) in sorted(groups.items()):
+        if key not in allowed:
+            problems.append(f"{key}: the same inputs ({', '.join(inputs) or 'none'}) in {len(es)} furnace machine(s) "
+                            f"({', '.join(es[:3])}{', ...' if len(es) > 3 else ''}); only the first by subgroup and order runs")
+        elif allowed[key][0] not in key.split("+"):
+            problems.append(f"{key}: FORK_FURNACE_SAME_INPUTS names {allowed[key][0]} as the winner, which is not in the group")
+    problems += [f"{r}: two item or two fluid ingredients, the furnace machine(s) {', '.join(es[:3])} cannot run it"
+                 for r, es in sorted(unrunnable.items())]
+    problems += [f"{k}: in FORK_FURNACE_SAME_INPUTS but no such group (remove the entry)" for k in sorted(allowed)
+                 if k not in groups]
+    info = (f"{len(furnaces)} furnace machines, {len(n)} recipes they run, {len(groups)} groups with the same inputs, "
+            f"{sum(1 for k in groups if k in allowed)} kept on purpose (FORK_FURNACE_SAME_INPUTS)")
+    return info, problems
+
+
+STEAM_ORE_HOME = "steam-macerator"
+STEAM_ORE_INPUTS = r"(raw|crushed|purified|centrifuged)-"   # the ore forms (FORK_STEAM_ORE.inputs of 101)
+# issue #571: the steam macerator doubles these ores in the steam age (Raw Tin's copy is named after its LV recipe
+# macerating-raw-tin), and so does its crushed ore -> impure dust
+STEAM_ORE_TEST = ["steam-crushed-copper", "steam-crushed-iron", "steam-macerating-raw-tin",
+                  "steam-impure-copper-dust", "steam-impure-iron-dust", "steam-impure-tin-dust"]
+
+
+def check_steam_ores(m, sec):
+    """Issue #571: the steam macerator's copies of the ore recipes (prototypes/101-fork-machines.lua) come with the steam
+    age. The recipes of STEAM_ORE_TEST must be unlocked by a technology of red science only (its own and its
+    prerequisites' packs), and each product must have a furnace recipe (category smelting, the product alone) enabled from
+    the start or unlocked by that technology or one of its prerequisites. Rule: a copy of an ore form (category
+    steam-macerator-recipes, input STEAM_ORE_INPUTS) whose technologies all have a higher effective science than Steam
+    Macerator, while its input
+    can be obtained at Steam Macerator's science (as #237) and a recipe of that science takes each of its products (#252's
+    rule the other way round: the impure dust of an ore without a furnace recipe waits for the LV cauldron, washer and
+    centrifuge, and so does its copy), fails unless it is in the allow-list FORK_STEAM_LATE with its
+    reason (section STEAMLATEOK; an entry that matches nothing fails too). Returns (info line, problems)."""
+    rank = {p + "-science-pack": i for i, p in enumerate(SCIENCE_ORDER)}
+    T, R = m.T, m.R
+    allowed = {r[0]: r[1] if len(r) > 1 else "" for r in sec.get("STEAMLATEOK", [])}
+    unl, memo, eff_memo = {}, {}, {}
+    for t, v in T.items():
+        for r in v["eff"]:
+            unl.setdefault(r, []).append(t)
+
+    def closure(t):
+        if t not in memo:
+            memo[t] = frozenset({t}).union(*[closure(p) for p in T[t]["pre"] if p in T])
+        return memo[t]
+
+    def tier(t):
+        return max((rank.get(p, len(SCIENCE_ORDER)) for p in T[t]["sci"]), default=-1)
+
+    def effective(t):
+        if t not in eff_memo:
+            eff_memo[t] = max([tier(t)] + [effective(p) for p in T[t]["pre"] if p in T])
+        return eff_memo[t]
+    if STEAM_ORE_HOME not in T:
+        return "no technology " + STEAM_ORE_HOME, [f"{STEAM_ORE_HOME}: no such technology"]
+    smelting = {}
+    for r, v in R.items():
+        if v["cat"] == "smelting" and not v["hidden"] and len(v["ing"]) == 1:
+            smelting.setdefault(v["ing"][0], []).append(r)
+    problems = []
+    red = rank["automation-science-pack"]
+    for r in STEAM_ORE_TEST:
+        techs = [t for t in unl.get(r, []) if t in m.researched]
+        if r not in R or not techs:
+            problems.append(f"{r}: no such recipe or no researchable technology unlocks it")
+            continue
+        ok = [t for t in techs if effective(t) == red]
+        if not ok:
+            problems.append(f"{r}: unlocked by {', '.join(sorted(techs))}, not by a technology of red science only")
+            continue
+        for x in R[r]["res"]:
+            if not any(R[s]["en"] or any(u in closure(ok[0]) for u in unl.get(s, [])) for s in smelting.get(x, [])):
+                problems.append(f"{r}: {x} has no furnace recipe at {ok[0]} or before "
+                                f"(furnace recipes: {', '.join(sorted(smelting.get(x, []))) or 'none'})")
+    home = effective(STEAM_ORE_HOME)
+    avail, _ = m.obtainable({t for t in m.researched if tier(t) <= home})
+    takers = {}
+    for r, v in R.items():
+        if not v["hidden"] and "recycling" not in r:
+            for i in set(v["ing"]):
+                takers.setdefault(i, []).append(r)
+
+    def taken(x):
+        """something takes x at Steam Macerator's science"""
+        return any(R[c]["en"] or any(t in m.researched and effective(t) <= home for t in unl.get(c, []))
+                   for c in takers.get(x, []))
+    found, n = {}, 0
+    for r, v in sorted(R.items()):
+        if v["cat"] != "steam-macerator-recipes" or v["hidden"] or r not in m.unlocked \
+                or not re.match(STEAM_ORE_INPUTS, v["ing"][0] if v["ing"] else ""):
+            continue
+        n += 1
+        techs = [t for t in unl.get(r, []) if t in m.researched]
+        if techs and min(effective(t) for t in techs) > home and all(i in avail for i in v["ing"]) \
+                and all(taken(x) for x in v["res"]):
+            found[r] = sorted(techs)
+    problems += [f"{r}: unlocked by {', '.join(ts)} ({SCIENCE_ORDER[min(effective(t) for t in ts)]} science), but "
+                 f"{', '.join(R[r]['ing'])} is there at {STEAM_ORE_HOME}'s science" for r, ts in found.items()
+                 if r not in allowed]
+    problems += [f"{r}: in FORK_STEAM_LATE but no such copy (remove the entry)" for r in sorted(allowed) if r not in found]
+    info = (f"{len(STEAM_ORE_TEST)} test recipes, {n} steam macerator recipes of ore forms, {len(found)} later than their input, "
+            f"{sum(1 for r in found if r in allowed)} kept on purpose (FORK_STEAM_LATE)")
+    return info, problems
+
+
+NUGGET_ORE_FORMS = r"(crushed|purified|centrifuged)-"   # the ore forms whose furnace recipe gives nuggets (FORK_NUGGET_ORES)
+
+
+def check_nugget_ingots(m, sec):
+    """Issue #586: the furnace smelts an ore form (crushed, purified, centrifuged ore) into nuggets, so each technology
+    that unlocks such a furnace recipe (category smelting, the ore form alone; enabled from the start counts as "start")
+    must have a recipe that turns the nugget into an ingot (it takes the nugget and gives an ingot, not hidden) enabled
+    from the start or unlocked by itself or a technology in its prerequisite closure. A row "<technology>:<nugget>" fails
+    unless it is in the allow-list FORK_NUGGETS_BEFORE_INGOTS of prototypes/101-fork-machines.lua with its reason
+    (section NUGGETINGOTOK; an entry that matches nothing fails too). The other half (nugget_ingot_unlocks of 101): a
+    nugget -> ingot recipe whose technologies all have a prerequisite that already has the nugget and the recipe's mold
+    (its producer's technology) comes later than it must and fails. Returns (info line, problems)."""
+    T, R = m.T, m.R
+    allowed = {r[0]: r[1] if len(r) > 1 else "" for r in sec.get("NUGGETINGOTOK", [])}
+    unl, memo = {}, {}
+    for t, v in T.items():
+        for r in v["eff"]:
+            unl.setdefault(r, []).append(t)
+
+    def closure(t):
+        if t not in memo:
+            memo[t] = frozenset({t}).union(*[closure(p) for p in T[t]["pre"] if p in T])
+        return memo[t]
+
+    def techs(r):
+        return {t for t in unl.get(r, []) if t in m.researched}
+    furnace, producers = {}, {}
+    for r, v in R.items():
+        if v["hidden"] or "recycling" in r:
+            continue
+        for x in v["res"]:
+            producers.setdefault(x, []).append(r)
+        if v["cat"] == "smelting" and len(v["ing"]) == 1 and re.match(NUGGET_ORE_FORMS, v["ing"][0]):
+            for x in v["res"]:
+                if x.endswith("-nugget"):
+                    furnace.setdefault(x, []).append(r)
+    ingots = {}
+    for r, v in R.items():
+        if not v["hidden"] and "recycling" not in r and any(x.endswith("-ingot") for x in v["res"]):
+            for i in set(v["ing"]):
+                if i in furnace:
+                    ingots.setdefault(i, []).append(r)
+    found, late, n = {}, [], 0
+    for nug in sorted(furnace):
+        made = {t for s in furnace[nug] for t in techs(s)}
+        start = any(R[s]["en"] for s in furnace[nug])
+        rs = ingots.get(nug, [])
+        ing_t = {t for r in rs for t in techs(r)}
+        first = sorted(u for u in ing_t if not any(w != u and w in closure(u) for w in ing_t))
+        for f in sorted(made) + (["start"] if start else []):
+            n += 1
+            if any(R[r]["en"] for r in rs) or (f != "start" and ing_t & closure(f)):
+                continue
+            found[f"{f}:{nug}"] = ", ".join(sorted(s for s in furnace[nug] if R[s]["en"] or f in techs(s))) + \
+                f"; nugget -> ingot: {', '.join(sorted(rs)) or 'none'} ({', '.join(first) or 'no technology'})"
+        for r in rs:
+            mold = m.tools.get(r)
+            mold_t = {t for p in producers.get(mold, []) for t in techs(p)} if mold else set()
+            mold_en = not mold or any(R[p]["en"] for p in producers.get(mold, []))
+            us = techs(r)
+            if R[r]["en"] or not us:
+                continue
+
+            def ready(p):
+                return (start or made & closure(p)) and (mold_en or mold_t & closure(p))
+            early = {u: sorted(p for p in closure(u) if p != u and ready(p)) for u in us}
+            if all(early[u] for u in us):
+                u = sorted(us)[0]
+                ps = [p for p in early[u] if not any(q != p and q in closure(p) for q in early[u])]
+                late.append(f"{r}: comes with {', '.join(sorted(us))}, but {', '.join(ps[:3])} already has {nug}"
+                            + (f" and the mold {mold}" if mold else "") + " (nugget_ingot_unlocks of 101)")
+    problems = [f"{k}: {why}" for k, why in sorted(found.items()) if k not in allowed]
+    problems += late
+    problems += [f"{k}: in FORK_NUGGETS_BEFORE_INGOTS but no such technology and nugget (remove the entry)"
+                 for k in sorted(allowed) if k not in found]
+    info = (f"{len(furnace)} nuggets of ore forms' furnace recipes, {n} technologies that make one, {len(found)} before "
+            f"a nugget -> ingot recipe, {sum(1 for k in found if k in allowed)} kept on purpose (FORK_NUGGETS_BEFORE_INGOTS), "
+            f"{len(late)} nugget -> ingot recipes later than the nugget and the mold")
+    return info, problems
 
 
 def check_locked(m, sec):
@@ -1724,12 +2323,19 @@ def check_one_pack(sec):
 
 
 def parse_settings(pairs):
+    """--set NAME=VALUE: true or false for a bool startup setting, a number for a double or int setting (issue #593), any
+    other value for a string setting (issue #563)."""
     out = {}
     for p in pairs or []:
         name, _, value = p.partition("=")
-        if value not in ("true", "false"):
-            sys.exit(f"--set {p}: expected <bool startup setting>=true|false")
-        out[name] = value == "true"
+        if not value:
+            sys.exit(f"--set {p}: expected <startup setting>=<value>")
+        if value in ("true", "false"):
+            out[name] = value == "true"
+        elif re.fullmatch(r"-?\d+(\.\d+)?", value):
+            out[name] = float(value) if "." in value else int(value)
+        else:
+            out[name] = value
     return out
 
 
@@ -1792,6 +2398,27 @@ def check(a):
     report("items a technology's recipes take that its prerequisites do not make (the technology, the item, the nearest "
            "producer; unlock the producer there or earlier, make the producer's technology a prerequisite, or add "
            "<technology>:<item> to FORK_UNLOCK_TREE_GAPS of prototypes/142-fork-recipe-unlocks.lua)", tree, limit=400)
+    early_info, early = check_machines_early(m, sec)
+    print(f"\nmachines unlocked before their first recipe (issue #556): {early_info}")
+    report("technologies that unlock a machine before any recipe it can run (the technology, the machine, the first "
+           "technologies of a recipe it runs; unlock the machine there, or add <technology>:<machine> to "
+           "FORK_MACHINES_BEFORE_RECIPES of prototypes/142-fork-recipe-unlocks.lua)", early, limit=200)
+    furnace_info, furnace = check_furnace_inputs(m, sec)
+    print(f"\nfurnace machines (issue #560): {furnace_info}")
+    report("recipes of a furnace machine with the same inputs, or that a furnace cannot run (a furnace runs the first "
+           "matching recipe by subgroup and order; remove or move one, or add the group with its winner to "
+           "FORK_FURNACE_SAME_INPUTS of prototypes/101-fork-machines.lua)", furnace, limit=200)
+    steam_info, steam = check_steam_ores(m, sec)
+    print(f"\nsteam macerator ore recipes (issue #571): {steam_info}")
+    report("steam macerator copies later than the steam age that has their input, or test recipes off the steam age "
+           "(fix the unlock in steam_ore_unlocks of prototypes/101-fork-machines.lua, or add the copy to "
+           "FORK_STEAM_LATE there with its reason)", steam, limit=200)
+    nugget_info, nugget = check_nugget_ingots(m, sec)
+    print(f"\nnuggets of ore forms back into ingots (issue #586): {nugget_info}")
+    report("technologies whose ore form furnace recipes give a nugget that no nugget -> ingot recipe of theirs or of their "
+           "prerequisites takes, or nugget -> ingot recipes later than the nugget and the mold (fix the unlock in "
+           "nugget_ingot_unlocks of prototypes/101-fork-machines.lua, or add <technology>:<nugget> to "
+           "FORK_NUGGETS_BEFORE_INGOTS there with its reason)", nugget, limit=200)
     report("draft recipes outside DRAFTS_OK (issue #39)", new_drafts)
     report("technologies that unlock a recipe the ore chain removes (issue #388: delete the unlock from "
            "prototypes/98-technology.lua or the table of 142; FORK-STALE-UNLOCK in the log)", stale_unlocks)
@@ -1810,6 +2437,9 @@ def check(a):
     table_info, table_only = check_table_only(m, sec)
     print(f"\ncrafting table and hand only items (issue #126): {table_info}")
     report("items that only the crafting table or the hand can make, without an entry in FORK_RECIPES_TABLE_ONLY", table_only)
+    trigger_info, trigger_only = check_trigger_items(m, sec)
+    print(f"\nitems of craft triggers (issue #547): {trigger_info}")
+    report("items whose only use is a technology's craft trigger (prototypes/100-fork-fixes.lua)", trigger_only)
     lens_info, lenses = check_engraver_lenses(m, sec)
     print(f"\nlaser engraver lenses (issue #325): {lens_info}")
     report("laser engraver recipes without a lens (prototypes/155-fork-ore-chain.lua)", lenses)
@@ -1828,6 +2458,9 @@ def check(a):
     me_info, me_recipes = check_me_recipes(sec)
     print(f"\nME recipes (issue #214): {me_info}")
     report("me-network recipes without a Gregtorio recipe (prototypes/120-fork-me-network-compat.lua)", me_recipes)
+    tab_info, me_tab = check_me_tab(sec)
+    print(f"\nME tab (issue #519): {tab_info}")
+    report("ME items outside the tab ME Network, or ME recipes outside their item's row", me_tab)
     parts_info, parts_unranked = check_material_parts(sec)
     print(f"\nmaterial parts (issue #118): {parts_info}")
     report("WARNING: materials of the material parts without a tier (prototypes/200-fork-material-parts.lua)", parts_unranked)
@@ -1835,6 +2468,16 @@ def check(a):
     print(f"\nGT's ore veins (issue #496): {mixes_info}")
     report("ores of GT's veins on Gregtorio's surfaces without a raw ore and its chain (prototypes/165-fork-ore-veins.lua)",
            ore_mixes)
+    rates_info, steam_rates = check_steam_rates(sec)
+    print(f"\nsteam per second in the descriptions (issue #564): {rates_info}")
+    report("steam per second that differs from GTNH's (prototypes/fork-steam-rates.lua)", steam_rates)
+    boilers_info, boiler_output = check_boiler_output(sec)
+    print(f"\nboiler output (issue #593): {boilers_info}")
+    report("steam makers neither multiplied nor left out (prototypes/fork-boiler-output.lua)", boiler_output)
+    classic_info, classic_veins = check_classic_veins(m, sec)
+    print(f"\nclassic vein recipes (issue #563): {classic_info}")
+    report("placed veins without their classic vein recipe and twins, or with other ores (prototypes/166-fork-classic-veins.lua)",
+           classic_veins)
     chain_ores, ore_chain = check_ore_chain(m)
     print(f"\nore chain (issue #185): {chain_ores} ores with GTNH's chain")
     report("ore chain gaps and ore washer shortcuts (prototypes/155-fork-ore-chain.lua)", ore_chain)
@@ -1882,6 +2525,12 @@ def check(a):
         print("  " + line)
     report("prototypes without a name (\"Unknown key\" in the game; add the locale entry, a main product or the "
            "allow-list FORK_LOCALE_MISSING of prototypes/fork-locale.lua)", names, limit=60)
+    table_info, vein_doc = check_vein_table(sec, getattr(a, "vein_table", False))
+    print(f"\nvein table of docs/ORE-VEINS.md (issue #574): {table_info}")
+    report("the vein table of docs/ORE-VEINS.md", vein_doc)
+    renames_info, renames = check_item_renames(m, getattr(a, "item_renames", False))
+    print(f"\nitem renames for the ME network (issue #580, prototypes/data/item-renames.lua): {renames_info}")
+    report("the item renames of prototypes/data/item-renames.lua", renames)
     if getattr(a, "fluids_out", None):
         Path(a.fluids_out).write_text("\n".join("\t".join(r) for r in sec.get("FLUIDS", [])) + "\n", encoding="utf-8")
         print(f"\nfluid list written to {a.fluids_out} (input for tools/gen_review_sheet.py fluids)")
@@ -1893,10 +2542,11 @@ def check(a):
         Path(a.balance_out).write_text("[\n" + ",\n".join(rows) + "\n]\n", encoding="utf-8")
         print(f"\nbalance data written to {a.balance_out} (recipes, machines, technologies as JSON)")
     ok = not (files or [s for s in sprites if not s.startswith("(")] or uncraft or menu or required or unresearchable
-              or new_drafts or fluid_problems or locked or one_pack or fluid_steps or table_only or me_recipes
+              or new_drafts or fluid_problems or locked or one_pack or fluid_steps or table_only or me_recipes or me_tab
               or extractor_split or ore_mixes or ore_chain or ore_baths or ore_o34 or ore_hammer
               or circuit_icons or pgm_dusts or recycling or names or gaps or tree or vanilla or lenses or mine_twins
-              or unplaceable or stale_unlocks or removed_keys)
+              or unplaceable or stale_unlocks or removed_keys or trigger_only or classic_veins or early or furnace
+              or steam or nugget or steam_rates or boiler_output or vein_doc or renames)
     print("\nRESULT:", "OK" if ok else "PROBLEMS FOUND")
     return 0 if ok else 1
 
@@ -1915,6 +2565,56 @@ def one_pack(a):
     return 1 if problems else 0
 
 
+def classic(a):
+    """Part of `all` (issue #563): check and runtime once more with the classic ore mode (gregtorio-continued-ore-mode =
+    vein-recipes), as the one-pack research setting is loaded a second time."""
+    c = argparse.Namespace(**vars(a))
+    c.set, c.balance_out, c.fluids_out, c.locale_out, c.techs = [f"{ORE_MODE}=vein-recipes"], None, None, None, None
+    print(f"\n=== classic ore mode ({ORE_MODE}=vein-recipes): check ===")
+    if check(c):
+        return 1
+    print(f"\n=== classic ore mode ({ORE_MODE}=vein-recipes): runtime ===")
+    if runtime(c):
+        return 1
+    print("\n=== switching the ore mode of a save ===")
+    return switch(a)
+
+
+def boilers(a):
+    """Part of `all` (issue #593): check and runtime once more with the boiler output setting at BOILERS_SET (the rates of
+    the check and the coal and solar boiler tests of the runtime follow the setting)."""
+    c = argparse.Namespace(**vars(a))
+    c.set, c.balance_out, c.fluids_out, c.locale_out, c.techs = [f"{BOILER_OUTPUT}={BOILERS_SET}"], None, None, None, None
+    print(f"\n=== boiler output ({BOILER_OUTPUT}={BOILERS_SET}): check ===")
+    if check(c):
+        return 1
+    print(f"\n=== boiler output ({BOILER_OUTPUT}={BOILERS_SET}): runtime ===")
+    return runtime(c)
+
+
+def switch(a):
+    """Issue #563: a map made in one ore mode, loaded in the other, both ways (switchmod/control.lua: the scene and its
+    checks; scripts/fork-ore-veins.lua migrates the save in on_configuration_changed)."""
+    failed = False
+    for frm, to in (("map-veins", "vein-recipes"), ("vein-recipes", "map-veins")):
+        prepare_mods(with_switch=True, settings={ORE_MODE: frm})
+        log = factorio("--create", str(WORK / "switch-map.zip"), *seed_args(a))
+        setup = re.search(r"DEVCHECK-SWITCH-SETUP (.*)", log)
+        if load_errors(log) or not setup or not setup.group(1).startswith("ok"):
+            print(f"{frm} -> {to}: the map was not made: {load_errors(log) or (setup.group(1) if setup else 'no set-up')}")
+            failed = True
+            continue
+        prepare_mods(with_switch=True, settings={ORE_MODE: to})
+        log = factorio("--benchmark", str(WORK / "switch-map.zip"), "--benchmark-ticks", "400")
+        res = re.search(r"DEVCHECK-SWITCH (.*)", log)
+        print(f"{frm} -> {to}: {res.group(1) if res else 'no result ' + (load_errors(log) or script_error(log) or '')}")
+        for f in re.findall(r"DEVCHECK-SWITCH-FAIL (.*)", log):
+            print("  - " + f)
+        failed |= not (res and res.group(1).startswith("ok"))
+    print("\nRESULT: " + ("PROBLEMS FOUND" if failed else "OK"))
+    return 1 if failed else 0
+
+
 def seed_args(a):
     if a.seed == "random":
         return []
@@ -1922,7 +2622,7 @@ def seed_args(a):
 
 
 def runtime(a):
-    prepare_mods(with_runtime=True)
+    prepare_mods(with_runtime=True, settings=parse_settings(getattr(a, "set", None)))
     log = factorio("--create", str(WORK / "runtime-map.zip"), *seed_args(a))
     if load_errors(log):
         print(load_errors(log))
@@ -1942,7 +2642,7 @@ def runtime(a):
     print(f"benchmark: {ran.group(0) if ran else 'did not run'}")
     # the ME network's runtime tests are in me-network since issue #83 (its tools/devcheck)
     tests = (("MOLD", "mold test"), ("LENS", "lens test"), ("POWER", "power test"), ("FUEL", "fuel check test"), ("COOLED", "cooled fluid test"),
-             ("TIERS", "turbine tier test"), ("RECIPES", "recipe test"), ("CRUSH", "raw ore crushing test"), ("STEAM", "steam turbine test"), ("CHAIN", "nuclear chain test"), ("LFTR", "LFTR test"), ("LSC", "supercapacitor test"), ("LSUP", "supercapacitor upgrade test"), ("ELEVATOR", "space elevator test"), ("MELT", "melt and cast test"), ("OFFER", "offered recipes test"), ("EMINE", "electric mine test"), ("SOLAR", "solar boiler test"), ("BATTERY", "battery buffer test"), ("VEINS", "map vein test"), ("DRILLS", "mining drill test"), ("PORTAL", "portal test"), ("ENDER", "ender storage test"), ("VICTORY", "victory test"),
+             ("TIERS", "turbine tier test"), ("RECIPES", "recipe test"), ("CRUSH", "raw ore crushing test"), ("OREFURNACE", "ore furnace line test"), ("STEAM", "steam turbine test"), ("CHAIN", "nuclear chain test"), ("LFTR", "LFTR test"), ("LSC", "supercapacitor test"), ("LSUP", "supercapacitor upgrade test"), ("ELEVATOR", "space elevator test"), ("MELT", "melt and cast test"), ("OFFER", "offered recipes test"), ("EMINE", "electric mine test"), ("SOLAR", "solar boiler test"), ("COALBOILER", "coal boiler test"),("TORCH", "torch test"), ("BATTERY", "battery buffer test"), ("VEINS", "map vein test"), ("CLASSIC", "classic vein test"), ("DRILLS", "mining drill test"), ("PORTAL", "portal test"), ("ENDER", "ender storage test"), ("VICTORY", "victory test"),
              ("POSTVICTORY", "post-victory test"))
     for key, label in tests:
         m = re.search(rf"DEVCHECK-RUNTIME-{key} (.*)", log)
@@ -2053,8 +2753,24 @@ def load_and_save(mapfile, log_path):
     """Loads `mapfile` in a headless server with nobody connected and `auto_pause`, so no tick runs: only the load with
     the mods' on_init / on_configuration_changed and the migrations. Quits through RCON at once (a Lua command would run
     a tick, and the helper mod's checks with it): the server saves the map when it quits (`--benchmark` cannot save),
-    the save is copied over `mapfile`. Returns the server log and None, or the log and a reason. The ports are free
-    ones (another devcheck may run a server at the same time)."""
+    the save is copied over `mapfile`. Returns the server log and None, or the log and a reason."""
+    step = WORK / "migrate-step.zip"                   # the server saves the map back into this file when it quits
+    shutil.copy2(mapfile, step)
+    log, reason, _ = server_session(step, log_path, "devcheck migrate: the intermediate load")
+    if not reason and re.search(r"DEVCHECK-MIGRATE-(?!SETUP)[A-Z]+ ", log):
+        reason = "a tick ran in the intermediate load (the helper mod's checks ran there)"
+    ticks = re.findall(r"updateTick\((\d+)\) changing state from\(InGame\)", log)
+    if not reason:
+        shutil.copy2(step, mapfile)
+        print(f"  saved when the server quit (tick {ticks[-1] if ticks else '?'}, no tick run)")
+    return log, reason
+
+
+def server_session(step, log_path, description, commands=()):
+    """Loads the save `step` in a headless server with nobody connected and `auto_pause`, sends `commands` through RCON
+    (each Lua command runs one tick), quits through RCON: the server saves the map back into `step` when it quits.
+    Returns the server log, None or a reason, and the RCON answers of the commands. The ports are free ones (another
+    devcheck may run a server at the same time)."""
     import socket, time
 
     def free_port(kind):
@@ -2064,12 +2780,10 @@ def load_and_save(mapfile, log_path):
     rcon_port, game_port = free_port(socket.SOCK_STREAM), free_port(socket.SOCK_DGRAM)
     binary = FACTORIO / ("bin/x64/factorio.exe" if os.name == "nt" else "bin/x64/factorio")
     settings = WORK / "server-settings.json"
-    settings.write_text(json.dumps({"name": "devcheck", "description": "devcheck migrate: the intermediate load",
+    settings.write_text(json.dumps({"name": "devcheck", "description": description,
                                     "visibility": {"public": False, "lan": False}, "auto_pause": True,
                                     "require_user_verification": False, "max_players": 1}), encoding="utf-8")
-    step = WORK / "migrate-step.zip"                   # the server saves the map back into this file when it quits
-    shutil.copy2(mapfile, step)
-    reason = None
+    reason, answers = None, []
     with open(log_path, "w", encoding="utf-8") as out:
         proc = subprocess.Popen([str(binary), "--mod-directory", str(MODS), "--start-server", str(step),
                                  "--server-settings", str(settings), "--bind", f"127.0.0.1:{game_port}",
@@ -2089,6 +2803,8 @@ def load_and_save(mapfile, log_path):
             if not sock:
                 reason = "the server did not load the save or answer RCON"
             else:
+                for i, command in enumerate(commands):
+                    answers.append(rcon(sock, 2, command, 10 + i))
                 try:
                     rcon(sock, 2, "/quit", 2)
                 except OSError:
@@ -2110,13 +2826,7 @@ def load_and_save(mapfile, log_path):
     log = log_path.read_text(encoding="utf-8", errors="replace")
     if not reason and not re.search(r"Saving map as .*\n(?:.*\n)*?.*Saving progress: 100", log):
         reason = "the server did not save the map when it quit"
-    if not reason and re.search(r"DEVCHECK-MIGRATE-(?!SETUP)[A-Z]+ ", log):
-        reason = "a tick ran in the intermediate load (the helper mod's checks ran there)"
-    ticks = re.findall(r"updateTick\((\d+)\) changing state from\(InGame\)", log)
-    if not reason:
-        shutil.copy2(step, mapfile)
-        print(f"  saved when the server quit (tick {ticks[-1] if ticks else '?'}, no tick run)")
-    return log, reason
+    return log, reason, answers
 
 
 def bumped_working_copy(old_zip):
@@ -2190,10 +2900,11 @@ class old_factorio:
 def migrate(a):
     """Create a map with an older version (also "Gregtorio" before 0.3.0), then load and run it with the working copy."""
     old = a.from_zip or zip_from_ref(a.from_ref)
+    old_migs = zip_migrations(old)
     old_me = old_me_network(a.old_me_network) if getattr(a, "old_me_network", None) else None
     with old_factorio(a, old):
         with me_network_from(old_me):
-            prepare_mods(gregtorio_zip=old, with_migrate=True)
+            prepare_mods(gregtorio_zip=old, with_migrate=True, old_migrations=old_migs)
         log = factorio("--create", str(WORK / "migrate-map.zip"), *seed_args(a))
     print(f"map seed: {'random' if a.seed == 'random' else a.seed}")
     if load_errors(log):
@@ -2225,6 +2936,8 @@ def migrate(a):
     print(f"old save with researched technologies (issue #91): {setup.group(1) if setup else 'no result'}")
     setup = re.search(r"DEVCHECK-MIGRATE-SETUP-REMOVED (.*)", log)
     print(f"old save with removed fluids and items (issues #98, #96): {setup.group(1) if setup else 'no result'}")
+    setup = re.search(r"DEVCHECK-MIGRATE-SETUP-FURNACES (.*)", log)
+    print(f"old save with every ore machine placed, loaded and mid-craft (issue #560): {setup.group(1) if setup else 'no result'}")
     setup = re.search(r"DEVCHECK-MIGRATE-SETUP-PLANETS (.*)", log)
     print(f"old save with surfaces of the Space Age planets (issue #529): {setup.group(1) if setup else 'no result'}")
     setup = re.search(r"DEVCHECK-MIGRATE-SETUP-VEINGRID (.*)", log)
@@ -2243,7 +2956,7 @@ def migrate(a):
         step_me = old_me_network(STEP_ME_NETWORK, "intermediate load with")
         old = zip_from_ref(STEP_GREGTORIO)
         with me_network_from(step_me):
-            prepare_mods(gregtorio_zip=old, with_migrate=True)
+            prepare_mods(gregtorio_zip=old, with_migrate=True, old_migrations=old_migs)
         step_log, why = load_and_save(WORK / "migrate-map.zip", WORK / "migrate-step.log")
         if why:
             print(f"intermediate load: FAILED, {why}: "
@@ -2253,7 +2966,9 @@ def migrate(a):
     elif save_me is not None and version_tuple(save_me) < ME_CUT_OFF:
         print(f"--direct: the old save of me-network {save_me} is loaded with the working copies (me-network 0.5.1 and "
               f"later refuse it)")
-    prepare_mods(with_migrate=True, gregtorio_zip=bumped_working_copy(old))
+    # (issue #563: --set forces a startup setting of the working copy's load, e.g. the classic ore mode)
+    prepare_mods(with_migrate=True, gregtorio_zip=bumped_working_copy(old), old_migrations=old_migs,
+                 settings=parse_settings(getattr(a, "set", None)))
     log = factorio("--benchmark", str(WORK / "migrate-map.zip"), "--benchmark-ticks", str(a.ticks))
     ran = re.search(r"Performed (\d+) updates", log)
     fluids = re.search(r"DEVCHECK-MIGRATE-FLUIDS (.*)", log)
@@ -2275,6 +2990,10 @@ def migrate(a):
     print(f"technology effects of the old save (issue #91): {techs.group(1) if techs else 'no result'}")
     removed = re.search(r"DEVCHECK-MIGRATE-REMOVED (.*)", log)
     print(f"removed fluids and items of the old save (issues #98, #96): {removed.group(1) if removed else 'no result'}")
+    furnaces = re.search(r"DEVCHECK-MIGRATE-FURNACES (.*)", log)
+    print(f"ore machines of the old save as furnaces (issue #560): {furnaces.group(1) if furnaces else 'no result'}")
+    for line in re.findall(r"FORK-ORE-FURNACES: (.*)", log):
+        print("  migration: " + line)
     planets = re.search(r"DEVCHECK-MIGRATE-PLANETS (.*)", log)
     print(f"surfaces of the deleted Space Age planets (issue #529): {planets.group(1) if planets else 'no result'}")
     veingrid = re.search(r"DEVCHECK-MIGRATE-VEINGRID (.*)", log)
@@ -2283,6 +3002,8 @@ def migrate(a):
     print(f"vein ores of the old save regenerated (issue #534): {veinores.group(1) if veinores else 'no result'}")
     mapgen = re.search(r"DEVCHECK-MIGRATE-MAPGEN (.*)", log)
     print(f"map generation of the old save (issue #540): {mapgen.group(1) if mapgen else 'no result'}")
+    lenses = re.search(r"DEVCHECK-MIGRATE-MELENSES (.*)", log)
+    print(f"lenses of the old save in its ME network renamed (issue #580): {lenses.group(1) if lenses else 'no result'}")
     for line in re.findall(r"FORK-ORE-VEINS: (.*other planets.*)", log):
         print("  migration: " + line)
     # issue #83: the fingerprints of what gregtorio-continued gave and what me-network got must be equal (issue #209:
@@ -2304,8 +3025,8 @@ def migrate(a):
         and patterns and not patterns.group(1).startswith("failed") and job and not job.group(1).startswith("failed") \
         and items and not items.group(1).startswith("failed") and handover_ok \
         and techs and not techs.group(1).startswith("failed") \
-        and removed and not removed.group(1).startswith("failed")         and planets and not planets.group(1).startswith("failed")         and veingrid and not veingrid.group(1).startswith("failed")         and veinores and not veinores.group(1).startswith("failed") \
-        and mapgen and not mapgen.group(1).startswith("failed")
+        and removed and not removed.group(1).startswith("failed")         and furnaces and not furnaces.group(1).startswith("failed")         and planets and not planets.group(1).startswith("failed")         and veingrid and not veingrid.group(1).startswith("failed")         and veinores and not veinores.group(1).startswith("failed") \
+        and mapgen and not mapgen.group(1).startswith("failed")         and lenses and not lenses.group(1).startswith("failed")
     return 0 if ok else 1
 
 
@@ -2412,46 +3133,191 @@ def save_path(path):
     return ROOT / m.group(2) if m.group(1) in MOD_NAMES else None
 
 
+MENUSIM_TOOLS = ROOT / "tools" / "menusim"     # issue #588: resave.lua and a <name>.json per Gregtorio scene
+REPLAY_FILES = ("level-init.dat", "script-init.dat")
+
+
+def own_scene(save):
+    """issue #588: a scene of Gregtorio's own (its save is in this mod)"""
+    return bool(re.match(r"__(%s)__/" % "|".join(MOD_NAMES), save or ""))
+
+
 def run_menusim(name, save, length, gregtorio):
-    """Load the simulation's save with --benchmark for its length; the helper mod runs its init and update chunks"""
-    prepare_mods(menusim=name, gregtorio=gregtorio)
+    """Load the simulation's save with --benchmark for its length; the helper mod runs its init and update chunks.
+    Issue #588: a scene of Gregtorio's own also has its save's entities checked against tools/menusim/<name>.json and
+    the machines in the camera's view watched (menusimmod/control.lua)."""
     path = save_path(save)
+    own = own_scene(save)
     if not path or not path.exists():
-        return f"skipped (no save file: {save or 'none'})", []
+        return (f"ERROR no save file: {save}" if own else f"skipped (no save file: {save or 'none'})"), []
+    config = {"name": name, "ticks": length}
+    if own:
+        scene = MENUSIM_TOOLS / f"{name}.json"
+        if not scene.exists():
+            return f"ERROR {scene.relative_to(ROOT).as_posix()} is missing: run `menusim --sim {name} --rebuild`", []
+        config["expect"] = json.loads(scene.read_text(encoding="utf-8"))["entities"]
+    prepare_mods(menusim=config, gregtorio=gregtorio)
     log = factorio("--benchmark", str(path), "--benchmark-ticks", str(length))
     lines = re.findall(r"DEVCHECK-MENUSIM (.*)", log)
     ran = re.search(r"Performed (\d+) updates", log)
     err = re.search(r"(Error while running.*|non-recoverable.*|Error.*)(\n.*){0,3}", log)
     if any(l.startswith("FAIL") for l in lines):
-        return next(l for l in lines if l.startswith("FAIL")), lines
+        fails = [l for l in lines if l.startswith("FAIL")]
+        return fails[0] + (f" (and {len(fails) - 1} more FAIL lines)" if len(fails) > 1 else ""), lines
     if err and not ran:
-        return "ERROR " + " ".join(x.strip() for x in err.group(0).splitlines()), lines
+        # (issue #597: an error in a scene's chunk is named with its cause, e.g. "update:2: LuaSimulation doesn't ...")
+        return "ERROR " + (script_error(log) or " ".join(x.strip() for x in err.group(0).splitlines())), lines
     if not any(l == "init done" for l in lines):
         return "ERROR init did not run", lines
+    if own and not any(l.startswith("view ") for l in lines):
+        return "ERROR the machines in view were not checked to the end", lines
     deaths = sum(1 for l in lines if l.startswith("DIED"))
-    return f"ok ({ran.group(1)} ticks{f', {deaths} characters died' if deaths else ''})", lines
+    facts = "".join(f"; {l}" for l in lines if l.startswith(("entities:", "view ")))
+    return f"ok ({ran.group(1)} ticks{f', {deaths} characters died' if deaths else ''}{facts})", lines
 
 
 def menusim(a):
-    """Run main menu simulations with the mod (and with --compare also without it) and report errors."""
+    """Run main menu simulations with the mod (and with --compare also without it) and report errors.
+    `--sim own` (part of `all`): Gregtorio's own scenes only. `--rebuild`: issue #588, menusim_rebuild.
+    Issue #595: with Gregtorio the menu has only Gregtorio's scenes; any other one left fails."""
+    if getattr(a, "rebuild", False):
+        return menusim_rebuild(a)
     variants = [True, False] if a.compare else [True]
     failed = False
     for gregtorio in variants:
         label = "with Gregtorio" if gregtorio else "without Gregtorio"
         sims = menusim_list(gregtorio)
-        names = sorted(sims) if a.sim == "all" else [a.sim]
-        print(f"== {label}: {len(sims)} menu simulations{'' if a.sim == 'all' else ', running ' + a.sim}")
+        if a.sim == "all":
+            names = sorted(sims)
+        elif a.sim == "own":
+            names = sorted(n for n, (save, _) in sims.items() if own_scene(save))
+        else:
+            names = [a.sim]
+        print(f"== {label}: {len(sims)} menu simulations{'' if a.sim in ('all', 'own') else ', running ' + a.sim}")
+        others = sorted(n for n, (save, _) in sims.items() if not own_scene(save))
+        if gregtorio and others:
+            print(f"FAIL not Gregtorio's own, still in the menu (issue #595): {', '.join(others)}")
+            failed = True
         for name in names:
             if name not in sims:
                 print(f"{name}: not in main_menu_simulations")
+                failed |= gregtorio
                 continue
             save, length = sims[name]
             result, lines = run_menusim(name, save, a.ticks or length, gregtorio)
             print(f"{name}: {result}")
-            if a.sim != "all" or a.verbose:
+            if a.sim not in ("all", "own") or a.verbose:
                 for l in lines:
                     print("    " + l)
             failed |= result.startswith(("ERROR", "FAIL"))
+    print("\nRESULT: " + ("PROBLEMS FOUND" if failed else "OK"))
+    return 1 if failed else 0
+
+
+def menusim_own(a):
+    """Part of `all` (issue #588): Gregtorio's own menu scenes"""
+    print("\n=== Gregtorio's main menu scenes ===")
+    return menusim(argparse.Namespace(sim="own", compare=False, ticks=None, verbose=False, rebuild=False))
+
+
+def player_entities(answer, what):
+    try:
+        return json.loads(answer)
+    except ValueError:
+        sys.exit(f"{what}: no answer from the server's Lua command: {answer!r}")
+
+
+def menusim_rebuild(a):
+    """Issue #588: saves a Gregtorio scene's save again with today's mods and shrinks it, in the headless game.
+    1. --made-with GREGTORIO_REF[:ME_NETWORK_REF]: loads the save with the versions it was made with and counts the
+       player force's entities by name (the menusim helper's count mode).
+    2. Loads it in a headless server with today's mods (no helper mod: the save keeps the players' mod list), runs
+       tools/menusim/resave.lua over RCON (chunks cut to the factory, the blueprint library and the replay off) and
+       saves it when the server quits; the replay's start state (REPLAY_FILES), which the engine keeps in every save, is
+       left out of the zip.
+    3. Fails when an entity name has fewer entities after the load or the resave than with the save's own versions;
+       otherwise the save replaces the one in menu-simulations/ and tools/menusim/<name>.json gets today's counts (what
+       `menusim` checks every load against) and the facts of the rebuild. The source is the save of the working copy
+       or, with --save-from, the one of a git ref (the save as its builder made it)."""
+    import zipfile
+    sims = menusim_list(True)
+    if a.sim not in sims or not own_scene(sims[a.sim][0]):
+        sys.exit(f"--rebuild: {a.sim} is not a main menu simulation of Gregtorio's own")
+    save, length = sims[a.sim]
+    path = save_path(save)
+    rel = path.relative_to(ROOT).as_posix()
+    work = WORK / "menusim"
+    work.mkdir(exist_ok=True)
+    src = work / "source.zip"
+    if a.save_from:
+        src.write_bytes(subprocess.run(["git", "-C", str(ROOT), "show", f"{a.save_from}:{rel}"],
+                                       capture_output=True, check=True).stdout)
+    else:
+        shutil.copy2(path, src)
+    print(f"== {a.sim}: {rel} from {a.save_from or 'the working copy'}, {src.stat().st_size / 1e6:.2f} MB")
+    baseline = None
+    if a.made_with:
+        g_ref, _, me_ref = a.made_with.partition(":")
+        g_zip = zip_from_ref(g_ref)
+        me_dir = old_me_network(me_ref, "the save's own versions:") if me_ref else None
+        with me_network_from(me_dir):
+            prepare_mods(gregtorio_zip=g_zip, menusim={"name": a.sim, "count_only": True})
+            log = factorio("--benchmark", str(src), "--benchmark-ticks", "2")
+        m = re.search(r"DEVCHECK-MENUSIM COUNTS (.*)", log)
+        if not m:
+            sys.exit("the load with the save's own versions failed:\n" + (load_errors(log) or script_error(log) or log[-2000:]))
+        baseline = json.loads(m.group(1))
+        print(f"loaded with Gregtorio {g_ref}{' and me-network ' + me_ref if me_ref else ''}: "
+              f"{sum(baseline.values())} entities of the player force")
+    prepare_mods(helper=False)
+    step = work / path.name                      # the zip's folder takes the file's name
+    shutil.copy2(src, step)
+    count = ("/sc local by, n = {}, 0 for _, e in pairs(game.surfaces.nauvis.find_entities_filtered({ force = 'player' }))"
+             " do if e.type ~= 'character' then by[e.name] = (by[e.name] or 0) + 1 end end"
+             " for _ in game.surfaces.nauvis.get_chunks() do n = n + 1 end"
+             " rcon.print(helpers.table_to_json({ entities = by, chunks = n, players = #game.players }))")
+    lua = (MENUSIM_TOOLS / "resave.lua").read_text(encoding="utf-8")
+    log, reason, answers = server_session(step, work / "server.log", f"devcheck menusim --rebuild {a.sim}", [
+        "/sc rcon.print('ready')",            # (the first Lua command of a session may get the achievements warning)
+        f"/sc local MARGIN = {a.margin}\n{lua}", count])
+    if reason:
+        sys.exit(f"the headless save failed: {reason}\n{load_errors(log) or log[-2000:]}")
+    resave, resaved = player_entities(answers[1], "resave.lua"), player_entities(answers[2], "count")
+    after = resaved["entities"]
+    out = work / "rebuilt.zip"
+    with zipfile.ZipFile(step) as zin, zipfile.ZipFile(out, "w", zipfile.ZIP_DEFLATED) as zout:
+        for info in zin.infolist():
+            if info.filename.rsplit("/", 1)[-1] not in REPLAY_FILES:
+                zout.writestr(info, zin.read(info.filename))
+    before = resave["entities"]
+    names = sorted(set(before) | set(after) | set(baseline or {}))
+    lost = [n for n in names if after.get(n, 0) < before.get(n, 0) or (baseline and before.get(n, 0) < baseline.get(n, 0))]
+    print(f"{'entity':32} {'own versions':>12} {'today':>8} {'resaved':>8}")
+    for n in names:
+        print(f"{n:32} {baseline.get(n, '-') if baseline else '-':>12} {before.get(n, '-'):>8} {after.get(n, '-'):>8}"
+              f"{'   LOST' if n in lost else ''}")
+    print(f"chunks: {resave['chunks']} -> {resaved['chunks']} (margin {a.margin}); blueprint library records deleted: "
+          f"{resave['blueprint_records']}; players removed: {resave['players']} ({resaved['players']} left); "
+          f"replay files left out: {', '.join(REPLAY_FILES)}")
+    print(f"size: {src.stat().st_size / 1e6:.2f} MB -> {out.stat().st_size / 1e6:.2f} MB")
+    if resaved["players"]:
+        lost.append(f"{resaved['players']} players")       # (issue #599: the menu draws a player's GUI over the scene)
+    if lost:
+        print("\nRESULT: PROBLEMS FOUND (entities lost or players left: " + ", ".join(lost) + "; the save was not replaced)")
+        return 1
+    shutil.copy2(out, path)
+    scene = MENUSIM_TOOLS / f"{a.sim}.json"
+    scene.write_text(json.dumps({
+        "save": rel, "rebuilt_from": a.save_from or "working copy", "made_with": a.made_with, "margin": a.margin,
+        "chunks": {"before": resave["chunks"], "kept": resaved["chunks"]}, "players_removed": resave["players"],
+        "size": {"before": src.stat().st_size, "after": out.stat().st_size},
+        "entities": dict(sorted(after.items()))}, indent=2) + "\n", encoding="utf-8", newline="\n")
+    print(f"wrote {rel} and {scene.relative_to(ROOT).as_posix()}\n")
+    result, lines = run_menusim(a.sim, save, length, True)
+    print(f"{a.sim}: {result}")
+    for l in lines:
+        print("    " + l)
+    failed = result.startswith(("ERROR", "FAIL"))
     print("\nRESULT: " + ("PROBLEMS FOUND" if failed else "OK"))
     return 1 if failed else 0
 
@@ -2468,11 +3334,17 @@ def main():
     c.add_argument("--techs", help="regex: list matching technologies and whether they are researchable")
     c.add_argument("--balance-out", help="also write recipes (amounts, times), machine speeds and technology counts as JSON")
     c.add_argument("--fluids-out", help="also write the fluids with subgroup, order and icon (for gen_review_sheet.py fluids)")
-    c.add_argument("--set", action="append", metavar="SETTING=true|false",
-                   help="force a bool startup setting for this run, e.g. gregtorio-continued-one-pack-research=true")
+    c.add_argument("--vein-table", action="store_true",
+                   help="issue #574: write the vein table of docs/ORE-VEINS.md from the mod's placed veins")
+    c.add_argument("--item-renames", action="store_true",
+                   help="issue #580: write prototypes/data/item-renames.lua from the item renames of the JSON migrations")
+    c.add_argument("--set", action="append", metavar="SETTING=VALUE",
+                   help="force a startup setting for this run (bool, number or string), e.g. "
+                   "gregtorio-continued-one-pack-research=true or gregtorio-continued-boiler-output=4")
     r = sub.add_parser("runtime")
     r.add_argument("--ticks", type=int, default=1500)
     r.add_argument("--seed", default=str(DEFAULT_SEED), help=f"map seed or `random` (default {DEFAULT_SEED})")
+    r.add_argument("--set", action="append", metavar="SETTING=VALUE", help="force a startup setting, as for check")
     m = sub.add_parser("migrate")
     src = m.add_mutually_exclusive_group(required=True)
     src.add_argument("--from-zip", help="older Gregtorio_x.y.z.zip to create the save with")
@@ -2485,16 +3357,31 @@ def main():
                    f"working copies directly, without the intermediate load with Gregtorio {STEP_GREGTORIO} and "
                    f"me-network {STEP_ME_NETWORK} (me-network 0.5.1 and later refuse it)")
     m.add_argument("--seed", default=str(DEFAULT_SEED), help=f"map seed or `random` (default {DEFAULT_SEED})")
+    m.add_argument("--set", action="append", metavar="SETTING=VALUE",
+                   help="issue #563: force a startup setting of the working copy's load, e.g. "
+                   "gregtorio-continued-ore-mode=vein-recipes")
     m.add_argument("--old-factorio", metavar="DIR", help="issue #535: an unpacked Factorio of the old version's "
                    "factorio_version (bin/ and data/), which makes the old save when it is not this one's (a 2.0 version)")
     m.add_argument("--old-mods", metavar="DIR", help="issue #535: with --old-factorio, a folder with the old version's "
                    "dependency zips (configurable-valves, autocraft-logistics of Factorio 2.0)")
     ms = sub.add_parser("menusim", help="run main menu simulations")
-    ms.add_argument("--sim", default="nauvis_biter_base_laser_defense", help="simulation name or `all`")
+    ms.add_argument("--sim", default="nauvis_biter_base_laser_defense",
+                    help="simulation name, `all` or `own` (Gregtorio's own scenes, part of `all`)")
     ms.add_argument("--compare", action="store_true", help="also run without Gregtorio")
     ms.add_argument("--ticks", type=int, help="ticks to run (default: the simulation's length)")
     ms.add_argument("--verbose", action="store_true", help="print the log lines with --sim all too")
+    ms.add_argument("--rebuild", action="store_true", help="issue #588: save a Gregtorio scene's save again with "
+                    "today's mods in the headless game, cut to the chunks of its factory (tools/menusim/resave.lua), "
+                    "and write tools/menusim/<sim>.json")
+    ms.add_argument("--save-from", metavar="REF", help="with --rebuild: take the save of this git ref (e.g. the commit "
+                    "that added it as its builder made it) instead of the working copy's")
+    ms.add_argument("--made-with", metavar="GREGTORIO_REF[:ME_NETWORK_REF]", help="with --rebuild: also load the save "
+                    "with the versions it was made with and fail when the load with today's mods loses an entity, "
+                    "e.g. v0.5.8:v0.5.8")
+    ms.add_argument("--margin", type=int, default=0, help="with --rebuild: chunks kept around the factory's chunks")
     sub.add_parser("handover", help="issue #83: prototype of the ME state hand-over to me-network")
+    sw = sub.add_parser("switch", help="issue #563: a save switches its ore mode, both ways")
+    sw.add_argument("--seed", default=str(DEFAULT_SEED), help=f"map seed or `random` (default {DEFAULT_SEED})")
     al = sub.add_parser("all")
     al.add_argument("--ticks", type=int, default=1500)
     al.add_argument("--locale-out")
@@ -2513,7 +3400,9 @@ def main():
         return menusim(a)
     if a.cmd == "handover":
         return handover(a)
-    return check(a) or one_pack(a) or runtime(a)
+    if a.cmd == "switch":
+        return switch(a)
+    return check(a) or one_pack(a) or runtime(a) or classic(a) or boilers(a) or menusim_own(a)
 
 
 if __name__ == "__main__":
