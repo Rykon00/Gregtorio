@@ -130,6 +130,7 @@ local function tests_running()
 	check(storage.emine and storage.emine.done, "electric mine")
 	check(storage.lftr and storage.lftr.done, "LFTR")
 	check(storage.solar and storage.solar.done, "solar boilers")
+	check(storage.coal_boiler and storage.coal_boiler.done, "coal boiler")
 	check(storage.torch and storage.torch.done, "torch")
 	check(storage.battery and storage.battery.done, "battery buffers")
 	return running
@@ -1238,8 +1239,12 @@ function orefurnace_test()
 end
 
 --- Solar boilers (issue #446, scripts/fork-steam-boilers.lua): on a surface of their own with the time of day frozen, a
---- Simple Solar Boiler stops at midnight (status "No sunlight") and makes steam at noon
+--- Simple Solar Boiler stops at midnight (status "No sunlight") and makes steam at noon, 1.2 per second times the boiler
+--- output setting (issue #593)
 local SB_WAIT = 150
+--- issue #593: the boiler output setting of this load (1: GT New Horizons)
+BOILER_FACTOR = settings.startup["gregtorio-continued-boiler-output"] and settings.startup["gregtorio-continued-boiler-output"].value
+	or 1
 function setup_solar_test(_)
 	local ss = game.create_surface("devcheck-solar")
 	ss.always_day = false
@@ -1278,11 +1283,69 @@ function solar_test()
 		if e.disabled_by_script then problems[#problems + 1] = "it is stopped at noon" end
 		st.day_steam = e.get_fluid_count("steam")
 		if not (st.day_steam > (st.night_steam or 0)) then problems[#problems + 1] = "no steam at noon" end
+		-- issue #593: one craft a second, its steam is 1.2 times the boiler output setting
+		st.crafts = e.products_finished
+		st.per_craft = st.crafts > 0 and (st.day_steam - (st.night_steam or 0)) / st.crafts or 0
+		if math.abs(st.per_craft - 1.2 * BOILER_FACTOR) > 1e-3 then
+			problems[#problems + 1] = string.format("%.4f steam per second by day, not %.4f (boiler output %g)", st.per_craft,
+				1.2 * BOILER_FACTOR, BOILER_FACTOR)
+		end
 	end
 	st.done = true
 	for _, p in pairs(problems) do log("DEVCHECK-RUNTIME-FAIL solar boiler test: " .. p) end
-	log("DEVCHECK-RUNTIME-SOLAR " .. (#problems == 0 and "ok" or "failed") .. string.format(" (steam %.1f at midnight, %.1f at noon)",
-		st.night_steam or 0, st.day_steam or 0))
+	log("DEVCHECK-RUNTIME-SOLAR " .. (#problems == 0 and "ok" or "failed") .. string.format(" (steam %.1f at midnight, %.1f at noon"
+		.. " from %d crafts of 1 s: %.2f steam/s by day)", st.night_steam or 0, st.day_steam or 0, st.crafts or 0, st.per_craft or 0))
+end
+
+--- Coal boiler (issue #593, prototypes/fork-boiler-output.lua): a Small Coal Boiler with water and coal, on the solar test's
+--- surface, makes 1.2 steam per second times the boiler output setting and burns 36 kW of coal times the setting, measured
+--- over CB_TICKS after CB_WARM ticks (the fuel is the coal in its inventory and what still burns)
+CB_WARM, CB_TICKS = 60, 300   -- (globals: the main chunk is near Lua's 200 locals)
+function setup_coal_boiler_test(_)
+	local ss = game.surfaces["devcheck-solar"]
+	if not ss then return { "coal boiler test: no surface (the solar boiler test makes it)" } end
+	local e = ss.create_entity{ name = "small-coal-boiler", position = { 10.5, 0.5 }, force = "player", raise_built = true }
+	if not e then return { "coal boiler test: could not place the Small Coal Boiler" } end
+	e.insert_fluid{ name = "water", amount = 150 }
+	e.insert{ name = "coal", count = 10 }
+	storage.coal_boiler = { e = e, at = game.tick }
+	return {}
+end
+
+function coal_boiler_fuel(e)
+	return e.get_item_count("coal") * prototypes.item["coal"].fuel_value + e.burner.remaining_burning_fuel
+end
+
+function coal_boiler_test()
+	local st = storage.coal_boiler
+	if not st or st.done then return end
+	local e = st.e
+	local problems = {}
+	if not (e and e.valid) then
+		problems[#problems + 1] = "the boiler is gone"
+	elseif not st.t1 then
+		if game.tick < st.at + CB_WARM then return end
+		e.insert_fluid{ name = "water", amount = 150 }
+		st.t1, st.s1, st.f1 = game.tick, e.get_fluid_count("steam"), coal_boiler_fuel(e)
+		return
+	else
+		if game.tick < st.t1 + CB_TICKS then return end
+		local secs = (game.tick - st.t1) / 60
+		st.steam = (e.get_fluid_count("steam") - st.s1) / secs
+		st.watts = (st.f1 - coal_boiler_fuel(e)) / secs
+		st.coal = st.watts / prototypes.item["coal"].fuel_value
+		local want_steam, want_watts = 1.2 * BOILER_FACTOR, 36e3 * BOILER_FACTOR
+		if math.abs(st.steam - want_steam) > want_steam * 0.02 then
+			problems[#problems + 1] = string.format("%.3f steam/s, not %.3f", st.steam, want_steam)
+		end
+		if math.abs(st.watts - want_watts) > want_watts * 0.05 then
+			problems[#problems + 1] = string.format("burns %.0f W of coal, not %.0f", st.watts, want_watts)
+		end
+	end
+	st.done = true
+	for _, p in pairs(problems) do log("DEVCHECK-RUNTIME-FAIL coal boiler test: " .. p) end
+	log("DEVCHECK-RUNTIME-COALBOILER " .. (#problems == 0 and "ok" or "failed") .. string.format(" (boiler output %g: %.3f steam/s, "
+		.. "%.4f coal/s = %.1f kW)", BOILER_FACTOR, st.steam or 0, st.coal or 0, (st.watts or 0) / 1e3))
 end
 
 --- The torch (issue #555, prototypes/100-fork-fixes.lua): on a surface of its own frozen at midnight, without any power,
@@ -3117,6 +3180,7 @@ script.on_nth_tick(10, function()
 	melt_test()
 	emine_test()
 	solar_test()
+	coal_boiler_test()
 	torch_test()
 	battery_test()
 	veins_test()
@@ -3199,6 +3263,7 @@ script.on_init(function()
 	for _, f in pairs(setup_melt_test(s)) do fails[#fails + 1] = f end
 	for _, f in pairs(setup_emine_test(s)) do fails[#fails + 1] = f end
 	for _, f in pairs(setup_solar_test(s)) do fails[#fails + 1] = f end
+	for _, f in pairs(setup_coal_boiler_test(s)) do fails[#fails + 1] = f end
 	for _, f in pairs(setup_torch_test(s)) do fails[#fails + 1] = f end
 	for _, f in pairs(setup_battery_test(s)) do fails[#fails + 1] = f end
 	for _, f in pairs(setup_veins_test()) do fails[#fails + 1] = f end

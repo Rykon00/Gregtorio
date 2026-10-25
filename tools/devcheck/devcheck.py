@@ -307,12 +307,17 @@ def prepare_mods(with_runtime=False, gregtorio_zip=None, with_migrate=False, men
         (d / "info.json").write_text(json.dumps({
             "name": "zz-gregtorio-devcheck-settings", "version": "1.0.0", "title": "Gregtorio devcheck settings",
             "author": "rykon_", "factorio_version": engine_version(), "dependencies": ["? " + n for n in MOD_NAMES]}))
-        # (issue #563: a string setting takes its value as the only allowed one)
+        # (issue #563: a string setting takes its value as the only allowed one; issue #593: a number setting too)
         (d / "settings-final-fixes.lua").write_text("".join(
             (f"do local s = data.raw['bool-setting'][{json.dumps(n)}] "
              f"assert(s, 'devcheck --set: no bool setting ' .. {json.dumps(n)}) "
              f"s.hidden = true s.forced_value = {'true' if v else 'false'} s.default_value = s.forced_value end\n")
             if isinstance(v, bool) else
+            (f"do local s = data.raw['double-setting'][{json.dumps(n)}] or data.raw['int-setting'][{json.dumps(n)}] "
+             f"assert(s, 'devcheck --set: no double or int setting ' .. {json.dumps(n)}) "
+             f"s.hidden = true s.minimum_value = nil s.maximum_value = nil s.allowed_values = {{ {v!r} }} "
+             f"s.default_value = {v!r} end\n")
+            if isinstance(v, (int, float)) else
             (f"do local s = data.raw['string-setting'][{json.dumps(n)}] "
              f"assert(s, 'devcheck --set: no string setting ' .. {json.dumps(n)}) "
              f"s.hidden = true s.allowed_values = {{ {json.dumps(v)} }} s.default_value = {json.dumps(v)} end\n")
@@ -1696,20 +1701,42 @@ def check_unresearchable(m):
     return out
 
 
-STEAM_RATES_EXPECTED = {"small-coal-boiler": 1.2, "large-bronze-boiler": 160, "steam-alloy-smelter": 3.2}
+STEAM_RATES_EXPECTED = {"small-coal-boiler": 1.2, "large-bronze-boiler": 160, "steam-alloy-smelter": 3.2,
+                        "simple-solar-boiler": 1.2}
+# issue #593: what these boilers burn per second at the boiler output setting's default (GTNH); both rise by the factor
+STEAM_WATTS_EXPECTED = {"small-coal-boiler": 36e3, "large-bronze-boiler": 4.8e6}
+BOILER_OUTPUT = "gregtorio-continued-boiler-output"
+BOILERS_SET = 4   # the factor of `all`'s extra load (issue #593)
+
+
+def boiler_factor(sec):
+    """the boiler output setting the mod was loaded with (section BOILEROUTPUT, issue #593; 1 in older versions)"""
+    for r in sec.get("BOILEROUTPUT", []):
+        if r[0] == "factor" and len(r) > 1:
+            return float(r[1])
+    return 1.0
 
 
 def check_steam_rates(sec):
     """Issue #564 (prototypes/fork-steam-rates.lua): the descriptions say steam per second; the computed rates of the Small
-    Coal Boiler (1.2), the Large Bronze Boiler (160) and the Steam Alloy Smelter (3.2) must be GTNH's, and every rate is
-    positive; the line is in the description of the entity and of every item that places it (the first version reached
-    only the item of the same name). Returns (info line, problems)."""
+    Coal Boiler (1.2), the Large Bronze Boiler (160), the Simple Solar Boiler (1.2 by day) and the Steam Alloy Smelter
+    (3.2) must be GTNH's, and every rate is positive; the line is in the description of the entity and of every item that
+    places it (the first version reached only the item of the same name). Issue #593: the boilers' rates and what the
+    coal and bronze boiler burn per second times the boiler output setting, the smelter's unchanged. Returns (info line,
+    problems)."""
     rows = {r[0]: r for r in sec.get("STEAMRATES", []) if len(r) >= 4}
+    factor = boiler_factor(sec)
     problems = []
     for name, want in STEAM_RATES_EXPECTED.items():
         got = float(rows[name][3]) if name in rows else None
-        if got is None or abs(got - want) > want * 1e-6:
+        want = want * factor if name in rows and rows[name][1] != "uses" else want
+        # (1e-5: a solar boiler's steam is on the grid of 2^-24, issue #117)
+        if got is None or abs(got - want) > want * 1e-5:
             problems.append(f"{name}: {got} steam/s, not {want}")
+    for name, want in STEAM_WATTS_EXPECTED.items():
+        got = float(rows[name][7]) if name in rows and len(rows[name]) > 7 and rows[name][7] else None
+        if got is None or abs(got - want * factor) > want * factor * 1e-6:
+            problems.append(f"{name}: burns {got} W, not {want * factor} (the boiler output setting is {factor})")
     problems += [f"{n}: rate {r[3]}" for n, r in sorted(rows.items()) if not float(r[3]) > 0]
     for n, r in sorted(rows.items()):
         if len(r) > 5 and r[5] not in ("entity", "game"):   # (game: a boiler, whose output the game shows)
@@ -1721,6 +1748,20 @@ def check_steam_rates(sec):
         kinds[r[1]] = kinds.get(r[1], 0) + 1
     return (f"{len(rows)} entities with steam per second (" + ", ".join(f"{k} {v}" for k, v in sorted(kinds.items()))
             + ")", problems)
+
+
+def check_boiler_output(sec):
+    """Issue #593 (prototypes/fork-boiler-output.lua): every entity that makes steam by itself (a STEAMRATES row of kind
+    boiler or solar) is multiplied by the boiler output setting or left out with a reason. Returns (info line, problems)."""
+    rows = sec.get("BOILEROUTPUT", [])
+    changed = sorted(r[0] for r in rows if len(r) > 2 and r[1] == "changed")
+    left = {r[0]: r[2] for r in rows if len(r) > 2 and r[1] == "left"}
+    problems = [f"{r[0]}: makes steam ({r[1]}) but is neither multiplied nor left out with a reason"
+                for r in sec.get("STEAMRATES", []) if len(r) > 1 and r[1] != "uses" and r[0] not in changed
+                and r[0] not in left]
+    info = (f"factor {boiler_factor(sec):g}, {len(changed)} multiplied ({', '.join(changed)}), {len(left)} left out ("
+            + "; ".join(f"{n}: {why}" for n, why in sorted(left.items())) + ")")
+    return info, problems
 
 
 def check_required(m):
@@ -2282,13 +2323,19 @@ def check_one_pack(sec):
 
 
 def parse_settings(pairs):
-    """--set NAME=VALUE: true or false for a bool startup setting, any other value for a string setting (issue #563)."""
+    """--set NAME=VALUE: true or false for a bool startup setting, a number for a double or int setting (issue #593), any
+    other value for a string setting (issue #563)."""
     out = {}
     for p in pairs or []:
         name, _, value = p.partition("=")
         if not value:
             sys.exit(f"--set {p}: expected <startup setting>=<value>")
-        out[name] = value == "true" if value in ("true", "false") else value
+        if value in ("true", "false"):
+            out[name] = value == "true"
+        elif re.fullmatch(r"-?\d+(\.\d+)?", value):
+            out[name] = float(value) if "." in value else int(value)
+        else:
+            out[name] = value
     return out
 
 
@@ -2424,6 +2471,9 @@ def check(a):
     rates_info, steam_rates = check_steam_rates(sec)
     print(f"\nsteam per second in the descriptions (issue #564): {rates_info}")
     report("steam per second that differs from GTNH's (prototypes/fork-steam-rates.lua)", steam_rates)
+    boilers_info, boiler_output = check_boiler_output(sec)
+    print(f"\nboiler output (issue #593): {boilers_info}")
+    report("steam makers neither multiplied nor left out (prototypes/fork-boiler-output.lua)", boiler_output)
     classic_info, classic_veins = check_classic_veins(m, sec)
     print(f"\nclassic vein recipes (issue #563): {classic_info}")
     report("placed veins without their classic vein recipe and twins, or with other ores (prototypes/166-fork-classic-veins.lua)",
@@ -2496,7 +2546,7 @@ def check(a):
               or extractor_split or ore_mixes or ore_chain or ore_baths or ore_o34 or ore_hammer
               or circuit_icons or pgm_dusts or recycling or names or gaps or tree or vanilla or lenses or mine_twins
               or unplaceable or stale_unlocks or removed_keys or trigger_only or classic_veins or early or furnace
-              or steam or nugget or steam_rates or vein_doc or renames)
+              or steam or nugget or steam_rates or boiler_output or vein_doc or renames)
     print("\nRESULT:", "OK" if ok else "PROBLEMS FOUND")
     return 0 if ok else 1
 
@@ -2528,6 +2578,18 @@ def classic(a):
         return 1
     print("\n=== switching the ore mode of a save ===")
     return switch(a)
+
+
+def boilers(a):
+    """Part of `all` (issue #593): check and runtime once more with the boiler output setting at BOILERS_SET (the rates of
+    the check and the coal and solar boiler tests of the runtime follow the setting)."""
+    c = argparse.Namespace(**vars(a))
+    c.set, c.balance_out, c.fluids_out, c.locale_out, c.techs = [f"{BOILER_OUTPUT}={BOILERS_SET}"], None, None, None, None
+    print(f"\n=== boiler output ({BOILER_OUTPUT}={BOILERS_SET}): check ===")
+    if check(c):
+        return 1
+    print(f"\n=== boiler output ({BOILER_OUTPUT}={BOILERS_SET}): runtime ===")
+    return runtime(c)
 
 
 def switch(a):
@@ -2580,7 +2642,7 @@ def runtime(a):
     print(f"benchmark: {ran.group(0) if ran else 'did not run'}")
     # the ME network's runtime tests are in me-network since issue #83 (its tools/devcheck)
     tests = (("MOLD", "mold test"), ("LENS", "lens test"), ("POWER", "power test"), ("FUEL", "fuel check test"), ("COOLED", "cooled fluid test"),
-             ("TIERS", "turbine tier test"), ("RECIPES", "recipe test"), ("CRUSH", "raw ore crushing test"), ("OREFURNACE", "ore furnace line test"), ("STEAM", "steam turbine test"), ("CHAIN", "nuclear chain test"), ("LFTR", "LFTR test"), ("LSC", "supercapacitor test"), ("LSUP", "supercapacitor upgrade test"), ("ELEVATOR", "space elevator test"), ("MELT", "melt and cast test"), ("OFFER", "offered recipes test"), ("EMINE", "electric mine test"), ("SOLAR", "solar boiler test"), ("TORCH", "torch test"), ("BATTERY", "battery buffer test"), ("VEINS", "map vein test"), ("CLASSIC", "classic vein test"), ("DRILLS", "mining drill test"), ("PORTAL", "portal test"), ("ENDER", "ender storage test"), ("VICTORY", "victory test"),
+             ("TIERS", "turbine tier test"), ("RECIPES", "recipe test"), ("CRUSH", "raw ore crushing test"), ("OREFURNACE", "ore furnace line test"), ("STEAM", "steam turbine test"), ("CHAIN", "nuclear chain test"), ("LFTR", "LFTR test"), ("LSC", "supercapacitor test"), ("LSUP", "supercapacitor upgrade test"), ("ELEVATOR", "space elevator test"), ("MELT", "melt and cast test"), ("OFFER", "offered recipes test"), ("EMINE", "electric mine test"), ("SOLAR", "solar boiler test"), ("COALBOILER", "coal boiler test"),("TORCH", "torch test"), ("BATTERY", "battery buffer test"), ("VEINS", "map vein test"), ("CLASSIC", "classic vein test"), ("DRILLS", "mining drill test"), ("PORTAL", "portal test"), ("ENDER", "ender storage test"), ("VICTORY", "victory test"),
              ("POSTVICTORY", "post-victory test"))
     for key, label in tests:
         m = re.search(rf"DEVCHECK-RUNTIME-{key} (.*)", log)
@@ -3273,8 +3335,9 @@ def main():
                    help="issue #574: write the vein table of docs/ORE-VEINS.md from the mod's placed veins")
     c.add_argument("--item-renames", action="store_true",
                    help="issue #580: write prototypes/data/item-renames.lua from the item renames of the JSON migrations")
-    c.add_argument("--set", action="append", metavar="SETTING=true|false",
-                   help="force a bool startup setting for this run, e.g. gregtorio-continued-one-pack-research=true")
+    c.add_argument("--set", action="append", metavar="SETTING=VALUE",
+                   help="force a startup setting for this run (bool, number or string), e.g. "
+                   "gregtorio-continued-one-pack-research=true or gregtorio-continued-boiler-output=4")
     r = sub.add_parser("runtime")
     r.add_argument("--ticks", type=int, default=1500)
     r.add_argument("--seed", default=str(DEFAULT_SEED), help=f"map seed or `random` (default {DEFAULT_SEED})")
@@ -3336,7 +3399,7 @@ def main():
         return handover(a)
     if a.cmd == "switch":
         return switch(a)
-    return check(a) or one_pack(a) or runtime(a) or classic(a) or menusim_own(a)
+    return check(a) or one_pack(a) or runtime(a) or classic(a) or boilers(a) or menusim_own(a)
 
 
 if __name__ == "__main__":

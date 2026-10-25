@@ -450,6 +450,14 @@
   to the description of the entity and of its items (not for a `boiler`: the game shows its output itself) (`[fork-steam]` locale keys; a steam age machine also names its Small Coal Boilers);
   `FORK_STEAM_RATES` is devcheck's section STEAMRATES, which checks the Small Coal Boiler (1.2), the Large Bronze Boiler
   (160) and the Steam Alloy Smelter (3.2).
+- Boiler output (issue #593): the startup setting `gregtorio-continued-boiler-output` (a double from the list 1, 1.5, 2,
+  3, 4, 6, 8, 16; default 1, GTNH) makes every steam boiler bigger, not more efficient: `prototypes/fork-boiler-output.lua`
+  (required from `data-final-fixes.lua` before `fork-steam-rates.lua`) multiplies a burner or fluid `boiler`'s
+  `energy_consumption` and the fixed recipes of the lava and solar boilers (steam and fluid ingredients, on 197's grid
+  with `FORK_FLUID_STEPS.round_up`); heat exchangers stay (section BOILEROUTPUT). devcheck's expected boiler rates and
+  watts follow the setting; `devcheck.py all` loads `check` and `runtime` once more with `--set
+  gregtorio-continued-boiler-output=4` (`--set` takes numbers for double and int settings); the runtime's coal boiler and
+  solar boiler tests measure steam per second against the setting. At 16 every fluid box carries the flow (probed).
 - Generators (`generator` prototypes that burn fluids by fuel value, 136) are demand driven; an
   input-output fluid box keeps part of its fluid in the pipeline segment (`get_fluid_count` reports
   only the entity's part; since Factorio 2.1 `get_fluid_segment_fluid` is the whole segment with that part, where 2.0's

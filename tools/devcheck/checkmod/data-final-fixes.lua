@@ -154,7 +154,8 @@ section("NUGGETINGOTOK", ni)
 
 --- Issue #564: steam per second of the boilers and steam machines (FORK_STEAM_RATES of prototypes/fork-steam-rates.lua);
 --- one row per entity: name, kind (boiler, solar, uses), fluid, rate, Small Coal Boilers or "", then whether the line is in
---- the entity's description and in its items' ("entity", "items": the ones that lack it) (absent in older versions)
+--- the entity's description and in its items' ("entity", "items": the ones that lack it), then a boiler's watts (issue
+--- #593, "" for the others) (absent in older versions)
 local sr = {}
 local function has_line(p) return p and serpent.line(p.localised_description or ""):find("fork%-steam%.") ~= nil end
 for name, s in pairs(FORK_STEAM_RATES or {}) do
@@ -166,9 +167,20 @@ for name, s in pairs(FORK_STEAM_RATES or {}) do
 		end
 	end
 	sr[#sr + 1] = table.concat({ name, s.kind, s.fluid, tostring(s.rate), s.boilers and tostring(s.boilers) or "",
-		(s.line == false and "game") or (has_line(e) and "entity") or "-", table.concat(lacking, ",") }, "\t")
+		(s.line == false and "game") or (has_line(e) and "entity") or "-", table.concat(lacking, ","),
+		s.watts and tostring(s.watts) or "" }, "\t")
 end
 section("STEAMRATES", sr)
+
+--- Issue #593: the boiler output setting (FORK_BOILER_OUTPUT of prototypes/fork-boiler-output.lua): a row with the factor,
+--- then one per entity: name, "changed" or "left", its kind or the reason (absent in older versions)
+local bo = {}
+if FORK_BOILER_OUTPUT then
+	bo[1] = "factor\t" .. tostring(FORK_BOILER_OUTPUT.factor)
+	for name, what in pairs(FORK_BOILER_OUTPUT.changed) do bo[#bo + 1] = name .. "\tchanged\t" .. what end
+	for name, why in pairs(FORK_BOILER_OUTPUT.left_out) do bo[#bo + 1] = name .. "\tleft\t" .. why end
+end
+section("BOILEROUTPUT", bo)
 
 --- Issue #126: the recipes of items only the crafting table, the ME Molecular Assembler or the hand can make, on purpose
 --- (FORK_RECIPES_TABLE_ONLY in prototypes/148-fork-gtnh-table-items.lua; absent in older versions)
