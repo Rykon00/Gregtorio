@@ -3116,13 +3116,12 @@ def handover(a):
 
 
 def menusim_list(gregtorio):
-    """{name: (save file, length, copy)} of the main menu simulations, as the game has them with this mod set; copy
-    (issue #591): "" or, for a Gregtorio scene's copy, "copy of <name>" or why it is not one (menusimmod)"""
+    """{name: (save file, length)} of the main menu simulations, as the game has them with this mod set"""
     prepare_mods(menusim="none", gregtorio=gregtorio)
     log = factorio("--create", str(WORK / "menusim-list.zip"))
     if load_errors(log):
         sys.exit("the mods do not load:\n" + load_errors(log))
-    return {r[0]: (r[1], int(r[2]), r[3] if len(r) > 3 else "") for r in sections(log).get("MENUSIMS", [])}
+    return {r[0]: (r[1], int(r[2])) for r in sections(log).get("MENUSIMS", [])}
 
 
 def save_path(path):
@@ -3178,7 +3177,8 @@ def run_menusim(name, save, length, gregtorio):
 
 def menusim(a):
     """Run main menu simulations with the mod (and with --compare also without it) and report errors.
-    `--sim own` (part of `all`): Gregtorio's own scenes only. `--rebuild`: issue #588, menusim_rebuild."""
+    `--sim own` (part of `all`): Gregtorio's own scenes only. `--rebuild`: issue #588, menusim_rebuild.
+    Issue #595: with Gregtorio the menu has only Gregtorio's scenes; any other one left fails."""
     if getattr(a, "rebuild", False):
         return menusim_rebuild(a)
     variants = [True, False] if a.compare else [True]
@@ -3189,21 +3189,20 @@ def menusim(a):
         if a.sim == "all":
             names = sorted(sims)
         elif a.sim == "own":
-            names = sorted(n for n, (save, _, _) in sims.items() if own_scene(save))
+            names = sorted(n for n, (save, _) in sims.items() if own_scene(save))
         else:
             names = [a.sim]
         print(f"== {label}: {len(sims)} menu simulations{'' if a.sim in ('all', 'own') else ', running ' + a.sim}")
+        others = sorted(n for n, (save, _) in sims.items() if not own_scene(save))
+        if gregtorio and others:
+            print(f"FAIL not Gregtorio's own, still in the menu (issue #595): {', '.join(others)}")
+            failed = True
         for name in names:
             if name not in sims:
                 print(f"{name}: not in main_menu_simulations")
                 failed |= gregtorio
                 continue
-            save, length, copy = sims[name]
-            if copy:
-                # issue #591: a Gregtorio scene's copy (prototypes/fork-menu-simulations.lua) runs as its scene
-                print(f"{name}: {copy}{', not run again' if copy.startswith('copy of ') else ''}")
-                failed |= not copy.startswith("copy of ")
-                continue
+            save, length = sims[name]
             result, lines = run_menusim(name, save, a.ticks or length, gregtorio)
             print(f"{name}: {result}")
             if a.sim not in ("all", "own") or a.verbose:
@@ -3241,9 +3240,9 @@ def menusim_rebuild(a):
        or, with --save-from, the one of a git ref (the save as its builder made it)."""
     import zipfile
     sims = menusim_list(True)
-    if a.sim not in sims or not own_scene(sims[a.sim][0]) or sims[a.sim][2]:
-        sys.exit(f"--rebuild: {a.sim} is not a main menu simulation of Gregtorio's own (or a copy of one: rebuild the scene)")
-    save, length, _ = sims[a.sim]
+    if a.sim not in sims or not own_scene(sims[a.sim][0]):
+        sys.exit(f"--rebuild: {a.sim} is not a main menu simulation of Gregtorio's own")
+    save, length = sims[a.sim]
     path = save_path(save)
     rel = path.relative_to(ROOT).as_posix()
     work = WORK / "menusim"
