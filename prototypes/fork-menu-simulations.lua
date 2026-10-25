@@ -25,24 +25,28 @@ if not simulations then return end
 -- player-built entities span -91,-78 to 126,68; zoom 1 shows 60 x 34 tiles at 1920 x 1080). `update` keeps the
 -- machines near the camera busy: once a second it tops up the fuel of a burner that burnt its last item, empties a
 -- crafting machine whose output is full and gives a crafting machine short of its ingredients one craft's worth (the
--- factory has more forge hammers than its macerators feed).
+-- factory has more forge hammers than its macerators feed). The camera is written into both chunks from `camera`:
+-- `game.simulation.camera_zoom` can only be written, a read stops the scene (issue #597).
+local camera = { x = 58, y = -3, zoom = 1 }
+local near = { { camera.x - 48 / camera.zoom, camera.y - 27 / camera.zoom },
+	{ camera.x + 48 / camera.zoom, camera.y + 27 / camera.zoom } }
 simulations.gregtorio_steam_age = {
 	checkboard = false,
 	save = "__gregtorio-continued__/menu-simulations/gregtech-steam-age.zip",
 	length = 60 * 20,
 	init = [[
-    game.simulation.camera_position = {58, -3}
-    game.simulation.camera_zoom = 1
+    game.simulation.camera_position = ]] .. serpent.line({ camera.x, camera.y }, { comment = false }) .. [[
+
+    game.simulation.camera_zoom = ]] .. camera.zoom .. [[
+
     game.tick_paused = false
     game.surfaces.nauvis.daytime = 0
   ]],
 	update = [[
     if game.tick % 60 ~= 0 then return end
-    local p, z = game.simulation.camera_position, game.simulation.camera_zoom
-    local w, h = 48 / z, 27 / z
     local crafter = { ["assembling-machine"] = true, furnace = true }
     for _, e in pairs(game.surfaces.nauvis.find_entities_filtered({ force = "player",
-      area = { { p.x - w, p.y - h }, { p.x + w, p.y + h } },
+      area = ]] .. serpent.line(near, { comment = false }) .. [[,
       type = { "assembling-machine", "furnace", "inserter", "lab", "boiler", "mining-drill" } })) do
       local burner = e.burner
       if burner and burner.currently_burning and burner.inventory.is_empty() then

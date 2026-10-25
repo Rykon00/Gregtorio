@@ -3165,7 +3165,8 @@ def run_menusim(name, save, length, gregtorio):
         fails = [l for l in lines if l.startswith("FAIL")]
         return fails[0] + (f" (and {len(fails) - 1} more FAIL lines)" if len(fails) > 1 else ""), lines
     if err and not ran:
-        return "ERROR " + " ".join(x.strip() for x in err.group(0).splitlines()), lines
+        # (issue #597: an error in a scene's chunk is named with its cause, e.g. "update:2: LuaSimulation doesn't ...")
+        return "ERROR " + (script_error(log) or " ".join(x.strip() for x in err.group(0).splitlines())), lines
     if not any(l == "init done" for l in lines):
         return "ERROR init did not run", lines
     if own and not any(l.startswith("view ") for l in lines):
