@@ -4808,6 +4808,69 @@ end
 
 
 --------------------------------------------------------------------------------
+--- 45) THE GODFORGE ON RESIDUE (issue #608, the ROADMAP's "left for later" of 140). GT's godforge burns raw star matter,
+---   dimensionally transcendent residue or MHDCSM (tectech/thing/metaTileEntity/multi/godforge/MTEForgeOfGods.java:
+---   272-276); its consumption per fuel factor f is f x 300 x 1.15^f of residue against f x 2 x 1.08^f of raw star
+---   matter (godforge/util/GodforgeMath.java:21-36), 160 times as much residue at the first factor. Every godforge
+---   recipe that burns raw star matter (140) gets a twin `<recipe>-residue` that burns 160 times its raw star matter in
+---   residue; it comes with the later of the original's technology and Dimensionally Shifted Superfluid (the residue's
+---   maker, section 20); when neither comes after the other, with the original's, which then needs Dimensionally Shifted
+---   Superfluid. MHDCSM is left out (not in the mod).
+--------------------------------------------------------------------------------
+do
+	local STAR, DTR, DSS = "raw-star-matter", "dimensionally-transcendent-residue", "dimensionally-shifted-superfluid"
+	local RESIDUE_PER_STAR = 160
+	local function ancestors(name, seen)
+		seen = seen or {}
+		for _, p in pairs(data.raw.technology[name] and data.raw.technology[name].prerequisites or {}) do
+			if not seen[p] then
+				seen[p] = true
+				ancestors(p, seen)
+			end
+		end
+		return seen
+	end
+	local tech_of = {}
+	for tname, t in pairs(data.raw.technology) do
+		for _, e in pairs(t.effects or {}) do
+			if e.type == "unlock-recipe" then tech_of[e.recipe] = tech_of[e.recipe] or tname end
+		end
+	end
+	local names = {}
+	for name, r in pairs(data.raw.recipe) do
+		if fork_has_category(r, "godforge-recipes") then
+			for _, i in pairs(r.ingredients or {}) do
+				if i.name == STAR and i.type == "fluid" then names[#names + 1] = name end
+			end
+		end
+	end
+	table.sort(names)
+	for _, name in ipairs(names) do
+		local twin = table.deepcopy(data.raw.recipe[name])
+		twin.name = name .. "-residue"
+		for _, i in pairs(twin.ingredients) do
+			if i.name == STAR then i.name, i.amount = DTR, i.amount * RESIDUE_PER_STAR end
+		end
+		twin.main_product = twin.main_product or (twin.results[1] and twin.results[1].name)
+		twin.localised_name = nil
+		data:extend({ twin })
+		--- the later of the original's technology and DSS; when neither comes after the other, the original's with DSS
+		--- as a new prerequisite
+		local tech = tech_of[name]
+		if tech and tech ~= DSS and not ancestors(tech)[DSS] then
+			if ancestors(DSS)[tech] then
+				tech = DSS
+			else
+				table.insert(data.raw.technology[tech].prerequisites, DSS)
+			end
+		end
+		if tech then fork_add_unlock(tech, twin.name) end
+	end
+end
+
+
+
+--------------------------------------------------------------------------------
 --- 38) GT'S PARTS OF THE METALS OF THIS FILE (issue #467). 158 makes GT New Horizons' parts of every metal of
 ---   prototypes/gt-parts-data.lua (issue #227) whose ingot exists; most metals of this file come after 158, so its
 ---   FORK_GT_PARTS.run() runs once more here (it skips what exists), then 143's casts for the new forms.
