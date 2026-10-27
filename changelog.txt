@@ -1,4 +1,8 @@
 ---------------------------------------------------------------------------------------------------
+Version: 0.5.10
+  Changes:
+    - The ME parts keep stacking to 64: me-network 0.5.11 stacks its items to Factorio's 50, Gregtorio raises the ME Fluix Cable, the storage housing, the storage components, blank patterns, every upgrade card and the ME Wireless Booster to 64 again, like its other items.
+---------------------------------------------------------------------------------------------------
 Version: 0.5.9
 Date: 2026-10-25
   Features:

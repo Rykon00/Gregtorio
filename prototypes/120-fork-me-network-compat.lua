@@ -43,6 +43,21 @@ FORK_ME_TAB_ITEMS = { "advanced-storage-housing" }
 FORK_ME_TAB_OUTSIDE = {
 }
 
+--- me-network stacks its items to 50, Factorio's usual size (since me-network 0.5.11; before, some stacked to Minecraft's
+--- 64). In Gregtorio the ME parts stack to 64 as GregTech's items do: the ME Fluix Cable, the storage housing, the storage
+--- components, blank patterns, every upgrade card and the ME Wireless Booster. Blocks keep me-network's 50 or 10, cells,
+--- patterns and terminals 1
+local ME_STACK_64 = { ["fluix-cable"] = true, ["basic-storage-housing"] = true, ["me-blank-pattern"] = true,
+	["me-wireless-booster"] = true }
+for _, name in ipairs(ME.items or {}) do
+	if ME_STACK_64[name] or name:find("^me%-.+%-storage%-component$") or name:find("^me%-.+%-card$") then
+		for t in pairs(defines.prototypes.item) do      -- (the Acceleration Card is a module)
+			local item = data.raw[t] and data.raw[t][name]
+			if item then item.stack_size = 64 end
+		end
+	end
+end
+
 --- issue #519: the row of an ME item in me-network's tab "ME Network" (its subgroup and order), whatever its type
 local function item_row(name)
 	for t in pairs(defines.prototypes.item) do
