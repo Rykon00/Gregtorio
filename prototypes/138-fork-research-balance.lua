@@ -5,9 +5,14 @@
 --- of the same count in the factory of its tier (the factory doubles with every tier, so the real cost still
 --- doubles): UV /4.5, UHV and UEV /13.9, UIV /25.3, UMV /32.2, UXV /59.3, rounded. The UXV technologies and
 --- the `stargate` technology then cost about as long as building the stargate (8 against 10 hours).
---- Loaded after every file that defines or changes technologies (also after 139, the phase 6a multiblocks, whose
---- technologies get their counts here). The infinite `research-productivity` keeps its formula; the vanilla techs
---- in devcheck's UNRESEARCHABLE_OK are left alone.
+--- Loaded after every file that defines or changes technologies up to 141 (also after 139, the phase 6a multiblocks,
+--- whose technologies get their counts here). The infinite `research-productivity` keeps its formula; the vanilla techs
+--- in devcheck's UNRESEARCHABLE_OK are left alone. Issue #605: the files 145 to 166 load after this one, so their
+--- technologies of UV science and up are in this table too and data-final-fixes.lua calls FORK_RESEARCH_BALANCE.apply()
+--- once more at the end; devcheck fails for a technology of 9 or more packs whose count lies outside the band of its pack
+--- count (from 50, the count of the reach and space elevator technologies, or the lowest count of this table at that pack
+--- count if lower, to the highest count of this table at that pack count), unless it is in the allow-list
+--- FORK_RESEARCH_OUTLIERS with its reason.
 local FORK_RESEARCH_COUNTS = {
 	-- UV (agricultural pack): /4.5
 	["bedrockium"] = 900, -- 4000
@@ -106,15 +111,33 @@ local FORK_RESEARCH_COUNTS = {
 	-- issue #249: the MAX recipes of the plasma forge and the QFT (141)
 	["dtpf-max-recipes"] = 55,
 	["qft-temporal-harmony"] = 55,
+	-- issue #605: the technologies of 145 to 166 (loaded after this file) with their upstream-sized counts, scaled the
+	-- same way
+	["kevlar"] = 325, -- UV, 1500 (164)
+	["prismatic-naquadah"] = 325, -- UV, 1500 (164)
+	["thorium-based-liquid-fuel"] = 180, -- UHV, 2500 (164)
+	["precise-electronic-unit-mk3"] = 180, -- UHV, 2500 (164)
+	["naquadah-fuel-refinery"] = 110, -- UHV, 1500 (164)
+	["beamline"] = 110, -- UHV, 1500 (164)
+	["radox-polymer"] = 110, -- UEV, 1500 (164)
+	["six-phased-copper"] = 50, -- UXV, 60 (164), as 138's UXV technologies
 }
-for name, count in pairs(FORK_RESEARCH_COUNTS) do
-	local tech = data.raw.technology[name]
-	if tech and tech.unit and tech.unit.count then
-		tech.unit.count = count
-	else
-		log("FORK-RESEARCH: no counted technology " .. name)
+--- Issue #605: technologies of 9 or more packs whose count lies outside the band of devcheck's research count rule on
+--- purpose (technology -> reason)
+FORK_RESEARCH_OUTLIERS = {}
+--- `final`: the last call (data-final-fixes.lua), which logs a name of the table that is no technology with a count
+FORK_RESEARCH_BALANCE = { counts = FORK_RESEARCH_COUNTS }
+function FORK_RESEARCH_BALANCE.apply(final)
+	for name, count in pairs(FORK_RESEARCH_COUNTS) do
+		local tech = data.raw.technology[name]
+		if tech and tech.unit and tech.unit.count then
+			tech.unit.count = count
+		elseif final then
+			log("FORK-RESEARCH: no counted technology " .. name)
+		end
 	end
 end
+FORK_RESEARCH_BALANCE.apply(false)
 
 --- Victory: 15 units per level instead of 1000 (/59.3 like the UXV technologies). Level 1 costs the stargate
 --- (1000 MAX packs from one stargate) and 15 units of the other 14 packs; the MAX packs of one stargate

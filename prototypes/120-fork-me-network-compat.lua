@@ -43,6 +43,21 @@ FORK_ME_TAB_ITEMS = { "advanced-storage-housing" }
 FORK_ME_TAB_OUTSIDE = {
 }
 
+--- me-network stacks its items to 50, Factorio's usual size (since me-network 0.5.11; before, some stacked to Minecraft's
+--- 64). In Gregtorio the ME parts stack to 64 as GregTech's items do: the ME Fluix Cable, the storage housing, the storage
+--- components, blank patterns, every upgrade card and the ME Wireless Booster. Blocks keep me-network's 50 or 10, cells,
+--- patterns and terminals 1
+local ME_STACK_64 = { ["fluix-cable"] = true, ["basic-storage-housing"] = true, ["me-blank-pattern"] = true,
+	["me-wireless-booster"] = true }
+for _, name in ipairs(ME.items or {}) do
+	if ME_STACK_64[name] or name:find("^me%-.+%-storage%-component$") or name:find("^me%-.+%-card$") then
+		for t in pairs(defines.prototypes.item) do      -- (the Acceleration Card is a module)
+			local item = data.raw[t] and data.raw[t][name]
+			if item then item.stack_size = 64 end
+		end
+	end
+end
+
 --- issue #519: the row of an ME item in me-network's tab "ME Network" (its subgroup and order), whatever its type
 local function item_row(name)
 	for t in pairs(defines.prototypes.item) do
@@ -391,6 +406,29 @@ recipe_of{
 	ingredients = I{ "wooden-chest", 1, "certus-quartz-screw", 2, "me-interface", 1, "nether-quartz-plate", 2,
 		"lv-piston", 1 },
 }
+
+--- issue #603 (me-network issues #506 and #531, me-network 0.5.11): the ME Logistic Storage Bus and the ME Logistic
+--- Interface connect the network to Factorio's logistic robots, which neither AE2 nor GTNH has, so there is no GTNH recipe:
+--- Gregtorio keeps me-network's parts (the storage bus or the interface, the logistic chests, 2 MV circuits) in the HV
+--- assembler, where the logistic chests are made (13-mv-age-item.lua), 10 s as the other bus recipes. Both come with HV
+--- Machines, the technology of the logistic chests (142), which comes after Logistic Robotics and ME Network (see the
+--- technologies below)
+local LOGISTIC_BLOCKS = {
+	{ "me-logistic-storage-bus", I{ "me-storage-bus", 1, "storage-chest", 1, "advanced-circuit", 2 } },
+	{ "me-logistic-interface", I{ "me-interface", 1, "storage-chest", 1, "passive-provider-chest", 1, "advanced-circuit", 2 } },
+}
+for _, b in ipairs(LOGISTIC_BLOCKS) do
+	if data.raw.item[b[1]] then
+		recipe_of{
+			name = b[1],
+			category = "hv-assembling-machine-recipes",
+			item_row = true,
+			energy_required = 10 * HV_SPEED,
+			ingredients = b[2],
+		}
+		fork_add_unlock("hv-machines", b[1])
+	end
+end
 
 
 
