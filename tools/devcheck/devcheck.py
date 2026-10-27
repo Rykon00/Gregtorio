@@ -35,7 +35,7 @@ zips into a folder and pass --mods-from DIR.
     not in the item group "fluids"; fluids in the fallback row gregtorio-fluids-unsorted are a warning
 It also reports how many technologies are researchable and where progression stops.
 """
-import argparse, json, os, re, shutil, subprocess, sys, tarfile, urllib.parse, urllib.request
+import argparse, json, math, os, re, shutil, subprocess, sys, tarfile, urllib.parse, urllib.request
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -768,6 +768,27 @@ def check_spoiling(m, sec):
                  for i in sorted(allow) if i not in made]
     return f"{sum(1 for s in m.spoil.values() if s)} items spoil, {len(made)} of them made by a reachable recipe, " \
            f"{len(allow)} on purpose (FORK_SPOILING_KEPT)", problems
+
+
+OVERCLOCK = "gregtorio-continued-gt-overclocking"
+
+
+def check_overclocking(sec):
+    """Issue #616 (prototypes/fork-gt-overclocking.lua, section OVERCLOCK): with the setting on, every electric crafting
+    machine with a crafting speed of 2 or more draws its power times 2^floor(log2(speed)) (GT's 4x power per tier) and the
+    others are left; with it off, none is changed. Returns (info line, problems)."""
+    rows = sec.get("OVERCLOCK", [])
+    if not rows:
+        return "no section OVERCLOCK (older version)", []
+    on = rows[0][1] == "true"
+    problems, changed = [], 0
+    for r in rows[1:]:
+        name, speed, factor = r[0], float(r[1]), float(r[2])
+        want = 2 ** math.floor(math.log2(speed) + 1e-9) if on and speed >= 2 else 1
+        changed += factor != 1
+        if abs(factor - want) > 1e-9:
+            problems.append(f"{name}: crafting speed {speed:g}, power factor {factor:g}, expected {want:g}")
+    return f"setting {'on' if on else 'off'}: {changed} of {len(rows) - 1} electric crafting machines draw more power", problems
 
 
 VANILLA_MODS = {"base", "space-age", "quality", "elevated-rails"}
@@ -2465,6 +2486,9 @@ def check(a):
     trigger_info, trigger_only = check_trigger_items(m, sec)
     print(f"\nitems of craft triggers (issue #547): {trigger_info}")
     report("items whose only use is a technology's craft trigger (prototypes/100-fork-fixes.lua)", trigger_only)
+    oc_info, overclock = check_overclocking(sec)
+    print(f"\nGT overclocking (issue #616): {oc_info}")
+    report("machines whose power does not follow the GT overclocking setting (prototypes/fork-gt-overclocking.lua)", overclock)
     spoil_info, spoiling = check_spoiling(m, sec)
     print(f"\nspoiling items (issue #602): {spoil_info}")
     report("items that spoil and that a reachable recipe makes (data-final-fixes.lua)", spoiling)
@@ -2573,7 +2597,8 @@ def check(a):
               or new_drafts or fluid_problems or locked or one_pack or fluid_steps or table_only or me_recipes or me_tab
               or extractor_split or ore_mixes or ore_chain or ore_baths or ore_o34 or ore_hammer
               or circuit_icons or pgm_dusts or recycling or names or gaps or tree or vanilla or lenses or mine_twins
-              or unplaceable or stale_unlocks or removed_keys or trigger_only or spoiling or classic_veins or early or furnace
+              or unplaceable or stale_unlocks or removed_keys or trigger_only or spoiling or overclock or classic_veins
+              or early or furnace
               or steam or nugget or steam_rates or boiler_output or vein_doc or renames)
     print("\nRESULT:", "OK" if ok else "PROBLEMS FOUND")
     return 0 if ok else 1
@@ -2617,6 +2642,18 @@ def boilers(a):
     if check(c):
         return 1
     print(f"\n=== boiler output ({BOILER_OUTPUT}={BOILERS_SET}): runtime ===")
+    return runtime(c)
+
+
+def overclocking(a):
+    """Part of `all` (issue #616): check and runtime once more with GT overclocking on (every machine from MV up draws 4x
+    power per tier)."""
+    c = argparse.Namespace(**vars(a))
+    c.set, c.balance_out, c.fluids_out, c.locale_out, c.techs = [f"{OVERCLOCK}=true"], None, None, None, None
+    print(f"\n=== GT overclocking ({OVERCLOCK}=true): check ===")
+    if check(c):
+        return 1
+    print(f"\n=== GT overclocking ({OVERCLOCK}=true): runtime ===")
     return runtime(c)
 
 
@@ -3430,7 +3467,7 @@ def main():
         return handover(a)
     if a.cmd == "switch":
         return switch(a)
-    return check(a) or one_pack(a) or runtime(a) or classic(a) or boilers(a) or menusim_own(a)
+    return check(a) or one_pack(a) or runtime(a) or classic(a) or boilers(a) or overclocking(a) or menusim_own(a)
 
 
 if __name__ == "__main__":

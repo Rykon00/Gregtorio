@@ -462,6 +462,11 @@
   watts follow the setting; `devcheck.py all` loads `check` and `runtime` once more with `--set
   gregtorio-continued-boiler-output=4` (`--set` takes numbers for double and int settings); the runtime's coal boiler and
   solar boiler tests measure steam per second against the setting. At 16 every fluid box carries the flow (probed).
+- GT overclocking (issue #616): the startup setting `gregtorio-continued-gt-overclocking` (default off) makes every
+  electric assembling machine and furnace with a crafting speed of 2 or more draw its power times 2^floor(log2(speed)),
+  so the power quadruples per tier (GT's overclock: a recipe costs twice its energy per tier above its own) instead of
+  doubling (`prototypes/fork-gt-overclocking.lua`, required from `data-final-fixes.lua` after the machines; section
+  OVERCLOCK). `devcheck.py all` loads `check` and `runtime` once more with it on.
 - Generators (`generator` prototypes that burn fluids by fuel value, 136) are demand driven; an
   input-output fluid box keeps part of its fluid in the pipeline segment (`get_fluid_count` reports
   only the entity's part; since Factorio 2.1 `get_fluid_segment_fluid` is the whole segment with that part, where 2.0's
