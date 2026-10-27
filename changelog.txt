@@ -1,16 +1,12 @@
 ---------------------------------------------------------------------------------------------------
 Version: 0.5.10
   Changes:
-    - Recipes that left out a GT New Horizons material because the mod lacked it use it now (issue #611):
-      - The Resplendent catalyst of the plasma forge is GT New Horizons' recipe: the Prosaic catalyst with nitrogen, zinc, silver and titanium plasma. Before, it was the Crude catalyst with boron, sulfur, nitrogen, zinc and titanium plasma. The Prosaic catalyst comes with the Godforge, as the Resplendent one does.
-      - The Quantum Force Transformer takes Neptunium Plasma as its focus plasma, made from radon and nitrogen plasma in the Fusion Reactor MK4. It comes with the Quantum Force Transformer. Before, the focus plasma was nitrogen plasma.
-      - P-507 is made as in GT New Horizons: 2-Ethyl-1-hexanol from hydrogen and seed oil in the HV chemical reactor, then sodium, 2-Ethyl-1-hexanol, phosphoric acid and ethanol in the EV Large Chemical Reactor. Before, it was ethanol and phosphoric acid in the IV chemical reactor. Naquadah Processing needs Fermentation now.
-      - The fusion reactor MK3 fuses cobalt and neon into molten rubidium, which solidifies into rubidium dust.
-      - The Fusion Reactor MK4 controller takes 5000 UU matter, and its technology needs Beamline.
-      - Honeaite and lafossaite dust electrolysis give thallium dust too.
----------------------------------------------------------------------------------------------------
-Version: 0.5.10
-  Changes:
+    - Recipes that left out a GT New Horizons material because the mod lacked it use it now (issue #611). The Resplendent catalyst of the plasma forge is GT New Horizons' recipe: the Prosaic catalyst with nitrogen, zinc, silver and titanium plasma. Before, it was the Crude catalyst with boron, sulfur, nitrogen, zinc and titanium plasma. The Prosaic catalyst comes with the Godforge, as the Resplendent one does.
+    - The Quantum Force Transformer takes Neptunium Plasma as its focus plasma, made from radon and nitrogen plasma in the Fusion Reactor MK4. It comes with the Quantum Force Transformer. Before, the focus plasma was nitrogen plasma.
+    - P-507 is made as in GT New Horizons: 2-Ethyl-1-hexanol from hydrogen and seed oil in the HV chemical reactor, then sodium, 2-Ethyl-1-hexanol, phosphoric acid and ethanol in the EV Large Chemical Reactor. Before, it was ethanol and phosphoric acid in the IV chemical reactor. Naquadah Processing needs Fermentation now.
+    - The fusion reactor MK3 fuses cobalt and neon into molten rubidium, which solidifies into rubidium dust.
+    - The Fusion Reactor MK4 controller takes 5000 UU matter, and its technology needs Beamline.
+    - Honeaite and lafossaite dust electrolysis give thallium dust too.
     - The ME parts keep stacking to 64: me-network 0.5.11 stacks its items to Factorio's 50, Gregtorio raises the ME Fluix Cable, the storage housing, the storage components, blank patterns, every upgrade card and the ME Wireless Booster to 64 again, like its other items.
   Bugfixes:
     - The UV science pack no longer spoils (issue #602). It is Space Age's agricultural science pack, which kept Space Age's spoiling: packs turned into spoilage after an hour in chests, on belts and in labs, and the ME network could not store them. UV packs of existing saves stop spoiling too.
