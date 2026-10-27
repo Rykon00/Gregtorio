@@ -407,6 +407,29 @@ recipe_of{
 		"lv-piston", 1 },
 }
 
+--- issue #603 (me-network issues #506 and #531, me-network 0.5.11): the ME Logistic Storage Bus and the ME Logistic
+--- Interface connect the network to Factorio's logistic robots, which neither AE2 nor GTNH has, so there is no GTNH recipe:
+--- Gregtorio keeps me-network's parts (the storage bus or the interface, the logistic chests, 2 MV circuits) in the HV
+--- assembler, where the logistic chests are made (13-mv-age-item.lua), 10 s as the other bus recipes. Both come with HV
+--- Machines, the technology of the logistic chests (142), which comes after Logistic Robotics and ME Network (see the
+--- technologies below)
+local LOGISTIC_BLOCKS = {
+	{ "me-logistic-storage-bus", I{ "me-storage-bus", 1, "storage-chest", 1, "advanced-circuit", 2 } },
+	{ "me-logistic-interface", I{ "me-interface", 1, "storage-chest", 1, "passive-provider-chest", 1, "advanced-circuit", 2 } },
+}
+for _, b in ipairs(LOGISTIC_BLOCKS) do
+	if data.raw.item[b[1]] then
+		recipe_of{
+			name = b[1],
+			category = "hv-assembling-machine-recipes",
+			item_row = true,
+			energy_required = 10 * HV_SPEED,
+			ingredients = b[2],
+		}
+		fork_add_unlock("hv-machines", b[1])
+	end
+end
+
 
 
 --------------------------------------------------------------------------------
