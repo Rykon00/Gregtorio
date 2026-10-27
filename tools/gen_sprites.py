@@ -1063,15 +1063,17 @@ def steam_age(gt):
         save(badged_icon(look(icon), solar), ICONS / f"{name}.png")
 
 
-# issue #444: the battery buffers LV to HV, 1 to 16 batteries (prototypes/145-fork-power-multiblocks.lua, section 8)
-BUFFER_TINT = {"LV": (150, 144, 136), "MV": (175, 225, 250), "HV": (220, 220, 236)}
+# issue #444: the battery buffers LV to HV, 1 to 16 batteries (prototypes/145-fork-power-multiblocks.lua, section 8);
+# issue #614: EV and IV (section 8b)
+BUFFER_TINT = {"LV": (150, 144, 136), "MV": (175, 225, 250), "HV": (220, 220, 236), "EV": (235, 235, 245),
+               "IV": (205, 205, 225)}
 
 
 def battery_buffers(gt):
     """GT's battery buffer: the tier's hull (MACHINE_<tier>_SIDE in the colour of Gregtorio's hull of the tier) with GT's
     energy output overlay on top and the battery slots below, n x n dark slots with a lit battery each (2 x 2 tiles,
     and the icon the same at half the size)"""
-    for tier in ("LV", "MV", "HV"):
+    for tier in BUFFER_TINT:
         side = tint(load(gt_path(gt, f"gregtech:iconsets/MACHINE_{tier}_SIDE")), BUFFER_TINT[tier])
         face = side.copy()
         face.alpha_composite(frames_of(load(gt_path(gt, "gregtech:iconsets/OVERLAY_ENERGY_OUT")))[0])

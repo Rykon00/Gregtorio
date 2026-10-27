@@ -13,18 +13,18 @@
 ---
 --- Simplified, on purpose:
 ---   * DTPF: no coil heat, no runtime discount and no convergence. GT's five catalysts (made from up to
----     20 plasmas in the transcendent plasma mixer) are two fluids made in the forge itself: crude (GT's
----     four plasmas) and resplendent (crude + boron, sulfur, nitrogen, zinc and titanium plasma; GT's
----     radon, nickel and silver plasma do not exist here). Issue #355: GT's residue (DTR) and the prosaic catalyst in 164
----     section 20.
+---     20 plasmas in the transcendent plasma mixer) are fluids made in the forge itself: crude (GT's
+---     four plasmas) and resplendent (here crude + boron, sulfur, nitrogen, zinc and titanium plasma; issue #611: 164
+---     section 20 makes it GT's, the prosaic catalyst + nitrogen, zinc, silver and titanium plasma). Issue #355: GT's
+---     residue (DTR) and the prosaic catalyst in 164 section 20.
 ---   * DTPF metals: GT makes them from carrier melts (copper -> cosmic neutronium) and tesseracts, which
 ---     would skip the whole fusion chain. Here each DTPF recipe is the fusion recipe of the metal with
 ---     two thirds of the inputs per output and in a third of the reactor time (see DTPF_INPUT and
 ---     DTPF_TIME), plus catalyst; the resplendent tier makes twice the batch in the same time for less
 ---     catalyst per ingot. tools/balance_model.py compares the two routes.
 ---   * QFT: no catalyst items, no tiered casings and no focus plasmas to choose: one recipe per main
----     output (GT's neptunium focus: the focused output at (N+1)/2N, the others at 1/2N), nitrogen plasma
----     as the focus plasma (GT: neptunium plasma, from radon and nitrogen plasma).
+---     output (GT's neptunium focus: the focused output at (N+1)/2N, the others at 1/2N), with 100 neptunium plasma
+---     (issue #611; GT's, from radon and nitrogen plasma; before: nitrogen plasma as its stand-in).
 --- Phase 6b (MAX tier, godforge) hooks are marked "6b hook" and listed in the roadmap.
 --------------------------------------------------------------------------------
 
@@ -152,7 +152,8 @@ multiblock{
 }
 
 --- Catalysts (GT: transcendent plasma mixer, 1000 of each plasma -> 1000 catalyst in 5 s). Crude is GT's
---- recipe; resplendent is GT's without radon, nickel and silver plasma. Made in the forge itself.
+--- recipe; resplendent's ingredients are GT's since issue #611 (164 section 20 sets them once the prosaic catalyst
+--- exists). Made in the forge itself.
 F.fluid("excited-dimensionally-transcendent-crude-catalyst", "spackled-orange-fluid", { 0.85, 0.45, 0.20 })
 F.fluid("excited-dimensionally-transcendent-resplendent-catalyst", "spackled-light-blue-fluid", { 0.45, 0.80, 0.95 })
 
@@ -285,7 +286,8 @@ create_item{
 	},
 }
 
---- 9x9: four fluid inputs north, two outputs south
+--- 9x9: four fluid inputs north, two outputs south; issue #609: two more inputs west and four more outputs (south and
+--- east) for GT's plastic and rubber recipes (four fluids and the focus plasma in, up to six fluids out)
 multiblock{
 	name = QFT, size = { 9, 9 }, categories = { QFT_CAT }, speed = UMV_SPEED, energy = "1310.72MW",
 	ports = {
@@ -293,8 +295,14 @@ multiblock{
 		fluid_port(-1, -4, "input", defines.direction.north),
 		fluid_port( 1, -4, "input", defines.direction.north),
 		fluid_port( 3, -4, "input", defines.direction.north),
+		fluid_port(-4, -1, "input", defines.direction.west),
+		fluid_port(-4,  1, "input", defines.direction.west),
 		fluid_port(-1,  4, "output", defines.direction.south),
 		fluid_port( 1,  4, "output", defines.direction.south),
+		fluid_port(-3,  4, "output", defines.direction.south),
+		fluid_port( 3,  4, "output", defines.direction.south),
+		fluid_port( 4, -1, "output", defines.direction.east),
+		fluid_port( 4,  1, "output", defines.direction.east),
 	},
 }
 
@@ -305,7 +313,18 @@ multiblock{
 --- enriched naquadah earth. GT's inert naquadah dusts (activated to melt in GT's neutron activator) are
 --- the mod's step before the metal: naquadahine dust and enriched naquadah sulphate.
 --- Each output has `amount` at 100 %; a recipe per main output gives it (N+1)/2N and the others 1/2N.
-local FOCUS_PLASMA = "nitrogen-plasma"
+--- Issue #611: the focus plasma is GT's neptunium plasma (before: nitrogen plasma as its stand-in), from radon and
+--- nitrogen plasma in the fusion reactor MK4 (gtPlusPlus/xmod/gregtech/loaders/recipe/RecipeLoaderChemicalSkips.java:
+--- 408-415: 100 + 100 -> 100 in 30 s at UHV, start 1G EU, so MK4), unlocked with the QFT, its only consumer
+local FOCUS_PLASMA = "neptunium-plasma"
+F.fluid(FOCUS_PLASMA, "dark-blue-spackled-fluid", { 0.18, 0.31, 0.48 })
+create_recipe{
+	name = FOCUS_PLASMA,
+	category = "mk4-fusion-reactor-recipes",
+	energy_required = 30 * UEV_SPEED,
+	ingredients = { fluid("radon-plasma", 100), fluid("nitrogen-plasma", 100) },
+	results = { fluid(FOCUS_PLASMA, 100) },
+}
 local QFT_RECIPES = {
 	{ input = { item("metallic-platinum-powder", 32) }, time = 20,
 		outputs = { { "platinum-dust", 64 }, { "palladium-dust", 64 }, { "iridium-dust", 64 }, { "osmium-dust", 64 },
@@ -344,13 +363,17 @@ local QFT_RECIPES = {
 		outputs = { { "cerium-dust", 64 }, { "gadolinium-dust", 64 }, { "samarium-dust", 64 }, { "zirconium-dust", 64 } } },
 }
 local qft_recipes = {}
-for _, def in pairs(QFT_RECIPES) do
+--- issue #609: the recipes of a QFT definition (one per output); an output may be a fluid (GT's plastics and rubbers),
+--- which is then a focus choice too. FORK_QFT.add lets later files add GT's recipes whose materials they make (164).
+local function qft_add(def)
+	local names = {}
 	local n = #def.outputs + (def.extra and #def.extra or 0)
 	for _, focus in pairs(def.outputs) do
 		local results = {}
 		for _, o in pairs(def.outputs) do
 			local p = o[1] == focus[1] and (n + 1) / (2 * n) or 1 / (2 * n)
-			results[#results + 1] = { type = "item", name = o[1], amount = o[2], independent_probability = p }
+			results[#results + 1] = { type = data.raw.fluid[o[1]] and "fluid" or "item", name = o[1], amount = o[2],
+				independent_probability = p }
 		end
 		for _, e in pairs(def.extra or {}) do
 			results[#results + 1] = { type = "fluid", name = e.name, amount = e.amount, independent_probability = 1 / (2 * n) }
@@ -367,9 +390,14 @@ for _, def in pairs(QFT_RECIPES) do
 			results = results,
 			main_product = focus[1],
 		}
-		qft_recipes[#qft_recipes + 1] = name
+		names[#names + 1] = name
 	end
+	return names
 end
+for _, def in pairs(QFT_RECIPES) do
+	for _, name in pairs(qft_add(def)) do qft_recipes[#qft_recipes + 1] = name end
+end
+FORK_QFT = { add = qft_add, technology = QFT }
 
 
 
@@ -403,5 +431,5 @@ F.tech{
 }
 F.tech{
 	name = QFT, prerequisites = { "umv-multiblocks" }, packs = 13, count = 1,
-	recipes = F.join({ QFT .. "-coil-casing", QFT .. "-controller", QFT }, qft_recipes),
+	recipes = F.join({ QFT .. "-coil-casing", QFT .. "-controller", QFT, FOCUS_PLASMA }, qft_recipes),
 }

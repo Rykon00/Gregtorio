@@ -2685,10 +2685,19 @@ do
 		{ { ENA .. "-ingot", 1 } })
 	step(L, "molten-metastable-oganesson", "mk4-fusion-reactor-recipes", 30, UEV_SPEED,
 		{ { "molten-" .. ENA, 14.4 }, { "oganesson", 25 } }, { { "molten-metastable-oganesson", 3.6 } })
-	--- the prosaic catalyst
-	step(L, PROSAIC, DTPF_CAT, 5, UMV_SPEED,
+	--- the prosaic catalyst; issue #611: with the godforge, as the resplendent catalyst it now goes into (GT's resplendent
+	--- is the prosaic's eight plasmas and nitrogen, zinc, silver and titanium plasma, gregtech/loaders/postload/recipes/
+	--- TranscendentPlasmaMixerRecipes.java:40-74; 139's recipe left out radon, nickel and silver plasma, which the mod has
+	--- since #375)
+	step({}, PROSAIC, DTPF_CAT, 5, UMV_SPEED,
 		{ { CRUDE, 100 }, { "radon-plasma", 100 }, { "nickel-plasma", 100 }, { "boron-plasma", 100 }, { "sulfur-plasma", 100 } },
 		{ { PROSAIC, 100 } })
+	fork_add_unlock("godforge", PROSAIC)
+	data.raw.recipe[RESPLENDENT].ingredients = {
+		{ type = "fluid", name = PROSAIC, amount = 100 }, { type = "fluid", name = "nitrogen-plasma", amount = 100 },
+		{ type = "fluid", name = "zinc-plasma", amount = 100 }, { type = "fluid", name = "silver-plasma", amount = 100 },
+		{ type = "fluid", name = "titanium-plasma", amount = 100 },
+	}
 	--- the superfluid
 	local function superfluid(list, name, seconds, speed, sbm, mog, g8w, ct, radox, catalyst, out, residue)
 		step(list, name, DTPF_CAT, seconds, speed,
@@ -4808,6 +4817,195 @@ end
 
 
 --------------------------------------------------------------------------------
+--- 42) LEFT-OUT RECIPES WHOSE BLOCKER EXISTS NOW (issue #611)
+---   * P-507 as GT New Horizons makes it (goodgenerator/loader/NaquadahRecipeLoader.java:163-184): 2-ethyl-1-hexanol from
+---     hydrogen and the seed oil of #360 (8000 + 3000 -> 1000, 20 s at HV; GT's copper plate is not used up and is left
+---     out), then 2 sodium, 2000 2-ethyl-1-hexanol, 1000 phosphoric acid and 2000 ethanol -> 1000 P-507 in the large
+---     chemical reactor (60 s at EV); fluids a tenth, as the rest of 125's goodgenerator line. It replaces upstream's
+---     recipe (ethanol and phosphoric acid in the IV chemical reactor) with its name; 2-ethyl-1-hexanol comes with it
+---   * GT's fusion of cobalt and neon into rubidium (gregtech/loaders/postload/recipes/FusionReactorRecipes.java:293-301:
+---     144 + 144 -> 144 in 24 ticks, start 500M EU, the MK3), a tenth as 136's section 1c, and the melt solidified into
+---     the dust (the mod has no rubidium ingot, as uranium in 136); mellion takes the rubidium (section 29)
+---   * UU matter in the fusion reactor MK4's controller (tectech/loader/recipe/ResearchStationAssemblyLine.java:823-843:
+---     50000 L, here a tenth), now that the LuV mass fabricator makes it (section 30); the technology that unlocks it gets
+---     Beamline as a prerequisite. The casing (:865-883, 1000 L) stays without: the UHV assembler takes two fluids. GT's cinobite and octiron (#629) and astral
+---     titanium (here only with Six-Phased Copper, UXV, section 35) keep their stand-ins, tritanium and cosmic neutronium
+--------------------------------------------------------------------------------
+do
+	local function item(name, amount) return { type = "item", name = name, amount = amount } end
+	local function fluid(name, amount) return { type = "fluid", name = name, amount = amount } end
+	local L = {}
+	F.fluid("2-ethyl-1-hexanol", "dark-muted-yellow-fluid", { 0.85, 0.80, 0.45 })
+	step(L, "2-ethyl-1-hexanol", "hv-chemical-reactor-recipes", 20, HV_SPEED,
+		{ { "hydrogen", 800 }, { "seed-oil", 300 } }, { { "2-ethyl-1-hexanol", 100 } })
+	local p507 = data.raw.recipe["p507"]
+	fork_set_category(p507, "ev-chemical-reactor-recipes")
+	p507.energy_required = 60 * EV_SPEED
+	p507.ingredients = {
+		item("sodium", 2), fluid("2-ethyl-1-hexanol", 200), fluid("phosphoric-acid", 100), fluid("ethanol", 200),
+	}
+	p507.results = { fluid("p507", 100) }
+	p507.main_product = "p507"
+	for name, tech in pairs(data.raw.technology) do
+		for _, e in pairs(tech.effects or {}) do
+			if e.type == "unlock-recipe" and e.recipe == "p507" then
+				fork_add_unlock(name, "2-ethyl-1-hexanol")
+				table.insert(tech.prerequisites, "fermentation")   -- (#252: the seed oil)
+			end
+		end
+	end
+	--- the honeaite and lafossaite electrolysis (155) make thallium dust now, so its tiny piles are no longer its only source
+	FORK_RECIPES_TABLE_ONLY["thallium-dust-from-tiny-piles"] = nil
+
+	F.fluid("molten-rubidium", "molten-rubidium", { 0.94, 0.12, 0.12 })   -- (GT's colour, gen_gt_icons --molten)
+	step({}, "rubidium-fusion", "mk3-fusion-reactor-recipes", 1.2, UV_SPEED,
+		{ { "molten-cobalt", 14.4 }, { "neon", 14.4 } }, { { "molten-rubidium", 14.4 } })
+	step({}, "solidify-rubidium-dust", "iv-fluid-solidifier-recipes", 1.6, IV_SPEED,
+		{ { "molten-rubidium", 14.4 } }, { { "rubidium-dust", 1 } })
+	fork_add_unlock("fusion-plasmas-mk3", "rubidium-fusion")
+	fork_add_unlock("fusion-plasmas-mk3", "solidify-rubidium-dust")
+
+	for name, amount in pairs({ ["fusion-reactor-mk4-controller"] = 5000 }) do
+		local r = data.raw.recipe[name]
+		table.insert(r.ingredients, fluid("uu-matter", amount))
+		for tname, tech in pairs(data.raw.technology) do
+			for _, e in pairs(tech.effects or {}) do
+				if e.type == "unlock-recipe" and e.recipe == name then
+					local has = false
+					for _, p in pairs(tech.prerequisites or {}) do if p == "beamline" then has = true end end
+					if not has then table.insert(tech.prerequisites, "beamline") end
+				end
+			end
+		end
+	end
+end
+
+
+
+--------------------------------------------------------------------------------
+--- 43) GT'S QFT RECIPES WHOSE MATERIALS EXIST NOW (issue #609). GT++ gtPlusPlus/xmod/gregtech/loaders/recipe/
+---   RecipeLoaderChemicalSkips.java: early plastics (:139-157), early rubbers (:159-175), titanium, tungsten and indium
+---   (:192-203, :204-217), thorium, uranium and plutonium (:218-232) and the late plastics (:328-341), 20 s each, in 139's
+---   pattern (FORK_QFT.add: one recipe per output, GT's items at 100 %, the focused output at (N+1)/2N, the others at
+---   1/2N, the focus plasma; no catalyst items). GT's fluids of a recipe are scaled by one factor so the largest is the
+---   1000 of a fluid port (139 scaled its inputs to 1000 the same way; here the ratios stay). Left out: GT's glue recipe
+---   (:177-190, stable adhesive is not in the mod) and the prismarine recipe (:297-312, no prismatic naquadah dust: the
+---   mod's prismatic naquadah is a melt, section 26)
+--------------------------------------------------------------------------------
+do
+	local function item(name, amount) return { type = "item", name = name, amount = amount } end
+	--- GT's fluid amounts of a recipe (inputs and outputs) -> scaled so the largest is 1000
+	local function scaled(inputs, outputs)
+		local top = 0
+		for _, f in pairs(inputs) do top = math.max(top, f[2]) end
+		for _, o in pairs(outputs) do if data.raw.fluid[o[1]] then top = math.max(top, o[2]) end end
+		local k = 1000 / top
+		local ins, outs = {}, {}
+		for _, f in pairs(inputs) do ins[#ins + 1] = { type = "fluid", name = f[1], amount = math.floor(f[2] * k * 10 + 0.5) / 10 } end
+		for _, o in pairs(outputs) do
+			outs[#outs + 1] = { o[1], data.raw.fluid[o[1]] and math.floor(o[2] * k * 10 + 0.5) / 10 or o[2] }
+		end
+		return ins, outs
+	end
+	local function qft(items, fluids, outputs)
+		local ins, outs = scaled(fluids, outputs)
+		local input = {}
+		for _, i in pairs(items) do input[#input + 1] = item(i[1], i[2]) end
+		for _, f in pairs(ins) do input[#input + 1] = f end
+		for _, name in pairs(FORK_QFT.add{ input = input, time = 20, outputs = outs }) do
+			fork_add_unlock(FORK_QFT.technology, name)
+		end
+	end
+	--- early plastics
+	qft({ { "carbon", 64 } }, { { "oxygen", 16000 }, { "hydrogen", 16000 }, { "chlorine", 16000 }, { "fluorine", 16000 } },
+		{ { "polyethylene", 36864 }, { "polyvinyl-chloride", 18432 }, { "polystyrene", 9216 }, { "ptfe", 18432 },
+			{ "epoxy", 9216 }, { "polybenzimidazole", 9216 } })
+	--- early rubbers
+	qft({ { "sulfur", 32 }, { "carbon", 32 } }, { { "oxygen", 16000 }, { "hydrogen", 16000 }, { "chlorine", 16000 } },
+		{ { "silicone-rubber", 9216 }, { "styrene-butadiene-rubber", 9216 }, { "polyphenylene-sulfide", 18432 },
+			{ "liquid-rubber", 36864 } })
+	--- titanium, tungsten and indium
+	qft({ { "lead-dust", 16 }, { "bauxite-dust", 32 }, { "tungstate-dust", 16 } }, {},
+		{ { "titanium-dust", 64 }, { "tungstensteel-dust", 64 }, { "tungsten-carbide-dust", 64 }, { "indium", 64 } })
+	qft({ { "rutile-dust", 32 }, { "scheelite-dust", 16 }, { "ilmenite-dust", 16 } }, {},
+		{ { "titanium-dust", 64 }, { "tungstensteel-dust", 64 }, { "tantalum-dust", 64 }, { "rhenium-dust", 64 },
+			{ "niobium-dust", 64 }, { "hafnium-dust", 64 } })
+	--- thorium, uranium and plutonium (GT's uranium is uranium 238)
+	qft({ { "thorium-dust", 32 }, { "uranium-238-dust", 32 } }, {},
+		{ { "thorium-232-dust", 64 }, { "uranium-233-dust", 64 }, { "uranium-235-dust", 64 }, { "plutonium-238-dust", 64 },
+			{ "plutonium-239-dust", 64 }, { "plutonium-241-dust", 64 } })
+	--- (the QFT makes plutonium 238 and 241 dust too, so their tiny piles are no longer their only source)
+	FORK_RECIPES_TABLE_ONLY["plutonium-238-dust-from-tiny-piles"] = nil
+	FORK_RECIPES_TABLE_ONLY["plutonium-241-dust-from-tiny-piles"] = nil
+	--- the late plastics
+	qft({ { "carbon", 64 }, { "osmium-dust", 24 } }, { { "hydrogen", 16000 }, { "nitrogen", 16000 } },
+		{ { "xenoxene", 16000 }, { "molten-radox-polymer", 9216 }, { "heavy-radox", 16000 }, { "molten-kevlar", 9216 } })
+end
+
+
+
+--------------------------------------------------------------------------------
+--- 44) NAQUADAH FUEL CRACKING AND NAQUADAH ASPHALT (issue #610). goodgenerator/loader/RecipeLoader.java:444-489 with
+---   goodgenerator/util/CrackRecipeAdder.java:39-110: naquadah gas, light and heavy naquadah fuel and naquadah asphalt are
+---   cracked with the molten atomic separation catalyst (1000 L and 4, 4, 6 or 12 L of the catalyst -> 1000 L lightly,
+---   moderately or heavily cracked fluid in 0.8, 1 and 1.2 times the fluid's time D at 4020 EU/t, the IV cracker; the
+---   catalyst here a tenth, as the mod's melts) and the cracked fluids distilled (D/2 at a third of the power, the EV tall
+---   distillation tower) into six fluids and a tiny pile, by CrackRecipeAdder's coefficients (1.25 to 0.8 light, 1.4 to
+---   0.7 moderate, 1.6 to 0.55 heavy). The naquadah fluids and gases keep GT's litres as 136's naquadah fuel line, the
+---   melts are a tenth; asphalt comes from the naquadah solution distillation (RecipeLoader.java:609-616: 2 L of 20 L)
+---   and is used only here (the maintainer's decision of 2026-10-27: as GTNH, though the catalyst comes much later here,
+---   with Creon and Mellion; until then the asphalt is stored or voided). GT's
+---   distillery variants (one output each) are left out. New: naquadah asphalt, the twelve cracked fluids, molten
+---   thulium (cast and melted by 143 with the thulium ingot), the tiny pile of uranium 235. Unlocked with the first
+---   technology of the molten catalyst (after the ingot of Naquadah Based Fuel MK5, FORK_CASTING's melt).
+--------------------------------------------------------------------------------
+do
+	local ASC = "molten-atomic-separation-catalyst"
+	local GASES = { "helium", "neon", "argon", "krypton", "xenon", "radon" }
+	F.fluid("naquadah-asphalt", "dark-gray-spackled-fluid", { 0.10, 0.15, 0.10 })
+	F.fluid("molten-thulium", "molten-thulium", { 89 / 255, 107 / 255, 194 / 255 })   -- (GT's colour, gen_gt_icons --molten)
+	FORK_CASTING.materials["thulium"] = { "iv", "naquadah-fuel-refinery" }
+	local tiny_u235, tiny_u235_recipe = pile("uranium-235-dust", "tiny")
+	table.insert(data.raw.recipe["naquadah-solution-distillation"].results,
+		{ type = "fluid", name = "naquadah-asphalt", amount = 2 })
+	--- fluid, its catalyst (GT L), time D (ticks), its tiny pile, its six outputs (GT's order) for light, moderate, heavy
+	local CRACK = {
+		{ "naquadah-gas", 4, 300, "tiny-pile-of-naquadah-dust", GASES,
+			{ { 375, 60, 88, 18, 34, 11200 }, { 420, 62, 96, 16, 30, 9800 }, { 480, 75, 116, 14, 24, 7700 } } },
+		{ "light-naquadah-fuel", 4, 450, tiny_u235,
+			{ "radon", "naquadah-gas", "molten-uranium", "heavy-naquadah-fuel", "molten-plutonium", "naquadah-asphalt" },
+			{ { 1750, 480, 712, 252, 489, 112 }, { 1960, 500, 777, 224, 432, 98 }, { 2240, 600, 939, 196, 345, 77 } } },
+		{ "heavy-naquadah-fuel", 6, 500, "tiny-pile-of-plutonium-239-dust",
+			{ "radon", "naquadah-gas", "light-naquadah-fuel", "molten-uranium", "molten-lutetium", "naquadah-asphalt" },
+			{ { 1250, 540, 616, 648, 550, 192 }, { 1400, 562, 672, 576, 486, 168 }, { 1600, 675, 812, 504, 388, 132 } } },
+		{ "naquadah-asphalt", 12, 800, "tiny-pile-of-naquadria-dust",
+			{ "light-naquadah-fuel", "molten-uranium", "molten-thorium", "molten-plutonium", "molten-thulium", "heavy-naquadah-fuel" },
+			{ { 750, 1382, 950, 712, 183, 280 }, { 840, 1440, 1036, 633, 162, 245 }, { 960, 1728, 1252, 554, 129, 192 } } },
+	}
+	local LEVELS = { { "lightly", 0.8 }, { "moderately", 1 }, { "heavily", 1.2 } }
+	local L = { tiny_u235_recipe }
+	for _, c in pairs(CRACK) do
+		local base = data.raw.fluid[c[1]]
+		for i, lv in pairs(LEVELS) do
+			local cracked = lv[1] .. "-cracked-" .. c[1]
+			local col = base and base.base_color or { r = 0.3, g = 0.6, b = 0.3 }
+			F.fluid(cracked, "spackled-forest-green-fluid", { col.r * (1 - 0.15 * i), col.g * (1 - 0.1 * i), col.b })
+			step(L, cracked, "iv-cracker-recipes", c[3] * lv[2] / 20, IV_SPEED,
+				{ { c[1], 1000 }, { ASC, c[2] / 10 } }, { { cracked, 1000 } })
+			local outs = {}
+			--- (the melts a tenth, as the mod's melts: an ingot is 14.4 here, 144 L in GT)
+			for k, f in pairs(c[5]) do outs[#outs + 1] = { f, f:find("^molten%-") and c[6][i][k] / 10 or c[6][i][k] } end
+			outs[#outs + 1] = { c[4], 1 }
+			step(L, cracked .. "-distillation", "ev-tall-distillation-recipes", c[3] / 2 / 20, EV_SPEED,
+				{ { cracked, 1000 } }, outs, c[5][1])
+		end
+	end
+	FORK_CRACKING_RECIPES = L   -- (unlocked after 143's run in section 38, which makes the melt)
+end
+
+
+
+--------------------------------------------------------------------------------
 --- 45) THE GODFORGE ON RESIDUE (issue #608, the ROADMAP's "left for later" of 140). GT's godforge burns raw star matter,
 ---   dimensionally transcendent residue or MHDCSM (tectech/thing/metaTileEntity/multi/godforge/MTEForgeOfGods.java:
 ---   272-276); its consumption per fuel factor f is f x 300 x 1.15^f of residue against f x 2 x 1.08^f of raw star
@@ -4878,3 +5076,5 @@ end
 FORK_GT_PARTS.run()
 FORK_CASTING.run()
 FORK_GT_PARTS.log("164")
+--- issue #610 (section 44): the cracking comes with the technology of the catalyst's melt (143's materials)
+for _, r in pairs(FORK_CRACKING_RECIPES) do fork_add_unlock(FORK_CASTING.materials["atomic-separation-catalyst"][2], r) end

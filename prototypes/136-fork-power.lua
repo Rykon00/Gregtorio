@@ -539,7 +539,7 @@ end
 ---   -> naquadah emulsion (quicklime) -> naquadah solution (centrifuge)
 ---   -> light and heavy naquadah fuel, naquadah gas, water (distillation tower)
 ---   light + heavy -> naquadah based fuel MK1 (fusion MK2), MK2 (UHV mixer), MK3 (UEV mixer)
---- Shortened against GT: no naquadah asphalt and no cracking of the fuels, no antimony
+--- Shortened against GT: no naquadah asphalt and no cracking of the fuels (issue #610: both in 164 section 44), no antimony
 --- trioxide, no tiberium, no high density uranium (uranium dust instead; high density plutonium
 --- replaces the plutonium dust in 137-fork-endgame-materials.lua),
 --- no naquadah fuel refinery. The liquid nuclear fuels of GoodGenerator (uranium, plutonium) are
@@ -628,7 +628,9 @@ create_recipe{
 	},
 	main_product = "light-naquadah-fuel",
 }
---- GT: uranium fuel = high density uranium (a stack of uranium), potassium, quantium, radon
+--- GT: uranium fuel = high density uranium (a stack of uranium), potassium, quantium, radon. Issue #611: 164 makes high
+--- density uranium since #356, but with the Naquadah Fuel Refinery (UHV, after Quantium), two tiers after this fuel
+--- (Naquadah Fuels, ZPM): the 64 uranium dusts and the naquadah dust stay as its stand-ins
 create_recipe{
 	name = "uranium-based-liquid-fuel",
 	category = "luv-mixer-recipes",

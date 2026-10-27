@@ -29,13 +29,13 @@ zips into a folder and pass --mods-from DIR.
   * a sprite sheet is smaller than its width/height/frame_count need
   * an unlocked recipe cannot be crafted: no machine for its category, an ingredient that can
     never be obtained, or no reachable machine with enough fluid inputs/outputs
-  * an enabled technology cannot be researched and is not in UNRESEARCHABLE_OK (the vanilla
-    armor/equipment techs), or one of the issue #29 QoL techs is neither researchable nor hidden
+  * an enabled technology cannot be researched and is not in UNRESEARCHABLE_OK (empty since issue #640: the
+    vanilla techs behind a disabled one are disabled), or one of the issue #29 QoL techs is neither researchable nor hidden
   * a fluid that is not hidden (the parameter fluids excepted) is not in the Fluids tab: its subgroup is missing or
     not in the item group "fluids"; fluids in the fallback row gregtorio-fluids-unsorted are a warning
 It also reports how many technologies are researchable and where progression stops.
 """
-import argparse, json, os, re, shutil, subprocess, sys, tarfile, urllib.parse, urllib.request
+import argparse, json, math, os, re, shutil, subprocess, sys, tarfile, urllib.parse, urllib.request
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -414,7 +414,8 @@ class Model:
                 self.spoil[p[1]] = float(p[5]) if len(p) > 5 and p[5] else 0
             elif k == "T":
                 self.T[p[1]] = dict(pre=[x for x in p[2].split(",") if x], eff=[x for x in p[3].split(",") if x],
-                                    sci=[x for x in p[4].split(",") if x], trig=p[5], en=p[6] == "true")
+                                    sci=[x for x in p[4].split(",") if x], trig=p[5], en=p[6] == "true",
+                                    count=float(p[7]) if len(p) > 7 and p[7] else None)   # (issue #605)
             elif k == "M" and p[4] != "gregtorio-disabled":
                 mined[p[1]] = ([p[2]] if p[2] else []) + [x.split(":", 1)[1] for x in p[3].split(",") if x]
                 if p[4] == "gt-ore":
@@ -768,6 +769,94 @@ def check_spoiling(m, sec):
                  for i in sorted(allow) if i not in made]
     return f"{sum(1 for s in m.spoil.values() if s)} items spoil, {len(made)} of them made by a reachable recipe, " \
            f"{len(allow)} on purpose (FORK_SPOILING_KEPT)", problems
+RESEARCH_BAND_LOW = 50    # the count of the reach, void miner and space elevator technologies (issue #605)
+
+
+def check_research_counts(m, sec):
+    """Issue #605: prototypes/138-fork-research-balance.lua scales the counts from UV science up (9 packs and more). A
+    researchable technology of 9 or more packs with a count outside the band of its pack count fails: from
+    RESEARCH_BAND_LOW (or the lowest count of 138's table at that pack count, if lower) to the highest count that 138's
+    table (section RESEARCHCOUNTS) gives a technology of that pack count; unless it is in the allow-list FORK_RESEARCH_OUTLIERS of 138 with its reason (section RESEARCHOK). Infinite
+    technologies (a count formula, no count) are left out. An entry that is no such technology fails too. Returns (info
+    line, problems)."""
+    allow = {r[0]: (r[1] if len(r) > 1 else "") for r in sec.get("RESEARCHOK", [])}
+    target = {r[0]: float(r[1]) for r in sec.get("RESEARCHCOUNTS", []) if len(r) > 1}
+    low, high, rows = {}, {}, []
+    for t in sorted(m.researched):
+        v = m.T.get(t)
+        if not v or v.get("count") is None or len(v["sci"]) < 9:
+            continue
+        n = len(v["sci"])
+        rows.append((t, n, v["count"]))
+        if t in target:   # the band comes from the table's counts, not from what the load made of them
+            high[n] = max(high.get(n, 0), target[t])
+            low[n] = min(low.get(n, RESEARCH_BAND_LOW), target[t])
+    outside = {t: (n, c) for t, n, c in rows if n in high and not low[n] <= c <= high[n]}
+    problems = [f"{t}: {c:g} units of {n} packs, outside the band {low[n]:g}-{high[n]:g} of its pack count (scale it in "
+                "prototypes/138-fork-research-balance.lua, or add it to FORK_RESEARCH_OUTLIERS with its reason)"
+                for t, (n, c) in sorted(outside.items()) if t not in allow]
+    problems += [f"FORK_RESEARCH_OUTLIERS: {t} has no reason" for t, why in sorted(allow.items()) if not why]
+    problems += [f"FORK_RESEARCH_OUTLIERS: {t} is not a technology outside its band (remove the entry)"
+                 for t in sorted(allow) if t not in outside]
+    bands = ", ".join(f"{n} packs {low[n]:g}-{h:g}" for n, h in sorted(high.items()))
+    return f"{len(rows)} researchable technologies of 9 or more packs, bands {bands}; {len(allow)} outside on purpose " \
+           "(FORK_RESEARCH_OUTLIERS)", problems
+NYI_ICON = "graphics/technology/nyi.png"
+
+
+def check_nyi_icons(sec):
+    """Issue #639: a shown technology, item, fluid or recipe of the load (the `shown` column of section NAMES) whose own
+    icon (section ICONS: the mod's files of `icon` and `icons`) is the NYI placeholder, graphics/technology/nyi.png or
+    a file of the mod with the same bytes, fails unless it is in the allow-list FORK_NYI_ICONS of
+    prototypes/199-fork-finalize.lua with its reason (section NYIOK); an entry that is no such prototype fails too.
+    Returns (info line, problems)."""
+    allow = {r[0]: (r[1] if len(r) > 1 else "") for r in sec.get("NYIOK", [])}
+    nyi = (ROOT / NYI_ICON).read_bytes()
+    same = {}
+
+    def is_nyi(path):
+        if path not in same:
+            f = ROOT / path.split("__gregtorio-continued__/", 1)[-1]
+            same[path] = f.is_file() and f.stat().st_size == len(nyi) and f.read_bytes() == nyi
+        return same[path]
+    shown = {(r[0], r[2]) for r in sec.get("NAMES", []) if len(r) > 5 and r[5]}
+    found = {}
+    for r in sec.get("ICONS", []):
+        if len(r) < 3:
+            continue
+        hits = [p for p in r[2].split(",") if is_nyi(p)]
+        if hits and (r[0], r[1]) in shown:
+            found[r[1]] = (r[0], hits[0])
+    copies = sorted({p for p, v in same.items() if v})
+    problems = [f"{cls} {name}: shows the NYI placeholder ({path}; give it an icon, e.g. tools/gen_tech_icons.py with "
+                "tools/tech-icons.tsv, or add it to FORK_NYI_ICONS with its reason)"
+                for name, (cls, path) in sorted(found.items()) if name not in allow]
+    problems += [f"FORK_NYI_ICONS: {n} has no reason" for n, why in sorted(allow.items()) if not why]
+    problems += [f"FORK_NYI_ICONS: {n} does not show the NYI placeholder (remove the entry)" for n in sorted(allow)
+                 if n not in found]
+    return f"{len(copies)} placeholder files in use, {len(found)} shown prototypes with one, {len(allow)} on purpose " \
+           "(FORK_NYI_ICONS)", problems
+
+
+OVERCLOCK = "gregtorio-continued-gt-overclocking"
+
+
+def check_overclocking(sec):
+    """Issue #616 (prototypes/fork-gt-overclocking.lua, section OVERCLOCK): with the setting on, every electric crafting
+    machine with a crafting speed of 2 or more draws its power times 2^floor(log2(speed)) (GT's 4x power per tier) and the
+    others are left; with it off, none is changed. Returns (info line, problems)."""
+    rows = sec.get("OVERCLOCK", [])
+    if not rows:
+        return "no section OVERCLOCK (older version)", []
+    on = rows[0][1] == "true"
+    problems, changed = [], 0
+    for r in rows[1:]:
+        name, speed, factor = r[0], float(r[1]), float(r[2])
+        want = 2 ** math.floor(math.log2(speed) + 1e-9) if on and speed >= 2 else 1
+        changed += factor != 1
+        if abs(factor - want) > 1e-9:
+            problems.append(f"{name}: crafting speed {speed:g}, power factor {factor:g}, expected {want:g}")
+    return f"setting {'on' if on else 'off'}: {changed} of {len(rows) - 1} electric crafting machines draw more power", problems
 
 
 VANILLA_MODS = {"base", "space-age", "quality", "elevated-rails"}
@@ -1692,13 +1781,9 @@ REMOVED_KEYS_OTHER_MODS = {
     "storage-tank/configurable-valve-guage-output": "configurable-valves 2.0.2, as above",
 }
 
-UNRESEARCHABLE_OK = [
-    "battery-equipment", "battery-mk2-equipment", "battery-mk3-equipment", "belt-immunity-equipment",
-    "energy-shield-equipment", "energy-shield-mk2-equipment", "exoskeleton-equipment", "explosives",
-    "fission-reactor-equipment", "fusion-reactor", "fusion-reactor-equipment", "mech-armor", "modular-armor",
-    "night-vision-equipment", "personal-roboport-equipment", "personal-roboport-mk2-equipment", "power-armor",
-    "power-armor-mk2", "spidertron",
-]
+# Issue #640: empty since data-final-fixes.lua disables every vanilla technology behind a disabled one (the 19 armor,
+# equipment, explosives, fusion reactor and spidertron technologies that stood in the tree for good before)
+UNRESEARCHABLE_OK = []
 # Issue #29: the quality-of-life techs whose vanilla gate is disabled; each must be researchable or hidden
 # (prototypes/103-fork-qol-techs.lua re-gates them onto Gregtorio techs)
 QOL_TECHS = (["bulk-inserter", "stack-inserter", "logistics-3", "turbo-transport-belt",
@@ -2465,9 +2550,19 @@ def check(a):
     trigger_info, trigger_only = check_trigger_items(m, sec)
     print(f"\nitems of craft triggers (issue #547): {trigger_info}")
     report("items whose only use is a technology's craft trigger (prototypes/100-fork-fixes.lua)", trigger_only)
+    oc_info, overclock = check_overclocking(sec)
+    print(f"\nGT overclocking (issue #616): {oc_info}")
+    report("machines whose power does not follow the GT overclocking setting (prototypes/fork-gt-overclocking.lua)", overclock)
     spoil_info, spoiling = check_spoiling(m, sec)
     print(f"\nspoiling items (issue #602): {spoil_info}")
     report("items that spoil and that a reachable recipe makes (data-final-fixes.lua)", spoiling)
+    research_info, research_counts = check_research_counts(m, sec)
+    print(f"\nresearch counts from UV up (issue #605): {research_info}")
+    report("technologies whose count lies outside the band of their pack count (prototypes/138-fork-research-balance.lua)",
+           research_counts)
+    nyi_info, nyi_icons = check_nyi_icons(sec)
+    print(f"\nNYI placeholder icons (issue #639): {nyi_info}")
+    report("shown prototypes with the NYI placeholder icon (prototypes/199-fork-finalize.lua)", nyi_icons)
     lens_info, lenses = check_engraver_lenses(m, sec)
     print(f"\nlaser engraver lenses (issue #325): {lens_info}")
     report("laser engraver recipes without a lens (prototypes/155-fork-ore-chain.lua)", lenses)
@@ -2573,7 +2668,8 @@ def check(a):
               or new_drafts or fluid_problems or locked or one_pack or fluid_steps or table_only or me_recipes or me_tab
               or extractor_split or ore_mixes or ore_chain or ore_baths or ore_o34 or ore_hammer
               or circuit_icons or pgm_dusts or recycling or names or gaps or tree or vanilla or lenses or mine_twins
-              or unplaceable or stale_unlocks or removed_keys or trigger_only or spoiling or classic_veins or early or furnace
+              or unplaceable or stale_unlocks or removed_keys or trigger_only or spoiling or classic_veins or early
+              or furnace or research_counts or nyi_icons or overclock
               or steam or nugget or steam_rates or boiler_output or vein_doc or renames)
     print("\nRESULT:", "OK" if ok else "PROBLEMS FOUND")
     return 0 if ok else 1
@@ -2617,6 +2713,18 @@ def boilers(a):
     if check(c):
         return 1
     print(f"\n=== boiler output ({BOILER_OUTPUT}={BOILERS_SET}): runtime ===")
+    return runtime(c)
+
+
+def overclocking(a):
+    """Part of `all` (issue #616): check and runtime once more with GT overclocking on (every machine from MV up draws 4x
+    power per tier)."""
+    c = argparse.Namespace(**vars(a))
+    c.set, c.balance_out, c.fluids_out, c.locale_out, c.techs = [f"{OVERCLOCK}=true"], None, None, None, None
+    print(f"\n=== GT overclocking ({OVERCLOCK}=true): check ===")
+    if check(c):
+        return 1
+    print(f"\n=== GT overclocking ({OVERCLOCK}=true): runtime ===")
     return runtime(c)
 
 
@@ -2669,7 +2777,7 @@ def runtime(a):
     fails += re.findall(r"DEVCHECK-RUNTIME-FAIL (.*)", log)
     print(f"benchmark: {ran.group(0) if ran else 'did not run'}")
     # the ME network's runtime tests are in me-network since issue #83 (its tools/devcheck)
-    tests = (("MOLD", "mold test"), ("LENS", "lens test"), ("POWER", "power test"), ("FUEL", "fuel check test"), ("COOLED", "cooled fluid test"),
+    tests = (("MOLD", "mold test"), ("LENS", "lens test"), ("MOLDCLONE", "cloned mold machine test"), ("POWER", "power test"), ("FUEL", "fuel check test"), ("COOLED", "cooled fluid test"),
              ("TIERS", "turbine tier test"), ("RECIPES", "recipe test"), ("CRUSH", "raw ore crushing test"), ("OREFURNACE", "ore furnace line test"), ("STEAM", "steam turbine test"), ("CHAIN", "nuclear chain test"), ("LFTR", "LFTR test"), ("LSC", "supercapacitor test"), ("LSUP", "supercapacitor upgrade test"), ("ELEVATOR", "space elevator test"), ("MELT", "melt and cast test"), ("OFFER", "offered recipes test"), ("EMINE", "electric mine test"), ("SOLAR", "solar boiler test"), ("COALBOILER", "coal boiler test"),("TORCH", "torch test"), ("BATTERY", "battery buffer test"), ("VEINS", "map vein test"), ("CLASSIC", "classic vein test"), ("DRILLS", "mining drill test"), ("PORTAL", "portal test"), ("ENDER", "ender storage test"), ("VICTORY", "victory test"),
              ("POSTVICTORY", "post-victory test"))
     for key, label in tests:
@@ -3430,7 +3538,7 @@ def main():
         return handover(a)
     if a.cmd == "switch":
         return switch(a)
-    return check(a) or one_pack(a) or runtime(a) or classic(a) or boilers(a) or menusim_own(a)
+    return check(a) or one_pack(a) or runtime(a) or classic(a) or boilers(a) or overclocking(a) or menusim_own(a)
 
 
 if __name__ == "__main__":
