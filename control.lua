@@ -87,8 +87,9 @@ script.on_event(defines.events.on_blueprint_settings_pasted, fork_ender.on_bluep
 script.on_event(defines.events.on_cutscene_cancelled, function(event)
 	local player = game.get_player(event.player_index)
 	if player and player.character then
-		player.print("It is strongly recommended that you set Manual Labor to autocraft up to a high number (1000+) for the early game and enable autocrafting.")
-		player.print("You can safely disable all resource generation on Nauvis, its not used in this mod.")
+		--- (issue #604: the texts are locale; the hint to disable Nauvis' resource generation is gone: 102 takes the vanilla
+		--- resources off every planet anyway, and since the map veins (#497) Gregtorio's own ores lie there)
+		player.print({ "fork-hint.manual-labor" })
 		--- Fork: where to find machine recipes (issue #49, prototypes/198-fork-crafting-menu.lua)
 		if settings.startup["gregtorio-continued-show-machine-recipes"].value then
 			player.print({ "fork-hint.machine-recipes" })
@@ -101,45 +102,45 @@ end)
 
 
 
-local tech_name = {
-  ["weapon-shooting-speed-1"] = "Weapon Shooting Speed One",
-  ["physical-projectile-damage-1"] = "Physical Projectile Damage One",
-  ["logistic-science-pack"] = "LV Science Pack",
-  ["steel-backpack"] = "Steel Backpack",
-  ["repair-pack"] = "Repair Pack",
-  ["stone-wall"] = "Stone Wall",
-  ["military"] = "Military",
-  ["iron-furnace"] = "Iron Furnace",
-  ["gun-turret"] = "Gun Turret",
-  ["lamp"] = "Torches",
-  ["logistics"] = "Logistics",
-  ["basic-backpack"] = "Basic Backpack",
-  ["small-coal-boiler"] = "Small Coal Boiler",
-  ["steam-alloy-smelter"] = "Steam Alloy Smelter",
-  ["steam-compressor"] = "Steam Compressor",
-  ["steam-forge-hammer"] = "Steam Forge Hammer",
-  ["coke-oven"] = "Coke Oven",
-  ["steel-processing"] = "Steel Processing",
-  ["glassmaking"] = "Glassmaking",
-  ["steam-macerator"] = "Steam Macerator",
-  ["steam-extractor"] = "Steam Extractor",
-  ["rubber"] = "Rubber",
-  ["primitive-electronics"] = "Primitive Electronics",
-  ["steam-turbine"] = "Steam Turbine",
-  ["wiremill"] = "Wiremill",
-  ["bending-machine"] = "Bending Machine",
+--- the red science technologies whose research gives 1000 Manual Labor (issue #604: the message names the technology by its
+--- localised name)
+local MOTIVATION_TECHS = {
+  ["weapon-shooting-speed-1"] = true,
+  ["physical-projectile-damage-1"] = true,
+  ["logistic-science-pack"] = true,
+  ["steel-backpack"] = true,
+  ["repair-pack"] = true,
+  ["stone-wall"] = true,
+  ["military"] = true,
+  ["iron-furnace"] = true,
+  ["gun-turret"] = true,
+  ["lamp"] = true,
+  ["logistics"] = true,
+  ["basic-backpack"] = true,
+  ["small-coal-boiler"] = true,
+  ["steam-alloy-smelter"] = true,
+  ["steam-compressor"] = true,
+  ["steam-forge-hammer"] = true,
+  ["coke-oven"] = true,
+  ["steel-processing"] = true,
+  ["glassmaking"] = true,
+  ["steam-macerator"] = true,
+  ["steam-extractor"] = true,
+  ["rubber"] = true,
+  ["primitive-electronics"] = true,
+  ["steam-turbine"] = true,
+  ["wiremill"] = true,
+  ["bending-machine"] = true,
 }
 
 script.on_event(defines.events.on_research_finished, function(event)
   fork_victory.on_research_finished(event)
-  local name = tech_name[event.research.name]
-  if not name then return end
+  if not MOTIVATION_TECHS[event.research.name] then return end
 
   for _, player in pairs(event.research.force.players) do
     if player and player.valid and player.character then
       player.insert({name = "manual-labor", count = 1000})
-      player.print("[color=orange]You feel a burst of motivation after having researched " .. name .. "![/color]")
-      player.print("[color=orange]You have gained an additional 1000 Manual Labor, and will continue to gain this for each red pack only tech researched.[/color]")
+      player.print({ "fork-hint.motivation", event.research.localised_name })
     end
   end
 end)
@@ -178,11 +179,11 @@ local VANILLA_RESOURCES = {
 	"tungsten-ore", "calcite", "scrap", "sulfuric-acid-geyser", "lithium-brine", "fluorine-vent",
 }
 commands.add_command("gregtorio-remove-vanilla-ores",
-	"Removes all vanilla resource patches (iron, copper, stone, coal, uranium, oil ...) on every surface. Gregtorio does not use them.",
+	{ "fork-hint.remove-vanilla-ores-help" },
 	function(cmd)
 		local player = cmd.player_index and game.get_player(cmd.player_index)
 		if player and not player.admin then
-			player.print("Only admins can use this command.")
+			player.print({ "fork-hint.admins-only" })
 			return
 		end
 		local names = {}
@@ -196,5 +197,5 @@ commands.add_command("gregtorio-remove-vanilla-ores",
 				removed = removed + 1
 			end
 		end
-		game.print("Gregtorio: removed " .. removed .. " vanilla resource tiles.")
+		game.print({ "fork-hint.vanilla-ores-removed", removed })
 	end)
