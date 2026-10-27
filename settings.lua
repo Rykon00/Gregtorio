@@ -34,5 +34,14 @@ data:extend({
 		default_value = 1,
 		allowed_values = { 1, 1.5, 2, 3, 4, 6, 8, 16 },
 		order = "d"
+	},
+	--- Fork: GT New Horizons' overclocking (issue #616, prototypes/fork-gt-overclocking.lua): every electric machine's power
+	--- grows 4 times per tier instead of 2, so a recipe costs twice the energy per tier above its own; default off
+	{
+		type = "bool-setting",
+		name = "gregtorio-continued-gt-overclocking",
+		setting_type = "startup",
+		default_value = false,
+		order = "e"
 	}
 })

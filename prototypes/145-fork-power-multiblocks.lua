@@ -804,3 +804,97 @@ do
 		recipes = hv_recipes,
 	}
 end
+
+
+
+--------------------------------------------------------------------------------
+--- 8b) BATTERY BUFFERS EV AND IV (issue #614): GT New Horizons has its battery buffers on every tier
+--- (LoaderMetaTileEntities.java:8454-8461, 8507-8513, 8560-8566, 8613-8619; recipes MTERecipeLoader.java:2886-3075 with
+--- aluminium and tungsten wire) and takes the tier's battery: IC2's lapotron crystal for EV (oredict batteryEV,
+--- LoaderGTOreDictionary.java:172; 10 000 000 EU) and the lapotronic energy orb for IV (MetaGeneratedItem01.java:5225;
+--- 100 000 000 EU). Section 8's buffers with those batteries, at the tiers GT New Horizons makes them: the lapotron
+--- crystal's chain (energium and lapotron dust, the raw crystal: HV autoclave, the crystal: EV assembler) came with the
+--- ZPM Assembly Line here and moves to Lapotron Crystals (EV), the orb and its engraved lapotron chip from Lapotronic
+--- Energy Orbs (ZPM science) to Lapotronic Energy Orb (IV), which the ZPM technology then needs. The IV buffer's x16 wire
+--- is GT's tungsten wireGt16 (the wiremill's 8 ingots, as the mod's other x16 wires).
+--------------------------------------------------------------------------------
+do
+	local EU = 1e3 / 3
+	--- every technology loses the unlock, `tech` gets it
+	local function move(recipe, tech)
+		for _, t in pairs(data.raw.technology) do
+			if t.effects then
+				local keep = {}
+				for _, e in pairs(t.effects) do
+					if not (e.type == "unlock-recipe" and e.recipe == recipe) then keep[#keep + 1] = e end
+				end
+				t.effects = keep
+			end
+		end
+		fork_add_unlock(tech, recipe)
+	end
+	create_item{
+		name = "tungsten-wire-16x",
+		category = "lv-wiremill-recipes",
+		energy_required = data.raw.recipe["tungsten-wire"].energy_required * 8,
+		ingredients = { { type = "item", name = "tungsten-ingot", amount = 8 } },
+		results = { { type = "item", name = "tungsten-wire-16x", amount = 1 } },
+	}
+	local BUFFERS = {
+		--   tier  battery                   capacity (EU) volts  wire              technology
+		{ "ev", "lapotron-crystal",       1e7,          2048, "aluminium-wire", "lapotron-crystals" },
+		{ "iv", "lapotronic-energy-orb",  1e8,          8192, "tungsten-wire",  "lapotronic-energy-orb" },
+	}
+	F.tech{
+		name = "lapotron-crystals", prerequisites = { "large-batteries", "ev-components", "ender-io", "aluminium" },
+		packs = 5, count = 400, recipes = {},
+	}
+	F.tech{
+		name = "lapotronic-energy-orb", prerequisites = { "lapotron-crystals", "nanoprocessors", "ev-energy-hatches",
+			"industrial-precision-lathe", "me-storage-256k", "iv-components", "tungsten" },
+		packs = 6, count = 600, recipes = { "tungsten-wire-16x" },
+	}
+	for _, r in pairs({ "energium-dust", "lapotron-dust", "raw-lapotron-crystal", "lapotron-crystal" }) do
+		move(r, "lapotron-crystals")
+	end
+	for _, r in pairs({ "engraved-lapotron-chip", "lapotronic-energy-orb" }) do move(r, "lapotronic-energy-orb") end
+	table.insert(data.raw.technology["lapotronic-energy-orbs"].prerequisites, "lapotronic-energy-orb")
+	--- (#252: the later users of the crystal's chain and the lapotron chip; the precise electronic units follow the ZPM
+	--- assembly line)
+	table.insert(data.raw.technology["zpm-assembly-line"].prerequisites, "lapotronic-energy-orb")
+	if data.raw.technology["me-storage-1024k"] then
+		table.insert(data.raw.technology["me-storage-1024k"].prerequisites, "lapotron-crystals")
+	end
+	for i, b in ipairs(BUFFERS) do
+		local tier = b[1]
+		for _, n in ipairs({ 1, 2, 3, 4 }) do
+			local slots = n * n
+			local name = tier .. "-battery-buffer-" .. slots
+			local wire = n == 4 and { b[5] .. "-16x", 4 } or { b[5], 4 * ({ 1, 4, 8 })[n] }
+			create_item{
+				name = name,
+				subgroup = "energy",
+				order = "e[battery-buffer]-" .. (3 + i) .. "-" .. n,
+				place_result = name,
+				stack_size = 10,
+				ingredients = {
+					{ type = "item", name = wire[1], amount = wire[2] },
+					{ type = "item", name = "wooden-chest", amount = 1 },
+					{ type = "item", name = tier .. "-machine-hull", amount = 1 },
+					{ type = "item", name = b[2], amount = slots },
+				},
+			}
+			local buffer = table.deepcopy(data.raw.accumulator["hv-battery-buffer-" .. slots])
+			local amp = b[4] * 60 * EU   -- one amp of the tier in W
+			buffer.name = name
+			buffer.icon = "__gregtorio-continued__/graphics/icons/" .. name .. ".png"
+			buffer.minable.result = name
+			buffer.energy_source.buffer_capacity = string.format("%.6fMJ", slots * b[3] * EU / 1e6)
+			buffer.energy_source.input_flow_limit = string.format("%.6gkW", 2 * slots * amp / 1e3)
+			buffer.energy_source.output_flow_limit = string.format("%.6gkW", slots * amp / 1e3)
+			buffer.chargable_graphics.picture.layers[1].filename = SPRITE_PATH .. name .. ".png"
+			data:extend({ buffer })
+			fork_add_unlock(b[6], name)
+		end
+	end
+end

@@ -75,7 +75,11 @@
     turbine; needs 140's magmatter and adds its turbine to 136's mod data; issue #249: the MAX recipes of the plasma
     forge and the QFT with substitutes); 140 and 141 load after 139 and **before** 138
   - 138 research balance (issue #30: explicit unit counts of the technologies from UV to `victory`; loads after every
-    file that defines technologies; balance passes use `tools/balance_model.py` on `devcheck.py check --balance-out`)
+    file that defines technologies up to 141; issue #605: the table also names the UV+ technologies of 145 to 166, and
+    `FORK_RESEARCH_BALANCE.apply()` runs once more at the end of data-final-fixes.lua; devcheck fails for a researchable
+    technology of 9 or more packs whose count lies outside the band of its pack count (from 50, or the table's lowest at
+    that pack count, to the table's highest) unless it is in `FORK_RESEARCH_OUTLIERS`: a new UV+ technology gets its
+    scaled count in the table; balance passes use `tools/balance_model.py` on `devcheck.py check --balance-out`)
   - 147 GT routes (issue #98: the PECA board deleted, sodium persulfate, black plutonium and cosmic neutronium through
     the blast furnace and vacuum freezer, the high octane line, GT's deuterium and PPIC wafer; loads after 138 and
     **before** 142, whose block `UNLOCKS_98` unlocks its recipes, and 143, which casts the black plutonium ingot)
@@ -175,7 +179,7 @@
     water to superheated steam), the large combustion engine and the large gas turbine (EV burner generators on the fuel
     cells); issue #295: GT++'s EV, IV and LuV rocket engines on the H8N4C2O4 rocket fuel cell (fuel category
     `rocket-engine-fuel`; the fuel's GTNH recipe and the Chemical Plant's move to Rocket Fuel are in 159); issue #444: GTNH's LV to HV
-    batteries and the battery buffers (accumulators of a fixed size, the batteries in the recipe; technology Large Batteries); their technologies are named in 142's `UNLOCKS`, so it loads after 138 and **before** 142, and
+    batteries and the battery buffers (accumulators of a fixed size, the batteries in the recipe; technology Large Batteries); issue #614: the EV and IV buffers (section 8b) with GTNH's tier batteries, the lapotron crystal (its chain moved from the ZPM Assembly Line to Lapotron Crystals, EV) and the lapotronic energy orb (moved to Lapotronic Energy Orb, IV); their technologies are named in 142's `UNLOCKS`, so it loads after 138 and **before** 142, and
     before 196 for its fluids; it takes 136's generator from the global `FORK_POWER` and adds to its mod data
     `fork-power`)
   - 144 dead fluids (issue #91: GT's uses and producers of fluids nothing made or used; the blast furnace gas variants
@@ -371,11 +375,13 @@
   me-network calls in its `on_init`; keep its table list and fingerprint function equal to me-network's
   `scripts/fork-me-handover.lua`). Everything else of the ME network (runtime, graphics, locale, its tests,
   `docs/AE2.md`, `docs/ME-REWORK.md`) is in the me-network repository; an ME change goes there, Gregtorio only changes
-  the compat file when a recipe or a tier changes. Tick intervals in use: `on_nth_tick` 30 (molds), 60 (#499: the Ore Drilling Plants' Drilling Fluid, `fork-ore-drills.lua`, `storage.fork_ore_drills`), 120 (solar boilers); `on_tick`
+  the compat file when a recipe or a tier changes. Tick intervals in use: `on_nth_tick` 5 (molds), 12 (#499: the Ore Drilling Plants' Drilling Fluid, `fork-ore-drills.lua`, `storage.fork_ore_drills`), 24 (solar boilers), 20 (#504: the Ender Tanks); issue #642: the molds, the plants and the solar boilers are checked in shares through `scripts/fork-batch.lua` (each entity once per 30, 60 and 120 ticks, a cursor beside its table in storage), so a megabase pays about the same every few ticks instead of one spike per period (3000 mold machines: 11 ms spikes -> 4 ms, 15 % more script time on average); a new periodic check over many entities does the same, and reads mod data once (its `data` builds the table on every read); `on_tick`
   (fork-power: turbine energy every tick, fuel check, output hatches and the supercapacitor loss every 10th tick);
   registrations for the same interval (or a second `on_tick`) overwrite each other, so a new periodic task picks a free
   interval. The scripts keep their state lazy (`storage.fork_molds`, `storage.fork_power`).
-- `data-final-fixes.lua` disables vanilla techs (`disable_tech`: hidden, no effects). The main menu simulations that call
+- `data-final-fixes.lua` disables vanilla techs (`disable_tech`: hidden, no effects); issue #640: a vanilla technology
+  behind a disabled one is disabled too (`FORK-UNRESEARCHABLE` in the log), so no technology stands in the tree that can
+  never be researched. The main menu simulations that call
   `research_all_technologies()` get the bonuses of those techs from `prototypes/fork-menu-simulations.lua` (PR #65: the
   laser defense simulation's character died without them and its script stopped the menu); after changing the disabled
   techs or the character, run `python tools/devcheck/devcheck.py menusim --sim all --compare`. Issue #588: Gregtorio's
@@ -462,6 +468,11 @@
   watts follow the setting; `devcheck.py all` loads `check` and `runtime` once more with `--set
   gregtorio-continued-boiler-output=4` (`--set` takes numbers for double and int settings); the runtime's coal boiler and
   solar boiler tests measure steam per second against the setting. At 16 every fluid box carries the flow (probed).
+- GT overclocking (issue #616): the startup setting `gregtorio-continued-gt-overclocking` (default off) makes every
+  electric assembling machine and furnace with a crafting speed of 2 or more draw its power times 2^floor(log2(speed)),
+  so the power quadruples per tier (GT's overclock: a recipe costs twice its energy per tier above its own) instead of
+  doubling (`prototypes/fork-gt-overclocking.lua`, required from `data-final-fixes.lua` after the machines; section
+  OVERCLOCK). `devcheck.py all` loads `check` and `runtime` once more with it on.
 - Generators (`generator` prototypes that burn fluids by fuel value, 136) are demand driven; an
   input-output fluid box keeps part of its fluid in the pipeline segment (`get_fluid_count` reports
   only the entity's part; since Factorio 2.1 `get_fluid_segment_fluid` is the whole segment with that part, where 2.0's
@@ -473,7 +484,8 @@
   missing item icons from `tools/gen_icons.py` (a placeholder; the real icon from GT textures with
   `tools/gen_gt_icons.py` after adding the item to `tools/gt-icon-items.txt`; `tools/gen_icons.py --drawn` writes the graphics
   drawn as code where GT has no texture, issue #431: the cauldron), technology icons from
-  `tools/gen_tech_icons.py` (`tools/tech-icons.tsv`), missing names from `tools/gen_locale.py`.
+  `tools/gen_tech_icons.py` (`tools/tech-icons.tsv`; issue #639: devcheck fails for a shown prototype with the NYI
+  placeholder icon unless it is in `FORK_NYI_ICONS` of 199), missing names from `tools/gen_locale.py`.
   Check graphics changes with the contact sheets of `tools/gen_review_sheet.py`.
 - **Machine names are GTNH's** (issue #156): a new machine, multiblock or controller takes the name GT New Horizons
   gives it, from the `en_US.lang` files of GT5-Unofficial (`src/main/resources/assets/*/lang/en_US.lang`, or the name
