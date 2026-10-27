@@ -1798,6 +1798,11 @@ hafnium dust), radioactives (thorium 232, uranium 233, plutonium 238 and 241), t
 mixture (monazite and bastnasite cannot be obtained; holmium, cerium, gadolinium, lanthanum dust; issue #249 built them once
 the lanthanide lines of #262, #269 and #272 had made those dusts), naquadria (naquadria earth,
 naquadria supersolid), netherite, prismarine, stem cells, late plastics, Kevlar, biocells, seaweed and the temporal harmony recipe.
+Issue #609 (2026-10-27) built six of them now that their materials exist (164 section 43): early plastics, early rubbers,
+both titanium/tungsten/indium recipes, the radioactives and the late plastics (xenoxene, radox polymer, heavy radox, Kevlar);
+their fluids are scaled by one factor so the largest is 1000, and the QFT got two more fluid inputs and four more outputs.
+Still not built: glues (stable adhesive), prismarine (prismatic naquadah dust; the mod's prismatic naquadah is a melt),
+naquadria, netherite (#617), stem cells, biocells, seaweed and the temporal harmony recipe.
 So the QFT had no rare earth recipe; since issue #249 it has GT's bastline (bastnasite or cerium-rich mixture) and monaline
 (without hafnia and the superconductor composite). The mod's rare earth (I) line has none (GT's rare earth dust has no QFT
 recipe).

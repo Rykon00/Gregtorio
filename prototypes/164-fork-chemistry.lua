@@ -4808,6 +4808,68 @@ end
 
 
 --------------------------------------------------------------------------------
+--- 43) GT'S QFT RECIPES WHOSE MATERIALS EXIST NOW (issue #609). GT++ gtPlusPlus/xmod/gregtech/loaders/recipe/
+---   RecipeLoaderChemicalSkips.java: early plastics (:139-157), early rubbers (:159-175), titanium, tungsten and indium
+---   (:192-203, :204-217), thorium, uranium and plutonium (:218-232) and the late plastics (:328-341), 20 s each, in 139's
+---   pattern (FORK_QFT.add: one recipe per output, GT's items at 100 %, the focused output at (N+1)/2N, the others at
+---   1/2N, the focus plasma; no catalyst items). GT's fluids of a recipe are scaled by one factor so the largest is the
+---   1000 of a fluid port (139 scaled its inputs to 1000 the same way; here the ratios stay). Left out: GT's glue recipe
+---   (:177-190, stable adhesive is not in the mod) and the prismarine recipe (:297-312, no prismatic naquadah dust: the
+---   mod's prismatic naquadah is a melt, section 26)
+--------------------------------------------------------------------------------
+do
+	local function item(name, amount) return { type = "item", name = name, amount = amount } end
+	--- GT's fluid amounts of a recipe (inputs and outputs) -> scaled so the largest is 1000
+	local function scaled(inputs, outputs)
+		local top = 0
+		for _, f in pairs(inputs) do top = math.max(top, f[2]) end
+		for _, o in pairs(outputs) do if data.raw.fluid[o[1]] then top = math.max(top, o[2]) end end
+		local k = 1000 / top
+		local ins, outs = {}, {}
+		for _, f in pairs(inputs) do ins[#ins + 1] = { type = "fluid", name = f[1], amount = math.floor(f[2] * k * 10 + 0.5) / 10 } end
+		for _, o in pairs(outputs) do
+			outs[#outs + 1] = { o[1], data.raw.fluid[o[1]] and math.floor(o[2] * k * 10 + 0.5) / 10 or o[2] }
+		end
+		return ins, outs
+	end
+	local function qft(items, fluids, outputs)
+		local ins, outs = scaled(fluids, outputs)
+		local input = {}
+		for _, i in pairs(items) do input[#input + 1] = item(i[1], i[2]) end
+		for _, f in pairs(ins) do input[#input + 1] = f end
+		for _, name in pairs(FORK_QFT.add{ input = input, time = 20, outputs = outs }) do
+			fork_add_unlock(FORK_QFT.technology, name)
+		end
+	end
+	--- early plastics
+	qft({ { "carbon", 64 } }, { { "oxygen", 16000 }, { "hydrogen", 16000 }, { "chlorine", 16000 }, { "fluorine", 16000 } },
+		{ { "polyethylene", 36864 }, { "polyvinyl-chloride", 18432 }, { "polystyrene", 9216 }, { "ptfe", 18432 },
+			{ "epoxy", 9216 }, { "polybenzimidazole", 9216 } })
+	--- early rubbers
+	qft({ { "sulfur", 32 }, { "carbon", 32 } }, { { "oxygen", 16000 }, { "hydrogen", 16000 }, { "chlorine", 16000 } },
+		{ { "silicone-rubber", 9216 }, { "styrene-butadiene-rubber", 9216 }, { "polyphenylene-sulfide", 18432 },
+			{ "liquid-rubber", 36864 } })
+	--- titanium, tungsten and indium
+	qft({ { "lead-dust", 16 }, { "bauxite-dust", 32 }, { "tungstate-dust", 16 } }, {},
+		{ { "titanium-dust", 64 }, { "tungstensteel-dust", 64 }, { "tungsten-carbide-dust", 64 }, { "indium", 64 } })
+	qft({ { "rutile-dust", 32 }, { "scheelite-dust", 16 }, { "ilmenite-dust", 16 } }, {},
+		{ { "titanium-dust", 64 }, { "tungstensteel-dust", 64 }, { "tantalum-dust", 64 }, { "rhenium-dust", 64 },
+			{ "niobium-dust", 64 }, { "hafnium-dust", 64 } })
+	--- thorium, uranium and plutonium (GT's uranium is uranium 238)
+	qft({ { "thorium-dust", 32 }, { "uranium-238-dust", 32 } }, {},
+		{ { "thorium-232-dust", 64 }, { "uranium-233-dust", 64 }, { "uranium-235-dust", 64 }, { "plutonium-238-dust", 64 },
+			{ "plutonium-239-dust", 64 }, { "plutonium-241-dust", 64 } })
+	--- (the QFT makes plutonium 238 and 241 dust too, so their tiny piles are no longer their only source)
+	FORK_RECIPES_TABLE_ONLY["plutonium-238-dust-from-tiny-piles"] = nil
+	FORK_RECIPES_TABLE_ONLY["plutonium-241-dust-from-tiny-piles"] = nil
+	--- the late plastics
+	qft({ { "carbon", 64 }, { "osmium-dust", 24 } }, { { "hydrogen", 16000 }, { "nitrogen", 16000 } },
+		{ { "xenoxene", 16000 }, { "molten-radox-polymer", 9216 }, { "heavy-radox", 16000 }, { "molten-kevlar", 9216 } })
+end
+
+
+
+--------------------------------------------------------------------------------
 --- 38) GT'S PARTS OF THE METALS OF THIS FILE (issue #467). 158 makes GT New Horizons' parts of every metal of
 ---   prototypes/gt-parts-data.lua (issue #227) whose ingot exists; most metals of this file come after 158, so its
 ---   FORK_GT_PARTS.run() runs once more here (it skips what exists), then 143's casts for the new forms.
