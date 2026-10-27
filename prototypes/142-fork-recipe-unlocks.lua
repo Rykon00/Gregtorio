@@ -916,7 +916,8 @@ FORK_MACHINES_BEFORE_RECIPES = {
 	["mv-machines:mv-rock-crusher"] = "a tier machine comes with its tier's Machines technology like the others of the tier; "
 		.. "it runs the LV Rock Crusher's recipe, which comes with Rock Crusher (LV)",
 }
-for _, t in pairs({ "mv", "hv", "ev", "iv", "luv", "zpm", "uv", "uhv", "uev", "uiv", "umv", "uxv", "max" }) do
+--- (issue #611: from ZPM on the tier's Machines technology has Fermentation behind it, through Naquadah Processing's seed oil)
+for _, t in pairs({ "mv", "hv", "ev", "iv", "luv" }) do
 	for _, m in pairs({ "brewery", "fermenter" }) do
 		FORK_MACHINES_BEFORE_RECIPES[t .. "-machines:" .. t .. "-" .. m] = "a tier machine comes with its tier's Machines "
 			.. "technology like the others of the tier; it runs the LV " .. m .. "'s recipes, which come with Fermentation (LV, 164)"

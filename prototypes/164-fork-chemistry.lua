@@ -2685,10 +2685,19 @@ do
 		{ { ENA .. "-ingot", 1 } })
 	step(L, "molten-metastable-oganesson", "mk4-fusion-reactor-recipes", 30, UEV_SPEED,
 		{ { "molten-" .. ENA, 14.4 }, { "oganesson", 25 } }, { { "molten-metastable-oganesson", 3.6 } })
-	--- the prosaic catalyst
-	step(L, PROSAIC, DTPF_CAT, 5, UMV_SPEED,
+	--- the prosaic catalyst; issue #611: with the godforge, as the resplendent catalyst it now goes into (GT's resplendent
+	--- is the prosaic's eight plasmas and nitrogen, zinc, silver and titanium plasma, gregtech/loaders/postload/recipes/
+	--- TranscendentPlasmaMixerRecipes.java:40-74; 139's recipe left out radon, nickel and silver plasma, which the mod has
+	--- since #375)
+	step({}, PROSAIC, DTPF_CAT, 5, UMV_SPEED,
 		{ { CRUDE, 100 }, { "radon-plasma", 100 }, { "nickel-plasma", 100 }, { "boron-plasma", 100 }, { "sulfur-plasma", 100 } },
 		{ { PROSAIC, 100 } })
+	fork_add_unlock("godforge", PROSAIC)
+	data.raw.recipe[RESPLENDENT].ingredients = {
+		{ type = "fluid", name = PROSAIC, amount = 100 }, { type = "fluid", name = "nitrogen-plasma", amount = 100 },
+		{ type = "fluid", name = "zinc-plasma", amount = 100 }, { type = "fluid", name = "silver-plasma", amount = 100 },
+		{ type = "fluid", name = "titanium-plasma", amount = 100 },
+	}
 	--- the superfluid
 	local function superfluid(list, name, seconds, speed, sbm, mog, g8w, ct, radox, catalyst, out, residue)
 		step(list, name, DTPF_CAT, seconds, speed,
@@ -4805,6 +4814,72 @@ do
 		table.insert(data.raw.technology[CRAFT].prerequisites, T_STAB)
 	end
 end
+
+
+--------------------------------------------------------------------------------
+--- 42) LEFT-OUT RECIPES WHOSE BLOCKER EXISTS NOW (issue #611)
+---   * P-507 as GT New Horizons makes it (goodgenerator/loader/NaquadahRecipeLoader.java:163-184): 2-ethyl-1-hexanol from
+---     hydrogen and the seed oil of #360 (8000 + 3000 -> 1000, 20 s at HV; GT's copper plate is not used up and is left
+---     out), then 2 sodium, 2000 2-ethyl-1-hexanol, 1000 phosphoric acid and 2000 ethanol -> 1000 P-507 in the large
+---     chemical reactor (60 s at EV); fluids a tenth, as the rest of 125's goodgenerator line. It replaces upstream's
+---     recipe (ethanol and phosphoric acid in the IV chemical reactor) with its name; 2-ethyl-1-hexanol comes with it
+---   * GT's fusion of cobalt and neon into rubidium (gregtech/loaders/postload/recipes/FusionReactorRecipes.java:293-301:
+---     144 + 144 -> 144 in 24 ticks, start 500M EU, the MK3), a tenth as 136's section 1c, and the melt solidified into
+---     the dust (the mod has no rubidium ingot, as uranium in 136); mellion takes the rubidium (section 29)
+---   * UU matter in the fusion reactor MK4's controller (tectech/loader/recipe/ResearchStationAssemblyLine.java:823-843:
+---     50000 L, here a tenth), now that the LuV mass fabricator makes it (section 30); the technology that unlocks it gets
+---     Beamline as a prerequisite. The casing (:865-883, 1000 L) stays without: the UHV assembler takes two fluids. GT's cinobite and octiron (#629) and astral
+---     titanium (here only with Six-Phased Copper, UXV, section 35) keep their stand-ins, tritanium and cosmic neutronium
+--------------------------------------------------------------------------------
+do
+	local function item(name, amount) return { type = "item", name = name, amount = amount } end
+	local function fluid(name, amount) return { type = "fluid", name = name, amount = amount } end
+	local L = {}
+	F.fluid("2-ethyl-1-hexanol", "dark-muted-yellow-fluid", { 0.85, 0.80, 0.45 })
+	step(L, "2-ethyl-1-hexanol", "hv-chemical-reactor-recipes", 20, HV_SPEED,
+		{ { "hydrogen", 800 }, { "seed-oil", 300 } }, { { "2-ethyl-1-hexanol", 100 } })
+	local p507 = data.raw.recipe["p507"]
+	fork_set_category(p507, "ev-chemical-reactor-recipes")
+	p507.energy_required = 60 * EV_SPEED
+	p507.ingredients = {
+		item("sodium", 2), fluid("2-ethyl-1-hexanol", 200), fluid("phosphoric-acid", 100), fluid("ethanol", 200),
+	}
+	p507.results = { fluid("p507", 100) }
+	p507.main_product = "p507"
+	for name, tech in pairs(data.raw.technology) do
+		for _, e in pairs(tech.effects or {}) do
+			if e.type == "unlock-recipe" and e.recipe == "p507" then
+				fork_add_unlock(name, "2-ethyl-1-hexanol")
+				table.insert(tech.prerequisites, "fermentation")   -- (#252: the seed oil)
+			end
+		end
+	end
+	--- the honeaite and lafossaite electrolysis (155) make thallium dust now, so its tiny piles are no longer its only source
+	FORK_RECIPES_TABLE_ONLY["thallium-dust-from-tiny-piles"] = nil
+
+	F.fluid("molten-rubidium", "molten-rubidium", { 0.94, 0.12, 0.12 })   -- (GT's colour, gen_gt_icons --molten)
+	step({}, "rubidium-fusion", "mk3-fusion-reactor-recipes", 1.2, UV_SPEED,
+		{ { "molten-cobalt", 14.4 }, { "neon", 14.4 } }, { { "molten-rubidium", 14.4 } })
+	step({}, "solidify-rubidium-dust", "iv-fluid-solidifier-recipes", 1.6, IV_SPEED,
+		{ { "molten-rubidium", 14.4 } }, { { "rubidium-dust", 1 } })
+	fork_add_unlock("fusion-plasmas-mk3", "rubidium-fusion")
+	fork_add_unlock("fusion-plasmas-mk3", "solidify-rubidium-dust")
+
+	for name, amount in pairs({ ["fusion-reactor-mk4-controller"] = 5000 }) do
+		local r = data.raw.recipe[name]
+		table.insert(r.ingredients, fluid("uu-matter", amount))
+		for tname, tech in pairs(data.raw.technology) do
+			for _, e in pairs(tech.effects or {}) do
+				if e.type == "unlock-recipe" and e.recipe == name then
+					local has = false
+					for _, p in pairs(tech.prerequisites or {}) do if p == "beamline" then has = true end end
+					if not has then table.insert(tech.prerequisites, "beamline") end
+				end
+			end
+		end
+	end
+end
+
 
 
 --------------------------------------------------------------------------------

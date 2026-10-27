@@ -3,12 +3,16 @@
 --- (MTEBoilerSolar: daytime and the sky). Their entities (prototypes/101-fork-machines.lua, section 2m; the mod data
 --- `fork-solar-boilers` names them) run one recipe without power; every CHECK_TICKS this script stops them at night
 --- (disabled_by_script, status "No sunlight") and lets them run by day: the light of their surface, 1 - darkness, at
---- least DAYLIGHT. State: storage.fork_solar_boilers (unit number -> entity), filled when one is built and after a mod
---- change; an entity that is gone drops out on the next check.
+--- least DAYLIGHT. State: storage.fork_solar_boilers.boilers (unit number -> entity), filled when one is built and after a
+--- mod change; an entity that is gone drops out on its next check.
 --------------------------------------------------------------------------------
 
 local M = {}
-local CHECK_TICKS = 120   -- (free: the molds take 30, fork-power on_tick)
+local batch = require("scripts.fork-batch")
+local CHECK_TICKS = 120
+--- issue #642: the boilers are checked in shares every STEP_TICKS, each one once per CHECK_TICKS (scripts/fork-batch.lua;
+--- the boilers live in storage.fork_solar_boilers.boilers since then)
+local STEP_TICKS = 24
 local DAYLIGHT = 0.5
 
 local names
@@ -24,8 +28,13 @@ local function boiler_names()
 end
 
 local function state()
-	storage.fork_solar_boilers = storage.fork_solar_boilers or {}
-	return storage.fork_solar_boilers
+	local st = storage.fork_solar_boilers
+	if not (st and st.boilers) then
+		--- (a save from before #642 kept unit number -> entity right in storage.fork_solar_boilers)
+		st = { boilers = st or {} }
+		storage.fork_solar_boilers = st
+	end
+	return st
 end
 
 local function update(entity)
@@ -37,7 +46,7 @@ end
 
 function M.on_built(entity)
 	if entity and entity.valid and boiler_names()[entity.name] then
-		state()[entity.unit_number] = entity
+		state().boilers[entity.unit_number] = entity
 		update(entity)
 	end
 end
@@ -45,19 +54,19 @@ end
 function M.on_configuration_changed()
 	local list = {}
 	for n in pairs(boiler_names()) do list[#list + 1] = n end
-	storage.fork_solar_boilers = {}
+	storage.fork_solar_boilers = { boilers = {} }
 	if #list == 0 then return end
 	for _, surface in pairs(game.surfaces) do
 		for _, e in pairs(surface.find_entities_filtered{ name = list }) do M.on_built(e) end
 	end
 end
 
-script.on_nth_tick(CHECK_TICKS, function()
-	local st = storage.fork_solar_boilers
-	if not st then return end
-	for k, e in pairs(st) do
-		if e.valid then update(e) else st[k] = nil end
-	end
+script.on_nth_tick(STEP_TICKS, function()
+	if not storage.fork_solar_boilers then return end
+	local st = state()
+	batch.visit(st, "boilers", CHECK_TICKS, STEP_TICKS, function(k, e)
+		if e.valid then update(e) else st.boilers[k] = nil end
+	end)
 end)
 
 return M

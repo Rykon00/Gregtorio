@@ -13,18 +13,18 @@
 ---
 --- Simplified, on purpose:
 ---   * DTPF: no coil heat, no runtime discount and no convergence. GT's five catalysts (made from up to
----     20 plasmas in the transcendent plasma mixer) are two fluids made in the forge itself: crude (GT's
----     four plasmas) and resplendent (crude + boron, sulfur, nitrogen, zinc and titanium plasma; GT's
----     radon, nickel and silver plasma do not exist here). Issue #355: GT's residue (DTR) and the prosaic catalyst in 164
----     section 20.
+---     20 plasmas in the transcendent plasma mixer) are fluids made in the forge itself: crude (GT's
+---     four plasmas) and resplendent (here crude + boron, sulfur, nitrogen, zinc and titanium plasma; issue #611: 164
+---     section 20 makes it GT's, the prosaic catalyst + nitrogen, zinc, silver and titanium plasma). Issue #355: GT's
+---     residue (DTR) and the prosaic catalyst in 164 section 20.
 ---   * DTPF metals: GT makes them from carrier melts (copper -> cosmic neutronium) and tesseracts, which
 ---     would skip the whole fusion chain. Here each DTPF recipe is the fusion recipe of the metal with
 ---     two thirds of the inputs per output and in a third of the reactor time (see DTPF_INPUT and
 ---     DTPF_TIME), plus catalyst; the resplendent tier makes twice the batch in the same time for less
 ---     catalyst per ingot. tools/balance_model.py compares the two routes.
 ---   * QFT: no catalyst items, no tiered casings and no focus plasmas to choose: one recipe per main
----     output (GT's neptunium focus: the focused output at (N+1)/2N, the others at 1/2N), nitrogen plasma
----     as the focus plasma (GT: neptunium plasma, from radon and nitrogen plasma).
+---     output (GT's neptunium focus: the focused output at (N+1)/2N, the others at 1/2N), with 100 neptunium plasma
+---     (issue #611; GT's, from radon and nitrogen plasma; before: nitrogen plasma as its stand-in).
 --- Phase 6b (MAX tier, godforge) hooks are marked "6b hook" and listed in the roadmap.
 --------------------------------------------------------------------------------
 
@@ -152,7 +152,8 @@ multiblock{
 }
 
 --- Catalysts (GT: transcendent plasma mixer, 1000 of each plasma -> 1000 catalyst in 5 s). Crude is GT's
---- recipe; resplendent is GT's without radon, nickel and silver plasma. Made in the forge itself.
+--- recipe; resplendent's ingredients are GT's since issue #611 (164 section 20 sets them once the prosaic catalyst
+--- exists). Made in the forge itself.
 F.fluid("excited-dimensionally-transcendent-crude-catalyst", "spackled-orange-fluid", { 0.85, 0.45, 0.20 })
 F.fluid("excited-dimensionally-transcendent-resplendent-catalyst", "spackled-light-blue-fluid", { 0.45, 0.80, 0.95 })
 
@@ -305,7 +306,18 @@ multiblock{
 --- enriched naquadah earth. GT's inert naquadah dusts (activated to melt in GT's neutron activator) are
 --- the mod's step before the metal: naquadahine dust and enriched naquadah sulphate.
 --- Each output has `amount` at 100 %; a recipe per main output gives it (N+1)/2N and the others 1/2N.
-local FOCUS_PLASMA = "nitrogen-plasma"
+--- Issue #611: the focus plasma is GT's neptunium plasma (before: nitrogen plasma as its stand-in), from radon and
+--- nitrogen plasma in the fusion reactor MK4 (gtPlusPlus/xmod/gregtech/loaders/recipe/RecipeLoaderChemicalSkips.java:
+--- 408-415: 100 + 100 -> 100 in 30 s at UHV, start 1G EU, so MK4), unlocked with the QFT, its only consumer
+local FOCUS_PLASMA = "neptunium-plasma"
+F.fluid(FOCUS_PLASMA, "dark-blue-spackled-fluid", { 0.18, 0.31, 0.48 })
+create_recipe{
+	name = FOCUS_PLASMA,
+	category = "mk4-fusion-reactor-recipes",
+	energy_required = 30 * UEV_SPEED,
+	ingredients = { fluid("radon-plasma", 100), fluid("nitrogen-plasma", 100) },
+	results = { fluid(FOCUS_PLASMA, 100) },
+}
 local QFT_RECIPES = {
 	{ input = { item("metallic-platinum-powder", 32) }, time = 20,
 		outputs = { { "platinum-dust", 64 }, { "palladium-dust", 64 }, { "iridium-dust", 64 }, { "osmium-dust", 64 },
@@ -403,5 +415,5 @@ F.tech{
 }
 F.tech{
 	name = QFT, prerequisites = { "umv-multiblocks" }, packs = 13, count = 1,
-	recipes = F.join({ QFT .. "-coil-casing", QFT .. "-controller", QFT }, qft_recipes),
+	recipes = F.join({ QFT .. "-coil-casing", QFT .. "-controller", QFT, FOCUS_PLASMA }, qft_recipes),
 }
