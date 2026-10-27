@@ -831,6 +831,28 @@ FORK_UNLOCK_TREE.apply(true)
 --- Fork: the recycling recipes get their technologies now that the vanilla ones are set and disabled
 --- (prototypes/157-fork-recycling.lua, issue #190)
 FORK_RECYCLING.unlock()
+--- Fork (issue #640): a vanilla technology behind a disabled one can never be researched (the armor and equipment
+--- technologies, explosives, the fusion reactor, the spidertron), so it is disabled too instead of standing in the tree
+--- for good; repeated until no such technology is left. Their effects go to the main menu simulations like the others
+do
+	local changed = true
+	while changed do
+		changed = false
+		for name, tech in pairs(data.raw.technology) do
+			if tech.enabled ~= false and not tech.hidden and not is_gregtorio_tech(tech) then
+				for _, pre in pairs(tech.prerequisites or {}) do
+					local p = data.raw.technology[pre]
+					if not p or p.hidden then
+						log("FORK-UNRESEARCHABLE: " .. name .. " (behind " .. pre .. ") disabled")
+						disable_tech(name)
+						changed = true
+						break
+					end
+				end
+			end
+		end
+	end
+end
 --- Fork: the steam macerator runs copies of the LV macerator recipes without their byproducts, as GT's bronze machines
 --- (prototypes/101-fork-machines.lua, issue #447); after every unlock above; the copies of the ore forms come in the steam
 --- age, with the smelting of what they make (issue #571)

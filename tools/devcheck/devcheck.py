@@ -29,8 +29,8 @@ zips into a folder and pass --mods-from DIR.
   * a sprite sheet is smaller than its width/height/frame_count need
   * an unlocked recipe cannot be crafted: no machine for its category, an ingredient that can
     never be obtained, or no reachable machine with enough fluid inputs/outputs
-  * an enabled technology cannot be researched and is not in UNRESEARCHABLE_OK (the vanilla
-    armor/equipment techs), or one of the issue #29 QoL techs is neither researchable nor hidden
+  * an enabled technology cannot be researched and is not in UNRESEARCHABLE_OK (empty since issue #640: the
+    vanilla techs behind a disabled one are disabled), or one of the issue #29 QoL techs is neither researchable nor hidden
   * a fluid that is not hidden (the parameter fluids excepted) is not in the Fluids tab: its subgroup is missing or
     not in the item group "fluids"; fluids in the fallback row gregtorio-fluids-unsorted are a warning
 It also reports how many technologies are researchable and where progression stops.
@@ -1692,13 +1692,9 @@ REMOVED_KEYS_OTHER_MODS = {
     "storage-tank/configurable-valve-guage-output": "configurable-valves 2.0.2, as above",
 }
 
-UNRESEARCHABLE_OK = [
-    "battery-equipment", "battery-mk2-equipment", "battery-mk3-equipment", "belt-immunity-equipment",
-    "energy-shield-equipment", "energy-shield-mk2-equipment", "exoskeleton-equipment", "explosives",
-    "fission-reactor-equipment", "fusion-reactor", "fusion-reactor-equipment", "mech-armor", "modular-armor",
-    "night-vision-equipment", "personal-roboport-equipment", "personal-roboport-mk2-equipment", "power-armor",
-    "power-armor-mk2", "spidertron",
-]
+# Issue #640: empty since data-final-fixes.lua disables every vanilla technology behind a disabled one (the 19 armor,
+# equipment, explosives, fusion reactor and spidertron technologies that stood in the tree for good before)
+UNRESEARCHABLE_OK = []
 # Issue #29: the quality-of-life techs whose vanilla gate is disabled; each must be researchable or hidden
 # (prototypes/103-fork-qol-techs.lua re-gates them onto Gregtorio techs)
 QOL_TECHS = (["bulk-inserter", "stack-inserter", "logistics-3", "turbo-transport-belt",
