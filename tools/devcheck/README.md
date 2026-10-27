@@ -52,6 +52,15 @@ title "stand-in of the texture mod"), made and removed with the other helper mod
 Exit code 0 means OK, 1 means problems (details in the output, the full Factorio log is in
 `.devcheck/last-run.log`).
 
+## CI
+
+Issue #641: `.github/workflows/devcheck.yml` runs `setup` and `all` on every pull request into `main`, every night on
+`main` and by hand (with a me-network ref of choice). It checks Gregtorio out next to me-network's `main`, so `all` finds
+me-network as `../me-network`, and downloads the latest stable headless Factorio. The dependency mods come from the mod
+portal with the repository secrets `FACTORIO_USERNAME` and `FACTORIO_TOKEN`; without them the job warns and passes. A
+failed run keeps `.devcheck/last-run.log` as the artifact `devcheck-last-run-log`. A failing devcheck blocks a merge
+once the check `devcheck` is required in the branch protection of `main`.
+
 ## Map seed and reproducing a failure
 
 `runtime` and `migrate` create their map with a fixed seed (`DEFAULT_SEED` in `devcheck.py`), so two

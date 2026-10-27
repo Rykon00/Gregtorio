@@ -1,0 +1,83 @@
+name: devcheck
+
+# Issue #641: the headless test harness tools/devcheck/devcheck.py (`all`: check, the cheap research load, runtime,
+# the classic ore mode, switch, the boiler output setting and the main menu scenes) on every pull request into main,
+# every night on main and by hand. It downloads the headless Factorio 2.1 from factorio.com and takes me-network from
+# its repository (the branch main, or the input `me_network_ref` of a run by hand), which devcheck finds as the sibling
+# checkout ../me-network. The dependency configurable-valves comes from the mod portal, which needs a Factorio account:
+# the repository secrets FACTORIO_USERNAME and FACTORIO_TOKEN (factorio.com -> profile). Without them the job only
+# warns and passes. To make a failing devcheck block a merge, mark the check "devcheck" as required in the branch
+# protection of main. The Factorio log of the last load (.devcheck/last-run.log) is kept as an artifact when it fails.
+
+on:
+  pull_request:
+    branches: [main]
+  schedule:
+    - cron: "17 3 * * *"
+  workflow_dispatch:
+    inputs:
+      me_network_ref:
+        description: "me-network branch, tag or commit"
+        default: main
+
+permissions:
+  contents: read
+
+concurrency:
+  group: devcheck-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  devcheck:
+    runs-on: ubuntu-latest
+    timeout-minutes: 150
+    env:
+      FACTORIO_USERNAME: ${{ secrets.FACTORIO_USERNAME }}
+      FACTORIO_TOKEN: ${{ secrets.FACTORIO_TOKEN }}
+      PYTHONUNBUFFERED: "1"
+    steps:
+      - name: Factorio account
+        id: account
+        run: |
+          if [ -z "$FACTORIO_USERNAME" ] || [ -z "$FACTORIO_TOKEN" ]; then
+            echo "::warning::devcheck skipped: the repository secrets FACTORIO_USERNAME and FACTORIO_TOKEN are not set (needed for the mod portal download of configurable-valves)."
+            echo "run=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "run=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - uses: actions/checkout@v4
+        if: steps.account.outputs.run == 'true'
+        with:
+          path: Gregtorio
+
+      - uses: actions/checkout@v4
+        if: steps.account.outputs.run == 'true'
+        with:
+          repository: Rykon00/me-network
+          ref: ${{ inputs.me_network_ref || 'main' }}
+          path: me-network
+
+      - uses: actions/setup-python@v5
+        if: steps.account.outputs.run == 'true'
+        with:
+          python-version: "3.12"
+
+      - name: Setup (headless Factorio, dependency mods)
+        if: steps.account.outputs.run == 'true'
+        working-directory: Gregtorio
+        run: |
+          pip install --quiet pillow
+          python tools/devcheck/devcheck.py setup
+
+      - name: devcheck all
+        if: steps.account.outputs.run == 'true'
+        working-directory: Gregtorio
+        run: python tools/devcheck/devcheck.py all
+
+      - uses: actions/upload-artifact@v4
+        if: failure() && steps.account.outputs.run == 'true'
+        with:
+          name: devcheck-last-run-log
+          path: Gregtorio/.devcheck/last-run.log
+          if-no-files-found: ignore
