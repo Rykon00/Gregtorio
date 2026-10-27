@@ -1,4 +1,8 @@
 ---------------------------------------------------------------------------------------------------
+Version: 0.5.10
+  Bugfixes:
+    - The start hint no longer says that resource generation on Nauvis can be switched off (issue #604): since the map veins Gregtorio's ores lie on Nauvis, and following the hint gave a map without ores. The vanilla resources are off on every map anyway. The texts of the start hints, the Manual Labor reward and the command /gregtorio-remove-vanilla-ores are translatable now.
+---------------------------------------------------------------------------------------------------
 Version: 0.5.9
 Date: 2026-10-25
   Features:
