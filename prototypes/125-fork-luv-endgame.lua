@@ -215,7 +215,7 @@ create_recipe{
 --- Issue #207: goodgenerator's naquadah nugget, 2 naquadah oxide mixtures (its naquadah earth) -> 1 nugget in the blast
 --- furnace with a gas (NaquadahRecipeLoader.java:512-520: IV, 5000 K, 2 min, 1000 L of any blast furnace gas, GT's time
 --- and gas factor per gas as 147's), 9 nuggets -> an ingot in the alloy smelter with the mold (GT ProcessingNugget.java).
---- Not taken over: GT's P-507 recipe (2-ethyl-1-hexanol needs seed oil, which Gregtorio lacks), the quantum force
+--- Not taken over: GT's P-507 recipe (issue #611: built in 164 section 42 since seed oil exists, #360), the quantum force
 --- transformer's inert naquadah recipes (139 keeps its own) and the goo and mass items (CropsNH); docs/ORE-CHAIN.md.
 do
 	local function patch(name, f)

@@ -814,6 +814,9 @@ Not switched, on purpose:
 - **UU matter is not built.** Its magic consumers are removed. The rest are the MK4 fusion parts, where it is one of four fluids
   (with cinobite, octiron and astral titanium, none of them in the mod; tritanium and cosmic neutronium melt stand in for all four)
   and the UEV to UXV hatches (which leave it out). It needs GT's mass fabricator, a machine the fork does not have. Open point.
+  (Since #355 step 4 the LuV mass fabricator makes UU matter; issue #611 puts it into the MK4 controller and casing, a
+  tenth of GT's 50000 and 1000 L; cinobite and octiron (#629) and astral titanium, which comes only at UXV, keep their
+  stand-ins.)
   Issue #355 step 4 built it (164 section 30): the LuV Mass Fabricator makes it for the Beam Crafter and the beamline.
   The MK4 fusion parts and the hatches keep leaving it out.
 
@@ -1794,7 +1797,7 @@ oganesson and californium, the Avaritia singularities of the bridge).
 | Catalyst | Inputs (100 each) | GT |
 |---|---|---|
 | excited dimensionally transcendent crude catalyst | helium, iron, calcium, niobium plasma | the same four plasmas (transcendent plasma mixer) |
-| excited dimensionally transcendent resplendent catalyst | crude catalyst, boron, sulfur, nitrogen, zinc, titanium plasma | GT's resplendent catalyst also takes radon, nickel and silver plasma, which the mod does not have |
+| excited dimensionally transcendent resplendent catalyst | crude catalyst, boron, sulfur, nitrogen, zinc, titanium plasma | GT's resplendent catalyst also takes radon, nickel and silver plasma (issue #611: since #375 the mod has them; the resplendent catalyst is GT's now, the prosaic catalyst + nitrogen, zinc, silver and titanium plasma, 164 section 20) |
 
 Each metal recipe is the fusion recipe of the metal (the MK3 to MK5 recipe, which stays the entry route) with two thirds of its
 inputs per ingot, in a third of the reactor time (the DTPF and the reactors draw the same 0.64 MW per crafting speed), plus
@@ -1813,7 +1816,7 @@ The catalyst per craft is 1.5 crude (0.5 resplendent) per second that a MK5 woul
 the energy of the normal route).
 
 **QFT recipes** (29, 20 s; the naquadah ones 10 s). GT's recipes whose inputs and outputs the mod has, one recipe per main output,
-each with 100 nitrogen plasma as the focus plasma; every output has its GT amount at 100 %, the focused one gets (N+1)/2N, the
+each with 100 nitrogen plasma as the focus plasma (issue #611: GT's neptunium plasma, from radon and nitrogen plasma in the MK4); every output has its GT amount at 100 %, the focused one gets (N+1)/2N, the
 others 1/2N (GT's neptunium focus with N outputs: 58 % and 8 % with six outputs):
 
 | Input (GT name) | Outputs (64 each) | Recipes |
@@ -1856,7 +1859,7 @@ platinum numbers are GT's: the QFT is a chain skip of that size there too.
   tesseracts, hypogen or infinity catalyst). Here the DTPF takes the inputs of the fusion recipe: same chain, less of it, faster.
 - **QFT focus.** GT chooses the focused output with a circuit and boosts all outputs with fermium plasma; parallels come from the
   number of catalyst items in a catalyst housing, the recipe and focus tiers from tiered casings. Here: one recipe per main output with
-  GT's neptunium chances at the recipe's own tier, nitrogen plasma (GT's neptunium plasma is made from radon and nitrogen plasma), no
+  GT's neptunium chances at the recipe's own tier, neptunium plasma (issue #611; before: nitrogen plasma as its stand-in), no
   catalysts, no tiered casings, no fermium.
 - **QFT naquadah.** GT gives one inert naquadah dust per 32 naquadah earth (activated to 0.67 naquadah ingots in GT's neutron
   activator); the mod's line ends in naquadahine dust (3 make 30 hot naquadah ingots), so the QFT gives 16 naquadahine dust per craft
@@ -2394,7 +2397,7 @@ file lacks):
 | Nd + H, Nd + Pm -> europium; Lu + Cr, Lu + Pm -> americium; Am + naquadria -> neutronium; glowstone + He -> sunnarium; Ga + Rn -> duranium; Ti + duranium -> tritanium | yes (promethium routes: Gregtorio has no promethium, the other route of each) |
 | Li + W -> iridium, Be + W -> platinum, Pu + Th -> naquadah, W + He -> osmium, Mn + H -> iron, Hg + Mg and Au + Al -> uranium, U + He -> plutonium, V + H -> chrome, Ta + T -> tungsten, Ag + Li -> indium | yes since #375 part A (136 section 1c; the maintainer's decision: as GTNH has them), see "Accepted shortcuts" below |
 | K + F -> nickel, Au + As -> silver, Ta + Zn plasma -> bismuth, Ir + F -> radon, Pu-241 + H -> americium, Lu + V -> Pu-241, Os + Si -> thorium plasma | yes since #375 part B (136 section 1d, balanced like #32); americium since #386 step 2 |
-| Co + neon -> rubidium (500M); Te + Zn -> lead plasma (6G) | no: rubidium and tellurium have no consumer in Gregtorio (the issue's two elements), lead plasma none either |
+| Co + neon -> rubidium (500M); Te + Zn -> lead plasma (6G) | no: rubidium and tellurium have no consumer in Gregtorio (the issue's two elements), lead plasma none either. Since then mellion takes rubidium and lead plasma tellurium (#397); issue #611 builds the rubidium fusion (164 section 42) |
 | redstone plasma + ichorium -> unformed hexanite (6G) | no: Thaumcraft's ichorium (#39 removed it) |
 
 Accepted shortcuts (#375, the maintainer's decision): the transmutations are real and cheap late routes in GTNH and
