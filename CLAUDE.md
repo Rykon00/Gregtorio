@@ -75,7 +75,11 @@
     turbine; needs 140's magmatter and adds its turbine to 136's mod data; issue #249: the MAX recipes of the plasma
     forge and the QFT with substitutes); 140 and 141 load after 139 and **before** 138
   - 138 research balance (issue #30: explicit unit counts of the technologies from UV to `victory`; loads after every
-    file that defines technologies; balance passes use `tools/balance_model.py` on `devcheck.py check --balance-out`)
+    file that defines technologies up to 141; issue #605: the table also names the UV+ technologies of 145 to 166, and
+    `FORK_RESEARCH_BALANCE.apply()` runs once more at the end of data-final-fixes.lua; devcheck fails for a researchable
+    technology of 9 or more packs whose count lies outside the band of its pack count (from 50, or the table's lowest at
+    that pack count, to the table's highest) unless it is in `FORK_RESEARCH_OUTLIERS`: a new UV+ technology gets its
+    scaled count in the table; balance passes use `tools/balance_model.py` on `devcheck.py check --balance-out`)
   - 147 GT routes (issue #98: the PECA board deleted, sodium persulfate, black plutonium and cosmic neutronium through
     the blast furnace and vacuum freezer, the high octane line, GT's deuterium and PPIC wafer; loads after 138 and
     **before** 142, whose block `UNLOCKS_98` unlocks its recipes, and 143, which casts the black plutonium ingot)
