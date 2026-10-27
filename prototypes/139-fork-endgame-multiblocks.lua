@@ -286,7 +286,8 @@ create_item{
 	},
 }
 
---- 9x9: four fluid inputs north, two outputs south
+--- 9x9: four fluid inputs north, two outputs south; issue #609: two more inputs west and four more outputs (south and
+--- east) for GT's plastic and rubber recipes (four fluids and the focus plasma in, up to six fluids out)
 multiblock{
 	name = QFT, size = { 9, 9 }, categories = { QFT_CAT }, speed = UMV_SPEED, energy = "1310.72MW",
 	ports = {
@@ -294,8 +295,14 @@ multiblock{
 		fluid_port(-1, -4, "input", defines.direction.north),
 		fluid_port( 1, -4, "input", defines.direction.north),
 		fluid_port( 3, -4, "input", defines.direction.north),
+		fluid_port(-4, -1, "input", defines.direction.west),
+		fluid_port(-4,  1, "input", defines.direction.west),
 		fluid_port(-1,  4, "output", defines.direction.south),
 		fluid_port( 1,  4, "output", defines.direction.south),
+		fluid_port(-3,  4, "output", defines.direction.south),
+		fluid_port( 3,  4, "output", defines.direction.south),
+		fluid_port( 4, -1, "output", defines.direction.east),
+		fluid_port( 4,  1, "output", defines.direction.east),
 	},
 }
 
@@ -356,13 +363,17 @@ local QFT_RECIPES = {
 		outputs = { { "cerium-dust", 64 }, { "gadolinium-dust", 64 }, { "samarium-dust", 64 }, { "zirconium-dust", 64 } } },
 }
 local qft_recipes = {}
-for _, def in pairs(QFT_RECIPES) do
+--- issue #609: the recipes of a QFT definition (one per output); an output may be a fluid (GT's plastics and rubbers),
+--- which is then a focus choice too. FORK_QFT.add lets later files add GT's recipes whose materials they make (164).
+local function qft_add(def)
+	local names = {}
 	local n = #def.outputs + (def.extra and #def.extra or 0)
 	for _, focus in pairs(def.outputs) do
 		local results = {}
 		for _, o in pairs(def.outputs) do
 			local p = o[1] == focus[1] and (n + 1) / (2 * n) or 1 / (2 * n)
-			results[#results + 1] = { type = "item", name = o[1], amount = o[2], independent_probability = p }
+			results[#results + 1] = { type = data.raw.fluid[o[1]] and "fluid" or "item", name = o[1], amount = o[2],
+				independent_probability = p }
 		end
 		for _, e in pairs(def.extra or {}) do
 			results[#results + 1] = { type = "fluid", name = e.name, amount = e.amount, independent_probability = 1 / (2 * n) }
@@ -379,9 +390,14 @@ for _, def in pairs(QFT_RECIPES) do
 			results = results,
 			main_product = focus[1],
 		}
-		qft_recipes[#qft_recipes + 1] = name
+		names[#names + 1] = name
 	end
+	return names
 end
+for _, def in pairs(QFT_RECIPES) do
+	for _, name in pairs(qft_add(def)) do qft_recipes[#qft_recipes + 1] = name end
+end
+FORK_QFT = { add = qft_add, technology = QFT }
 
 
 
