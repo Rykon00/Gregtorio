@@ -75,7 +75,11 @@
     turbine; needs 140's magmatter and adds its turbine to 136's mod data; issue #249: the MAX recipes of the plasma
     forge and the QFT with substitutes); 140 and 141 load after 139 and **before** 138
   - 138 research balance (issue #30: explicit unit counts of the technologies from UV to `victory`; loads after every
-    file that defines technologies; balance passes use `tools/balance_model.py` on `devcheck.py check --balance-out`)
+    file that defines technologies up to 141; issue #605: the table also names the UV+ technologies of 145 to 166, and
+    `FORK_RESEARCH_BALANCE.apply()` runs once more at the end of data-final-fixes.lua; devcheck fails for a researchable
+    technology of 9 or more packs whose count lies outside the band of its pack count (from 50, or the table's lowest at
+    that pack count, to the table's highest) unless it is in `FORK_RESEARCH_OUTLIERS`: a new UV+ technology gets its
+    scaled count in the table; balance passes use `tools/balance_model.py` on `devcheck.py check --balance-out`)
   - 147 GT routes (issue #98: the PECA board deleted, sodium persulfate, black plutonium and cosmic neutronium through
     the blast furnace and vacuum freezer, the high octane line, GT's deuterium and PPIC wafer; loads after 138 and
     **before** 142, whose block `UNLOCKS_98` unlocks its recipes, and 143, which casts the black plutonium ingot)
@@ -371,7 +375,7 @@
   me-network calls in its `on_init`; keep its table list and fingerprint function equal to me-network's
   `scripts/fork-me-handover.lua`). Everything else of the ME network (runtime, graphics, locale, its tests,
   `docs/AE2.md`, `docs/ME-REWORK.md`) is in the me-network repository; an ME change goes there, Gregtorio only changes
-  the compat file when a recipe or a tier changes. Tick intervals in use: `on_nth_tick` 30 (molds), 60 (#499: the Ore Drilling Plants' Drilling Fluid, `fork-ore-drills.lua`, `storage.fork_ore_drills`), 120 (solar boilers); `on_tick`
+  the compat file when a recipe or a tier changes. Tick intervals in use: `on_nth_tick` 5 (molds), 12 (#499: the Ore Drilling Plants' Drilling Fluid, `fork-ore-drills.lua`, `storage.fork_ore_drills`), 24 (solar boilers), 20 (#504: the Ender Tanks); issue #642: the molds, the plants and the solar boilers are checked in shares through `scripts/fork-batch.lua` (each entity once per 30, 60 and 120 ticks, a cursor beside its table in storage), so a megabase pays about the same every few ticks instead of one spike per period (3000 mold machines: 11 ms spikes -> 4 ms, 15 % more script time on average); a new periodic check over many entities does the same, and reads mod data once (its `data` builds the table on every read); `on_tick`
   (fork-power: turbine energy every tick, fuel check, output hatches and the supercapacitor loss every 10th tick);
   registrations for the same interval (or a second `on_tick`) overwrite each other, so a new periodic task picks a free
   interval. The scripts keep their state lazy (`storage.fork_molds`, `storage.fork_power`).

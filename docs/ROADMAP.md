@@ -25,16 +25,50 @@ UEV = cryogenic, UIV = promethium, then UMV / UXV / max (the stargate; since pha
 | 5a | UEV and UIV: bio and optical lines, cosmic neutronium / draconium / infinity / transcendent metal, UEV and UIV components, fusion MK4, science packs, energy hatches and machines | **done** (`prototypes/131-fork-uev.lua`, `132-fork-uiv.lua`) |
 | 5b | UMV, UXV, MAX and the endgame (stargate, victory), fusion MK5 | **done** (`prototypes/133-fork-umv.lua`, `134-fork-uxv.lua`, `135-fork-endgame.lua`, `scripts/fork-victory.lua`) |
 | side | Water purification line: grades 1-8, the NPIC to APIC chips and complex SMDs (Gregtorio's stand-in for GT's optical SMDs, #259) | **done** (`prototypes/129-fork-water-purification.lua`, see "Side quest: water purification grades 7 and 8") |
-| side | AE2 autocrafting (patterns, molecular assembler on top of the ME network from `120-fork-ae2.lua`) and fluids in the ME network (fluid drives, fluid interface, fluid recipes as patterns) | **done** (`prototypes/121-fork-ae2-autocrafting.lua`, `122-fork-ae2-fluids.lua`, `scripts/fork-me-autocraft.lua`, `scripts/fork-me-fluids.lua`, `docs/AE2.md`) |
-| side | AE2 extras (issue #38): level maintainer, crafting CPU tiers, circuit interface, fluid interface settings in blueprints | **done** (`prototypes/121-fork-ae2-autocrafting.lua`, `scripts/fork-me-circuit.lua`, see "AE2 extras" below) |
+| side | AE2 autocrafting (patterns, molecular assembler on top of the ME network from `120-fork-ae2.lua`) and fluids in the ME network (fluid drives, fluid interface, fluid recipes as patterns) | **done** (then `prototypes/121-fork-ae2-autocrafting.lua`, `122-fork-ae2-fluids.lua`, `scripts/fork-me-autocraft.lua`, `scripts/fork-me-fluids.lua`, `docs/AE2.md`; since issue #83 all of it is in the mod me-network, Gregtorio keeps `prototypes/120-fork-me-network-compat.lua`) |
+| side | AE2 extras (issue #38): level maintainer, crafting CPU tiers, circuit interface, fluid interface settings in blueprints | **done** (`prototypes/121-fork-ae2-autocrafting.lua`, `scripts/fork-me-circuit.lua`, see "AE2 extras" below; since issue #83 in me-network) |
 | side | Endgame power: plasma turbines (LuV to UXV, the UHV to UXV ones from issue #34), naquadah fuel line and large naquadah reactors, dynamo hatches LuV to UXV | **done** (`prototypes/136-fork-power.lua`, `scripts/fork-power.lua`, see "Side quest: endgame power") |
 | side | Drafts and endgame materials: triage of every draft, super coolant, fluxed electrum, bedrockium, quantium (issues #39, #36) | **done** (`prototypes/137-fork-endgame-materials.lua`, see "Drafts and endgame materials") |
 | side | Graphics: item and technology icons from GT textures instead of placeholders, own sprites for fusion MK4/MK5, a tier look for the UHV to UXV machines, plasma turbines and naquadah reactors (issues #40, #41) | **done** (`tools/gen_gt_icons.py`, `tools/gen_sprites.py`, review sheets and inventory in `docs/graphics-review/`) |
 | 6a | Quantum force transformer and dimensionally transcendent plasma forge (issue #37, part 1) | **done** (`prototypes/139-fork-endgame-multiblocks.lua`, see "Phase 6a: QFT and DTPF") |
 | 6b | MAX tier and the godforge (issue #37, part 2) | **done** (`prototypes/140-fork-godforge.lua`, `141-fork-max.lua`, see "Phase 6b: MAX tier and godforge") |
-| side | Balance of the tiers from UHV up in the real game, and a look at the new graphics there | open (in-game checks #247 balance, #248 graphics; question #249) |
+| side | Balance of the tiers from UHV up in the real game, and a look at the new graphics there | open (in-game check #606, the successor of #247 and #248; question #249 decided in PR #280) |
 | side | Ore processing as GT New Horizons has it (issue #176): purified, centrifuged, impure and pure forms, thermal centrifuge, chemical bath washing, electromagnetic separator, gem sifting | **done** (`prototypes/155-fork-ore-chain.lua`, `docs/ORE-CHAIN.md`, phases O1 to O4: #185 to #188) |
-| side | Early game (Stone, Steam, LV, MV) as GT New Horizons has it: the gaps of the early game analysis of 2026-10-18 | open (see "Early game: Stone age to MV" below) |
+| side | Early game (Stone, Steam, LV, MV) as GT New Horizons has it: the gaps of the early game analysis of 2026-10-18 | **done** (every gap of "Early game: Stone age to MV" below; the stone and steam age depth of the 2026-10-27 analysis is #612 and #613) |
+
+## Design rules
+
+How Gregtorio turns GT New Horizons into Factorio, where the code only implies it (issue #607):
+
+- **A multiblock is one entity.** GT's structure blocks (casings, coils, glass, pipes) and its hatches and buses become
+  ingredients of the controller's item; an input/output bus, a maintenance hatch or a muffler hatch is a hull of its tier
+  in the recipe. The entity has the footprint of GT's structure where it fits a factory, and fluid ports instead of
+  hatches.
+- **No voltages, no transformers, no cable loss** (the maintainer's decision on #619, 2026-10-27). Every machine runs on
+  Factorio's electric network; a tier is a science tier and a machine's speed and power, not a voltage. Cables and wires
+  are ingredients only, and so are GT's fluid pipes (Factorio's pipes carry the fluids).
+- **Perfect overclocking** for every machine: each tier doubles speed and power (`05-definitions-module.lua`); GT's
+  4x-power rule is #616 (a setting, default off).
+- **A science tier is GTNH's tier of the recipe's parts** where a GTNH controller's recipe voltage is one tier above them
+  (GT's assembly line takes recipes up to four times its hatch voltage): the maintainer's decision on #624 (2026-10-27)
+  moves the space elevator, the DTPF and the godforge to GTNH's tiers.
+- **Every item and fluid is unlocked where it is first consumed** (#252), and a machine with its first recipe (#556).
+- **Stand-ins are named** where a GTNH part is missing, in the code comment and here, with the issue that removes them.
+
+### Decisions of 2026-10-27 (the GTNH gap analysis, issues #602 to #642)
+
+| Issue | Decision |
+|---|---|
+| #613 | build all three: the coke oven hatch, water shortage in the steam age, a Tinkers-like smeltery path |
+| #615 | every Reach technology from the Moon on is a craft trigger of its tier's rocket after GTNH |
+| #618 | maintenance for multiblocks as a startup setting, default off |
+| #619 | no voltage tiers, transformers or cable loss (rule above) |
+| #620 | the blast furnace's heat in Kelvin with coil modules, as GT has it (heat check and overclock bonus) |
+| #621 | radioactivity and the hazmat suit as a startup setting, default off |
+| #622 | wireless energy between surfaces at UHV, as GTNH's wireless EU |
+| #624 | the space elevator at UV, the DTPF at UEV, the godforge at UIV |
+| #626 | YAFC mode is removed (YAFC sees the map veins and the classic vein recipes) |
+| #638 | GT's single-block naquadah reactors Mk I-V and plasma generators come back on GTNH's tiers (#644) |
 
 ## Early game: Stone age to MV
 
@@ -50,7 +84,7 @@ worked off one pull request each; this list is their status.
 | LV | the LV Miner waited for the Military Science Pack technology (its LV sensor) | #443 | fixed (the sensor comes with the Circuit Assembler) |
 | LV | the LV Combustion Generator, LV Extruder and LV Laser Engraver | #449 | done (the LV categories hold GT's LV recipes; the LV extruder has one, the aluminium rod) |
 | LV, MV | energy storage before IV: battery buffers and the LV to HV batteries | #444 | done (fixed-size buffers LV to HV with the batteries in the recipe; LV and MV with Battery, HV with Large Batteries) |
-| LV to HV | circuit recipe names of GTNH (Integrated Logic Circuit, Microprocessor, Integrated Processor, Processor Assembly, Workstation, Mainframe) | #445 | open |
+| LV to HV | circuit recipe names of GTNH (Integrated Logic Circuit, Microprocessor, Integrated Processor, Processor Assembly, Workstation, Mainframe) | #445 | done (PR #464) |
 | ULV, HV | the ULV circuit tier; the nanoprocessor's parts at HV | #450 | done (`ulv-circuit` from the vacuum tube and NAND chip recipes; the nanoprocessor in the HV circuit assembler, its parts at HV, the wafer EV; the MV EBF and vacuum freezer keep their names) |
 | all | GTNH's veins as mixed ore patches on the map instead of the vein recipes | #451 | done (plan #494, #495-#505: the map veins of Nauvis, the Nether, the Twilight Forest and The End, mining drills, portals, Ender Storage; `docs/ORE-VEINS.md`) |
 
@@ -1187,7 +1221,8 @@ and its hatch holds the cooled fluid for the plasma burnt (helium, nitrogen, mol
   draconium, hypogen, atomic separation catalyst are not in the mod). The chain skips naquadah asphalt, the cracking of the
   fuels (removed for good in issue #39 with the atomic separation catalyst), antimony trioxide, tiberium, high density uranium
   and ~~plutonium~~ (high density plutonium is built since issue #39) and the naquadah fuel refinery.
-* GT's single-block naquadah reactors (naquadah rods) and single-block plasma generators are not built.
+* GT's single-block naquadah reactors (naquadah rods) and single-block plasma generators are not built (the maintainer's
+  decision on #638, 2026-10-27: they come back on GTNH's tiers, #644).
 
 ### Existing saves
 
@@ -2478,8 +2513,8 @@ the raw pico wafer) are not in the mod.
 Not built: GT's ZPIC and YPIC. The ZPIC wafer is a beamcrafter recipe of the core mod (APIC wafer, spacetime dust,
 molten creon and mellion, 20 gravitons each beam), the YPIC wafer a MAX fluid solidifier recipe (the Bose-Einstein
 condensate wafer, GT's Wafer8, with 1500 L quark gluon plasma); the mod has no beamcrafter, creon, mellion, gravitons or
-Wafer6 to Wafer8. The UMV and UXV energy and dynamo hatches keep 133's and 134's doubled APICs. Issue #355 stays open for
-them. (2026-10-18: the ZPIC is built, see "The Large Hadron Collider and the gravitational lens" below; 2026-10-20:
+Wafer6 to Wafer8. The UMV and UXV energy and dynamo hatches kept 133's and 134's doubled APICs, and issue #355 stayed open for
+them until both chips were built. (2026-10-18: the ZPIC is built, see "The Large Hadron Collider and the gravitational lens" below; 2026-10-20:
 YPIC is built, see "YPIC (issue #355, step 5)".)
 
 Part 2, the godforge route (the maintainer's decision on #355: celestial tungsten from the godforge, the quantum anomaly

@@ -267,6 +267,10 @@ function M.on_built(entity)
 	if not (entity and entity.valid) then return end
 	if lftr_power[entity.name] then register_lftr(state(), entity) end
 	if turbine_names[entity.name] then register_turbine(state(), entity) end
+	if entity.name == hatch_name then   -- (issue #642: the turbines search their hatches again)
+		local st = state()
+		st.hatch_gen = (st.hatch_gen or 0) + 1
+	end
 	if fuels_of[entity.name] then register_generator(state(), entity) end
 	if loss_of[entity.name] then
 		local st = state()
@@ -370,12 +374,25 @@ end
 --------------------------------------------------------------------------------
 
 --- Output hatches touching the turbine's footprint
-local function hatches_of(entity)
+local function find_hatches(entity)
 	local box = entity.selection_box
 	return entity.surface.find_entities_filtered{
 		name = hatch_name,
 		area = { { box.left_top.x - 0.5, box.left_top.y - 0.5 }, { box.right_bottom.x + 0.5, box.right_bottom.y + 0.5 } },
 	}
+end
+--- issue #642: the hatches of turbine record t, searched again only when a hatch was built anywhere since
+--- (st.hatch_gen, raised by on_built) or one of them is gone
+local function hatches_of(st, t)
+	local list = t.hatches
+	if list and t.hatch_gen == (st.hatch_gen or 0) then
+		for _, h in pairs(list) do
+			if not h.valid then list = nil break end
+		end
+		if list then return list end
+	end
+	t.hatches, t.hatch_gen = find_hatches(t.entity), st.hatch_gen or 0
+	return t.hatches
 end
 
 --- Owe the cooled fluid for `energy` J burnt on `fluid`, at most `max` units of plasma; returns the
@@ -415,7 +432,7 @@ local function step(st)
 			t.amount = amount
 			t.on = t.fluid ~= nil and not e.disabled_by_script
 			if next(t.owed) then
-				local hatches = hatches_of(e)
+				local hatches = hatches_of(st, t)
 				if #hatches == 0 then
 					t.owed = {}                      -- no hatch: lost, as in GT
 				else
