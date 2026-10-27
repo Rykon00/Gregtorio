@@ -206,6 +206,31 @@ for name, count in pairs(FORK_RESEARCH_BALANCE and FORK_RESEARCH_BALANCE.counts 
 for name, reason in pairs(FORK_RESEARCH_OUTLIERS or {}) do ro[#ro + 1] = name .. "\t" .. reason end
 section("RESEARCHCOUNTS", rc)
 section("RESEARCHOK", ro)
+--- Issue #639: the icon files of Gregtorio's own graphics on technologies, items, fluids and recipes (class, name, files),
+--- for devcheck's rule against the NYI placeholder; and the ones that keep it on purpose (FORK_NYI_ICONS of
+--- prototypes/199-fork-finalize.lua, absent in older versions)
+local ic, nk = {}, {}
+local function icon_files(p)
+	local files = {}
+	if p.icon then files[#files + 1] = p.icon end
+	for _, layer in pairs(p.icons or {}) do files[#files + 1] = layer.icon end
+	local own = {}
+	for _, f in pairs(files) do if f:find("__gregtorio-continued__/", 1, true) == 1 then own[#own + 1] = f end end
+	return own
+end
+local function icon_rows(class, list)
+	for name, p in pairs(list or {}) do
+		local own = icon_files(p)
+		if #own > 0 then ic[#ic + 1] = class .. "\t" .. name .. "\t" .. table.concat(own, ",") end
+	end
+end
+icon_rows("technology", data.raw.technology)
+icon_rows("fluid", data.raw.fluid)
+icon_rows("recipe", data.raw.recipe)
+for t, _ in pairs(defines.prototypes.item) do icon_rows("item", data.raw[t]) end
+for name, reason in pairs(FORK_NYI_ICONS or {}) do nk[#nk + 1] = name .. "\t" .. reason end
+section("ICONS", ic)
+section("NYIOK", nk)
 
 --- Issue #318: the vanilla recipes without a technology, of items Gregtorio makes, that stay on purpose
 --- (FORK_VANILLA_RECIPES_KEPT in data-final-fixes.lua; absent in older versions)

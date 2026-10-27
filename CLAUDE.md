@@ -477,7 +477,8 @@
   missing item icons from `tools/gen_icons.py` (a placeholder; the real icon from GT textures with
   `tools/gen_gt_icons.py` after adding the item to `tools/gt-icon-items.txt`; `tools/gen_icons.py --drawn` writes the graphics
   drawn as code where GT has no texture, issue #431: the cauldron), technology icons from
-  `tools/gen_tech_icons.py` (`tools/tech-icons.tsv`), missing names from `tools/gen_locale.py`.
+  `tools/gen_tech_icons.py` (`tools/tech-icons.tsv`; issue #639: devcheck fails for a shown prototype with the NYI
+  placeholder icon unless it is in `FORK_NYI_ICONS` of 199), missing names from `tools/gen_locale.py`.
   Check graphics changes with the contact sheets of `tools/gen_review_sheet.py`.
 - **Machine names are GTNH's** (issue #156): a new machine, multiblock or controller takes the name GT New Horizons
   gives it, from the `en_US.lang` files of GT5-Unofficial (`src/main/resources/assets/*/lang/en_US.lang`, or the name
