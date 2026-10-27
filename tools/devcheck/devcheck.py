@@ -412,7 +412,8 @@ class Model:
                 self.uses[p[1]] = [x for x in p[4].split(",") if x] if len(p) > 4 else []
             elif k == "T":
                 self.T[p[1]] = dict(pre=[x for x in p[2].split(",") if x], eff=[x for x in p[3].split(",") if x],
-                                    sci=[x for x in p[4].split(",") if x], trig=p[5], en=p[6] == "true")
+                                    sci=[x for x in p[4].split(",") if x], trig=p[5], en=p[6] == "true",
+                                    count=float(p[7]) if len(p) > 7 and p[7] else None)   # (issue #605)
             elif k == "M" and p[4] != "gregtorio-disabled":
                 mined[p[1]] = ([p[2]] if p[2] else []) + [x.split(":", 1)[1] for x in p[3].split(",") if x]
                 if p[4] == "gt-ore":
@@ -743,6 +744,40 @@ def check_trigger_items(m, sec):
                  for i in sorted(allow) if i not in dead]
     return f"{len(triggers)} items of craft-item triggers, {len(dead)} without another use, {len(allow)} of them on " \
            f"purpose (FORK_TRIGGER_ONLY_ITEMS)", problems
+
+
+RESEARCH_BAND_LOW = 50    # the count of the reach, void miner and space elevator technologies (issue #605)
+
+
+def check_research_counts(m, sec):
+    """Issue #605: prototypes/138-fork-research-balance.lua scales the counts from UV science up (9 packs and more). A
+    researchable technology of 9 or more packs with a count outside the band of its pack count fails: from
+    RESEARCH_BAND_LOW (or the lowest count of 138's table at that pack count, if lower) to the highest count that 138's
+    table (section RESEARCHCOUNTS) gives a technology of that pack count; unless it is in the allow-list FORK_RESEARCH_OUTLIERS of 138 with its reason (section RESEARCHOK). Infinite
+    technologies (a count formula, no count) are left out. An entry that is no such technology fails too. Returns (info
+    line, problems)."""
+    allow = {r[0]: (r[1] if len(r) > 1 else "") for r in sec.get("RESEARCHOK", [])}
+    target = {r[0]: float(r[1]) for r in sec.get("RESEARCHCOUNTS", []) if len(r) > 1}
+    low, high, rows = {}, {}, []
+    for t in sorted(m.researched):
+        v = m.T.get(t)
+        if not v or v.get("count") is None or len(v["sci"]) < 9:
+            continue
+        n = len(v["sci"])
+        rows.append((t, n, v["count"]))
+        if t in target:   # the band comes from the table's counts, not from what the load made of them
+            high[n] = max(high.get(n, 0), target[t])
+            low[n] = min(low.get(n, RESEARCH_BAND_LOW), target[t])
+    outside = {t: (n, c) for t, n, c in rows if n in high and not low[n] <= c <= high[n]}
+    problems = [f"{t}: {c:g} units of {n} packs, outside the band {low[n]:g}-{high[n]:g} of its pack count (scale it in "
+                "prototypes/138-fork-research-balance.lua, or add it to FORK_RESEARCH_OUTLIERS with its reason)"
+                for t, (n, c) in sorted(outside.items()) if t not in allow]
+    problems += [f"FORK_RESEARCH_OUTLIERS: {t} has no reason" for t, why in sorted(allow.items()) if not why]
+    problems += [f"FORK_RESEARCH_OUTLIERS: {t} is not a technology outside its band (remove the entry)"
+                 for t in sorted(allow) if t not in outside]
+    bands = ", ".join(f"{n} packs {low[n]:g}-{h:g}" for n, h in sorted(high.items()))
+    return f"{len(rows)} researchable technologies of 9 or more packs, bands {bands}; {len(allow)} outside on purpose " \
+           "(FORK_RESEARCH_OUTLIERS)", problems
 
 
 VANILLA_MODS = {"base", "space-age", "quality", "elevated-rails"}
@@ -2440,6 +2475,10 @@ def check(a):
     trigger_info, trigger_only = check_trigger_items(m, sec)
     print(f"\nitems of craft triggers (issue #547): {trigger_info}")
     report("items whose only use is a technology's craft trigger (prototypes/100-fork-fixes.lua)", trigger_only)
+    research_info, research_counts = check_research_counts(m, sec)
+    print(f"\nresearch counts from UV up (issue #605): {research_info}")
+    report("technologies whose count lies outside the band of their pack count (prototypes/138-fork-research-balance.lua)",
+           research_counts)
     lens_info, lenses = check_engraver_lenses(m, sec)
     print(f"\nlaser engraver lenses (issue #325): {lens_info}")
     report("laser engraver recipes without a lens (prototypes/155-fork-ore-chain.lua)", lenses)
@@ -2545,7 +2584,8 @@ def check(a):
               or new_drafts or fluid_problems or locked or one_pack or fluid_steps or table_only or me_recipes or me_tab
               or extractor_split or ore_mixes or ore_chain or ore_baths or ore_o34 or ore_hammer
               or circuit_icons or pgm_dusts or recycling or names or gaps or tree or vanilla or lenses or mine_twins
-              or unplaceable or stale_unlocks or removed_keys or trigger_only or classic_veins or early or furnace
+              or unplaceable or stale_unlocks or removed_keys or trigger_only or research_counts or classic_veins or early
+              or furnace
               or steam or nugget or steam_rates or boiler_output or vein_doc or renames)
     print("\nRESULT:", "OK" if ok else "PROBLEMS FOUND")
     return 0 if ok else 1

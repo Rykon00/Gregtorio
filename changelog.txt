@@ -1,4 +1,8 @@
 ---------------------------------------------------------------------------------------------------
+Version: 0.5.10
+  Balancing:
+    - Eight technologies from UV science up cost what their tier's other technologies cost (issue #605): they came after the research balance of 0.4 and kept their old unit counts, 5 to 15 times dearer than their neighbours. Kevlar and Prismatic Naquadah 325 units (before 1500), Thorium Based Liquid Fuel and Precise Electronic Unit Mk-III 180 (2500), Naquadah Fuel Refinery and Beamline 110 (1500), Radox Polymer 110 (1500), Six-Phased Copper 50 (60).
+---------------------------------------------------------------------------------------------------
 Version: 0.5.9
 Date: 2026-10-25
   Features:

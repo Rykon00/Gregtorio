@@ -812,6 +812,9 @@ disable_tech("tesla-weapons")
 --- Fork: the technologies whose units were set above are divided like the others (prototypes/149-fork-early-research.lua,
 --- issue #146)
 FORK_EARLY_RESEARCH.rescale()
+--- Fork: the research counts from UV up once more, for the technologies of the files after 138
+--- (prototypes/138-fork-research-balance.lua, issue #605)
+FORK_RESEARCH_BALANCE.apply(true)
 --- Fork: the prerequisites of issue #252 (prototypes/142-fork-recipe-unlocks.lua), after the vanilla ones are set above
 FORK_UNLOCK_TREE.apply(true)
 --- Fork: the recycling recipes get their technologies now that the vanilla ones are set and disabled

@@ -13,7 +13,7 @@ end
 
 --- R recipe category enabled ingredients results hidden hide_from_player_crafting subgroup group
 --- C crafter type categories fluid_in fluid_out
---- I item type place_result uses | F fluid | T tech prereqs unlocks science trigger enabled
+--- I item type place_result uses | F fluid | T tech prereqs unlocks science trigger enabled count
 ---   (uses, issue #547: what an item does besides being an ingredient: fuel, tile, equipment, plant)
 --- M resource result results category | O offshore-pump fluid
 local dump = {}
@@ -66,7 +66,7 @@ for n, tech in pairs(data.raw.technology) do
 	if tech.unit then for _, i in pairs(tech.unit.ingredients or {}) do ing[#ing + 1] = i[1] or i.name end end
 	local trig = tech.research_trigger and serpent.line(tech.research_trigger) or ""
 	D("T", n, table.concat(tech.prerequisites or {}, ","), table.concat(eff, ","), table.concat(ing, ","), trig,
-		tostring(tech.enabled ~= false and not tech.hidden))
+		tostring(tech.enabled ~= false and not tech.hidden), tostring(tech.unit and tech.unit.count or ""))
 end
 for n, e in pairs(data.raw.resource) do
 	local m = e.minable or {}
@@ -193,6 +193,14 @@ section("TABLEONLYOK", tk)
 local to = {}
 for name, reason in pairs(FORK_TRIGGER_ONLY_ITEMS or {}) do to[#to + 1] = name .. "\t" .. reason end
 section("TRIGGERONLYOK", to)
+
+--- Issue #605: the technologies whose counts prototypes/138-fork-research-balance.lua sets (the bands of the research count
+--- rule) and the ones outside their band on purpose (FORK_RESEARCH_OUTLIERS; both absent in older versions)
+local rc, ro = {}, {}
+for name, count in pairs(FORK_RESEARCH_BALANCE and FORK_RESEARCH_BALANCE.counts or {}) do rc[#rc + 1] = name .. "\t" .. count end
+for name, reason in pairs(FORK_RESEARCH_OUTLIERS or {}) do ro[#ro + 1] = name .. "\t" .. reason end
+section("RESEARCHCOUNTS", rc)
+section("RESEARCHOK", ro)
 
 --- Issue #318: the vanilla recipes without a technology, of items Gregtorio makes, that stay on purpose
 --- (FORK_VANILLA_RECIPES_KEPT in data-final-fixes.lua; absent in older versions)
