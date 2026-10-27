@@ -2482,7 +2482,10 @@ function setup_lsc_test(s)
 			raise_built = true }
 		local got = ls.turbine.insert_fluid{ name = "helium-plasma", amount = 100 }
 		if got < 100 then fails[#fails + 1] = "supercapacitor test: the turbine took only " .. got .. " plasma" end
-		ls.load = s.create_entity{ name = "uiv-compressor", position = { LS_X + 6, LS_Y + 5 }, force = "player" }
+		--- (issue #616: with GT overclocking a machine's power grows 4x per tier, so the LuV compressor is the old UIV load)
+		local oc = settings.startup["gregtorio-continued-gt-overclocking"]
+		ls.load = s.create_entity{ name = oc and oc.value and "luv-compressor" or "uiv-compressor", position = { LS_X + 6, LS_Y + 5 },
+			force = "player" }
 		for name, r in pairs(prototypes.recipe) do
 			if r.categories[1] == "lv-compressor-recipes" and #r.ingredients == 0 then ls.recipe = name break end
 		end
