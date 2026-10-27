@@ -13,11 +13,16 @@ local batch = require("scripts.fork-batch")
 
 local CHECK_TICKS = 30
 --- issue #642: the machines are checked in shares every STEP_TICKS, each one once per CHECK_TICKS (scripts/fork-batch.lua)
-local STEP_TICKS = 2
+local STEP_TICKS = 5
 
+--- (issue #642: read once per session; the mod data's `data` builds the whole table on every read)
+local recipes_cache
 local function mold_recipes()
-	local md = prototypes.mod_data["fork-mold-recipes"]
-	return md and md.data or {}
+	if not recipes_cache then
+		local md = prototypes.mod_data["fork-mold-recipes"]
+		recipes_cache = md and md.data or {}
+	end
+	return recipes_cache
 end
 
 --- the module categories of 150's items that stay in the machine

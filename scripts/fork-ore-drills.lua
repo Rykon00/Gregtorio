@@ -15,9 +15,9 @@ local M = {}
 local batch = require("scripts.fork-batch")
 local CHECK_TICKS = 60
 --- issue #642: the plants are checked in shares every STEP_TICKS, each one once per CHECK_TICKS (scripts/fork-batch.lua);
---- a check charges the ticks since the plant's last one (rec.tick). Free intervals: the molds take 2, the solar boilers 8,
+--- a check charges the ticks since the plant's last one (rec.tick). Free intervals: the molds take 5, the solar boilers 24,
 --- the Ender Tanks 20, fork-power on_tick
-local STEP_TICKS = 4
+local STEP_TICKS = 12
 
 local config
 local function drill_data()

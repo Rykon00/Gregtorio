@@ -12,7 +12,7 @@ local batch = require("scripts.fork-batch")
 local CHECK_TICKS = 120
 --- issue #642: the boilers are checked in shares every STEP_TICKS, each one once per CHECK_TICKS (scripts/fork-batch.lua;
 --- the boilers live in storage.fork_solar_boilers.boilers since then)
-local STEP_TICKS = 8
+local STEP_TICKS = 24
 local DAYLIGHT = 0.5
 
 local names
