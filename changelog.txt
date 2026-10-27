@@ -1,7 +1,12 @@
 ---------------------------------------------------------------------------------------------------
 Version: 0.5.10
+  Features:
+    - ME Network's ME Logistic Storage Bus and ME Logistic Interface (ME Network 0.5.11) get Gregtorio recipes (issue #603): made in the HV Assembler from the ME Storage Bus or the ME Interface, the logistic chests and 2 MV circuits, unlocked with HV Machines together with the logistic chests. With an older ME Network they do not exist.
+  Changes:
+    - The ME parts keep stacking to 64: me-network 0.5.11 stacks its items to Factorio's 50, Gregtorio raises the ME Fluix Cable, the storage housing, the storage components, blank patterns, every upgrade card and the ME Wireless Booster to 64 again, like its other items.
   Bugfixes:
     - The start hint no longer says that resource generation on Nauvis can be switched off (issue #604): since the map veins Gregtorio's ores lie on Nauvis, and following the hint gave a map without ores. The vanilla resources are off on every map anyway. The texts of the start hints, the Manual Labor reward and the command /gregtorio-remove-vanilla-ores are translatable now.
+    - The UV science pack no longer spoils (issue #602). It is Space Age's agricultural science pack, which kept Space Age's spoiling: packs turned into spoilage after an hour in chests, on belts and in labs, and the ME network could not store them. UV packs of existing saves stop spoiling too.
 ---------------------------------------------------------------------------------------------------
 Version: 0.5.9
 Date: 2026-10-25
