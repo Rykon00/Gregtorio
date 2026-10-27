@@ -39,11 +39,6 @@ if YAFC_MODE then require("prototypes.99-yafc-module") end
 
 
 
--- Log all defined fluids
-for name, fluid in pairs(data.raw["fluid"]) do
-	log("DEBUG: Fluid found in data.lua: " .. name)
-end
-
 -- Check for bad fluid entries in recipes
 for name, recipe in pairs(data.raw.recipe) do
 	local function scan(t)
