@@ -13,7 +13,7 @@ end
 
 --- R recipe category enabled ingredients results hidden hide_from_player_crafting subgroup group
 --- C crafter type categories fluid_in fluid_out
---- I item type place_result uses spoil_ticks | F fluid | T tech prereqs unlocks science trigger enabled
+--- I item type place_result uses spoil_ticks | F fluid | T tech prereqs unlocks science trigger enabled count
 ---   (uses, issue #547: what an item does besides being an ingredient: fuel, tile, equipment, plant; spoil_ticks, issue
 ---   #602: 0 for an item that does not spoil)
 --- M resource result results category | O offshore-pump fluid
@@ -67,7 +67,7 @@ for n, tech in pairs(data.raw.technology) do
 	if tech.unit then for _, i in pairs(tech.unit.ingredients or {}) do ing[#ing + 1] = i[1] or i.name end end
 	local trig = tech.research_trigger and serpent.line(tech.research_trigger) or ""
 	D("T", n, table.concat(tech.prerequisites or {}, ","), table.concat(eff, ","), table.concat(ing, ","), trig,
-		tostring(tech.enabled ~= false and not tech.hidden))
+		tostring(tech.enabled ~= false and not tech.hidden), tostring(tech.unit and tech.unit.count or ""))
 end
 for n, e in pairs(data.raw.resource) do
 	local m = e.minable or {}
@@ -199,6 +199,38 @@ section("TRIGGERONLYOK", to)
 local sk = {}
 for name, reason in pairs(FORK_SPOILING_KEPT or {}) do sk[#sk + 1] = name .. "\t" .. reason end
 section("SPOILOK", sk)
+--- Issue #605: the technologies whose counts prototypes/138-fork-research-balance.lua sets (the bands of the research count
+--- rule) and the ones outside their band on purpose (FORK_RESEARCH_OUTLIERS; both absent in older versions)
+local rc, ro = {}, {}
+for name, count in pairs(FORK_RESEARCH_BALANCE and FORK_RESEARCH_BALANCE.counts or {}) do rc[#rc + 1] = name .. "\t" .. count end
+for name, reason in pairs(FORK_RESEARCH_OUTLIERS or {}) do ro[#ro + 1] = name .. "\t" .. reason end
+section("RESEARCHCOUNTS", rc)
+section("RESEARCHOK", ro)
+--- Issue #639: the icon files of Gregtorio's own graphics on technologies, items, fluids and recipes (class, name, files),
+--- for devcheck's rule against the NYI placeholder; and the ones that keep it on purpose (FORK_NYI_ICONS of
+--- prototypes/199-fork-finalize.lua, absent in older versions)
+local ic, nk = {}, {}
+local function icon_files(p)
+	local files = {}
+	if p.icon then files[#files + 1] = p.icon end
+	for _, layer in pairs(p.icons or {}) do files[#files + 1] = layer.icon end
+	local own = {}
+	for _, f in pairs(files) do if f:find("__gregtorio-continued__/", 1, true) == 1 then own[#own + 1] = f end end
+	return own
+end
+local function icon_rows(class, list)
+	for name, p in pairs(list or {}) do
+		local own = icon_files(p)
+		if #own > 0 then ic[#ic + 1] = class .. "\t" .. name .. "\t" .. table.concat(own, ",") end
+	end
+end
+icon_rows("technology", data.raw.technology)
+icon_rows("fluid", data.raw.fluid)
+icon_rows("recipe", data.raw.recipe)
+for t, _ in pairs(defines.prototypes.item) do icon_rows("item", data.raw[t]) end
+for name, reason in pairs(FORK_NYI_ICONS or {}) do nk[#nk + 1] = name .. "\t" .. reason end
+section("ICONS", ic)
+section("NYIOK", nk)
 
 --- Issue #318: the vanilla recipes without a technology, of items Gregtorio makes, that stay on purpose
 --- (FORK_VANILLA_RECIPES_KEPT in data-final-fixes.lua; absent in older versions)
