@@ -431,6 +431,9 @@
   `main_product` or a `[recipe-name]` entry, a new subgroup an `[item-subgroup-name]` entry. `devcheck.py check` fails for
   every shown prototype of this mod without a name (runtime names of `checkmod/control.lua`, keys of every loaded
   `locale/en`), except the allow-list `FORK_LOCALE_MISSING`; `--locale-out` writes the missing keys for `tools/gen_locale.py`.
+- Spoiling (issue #602): GT New Horizons has no spoiling; `data-final-fixes.lua` takes Space Age's spoiling off the Space
+  Age items Gregtorio makes (the UV science pack is the agricultural science pack), and `devcheck.py check` fails for an
+  item that spoils and that a reachable recipe makes, unless it is in the allow-list `FORK_SPOILING_KEPT` with its reason.
 - Cheap research: the startup setting `gregtorio-continued-one-pack-research` (default off) makes every technology with
   science packs cost one research unit with one pack of each kind (`prototypes/fork-one-pack-research.lua`, required last
   in `data-final-fixes.lua`, after everything that sets unit counts). `devcheck.py all` loads the mod a second time with

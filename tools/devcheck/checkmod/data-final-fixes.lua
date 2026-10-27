@@ -13,8 +13,9 @@ end
 
 --- R recipe category enabled ingredients results hidden hide_from_player_crafting subgroup group
 --- C crafter type categories fluid_in fluid_out
---- I item type place_result uses | F fluid | T tech prereqs unlocks science trigger enabled count
----   (uses, issue #547: what an item does besides being an ingredient: fuel, tile, equipment, plant)
+--- I item type place_result uses spoil_ticks | F fluid | T tech prereqs unlocks science trigger enabled count
+---   (uses, issue #547: what an item does besides being an ingredient: fuel, tile, equipment, plant; spoil_ticks, issue
+---   #602: 0 for an item that does not spoil)
 --- M resource result results category | O offshore-pump fluid
 local dump = {}
 local function D(...) dump[#dump + 1] = table.concat({ ... }, "\t") end
@@ -56,7 +57,7 @@ for t, _ in pairs(defines.prototypes.item) do
 		if it.place_as_tile then uses[#uses + 1] = "tile" end
 		if it.place_as_equipment_result then uses[#uses + 1] = "equipment" end
 		if it.plant_result then uses[#uses + 1] = "plant" end
-		D("I", n, t, it.place_result or "", table.concat(uses, ","))
+		D("I", n, t, it.place_result or "", table.concat(uses, ","), tostring(it.spoil_ticks or 0))
 	end
 end
 for n, _ in pairs(data.raw.fluid) do D("F", n) end
@@ -194,6 +195,10 @@ local to = {}
 for name, reason in pairs(FORK_TRIGGER_ONLY_ITEMS or {}) do to[#to + 1] = name .. "\t" .. reason end
 section("TRIGGERONLYOK", to)
 
+--- Issue #602: the items that spoil on purpose (FORK_SPOILING_KEPT in data-final-fixes.lua; absent in older versions)
+local sk = {}
+for name, reason in pairs(FORK_SPOILING_KEPT or {}) do sk[#sk + 1] = name .. "\t" .. reason end
+section("SPOILOK", sk)
 --- Issue #605: the technologies whose counts prototypes/138-fork-research-balance.lua sets (the bands of the research count
 --- rule) and the ones outside their band on purpose (FORK_RESEARCH_OUTLIERS; both absent in older versions)
 local rc, ro = {}, {}

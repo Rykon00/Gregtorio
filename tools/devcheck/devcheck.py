@@ -389,6 +389,7 @@ class Model:
         self.burnt, self.burners = [], {}   # (fuel item, burnt result, fuel categories); burner entity -> categories
         self.tools = {}                     # recipe -> the mold or lens it needs in the module slot (issue #316)
         self.itype, self.uses = {}, {}      # item -> its prototype type; item -> its uses besides recipes (issue #547)
+        self.spoil = {}                     # item -> its spoil ticks, 0 when it does not spoil (issue #602)
         self.base = {"water", "steam"}
         mined, reach = {}, {}   # issue #501: resource -> its mined items; resource -> technologies of its planets
         gt_ores = set()         # issue #563: the resources of the map veins (category gt-ore)
@@ -410,6 +411,7 @@ class Model:
                 self.I[p[1]] = p[3] if len(p) > 3 else ""
                 self.itype[p[1]] = p[2]
                 self.uses[p[1]] = [x for x in p[4].split(",") if x] if len(p) > 4 else []
+                self.spoil[p[1]] = float(p[5]) if len(p) > 5 and p[5] else 0
             elif k == "T":
                 self.T[p[1]] = dict(pre=[x for x in p[2].split(",") if x], eff=[x for x in p[3].split(",") if x],
                                     sci=[x for x in p[4].split(",") if x], trig=p[5], en=p[6] == "true",
@@ -746,6 +748,27 @@ def check_trigger_items(m, sec):
            f"purpose (FORK_TRIGGER_ONLY_ITEMS)", problems
 
 
+def check_spoiling(m, sec):
+    """Issue #602: GT New Horizons has no spoiling, so an item that spoils (`spoil_ticks` of the `I` rows) and that a
+    recipe makes that is enabled or unlocked by a researchable technology and not hidden fails, unless it is in the
+    allow-list FORK_SPOILING_KEPT of data-final-fixes.lua with its reason (section SPOILOK); an entry that is no such item
+    fails too. Returns (info line, problems)."""
+    allow = {r[0]: (r[1] if len(r) > 1 else "") for r in sec.get("SPOILOK", [])}
+    made = {}
+    for r in m.unlocked:
+        v = m.R[r]
+        if not v["hidden"]:
+            for x in v["res"]:
+                if m.spoil.get(x):
+                    made.setdefault(x, []).append(r)
+    problems = [f"{i}: spoils after {m.spoil[i] / 60:g} s and {', '.join(sorted(rs)[:3])} makes it (take its spoiling off "
+                "in data-final-fixes.lua, or add it to FORK_SPOILING_KEPT with its reason)"
+                for i, rs in sorted(made.items()) if i not in allow]
+    problems += [f"FORK_SPOILING_KEPT: {i} has no reason" for i, why in sorted(allow.items()) if not why]
+    problems += [f"FORK_SPOILING_KEPT: {i} is not an item that spoils and that a reachable recipe makes (remove the entry)"
+                 for i in sorted(allow) if i not in made]
+    return f"{sum(1 for s in m.spoil.values() if s)} items spoil, {len(made)} of them made by a reachable recipe, " \
+           f"{len(allow)} on purpose (FORK_SPOILING_KEPT)", problems
 RESEARCH_BAND_LOW = 50    # the count of the reach, void miner and space elevator technologies (issue #605)
 
 
@@ -2475,6 +2498,9 @@ def check(a):
     trigger_info, trigger_only = check_trigger_items(m, sec)
     print(f"\nitems of craft triggers (issue #547): {trigger_info}")
     report("items whose only use is a technology's craft trigger (prototypes/100-fork-fixes.lua)", trigger_only)
+    spoil_info, spoiling = check_spoiling(m, sec)
+    print(f"\nspoiling items (issue #602): {spoil_info}")
+    report("items that spoil and that a reachable recipe makes (data-final-fixes.lua)", spoiling)
     research_info, research_counts = check_research_counts(m, sec)
     print(f"\nresearch counts from UV up (issue #605): {research_info}")
     report("technologies whose count lies outside the band of their pack count (prototypes/138-fork-research-balance.lua)",
@@ -2584,8 +2610,8 @@ def check(a):
               or new_drafts or fluid_problems or locked or one_pack or fluid_steps or table_only or me_recipes or me_tab
               or extractor_split or ore_mixes or ore_chain or ore_baths or ore_o34 or ore_hammer
               or circuit_icons or pgm_dusts or recycling or names or gaps or tree or vanilla or lenses or mine_twins
-              or unplaceable or stale_unlocks or removed_keys or trigger_only or research_counts or classic_veins or early
-              or furnace
+              or unplaceable or stale_unlocks or removed_keys or trigger_only or spoiling or classic_veins or early
+              or furnace or research_counts
               or steam or nugget or steam_rates or boiler_output or vein_doc or renames)
     print("\nRESULT:", "OK" if ok else "PROBLEMS FOUND")
     return 0 if ok else 1
