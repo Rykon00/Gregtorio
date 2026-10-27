@@ -2585,7 +2585,8 @@ Step 3 (164 section 20): the shared foundation.
 - **Dimensionally Shifted Superfluid.** GT's tiers 2 (prosaic, UIV) and 3 (resplendent, UMV) come with the technology
   Dimensionally Shifted Superfluid, after the plasma module (celestial tungsten plasma). Tier 5 (stellar) comes with
   the stellar catalyst after the stargate. Tier 4 needs the exotic catalyst, which the mod lacks.
-- **Left for later:** fermium plasma (nothing takes it before creon) and the godforge burning residue as fuel.
+- **Left for later:** fermium plasma (nothing takes it before creon) and the godforge burning residue as fuel. (Issue
+  #608: fermium plasma came with creon and mellion, #355 step 2, 164 section 29; the residue with 164 section 45.)
 
 Next: creon and mellion, the gravitational lens, ZPIC and YPIC.
 
@@ -2777,7 +2778,7 @@ The refinery (164 section 27; GoodGenerator's RecipeLoader.java and FuelRecipeLo
 - **Technologies:** Naquadah Fuel Refinery (10 packs) and Naquadah Based Fuel MK4 (13 packs, after the UMV energy hatches
   and the thorium based liquid fuel).
 - **Left for later:** GT's alternative recipes (chromatic glass dust; hypogen and the one-step MK IV came with #436),
-  MK V and VI and coils T3 and T4.
+  MK V and VI and coils T3 and T4. (Issue #608: all built since, the MK III with chromatic glass dust in section 28.)
 
 MK V, MK VI and the coils T3 and T4 (164 section 28; GoodGenerator's FuelRecipeLoader.java, RecipeLoader.java and
 RecipeLoader2.java, GT++'s RecipesGregTech.java):
@@ -2918,7 +2919,7 @@ Part 2 (164 section 41):
 Decision (the issue's step 1, the smallest one): GT's dual and quad rods of uranium and thorium and the MOX rods (164).
 A rod of n cells gives n x (1 + n / 2) pulses (IC2), so a dual rod holds 4 and a quad rod 12 times the single rod's
 value; MOX is half a uranium rod (GT's lifetime), without IC2's heat bonus (no hull heat in the mod's reactors). The
-depleted rods go into GT's thermal centrifuge. Left for later: GT's IV centrifuge of 8 depleted rods with the isotopes
+depleted rods go into GT's thermal centrifuge. Left for later (issue #608: both built in #386, 164 sections 13 and 14): GT's IV centrifuge of 8 depleted rods with the isotopes
 (plutonium 238 and 241, uranium 232 and 233, thorium 232; nothing takes them before the LFTR), the naquadah rods (GT
 cans them into a large tungstensteel fluid cell, which the mod lacks), the LFTR with its salt loop, the Cold Trap and the
 Reactor Processing Unit, and the Reactor Fuel Processing Plant (issue #386).
