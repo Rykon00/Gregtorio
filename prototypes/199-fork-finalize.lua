@@ -248,6 +248,9 @@ log("FORK-AUTOUNLOCK: " .. added .. " additional recipes unlocked")
 --------------------------------------------------------------------------------
 
 require("prototypes.fork-tech-icons")
+--- Issue #639: devcheck fails for a shown technology, item, fluid or recipe whose icon is the NYI placeholder
+--- (graphics/technology/nyi.png or a file with the same bytes) unless it is in this allow-list with its reason
+FORK_NYI_ICONS = {}
 for name, _ in pairs(FORK_TECH_ICONS) do
 	local t = data.raw.technology[name]
 	if t and t.icon and t.icon:sub(1, 24) == "__gregtorio-continued__/" then

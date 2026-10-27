@@ -4,7 +4,7 @@
 --- The ME network's runtime tests are in the mod me-network since issue #83 (its tools/devcheck).
 --- Molds (prototypes/150-fork-molds.lua): an LV alloy smelter with a mold recipe must stop
 --- without a mold, run with a mold in its mold slot and keep the mold there; issue #316: the same for an EV laser
---- engraver with a gem step and its lens ("Missing lens").
+--- engraver with a gem step and its lens ("Missing lens"); issue #642: a machine cloned onto its spot (on_entity_cloned).
 --- Endgame power (prototypes/136-fork-power.lua): a plasma turbine and a naquadah reactor under load
 --- must burn their fuel and make power; the turbine's output hatch gets the cooled fluid.
 --- Fuel check (issue #25): steam and the other generator's fuel stop a generator; the right fuel runs it.
@@ -2138,6 +2138,10 @@ local TOOL_TESTS = {
 		tool = "mold", product = "glass", status = "entity-status.fork-missing-mold" },
 	{ key = "LENS", x = 20, machine = "ev-laser-engraver", recipe = "engraving-chipped-ruby-to-flawed",
 		input = { "chipped-ruby", 12 }, tool = "ruby-lens", product = "flawed-ruby", status = "entity-status.fork-missing-lens" },
+	--- issue #642: a cloned machine (on_entity_cloned) is checked too: built away from the spot without telling the mod,
+	--- cloned onto it, the original removed
+	{ key = "MOLDCLONE", x = 34, machine = "lv-alloy-smelter", recipe = "glass-alloy-smelter", input = { "glass-dust", 20 },
+		tool = "mold", product = "glass", status = "entity-status.fork-missing-mold", clone = true },
 }
 
 function setup_mold_test(s)
@@ -2149,10 +2153,16 @@ function setup_mold_test(s)
 			eei.power_production = 1e8
 			eei.electric_buffer_size = 1e9
 			s.create_entity{ name = "substation", position = { t.x - 3, MOLD_Y }, force = "player" }
-			local m = s.create_entity{ name = t.machine, position = { t.x, MOLD_Y }, force = "player", raise_built = true }
+			local m = s.create_entity{ name = t.machine, position = { t.x, MOLD_Y + (t.clone and 6 or 0) }, force = "player",
+				raise_built = not t.clone }
 			m.force.recipes[t.recipe].enabled = true
 			m.set_recipe(t.recipe)
 			m.insert{ name = t.input[1], count = t.input[2] }
+			if t.clone then
+				local original = m
+				m = original.clone{ position = { t.x, MOLD_Y }, surface = s }
+				original.destroy()
+			end
 			storage.mold_tests[i] = { machine = m }
 		end)
 		if not ok then
