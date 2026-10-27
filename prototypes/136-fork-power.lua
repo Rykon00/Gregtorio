@@ -628,7 +628,9 @@ create_recipe{
 	},
 	main_product = "light-naquadah-fuel",
 }
---- GT: uranium fuel = high density uranium (a stack of uranium), potassium, quantium, radon
+--- GT: uranium fuel = high density uranium (a stack of uranium), potassium, quantium, radon. Issue #611: 164 makes high
+--- density uranium since #356, but with the Naquadah Fuel Refinery (UHV, after Quantium), two tiers after this fuel
+--- (Naquadah Fuels, ZPM): the 64 uranium dusts and the naquadah dust stay as its stand-ins
 create_recipe{
 	name = "uranium-based-liquid-fuel",
 	category = "luv-mixer-recipes",

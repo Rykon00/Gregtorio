@@ -1133,6 +1133,7 @@ def icon_table(c):
 
     # multi-amp wires (upstream: 16x = a block of the metal)
     T["luv-superconductor-wire-16x"] = lambda: bar(c.m.colour("itbtc-alloy"), 2, n=4)
+    T["tungsten-wire-16x"] = lambda: bar(c.m.colour("tungsten"), 2, n=4)   # (issue #614)
     # issue #355: GoodGenerator's HiCs, unit casings and High Energy Mixture, NewHorizonsCoreMod's engraved chips, GT's
     # crystal chips, the precise assembler controller (its casing with GT's quantum chest front, MTEPreciseAssembler.java)
     for i in range(1, 6):
@@ -1392,7 +1393,8 @@ def main():
         tex.trace = []
         try:
             img = table[n]()
-            sources.append((n, " + ".join(dict.fromkeys(tex.trace))))
+            # (issue #639: an icon drawn in code from a material colour or shape, without a GT texture, says so)
+            sources.append((n, " + ".join(dict.fromkeys(tex.trace)) or "drawn in code (tools/gen_gt_icons.py), no texture"))
         except (FileNotFoundError, KeyError) as e:
             failed.append((n, str(e)))
             continue
