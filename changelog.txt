@@ -1,4 +1,8 @@
 ---------------------------------------------------------------------------------------------------
+Version: 0.5.10
+  Changes:
+    - Large factories run smoother (issue #642): the checks of the mold and lens machines (every 30 ticks), the Ore Drilling Plants (every 60) and the solar boilers (every 120) are spread over the ticks instead of all machines in one tick, and the plasma turbines remember their output hatches instead of searching for them every 10 ticks. Machines copied by another mod or the map editor (cloned) get their mold check and mine handling too. The game no longer writes a line per fluid into the log at every start.
+---------------------------------------------------------------------------------------------------
 Version: 0.5.9
 Date: 2026-10-25
   Features:

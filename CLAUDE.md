@@ -371,7 +371,7 @@
   me-network calls in its `on_init`; keep its table list and fingerprint function equal to me-network's
   `scripts/fork-me-handover.lua`). Everything else of the ME network (runtime, graphics, locale, its tests,
   `docs/AE2.md`, `docs/ME-REWORK.md`) is in the me-network repository; an ME change goes there, Gregtorio only changes
-  the compat file when a recipe or a tier changes. Tick intervals in use: `on_nth_tick` 30 (molds), 60 (#499: the Ore Drilling Plants' Drilling Fluid, `fork-ore-drills.lua`, `storage.fork_ore_drills`), 120 (solar boilers); `on_tick`
+  the compat file when a recipe or a tier changes. Tick intervals in use: `on_nth_tick` 2 (molds), 4 (#499: the Ore Drilling Plants' Drilling Fluid, `fork-ore-drills.lua`, `storage.fork_ore_drills`), 8 (solar boilers), 20 (#504: the Ender Tanks); issue #642: the molds, the plants and the solar boilers are checked in shares through `scripts/fork-batch.lua` (each entity once per 30, 60 and 120 ticks, a cursor beside its table in storage), so a megabase pays the same every tick instead of one spike per period: a new periodic check over many entities does the same; `on_tick`
   (fork-power: turbine energy every tick, fuel check, output hatches and the supercapacitor loss every 10th tick);
   registrations for the same interval (or a second `on_tick`) overwrite each other, so a new periodic task picks a free
   interval. The scripts keep their state lazy (`storage.fork_molds`, `storage.fork_power`).

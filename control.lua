@@ -60,6 +60,8 @@ script.on_event({ defines.events.script_raised_built, defines.events.script_rais
   fork_ender.on_built(event.entity, event.tags)
 end)
 script.on_event(defines.events.on_entity_cloned, function(event)
+  fork_electric_mine.on_built(event.destination)   -- (issue #642: the molds and the mines too)
+  fork_molds.on_built(event.destination)
   fork_power.on_built(event.destination)
   fork_space_elevator.on_built(event.destination)
   fork_steam_boilers.on_built(event.destination)
