@@ -871,6 +871,9 @@ require("prototypes.fork-one-pack-research")
 --- Fork: the boiler output setting (issue #593): every steam boiler makes its steam and burns its fuel that many times
 --- faster; after every file that makes or changes a boiler and before the steam per second of the descriptions below
 require("prototypes.fork-boiler-output")
+--- Fork: GT New Horizons' overclocking (issue #616, startup setting, default off): the machines' power grows 4 times per
+--- tier; after every file that makes or changes a machine
+require("prototypes.fork-gt-overclocking")
 --- Fork: steam per second in the descriptions of the boilers and the steam machines (issue #564), after every file that
 --- makes or changes them
 require("prototypes.fork-steam-rates")

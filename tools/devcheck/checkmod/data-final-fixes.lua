@@ -195,6 +195,21 @@ local to = {}
 for name, reason in pairs(FORK_TRIGGER_ONLY_ITEMS or {}) do to[#to + 1] = name .. "\t" .. reason end
 section("TRIGGERONLYOK", to)
 
+--- Issue #616: the machines GT overclocking changed (prototypes/fork-gt-overclocking.lua) with their factor, and every
+--- electric crafting machine with its crafting speed; the first row says whether the setting is on (absent in older versions)
+local oc = {}
+if FORK_GT_OVERCLOCKING then
+	oc[1] = "setting\t" .. tostring(FORK_GT_OVERCLOCKING.on)
+	for _, t in pairs({ "assembling-machine", "furnace" }) do
+		for name, e in pairs(data.raw[t] or {}) do
+			if e.energy_source and e.energy_source.type == "electric" then
+				oc[#oc + 1] = name .. "\t" .. tostring(e.crafting_speed or 1) .. "\t" .. tostring(FORK_GT_OVERCLOCKING.changed[name] or 1)
+			end
+		end
+	end
+end
+section("OVERCLOCK", oc)
+
 --- Issue #602: the items that spoil on purpose (FORK_SPOILING_KEPT in data-final-fixes.lua; absent in older versions)
 local sk = {}
 for name, reason in pairs(FORK_SPOILING_KEPT or {}) do sk[#sk + 1] = name .. "\t" .. reason end
