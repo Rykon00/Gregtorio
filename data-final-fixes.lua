@@ -193,6 +193,20 @@ for _, t in pairs({ "assembling-machine", "furnace", "rocket-silo" }) do
 	end
 end
 
+--- Issue #602: GT New Horizons has no spoiling. The Space Age items Gregtorio makes keep Space Age's spoiling unless it is
+--- taken off here: the UV science pack is Space Age's agricultural science pack (127), which turned into spoilage after an
+--- hour in chests, on belts and in labs, and me-network does not store items that spoil. devcheck fails for an item that
+--- spoils and that a reachable recipe makes, unless it is in the allow-list FORK_SPOILING_KEPT with its reason.
+FORK_SPOILING_KEPT = {}
+for _, name in pairs({ "agricultural-science-pack" }) do
+	for t, _ in pairs(defines.prototypes.item) do
+		local it = data.raw[t] and data.raw[t][name]
+		if it then
+			it.spoil_ticks, it.spoil_result, it.spoil_to_trigger_result, it.spoil_level = nil, nil, nil, nil
+		end
+	end
+end
+
 ---SPACE AGE PLANETS AND SPACE PLATFORMS (issue #529)
 --- The maintainer's request: the Space Age planets are not part of Gregtorio's game. Its surfaces are Nauvis and the
 --- hidden planets of 165 (gt-nether, gt-twilight, gt-end), which copied what they take (Vulcanus' map generation for the
@@ -812,6 +826,9 @@ disable_tech("tesla-weapons")
 --- Fork: the technologies whose units were set above are divided like the others (prototypes/149-fork-early-research.lua,
 --- issue #146)
 FORK_EARLY_RESEARCH.rescale()
+--- Fork: the research counts from UV up once more, for the technologies of the files after 138
+--- (prototypes/138-fork-research-balance.lua, issue #605)
+FORK_RESEARCH_BALANCE.apply(true)
 --- Fork: the prerequisites of issue #252 (prototypes/142-fork-recipe-unlocks.lua), after the vanilla ones are set above
 FORK_UNLOCK_TREE.apply(true)
 --- Fork: the recycling recipes get their technologies now that the vanilla ones are set and disabled

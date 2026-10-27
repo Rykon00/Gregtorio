@@ -75,7 +75,11 @@
     turbine; needs 140's magmatter and adds its turbine to 136's mod data; issue #249: the MAX recipes of the plasma
     forge and the QFT with substitutes); 140 and 141 load after 139 and **before** 138
   - 138 research balance (issue #30: explicit unit counts of the technologies from UV to `victory`; loads after every
-    file that defines technologies; balance passes use `tools/balance_model.py` on `devcheck.py check --balance-out`)
+    file that defines technologies up to 141; issue #605: the table also names the UV+ technologies of 145 to 166, and
+    `FORK_RESEARCH_BALANCE.apply()` runs once more at the end of data-final-fixes.lua; devcheck fails for a researchable
+    technology of 9 or more packs whose count lies outside the band of its pack count (from 50, or the table's lowest at
+    that pack count, to the table's highest) unless it is in `FORK_RESEARCH_OUTLIERS`: a new UV+ technology gets its
+    scaled count in the table; balance passes use `tools/balance_model.py` on `devcheck.py check --balance-out`)
   - 147 GT routes (issue #98: the PECA board deleted, sodium persulfate, black plutonium and cosmic neutronium through
     the blast furnace and vacuum freezer, the high octane line, GT's deuterium and PPIC wafer; loads after 138 and
     **before** 142, whose block `UNLOCKS_98` unlocks its recipes, and 143, which casts the black plutonium ingot)
@@ -427,6 +431,9 @@
   `main_product` or a `[recipe-name]` entry, a new subgroup an `[item-subgroup-name]` entry. `devcheck.py check` fails for
   every shown prototype of this mod without a name (runtime names of `checkmod/control.lua`, keys of every loaded
   `locale/en`), except the allow-list `FORK_LOCALE_MISSING`; `--locale-out` writes the missing keys for `tools/gen_locale.py`.
+- Spoiling (issue #602): GT New Horizons has no spoiling; `data-final-fixes.lua` takes Space Age's spoiling off the Space
+  Age items Gregtorio makes (the UV science pack is the agricultural science pack), and `devcheck.py check` fails for an
+  item that spoils and that a reachable recipe makes, unless it is in the allow-list `FORK_SPOILING_KEPT` with its reason.
 - Cheap research: the startup setting `gregtorio-continued-one-pack-research` (default off) makes every technology with
   science packs cost one research unit with one pack of each kind (`prototypes/fork-one-pack-research.lua`, required last
   in `data-final-fixes.lua`, after everything that sets unit counts). `devcheck.py all` loads the mod a second time with
