@@ -1,6 +1,7 @@
 ---------------------------------------------------------------------------------------------------
 Version: 0.5.10
   Features:
+    - EV and IV battery buffers (issue #614), as in GT New Horizons: 1, 4, 9 or 16 batteries of the tier, the lapotron crystal (EV, 10 000 000 EU each) or the lapotronic energy orb (IV, 100 000 000 EU each), 1 amp out and 2 in per battery. The lapotron crystal and its chain (energium dust, lapotron dust, the raw crystal) come with the new technology Lapotron Crystals (EV) instead of the ZPM Assembly Line, the lapotronic energy orb and the engraved lapotron chip with the new Lapotronic Energy Orb (IV) instead of Lapotronic Energy Orbs (ZPM science), as in GT New Horizons. Existing saves keep every recipe they had.
     - ME Network's ME Logistic Storage Bus and ME Logistic Interface (ME Network 0.5.11) get Gregtorio recipes (issue #603): made in the HV Assembler from the ME Storage Bus or the ME Interface, the logistic chests and 2 MV circuits, unlocked with HV Machines together with the logistic chests. With an older ME Network they do not exist.
   Balancing:
     - Eight technologies from UV science up cost what their tier's other technologies cost (issue #605): they came after the research balance of 0.4 and kept their old unit counts, 5 to 15 times dearer than their neighbours. Kevlar and Prismatic Naquadah 325 units (before 1500), Thorium Based Liquid Fuel and Precise Electronic Unit Mk-III 180 (2500), Naquadah Fuel Refinery and Beamline 110 (1500), Radox Polymer 110 (1500), Six-Phased Copper 50 (60).

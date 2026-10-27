@@ -212,6 +212,7 @@ luv-pump
 luv-robot-arm
 luv-sensor
 luv-superconductor-wire-16x
+tungsten-wire-16x
 magmatter-cable
 magmatter-foil
 magmatter-frame
