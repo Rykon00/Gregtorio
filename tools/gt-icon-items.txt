@@ -3449,6 +3449,7 @@ tiny-pile-of-plutonium-241-dust
 small-pile-of-lutetium-dust
 small-pile-of-uranium-235-dust
 tiny-pile-of-plutonium-239-dust
+tiny-pile-of-uranium-235-dust
 lithium-7-dust
 lithium-hydroxide-dust
 lithium-fluoride-dust

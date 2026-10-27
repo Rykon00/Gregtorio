@@ -1,8 +1,10 @@
 ---------------------------------------------------------------------------------------------------
 Version: 0.5.10
   Features:
+    - Naquadah fuels can be cracked as in GT New Horizons (issue #610): naquadah gas, light and heavy naquadah fuel and the new Naquadah Asphalt are cracked lightly, moderately or heavily in the IV Cracker with molten atomic separation catalyst and distilled in the EV Tall Distillation Tower into noble gases, radon, the other naquadah fuels, molten uranium, plutonium, thorium, lutetium and thulium and a tiny pile of naquadah, uranium 235, plutonium or naquadria dust; with Creon and Mellion, the first technology that melts the catalyst.
     - ME Network's ME Logistic Storage Bus and ME Logistic Interface (ME Network 0.5.11) get Gregtorio recipes (issue #603): made in the HV Assembler from the ME Storage Bus or the ME Interface, the logistic chests and 2 MV circuits, unlocked with HV Machines together with the logistic chests. With an older ME Network they do not exist.
   Changes:
+    - The naquadah solution distillation also gives 2 Naquadah Asphalt per 20 naquadah solution, as in GT New Horizons (issue #610). Its only use is its cracking, which needs the atomic separation catalyst of Creon and Mellion: until then store or void it, or the tower stops when the asphalt output is full (existing factories too).
     - The ME parts keep stacking to 64: me-network 0.5.11 stacks its items to Factorio's 50, Gregtorio raises the ME Fluix Cable, the storage housing, the storage components, blank patterns, every upgrade card and the ME Wireless Booster to 64 again, like its other items.
   Bugfixes:
     - The UV science pack no longer spoils (issue #602). It is Space Age's agricultural science pack, which kept Space Age's spoiling: packs turned into spoilage after an hour in chests, on belts and in labs, and the ME network could not store them. UV packs of existing saves stop spoiling too.

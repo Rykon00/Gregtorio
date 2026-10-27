@@ -4808,6 +4808,67 @@ end
 
 
 --------------------------------------------------------------------------------
+--- 44) NAQUADAH FUEL CRACKING AND NAQUADAH ASPHALT (issue #610). goodgenerator/loader/RecipeLoader.java:444-489 with
+---   goodgenerator/util/CrackRecipeAdder.java:39-110: naquadah gas, light and heavy naquadah fuel and naquadah asphalt are
+---   cracked with the molten atomic separation catalyst (1000 L and 4, 4, 6 or 12 L of the catalyst -> 1000 L lightly,
+---   moderately or heavily cracked fluid in 0.8, 1 and 1.2 times the fluid's time D at 4020 EU/t, the IV cracker; the
+---   catalyst here a tenth, as the mod's melts) and the cracked fluids distilled (D/2 at a third of the power, the EV tall
+---   distillation tower) into six fluids and a tiny pile, by CrackRecipeAdder's coefficients (1.25 to 0.8 light, 1.4 to
+---   0.7 moderate, 1.6 to 0.55 heavy). The naquadah fluids and gases keep GT's litres as 136's naquadah fuel line, the
+---   melts are a tenth; asphalt comes from the naquadah solution distillation (RecipeLoader.java:609-616: 2 L of 20 L)
+---   and is used only here (the maintainer's decision of 2026-10-27: as GTNH, though the catalyst comes much later here,
+---   with Creon and Mellion; until then the asphalt is stored or voided). GT's
+---   distillery variants (one output each) are left out. New: naquadah asphalt, the twelve cracked fluids, molten
+---   thulium (cast and melted by 143 with the thulium ingot), the tiny pile of uranium 235. Unlocked with the first
+---   technology of the molten catalyst (after the ingot of Naquadah Based Fuel MK5, FORK_CASTING's melt).
+--------------------------------------------------------------------------------
+do
+	local ASC = "molten-atomic-separation-catalyst"
+	local GASES = { "helium", "neon", "argon", "krypton", "xenon", "radon" }
+	F.fluid("naquadah-asphalt", "dark-gray-spackled-fluid", { 0.10, 0.15, 0.10 })
+	F.fluid("molten-thulium", "molten-thulium", { 89 / 255, 107 / 255, 194 / 255 })   -- (GT's colour, gen_gt_icons --molten)
+	FORK_CASTING.materials["thulium"] = { "iv", "naquadah-fuel-refinery" }
+	local tiny_u235, tiny_u235_recipe = pile("uranium-235-dust", "tiny")
+	table.insert(data.raw.recipe["naquadah-solution-distillation"].results,
+		{ type = "fluid", name = "naquadah-asphalt", amount = 2 })
+	--- fluid, its catalyst (GT L), time D (ticks), its tiny pile, its six outputs (GT's order) for light, moderate, heavy
+	local CRACK = {
+		{ "naquadah-gas", 4, 300, "tiny-pile-of-naquadah-dust", GASES,
+			{ { 375, 60, 88, 18, 34, 11200 }, { 420, 62, 96, 16, 30, 9800 }, { 480, 75, 116, 14, 24, 7700 } } },
+		{ "light-naquadah-fuel", 4, 450, tiny_u235,
+			{ "radon", "naquadah-gas", "molten-uranium", "heavy-naquadah-fuel", "molten-plutonium", "naquadah-asphalt" },
+			{ { 1750, 480, 712, 252, 489, 112 }, { 1960, 500, 777, 224, 432, 98 }, { 2240, 600, 939, 196, 345, 77 } } },
+		{ "heavy-naquadah-fuel", 6, 500, "tiny-pile-of-plutonium-239-dust",
+			{ "radon", "naquadah-gas", "light-naquadah-fuel", "molten-uranium", "molten-lutetium", "naquadah-asphalt" },
+			{ { 1250, 540, 616, 648, 550, 192 }, { 1400, 562, 672, 576, 486, 168 }, { 1600, 675, 812, 504, 388, 132 } } },
+		{ "naquadah-asphalt", 12, 800, "tiny-pile-of-naquadria-dust",
+			{ "light-naquadah-fuel", "molten-uranium", "molten-thorium", "molten-plutonium", "molten-thulium", "heavy-naquadah-fuel" },
+			{ { 750, 1382, 950, 712, 183, 280 }, { 840, 1440, 1036, 633, 162, 245 }, { 960, 1728, 1252, 554, 129, 192 } } },
+	}
+	local LEVELS = { { "lightly", 0.8 }, { "moderately", 1 }, { "heavily", 1.2 } }
+	local L = { tiny_u235_recipe }
+	for _, c in pairs(CRACK) do
+		local base = data.raw.fluid[c[1]]
+		for i, lv in pairs(LEVELS) do
+			local cracked = lv[1] .. "-cracked-" .. c[1]
+			local col = base and base.base_color or { r = 0.3, g = 0.6, b = 0.3 }
+			F.fluid(cracked, "spackled-forest-green-fluid", { col.r * (1 - 0.15 * i), col.g * (1 - 0.1 * i), col.b })
+			step(L, cracked, "iv-cracker-recipes", c[3] * lv[2] / 20, IV_SPEED,
+				{ { c[1], 1000 }, { ASC, c[2] / 10 } }, { { cracked, 1000 } })
+			local outs = {}
+			--- (the melts a tenth, as the mod's melts: an ingot is 14.4 here, 144 L in GT)
+			for k, f in pairs(c[5]) do outs[#outs + 1] = { f, f:find("^molten%-") and c[6][i][k] / 10 or c[6][i][k] } end
+			outs[#outs + 1] = { c[4], 1 }
+			step(L, cracked .. "-distillation", "ev-tall-distillation-recipes", c[3] / 2 / 20, EV_SPEED,
+				{ { cracked, 1000 } }, outs, c[5][1])
+		end
+	end
+	FORK_CRACKING_RECIPES = L   -- (unlocked after 143's run in section 38, which makes the melt)
+end
+
+
+
+--------------------------------------------------------------------------------
 --- 38) GT'S PARTS OF THE METALS OF THIS FILE (issue #467). 158 makes GT New Horizons' parts of every metal of
 ---   prototypes/gt-parts-data.lua (issue #227) whose ingot exists; most metals of this file come after 158, so its
 ---   FORK_GT_PARTS.run() runs once more here (it skips what exists), then 143's casts for the new forms.
@@ -4815,3 +4876,5 @@ end
 FORK_GT_PARTS.run()
 FORK_CASTING.run()
 FORK_GT_PARTS.log("164")
+--- issue #610 (section 44): the cracking comes with the technology of the catalyst's melt (143's materials)
+for _, r in pairs(FORK_CRACKING_RECIPES) do fork_add_unlock(FORK_CASTING.materials["atomic-separation-catalyst"][2], r) end
