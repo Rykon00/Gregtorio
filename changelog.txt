@@ -1,5 +1,7 @@
 ---------------------------------------------------------------------------------------------------
 Version: 0.5.10
+  Features:
+    - ME Network's ME Logistic Storage Bus and ME Logistic Interface (ME Network 0.5.11) get Gregtorio recipes (issue #603): made in the HV Assembler from the ME Storage Bus or the ME Interface, the logistic chests and 2 MV circuits, unlocked with HV Machines together with the logistic chests. With an older ME Network they do not exist.
   Changes:
     - Recipes that left out a GT New Horizons material because the mod lacked it use it now (issue #611). The Resplendent catalyst of the plasma forge is GT New Horizons' recipe: the Prosaic catalyst with nitrogen, zinc, silver and titanium plasma. Before, it was the Crude catalyst with boron, sulfur, nitrogen, zinc and titanium plasma. The Prosaic catalyst comes with the Godforge, as the Resplendent one does.
     - The Quantum Force Transformer takes Neptunium Plasma as its focus plasma, made from radon and nitrogen plasma in the Fusion Reactor MK4. It comes with the Quantum Force Transformer. Before, the focus plasma was nitrogen plasma.
