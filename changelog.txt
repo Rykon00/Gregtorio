@@ -1,4 +1,8 @@
 ---------------------------------------------------------------------------------------------------
+Version: 0.5.10
+  Bugfixes:
+    - The UV science pack no longer spoils (issue #602). It is Space Age's agricultural science pack, which kept Space Age's spoiling: packs turned into spoilage after an hour in chests, on belts and in labs, and the ME network could not store them. UV packs of existing saves stop spoiling too.
+---------------------------------------------------------------------------------------------------
 Version: 0.5.9
 Date: 2026-10-25
   Features:
