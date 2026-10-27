@@ -745,6 +745,43 @@ def check_trigger_items(m, sec):
            f"purpose (FORK_TRIGGER_ONLY_ITEMS)", problems
 
 
+NYI_ICON = "graphics/technology/nyi.png"
+
+
+def check_nyi_icons(sec):
+    """Issue #639: a shown technology, item, fluid or recipe of the load (the `shown` column of section NAMES) whose own
+    icon (section ICONS: the mod's files of `icon` and `icons`) is the NYI placeholder, graphics/technology/nyi.png or
+    a file of the mod with the same bytes, fails unless it is in the allow-list FORK_NYI_ICONS of
+    prototypes/199-fork-finalize.lua with its reason (section NYIOK); an entry that is no such prototype fails too.
+    Returns (info line, problems)."""
+    allow = {r[0]: (r[1] if len(r) > 1 else "") for r in sec.get("NYIOK", [])}
+    nyi = (ROOT / NYI_ICON).read_bytes()
+    same = {}
+
+    def is_nyi(path):
+        if path not in same:
+            f = ROOT / path.split("__gregtorio-continued__/", 1)[-1]
+            same[path] = f.is_file() and f.stat().st_size == len(nyi) and f.read_bytes() == nyi
+        return same[path]
+    shown = {(r[0], r[2]) for r in sec.get("NAMES", []) if len(r) > 5 and r[5]}
+    found = {}
+    for r in sec.get("ICONS", []):
+        if len(r) < 3:
+            continue
+        hits = [p for p in r[2].split(",") if is_nyi(p)]
+        if hits and (r[0], r[1]) in shown:
+            found[r[1]] = (r[0], hits[0])
+    copies = sorted({p for p, v in same.items() if v})
+    problems = [f"{cls} {name}: shows the NYI placeholder ({path}; give it an icon, e.g. tools/gen_tech_icons.py with "
+                "tools/tech-icons.tsv, or add it to FORK_NYI_ICONS with its reason)"
+                for name, (cls, path) in sorted(found.items()) if name not in allow]
+    problems += [f"FORK_NYI_ICONS: {n} has no reason" for n, why in sorted(allow.items()) if not why]
+    problems += [f"FORK_NYI_ICONS: {n} does not show the NYI placeholder (remove the entry)" for n in sorted(allow)
+                 if n not in found]
+    return f"{len(copies)} placeholder files in use, {len(found)} shown prototypes with one, {len(allow)} on purpose " \
+           "(FORK_NYI_ICONS)", problems
+
+
 VANILLA_MODS = {"base", "space-age", "quality", "elevated-rails"}
 
 
@@ -2440,6 +2477,9 @@ def check(a):
     trigger_info, trigger_only = check_trigger_items(m, sec)
     print(f"\nitems of craft triggers (issue #547): {trigger_info}")
     report("items whose only use is a technology's craft trigger (prototypes/100-fork-fixes.lua)", trigger_only)
+    nyi_info, nyi_icons = check_nyi_icons(sec)
+    print(f"\nNYI placeholder icons (issue #639): {nyi_info}")
+    report("shown prototypes with the NYI placeholder icon (prototypes/199-fork-finalize.lua)", nyi_icons)
     lens_info, lenses = check_engraver_lenses(m, sec)
     print(f"\nlaser engraver lenses (issue #325): {lens_info}")
     report("laser engraver recipes without a lens (prototypes/155-fork-ore-chain.lua)", lenses)
@@ -2545,7 +2585,8 @@ def check(a):
               or new_drafts or fluid_problems or locked or one_pack or fluid_steps or table_only or me_recipes or me_tab
               or extractor_split or ore_mixes or ore_chain or ore_baths or ore_o34 or ore_hammer
               or circuit_icons or pgm_dusts or recycling or names or gaps or tree or vanilla or lenses or mine_twins
-              or unplaceable or stale_unlocks or removed_keys or trigger_only or classic_veins or early or furnace
+              or unplaceable or stale_unlocks or removed_keys or trigger_only or nyi_icons or classic_veins or early
+              or furnace
               or steam or nugget or steam_rates or boiler_output or vein_doc or renames)
     print("\nRESULT:", "OK" if ok else "PROBLEMS FOUND")
     return 0 if ok else 1
