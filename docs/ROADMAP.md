@@ -1222,7 +1222,8 @@ and its hatch holds the cooled fluid for the plasma burnt (helium, nitrogen, mol
   exact (see "Cooled fluid" above). What does not fit into the hatches waits in the turbine instead of being voided.
 * The naquadah reactor has no depleted fuel output and no coolant bonus; fuel MK4 to MK6 are not built (orundum, awakened
   draconium, hypogen, atomic separation catalyst are not in the mod). The chain skips naquadah asphalt, the cracking of the
-  fuels (removed for good in issue #39 with the atomic separation catalyst), antimony trioxide, tiberium, high density uranium
+  fuels (removed for good in issue #39 with the atomic separation catalyst; issue #610 built both, 164 section 44, with
+  the catalyst of #356), antimony trioxide, tiberium, high density uranium
   and ~~plutonium~~ (high density plutonium is built since issue #39) and the naquadah fuel refinery.
 * GT's single-block naquadah reactors (naquadah rods) and single-block plasma generators are not built (the maintainer's
   decision on #638, 2026-10-27: they come back on GTNH's tiers, #644).
