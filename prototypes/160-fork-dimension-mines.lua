@@ -104,6 +104,13 @@ local IN_NETHER = { { property = "gt-dimension", min = 2, max = 2 } }
 data.raw.recipe["nether-air-intake"].surface_conditions = IN_NETHER
 data.raw.recipe["mining-glowstone-vein"].surface_conditions = IN_NETHER
 data.raw.recipe["water-drilling-rig"].surface_conditions = { { property = "gt-dimension", max = 1 } }
+--- issue #617 (the maintainer's decision of 2026-10-28): ancient debris, the start of GT's netherite chain
+--- (gregtech/loaders/postload/chains/NetheriteRecipes.java:313-321), lies in GTNH's Nether scattered like small ores
+--- (Et Futurum Requiem's world gen, GT-New-Horizons-Modpack config/etfuturum/world.cfg:110-111, 182-183: veins of 2 or 3);
+--- a Manual Mine recipe in the Nether like the glowstone vein, with 163's electric twins; unlocked by 164 section 48
+create_item{ name = "ancient-debris", subgroup = "subgroup-mining", skip_recipe = true }
+manual("mining-ancient-debris", "manual-mine-recipes", { PICKAXE, LABOR(24) }, { item("ancient-debris", 2) })
+data.raw.recipe["mining-ancient-debris"].surface_conditions = IN_NETHER
 nether[#nether + 1] = manual("digging-obsidian", "manual-digsite-recipes", { PICKAXE, LABOR(8) }, { item("obsidian", 4) })
 create_item{ name = "flint-and-steel", subgroup = "stone-age-production-machine", stack_size = 10,
 	ingredients = { item("flint", 1), item("iron-ingot", 1) } }
