@@ -246,6 +246,8 @@ MATERIALS = {
     "niobium": "Niobium", "advanced-nitinol": ("FIERY", (136, 117, 159)), "cobalt": "Cobalt",
     "shirabon": ("METALLIC", (0xe0, 0x15, 0x6d)), "astral-titanium": ("METALLIC", (220, 160, 240)),
     "chromatic-glass": ("GLASS", (255, 255, 255)), "blaze": "Blaze",
+    # issue #627: Thermal Foundation's blizz, GT's snow and cryotheum (MaterialsInit.java)
+    "blizz": "Blizz", "snow": "Snow", "cryotheum": "Cryotheum",
     "calcium": "Calcium",
     # issue #205: goodgenerator's Werkstoffe of the naquadah line (GGMaterial.java, their colours; dusts)
     "naquadria-oxide-mixture": ("METALLIC", (77, 77, 85)), "indium-phosphate": ("DULL", (43, 46, 112)),
@@ -1208,6 +1210,10 @@ def icon_table(c):
     T["medium-infinity-fluid-pipe"] = lambda: c.m.icon("infinity", "pipeMedium", kind="blocks")
     T["medium-spacetime-fluid-pipe"] = lambda: c.m.icon("spacetime", "pipeMedium", kind="blocks")
     T["blaze-powder"] = lambda: c.part("blaze", "dust")
+    # issue #627: the cryotheum line (GT's rod and dust icons of blizz, snow and cryotheum)
+    T["blizz-rod"] = lambda: c.part("blizz", "stick")
+    for m in ("blizz", "snow", "cryotheum"):
+        T[m + "-dust"] = (lambda m=m: lambda: c.part(m, "dust"))()
     # issue #355 step 2: GT's Harmonic Compound (MetaGeneratedItem03 762)
     T["harmonic-compound"] = lambda: c.gt(M3 + "762")
     # issue #355 step 4: the beamline (gtnhlanth's casings and items, GT's beam hatch overlays and pipe, the controllers'

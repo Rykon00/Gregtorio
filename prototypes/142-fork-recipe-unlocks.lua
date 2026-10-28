@@ -747,7 +747,7 @@ FORK_UNLOCK_TREE = { prerequisites = {
 	["aluminium"] = { "cutting-machine" },   -- machine lv-cutting-machine
 	["assembly-line"] = { "industrial-precision-lathe" },   -- grate-machine-casing
 	["black-steel"] = { "electric-blast-furnace", "galena", "rare-earth-processing" },   -- machine mv-electric-blast-furnace; silver-ingot; nether-quartz
-	["bio-processors"] = { "qubit-cpus" },   -- qubit-cpu-chip
+	["bio-processors"] = { "qubit-cpus", "quantium" },   -- qubit-cpu-chip; infinity-catalyst-dust (the mutated living solder, #627)
 	["cetane-boosted-diesel"] = { "implosion-compressor" },   -- nitric-acid
 	["dimensionally-shifted-superfluid"] = { "radox-polymer" },   -- super-heavy-radox (issue #517)
 	["concrete"] = { "automation-2", "extractor" },   -- machine lv-assembling-machine; lv-pump (the LV Fluid Extractor, issue #556)

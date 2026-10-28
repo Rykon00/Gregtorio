@@ -23,7 +23,7 @@
 ---     wafers (Gregtorio's chips); OpenBlocks' elevator (the research item and an ingredient) has no counterpart;
 ---   * the nanotube spool's 4 x 64 16x graphene wires -> 256 graphene wires (the mod has no 16x wire); its cleanroom is
 ---     not built;
----   * mutated living solder (motors Mk-III to Mk-V) -> molten indalloy 140, as everywhere in the mod; dimensionally
+---   * mutated living solder (motors Mk-III to Mk-V): GT's since issue #627 (164 section 46; indalloy 140 before); dimensionally
 ---     shifted superfluid -> super coolant; the Mk-IV motor's proto-halkonite plate -> osmiridium, the plate of the
 ---     other motors.
 --- Loads after 160 (data.lua) and before 142, whose tree check sees the technologies.
@@ -512,7 +512,7 @@ for _, r in pairs({ "crushed-thulium", "crushed-tellurium", "crushed-firestone" 
 --- Fluids the mod lacks are left out, not replaced: GT's ender goo, extra heavy oil, natural gas, medium oil, liquid oxygen
 --- and Galacticraft's unknown water. The closest analogue where the mod lacks a part: the Infinite Fluid Drilling Rig ->
 --- the IV drilling rig (the mod's fluid drilling rigs); the Ender Fluid Link Cover -> an eye of ender; the medium tungstensteel pipe -> 3 tungstensteel
---- plates (GT's pipe recipe); mutated living solder -> molten indalloy 140; metastable oganesson screws -> spacetime screws,
+--- plates (GT's pipe recipe); mutated living solder (164 section 46, issue #627; indalloy 140 before); metastable oganesson screws -> spacetime screws,
 --- proto-halkonite -> osmiridium (as the motors of #301), black and white dwarf matter -> universium (the materials come a
 --- tier later here).
 --------------------------------------------------------------------------------
@@ -720,7 +720,7 @@ end
 ---     4 parallels (TileEntityModuleAssembler.java:271-292), with Mk-I motors like the mining module Mk-I.
 ---   * The Singularity cell (SpaceAssemblerRecipes.java:422-434, module tier 1, UHV, 10 s): an eternal singularity, 12
 ---     16384k components, 8 Quantum Chests V (GT's Quantum_Chest_IV, its tier 10), 4 infinity blocks, 4 infinity
----     catalysts, 12 cosmic neutronium blocks, 2304 L UEV solder (GTNH's mutated living solder is indalloy 140 here, as in
+---     catalysts, 12 cosmic neutronium blocks, 2304 L UEV solder (GTNH's mutated living solder, 164 section 46 since issue #627, as in
 ---     the module recipes above). It replaces 120's UHV assembler recipe.
 ---   * The Quantum Chest V (NHC AssemblerRecipes.java:2525-2533: 4 UEV circuits, 3 americium plates, a UV field
 ---     generator, the UEV chest buffer; LV, 5 s) and the UEV Chest Buffer (:2545-2553: the UEV conveyor, circuit and hull

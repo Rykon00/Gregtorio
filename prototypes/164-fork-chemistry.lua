@@ -5069,6 +5069,102 @@ end
 
 
 --------------------------------------------------------------------------------
+--- 46) GELID CRYOTHEUM AND THE MUTATED LIVING SOLDER (issue #627, the maintainer's decision of 2026-10-28: cryotheum as
+---   GT makes it). GT++'s UEV+ solder (gtPlusPlus/core/item/chemistry/RecipeLoaderGenericChem.java:151-168: chemical
+---   plant T7, 3842160 EU/t, 13 min 20 s): 64 biocells + 8 gravi-stars + 2 infinity catalyst dust + 18000 L tin plasma
+---   + 18000 L bismuth plasma + 4000 L gelid cryotheum -> 40320 L (4 stacks + 24 ingots) mutated living solder; GT++'s
+---   infinite mutation catalyst is left out by the rule of this file. Gregtorio's chemical plant runs at MV speed only (no
+---   casing tiers), so the recipe runs in the UHV Large Chemical Reactor: a GT multiblock takes two amps, and two UHV amps
+---   (4194304 EU/t) carry the 3842160 EU/t, so GTNH makes the solder before UEV; its first users are UHV-tier circuits
+---   (the bioware supercomputer).
+---   Gelid cryotheum: MV mixer, 8 s: saltpeter + snow + lapis + blizz dust -> cryotheum dust
+---   (gtPlusPlus/xmod/thermalfoundation/recipe/TFGregtechRecipes.java:66-77); fluid extractor, 10 s at HV:
+---   1 dust -> 250 L (gtPlusPlus/core/recipe/RecipesGregTech.java:1604-1609).
+---   Snow: GT counts a snowball as one snow dust (gregtech/loaders/preload/LoaderGTItemData.java:85); the fluid
+---   solidifier makes it from 250 L water with the ball mold (gregtech/loaders/postload/recipes/FluidSolidifierRecipes.java:
+---   58-64, 6.4 s at LV; Gregtorio's one mold).
+---   Blizz: the blizz rod drops from Blizzes (gtPlusPlus/core/common/CommonProxy.java:115-119), crushed in the Extreme
+---   Entity Crusher as the blazes are (17-ev-age-item.lua "crushing-blazes", 8 s); macerator: 1 rod -> 3 dust + 1 at
+---   50 % (gregtech/loaders/postload/recipes/Pulverizer.java:651-659).
+---   Unlocked where the solder is first used (FORK_MUTATED_SOLDER_TECH: the bio processors' technology, which unlocks
+---   the bioware supercomputer; issue #252's rule).
+---   Where GTNH solders with it instead of Indalloy 140 (Gregtorio used Indalloy 140 for every solder from UEV on):
+---   - circuits from the bioware supercomputer on (tectech/loader/recipe/ResearchStationAssemblyLine.java:470, :501; the
+---     bioware processor and assembly keep Indalloy 140, NewHorizonsCoreMod CircuitAssemblyLineRecipes.java:887, :901),
+---     every optical circuit (:522, :545, :571; NewHorizonsCoreMod CircuitAssemblyLineRecipes.java:955), and by that rule
+---     the exotic, temporal and Planck circuits (GTNH has no recipe for them);
+---   - the components from UEV on (ResearchStationAssemblyLine.java:1338, :1548, :1759, :1955; UHV keeps Indalloy, :1128)
+---     and by that rule MAX's; the energy and dynamo hatches from UEV on (:230, :250, :271, :293 and the dynamos);
+---   - the DTPF (:639, :659, :697), the godforge (:2412, :2497, :2540; its shielding casing by the tier rule), the Quantum
+---     Force Transformer (gtPlusPlus/core/recipe/RecipesMachinesCustom.java:453), the fusion reactor Mk-IV and Mk-V
+---     controllers and the stargate by the tier rule, the UIV solenoid (NewHorizonsCoreMod AssemblingLineRecipes.java:1588,
+---     solderUEV);
+---   - the space elevator's motors from Mk-III, the UHV-UIV mining drones, the mining module Mk-III, the pump modules and
+---     the ME singularity cell (gtnhintergalactic/recipe/MachineRecipes.java:217-257, 279-332, 462, 629-669;
+---     NewHorizonsCoreMod SpaceAssemblerRecipes.java:431).
+---   GTNH keeps Indalloy 140 for the naquadah fuel refinery, the large naquadah reactor and the component assembly line.
+---   The amounts stay Gregtorio's.
+--------------------------------------------------------------------------------
+FORK_MUTATED_SOLDER = "mutated-living-solder"
+FORK_MUTATED_SOLDER_TECH = "bio-processors"
+local MUTATED_SOLDER_RECIPES = { "bio-processor-supercomputer", "bio-processor-mainframe", "dimensional-bridge",
+	"dimensionally-transcendent-casing", "dimensionally-transcendent-plasma-forge-controller", "quantum-force-transformer-controller",
+	"godforge-controller", "stellar-energy-siphon-casing", "remote-graviton-flow-modulator",
+	"singularity-reinforced-stellar-shielding-casing", "fusion-reactor-mk4-controller", "fusion-reactor-mk5-controller",
+	"uiv-solenoid-superconductor-coil", "space-elevator-motor-mk3", "space-elevator-motor-mk4", "space-elevator-motor-mk5",
+	"mining-drone-uhv", "mining-drone-uev", "mining-drone-uiv", "space-elevator-mining-module-mk3",
+	"space-elevator-pump-module-mk1", "space-elevator-pump-module-mk2", "space-elevator-pump-module-mk3",
+	"me-singularity-storage-cell" }
+for _, line in pairs({ "optical", "exotic", "temporal", "planck" }) do
+	for _, form in pairs({ "", "-assembly", "-supercomputer", "-mainframe" }) do
+		table.insert(MUTATED_SOLDER_RECIPES, line .. "-processor" .. form)
+	end
+end
+for _, t in pairs({ "uev", "uiv", "umv", "uxv", "max" }) do
+	for _, part in pairs({ "conveyor-module", "emitter", "field-generator", "motor", "piston", "pump", "robot-arm", "sensor",
+		"energy-hatch", "dynamo-hatch" }) do
+		table.insert(MUTATED_SOLDER_RECIPES, t .. "-" .. part)
+	end
+end
+for _, name in pairs({ "umv-energy-hatch-zpic", "umv-dynamo-hatch-zpic", "uxv-energy-hatch-ypic", "uxv-dynamo-hatch-ypic" }) do
+	table.insert(MUTATED_SOLDER_RECIPES, name)
+end
+for name, r in pairs(data.raw.recipe) do
+	if name:match("^stargate%-") then table.insert(MUTATED_SOLDER_RECIPES, name) end
+end
+do
+	local R = {}
+	F.fluid("gelid-cryotheum", "spackled-light-blue-fluid", { 0x00 / 255, 0x94 / 255, 0xcb / 255 })
+	F.fluid(FORK_MUTATED_SOLDER, "purple-fluid", { 147 / 255, 109 / 255, 155 / 255 })
+	items(SUB_DUST, { "blizz-dust", "snow-dust", "cryotheum-dust" })
+	items(SUB_PART, { "blizz-rod" })
+	step(R, "crushing-blizzes", "ev-extreme-entity-crusher-recipes", 8, 1, {}, { { "blizz-rod", 1 } }, "blizz-rod")
+	step(R, "blizz-dust", "lv-macerator-recipes", 20, LV_SPEED, { { "blizz-rod", 1 } },
+		{ { "blizz-dust", 3 }, { "blizz-dust", 1, 0.5 } })
+	step(R, "snow-dust", "lv-fluid-solidifier-recipes", 6.4, LV_SPEED, { { "water", 25 } }, { { "snow-dust", 1 } })
+	step(R, "cryotheum-dust", "mv-mixer-recipes", 8, MV_SPEED,
+		{ { "saltpeter", 1 }, { "snow-dust", 1 }, { "lapis-dust", 1 }, { "blizz-dust", 1 } }, { { "cryotheum-dust", 1 } })
+	step(R, "gelid-cryotheum", "hv-fluid-extractor-recipes", 10, HV_SPEED, { { "cryotheum-dust", 1 } },
+		{ { "gelid-cryotheum", 25 } })
+	step(R, FORK_MUTATED_SOLDER, "uhv-chemical-reactor-recipes", 800, UHV_SPEED,
+		{ { "bio-cells", 64 }, { "gravi-star", 8 }, { "infinity-catalyst-dust", 2 }, { "tin-plasma", 1800 },
+			{ "bismuth-plasma", 1800 }, { "gelid-cryotheum", 400 } }, { { FORK_MUTATED_SOLDER, 4032 } })
+	for _, r in pairs(R) do fork_add_unlock(FORK_MUTATED_SOLDER_TECH, r) end
+	local switched = 0
+	for _, name in pairs(MUTATED_SOLDER_RECIPES) do
+		local r = data.raw.recipe[name]
+		local found = false
+		for _, i in pairs(r and r.ingredients or {}) do
+			if i.name == "molten-indalloy-140" then i.name, found = FORK_MUTATED_SOLDER, true end
+		end
+		if found then switched = switched + 1 else error("issue #627: no Indalloy 140 in recipe " .. name) end
+	end
+	log("FORK-MUTATED-SOLDER: " .. switched .. " recipes")
+end
+
+
+
+--------------------------------------------------------------------------------
 --- 38) GT'S PARTS OF THE METALS OF THIS FILE (issue #467). 158 makes GT New Horizons' parts of every metal of
 ---   prototypes/gt-parts-data.lua (issue #227) whose ingot exists; most metals of this file come after 158, so its
 ---   FORK_GT_PARTS.run() runs once more here (it skips what exists), then 143's casts for the new forms.

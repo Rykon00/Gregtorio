@@ -1786,7 +1786,7 @@ infinity screws for GT's laurenium screws (no dysprosium in the mod), a 1080k su
 superconductor wire), the dimensional bridge (casing, UHV field generator, UV emitter for GT's microwave energy transmitter, UV
 circuits, 4 FPIC wafers, triamerotronium wire), the DTPF controller (4 bridges, 4 UEV energy hatches, dracofinium wire, 4 super
 coolant cells, 20 UIV circuits, 4 UEV field generators and pumps, superdense osmiridium; indalloy 140 for GT's mutated living
-solder and molten enriched naquadah, GT's amounts); before #355 the DTPF and its parts were one tier up (UMV). The QFT coil casing (UMV
+solder (GT's own since issue #627) and molten enriched naquadah, GT's amounts); before #355 the DTPF and its parts were one tier up (UMV). The QFT coil casing (UMV
 assembler: infinity coil, 4 super coolant cells, transcendent metal, a superconducting coil block) and the QFT controller (ZPM
 assembly line: UIV circuits, pumps, field generators and robot arms). GT builds both at UIV with UEV parts; the QFT here is a UMV
 machine (UMV science), so its parts are one tier up. GT items the mod does not have are left out of the DTPF (the 16 Exothermic
@@ -2857,7 +2857,7 @@ as GTNH has it, and the Singularity crafting storage left for a new issue.
   - 8 Quantum Chests V with their UEV chest buffers;
   - 4 infinity and 12 cosmic neutronium blocks, and 4 Infinity Catalysts (64 dust each, the HV compressor for the
     neutronium compressor);
-  - indalloy 140 for the UEV solder.
+  - indalloy 140 for the UEV solder (the mutated living solder since issue #627).
 
   ME Storage Singularity moves to UMV science.
 - **Left for #487:** the Singularity crafting storage's Creative Energy Cells (AE2 dense energy cells), Draconic
@@ -3014,3 +3014,14 @@ Part 2 (164): the Universal Chemical Fuel Engine and the thorium based liquid fu
   GoodGenerator's neutron activator recipe for it (200 L excited -> 200 L depleted, 500 s) and its centrifuge
   (thorium-232, praseodymium, boron, indium). That centrifuge is the mod's only source of praseodymium (fuel MK IV;
   164 section 23).
+
+## Mutated Living Solder (issue #627)
+
+GT++'s UEV+ solder (`RecipeLoaderGenericChem.java:151-168`) and the Gelid Cryotheum it needs are built in 164 section 46
+(the maintainer's decision of 2026-10-28: cryotheum as GT makes it): blizz rods from the Extreme Entity Crusher, blizz
+powder, snowballs (GT's snow dust) from water in the fluid solidifier, cryotheum dust in the MV mixer, gelid cryotheum in
+the HV fluid extractor, the solder in the UHV Large Chemical Reactor (GT's chemical plant T7 at 3842160 EU/t takes two
+UHV amps; Gregtorio's chemical plant has no casing tiers). It replaces Indalloy 140 in the 105 recipes where GTNH solders
+with it (circuits from the bioware supercomputer on, UEV+ components and hatches, DTPF, godforge, QFT, the space elevator's
+late modules, the stargate by the tier rule); the amounts stay Gregtorio's. Left for later (#671): the solder amounts that
+differ from GT's tenth, and 162's GT-litre fluid amounts.

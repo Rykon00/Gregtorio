@@ -5160,3 +5160,7 @@ screwdriver-usage	colour of Wood #643200 + gt:gregtech/textures/items/materialic
 wire-cutter-usage	colour of Iron #c8c8c8 + gt:gregtech/textures/items/materialicons/NONE/toolWireCutter + gt:gregtech/textures/items/materialicons/NONE/toolWireCutter_OVERLAY
 wrench-usage	colour of Iron #c8c8c8 + gt:gregtech/textures/items/materialicons/NONE/toolWrench
 knife-usage	colour of Iron #c8c8c8 + gt:gregtech/textures/items/materialicons/NONE/toolKnife + gt:gregtech/textures/items/materialicons/NONE/toolKnife_OVERLAY
+blizz-rod	colour of Blizz #dce9ff + gt:gregtech/textures/items/materialicons/NONE/stick + gt:gregtech/textures/items/materialicons/CUSTOM/blizz/stick_OVERLAY
+blizz-dust	colour of Blizz #dce9ff + gt:gregtech/textures/items/materialicons/NONE/dust + gt:gregtech/textures/items/materialicons/CUSTOM/blizz/dust_OVERLAY
+snow-dust	colour of Snow #fafafa + gt:gregtech/textures/items/materialicons/FINE/dust
+cryotheum-dust	colour of Cryotheum #0094cb + gt:gregtech/textures/items/materialicons/NONE/dust + gt:gregtech/textures/items/materialicons/CUSTOM/cryotheum/dust_OVERLAY
