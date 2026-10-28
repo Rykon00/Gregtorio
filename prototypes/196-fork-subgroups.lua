@@ -154,6 +154,7 @@ put("molten-elements", { "calcium-fluoride" })
 put("gases", { "iodine" })
 put("molten-elements", { "bromine" })
 put("ore-solutions", { "seaweed-concentrate", "seaweed-byproducts" })
+put("ore-solutions", { "samarium-rare-earth-mud" })   -- issue #631 part 2
 --- issue #335: the Drilling Fluid of the Ore Drilling Plants (163), water with stone dust and lubricant
 put("basic", { "drilling-fluid" })
 --- issue #362: GT++'s rocket fuels and the chains behind them (164)

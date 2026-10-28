@@ -963,7 +963,7 @@ for name, pool in pairs({
 		{ "raw-monazite", 0.00249 }, { "raw-neodymium", 0.00249 }, { "raw-thorium", 0.00249 }, { "raw-naquadah", 0.00083 },
 		{ "raw-tungstate", 0.00083 },
 	},
-	--- BarnardC (T8): left out Deep Iron, Iridium, Osmium, Samarium, Shadow Iron, Tungsten
+	--- BarnardC (T8): left out Deep Iron, Iridium, Osmium, Shadow Iron, Tungsten
 	["barnard-c"] = {
 		{ "raw-lignite", 0.31093 }, { "raw-oilsands", 0.0823 }, { "raw-basaltic-mineral-sand", 0.07316 },
 		{ "raw-granitic-mineral-sand", 0.07316 }, { "raw-arsenic", 0.05487 }, { "raw-bismuth", 0.05487 },
@@ -971,7 +971,7 @@ for name, pool in pairs({
 		{ "raw-red-garnet", 0.03658 }, { "raw-coal", 0.01829 }, { "raw-kyanite", 0.01829 }, { "raw-mica", 0.01829 },
 		{ "raw-silicon", 0.01463 }, { "raw-antimony", 0.01372 }, { "raw-nickel", 0.01029 },
 		{ "raw-fullers-earth", 0.00914 }, { "raw-gypsum", 0.00914 }, { "raw-neodymium", 0.00914 },
-		{ "raw-lepidolite", 0.00572 }, { "raw-spodumene", 0.00572 }, { "raw-borax", 0.00457 },
+		{ "raw-samarium", 0.00914 }, { "raw-lepidolite", 0.00572 }, { "raw-spodumene", 0.00572 }, { "raw-borax", 0.00457 },
 		{ "raw-yellow-garnet", 0.00457 }, { "raw-cassiterite", 0.00229 }, { "raw-pollucite", 0.00229 },
 		{ "raw-tartarite", 0.00229 },
 	},
@@ -988,7 +988,7 @@ for name, pool in pairs({
 		{ "raw-platinum", 0.00266 }, { "raw-pyrolusite", 0.00177 }, { "raw-tantalite", 0.00177 },
 		{ "raw-molybdenum", 0.00044 }, { "raw-powellite", 0.00044 },
 	},
-	--- CentauriA (T8): left out Cadmium, Caesium, Cerium, Electrotine, Lanthanum, Samarium
+	--- CentauriA (T8): left out Cadmium, Caesium, Cerium, Electrotine, Lanthanum
 	["centauri-bb"] = {
 		{ "raw-sulfur", 0.14109 }, { "raw-nether-quartz", 0.11993 }, { "raw-tetrahedrite", 0.09877 },
 		{ "raw-redstone", 0.08466 }, { "raw-cassiterite-sand", 0.05644 }, { "raw-garnet-sand", 0.05644 },
@@ -996,11 +996,11 @@ for name, pool in pairs({
 		{ "raw-black-plutonium", 0.02822 }, { "raw-red-garnet", 0.02822 }, { "raw-saltpeter", 0.02822 },
 		{ "raw-quartzite", 0.02116 }, { "raw-barite", 0.01411 }, { "raw-grossular", 0.01411 },
 		{ "raw-spessartine", 0.01411 }, { "raw-pyrite", 0.00882 }, { "raw-sphalerite", 0.00882 },
-		{ "raw-asbestos", 0.00705 }, { "raw-neodymium", 0.00705 }, { "raw-uraninite", 0.00705 }, { "raw-copper", 0.00617 },
-		{ "raw-stibnite", 0.00617 }, { "raw-cinnabar", 0.00529 }, { "raw-ruby", 0.00529 }, { "raw-alunite", 0.00353 },
-		{ "raw-borax", 0.00353 }, { "raw-certus-quartz", 0.00353 }, { "raw-yellow-garnet", 0.00353 },
-		{ "raw-emerald", 0.00265 }, { "raw-thorium", 0.00265 }, { "raw-pyrolusite", 0.00176 },
-		{ "raw-tantalite", 0.00176 }, { "raw-tartarite", 0.00176 },
+		{ "raw-asbestos", 0.00705 }, { "raw-neodymium", 0.00705 }, { "raw-samarium", 0.00705 },
+		{ "raw-uraninite", 0.00705 }, { "raw-copper", 0.00617 }, { "raw-stibnite", 0.00617 }, { "raw-cinnabar", 0.00529 },
+		{ "raw-ruby", 0.00529 }, { "raw-alunite", 0.00353 }, { "raw-borax", 0.00353 }, { "raw-certus-quartz", 0.00353 },
+		{ "raw-yellow-garnet", 0.00353 }, { "raw-emerald", 0.00265 }, { "raw-thorium", 0.00265 },
+		{ "raw-pyrolusite", 0.00176 }, { "raw-tantalite", 0.00176 }, { "raw-tartarite", 0.00176 },
 	},
 	--- TcetiE (T8): left out Chrome, Manganese, Nether Star, Perlite, Uvarovite
 	["tau-ceti-e"] = {
@@ -1030,14 +1030,15 @@ for name, pool in pairs({
 		{ "raw-enriched-naquadah", 0.00187 }, { "raw-platinum", 0.00187 }, { "raw-diamond", 0.001 },
 		{ "raw-tungstate", 0.00062 },
 	},
-	--- Seth (T9): left out Chrome, Electrotine, Iridium, Mithril, Osmium, Samarium
+	--- Seth (T9): left out Chrome, Electrotine, Iridium, Mithril, Osmium
 	["seth"] = {
 		{ "raw-magnetite", 0.44444 }, { "raw-tengam", 0.11111 }, { "raw-tin", 0.07378 }, { "raw-ilmenite", 0.0625 },
 		{ "raw-bauxite", 0.05556 }, { "raw-bastnasite", 0.04167 }, { "raw-draconium", 0.02778 },
 		{ "raw-vanadium-magnetite", 0.02778 }, { "raw-nickel", 0.01476 }, { "raw-gold", 0.01389 }, { "raw-iron", 0.01389 },
-		{ "raw-neodymium", 0.00955 }, { "raw-aluminium", 0.00694 }, { "raw-platinum", 0.00694 },
-		{ "raw-cassiterite", 0.00434 }, { "raw-jade", 0.00347 }, { "raw-vinteum", 0.00347 }, { "raw-monazite", 0.0026 },
-		{ "raw-palladium", 0.00174 }, { "raw-tartarite", 0.00174 }, { "raw-sheldonite", 0.00087 },
+		{ "raw-samarium", 0.01389 }, { "raw-neodymium", 0.00955 }, { "raw-aluminium", 0.00694 },
+		{ "raw-platinum", 0.00694 }, { "raw-cassiterite", 0.00434 }, { "raw-jade", 0.00347 }, { "raw-vinteum", 0.00347 },
+		{ "raw-monazite", 0.0026 }, { "raw-palladium", 0.00174 }, { "raw-tartarite", 0.00174 },
+		{ "raw-sheldonite", 0.00087 },
 	},
 	--- Maahes (T9): left out Alduorite, Ardite, Chrome, Iridium, Manganese, Rutile, Titanium, Trinium, Vanadium
 	["maahes"] = {
@@ -1067,6 +1068,10 @@ end
 create_ore("raw-tengam", nil, "crushed-tengam", "raw-tengam-dust", nil, "crushed-tengam", nil, nil, 1, false, false)
 create_ore("raw-tartarite", nil, "crushed-tartarite", "tartarite-dust", nil, "crushed-tartarite", nil, nil, 1, false, false)
 create_ore("raw-naquadria", nil, "crushed-naquadria", nil, nil, "crushed-naquadria", nil, nil, 1, false, false)
+--- issue #631: GT's samarium ore (Seth's, Barnard C's and Centauri Bb's SecondLanthanid vein), whose dust in GTNH is
+--- gtnhlanth's samarium ore concentrate (164 section 55)
+create_ore("raw-samarium", nil, "crushed-samarium", "samarium-ore-concentrate", nil, "crushed-samarium", nil, nil, 1, false,
+	false)
 --- issue #373: Neper's ores the mod lacked (GT's dilithium, mysterious crystal and vinteum; the mysterious crystal dust is
 --- the moon dust's above)
 create_ore("raw-dilithium", nil, "crushed-dilithium", "dilithium-dust", nil, "crushed-dilithium", nil, nil, 1, false, false)
@@ -1188,3 +1193,4 @@ unlock_in(VM_TECHS[3], { "crushed-awakened-draconium" })   -- issue #356: the Me
 --- (issue #636: draconium, oriharukon and vinteum come from Phobos and Deimos's mines with Reach Mars now)
 unlock_in(MARS, { "crushed-draconium", "crushed-oriharukon", "crushed-vinteum" })
 unlock_in(VM_TECHS[3], { "crushed-tengam", "crushed-tartarite", "crushed-naquadria" })   -- issue #636: Seth, Maahes
+unlock_in(VM_TECHS[2], { "crushed-samarium" })   -- issue #631: Barnard C, Centauri Bb

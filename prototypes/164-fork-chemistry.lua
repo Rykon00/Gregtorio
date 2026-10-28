@@ -6146,6 +6146,93 @@ end
 
 
 --------------------------------------------------------------------------------
+--- 55) GTNH'S SAMARIUM ORE CONCENTRATE (issue #631 part 2). gtnhlanth's samarium chain (gtnhlanth/loader/RecipeLoader.java:
+---   3033-3208) for the concentrate of GT's samarium ore (160's raw samarium, Void Miners II and III) and of the
+---   Everglades' florencite (its byproduct and electrolysis, 155; the GTNH dump's GT++ chain):
+---   * digester (EV, 10 s): 16 concentrate + 200 L nitric acid -> thorium phosphate concentrate + 800 L muddy samarium
+---     rare earth solution; 8 crushed samarium + 300 L -> 3 + 1200 L
+---   * dissolution tank (EV, 10 s): 1000 L nitric acid + 1000 L muddy solution -> 2000 L samarium rare earth mud,
+---     cerium dioxide (80 %) and cerium ore concentrate (the mod's cerium-rich mixture, 60 %); (EV, 30 s) 9000 L water +
+---     1000 L mud -> 10000 L diluted samarium rare earth solution, 2 neodymic rare earth concentrate (the mod's neodymium
+---     rare earth concentrate, 90 % and 60 %); GT's batches of nine are left out (the same ratios)
+---   * the large chemical reactor's low efficiency methods (EV): 1000 L nitric acid + 1000 L muddy solution -> 1000 L mud
+---     and cerium dioxide at 50 % (15 s); 1000 L mud + 16000 L water -> 8000 L diluted solution (60 s)
+---   * large chemical reactor (EV, 10 s): 2000 L diluted solution + 3000 L oxalate (GoodGenerator's, the mod's oxalic acid
+---     as in 159) -> 5 impure samarium oxalate, 3 dephosphated samarium concentrate at 10 %, 50 L muddy solution; (EV, 10
+---     s) 5 oxalate + 6000 L hydrochloric acid -> 8 impure samarium chloride + 6000 L carbon monoxide
+---   * mixer (LV, 5 s): 2 chloride + salt -> 3 samarium chloride-sodium chloride blend; electrolyzer (IV, 1 s): 6 blend ->
+---     samarium dust, sodium, 2 tiny piles of rarest earth residue, 4000 L chlorine; (LuV, 2 s) 54 -> 9, 9, a residue
+---     dust, 36000 L
+---   * the side routes: chemical reactor (EV, 15 s) 2 concentrate + 3 calcium -> dephosphated samarium concentrate + 5
+---     tricalcium phosphate; centrifuge (EV, 10 s) 6 dephosphated -> samarium dust + 2 thorianite; and GTNH's concentrate
+---     recipes beside 159's salt and plain ones: the mixer, halogenic monazite mixture + 2 concentrate + 1000 L acetone
+---     -> 3 saturated monazite rare earth (HV, 20 s), the chemical reactor, samaric rare earth concentrate + concentrate +
+---     2000 L hydrofluoric acid -> 2 fluorinated samaric concentrate (HV, 17.5 s)
+---   Left out: the ZPM distillation of molten samarium chloride with lanthanum (the GTNH dump has no recipe that melts the
+---   chloride). Thorium phosphate concentrate and rarest earth residue have no use in GTNH either. Fluids a tenth.
+---   Unlocked with Reach the Toxic Everglades (florencite, the concentrate's first source).
+--------------------------------------------------------------------------------
+do
+	local R = {}
+	local function fl(name, icon, rgb) F.fluid(name, icon, { rgb[1] / 255, rgb[2] / 255, rgb[3] / 255 }) end
+	--- (gtnhlanth's Werkstoff colours, WerkstoffMaterialPool.java)
+	fl("muddy-samarium-rare-earth-solution", "olive-fluid", { 226, 180, 108 })
+	fl("samarium-rare-earth-mud", "olive-fluid", { 226, 180, 128 })
+	fl("diluted-samarium-rare-earth-solution", "light-orange-fluid", { 226, 180, 148 })
+	items(SUB_DUST, { "samarium-ore-concentrate", "thorium-phosphate-concentrate", "samarium-oxalate",
+		"dephosphated-samarium-concentrate", "samarium-chloride", "samarium-chloride-sodium-chloride-blend",
+		"rarest-earth-residue", "tiny-pile-of-rarest-earth-residue-dust" })
+	step(R, "muddy-samarium-rare-earth-solution", "digester-recipes", 10, EV_SPEED,
+		{ { "samarium-ore-concentrate", 16 }, { "nitric-acid", 20 } },
+		{ { "thorium-phosphate-concentrate", 1 }, { "muddy-samarium-rare-earth-solution", 80 } }, "muddy-samarium-rare-earth-solution")
+	step(R, "muddy-samarium-rare-earth-solution-from-crushed", "digester-recipes", 10, EV_SPEED,
+		{ { "crushed-samarium", 8 }, { "nitric-acid", 30 } },
+		{ { "thorium-phosphate-concentrate", 3 }, { "muddy-samarium-rare-earth-solution", 120 } }, "muddy-samarium-rare-earth-solution")
+	step(R, "samarium-rare-earth-mud", "dissolution-tank-recipes", 10, EV_SPEED,
+		{ { "nitric-acid", 100 }, { "muddy-samarium-rare-earth-solution", 100 } },
+		{ { "samarium-rare-earth-mud", 200 }, { "cerium-dioxide", 1, 0.8 }, { "cerium-rich-mixture", 1, 0.6 } }, "samarium-rare-earth-mud")
+	step(R, "samarium-rare-earth-mud-low-efficiency", "ev-chemical-reactor-recipes", 15, EV_SPEED,
+		{ { "nitric-acid", 100 }, { "muddy-samarium-rare-earth-solution", 100 } },
+		{ { "samarium-rare-earth-mud", 100 }, { "cerium-dioxide", 1, 0.5 } }, "samarium-rare-earth-mud")
+	step(R, "diluted-samarium-rare-earth-solution", "dissolution-tank-recipes", 30, EV_SPEED,
+		{ { "water", 900 }, { "samarium-rare-earth-mud", 100 } },
+		{ { "diluted-samarium-rare-earth-solution", 1000 }, { "neodymium-rare-earth-concentrate", 1, 0.9 },
+			{ "neodymium-rare-earth-concentrate", 1, 0.6 } }, "diluted-samarium-rare-earth-solution")
+	step(R, "diluted-samarium-rare-earth-solution-low-efficiency", "ev-chemical-reactor-recipes", 60, EV_SPEED,
+		{ { "samarium-rare-earth-mud", 100 }, { "water", 1600 } }, { { "diluted-samarium-rare-earth-solution", 800 } })
+	step(R, "samarium-oxalate", "ev-chemical-reactor-recipes", 10, EV_SPEED,
+		{ { "diluted-samarium-rare-earth-solution", 200 }, { "oxalic-acid", 300 } },
+		{ { "samarium-oxalate", 5 }, { "dephosphated-samarium-concentrate", 3, 0.1 }, { "muddy-samarium-rare-earth-solution", 5 } },
+		"samarium-oxalate")
+	step(R, "samarium-chloride", "ev-chemical-reactor-recipes", 10, EV_SPEED,
+		{ { "samarium-oxalate", 5 }, { "hydrochloric-acid", 600 } }, { { "samarium-chloride", 8 }, { "carbon-monoxide", 600 } },
+		"samarium-chloride")
+	step(R, "samarium-chloride-sodium-chloride-blend", "lv-mixer-recipes", 5, LV_SPEED,
+		{ { "samarium-chloride", 2 }, { "salt", 1 } }, { { "samarium-chloride-sodium-chloride-blend", 3 } })
+	step(R, "samarium-chloride-sodium-chloride-blend-electrolysis", "iv-electrolyzer-recipes", 1, IV_SPEED,
+		{ { "samarium-chloride-sodium-chloride-blend", 6 } },
+		{ { "samarium-dust", 1 }, { "sodium", 1 }, { "tiny-pile-of-rarest-earth-residue-dust", 2 }, { "chlorine", 400 } }, "samarium-dust")
+	step(R, "samarium-chloride-sodium-chloride-blend-electrolysis-x9", "luv-electrolyzer-recipes", 2, LUV_SPEED,
+		{ { "samarium-chloride-sodium-chloride-blend", 54 } },
+		{ { "samarium-dust", 9 }, { "sodium", 9 }, { "rarest-earth-residue", 2 }, { "chlorine", 3600 } }, "samarium-dust")
+	step(R, "dephosphated-samarium-concentrate", "ev-chemical-reactor-recipes", 15, EV_SPEED,
+		{ { "samarium-ore-concentrate", 2 }, { "calcium", 3 } },
+		{ { "dephosphated-samarium-concentrate", 1 }, { "tricalcium-phosphate", 5 } }, "dephosphated-samarium-concentrate")
+	step(R, "dephosphated-samarium-concentrate-centrifuging", "ev-centrifuge-recipes", 10, EV_SPEED,
+		{ { "dephosphated-samarium-concentrate", 6 } }, { { "samarium-dust", 1 }, { "thorianite", 2 } }, "samarium-dust")
+	step(R, "saturated-monazite-rare-earth-from-samarium-ore-concentrate", "hv-mixer-recipes", 20, HV_SPEED,
+		{ { "heterogenous-halogenic-monazite-rare-earth-mixture", 1 }, { "samarium-ore-concentrate", 2 }, { "acetone", 100 } },
+		{ { "saturated-monazite-rare-earth", 3 } })
+	step(R, "fluorinated-samaric-concentrate-from-samarium-ore-concentrate", "hv-chemical-reactor-recipes", 17.5, HV_SPEED,
+		{ { "samaric-rare-earth-concentrate", 1 }, { "samarium-ore-concentrate", 1 }, { "hydrofluoric-acid", 200 } },
+		{ { "fluorinated-samaric-concentrate", 2 } })
+	for _, r in pairs(R) do fork_add_unlock("reach-the-everglades", r) end
+	table.insert(data.raw.technology["reach-the-everglades"].prerequisites, "cerium-processing")   -- (the oxalic acid)
+end
+
+
+
+--------------------------------------------------------------------------------
 --- 38) GT'S PARTS OF THE METALS OF THIS FILE (issue #467). 158 makes GT New Horizons' parts of every metal of
 ---   prototypes/gt-parts-data.lua (issue #227) whose ingot exists; most metals of this file come after 158, so its
 ---   FORK_GT_PARTS.run() runs once more here (it skips what exists), then 143's casts for the new forms.

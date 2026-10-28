@@ -844,6 +844,9 @@ local RT = {
 	{ "lv-greenhouse", "growing-seaweed" },
 	{ "hv-chemical-reactor", "iodine-dust" },
 	{ "hv-electric-blast-furnace", "hot-hafnium-ingot" },
+	-- issue #631 part 2 (section 55): the samarium ore concentrate's digester and the blend's electrolysis
+	{ "digester", "muddy-samarium-rare-earth-solution" },
+	{ "iv-electrolyzer", "samarium-chloride-sodium-chloride-blend-electrolysis" },
 	-- issue #636 (160, 161): the Phobos and Deimos mines, Seth's Void Miner III pool and the Deep Dark (every raw ore)
 	{ "dimension-mine", "mining-heavy-pentele-vein" },
 	{ "void-miner-iii", "void-mining-seth" },
