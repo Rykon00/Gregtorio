@@ -1643,7 +1643,7 @@ do
 			name = t .. "-packager",
 			subgroup = t .. "-age-production-machine",
 			ingredients = {
-				{ type = "item", name = "chest", amount = 2 },
+				{ type = "item", name = "wooden-chest", amount = 2 },   -- (GT: craftingChest, any chest)
 				{ type = "item", name = circuit, amount = 2 },
 				{ type = "item", name = t .. "-robot-arm", amount = 1 },
 				{ type = "item", name = t .. "-machine-hull", amount = 1 },
@@ -1682,7 +1682,7 @@ function FORK_PACKAGER.twin_piles()
 		twin.category, twin.categories = nil, { "lv-packager-recipes" }
 		twin.energy_required = 1
 		twin.subgroup = "subgroup-lv-packager-recipes"
-		twin.hide_from_player_crafting = true
+		twin.hide_from_player_crafting = nil
 		twin.enabled = t[2].enabled
 		twin.localised_name = twin.localised_name or { "?", { "item-name." .. t[2].results[1].name } }
 		data:extend({ twin })
