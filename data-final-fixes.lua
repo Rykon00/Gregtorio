@@ -900,6 +900,8 @@ fork_steam_categories()
 fork_furnace_machines()
 --- Fork: every Gregtorio recipe named after its product unless it has its own name (prototypes/fork-locale.lua, issue #230)
 FORK_LOCALE.name_recipes()
+--- Fork: every tiered machine says what it does (prototypes/167-fork-tips.lua, issue #625); after every machine
+FORK_TIPS.describe_machines()
 require("prototypes.fork-menu-simulations")
 --- Fork: cheap research (startup setting, default off); after every change to the technologies above
 require("prototypes.fork-one-pack-research")
