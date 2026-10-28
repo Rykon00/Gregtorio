@@ -157,6 +157,19 @@ for name, m in pairs(data.raw["assembling-machine"]) do
 	end
 end
 
+--- Issue #635: GT's electrolyzer gives its gases and water as cells in six item slots (gregtech/api/recipe/RecipeMaps.java:
+--- 820-821, maxIO(2, 6, 1, 1)); without cells the decompositions need a third fluid output (trona and vermiculite: hydrogen,
+--- oxygen and water): the 3x3 electrolyzers get one between their two (south)
+for _, m in pairs(data.raw["assembling-machine"]) do
+	local electrolyzer = false
+	for _, c in pairs(m.crafting_categories or {}) do
+		if c:match("^%a+%-electrolyzer%-recipes$") then electrolyzer = true end
+	end
+	if electrolyzer and m.selection_box and m.selection_box[2][2] == 1.5 and m.fluid_boxes and #m.fluid_boxes == 4 then
+		m.fluid_boxes[5] = fluid_port(0, 1, "output", defines.direction.south)
+	end
+end
+
 --- Issue #356: GT's chemical bath and laser engraver maps take 2 fluids in and give 2 out (gregtech/api/recipe/
 --- RecipeMaps.java: chemicalBathRecipes maxIO(2, 6, 2, 2), laserEngraverRecipes maxIO(4, 4, 2, 2); the netherite chain's
 --- extraction and crystallization use them): the 3x3 baths get a second input (north) and output (south), the 3x3
@@ -1599,6 +1612,88 @@ end
 
 
 --------------------------------------------------------------------------------
+--- 2j') PACKAGER, LV TO EV (issue #635, the maintainer's decision: GT's Packager instead of the crafting table only)
+---    GT New Horizons' Basic Packager (the boxinator, LoaderMetaTileEntities.java, recipe map packagerRecipes,
+---    RecipeMaps.java:748-749 maxIO(2, 1, 0, 0)): 4 small or 9 tiny piles of a dust -> the dust, 1 s at 4 EU/t
+---    (gregtech/loaders/oreprocessing/ProcessingDust.java:572-578). Here every crafting table recipe <dust>-from-small-piles
+---    and -tiny-piles gets a twin in lv-packager-recipes (FORK_PACKAGER.twin_piles(), data-final-fixes.lua, after every
+---    file that makes piles); the crafting table recipe stays. Machine recipe as GT's "BCB", "RMV", "WCW"
+---    (MTERecipeLoader.java:3222-3228: 2 chests, 2 circuits, the robot arm, the hull, the conveyor, 2 cables). Power 4 EU/t
+---    at LV, doubled per tier; LV with Ore Centrifuging (the LV centrifuge, whose small piles it packs), MV to EV with the machines of their tier. Sprites:
+---    tools/gen_sprites.py (packager_lv_mv: the assembling machine's frame with GT's packager front); IV to MAX through
+---    IV_BASIC_MACHINES (GT's packager ends at UV).
+--------------------------------------------------------------------------------
+
+recipe_category_and_subgroup("lv-packager-recipes")
+FORK_PACKAGER = {}
+do
+	local TIERS_635 = {
+		--  tier  path  energy   speed  cable             circuit
+		{ "lv", "lv", "40kW",  1, "tin-cable",       "electronic-circuit" },
+		{ "mv", "mv", "80kW",  2, "copper-cable",    "advanced-circuit" },
+		{ "hv", "mv", "160kW", 4, "gold-cable",      "processing-unit" },
+		{ "ev", "mv", "320kW", 8, "aluminium-cable", "ev-circuit" },
+	}
+	local TECH_OF = { lv = "ore-centrifuging", mv = "mv-machines", hv = "hv-machines", ev = "ev-machines" }
+	for _, a in ipairs(TIERS_635) do
+		local t, pt, energy, speed, cable, circuit = table.unpack(a)
+		make_electric_machine(t .. "-packager", t .. "-packager", pt .. "-packager", { "lv-packager-recipes" }, "fr-packager",
+			energy, speed, 1, 0.5, 3, 3)
+		create_item{
+			name = t .. "-packager",
+			subgroup = t .. "-age-production-machine",
+			ingredients = {
+				{ type = "item", name = "chest", amount = 2 },
+				{ type = "item", name = circuit, amount = 2 },
+				{ type = "item", name = t .. "-robot-arm", amount = 1 },
+				{ type = "item", name = t .. "-machine-hull", amount = 1 },
+				{ type = "item", name = t .. "-conveyor-module", amount = 1 },
+				{ type = "item", name = cable, amount = 2 },
+			},
+			place_result = t .. "-packager",
+			stack_size = 10,
+		}
+		FORK_PACKAGER[t] = t .. "-packager"
+		fork_add_unlock(TECH_OF[t], t .. "-packager")
+	end
+	data.raw["assembling-machine"]["lv-packager"].next_upgrade = "mv-packager"
+	data.raw["assembling-machine"]["mv-packager"].next_upgrade = "hv-packager"
+	data.raw["assembling-machine"]["hv-packager"].next_upgrade = "ev-packager"
+	FORK_PACKAGER.tech_of = TECH_OF
+end
+--- every pile -> dust recipe of the crafting table gets its packager twin (GT: 1 s at LV), unlocked with the original
+function FORK_PACKAGER.twin_piles()
+	local unl = {}
+	for tname, tech in pairs(data.raw.technology) do
+		for _, e in pairs(tech.effects or {}) do
+			if e.type == "unlock-recipe" then unl[e.recipe] = unl[e.recipe] or tname end
+		end
+	end
+	local twins = {}
+	for name, r in pairs(data.raw.recipe) do
+		if (name:match("%-from%-small%-piles$") or name:match("%-from%-tiny%-piles$")) and not name:match("^packager%-") then
+			twins[#twins + 1] = { name, r }
+		end
+	end
+	table.sort(twins, function(x, y) return x[1] < y[1] end)
+	for _, t in pairs(twins) do
+		local twin = table.deepcopy(t[2])
+		twin.name = "packager-" .. t[1]
+		twin.category, twin.categories = nil, { "lv-packager-recipes" }
+		twin.energy_required = 1
+		twin.subgroup = "subgroup-lv-packager-recipes"
+		twin.hide_from_player_crafting = true
+		twin.enabled = t[2].enabled
+		twin.localised_name = twin.localised_name or { "?", { "item-name." .. t[2].results[1].name } }
+		data:extend({ twin })
+		if unl[t[1]] then fork_add_unlock(unl[t[1]], twin.name) end
+	end
+	log("FORK-PACKAGER: " .. #twins .. " pile recipes twinned")
+end
+
+
+
+--------------------------------------------------------------------------------
 --- 2k) CAULDRON (issue #427)
 ---    GT New Horizons' early, byproduct-free washing: an impure or pure dust dropped into a filled cauldron becomes the
 ---    dust (MetaGeneratedItem01.getCauldronWashingResult, recipe map cauldronRecipe of GTPostLoad.addCauldronRecipe:
@@ -1789,6 +1884,7 @@ IV_BASIC_MACHINES = {
 	"canning-machine", "mixer", "ore-washer", "laser-engraver", "fluid-solidifier", "chemical-bath",
 	"polarizer", "circuit-assembler", "autoclave", "alloy-smelter", "compressor", "forge-hammer", "arc-furnace", "forming-press", "electric-furnace", "sifting-machine", "thermal-centrifuge", "electromagnetic-separator",
 	"brewery", "fermenter",   -- issue #360
+	"packager",   -- issue #635
 }
 --- Multiblocks that come as an upgrade of the EV version (graphics of the EV version with energy hatches of the tier)
 IV_UPGRADE_MACHINES = {
