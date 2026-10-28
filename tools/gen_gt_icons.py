@@ -271,6 +271,11 @@ MATERIALS = {
     "cinobite-a243": ("METALLIC", (149, 162, 157)), "octiron": ("METALLIC", (148, 140, 87)),
     # issue #636: Seth's raw tengam (the ore and GT's Raw Tengam Dust) and tartarite (MaterialsInit.java)
     "tengam": "TengamRaw", "raw-tengam": "TengamRaw", "tartarite": "Tartarite",
+    # issue #629 part 2: GT's purified and attuned tengam; proto-halkonite steel and its hot form (their own textures,
+    # TextureSet.java:60-61, white)
+    "purified-tengam": "TengamPurified", "attuned-tengam": "TengamAttuned",
+    "proto-halkonite-steel": ("CUSTOM/protohalkonite", (255, 255, 255)),
+    "hot-proto-halkonite-steel": ("CUSTOM/hotprotohalkonite", (255, 255, 255)),
     "calcium": "Calcium",
     # issue #205: goodgenerator's Werkstoffe of the naquadah line (GGMaterial.java, their colours; dusts)
     "naquadria-oxide-mixture": ("METALLIC", (77, 77, 85)), "indium-phosphate": ("DULL", (43, 46, 112)),

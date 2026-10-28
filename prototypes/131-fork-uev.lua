@@ -446,7 +446,7 @@ create_recipe{
 --- 3) UEV COMPONENTS (zpm-assembly-line-recipes, like the UHV ones)
 --- GT5-Unofficial assembly line recipes; 1 GT ingot of fluid = 14.4, 2000 L lubricant = 200.
 --- Changes against GT:
----   * attuned tengam rods -> magnetic samarium rods (no tengam), bedrockium / nether star plates
+---   * attuned tengam rods -> magnetic samarium rods (since issue #629 attuned tengam, 164 section 53), bedrockium / nether star plates
 ---     -> cosmic neutronium plates, quantium -> cosmic neutronium melt, infinity catalyst foil ->
 ---     infinity foil (137-fork-endgame-materials.lua puts quantium melt in, issue #36)
 ---   * fine wire and foil counts cut (GT: 512 fine cosmic neutronium wires, 256 foils): motor 64

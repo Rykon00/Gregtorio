@@ -1257,6 +1257,8 @@ ORE_SEPARATOR = {"vanadium-magnetite": "gold", "tin": "iron", "ilmenite": "iron"
                  "granitic-mineral-sand": "gold", "glauconite-sand": "iron", "yellow-garnet": "iron"}
 # Issue #262: the other separator recipes of GTNH (gtnhlanth's monazite line, prototypes/159-fork-lanthanides.lua)
 SEPARATOR_OTHER = {"monazite-rarer-earth-sediment"}
+# issue #629: raw tengam dust into purified tengam dust (the GTNH recipe dump; prototypes/164-fork-chemistry.lua section 53)
+SEPARATOR_OTHER.add("purified-tengam-dust")
 # Issue #188: the gem ores of GTNH's sifter (table, crystallisable for the autoclave) and their gem items
 ORE_GEMS = {"ruby": ("ruby", False), "emerald": ("emerald", False), "diamond": ("diamond", False),
             "nether-quartz": ("nether-quartz", True), "certus-quartz": ("certus-quartz", True),

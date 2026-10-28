@@ -5961,6 +5961,101 @@ end
 
 
 --------------------------------------------------------------------------------
+--- 53) ATTUNED TENGAM AND PROTO-HALKONITE STEEL (issue #629 part 2, the maintainer's decision of 2026-10-28: after #636,
+---   tairitsu as tritanium), where magnetic samarium, fine cosmic neutronium or transcendent metal wire and osmiridium
+---   stood in. The GTNH recipe dump (tools/gtnh_dump) gives every step:
+---   * attuned tengam: Seth's raw tengam dust (160, 155) in the electromagnetic separator -> purified tengam dust (10 s at
+---     UHV; GT's 10 % magnetic neodymium and samarium dust left out, no such dusts in the mod), the fluid extractor ->
+---     144 L (1.2 s at MV), the fluid solidifier -> a purified tengam rod (72 L, 7.5 s at UV) or long rod (144 L, 15 s),
+---     the polarizer -> the attuned rod (3.2 s at UHV) or long rod (6.4 s). Users: the UEV, UIV and UMV motors (8, 16 and
+---     32 long rods instead of 4 long magnetic samarium rods; tectech ResearchStationAssemblyLine.java, the dump's
+---     fakeAssemblylineProcess) and the UEV to UMV voltage coils (a rod each instead of a magnetic samarium rod, GT's
+---     AssemblerRecipes)
+---   * proto-halkonite steel (gtPlusPlus/core/recipe/RecipesGregTech.java:1105-1116): the UEV alloy blast smelter, 2
+---     transcendent metal + 2 tairitsu + 2 tartarite + 1 titansteel + 1 infinity dust + 1000 L dimensionally
+---     transcendent residue -> 1152 L base, 60 s; the chemical bath dips an infinity part into the base (8 fine wires +
+---     144 L, 8 s at UEV; a plate + 144 L, 8 s) into the hot part, the vacuum freezer cools it (36 L dimensionally shifted
+---     superfluid + 576 L super coolant, 1 s at UIV). Users: the UIV motor and field generator (64 fine wires each,
+---     the mod's count; GT 512) and the space elevator's Mk-IV motor (16 plates).
+---   Named stand-ins: tairitsu (GoodGenerator, not in the mod) as tritanium dust (as #628); the dimensionally shifted
+---   superfluid of the freezer as super coolant (as 162: the superfluid comes at UMV here). The UIV components come at 11
+---   packs, before the UIV vacuum freezer (12): the freezing runs in the UEV one at UIV time (as 127's UV assembly line
+---   recipes run in the ZPM one).
+---   Unlocked with their first users' technologies (issue #252's rule): attuned tengam with the UEV components,
+---   proto-halkonite with the UIV components.
+--------------------------------------------------------------------------------
+do
+	local function fl(name, rgb) F.fluid(name, name, { rgb[1] / 255, rgb[2] / 255, rgb[3] / 255 }) end
+	local RT, RH = {}, {}
+	--- (purified tengam in GT's colour, gen_gt_icons --molten; the base in its own GT fluid texture, white)
+	fl("molten-purified-tengam", { 186, 223, 112 })
+	fl("molten-proto-halkonite-steel-base", { 255, 255, 255 })
+	items(SUB_DUST, { "purified-tengam-dust" })
+	items(SUB_PART, { "purified-tengam-rod", "long-purified-tengam-rod", "attuned-tengam-rod", "long-attuned-tengam-rod",
+		"fine-hot-proto-halkonite-steel-wire", "fine-proto-halkonite-steel-wire", "hot-proto-halkonite-steel-plate",
+		"proto-halkonite-steel-plate" })
+	step(RT, "purified-tengam-dust", "lv-electromagnetic-separator-recipes", 10, UHV_SPEED, { { "raw-tengam-dust", 1 } },
+		{ { "purified-tengam-dust", 1 } })
+	step(RT, "molten-purified-tengam", "mv-fluid-extractor-recipes", 1.2, MV_SPEED, { { "purified-tengam-dust", 1 } },
+		{ { "molten-purified-tengam", 14.4 } })
+	step(RT, "purified-tengam-rod", "uv-fluid-solidifier-recipes", 7.5, UV_SPEED, { { "molten-purified-tengam", 7.2 } },
+		{ { "purified-tengam-rod", 1 } })
+	step(RT, "long-purified-tengam-rod", "uv-fluid-solidifier-recipes", 15, UV_SPEED, { { "molten-purified-tengam", 14.4 } },
+		{ { "long-purified-tengam-rod", 1 } })
+	step(RT, "attuned-tengam-rod", "uhv-polarizer-recipes", 3.2, UHV_SPEED, { { "purified-tengam-rod", 1 } },
+		{ { "attuned-tengam-rod", 1 } })
+	step(RT, "long-attuned-tengam-rod", "uhv-polarizer-recipes", 6.4, UHV_SPEED, { { "long-purified-tengam-rod", 1 } },
+		{ { "long-attuned-tengam-rod", 1 } })
+	step(RH, "molten-proto-halkonite-steel-base", "uev-alloy-blast-smelter-recipes", 60, UEV_SPEED,
+		{ { "transcendent-metal-dust", 2 }, { "tritanium-dust", 2 }, { "tartarite-dust", 2 }, { "titansteel-dust", 1 },
+			{ "infinity-dust", 1 }, { "dimensionally-transcendent-residue", 100 } }, { { "molten-proto-halkonite-steel-base", 115.2 } })
+	step(RH, "fine-hot-proto-halkonite-steel-wire", "uev-chemical-bath-recipes", 8, UEV_SPEED,
+		{ { "fine-infinity-wire", 8 }, { "molten-proto-halkonite-steel-base", 14.4 } }, { { "fine-hot-proto-halkonite-steel-wire", 8 } })
+	step(RH, "fine-proto-halkonite-steel-wire", "uev-vacuum-freezer-recipes", 1, UIV_SPEED,
+		{ { "fine-hot-proto-halkonite-steel-wire", 8 }, { "super-coolant", 61.2 } }, { { "fine-proto-halkonite-steel-wire", 8 } })
+	step(RH, "hot-proto-halkonite-steel-plate", "uev-chemical-bath-recipes", 8, UEV_SPEED,
+		{ { "infinity-plate", 1 }, { "molten-proto-halkonite-steel-base", 14.4 } }, { { "hot-proto-halkonite-steel-plate", 1 } })
+	step(RH, "proto-halkonite-steel-plate", "uev-vacuum-freezer-recipes", 1, UIV_SPEED,
+		{ { "hot-proto-halkonite-steel-plate", 1 }, { "super-coolant", 61.2 } }, { { "proto-halkonite-steel-plate", 1 } })
+	--- the users
+	local function swap(recipe, old, new, amount)
+		local found = false
+		for _, i in pairs(data.raw.recipe[recipe].ingredients) do
+			if i.name == old then i.name, i.amount, found = new, amount, true end
+		end
+		assert(found, "section 53: " .. recipe .. " has no " .. old)
+	end
+	swap("uev-motor", "long-magnetic-samarium-rod", "long-attuned-tengam-rod", 8)
+	swap("uiv-motor", "long-magnetic-samarium-rod", "long-attuned-tengam-rod", 16)
+	swap("umv-motor", "long-magnetic-samarium-rod", "long-attuned-tengam-rod", 32)
+	for _, c in pairs({ "extremely-ultimate-voltage-coil", "insanely-ultimate-voltage-coil", "mega-ultimate-voltage-coil" }) do
+		swap(c, "magnetic-samarium-rod", "attuned-tengam-rod", 1)
+	end
+	swap("uiv-motor", "fine-cosmic-neutronium-wire", "fine-proto-halkonite-steel-wire", 64)
+	swap("uiv-field-generator", "fine-transcendent-metal-wire", "fine-proto-halkonite-steel-wire", 64)
+	swap("space-elevator-motor-mk4", "osmiridium-plate", "proto-halkonite-steel-plate", 16)
+	for _, r in pairs(RT) do fork_add_unlock("uev-components", r) end
+	for _, r in pairs(RH) do fork_add_unlock("uiv-components", r) end
+	--- (the base's dusts from their ingots in the macerator, unlocked where they were first used before, now come with
+	--- the UIV components; the residue with the DTPF)
+	local DUSTS = {}
+	for _, x in pairs({ "transcendent-metal-dust", "tritanium-dust", "infinity-dust" }) do
+		DUSTS[x], DUSTS["steam-" .. x] = true, true
+	end
+	for _, t in pairs(data.raw.technology) do
+		local keep = {}
+		for _, e in pairs(t.effects or {}) do
+			if not (e.type == "unlock-recipe" and DUSTS[e.recipe]) then keep[#keep + 1] = e end
+		end
+		t.effects = keep
+	end
+	for x in pairs(DUSTS) do if data.raw.recipe[x] then fork_add_unlock("uiv-components", x) end end
+	table.insert(data.raw.technology["uiv-components"].prerequisites, "dimensionally-transcendent-plasma-forge")
+end
+
+
+
+--------------------------------------------------------------------------------
 --- 38) GT'S PARTS OF THE METALS OF THIS FILE (issue #467). 158 makes GT New Horizons' parts of every metal of
 ---   prototypes/gt-parts-data.lua (issue #227) whose ingot exists; most metals of this file come after 158, so its
 ---   FORK_GT_PARTS.run() runs once more here (it skips what exists), then 143's casts for the new forms.
