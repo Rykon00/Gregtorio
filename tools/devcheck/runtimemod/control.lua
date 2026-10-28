@@ -836,6 +836,10 @@ local RT = {
 	-- issue #629 (section 52): GT++'s cinobite A243 and octiron for the fusion reactor Mk-IV's parts
 	{ "zpm-alloy-blast-smelter", "molten-cinobite-a243" },
 	{ "uhv-alloy-blast-smelter", "molten-octiron" },
+	-- issue #629 part 2 (section 53): attuned tengam (polarizer) and proto-halkonite steel (alloy blast smelter, freezer)
+	{ "uhv-polarizer", "long-attuned-tengam-rod" },
+	{ "uev-alloy-blast-smelter", "molten-proto-halkonite-steel-base" },
+	{ "uev-vacuum-freezer", "fine-proto-halkonite-steel-wire" },
 	-- issue #636 (160, 161): the Phobos and Deimos mines, Seth's Void Miner III pool and the Deep Dark (every raw ore)
 	{ "dimension-mine", "mining-heavy-pentele-vein" },
 	{ "void-miner-iii", "void-mining-seth" },

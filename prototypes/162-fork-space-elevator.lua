@@ -25,7 +25,7 @@
 ---     not built;
 ---   * mutated living solder (motors Mk-III to Mk-V): GT's since issue #627 (164 section 46; indalloy 140 before); dimensionally
 ---     shifted superfluid -> super coolant; the Mk-IV motor's proto-halkonite plate -> osmiridium, the plate of the
----     other motors.
+---     other motors (since issue #629 GT's proto-halkonite steel plate, 164 section 53).
 --- Loads after 160 (data.lua) and before 142, whose tree check sees the technologies.
 --------------------------------------------------------------------------------
 

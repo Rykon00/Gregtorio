@@ -5292,3 +5292,12 @@ impure-naquadria-dust	colour of Naquadria #1e1e1e + gt:gregtech/textures/items/m
 pure-naquadria-dust	colour of Naquadria #1e1e1e + gt:gregtech/textures/items/materialicons/SHINY/dustPure + gt:gregtech/textures/items/materialicons/SHINY/dustPure_OVERLAY
 raw-tengam-dust	colour of TengamRaw #a0bf60 + gt:gregtech/textures/items/materialicons/ROUGH/dust
 tartarite-dust	colour of Tartarite #ff763c + gt:gregtech/textures/items/materialicons/METALLIC/dust
+attuned-tengam-rod	colour of TengamAttuned #d5ff80 + gt:gregtech/textures/items/materialicons/MAGNETIC/stick + gt:gregtech/textures/items/materialicons/MAGNETIC/stick_OVERLAY
+fine-hot-proto-halkonite-steel-wire	gt:gregtech/textures/items/materialicons/CUSTOM/hotprotohalkonite/wireFine + gt:gregtech/textures/items/materialicons/CUSTOM/hotprotohalkonite/wireFine_OVERLAY
+fine-proto-halkonite-steel-wire	gt:gregtech/textures/items/materialicons/CUSTOM/protohalkonite/wireFine + gt:gregtech/textures/items/materialicons/CUSTOM/protohalkonite/wireFine_OVERLAY
+hot-proto-halkonite-steel-plate	gt:gregtech/textures/items/materialicons/CUSTOM/hotprotohalkonite/plate
+long-attuned-tengam-rod	colour of TengamAttuned #d5ff80 + gt:gregtech/textures/items/materialicons/MAGNETIC/stickLong + gt:gregtech/textures/items/materialicons/MAGNETIC/stickLong_OVERLAY
+long-purified-tengam-rod	colour of TengamPurified #badf70 + gt:gregtech/textures/items/materialicons/NONE/stickLong
+proto-halkonite-steel-plate	gt:gregtech/textures/items/materialicons/CUSTOM/protohalkonite/plate
+purified-tengam-dust	colour of TengamPurified #badf70 + gt:gregtech/textures/items/materialicons/METALLIC/dust
+purified-tengam-rod	colour of TengamPurified #badf70 + gt:gregtech/textures/items/materialicons/NONE/stick

@@ -5313,3 +5313,13 @@ impure-naquadria-dust
 pure-naquadria-dust
 raw-tengam-dust
 tartarite-dust
+# issue #629 part 2: attuned tengam and proto-halkonite steel
+purified-tengam-dust
+purified-tengam-rod
+long-purified-tengam-rod
+attuned-tengam-rod
+long-attuned-tengam-rod
+fine-hot-proto-halkonite-steel-wire
+fine-proto-halkonite-steel-wire
+hot-proto-halkonite-steel-plate
+proto-halkonite-steel-plate
