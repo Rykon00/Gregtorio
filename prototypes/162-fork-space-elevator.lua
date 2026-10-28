@@ -71,7 +71,7 @@ local parts = {
 	part("nanotube-spool", "zpm-assembling-machine-recipes", 60 * ZPM_SPEED, {
 		item("graphene-wire", 256), fluid("advanced-glue", 720),
 	}),
-	part("space-elevator-cable", "uhv-assembling-machine-recipes", 120 * UHV_SPEED, {
+	part("space-elevator-cable", "uv-assembling-machine-recipes", 120 * UV_SPEED, {   -- (issue #624: UV, GTNH's tier)
 		item("nanotube-spool", 64), item("uhv-circuit", 4), fluid("super-glue", 8000),
 	}),
 	part("space-elevator-controller", AL, 300 * UHV_SPEED, {
@@ -125,8 +125,8 @@ for t = 1, 5 do
 	create_item{
 		name = name,
 		icon = FORK_ICON .. name .. ".png",
-		category = "uhv-assembling-machine-recipes",
-		energy_required = 300 * UHV_SPEED,
+		category = t == 1 and "uv-assembling-machine-recipes" or "uhv-assembling-machine-recipes",   -- (#624: Mk-I at UV)
+		energy_required = 300 * (t == 1 and UV_SPEED or UHV_SPEED),
 		subgroup = SUBGROUP,
 		stack_size = 1,
 		place_result = name,
@@ -158,11 +158,15 @@ data:extend({ { type = "mod-data", name = "fork-space-elevator", data = MODDATA 
 --- TECHNOLOGIES (GT researches the controller from OpenBlocks' elevator and each motor from the one before)
 --------------------------------------------------------------------------------
 
---- GT's parts are a tier later here (cosmic neutronium comes with Quantium at UEV, infinity with the UEV materials,
---- transcendent metal UIV, spacetime UMV, universium UXV): each technology follows the materials it takes (#252's rule,
---- the consumer moves to its producer's technology when the producer's chain is late)
-F.tech{ name = "space-elevator", prerequisites = { "uhv-components", "wetware-processor-mainframes", "uhv-machines",
-	"quantium", "super-glue" }, packs = 10, count = 50, time = 60, recipes = F.join(parts, { motors[1], elevators[1] }) }
+--- GT's parts are a tier later here (infinity with the UEV materials, transcendent metal UIV, spacetime UMV, universium
+--- UXV): each technology follows the materials it takes (#252's rule, the consumer moves to its producer's technology
+--- when the producer's chain is late). Issue #624 (the maintainer's decision): the elevator itself at GTNH's tier, UV:
+--- cosmic neutronium (its screws and rings) comes with the technology Cosmic Neutronium after the Void Miner III, which
+--- mines it (Horus), instead of Quantium (142, 161), and the cable and the Mk-I elevator are UV assembler recipes
+F.tech{ name = "cosmic-neutronium", prerequisites = { "void-miner-iii", "uv-machines" }, packs = 9, count = 50, time = 60,
+	recipes = {} }
+F.tech{ name = "space-elevator", prerequisites = { "uhv-components", "wetware-processor-mainframes", "uv-machines",
+	"cosmic-neutronium", "super-glue" }, packs = 9, count = 50, time = 60, recipes = F.join(parts, { motors[1], elevators[1] }) }
 local PACKS = { 10, 10, 11, 12, 13 }
 local AFTER = { nil, "uev-materials", "uiv-materials", "umv-materials", "uxv-materials" }
 for t = 2, 5 do

@@ -66,7 +66,7 @@ How Gregtorio turns GT New Horizons into Factorio, where the code only implies i
 | #620 | the blast furnace's heat in Kelvin with coil modules, as GT has it (heat check and overclock bonus) |
 | #621 | radioactivity and the hazmat suit as a startup setting, default off |
 | #622 | wireless energy between surfaces at UHV, as GTNH's wireless EU |
-| #624 | the space elevator at UV, the DTPF at UEV, the godforge at UIV |
+| #624 | the space elevator at UV, the DTPF at UEV, the godforge at UIV (built: the DTPF's technology 11 packs, the godforge's 12 packs with the UIV assembler, the elevator's 9 packs with cosmic neutronium from the new technology Cosmic Neutronium after the Void Miner III) |
 | #626 | YAFC mode is removed (YAFC sees the map veins and the classic vein recipes) |
 | #638 | GT's single-block naquadah reactors Mk I-V and plasma generators come back on GTNH's tiers (#644) |
 
