@@ -156,6 +156,8 @@ require("prototypes.161-fork-dimension-unlocks")
 require("prototypes.165-fork-ore-veins")
 --- issue #563: the classic vein recipes, generated from 165's veins, unlocked by the ore chains of 155 and 161 (after 165)
 require("prototypes.166-fork-classic-veins")
+--- issue #625: the tier goals as tips (their technologies exist by now)
+require("prototypes.167-fork-tips")
 --- issue #164: the circuit variant recipes show the icon of their GTNH item (156)
 require("prototypes.156-fork-circuit-icons")
 --- issue #190: GTNH's material recycling (macerator, arc furnace, fluid extractor), after every file that makes recipes

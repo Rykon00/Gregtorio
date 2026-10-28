@@ -339,6 +339,9 @@
     technology, the twins with the first plant's and the LV Miner's technology unless every vein technology is later, then
     163's `unlock_dimension_mines()`; devcheck fails for a placed vein of `FORK_ORE_MIXES` without its recipe and twins or
     with other ores (section CLASSICVEINS); `docs/ORE-VEINS.md`; loads after 165)
+  - 167 tips (issue #625: the Tips and tricks category `gregtorio`, a title tip and one tip per tier from steam to MAX
+    with the tier's goals after GTNH's quest lines, unlocked by the technology of the tier's science pack; the texts in
+    `locale/en/fork.cfg` link the technologies with rich text tags; loads after 166)
   - 156 circuit icons (issue #164: the circuit variant recipes up to UV keep the shared tier item and show GT's texture
     of their GTNH item as recipe icon; devcheck fails for a tier circuit recipe without its own icon; issue #450: the ULV
     tier item `ulv-circuit`, which the vacuum tube and NAND chip recipes give and every former user of the two takes, and
