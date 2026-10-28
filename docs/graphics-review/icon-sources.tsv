@@ -5153,3 +5153,7 @@ purified-molybdenum	colour of Molybdenum #b4b4dc + gt:gregtech/textures/items/ma
 purified-quartzite	colour of Quartzite #d2e6d2 + gt:gregtech/textures/items/materialicons/NONE/crushedPurified
 raw-molybdenum	colour of Molybdenum #b4b4dc + gt:gregtech/textures/items/materialicons/SHINY/oreRaw
 raw-oilsands	colour of Oilsands #0a0a0a + gt:gregtech/textures/items/materialicons/NONE/oreRaw
+blizz-rod	colour of Blizz #dce9ff + gt:gregtech/textures/items/materialicons/NONE/stick + gt:gregtech/textures/items/materialicons/CUSTOM/blizz/stick_OVERLAY
+blizz-dust	colour of Blizz #dce9ff + gt:gregtech/textures/items/materialicons/NONE/dust + gt:gregtech/textures/items/materialicons/CUSTOM/blizz/dust_OVERLAY
+snow-dust	colour of Snow #fafafa + gt:gregtech/textures/items/materialicons/FINE/dust
+cryotheum-dust	colour of Cryotheum #0094cb + gt:gregtech/textures/items/materialicons/NONE/dust + gt:gregtech/textures/items/materialicons/CUSTOM/cryotheum/dust_OVERLAY

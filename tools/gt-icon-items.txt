@@ -5170,3 +5170,7 @@ purified-molybdenum
 purified-quartzite
 raw-molybdenum
 raw-oilsands
+blizz-rod
+blizz-dust
+snow-dust
+cryotheum-dust

@@ -86,7 +86,7 @@ put("organic", { "acetic-acid", "formic-acid", "phthalic-acid", "acetone", "benz
 	"p507", "2-ethyl-1-hexanol", "biomass", "bacterial-sludge", "enriched-bacterial-sludge", "growth-medium", "mutagen" })
 put("polymers", { "glue", "advanced-glue", "super-glue", "epoxy", "liquid-rubber", "silicone-rubber", "ptfe" })
 put("coolants", { "cryogenic-helium", "lapis-coolant", "super-coolant", "sodium-potassium", "liquid-air",
-	"liquid-nether-air", "liquid-ender-air", "coolant", "hot-coolant" })
+	"liquid-nether-air", "liquid-ender-air", "coolant", "hot-coolant", "gelid-cryotheum" })
 put("molten-elements", { "mercury", "molten-glass", "molten-borosilicate-glass", "molten-aluminium", "molten-americium",
 	"molten-beryllium", "molten-chrome", "molten-cobalt", "molten-europium", "molten-flerovium", "molten-gallium",
 	"molten-lithium", "molten-lutetium", "molten-magnesium", "molten-neodymium", "molten-silicon", "molten-silver",
@@ -94,7 +94,7 @@ put("molten-elements", { "mercury", "molten-glass", "molten-borosilicate-glass",
 	-- issue #91: the melts of the elements that had none
 	"molten-gold", "molten-lead", "molten-nickel", "molten-zinc", "molten-iridium", "molten-osmium", "molten-palladium",
 	"molten-platinum", "molten-samarium" })
-put("molten-alloys", { "soldering-alloy" })
+put("molten-alloys", { "soldering-alloy", "mutated-living-solder" })   -- (issue #627: GT++'s UEV+ solder)
 put("molten-superalloys", { "molten-hastelloy-c276", "molten-hastelloy-w", "molten-hastelloy-x", "molten-incoloy-020",
 	"molten-incoloy-903", "molten-incoloy-ds", "molten-incoloy-ma956", "molten-inconel-625", "molten-inconel-690",
 	"molten-inconel-792", "molten-maraging-steel-250", "molten-maraging-steel-300", "molten-stellite", "molten-talonite",
