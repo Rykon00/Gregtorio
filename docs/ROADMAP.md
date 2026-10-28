@@ -2373,8 +2373,8 @@ Part 2: the Twilight Forest's olivine vein and small ores and the Nether's saltp
   lists the dimension as T0), its veins GTPP0-19 with GT++'s 39 ores (RecipeGenOre.java). Deviations: the mod's generic
   chain with GT++'s two byproducts (GT++ uses byproduct B in the thermal centrifuge of the crushed ore and the
   centrifuge of the impure dust, the mod's chain its usual order); no forge hammer recipe for the raw ore (GT++ hammers
-  only the ore block); elements the mod lacks are left out of byproducts and decompositions (germanium, tellurium,
-  thallium, bromine, iodine, radium, selenium, strontium oxide, samarium ore concentrate; erbium, ytterbium and
+  only the ore block); elements the mod lacks are left out of byproducts and decompositions (germanium (since #630 in alburnite), tellurium,
+  thallium, bromine, iodine, radium, selenium (since #630 in miessiite), strontium oxide, samarium ore concentrate; erbium, ytterbium and
   dysprosium are GT's dusts since #355, which needs them); the LV chemical dehydrator has one fluid output, so cerite, fluorcaphite and lepersonnite give only
   their oxygen; fluorite (F)'s hydrogen chemical bath is left out; runite gets its ore chain to runite dust, GT++'s
   alloy blast smelter melt and ingot are not built (no consumer). Agardite (Cd), yttrialite and lanthanite (Ce) are
@@ -2431,7 +2431,7 @@ The elements of #365 by consumer in Gregtorio's lines:
   mysterious crystal and vinteum are new ores, the shards, arsenic, tungsten, antimony, quartz sand, charged certus and
   the irons have no ore in the mod and are left out); 141's timepiece takes GT's 32 dilithium instead of 32 diamonds.
 * **Mithril, rubidium, tellurium, dysprosium, scandium, strontium, radium, polonium, curium, neptunium, technetium,
-  rhenium, thallium, germanium, selenium**: no consumer in Gregtorio's lines (strontium's GTNH use is the netherite
+  rhenium, thallium, germanium, selenium**: no consumer (germanium and selenium are built since #630 with their GTNH sources, still without a consumer) in Gregtorio's lines (strontium's GTNH use is the netherite
   chain, scandium's and strontium's their plasmas' fuel values), so not built.
 
 ### Bio fuels, Brewery and Fermenter (issue #360)
@@ -3036,4 +3036,8 @@ brown metal catalyst left out; the controllers leave out tungsten grinders, Lafi
 maceration stack and quantium pipe casings, the advanced distillation towers, extruder casings and Aquatic Steel. Platinum
 and osmium dust of the froths are bartworks' replacements (metallic platinum powder, rarest metal mixture). The line is UV
 here (aniline and calcium hydroxide come with Kevlar, the vacuum furnace with Prismatic Naquadah), LuV in GTNH.
-Still to come in #630: germanium and selenium (their froth outputs and other GTNH sources) and their left-out places.
+Germanium and selenium (part 2): dusts of GT++'s elements from the sphalerite and platinum froths and from alburnite and
+miessiite (155). GT++'s other routes are left out: the germanium roasting in the alloy blast smelter and the selenium
+dioxide line start from purified crushed ores, which Gregtorio's ore chain does not have, and the latter needs hot water
+and the industrial coke oven. Their GTNH consumers (abyssal and quantum alloy, the godforge's exotic module plasmas,
+the technetium plasma fusion) are not in the mod either.

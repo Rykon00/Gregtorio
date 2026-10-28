@@ -5193,3 +5193,5 @@ milled-monazite	gt:miscutils/textures/items/processing/MilledOre/milled + gt:mis
 milled-netherrack	gt:miscutils/textures/items/processing/MilledOre/milled + gt:miscutils/textures/items/processing/MilledOre/milled_OVERLAY
 small-pile-of-tin-dust	colour of Tin #dcdcdc + gt:gregtech/textures/items/materialicons/NONE/dustSmall
 small-pile-of-sulfur	colour of Sulfur #c8c800 + gt:gregtech/textures/items/materialicons/NONE/dustSmall
+germanium-dust	colour of germanium #c8c8c8 + gt:gregtech/textures/items/materialicons/NONE/dust
+selenium-dust	colour of selenium #bebebe + gt:gregtech/textures/items/materialicons/NONE/dust

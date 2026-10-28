@@ -248,6 +248,8 @@ MATERIALS = {
     "chromatic-glass": ("GLASS", (255, 255, 255)), "blaze": "Blaze",
     # issue #630: GT++'s calcium carbonate dust (ModItems.java:652-656, white) and GT's netherrack
     "calcium-carbonate": ("DULL", (255, 255, 255)), "netherrack": "Netherrack",
+    # GT++'s germanium and selenium (MaterialsElements.java:55-78, their colours)
+    "germanium": ("DULL", (200, 200, 200)), "selenium": ("DULL", (190, 190, 190)),
     # issue #627: Thermal Foundation's blizz, GT's snow and cryotheum (MaterialsInit.java)
     "blizz": "Blizz", "snow": "Snow", "cryotheum": "Cryotheum",
     "calcium": "Calcium",

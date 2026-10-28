@@ -5213,3 +5213,5 @@ milled-monazite
 milled-netherrack
 small-pile-of-tin-dust
 small-pile-of-sulfur
+germanium-dust
+selenium-dust

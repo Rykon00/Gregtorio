@@ -5216,6 +5216,9 @@ do
 	items(SUB_DUST, { "sodium-ethoxide", "potassium-hydroxide", "sodium-ethyl-xanthate", "potassium-ethyl-xanthate",
 		"calcium-carbonate-dust", "crushed-pine-materials" })
 	items(SUB_PART, { "alumina-milling-ball", "soapstone-milling-ball", "heavy-hellish-mud" })
+	--- germanium and selenium (GT++'s elements, core/material/MaterialsElements.java:55-78): the sphalerite and platinum
+	--- froths are GTNH's bulk source (15 germanium, 40 selenium per 4000 L), alburnite and miessiite their ores (155)
+	items(SUB_DUST, { "germanium-dust", "selenium-dust" })
 	step(R, "crushed-pine-materials", CP, 10, MV_SPEED, { { "wood", 1 } }, { { "crushed-pine-materials", 64 } })
 	step(R, "pine-oil", CP, 60, MV_SPEED, { { "crushed-pine-materials", 64 }, { "steam", 500 } },
 		{ { "pine-oil", 50 }, { "ash-dust", 1, 0.25 }, { "dark-ash-dust", 1, 0.1 } })
@@ -5254,10 +5257,10 @@ do
 	--- the ores: IsaMill and flotation tier, xanthate, pine oil (a tenth of GT's litres), the froth's dusts, the vacuum
 	--- furnace's tier and seconds
 	local ORES = {
-		{ "sphalerite", LUV_SPEED, "sodium", 1400, { { "zinc-dust", 180 }, { "iron-dust", 120 }, { "indium", 64 } }, LUV_SPEED, 120 },
+		{ "sphalerite", LUV_SPEED, "sodium", 1400, { { "zinc-dust", 180 }, { "iron-dust", 120 }, { "indium", 64 }, { "germanium-dust", 15 } }, LUV_SPEED, 120 },
 		{ "chalcopyrite", IV_SPEED, "sodium", 1200, { { "copper-dust", 180 }, { "iron-dust", 120 }, { "cadmium", 50 }, { "indium", 10 } }, IV_SPEED, 120 },
 		{ "nickel", IV_SPEED, "potassium", 2500, { { "nickel-dust", 150 }, { "cobalt-dust", 120 }, { "rhodium-dust", 32 }, { "ruthenium-dust", 16 } }, IV_SPEED, 120 },
-		{ "platinum", LUV_SPEED, "potassium", 3500, { { "metallic-platinum-powder", 128 }, { "rhodium-dust", 60 }, { "tellurium-dust", 10 } }, LUV_SPEED, 120 },
+		{ "platinum", LUV_SPEED, "potassium", 3500, { { "metallic-platinum-powder", 128 }, { "rhodium-dust", 60 }, { "selenium-dust", 40 }, { "tellurium-dust", 10 } }, LUV_SPEED, 120 },
 		{ "pentlandite", LUV_SPEED, "sodium", 1400, { { "iron-dust", 150 }, { "nickel-dust", 100 }, { "metallic-platinum-powder", 40 }, { "hafnium-dust", 10 } }, LUV_SPEED, 120 },
 		{ "redstone", IV_SPEED, "sodium", 1300, { { "redstone-dust", 300 }, { "chromium-dust", 60 }, { "firestone-dust", 45 }, { "dysprosium-dust", 16 } }, IV_SPEED, 120 },
 		{ "spessartine", LUV_SPEED, "potassium", 3500, { { "manganese-dust", 150 }, { "aluminium-dust", 90 }, { "rarest-metal-mixture", 30 }, { "strontium-dust", 20 } }, LUV_SPEED, 120 },
