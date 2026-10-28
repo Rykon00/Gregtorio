@@ -5209,6 +5209,47 @@ infused-gold-plate	colour of InfusedGold #ffc83c + gt:gregtech/textures/items/ma
 infused-gold-foil	colour of InfusedGold #ffc83c + gt:gregtech/textures/items/materialicons/NONE/foil
 thaumium-dust	colour of Thaumium #9664c8 + gt:gregtech/textures/items/materialicons/METALLIC/dust
 netherite-foil	colour of netherite #4a4040 + gt:gregtech/textures/items/materialicons/NONE/foil
+pentacadmium-magnesium-hexaoxid-dust	colour of Pentacadmiummagnesiumhexaoxid #555555 + gt:gregtech/textures/items/materialicons/SHINY/dust + gt:gregtech/textures/items/materialicons/SHINY/dust_OVERLAY
+pentacadmium-magnesium-hexaoxid-ingot	colour of Pentacadmiummagnesiumhexaoxid #555555 + gt:gregtech/textures/items/materialicons/SHINY/ingot + gt:gregtech/textures/items/materialicons/SHINY/ingot_OVERLAY
+pentacadmium-magnesium-hexaoxid-wire	colour of Pentacadmiummagnesiumhexaoxid #555555
+titaniumonabarium-decacoppereikosaoxid-dust	colour of Titaniumonabariumdecacoppereikosaoxid #331900 + gt:gregtech/textures/items/materialicons/METALLIC/dust
+titaniumonabarium-decacoppereikosaoxid-ingot	colour of Titaniumonabariumdecacoppereikosaoxid #331900 + gt:gregtech/textures/items/materialicons/METALLIC/ingot
+titaniumonabarium-decacoppereikosaoxid-wire	colour of Titaniumonabariumdecacoppereikosaoxid #331900
+uranium-triplatinid-dust	colour of Uraniumtriplatinid #008700 + gt:gregtech/textures/items/materialicons/SHINY/dust + gt:gregtech/textures/items/materialicons/SHINY/dust_OVERLAY
+uranium-triplatinid-ingot	colour of Uraniumtriplatinid #008700 + gt:gregtech/textures/items/materialicons/SHINY/ingot + gt:gregtech/textures/items/materialicons/SHINY/ingot_OVERLAY
+uranium-triplatinid-wire	colour of Uraniumtriplatinid #008700
+hot-titaniumonabarium-decacoppereikosaoxid-ingot	colour of Titaniumonabariumdecacoppereikosaoxid #331900 + gt:gregtech/textures/items/materialicons/NONE/ingotHot + gt:gregtech/textures/items/materialicons/NONE/ingotHot_OVERLAY
+hot-uranium-triplatinid-ingot	colour of Uraniumtriplatinid #008700 + gt:gregtech/textures/items/materialicons/NONE/ingotHot + gt:gregtech/textures/items/materialicons/NONE/ingotHot_OVERLAY
+mv-superconductor-wire	colour of SuperconductorMV #555555
+hv-superconductor-wire	colour of SuperconductorHV #331900
+ev-superconductor-wire	colour of SuperconductorEV #008700
+mv-solenoid-superconductor-coil	gt:gregtech/textures/blocks/iconsets/MV_SIDE_CYCLOTRON_SOLENOID
+hv-solenoid-superconductor-coil	gt:gregtech/textures/blocks/iconsets/HV_SIDE_CYCLOTRON_SOLENOID
+ev-solenoid-superconductor-coil	gt:gregtech/textures/blocks/iconsets/EV_SIDE_CYCLOTRON_SOLENOID
+dyson-swarm-module	gt:gtnhintergalactic/textures/items/dysonSwarmModule
+solar-sail	gt:gtnhintergalactic/textures/items/solarSail
+drone-case	gt:gtnhintergalactic/textures/items/droneCase
+femtocontroller	gt:gtnhintergalactic/textures/items/femtocontroller
+fuel-pellet	gt:gtnhintergalactic/textures/items/fuelPellet
+uht-resistant-mesh	gt:gtnhintergalactic/textures/items/UHTResistantMesh
+tantalum-hafnium-carbide-nanofibers	gt:gtnhintergalactic/textures/items/TaHfCNanofibers
+neutronium-nanofibers	gt:gtnhintergalactic/textures/items/NtNanofibers
+tantalum-hafnium-nanoparticles	gt:gtnhintergalactic/textures/items/TaHfNanoparticles
+neutronium-nanoparticles	gt:gtnhintergalactic/textures/items/NtNanoparticles
+dyson-swarm-controller	gt:gtnhintergalactic/textures/blocks/dysonSwarm/ReceiverCasing_Side + gt:gregtech/textures/blocks/iconsets/OVERLAY_FRONT_DYSONSPHERE
+dyson-swarm-receiver-casing	gt:gtnhintergalactic/textures/blocks/dysonSwarm/ReceiverCasing_Side
+dyson-swarm-receiver-dish	gt:gtnhintergalactic/textures/blocks/dysonSwarm/ReceiverDish_Side
+dyson-swarm-deployment-unit-casing	gt:gtnhintergalactic/textures/blocks/dysonSwarm/DeploymentUnitCasing_Side
+dyson-swarm-deployment-unit-core	gt:gtnhintergalactic/textures/blocks/dysonSwarm/DeploymentUnitCore_Side
+dyson-swarm-deployment-unit-magnet	gt:gtnhintergalactic/textures/blocks/dysonSwarm/DeploymentUnitMagnet_Side
+dyson-swarm-control-casing	gt:gtnhintergalactic/textures/blocks/dysonSwarm/ControlCasing_Side
+dyson-swarm-control-primary-windings	gt:gtnhintergalactic/textures/blocks/dysonSwarm/ControlPrimary_Side
+dyson-swarm-control-secondary-windings	gt:gtnhintergalactic/textures/blocks/dysonSwarm/ControlSecondary_Side
+dyson-swarm-control-toroid	gt:gtnhintergalactic/textures/blocks/dysonSwarm/ControlToroid_Side
+hafnium-carbide-dust	colour of hafnium-carbide #bebec8 + gt:gregtech/textures/items/materialicons/NONE/dust
+tantalum-hafnium-carbide-dust	colour of tantalum-hafnium-carbide #8c8278 + gt:gregtech/textures/items/materialicons/METALLIC/dust
+tantalum-hafnium-carbide-mixture	colour of tantalum-hafnium-carbide-mixture #a0968c + gt:gregtech/textures/items/materialicons/NONE/dust
+tantalum-hafnium-carbide-ingot	colour of tantalum-hafnium-carbide #8c8278 + gt:gregtech/textures/items/materialicons/METALLIC/ingot
 wetware-circuit-board	gt:gregtech/textures/items/gt.metaitem.03/6
 bioware-circuit-board	gt:gregtech/textures/items/gt.metaitem.03/8
 petri-dish	gt:gregtech/textures/items/gt.metaitem.03/22

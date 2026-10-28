@@ -97,6 +97,65 @@ function lftr_test()
 	log("DEVCHECK-RUNTIME-LFTR " .. (#problems == 0 and "ok" or "failed") .. (lf.summary or ""))
 end
 
+--- Dyson Swarm (issue #623): the ground unit deploys modules into its swarm, its dynamo gives 195.3125 MW per module
+--- while it runs, a forced hourly cycle takes GT's share (10 000 modules -> 9178), the dynamo goes with the unit
+local DY_X, DY_Y = -330.5, 270.5
+local DY_TICK, DY_GONE = 150, 30   -- (its fluid box takes 400 cryotheum: 4 s of work)
+local DY_W = 10000000 * 655360000 / 33554432
+
+function setup_dyson_test(s)
+	local fails = {}
+	local dy = {}
+	storage.dyson = dy
+	local ok, err = pcall(function()
+		dy.unit = s.create_entity{ name = "dyson-swarm-ground-unit", position = { DY_X, DY_Y }, force = "player", raise_built = true }
+		game.forces.player.recipes["dyson-swarm-operation"].enabled = true
+		dy.unit.insert{ name = "dyson-swarm-module", count = 20 }
+		local got = dy.unit.insert_fluid{ name = "gelid-cryotheum", amount = 400 }
+		if got < 400 - 1e-6 then fails[#fails + 1] = "Dyson Swarm test: the unit took only " .. got .. " cryotheum" end
+	end)
+	if not ok then fails[#fails + 1] = "Dyson Swarm test: " .. tostring(err) end
+	return fails
+end
+
+function dyson_test()
+	local dy = storage.dyson
+	if not dy or dy.done or game.tick < DY_TICK then return end
+	local s = game.surfaces[1]
+	local problems = {}
+	local function expect(ok, what) if not ok then problems[#problems + 1] = what end end
+	if not dy.cycled then
+		expect(dy.unit and dy.unit.valid, "the unit is missing")
+		if #problems == 0 then
+			local u = dy.unit
+			local count, power = remote.call("gregtorio-power", "dyson", u)
+			expect(u.status == defines.entity_status.working, "the unit does not work (status " .. tostring(u.status) .. ")")
+			expect(count >= 2, "only " .. count .. " modules deployed by tick " .. game.tick)
+			expect(math.abs(power - count * DY_W) < 1, "the dynamo gives " .. power .. " W for " .. count .. " modules")
+			dy.summary = string.format(" (%d modules by tick %d, %.1f MW", count, game.tick, power / 1e6)
+			remote.call("gregtorio-power", "dyson_set", u, 10000, game.tick)
+			dy.cycled = game.tick
+		end
+		if #problems > 0 then dy.done = true end
+	elseif not dy.destroyed_at then
+		if game.tick < dy.cycled + 20 then return end
+		local count = remote.call("gregtorio-power", "dyson", dy.unit)
+		expect(count == 9178, "after a forced cycle 10000 modules became " .. count .. ", not 9178")
+		dy.summary = (dy.summary or "") .. string.format("; a cycle: 10000 -> %d)", count)
+		dy.position = dy.unit.position
+		dy.unit.destroy{ raise_destroy = true }
+		dy.destroyed_at = game.tick
+	elseif game.tick >= dy.destroyed_at + DY_GONE then
+		expect(s.find_entity("dyson-swarm-dynamo", dy.position) == nil, "the dynamo stayed after the unit was destroyed")
+		dy.done = true
+	else
+		return
+	end
+	if not dy.done then return end
+	for _, p in pairs(problems) do log("DEVCHECK-RUNTIME-FAIL Dyson Swarm test: " .. p) end
+	log("DEVCHECK-RUNTIME-DYSON " .. (#problems == 0 and "ok" or "failed") .. (dy.summary or ""))
+end
+
 --- Lapotronic supercapacitor (issue #97): charges and discharges at two amps of its tier, holds its capacity by tier
 --- and loses GT's 1 % per day.
 --- Offered recipes (issue #126): the machine recipes that were hidden from the crafting menu are offered by the machines.
@@ -3194,6 +3253,7 @@ script.on_nth_tick(10, function()
 	steam_test()
 	chain_test()
 	lftr_test()
+	dyson_test()
 	lsc_test()
 	lsup_test()
 	elevator_test()
@@ -3277,6 +3337,7 @@ script.on_init(function()
 	for _, f in pairs(setup_steam_test(s)) do fails[#fails + 1] = f end
 	for _, f in pairs(setup_chain_test(s)) do fails[#fails + 1] = f end
 	for _, f in pairs(setup_lftr_test(s)) do fails[#fails + 1] = f end
+	for _, f in pairs(setup_dyson_test(s)) do fails[#fails + 1] = f end
 	for _, f in pairs(setup_lsc_test(s)) do fails[#fails + 1] = f end
 	for _, f in pairs(setup_lsup_test(s)) do fails[#fails + 1] = f end
 	for _, f in pairs(setup_elevator_test(s)) do fails[#fails + 1] = f end

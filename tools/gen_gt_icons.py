@@ -246,10 +246,18 @@ MATERIALS = {
     "niobium": "Niobium", "advanced-nitinol": ("FIERY", (136, 117, 159)), "cobalt": "Cobalt",
     "shirabon": ("METALLIC", (0xe0, 0x15, 0x6d)), "astral-titanium": ("METALLIC", (220, 160, 240)),
     "chromatic-glass": ("GLASS", (255, 255, 255)), "blaze": "Blaze",
+    # issue #634: GT's MV to EV superconductor bases and superconductors (MaterialsInit.java:13538-13602)
+    "pentacadmium-magnesium-hexaoxid": "Pentacadmiummagnesiumhexaoxid",
+    "titaniumonabarium-decacoppereikosaoxid": "Titaniumonabariumdecacoppereikosaoxid",
+    "uranium-triplatinid": "Uraniumtriplatinid",
+    "superconductor-mv": "SuperconductorMV", "superconductor-hv": "SuperconductorHV", "superconductor-ev": "SuperconductorEV",
     # issue #630: GT++'s calcium carbonate dust (ModItems.java:652-656, white) and GT's netherrack
     "calcium-carbonate": ("DULL", (255, 255, 255)), "netherrack": "Netherrack",
     # GT++'s germanium and selenium (MaterialsElements.java:55-78, their colours)
     "germanium": ("DULL", (200, 200, 200)), "selenium": ("DULL", (190, 190, 190)),
+    # issue #623: ScriptGalaxySpace's hafnium carbide and tantalum hafnium carbide (no GT material: own grey tones)
+    "hafnium-carbide": ("DULL", (190, 190, 200)), "tantalum-hafnium-carbide": ("METALLIC", (140, 130, 120)),
+    "tantalum-hafnium-carbide-mixture": ("DULL", (160, 150, 140)),
     # issue #617: GT's infused gold and thaumium; netherite (GT's SET_NETHERITE textures are not in GT5-Unofficial: a dark
     # metallic foil) and Et Futurum's ancient debris (a rough brown ore)
     "infused-gold": "InfusedGold", "thaumium": "Thaumium", "netherite": ("METALLIC", (0x4a, 0x40, 0x40)),
@@ -1229,6 +1237,24 @@ def icon_table(c):
     T["heavy-hellish-mud"] = lambda: c.gt("gt:gregtech/textures/items/gt.metaitem.03/242")
     T["calcium-carbonate-dust"] = lambda: c.part("calcium-carbonate", "dust")
     T["small-pile-of-sulfur"] = lambda: c.part("sulfur", "dustSmall")   # (the red mud's piles)
+    # issue #623: gtnhintergalactic's Dyson Swarm parts (items/) and casings (blocks/dysonSwarm/)
+    IGI, IGB = "gt:gtnhintergalactic/textures/items/", "gt:gtnhintergalactic/textures/blocks/dysonSwarm/"
+    for k, f in (("dyson-swarm-module", "dysonSwarmModule"), ("solar-sail", "solarSail"), ("drone-case", "droneCase"),
+                 ("femtocontroller", "femtocontroller"), ("fuel-pellet", "fuelPellet"), ("uht-resistant-mesh", "UHTResistantMesh"),
+                 ("tantalum-hafnium-carbide-nanofibers", "TaHfCNanofibers"), ("neutronium-nanofibers", "NtNanofibers"),
+                 ("tantalum-hafnium-nanoparticles", "TaHfNanoparticles"), ("neutronium-nanoparticles", "NtNanoparticles")):
+        T[k] = (lambda f=f: lambda: c.gt(IGI + f))()
+    for k, f in (("receiver-casing", "ReceiverCasing"), ("receiver-dish", "ReceiverDish"),
+                 ("deployment-unit-casing", "DeploymentUnitCasing"), ("deployment-unit-core", "DeploymentUnitCore"),
+                 ("deployment-unit-magnet", "DeploymentUnitMagnet"), ("control-casing", "ControlCasing"),
+                 ("control-primary-windings", "ControlPrimary"), ("control-secondary-windings", "ControlSecondary"),
+                 ("control-toroid", "ControlToroid")):
+        T["dyson-swarm-" + k] = (lambda f=f: lambda: c.gt(IGB + f + "_Side"))()
+    T["dyson-swarm-controller"] = lambda: over(c.gt(IGB + "ReceiverCasing_Side"), c.gt(f"{BLK}OVERLAY_FRONT_DYSONSPHERE"))
+    T["hafnium-carbide-dust"] = lambda: c.part("hafnium-carbide", "dust")
+    T["tantalum-hafnium-carbide-dust"] = lambda: c.part("tantalum-hafnium-carbide", "dust")
+    T["tantalum-hafnium-carbide-mixture"] = lambda: c.part("tantalum-hafnium-carbide-mixture", "dust")
+    T["tantalum-hafnium-carbide-ingot"] = lambda: c.part("tantalum-hafnium-carbide", "ingot")
     # issue #628: GT's wetware and bio boards and the petri dish (gt.metaitem.03/6, 8, 22), the T1 photolithographic
     # casing, the PCB Factory's controller (the casing with the assembly line front)
     for k, n in (("wetware-circuit-board", 6), ("bioware-circuit-board", 8), ("petri-dish", 22)):
@@ -1270,10 +1296,13 @@ def icon_table(c):
     T["electrode-casing"] = lambda: c.gt(LANTH + "blocks/casing.electrode")
     T["capillary-exchange"] = lambda: c.gt(LANTH + "items/capillary_exchange")
     T["mu-metal-lattice"] = lambda: c.gt(LANTH + "items/mm_lattice")
+    # issue #634: the MV to EV superconductor wires (GT's superconductor sheen in their colours)
+    for t in ("mv", "hv", "ev"):
+        T[f"{t}-superconductor-wire"] = (lambda t=t: lambda: c.part(f"superconductor-{t}", "@superconductor"))()
     # the LHC: GT's cyclotron solenoids, collider and module casings, its front, the large fluid cells
     # (MetaGeneratedItem01 410/411/413), the samarium electromagnet (348), the tantalum capacitor (499), the ULV coil
     # (MetaGeneratedItem03 140); GoodGenerator's compact fusion coils (fuison/2, 3) and resonator parts
-    for t in ("uv", "uhv", "uiv"):
+    for t in ("mv", "hv", "ev", "uv", "uhv", "uiv"):   # (issue #634: MV to EV)
         T[f"{t}-solenoid-superconductor-coil"] = (lambda t=t: c.gt(f"{BLK}{GT_TIER[t]}_SIDE_CYCLOTRON_SOLENOID"))
     for n, f in (("collider-casing", "COLLIDER_CASING"), ("cms-casing", "CMS_CASING"), ("atlas-casing", "ATLAS_CASING"),
                  ("lhcb-casing", "LHCB_CASING")):

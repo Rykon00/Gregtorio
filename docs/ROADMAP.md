@@ -3063,6 +3063,27 @@ recipes of ancient debris (no EIC; debris is mined), the netherite blocks and st
 dense netherite plate (its only user here would be the Fusion Computer), Force Field Glass (chronomatic glass and
 celestial tungsten parts are missing).
 
+## MV to EV superconductors (issue #634)
+
+GTNH's superconductor ladder from MV on (164 section 49; the maintainer's decision of 2026-10-28): Pentacadmium Magnesium
+Hexaoxid (MV), Titaniumonabarium Decacoppereikosaoxid (HV) and Uranium Triplatinid (EV), mixed, smelted, drawn into wire
+and made superconducting by the mod's IV rule (the tiny pipes' metal as melt, cryogenic helium); GTNH's MV to EV solenoid
+coils, and the Large Fluid Extractor with them besides the IV one (GT's 8 parallels per solenoid tier: 2/5, 3/5 and 4/5
+of the IV build's speed). Named stand-ins in the solenoids: GT's medium pipe as its 3 plates, the annealed copper cables
+as copper cables, the long permalloy rods as permalloy dust; the coolant cells are left out as in the IV solenoid. All
+come with Large Fluid Extractor, their only use here (GTNH also uses them in machines the mod does not have: tesla
+coils, chargers, vanadium redox batteries). The UHV+ superconductors keep the mod's ladder (a question for later).
+## Dyson Swarm (issue #623)
+
+gtnhintergalactic's Dyson Swarm Ground Unit (164 section 50, the maintainer's decision of 2026-10-28: with named
+stand-ins). A 3x3 machine without power that deploys one Dyson Swarm Module and burns 100 gelid cryotheum a second (GT:
+3 600 000 L an hour); `scripts/fork-power.lua` counts its swarm (at most 10 000 modules), gives 195.3125 MW per module
+(GT's 10 000 000 EU/t on Gregtorio's tier scale, a UIV amp of 655.36 MW) through a hidden dynamo while it runs, and takes
+GT's hourly loss without computation (6.6 % to 8.2 %). Deviations: the swarm is per unit and keeps deploying when full
+(the surplus is lost, GT keeps it in the bus); no computation, data hatch or dimension factor (the Overworld's 1.0); UU
+matter left out. The module chain (solar sails, drone case, femtocontroller, fuel pellet, the UHT mesh from tantalum
+hafnium carbide and neutronium nanofibers) and the nine casings follow NewHorizonsCoreMod's recipes; the stand-ins are
+named in the code. Technology Dyson Swarm (UIV science).
 ## Wetware, bio and optical boards (issue #628)
 
 The three late printed boards follow GTNH since #628 (164 section 51; the maintainer's decision of 2026-10-28):
