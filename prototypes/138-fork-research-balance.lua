@@ -60,7 +60,7 @@ local FORK_RESEARCH_COUNTS = {
 	["uiv-materials"] = 225, -- 3000
 	-- UIV (promethium pack): /25.3
 	["exotic-processor-mainframes"] = 120, -- 3000
-	["dimensionally-transcendent-plasma-forge"] = 120, -- phase 6a (139); UIV since issue #355 (GTNH's place)
+	["dimensionally-transcendent-plasma-forge"] = 215, -- phase 6a (139); UEV since issue #624 (GTNH's tier; 3000 / 13.9)
 	["exotic-processors"] = 100, -- 2500
 	["fusion-coil-ii"] = 100, -- 2500
 	["fusion-plasmas-mk5"] = 120, -- 3000
@@ -75,7 +75,7 @@ local FORK_RESEARCH_COUNTS = {
 	["umv-science-pack"] = 90, -- 2300
 	-- UMV: /32.2
 	["quantum-force-transformer"] = 95, -- new in phase 6a
-	["godforge"] = 95, -- phase 6b (140); between the UIV and UMV energy hatches since issue #355 (GTNH's place)
+	["godforge"] = 120, -- phase 6b (140); UIV science since issue #624 (GTNH's tier; 3000 / 25.3)
 	["godforge-plasma-module"] = 95, -- issue #355: GT's plasma module upgrades for celestial tungsten plasma
 	["temporal-processor-mainframes"] = 95, -- 3000
 	["temporal-processors"] = 95, -- 3000

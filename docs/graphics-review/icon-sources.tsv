@@ -5153,3 +5153,59 @@ purified-molybdenum	colour of Molybdenum #b4b4dc + gt:gregtech/textures/items/ma
 purified-quartzite	colour of Quartzite #d2e6d2 + gt:gregtech/textures/items/materialicons/NONE/crushedPurified
 raw-molybdenum	colour of Molybdenum #b4b4dc + gt:gregtech/textures/items/materialicons/SHINY/oreRaw
 raw-oilsands	colour of Oilsands #0a0a0a + gt:gregtech/textures/items/materialicons/NONE/oreRaw
+hammer-usage	colour of Wood #643200 + gt:gregtech/textures/items/materialicons/NONE/stick + colour of Iron #c8c8c8 + gt:gregtech/textures/items/materialicons/NONE/toolHeadHammer
+file-usage	colour of Wood #643200 + gt:gregtech/textures/items/materialicons/NONE/handleFile + colour of Iron #c8c8c8 + gt:gregtech/textures/items/materialicons/NONE/toolHeadFile
+saw-usage	colour of Wood #643200 + gt:gregtech/textures/items/materialicons/NONE/handleSaw + colour of Iron #c8c8c8 + gt:gregtech/textures/items/materialicons/NONE/toolHeadSaw
+screwdriver-usage	colour of Wood #643200 + gt:gregtech/textures/items/materialicons/NONE/handleScrewdriver + colour of Iron #c8c8c8 + gt:gregtech/textures/items/materialicons/NONE/toolHeadScrewdriver
+wire-cutter-usage	colour of Iron #c8c8c8 + gt:gregtech/textures/items/materialicons/NONE/toolWireCutter + gt:gregtech/textures/items/materialicons/NONE/toolWireCutter_OVERLAY
+wrench-usage	colour of Iron #c8c8c8 + gt:gregtech/textures/items/materialicons/NONE/toolWrench
+knife-usage	colour of Iron #c8c8c8 + gt:gregtech/textures/items/materialicons/NONE/toolKnife + gt:gregtech/textures/items/materialicons/NONE/toolKnife_OVERLAY
+blizz-rod	colour of Blizz #dce9ff + gt:gregtech/textures/items/materialicons/NONE/stick + gt:gregtech/textures/items/materialicons/CUSTOM/blizz/stick_OVERLAY
+blizz-dust	colour of Blizz #dce9ff + gt:gregtech/textures/items/materialicons/NONE/dust + gt:gregtech/textures/items/materialicons/CUSTOM/blizz/dust_OVERLAY
+snow-dust	colour of Snow #fafafa + gt:gregtech/textures/items/materialicons/FINE/dust
+cryotheum-dust	colour of Cryotheum #0094cb + gt:gregtech/textures/items/materialicons/NONE/dust + gt:gregtech/textures/items/materialicons/CUSTOM/cryotheum/dust_OVERLAY
+alumina-milling-ball	gt:miscutils/textures/items/science/general/MetaItem1/7
+soapstone-milling-ball	gt:miscutils/textures/items/science/general/MetaItem1/8
+sodium-ethoxide	gt:miscutils/textures/items/science/general/MetaItem1/9
+sodium-ethyl-xanthate	gt:miscutils/textures/items/science/general/MetaItem1/10
+potassium-ethyl-xanthate	gt:miscutils/textures/items/science/general/MetaItem1/11
+potassium-hydroxide	gt:miscutils/textures/items/science/general/MetaItem1/12
+crushed-pine-materials	gt:miscutils/textures/items/bioscience/MetaItem1/25
+heavy-hellish-mud	gt:gregtech/textures/items/gt.metaitem.03/242
+calcium-carbonate-dust	gt:gregtech/textures/items/materialicons/NONE/dust
+isamill-exterior-casing	gt:miscutils/textures/blocks/TileEntities/MACHINE_CASING_GRINDING_FACTORY
+isamill-gearbox	gt:miscutils/textures/blocks/TileEntities/MACHINE_CASING_GEARBOX_T1
+isamill-piping	gt:miscutils/textures/blocks/TileEntities/MACHINE_CASING_PIPE_T1
+flotation-cell-casing	gt:miscutils/textures/blocks/TileEntities/MACHINE_CASING_FLOTATION
+isamill-controller	gt:miscutils/textures/blocks/TileEntities/MACHINE_CASING_GRINDING_FACTORY + gt:miscutils/textures/blocks/iconsets/Grinder/GRINDER5
+flotation-cell-controller	gt:miscutils/textures/blocks/TileEntities/MACHINE_CASING_FLOTATION + gt:miscutils/textures/blocks/iconsets/controllerFaces/frothFlotationCell
+milled-sphalerite	gt:miscutils/textures/items/processing/MilledOre/milled + gt:miscutils/textures/items/processing/MilledOre/milled_OVERLAY
+milled-chalcopyrite	gt:miscutils/textures/items/processing/MilledOre/milled + gt:miscutils/textures/items/processing/MilledOre/milled_OVERLAY
+milled-nickel	gt:miscutils/textures/items/processing/MilledOre/milled + gt:miscutils/textures/items/processing/MilledOre/milled_OVERLAY
+milled-platinum	gt:miscutils/textures/items/processing/MilledOre/milled + gt:miscutils/textures/items/processing/MilledOre/milled_OVERLAY
+milled-pentlandite	gt:miscutils/textures/items/processing/MilledOre/milled + gt:miscutils/textures/items/processing/MilledOre/milled_OVERLAY
+milled-redstone	gt:miscutils/textures/items/processing/MilledOre/milled + gt:miscutils/textures/items/processing/MilledOre/milled_OVERLAY
+milled-spessartine	gt:miscutils/textures/items/processing/MilledOre/milled + gt:miscutils/textures/items/processing/MilledOre/milled_OVERLAY
+milled-grossular	gt:miscutils/textures/items/processing/MilledOre/milled + gt:miscutils/textures/items/processing/MilledOre/milled_OVERLAY
+milled-almandine	gt:miscutils/textures/items/processing/MilledOre/milled + gt:miscutils/textures/items/processing/MilledOre/milled_OVERLAY
+milled-pyrope	gt:miscutils/textures/items/processing/MilledOre/milled + gt:miscutils/textures/items/processing/MilledOre/milled_OVERLAY
+milled-monazite	gt:miscutils/textures/items/processing/MilledOre/milled + gt:miscutils/textures/items/processing/MilledOre/milled_OVERLAY
+milled-netherrack	gt:miscutils/textures/items/processing/MilledOre/milled + gt:miscutils/textures/items/processing/MilledOre/milled_OVERLAY
+small-pile-of-tin-dust	colour of Tin #dcdcdc + gt:gregtech/textures/items/materialicons/NONE/dustSmall
+small-pile-of-sulfur	colour of Sulfur #c8c800 + gt:gregtech/textures/items/materialicons/NONE/dustSmall
+germanium-dust	colour of germanium #c8c8c8 + gt:gregtech/textures/items/materialicons/NONE/dust
+selenium-dust	colour of selenium #bebebe + gt:gregtech/textures/items/materialicons/NONE/dust
+ancient-debris	colour of ancient-debris #5a3e36 + gt:gregtech/textures/items/materialicons/NONE/crushed + gt:gregtech/textures/items/materialicons/NONE/crushed_OVERLAY
+netherite-scrap	gt:gregtech/textures/items/gt.metaitem.03/247
+hot-netherite-scrap	gt:gregtech/textures/items/gt.metaitem.03/247
+netherite-scrap-seed	gt:gregtech/textures/items/gt.metaitem.03/243
+brittle-netherite-scrap	gt:gregtech/textures/items/gt.metaitem.03/244
+netherite-nanoparticles	gt:gregtech/textures/items/gt.metaitem.03/245
+intensely-bonded-netherite-nanoparticles	gt:gregtech/textures/items/gt.metaitem.03/246
+naquarite-universal-insulator-foil	gt:gregtech/textures/items/gt.metaitem.03/251
+infused-gold-dust	colour of InfusedGold #ffc83c + gt:gregtech/textures/items/materialicons/SHINY/dust + gt:gregtech/textures/items/materialicons/SHINY/dust_OVERLAY
+infused-gold-ingot	colour of InfusedGold #ffc83c + gt:gregtech/textures/items/materialicons/SHINY/ingot + gt:gregtech/textures/items/materialicons/SHINY/ingot_OVERLAY
+infused-gold-plate	colour of InfusedGold #ffc83c + gt:gregtech/textures/items/materialicons/SHINY/plate + gt:gregtech/textures/items/materialicons/SHINY/plate_OVERLAY
+infused-gold-foil	colour of InfusedGold #ffc83c + gt:gregtech/textures/items/materialicons/NONE/foil
+thaumium-dust	colour of Thaumium #9664c8 + gt:gregtech/textures/items/materialicons/METALLIC/dust
+netherite-foil	colour of netherite #4a4040 + gt:gregtech/textures/items/materialicons/NONE/foil

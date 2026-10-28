@@ -86,7 +86,7 @@ put("organic", { "acetic-acid", "formic-acid", "phthalic-acid", "acetone", "benz
 	"p507", "2-ethyl-1-hexanol", "biomass", "bacterial-sludge", "enriched-bacterial-sludge", "growth-medium", "mutagen" })
 put("polymers", { "glue", "advanced-glue", "super-glue", "epoxy", "liquid-rubber", "silicone-rubber", "ptfe" })
 put("coolants", { "cryogenic-helium", "lapis-coolant", "super-coolant", "sodium-potassium", "liquid-air",
-	"liquid-nether-air", "liquid-ender-air", "coolant", "hot-coolant" })
+	"liquid-nether-air", "liquid-ender-air", "coolant", "hot-coolant", "gelid-cryotheum" })
 put("molten-elements", { "mercury", "molten-glass", "molten-borosilicate-glass", "molten-aluminium", "molten-americium",
 	"molten-beryllium", "molten-chrome", "molten-cobalt", "molten-europium", "molten-flerovium", "molten-gallium",
 	"molten-lithium", "molten-lutetium", "molten-magnesium", "molten-neodymium", "molten-silicon", "molten-silver",
@@ -94,6 +94,17 @@ put("molten-elements", { "mercury", "molten-glass", "molten-borosilicate-glass",
 	-- issue #91: the melts of the elements that had none
 	"molten-gold", "molten-lead", "molten-nickel", "molten-zinc", "molten-iridium", "molten-osmium", "molten-palladium",
 	"molten-platinum", "molten-samarium" })
+put("molten-alloys", { "soldering-alloy", "mutated-living-solder" })
+--- issue #630: GT++'s milling and flotation (164 section 47)
+put("organic", { "pine-oil", "carbon-disulfide", "urea", "liquid-resin" })
+put("gases", { "coal-gas", "nefarious-gas" })
+put("ore-solutions", { "red-mud", "nether-semi-fluid", "nefarious-oil", "poor-nether-waste", "netherrack-flotation-froth" })
+for _, o in pairs(FORK_MILLING and FORK_MILLING.ores or {}) do put("ore-solutions", { o[1] .. "-flotation-froth" }) end
+--- issue #617: the netherite chain (164 section 48)
+put("ore-solutions", { "rich-nether-waste" })
+put("molten-alloys", { "molten-thaumium", "molten-hellish-metal", "molten-manyullyn" })
+put("molten-elements", { "molten-boron" })
+   -- (issue #627: GT++'s UEV+ solder)
 put("molten-alloys", { "soldering-alloy" })
 --- issue #635: the fluid heater's steps
 put("organic", { "diluted-acetone", "cyanoacrylate-polymer" })

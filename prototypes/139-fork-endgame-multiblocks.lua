@@ -61,7 +61,7 @@ end
 --- takes one amp of its tier), GT's UIV recipes of the parts, the Awakened Draconium coil (GT's lowest recipes
 --- ask 10 800 K, its heat), two UEV energy hatches (GT: up to two; four UEV amps carry its UIV amp).
 --- Part recipes as in GT where the mod has the part, fluids a tenth of GT's litres: the microwave energy
---- transmitter is a UV emitter, mutated living solder is indalloy 140, laurenium screws are infinity screws (the
+--- transmitter is a UV emitter, mutated living solder since issue #627 (164 section 46; indalloy 140 before), laurenium screws are infinity screws (the
 --- mod has no laurenium: no dysprosium), the FPIC is the FPIC wafer. Left out (GT items the mod does not have):
 --- oganesson and californium, the Avaritia singularities of the bridge; in the controller the 16 Exothermic
 --- Hearths (GT's mega blast furnace), the eternal singularities, the quantum anomaly (in the mod it comes from
@@ -418,8 +418,10 @@ for _, r in pairs(dtpf_recipes.crude) do
 	list[#list + 1] = r
 end
 F.tech{
+	--- (issue #624, the maintainer's decision: GTNH's tier, UEV science: GT's controller is a research assembly line
+	--- recipe at UIV voltage from UEV parts, which GT's assembly line runs with UEV hatches, MTEAssemblyLine.java:325)
 	name = DTPF, prerequisites = { "uev-energy-hatches", "femto-power-ics", "optical-processor-mainframes",
-		"uev-materials", "naquadah-alloy", "fusion-plasmas-mk4" }, packs = 12, count = 1,
+		"uev-materials", "naquadah-alloy", "fusion-plasmas-mk4" }, packs = 11, count = 1,
 	recipes = F.join({ "dimensionally-transcendent-casing", "dimensional-bridge", DTPF .. "-controller", DTPF, CRUDE },
 		crude_now),
 }

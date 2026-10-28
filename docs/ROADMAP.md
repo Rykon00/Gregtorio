@@ -66,7 +66,7 @@ How Gregtorio turns GT New Horizons into Factorio, where the code only implies i
 | #620 | the blast furnace's heat in Kelvin with coil modules, as GT has it (heat check and overclock bonus) |
 | #621 | radioactivity and the hazmat suit as a startup setting, default off |
 | #622 | wireless energy between surfaces at UHV, as GTNH's wireless EU |
-| #624 | the space elevator at UV, the DTPF at UEV, the godforge at UIV |
+| #624 | the space elevator at UV, the DTPF at UEV, the godforge at UIV (built: the DTPF's technology 11 packs, the godforge's 12 packs with the UIV assembler, the elevator's 9 packs with cosmic neutronium from the new technology Cosmic Neutronium after the Void Miner III) |
 | #626 | YAFC mode is removed (YAFC sees the map veins and the classic vein recipes) |
 | #638 | GT's single-block naquadah reactors Mk I-V and plasma generators come back on GTNH's tiers (#644) |
 
@@ -1786,7 +1786,7 @@ infinity screws for GT's laurenium screws (no dysprosium in the mod), a 1080k su
 superconductor wire), the dimensional bridge (casing, UHV field generator, UV emitter for GT's microwave energy transmitter, UV
 circuits, 4 FPIC wafers, triamerotronium wire), the DTPF controller (4 bridges, 4 UEV energy hatches, dracofinium wire, 4 super
 coolant cells, 20 UIV circuits, 4 UEV field generators and pumps, superdense osmiridium; indalloy 140 for GT's mutated living
-solder and molten enriched naquadah, GT's amounts); before #355 the DTPF and its parts were one tier up (UMV). The QFT coil casing (UMV
+solder (GT's own since issue #627) and molten enriched naquadah, GT's amounts); before #355 the DTPF and its parts were one tier up (UMV). The QFT coil casing (UMV
 assembler: infinity coil, 4 super coolant cells, transcendent metal, a superconducting coil block) and the QFT controller (ZPM
 assembly line: UIV circuits, pumps, field generators and robot arms). GT builds both at UIV with UEV parts; the QFT here is a UMV
 machine (UMV science), so its parts are one tier up. GT items the mod does not have are left out of the DTPF (the 16 Exothermic
@@ -1841,7 +1841,7 @@ Issue #609 (2026-10-27) built six of them now that their materials exist (164 se
 both titanium/tungsten/indium recipes, the radioactives and the late plastics (xenoxene, radox polymer, heavy radox, Kevlar);
 their fluids are scaled by one factor so the largest is 1000, and the QFT got two more fluid inputs and four more outputs.
 Still not built: glues (stable adhesive), prismarine (prismatic naquadah dust; the mod's prismatic naquadah is a melt),
-naquadria, netherite (#617), stem cells, biocells, seaweed and the temporal harmony recipe.
+naquadria, stem cells, biocells, seaweed and the temporal harmony recipe.
 So the QFT had no rare earth recipe; since issue #249 it has GT's bastline (bastnasite or cerium-rich mixture) and monaline
 (without hafnia and the superconductor composite). The mod's rare earth (I) line has none (GT's rare earth dust has no QFT
 recipe).
@@ -2373,8 +2373,8 @@ Part 2: the Twilight Forest's olivine vein and small ores and the Nether's saltp
   lists the dimension as T0), its veins GTPP0-19 with GT++'s 39 ores (RecipeGenOre.java). Deviations: the mod's generic
   chain with GT++'s two byproducts (GT++ uses byproduct B in the thermal centrifuge of the crushed ore and the
   centrifuge of the impure dust, the mod's chain its usual order); no forge hammer recipe for the raw ore (GT++ hammers
-  only the ore block); elements the mod lacks are left out of byproducts and decompositions (germanium, tellurium,
-  thallium, bromine, iodine, radium, selenium, strontium oxide, samarium ore concentrate; erbium, ytterbium and
+  only the ore block); elements the mod lacks are left out of byproducts and decompositions (germanium (since #630 in alburnite), tellurium,
+  thallium, bromine, iodine, radium, selenium (since #630 in miessiite), strontium oxide, samarium ore concentrate; erbium, ytterbium and
   dysprosium are GT's dusts since #355, which needs them); since #635 the chemical dehydrators have two fluid outputs, so cerite, fluorcaphite and lepersonnite
   give their hydrogen or fluorine too (before, only their oxygen); fluorite (F)'s hydrogen chemical bath is left out; runite gets its ore chain to runite dust, GT++'s
   alloy blast smelter melt and ingot are not built (no consumer). Agardite (Cd), yttrialite and lanthanite (Ce) are
@@ -2431,7 +2431,7 @@ The elements of #365 by consumer in Gregtorio's lines:
   mysterious crystal and vinteum are new ores, the shards, arsenic, tungsten, antimony, quartz sand, charged certus and
   the irons have no ore in the mod and are left out); 141's timepiece takes GT's 32 dilithium instead of 32 diamonds.
 * **Mithril, rubidium, tellurium, dysprosium, scandium, strontium, radium, polonium, curium, neptunium, technetium,
-  rhenium, thallium, germanium, selenium**: no consumer in Gregtorio's lines (strontium's GTNH use is the netherite
+  rhenium, thallium, germanium, selenium**: no consumer (germanium and selenium are built since #630 with their GTNH sources, still without a consumer) in Gregtorio's lines (strontium's GTNH use is the netherite
   chain, scandium's and strontium's their plasmas' fuel values), so not built.
 
 ### Bio fuels, Brewery and Fermenter (issue #360)
@@ -2661,8 +2661,7 @@ Large Hadron Collider (13 packs) and Gravitational Lens (15 packs: its Space com
   ZPIC's creon and mellion come after the UMV hatches (naquadah fuel MK IV to VI, the UMV blast furnace), so GTNH's
   recipe alone would close a cycle.
 - **Left out, named:** GT's black hole compressor (the lens runs in the UMV compressor), the glass's Force Field Glass
-  (netherite, molten celestial tungsten; its Six-Phased Copper rods came with #436), the collider casing's Naquarite
-  foil (netherite, Thaumcraft), the LHC controller's Research Stations (no TecTech computation) and UV Neutron
+  (netherite, molten celestial tungsten; its Six-Phased Copper rods came with #436), the LHC controller's Research Stations (no TecTech computation) and UV Neutron
   Accelerators (their inverter's plastic case takes cyan dye, which the mod has none of).
 
 ### YPIC (issue #355, step 5)
@@ -2750,7 +2749,7 @@ coils T1 for MK III, T2 for MK IV).
   - The baths' and engravers' extra fluid ports follow GT's maps (2 fluids in, 2 out; 101).
   - The loops run as in GT: contaminated hydrogen peroxide and contaminated nitrobenzene. The crystal step gives the
     strontium back.
-  - Left out: GT's prismatic bee comb, the raw fluorophlogopite slurry and the netherite Naquarite foil.
+  - Left out: GT's prismatic bee comb and the raw fluorophlogopite slurry (the Naquarite foil since #617).
 
 The refinery (164 section 27; GoodGenerator's RecipeLoader.java and FuelRecipeLoader.java):
 - **Two machines**, as the mod builds tiered casings: the Naquadah Fuel Refinery with T1 coils (UHV, 4 parallels: MK III)
@@ -2857,7 +2856,7 @@ as GTNH has it, and the Singularity crafting storage left for a new issue.
   - 8 Quantum Chests V with their UEV chest buffers;
   - 4 infinity and 12 cosmic neutronium blocks, and 4 Infinity Catalysts (64 dust each, the HV compressor for the
     neutronium compressor);
-  - indalloy 140 for the UEV solder.
+  - indalloy 140 for the UEV solder (the mutated living solder since issue #627).
 
   ME Storage Singularity moves to UMV science.
 - **Left for #487:** the Singularity crafting storage's Creative Energy Cells (AE2 dense energy cells), Draconic
@@ -3013,3 +3012,53 @@ Part 2 (164): the Universal Chemical Fuel Engine and the thorium based liquid fu
   GoodGenerator's neutron activator recipe for it (200 L excited -> 200 L depleted, 500 s) and its centrifuge
   (thorium-232, praseodymium, boron, indium). That centrifuge is the mod's only source of praseodymium (fuel MK IV;
   164 section 23).
+
+## Mutated Living Solder (issue #627)
+
+GT++'s UEV+ solder (`RecipeLoaderGenericChem.java:151-168`) and the Gelid Cryotheum it needs are built in 164 section 46
+(the maintainer's decision of 2026-10-28: cryotheum as GT makes it): blizz rods from the Extreme Entity Crusher, blizz
+powder, snowballs (GT's snow dust) from water in the fluid solidifier, cryotheum dust in the MV mixer, gelid cryotheum in
+the HV fluid extractor, the solder in the UHV Large Chemical Reactor (GT's chemical plant T7 at 3842160 EU/t takes two
+UHV amps; Gregtorio's chemical plant has no casing tiers). It replaces Indalloy 140 in the 105 recipes where GTNH solders
+with it (circuits from the bioware supercomputer on, UEV+ components and hatches, DTPF, godforge, QFT, the space elevator's
+late modules, the stargate by the tier rule); the amounts stay Gregtorio's. Left for later (#671): the solder amounts that
+differ from GT's tenth, and 162's GT-litre fluid amounts.
+
+## Milling and flotation (issue #630)
+
+GT++'s IsaMill and GT's Froth Flotation Cell with GTNH's 11 milled ores and the netherrack froth (164 section 47, the
+maintainer's decision of 2026-10-28: the full scope). Stand-ins and deviations: Gregtorio's wood for GT++'s pine logs, its
+netherrack dust for the netherrack block; the milling ball's wear as a 99 % (alumina) or 98 % (soapstone) chance to
+return; the froth coils' heat is not modelled (the monazite froth needs 7500 K, the Utupu-Tanuri has 7200 K); GT++'s
+brown metal catalyst left out; the controllers leave out tungsten grinders, Lafium, Trinium Naquadah Carbonite, the
+maceration stack and quantium pipe casings, the advanced distillation towers, extruder casings and Aquatic Steel. Platinum
+and osmium dust of the froths are bartworks' replacements (metallic platinum powder, rarest metal mixture). The line is UV
+here (aniline and calcium hydroxide come with Kevlar, the vacuum furnace with Prismatic Naquadah), LuV in GTNH.
+Germanium and selenium (part 2): dusts of GT++'s elements from the sphalerite and platinum froths and from alburnite and
+miessiite (155). GT++'s other routes are left out: the germanium roasting in the alloy blast smelter and the selenium
+dioxide line start from purified crushed ores, which Gregtorio's ore chain does not have, and the latter needs hot water
+and the industrial coke oven. Their GTNH consumers (abyssal and quantum alloy, the godforge's exotic module plasmas,
+the technetium plasma fusion) are not in the mod either.
+
+## Netherite (issue #617)
+
+GT's netherite chain from ancient debris on (164 section 48; the maintainer's decisions of 2026-10-28). Ancient debris
+is a Manual Mine recipe in the Nether (160, with 163's electric twins); forge hammer, chemical bath, autoclave and seed
+bath give brittle scrap, the macerator nanoparticles, the EBF with molten hellish metal the bonded nanoparticles, the
+arc furnace netherite foil, the forming press the Naquarite Universal Insulator Foil. The 3x3 forming presses got a
+fluid input and the arc furnaces a fluid output (GT's maps take and give one). Netherite is UHV here (the Naquarite
+foil's manyullyn comes with Precise Electronic Unit MK3); GTNH's line is LuV.
+
+Named stand-ins for the Thaumcraft materials: infused gold dust from gold, glowstone (for salis mundus) and mercury
+(GT's centrifuge reversed); thaumium by GT's own recipe with lapis coolant; hellish metal by NewHorizonsCoreMod's
+electrolyzer recipe with 9 rhodium dust for the rhodium block, blaze rods for the Nether Shards, blaze powder for the
+infused fire dust, its block given as melt.
+
+Users only where the tier fits (the decision): the UEV to UMV superconducting coils, the awakened draconium, infinity
+and eternal coils, the collider casing and the QFT's netherite recipe take netherite's Naquarite foil. Kept with their
+stand-ins, as they come before netherite here: the fusion casings (GTNH: a netherite plate), the Fusion Computer MK1
+(a dense netherite plate; Gregtorio: dense osmiridium), Void Miner I (netherite frames; Gregtorio: iridium frames), the
+trinium coil and the ZPM to UHV superconducting coils (the Naquarite foil). Left out: the electric implosion compressor
+recipes of ancient debris (no EIC; debris is mined), the netherite blocks and stairs, the Forestry comb route, the
+dense netherite plate (its only user here would be the Fusion Computer), Force Field Glass (chronomatic glass and
+celestial tungsten parts are missing).

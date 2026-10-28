@@ -70,7 +70,8 @@
     unit counts of its technologies; phase 6b hooks are marked `6b hook`)
   - 140 godforge (phase 6b: the godforge, raw star matter, magmatter, the stellar catalyst of the plasma forge, the
     infinite `godforge-upgrades`; issue #249: quark gluon plasma and GT's rhugnor MK5 recipe; issue #355: the godforge between
-    the UIV and UMV energy hatches with GT's recipes, the plasma module technology with celestial tungsten)
+    the UIV and UMV energy hatches with GT's recipes (issue #624: at UIV science, the DTPF at UEV, the space elevator at UV with
+    the new technology Cosmic Neutronium), the plasma module technology with celestial tungsten)
   - 141 MAX tier (phase 6b: magmatter parts, the Planck line and MAX circuit, MAX components, hatches, machines and
     turbine; needs 140's magmatter and adds its turbine to 136's mod data; issue #249: the MAX recipes of the plasma
     forge and the QFT with substitutes); 140 and 141 load after 139 and **before** 138
@@ -179,7 +180,7 @@
     water to superheated steam), the large combustion engine and the large gas turbine (EV burner generators on the fuel
     cells); issue #295: GT++'s EV, IV and LuV rocket engines on the H8N4C2O4 rocket fuel cell (fuel category
     `rocket-engine-fuel`; the fuel's GTNH recipe and the Chemical Plant's move to Rocket Fuel are in 159); issue #444: GTNH's LV to HV
-    batteries and the battery buffers (accumulators of a fixed size, the batteries in the recipe; technology Large Batteries); issue #614: the EV and IV buffers (section 8b) with GTNH's tier batteries, the lapotron crystal (its chain moved from the ZPM Assembly Line to Lapotron Crystals, EV) and the lapotronic energy orb (moved to Lapotronic Energy Orb, IV); their technologies are named in 142's `UNLOCKS`, so it loads after 138 and **before** 142, and
+    batteries and the battery buffers (accumulators of a fixed size, the batteries in the recipe; technology Large Batteries); issue #637: the EV and IV gas turbines and semifluid generators (section 9) and GT++'s advanced boilers (section 9b); issue #614: the EV and IV buffers (section 8b) with GTNH's tier batteries, the lapotron crystal (its chain moved from the ZPM Assembly Line to Lapotron Crystals, EV) and the lapotronic energy orb (moved to Lapotronic Energy Orb, IV); their technologies are named in 142's `UNLOCKS`, so it loads after 138 and **before** 142, and
     before 196 for its fluids; it takes 136's generator from the global `FORK_POWER` and adds to its mod data
     `fork-power`)
   - 144 dead fluids (issue #91: GT's uses and producers of fluids nothing made or used; the blast furnace gas variants
@@ -188,7 +189,10 @@
     crafting table made; the reachable hand-only vanilla recipes (firearm magazine, light armor, rail ramp and support,
     wood processing) moved into `crafting-or-assembling-recipes`; the allow-list `FORK_RECIPES_TABLE_ONLY` of recipes of
     items that only the crafting table, the ME Molecular Assembler or the hand make, each with its reason; devcheck
-    fails for a reachable item whose every recipe is such a recipe and not in it; loads after 144 and before 150)
+    fails for a reachable item whose every recipe is such a recipe and not in it; GT's crafting tools of issue #612:
+    `<tool>-usage` charges (hammer, file, saw, screwdriver, wire cutter, wrench, knife) from iron, bronze or steel, one
+    recipe per material, and the charges added to the `crafting-table-recipes` of the parts by GT's shapes (`FORK_TOOLS`
+    maps a tool to its item); loads after 144 and before 150)
   - 149 early research (issues #127 and #146: the unit counts of the technologies with red and green packs only, 80 and
     more, divided by 6, those of MV to IV by 10, 13, 19 and 16; data-final-fixes.lua calls
     `FORK_EARLY_RESEARCH.rescale()` for the technologies whose units it sets later; the cheap research setting wins)
@@ -264,7 +268,7 @@
     (section 13, technology Naquadah Fuel Rods), the isotopes, the LFTR fuels, Hastelloy-N and the Reactor Fuel
     Processing Plant (section 14, technology Liquid Fluoride Thorium Reactor), the LFTR, the Reactor Processing Unit I,
     the Cold Trap I and the Sparge Tower (section 15; the LFTR's power comes from scripts/fork-power.lua) and the LFTR
-    loop (section 16); issue #406: the Nuclear Salt Processing Plant (section 17); issue #355: the Precise Assembler and the HiCs (section 18), the quantum anomaly and chromatic glass (section 19), the plasma forge's residue and Dimensionally Shifted Superfluid with the oganessons (section 20); issue #406: the Cold Trap II and RPU II with Pikyonium 64B (section 21); issue #356: the Mehen Belt's draconium (section 22), the depleted thorium fuel and praseodymium (section 23), the netherite chain's materials (section 24), GT++'s Algae Farm and Industrial Dehydrator (section 25), the netherite chain to the prismatic naquadah sheet (section 26), the Naquadah Fuel Refinery with MK III and MK IV (section 27), MK V and MK VI with coils T3 and T4 (section 28); issue #355 step 2: creon and mellion with fiery steel, fermium plasma and MK V's alternative (section 29); issue #355 step 4: the beamline with mu-metal, the Source Chamber, the Beam Crafter and UU matter (section 30), the Large Hadron Collider with its particles (section 31), the gravitational lens (section 32), the ZPIC with a second UMV hatch recipe (section 33); loads after 159 and
+    loop (section 16); issue #406: the Nuclear Salt Processing Plant (section 17); issue #355: the Precise Assembler and the HiCs (section 18), the quantum anomaly and chromatic glass (section 19), the plasma forge's residue and Dimensionally Shifted Superfluid with the oganessons (section 20); issue #406: the Cold Trap II and RPU II with Pikyonium 64B (section 21); issue #356: the Mehen Belt's draconium (section 22), the depleted thorium fuel and praseodymium (section 23), the netherite chain's materials (section 24), GT++'s Algae Farm and Industrial Dehydrator (section 25), the netherite chain to the prismatic naquadah sheet (section 26), the Naquadah Fuel Refinery with MK III and MK IV (section 27), MK V and MK VI with coils T3 and T4 (section 28); issue #355 step 2: creon and mellion with fiery steel, fermium plasma and MK V's alternative (section 29); issue #355 step 4: the beamline with mu-metal, the Source Chamber, the Beam Crafter and UU matter (section 30), the Large Hadron Collider with its particles (section 31), the gravitational lens (section 32), the ZPIC with a second UMV hatch recipe (section 33); issue #627: gelid cryotheum and the mutated living solder, which replaces indalloy 140 in GTNH's places (`MUTATED_SOLDER_RECIPES`, section 46, inserted before 38 like 42-45); issue #630: GT++'s milling and flotation (section 47: IsaMill, Flotation Cell, the milled ores and froths of `FORK_MILLING.ores`, the netherrack froth's Poor Nether Waste, pine oil and xanthates, nefarious oil; technologies Milling and Flotation and Froth Processing); issue #617: GT's netherite chain from ancient debris (160's Nether Manual Mine) to the Naquarite foil, its users where the tier fits, the forming press and arc furnace fluid ports (section 48, technology Netherite); loads after 159 and
     before 161)
   - 161 dimension unlocks (issue #287: the unlock rules of 160, `ore_dimension` moves or gates the ore chains of the
     dimensions' ores, the ender air with Radon, black plutonium with the Void Miner II, the bornite chain with
@@ -339,6 +343,11 @@
     technology, the twins with the first plant's and the LV Miner's technology unless every vein technology is later, then
     163's `unlock_dimension_mines()`; devcheck fails for a placed vein of `FORK_ORE_MIXES` without its recipe and twins or
     with other ores (section CLASSICVEINS); `docs/ORE-VEINS.md`; loads after 165)
+  - 167 tips (issue #625: the Tips and tricks category `gregtorio`, a title tip and one tip per tier from steam to MAX
+    with the tier's goals after GTNH's quest lines, unlocked by the technology of the tier's science pack; the texts in
+    `locale/en/fork.cfg` link the technologies with rich text tags; `FORK_TIPS.describe_machines()` in data-final-fixes gives
+    every tiered machine `<tier>-<kind>` the description of its kind (locale [fork-machine]) unless it has its own
+    `entity-description`; devcheck fails for a shown machine without a description (`MACHINE_TYPES`); loads after 166)
   - 156 circuit icons (issue #164: the circuit variant recipes up to UV keep the shared tier item and show GT's texture
     of their GTNH item as recipe icon; devcheck fails for a tier circuit recipe without its own icon; issue #450: the ULV
     tier item `ulv-circuit`, which the vacuum tube and NAND chip recipes give and every former user of the two takes, and

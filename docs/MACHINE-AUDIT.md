@@ -95,3 +95,14 @@ All closed; the verdicts are decided:
 - #367 (the machines the first audit missed): no "add" verdict, so no new issue
 
 The multiblocks are audited in `docs/MULTIBLOCK-AUDIT.md` (#246, #257).
+
+## Issue #637 (2026-10-28): tier gaps of the generators and single blocks
+
+| GT machine | Built | Where |
+|---|---|---|
+| Gas Turbine EV, IV (LoaderMetaTileEntities.java:9082-9096) | **built** (60 %, 50 %, one amp of the tier) | `145-fork-power-multiblocks.lua` section 9, EV Machines / IV Machines |
+| Semifluid Generator EV, IV (GT++ GregtechSemiFluidgenerators.java:35-46) | **built** (80 %, 75 %; large titanium and tungstensteel gears for GT++'s Incoloy-DS and Nitinol-60 gears) | 145 section 9 |
+| Advanced Boiler LV to HV (GT++ GregtechAdvancedBoilers.java:28-97) | **built** (7.5, 15, 22.5 steam a second; the mod's pipe and storage tank for GT's pipes and IronTanks) | 145 section 9b, Advanced Boilers / HV Advanced Boiler |
+| Chemical Reactor EV, IV (LoaderMetaTileEntities.java:2552, 2565) | **built** | `101-fork-machines.lua` section 2g' |
+| Distillery HV to IV (LoaderMetaTileEntities.java:4111-4137) | **built** | 101 section 2g' |
+| Chemical Reactor and Distillery LuV to UV (NewHorizonsCoreMod GT_Loader_Machines.java:381, 1515) | **leave** | the large chemical reactor and the tall distillation tower run their categories from LuV on |

@@ -509,8 +509,10 @@ local UNLOCKS = {
 		"crushed-borax", "crushed-neutronium", "neutronium-dust",
 	},
 	["quantium"] = { -- UHV
-		"centrifuging-crushed-cosmic-neutronium", "centrifuging-crushed-infinity-catalyst", "cosmic-neutronium-dust",
-		"crushed-cosmic-neutronium", "crushed-infinity-catalyst", "infinity-catalyst-dust",
+		"centrifuging-crushed-infinity-catalyst", "crushed-infinity-catalyst", "infinity-catalyst-dust",
+	},
+	["cosmic-neutronium"] = { -- UV (issue #624: the space elevator's screws and rings)
+		"centrifuging-crushed-cosmic-neutronium", "cosmic-neutronium-dust", "crushed-cosmic-neutronium",
 	},
 }
 --- Issue #98 (prototypes/147-fork-gt-routes.lua): the second printed board with sodium persulfate where the printed
@@ -530,7 +532,7 @@ local UNLOCKS_98 = {
 		"ppic-wafer-sunnarium",
 	},
 	["bedrockium"] = F.join({ "black-plutonium-ingot" }, FORK_GT_ROUTES.black_plutonium), -- UV
-	["quantium"] = F.join({ "cosmic-neutronium-ingot-from-hot-ingot" }, FORK_GT_ROUTES.cosmic_neutronium), -- UHV
+	["cosmic-neutronium"] = F.join({ "cosmic-neutronium-ingot-from-hot-ingot" }, FORK_GT_ROUTES.cosmic_neutronium), -- UV (#624)
 }
 --- Issue #96 (prototypes/146-fork-platinum-line.lua): GTNH's platinum line on the six technologies of the upstream
 --- line (their names kept): the ore washer and the sludge on platinum ore processing, aqua regia, the sludge centrifuge
@@ -742,13 +744,15 @@ end
 --- of a recipe category). Applied here, so the unlocks of 155 and 158 (unlock_after) see them, and once more by
 --- data-final-fixes.lua after it sets the vanilla technologies' prerequisites.
 FORK_UNLOCK_TREE = { prerequisites = {
+	["large-hadron-collider"] = { "cosmic-neutronium" },   -- double-cosmic-neutronium-plate (issue #624)
+	["naquadah-based-fuel-mk4"] = { "cosmic-neutronium" },   -- cosmic-neutronium-frame (issue #624)
 	["advanced-ev-machines"] = { "platinum" },   -- platinum-ingot
 	["advanced-integrated-circuits"] = { "nand-chips", "oil-gathering" },   -- fine-tin-wire; lubricant
 	["alloy-blast-smelter"] = { "nuclear-power" },   -- platinum-cable
 	["aluminium"] = { "cutting-machine" },   -- machine lv-cutting-machine
 	["assembly-line"] = { "industrial-precision-lathe" },   -- grate-machine-casing
 	["black-steel"] = { "electric-blast-furnace", "galena", "rare-earth-processing" },   -- machine mv-electric-blast-furnace; silver-ingot; nether-quartz
-	["bio-processors"] = { "qubit-cpus" },   -- qubit-cpu-chip
+	["bio-processors"] = { "qubit-cpus", "quantium" },   -- qubit-cpu-chip; infinity-catalyst-dust (the mutated living solder, #627)
 	["cetane-boosted-diesel"] = { "implosion-compressor" },   -- nitric-acid
 	["dimensionally-shifted-superfluid"] = { "radox-polymer" },   -- super-heavy-radox (issue #517)
 	["concrete"] = { "automation-2", "extractor" },   -- machine lv-assembling-machine; lv-pump (the LV Fluid Extractor, issue #556)
