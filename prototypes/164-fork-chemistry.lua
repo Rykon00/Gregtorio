@@ -1050,8 +1050,8 @@ F.tech{
 ---   cupric oxide, bismuth(III) oxide (:898-905, :920-927), 2-butyne-1,4-diol (EV, 20 s; :6009-6021), nickel aluminide
 ---     (blast furnace, HV, 45 s; BlastFurnaceRecipes.java:519-525), Raney nickel (EV, 60 s; :872-883), 1,4-butanediol
 ---     (UV, 15 s; :6041-6050), gamma-butyrolactone (EV, 5 s; :5989-5996), N-methyl-2-pyrrolidone (IV, 30 s; :931-940)
----   acetic anhydride: 2000 acetic acid -> 1000 (HV dehydrator, 30 s; gtPlusPlus RecipesGregTech.java:1224-1231; its
----     water left out: the dehydrator has one fluid output), 4-nitroaniline (EV, 15 s; :5950-5959), p-phenylenediamine
+---   acetic anhydride: 2000 acetic acid -> 1000 + 1000 water (HV dehydrator, 30 s; gtPlusPlus RecipesGregTech.java:1224-1231;
+---     the water since #635), 4-nitroaniline (EV, 15 s; :5950-5959), p-phenylenediamine
 ---     (UV, 20 s; :5974-5985)
 ---   diaminodiphenylmethane mixture (EV, 60 s; :5837-5846), its MDI mixture with phosgene (EV, 30 s; :5879-5887), MDI
 ---     from the distillation tower (EV, 125 s; DistilleryRecipes.java:423-430)
@@ -1158,7 +1158,7 @@ step(RECIPES, "n-methyl-2-pyrrolidone", "iv-chemical-reactor-recipes", 30, IV_SP
 	{ { "methylamine", 100 }, { "gamma-butyrolactone", 100 } }, { { "n-methyl-2-pyrrolidone", 100 }, { "water", 100 } })
 --- p-phenylenediamine
 step(RECIPES, "acetic-anhydride", "hv-dehydrator-recipes", 30, HV_SPEED, { { "acetic-acid", 200 } },
-	{ { "acetic-anhydride", 100 } })
+	{ { "acetic-anhydride", 100 }, { "water", 100 } })   -- (the water since #635: the dehydrators' second output)
 step(RECIPES, "4-nitroaniline", "ev-chemical-reactor-recipes", 15, EV_SPEED,
 	{ { "aniline", 100 }, { "acetic-anhydride", 10 }, { "nitration-mixture", 200 } },
 	{ { "4-nitroaniline", 100 }, { "diluted-sulfuric-acid", 100 } })
@@ -1431,8 +1431,8 @@ F.tech{
 --- Fuel Processing Plant, so the plant comes with them). Fluids a tenth of GT's litres, GT's seconds x the tier speed.
 --- The isotopes: GT's IV centrifuge of 8 depleted rods (or 4 dual, 2 quad; gregtech/loaders/load/FissionFuelLoader.java:
 --- 134-175, 245-286, 354-395): 8 empty fuel rods back, the fuel's dust, thorium 232, uranium 232 and 233, plutonium 238
---- and 241, polonium, thallium and krypton (GT's chances; small and tiny piles make the dust at the crafting table, GT's
---- packager is not in the mod). GT's "uranium" dust is the mod's uranium 238, GT's "plutonium" its plutonium 239.
+--- and 241, polonium, thallium and krypton (GT's chances; small and tiny piles make the dust at the crafting table and,
+--- since #635, in GT's packager). GT's "uranium" dust is the mod's uranium 238, GT's "plutonium" its plutonium 239.
 --- GT++'s fluoride chemistry (gtPlusPlus/xmod/gregtech/loaders/recipe/RecipeLoaderNuclear.java, N below):
 ---   lithium 7: laser engraver, 3 lithium + a white lens (the mod's: diamond) -> 1, EV, 120 s (RecipesLaserEngraver.java:
 ---     40-47); lithium hydroxide: 16 lithium 7 + 8000 oxygen + 8000 water -> 6912 L, LV, 300 s (N 125-132), its dust in the
@@ -1442,8 +1442,9 @@ F.tech{
 ---     its dust (GT++'s generated dehydrator recipe, 144 L, 16 EU/t, 1.5 s; MaterialGenerator.java:181-191), ammonium
 ---     bifluoride from 2000 GT hydrofluoric acid + 1000 ammonia -> 576 L (LV, 40 s; N 157-165), ammonium
 ---     tetrafluoroberyllate from 3 beryllium hydroxide + 1152 L of it -> 1000 + 2000 water (MV, 300 s; N 314-322; or the
----     MV dehydrator in 6 s, N 305-312, its water left out: one fluid output), beryllium fluoride from 1000 of it -> 3 +
----     2000 ammonia + 1000 industrial strength HF (MV, 300 s; N 341-350)
+---     MV dehydrator in 6 s, N 305-312, with its water since #635), beryllium fluoride from 1000 of it -> 3 + 2000 ammonia
+---     + 1000 industrial strength HF (MV, 300 s; N 341-350; since #635 also GT++'s MV dehydrator route with 2000 ammonia
+---     and 1000 hydrofluoric acid, N 329-339)
 ---   zirconium tetrafluoride: the zirconium pellet (autoclave, 1 zirconium + 4000 chlorine, LV, 15 s; N 67-75), 5
 ---     zirconium tetrachloride from it (macerator, 20 s; N 527-534; the mod's zirconium tetrachloride of 159 is the same
 ---     chemical and serves as GT++'s), cooked in the blast furnace (HV, 60 s; N 89-95), with 800 GT hydrofluoric acid (HV,
@@ -1485,10 +1486,7 @@ local function pile(d, kind, only)
 			results = { { type = "item", name = d, amount = 1 } },
 		}
 	end
-	if only then
-		FORK_RECIPES_TABLE_ONLY[r] = "GTNH: the dust comes only from the piles of GT's IV centrifuge of depleted rods "
-			.. "(FissionFuelLoader.java), and the piles make the dust in GT's packager, which the mod does not have"
-	end
+	--- (`only`: the dust comes only from its piles; since issue #635 the packager makes it too, no allow-list entry)
 	return p, r
 end
 
@@ -1583,10 +1581,15 @@ step(RECIPES, "ammonium-tetrafluoroberyllate", "mv-chemical-reactor-recipes", 30
 	{ { "beryllium-hydroxide-dust", 3 }, { "ammonium-bifluoride", 115.2 } },
 	{ { "ammonium-tetrafluoroberyllate", 100 }, { "water", 200 } })
 step(RECIPES, "ammonium-tetrafluoroberyllate-dehydration", "mv-dehydrator-recipes", 6, MV_SPEED,
-	{ { "beryllium-hydroxide-dust", 3 }, { "ammonium-bifluoride", 115.2 } }, { { "ammonium-tetrafluoroberyllate", 100 } })
+	{ { "beryllium-hydroxide-dust", 3 }, { "ammonium-bifluoride", 115.2 } },
+	{ { "ammonium-tetrafluoroberyllate", 100 }, { "water", 200 } })   -- (the water since #635: the dehydrators' second output)
 step(RECIPES, "beryllium-fluoride-dust", "mv-chemical-reactor-recipes", 300, MV_SPEED,
 	{ { "ammonium-tetrafluoroberyllate", 100 } },
 	{ { "beryllium-fluoride-dust", 3 }, { "ammonia", 200 }, { ISHF, 100 } })
+--- (issue #635: GT++'s dehydrator route, N 329-339, with its cells' ammonia and hydrofluoric acid as the two outputs)
+step(RECIPES, "beryllium-fluoride-dust-dehydration", "mv-dehydrator-recipes", 300, MV_SPEED,
+	{ { "ammonium-tetrafluoroberyllate", 100 } },
+	{ { "beryllium-fluoride-dust", 3 }, { "ammonia", 200 }, { "hydrofluoric-acid", 100 } }, "beryllium-fluoride-dust")
 step(RECIPES, ISHF, "chemical-plant-recipes", 30, HV_SPEED, { { ISHF, 200 }, { "hydrofluoric-acid", 500 } },
 	{ { ISHF, 450 } })
 step(RECIPES, "zirconium-pellet", "lv-autoclave-recipes", 15, LV_SPEED, { { "zirconium-dust", 1 }, { "chlorine", 400 } },
@@ -2866,9 +2869,8 @@ do
 	step(L, "flawed-cubic-zirconia", "hv-electric-blast-furnace-recipes", 2880, HV_SPEED,
 		{ { "zirconium-dust", 10 }, { "yttrium-oxide", 1 }, { "oxygen", 2000 } },
 		{ { "flawed-cubic-zirconia", 40 }, { "yttrium-oxide", 1 } }, "flawed-cubic-zirconia")
+	--- (cubic zirconia comes only as flawed gems, which macerate into small piles; the packager makes the dust, #635)
 	local p, r = pile("cubic-zirconia-dust", "small")
-	FORK_RECIPES_TABLE_ONLY[r] = "GTNH: cubic zirconia comes only as flawed gems (bartworks' blast furnace), which "
-		.. "macerate into small piles; GT makes the dust from them in the packager, which the mod does not have"
 	L[#L + 1] = r
 	step(L, "flawed-cubic-zirconia-maceration", "lv-macerator-recipes", 1.4, LV_SPEED, { { "flawed-cubic-zirconia", 1 } },
 		{ { p, 2 } })

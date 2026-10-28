@@ -115,7 +115,7 @@ FORK_RECIPES_TABLE_ONLY = {
 	["liquid-concrete-bucket"] = "GTNH: crafting table only (NHC GT_CraftingRecipeLoader.java:1226)",
 	["mortar-and-pestle"] = "GTNH: the mortar is a tool made at the crafting table, no machine recipe (GT ProcessingIngot.java:101 uses it as a crafting tool)",
 	-- (issue #223: dark ash dust has machine recipes since GT's raw iron blast furnace recipe, no entry needed)
-	["ferrosilite-dust-from-small-piles"] = "GTNH: 4 small piles make a dust at the crafting table or in the packager (GT ProcessingDust.java:572-578); Gregtorio has no packager, and ferrosilite comes only as small piles of chalcopyrite's bricked blast furnace recipes (issue #373)",
+	-- (issue #635: the pile recipes have packager twins, FORK_PACKAGER.twin_piles(); no entries for them)
 }
 
 

@@ -513,7 +513,9 @@ for _, d in pairs(DEHYDRATORS) do
 	local src = data.raw["assembling-machine"][d[2]]
 	machine{
 		name = d[1] .. "-dehydrator", source = d[2], category = d[3][1], speed = d[4], energy = src.energy_usage,
-		subgroup = d[5], ports = { port("input", N, { 0, -1 }), port("output", S, { 0, 1 }) },
+		--- (issue #635: GT's dehydrator gives water and gases as cells in its nine item slots, gregtech/api/recipe/
+		--- RecipeMaps.java:2017-2019 maxIO(2, 9, 1, 1); without cells a second fluid output)
+		subgroup = d[5], ports = { port("input", N, { 0, -1 }), port("output", S, { 0, 1 }), port("output", S, { 1, 1 }) },
 		recipe = { "crafting-or-assembling-recipes", 1, d[6] },
 	}
 	local m = data.raw["assembling-machine"][d[1] .. "-dehydrator"]

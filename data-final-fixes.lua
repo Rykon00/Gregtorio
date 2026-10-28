@@ -898,6 +898,9 @@ fork_steam_categories()
 --- Fork: the ore machines are furnaces that pick their recipe from the input (prototypes/101-fork-machines.lua, issue
 --- #560); after the steam macerators' categories above
 fork_furnace_machines()
+--- Fork: the packager twins of the pile recipes (prototypes/101-fork-machines.lua, issue #635); after every file that
+--- makes piles and after the unlocks above
+FORK_PACKAGER.twin_piles()
 --- Fork: every Gregtorio recipe named after its product unless it has its own name (prototypes/fork-locale.lua, issue #230)
 FORK_LOCALE.name_recipes()
 --- Fork: every tiered machine says what it does (prototypes/167-fork-tips.lua, issue #625); after every machine

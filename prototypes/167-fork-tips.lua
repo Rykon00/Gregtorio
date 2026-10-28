@@ -69,9 +69,9 @@ for _, k in pairs({ "advanced-boiler", "alloy-blast-smelter", "alloy-smelter", "
 	"autoclave", "bending-machine", "brewery", "canning-machine", "centrifuge", "chemical-bath", "chemical-reactor",
 	"circuit-assembler", "combustion-generator", "cutting-machine", "compressor", "cracker", "dehydrator", "dimension-miner", "distillery",
 	"drilling-rig", "electric-blast-furnace", "electric-furnace", "electrolyzer", "electromagnetic-separator", "extractor",
-	"extruder", "fermenter", "fluid-extractor", "fluid-solidifier", "forge-hammer", "forming-press", "gas-turbine",
+	"extruder", "fermenter", "fluid-extractor", "fluid-heater", "fluid-solidifier", "forge-hammer", "forming-press", "gas-turbine",
 	"implosion-compressor", "large-chemical-reactor", "large-naquadah-reactor", "large-plasma-turbine", "large-sifter",
-	"laser-engraver", "lathe", "macerator", "miner", "mixer", "multismelter", "ore-washer", "polarizer", "pyrolyse-oven",
+	"laser-engraver", "lathe", "macerator", "miner", "mixer", "multismelter", "ore-washer", "packager", "polarizer", "pyrolyse-oven",
 	"rock-crusher", "rocket-engine", "semifluid-generator", "short-distillation-tower", "sifting-machine",
 	"steam-turbine", "tall-distillation-tower", "thermal-centrifuge", "vacuum-freezer", "wiremill" }) do
 	KINDS[k] = true

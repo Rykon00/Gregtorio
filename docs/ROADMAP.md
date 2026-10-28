@@ -2355,9 +2355,9 @@ Part 1: GTNH's Overworld veins (`OreMixes.java`) whose ores the mod lacked, 30 r
   new Manual Mine recipe at 32/24/16/8 (primary to sporadic).
 * GT's byproducts basalt, black granite and rubidium are items since #373; the mineral sands' centrifuge gives basalt
   or black granite (black granite's own decomposition leaves out its biotite, which the mod lacks).
-* Trona and vermiculite decompose without their water (the electrolyzers have two fluid outputs).
+* Trona and vermiculite decompose with their water since #635 (the electrolyzers' third fluid output; before, without it).
 * Chalcopyrite's bricked blast furnace recipes with sand, glass or the quartzes are built since #373, with GT's
-  ferrosilite (its small piles make a dust at the crafting table: Gregtorio has no packager).
+  ferrosilite (its small piles make a dust at the crafting table and, since #635, in the packager).
 
 Part 2: the Twilight Forest's olivine vein and small ores and the Nether's saltpeter electrotine vein (16 more ores).
 * Electrotine (Project Red's) is left out of its vein.
@@ -2375,8 +2375,8 @@ Part 2: the Twilight Forest's olivine vein and small ores and the Nether's saltp
   centrifuge of the impure dust, the mod's chain its usual order); no forge hammer recipe for the raw ore (GT++ hammers
   only the ore block); elements the mod lacks are left out of byproducts and decompositions (germanium (since #630 in alburnite), tellurium,
   thallium, bromine, iodine, radium, selenium (since #630 in miessiite), strontium oxide, samarium ore concentrate; erbium, ytterbium and
-  dysprosium are GT's dusts since #355, which needs them); the LV chemical dehydrator has one fluid output, so cerite, fluorcaphite and lepersonnite give only
-  their oxygen; fluorite (F)'s hydrogen chemical bath is left out; runite gets its ore chain to runite dust, GT++'s
+  dysprosium are GT's dusts since #355, which needs them); since #635 the chemical dehydrators have two fluid outputs, so cerite, fluorcaphite and lepersonnite
+  give their hydrogen or fluorine too (before, only their oxygen); fluorite (F)'s hydrogen chemical bath is left out; runite gets its ore chain to runite dust, GT++'s
   alloy blast smelter melt and ingot are not built (no consumer). Agardite (Cd), yttrialite and lanthanite (Ce) are
   the mod's rare earth dusts of the same names.
 * #373, Neper: a Void Miner III recipe (T9, as Horus and Anubis), see Dilithium below.
@@ -2467,7 +2467,7 @@ organorhodium catalyst route to butanol, polyurethane catalyst A, polyurethane r
 woven Kevlar and the Kevlar plate. Deviations:
 * GT's spinneret (the solidifier's tool for the fiber) is the solidifier's generic mold (a stand-in).
 * Where GT's single reactor recipe needs a tiny pile (butyraldehyde, butanol), GT's x9 large reactor recipe is used.
-* Acetic anhydride's water is left out (the dehydrator has one fluid output).
+* Acetic anhydride's water comes out since #635 (the dehydrators' second fluid output).
 * Users: the UXV pump's 64 rings and the UXV conveyor's 80 plates are Kevlar (GTNH: Kevlar and radox; the silicone
   rubber stand-ins before), the UXV hull takes molten Kevlar (GT's 576 L at the mod's tenth) instead of
   polybenzimidazole. GTNH's other users (PCB factory tier 7, neutron accelerators, black hole compressor, solar factory,
@@ -2937,14 +2937,13 @@ Rods, but its higher science would hold the other rods back, so The Core has its
 Step 2 (164 section 14, technology Liquid Fluoride Thorium Reactor; the plan on #386: GT++'s LFTR fuels are recipes of
 the Reactor Fuel Processing Plant only, so the plant comes here, not in step 4):
 - the isotopes: GT's IV centrifuge of 8 depleted thorium, uranium or MOX rods (4 dual, 2 quad) with GT's chances;
-  small and tiny piles make their dust at the crafting table (GT's packager is not in the mod; FORK_RECIPES_TABLE_ONLY
-  names the dusts nothing else makes). The MOX isotopes come with Fusion Plasmas MK3, where their plutonium 241 is first
+  small and tiny piles make their dust at the crafting table and, since #635, in GT's packager. The MOX isotopes come with Fusion Plasmas MK3, where their plutonium 241 is first
   used (americium plasma, 136 section 1d); thorium 232 also goes into GoodGenerator's uranium carbide-thorium mixture
   (11 thorium + 1 thorium 232 as in GTNH, before 12 thorium).
 - GT++'s fluorides and GoodGenerator's thorium tetrafluoride with GT's recipes; the mod's zirconium tetrachloride of 159
   serves as GT++'s (the same chemical). GT++'s industrial strength hydrofluoric acid is its own fluid; its first source is
   the beryllium fluoride recipe, as in GTNH. Left out: the lithium carbonate routes (the mod has no lithium carbonate)
-  and the beryllium fluoride dehydrator (two fluid outputs).
+  (the beryllium fluoride dehydrator came with #635's second dehydrator output).
 - Hastelloy-N (GT++'s alloy blast smelter recipe, cast by 143) and the Reactor Fuel Processing Plant: a 3x3 machine with
   four fluid inputs at IV speed, its item the controller with the structure's casings (17 sealant, 7 structural, 5
   fluid containment, 4 reactor shield) and hatches as hulls. Its parts with GT's and the core mod's recipes: the

@@ -39,7 +39,7 @@
 --- Issue #223, B5: GT's nugget recipes (ProcessingNugget.java) for every metal with a nugget: ingot -> 9 nuggets in the
 --- alloy smelter with the mold (5 s), 9 nuggets -> ingot where missing (10 s), nugget -> a tiny pile of the dust in the
 --- macerator (registerReverseMacerating: mass / 9 ticks, at least 16); 9 tiny and 4 small piles make the dust at the
---- crafting table (GT's packager is not in Gregtorio). GT's crafting recipe with the saw is not made (no GT tools).
+--- crafting table and, since #635, in GT's packager (101's pile twins). GT's crafting recipe with the saw is not made (no GT tools).
 --- Unlocks: unlock_after of 155 (the first technology after the machine and the inputs). Loads after 155 and before
 --- 150, 196, 197, 198, 199 and 200.
 --------------------------------------------------------------------------------
