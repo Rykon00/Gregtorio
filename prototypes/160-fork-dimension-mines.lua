@@ -975,7 +975,7 @@ for name, pool in pairs({
 		{ "raw-yellow-garnet", 0.00457 }, { "raw-cassiterite", 0.00229 }, { "raw-pollucite", 0.00229 },
 		{ "raw-tartarite", 0.00229 },
 	},
-	--- BarnardE (T8): left out Cadmium, Caesium, Cerium, Deep Iron, Infused Gold, Lanthanum, Nether Star, Plutonium241, Shadow Iron, Titanium, Tungsten, Uranium235, Zinc
+	--- BarnardE (T8): left out Cadmium, Caesium, Deep Iron, Infused Gold, Nether Star, Plutonium241, Shadow Iron, Titanium, Tungsten, Uranium235, Zinc
 	["barnard-e"] = {
 		{ "raw-magnetite", 0.22699 }, { "raw-iron", 0.08228 }, { "raw-uraninite", 0.07448 },
 		{ "raw-chalcopyrite", 0.05675 }, { "raw-naquadah", 0.04611 }, { "raw-bentonite", 0.04256 },
@@ -984,11 +984,12 @@ for name, pool in pairs({
 		{ "raw-silicon", 0.01135 }, { "raw-adamantium", 0.00709 }, { "raw-copper", 0.00709 },
 		{ "raw-neutronium", 0.00709 }, { "raw-pyrite", 0.00709 }, { "raw-nickel", 0.00567 }, { "raw-glauconite", 0.00532 },
 		{ "raw-olivine", 0.00532 }, { "raw-red-garnet", 0.00532 }, { "raw-yellow-garnet", 0.00532 },
-		{ "raw-molybdenite", 0.00355 }, { "raw-wulfenite", 0.00355 }, { "raw-enriched-naquadah", 0.00266 },
-		{ "raw-platinum", 0.00266 }, { "raw-pyrolusite", 0.00177 }, { "raw-tantalite", 0.00177 },
-		{ "raw-molybdenum", 0.00044 }, { "raw-powellite", 0.00044 },
+		{ "raw-cerium", 0.00355 }, { "raw-lanthanum", 0.00355 }, { "raw-molybdenite", 0.00355 },
+		{ "raw-wulfenite", 0.00355 }, { "raw-enriched-naquadah", 0.00266 }, { "raw-platinum", 0.00266 },
+		{ "raw-pyrolusite", 0.00177 }, { "raw-tantalite", 0.00177 }, { "raw-molybdenum", 0.00044 },
+		{ "raw-powellite", 0.00044 },
 	},
-	--- CentauriA (T8): left out Cadmium, Caesium, Cerium, Electrotine, Lanthanum
+	--- CentauriA (T8): left out Cadmium, Caesium, Electrotine
 	["centauri-bb"] = {
 		{ "raw-sulfur", 0.14109 }, { "raw-nether-quartz", 0.11993 }, { "raw-tetrahedrite", 0.09877 },
 		{ "raw-redstone", 0.08466 }, { "raw-cassiterite-sand", 0.05644 }, { "raw-garnet-sand", 0.05644 },
@@ -998,9 +999,10 @@ for name, pool in pairs({
 		{ "raw-spessartine", 0.01411 }, { "raw-pyrite", 0.00882 }, { "raw-sphalerite", 0.00882 },
 		{ "raw-asbestos", 0.00705 }, { "raw-neodymium", 0.00705 }, { "raw-samarium", 0.00705 },
 		{ "raw-uraninite", 0.00705 }, { "raw-copper", 0.00617 }, { "raw-stibnite", 0.00617 }, { "raw-cinnabar", 0.00529 },
-		{ "raw-ruby", 0.00529 }, { "raw-alunite", 0.00353 }, { "raw-borax", 0.00353 }, { "raw-certus-quartz", 0.00353 },
-		{ "raw-yellow-garnet", 0.00353 }, { "raw-emerald", 0.00265 }, { "raw-thorium", 0.00265 },
-		{ "raw-pyrolusite", 0.00176 }, { "raw-tantalite", 0.00176 }, { "raw-tartarite", 0.00176 },
+		{ "raw-ruby", 0.00529 }, { "raw-alunite", 0.00353 }, { "raw-borax", 0.00353 }, { "raw-cerium", 0.00353 },
+		{ "raw-certus-quartz", 0.00353 }, { "raw-lanthanum", 0.00353 }, { "raw-yellow-garnet", 0.00353 },
+		{ "raw-emerald", 0.00265 }, { "raw-thorium", 0.00265 }, { "raw-pyrolusite", 0.00176 },
+		{ "raw-tantalite", 0.00176 }, { "raw-tartarite", 0.00176 },
 	},
 	--- TcetiE (T8): left out Chrome, Manganese, Nether Star, Perlite, Uvarovite
 	["tau-ceti-e"] = {
@@ -1016,7 +1018,7 @@ for name, pool in pairs({
 		{ "raw-spodumene", 0.00304 }, { "raw-borax", 0.00243 }, { "raw-certus-quartz", 0.00243 },
 		{ "raw-tungstate", 0.00243 }, { "raw-lapis", 0.00195 }, { "raw-molybdenum", 0.0003 },
 	},
-	--- VegaB (T8): left out Cadmium, Caesium, Cerium, Chrome, Chrysotile, Gallium, Infused Gold, Lanthanum, Lithium, Nether Star, Niobium, Plutonium241, Titanium, Uranium235, Vanadium, Yttrium
+	--- VegaB (T8): left out Cadmium, Caesium, Chrome, Chrysotile, Gallium, Infused Gold, Lithium, Nether Star, Niobium, Plutonium241, Titanium, Uranium235, Vanadium, Yttrium
 	["vega-b"] = {
 		{ "raw-magnetite", 0.18967 }, { "raw-tetrahedrite", 0.06988 }, { "raw-redstone", 0.0599 }, { "raw-gold", 0.04367 },
 		{ "raw-galena", 0.03993 }, { "raw-pitchblende", 0.03993 }, { "raw-uraninite", 0.03494 },
@@ -1026,9 +1028,9 @@ for name, pool in pairs({
 		{ "raw-silver", 0.01248 }, { "raw-lead", 0.01048 }, { "raw-scheelite", 0.00998 },
 		{ "raw-vanadium-magnetite", 0.00998 }, { "raw-antimony", 0.00749 }, { "raw-adamantium", 0.00499 },
 		{ "raw-neutronium", 0.00499 }, { "raw-copper", 0.00437 }, { "raw-stibnite", 0.00437 }, { "raw-cinnabar", 0.00374 },
-		{ "raw-ruby", 0.00374 }, { "raw-calcite", 0.0025 }, { "raw-lapis", 0.0025 }, { "raw-realgar", 0.0025 },
-		{ "raw-enriched-naquadah", 0.00187 }, { "raw-platinum", 0.00187 }, { "raw-diamond", 0.001 },
-		{ "raw-tungstate", 0.00062 },
+		{ "raw-ruby", 0.00374 }, { "raw-calcite", 0.0025 }, { "raw-cerium", 0.0025 }, { "raw-lanthanum", 0.0025 },
+		{ "raw-lapis", 0.0025 }, { "raw-realgar", 0.0025 }, { "raw-enriched-naquadah", 0.00187 },
+		{ "raw-platinum", 0.00187 }, { "raw-diamond", 0.001 }, { "raw-tungstate", 0.00062 },
 	},
 	--- Seth (T9): left out Chrome, Electrotine, Iridium, Mithril, Osmium
 	["seth"] = {
@@ -1072,6 +1074,13 @@ create_ore("raw-naquadria", nil, "crushed-naquadria", nil, nil, "crushed-naquadr
 --- gtnhlanth's samarium ore concentrate (164 section 55)
 create_ore("raw-samarium", nil, "crushed-samarium", "samarium-ore-concentrate", nil, "crushed-samarium", nil, nil, 1, false,
 	false)
+--- issue #631 part 3: GT's ores of the other lanthanides with an ion extraction resin (164 section 56): lanthanum and
+--- cerium in the RareEarth vein (Barnard E and F, Centauri Bb, Vega B), every one in the Deep Dark (161); their dusts are
+--- the mod's
+for _, x in pairs({ "lanthanum", "praseodymium", "cerium", "europium", "gadolinium", "terbium", "dysprosium", "holmium",
+	"erbium", "ytterbium", "lutetium" }) do
+	create_ore("raw-" .. x, nil, "crushed-" .. x, nil, nil, "crushed-" .. x, nil, nil, 1, false, false)
+end
 --- issue #373: Neper's ores the mod lacked (GT's dilithium, mysterious crystal and vinteum; the mysterious crystal dust is
 --- the moon dust's above)
 create_ore("raw-dilithium", nil, "crushed-dilithium", "dilithium-dust", nil, "crushed-dilithium", nil, nil, 1, false, false)
@@ -1193,4 +1202,4 @@ unlock_in(VM_TECHS[3], { "crushed-awakened-draconium" })   -- issue #356: the Me
 --- (issue #636: draconium, oriharukon and vinteum come from Phobos and Deimos's mines with Reach Mars now)
 unlock_in(MARS, { "crushed-draconium", "crushed-oriharukon", "crushed-vinteum" })
 unlock_in(VM_TECHS[3], { "crushed-tengam", "crushed-tartarite", "crushed-naquadria" })   -- issue #636: Seth, Maahes
-unlock_in(VM_TECHS[2], { "crushed-samarium" })   -- issue #631: Barnard C, Centauri Bb
+unlock_in(VM_TECHS[2], { "crushed-samarium", "crushed-lanthanum", "crushed-cerium" })   -- issue #631: Barnard C and E, Centauri Bb, Vega B

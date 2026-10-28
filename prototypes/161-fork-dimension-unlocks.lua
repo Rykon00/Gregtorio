@@ -228,4 +228,27 @@ do
 	end
 	FORK5B.tech{ name = "the-deep-dark", prerequisites = { VM_TECHS[3], "uhv-machines" }, packs = 10, count = 50, time = 60,
 		recipes = recipes }
+	--- issue #631 part 3: the lanthanides only the Deep Dark mines (no GTNH vein holds them): their ore chains (155, which
+	--- found no source for them) come with it; Rare Earth Ion Extraction (164 section 56) comes after it
+	local unlocked = {}
+	for _, t in pairs(data.raw.technology) do
+		for _, e in pairs(t.effects or {}) do if e.type == "unlock-recipe" then unlocked[e.recipe] = true end end
+	end
+	local chain = {}
+	for _, x in pairs({ "praseodymium", "europium", "gadolinium", "terbium", "dysprosium", "holmium", "erbium", "ytterbium",
+		"lutetium" }) do
+		local forms = {}
+		for _, f in pairs({ "raw-%s", "crushed-%s", "purified-%s", "centrifuged-%s", "impure-%s-dust", "pure-%s-dust" }) do
+			forms[f:format(x)] = true
+		end
+		for name, r in pairs(data.raw.recipe) do
+			if not unlocked[name] and r.enabled == false and not name:find("recycling", 1, true) then
+				for _, i in pairs(r.ingredients or {}) do
+					if forms[i.name] then chain[#chain + 1] = name; break end
+				end
+			end
+		end
+	end
+	for _, n in pairs(chain) do fork_add_unlock("the-deep-dark", n) end
+	table.insert(data.raw.technology["rare-earth-ion-extraction"].prerequisites, "the-deep-dark")
 end
