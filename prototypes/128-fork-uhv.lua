@@ -495,8 +495,8 @@ create_item{
 ---   * QPIC wafers need the water purification line -> UHPIC wafers like the MK1 and MK2
 ---   * superdense americium plate (skipped when americium was made): 64 plates in the UV compressor
 ---   * the advanced fusion coil (the draft is the MK4 one with UU matter and UEV circuits): UHV
----     emitter and sensor, tritanium and neutronium melt instead of cinobite, octiron, astral
----     titanium and UU matter. The reactor takes 8 of them (GT: 32): each needs a UHV emitter and sensor (about 110 tritanium
+---     emitter and sensor; GT's cinobite and octiron melts come in 164's section 52 (issue #629), astral
+---     titanium and UU matter stay out (the UHV assembler takes two fluids). The reactor takes 8 of them (GT: 32): each needs a UHV emitter and sensor (about 110 tritanium
 ---     ingots), see the PR.
 --- GT's neutronium (americium + naquadria) is a MK3 recipe; here MK3 is the efficient one and the
 --- MK2 keeps a slow one (see below), otherwise the UV pump needs neutronium and the MK3 needs UV

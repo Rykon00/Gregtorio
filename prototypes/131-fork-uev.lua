@@ -580,8 +580,8 @@ create_item{
 --- Controller, reactor and casing MK3 are the drafts in 21-luv-age-item.lua. The MK4 is the UEV
 --- tier (16 UEV energy hatches, 32 UEV hulls), UEV circuits in the controller. Drafts fixed here:
 ---   * the reactor needs its controller (the draft called it "computer")
----   * casing MK3: category typo `uvh-...`; UU matter, cinobite, octiron and astral titanium ->
----     tritanium and cosmic neutronium melt, one UHV motor per casing (the draft: 2 motors and a
+---   * casing MK3: category typo `uvh-...`; cinobite and octiron melt (164's section 52, issue #629; UU
+---     matter and astral titanium left out), one UHV motor per casing (the draft: 2 motors and a
 ---     piston, 79 casings would have been 240 motors)
 ---   * the controller uses dracofinium wire (draft: triamerotronium) and FPIC wafers (GT)
 ---   * the reactor takes 16 advanced fusion coils (draft: 32; the MK3 takes 8): each needs a UHV

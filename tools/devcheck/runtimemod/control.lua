@@ -833,6 +833,9 @@ local RT = {
 	-- issue #628 (prototypes/164-fork-chemistry.lua section 51): GTNH's wetware printed board and the PCB Factory's optical one
 	{ "hv-chemical-reactor", "wetware-printed-circuit-board" },
 	{ "pcb-factory", "optical-printed-circuit-board" },
+	-- issue #629 (section 52): GT++'s cinobite A243 and octiron for the fusion reactor Mk-IV's parts
+	{ "zpm-alloy-blast-smelter", "molten-cinobite-a243" },
+	{ "uhv-alloy-blast-smelter", "molten-octiron" },
 	{ "lv-fluid-heater", "water-fluid-heater" },
 	{ "lv-packager", "packager-iron-dust-from-small-piles" },
 	{ "component-assembly-line", "lv-motor-coal" },
