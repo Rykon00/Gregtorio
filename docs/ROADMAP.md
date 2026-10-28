@@ -71,7 +71,7 @@ How Gregtorio turns GT New Horizons into Factorio, where the code only implies i
 | #638 | GT's single-block naquadah reactors Mk I-V and plasma generators come back on GTNH's tiers (#644) |
 | #629 | cinobite A243 and octiron built (164 section 52, thaumium for Thaumcraft's crystal powders); attuned tengam and proto-halkonite steel built after #636 (164 section 53, tairitsu as tritanium, the freezer's superfluid as super coolant); white and black dwarf matter and phonon medium moved to #699 |
 | #636 | Phobos's and Deimos's veins as mines with Reach Mars (draconium, oriharukon and the heavy pentele vein at EV, as in GTNH); Seth, Maahes and every other void-minable dimension of T3 to T8 as Void Miner pools; the Deep Dark (T10) as a Void Miner III recipe with every raw ore, technology The Deep Dark at UHV |
-| #631 | in three parts: iodine and GT's hafnium route first (164 section 54: seaweed from the greenhouse, the two centrifuge steps with two fluids in the chemical reactor), then the samarium ore concentrate and the rare earth ion extraction |
+| #631 | in three parts: iodine and GT's hafnium route first (164 section 54: seaweed from the greenhouse, the two centrifuge steps with two fluids in the chemical reactor), then the samarium ore concentrate (section 55: GT's samarium ore in the Void Miner pools of Seth, Barnard C and Centauri Bb, florencite's concentrate, gtnhlanth's chain; the ZPM distillation left out) and the rare earth ion extraction |
 
 ## Early game: Stone age to MV
 

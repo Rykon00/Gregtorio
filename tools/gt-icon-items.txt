@@ -5333,3 +5333,18 @@ hafnium-iodide-dust
 hafnium-runoff-dust
 tiny-pile-of-hafnium-runoff-dust
 hot-hafnium-ingot
+# issue #631 part 2: the samarium ore concentrate line and GT's samarium ore
+samarium-ore-concentrate
+thorium-phosphate-concentrate
+samarium-oxalate
+dephosphated-samarium-concentrate
+samarium-chloride
+samarium-chloride-sodium-chloride-blend
+rarest-earth-residue
+tiny-pile-of-rarest-earth-residue-dust
+raw-samarium
+crushed-samarium
+purified-samarium
+centrifuged-samarium
+impure-samarium-dust
+pure-samarium-dust

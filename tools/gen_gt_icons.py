@@ -330,6 +330,12 @@ MATERIALS = {
     "iodine": ("SHINY", (171, 40, 175)), "seaweed-ash": ("DULL", (70, 75, 71)), "hafnia": ("DULL", (247, 223, 203)),
     "hafnium-tetrachloride": ("DULL", (238, 247, 249)), "low-purity-hafnium": ("DULL", (240, 223, 208)),
     "hafnium-iodide": ("DULL", (216, 60, 1)), "hafnium-runoff": ("DULL", (74, 65, 42)),
+    # issue #631 part 2: gtnhlanth's samarium line (WerkstoffMaterialPool.java, their colours); GT's samarium ore is the
+    # concentrate's
+    "samarium-ore-concentrate": ("DULL", (255, 200, 230)), "thorium-phosphate-concentrate": ("DULL", (217, 144, 88)),
+    "samarium-oxalate": ("DULL", (248, 248, 180)), "dephosphated-samarium-concentrate": ("DULL", (255, 170, 220)),
+    "samarium-chloride": ("DULL", (248, 248, 120)), "samarium-chloride-sodium-chloride-blend": ("DULL", (255, 200, 230)),
+    "rarest-earth-residue": ("DULL", (224, 211, 211)),
     "zirconium": ("METALLIC", (175, 175, 175)),
     "red-zircon": ("GEM_VERTICAL", (195, 19, 19)),
     "dilithium": "Dilithium", "vinteum": "Vinteum", "mysterious-crystal": "MysteriousCrystal",   # issue #373: Neper
@@ -1163,7 +1169,7 @@ def icon_table(c):
     T["lanthanum-hexaboride"] = lambda: c.part("lanthanum-hexaboride", "gem")
 
     # issue #272: the dusts of section 6 of 159, which the fork names without "-dust"
-    for m in ("europium-iii-oxide", "europium-oxide", "hafnia-zirconia-blend", "zirconia", "zirconium-tetrachloride", "hafnia", "hafnium-tetrachloride", "lanthanum-oxide", "boron-trioxide", "samaric-rare-earth-concentrate", "fluorinated-samaric-concentrate", "samarium-terbium-mixture", "nitrogenated-samarium-terbium-mixture", "terbium-nitrate"):
+    for m in ("europium-iii-oxide", "europium-oxide", "hafnia-zirconia-blend", "zirconia", "zirconium-tetrachloride", "hafnia", "hafnium-tetrachloride", "samarium-ore-concentrate", "thorium-phosphate-concentrate", "samarium-oxalate", "dephosphated-samarium-concentrate", "samarium-chloride", "samarium-chloride-sodium-chloride-blend", "rarest-earth-residue", "lanthanum-oxide", "boron-trioxide", "samaric-rare-earth-concentrate", "fluorinated-samaric-concentrate", "samarium-terbium-mixture", "nitrogenated-samarium-terbium-mixture", "terbium-nitrate"):
         T[m] = lambda m=m: c.part(m, "dust")
 
     # issue #269: the dusts of the bastnasite and cerium lines, which the fork names without "-dust"

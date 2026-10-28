@@ -5310,3 +5310,17 @@ hafnium-iodide-dust	colour of hafnium-iodide #d83c01 + gt:gregtech/textures/item
 hafnium-runoff-dust	colour of hafnium-runoff #4a412a + gt:gregtech/textures/items/materialicons/NONE/dust
 tiny-pile-of-hafnium-runoff-dust	colour of hafnium-runoff #4a412a + gt:gregtech/textures/items/materialicons/NONE/dustTiny
 hot-hafnium-ingot	colour of hafnium #e8e0db + gt:gregtech/textures/items/materialicons/NONE/ingotHot + gt:gregtech/textures/items/materialicons/NONE/ingotHot_OVERLAY
+samarium-ore-concentrate	colour of samarium-ore-concentrate #ffc8e6 + gt:gregtech/textures/items/materialicons/NONE/dust
+thorium-phosphate-concentrate	colour of thorium-phosphate-concentrate #d99058 + gt:gregtech/textures/items/materialicons/NONE/dust
+samarium-oxalate	colour of samarium-oxalate #f8f8b4 + gt:gregtech/textures/items/materialicons/NONE/dust
+dephosphated-samarium-concentrate	colour of dephosphated-samarium-concentrate #ffaadc + gt:gregtech/textures/items/materialicons/NONE/dust
+samarium-chloride	colour of samarium-chloride #f8f878 + gt:gregtech/textures/items/materialicons/NONE/dust
+samarium-chloride-sodium-chloride-blend	colour of samarium-chloride-sodium-chloride-blend #ffc8e6 + gt:gregtech/textures/items/materialicons/NONE/dust
+rarest-earth-residue	colour of rarest-earth-residue #e0d3d3 + gt:gregtech/textures/items/materialicons/NONE/dust
+raw-samarium	colour of Samarium #ffffcc + gt:gregtech/textures/items/materialicons/METALLIC/oreRaw
+crushed-samarium	colour of Samarium #ffffcc + gt:gregtech/textures/items/materialicons/NONE/crushed + gt:gregtech/textures/items/materialicons/NONE/crushed_OVERLAY
+purified-samarium	colour of Samarium #ffffcc + gt:gregtech/textures/items/materialicons/NONE/crushedPurified
+centrifuged-samarium	colour of Samarium #ffffcc + gt:gregtech/textures/items/materialicons/NONE/crushedCentrifuged
+impure-samarium-dust	colour of Samarium #ffffcc + gt:gregtech/textures/items/materialicons/METALLIC/dustImpure + gt:gregtech/textures/items/materialicons/METALLIC/dustImpure_OVERLAY
+pure-samarium-dust	colour of Samarium #ffffcc + gt:gregtech/textures/items/materialicons/METALLIC/dustPure + gt:gregtech/textures/items/materialicons/METALLIC/dustPure_OVERLAY
+tiny-pile-of-rarest-earth-residue-dust	colour of rarest-earth-residue #e0d3d3 + gt:gregtech/textures/items/materialicons/NONE/dustTiny
