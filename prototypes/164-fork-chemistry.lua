@@ -6056,6 +6056,96 @@ end
 
 
 --------------------------------------------------------------------------------
+--- 54) IODINE AND GT'S HAFNIUM ROUTE (issue #631 part 1, the maintainer's decision of 2026-10-28: seaweed from the
+---   greenhouse). gtnhlanth's loadGeneral (gtnhlanth/loader/RecipeLoader.java:902-1066):
+---   * iodine from seaweed: seaweed ash (furnace, 1 seaweed); mixer, 8 ash + 1200 L diluted sulfuric acid -> calcite +
+---     1200 L seaweed concentrate (30 s at HV); centrifuge, 2000 L concentrate + 2000 L chlorobenzene -> iodine dust + 200
+---     L seaweed byproducts (30 s at HV); centrifuge, 6000 L byproducts + 12000 L nitrobenzene -> 60 iodine, 8 arsenic, 6
+---     magnesium, 2 cadmium dust + 200 L bromine (3 s at UEV; GT++'s bromine, issue #632's element)
+---   * iodine as a fluid (GT: 1000 L a dust): fluid extractor and solidifier, 6.35 s at LV each
+---   * the Everglades' iodine ores give theirs in the electrolyzer as in GTNH (the dump): lautarite 2 per 9 dust,
+---     perroudite 2 per 20 dust (and its 2000 L bromine, left out before) (155's NEW_ORES)
+---   * hafnium (:902-998): the hafnia-zirconia blend's centrifuge gives GT's 3 hafnia too (159 left it out); chemical
+---     reactor, 3 hafnia + 4000 L hydrochloric acid -> 5 hafnium tetrachloride + 2000 L water (15 s at LV), 5 + 1000 L
+---     water -> 1000 L solution (10 s at LV); blast furnace, 2 magnesium + 1000 L solution -> low-purity hafnium dust + 6
+---     magnesium chloride (30 s at EV); chemical reactor, + 4000 L iodine (or 4 iodine dust) -> 5 hafnium iodide (15 s
+---     at LV); blast furnace, 5 iodide -> a hot hafnium ingot, a tiny pile of hafnium runoff and the 4000 L iodine back
+---     (30 s at HV), or 45 -> 9, a runoff dust and 36000 L (241.5 s); vacuum freezer, hot -> ingot (26.7 s at MV)
+---   The two centrifuge steps (GT's centrifugeNonCellRecipes: two fluid inputs, GT++'s Industrial Centrifuge) run in the
+---   (large) chemical reactor of their tier, the maintainer's choice: the mod's centrifuges are furnaces with one fluid
+---   input (issue #560).
+---   Fluids a tenth. Named stand-in: Pam's HarvestCraft seaweed (not in the mod) from the Extreme Industrial Greenhouse,
+---   as its wheat (11: 2400 water, 30 s -> 64). Unlocked with Zirconium Processing (hafnium iodide is iodine's first use,
+---   issue #252's rule); the byproducts' UEV step with the UEV multiblocks (its reactor).
+--------------------------------------------------------------------------------
+do
+	local RZ, RU = {}, {}
+	local function fl(name, icon, rgb) F.fluid(name, icon, { rgb[1] / 255, rgb[2] / 255, rgb[3] / 255 }) end
+	--- (gtnhlanth's Werkstoff colours, WerkstoffMaterialPool.java; GT++'s bromine, MaterialsElements.java)
+	fl("iodine", "purple-fluid", { 171, 40, 175 })
+	fl("seaweed-concentrate", "olive-fluid", { 70, 100, 71 })
+	fl("seaweed-byproducts", "purple-fluid", { 125, 50, 138 })
+	fl("hafnium-tetrachloride-solution", "nearly-white-fluid", { 238, 247, 249 })
+	if not data.raw.fluid["bromine"] then fl("bromine", "medium-red-fluid", { 200, 25, 25 }) end
+	items(SUB_DUST, { "iodine-dust", "seaweed-ash-dust", "hafnia", "hafnium-tetrachloride", "low-purity-hafnium-dust",
+		"hafnium-iodide-dust", "hafnium-runoff-dust", "tiny-pile-of-hafnium-runoff-dust" })
+	items(SUB_PART, { "seaweed", "hot-hafnium-ingot" })
+	--- iodine
+	step(RZ, "growing-seaweed", "greenhouse-recipes", 30, 1, { { "water", 2400 } }, { { "seaweed", 64 } }, "seaweed")
+	step(RZ, "seaweed-ash-dust", "smelting", 3.2, 1, { { "seaweed", 1 } }, { { "seaweed-ash-dust", 1 } })
+	step(RZ, "seaweed-concentrate", "hv-mixer-recipes", 30, HV_SPEED, { { "seaweed-ash-dust", 8 }, { "diluted-sulfuric-acid", 120 } },
+		{ { "calcite", 1 }, { "seaweed-concentrate", 120 } }, "seaweed-concentrate")
+	step(RZ, "iodine-dust", "hv-chemical-reactor-recipes", 30, HV_SPEED, { { "seaweed-concentrate", 200 }, { "chlorobenzene", 200 } },
+		{ { "iodine-dust", 1 }, { "seaweed-byproducts", 20 } }, "iodine-dust")
+	step(RU, "seaweed-byproducts-centrifuging", "uev-chemical-reactor-recipes", 3, UEV_SPEED,
+		{ { "seaweed-byproducts", 600 }, { "nitrobenzene", 1200 } },
+		{ { "iodine-dust", 60 }, { "arsenic", 8 }, { "magnesium", 6 }, { "cadmium", 2 }, { "bromine", 20 } }, "iodine-dust")
+	step(RZ, "iodine", "lv-fluid-extractor-recipes", 6.35, LV_SPEED, { { "iodine-dust", 1 } }, { { "iodine", 100 } })
+	step(RZ, "solidify-iodine-dust", "lv-fluid-solidifier-recipes", 6.35, LV_SPEED, { { "iodine", 100 } }, { { "iodine-dust", 1 } })
+	--- hafnium
+	table.insert(data.raw.recipe["zirconia"].results, { type = "item", name = "hafnia", amount = 3 })
+	step(RZ, "hafnium-tetrachloride", "lv-chemical-reactor-recipes", 15, LV_SPEED, { { "hafnia", 3 }, { "hydrochloric-acid", 400 } },
+		{ { "hafnium-tetrachloride", 5 }, { "water", 200 } }, "hafnium-tetrachloride")
+	step(RZ, "hafnium-tetrachloride-solution", "lv-chemical-reactor-recipes", 10, LV_SPEED,
+		{ { "hafnium-tetrachloride", 5 }, { "water", 100 } }, { { "hafnium-tetrachloride-solution", 100 } })
+	step(RZ, "low-purity-hafnium-dust", "ev-electric-blast-furnace-recipes", 30, EV_SPEED,
+		{ { "magnesium", 2 }, { "hafnium-tetrachloride-solution", 100 } }, { { "low-purity-hafnium-dust", 1 }, { "magnesium-chloride", 6 } },
+		"low-purity-hafnium-dust")
+	step(RZ, "hafnium-iodide-dust", "lv-chemical-reactor-recipes", 15, LV_SPEED,
+		{ { "low-purity-hafnium-dust", 1 }, { "iodine", 400 } }, { { "hafnium-iodide-dust", 5 } })
+	step(RZ, "hafnium-iodide-dust-from-iodine-dust", "lv-chemical-reactor-recipes", 15, LV_SPEED,
+		{ { "low-purity-hafnium-dust", 1 }, { "iodine-dust", 4 } }, { { "hafnium-iodide-dust", 5 } })
+	step(RZ, "hot-hafnium-ingot", "hv-electric-blast-furnace-recipes", 30, HV_SPEED, { { "hafnium-iodide-dust", 5 } },
+		{ { "hot-hafnium-ingot", 1 }, { "tiny-pile-of-hafnium-runoff-dust", 1 }, { "iodine", 400 } }, "hot-hafnium-ingot")
+	step(RZ, "hot-hafnium-ingot-x9", "hv-electric-blast-furnace-recipes", 241.5, HV_SPEED, { { "hafnium-iodide-dust", 45 } },
+		{ { "hot-hafnium-ingot", 9 }, { "hafnium-runoff-dust", 1 }, { "iodine", 3600 } }, "hot-hafnium-ingot")
+	step(RZ, "hafnium-ingot-from-hot", "mv-vacuum-freezer-recipes", 26.7, MV_SPEED, { { "hot-hafnium-ingot", 1 } },
+		{ { "hafnium-ingot", 1 } })
+	--- the Everglades' iodine ores (155's decompositions)
+	local function add(recipe, results)
+		local r = data.raw.recipe[recipe]
+		for _, x in pairs(results) do r.results[#r.results + 1] = x end
+	end
+	add("lautarite-dust-decomposition", { { type = "item", name = "iodine-dust", amount = 2 } })
+	add("perroudite-dust-decomposition", { { type = "item", name = "iodine-dust", amount = 2 },
+		{ type = "fluid", name = "bromine", amount = 200 } })
+	for _, r in pairs(RZ) do fork_add_unlock("zirconium-processing", r) end
+	for _, r in pairs(RU) do fork_add_unlock("uev-multiblocks", r) end
+	--- (chlorobenzene comes with the advanced SMDs, nitrobenzene with Kevlar)
+	for t, pre in pairs({ ["zirconium-processing"] = { "advanced-smds" },
+		["uev-multiblocks"] = { "kevlar", "zirconium-processing" } }) do
+		local list = data.raw.technology[t].prerequisites
+		for _, p in pairs(pre) do
+			local has = false
+			for _, x in pairs(list) do if x == p then has = true end end
+			if not has then list[#list + 1] = p end
+		end
+	end
+end
+
+
+
+--------------------------------------------------------------------------------
 --- 38) GT'S PARTS OF THE METALS OF THIS FILE (issue #467). 158 makes GT New Horizons' parts of every metal of
 ---   prototypes/gt-parts-data.lua (issue #227) whose ingot exists; most metals of this file come after 158, so its
 ---   FORK_GT_PARTS.run() runs once more here (it skips what exists), then 143's casts for the new forms.

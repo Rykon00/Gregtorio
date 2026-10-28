@@ -325,6 +325,11 @@ MATERIALS = {
     "hafnia-zirconia-blend": ("DULL", (247, 223, 203)),
     "zirconia": ("SHINY", (177, 152, 101)),
     "zirconium-tetrachloride": ("DULL", (179, 164, 151)),
+    # issue #631: gtnhlanth's iodine and hafnium Werkstoffe (WerkstoffMaterialPool.java, their colours); the hot hafnium
+    # ingot is hafnium's
+    "iodine": ("SHINY", (171, 40, 175)), "seaweed-ash": ("DULL", (70, 75, 71)), "hafnia": ("DULL", (247, 223, 203)),
+    "hafnium-tetrachloride": ("DULL", (238, 247, 249)), "low-purity-hafnium": ("DULL", (240, 223, 208)),
+    "hafnium-iodide": ("DULL", (216, 60, 1)), "hafnium-runoff": ("DULL", (74, 65, 42)),
     "zirconium": ("METALLIC", (175, 175, 175)),
     "red-zircon": ("GEM_VERTICAL", (195, 19, 19)),
     "dilithium": "Dilithium", "vinteum": "Vinteum", "mysterious-crystal": "MysteriousCrystal",   # issue #373: Neper
@@ -1158,7 +1163,7 @@ def icon_table(c):
     T["lanthanum-hexaboride"] = lambda: c.part("lanthanum-hexaboride", "gem")
 
     # issue #272: the dusts of section 6 of 159, which the fork names without "-dust"
-    for m in ("europium-iii-oxide", "europium-oxide", "hafnia-zirconia-blend", "zirconia", "zirconium-tetrachloride", "lanthanum-oxide", "boron-trioxide", "samaric-rare-earth-concentrate", "fluorinated-samaric-concentrate", "samarium-terbium-mixture", "nitrogenated-samarium-terbium-mixture", "terbium-nitrate"):
+    for m in ("europium-iii-oxide", "europium-oxide", "hafnia-zirconia-blend", "zirconia", "zirconium-tetrachloride", "hafnia", "hafnium-tetrachloride", "lanthanum-oxide", "boron-trioxide", "samaric-rare-earth-concentrate", "fluorinated-samaric-concentrate", "samarium-terbium-mixture", "nitrogenated-samarium-terbium-mixture", "terbium-nitrate"):
         T[m] = lambda m=m: c.part(m, "dust")
 
     # issue #269: the dusts of the bastnasite and cerium lines, which the fork names without "-dust"
