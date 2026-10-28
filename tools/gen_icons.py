@@ -526,6 +526,33 @@ def draw_planet(kind):
     return out
 
 
+SEAWEED = [(18, 52, 26), (30, 84, 40), (52, 120, 58), (90, 160, 84), (140, 196, 120)]
+
+
+def draw_seaweed():
+    """32 x 32 RGBA: issue #631, Pam's HarvestCraft seaweed (no texture in the checkouts): three wavy green fronds
+    rising from a common base, lit from the left, with a dark outline"""
+    img = Image.new("RGBA", (32, 32), (0, 0, 0, 0))
+    px = img.load()
+    for i, (x0, phase, top) in enumerate(((11, 0.0, 4), (16, 1.6, 2), (21, 3.1, 6))):
+        for y in range(top, 29):
+            t = (29 - y) / (29 - top)
+            cx = x0 + 3.0 * math.sin(phase + y * 0.45) * t + (i - 1) * 4 * t
+            w = 2.6 - 1.4 * t
+            for x in range(32):
+                d = (x + 0.5 - cx) / w
+                if abs(d) <= 1:
+                    px[x, y] = tone(SEAWEED, 0.75 - 0.35 * (d + 1) / 2 + 0.15 * math.sin(y * 0.9 + i))
+    out = img.copy()
+    o = out.load()
+    for y in range(32):
+        for x in range(32):
+            if px[x, y][3] and any(not (0 <= x + dx < 32 and 0 <= y + dy < 32) or px[x + dx, y + dy][3] == 0
+                                   for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1))):
+                o[x, y] = (8, 24, 12, 255)
+    return out
+
+
 def save_if_changed(img, path):
     if path.exists():
         old = Image.open(path).convert("RGBA")
@@ -564,6 +591,8 @@ def drawn():
     #  issue #574: the planet icons of the Nether, the Twilight Forest and The End
     for planet, kind in (("gt-nether", "nether"), ("gt-twilight", "twilight"), ("gt-end", "end")):
         save_if_changed(draw_planet(kind), ICONS / (planet + ".png"))
+    #  issue #631: the greenhouse's seaweed
+    save_if_changed(draw_seaweed(), ICONS / "seaweed.png")
 
 
 def main():

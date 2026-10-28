@@ -5323,3 +5323,13 @@ fine-hot-proto-halkonite-steel-wire
 fine-proto-halkonite-steel-wire
 hot-proto-halkonite-steel-plate
 proto-halkonite-steel-plate
+# issue #631: iodine and GT's hafnium route
+iodine-dust
+seaweed-ash-dust
+hafnia
+hafnium-tetrachloride
+low-purity-hafnium-dust
+hafnium-iodide-dust
+hafnium-runoff-dust
+tiny-pile-of-hafnium-runoff-dust
+hot-hafnium-ingot

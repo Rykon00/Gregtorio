@@ -418,7 +418,7 @@ F.tech{
 --- Zirconium (RL 866-900, 993-1002; bartworks Electrolyzer.java and its generated Zirconium recipes):
 ---   the monazite dissolution tank gives 4/9 hafnia-zirconia blend (GT's 4 tiny piles), the monazite sifter 5 % and the
 ---   bastnasite sifter 10 % red zircon dust;
----   centrifuge: hafnia-zirconia blend -> 3 zirconia (EV, 30 s; GT's 3 hafnia are left out, see below)
+---   centrifuge: hafnia-zirconia blend -> 3 zirconia (EV, 30 s; GT's 3 hafnia since issue #631, 164 section 54)
 ---   chemical reactor: 3 zirconia + 400 hydrochloric acid -> 5 zirconium tetrachloride, 200 water (LV, 15 s);
 ---     5 zirconium tetrachloride + 100 water -> 100 zirconium tetrachloride solution (LV, 10 s)
 ---   blast furnace: 2 magnesium + 100 solution -> hot zirconium ingot, 6 magnesium chloride (EV, 30 s); zirconium dust
@@ -451,8 +451,8 @@ F.tech{
 --- 4 large polyethylene pipes are 24 polyethylene sheets and the 4 black metal frames black steel frames, Gregtorio has
 --- neither) and the MV and HV Dehydrators (GregtechDehydrator.java 171-185: hull, robot arm, circuit, fine wire, 2x 4x
 --- cables, gears; 3x3 copies of the chemical bath of their tier). Section 7 adds the EV to ZPM Dehydrators and
---- hafnium from GT++'s ilmenite sifter (issue #274); GT's hafnia route needs iodine, which Gregtorio has no source
---- for, and GTNH's samarium chain samarium ore (#154).
+--- hafnium from GT++'s ilmenite sifter (issue #274); GT's hafnia route with iodine is 164's section 54 (issue #631),
+--- GTNH's samarium chain needs samarium ore (#154).
 --------------------------------------------------------------------------------
 
 local EUROPIUM, ZIRCONIUM, HEXABORIDE, SAMARIC = "europium-processing", "zirconium-processing", "lanthanum-hexaboride",
@@ -647,7 +647,7 @@ F.tech{
 --- RecipeLoaderNuclear.java 551-565): iron 50 %, zirconium 2 x 10 %, hafnium 2 x 3 % (HV, 30 s; GT's cast iron dust,
 --- 2.78 %, is left out: Gregtorio has no cast iron). Hafnium is bartworks' Werkstoff without a blast furnace: its dust
 --- smelts into the ingot in the furnace, the macerator grinds the ingot (5 s). GT's hafnia route (hafnium tetrachloride,
---- low-purity hafnium, hafnium iodide) waits for an iodine source.
+--- low-purity hafnium, hafnium iodide) is 164's section 54 since issue #631 (iodine from seaweed).
 ---
 --- The Chemical Dehydrators I to IV (EV to ZPM, GT++'s GregtechDehydrator.java 68-209): hull, robot arm, circuit, a
 --- dehydrator coil, 2x 4x cables (8 cables) and 2 gears of the tier, like the MV and HV ones of section 6. The coil

@@ -150,6 +150,10 @@ put("ore-solutions", { "zirconium-tetrachloride-solution", "hydrated-ammonium-ni
 put("acids", { "boric-acid" })
 put("gases", { "phosgene", "boron-trichloride", "chloromethane" })
 put("molten-elements", { "calcium-fluoride" })
+--- issue #631: iodine (GT's gas) and GT++'s bromine (a liquid element, next to mercury); the seaweed line's solutions
+put("gases", { "iodine" })
+put("molten-elements", { "bromine" })
+put("ore-solutions", { "seaweed-concentrate", "seaweed-byproducts" })
 --- issue #335: the Drilling Fluid of the Ore Drilling Plants (163), water with stone dust and lubricant
 put("basic", { "drilling-fluid" })
 --- issue #362: GT++'s rocket fuels and the chains behind them (164)

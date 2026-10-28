@@ -5301,3 +5301,12 @@ long-purified-tengam-rod	colour of TengamPurified #badf70 + gt:gregtech/textures
 proto-halkonite-steel-plate	gt:gregtech/textures/items/materialicons/CUSTOM/protohalkonite/plate
 purified-tengam-dust	colour of TengamPurified #badf70 + gt:gregtech/textures/items/materialicons/METALLIC/dust
 purified-tengam-rod	colour of TengamPurified #badf70 + gt:gregtech/textures/items/materialicons/NONE/stick
+iodine-dust	colour of iodine #ab28af + gt:gregtech/textures/items/materialicons/SHINY/dust + gt:gregtech/textures/items/materialicons/SHINY/dust_OVERLAY
+seaweed-ash-dust	colour of seaweed-ash #464b47 + gt:gregtech/textures/items/materialicons/NONE/dust
+hafnia	colour of hafnia #f7dfcb + gt:gregtech/textures/items/materialicons/NONE/dust
+hafnium-tetrachloride	colour of hafnium-tetrachloride #eef7f9 + gt:gregtech/textures/items/materialicons/NONE/dust
+low-purity-hafnium-dust	colour of low-purity-hafnium #f0dfd0 + gt:gregtech/textures/items/materialicons/NONE/dust
+hafnium-iodide-dust	colour of hafnium-iodide #d83c01 + gt:gregtech/textures/items/materialicons/NONE/dust
+hafnium-runoff-dust	colour of hafnium-runoff #4a412a + gt:gregtech/textures/items/materialicons/NONE/dust
+tiny-pile-of-hafnium-runoff-dust	colour of hafnium-runoff #4a412a + gt:gregtech/textures/items/materialicons/NONE/dustTiny
+hot-hafnium-ingot	colour of hafnium #e8e0db + gt:gregtech/textures/items/materialicons/NONE/ingotHot + gt:gregtech/textures/items/materialicons/NONE/ingotHot_OVERLAY
