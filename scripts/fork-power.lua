@@ -74,11 +74,12 @@ local function mod_data()
 	return md and md.data or { turbines = {}, cooled = {}, hatch = "turbine-output-hatch", fuels = {} }
 end
 
-local turbine_names, cooled_of, ratio_of, effectivity_of, hatch_name, fuels_of, loss_of, lftr_power, dynamo_name
+local turbine_names, cooled_of, ratio_of, effectivity_of, hatch_name, fuels_of, loss_of, lftr_power, dynamo_name, dyson
 local function init()
 	if turbine_names then return end
 	local d = mod_data()
 	lftr_power, dynamo_name = {}, d.lftr_dynamo
+	dyson = d.dyson and prototypes.entity[d.dyson.entity] and prototypes.entity[d.dyson.dynamo] and d.dyson or nil
 	for name, recipes in pairs(d.lftr or {}) do
 		if prototypes.entity[name] then lftr_power[name] = recipes end
 	end
@@ -111,6 +112,7 @@ local function state()
 	st.generators = st.generators or {}         -- saves from before the fuel check
 	st.capacitors = st.capacitors or {}         -- saves from before issue #97
 	st.lftrs = st.lftrs or {}                   -- issue #386
+	st.dysons = st.dysons or {}                 -- issue #623
 	return st
 end
 
@@ -262,9 +264,59 @@ local function lftr_step(st)
 	end
 end
 
+--------------------------------------------------------------------------------
+--- Dyson Swarm ground units (issue #623, prototypes/164-fork-chemistry.lua section 50): each unit's swarm counts the
+--- modules its finished runs deployed (at most `max_modules`), loses GT's share once a cycle (IGConfig.java:33-63
+--- without computation: m x 2 x chance / (exp(-a (m - 1)) + 1)) and gives `module_watts` per module through its hidden
+--- dynamo while the unit runs
+--------------------------------------------------------------------------------
+
+local function register_dyson(st, entity)
+	local u = st.dysons[entity.unit_number]
+	if u and u.dynamo and u.dynamo.valid then return end
+	local surface, position = entity.surface, entity.position
+	local dynamo = surface.find_entities_filtered{ name = dyson.dynamo, position = position, limit = 1 }[1]
+		or surface.create_entity{ name = dyson.dynamo, position = position, force = entity.force }
+	if dynamo then dynamo.power_production = 0 end
+	st.dysons[entity.unit_number] = { entity = entity, dynamo = dynamo, power = 0, count = u and u.count or 0,
+		finished = entity.products_finished, next_loss = u and u.next_loss or game.tick + dyson.cycle_ticks }
+end
+
+local function dyson_step(st)
+	for id, u in pairs(st.dysons) do
+		local e, d = u.entity, u.dynamo
+		if not (e and e.valid) then
+			if d and d.valid then d.destroy() end
+			st.dysons[id] = nil
+		elseif not (d and d.valid) then
+			u.dynamo = nil
+			register_dyson(st, e)
+		else
+			local done = e.products_finished - (u.finished or 0)
+			if done > 0 then u.count = math.min(dyson.max_modules, u.count + done) end
+			u.finished = e.products_finished
+			if game.tick >= u.next_loss then
+				local m = u.count
+				if m > 0 then
+					local lost = m * 2 * dyson.chance / (math.exp(-dyson.a * (m - 1)) + 1)
+					u.count = math.max(0, m - math.floor(lost + 0.5))
+				end
+				u.next_loss = u.next_loss + dyson.cycle_ticks
+			end
+			local power = 0
+			if e.status == defines.entity_status.working then power = u.count * dyson.module_watts / 60 end
+			if u.power ~= power then
+				d.power_production = power
+				u.power = power
+			end
+		end
+	end
+end
+
 function M.on_built(entity)
 	init()
 	if not (entity and entity.valid) then return end
+	if dyson and entity.name == dyson.entity then register_dyson(state(), entity) end
 	if lftr_power[entity.name] then register_lftr(state(), entity) end
 	if turbine_names[entity.name] then register_turbine(state(), entity) end
 	if entity.name == hatch_name then   -- (issue #642: the turbines search their hatches again)
@@ -301,7 +353,23 @@ function M.on_configuration_changed()
 	for n, _ in pairs(lftr_power) do
 		if not seen[n] then names[#names + 1] = n; seen[n] = true end
 	end
+	if dyson and not seen[dyson.entity] then names[#names + 1] = dyson.entity; seen[dyson.entity] = true end
 	local st = state()
+	--- Dyson Swarm dynamos: drop the gone units' and any interface without its unit
+	for id, u in pairs(st.dysons) do
+		if not (dyson and u.entity and u.entity.valid) then
+			if u.dynamo and u.dynamo.valid then u.dynamo.destroy() end
+			st.dysons[id] = nil
+		end
+	end
+	if dyson then
+		for _, surface in pairs(game.surfaces) do
+			for _, d in pairs(surface.find_entities_filtered{ name = dyson.dynamo }) do
+				local owner = surface.find_entities_filtered{ name = dyson.entity, position = d.position, limit = 1 }[1]
+				if not owner then d.destroy() end
+			end
+		end
+	end
 	--- LFTR dynamos: drop the gone reactors' and any interface without its reactor
 	for id, l in pairs(st.lftrs) do
 		if not (l.entity and l.entity.valid and lftr_power[l.entity.name]) then
@@ -341,6 +409,7 @@ function M.on_configuration_changed()
 			if fuels_of[e.name] then register_generator(st, e) end
 			if loss_of[e.name] then st.capacitors[e.unit_number] = e end
 			if lftr_power[e.name] then register_lftr(st, e) end
+			if dyson and e.name == dyson.entity then register_dyson(st, e) end
 		end
 	end
 end
@@ -471,12 +540,23 @@ script.on_event(defines.events.on_tick, function(event)
 	check_step(st)
 	step(st)
 	if st.lftrs then lftr_step(st) end
+	if dyson and st.dysons then dyson_step(st) end
 	if st.capacitors then capacitor_step(st) end
 end)
 
 --- For tests: the cooled fluid still owed by a turbine (of one fluid, or all of them), and the energy
 --- counted since the last step
 remote.add_interface("gregtorio-power", {
+	--- issue #623: a Dyson Swarm ground unit's swarm (modules, power in W)
+	dyson = function(entity)
+		local u = entity and entity.valid and storage.fork_power and storage.fork_power.dysons
+			and storage.fork_power.dysons[entity.unit_number]
+		return u and u.count or 0, u and u.power * 60 or 0
+	end,
+	dyson_set = function(entity, count, next_loss)
+		local u = storage.fork_power.dysons[entity.unit_number]
+		if u then u.count, u.next_loss = count or u.count, next_loss or u.next_loss end
+	end,
 	debt = function(entity, fluid)
 		local t = storage.fork_power and storage.fork_power.turbines[entity.unit_number]
 		if not t then return 0 end

@@ -104,6 +104,7 @@ for _, o in pairs(FORK_MILLING and FORK_MILLING.ores or {}) do put("ore-solution
 put("ore-solutions", { "rich-nether-waste" })
 put("molten-alloys", { "molten-thaumium", "molten-hellish-metal", "molten-manyullyn" })
 put("molten-elements", { "molten-boron" })
+put("molten-alloys", { "molten-tantalum-hafnium-carbide" })   -- issue #623
    -- (issue #627: GT++'s UEV+ solder)
 put("molten-alloys", { "soldering-alloy" })
 --- issue #635: the fluid heater's steps

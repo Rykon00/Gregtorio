@@ -5630,6 +5630,174 @@ end
 
 
 --------------------------------------------------------------------------------
+--- 50) THE DYSON SWARM (issue #623, the maintainer's decision of 2026-10-28: as GTNH with named stand-ins).
+---   gtnhintergalactic's Dyson Swarm Ground Unit (gtnhintergalactic/tile/multi/TileEntityDysonSwarm.java, TDS below):
+---   each run pulls Dyson Swarm Modules into its swarm (at most 10 000, :267-279), which gives 10 000 000 EU/t per module
+---   (:282; Gregtorio's tier scale: a GT UIV amp, 33 554 432 EU/t, is 655.36 MW, so 195.3125 MW per module), as long as
+---   it has 3 600 000 L cryotheum per hour (:284, :291); once an hour it loses m x 0.132 / (exp(-0.00005 (m - 1)) +
+---   exp(0.00003 x computation)) modules (gtnhintergalactic/config/IGConfig.java:33-63; Gregtorio has no computation, so
+---   6.6 % to 8.2 % an hour). The dimension factor is the Overworld's 1.0 (IGConfig.java:73-117).
+---   Here the ground unit is a 3x3 machine that deploys one module and burns 100 L of gelid cryotheum (GT's 1000 L, a
+---   tenth) a second; scripts/fork-power.lua counts the deployed modules (the machine's finished runs), applies the hourly
+---   loss and feeds the swarm's power through a hidden dynamo while the unit runs (mod data `dyson`). A full swarm (10 000)
+---   keeps deploying, so its surplus modules are lost (GT keeps them in the bus).
+---   Recipes (NewHorizonsCoreMod gthandler/recipes/AssemblingLineRecipes.java:329-552, the assembly line here; UU matter
+---   left out as everywhere since #36; GT's liquid helium as cryogenic helium, its mutated living solder since #627):
+---   * module (:364-376, UHV 5 s): 4 solar sails, a drone case, a femtocontroller, GT++'s RTG, a fuel pellet, 4 FPIC
+---     chips, 1843.2 solder, 1600 cryotheum -> 64
+---   * drone case (:329-345), femtocontroller (:347-362), fuel pellet (AssemblerRecipes.java:9853-9860), solar sail
+---     (SolarFactoryRecipes.java:377-390), UHT resistant mesh and the nanofibers (ScriptGalaxySpace.java:254-390)
+---   * the nine casings (:378-533) and the controller (:535-552); the unit takes the structure's blocks by GT's counts
+---     (TDS tooltip :466-480)
+---   Named stand-ins (the mod lacks these): OpenComputers' drone and microcontroller cases and microchips as UEV robot
+---   arms and RAM chips, GraviSuite's gravitation engine as a UEV field generator, the Heavy Duty Rocket Engine T4 as the
+---   large rocket engine, xenon plasma as helium plasma, the Optically Perfected CPU as an optical processor, GT++'s RTG
+---   as 4 plutonium 238 dust (its fuel), the FPIC chip as the FPIC wafer, the LuV solar panel cover (solar is off) as a
+---   LuV sensor, radox item casings, foils and long rods as radox polymer plates, bartworks' UEV energy distributor as the
+---   UEV energy hatch, the UEV voltage coil as a superconducting coil block, Quantum Tanks and Chests IV as the Quantum
+---   Chest V (left out: the mod's comes only at UMV), Minecraft's droppers as inserters, TecTech's Quantum Computer and OpenComputers' servers as UIV and UEV
+---   circuits, the Tesla primary's eM coils as superconducting coil blocks, Computronics' parts as UIV sensors, the
+---   irradiant reinforced bedrockium plate as a bedrockium plate, the coolant cells as super coolant; the TaHf carbide's
+---   plasma arc furnace as the IV blast furnace, hafnia as hafnium dust; the Ultra High Strength Concrete as the space
+---   elevator's concrete (as 162); the parts the mod makes only after UIV: the Energised Tesseract as a UEV field
+---   generator, the glowstone nanites as glowstone dust, the medium infinity pipes as their 3 infinity plates each (GT's
+---   pipe), the Field Restriction Coils T2 as UEV field generators; GT's tantalum carbide dust as its ingot.
+--------------------------------------------------------------------------------
+do
+	local R = {}
+	local function item(name, amount) return { type = "item", name = name, amount = amount } end
+	local SOLDER, CRYO, SC = FORK_MUTATED_SOLDER, "gelid-cryotheum", "super-coolant"
+	local AL = "zpm-assembly-line-recipes"
+	items(SUB_DUST, { "hafnium-carbide-dust", "tantalum-hafnium-carbide-mixture", "tantalum-hafnium-carbide-dust",
+		"tantalum-hafnium-nanoparticles", "neutronium-nanoparticles" })
+	items(SUB_PART, { "tantalum-hafnium-carbide-ingot", "tantalum-hafnium-carbide-nanofibers", "neutronium-nanofibers",
+		"uht-resistant-mesh", "solar-sail", "drone-case", "femtocontroller", "fuel-pellet", "dyson-swarm-module" })
+	items("subgroup-uiv-age-multiblocks", { "dyson-swarm-receiver-casing", "dyson-swarm-receiver-dish",
+		"dyson-swarm-deployment-unit-casing", "dyson-swarm-deployment-unit-core", "dyson-swarm-deployment-unit-magnet",
+		"dyson-swarm-control-casing", "dyson-swarm-control-primary-windings", "dyson-swarm-control-secondary-windings",
+		"dyson-swarm-control-toroid", "dyson-swarm-controller" })
+	--- the tantalum hafnium carbide and the mesh (ScriptGalaxySpace.java:254-390)
+	F.fluid("molten-tantalum-hafnium-carbide", "medium-gray-fluid", { 0.55, 0.50, 0.45 })
+	step(R, "hafnium-carbide-dust", "lv-chemical-reactor-recipes", 20, LV_SPEED, { { "hafnium-dust", 1 }, { "carbon", 1 } },
+		{ { "hafnium-carbide-dust", 1 } })
+	step(R, "tantalum-hafnium-carbide-mixture", "ev-mixer-recipes", 10, EV_SPEED,
+		{ { "tantalum-carbide-ingot", 4 }, { "hafnium-carbide-dust", 1 } }, { { "tantalum-hafnium-carbide-mixture", 5 } })
+	step(R, "tantalum-hafnium-carbide-ingot", "iv-electric-blast-furnace-recipes", 0.25, IV_SPEED,
+		{ { "tantalum-hafnium-carbide-mixture", 1 }, { "nitrogen", 20 } }, { { "tantalum-hafnium-carbide-ingot", 1 } })
+	step(R, "tantalum-hafnium-carbide-dust", "lv-macerator-recipes", 5, LV_SPEED, { { "tantalum-hafnium-carbide-ingot", 1 } },
+		{ { "tantalum-hafnium-carbide-dust", 1 } })
+	step(R, "melt-tantalum-hafnium-carbide-ingot", "iv-fluid-extractor-recipes", 1.2, IV_SPEED,
+		{ { "tantalum-hafnium-carbide-ingot", 1 } }, { { "molten-tantalum-hafnium-carbide", 14.4 } })
+	step(R, "tantalum-hafnium-nanoparticles", "hv-macerator-recipes", 5, HV_SPEED, { { "tantalum-hafnium-carbide-dust", 1 } },
+		{ { "tantalum-hafnium-nanoparticles", 1 } })
+	step(R, "neutronium-nanoparticles", "hv-macerator-recipes", 5, HV_SPEED, { { "neutronium-dust", 1 } },
+		{ { "neutronium-nanoparticles", 1 } })
+	step(R, "tantalum-hafnium-carbide-nanofibers", "iv-autoclave-recipes", 50, IV_SPEED,
+		{ { "tantalum-hafnium-nanoparticles", 1 }, { "molten-tantalum-hafnium-carbide", 57.6 } },
+		{ { "tantalum-hafnium-carbide-nanofibers", 5 } })
+	step(R, "neutronium-nanofibers", "iv-autoclave-recipes", 50, IV_SPEED,
+		{ { "neutronium-nanoparticles", 1 }, { "molten-neutronium", 57.6 } }, { { "neutronium-nanofibers", 5 } })
+	step(R, "uht-resistant-mesh", "luv-assembling-machine-recipes", 10, LUV_SPEED,
+		{ { "tantalum-hafnium-carbide-nanofibers", 4 }, { "neutronium-nanofibers", 4 } }, { { "uht-resistant-mesh", 1 } })
+	--- the module's parts
+	step(R, "solar-sail", "uev-assembling-machine-recipes", 10, UEV_SPEED,
+		{ { "luv-sensor", 1 }, { "luv-robot-arm", 1 }, { "uht-resistant-mesh", 8 }, { "kevlar-plate", 4 },
+			{ "radox-polymer-plate", 1 }, { "glowstone-dust", 2 }, { SOLDER, 72 }, { "grade-8-water", 10 } },
+		{ { "solar-sail", 1 } })
+	step(R, "drone-case", AL, 5, UHV_SPEED,
+		{ { "uev-robot-arm", 4 }, { "transcendent-metal-frame", 4 }, { "uev-emitter", 1 }, { "ram-chip-wrap", 4 },
+			{ "uev-field-generator", 4 }, { "lapotronic-energy-orb-cluster", 4 }, { "large-rocket-engine", 1 }, { SOLDER, 72 },
+			{ "helium-plasma", 100 } }, { { "drone-case", 1 } })
+	step(R, "femtocontroller", AL, 5, UHV_SPEED,
+		{ { "uev-robot-arm", 4 }, { "optical-processor", 1 }, { "uev-sensor", 1 }, { "uhv-circuit", 2 }, { "uev-field-generator", 1 },
+			{ "cosmic-neutronium-screw", 8 }, { "dracofinium-superconductive-wire", 4 }, { SOLDER, 72 },
+			{ "dimensionally-shifted-superfluid", 100 } }, { { "femtocontroller", 1 } })
+	step(R, "fuel-pellet", "uev-assembling-machine-recipes", 10, UEV_SPEED,
+		{ { "advanced-radiation-protection-plate", 6 }, { "the-core", 4 }, { "naquarite-universal-insulator-foil", 4 }, { SC, 1600 } },
+		{ { "fuel-pellet", 1 } })
+	step(R, "dyson-swarm-module", AL, 5, UHV_SPEED,
+		{ { "solar-sail", 4 }, { "drone-case", 1 }, { "femtocontroller", 1 }, { "plutonium-238-dust", 4 }, { "fuel-pellet", 1 },
+			{ "fpic-wafer", 4 }, { SOLDER, 1843.2 }, { CRYO, 1600 } }, { { "dyson-swarm-module", 64 } })
+	--- the casings and the controller (UEV, the controller UIV)
+	local CASING = { { SOLDER, 1152 }, { SC, 1600 } }
+	local function casing(name, seconds, n, parts, fluids)
+		local ing = {}
+		for _, p in pairs(parts) do ing[#ing + 1] = p end
+		for _, f in pairs(fluids or {}) do ing[#ing + 1] = f end
+		for _, f in pairs(CASING) do ing[#ing + 1] = f end
+		step(R, name, AL, seconds, UEV_SPEED, ing, { { name, n } })
+	end
+	casing("dyson-swarm-receiver-casing", 40, 4, { { "uev-energy-hatch", 4 }, { "fpic-wafer", 32 },
+		{ "dracofinium-superconductive-wire", 64 }, { "superconducting-coil-block", 64 } }, { { "cryogenic-helium", 5000 } })
+	casing("dyson-swarm-receiver-dish", 30, 3, { { "uht-resistant-mesh", 64 }, { "advanced-radiation-protection-plate", 64 },
+		{ "infinity-plate", 24 }, { "uev-field-generator", 2 } }, { { "molten-rhugnor", 4 } })
+	casing("dyson-swarm-deployment-unit-casing", 40, 4, { { "uiv-machine-hull", 4 }, { "uiv-circuit", 8 }, { "uiv-pump", 32 },
+		{ "uiv-conveyor-module", 32 }, { "radox-polymer-plate", 64 } },
+		{ { "dimensionally-shifted-superfluid", 5000 } })
+	casing("dyson-swarm-deployment-unit-core", 10, 1, { { "uiv-machine-hull", 4 }, { "uiv-conveyor-module", 32 },
+		{ "uiv-robot-arm", 32 }, { "uiv-piston", 32 }, { "inserter", 256 } }, { { "dimensionally-shifted-superfluid", 5000 } })
+	casing("dyson-swarm-deployment-unit-magnet", 40, 4, { { "uiv-machine-hull", 4 }, { "dracofinium-superconductive-wire", 256 },
+		{ "fpic-wafer", 32 }, { "uiv-circuit", 16 }, { "radox-polymer-plate", 32 } }, { { "molten-rhugnor", 4 } })
+	casing("dyson-swarm-control-casing", 80, 8, { { "uiv-machine-hull", 4 }, { "uev-circuit", 4 }, { "uiv-circuit", 12 } },
+		{ { "molten-radox-polymer", 230.4 } })
+	casing("dyson-swarm-control-primary-windings", 40, 4, { { "fpic-wafer", 2 }, { "naquarite-universal-insulator-foil", 24 },
+		{ "superconducting-coil-block", 4 } }, { { "molten-radox-polymer", 345.6 } })
+	casing("dyson-swarm-control-secondary-windings", 40, 4, { { "fpic-wafer", 2 }, { "naquarite-universal-insulator-foil", 24 },
+		{ "awakened-draconium-coil-block", 4 } }, { { "molten-radox-polymer", 324 } })
+	casing("dyson-swarm-control-toroid", 10, 1, { { "cosmic-neutronium-screw", 4 }, { "neutronium-plate", 8 },
+		{ "dracofinium-superconductive-wire", 4 } }, { { "molten-radox-polymer", 14.4 } })
+	step(R, "dyson-swarm-controller", AL, 120, UIV_SPEED,
+		{ { "uiv-machine-hull", 4 }, { "bedrockium-plate", 4 }, { "uiv-circuit", 16 }, { "uiv-sensor", 4 }, { "uev-circuit", 8 },
+			{ "radox-polymer-plate", 64 }, { "molten-rhugnor", 10 }, { SOLDER, 1152 }, { SC, 1600 } }, { { "dyson-swarm-controller", 1 } })
+	--- the ground unit (the structure's blocks by GT's counts) and its hidden dynamo
+	local MODULE_WATTS = 10000000 * 655360000 / 33554432
+	machine{
+		name = "dyson-swarm-ground-unit", category = "dyson-swarm-recipes", speed = 1,
+		energy_source = { type = "void" }, energy = "1W", subgroup = "subgroup-uiv-age-multiblocks",
+		ports = { port("input", N, { 0, -1 }) }, list = R,
+		recipe = { "crafting-or-assembling-recipes", 1, { item("dyson-swarm-controller", 1), item("concrete", 256),
+			item("dyson-swarm-control-casing", 138), item("dyson-swarm-control-toroid", 128), item("dyson-swarm-receiver-dish", 81),
+			item("dyson-swarm-deployment-unit-casing", 72), item("dyson-swarm-receiver-casing", 64),
+			item("dyson-swarm-deployment-unit-magnet", 32), item("dyson-swarm-control-primary-windings", 20),
+			item("dyson-swarm-control-secondary-windings", 12), item("awakened-draconium-coil-block", 9),
+			item("dyson-swarm-deployment-unit-core", 1), item("hsss-frame", 23), item("titanium-frame", 16),
+			item("uiv-dynamo-hatch", 1) } },
+	}
+	create_recipe{ name = "dyson-swarm-operation", category = "dyson-swarm-recipes", energy_required = 1,
+		ingredients = { item("dyson-swarm-module", 1), { type = "fluid", name = CRYO, amount = 100 } }, results = {},
+		icon = FORK_ICON .. "dyson-swarm-ground-unit.png", icon_size = 32, subgroup = "subgroup-uiv-age-multiblocks" }
+	R[#R + 1] = "dyson-swarm-operation"
+	data.raw["assembling-machine"]["dyson-swarm-ground-unit"].fixed_recipe = "dyson-swarm-operation"
+	FORK_RECYCLING_BLACKLIST["dyson-swarm-ground-unit"] = "the ground unit's structure: its sum passes 65535 per result; GT recycles the controller"
+	data:extend({ {
+		type = "electric-energy-interface",
+		name = "dyson-swarm-dynamo",
+		icon = FORK_ICON .. "dyson-swarm-ground-unit.png",
+		icon_size = 32,
+		flags = { "not-on-map", "not-blueprintable", "not-deconstructable", "placeable-off-grid", "not-flammable",
+			"no-copy-paste", "not-selectable-in-game", "not-upgradable", "hide-alt-info" },
+		hidden = true,
+		selectable_in_game = false,
+		collision_box = { { -1.3, -1.3 }, { 1.3, 1.3 } },
+		collision_mask = { layers = {} },
+		energy_source = { type = "electric", usage_priority = "primary-output", buffer_capacity = "40GJ",
+			output_flow_limit = "2000GW", input_flow_limit = "0W" },
+		energy_production = "0W",
+		gui_mode = "none",
+		localised_name = { "entity-name.dyson-swarm-ground-unit" },
+	} })
+	data.raw["mod-data"]["fork-power"].data.dyson = { entity = "dyson-swarm-ground-unit", dynamo = "dyson-swarm-dynamo",
+		module_watts = MODULE_WATTS, max_modules = 10000, cycle_ticks = 216000, chance = 0.066, a = 0.00005 }
+	F.tech{
+		name = "dyson-swarm", packs = 12, count = 120, time = 60, recipes = R,
+		prerequisites = { "uiv-multiblocks", "netherite", "large-hadron-collider", "uiv-naquadah-reactor", "the-core",
+			"large-rocket-engine" },
+	}
+end
+
+
+
+--------------------------------------------------------------------------------
 --- 38) GT'S PARTS OF THE METALS OF THIS FILE (issue #467). 158 makes GT New Horizons' parts of every metal of
 ---   prototypes/gt-parts-data.lua (issue #227) whose ingot exists; most metals of this file come after 158, so its
 ---   FORK_GT_PARTS.run() runs once more here (it skips what exists), then 143's casts for the new forms.
