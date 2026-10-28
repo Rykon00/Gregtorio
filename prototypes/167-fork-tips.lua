@@ -65,7 +65,7 @@ FORK_TIPS = {}
 local TIER_PREFIXES = { "ulv", "lv", "mv", "hv", "ev", "iv", "luv", "zpm", "uv", "uhv", "uev", "uiv", "umv", "uxv", "max",
 	"steam", "bronze", "steel", "high-pressure" }
 local KINDS = {}
-for _, k in pairs({ "alloy-blast-smelter", "alloy-smelter", "arc-furnace", "assembling-machine", "assembly-line",
+for _, k in pairs({ "advanced-boiler", "alloy-blast-smelter", "alloy-smelter", "arc-furnace", "assembling-machine", "assembly-line",
 	"autoclave", "bending-machine", "brewery", "canning-machine", "centrifuge", "chemical-bath", "chemical-reactor",
 	"circuit-assembler", "combustion-generator", "cutting-machine", "compressor", "cracker", "dehydrator", "dimension-miner", "distillery",
 	"drilling-rig", "electric-blast-furnace", "electric-furnace", "electrolyzer", "electromagnetic-separator", "extractor",
