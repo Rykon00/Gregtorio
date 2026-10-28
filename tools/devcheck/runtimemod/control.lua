@@ -767,7 +767,12 @@ local RT = {
 	{ "ev-electric-blast-furnace", "naquadah-doped-monocrystaline-silicon-boule" },
 	{ "mv-pyrolyse-oven", "charcoal-byproducts" },
 	{ "ev-large-chemical-reactor", "cyanoacetic-acid" },
-	{ "iv-large-chemical-reactor", "super-glue" },
+	{ "iv-large-chemical-reactor", "cyanoacrylate-polymer" },   -- (issue #635: super glue takes two steps)
+	-- issue #635 (prototypes/101-fork-machines.lua): the fluid heater (water into steam, the glue line's polymer) and the
+	-- packager (a pile twin)
+	{ "hv-fluid-heater", "super-glue" },
+	{ "lv-fluid-heater", "water-fluid-heater" },
+	{ "lv-packager", "packager-iron-dust-from-small-piles" },
 	{ "component-assembly-line", "lv-motor-coal" },
 	-- issue #126 (prototypes/148-fork-gtnh-table-items.lua): GTNH's machine recipes of the items the crafting table made
 	{ "lv-fluid-solidifier", "anvil-fluid-solidifier" },
