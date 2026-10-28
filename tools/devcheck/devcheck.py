@@ -1550,6 +1550,9 @@ def check_fluid_steps(sec):
     return [f"{r} ({kind}) {fluid}: {amount}" for r, kind, fluid, amount in sec.get("FLUIDSTEPS", [])]
 
 
+# issue #625: the entity types of the machines, which must have a description
+MACHINE_TYPES = ("assembling-machine", "furnace", "mining-drill", "generator", "burner-generator", "boiler", "reactor",
+                 "lab", "rocket-silo", "fusion-reactor", "fusion-generator", "agricultural-tower")
 NAME_CLASSES = ("item", "fluid", "recipe", "technology", "entity", "equipment", "tile", "item-group", "item-subgroup",
                 "autoplace-control")
 
@@ -1643,7 +1646,7 @@ def check_names(sec):
         return [], ["no DEVCHECK-NAMES section in the log (checkmod/control.lua did not run)"], []
     keys, files = locale_keys(), defining_files()
     allowed = {r[0]: r[1] if len(r) > 1 else "" for r in sec.get("LOCALEOK", [])}
-    seen, counts, problems, gen = set(), {}, [], []
+    seen, counts, problems, gen, machines = set(), {}, [], [], {}
     for r in sec["NAMES"]:
         cls, typ, name, created, shown = r[0], r[1], r[2], r[3], r[5]
         ls = json.loads(r[7]).get("n")
@@ -1661,6 +1664,15 @@ def check_names(sec):
             if not desc or missing_keys(desc, keys):
                 problems.append(f"{cls} {name}: no description of its ores"
                                 + (f" (unknown key {', '.join(missing_keys(desc, keys))})" if desc else ""))
+        if cls == "entity" and typ in MACHINE_TYPES:
+            # issue #625: a machine the player builds says what it does (prototypes/167-fork-tips.lua)
+            desc = json.loads(extra).get("d") if extra.startswith("{") else None
+            m = machines.setdefault(typ, [0, 0])
+            m[0] += 1
+            if not desc or missing_keys(desc, keys):
+                m[1] += 1
+                problems.append(f"{cls} {name} ({typ}, {files.get(name, 'built in a loop, no literal name')}): no "
+                                f"description (unknown key {', '.join(missing_keys(desc, keys)) if desc else '-'})")
         miss = missing_keys(ls, keys)
         if not miss or f"{cls}:{name}" in allowed:
             continue
@@ -1686,6 +1698,8 @@ def check_names(sec):
             problems.append(f"{k}: in FORK_LOCALE_MISSING but has a name (remove the entry)")
     info = [f"{cls}: {counts[cls][0]} shown, {counts[cls][1]} without a name" for cls in NAME_CLASSES if cls in counts]
     info.append(f"{len(allowed)} kept without a name (FORK_LOCALE_MISSING)")
+    info.append("machines (issue #625): " + ", ".join(f"{t} {m[0]} shown, {m[1]} without a description"
+                                                       for t, m in sorted(machines.items())))
     return info, sorted(problems), sorted(set(gen))
 
 
