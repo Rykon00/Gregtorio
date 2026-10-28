@@ -69,6 +69,8 @@ How Gregtorio turns GT New Horizons into Factorio, where the code only implies i
 | #624 | the space elevator at UV, the DTPF at UEV, the godforge at UIV (built: the DTPF's technology 11 packs, the godforge's 12 packs with the UIV assembler, the elevator's 9 packs with cosmic neutronium from the new technology Cosmic Neutronium after the Void Miner III) |
 | #626 | YAFC mode is removed (YAFC sees the map veins and the classic vein recipes) |
 | #638 | GT's single-block naquadah reactors Mk I-V and plasma generators come back on GTNH's tiers (#644) |
+| #629 | cinobite A243 and octiron built (164 section 52, thaumium for Thaumcraft's crystal powders); attuned tengam and proto-halkonite steel after #636 (tairitsu as tritanium); white and black dwarf matter and phonon medium moved to #699 |
+| #636 | Phobos's and Deimos's veins as mines with Reach Mars (draconium, oriharukon and the heavy pentele vein at EV, as in GTNH); Seth, Maahes and every other void-minable dimension of T3 to T8 as Void Miner pools; the Deep Dark (T10) as a Void Miner III recipe with every raw ore, technology The Deep Dark at UHV |
 
 ## Early game: Stone age to MV
 
@@ -2380,6 +2382,15 @@ Part 2: the Twilight Forest's olivine vein and small ores and the Nether's saltp
   alloy blast smelter melt and ingot are not built (no consumer). Agardite (Cd), yttrialite and lanthanite (Ce) are
   the mod's rare earth dusts of the same names.
 * #373, Neper: a Void Miner III recipe (T9, as Horus and Anubis), see Dilithium below.
+* #636 (the maintainer's decision of 2026-10-28): the rest of GTNH's dimensions. Phobos and Deimos (T2) get mines for
+  their veins without one (draconium, oriharukon, heavy pentele: arsenic and antimony as new raw ores) with Reach Mars;
+  the space quartz vein's ores are the map veins'. Every other void-minable dimension gets its Void Miner pool from GT's
+  veins and small ores (VoidMinerUtility.generateDropMaps, GT5-Unofficial f2814df): T3 to T7 the Void Miner I (Ceres,
+  Ganymede, Io, Mercury, Titan, Enceladus, Miranda, Oberon, Proteus, Triton, Haumea, Makemake), T8 the II (Barnard C
+  and E, Centauri Bb, Tau Ceti E, Vega B), T9 the III (Seth with raw tengam and tartarite, Maahes with naquadria, new
+  raw ores with GTNH's chain). GTNH's asteroid belts (the Asteroids, the Kuiper Belt, the Mehen Belt) cannot be void
+  mined there; the mod keeps its Mehen Belt pool (#356). The Deep Dark (T10) is a Void Miner III recipe with every raw
+  ore of the mod in equal shares (GTNH: every ore at weight 1, VoidMinerLoader.java), technology The Deep Dark at UHV.
 * #356 (the maintainer's decision on #417): the Mehen Belt, AmunRa's T9 asteroid belt, as a Void Miner III recipe with
   its full pool (12 veins, 7 small ores). It is GT New Horizons' source of awakened draconium (the vein of draconium,
   draconium, awakened draconium and nether star). Draconium and awakened draconium are new ores with GTNH's chain

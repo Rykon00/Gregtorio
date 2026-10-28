@@ -106,7 +106,9 @@
     every vein of Ross128b (Reach Ross128) and Ross128ba (Reach Ross128ba, ZPM) with bartworks' ores (155's `NEW_ORES`);
     the Toxic Everglades' veins GTPP0-19 (Reach the Toxic Everglades, LuV) with GT++'s ores, whose dehydrator
     decompositions 161 unlocks through `FORK_ORE_CHAIN.unlock_after_159` (159 makes the dehydrators after 155); Neper's
-    pool for the Void Miner III (dilithium, mysterious crystal, vinteum); issue #563: the veins of Nauvis, the Nether and
+    pool for the Void Miner III (dilithium, mysterious crystal, vinteum); issue #636: Phobos's and Deimos's mines (draconium,
+    oriharukon, heavy pentele) with Reach Mars, a Void Miner pool for every other void-minable dimension of T3 to T9 (Seth's raw
+    tengam and tartarite, Maahes's naquadria), the Deep Dark's Void Miner III recipe with every raw ore in 161; issue #563: the veins of Nauvis, the Nether and
     the Twilight Forest that #505 deleted here are 166's generated classic recipes, not 160's; loads after 146 and
     **before** 142 (issue #287: the unlock table of 142 and the ore chains of 155 see the mines; the rules are in 161))
   - 162 space elevator (issue #301, part 1 of #292's decision: gtnhintergalactic's Space Elevator in GTNH's full scope:

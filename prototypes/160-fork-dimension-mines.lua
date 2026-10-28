@@ -654,6 +654,31 @@ F.tech{ name = ROSS_BA, prerequisites = { ROSS, VENUS, "zpm-machines" }, packs =
 
 
 --------------------------------------------------------------------------------
+--- PHOBOS, DEIMOS AND THE MOON (issue #636, the maintainer's decision of 2026-10-28): every GTNH vein of the Moon (T1,
+--- here HV) and of Mars's moons Phobos and Deimos (T2, here EV with Reach Mars) is mined, as a mine at GT's 32, 24, 16
+--- and 8 as Ross128's (the vein() above). The veins that had none (GT5-Unofficial f2814df OreMixes.java,
+--- prototypes/data/ore-mixes.lua):
+---   Draconium (Deimos, Phobos: draconium, electrotine, jade, vinteum; electrotine left out, no material in the mod)
+---   Oriharukon (Deimos, Phobos: oriharukon, tanzanite, vyroxeres, mirabilite; the last two left out, as before)
+---   HeavyPentele (Mars, Phobos: arsenic, bismuth, antimony twice)
+--- QuartzSpace (Moon, Mars, Phobos: quartzite, barite, certus quartz) gets none: its ores are the map veins' (163 hides
+--- such a mine). The other veins had their mine (the Moon's and Mars's above, the Overworld's, the Nether's, the End's).
+--- Draconium, oriharukon and vinteum came from the Void Miner III (UV) only; GTNH has them at T2. Arsenic and antimony
+--- are new raw ores (create_ore; their dusts are the mod's; 155 gives them GT's chain).
+--------------------------------------------------------------------------------
+
+create_ore("raw-arsenic", nil, "crushed-arsenic", nil, nil, "crushed-arsenic", nil, nil, 1, false, false)
+create_ore("raw-antimony", nil, "crushed-antimony", nil, nil, "crushed-antimony", nil, nil, 1, false, false)
+unlock_in(MARS, {
+	vein("mining-draconium-vein", { "draconium", nil, "jade", "vinteum" }),
+	vein("mining-oriharukon-vein", { "oriharukon", "tanzanite" }),
+	vein("mining-heavy-pentele-vein", { "arsenic", "bismuth", "antimony", "antimony" }),
+	"crushed-arsenic", "crushed-antimony",
+})
+
+
+
+--------------------------------------------------------------------------------
 --- THE TOXIC EVERGLADES (issue #373, group 3): GT++'s dimension (GTNH's T0 in DimensionHelper.java:102, reached by a
 --- portal whose Containment Frame is a LuV assembler recipe, gtPlusPlus/core/recipe/RecipesMachines.java:164-178:
 --- here LuV, Reach the Toxic Everglades). Its veins GTPP0 to GTPP19 (OreMixes.java:1131-1349) at GT's 32, 24, 16, 8,
@@ -780,11 +805,268 @@ VOID_POOLS["mehen-belt"] = {
 	{ "raw-sheldonite", 0.00835 }, { "raw-pentlandite", 0.00668 }, { "raw-cobaltite", 0.00668 },
 	{ "raw-calcite", 0.00668 }, { "raw-awakened-draconium", 0.00334 }, { "raw-naquadah", 0.00167 },
 }
+--- issue #636 (the maintainer's decision of 2026-10-28): every other dimension of GTNH's T3 to T9 that the Void Miner
+--- may mine (bwcrossmod/galacticgreg/VoidMinerUtility.java:221-266 generateDropMaps: the veins' primary and secondary
+--- ore at the vein's weight, in-between and sporadic at an eighth, the small ores at their amount; GTNH's asteroid belts,
+--- the Asteroids, the Kuiper Belt and the Mehen Belt, cannot be void mined, galacticgreg/api/enums/DimensionDef.java:64,
+--- 175, 201), from GT5-Unofficial f2814df (OreMixes.java, SmallOres.java; the commit of prototypes/data/ore-mixes.lua).
+--- T3 to T7 with the Void Miner I, T8 with the II, Seth and Maahes (T9) with the III. Seth brings the raw tengam and the
+--- tartarite of #629 and Maahes the naquadria vein's naquadria, new raw ores here; the other ores the mod lacks are left
+--- out, as above.
+for name, pool in pairs({
+	--- Ceres (T3): left out Chrome, Electrotine, Plutonium, Titanium
+	["ceres"] = {
+		{ "raw-magnetite", 0.21455 }, { "raw-brown-limonite", 0.08046 }, { "raw-yellow-limonite", 0.08046 },
+		{ "raw-iron", 0.06705 }, { "raw-chalcopyrite", 0.05364 }, { "raw-bentonite", 0.04023 },
+		{ "raw-beryllium", 0.04023 }, { "raw-magnesite", 0.04023 }, { "raw-uraninite", 0.03352 },
+		{ "raw-diatomite", 0.02682 }, { "raw-lazurite", 0.02682 }, { "raw-saltpeter", 0.02682 },
+		{ "raw-soapstone", 0.02682 }, { "raw-sodalite", 0.02682 }, { "raw-talc", 0.02682 }, { "raw-grossular", 0.01341 },
+		{ "raw-spessartine", 0.01341 }, { "raw-vanadium-magnetite", 0.01341 }, { "raw-lead", 0.01073 },
+		{ "raw-banded-iron", 0.01006 }, { "raw-malachite", 0.01006 }, { "raw-glauconite", 0.00838 },
+		{ "raw-copper", 0.0067 }, { "raw-platinum", 0.0067 }, { "raw-pyrite", 0.0067 }, { "raw-bismuth", 0.00536 },
+		{ "raw-gold", 0.00536 }, { "raw-nickel", 0.00536 }, { "raw-olivine", 0.00503 }, { "raw-alunite", 0.00335 },
+		{ "raw-calcite", 0.00335 }, { "raw-lapis", 0.00335 }, { "raw-molybdenite", 0.00335 },
+		{ "raw-pentlandite", 0.00335 }, { "raw-thorium", 0.00335 }, { "raw-wulfenite", 0.00335 },
+		{ "raw-emerald", 0.00251 }, { "raw-pyrolusite", 0.00168 }, { "raw-tantalite", 0.00168 },
+		{ "raw-diamond", 0.00134 }, { "raw-palladium", 0.00084 }, { "raw-sheldonite", 0.00084 },
+		{ "raw-molybdenum", 0.00042 }, { "raw-powellite", 0.00042 },
+	},
+	--- Ganymede (T3): left out Chrome, Lithium, Perlite, Plutonium, Titanium, Uvarovite, Zinc
+	["ganymede"] = {
+		{ "raw-tetrahedrite", 0.11669 }, { "raw-redstone", 0.10669 }, { "raw-brown-limonite", 0.10002 },
+		{ "raw-yellow-limonite", 0.10002 }, { "raw-ilmenite", 0.08835 }, { "raw-bauxite", 0.06668 },
+		{ "raw-galena", 0.06668 }, { "raw-graphite", 0.06668 }, { "raw-uraninite", 0.04168 }, { "raw-tin", 0.02667 },
+		{ "raw-lead", 0.0175 }, { "raw-scheelite", 0.01667 }, { "raw-chromite", 0.01334 }, { "raw-iron", 0.01334 },
+		{ "raw-banded-iron", 0.0125 }, { "raw-malachite", 0.0125 }, { "raw-aluminium", 0.00834 },
+		{ "raw-platinum", 0.00834 }, { "raw-copper", 0.00729 }, { "raw-stibnite", 0.00729 }, { "raw-saltpeter", 0.00667 },
+		{ "raw-cinnabar", 0.00625 }, { "raw-ruby", 0.00625 }, { "raw-coal", 0.00417 }, { "raw-diamond", 0.00417 },
+		{ "raw-silver", 0.00417 }, { "raw-lapis", 0.00333 }, { "raw-palladium", 0.00104 }, { "raw-sheldonite", 0.00104 },
+		{ "raw-thorium", 0.00104 }, { "raw-tungstate", 0.00104 },
+	},
+	--- Io (T4): left out Ceruclase, Chrome, Infused Gold, Iridium, Mithril, Mytryl, Plutonium, Titanium, Vulcanite, Zinc
+	["io"] = {
+		{ "raw-magnetite", 0.24592 }, { "raw-sulfur", 0.1537 }, { "raw-tin", 0.08165 }, { "raw-pitchblende", 0.06148 },
+		{ "raw-bastnasite", 0.04611 }, { "raw-gold", 0.04611 }, { "raw-jasper", 0.03074 }, { "raw-iron", 0.02767 },
+		{ "raw-barite", 0.01537 }, { "raw-grossular", 0.01537 }, { "raw-quartzite", 0.01537 }, { "raw-silver", 0.01537 },
+		{ "raw-spessartine", 0.01537 }, { "raw-vanadium-magnetite", 0.01537 }, { "raw-uraninite", 0.01153 },
+		{ "raw-platinum", 0.01057 }, { "raw-pyrite", 0.00961 }, { "raw-pyrolusite", 0.00961 },
+		{ "raw-sphalerite", 0.00961 }, { "raw-apatite", 0.00768 }, { "raw-nickel", 0.00768 }, { "raw-bismuth", 0.00615 },
+		{ "raw-redstone", 0.00615 }, { "raw-saltpeter", 0.00615 }, { "raw-cassiterite", 0.0048 },
+		{ "raw-certus-quartz", 0.00384 }, { "raw-lapis", 0.00307 }, { "raw-monazite", 0.00288 },
+		{ "raw-neodymium", 0.00288 }, { "raw-tantalite", 0.00288 }, { "raw-palladium", 0.00192 },
+		{ "raw-pyrochlore", 0.00096 }, { "raw-sheldonite", 0.00096 }, { "raw-thorium", 0.00096 },
+	},
+	--- Mercury (T4): left out Chrome, Electrotine, Iridium, Mithril, Perlite, Titanium, Uvarovite, Zinc
+	["mercury"] = {
+		{ "raw-redstone", 0.11075 }, { "raw-brown-limonite", 0.10383 }, { "raw-yellow-limonite", 0.10383 },
+		{ "raw-ilmenite", 0.09172 }, { "raw-bauxite", 0.06922 }, { "raw-graphite", 0.06922 }, { "raw-bismuth", 0.05884 },
+		{ "raw-naquadah", 0.05516 }, { "raw-arsenic", 0.05191 }, { "raw-draconium", 0.03461 }, { "raw-nickel", 0.01557 },
+		{ "raw-chromite", 0.01384 }, { "raw-lead", 0.01384 }, { "raw-antimony", 0.01298 }, { "raw-banded-iron", 0.01298 },
+		{ "raw-malachite", 0.01298 }, { "raw-aluminium", 0.00865 }, { "raw-platinum", 0.00865 },
+		{ "raw-cinnabar", 0.00649 }, { "raw-ruby", 0.00649 }, { "raw-coal", 0.00433 }, { "raw-diamond", 0.00433 },
+		{ "raw-jade", 0.00433 }, { "raw-molybdenite", 0.00433 }, { "raw-vinteum", 0.00433 }, { "raw-wulfenite", 0.00433 },
+		{ "raw-enriched-naquadah", 0.00324 }, { "raw-palladium", 0.00216 }, { "raw-sheldonite", 0.00108 },
+		{ "raw-molybdenum", 0.00054 }, { "raw-powellite", 0.00054 },
+	},
+	--- Enceladus (T5): left out Chrome, Iridium, Lithium, Mithril, Orichalcum, Osmium, Rubracium, Titanium, Vanadium, Zinc
+	["enceladus"] = {
+		{ "raw-iron", 0.1269 }, { "raw-chalcopyrite", 0.10575 }, { "raw-bastnasite", 0.07931 },
+		{ "raw-magnetite", 0.07931 }, { "raw-uraninite", 0.05948 }, { "raw-lazurite", 0.05288 },
+		{ "raw-sodalite", 0.05288 }, { "raw-ledox", 0.03966 }, { "raw-opal", 0.03966 }, { "raw-nickel", 0.02809 },
+		{ "raw-scheelite", 0.02644 }, { "raw-silver", 0.02644 }, { "raw-copper", 0.01322 }, { "raw-pyrite", 0.01322 },
+		{ "raw-lapis", 0.0119 }, { "raw-saltpeter", 0.01058 }, { "raw-gold", 0.00991 }, { "raw-calcite", 0.00661 },
+		{ "raw-monazite", 0.00496 }, { "raw-neodymium", 0.00496 }, { "raw-palladium", 0.00165 },
+		{ "raw-tungstate", 0.00165 },
+	},
+	--- Miranda (T5): left out Electrotine, Iridium, Mithril, Osmium, Perlite, Titanium, Uvarovite
+	["miranda"] = {
+		{ "raw-tetrahedrite", 0.17241 }, { "raw-redstone", 0.14778 }, { "raw-tin", 0.13085 }, { "raw-graphite", 0.09852 },
+		{ "raw-desh", 0.07389 }, { "raw-draconium", 0.04926 }, { "raw-nickel", 0.02617 }, { "raw-chromite", 0.0197 },
+		{ "raw-ilmenite", 0.0197 }, { "raw-iron", 0.0197 }, { "raw-apatite", 0.01232 }, { "raw-pyrolusite", 0.01232 },
+		{ "raw-copper", 0.01078 }, { "raw-stibnite", 0.01078 }, { "raw-gold", 0.00985 }, { "raw-cinnabar", 0.00924 },
+		{ "raw-ruby", 0.00924 }, { "raw-cassiterite", 0.0077 }, { "raw-coal", 0.00616 }, { "raw-diamond", 0.00616 },
+		{ "raw-jade", 0.00616 }, { "raw-vinteum", 0.00616 }, { "raw-scheelite", 0.00462 }, { "raw-tungstate", 0.00462 },
+		{ "raw-palladium", 0.00154 }, { "raw-pyrochlore", 0.00154 }, { "raw-tantalite", 0.00154 },
+	},
+	--- Oberon (T5): left out Chrome, Deep Iron, Iridium, Lithium, Osmium, Shadow Iron, Titanium, Tungsten
+	["oberon"] = {
+		{ "raw-brown-limonite", 0.16216 }, { "raw-yellow-limonite", 0.16216 }, { "raw-galena", 0.10811 },
+		{ "raw-pitchblende", 0.10811 }, { "raw-naquadah", 0.08615 }, { "raw-silver", 0.03378 }, { "raw-lead", 0.02838 },
+		{ "raw-grossular", 0.02703 }, { "raw-scheelite", 0.02703 }, { "raw-spessartine", 0.02703 },
+		{ "raw-silicon", 0.02162 }, { "raw-banded-iron", 0.02027 }, { "raw-malachite", 0.02027 }, { "raw-nickel", 0.0152 },
+		{ "raw-platinum", 0.01351 }, { "raw-uraninite", 0.01351 }, { "raw-lapis", 0.00541 },
+		{ "raw-enriched-naquadah", 0.00507 }, { "raw-pyrolusite", 0.00338 }, { "raw-tantalite", 0.00338 },
+		{ "raw-diamond", 0.0027 }, { "raw-palladium", 0.00169 }, { "raw-sheldonite", 0.00169 },
+		{ "raw-tungstate", 0.00169 },
+	},
+	--- Titan (T5): left out Infused Gold, Iridium, Meteoric Iron, Mithril, Osmium, Perlite, Rutile, Titanium, Uvarovite, Zinc
+	["titan"] = {
+		{ "raw-ilmenite", 0.10055 }, { "raw-bauxite", 0.07683 }, { "raw-graphite", 0.07588 }, { "raw-naquadah", 0.06047 },
+		{ "raw-nickel", 0.0581 }, { "raw-arsenic", 0.05691 }, { "raw-bastnasite", 0.05691 }, { "raw-beryllium", 0.05691 },
+		{ "raw-bismuth", 0.05691 }, { "raw-gold", 0.05691 }, { "raw-garnierite", 0.03794 }, { "raw-tin", 0.03035 },
+		{ "raw-grossular", 0.01897 }, { "raw-silver", 0.01897 }, { "raw-spessartine", 0.01897 },
+		{ "raw-chromite", 0.01518 }, { "raw-iron", 0.01518 }, { "raw-antimony", 0.01423 }, { "raw-aluminium", 0.00949 },
+		{ "raw-redstone", 0.00759 }, { "raw-diamond", 0.00664 }, { "raw-coal", 0.00474 }, { "raw-cobaltite", 0.00474 },
+		{ "raw-molybdenite", 0.00474 }, { "raw-pentlandite", 0.00474 }, { "raw-wulfenite", 0.00474 },
+		{ "raw-emerald", 0.00356 }, { "raw-enriched-naquadah", 0.00356 }, { "raw-monazite", 0.00356 },
+		{ "raw-neodymium", 0.00356 }, { "raw-platinum", 0.00356 }, { "raw-thorium", 0.00356 },
+		{ "raw-pyrolusite", 0.00237 }, { "raw-tantalite", 0.00237 }, { "raw-palladium", 0.00119 },
+		{ "raw-molybdenum", 0.00059 }, { "raw-powellite", 0.00059 },
+	},
+	--- Proteus (T6): left out Chrome, Deep Iron, Infused Gold, Iridium, Osmium, Perlite, Shadow Iron, Titanium, Tungsten, Uvarovite, Vanadium, Zinc
+	["proteus"] = {
+		{ "raw-ilmenite", 0.10244 }, { "raw-bauxite", 0.07731 }, { "raw-chalcopyrite", 0.07731 },
+		{ "raw-graphite", 0.07731 }, { "raw-iron", 0.07731 }, { "raw-gold", 0.06523 }, { "raw-magnetite", 0.05799 },
+		{ "raw-uraninite", 0.04349 }, { "raw-copper", 0.04059 }, { "raw-tin", 0.03093 }, { "raw-barite", 0.01933 },
+		{ "raw-quartzite", 0.01933 }, { "raw-silver", 0.01933 }, { "raw-chromite", 0.01546 }, { "raw-silicon", 0.01546 },
+		{ "raw-nickel", 0.01087 }, { "raw-adamantium", 0.00966 }, { "raw-aluminium", 0.00966 },
+		{ "raw-neutronium", 0.00966 }, { "raw-pyrite", 0.00966 }, { "raw-bismuth", 0.00773 }, { "raw-redstone", 0.00773 },
+		{ "raw-saltpeter", 0.00773 }, { "raw-certus-quartz", 0.00483 }, { "raw-coal", 0.00483 },
+		{ "raw-diamond", 0.00483 }, { "raw-molybdenite", 0.00483 }, { "raw-wulfenite", 0.00483 },
+		{ "raw-platinum", 0.00362 }, { "raw-naquadah", 0.00121 }, { "raw-molybdenum", 0.0006 },
+		{ "raw-powellite", 0.0006 },
+	},
+	--- Triton (T6): left out Deep Iron, Gallium, Iridium, Lithium, Mithril, Niobium, Plutonium241, Shadow Iron, Titanium, Tungsten, Uranium235, Yttrium
+	["triton"] = {
+		{ "raw-magnetite", 0.27972 }, { "raw-galena", 0.06993 }, { "raw-bastnasite", 0.05245 }, { "raw-thorium", 0.05245 },
+		{ "raw-uraninite", 0.05245 }, { "raw-nickel", 0.04371 }, { "raw-garnierite", 0.03497 }, { "raw-copper", 0.02797 },
+		{ "raw-silver", 0.02185 }, { "raw-lead", 0.01836 }, { "raw-gold", 0.01748 }, { "raw-grossular", 0.01748 },
+		{ "raw-scheelite", 0.01748 }, { "raw-spessartine", 0.01748 }, { "raw-vanadium-magnetite", 0.01748 },
+		{ "raw-iron", 0.01399 }, { "raw-silicon", 0.01399 }, { "raw-adamantium", 0.00874 }, { "raw-neutronium", 0.00874 },
+		{ "raw-cobaltite", 0.00437 }, { "raw-pentlandite", 0.00437 }, { "raw-monazite", 0.00328 },
+		{ "raw-neodymium", 0.00328 }, { "raw-pyrolusite", 0.00219 }, { "raw-tantalite", 0.00219 },
+		{ "raw-diamond", 0.00175 }, { "raw-naquadah", 0.00109 }, { "raw-palladium", 0.00109 },
+		{ "raw-tungstate", 0.00109 },
+	},
+	--- Haumea (T7): left out Infused Gold, Lithium, Nether Star, Plutonium241, Titanium, Uranium235, Zinc
+	["haumea"] = {
+		{ "raw-uraninite", 0.10388 }, { "raw-ilmenite", 0.0813 }, { "raw-bauxite", 0.07227 },
+		{ "raw-pitchblende", 0.07227 }, { "raw-naquadah", 0.05872 }, { "raw-thorium", 0.05759 },
+		{ "raw-bastnasite", 0.0542 }, { "raw-bentonite", 0.0542 }, { "raw-beryllium", 0.0542 },
+		{ "raw-garnet-sand", 0.0542 }, { "raw-gold", 0.0542 }, { "raw-magnesite", 0.0542 }, { "raw-scheelite", 0.01807 },
+		{ "raw-iron", 0.01445 }, { "raw-adamantium", 0.00903 }, { "raw-aluminium", 0.00903 },
+		{ "raw-neutronium", 0.00903 }, { "raw-glauconite", 0.00678 }, { "raw-olivine", 0.00678 },
+		{ "raw-red-garnet", 0.00678 }, { "raw-yellow-garnet", 0.00678 }, { "raw-emerald", 0.00339 },
+		{ "raw-enriched-naquadah", 0.00339 }, { "raw-monazite", 0.00339 }, { "raw-neodymium", 0.00339 },
+		{ "raw-platinum", 0.00339 }, { "raw-tungstate", 0.00113 },
+	},
+	--- MakeMake (T7): left out Chrome, Chrysotile, Gallium, Lithium, Niobium, Titanium, Vanadium, Yttrium
+	["makemake"] = {
+		{ "raw-magnetite", 0.25266 }, { "raw-ilmenite", 0.05984 }, { "raw-bauxite", 0.05319 },
+		{ "raw-pitchblende", 0.05319 }, { "raw-red-garnet", 0.05319 }, { "raw-bastnasite", 0.03989 },
+		{ "raw-bentonite", 0.03989 }, { "raw-beryllium", 0.03989 }, { "raw-magnesite", 0.03989 },
+		{ "raw-uraninite", 0.03657 }, { "raw-yellow-garnet", 0.02992 }, { "raw-black-plutonium", 0.0266 },
+		{ "raw-iron", 0.0133 }, { "raw-scheelite", 0.0133 }, { "raw-vanadium-magnetite", 0.0133 }, { "raw-lead", 0.01064 },
+		{ "raw-adamantium", 0.00665 }, { "raw-aluminium", 0.00665 }, { "raw-neutronium", 0.00665 },
+		{ "raw-bismuth", 0.00532 }, { "raw-nickel", 0.00532 }, { "raw-glauconite", 0.00499 }, { "raw-gold", 0.00499 },
+		{ "raw-olivine", 0.00499 }, { "raw-borax", 0.00332 }, { "raw-realgar", 0.00332 }, { "raw-emerald", 0.00249 },
+		{ "raw-monazite", 0.00249 }, { "raw-neodymium", 0.00249 }, { "raw-thorium", 0.00249 }, { "raw-naquadah", 0.00083 },
+		{ "raw-tungstate", 0.00083 },
+	},
+	--- BarnardC (T8): left out Deep Iron, Iridium, Osmium, Samarium, Shadow Iron, Tungsten
+	["barnard-c"] = {
+		{ "raw-lignite", 0.31093 }, { "raw-oilsands", 0.0823 }, { "raw-basaltic-mineral-sand", 0.07316 },
+		{ "raw-granitic-mineral-sand", 0.07316 }, { "raw-arsenic", 0.05487 }, { "raw-bismuth", 0.05487 },
+		{ "raw-rock-salt", 0.04572 }, { "raw-salt", 0.04572 }, { "raw-black-plutonium", 0.03658 },
+		{ "raw-red-garnet", 0.03658 }, { "raw-coal", 0.01829 }, { "raw-kyanite", 0.01829 }, { "raw-mica", 0.01829 },
+		{ "raw-silicon", 0.01463 }, { "raw-antimony", 0.01372 }, { "raw-nickel", 0.01029 },
+		{ "raw-fullers-earth", 0.00914 }, { "raw-gypsum", 0.00914 }, { "raw-neodymium", 0.00914 },
+		{ "raw-lepidolite", 0.00572 }, { "raw-spodumene", 0.00572 }, { "raw-borax", 0.00457 },
+		{ "raw-yellow-garnet", 0.00457 }, { "raw-cassiterite", 0.00229 }, { "raw-pollucite", 0.00229 },
+		{ "raw-tartarite", 0.00229 },
+	},
+	--- BarnardE (T8): left out Cadmium, Caesium, Cerium, Deep Iron, Infused Gold, Lanthanum, Nether Star, Plutonium241, Shadow Iron, Titanium, Tungsten, Uranium235, Zinc
+	["barnard-e"] = {
+		{ "raw-magnetite", 0.22699 }, { "raw-iron", 0.08228 }, { "raw-uraninite", 0.07448 },
+		{ "raw-chalcopyrite", 0.05675 }, { "raw-naquadah", 0.04611 }, { "raw-bentonite", 0.04256 },
+		{ "raw-garnet-sand", 0.04256 }, { "raw-gold", 0.04256 }, { "raw-magnesite", 0.04256 }, { "raw-thorium", 0.04256 },
+		{ "raw-grossular", 0.01419 }, { "raw-spessartine", 0.01419 }, { "raw-vanadium-magnetite", 0.01419 },
+		{ "raw-silicon", 0.01135 }, { "raw-adamantium", 0.00709 }, { "raw-copper", 0.00709 },
+		{ "raw-neutronium", 0.00709 }, { "raw-pyrite", 0.00709 }, { "raw-nickel", 0.00567 }, { "raw-glauconite", 0.00532 },
+		{ "raw-olivine", 0.00532 }, { "raw-red-garnet", 0.00532 }, { "raw-yellow-garnet", 0.00532 },
+		{ "raw-molybdenite", 0.00355 }, { "raw-wulfenite", 0.00355 }, { "raw-enriched-naquadah", 0.00266 },
+		{ "raw-platinum", 0.00266 }, { "raw-pyrolusite", 0.00177 }, { "raw-tantalite", 0.00177 },
+		{ "raw-molybdenum", 0.00044 }, { "raw-powellite", 0.00044 },
+	},
+	--- CentauriA (T8): left out Cadmium, Caesium, Cerium, Electrotine, Lanthanum, Samarium
+	["centauri-bb"] = {
+		{ "raw-sulfur", 0.14109 }, { "raw-nether-quartz", 0.11993 }, { "raw-tetrahedrite", 0.09877 },
+		{ "raw-redstone", 0.08466 }, { "raw-cassiterite-sand", 0.05644 }, { "raw-garnet-sand", 0.05644 },
+		{ "raw-pitchblende", 0.05644 }, { "raw-beryllium", 0.04233 }, { "raw-diatomite", 0.03527 },
+		{ "raw-black-plutonium", 0.02822 }, { "raw-red-garnet", 0.02822 }, { "raw-saltpeter", 0.02822 },
+		{ "raw-quartzite", 0.02116 }, { "raw-barite", 0.01411 }, { "raw-grossular", 0.01411 },
+		{ "raw-spessartine", 0.01411 }, { "raw-pyrite", 0.00882 }, { "raw-sphalerite", 0.00882 },
+		{ "raw-asbestos", 0.00705 }, { "raw-neodymium", 0.00705 }, { "raw-uraninite", 0.00705 }, { "raw-copper", 0.00617 },
+		{ "raw-stibnite", 0.00617 }, { "raw-cinnabar", 0.00529 }, { "raw-ruby", 0.00529 }, { "raw-alunite", 0.00353 },
+		{ "raw-borax", 0.00353 }, { "raw-certus-quartz", 0.00353 }, { "raw-yellow-garnet", 0.00353 },
+		{ "raw-emerald", 0.00265 }, { "raw-thorium", 0.00265 }, { "raw-pyrolusite", 0.00176 },
+		{ "raw-tantalite", 0.00176 }, { "raw-tartarite", 0.00176 },
+	},
+	--- TcetiE (T8): left out Chrome, Manganese, Nether Star, Perlite, Uvarovite
+	["tau-ceti-e"] = {
+		{ "raw-magnetite", 0.31163 }, { "raw-apatite", 0.05843 }, { "raw-banded-iron", 0.05356 },
+		{ "raw-magnesite", 0.05356 }, { "raw-tin", 0.05173 }, { "raw-ilmenite", 0.05161 }, { "raw-oilsands", 0.04382 },
+		{ "raw-bauxite", 0.03895 }, { "raw-garnet-sand", 0.02921 }, { "raw-kaolinite", 0.02921 },
+		{ "raw-zeolite", 0.02921 }, { "raw-rock-salt", 0.02435 }, { "raw-salt", 0.02435 }, { "raw-red-garnet", 0.02313 },
+		{ "raw-black-plutonium", 0.01948 }, { "raw-vanadium-magnetite", 0.01948 }, { "raw-barite", 0.00974 },
+		{ "raw-gold", 0.00974 }, { "raw-iron", 0.00974 }, { "raw-quartzite", 0.00974 }, { "raw-chromite", 0.00779 },
+		{ "raw-opal", 0.0067 }, { "raw-sulfur", 0.0067 }, { "raw-yellow-garnet", 0.00609 }, { "raw-aluminium", 0.00487 },
+		{ "raw-fullers-earth", 0.00365 }, { "raw-glauconite-sand", 0.00365 }, { "raw-pyrochlore", 0.00365 },
+		{ "raw-tricalcium-phosphate", 0.00365 }, { "raw-cassiterite", 0.00304 }, { "raw-lepidolite", 0.00304 },
+		{ "raw-spodumene", 0.00304 }, { "raw-borax", 0.00243 }, { "raw-certus-quartz", 0.00243 },
+		{ "raw-tungstate", 0.00243 }, { "raw-lapis", 0.00195 }, { "raw-molybdenum", 0.0003 },
+	},
+	--- VegaB (T8): left out Cadmium, Caesium, Cerium, Chrome, Chrysotile, Gallium, Infused Gold, Lanthanum, Lithium, Nether Star, Niobium, Plutonium241, Titanium, Uranium235, Vanadium, Yttrium
+	["vega-b"] = {
+		{ "raw-magnetite", 0.18967 }, { "raw-tetrahedrite", 0.06988 }, { "raw-redstone", 0.0599 }, { "raw-gold", 0.04367 },
+		{ "raw-galena", 0.03993 }, { "raw-pitchblende", 0.03993 }, { "raw-uraninite", 0.03494 },
+		{ "raw-bismuth", 0.03394 }, { "raw-naquadah", 0.03244 }, { "raw-arsenic", 0.02995 },
+		{ "raw-garnet-sand", 0.02995 }, { "raw-thorium", 0.02995 }, { "raw-red-garnet", 0.02371 },
+		{ "raw-yellow-garnet", 0.02371 }, { "raw-lazurite", 0.01997 }, { "raw-sodalite", 0.01997 },
+		{ "raw-silver", 0.01248 }, { "raw-lead", 0.01048 }, { "raw-scheelite", 0.00998 },
+		{ "raw-vanadium-magnetite", 0.00998 }, { "raw-antimony", 0.00749 }, { "raw-adamantium", 0.00499 },
+		{ "raw-neutronium", 0.00499 }, { "raw-copper", 0.00437 }, { "raw-stibnite", 0.00437 }, { "raw-cinnabar", 0.00374 },
+		{ "raw-ruby", 0.00374 }, { "raw-calcite", 0.0025 }, { "raw-lapis", 0.0025 }, { "raw-realgar", 0.0025 },
+		{ "raw-enriched-naquadah", 0.00187 }, { "raw-platinum", 0.00187 }, { "raw-diamond", 0.001 },
+		{ "raw-tungstate", 0.00062 },
+	},
+	--- Seth (T9): left out Chrome, Electrotine, Iridium, Mithril, Osmium, Samarium
+	["seth"] = {
+		{ "raw-magnetite", 0.44444 }, { "raw-tengam", 0.11111 }, { "raw-tin", 0.07378 }, { "raw-ilmenite", 0.0625 },
+		{ "raw-bauxite", 0.05556 }, { "raw-bastnasite", 0.04167 }, { "raw-draconium", 0.02778 },
+		{ "raw-vanadium-magnetite", 0.02778 }, { "raw-nickel", 0.01476 }, { "raw-gold", 0.01389 }, { "raw-iron", 0.01389 },
+		{ "raw-neodymium", 0.00955 }, { "raw-aluminium", 0.00694 }, { "raw-platinum", 0.00694 },
+		{ "raw-cassiterite", 0.00434 }, { "raw-jade", 0.00347 }, { "raw-vinteum", 0.00347 }, { "raw-monazite", 0.0026 },
+		{ "raw-palladium", 0.00174 }, { "raw-tartarite", 0.00174 }, { "raw-sheldonite", 0.00087 },
+	},
+	--- Maahes (T9): left out Alduorite, Ardite, Chrome, Iridium, Manganese, Rutile, Titanium, Trinium, Vanadium
+	["maahes"] = {
+		{ "raw-naquadah", 0.12281 }, { "raw-basaltic-mineral-sand", 0.09357 }, { "raw-granitic-mineral-sand", 0.09357 },
+		{ "raw-magnetite", 0.07018 }, { "raw-enriched-naquadah", 0.05117 }, { "callisto-ice-dust", 0.04678 },
+		{ "raw-galena", 0.04678 }, { "raw-silver", 0.04678 }, { "raw-soapstone", 0.04678 }, { "raw-talc", 0.04678 },
+		{ "raw-topaz", 0.04678 }, { "quantium-dust", 0.03509 }, { "raw-amethyst", 0.03509 }, { "raw-adamantium", 0.0117 },
+		{ "raw-fullers-earth", 0.0117 }, { "raw-gypsum", 0.0117 }, { "raw-neutronium", 0.0117 }, { "raw-gold", 0.00877 },
+		{ "raw-blue-topaz", 0.00585 }, { "raw-cryolite", 0.00585 }, { "raw-glauconite", 0.00585 }, { "raw-lead", 0.00585 },
+		{ "raw-naquadria", 0.00585 }, { "raw-palladium", 0.00585 }, { "raw-pentlandite", 0.00585 },
+		{ "raw-sheldonite", 0.00585 }, { "raw-tungstate", 0.00585 }, { "raw-molybdenum", 0.00073 },
+		{ "raw-platinum", 0.00073 },
+	},
+}) do VOID_POOLS[name] = pool end
 
 local VM_PICKS = 20                -- ores per recipe at tier I (2 per second, 10 s)
 local VM_GAS = { { nil, 1 }, { "neon", 4 }, { "krypton", 8 }, { "xenon", 16 } }
 local VM_DIMS = { { "pluto", 1 }, { "barnard-f", 2 }, { "horus", 3 }, { "anubis", 3 }, { "neper", 3 },
 	{ "mehen-belt", 3 } }   -- neper: #373, mehen-belt: #356
+for _, d in pairs({ { "ceres", 1 }, { "ganymede", 1 }, { "io", 1 }, { "mercury", 1 }, { "enceladus", 1 }, { "miranda", 1 },
+	{ "oberon", 1 }, { "titan", 1 }, { "proteus", 1 }, { "triton", 1 }, { "haumea", 1 }, { "makemake", 1 },
+	{ "barnard-c", 2 }, { "barnard-e", 2 }, { "centauri-bb", 2 }, { "tau-ceti-e", 2 }, { "vega-b", 2 }, { "seth", 3 },
+	{ "maahes", 3 } }) do
+	VM_DIMS[#VM_DIMS + 1] = d   -- issue #636
+end
+--- issue #636: Seth's raw tengam and tartarite (GT's TengamRaw and Tartarite, the dusts new) and Maahes's naquadria
+create_ore("raw-tengam", nil, "crushed-tengam", "raw-tengam-dust", nil, "crushed-tengam", nil, nil, 1, false, false)
+create_ore("raw-tartarite", nil, "crushed-tartarite", "tartarite-dust", nil, "crushed-tartarite", nil, nil, 1, false, false)
+create_ore("raw-naquadria", nil, "crushed-naquadria", nil, nil, "crushed-naquadria", nil, nil, 1, false, false)
 --- issue #373: Neper's ores the mod lacked (GT's dilithium, mysterious crystal and vinteum; the mysterious crystal dust is
 --- the moon dust's above)
 create_ore("raw-dilithium", nil, "crushed-dilithium", "dilithium-dust", nil, "crushed-dilithium", nil, nil, 1, false, false)
@@ -901,6 +1183,8 @@ F.tech{ name = VM_TECHS[2], prerequisites = { VM_TECHS[1], "zpm-assembly-line", 
 	"crystal-processor-mainframes" }, packs = 8, count = 50, time = 60, recipes = F.join({ vm2 }, vm_recipes[2]) }
 F.tech{ name = VM_TECHS[3], prerequisites = { VM_TECHS[2], "uv-components" }, packs = 9, count = 50, time = 60,
 	recipes = F.join({ vm3 }, vm_recipes[3]) }
-unlock_in(VM_TECHS[3], { "crushed-dilithium", "crushed-mysterious-crystal", "crushed-vinteum" })   -- issue #373: Neper
-unlock_in(VM_TECHS[3], { "crushed-draconium", "crushed-awakened-draconium" })   -- issue #356: the Mehen Belt
-unlock_in(VM_TECHS[3], { "crushed-oriharukon" })   -- issue #355 step 5: Horus's oriharukon
+unlock_in(VM_TECHS[3], { "crushed-dilithium", "crushed-mysterious-crystal" })   -- issue #373: Neper
+unlock_in(VM_TECHS[3], { "crushed-awakened-draconium" })   -- issue #356: the Mehen Belt
+--- (issue #636: draconium, oriharukon and vinteum come from Phobos and Deimos's mines with Reach Mars now)
+unlock_in(MARS, { "crushed-draconium", "crushed-oriharukon", "crushed-vinteum" })
+unlock_in(VM_TECHS[3], { "crushed-tengam", "crushed-tartarite", "crushed-naquadria" })   -- issue #636: Seth, Maahes

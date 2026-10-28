@@ -264,6 +264,8 @@ MATERIALS = {
     "ancient-debris": ("ROUGH", (0x5a, 0x3e, 0x36)),
     # issue #627: Thermal Foundation's blizz, GT's snow and cryotheum (MaterialsInit.java)
     "blizz": "Blizz", "snow": "Snow", "cryotheum": "Cryotheum",
+    # issue #636: Seth's raw tengam (the ore and GT's Raw Tengam Dust) and tartarite (MaterialsInit.java)
+    "tengam": "TengamRaw", "raw-tengam": "TengamRaw", "tartarite": "Tartarite",
     "calcium": "Calcium",
     # issue #205: goodgenerator's Werkstoffe of the naquadah line (GGMaterial.java, their colours; dusts)
     "naquadria-oxide-mixture": ("METALLIC", (77, 77, 85)), "indium-phosphate": ("DULL", (43, 46, 112)),

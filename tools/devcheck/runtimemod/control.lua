@@ -833,6 +833,10 @@ local RT = {
 	-- issue #628 (prototypes/164-fork-chemistry.lua section 51): GTNH's wetware printed board and the PCB Factory's optical one
 	{ "hv-chemical-reactor", "wetware-printed-circuit-board" },
 	{ "pcb-factory", "optical-printed-circuit-board" },
+	-- issue #636 (160, 161): the Phobos and Deimos mines, Seth's Void Miner III pool and the Deep Dark (every raw ore)
+	{ "dimension-mine", "mining-heavy-pentele-vein" },
+	{ "void-miner-iii", "void-mining-seth" },
+	{ "void-miner-iii", "void-mining-deep-dark" },
 	{ "lv-fluid-heater", "water-fluid-heater" },
 	{ "lv-packager", "packager-iron-dust-from-small-piles" },
 	{ "component-assembly-line", "lv-motor-coal" },
