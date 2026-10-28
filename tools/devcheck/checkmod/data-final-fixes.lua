@@ -408,6 +408,10 @@ for item, why in pairs(FORK_RECYCLING_BLACKLIST or {}) do
 	rb[#rb + 1] = item .. "\t" .. tostring(why or "") .. "\t" .. tostring(data.raw.item[item] ~= nil or data.raw.tool[item] ~= nil)
 end
 section("RECYCLEBLACK", rb)
+--- Issue #670 (prototypes/157-fork-recycling.lua): the material blocks that stay a dead end on purpose, with their reasons
+local bd = {}
+for item, why in pairs(FORK_BLOCKS_DEAD_END or {}) do bd[#bd + 1] = item .. "\t" .. tostring(why or "") end
+section("BLOCKDEADOK", bd)
 
 --- Every __gregtorio-continued__/ file referenced anywhere, with its owner prototype
 local paths, seen = {}, {}

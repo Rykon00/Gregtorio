@@ -164,7 +164,7 @@ end
 --- 155 puts the forge hammer steps of the raw and crushed ores with their source, the Void Miners; they stay with the rest
 --- of their chain (#286: Bedrockium and Quantium; black plutonium's with the Void Miner II, above)
 for ore, tech in pairs({ ["black-plutonium"] = VM_TECHS[2], neutronium = "bedrockium", adamantium = "bedrockium",
-	borax = "bedrockium", bedrockium = "bedrockium", ["cosmic-neutronium"] = "quantium", ["infinity-catalyst"] = "quantium" }) do
+	borax = "bedrockium", bedrockium = "bedrockium", ["cosmic-neutronium"] = "cosmic-neutronium", ["infinity-catalyst"] = "quantium" }) do
 	move_unlocks({ "hammering-raw-" .. ore, "hammering-crushed-" .. ore }, tech)
 end
 ore_dimension(VM_TECHS[1], { "black-plutonium", "neutronium", "adamantium" })

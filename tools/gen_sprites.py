@@ -1097,6 +1097,32 @@ def battery_buffers(gt):
                 save(img, path)
 
 
+# issue #637: the EV and IV gas turbines and semifluid generators: HV's sprites and icon in the tier's colour; the icons
+# of the EV and IV chemical reactors and the HV to IV distilleries
+GENERATOR_TINT = {"ev": (225, 215, 245), "iv": (170, 180, 215)}
+
+
+def generator_tiers():
+    for base in ("gas-turbine", "semifluid-generator"):
+        src = ROOT / "graphics/entity" / f"hv-{base}"
+        for tier, rgb in GENERATOR_TINT.items():
+            name = f"{tier}-{base}"
+            d = ROOT / "graphics/entity" / name
+            d.mkdir(parents=True, exist_ok=True)
+            for kind in ("idle", "working"):
+                save(tint(load(src / f"hv-{base}-{kind}.png"), rgb), d / f"{name}-{kind}.png")
+            save(tint(load(ICONS / f"hv-{base}.png"), rgb), ICONS / f"{name}.png")
+    # the EV and IV chemical reactors and the HV to IV distilleries use the HV reactor's and the MV distillery's sprites;
+    # their icons are those in the tier's colour
+    tints = GENERATOR_TINT   # (the HV distillery has an upstream icon)
+    for base, src, tiers in (("chemical-reactor", "hv", ("ev", "iv")), ("distillery", "mv", ("ev", "iv"))):
+        for tier in tiers:
+            save(tint(load(ICONS / f"{src}-{base}.png"), tints[tier]), ICONS / f"{tier}-{base}.png")
+    # GT++'s advanced boilers: the Large Coal Boiler's icon in the tier's colour (the chassis: gen_gt_icons.py)
+    for tier, rgb in (("lv", (200, 200, 200)), ("mv", (220, 200, 160)), ("hv", (225, 215, 245))):
+        save(tint(load(ICONS / "large-coal-boiler.png"), rgb), ICONS / f"{tier}-advanced-boiler.png")
+
+
 def fluid_extractor_lv_ev():
     """Issue #152: the LV and MV fluid extractor sprites (HV and EV use MV's, like the extractor) are upstream's
     extractor with the liquid in its tubes molten; the idle picture keeps a low melt in the tubes, so the two machines
@@ -1342,6 +1368,7 @@ def main():
     lv_from_mv("autoclave")      # before the autoclave's tiers (it reads the MV autoclave)
     steam_age(a.gt)              # issue #446
     battery_buffers(a.gt)        # issue #444
+    generator_tiers()            # issue #637
     lv_from_mv("extruder", icon=False)          # issue #449 (the LV extruder icon is upstream's)
     lv_from_mv("laser-engraver", icon_palette=True)
     lv_from_mv("combustion-generator", icon=False)   # (the LV icon is upstream's)
