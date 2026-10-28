@@ -246,6 +246,8 @@ MATERIALS = {
     "niobium": "Niobium", "advanced-nitinol": ("FIERY", (136, 117, 159)), "cobalt": "Cobalt",
     "shirabon": ("METALLIC", (0xe0, 0x15, 0x6d)), "astral-titanium": ("METALLIC", (220, 160, 240)),
     "chromatic-glass": ("GLASS", (255, 255, 255)), "blaze": "Blaze",
+    # issue #630: GT++'s calcium carbonate dust (ModItems.java:652-656, white) and GT's netherrack
+    "calcium-carbonate": ("DULL", (255, 255, 255)), "netherrack": "Netherrack",
     # issue #627: Thermal Foundation's blizz, GT's snow and cryotheum (MaterialsInit.java)
     "blizz": "Blizz", "snow": "Snow", "cryotheum": "Cryotheum",
     "calcium": "Calcium",
@@ -1199,6 +1201,27 @@ def icon_table(c):
     T["medium-infinity-fluid-pipe"] = lambda: c.m.icon("infinity", "pipeMedium", kind="blocks")
     T["medium-spacetime-fluid-pipe"] = lambda: c.m.icon("spacetime", "pipeMedium", kind="blocks")
     T["blaze-powder"] = lambda: c.part("blaze", "dust")
+    # issue #630: GT++'s milling items (MetaItem1 of ItemGenericChemBase, ModItems.java:242-253), the milled ores
+    # (BaseOreComponent.java:146-149: processing/MilledOre/milled tinted, its overlay on top), the crushed pine materials
+    # (agrichem item 25), GT's heavy hellish mud (gt.metaitem.03/242), the IsaMill's and flotation cell's casings and fronts
+    GEN = "gt:miscutils/textures/items/science/general/MetaItem1/"
+    for k, n in (("alumina-milling-ball", 7), ("soapstone-milling-ball", 8), ("sodium-ethoxide", 9),
+                 ("sodium-ethyl-xanthate", 10), ("potassium-ethyl-xanthate", 11), ("potassium-hydroxide", 12)):
+        T[k] = (lambda n=n: lambda: c.gt(f"{GEN}{n}"))()
+    T["crushed-pine-materials"] = lambda: c.gt("gt:miscutils/textures/items/bioscience/MetaItem1/25")
+    T["heavy-hellish-mud"] = lambda: c.gt("gt:gregtech/textures/items/gt.metaitem.03/242")
+    T["calcium-carbonate-dust"] = lambda: c.part("calcium-carbonate", "dust")
+    MILLED = "gt:miscutils/textures/items/processing/MilledOre/milled"
+    for m in ("sphalerite", "chalcopyrite", "nickel", "platinum", "pentlandite", "redstone", "spessartine", "grossular",
+              "almandine", "pyrope", "monazite", "netherrack"):
+        T["milled-" + m] = (lambda m=m: lambda: over(tint(c.gt(MILLED), c.m.get(m)[1]), c.gt(MILLED + "_OVERLAY")))()
+    T["isamill-exterior-casing"] = lambda: c.gt(f"{GTPP_TE}MACHINE_CASING_GRINDING_FACTORY")
+    T["isamill-gearbox"] = lambda: c.gt(f"{GTPP_TE}MACHINE_CASING_GEARBOX_T1")
+    T["isamill-piping"] = lambda: c.gt(f"{GTPP_TE}MACHINE_CASING_PIPE_T1")
+    T["flotation-cell-casing"] = lambda: c.gt(f"{GTPP_TE}MACHINE_CASING_FLOTATION")
+    T["isamill-controller"] = lambda: over(c.gt(f"{GTPP_TE}MACHINE_CASING_GRINDING_FACTORY"), c.gt(f"{GTPP}Grinder/GRINDER5"))
+    T["flotation-cell-controller"] = lambda: over(c.gt(f"{GTPP_TE}MACHINE_CASING_FLOTATION"),
+                                                  c.gt(f"{GTPP}controllerFaces/frothFlotationCell"))
     # issue #627: the cryotheum line (GT's rod and dust icons of blizz, snow and cryotheum)
     T["blizz-rod"] = lambda: c.part("blizz", "stick")
     for m in ("blizz", "snow", "cryotheum"):

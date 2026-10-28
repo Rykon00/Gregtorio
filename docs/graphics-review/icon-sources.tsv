@@ -5157,3 +5157,30 @@ blizz-rod	colour of Blizz #dce9ff + gt:gregtech/textures/items/materialicons/NON
 blizz-dust	colour of Blizz #dce9ff + gt:gregtech/textures/items/materialicons/NONE/dust + gt:gregtech/textures/items/materialicons/CUSTOM/blizz/dust_OVERLAY
 snow-dust	colour of Snow #fafafa + gt:gregtech/textures/items/materialicons/FINE/dust
 cryotheum-dust	colour of Cryotheum #0094cb + gt:gregtech/textures/items/materialicons/NONE/dust + gt:gregtech/textures/items/materialicons/CUSTOM/cryotheum/dust_OVERLAY
+alumina-milling-ball	gt:miscutils/textures/items/science/general/MetaItem1/7
+soapstone-milling-ball	gt:miscutils/textures/items/science/general/MetaItem1/8
+sodium-ethoxide	gt:miscutils/textures/items/science/general/MetaItem1/9
+sodium-ethyl-xanthate	gt:miscutils/textures/items/science/general/MetaItem1/10
+potassium-ethyl-xanthate	gt:miscutils/textures/items/science/general/MetaItem1/11
+potassium-hydroxide	gt:miscutils/textures/items/science/general/MetaItem1/12
+crushed-pine-materials	gt:miscutils/textures/items/bioscience/MetaItem1/25
+heavy-hellish-mud	gt:gregtech/textures/items/gt.metaitem.03/242
+calcium-carbonate-dust	gt:gregtech/textures/items/materialicons/NONE/dust
+isamill-exterior-casing	gt:miscutils/textures/blocks/TileEntities/MACHINE_CASING_GRINDING_FACTORY
+isamill-gearbox	gt:miscutils/textures/blocks/TileEntities/MACHINE_CASING_GEARBOX_T1
+isamill-piping	gt:miscutils/textures/blocks/TileEntities/MACHINE_CASING_PIPE_T1
+flotation-cell-casing	gt:miscutils/textures/blocks/TileEntities/MACHINE_CASING_FLOTATION
+isamill-controller	gt:miscutils/textures/blocks/TileEntities/MACHINE_CASING_GRINDING_FACTORY + gt:miscutils/textures/blocks/iconsets/Grinder/GRINDER5
+flotation-cell-controller	gt:miscutils/textures/blocks/TileEntities/MACHINE_CASING_FLOTATION + gt:miscutils/textures/blocks/iconsets/controllerFaces/frothFlotationCell
+milled-sphalerite	gt:miscutils/textures/items/processing/MilledOre/milled + gt:miscutils/textures/items/processing/MilledOre/milled_OVERLAY
+milled-chalcopyrite	gt:miscutils/textures/items/processing/MilledOre/milled + gt:miscutils/textures/items/processing/MilledOre/milled_OVERLAY
+milled-nickel	gt:miscutils/textures/items/processing/MilledOre/milled + gt:miscutils/textures/items/processing/MilledOre/milled_OVERLAY
+milled-platinum	gt:miscutils/textures/items/processing/MilledOre/milled + gt:miscutils/textures/items/processing/MilledOre/milled_OVERLAY
+milled-pentlandite	gt:miscutils/textures/items/processing/MilledOre/milled + gt:miscutils/textures/items/processing/MilledOre/milled_OVERLAY
+milled-redstone	gt:miscutils/textures/items/processing/MilledOre/milled + gt:miscutils/textures/items/processing/MilledOre/milled_OVERLAY
+milled-spessartine	gt:miscutils/textures/items/processing/MilledOre/milled + gt:miscutils/textures/items/processing/MilledOre/milled_OVERLAY
+milled-grossular	gt:miscutils/textures/items/processing/MilledOre/milled + gt:miscutils/textures/items/processing/MilledOre/milled_OVERLAY
+milled-almandine	gt:miscutils/textures/items/processing/MilledOre/milled + gt:miscutils/textures/items/processing/MilledOre/milled_OVERLAY
+milled-pyrope	gt:miscutils/textures/items/processing/MilledOre/milled + gt:miscutils/textures/items/processing/MilledOre/milled_OVERLAY
+milled-monazite	gt:miscutils/textures/items/processing/MilledOre/milled + gt:miscutils/textures/items/processing/MilledOre/milled_OVERLAY
+milled-netherrack	gt:miscutils/textures/items/processing/MilledOre/milled + gt:miscutils/textures/items/processing/MilledOre/milled_OVERLAY

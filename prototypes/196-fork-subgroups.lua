@@ -94,7 +94,13 @@ put("molten-elements", { "mercury", "molten-glass", "molten-borosilicate-glass",
 	-- issue #91: the melts of the elements that had none
 	"molten-gold", "molten-lead", "molten-nickel", "molten-zinc", "molten-iridium", "molten-osmium", "molten-palladium",
 	"molten-platinum", "molten-samarium" })
-put("molten-alloys", { "soldering-alloy", "mutated-living-solder" })   -- (issue #627: GT++'s UEV+ solder)
+put("molten-alloys", { "soldering-alloy", "mutated-living-solder" })
+--- issue #630: GT++'s milling and flotation (164 section 47)
+put("organic", { "pine-oil", "carbon-disulfide", "urea", "liquid-resin" })
+put("gases", { "coal-gas", "nefarious-gas" })
+put("ore-solutions", { "red-mud", "nether-semi-fluid", "nefarious-oil", "poor-nether-waste", "netherrack-flotation-froth" })
+for _, o in pairs(FORK_MILLING and FORK_MILLING.ores or {}) do put("ore-solutions", { o[1] .. "-flotation-froth" }) end
+   -- (issue #627: GT++'s UEV+ solder)
 put("molten-superalloys", { "molten-hastelloy-c276", "molten-hastelloy-w", "molten-hastelloy-x", "molten-incoloy-020",
 	"molten-incoloy-903", "molten-incoloy-ds", "molten-incoloy-ma956", "molten-inconel-625", "molten-inconel-690",
 	"molten-inconel-792", "molten-maraging-steel-250", "molten-maraging-steel-300", "molten-stellite", "molten-talonite",
