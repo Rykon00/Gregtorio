@@ -3063,6 +3063,16 @@ recipes of ancient debris (no EIC; debris is mined), the netherite blocks and st
 dense netherite plate (its only user here would be the Fusion Computer), Force Field Glass (chronomatic glass and
 celestial tungsten parts are missing).
 
+## MV to EV superconductors (issue #634)
+
+GTNH's superconductor ladder from MV on (164 section 49; the maintainer's decision of 2026-10-28): Pentacadmium Magnesium
+Hexaoxid (MV), Titaniumonabarium Decacoppereikosaoxid (HV) and Uranium Triplatinid (EV), mixed, smelted, drawn into wire
+and made superconducting by the mod's IV rule (the tiny pipes' metal as melt, cryogenic helium); GTNH's MV to EV solenoid
+coils, and the Large Fluid Extractor with them besides the IV one (GT's 8 parallels per solenoid tier: 2/5, 3/5 and 4/5
+of the IV build's speed). Named stand-ins in the solenoids: GT's medium pipe as its 3 plates, the annealed copper cables
+as copper cables, the long permalloy rods as permalloy dust; the coolant cells are left out as in the IV solenoid. All
+come with Large Fluid Extractor, their only use here (GTNH also uses them in machines the mod does not have: tesla
+coils, chargers, vanadium redox batteries). The UHV+ superconductors keep the mod's ladder (a question for later).
 ## Dyson Swarm (issue #623)
 
 gtnhintergalactic's Dyson Swarm Ground Unit (164 section 50, the maintainer's decision of 2026-10-28: with named

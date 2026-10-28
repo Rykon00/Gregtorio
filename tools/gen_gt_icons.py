@@ -246,6 +246,11 @@ MATERIALS = {
     "niobium": "Niobium", "advanced-nitinol": ("FIERY", (136, 117, 159)), "cobalt": "Cobalt",
     "shirabon": ("METALLIC", (0xe0, 0x15, 0x6d)), "astral-titanium": ("METALLIC", (220, 160, 240)),
     "chromatic-glass": ("GLASS", (255, 255, 255)), "blaze": "Blaze",
+    # issue #634: GT's MV to EV superconductor bases and superconductors (MaterialsInit.java:13538-13602)
+    "pentacadmium-magnesium-hexaoxid": "Pentacadmiummagnesiumhexaoxid",
+    "titaniumonabarium-decacoppereikosaoxid": "Titaniumonabariumdecacoppereikosaoxid",
+    "uranium-triplatinid": "Uraniumtriplatinid",
+    "superconductor-mv": "SuperconductorMV", "superconductor-hv": "SuperconductorHV", "superconductor-ev": "SuperconductorEV",
     # issue #630: GT++'s calcium carbonate dust (ModItems.java:652-656, white) and GT's netherrack
     "calcium-carbonate": ("DULL", (255, 255, 255)), "netherrack": "Netherrack",
     # GT++'s germanium and selenium (MaterialsElements.java:55-78, their colours)
@@ -1285,10 +1290,13 @@ def icon_table(c):
     T["electrode-casing"] = lambda: c.gt(LANTH + "blocks/casing.electrode")
     T["capillary-exchange"] = lambda: c.gt(LANTH + "items/capillary_exchange")
     T["mu-metal-lattice"] = lambda: c.gt(LANTH + "items/mm_lattice")
+    # issue #634: the MV to EV superconductor wires (GT's superconductor sheen in their colours)
+    for t in ("mv", "hv", "ev"):
+        T[f"{t}-superconductor-wire"] = (lambda t=t: lambda: c.part(f"superconductor-{t}", "@superconductor"))()
     # the LHC: GT's cyclotron solenoids, collider and module casings, its front, the large fluid cells
     # (MetaGeneratedItem01 410/411/413), the samarium electromagnet (348), the tantalum capacitor (499), the ULV coil
     # (MetaGeneratedItem03 140); GoodGenerator's compact fusion coils (fuison/2, 3) and resonator parts
-    for t in ("uv", "uhv", "uiv"):
+    for t in ("mv", "hv", "ev", "uv", "uhv", "uiv"):   # (issue #634: MV to EV)
         T[f"{t}-solenoid-superconductor-coil"] = (lambda t=t: c.gt(f"{BLK}{GT_TIER[t]}_SIDE_CYCLOTRON_SOLENOID"))
     for n, f in (("collider-casing", "COLLIDER_CASING"), ("cms-casing", "CMS_CASING"), ("atlas-casing", "ATLAS_CASING"),
                  ("lhcb-casing", "LHCB_CASING")):

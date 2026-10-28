@@ -5523,6 +5523,108 @@ end
 
 
 --------------------------------------------------------------------------------
+--- 49) THE MV TO EV SUPERCONDUCTORS AND SOLENOIDS (issue #634, the maintainer's decision of 2026-10-28: with GTNH's
+---   solenoids, and the Large Fluid Extractor with their tiers). GT's materials (gregtech/loaders/materials/
+---   MaterialsInit.java:13538-13602): MV Pentacadmium Magnesium Hexaoxid (Cd5MgO6, 2500 K), HV Titaniumonabarium
+---   Decacoppereikosaoxid (TiBa9Cu10O20, 3300 K), EV Uranium Triplatinid (UPt3, 4400 K).
+---   * mixer (NewHorizonsCoreMod gthandler/recipes/MixerRecipes.java:444-469, 10 s): 5 cadmium + magnesium + 6000 L
+---     oxygen -> 12 dust (MV); titanium + 9 barium + 10 copper + 20000 L oxygen -> 40 dust (HV); uranium + 3 platinum
+---     -> 4 dust (EV; GT's uranium is the mod's uranium 238)
+---   * blast furnace (NewHorizonsCoreMod BlastFurnaceRecipes.java:622-639): MV 100 s at HV, the ingot; HV 115 s at HV and
+---     EV 140 s at EV, a hot ingot, cooled in the vacuum freezer in 10 s (GT VacuumFreezerRecipes.java:237-258)
+---   * wire: wiremill, 1 ingot -> 2, 2.5 s at LV (GT GTRecipeRegistrator.java:819-827 with ProcessingFineWire.java:22's
+---     base of 100 ticks)
+---   * superconductor (GT AssemblerRecipes.java:1839-1873, 20 s at the tier) by the rule of the mod's IV one (19-iv-age-
+---     item.lua: the tiny pipes' metal as melt, half an ingot each, helium as cryogenic helium, a tenth): MV 3 wires + 2
+---     tiny stainless steel pipes + the MV pump + 2000 L helium -> 3; HV 6 + 4 tiny titanium pipes + 4000 L; EV 9 + 6 tiny
+---     tungstensteel pipes + 6000 L
+---   * solenoid (NewHorizonsCoreMod AssemblerRecipes.java:3222-3297, 10 s at the tier, 288 L soldering alloy): MV 6 MV
+---     superconductor wire 2x (12 wires), 2 annealed copper cables 4x, a medium aluminium pipe, 8 long iron rods, 2 double
+---     steel plates, a helium coolant cell, the MV pump; HV 8 HV wire 2x, 2 silver cables 4x, a medium stainless steel
+---     pipe, 8 long iron rods, 2 double black steel plates; EV 8 EV wire 2x, 2 aluminium cables 4x, a medium titanium pipe,
+---     8 long permalloy rods, 2 double tungstensteel plates. Named stand-ins: a medium pipe is GT's 3 plates (as 162),
+---     the annealed copper cables the mod's copper cables (it has no annealed copper cable), the long permalloy rods
+---     permalloy dust (the mod has no permalloy ingot); the coolant cell is left out (as the IV solenoid of 19)
+---   * the Large Fluid Extractor (gregtech/common/tileentities/machines/multi/MTELargeFluidExtractor.java:76, :360-362)
+---     runs 8 parallels per solenoid tier: GTNH builds it with any solenoid; besides the IV one (19, crafting speed 32)
+---     it comes with 7 MV, HV or EV solenoids at 2/5, 3/5 and 4/5 of its speed.
+---   Unlocked with the Large Fluid Extractor's technology, their first and only use here (issue #252's rule).
+--------------------------------------------------------------------------------
+do
+	local R = {}
+	local MATS = {
+		--  tier  material                                  temp  hot    mixer inputs (+ fluids), dust out, EBF s, EBF tier  pipe melt
+		{ "mv", "pentacadmium-magnesium-hexaoxid", false, { { "cadmium", 5 }, { "magnesium", 1 }, { "oxygen", 600 } }, 12, MV_SPEED, 100, HV_SPEED,
+			"molten-stainless-steel", 3 },
+		{ "hv", "titaniumonabarium-decacoppereikosaoxid", true, { { "titanium-dust", 1 }, { "barium", 9 }, { "copper-dust", 10 },
+			{ "oxygen", 2000 } }, 40, HV_SPEED, 115, HV_SPEED, "molten-titanium", 6 },
+		{ "ev", "uranium-triplatinid", true, { { "uranium-238-dust", 1 }, { "platinum-dust", 3 } }, 4, EV_SPEED, 140, EV_SPEED,
+			"molten-tungstensteel", 9 },
+	}
+	for _, m in ipairs(MATS) do
+		local t, name, hot, mix, n_dust, mix_speed, ebf_s, ebf_speed, pipe_melt, n_wire = table.unpack(m)
+		local tspeed = ({ mv = MV_SPEED, hv = HV_SPEED, ev = EV_SPEED })[t]
+		items(SUB_DUST, { name .. "-dust" })
+		items(SUB_PART, { name .. "-ingot", name .. "-wire", t .. "-superconductor-wire" })
+		step(R, name .. "-dust", t .. "-mixer-recipes", 10, mix_speed, mix, { { name .. "-dust", n_dust } })
+		if hot then
+			items(SUB_PART, { "hot-" .. name .. "-ingot" })
+			step(R, "hot-" .. name .. "-ingot", t .. "-electric-blast-furnace-recipes", ebf_s, ebf_speed, { { name .. "-dust", 1 } },
+				{ { "hot-" .. name .. "-ingot", 1 } })
+			step(R, name .. "-ingot", t .. "-vacuum-freezer-recipes", 10, ebf_speed, { { "hot-" .. name .. "-ingot", 1 } },
+				{ { name .. "-ingot", 1 } })
+		else
+			step(R, name .. "-ingot", "hv-electric-blast-furnace-recipes", ebf_s, ebf_speed, { { name .. "-dust", 1 } },
+				{ { name .. "-ingot", 1 } })
+		end
+		step(R, name .. "-wire", "lv-wiremill-recipes", 2.5, LV_SPEED, { { name .. "-ingot", 1 } }, { { name .. "-wire", 2 } })
+		step(R, t .. "-superconductor-wire", t .. "-assembling-machine-recipes", 20, tspeed,
+			{ { name .. "-wire", n_wire }, { t .. "-pump", 1 }, { pipe_melt, n_wire / 3 * 2 * 7.2 }, { "cryogenic-helium", n_wire / 3 * 200 } },
+			{ { t .. "-superconductor-wire", n_wire } })
+	end
+	local SOLENOIDS = {
+		--  tier  wires cable                 pipe plates (3 = GT's medium pipe)   rods                       double plates
+		{ "mv", 12, { "copper-cable", 8 }, { "aluminium-plate", 3 }, { "long-iron-rod", 8 }, { "double-steel-plate", 2 } },
+		{ "hv", 16, { "silver-cable", 8 }, { "stainless-steel-plate", 3 }, { "long-iron-rod", 8 }, { "double-black-steel-plate", 2 } },
+		{ "ev", 16, { "aluminium-cable", 8 }, { "titanium-plate", 3 }, { "permalloy-dust", 8 }, { "double-tungstensteel-plate", 2 } },
+	}
+	local SPEED_OF = { mv = 2, hv = 3, ev = 4 }   -- (the solenoid tier of GT's large fluid extractor; IV is 5)
+	local large = data.raw["assembling-machine"]["iv-large-extractor"]
+	local large_item = data.raw.item["iv-large-extractor"]
+	local large_recipe = data.raw.recipe["iv-large-extractor"]
+	for _, s in ipairs(SOLENOIDS) do
+		local t, wires, cable, pipe, rods, plates = table.unpack(s)
+		local coil = t .. "-solenoid-superconductor-coil"
+		local tspeed = ({ mv = MV_SPEED, hv = HV_SPEED, ev = EV_SPEED })[t]
+		items("subgroup-iv-age-multiblocks", { coil })
+		step(R, coil, t .. "-assembling-machine-recipes", 10, tspeed,
+			{ { t .. "-superconductor-wire", wires }, cable, pipe, rods, plates, { t .. "-pump", 1 }, { "soldering-alloy", 28.8 } },
+			{ { coil, 1 } })
+		--- the Large Fluid Extractor with this solenoid
+		local name = "large-extractor-" .. t .. "-solenoids"
+		local e = table.deepcopy(large)
+		e.name = name
+		e.minable.result = name
+		e.crafting_speed = large.crafting_speed * SPEED_OF[t] / 5
+		e.next_upgrade = nil
+		e.localised_name = { "entity-name." .. name }
+		data:extend({ e })
+		local item = table.deepcopy(large_item)
+		item.name, item.place_result, item.localised_name = name, name, { "entity-name." .. name }
+		item.order = (large_item.order or "") .. "-" .. SPEED_OF[t]
+		data:extend({ item })
+		local ingredients = table.deepcopy(large_recipe.ingredients)
+		for _, i in pairs(ingredients) do
+			if i.name == "iv-solenoid-superconductor-coil" then i.name = coil end
+		end
+		create_recipe{ name = name, category = (large_recipe.categories or {})[1] or large_recipe.category, energy_required =
+			large_recipe.energy_required, subgroup = item.subgroup, ingredients = ingredients,
+			results = { { type = "item", name = name, amount = 1 } } }
+		R[#R + 1] = name
+	end
+	for _, r in pairs(R) do fork_add_unlock("large-extractor", r) end
+	--- (the EV solenoid's permalloy, a LV mixer recipe, came only with the beamline, section 30)
+	fork_add_unlock("large-extractor", "permalloy-dust")
 --- 50) THE DYSON SWARM (issue #623, the maintainer's decision of 2026-10-28: as GTNH with named stand-ins).
 ---   gtnhintergalactic's Dyson Swarm Ground Unit (gtnhintergalactic/tile/multi/TileEntityDysonSwarm.java, TDS below):
 ---   each run pulls Dyson Swarm Modules into its swarm (at most 10 000, :267-279), which gives 10 000 000 EU/t per module
