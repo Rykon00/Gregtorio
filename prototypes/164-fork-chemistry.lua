@@ -3055,7 +3055,7 @@ end
 ---   composite slurry (mixer: 4 YSZ, 32 mica dust, 576 L into 2000 L; 5 s, IV) and the sheet (the multiblock chemical
 ---   dehydrator: 16 tungsten carbide foils, 16 lead foils, 8000 L slurry into 16; 16 s, ZPM).
 --- Left out: GT's prismatic bee comb (no bees in the mod), the raw fluorophlogopite slurry (no fluorophlogopite), the
---- Naquarite foil (netherite). Unlocked with Prismatic Naquadah.
+--- Naquarite foil (built since issue #617, section 48). Unlocked with Prismatic Naquadah.
 --------------------------------------------------------------------------------
 do
 	local PN = "prismatic-naquadah"
@@ -3785,8 +3785,8 @@ end
 --- * The controller (RSAL:2192-2207): 64 Compact Fusion Coils, 32 Advanced Compact Fusion Coils (the precise assembler;
 ---   the quartz crystal resonator with GT's quartz wafer, special ceramics and micro heater), 64 UHV circuits, 64 UV
 ---   field generators, the electromagnet, 8 CMS casings and the neutronium melts.
---- * Left out, named: the collider casing's Naquarite Universal Insulator Foil (netherite and Thaumcraft's infused gold,
----   as 26), the controller's 8 Research Stations (the mod has no TecTech computation) and 8 UV Neutron Accelerators
+--- * Left out, named: the controller's 8 Research Stations (the collider casing's Naquarite Universal Insulator Foil
+---   since issue #617, section 48) (the mod has no TecTech computation) and 8 UV Neutron Accelerators
 ---   (their inverter's plastic case takes cyan dye, which the mod has none of).
 --------------------------------------------------------------------------------
 do
@@ -5065,6 +5065,458 @@ do
 			end
 		end
 		if tech then fork_add_unlock(tech, twin.name) end
+	end
+end
+
+
+
+--------------------------------------------------------------------------------
+--- 46) GELID CRYOTHEUM AND THE MUTATED LIVING SOLDER (issue #627, the maintainer's decision of 2026-10-28: cryotheum as
+---   GT makes it). GT++'s UEV+ solder (gtPlusPlus/core/item/chemistry/RecipeLoaderGenericChem.java:151-168: chemical
+---   plant T7, 3842160 EU/t, 13 min 20 s): 64 biocells + 8 gravi-stars + 2 infinity catalyst dust + 18000 L tin plasma
+---   + 18000 L bismuth plasma + 4000 L gelid cryotheum -> 40320 L (4 stacks + 24 ingots) mutated living solder; GT++'s
+---   infinite mutation catalyst is left out by the rule of this file. Gregtorio's chemical plant runs at MV speed only (no
+---   casing tiers), so the recipe runs in the UHV Large Chemical Reactor: a GT multiblock takes two amps, and two UHV amps
+---   (4194304 EU/t) carry the 3842160 EU/t, so GTNH makes the solder before UEV; its first users are UHV-tier circuits
+---   (the bioware supercomputer).
+---   Gelid cryotheum: MV mixer, 8 s: saltpeter + snow + lapis + blizz dust -> cryotheum dust
+---   (gtPlusPlus/xmod/thermalfoundation/recipe/TFGregtechRecipes.java:66-77); fluid extractor, 10 s at HV:
+---   1 dust -> 250 L (gtPlusPlus/core/recipe/RecipesGregTech.java:1604-1609).
+---   Snow: GT counts a snowball as one snow dust (gregtech/loaders/preload/LoaderGTItemData.java:85); the fluid
+---   solidifier makes it from 250 L water with the ball mold (gregtech/loaders/postload/recipes/FluidSolidifierRecipes.java:
+---   58-64, 6.4 s at LV; Gregtorio's one mold).
+---   Blizz: the blizz rod drops from Blizzes (gtPlusPlus/core/common/CommonProxy.java:115-119), crushed in the Extreme
+---   Entity Crusher as the blazes are (17-ev-age-item.lua "crushing-blazes", 8 s); macerator: 1 rod -> 3 dust + 1 at
+---   50 % (gregtech/loaders/postload/recipes/Pulverizer.java:651-659).
+---   Unlocked where the solder is first used (FORK_MUTATED_SOLDER_TECH: the bio processors' technology, which unlocks
+---   the bioware supercomputer; issue #252's rule).
+---   Where GTNH solders with it instead of Indalloy 140 (Gregtorio used Indalloy 140 for every solder from UEV on):
+---   - circuits from the bioware supercomputer on (tectech/loader/recipe/ResearchStationAssemblyLine.java:470, :501; the
+---     bioware processor and assembly keep Indalloy 140, NewHorizonsCoreMod CircuitAssemblyLineRecipes.java:887, :901),
+---     every optical circuit (:522, :545, :571; NewHorizonsCoreMod CircuitAssemblyLineRecipes.java:955), and by that rule
+---     the exotic, temporal and Planck circuits (GTNH has no recipe for them);
+---   - the components from UEV on (ResearchStationAssemblyLine.java:1338, :1548, :1759, :1955; UHV keeps Indalloy, :1128)
+---     and by that rule MAX's; the energy and dynamo hatches from UEV on (:230, :250, :271, :293 and the dynamos);
+---   - the DTPF (:639, :659, :697), the godforge (:2412, :2497, :2540; its shielding casing by the tier rule), the Quantum
+---     Force Transformer (gtPlusPlus/core/recipe/RecipesMachinesCustom.java:453), the fusion reactor Mk-IV and Mk-V
+---     controllers and the stargate by the tier rule, the UIV solenoid (NewHorizonsCoreMod AssemblingLineRecipes.java:1588,
+---     solderUEV);
+---   - the space elevator's motors from Mk-III, the UHV-UIV mining drones, the mining module Mk-III, the pump modules and
+---     the ME singularity cell (gtnhintergalactic/recipe/MachineRecipes.java:217-257, 279-332, 462, 629-669;
+---     NewHorizonsCoreMod SpaceAssemblerRecipes.java:431).
+---   GTNH keeps Indalloy 140 for the naquadah fuel refinery, the large naquadah reactor and the component assembly line.
+---   The amounts stay Gregtorio's.
+--------------------------------------------------------------------------------
+FORK_MUTATED_SOLDER = "mutated-living-solder"
+FORK_MUTATED_SOLDER_TECH = "bio-processors"
+local MUTATED_SOLDER_RECIPES = { "bio-processor-supercomputer", "bio-processor-mainframe", "dimensional-bridge",
+	"dimensionally-transcendent-casing", "dimensionally-transcendent-plasma-forge-controller", "quantum-force-transformer-controller",
+	"godforge-controller", "stellar-energy-siphon-casing", "remote-graviton-flow-modulator",
+	"singularity-reinforced-stellar-shielding-casing", "fusion-reactor-mk4-controller", "fusion-reactor-mk5-controller",
+	"uiv-solenoid-superconductor-coil", "space-elevator-motor-mk3", "space-elevator-motor-mk4", "space-elevator-motor-mk5",
+	"mining-drone-uhv", "mining-drone-uev", "mining-drone-uiv", "space-elevator-mining-module-mk3",
+	"space-elevator-pump-module-mk1", "space-elevator-pump-module-mk2", "space-elevator-pump-module-mk3",
+	"me-singularity-storage-cell" }
+for _, line in pairs({ "optical", "exotic", "temporal", "planck" }) do
+	for _, form in pairs({ "", "-assembly", "-supercomputer", "-mainframe" }) do
+		table.insert(MUTATED_SOLDER_RECIPES, line .. "-processor" .. form)
+	end
+end
+for _, t in pairs({ "uev", "uiv", "umv", "uxv", "max" }) do
+	for _, part in pairs({ "conveyor-module", "emitter", "field-generator", "motor", "piston", "pump", "robot-arm", "sensor",
+		"energy-hatch", "dynamo-hatch" }) do
+		table.insert(MUTATED_SOLDER_RECIPES, t .. "-" .. part)
+	end
+end
+for _, name in pairs({ "umv-energy-hatch-zpic", "umv-dynamo-hatch-zpic", "uxv-energy-hatch-ypic", "uxv-dynamo-hatch-ypic" }) do
+	table.insert(MUTATED_SOLDER_RECIPES, name)
+end
+for name, r in pairs(data.raw.recipe) do
+	if name:match("^stargate%-") then table.insert(MUTATED_SOLDER_RECIPES, name) end
+end
+do
+	local R = {}
+	F.fluid("gelid-cryotheum", "spackled-light-blue-fluid", { 0x00 / 255, 0x94 / 255, 0xcb / 255 })
+	F.fluid(FORK_MUTATED_SOLDER, "purple-fluid", { 147 / 255, 109 / 255, 155 / 255 })
+	items(SUB_DUST, { "blizz-dust", "snow-dust", "cryotheum-dust" })
+	items(SUB_PART, { "blizz-rod" })
+	step(R, "crushing-blizzes", "ev-extreme-entity-crusher-recipes", 8, 1, {}, { { "blizz-rod", 1 } }, "blizz-rod")
+	step(R, "blizz-dust", "lv-macerator-recipes", 20, LV_SPEED, { { "blizz-rod", 1 } },
+		{ { "blizz-dust", 3 }, { "blizz-dust", 1, 0.5 } })
+	step(R, "snow-dust", "lv-fluid-solidifier-recipes", 6.4, LV_SPEED, { { "water", 25 } }, { { "snow-dust", 1 } })
+	step(R, "cryotheum-dust", "mv-mixer-recipes", 8, MV_SPEED,
+		{ { "saltpeter", 1 }, { "snow-dust", 1 }, { "lapis-dust", 1 }, { "blizz-dust", 1 } }, { { "cryotheum-dust", 1 } })
+	step(R, "gelid-cryotheum", "hv-fluid-extractor-recipes", 10, HV_SPEED, { { "cryotheum-dust", 1 } },
+		{ { "gelid-cryotheum", 25 } })
+	step(R, FORK_MUTATED_SOLDER, "uhv-chemical-reactor-recipes", 800, UHV_SPEED,
+		{ { "bio-cells", 64 }, { "gravi-star", 8 }, { "infinity-catalyst-dust", 2 }, { "tin-plasma", 1800 },
+			{ "bismuth-plasma", 1800 }, { "gelid-cryotheum", 400 } }, { { FORK_MUTATED_SOLDER, 4032 } })
+	for _, r in pairs(R) do fork_add_unlock(FORK_MUTATED_SOLDER_TECH, r) end
+	local switched = 0
+	for _, name in pairs(MUTATED_SOLDER_RECIPES) do
+		local r = data.raw.recipe[name]
+		local found = false
+		for _, i in pairs(r and r.ingredients or {}) do
+			if i.name == "molten-indalloy-140" then i.name, found = FORK_MUTATED_SOLDER, true end
+		end
+		if found then switched = switched + 1 else error("issue #627: no Indalloy 140 in recipe " .. name) end
+	end
+	log("FORK-MUTATED-SOLDER: " .. switched .. " recipes")
+end
+
+
+
+--------------------------------------------------------------------------------
+--- 47) GT++'S MILLING AND FLOTATION (issue #630, the maintainer's decision of 2026-10-28: the full scope as GTNH). Paths
+---   under gtPlusPlus/ unless named otherwise.
+---   IsaMill (core/item/base/ore/BaseItemMilledOre.java:49-118; tiers core/item/ModItems.java:300-312): 16 crushed ore
+---   + alumina milling ball -> 32 milled ore (60 s) or + soapstone ball -> 16 (75 s); 16 raw ore -> 64 / 48 (120 / 150 s);
+---   netherrack: 256 -> 32 / 16 (60 s, IV; Gregtorio's netherrack is its dust). The ball is not used up but wears, one
+---   point a run (xmod/gregtech/common/tileentities/machines/multi/processing/MTEIsaMill.java:486-495): an alumina ball
+---   lasts 100 runs, a soapstone ball 50 (core/item/chemistry/general/ItemGenericChemBase.java:243-249); here the ball
+---   comes back at 99 % and 98 %.
+---   Flotation Cell (core/item/chemistry/RecipeLoaderMilling.java:235-401): 32 xanthate + 256 milled ore + pine oil ->
+---   1000 L froth, 480 s; netherrack: 256 milled + 8000 L nefarious oil -> 8000 L froth (LuV, 120 s).
+---   Froth in the vacuum furnace (the Utupu-Tanuri; RecipeLoaderMilling.java:41-233): 4000 L froth -> dusts + 2000 L red
+---   mud + 2000 L water (120 s; netherrack: 3000 L -> dusts + 16000 L poor nether waste, 60 s). The froths' coil heats
+---   (3500 to 7500 K) are not modelled; the Utupu-Tanuri has naquadah coils (7200 K), the monazite froth runs anyway.
+---   GTNH turns platinum and osmium dust out of the platinum line into PT metallic powder (twice the amount) and the
+---   iridium-osmium leach residue (bartworks/system/material/gtenhancement/PlatinumSludgeOutputs.java:45-56; Gregtorio:
+---   metallic platinum powder and rarest metal mixture): the pentlandite and spessartine froths give those.
+---   Red mud: centrifuge 1000 L -> small piles of iron, copper, tin, sulfur (30/30/20/20 %), tiny piles of nickel and lead
+---   (10 %, here small piles at 2.5 %) + 500 L water (core/item/chemistry/RecipeLoaderAgriculturalChem.java:215-231).
+---   Pine oil (RecipeLoaderMilling.java:404-500, chemical plant): wood (Gregtorio's one log; GT++ takes pine logs) -> 64
+---   crushed pine materials (MV, 10 s); 64 + 5000 steam -> 500 L (MV, 60 s) or + 5000 superheated steam -> 1500 L (MV, 45 s).
+---   Xanthates and their parts (core/item/chemistry/RecipeLoaderGenericChem.java:73-148, chemical plant, MV): sodium
+---   ethoxide, potassium hydroxide (with calcium carbonate), the two ethyl xanthates, carbon disulfide (EBF 1500 K from coke
+---   and sulfur, or from coal gas and sulfur; GT++'s brown metal catalyst left out by the rule of this file).
+---   Milling balls (:180-204, HV assembler): 64 alumina + 4000 L aniline -> 8; 32 soapstone + 2500 L liquid resin -> 8;
+---   liquid resin from urea and formaldehyde (plugin/agrichem/BioRecipes.java:623-641, chemical plant, LV).
+---   Nefarious oil (gregtech/loaders/postload/chains/NetheriteRecipes.java:247-283): nether air in the vacuum freezer ->
+---   nether semi-fluid; its distillation -> heavy hellish mud, nefarious gas, coal gas, anthracene, sulfur oxides,
+---   nitrogen dioxide and neon (IV); cracking nefarious gas with grade 1 or 2 purified water -> nefarious oil (IV).
+---   The machines (core/recipe/RecipesMachinesCustom.java:769-883): the IsaMill and the Flotation Cell are LuV assembly
+---   line controllers with their casings; GT parts the mod lacks are left out (named at their recipes). Gregtorio's
+---   aniline and calcium hydroxide come with Kevlar (UV) and its vacuum furnace with Prismatic Naquadah (UV), so the line
+---   is unlocked at UV (GTNH: LuV).
+--------------------------------------------------------------------------------
+do
+	local R, RF = {}, {}
+	local function item(name, amount) return { type = "item", name = name, amount = amount } end
+	local function fl(name, icon, rgb) F.fluid(name, icon, { rgb[1] / 255, rgb[2] / 255, rgb[3] / 255 }) end
+	--- the chemistry (colours: GTPPFluids.java and GT's Materials)
+	fl("pine-oil", "olive-fluid", { 220, 220, 0 })
+	fl("carbon-disulfide", "nearly-white-fluid", { 32, 32, 32 })
+	fl("coal-gas", "black-fluid", { 50, 50, 70 })
+	fl("urea", "nearly-white-fluid", { 38, 118, 38 })
+	fl("liquid-resin", "olive-fluid", { 59, 58, 56 })
+	fl("red-mud", "medium-red-fluid", { 180, 60, 40 })
+	fl("nether-semi-fluid", "medium-red-fluid", { 0x55, 0x10, 0x10 })
+	fl("nefarious-gas", "medium-red-fluid", { 0x8c, 0x22, 0x22 })
+	fl("nefarious-oil", "black-fluid", { 0x45, 0x05, 0x05 })
+	fl("poor-nether-waste", "medium-red-fluid", { 0x6a, 0x33, 0x23 })
+	items(SUB_DUST, { "sodium-ethoxide", "potassium-hydroxide", "sodium-ethyl-xanthate", "potassium-ethyl-xanthate",
+		"calcium-carbonate-dust", "crushed-pine-materials" })
+	items(SUB_PART, { "alumina-milling-ball", "soapstone-milling-ball", "heavy-hellish-mud" })
+	--- germanium and selenium (GT++'s elements, core/material/MaterialsElements.java:55-78): the sphalerite and platinum
+	--- froths are GTNH's bulk source (15 germanium, 40 selenium per 4000 L), alburnite and miessiite their ores (155)
+	items(SUB_DUST, { "germanium-dust", "selenium-dust" })
+	step(R, "crushed-pine-materials", CP, 10, MV_SPEED, { { "wood", 1 } }, { { "crushed-pine-materials", 64 } })
+	step(R, "pine-oil", CP, 60, MV_SPEED, { { "crushed-pine-materials", 64 }, { "steam", 500 } },
+		{ { "pine-oil", 50 }, { "ash-dust", 1, 0.25 }, { "dark-ash-dust", 1, 0.1 } })
+	step(R, "pine-oil-from-superheated-steam", CP, 45, MV_SPEED, { { "crushed-pine-materials", 64 }, { "superheated-steam", 500 } },
+		{ { "pine-oil", 150 } })
+	step(R, "sodium-ethoxide", CP, 20, MV_SPEED, { { "sodium", 1 }, { "ethanol", 100 } },
+		{ { "sodium-ethoxide", 9 }, { "hydrogen", 100 } })
+	step(R, "potassium-hydroxide", CP, 30, MV_SPEED,
+		{ { "potash-dust", 3 }, { "calcium-hydroxide-dust", 5 }, { "carbon-dioxide", 100 } },
+		{ { "potassium-hydroxide", 6 }, { "calcium-carbonate-dust", 5 } })
+	step(R, "carbon-disulfide", "mv-electric-blast-furnace-recipes", 600, MV_SPEED, { { "coke", 8 }, { "sulfur", 16 } },
+		{ { "carbon-disulfide", 400 }, { "dark-ash-dust", 1 } })
+	step(R, "carbon-disulfide-from-coal-gas", CP, 300, LV_SPEED, { { "sulfur", 4 }, { "coal-gas", 100 } },
+		{ { "carbon-disulfide", 200 } })
+	step(R, "potassium-ethyl-xanthate", CP, 60, MV_SPEED,
+		{ { "potassium-hydroxide", 3 }, { "ethanol", 100 }, { "carbon-disulfide", 100 } },
+		{ { "potassium-ethyl-xanthate", 12 }, { "water", 100 } })
+	step(R, "sodium-ethyl-xanthate", CP, 60, MV_SPEED, { { "sodium-ethoxide", 9 }, { "carbon-disulfide", 100 } },
+		{ { "sodium-ethyl-xanthate", 12 } })
+	step(R, "urea", CP, 5, LV_SPEED, { { "ammonia", 60 }, { "carbon-dioxide", 30 } }, { { "urea", 30 }, { "distilled-water", 30 } })
+	step(R, "liquid-resin", CP, 5, LV_SPEED, { { "urea", 20 }, { "formaldehyde", 20 } }, { { "liquid-resin", 20 } })
+	step(R, "alumina-milling-ball", "hv-assembling-machine-recipes", 180, HV_SPEED, { { "alumina", 64 }, { "aniline", 400 } },
+		{ { "alumina-milling-ball", 8 } })
+	step(R, "soapstone-milling-ball", "hv-assembling-machine-recipes", 120, HV_SPEED,
+		{ { "soapstone-dust", 32 }, { "liquid-resin", 250 } }, { { "soapstone-milling-ball", 8 } })
+	--- nefarious oil from nether air
+	step(R, "nether-semi-fluid", "mv-vacuum-freezer-recipes", 10, MV_SPEED, { { "nether-air", 100 } }, { { "nether-semi-fluid", 10 } })
+	step(R, "nefarious-gas", "iv-tall-distillation-recipes", 24, IV_SPEED, { { "nether-semi-fluid", 10000 } },
+		{ { "heavy-hellish-mud", 8 }, { "nefarious-gas", 800 }, { "coal-gas", 1600 }, { "anthracene", 6600 },
+			{ "sulfur-trioxide", 21000 }, { "sulfur-dioxide", 38000 }, { "nitrogen-dioxide", 14000 }, { "neon", 3600 } },
+		"nefarious-gas")
+	step(R, "nefarious-oil", "iv-cracker-recipes", 26, IV_SPEED, { { "grade-1-water", 400 }, { "nefarious-gas", 1600 } },
+		{ { "nefarious-oil", 1200 } })
+	step(R, "nefarious-oil-from-grade-2-water", "iv-cracker-recipes", 6, IV_SPEED,
+		{ { "grade-2-water", 100 }, { "nefarious-gas", 1600 } }, { { "nefarious-oil", 1800 } })
+	--- the ores: IsaMill and flotation tier, xanthate, pine oil (a tenth of GT's litres), the froth's dusts, the vacuum
+	--- furnace's tier and seconds
+	local ORES = {
+		{ "sphalerite", LUV_SPEED, "sodium", 1400, { { "zinc-dust", 180 }, { "iron-dust", 120 }, { "indium", 64 }, { "germanium-dust", 15 } }, LUV_SPEED, 120 },
+		{ "chalcopyrite", IV_SPEED, "sodium", 1200, { { "copper-dust", 180 }, { "iron-dust", 120 }, { "cadmium", 50 }, { "indium", 10 } }, IV_SPEED, 120 },
+		{ "nickel", IV_SPEED, "potassium", 2500, { { "nickel-dust", 150 }, { "cobalt-dust", 120 }, { "rhodium-dust", 32 }, { "ruthenium-dust", 16 } }, IV_SPEED, 120 },
+		{ "platinum", LUV_SPEED, "potassium", 3500, { { "metallic-platinum-powder", 128 }, { "rhodium-dust", 60 }, { "selenium-dust", 40 }, { "tellurium-dust", 10 } }, LUV_SPEED, 120 },
+		{ "pentlandite", LUV_SPEED, "sodium", 1400, { { "iron-dust", 150 }, { "nickel-dust", 100 }, { "metallic-platinum-powder", 40 }, { "hafnium-dust", 10 } }, LUV_SPEED, 120 },
+		{ "redstone", IV_SPEED, "sodium", 1300, { { "redstone-dust", 300 }, { "chromium-dust", 60 }, { "firestone-dust", 45 }, { "dysprosium-dust", 16 } }, IV_SPEED, 120 },
+		{ "spessartine", LUV_SPEED, "potassium", 3500, { { "manganese-dust", 150 }, { "aluminium-dust", 90 }, { "rarest-metal-mixture", 30 }, { "strontium-dust", 20 } }, LUV_SPEED, 120 },
+		{ "grossular", LUV_SPEED, "potassium", 2800, { { "calcium", 180 }, { "aluminium-dust", 110 }, { "tungsten-dust", 60 }, { "thallium-dust", 15 } }, LUV_SPEED, 120 },
+		{ "almandine", IV_SPEED, "sodium", 1800, { { "aluminium-dust", 150 }, { "magnesium", 75 }, { "yttrium-dust", 25 }, { "ytterbium-dust", 15 } }, IV_SPEED, 120 },
+		{ "pyrope", EV_SPEED, "sodium", 800, { { "magnesium", 110 }, { "manganese-dust", 70 }, { "borax", 60 }, { "rhenium-dust", 20 } }, EV_SPEED, 120 },
+		{ "monazite", ZPM_SPEED, "potassium", 3000, { { "erbium-dust", 64 }, { "lanthanum-dust", 32 }, { "lutetium-dust", 16 }, { "europium-dust", 8 } }, UV_SPEED, 60 },
+	}
+	FORK_MILLING = { ores = ORES, recipes = R }
+	local function milled_recipes(input, n, milled, tier, s_alumina, s_soap, out_alumina, out_soap)
+		step(R, milled .. "-from-" .. input .. "-alumina", "isamill-recipes", s_alumina, tier,
+			{ { input, n }, { "alumina-milling-ball", 1 } }, { { milled, out_alumina }, { "alumina-milling-ball", 1, 0.99 } }, milled)
+		step(R, milled .. "-from-" .. input .. "-soapstone", "isamill-recipes", s_soap, tier,
+			{ { input, n }, { "soapstone-milling-ball", 1 } }, { { milled, out_soap }, { "soapstone-milling-ball", 1, 0.98 } }, milled)
+	end
+	F.category("isamill-recipes")
+	F.category("flotation-cell-recipes")
+	for _, o in ipairs(ORES) do
+		local ore, milled, froth = o[1], "milled-" .. o[1], o[1] .. "-flotation-froth"
+		items(SUB_DUST, { milled })
+		fl(froth, "olive-fluid", { 0x80, 0x80, 0x60 })
+		milled_recipes("crushed-" .. ore, 16, milled, o[2], 60, 75, 32, 16)
+		if data.raw.item["raw-" .. ore] then milled_recipes("raw-" .. ore, 16, milled, o[2], 120, 150, 64, 48) end
+		step(R, froth, "flotation-cell-recipes", 480, o[2],
+			{ { o[3] .. "-ethyl-xanthate", 32 }, { milled, 256 }, { "pine-oil", o[4] } }, { { froth, 100 } })
+		local out = {}
+		for _, d in pairs(o[5]) do out[#out + 1] = d end
+		out[#out + 1] = { "red-mud", 200 }
+		out[#out + 1] = { "water", 200 }
+		step(RF, ore .. "-froth-processing", "vacuum-furnace-recipes", o[7], o[6], { { froth, 400 } }, out, o[5][1][1])
+	end
+	--- netherrack (Poor Nether Waste for the netherite chain, #617)
+	items(SUB_DUST, { "milled-netherrack" })
+	fl("netherrack-flotation-froth", "medium-red-fluid", { 0x70, 0x20, 0x20 })
+	milled_recipes("netherrack-dust", 256, "milled-netherrack", IV_SPEED, 60, 60, 32, 16)
+	step(R, "netherrack-flotation-froth", "flotation-cell-recipes", 120, LUV_SPEED,
+		{ { "milled-netherrack", 256 }, { "nefarious-oil", 800 } }, { { "netherrack-flotation-froth", 800 } })
+	step(RF, "netherrack-froth-processing", "vacuum-furnace-recipes", 60, LUV_SPEED, { { "netherrack-flotation-froth", 300 } },
+		{ { "sulfur", 256 }, { "antimony", 55 }, { "certus-quartz-dust", 40 }, { "nether-quartz-dust", 40 },
+			{ "ardite-dust", 32 }, { "cobalt-dust", 32 }, { "poor-nether-waste", 1600 } }, "poor-nether-waste")
+	--- red mud
+	local piles = {}
+	for _, p in pairs({ { "iron-dust", 0.3 }, { "copper-dust", 0.3 }, { "tin-dust", 0.2 }, { "sulfur", 0.2 },
+		{ "nickel-dust", 0.025 }, { "lead-dust", 0.025 } }) do
+		local name, from = pile(p[1], "small")
+		piles[#piles + 1] = { name, 1, p[2] }
+		RF[#RF + 1] = from
+	end
+	piles[#piles + 1] = { "water", 50 }
+	step(RF, "red-mud-centrifuging", "lv-centrifuge-recipes", 30, LV_SPEED, { { "red-mud", 100 } }, piles, piles[1][1])
+	--- the machines (RecipesMachinesCustom.java:769-883; left out, the mod lacks them: the IsaMill's 16 tungsten grinders,
+	--- 32 Lafium and 32 Trinium Naquadah Carbonite, the exterior casing's maceration stack casing, the piping's quantium
+	--- item pipe casing, the flotation cell's 2 advanced distillation towers, its extruder casings and Aquatic Steel)
+	local AL, LA = "luv-assembly-line-recipes", "luv-assembling-machine-recipes"
+	items("subgroup-luv-age-multiblocks", { "isamill-exterior-casing", "isamill-gearbox", "isamill-piping",
+		"flotation-cell-casing", "isamill-controller", "flotation-cell-controller" })
+	step(R, "isamill-gearbox", LA, 120, LUV_SPEED, { { "titanium-gear-box-casing", 2 }, { "large-inconel-625-gear", 4 },
+		{ "tungstensteel-plate", 16 }, { "molten-tungstensteel", 115.2 } }, { { "isamill-gearbox", 1 } })
+	step(R, "isamill-exterior-casing", LA, 120, LUV_SPEED, { { "double-zeron-100-plate", 2 }, { "zeron-100-rod", 4 },
+		{ "zeron-100-screw", 8 }, { "molten-titanium", 57.6 } }, { { "isamill-exterior-casing", 1 } })
+	step(R, "isamill-piping", "ev-assembling-machine-recipes", 480, EV_SPEED, { { "isamill-exterior-casing", 1 },
+		{ "hsse-ring", 8 }, { "hsse-plate", 8 }, { "hsse-screw", 8 }, { "molten-aluminium", 115.2 } }, { { "isamill-piping", 1 } })
+	step(R, "isamill-controller", AL, 600, LUV_SPEED, { { "isamill-exterior-casing", 4 }, { "isamill-gearbox", 4 },
+		{ "luv-circuit", 16 }, { "large-inconel-625-gear", 8 }, { "inconel-625-plate", 32 }, { "double-zeron-100-plate", 16 },
+		{ "zeron-100-screw", 64 }, { "molten-zeron-100", 230.4 } }, { { "isamill-controller", 1 } })
+	step(R, "flotation-cell-casing", LA, 120, LUV_SPEED, { { "double-hssg-plate", 4 }, { "stainless-steel-rotor", 4 },
+		{ "molten-stainless-steel", 115.2 } }, { { "flotation-cell-casing", 1 } })
+	step(R, "flotation-cell-controller", AL, 60, LUV_SPEED, { { "flotation-cell-casing", 4 }, { "luv-pump", 4 },
+		{ "large-stellite-gear", 8 }, { "stellite-plate", 32 }, { "double-hastelloy-n-plate", 16 }, { "inconel-625-screw", 64 },
+		{ "molten-inconel-792", 230.4 }, { "molten-hastelloy-n", 460.8 } }, { { "flotation-cell-controller", 1 } })
+	local LUV_MAC = data.raw["assembling-machine"]["luv-macerator"]
+	local LUV_POWER = LUV_MAC and LUV_MAC.energy_usage or EU16_LUV
+	machine{
+		name = "isamill", category = "isamill-recipes", speed = LUV_SPEED, energy = LUV_POWER,
+		subgroup = "subgroup-luv-age-multiblocks", ports = {}, list = R,
+		recipe = { "crafting-or-assembling-recipes", 1, { item("isamill-controller", 1), item("isamill-exterior-casing", 40),
+			item("isamill-piping", 8), item("isamill-gearbox", 5), item("luv-energy-hatch", 1) } },
+	}
+	machine{
+		name = "flotation-cell", category = "flotation-cell-recipes", speed = LUV_SPEED, energy = LUV_POWER,
+		subgroup = "subgroup-luv-age-multiblocks",
+		ports = { port("input", N, { -1, -1 }), port("input", N, { 1, -1 }), port("output", S, { 0, 1 }) },
+		list = R,
+		recipe = { "crafting-or-assembling-recipes", 1, { item("flotation-cell-controller", 1), item("flotation-cell-casing", 31),
+			item("inconel-625-frame", 20), item("inconel-792-frame", 8), item("luv-energy-hatch", 1) } },
+	}
+	F.tech{
+		--- (the producers of its parts and chemicals; aniline and calcium hydroxide come with Kevlar, so the line is UV here)
+		name = "milling-and-flotation", packs = 9, count = 300, time = 60, recipes = R,
+		prerequisites = { "kevlar", "luv-machines", "luv-energy-hatches", "luv-components", "hsse", "hssg", "fluid-shaper",
+			"industrial-centrifuge", "industrial-electrolyzer", "liquid-fluoride-thorium-reactor", "super-glue" },
+	}
+	--- the froths need the vacuum furnace, which Gregtorio's Utupu-Tanuri brings with Prismatic Naquadah (UV)
+	F.tech{
+		name = "froth-processing", prerequisites = { "milling-and-flotation", "prismatic-naquadah" }, packs = 9, count = 300,
+		time = 60, recipes = RF,
+	}
+	FORK_MILLING.froth_recipes = RF
+end
+
+
+
+--------------------------------------------------------------------------------
+--- 48) NETHERITE (issue #617, the maintainer's decisions of 2026-10-28). GT's chain from ancient debris on
+---   (gregtech/loaders/postload/chains/NetheriteRecipes.java, NR below; sections 24-26 built its prismatic naquadah
+---   part, 47 its nefarious oil and poor nether waste):
+---   * ancient debris: a Manual Mine recipe in the Nether (160); forge hammer, ZPM 27 s: 1 scrap + 1 at 25 % (NR:313-321);
+---     chemical bath, MV 25 s: scrap + 100 L lava -> hot netherite scrap (:323-329); autoclave, IV 60 s: 2 hot scrap +
+---     2000 L rich nether waste -> 2 scrap back + the netherite scrap seed at 10 % (:331-340); chemical bath, UHV 10 s:
+---     16 hot scrap + 16 heavy hellish mud + 8000 L poor nether waste -> 3 brittle scrap + 16 scrap (:342-350);
+---     chemical bath, IV 60 s: seed + 16000 L poor nether waste -> 3 brittle scrap at 50 %, the seed at 50 % (:353-360)
+---   * rich nether waste: mixer, ZPM 15 s: 32 heavy hellish mud + 16000 L poor -> 16000 L rich (:285-291)
+---   * brittle scrap -> netherite nanoparticles (macerator, LuV 16 s, :362-367); + 144 L molten hellish metal in the EBF
+---     (ZPM 15 s, 7500 K) -> intensely bonded netherite nanoparticles + 32 L molten thaumium (:369-378)
+---   * netherite foil: arc furnace, LuV 4 s: 4 infused gold foil + 1 bonded nanoparticles + 2 L boron plasma -> 4 netherite
+---     foil + 2 L molten boron (:399-413, :475-488; GT's (n, k) of the foil 4, 1)
+---   * the Naquarite Universal Insulator Foil: forming press, ZPM 24 s: 4 netherite foil + 16 radiation-proof prismatic
+---     naquadah composite sheets + 1152 L molten manyullyn -> 8 (:226-234)
+---   Stand-ins for the Thaumcraft materials the mod deleted (137), named:
+---   * infused gold dust: GT's centrifuge reversed (gregtech/loaders/postload/recipes/CentrifugeRecipes.java:65-75: 1
+---     dust + 200 L mercury -> 2 gold dust + 2 salis mundus at 90 %, MV 20 s): 2 gold dust + 2 glowstone dust (the
+---     salis mundus, the mod's Nether "magic" dust) + 20 L mercury -> 1, MV mixer 20 s; GT's InfusedGold smelts in a
+---     furnace (no blast temperature, MaterialsInit.java:3719-3735), the plate and foil as gold's
+---   * thaumium: GT's own recipe without Thaumcraft (ChemicalRecipes.java:135-142: 8 infused gold + 8 iron dust + 1000 L
+---     IC2 coolant -> 16, HV 20 s; the coolant is the mod's lapis coolant, as upstream's old recipe); melted as an ingot
+---   * hellish metal: NewHorizonsCoreMod ScriptTCCoreMod.java:1139-1146 (electrolyzer, ZPM 60 s: a rhodium block + 8
+---     Nether Shards + 8 Infused Fire dust + 1152 L molten thaumium -> a hellish metal block): 9 rhodium dust for the
+---     block (the mod has no rhodium block), a blaze rod for each Nether Shard (Thaumic Tinkerer's shard is made around
+---     a blaze rod, ScriptThaumicTinkerer.java:1477-1484), blaze powder for the infused fire dust; the block comes out
+---     as its 9 ingots' melt, 1296 L
+---   Users, only where the tier fits (the decision: no Gregtorio recipe earlier than netherite gets it; the fusion
+---   casings, the Fusion Computer MK1's dense plate, Void Miner I, the trinium coil and the ZPM to UHV superconducting
+---   coils keep their stand-ins; netherite is UHV here, as the Naquarite foil's manyullyn): the Naquarite foil in the UEV
+---   to UMV superconducting coils (NewHorizonsCoreMod AssemblerRecipes.java:335-376: 2, 1, 1 instead of the
+---   niobium-titanium foil), the awakened draconium coil (:8366-
+---   8372: 16 instead of 8 infinity foil), the infinity and eternal coils (tectech ResearchStationAssemblyLine.java:113,
+---   :145: 24 and 64 instead of 8 cosmic neutronium and 8 spacetime foil) and the collider casing (NewHorizonsCoreMod
+---   AssemblerRecipes.java:9800-9809: 16); the QFT's netherite recipe (gtPlusPlus/xmod/gregtech/loaders/recipe/
+---   RecipeLoaderChemicalSkips.java:276-295) by 139's FORK_QFT pattern. Left out: GT's electric implosion compressor
+---   recipes of ancient debris (:295-311; the mod has no EIC, debris is mined), the netherite blocks and stairs, the
+---   Forestry comb recipe, Force Field Glass (chronomatic glass and celestial tungsten parts are missing).
+--------------------------------------------------------------------------------
+do
+	local R = {}
+	local function item(name, amount) return { type = "item", name = name, amount = amount } end
+	local NT = "netherite"
+	local function fl(name, icon, rgb) F.fluid(name, icon, { rgb[1] / 255, rgb[2] / 255, rgb[3] / 255 }) end
+	fl("rich-nether-waste", "medium-red-fluid", { 0x8a, 0x40, 0x2a })
+	fl("molten-thaumium", "purple-fluid", { 0x96, 0x64, 0xc8 })
+	fl("molten-hellish-metal", "medium-red-fluid", { 0xa0, 0x30, 0x30 })
+	fl("molten-boron", "nearly-white-fluid", { 0xd2, 0xfa, 0xd2 })
+	--- (GT's Manyullyn colour, MaterialsInit.java:10863; 143's casting melts and casts it in section 38)
+	fl("molten-manyullyn", "purple-fluid", { 0x9a, 0x4c, 0xb9 })
+	items(SUB_DUST, { "infused-gold-dust", "thaumium-dust", "netherite-nanoparticles" })
+	items(SUB_PART, { "netherite-scrap", "hot-netherite-scrap", "netherite-scrap-seed", "brittle-netherite-scrap",
+		"intensely-bonded-netherite-nanoparticles", "infused-gold-ingot", "infused-gold-plate", "infused-gold-foil",
+		"netherite-foil", "naquarite-universal-insulator-foil" })
+	--- the stand-ins
+	step(R, "infused-gold-dust", "mv-mixer-recipes", 20, MV_SPEED, { { "gold-dust", 2 }, { "glowstone-dust", 2 }, { "mercury", 20 } },
+		{ { "infused-gold-dust", 1 } })
+	create_recipe{ name = "infused-gold-ingot", category = "smelting", energy_required = 10, subgroup = SUB_PART,
+		ingredients = { item("infused-gold-dust", 1) }, results = { item("infused-gold-ingot", 1) } }
+	R[#R + 1] = "infused-gold-ingot"
+	step(R, "infused-gold-plate", "lv-bending-machine-recipes", 9.8, LV_SPEED, { { "infused-gold-ingot", 1 } }, { { "infused-gold-plate", 1 } })
+	step(R, "infused-gold-foil", "lv-bending-machine-recipes", 9.8, LV_SPEED, { { "infused-gold-plate", 1 } }, { { "infused-gold-foil", 4 } })
+	step(R, "thaumium-dust", "hv-chemical-reactor-recipes", 20, HV_SPEED,
+		{ { "infused-gold-dust", 8 }, { "iron-dust", 8 }, { "lapis-coolant", 100 } }, { { "thaumium-dust", 16 } })
+	step(R, "molten-thaumium", "lv-fluid-extractor-recipes", 1.2, LV_SPEED, { { "thaumium-dust", 1 } }, { { "molten-thaumium", 14.4 } })
+	step(R, "molten-hellish-metal", "zpm-electrolyzer-recipes", 60, ZPM_SPEED,
+		{ { "rhodium-dust", 9 }, { "blaze-rod", 8 }, { "blaze-powder", 8 }, { "molten-thaumium", 115.2 } },
+		{ { "molten-hellish-metal", 129.6 } })
+	--- the chain
+	step(R, "netherite-scrap", "lv-forge-hammer-recipes", 27, ZPM_SPEED, { { "ancient-debris", 1 } },
+		{ { "netherite-scrap", 1 }, { "netherite-scrap", 1, 0.25 } })
+	step(R, "hot-netherite-scrap", "mv-chemical-bath-recipes", 25, MV_SPEED, { { "netherite-scrap", 1 }, { "lava", 10 } },
+		{ { "hot-netherite-scrap", 1 } })
+	step(R, "rich-nether-waste", "zpm-mixer-recipes", 15, ZPM_SPEED, { { "heavy-hellish-mud", 32 }, { "poor-nether-waste", 1600 } },
+		{ { "rich-nether-waste", 1600 } })
+	step(R, "netherite-scrap-seed", "iv-autoclave-recipes", 60, IV_SPEED, { { "hot-netherite-scrap", 2 }, { "rich-nether-waste", 200 } },
+		{ { "netherite-scrap-seed", 1, 0.1 }, { "netherite-scrap", 2 } }, "netherite-scrap-seed")
+	step(R, "brittle-netherite-scrap-from-hot-scrap", "uhv-chemical-bath-recipes", 10, UHV_SPEED,
+		{ { "hot-netherite-scrap", 16 }, { "heavy-hellish-mud", 16 }, { "poor-nether-waste", 800 } },
+		{ { "brittle-netherite-scrap", 3 }, { "netherite-scrap", 16 } }, "brittle-netherite-scrap")
+	step(R, "brittle-netherite-scrap", "iv-chemical-bath-recipes", 60, IV_SPEED,
+		{ { "netherite-scrap-seed", 1 }, { "poor-nether-waste", 1600 } },
+		{ { "brittle-netherite-scrap", 3, 0.5 }, { "netherite-scrap-seed", 1, 0.5 } }, "brittle-netherite-scrap")
+	step(R, "netherite-nanoparticles", "luv-macerator-recipes", 16, LUV_SPEED, { { "brittle-netherite-scrap", 1 } },
+		{ { "netherite-nanoparticles", 1 } })
+	step(R, "intensely-bonded-netherite-nanoparticles", "zpm-electric-blast-furnace-recipes", 15, ZPM_SPEED,
+		{ { "netherite-nanoparticles", 1 }, { "molten-hellish-metal", 14.4 } },
+		{ { "intensely-bonded-netherite-nanoparticles", 1 }, { "molten-thaumium", 3.2 } })
+	step(R, "netherite-foil", "lv-arc-furnace-recipes", 4, LUV_SPEED,
+		{ { "infused-gold-foil", 4 }, { "intensely-bonded-netherite-nanoparticles", 1 }, { "boron-plasma", 0.2 } },
+		{ { "netherite-foil", 4 }, { "molten-boron", 0.2 } })
+	step(R, "naquarite-universal-insulator-foil", "lv-forming-press-recipes", 24, ZPM_SPEED,
+		{ { "netherite-foil", 4 }, { "radiation-proof-prismatic-naquadah-composite-sheet", 16 }, { "molten-manyullyn", 115.2 } },
+		{ { "naquarite-universal-insulator-foil", 8 } })
+	FORK_CASTING.materials["manyullyn"] = { "zpm", NT }
+	--- GT's forming press takes a fluid and its arc furnace gives one (gregtech/api/recipe/RecipeMaps.java:491
+	--- formingPressRecipes maxIO(6, 1, 1, 0), :446 arcFurnaceRecipes maxIO(2, 9, 2, 1)): the presses get an input on
+	--- their north side, the arc furnaces (one input at (-1, -1)) an output on their south side
+	for _, m in pairs(data.raw["assembling-machine"]) do
+		local press, arc = false, false
+		for _, c in pairs(m.crafting_categories or {}) do
+			if c == "lv-forming-press-recipes" then press = true end
+			if c == "lv-arc-furnace-recipes" then arc = true end
+		end
+		local small = m.selection_box and m.selection_box[2][2] == 1.5   -- (the 3x3 machines; the multiblocks have theirs)
+		m.fluid_boxes = m.fluid_boxes or {}
+		if small and press and #m.fluid_boxes == 0 then
+			m.fluid_boxes[1] = fluid_port(0, -1, "input", defines.direction.north)
+		end
+		if small and arc and #m.fluid_boxes == 1 then
+			m.fluid_boxes[2] = fluid_port(1, 1, "output", defines.direction.south)
+		end
+		if #m.fluid_boxes == 0 then m.fluid_boxes = nil end
+	end
+	F.tech{
+		--- (UHV here: the Naquarite foil's manyullyn comes with Precise Electronic Unit MK3, the second bath with the UHV
+		--- chemical bath)
+		name = NT, packs = 10, count = 300, time = 60, recipes = R,
+		prerequisites = { "froth-processing", "prismatic-naquadah", "precise-electronic-unit-mk3", "uhv-machines" },
+	}
+	fork_add_unlock(NT, "mining-ancient-debris")
+	--- (blaze powder, for the hellish metal, came only with Naquadah Based Fuel MK5 (section 34); GT macerates it at LV)
+	fork_add_unlock(NT, "blaze-powder")
+	--- the users
+	local NAQ = "naquarite-universal-insulator-foil"
+	local function swap(recipe, old, amount)
+		local r = data.raw.recipe[recipe]
+		for _, i in pairs(r and r.ingredients or {}) do
+			if i.name == old then i.name, i.amount = NAQ, amount return end
+		end
+		error("issue #617: no " .. old .. " in recipe " .. recipe)
+	end
+	swap("superconducting-coil-block-uev", "niobium-titanium-foil", 2)
+	swap("superconducting-coil-block-uiv", "niobium-titanium-foil", 1)
+	swap("superconducting-coil-block-umv", "niobium-titanium-foil", 1)
+	swap("awakened-draconium-coil-block", "infinity-foil", 16)
+	swap("infinity-coil-block", "cosmic-neutronium-foil", 24)
+	swap("eternal-coil-block", "spacetime-foil", 64)
+	table.insert(data.raw.recipe["collider-casing"].ingredients, item(NAQ, 16))
+	--- (the users' technologies come after netherite; the later ones follow the UEV energy hatches)
+	for _, t in pairs({ "uev-energy-hatches", "large-hadron-collider" }) do
+		table.insert(data.raw.technology[t].prerequisites, NT)
+	end
+	--- the QFT's netherite recipe (GT: UHV 20 s, focus 2: 1024 netherrack dust, an ancient debris, 64000 L nether air,
+	--- 1152 L hellish metal, 256000 L lava -> 16 scrap, 64 bonded nanoparticles, 64000 L nefarious oil; the fluids
+	--- scaled as 139's, the largest to 1000 L)
+	for _, name in pairs(FORK_QFT.add{ input = { item("netherrack-dust", 1024), item("ancient-debris", 1),
+		{ type = "fluid", name = "nether-air", amount = 250 }, { type = "fluid", name = "molten-hellish-metal", amount = 4.5 },
+		{ type = "fluid", name = "lava", amount = 1000 } }, time = 20,
+		outputs = { { "netherite-scrap", 16 }, { "intensely-bonded-netherite-nanoparticles", 64 }, { "nefarious-oil", 250 } } }) do
+		fork_add_unlock(FORK_QFT.technology, name)
 	end
 end
 

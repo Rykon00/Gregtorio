@@ -246,6 +246,16 @@ MATERIALS = {
     "niobium": "Niobium", "advanced-nitinol": ("FIERY", (136, 117, 159)), "cobalt": "Cobalt",
     "shirabon": ("METALLIC", (0xe0, 0x15, 0x6d)), "astral-titanium": ("METALLIC", (220, 160, 240)),
     "chromatic-glass": ("GLASS", (255, 255, 255)), "blaze": "Blaze",
+    # issue #630: GT++'s calcium carbonate dust (ModItems.java:652-656, white) and GT's netherrack
+    "calcium-carbonate": ("DULL", (255, 255, 255)), "netherrack": "Netherrack",
+    # GT++'s germanium and selenium (MaterialsElements.java:55-78, their colours)
+    "germanium": ("DULL", (200, 200, 200)), "selenium": ("DULL", (190, 190, 190)),
+    # issue #617: GT's infused gold and thaumium; netherite (GT's SET_NETHERITE textures are not in GT5-Unofficial: a dark
+    # metallic foil) and Et Futurum's ancient debris (a rough brown ore)
+    "infused-gold": "InfusedGold", "thaumium": "Thaumium", "netherite": ("METALLIC", (0x4a, 0x40, 0x40)),
+    "ancient-debris": ("ROUGH", (0x5a, 0x3e, 0x36)),
+    # issue #627: Thermal Foundation's blizz, GT's snow and cryotheum (MaterialsInit.java)
+    "blizz": "Blizz", "snow": "Snow", "cryotheum": "Cryotheum",
     "calcium": "Calcium",
     # issue #205: goodgenerator's Werkstoffe of the naquadah line (GGMaterial.java, their colours; dusts)
     "naquadria-oxide-mixture": ("METALLIC", (77, 77, 85)), "indium-phosphate": ("DULL", (43, 46, 112)),
@@ -1105,6 +1115,15 @@ def icon_table(c):
     for m in ("steel", "titanium", "tungstensteel", "iridium", "trinium", "naquadah", "naquadah-alloy", "naquadria",
               "neutronium", "cosmic-neutronium", "infinity", "transcendent-metal", "spacetime", "eternity"):
         T[m + "-drill-head"] = (lambda m=m: lambda: c.part(m, "toolHeadDrill"))()
+    # issue #612: the charges of GT's crafting tools, an iron tool as GT draws it (gregtech/common/tools/Tool*.java
+    # getIcon: the head of the material over the wooden handle, the wire cutter, wrench and knife in one texture)
+    T["hammer-usage"] = lambda: over(c.part("wood", "stick"), c.part("iron", "toolHeadHammer"))
+    T["file-usage"] = lambda: over(c.part("wood", "handleFile"), c.part("iron", "toolHeadFile"))
+    T["saw-usage"] = lambda: over(c.part("wood", "handleSaw"), c.part("iron", "toolHeadSaw"))
+    T["screwdriver-usage"] = lambda: over(c.part("wood", "handleScrewdriver"), c.part("iron", "toolHeadScrewdriver"))
+    T["wire-cutter-usage"] = lambda: c.part("iron", "toolWireCutter")
+    T["wrench-usage"] = lambda: c.part("iron", "toolWrench")
+    T["knife-usage"] = lambda: c.part("iron", "toolKnife")
     # issue #96: the dusts of the platinum line, which the fork names without "-dust"
     for m in ("platinum-salt", "refined-platinum-salt", "reprecipitated-platinum", "platinum-residue", "palladium-salt",
               "reprecipitated-palladium", "potassium-disulfate", "rhodium-filter-cake", "reprecipitated-rhodium",
@@ -1134,6 +1153,8 @@ def icon_table(c):
     # multi-amp wires (upstream: 16x = a block of the metal)
     T["luv-superconductor-wire-16x"] = lambda: bar(c.m.colour("itbtc-alloy"), 2, n=4)
     T["tungsten-wire-16x"] = lambda: bar(c.m.colour("tungsten"), 2, n=4)   # (issue #614)
+    for i in (1, 2, 3):   # issue #637: GT++'s boiler chassis
+        T[f"advanced-boiler-chassis-t{i}"] = lambda i=i: c.gt(f"gt:miscutils/textures/items/itemBoilerChassis{i}")
     # issue #355: GoodGenerator's HiCs, unit casings and High Energy Mixture, NewHorizonsCoreMod's engraved chips, GT's
     # crystal chips, the precise assembler controller (its casing with GT's quantum chest front, MTEPreciseAssembler.java)
     for i in range(1, 6):
@@ -1197,6 +1218,42 @@ def icon_table(c):
     T["medium-infinity-fluid-pipe"] = lambda: c.m.icon("infinity", "pipeMedium", kind="blocks")
     T["medium-spacetime-fluid-pipe"] = lambda: c.m.icon("spacetime", "pipeMedium", kind="blocks")
     T["blaze-powder"] = lambda: c.part("blaze", "dust")
+    # issue #630: GT++'s milling items (MetaItem1 of ItemGenericChemBase, ModItems.java:242-253), the milled ores
+    # (BaseOreComponent.java:146-149: processing/MilledOre/milled tinted, its overlay on top), the crushed pine materials
+    # (agrichem item 25), GT's heavy hellish mud (gt.metaitem.03/242), the IsaMill's and flotation cell's casings and fronts
+    GEN = "gt:miscutils/textures/items/science/general/MetaItem1/"
+    for k, n in (("alumina-milling-ball", 7), ("soapstone-milling-ball", 8), ("sodium-ethoxide", 9),
+                 ("sodium-ethyl-xanthate", 10), ("potassium-ethyl-xanthate", 11), ("potassium-hydroxide", 12)):
+        T[k] = (lambda n=n: lambda: c.gt(f"{GEN}{n}"))()
+    T["crushed-pine-materials"] = lambda: c.gt("gt:miscutils/textures/items/bioscience/MetaItem1/25")
+    T["heavy-hellish-mud"] = lambda: c.gt("gt:gregtech/textures/items/gt.metaitem.03/242")
+    T["calcium-carbonate-dust"] = lambda: c.part("calcium-carbonate", "dust")
+    T["small-pile-of-sulfur"] = lambda: c.part("sulfur", "dustSmall")   # (the red mud's piles)
+    # issue #617: GT's netherite items (gt.metaitem.03/243-251), the scrap as the hot scrap cooled, the debris an ore
+    M03 = "gt:gregtech/textures/items/gt.metaitem.03/"
+    for k, n in (("netherite-scrap-seed", 243), ("brittle-netherite-scrap", 244), ("netherite-nanoparticles", 245),
+                 ("intensely-bonded-netherite-nanoparticles", 246),
+                 ("naquarite-universal-insulator-foil", 251)):
+        T[k] = (lambda n=n: lambda: c.gt(f"{M03}{n}"))()
+    # (texture 247 is grey: GT tints it; hot scrap glowing orange, scrap the colour of ancient debris)
+    T["hot-netherite-scrap"] = lambda: tint(c.gt(f"{M03}247"), (255, 150, 80))
+    T["netherite-scrap"] = lambda: tint(c.gt(f"{M03}247"), (110, 85, 75))
+    T["ancient-debris"] = lambda: c.part("ancient-debris", "crushed")
+    MILLED = "gt:miscutils/textures/items/processing/MilledOre/milled"
+    for m in ("sphalerite", "chalcopyrite", "nickel", "platinum", "pentlandite", "redstone", "spessartine", "grossular",
+              "almandine", "pyrope", "monazite", "netherrack"):
+        T["milled-" + m] = (lambda m=m: lambda: over(tint(c.gt(MILLED), c.m.get(m)[1]), c.gt(MILLED + "_OVERLAY")))()
+    T["isamill-exterior-casing"] = lambda: c.gt(f"{GTPP_TE}MACHINE_CASING_GRINDING_FACTORY")
+    T["isamill-gearbox"] = lambda: c.gt(f"{GTPP_TE}MACHINE_CASING_GEARBOX_T1")
+    T["isamill-piping"] = lambda: c.gt(f"{GTPP_TE}MACHINE_CASING_PIPE_T1")
+    T["flotation-cell-casing"] = lambda: c.gt(f"{GTPP_TE}MACHINE_CASING_FLOTATION")
+    T["isamill-controller"] = lambda: over(c.gt(f"{GTPP_TE}MACHINE_CASING_GRINDING_FACTORY"), c.gt(f"{GTPP}Grinder/GRINDER5"))
+    T["flotation-cell-controller"] = lambda: over(c.gt(f"{GTPP_TE}MACHINE_CASING_FLOTATION"),
+                                                  c.gt(f"{GTPP}controllerFaces/frothFlotationCell"))
+    # issue #627: the cryotheum line (GT's rod and dust icons of blizz, snow and cryotheum)
+    T["blizz-rod"] = lambda: c.part("blizz", "stick")
+    for m in ("blizz", "snow", "cryotheum"):
+        T[m + "-dust"] = (lambda m=m: lambda: c.part(m, "dust"))()
     # issue #355 step 2: GT's Harmonic Compound (MetaGeneratedItem03 762)
     T["harmonic-compound"] = lambda: c.gt(M3 + "762")
     # issue #355 step 4: the beamline (gtnhlanth's casings and items, GT's beam hatch overlays and pipe, the controllers'

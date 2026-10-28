@@ -305,6 +305,13 @@ MULTIBLOCKS = {
     "algae-farm": ((3, 3), "gregtech:iconsets/ALGAE_CASING", None,
                    ("miscutils:iconsets/controllerFaces/algaePondBase", "miscutils:iconsets/controllerFaces/algaePondBaseActive"),
                    None),
+    # issue #630: GT++'s IsaMill (its grinding mill casing and grinder front, MTEIsaMill.java:76-84, casing index 66 of
+    # GregtechMetaCasingBlocks5.java:67) and GT's Froth Flotation Cell (the flotation casing, its controller face)
+    "isamill": ((3, 3), "miscutils:TileEntities/MACHINE_CASING_GRINDING_FACTORY", None,
+                ("miscutils:iconsets/Grinder/GRINDER5", "miscutils:iconsets/Grinder/GRINDER_ACTIVE5"), None),
+    "flotation-cell": ((3, 3), "miscutils:TileEntities/MACHINE_CASING_FLOTATION", None,
+                       ("miscutils:iconsets/controllerFaces/frothFlotationCell",
+                        "miscutils:iconsets/controllerFaces/frothFlotationCellActive"), None),
     "industrial-dehydrator": ((3, 3), "gregtech:iconsets/VACUUM_CASING_SIDE", None,
                               ("miscutils:iconsets/controllerFaces/industrialDehydrator",
                                "miscutils:iconsets/controllerFaces/industrialDehydratorActive"), None),
@@ -403,7 +410,7 @@ WHOLE_ICONS = {"large-titanium-boiler", "large-combustion-engine", "digester", "
                "ev-rocket-engine", "iv-rocket-engine", "luv-rocket-engine", "large-rocket-engine",
                "universal-chemical-fuel-engine", "reactor-fuel-processing-plant", "liquid-fluoride-thorium-reactor",
                "sparge-tower", "cold-trap-i", "reactor-processing-unit-i", "nuclear-salt-processing-plant", "cold-trap-ii", "reactor-processing-unit-ii",
-               "algae-farm", "industrial-dehydrator", "naquadah-fuel-refinery", "naquadah-fuel-refinery-t2",
+               "algae-farm", "industrial-dehydrator", "isamill", "flotation-cell", "naquadah-fuel-refinery", "naquadah-fuel-refinery-t2",
                "naquadah-fuel-refinery-t3", "naquadah-fuel-refinery-t4", "source-chamber", "beam-crafter",
                "luv-mass-fabricator", "nano-forge", "nano-forge-t2", "nano-forge-t3", *(f"draconic-evolution-fusion-crafter-t{k}" for k in range(1, 5)), "large-hadron-collider", "large-hadron-collider-weak", "large-hadron-collider-lhcb",
                *(f"precise-assembler-mk{i}" for i in range(1, 4)),
@@ -1104,6 +1111,32 @@ def battery_buffers(gt):
                 save(img, path)
 
 
+# issue #637: the EV and IV gas turbines and semifluid generators: HV's sprites and icon in the tier's colour; the icons
+# of the EV and IV chemical reactors and the HV to IV distilleries
+GENERATOR_TINT = {"ev": (225, 215, 245), "iv": (170, 180, 215)}
+
+
+def generator_tiers():
+    for base in ("gas-turbine", "semifluid-generator"):
+        src = ROOT / "graphics/entity" / f"hv-{base}"
+        for tier, rgb in GENERATOR_TINT.items():
+            name = f"{tier}-{base}"
+            d = ROOT / "graphics/entity" / name
+            d.mkdir(parents=True, exist_ok=True)
+            for kind in ("idle", "working"):
+                save(tint(load(src / f"hv-{base}-{kind}.png"), rgb), d / f"{name}-{kind}.png")
+            save(tint(load(ICONS / f"hv-{base}.png"), rgb), ICONS / f"{name}.png")
+    # the EV and IV chemical reactors and the HV to IV distilleries use the HV reactor's and the MV distillery's sprites;
+    # their icons are those in the tier's colour
+    tints = GENERATOR_TINT   # (the HV distillery has an upstream icon)
+    for base, src, tiers in (("chemical-reactor", "hv", ("ev", "iv")), ("distillery", "mv", ("ev", "iv"))):
+        for tier in tiers:
+            save(tint(load(ICONS / f"{src}-{base}.png"), tints[tier]), ICONS / f"{tier}-{base}.png")
+    # GT++'s advanced boilers: the Large Coal Boiler's icon in the tier's colour (the chassis: gen_gt_icons.py)
+    for tier, rgb in (("lv", (200, 200, 200)), ("mv", (220, 200, 160)), ("hv", (225, 215, 245))):
+        save(tint(load(ICONS / "large-coal-boiler.png"), rgb), ICONS / f"{tier}-advanced-boiler.png")
+
+
 def fluid_extractor_lv_ev():
     """Issue #152: the LV and MV fluid extractor sprites (HV and EV use MV's, like the extractor) are upstream's
     extractor with the liquid in its tubes molten; the idle picture keeps a low melt in the tubes, so the two machines
@@ -1350,6 +1383,7 @@ def main():
     lv_from_mv("autoclave")      # before the autoclave's tiers (it reads the MV autoclave)
     steam_age(a.gt)              # issue #446
     battery_buffers(a.gt)        # issue #444
+    generator_tiers()            # issue #637
     lv_from_mv("extruder", icon=False)          # issue #449 (the LV extruder icon is upstream's)
     lv_from_mv("laser-engraver", icon_palette=True)
     lv_from_mv("combustion-generator", icon=False)   # (the LV icon is upstream's)
