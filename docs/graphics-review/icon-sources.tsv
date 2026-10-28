@@ -5324,3 +5324,69 @@ centrifuged-samarium	colour of Samarium #ffffcc + gt:gregtech/textures/items/mat
 impure-samarium-dust	colour of Samarium #ffffcc + gt:gregtech/textures/items/materialicons/METALLIC/dustImpure + gt:gregtech/textures/items/materialicons/METALLIC/dustImpure_OVERLAY
 pure-samarium-dust	colour of Samarium #ffffcc + gt:gregtech/textures/items/materialicons/METALLIC/dustPure + gt:gregtech/textures/items/materialicons/METALLIC/dustPure_OVERLAY
 tiny-pile-of-rarest-earth-residue-dust	colour of rarest-earth-residue #e0d3d3 + gt:gregtech/textures/items/materialicons/NONE/dustTiny
+raw-lanthanum	colour of Lanthanum #8a8a8a + gt:gregtech/textures/items/materialicons/METALLIC/oreRaw
+crushed-lanthanum	colour of Lanthanum #8a8a8a + gt:gregtech/textures/items/materialicons/NONE/crushed + gt:gregtech/textures/items/materialicons/NONE/crushed_OVERLAY
+purified-lanthanum	colour of Lanthanum #8a8a8a + gt:gregtech/textures/items/materialicons/NONE/crushedPurified
+centrifuged-lanthanum	colour of Lanthanum #8a8a8a + gt:gregtech/textures/items/materialicons/NONE/crushedCentrifuged
+impure-lanthanum-dust	colour of Lanthanum #8a8a8a + gt:gregtech/textures/items/materialicons/METALLIC/dustImpure + gt:gregtech/textures/items/materialicons/METALLIC/dustImpure_OVERLAY
+pure-lanthanum-dust	colour of Lanthanum #8a8a8a + gt:gregtech/textures/items/materialicons/METALLIC/dustPure + gt:gregtech/textures/items/materialicons/METALLIC/dustPure_OVERLAY
+raw-praseodymium	colour of Praseodymium #75d681 + gt:gregtech/textures/items/materialicons/DULL/oreRaw
+crushed-praseodymium	colour of Praseodymium #75d681 + gt:gregtech/textures/items/materialicons/NONE/crushed + gt:gregtech/textures/items/materialicons/NONE/crushed_OVERLAY
+purified-praseodymium	colour of Praseodymium #75d681 + gt:gregtech/textures/items/materialicons/NONE/crushedPurified
+centrifuged-praseodymium	colour of Praseodymium #75d681 + gt:gregtech/textures/items/materialicons/NONE/crushedCentrifuged
+impure-praseodymium-dust	colour of Praseodymium #75d681 + gt:gregtech/textures/items/materialicons/NONE/dustImpure + gt:gregtech/textures/items/materialicons/NONE/dustImpure_OVERLAY
+pure-praseodymium-dust	colour of Praseodymium #75d681 + gt:gregtech/textures/items/materialicons/NONE/dustPure + gt:gregtech/textures/items/materialicons/NONE/dustPure_OVERLAY
+raw-cerium	colour of Cerium #7bd490 + gt:gregtech/textures/items/materialicons/METALLIC/oreRaw
+crushed-cerium	colour of Cerium #7bd490 + gt:gregtech/textures/items/materialicons/NONE/crushed + gt:gregtech/textures/items/materialicons/NONE/crushed_OVERLAY
+purified-cerium	colour of Cerium #7bd490 + gt:gregtech/textures/items/materialicons/NONE/crushedPurified
+centrifuged-cerium	colour of Cerium #7bd490 + gt:gregtech/textures/items/materialicons/NONE/crushedCentrifuged
+impure-cerium-dust	colour of Cerium #7bd490 + gt:gregtech/textures/items/materialicons/METALLIC/dustImpure + gt:gregtech/textures/items/materialicons/METALLIC/dustImpure_OVERLAY
+pure-cerium-dust	colour of Cerium #7bd490 + gt:gregtech/textures/items/materialicons/METALLIC/dustPure + gt:gregtech/textures/items/materialicons/METALLIC/dustPure_OVERLAY
+raw-europium	colour of Europium #f6b5ff + gt:gregtech/textures/items/materialicons/SHINY/oreRaw
+crushed-europium	colour of Europium #f6b5ff + gt:gregtech/textures/items/materialicons/NONE/crushed + gt:gregtech/textures/items/materialicons/NONE/crushed_OVERLAY
+purified-europium	colour of Europium #f6b5ff + gt:gregtech/textures/items/materialicons/NONE/crushedPurified
+centrifuged-europium	colour of Europium #f6b5ff + gt:gregtech/textures/items/materialicons/NONE/crushedCentrifuged
+impure-europium-dust	colour of Europium #f6b5ff + gt:gregtech/textures/items/materialicons/SHINY/dustImpure + gt:gregtech/textures/items/materialicons/SHINY/dustImpure_OVERLAY
+pure-europium-dust	colour of Europium #f6b5ff + gt:gregtech/textures/items/materialicons/SHINY/dustPure + gt:gregtech/textures/items/materialicons/SHINY/dustPure_OVERLAY
+raw-gadolinium	colour of Gadolinium #3bba1c + gt:gregtech/textures/items/materialicons/METALLIC/oreRaw
+crushed-gadolinium	colour of Gadolinium #3bba1c + gt:gregtech/textures/items/materialicons/NONE/crushed + gt:gregtech/textures/items/materialicons/NONE/crushed_OVERLAY
+purified-gadolinium	colour of Gadolinium #3bba1c + gt:gregtech/textures/items/materialicons/NONE/crushedPurified
+centrifuged-gadolinium	colour of Gadolinium #3bba1c + gt:gregtech/textures/items/materialicons/NONE/crushedCentrifuged
+impure-gadolinium-dust	colour of Gadolinium #3bba1c + gt:gregtech/textures/items/materialicons/METALLIC/dustImpure + gt:gregtech/textures/items/materialicons/METALLIC/dustImpure_OVERLAY
+pure-gadolinium-dust	colour of Gadolinium #3bba1c + gt:gregtech/textures/items/materialicons/METALLIC/dustPure + gt:gregtech/textures/items/materialicons/METALLIC/dustPure_OVERLAY
+raw-terbium	gt:gregtech/textures/items/materialicons/METALLIC/oreRaw
+crushed-terbium	gt:gregtech/textures/items/materialicons/NONE/crushed + gt:gregtech/textures/items/materialicons/NONE/crushed_OVERLAY
+purified-terbium	gt:gregtech/textures/items/materialicons/NONE/crushedPurified
+centrifuged-terbium	gt:gregtech/textures/items/materialicons/NONE/crushedCentrifuged
+impure-terbium-dust	gt:gregtech/textures/items/materialicons/METALLIC/dustImpure + gt:gregtech/textures/items/materialicons/METALLIC/dustImpure_OVERLAY
+pure-terbium-dust	gt:gregtech/textures/items/materialicons/METALLIC/dustPure + gt:gregtech/textures/items/materialicons/METALLIC/dustPure_OVERLAY
+raw-dysprosium	colour of Dysprosium #69d150 + gt:gregtech/textures/items/materialicons/METALLIC/oreRaw
+crushed-dysprosium	colour of Dysprosium #69d150 + gt:gregtech/textures/items/materialicons/NONE/crushed + gt:gregtech/textures/items/materialicons/NONE/crushed_OVERLAY
+purified-dysprosium	colour of Dysprosium #69d150 + gt:gregtech/textures/items/materialicons/NONE/crushedPurified
+centrifuged-dysprosium	colour of Dysprosium #69d150 + gt:gregtech/textures/items/materialicons/NONE/crushedCentrifuged
+impure-dysprosium-dust	colour of Dysprosium #69d150 + gt:gregtech/textures/items/materialicons/METALLIC/dustImpure + gt:gregtech/textures/items/materialicons/METALLIC/dustImpure_OVERLAY
+pure-dysprosium-dust	colour of Dysprosium #69d150 + gt:gregtech/textures/items/materialicons/METALLIC/dustPure + gt:gregtech/textures/items/materialicons/METALLIC/dustPure_OVERLAY
+raw-holmium	colour of Holmium #1608a6 + gt:gregtech/textures/items/materialicons/SHINY/oreRaw
+crushed-holmium	colour of Holmium #1608a6 + gt:gregtech/textures/items/materialicons/NONE/crushed + gt:gregtech/textures/items/materialicons/NONE/crushed_OVERLAY
+purified-holmium	colour of Holmium #1608a6 + gt:gregtech/textures/items/materialicons/NONE/crushedPurified
+centrifuged-holmium	colour of Holmium #1608a6 + gt:gregtech/textures/items/materialicons/NONE/crushedCentrifuged
+impure-holmium-dust	colour of Holmium #1608a6 + gt:gregtech/textures/items/materialicons/SHINY/dustImpure + gt:gregtech/textures/items/materialicons/SHINY/dustImpure_OVERLAY
+pure-holmium-dust	colour of Holmium #1608a6 + gt:gregtech/textures/items/materialicons/SHINY/dustPure + gt:gregtech/textures/items/materialicons/SHINY/dustPure_OVERLAY
+raw-erbium	colour of Erbium #b09851 + gt:gregtech/textures/items/materialicons/SHINY/oreRaw
+crushed-erbium	colour of Erbium #b09851 + gt:gregtech/textures/items/materialicons/NONE/crushed + gt:gregtech/textures/items/materialicons/NONE/crushed_OVERLAY
+purified-erbium	colour of Erbium #b09851 + gt:gregtech/textures/items/materialicons/NONE/crushedPurified
+centrifuged-erbium	colour of Erbium #b09851 + gt:gregtech/textures/items/materialicons/NONE/crushedCentrifuged
+impure-erbium-dust	colour of Erbium #b09851 + gt:gregtech/textures/items/materialicons/SHINY/dustImpure + gt:gregtech/textures/items/materialicons/SHINY/dustImpure_OVERLAY
+pure-erbium-dust	colour of Erbium #b09851 + gt:gregtech/textures/items/materialicons/SHINY/dustPure + gt:gregtech/textures/items/materialicons/SHINY/dustPure_OVERLAY
+raw-ytterbium	colour of Ytterbium #2cc750 + gt:gregtech/textures/items/materialicons/SHINY/oreRaw
+crushed-ytterbium	colour of Ytterbium #2cc750 + gt:gregtech/textures/items/materialicons/NONE/crushed + gt:gregtech/textures/items/materialicons/NONE/crushed_OVERLAY
+purified-ytterbium	colour of Ytterbium #2cc750 + gt:gregtech/textures/items/materialicons/NONE/crushedPurified
+centrifuged-ytterbium	colour of Ytterbium #2cc750 + gt:gregtech/textures/items/materialicons/NONE/crushedCentrifuged
+impure-ytterbium-dust	colour of Ytterbium #2cc750 + gt:gregtech/textures/items/materialicons/SHINY/dustImpure + gt:gregtech/textures/items/materialicons/SHINY/dustImpure_OVERLAY
+pure-ytterbium-dust	colour of Ytterbium #2cc750 + gt:gregtech/textures/items/materialicons/SHINY/dustPure + gt:gregtech/textures/items/materialicons/SHINY/dustPure_OVERLAY
+raw-lutetium	colour of Lutetium #bc3ec7 + gt:gregtech/textures/items/materialicons/SHINY/oreRaw
+crushed-lutetium	colour of Lutetium #bc3ec7 + gt:gregtech/textures/items/materialicons/NONE/crushed + gt:gregtech/textures/items/materialicons/NONE/crushed_OVERLAY
+purified-lutetium	colour of Lutetium #bc3ec7 + gt:gregtech/textures/items/materialicons/NONE/crushedPurified
+centrifuged-lutetium	colour of Lutetium #bc3ec7 + gt:gregtech/textures/items/materialicons/NONE/crushedCentrifuged
+impure-lutetium-dust	colour of Lutetium #bc3ec7 + gt:gregtech/textures/items/materialicons/SHINY/dustImpure + gt:gregtech/textures/items/materialicons/SHINY/dustImpure_OVERLAY
+pure-lutetium-dust	colour of Lutetium #bc3ec7 + gt:gregtech/textures/items/materialicons/SHINY/dustPure + gt:gregtech/textures/items/materialicons/SHINY/dustPure_OVERLAY

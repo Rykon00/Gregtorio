@@ -155,6 +155,22 @@ put("gases", { "iodine" })
 put("molten-elements", { "bromine" })
 put("ore-solutions", { "seaweed-concentrate", "seaweed-byproducts" })
 put("ore-solutions", { "samarium-rare-earth-mud" })   -- issue #631 part 2
+--- issue #631 part 3: the ion extraction's chloride concentrates, resins and chlorinated solutions; the new melts
+do
+	local list, melts = { "chlorinated-rare-earth-concentrate", "chlorinated-rare-earth-enriched-solution",
+		"chlorinated-rare-earth-diluted-solution" }, {}
+	for _, x in pairs({ "lanthanum", "praseodymium", "cerium", "neodymium", "samarium", "europium", "gadolinium", "terbium",
+		"dysprosium", "holmium", "erbium", "thulium", "ytterbium", "lutetium" }) do
+		for _, f in pairs({ "%s-chloride-concentrate", "%s-extracting-nano-resin", "filled-%s-extracting-nano-resin" }) do
+			list[#list + 1] = f:format(x)
+		end
+	end
+	for _, x in pairs({ "lanthanum", "cerium", "gadolinium", "terbium", "dysprosium", "holmium", "erbium", "ytterbium" }) do
+		melts[#melts + 1] = "molten-" .. x   -- (the melts new here)
+	end
+	put("ore-solutions", list)
+	put("molten-elements", melts)
+end
 --- issue #335: the Drilling Fluid of the Ore Drilling Plants (163), water with stone dust and lubricant
 put("basic", { "drilling-fluid" })
 --- issue #362: GT++'s rocket fuels and the chains behind them (164)

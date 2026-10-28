@@ -310,6 +310,18 @@ local NEW_ORES = {
 	--- issue #631: GT's samarium ore (Void Miners II and III, 160), whose dust is gtnhlanth's samarium ore concentrate
 	--- (GTNH: every step of its chain gives 2 concentrate as its byproduct; GT's samarium: 62 protons, 88 neutrons)
 	["samarium"] = { dust = "samarium-ore-concentrate", byproducts = { "samarium-ore-concentrate" }, mass = 150 },   -- GT Samarium: SamariumOreConcentrate
+	--- issue #631 part 3: GT's lanthanide ores (160; GT's elements, no byproducts of their own)
+	["lanthanum"] = { dust = "lanthanum-dust", byproducts = {  }, mass = 138 },   -- GT Lanthanum: none (itself)
+	["praseodymium"] = { dust = "praseodymium-dust", byproducts = {  }, mass = 140 },   -- GT Praseodymium: none (itself)
+	["cerium"] = { dust = "cerium-dust", byproducts = {  }, mass = 140 },   -- GT Cerium: none (itself)
+	["europium"] = { dust = "europium-dust", byproducts = {  }, mass = 151 },   -- GT Europium: none (itself)
+	["gadolinium"] = { dust = "gadolinium-dust", byproducts = {  }, mass = 157 },   -- GT Gadolinium: none (itself)
+	["terbium"] = { dust = "terbium-dust", byproducts = {  }, mass = 158 },   -- GT Terbium: none (itself)
+	["dysprosium"] = { dust = "dysprosium-dust", byproducts = {  }, mass = 162 },   -- GT Dysprosium: none (itself)
+	["holmium"] = { dust = "holmium-dust", byproducts = {  }, mass = 164 },   -- GT Holmium: none (itself)
+	["erbium"] = { dust = "erbium-dust", byproducts = {  }, mass = 167 },   -- GT Erbium: none (itself)
+	["ytterbium"] = { dust = "ytterbium-dust", byproducts = {  }, mass = 173 },   -- GT Ytterbium: none (itself)
+	["lutetium"] = { dust = "lutetium-dust", byproducts = {  }, mass = 174 },   -- GT Lutetium: none (itself)
 	--- issue #356: the Lutetium Asteroid's thulium and tellurium (162); GT gives them no byproducts of their own
 	["thulium"] = { dust = "thulium-dust", byproducts = {  }, mass = 168 },   -- GT Thulium: none (itself)
 	["tellurium"] = { dust = "tellurium-dust", byproducts = {  }, mass = 127 },   -- GT Tellurium: none (itself)

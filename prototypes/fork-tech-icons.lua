@@ -253,6 +253,7 @@ FORK_TECH_ICONS = {
 	["qubit-cpus"] = true,
 	["radox-polymer"] = true,
 	["radox-polymer"] = true,
+	["rare-earth-ion-extraction"] = true,
 	["reach-mars"] = true,
 	["reach-mars"] = true,
 	["reach-ross128"] = true,

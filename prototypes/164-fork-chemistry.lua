@@ -6233,6 +6233,96 @@ end
 
 
 --------------------------------------------------------------------------------
+--- 56) GTNH'S RARE EARTH ION EXTRACTION (issue #631 part 3, the maintainer's decision of 2026-10-28: every lanthanide as
+---   GTNH; promethium moved to #632, GTNH's promethium chloride concentrate has no resin). gtnhlanth's UV method
+---   (gtnhlanth/loader/RecipeLoader.java:1773-3032), for the 14 lanthanides with a resin, from GT's ore of each (160's
+---   raw ores: lanthanum and cerium in the RareEarth vein's Void Miner pools, every one in the Deep Dark):
+---   * digester (ZPM, 2 s): a crushed ore + 36000 L chlorine -> 3 silicon dioxide + 3000 L <element> chloride
+---     concentrate (GT's <element> ore concentrate, the other input, has no recipe in the GTNH dump and is left out)
+---   * laser engraver (UV, 10 s): the mysterious crystal lens (kept), an <element> dust, carbon nanites and 4000 L P507
+---     -> 1000 L <element> extracting nano resin
+---   * large chemical reactor (UV, 1 s): 1000 L resin + 1000 L chloride concentrate -> 1000 L filled resin + 1000 L
+---     chlorinated rare earth concentrate; every resin takes the chlorinated concentrate in three steps (enriched,
+---     diluted solution, waste liquid), each 1000 L resin -> 1000 L filled resin
+---   * electrolyzer (ZPM, 5 s): 1000 L filled resin -> 1000 L resin back, a molten <element> cell (144 L) + 3000 L chlorine
+---   * the melts the mod had no use for go into the fluid solidifier (LV, 1.6 s, GT's ingot mold), into the dust where
+---     the mod has no ingot (as 164's rubidium)
+---   Tier: GTNH's UV method needs carbon nanites and the mysterious crystal lens, which come with the Nano Forge (UMV,
+---   13 packs) here; Rare Earth Ion Extraction follows it (and the Deep Dark, which mines most of the ores, and the space
+---   elevator's mining module, thulium's source); the lens's bath moves here, its first use.
+---   Fluids a tenth; cells as fluids; the resins, filled resins and chloride concentrates in their element's colour (14
+---   fluid colours of gtnhlanth are not worth a table). Unlocked with the new technology Rare Earth Ion Extraction (UV).
+--------------------------------------------------------------------------------
+do
+	local R = {}
+	local function fl(name, icon, rgb) F.fluid(name, icon, { rgb[1] / 255, rgb[2] / 255, rgb[3] / 255 }) end
+	--- the element and GT's colour (MaterialsInit.java)
+	local RE = {
+		{ "lanthanum", { 138, 138, 138 } }, { "praseodymium", { 117, 214, 129 } }, { "cerium", { 123, 212, 144 } },
+		{ "neodymium", { 100, 100, 100 } }, { "samarium", { 255, 255, 204 } }, { "europium", { 246, 181, 255 } },
+		{ "gadolinium", { 59, 186, 28 } }, { "terbium", { 255, 255, 255 } }, { "dysprosium", { 105, 209, 80 } },
+		{ "holmium", { 22, 8, 166 } }, { "erbium", { 176, 152, 81 } }, { "thulium", { 89, 107, 194 } },
+		{ "ytterbium", { 44, 199, 80 } }, { "lutetium", { 188, 62, 199 } },
+	}
+	--- (gtnhlanth's Werkstoff colours, WerkstoffMaterialPool.java)
+	fl("chlorinated-rare-earth-concentrate", "olive-fluid", { 130, 80, 60 })
+	fl("chlorinated-rare-earth-enriched-solution", "olive-fluid", { 130, 90, 60 })
+	fl("chlorinated-rare-earth-diluted-solution", "olive-fluid", { 216, 180, 100 })
+	local STAGES = { { "chlorinated-rare-earth-concentrate", "chlorinated-rare-earth-enriched-solution", "enriched" },
+		{ "chlorinated-rare-earth-enriched-solution", "chlorinated-rare-earth-diluted-solution", "diluted" },
+		{ "chlorinated-rare-earth-diluted-solution", "waste-liquid", "waste" } }
+	for _, e in pairs(RE) do
+		local x, rgb = e[1], e[2]
+		local resin, filled, conc = x .. "-extracting-nano-resin", "filled-" .. x .. "-extracting-nano-resin",
+			x .. "-chloride-concentrate"
+		local molten = "molten-" .. x
+		fl(conc, "olive-fluid", rgb)
+		fl(resin, "nearly-white-fluid", rgb)
+		fl(filled, "purple-fluid", rgb)
+		if not data.raw.fluid[molten] then fl(molten, molten, rgb) end
+		step(R, conc, "digester-recipes", 2, ZPM_SPEED, { { "crushed-" .. x, 1 }, { "chlorine", 3600 } },
+			{ { "silicon-dioxide", 3 }, { conc, 300 } }, conc)
+		step(R, resin, "uv-laser-engraver-recipes", 10, UV_SPEED,
+			{ { "mysterious-crystal-lens", 1 }, { x .. "-dust", 1 }, { "carbon-nanites", 1 }, { "p507", 400 } },
+			{ { "mysterious-crystal-lens", 1 }, { resin, 100 } }, resin)
+		step(R, x .. "-ion-extraction", "uv-chemical-reactor-recipes", 1, UV_SPEED, { { resin, 100 }, { conc, 100 } },
+			{ { filled, 100 }, { "chlorinated-rare-earth-concentrate", 100 } }, filled)
+		for _, s in pairs(STAGES) do
+			step(R, x .. "-ion-extraction-" .. s[3], "uv-chemical-reactor-recipes", 1, UV_SPEED, { { resin, 100 }, { s[1], 100 } },
+				{ { filled, 100 }, { s[2], 100 } }, filled)
+		end
+		step(R, filled .. "-electrolysis", "zpm-electrolyzer-recipes", 5, ZPM_SPEED, { { filled, 100 } },
+			{ { resin, 100 }, { molten, 14.4 }, { "chlorine", 300 } }, molten)
+		--- (a melt without a way into a solid: GT's fluid solidifier, into the ingot or, without one, the dust)
+		local solid = false
+		for _, r in pairs(data.raw.recipe) do
+			local ins = false
+			for _, i in pairs(r.ingredients or {}) do if i.name == molten then ins = true end end
+			if ins then
+				for _, o in pairs(r.results or {}) do
+					if o.name == x .. "-ingot" or o.name == x .. "-dust" then solid = true end
+				end
+			end
+		end
+		if not solid then
+			local into = data.raw.item[x .. "-ingot"] and (x .. "-ingot") or (x .. "-dust")
+			step(R, "solidify-" .. into, "lv-fluid-solidifier-recipes", 1.6, LV_SPEED, { { molten, 14.4 } }, { { into, 1 } })
+		end
+	end
+	--- (the mysterious crystal lens's UV chemical bath, its gem grades and plate, unlocked with their first uses before,
+	--- the Yocto Power ICs and the Gravitational Lens, come here)
+	for _, n in pairs({ "mysterious-crystal-lens", "flawless-mysterious-crystal", "exquisite-mysterious-crystal",
+		"mysterious-crystal-gem", "mysterious-crystal-plate" }) do
+		R[#R + 1] = n
+	end
+	FORK5B.tech{ name = "rare-earth-ion-extraction", packs = 13, count = 95, time = 60, recipes = R,
+		prerequisites = { "monazite-rare-earth-processing", "void-miner-ii", "uv-machines", "nano-forge",
+			"space-elevator-mining-module-mk1" } }
+end
+
+
+
+--------------------------------------------------------------------------------
 --- 38) GT'S PARTS OF THE METALS OF THIS FILE (issue #467). 158 makes GT New Horizons' parts of every metal of
 ---   prototypes/gt-parts-data.lua (issue #227) whose ingot exists; most metals of this file come after 158, so its
 ---   FORK_GT_PARTS.run() runs once more here (it skips what exists), then 143's casts for the new forms.

@@ -847,6 +847,10 @@ local RT = {
 	-- issue #631 part 2 (section 55): the samarium ore concentrate's digester and the blend's electrolysis
 	{ "digester", "muddy-samarium-rare-earth-solution" },
 	{ "iv-electrolyzer", "samarium-chloride-sodium-chloride-blend-electrolysis" },
+	-- issue #631 part 3 (section 56): the ion extraction's digester, reactor and electrolyzer steps
+	{ "digester", "lanthanum-chloride-concentrate" },
+	{ "uv-large-chemical-reactor", "lanthanum-ion-extraction" },
+	{ "zpm-electrolyzer", "filled-lanthanum-extracting-nano-resin-electrolysis" },
 	-- issue #636 (160, 161): the Phobos and Deimos mines, Seth's Void Miner III pool and the Deep Dark (every raw ore)
 	{ "dimension-mine", "mining-heavy-pentele-vein" },
 	{ "void-miner-iii", "void-mining-seth" },
