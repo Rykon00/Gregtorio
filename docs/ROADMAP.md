@@ -349,7 +349,7 @@ Choices and deviations from GT:
 - **Fusion reactor MK3.** UV tier as in GT (16 UV energy hatches, 32 UV hulls, 79 fusion casings MK2), UHV circuits in
   the controller, UHPIC wafers instead of QPIC wafers (like MK1 and MK2). The advanced fusion coil (draft: the MK4 coil with
   UU matter and UEV circuits) has a UHV emitter and sensor, tritanium and neutronium melt instead of cinobite, octiron,
-  astral titanium and UU matter. The reactor takes 8 of them (GT: 32). Superdense americium plate: 64 plates in the UV
+  astral titanium and UU matter (since issue #629 cinobite and octiron melt, 164 section 52). The reactor takes 8 of them (GT: 32). Superdense americium plate: 64 plates in the UV
   compressor. Iron plasma (the only MK3 plasma draft) is active; its fluid did not exist and was added.
 - **UHV components** follow GT with these changes: fine wire and foil counts cut (GT: 512 fine neutronium wires, 256
   fluxed electrum foils; here motor 48 fine wires, emitter and sensor 32 foils, field generator 64 fine wires), gravistar
@@ -818,7 +818,9 @@ Not switched, on purpose:
   and the UEV to UXV hatches (which leave it out). It needs GT's mass fabricator, a machine the fork does not have. Open point.
   (Since #355 step 4 the LuV mass fabricator makes UU matter; issue #611 puts it into the MK4 controller and casing, a
   tenth of GT's 50000 and 1000 L; cinobite and octiron (#629) and astral titanium, which comes only at UXV, keep their
-  stand-ins.)
+  stand-ins.) Issue #629 made GT++'s cinobite A243 and octiron (164 section 52): the coil, the casing and the controller
+  take them; the controller keeps cosmic neutronium for astral titanium, the coil and the casing (two fluids in the UHV
+  assembler) leave astral titanium and UU matter out.
   Issue #355 step 4 built it (164 section 30): the LuV Mass Fabricator makes it for the Beam Crafter and the beamline.
   The MK4 fusion parts and the hatches keep leaving it out.
 

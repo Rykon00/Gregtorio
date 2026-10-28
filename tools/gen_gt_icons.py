@@ -264,6 +264,11 @@ MATERIALS = {
     "ancient-debris": ("ROUGH", (0x5a, 0x3e, 0x36)),
     # issue #627: Thermal Foundation's blizz, GT's snow and cryotheum (MaterialsInit.java)
     "blizz": "Blizz", "snow": "Snow", "cryotheum": "Cryotheum",
+    # issue #629: GT++'s alloys of the fusion reactor Mk-IV's melts (MaterialsAlloy.java: energy crystal's own colour; the
+    # others have none and take the mean colour of their components, as GT++ draws them, Material.java getRGBColorForMat)
+    "energy-crystal": ("METALLIC", (228, 255, 0)), "tungsten-titanium-carbide": ("METALLIC", (135, 80, 171)),
+    "arcanite": ("METALLIC", (126, 140, 75)), "titansteel": ("METALLIC", (135, 106, 59)),
+    "cinobite-a243": ("METALLIC", (149, 162, 157)), "octiron": ("METALLIC", (148, 140, 87)),
     # issue #636: Seth's raw tengam (the ore and GT's Raw Tengam Dust) and tartarite (MaterialsInit.java)
     "tengam": "TengamRaw", "raw-tengam": "TengamRaw", "tartarite": "Tartarite",
     "calcium": "Calcium",
