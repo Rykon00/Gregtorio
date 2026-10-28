@@ -5255,3 +5255,8 @@ bioware-circuit-board	gt:gregtech/textures/items/gt.metaitem.03/8
 petri-dish	gt:gregtech/textures/items/gt.metaitem.03/22
 basic-photolithographic-casing	gt:gregtech/textures/blocks/iconsets/MACHINE_CASING_PCB_TIER_1
 pcb-factory-controller	gt:gregtech/textures/blocks/iconsets/MACHINE_CASING_PCB_TIER_1 + gt:gregtech/textures/blocks/iconsets/OVERLAY_FRONT_ASSEMBLY_LINE
+zeron-100-dust	colour of zeron-100 #b4b414 + gt:gregtech/textures/items/materialicons/METALLIC/dust
+energy-crystal-dust	colour of energy-crystal #e4ff00 + gt:gregtech/textures/items/materialicons/METALLIC/dust
+tungsten-titanium-carbide-dust	colour of tungsten-titanium-carbide #8750ab + gt:gregtech/textures/items/materialicons/METALLIC/dust
+arcanite-dust	colour of arcanite #7e8c4b + gt:gregtech/textures/items/materialicons/METALLIC/dust
+titansteel-dust	colour of titansteel #876a3b + gt:gregtech/textures/items/materialicons/METALLIC/dust

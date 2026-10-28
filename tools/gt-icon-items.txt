@@ -5275,3 +5275,8 @@ bioware-circuit-board
 petri-dish
 basic-photolithographic-casing
 pcb-factory-controller
+zeron-100-dust
+energy-crystal-dust
+tungsten-titanium-carbide-dust
+arcanite-dust
+titansteel-dust

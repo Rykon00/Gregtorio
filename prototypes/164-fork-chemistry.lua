@@ -4830,8 +4830,8 @@ end
 ---     the dust (the mod has no rubidium ingot, as uranium in 136); mellion takes the rubidium (section 29)
 ---   * UU matter in the fusion reactor MK4's controller (tectech/loader/recipe/ResearchStationAssemblyLine.java:823-843:
 ---     50000 L, here a tenth), now that the LuV mass fabricator makes it (section 30); the technology that unlocks it gets
----     Beamline as a prerequisite. The casing (:865-883, 1000 L) stays without: the UHV assembler takes two fluids. GT's cinobite and octiron (#629) and astral
----     titanium (here only with Six-Phased Copper, UXV, section 35) keep their stand-ins, tritanium and cosmic neutronium
+---     Beamline as a prerequisite. The casing (:865-883, 1000 L) stays without: the UHV assembler takes two fluids. GT's cinobite and octiron come in section 52
+---     (#629); astral titanium (here only with Six-Phased Copper, UXV, section 35) keeps its stand-in, cosmic neutronium
 --------------------------------------------------------------------------------
 do
 	local function item(name, amount) return { type = "item", name = name, amount = amount } end
@@ -5098,8 +5098,8 @@ end
 ---   - the components from UEV on (ResearchStationAssemblyLine.java:1338, :1548, :1759, :1955; UHV keeps Indalloy, :1128)
 ---     and by that rule MAX's; the energy and dynamo hatches from UEV on (:230, :250, :271, :293 and the dynamos);
 ---   - the DTPF (:639, :659, :697), the godforge (:2412, :2497, :2540; its shielding casing by the tier rule), the Quantum
----     Force Transformer (gtPlusPlus/core/recipe/RecipesMachinesCustom.java:453), the fusion reactor Mk-IV and Mk-V
----     controllers and the stargate by the tier rule, the UIV solenoid (NewHorizonsCoreMod AssemblingLineRecipes.java:1588,
+---     Force Transformer (gtPlusPlus/core/recipe/RecipesMachinesCustom.java:453), the fusion reactor Mk-V controller
+---     and the stargate by the tier rule (the Mk-IV's takes GT's melts without solder, section 52), the UIV solenoid (NewHorizonsCoreMod AssemblingLineRecipes.java:1588,
 ---     solderUEV);
 ---   - the space elevator's motors from Mk-III, the UHV-UIV mining drones, the mining module Mk-III, the pump modules and
 ---     the ME singularity cell (gtnhintergalactic/recipe/MachineRecipes.java:217-257, 279-332, 462, 629-669;
@@ -5112,7 +5112,7 @@ FORK_MUTATED_SOLDER_TECH = "bio-processors"
 local MUTATED_SOLDER_RECIPES = { "bio-processor-supercomputer", "bio-processor-mainframe", "dimensional-bridge",
 	"dimensionally-transcendent-casing", "dimensionally-transcendent-plasma-forge-controller", "quantum-force-transformer-controller",
 	"godforge-controller", "stellar-energy-siphon-casing", "remote-graviton-flow-modulator",
-	"singularity-reinforced-stellar-shielding-casing", "fusion-reactor-mk4-controller", "fusion-reactor-mk5-controller",
+	"singularity-reinforced-stellar-shielding-casing", "fusion-reactor-mk5-controller",
 	"uiv-solenoid-superconductor-coil", "space-elevator-motor-mk3", "space-elevator-motor-mk4", "space-elevator-motor-mk5",
 	"mining-drone-uhv", "mining-drone-uev", "mining-drone-uiv", "space-elevator-mining-module-mk3",
 	"space-elevator-pump-module-mk1", "space-elevator-pump-module-mk2", "space-elevator-pump-module-mk3",
@@ -5874,6 +5874,88 @@ do
 	for _, r in pairs(RW) do fork_add_unlock("wetware-processors", r) end
 	for _, r in pairs(RB) do fork_add_unlock("bio-processors", r) end
 	for _, r in pairs(RO) do fork_add_unlock("optical-processors", r) end
+end
+
+
+
+--------------------------------------------------------------------------------
+--- 52) GT++'S CINOBITE A243 AND OCTIRON (issue #629, the maintainer's decision of 2026-10-28: octiron with named stand-ins)
+---   for the fusion reactor Mk-IV's parts, where tritanium and neutronium (cosmic neutronium) stood in.
+---   * cinobite A243 (gtPlusPlus/core/material/MaterialsAlloy.java:680-697): alloy blast smelter, 16 Zeron-100 + 7
+---     naquadria + 5 gadolinium + 3 aluminium + 2 tin + 12 titanium + 6 osmiridium dust + 2000 L mercury -> 7632 L, 420 s
+---     at ZPM (the GTNH recipe dump, tools/gtnh_dump: gt.recipe.alloyblastsmelter; GT++ generates it from the material,
+---     gtPlusPlus/xmod/gregtech/loaders/RecipeGenBlastSmelter.java). Zeron-100 dust from its ingot in the macerator
+---     (1.8 s at LV, as GT's macerator of every ingot)
+---   * octiron (MaterialsAlloy.java:788-802): alloy blast smelter, 6 arcanite + 6 titansteel + 1 energy crystal + 2 black
+---     steel + 5 thaumium dust -> 2880 L, 540 s at UHV (the dump, as above). Its parts:
+---     - arcanite (MaterialsAlloy.java:472-485): mixer, 4 thorium 232 + 4 energy crystal dust + ordo and perditio crystal
+---       powder -> 10, 6.5 s at IV
+---     - titansteel (MaterialsAlloy.java:773-786): mixer, 3 tungsten titanium carbide + ignis, terra and perditio crystal
+---       powder -> 6, 3.9 s at UV
+---     - tungsten titanium carbide (MaterialsAlloy.java:407-420): mixer, 7 tungsten carbide + 3 titanium -> 10, 7.2 s at
+---       EV; tungsten carbide: mixer, tungsten + carbon -> 2, 10 s at HV (GT's, the dump: gt.recipe.mixer)
+---     Named stand-ins: Thaumcraft's crystal powders (not in the mod) as thaumium dust, one per powder; GT++'s energy
+---     crystal dust (mixed from aer, terra, ignis and aqua powder) as the mod's energy crystal, macerated (6.5 s at LV).
+---   * where they go (tectech/loader/recipe/ResearchStationAssemblyLine.java:823-883): the advanced fusion coil 16
+---     ingots each (2304 L), the fusion machine casing Mk-III 4 ingots (576 L), the Mk-IV controller a stack (9216 L),
+---     a tenth here. GT's third melt, astral titanium, comes here only at UXV (section 35): the controller keeps cosmic
+---     neutronium for it (GT's amount); the coil and the casing are made in the UHV assembler, which takes two fluids, so
+---     they take the two new melts and leave out astral titanium and UU matter. The controller takes no solder (GT has
+---     none; it leaves section 46's list).
+---   Unlocked with the fusion reactor Mk-III, the coil's technology (issue #252's rule).
+--------------------------------------------------------------------------------
+do
+	local R = {}
+	local function fl(name, rgb) F.fluid(name, name, { rgb[1] / 255, rgb[2] / 255, rgb[3] / 255 }) end
+	--- (the mean colours of their components, as GT++ draws a material without a colour, Material.java
+	--- getRGBColorForMat; octiron's lifted as a glowing melt: gen_gt_icons --molten)
+	fl("molten-cinobite-a243", { 149, 162, 157 })
+	fl("molten-octiron", { 196, 186, 115 })
+	items(SUB_DUST, { "zeron-100-dust", "energy-crystal-dust", "tungsten-carbide-dust", "tungsten-titanium-carbide-dust",
+		"arcanite-dust", "titansteel-dust" })
+	if not data.raw.recipe["tungsten-carbide-dust"] then
+		step(R, "tungsten-carbide-dust", "hv-mixer-recipes", 10, HV_SPEED, { { "tungsten-dust", 1 }, { "carbon", 1 } },
+			{ { "tungsten-carbide-dust", 2 } })
+	end
+	step(R, "zeron-100-dust", "lv-macerator-recipes", 1.8, LV_SPEED, { { "zeron-100-ingot", 1 } }, { { "zeron-100-dust", 1 } })
+	step(R, "energy-crystal-dust", "lv-macerator-recipes", 6.5, LV_SPEED, { { "energy-crystal", 1 } },
+		{ { "energy-crystal-dust", 1 } })
+	step(R, "tungsten-titanium-carbide-dust", "ev-mixer-recipes", 7.2, EV_SPEED,
+		{ { "tungsten-carbide-dust", 7 }, { "titanium-dust", 3 } }, { { "tungsten-titanium-carbide-dust", 10 } })
+	step(R, "arcanite-dust", "iv-mixer-recipes", 6.5, IV_SPEED,
+		{ { "thorium-232-dust", 4 }, { "energy-crystal-dust", 4 }, { "thaumium-dust", 2 } }, { { "arcanite-dust", 10 } })
+	step(R, "titansteel-dust", "uv-mixer-recipes", 3.9, UV_SPEED,
+		{ { "tungsten-titanium-carbide-dust", 3 }, { "thaumium-dust", 3 } }, { { "titansteel-dust", 6 } })
+	step(R, "molten-cinobite-a243", "zpm-alloy-blast-smelter-recipes", 420, ZPM_SPEED,
+		{ { "zeron-100-dust", 16 }, { "naquadria-dust", 7 }, { "gadolinium-dust", 5 }, { "aluminium-dust", 3 }, { "tin-dust", 2 },
+			{ "titanium-dust", 12 }, { "osmiridium-dust", 6 }, { "mercury", 200 } }, { { "molten-cinobite-a243", 763.2 } })
+	step(R, "molten-octiron", "uhv-alloy-blast-smelter-recipes", 540, UHV_SPEED,
+		{ { "arcanite-dust", 6 }, { "titansteel-dust", 6 }, { "energy-crystal-dust", 1 }, { "black-steel-dust", 2 },
+			{ "thaumium-dust", 5 } }, { { "molten-octiron", 288 } })
+	--- the fusion reactor Mk-IV's parts
+	local function fluid(name, amount) return { type = "fluid", name = name, amount = amount } end
+	local function melts(name, list)
+		local r = data.raw.recipe[name]
+		local keep = {}
+		for _, i in pairs(r.ingredients) do if i.type ~= "fluid" then keep[#keep + 1] = i end end
+		for _, f in pairs(list) do keep[#keep + 1] = fluid(f[1], f[2]) end
+		r.ingredients = keep
+	end
+	melts("advanced-fusion-coil", { { "molten-cinobite-a243", 230.4 }, { "molten-octiron", 230.4 } })
+	melts("fusion-machine-casing-mk3", { { "molten-cinobite-a243", 57.6 }, { "molten-octiron", 57.6 } })
+	melts("fusion-reactor-mk4-controller", { { "uu-matter", 5000 }, { "molten-cinobite-a243", 921.6 },
+		{ "molten-octiron", 921.6 }, { "molten-cosmic-neutronium", 921.6 } })
+	for _, r in pairs(R) do fork_add_unlock("fusion-reactor-mk3", r) end
+	--- (octiron is thaumium's first use now, section 48's netherite comes later: its two recipes come here too; the
+	--- energy crystal comes with the 1024k ME storage, thorium 232 with the LFTR, the alloy blast smelter at UHV)
+	fork_add_unlock("fusion-reactor-mk3", "infused-gold-dust")
+	fork_add_unlock("fusion-reactor-mk3", "thaumium-dust")
+	local pre = data.raw.technology["fusion-reactor-mk3"].prerequisites
+	for _, t in pairs({ "me-storage-1024k", "liquid-fluoride-thorium-reactor", "uhv-multiblocks" }) do
+		local has = false
+		for _, p in pairs(pre) do if p == t then has = true end end
+		if not has then pre[#pre + 1] = t end
+	end
 end
 
 
