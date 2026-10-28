@@ -70,7 +70,8 @@
     unit counts of its technologies; phase 6b hooks are marked `6b hook`)
   - 140 godforge (phase 6b: the godforge, raw star matter, magmatter, the stellar catalyst of the plasma forge, the
     infinite `godforge-upgrades`; issue #249: quark gluon plasma and GT's rhugnor MK5 recipe; issue #355: the godforge between
-    the UIV and UMV energy hatches with GT's recipes, the plasma module technology with celestial tungsten)
+    the UIV and UMV energy hatches with GT's recipes (issue #624: at UIV science, the DTPF at UEV, the space elevator at UV with
+    the new technology Cosmic Neutronium), the plasma module technology with celestial tungsten)
   - 141 MAX tier (phase 6b: magmatter parts, the Planck line and MAX circuit, MAX components, hatches, machines and
     turbine; needs 140's magmatter and adds its turbine to 136's mod data; issue #249: the MAX recipes of the plasma
     forge and the QFT with substitutes); 140 and 141 load after 139 and **before** 138
