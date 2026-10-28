@@ -145,6 +145,7 @@ FORK_TECH_ICONS = {
 	["naquadah-fuel-rods"] = true,
 	["naquadah-fuels"] = true,
 	["naquadah-processing"] = true,
+	["netherite"] = true,
 	["niobium-and-tantalum-extraction"] = true,
 	["niobium-titanium"] = true,
 	["nuclear-fuel-rods"] = true,

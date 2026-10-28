@@ -1841,7 +1841,7 @@ Issue #609 (2026-10-27) built six of them now that their materials exist (164 se
 both titanium/tungsten/indium recipes, the radioactives and the late plastics (xenoxene, radox polymer, heavy radox, Kevlar);
 their fluids are scaled by one factor so the largest is 1000, and the QFT got two more fluid inputs and four more outputs.
 Still not built: glues (stable adhesive), prismarine (prismatic naquadah dust; the mod's prismatic naquadah is a melt),
-naquadria, netherite (#617), stem cells, biocells, seaweed and the temporal harmony recipe.
+naquadria, stem cells, biocells, seaweed and the temporal harmony recipe.
 So the QFT had no rare earth recipe; since issue #249 it has GT's bastline (bastnasite or cerium-rich mixture) and monaline
 (without hafnia and the superconductor composite). The mod's rare earth (I) line has none (GT's rare earth dust has no QFT
 recipe).
@@ -2661,8 +2661,7 @@ Large Hadron Collider (13 packs) and Gravitational Lens (15 packs: its Space com
   ZPIC's creon and mellion come after the UMV hatches (naquadah fuel MK IV to VI, the UMV blast furnace), so GTNH's
   recipe alone would close a cycle.
 - **Left out, named:** GT's black hole compressor (the lens runs in the UMV compressor), the glass's Force Field Glass
-  (netherite, molten celestial tungsten; its Six-Phased Copper rods came with #436), the collider casing's Naquarite
-  foil (netherite, Thaumcraft), the LHC controller's Research Stations (no TecTech computation) and UV Neutron
+  (netherite, molten celestial tungsten; its Six-Phased Copper rods came with #436), the LHC controller's Research Stations (no TecTech computation) and UV Neutron
   Accelerators (their inverter's plastic case takes cyan dye, which the mod has none of).
 
 ### YPIC (issue #355, step 5)
@@ -2750,7 +2749,7 @@ coils T1 for MK III, T2 for MK IV).
   - The baths' and engravers' extra fluid ports follow GT's maps (2 fluids in, 2 out; 101).
   - The loops run as in GT: contaminated hydrogen peroxide and contaminated nitrobenzene. The crystal step gives the
     strontium back.
-  - Left out: GT's prismatic bee comb, the raw fluorophlogopite slurry and the netherite Naquarite foil.
+  - Left out: GT's prismatic bee comb and the raw fluorophlogopite slurry (the Naquarite foil since #617).
 
 The refinery (164 section 27; GoodGenerator's RecipeLoader.java and FuelRecipeLoader.java):
 - **Two machines**, as the mod builds tiered casings: the Naquadah Fuel Refinery with T1 coils (UHV, 4 parallels: MK III)
@@ -3041,3 +3040,26 @@ miessiite (155). GT++'s other routes are left out: the germanium roasting in the
 dioxide line start from purified crushed ores, which Gregtorio's ore chain does not have, and the latter needs hot water
 and the industrial coke oven. Their GTNH consumers (abyssal and quantum alloy, the godforge's exotic module plasmas,
 the technetium plasma fusion) are not in the mod either.
+
+## Netherite (issue #617)
+
+GT's netherite chain from ancient debris on (164 section 48; the maintainer's decisions of 2026-10-28). Ancient debris
+is a Manual Mine recipe in the Nether (160, with 163's electric twins); forge hammer, chemical bath, autoclave and seed
+bath give brittle scrap, the macerator nanoparticles, the EBF with molten hellish metal the bonded nanoparticles, the
+arc furnace netherite foil, the forming press the Naquarite Universal Insulator Foil. The 3x3 forming presses got a
+fluid input and the arc furnaces a fluid output (GT's maps take and give one). Netherite is UHV here (the Naquarite
+foil's manyullyn comes with Precise Electronic Unit MK3); GTNH's line is LuV.
+
+Named stand-ins for the Thaumcraft materials: infused gold dust from gold, glowstone (for salis mundus) and mercury
+(GT's centrifuge reversed); thaumium by GT's own recipe with lapis coolant; hellish metal by NewHorizonsCoreMod's
+electrolyzer recipe with 9 rhodium dust for the rhodium block, blaze rods for the Nether Shards, blaze powder for the
+infused fire dust, its block given as melt.
+
+Users only where the tier fits (the decision): the UEV to UMV superconducting coils, the awakened draconium, infinity
+and eternal coils, the collider casing and the QFT's netherite recipe take netherite's Naquarite foil. Kept with their
+stand-ins, as they come before netherite here: the fusion casings (GTNH: a netherite plate), the Fusion Computer MK1
+(a dense netherite plate; Gregtorio: dense osmiridium), Void Miner I (netherite frames; Gregtorio: iridium frames), the
+trinium coil and the ZPM to UHV superconducting coils (the Naquarite foil). Left out: the electric implosion compressor
+recipes of ancient debris (no EIC; debris is mined), the netherite blocks and stairs, the Forestry comb route, the
+dense netherite plate (its only user here would be the Fusion Computer), Force Field Glass (chronomatic glass and
+celestial tungsten parts are missing).

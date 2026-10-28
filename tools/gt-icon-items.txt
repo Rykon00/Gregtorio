@@ -5205,3 +5205,17 @@ small-pile-of-tin-dust
 small-pile-of-sulfur
 germanium-dust
 selenium-dust
+ancient-debris
+netherite-scrap
+hot-netherite-scrap
+netherite-scrap-seed
+brittle-netherite-scrap
+netherite-nanoparticles
+intensely-bonded-netherite-nanoparticles
+naquarite-universal-insulator-foil
+infused-gold-dust
+infused-gold-ingot
+infused-gold-plate
+infused-gold-foil
+thaumium-dust
+netherite-foil

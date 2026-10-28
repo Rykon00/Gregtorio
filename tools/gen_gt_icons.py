@@ -250,6 +250,10 @@ MATERIALS = {
     "calcium-carbonate": ("DULL", (255, 255, 255)), "netherrack": "Netherrack",
     # GT++'s germanium and selenium (MaterialsElements.java:55-78, their colours)
     "germanium": ("DULL", (200, 200, 200)), "selenium": ("DULL", (190, 190, 190)),
+    # issue #617: GT's infused gold and thaumium; netherite (GT's SET_NETHERITE textures are not in GT5-Unofficial: a dark
+    # metallic foil) and Et Futurum's ancient debris (a rough brown ore)
+    "infused-gold": "InfusedGold", "thaumium": "Thaumium", "netherite": ("METALLIC", (0x4a, 0x40, 0x40)),
+    "ancient-debris": ("ROUGH", (0x5a, 0x3e, 0x36)),
     # issue #627: Thermal Foundation's blizz, GT's snow and cryotheum (MaterialsInit.java)
     "blizz": "Blizz", "snow": "Snow", "cryotheum": "Cryotheum",
     "calcium": "Calcium",
@@ -1214,6 +1218,16 @@ def icon_table(c):
     T["heavy-hellish-mud"] = lambda: c.gt("gt:gregtech/textures/items/gt.metaitem.03/242")
     T["calcium-carbonate-dust"] = lambda: c.part("calcium-carbonate", "dust")
     T["small-pile-of-sulfur"] = lambda: c.part("sulfur", "dustSmall")   # (the red mud's piles)
+    # issue #617: GT's netherite items (gt.metaitem.03/243-251), the scrap as the hot scrap cooled, the debris an ore
+    M03 = "gt:gregtech/textures/items/gt.metaitem.03/"
+    for k, n in (("netherite-scrap-seed", 243), ("brittle-netherite-scrap", 244), ("netherite-nanoparticles", 245),
+                 ("intensely-bonded-netherite-nanoparticles", 246),
+                 ("naquarite-universal-insulator-foil", 251)):
+        T[k] = (lambda n=n: lambda: c.gt(f"{M03}{n}"))()
+    # (texture 247 is grey: GT tints it; hot scrap glowing orange, scrap the colour of ancient debris)
+    T["hot-netherite-scrap"] = lambda: tint(c.gt(f"{M03}247"), (255, 150, 80))
+    T["netherite-scrap"] = lambda: tint(c.gt(f"{M03}247"), (110, 85, 75))
+    T["ancient-debris"] = lambda: c.part("ancient-debris", "crushed")
     MILLED = "gt:miscutils/textures/items/processing/MilledOre/milled"
     for m in ("sphalerite", "chalcopyrite", "nickel", "platinum", "pentlandite", "redstone", "spessartine", "grossular",
               "almandine", "pyrope", "monazite", "netherrack"):

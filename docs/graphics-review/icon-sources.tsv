@@ -5188,3 +5188,17 @@ small-pile-of-tin-dust	colour of Tin #dcdcdc + gt:gregtech/textures/items/materi
 small-pile-of-sulfur	colour of Sulfur #c8c800 + gt:gregtech/textures/items/materialicons/NONE/dustSmall
 germanium-dust	colour of germanium #c8c8c8 + gt:gregtech/textures/items/materialicons/NONE/dust
 selenium-dust	colour of selenium #bebebe + gt:gregtech/textures/items/materialicons/NONE/dust
+ancient-debris	colour of ancient-debris #5a3e36 + gt:gregtech/textures/items/materialicons/NONE/crushed + gt:gregtech/textures/items/materialicons/NONE/crushed_OVERLAY
+netherite-scrap	gt:gregtech/textures/items/gt.metaitem.03/247
+hot-netherite-scrap	gt:gregtech/textures/items/gt.metaitem.03/247
+netherite-scrap-seed	gt:gregtech/textures/items/gt.metaitem.03/243
+brittle-netherite-scrap	gt:gregtech/textures/items/gt.metaitem.03/244
+netherite-nanoparticles	gt:gregtech/textures/items/gt.metaitem.03/245
+intensely-bonded-netherite-nanoparticles	gt:gregtech/textures/items/gt.metaitem.03/246
+naquarite-universal-insulator-foil	gt:gregtech/textures/items/gt.metaitem.03/251
+infused-gold-dust	colour of InfusedGold #ffc83c + gt:gregtech/textures/items/materialicons/SHINY/dust + gt:gregtech/textures/items/materialicons/SHINY/dust_OVERLAY
+infused-gold-ingot	colour of InfusedGold #ffc83c + gt:gregtech/textures/items/materialicons/SHINY/ingot + gt:gregtech/textures/items/materialicons/SHINY/ingot_OVERLAY
+infused-gold-plate	colour of InfusedGold #ffc83c + gt:gregtech/textures/items/materialicons/SHINY/plate + gt:gregtech/textures/items/materialicons/SHINY/plate_OVERLAY
+infused-gold-foil	colour of InfusedGold #ffc83c + gt:gregtech/textures/items/materialicons/NONE/foil
+thaumium-dust	colour of Thaumium #9664c8 + gt:gregtech/textures/items/materialicons/METALLIC/dust
+netherite-foil	colour of netherite #4a4040 + gt:gregtech/textures/items/materialicons/NONE/foil
