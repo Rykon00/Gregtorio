@@ -1211,6 +1211,7 @@ def icon_table(c):
     T["crushed-pine-materials"] = lambda: c.gt("gt:miscutils/textures/items/bioscience/MetaItem1/25")
     T["heavy-hellish-mud"] = lambda: c.gt("gt:gregtech/textures/items/gt.metaitem.03/242")
     T["calcium-carbonate-dust"] = lambda: c.part("calcium-carbonate", "dust")
+    T["small-pile-of-sulfur"] = lambda: c.part("sulfur", "dustSmall")   # (the red mud's piles)
     MILLED = "gt:miscutils/textures/items/processing/MilledOre/milled"
     for m in ("sphalerite", "chalcopyrite", "nickel", "platinum", "pentlandite", "redstone", "spessartine", "grossular",
               "almandine", "pyrope", "monazite", "netherrack"):

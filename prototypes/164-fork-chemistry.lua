@@ -5178,6 +5178,9 @@ end
 ---   Froth in the vacuum furnace (the Utupu-Tanuri; RecipeLoaderMilling.java:41-233): 4000 L froth -> dusts + 2000 L red
 ---   mud + 2000 L water (120 s; netherrack: 3000 L -> dusts + 16000 L poor nether waste, 60 s). The froths' coil heats
 ---   (3500 to 7500 K) are not modelled; the Utupu-Tanuri has naquadah coils (7200 K), the monazite froth runs anyway.
+---   GTNH turns platinum and osmium dust out of the platinum line into PT metallic powder (twice the amount) and the
+---   iridium-osmium leach residue (bartworks/system/material/gtenhancement/PlatinumSludgeOutputs.java:45-56; Gregtorio:
+---   metallic platinum powder and rarest metal mixture): the pentlandite and spessartine froths give those.
 ---   Red mud: centrifuge 1000 L -> small piles of iron, copper, tin, sulfur (30/30/20/20 %), tiny piles of nickel and lead
 ---   (10 %, here small piles at 2.5 %) + 500 L water (core/item/chemistry/RecipeLoaderAgriculturalChem.java:215-231).
 ---   Pine oil (RecipeLoaderMilling.java:404-500, chemical plant): wood (Gregtorio's one log; GT++ takes pine logs) -> 64
@@ -5191,7 +5194,9 @@ end
 ---   nether semi-fluid; its distillation -> heavy hellish mud, nefarious gas, coal gas, anthracene, sulfur oxides,
 ---   nitrogen dioxide and neon (IV); cracking nefarious gas with grade 1 or 2 purified water -> nefarious oil (IV).
 ---   The machines (core/recipe/RecipesMachinesCustom.java:769-883): the IsaMill and the Flotation Cell are LuV assembly
----   line controllers with their casings; GT parts the mod lacks are left out (named at their recipes).
+---   line controllers with their casings; GT parts the mod lacks are left out (named at their recipes). Gregtorio's
+---   aniline and calcium hydroxide come with Kevlar (UV) and its vacuum furnace with Prismatic Naquadah (UV), so the line
+---   is unlocked at UV (GTNH: LuV).
 --------------------------------------------------------------------------------
 do
 	local R, RF = {}, {}
@@ -5249,16 +5254,16 @@ do
 	--- the ores: IsaMill and flotation tier, xanthate, pine oil (a tenth of GT's litres), the froth's dusts, the vacuum
 	--- furnace's tier and seconds
 	local ORES = {
-		{ "sphalerite", LUV_SPEED, "sodium", 1400, { { "zinc-dust", 180 }, { "iron-dust", 120 }, { "indium-dust", 64 } }, LUV_SPEED, 120 },
-		{ "chalcopyrite", IV_SPEED, "sodium", 1200, { { "copper-dust", 180 }, { "iron-dust", 120 }, { "cadmium-dust", 50 }, { "indium-dust", 10 } }, IV_SPEED, 120 },
+		{ "sphalerite", LUV_SPEED, "sodium", 1400, { { "zinc-dust", 180 }, { "iron-dust", 120 }, { "indium", 64 } }, LUV_SPEED, 120 },
+		{ "chalcopyrite", IV_SPEED, "sodium", 1200, { { "copper-dust", 180 }, { "iron-dust", 120 }, { "cadmium", 50 }, { "indium", 10 } }, IV_SPEED, 120 },
 		{ "nickel", IV_SPEED, "potassium", 2500, { { "nickel-dust", 150 }, { "cobalt-dust", 120 }, { "rhodium-dust", 32 }, { "ruthenium-dust", 16 } }, IV_SPEED, 120 },
 		{ "platinum", LUV_SPEED, "potassium", 3500, { { "metallic-platinum-powder", 128 }, { "rhodium-dust", 60 }, { "tellurium-dust", 10 } }, LUV_SPEED, 120 },
-		{ "pentlandite", LUV_SPEED, "sodium", 1400, { { "iron-dust", 150 }, { "nickel-dust", 100 }, { "platinum-dust", 20 }, { "hafnium-dust", 10 } }, LUV_SPEED, 120 },
+		{ "pentlandite", LUV_SPEED, "sodium", 1400, { { "iron-dust", 150 }, { "nickel-dust", 100 }, { "metallic-platinum-powder", 40 }, { "hafnium-dust", 10 } }, LUV_SPEED, 120 },
 		{ "redstone", IV_SPEED, "sodium", 1300, { { "redstone-dust", 300 }, { "chromium-dust", 60 }, { "firestone-dust", 45 }, { "dysprosium-dust", 16 } }, IV_SPEED, 120 },
-		{ "spessartine", LUV_SPEED, "potassium", 3500, { { "manganese-dust", 150 }, { "aluminium-dust", 90 }, { "osmium-dust", 30 }, { "strontium-dust", 20 } }, LUV_SPEED, 120 },
-		{ "grossular", LUV_SPEED, "potassium", 2800, { { "calcium-dust", 180 }, { "aluminium-dust", 110 }, { "tungsten-dust", 60 }, { "thallium-dust", 15 } }, LUV_SPEED, 120 },
-		{ "almandine", IV_SPEED, "sodium", 1800, { { "aluminium-dust", 150 }, { "magnesium-dust", 75 }, { "yttrium-dust", 25 }, { "ytterbium-dust", 15 } }, IV_SPEED, 120 },
-		{ "pyrope", EV_SPEED, "sodium", 800, { { "magnesium-dust", 110 }, { "manganese-dust", 70 }, { "borax-dust", 60 }, { "rhenium-dust", 20 } }, EV_SPEED, 120 },
+		{ "spessartine", LUV_SPEED, "potassium", 3500, { { "manganese-dust", 150 }, { "aluminium-dust", 90 }, { "rarest-metal-mixture", 30 }, { "strontium-dust", 20 } }, LUV_SPEED, 120 },
+		{ "grossular", LUV_SPEED, "potassium", 2800, { { "calcium", 180 }, { "aluminium-dust", 110 }, { "tungsten-dust", 60 }, { "thallium-dust", 15 } }, LUV_SPEED, 120 },
+		{ "almandine", IV_SPEED, "sodium", 1800, { { "aluminium-dust", 150 }, { "magnesium", 75 }, { "yttrium-dust", 25 }, { "ytterbium-dust", 15 } }, IV_SPEED, 120 },
+		{ "pyrope", EV_SPEED, "sodium", 800, { { "magnesium", 110 }, { "manganese-dust", 70 }, { "borax", 60 }, { "rhenium-dust", 20 } }, EV_SPEED, 120 },
 		{ "monazite", ZPM_SPEED, "potassium", 3000, { { "erbium-dust", 64 }, { "lanthanum-dust", 32 }, { "lutetium-dust", 16 }, { "europium-dust", 8 } }, UV_SPEED, 60 },
 	}
 	FORK_MILLING = { ores = ORES, recipes = R }
@@ -5291,13 +5296,15 @@ do
 	step(R, "netherrack-flotation-froth", "flotation-cell-recipes", 120, LUV_SPEED,
 		{ { "milled-netherrack", 256 }, { "nefarious-oil", 800 } }, { { "netherrack-flotation-froth", 800 } })
 	step(RF, "netherrack-froth-processing", "vacuum-furnace-recipes", 60, LUV_SPEED, { { "netherrack-flotation-froth", 300 } },
-		{ { "sulfur", 256 }, { "antimony-dust", 55 }, { "certus-quartz-dust", 40 }, { "nether-quartz-dust", 40 },
+		{ { "sulfur", 256 }, { "antimony", 55 }, { "certus-quartz-dust", 40 }, { "nether-quartz-dust", 40 },
 			{ "ardite-dust", 32 }, { "cobalt-dust", 32 }, { "poor-nether-waste", 1600 } }, "poor-nether-waste")
 	--- red mud
 	local piles = {}
 	for _, p in pairs({ { "iron-dust", 0.3 }, { "copper-dust", 0.3 }, { "tin-dust", 0.2 }, { "sulfur", 0.2 },
 		{ "nickel-dust", 0.025 }, { "lead-dust", 0.025 } }) do
-		piles[#piles + 1] = { (pile(p[1], "small")), 1, p[2] }
+		local name, from = pile(p[1], "small")
+		piles[#piles + 1] = { name, 1, p[2] }
+		RF[#RF + 1] = from
 	end
 	piles[#piles + 1] = { "water", 50 }
 	step(RF, "red-mud-centrifuging", "lv-centrifuge-recipes", 30, LV_SPEED, { { "red-mud", 100 } }, piles, piles[1][1])
@@ -5338,7 +5345,10 @@ do
 			item("inconel-625-frame", 20), item("inconel-792-frame", 8), item("luv-energy-hatch", 1) } },
 	}
 	F.tech{
-		name = "milling-and-flotation", prerequisites = { "assembly-line" }, packs = 7, count = 400, time = 60, recipes = R,
+		--- (the producers of its parts and chemicals; aniline and calcium hydroxide come with Kevlar, so the line is UV here)
+		name = "milling-and-flotation", packs = 9, count = 300, time = 60, recipes = R,
+		prerequisites = { "kevlar", "luv-machines", "luv-energy-hatches", "luv-components", "hsse", "hssg", "fluid-shaper",
+			"industrial-centrifuge", "industrial-electrolyzer", "liquid-fluoride-thorium-reactor", "super-glue" },
 	}
 	--- the froths need the vacuum furnace, which Gregtorio's Utupu-Tanuri brings with Prismatic Naquadah (UV)
 	F.tech{
