@@ -365,10 +365,10 @@ step("nitrogenated-bastnasite-rarer-earth-oxides", MIX, 15, HV_SPEED,
 step("bastnasite-rarer-earth-oxide-suspension", CR, 35, HV_SPEED,
 	{ { "nitrogenated-bastnasite-rarer-earth-oxides", 100 }, { "acetone", 100 } },
 	{ { "bastnasite-rarer-earth-oxide-suspension", 100 } })
+F.fluid("diluted-acetone", "nearly-white-fluid", { 0.85, 0.85, 0.80 })   -- (before its recipe: step types it by data.raw)
 step("neodymium-rare-earth-concentrate", "hv-centrifuge-recipes", 45, HV_SPEED,
 	{ { "bastnasite-rarer-earth-oxide-suspension", 100 } },
 	{ { "neodymium-rare-earth-concentrate", 1, 0.8 }, { "samaric-rare-earth-concentrate", 1, 0.5 }, { "diluted-acetone", 75 } })
-F.fluid("diluted-acetone", "nearly-white-fluid", { 0.85, 0.85, 0.80 })
 step("acetone-from-diluted-acetone", "mv-fluid-heater-recipes", 1.2, MV_SPEED, { { "diluted-acetone", 50 } }, { { "acetone", 30 } })
 step("neodymium-rare-earth-concentrate-reaction", CR, 45, HV_SPEED,
 	{ { "neodymium-rare-earth-concentrate", 2 }, { "hydrochloric-acid", 200 } },

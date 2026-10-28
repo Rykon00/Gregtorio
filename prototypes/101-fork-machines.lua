@@ -1717,7 +1717,7 @@ do
 		{ "hv", "mv", "120kW", 4, "gold-cable",      "processing-unit",    "kanthal-wire" },
 		{ "ev", "mv", "240kW", 8, "aluminium-cable", "ev-circuit",         "nichrome-wire" },
 	}
-	local TECH_OF = { lv = "steam-turbine", mv = "mv-machines", hv = "hv-machines", ev = "ev-machines" }
+	local TECH_OF = { lv = "extractor", mv = "mv-machines", hv = "hv-machines", ev = "ev-machines" }
 	for _, a in ipairs(TIERS_635) do
 		local t, pt, energy, speed, cable, circuit, coil = table.unpack(a)
 		make_electric_machine(t .. "-fluid-heater", t .. "-fluid-heater", pt .. "-fluid-heater",
@@ -1753,7 +1753,7 @@ do
 			results = { { type = "fluid", name = "steam", amount = 96 } },
 			main_product = "steam",
 		}
-		fork_add_unlock("steam-turbine", w .. "-fluid-heater")
+		fork_add_unlock("extractor", w .. "-fluid-heater")   -- (with the LV heater: its pumps come with Extractor)
 	end
 end
 
