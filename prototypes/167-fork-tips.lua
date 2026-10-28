@@ -67,7 +67,7 @@ local TIER_PREFIXES = { "ulv", "lv", "mv", "hv", "ev", "iv", "luv", "zpm", "uv",
 local KINDS = {}
 for _, k in pairs({ "alloy-blast-smelter", "alloy-smelter", "arc-furnace", "assembling-machine", "assembly-line",
 	"autoclave", "bending-machine", "brewery", "canning-machine", "centrifuge", "chemical-bath", "chemical-reactor",
-	"circuit-assembler", "combustion-generator", "compressor", "cracker", "dehydrator", "dimension-miner", "distillery",
+	"circuit-assembler", "combustion-generator", "cutting-machine", "compressor", "cracker", "dehydrator", "dimension-miner", "distillery",
 	"drilling-rig", "electric-blast-furnace", "electric-furnace", "electrolyzer", "electromagnetic-separator", "extractor",
 	"extruder", "fermenter", "fluid-extractor", "fluid-solidifier", "forge-hammer", "forming-press", "gas-turbine",
 	"implosion-compressor", "large-chemical-reactor", "large-naquadah-reactor", "large-plasma-turbine", "large-sifter",

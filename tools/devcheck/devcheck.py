@@ -2661,7 +2661,8 @@ def check(a):
     for line in names_info:
         print("  " + line)
     report("prototypes without a name (\"Unknown key\" in the game; add the locale entry, a main product or the "
-           "allow-list FORK_LOCALE_MISSING of prototypes/fork-locale.lua)", names, limit=60)
+           "allow-list FORK_LOCALE_MISSING of prototypes/fork-locale.lua) and machines without a description (issue #625: "
+           "an entity-description or a kind of [fork-machine] in prototypes/167-fork-tips.lua)", names, limit=60)
     table_info, vein_doc = check_vein_table(sec, getattr(a, "vein_table", False))
     print(f"\nvein table of docs/ORE-VEINS.md (issue #574): {table_info}")
     report("the vein table of docs/ORE-VEINS.md", vein_doc)
