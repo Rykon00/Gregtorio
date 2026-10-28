@@ -5209,3 +5209,20 @@ infused-gold-plate	colour of InfusedGold #ffc83c + gt:gregtech/textures/items/ma
 infused-gold-foil	colour of InfusedGold #ffc83c + gt:gregtech/textures/items/materialicons/NONE/foil
 thaumium-dust	colour of Thaumium #9664c8 + gt:gregtech/textures/items/materialicons/METALLIC/dust
 netherite-foil	colour of netherite #4a4040 + gt:gregtech/textures/items/materialicons/NONE/foil
+pentacadmium-magnesium-hexaoxid-dust	colour of Pentacadmiummagnesiumhexaoxid #555555 + gt:gregtech/textures/items/materialicons/SHINY/dust + gt:gregtech/textures/items/materialicons/SHINY/dust_OVERLAY
+pentacadmium-magnesium-hexaoxid-ingot	colour of Pentacadmiummagnesiumhexaoxid #555555 + gt:gregtech/textures/items/materialicons/SHINY/ingot + gt:gregtech/textures/items/materialicons/SHINY/ingot_OVERLAY
+pentacadmium-magnesium-hexaoxid-wire	colour of Pentacadmiummagnesiumhexaoxid #555555
+titaniumonabarium-decacoppereikosaoxid-dust	colour of Titaniumonabariumdecacoppereikosaoxid #331900 + gt:gregtech/textures/items/materialicons/METALLIC/dust
+titaniumonabarium-decacoppereikosaoxid-ingot	colour of Titaniumonabariumdecacoppereikosaoxid #331900 + gt:gregtech/textures/items/materialicons/METALLIC/ingot
+titaniumonabarium-decacoppereikosaoxid-wire	colour of Titaniumonabariumdecacoppereikosaoxid #331900
+uranium-triplatinid-dust	colour of Uraniumtriplatinid #008700 + gt:gregtech/textures/items/materialicons/SHINY/dust + gt:gregtech/textures/items/materialicons/SHINY/dust_OVERLAY
+uranium-triplatinid-ingot	colour of Uraniumtriplatinid #008700 + gt:gregtech/textures/items/materialicons/SHINY/ingot + gt:gregtech/textures/items/materialicons/SHINY/ingot_OVERLAY
+uranium-triplatinid-wire	colour of Uraniumtriplatinid #008700
+hot-titaniumonabarium-decacoppereikosaoxid-ingot	colour of Titaniumonabariumdecacoppereikosaoxid #331900 + gt:gregtech/textures/items/materialicons/NONE/ingotHot + gt:gregtech/textures/items/materialicons/NONE/ingotHot_OVERLAY
+hot-uranium-triplatinid-ingot	colour of Uraniumtriplatinid #008700 + gt:gregtech/textures/items/materialicons/NONE/ingotHot + gt:gregtech/textures/items/materialicons/NONE/ingotHot_OVERLAY
+mv-superconductor-wire	colour of SuperconductorMV #555555
+hv-superconductor-wire	colour of SuperconductorHV #331900
+ev-superconductor-wire	colour of SuperconductorEV #008700
+mv-solenoid-superconductor-coil	gt:gregtech/textures/blocks/iconsets/MV_SIDE_CYCLOTRON_SOLENOID
+hv-solenoid-superconductor-coil	gt:gregtech/textures/blocks/iconsets/HV_SIDE_CYCLOTRON_SOLENOID
+ev-solenoid-superconductor-coil	gt:gregtech/textures/blocks/iconsets/EV_SIDE_CYCLOTRON_SOLENOID
