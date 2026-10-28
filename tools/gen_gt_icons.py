@@ -269,6 +269,8 @@ MATERIALS = {
     "energy-crystal": ("METALLIC", (228, 255, 0)), "tungsten-titanium-carbide": ("METALLIC", (135, 80, 171)),
     "arcanite": ("METALLIC", (126, 140, 75)), "titansteel": ("METALLIC", (135, 106, 59)),
     "cinobite-a243": ("METALLIC", (149, 162, 157)), "octiron": ("METALLIC", (148, 140, 87)),
+    # issue #636: Seth's raw tengam (the ore and GT's Raw Tengam Dust) and tartarite (MaterialsInit.java)
+    "tengam": "TengamRaw", "raw-tengam": "TengamRaw", "tartarite": "Tartarite",
     "calcium": "Calcium",
     # issue #205: goodgenerator's Werkstoffe of the naquadah line (GGMaterial.java, their colours; dusts)
     "naquadria-oxide-mixture": ("METALLIC", (77, 77, 85)), "indium-phosphate": ("DULL", (43, 46, 112)),

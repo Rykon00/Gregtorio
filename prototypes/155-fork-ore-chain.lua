@@ -299,6 +299,14 @@ local NEW_ORES = {
 	--- issue #355 step 5: Horus's oriharukon (Void Miner III, 160); GT's element Oh (76 protons, 125 neutrons), no
 	--- byproducts of its own
 	["oriharukon"] = { dust = "oriharukon-dust", byproducts = {  }, mass = 201 },   -- GT Oriharukon: none (itself)
+	--- issue #636: Phobos's and Mars's arsenic and antimony (the HeavyPentele vein, Reach Mars, 160; GT's elements As and
+	--- Sb), Seth's raw tengam and tartarite and Maahes's naquadria (Void Miner III, 160; no composition: technetium's
+	--- 98); raw tengam's magnetic neodymium and samarium byproducts are left out (no such dusts in the mod)
+	["arsenic"] = { dust = "arsenic", byproducts = {  }, mass = 75 },   -- GT Arsenic: none (itself)
+	["antimony"] = { dust = "antimony", byproducts = { "zinc-dust", "iron-dust" }, mass = 121 },   -- GT Antimony: Zinc, Iron
+	["tengam"] = { dust = "raw-tengam-dust", byproducts = {  }, mass = 98 },   -- GT TengamRaw: NeodymiumMagnetic, SamariumMagnetic (left out)
+	["tartarite"] = { dust = "tartarite-dust", byproducts = {  }, mass = 98 },   -- GT Tartarite: none (itself)
+	["naquadria"] = { dust = "naquadria-dust", byproducts = {  }, mass = 98 },   -- GT Naquadria: Naquadria (itself)
 	--- issue #356: the Lutetium Asteroid's thulium and tellurium (162); GT gives them no byproducts of their own
 	["thulium"] = { dust = "thulium-dust", byproducts = {  }, mass = 168 },   -- GT Thulium: none (itself)
 	["tellurium"] = { dust = "tellurium-dust", byproducts = {  }, mass = 127 },   -- GT Tellurium: none (itself)

@@ -5260,3 +5260,35 @@ energy-crystal-dust	colour of energy-crystal #e4ff00 + gt:gregtech/textures/item
 tungsten-titanium-carbide-dust	colour of tungsten-titanium-carbide #8750ab + gt:gregtech/textures/items/materialicons/METALLIC/dust
 arcanite-dust	colour of arcanite #7e8c4b + gt:gregtech/textures/items/materialicons/METALLIC/dust
 titansteel-dust	colour of titansteel #876a3b + gt:gregtech/textures/items/materialicons/METALLIC/dust
+raw-arsenic	gt:gregtech/textures/items/materialicons/DULL/oreRaw
+crushed-arsenic	gt:gregtech/textures/items/materialicons/NONE/crushed + gt:gregtech/textures/items/materialicons/NONE/crushed_OVERLAY
+purified-arsenic	gt:gregtech/textures/items/materialicons/NONE/crushedPurified
+centrifuged-arsenic	gt:gregtech/textures/items/materialicons/NONE/crushedCentrifuged
+impure-arsenic-dust	gt:gregtech/textures/items/materialicons/NONE/dustImpure + gt:gregtech/textures/items/materialicons/NONE/dustImpure_OVERLAY
+pure-arsenic-dust	gt:gregtech/textures/items/materialicons/NONE/dustPure + gt:gregtech/textures/items/materialicons/NONE/dustPure_OVERLAY
+raw-antimony	colour of Antimony #dcdcf0 + gt:gregtech/textures/items/materialicons/SHINY/oreRaw
+crushed-antimony	colour of Antimony #dcdcf0 + gt:gregtech/textures/items/materialicons/NONE/crushed + gt:gregtech/textures/items/materialicons/NONE/crushed_OVERLAY
+purified-antimony	colour of Antimony #dcdcf0 + gt:gregtech/textures/items/materialicons/NONE/crushedPurified
+centrifuged-antimony	colour of Antimony #dcdcf0 + gt:gregtech/textures/items/materialicons/NONE/crushedCentrifuged
+impure-antimony-dust	colour of Antimony #dcdcf0 + gt:gregtech/textures/items/materialicons/SHINY/dustImpure + gt:gregtech/textures/items/materialicons/SHINY/dustImpure_OVERLAY
+pure-antimony-dust	colour of Antimony #dcdcf0 + gt:gregtech/textures/items/materialicons/SHINY/dustPure + gt:gregtech/textures/items/materialicons/SHINY/dustPure_OVERLAY
+raw-tengam	colour of TengamRaw #a0bf60 + gt:gregtech/textures/items/materialicons/NONE/oreRaw
+crushed-tengam	colour of TengamRaw #a0bf60 + gt:gregtech/textures/items/materialicons/NONE/crushed + gt:gregtech/textures/items/materialicons/NONE/crushed_OVERLAY
+purified-tengam	colour of TengamRaw #a0bf60 + gt:gregtech/textures/items/materialicons/NONE/crushedPurified
+centrifuged-tengam	colour of TengamRaw #a0bf60 + gt:gregtech/textures/items/materialicons/NONE/crushedCentrifuged
+impure-tengam-dust	colour of TengamRaw #a0bf60 + gt:gregtech/textures/items/materialicons/ROUGH/dustImpure + gt:gregtech/textures/items/materialicons/ROUGH/dustImpure_OVERLAY
+pure-tengam-dust	colour of TengamRaw #a0bf60 + gt:gregtech/textures/items/materialicons/ROUGH/dustPure + gt:gregtech/textures/items/materialicons/ROUGH/dustPure_OVERLAY
+raw-tartarite	colour of Tartarite #ff763c + gt:gregtech/textures/items/materialicons/METALLIC/oreRaw
+crushed-tartarite	colour of Tartarite #ff763c + gt:gregtech/textures/items/materialicons/NONE/crushed + gt:gregtech/textures/items/materialicons/NONE/crushed_OVERLAY
+purified-tartarite	colour of Tartarite #ff763c + gt:gregtech/textures/items/materialicons/NONE/crushedPurified
+centrifuged-tartarite	colour of Tartarite #ff763c + gt:gregtech/textures/items/materialicons/NONE/crushedCentrifuged
+impure-tartarite-dust	colour of Tartarite #ff763c + gt:gregtech/textures/items/materialicons/METALLIC/dustImpure + gt:gregtech/textures/items/materialicons/METALLIC/dustImpure_OVERLAY
+pure-tartarite-dust	colour of Tartarite #ff763c + gt:gregtech/textures/items/materialicons/METALLIC/dustPure + gt:gregtech/textures/items/materialicons/METALLIC/dustPure_OVERLAY
+raw-naquadria	colour of Naquadria #1e1e1e + gt:gregtech/textures/items/materialicons/SHINY/oreRaw
+crushed-naquadria	colour of Naquadria #1e1e1e + gt:gregtech/textures/items/materialicons/NONE/crushed + gt:gregtech/textures/items/materialicons/NONE/crushed_OVERLAY
+purified-naquadria	colour of Naquadria #1e1e1e + gt:gregtech/textures/items/materialicons/NONE/crushedPurified
+centrifuged-naquadria	colour of Naquadria #1e1e1e + gt:gregtech/textures/items/materialicons/NONE/crushedCentrifuged
+impure-naquadria-dust	colour of Naquadria #1e1e1e + gt:gregtech/textures/items/materialicons/SHINY/dustImpure + gt:gregtech/textures/items/materialicons/SHINY/dustImpure_OVERLAY
+pure-naquadria-dust	colour of Naquadria #1e1e1e + gt:gregtech/textures/items/materialicons/SHINY/dustPure + gt:gregtech/textures/items/materialicons/SHINY/dustPure_OVERLAY
+raw-tengam-dust	colour of TengamRaw #a0bf60 + gt:gregtech/textures/items/materialicons/ROUGH/dust
+tartarite-dust	colour of Tartarite #ff763c + gt:gregtech/textures/items/materialicons/METALLIC/dust

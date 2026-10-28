@@ -332,6 +332,7 @@ FORK_TECH_ICONS = {
 	["temporal-processors"] = true,
 	["the-core"] = true,
 	["the-core"] = true,
+	["the-deep-dark"] = true,
 	["thorium-based-liquid-fuel"] = true,
 	["thorium-based-liquid-fuel"] = true,
 	["titanium"] = true,

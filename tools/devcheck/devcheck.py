@@ -1221,6 +1221,8 @@ ORE_BATHS = {
 ORE_BATHS["mercury"].update({"magnetite": "gold-dust", "chalcopyrite": "gold-dust"})
 ORE_BATHS["sodium-persulfate"].update({"yellow-limonite": "nickel-dust", "malachite": "copper-dust",
                                        "chalcopyrite": "cobalt-dust", "garnierite": "nickel-dust"})
+# issue #636: Mars's and Phobos's antimony (its byproduct zinc, GT's chemical bath in the GTNH recipe dump)
+ORE_BATHS["sodium-persulfate"]["antimony"] = "zinc-dust"
 def check_ore_baths(m):
     """Issue #186 (prototypes/155-fork-ore-chain.lua, phase O2): the chemical bath washes exactly the ores of ORE_BATHS
     with mercury or sodium persulfate into purified ore and the tagged material's dust, as in GTNH. Returns (number of
