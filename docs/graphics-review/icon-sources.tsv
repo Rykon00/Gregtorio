@@ -5153,6 +5153,13 @@ purified-molybdenum	colour of Molybdenum #b4b4dc + gt:gregtech/textures/items/ma
 purified-quartzite	colour of Quartzite #d2e6d2 + gt:gregtech/textures/items/materialicons/NONE/crushedPurified
 raw-molybdenum	colour of Molybdenum #b4b4dc + gt:gregtech/textures/items/materialicons/SHINY/oreRaw
 raw-oilsands	colour of Oilsands #0a0a0a + gt:gregtech/textures/items/materialicons/NONE/oreRaw
+hammer-usage	colour of Wood #643200 + gt:gregtech/textures/items/materialicons/NONE/stick + colour of Iron #c8c8c8 + gt:gregtech/textures/items/materialicons/NONE/toolHeadHammer
+file-usage	colour of Wood #643200 + gt:gregtech/textures/items/materialicons/NONE/handleFile + colour of Iron #c8c8c8 + gt:gregtech/textures/items/materialicons/NONE/toolHeadFile
+saw-usage	colour of Wood #643200 + gt:gregtech/textures/items/materialicons/NONE/handleSaw + colour of Iron #c8c8c8 + gt:gregtech/textures/items/materialicons/NONE/toolHeadSaw
+screwdriver-usage	colour of Wood #643200 + gt:gregtech/textures/items/materialicons/NONE/handleScrewdriver + colour of Iron #c8c8c8 + gt:gregtech/textures/items/materialicons/NONE/toolHeadScrewdriver
+wire-cutter-usage	colour of Iron #c8c8c8 + gt:gregtech/textures/items/materialicons/NONE/toolWireCutter + gt:gregtech/textures/items/materialicons/NONE/toolWireCutter_OVERLAY
+wrench-usage	colour of Iron #c8c8c8 + gt:gregtech/textures/items/materialicons/NONE/toolWrench
+knife-usage	colour of Iron #c8c8c8 + gt:gregtech/textures/items/materialicons/NONE/toolKnife + gt:gregtech/textures/items/materialicons/NONE/toolKnife_OVERLAY
 blizz-rod	colour of Blizz #dce9ff + gt:gregtech/textures/items/materialicons/NONE/stick + gt:gregtech/textures/items/materialicons/CUSTOM/blizz/stick_OVERLAY
 blizz-dust	colour of Blizz #dce9ff + gt:gregtech/textures/items/materialicons/NONE/dust + gt:gregtech/textures/items/materialicons/CUSTOM/blizz/dust_OVERLAY
 snow-dust	colour of Snow #fafafa + gt:gregtech/textures/items/materialicons/FINE/dust

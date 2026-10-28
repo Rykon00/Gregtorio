@@ -61,7 +61,8 @@ local function names_rows()
 		local minable = p.mineable_properties and p.mineable_properties.minable
 		local shown = base_shown(p) and (placed and "placed by an item" or minable and "minable"
 			or p.type == "resource" and "resource") or nil
-		row("entity", p, shown)
+		--- (issue #625: with its description, which a machine must have)
+		row("entity", p, shown, helpers.table_to_json({ d = p.localised_description }))
 	end
 	for _, p in pairs(prototypes.equipment) do
 		row("equipment", p, base_shown(p))

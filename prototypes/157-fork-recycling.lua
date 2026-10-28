@@ -285,6 +285,137 @@ for _, item in pairs(names) do
 		end
 	end
 end
+--------------------------------------------------------------------------------
+--- Issue #670: the material blocks. GT gives a storage block (OrePrefixes.block: 9 units of its material) the material
+--- recycling above with 9 units (GTRecipeRegistrator.registerMaterialRecycling: 9 dusts in max(16, 9 x mass) ticks, 9
+--- ingots of the arc smelting material in as many ticks with as many litres of oxygen, the melt of 9 ingots in 216 ticks)
+--- and the recipes of ProcessingBlock.java: the cutting machine cuts it into 9 plates (when the plate exists and the
+--- material's processing voltage is below IV: water, max(4, min(1000, mass x 10 x 30 / 320)) L, 2 x mass x 10 ticks, LV;
+--- GT's distilled water, lubricant and superfluid variants are left out, as for 158's bolts; GT++'s alloys,
+--- RecipeGenPlates.java: no fluid, mass x 10 ticks at the alloy's voltage), and the forge hammer breaks a gem block into 9
+--- gems (5 s, 24 EU/t). GTNH has no block -> ingot crafting (its config storageblockdecrafting is unused).
+--- A material block is block-of-<material> or <material>-block whose recipe takes 9 of one item (an ingot, a gem or a
+--- dust); its melt is the one its solidifier recipe takes, else 9 times the melt of that item. Everything comes from the
+--- recipes and 158's data (prototypes/gt-parts-data.lua: mass, processing voltage, GT++ or not). Unlocked like the
+--- recycling (FORK_RECYCLING.unlock(): the first technology after the machine and the block); the cutting and forge
+--- hammer recipes are FORK_RECYCLING.blocks, which 199's auto-unlock ignores like the recycling recipes. devcheck fails
+--- for a reachable material block that no recipe takes, unless it is in FORK_BLOCKS_DEAD_END with its reason.
+--------------------------------------------------------------------------------
+FORK_BLOCKS_DEAD_END = FORK_BLOCKS_DEAD_END or {}
+FORK_RECYCLING.blocks = {}
+FORK_RECYCLING.block_counts = { blocks = 0, ["cutting-machine"] = 0, ["forge-hammer"] = 0 }
+do
+	local GT = require("prototypes.gt-parts-data")
+	local SPEED = { lv = LV_SPEED, mv = MV_SPEED, hv = HV_SPEED, ev = EV_SPEED, iv = IV_SPEED, luv = LUV_SPEED,
+		zpm = ZPM_SPEED, uv = UV_SPEED, uhv = UHV_SPEED, uev = UEV_SPEED, uiv = UIV_SPEED, umv = UMV_SPEED, uxv = UXV_SPEED }
+	local BELOW_IV = { lv = true, mv = true, hv = true, ev = true }
+	--- a gem whose dust and plate have another material name (lapis-lazuli, lapis-dust, lapis-plate)
+	local GEM_MATERIAL = { ["lapis-lazuli"] = "lapis" }
+	local function is_block(n) return n:find("^block%-of%-") ~= nil or n:find("%-block$") ~= nil end
+	--- the blocks with their item of 9 and their melt; the melt of every item from the fluid extractor
+	local source, block_melt, melt_of, takers = {}, {}, {}, {}
+	for name, r in pairs(data.raw.recipe) do
+		local ing, res = r.ingredients or {}, r.results or {}
+		if not r.hidden and #ing == 1 and #res == 1 and res[1].type ~= "fluid" and is_block(res[1].name) and res[1].amount == 1 then
+			local b, i = res[1].name, ing[1]
+			if i.type ~= "fluid" and i.amount == 9 then
+				source[b] = source[b] or i.name
+			elseif i.type == "fluid" and i.name:find("^molten%-") then
+				block_melt[b] = block_melt[b] or { i.name, i.amount }
+			end
+		end
+		if not r.hidden and #ing == 1 and ing[1].type ~= "fluid" and ing[1].amount == 1 and #res == 1 and res[1].type == "fluid"
+			and res[1].name:find("^molten%-") then
+			for _, c in pairs(r.categories or {}) do
+				if c:find("fluid-extractor", 1, true) then melt_of[ing[1].name] = { res[1].name, res[1].amount } end
+			end
+		end
+		for _, i in pairs(ing) do
+			if is_block(i.name) then
+				takers[i.name] = takers[i.name] or {}
+				table.insert(takers[i.name], r)
+			end
+		end
+	end
+	local function taken_by(block, kind)
+		for _, r in pairs(takers[block] or {}) do
+			for _, c in pairs(r.categories or {}) do
+				if c:find(kind, 1, true) then return true end
+			end
+		end
+		return false
+	end
+	local function block_recipe(name, kind, tier, time, block, ingredients, results)
+		local category = tier .. "-" .. kind .. "-recipes"
+		if not data.raw["recipe-category"][category] or data.raw.recipe[name] then return end
+		data:extend({ {
+			type = "recipe", name = name, categories = { category }, enabled = false, energy_required = time,
+			ingredients = ingredients, results = results, main_product = results[1].name,
+			subgroup = data.raw["item-subgroup"]["subgroup-" .. category] and ("subgroup-" .. category) or nil,
+			allow_productivity = false, auto_recycle = false,
+		} })
+		FORK_RECYCLING.blocks[name] = true
+		FORK_RECYCLING.block_counts[kind] = FORK_RECYCLING.block_counts[kind] + 1
+		table.insert(FORK_RECYCLING.pending, { name, category, block })
+	end
+	local blocks = {}
+	for b in pairs(source) do
+		if item_exists(b) then blocks[#blocks + 1] = b end
+	end
+	table.sort(blocks)
+	for _, b in pairs(blocks) do
+		local src = source[b]
+		local kind = src:find("%-ingot$") and "ingot" or src:find("%-dust$") and "dust" or "gem"
+		local m = src:match("^(.+)%-ingot$") or src:match("^(.+)%-dust$") or src:match("^(.+)%-gem$") or src
+		m = GEM_MATERIAL[m] or m
+		local d = GT[m] or {}
+		local ms = d.mass or FORK_RECYCLING_MASS[m] or DEFAULT_MASS
+		local input = { { type = "item", name = b, amount = 1 } }
+		FORK_RECYCLING.block_counts.blocks = FORK_RECYCLING.block_counts.blocks + 1
+		--- macerator: 9 dusts (a platinum group metal: the platinum line's powder or residue, as above)
+		local dust = kind == "dust" and src or (d.dust and item_exists(d.dust) and d.dust) or (m .. "-dust")
+		local t = math.max(16, 9 * ms)
+		if PGM_DUST[m] and item_exists(PGM_DUST[m]) then
+			recipe("macerator", "lv-macerator-recipes", b, t / 20 * LV_SPEED, input,
+				{ { type = "item", name = PGM_DUST[m], amount = 18 } })
+		elseif item_exists(dust) then
+			recipe("macerator", "lv-macerator-recipes", b, t / 20 * LV_SPEED, input, { { type = "item", name = dust, amount = 9 } })
+		end
+		--- arc furnace: 9 ingots of a metal's arc smelting material (gems and dusts are no metals: GT drops them)
+		local into = (ARC_INTO[m] or m) .. "-ingot"
+		if kind == "ingot" and item_exists(into) then
+			recipe("arc-furnace", "lv-arc-furnace-recipes", b, t / 20 * LV_SPEED,
+				{ input[1], { type = "fluid", name = "oxygen", amount = grid(t / 10) } }, { { type = "item", name = into, amount = 9 } })
+		end
+		--- fluid extractor: the melt of 9 ingots
+		local melt = block_melt[b] or (melt_of[src] and { melt_of[src][1], melt_of[src][2] * 9 })
+		if melt and data.raw.fluid[melt[1]] then
+			recipe("fluid-extractor", "lv-fluid-extractor-recipes", b, math.max(1, 24 * 9) / 20 * LV_SPEED, input,
+				{ { type = "fluid", name = melt[1], amount = grid(melt[2]) } })
+		end
+		--- cutting machine: 9 plates
+		local plate = m .. "-plate"
+		if item_exists(plate) and not taken_by(b, "cutting-machine") then
+			local out = { { type = "item", name = plate, amount = 9 } }
+			local m10 = math.max(1, ms * 10)
+			if d.source == "gtpp" then
+				local tier = d.tier or "lv"
+				block_recipe("cut-" .. b, "cutting-machine", tier, m10 / 20 * SPEED[tier], b, input, out)
+			elseif not d.tier or BELOW_IV[d.tier] then
+				local water = math.max(4, math.min(1000, math.floor(m10 * 30 / 320))) / 10
+				block_recipe("cut-" .. b, "cutting-machine", "lv", 2 * m10 / 20 * LV_SPEED, b,
+					{ input[1], { type = "fluid", name = "water", amount = grid(water) } }, out)
+			end
+		end
+		--- forge hammer: 9 gems
+		if kind == "gem" and not taken_by(b, "forge-hammer") then
+			block_recipe("hammer-" .. b, "forge-hammer", "lv", 5 * LV_SPEED, b, input, { { type = "item", name = src, amount = 9 } })
+		end
+	end
+	log("FORK-RECYCLING: " .. FORK_RECYCLING.block_counts.blocks .. " material blocks, "
+		.. FORK_RECYCLING.block_counts["cutting-machine"] .. " cutting machine and " .. FORK_RECYCLING.block_counts["forge-hammer"]
+		.. " forge hammer recipes (issue #670)")
+end
 log("FORK-RECYCLING: " .. FORK_RECYCLING.items .. " items, " .. FORK_RECYCLING.by_kind.macerator .. " macerator, "
 	.. FORK_RECYCLING.by_kind["arc-furnace"] .. " arc furnace, " .. FORK_RECYCLING.by_kind["fluid-extractor"]
 	.. " fluid extractor recycling recipes")
@@ -420,6 +551,7 @@ function FORK_RECYCLING.unlock()
 		if not unlock_after(p[1], { machine_techs(p[2]), item_techs(p[3]) }) then
 			data.raw.recipe[p[1]] = nil
 			FORK_RECYCLING.recipes[p[1]] = nil
+			FORK_RECYCLING.blocks[p[1]] = nil
 			removed = removed + 1
 		end
 	end
