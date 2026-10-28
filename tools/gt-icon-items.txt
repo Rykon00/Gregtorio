@@ -5229,3 +5229,8 @@ infused-gold-plate
 infused-gold-foil
 thaumium-dust
 netherite-foil
+wetware-circuit-board
+bioware-circuit-board
+petri-dish
+basic-photolithographic-casing
+pcb-factory-controller

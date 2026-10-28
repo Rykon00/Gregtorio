@@ -1229,6 +1229,12 @@ def icon_table(c):
     T["heavy-hellish-mud"] = lambda: c.gt("gt:gregtech/textures/items/gt.metaitem.03/242")
     T["calcium-carbonate-dust"] = lambda: c.part("calcium-carbonate", "dust")
     T["small-pile-of-sulfur"] = lambda: c.part("sulfur", "dustSmall")   # (the red mud's piles)
+    # issue #628: GT's wetware and bio boards and the petri dish (gt.metaitem.03/6, 8, 22), the T1 photolithographic
+    # casing, the PCB Factory's controller (the casing with the assembly line front)
+    for k, n in (("wetware-circuit-board", 6), ("bioware-circuit-board", 8), ("petri-dish", 22)):
+        T[k] = (lambda n=n: lambda: c.gt(f"gt:gregtech/textures/items/gt.metaitem.03/{n}"))()
+    T["basic-photolithographic-casing"] = lambda: c.gt(f"{BLK}MACHINE_CASING_PCB_TIER_1")
+    T["pcb-factory-controller"] = lambda: over(c.gt(f"{BLK}MACHINE_CASING_PCB_TIER_1"), c.gt(f"{BLK}OVERLAY_FRONT_ASSEMBLY_LINE"))
     # issue #617: GT's netherite items (gt.metaitem.03/243-251), the scrap as the hot scrap cooled, the debris an ore
     M03 = "gt:gregtech/textures/items/gt.metaitem.03/"
     for k, n in (("netherite-scrap-seed", 243), ("brittle-netherite-scrap", 244), ("netherite-nanoparticles", 245),

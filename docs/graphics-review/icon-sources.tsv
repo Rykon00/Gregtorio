@@ -5209,3 +5209,8 @@ infused-gold-plate	colour of InfusedGold #ffc83c + gt:gregtech/textures/items/ma
 infused-gold-foil	colour of InfusedGold #ffc83c + gt:gregtech/textures/items/materialicons/NONE/foil
 thaumium-dust	colour of Thaumium #9664c8 + gt:gregtech/textures/items/materialicons/METALLIC/dust
 netherite-foil	colour of netherite #4a4040 + gt:gregtech/textures/items/materialicons/NONE/foil
+wetware-circuit-board	gt:gregtech/textures/items/gt.metaitem.03/6
+bioware-circuit-board	gt:gregtech/textures/items/gt.metaitem.03/8
+petri-dish	gt:gregtech/textures/items/gt.metaitem.03/22
+basic-photolithographic-casing	gt:gregtech/textures/blocks/iconsets/MACHINE_CASING_PCB_TIER_1
+pcb-factory-controller	gt:gregtech/textures/blocks/iconsets/MACHINE_CASING_PCB_TIER_1 + gt:gregtech/textures/blocks/iconsets/OVERLAY_FRONT_ASSEMBLY_LINE

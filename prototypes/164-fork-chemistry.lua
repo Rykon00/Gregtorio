@@ -5523,6 +5523,87 @@ end
 
 
 --------------------------------------------------------------------------------
+--- 51) GTNH'S WETWARE, BIOWARE AND OPTICAL BOARDS (issue #628, the maintainer's decision of 2026-10-28: the chemical
+---   reactor routes and the PCB Factory at T1 for the optical board; Gregtorio's own assembler recipes of the three
+---   printed boards are replaced, their names and technologies stay).
+---   * petri dish: fluid solidifier, 36 L molten PTFE -> 1, 8 s at LV (GT FluidSolidifierRecipes.java:170-176)
+---   * wetware board: circuit assembler, 16 multilayered fiber-reinforced boards + petri dish + LuV pump + IV sensor + IV
+---     circuit + 16 niobium-titanium foil + 4000 L sterilized growth medium -> 16, 60 s at LuV; bio board: 32 wetware
+---     boards + 8 petri dishes + UV pump + 2 LuV sensors + UV circuit + 32 neutronium foil + 16 000 L sterilized bio medium
+---     -> 32, 60 s at UV (NewHorizonsCoreMod gthandler/recipes/CircuitAssemblerRecipes.java:817-841)
+---   * printed: chemical reactor, wetware board + 32 niobium-titanium foil + 5000 L iron III chloride (or 10 000 L sodium
+---     persulfate) -> 1, 150 s at HV; bio board + 24 neutronium foil + 7500 L (or 15 000 L) -> 1, 180 s at EV
+---     (ChemicalReactorRecipes.java:192-230)
+---   * the PCB Factory (gregtech/common/tileentities/machines/multi/pcb/MTEPCBFactory.java) at T1, the optical board's
+---     only GTNH source (gregtech/loaders/postload/chains/PCBFactoryRecipes.java:586-678): kevlar plate + 16 each of
+---     tairitsu, infinity catalyst and chromatic glass foil + 500 L sulfuric acid + 12 500 L iron III chloride + 2880 L
+---     molten mysterious crystal -> 8 boards, 22.15 s at ZPM; with a radox plate and sqrt(2) of the rest -> 12, 18.1 s at
+---     UV. Controller: assembly line, UV, 5 min (PCB:45-59); the T1 structure (MTE:774-806): 72 basic photolithographic
+---     casings (assembler, ZPM 30 s: a naquadah alloy frame + 6 Artherium-Sn plates, PCB:61-67), 40 damascus steel and 9
+---     vibrant alloy frames, 25 plascrete, 25 tiered glass, 12 grate casings. GT's T2 and T3 need silver and gold
+---     nanites, which the mod does not make; its trace size, bio chamber and cooling tower are left out (1 parallel).
+---   Named stand-ins: GT's sterilized growth and bio media as the mod's growth medium; Artherium-Sn as naquadah alloy
+---   plates; damascus steel and vibrant alloy frames as HSS-S frames; plascrete as concrete; the tiered glass as
+---   borosilicate glass blocks; the tairitsu foil (goodgenerator's alloy, not in the mod) as tritanium foil, the infinity
+---   catalyst foil as its dust, the chromatic glass foil (the mod's chromatic glass comes after the optical
+---   circuits) as the mod's optical fiber, the mysterious crystal melt as its 20 ingots.
+--------------------------------------------------------------------------------
+do
+	local function item(name, amount) return { type = "item", name = name, amount = amount } end
+	local RW, RB, RO = {}, {}, {}
+	items(SUB_PART, { "petri-dish", "wetware-circuit-board", "bioware-circuit-board", "basic-photolithographic-casing",
+		"pcb-factory-controller" })
+	step(RW, "petri-dish", "lv-fluid-solidifier-recipes", 8, LV_SPEED, { { "ptfe", 3.6 } }, { { "petri-dish", 1 } })
+	step(RW, "wetware-circuit-board", "luv-circuit-assembler-recipes", 60, LUV_SPEED,
+		{ { "multilayered-fiber-reinforced-circuit-board", 16 }, { "petri-dish", 1 }, { "luv-pump", 1 }, { "iv-sensor", 1 },
+			{ "iv-circuit", 1 }, { "niobium-titanium-foil", 16 }, { "growth-medium", 400 } }, { { "wetware-circuit-board", 16 } })
+	step(RW, "wetware-printed-circuit-board", "hv-chemical-reactor-recipes", 150, HV_SPEED,
+		{ { "wetware-circuit-board", 1 }, { "niobium-titanium-foil", 32 }, { "iron-iii-chloride", 500 } },
+		{ { "wetware-printed-circuit-board", 1 } })
+	step(RW, "wetware-printed-circuit-board-persulfate", "hv-chemical-reactor-recipes", 150, HV_SPEED,
+		{ { "wetware-circuit-board", 1 }, { "niobium-titanium-foil", 32 }, { "sodium-persulfate", 1000 } },
+		{ { "wetware-printed-circuit-board", 1 } })
+	step(RB, "bioware-circuit-board", "uv-circuit-assembler-recipes", 60, UV_SPEED,
+		{ { "wetware-circuit-board", 32 }, { "petri-dish", 8 }, { "uv-pump", 1 }, { "luv-sensor", 2 }, { "uv-circuit", 1 },
+			{ "neutronium-foil", 32 }, { "growth-medium", 1600 } }, { { "bioware-circuit-board", 32 } })
+	step(RB, "bioware-printed-circuit-board", "ev-chemical-reactor-recipes", 180, EV_SPEED,
+		{ { "bioware-circuit-board", 1 }, { "neutronium-foil", 24 }, { "iron-iii-chloride", 750 } },
+		{ { "bioware-printed-circuit-board", 1 } })
+	step(RB, "bioware-printed-circuit-board-persulfate", "ev-chemical-reactor-recipes", 180, EV_SPEED,
+		{ { "bioware-circuit-board", 1 }, { "neutronium-foil", 24 }, { "sodium-persulfate", 1500 } },
+		{ { "bioware-printed-circuit-board", 1 } })
+	--- the PCB Factory at T1 and the optical board
+	step(RO, "basic-photolithographic-casing", "zpm-assembling-machine-recipes", 30, ZPM_SPEED,
+		{ { "naquadah-alloy-frame", 1 }, { "naquadah-alloy-plate", 6 } }, { { "basic-photolithographic-casing", 1 } })
+	step(RO, "pcb-factory-controller", "zpm-assembly-line-recipes", 300, UV_SPEED,
+		{ { "neutronium-frame", 32 }, { "zpm-circuit-assembler", 4 }, { "luv-circuit", 16 }, { "zpm-robot-arm", 8 },
+			{ "molten-indalloy-140", 518.4 }, { "molten-naquadah", 259.2 } }, { { "pcb-factory-controller", 1 } })
+	local ZPM_CF = data.raw["assembling-machine"]["zpm-centrifuge"]
+	machine{
+		name = "pcb-factory", category = "pcb-factory-recipes", speed = ZPM_SPEED,
+		energy = ZPM_CF and ZPM_CF.energy_usage or EU16_ZPM, subgroup = "subgroup-zpm-age-multiblocks",
+		ports = { port("input", N, { -1, -1 }), port("input", N, { 1, -1 }) }, list = RO,
+		recipe = { "crafting-or-assembling-recipes", 1, { item("pcb-factory-controller", 1),
+			item("basic-photolithographic-casing", 72), item("hsss-frame", 49), item("concrete", 25),
+			item("borosilicate-glass-block", 25), item("grate-machine-casing", 12), item("zpm-energy-hatch", 1) } },
+	}
+	local S2 = math.sqrt(2)
+	step(RO, "optical-printed-circuit-board", "pcb-factory-recipes", 22.15, ZPM_SPEED,
+		{ { "kevlar-plate", 1 }, { "tritanium-foil", 16 }, { "infinity-catalyst-dust", 16 }, { "optical-fiber", 16 },
+			{ "mysterious-crystal-ingot", 20 }, { "sulfuric-acid", 50 }, { "iron-iii-chloride", 1250 } },
+		{ { "optical-printed-circuit-board", 8 } })
+	step(RO, "optical-printed-circuit-board-radox", "pcb-factory-recipes", 18.1, UV_SPEED,
+		{ { "radox-polymer-plate", 1 }, { "tritanium-foil", 23 }, { "infinity-catalyst-dust", 23 }, { "optical-fiber", 23 },
+			{ "mysterious-crystal-ingot", 29 }, { "sulfuric-acid", 50 * S2 }, { "iron-iii-chloride", 1250 * S2 } },
+		{ { "optical-printed-circuit-board", 12 } })
+	for _, r in pairs(RW) do fork_add_unlock("wetware-processors", r) end
+	for _, r in pairs(RB) do fork_add_unlock("bio-processors", r) end
+	for _, r in pairs(RO) do fork_add_unlock("optical-processors", r) end
+end
+
+
+
+--------------------------------------------------------------------------------
 --- 38) GT'S PARTS OF THE METALS OF THIS FILE (issue #467). 158 makes GT New Horizons' parts of every metal of
 ---   prototypes/gt-parts-data.lua (issue #227) whose ingot exists; most metals of this file come after 158, so its
 ---   FORK_GT_PARTS.run() runs once more here (it skips what exists), then 143's casts for the new forms.

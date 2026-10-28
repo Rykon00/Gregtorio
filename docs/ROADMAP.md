@@ -3062,3 +3062,15 @@ trinium coil and the ZPM to UHV superconducting coils (the Naquarite foil). Left
 recipes of ancient debris (no EIC; debris is mined), the netherite blocks and stairs, the Forestry comb route, the
 dense netherite plate (its only user here would be the Fusion Computer), Force Field Glass (chronomatic glass and
 celestial tungsten parts are missing).
+
+## Wetware, bio and optical boards (issue #628)
+
+The three late printed boards follow GTNH since #628 (164 section 51; the maintainer's decision of 2026-10-28):
+the wetware and bio boards from the circuit assembler (multilayered boards or wetware boards, petri dishes, a pump, sensors,
+a circuit, niobium-titanium or neutronium foil, growth medium) and their printed boards from the chemical reactor (iron III
+chloride or sodium persulfate), as NewHorizonsCoreMod; the optical board from GT's PCB Factory at T1 (kevlar or radox
+plate, foils, acids, mysterious crystal), its only source in GTNH. Before, all three were the mod's own assembler recipes
+(stem cells, bio cells, optical fiber). The PCB Factory's T2 and T3 (silver and gold nanites), trace size, bio chamber and
+cooling tower are left out. Stand-ins are named in the code (growth medium for GT's sterilized media, naquadah alloy
+plates for Artherium-Sn, tritanium foil for tairitsu, the optical fiber for chromatic glass, mysterious crystal ingots
+for its melt).

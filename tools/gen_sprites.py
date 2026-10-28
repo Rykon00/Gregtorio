@@ -313,6 +313,9 @@ MULTIBLOCKS = {
     "flotation-cell": ((3, 3), "miscutils:TileEntities/MACHINE_CASING_FLOTATION", None,
                        ("miscutils:iconsets/controllerFaces/frothFlotationCell",
                         "miscutils:iconsets/controllerFaces/frothFlotationCellActive"), None),
+    # issue #628: GT's PCB Factory (its T1 photolithographic casing, the assembly line front MTEPCBFactory.java:296 shows)
+    "pcb-factory": ((3, 3), "gregtech:iconsets/MACHINE_CASING_PCB_TIER_1", None,
+                    ("gregtech:iconsets/OVERLAY_FRONT_ASSEMBLY_LINE", "gregtech:iconsets/OVERLAY_FRONT_ASSEMBLY_LINE_ACTIVE"), None),
     "industrial-dehydrator": ((3, 3), "gregtech:iconsets/VACUUM_CASING_SIDE", None,
                               ("miscutils:iconsets/controllerFaces/industrialDehydrator",
                                "miscutils:iconsets/controllerFaces/industrialDehydratorActive"), None),
@@ -411,7 +414,7 @@ WHOLE_ICONS = {"large-titanium-boiler", "large-combustion-engine", "digester", "
                "ev-rocket-engine", "iv-rocket-engine", "luv-rocket-engine", "large-rocket-engine",
                "universal-chemical-fuel-engine", "reactor-fuel-processing-plant", "liquid-fluoride-thorium-reactor",
                "sparge-tower", "cold-trap-i", "reactor-processing-unit-i", "nuclear-salt-processing-plant", "cold-trap-ii", "reactor-processing-unit-ii",
-               "algae-farm", "industrial-dehydrator", "isamill", "flotation-cell", "naquadah-fuel-refinery", "naquadah-fuel-refinery-t2",
+               "algae-farm", "industrial-dehydrator", "pcb-factory", "isamill", "flotation-cell", "naquadah-fuel-refinery", "naquadah-fuel-refinery-t2",
                "naquadah-fuel-refinery-t3", "naquadah-fuel-refinery-t4", "source-chamber", "beam-crafter",
                "luv-mass-fabricator", "nano-forge", "nano-forge-t2", "nano-forge-t3", *(f"draconic-evolution-fusion-crafter-t{k}" for k in range(1, 5)), "large-hadron-collider", "large-hadron-collider-weak", "large-hadron-collider-lhcb",
                *(f"precise-assembler-mk{i}" for i in range(1, 4)),

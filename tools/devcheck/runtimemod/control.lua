@@ -771,6 +771,9 @@ local RT = {
 	-- issue #635 (prototypes/101-fork-machines.lua): the fluid heater (water into steam, the glue line's polymer) and the
 	-- packager (a pile twin)
 	{ "hv-fluid-heater", "super-glue" },
+	-- issue #628 (prototypes/164-fork-chemistry.lua section 51): GTNH's wetware printed board and the PCB Factory's optical one
+	{ "hv-chemical-reactor", "wetware-printed-circuit-board" },
+	{ "pcb-factory", "optical-printed-circuit-board" },
 	{ "lv-fluid-heater", "water-fluid-heater" },
 	{ "lv-packager", "packager-iron-dust-from-small-piles" },
 	{ "component-assembly-line", "lv-motor-coal" },
