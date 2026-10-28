@@ -322,20 +322,23 @@ recipe("reprecipitated-rhodium-processing", "lv-chemical-reactor-recipes", 15,
 ---     + 1000 L steam, MV, 10 s, 775 K (:486-494)
 ---   6 sodium ruthenate + 3000 L chlorine -> 9000 L ruthenium tetroxide solution, LV, 15 s (:495-501)
 ---   fluid heater: 1000 L -> 2000 L hot solution, HV, 15 s (:502-507); distillation tower: 9000 L hot solution -> 6
----     salt + 1800 L water + 7200 L ruthenium tetroxide, HV, 75 s (:508-514). Gregtorio has no fluid heater: the heating
----     is part of the distillation (as the glue line of 142 does with GT's fluid heater step), 4500 L solution in
+---     salt + 1800 L water + 7200 L ruthenium tetroxide, HV, 75 s (:508-514); issue #635 built the fluid heater (before,
+---     the heating was part of the distillation, 4500 L solution in)
 ---   fluid solidifier: 1000 L ruthenium tetroxide -> its dust, 165 ticks, 64 EU/t (bartworks CellLoader.java:249-261,
 ---     mass 165, WerkstoffLoader.java:1060-1073)
 ---   ruthenium tetroxide + 6000 L HCl -> ruthenium dust + 6000 L chlorine + 2000 L water, LV, 15 s (:515-521)
 F.fluid("ruthenium-tetroxide-solution", "medium-gray-fluid", { 0.78, 0.78, 0.78 })
+F.fluid("hot-ruthenium-tetroxide-solution", "medium-gray-fluid", { 0.85, 0.70, 0.60 })
 F.fluid("ruthenium-tetroxide", "medium-gray-fluid", { 0.78, 0.78, 0.78 })
 recipe("iridium-group-sludge-processing", "mv-electric-blast-furnace-recipes", 10 * MV_SPEED,
 	{ item("iridium-group-sludge", 10), item("saltpeter", 10), fluid("salt-water", 100) },
 	{ item("sodium-ruthenate", 3), item("rarest-metal-mixture", 6), fluid("steam", 100) }, "sodium-ruthenate")
 recipe("ruthenium-tetroxide-solution", "lv-chemical-reactor-recipes", 15,
 	{ item("sodium-ruthenate", 6), fluid("chlorine", 300) }, { fluid("ruthenium-tetroxide-solution", 900) })
+recipe("hot-ruthenium-tetroxide-solution", "hv-fluid-heater-recipes", 15 * HV_SPEED,
+	{ fluid("ruthenium-tetroxide-solution", 100) }, { fluid("hot-ruthenium-tetroxide-solution", 200) })
 recipe("ruthenium-tetroxide-solution-distillation", "hv-tall-distillation-recipes", 75 * HV_SPEED,
-	{ fluid("ruthenium-tetroxide-solution", 450) },
+	{ fluid("hot-ruthenium-tetroxide-solution", 900) },
 	{ fluid("ruthenium-tetroxide", 720), item("salt", 6), fluid("water", 180) }, "ruthenium-tetroxide")
 recipe("ruthenium-tetroxide", "mv-fluid-solidifier-recipes", 8.25 * MV_SPEED, { fluid("ruthenium-tetroxide", 100) },
 	{ item("ruthenium-tetroxide", 1) })

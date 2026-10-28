@@ -105,6 +105,10 @@ put("ore-solutions", { "rich-nether-waste" })
 put("molten-alloys", { "molten-thaumium", "molten-hellish-metal", "molten-manyullyn" })
 put("molten-elements", { "molten-boron" })
    -- (issue #627: GT++'s UEV+ solder)
+put("molten-alloys", { "soldering-alloy" })
+--- issue #635: the fluid heater's steps
+put("organic", { "diluted-acetone", "cyanoacrylate-polymer" })
+put("ore-solutions", { "hot-ruthenium-tetroxide-solution" })
 put("molten-superalloys", { "molten-hastelloy-c276", "molten-hastelloy-w", "molten-hastelloy-x", "molten-incoloy-020",
 	"molten-incoloy-903", "molten-incoloy-ds", "molten-incoloy-ma956", "molten-inconel-625", "molten-inconel-690",
 	"molten-inconel-792", "molten-maraging-steel-250", "molten-maraging-steel-300", "molten-stellite", "molten-talonite",

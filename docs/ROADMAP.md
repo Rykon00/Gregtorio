@@ -2259,7 +2259,7 @@ bartworks' rule that ore processing gives twice the metallic powder instead of p
 technologies keep their names. Part 2 replaces the rhodium, ruthenium, osmium and iridium branches with bartworks' (potassium
 disulfate, rhodium sulfate, filter cake and reprecipitated rhodium; sodium ruthenate and ruthenium tetroxide; osmium
 solution; iridium dioxide and iridium chloride; GT's fluid heater step of the ruthenium line is part of its
-distillation, Gregtorio has no fluid heater). Per platinum residue: about 0.21 rhodium, 0.75 ruthenium, 0.31 iridium,
+distillation; since #635 the fluid heater does it, as in GT). Per platinum residue: about 0.21 rhodium, 0.75 ruthenium, 0.31 iridium,
 0.03 osmium (the GTCEu platinum group residue gave 0.67, 0.19, 0.29, 0.12). Per metallic platinum powder (salt loop closed): 0.71
 platinum dust, 128 palladium enriched ammonia, 0.71 platinum residue; one palladium unit (a powder or 100 ammonia):
 0.36 palladium dust.
@@ -2969,7 +2969,7 @@ Sparge Tower):
   are fluids, so a recipe that takes and returns sodium fluoride in cells takes the difference. The RPU's controller
   takes GT's IV chemical reactor as its parts (the mod has no single block IV chemical reactor; its 2 huge polyethylene
   pipes as 12 polyethylene sheets, as the mod's HV chemical reactor does for GT's pipe). Sodium fluoride melts in the
-  fluid extractor (GT: the fluid heater, which the mod does not have). Uranium 233's melt solidifies into its dust
+  fluid heater (since #635; before, the fluid extractor). Uranium 233's melt solidifies into its dust
   (GT++: the ingot), as 136 does for uranium and plutonium.
 - The Sparge Tower (LuV) with GT++'s recipes; GT gives each of the five sparged gases a random amount: here the mean.
   Its controller is GT++'s assembly line recipe without GT's research item (the mod's assembly lines take none); GT's

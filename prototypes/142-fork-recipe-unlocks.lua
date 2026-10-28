@@ -85,8 +85,9 @@ create_recipe{
 ---     into a mixture, distills it and mixes the di- and trichloroacetic acid back (EV, 150 s per 1000)
 ---   cyanoacetic acid: sodium carbonate, sodium cyanide, chloroacetic acid and HCl (GT: EV, 20 s)
 ---   ethyl cyanoacetate: cyanoacetic acid + ethanol (GT: IV, 1000 s)
----   super glue: ethyl cyanoacetate + formaldehyde, polymerised and cracked (GT: IV chemical plant 10 s and HV fluid
----     heater 45 s; GT's 1000 water per 100 polymer is kept)
+---   super glue: ethyl cyanoacetate + formaldehyde into the cyanoacrylate polymer (GT: IV chemical plant 10 s; GT's 1000
+---     water per 100 polymer is kept), cracked in the fluid heater (HV 45 s; gtPlusPlus RecipeLoaderGlueLine.java:117-127,
+---     224-231; issue #635: before, one 55 s step)
 F.fluid("formaldehyde", "nearly-white-fluid", { 0.85, 0.88, 0.80 })
 F.fluid("hydrogen-cyanide", "spackled-light-blue-fluid", { 0.70, 0.85, 0.90 })
 F.fluid("chloroacetic-acid", "pale-green-fluid", { 0.75, 0.85, 0.55 })
@@ -138,13 +139,17 @@ glue_step("ethyl-cyanoacetate", "iv-chemical-reactor-recipes", 1000, {
 	{ type = "item", name = "cyanoacetic-acid", amount = 9 },
 	{ type = "fluid", name = "ethanol", amount = 100 },
 }, { { type = "fluid", name = "ethyl-cyanoacetate", amount = 100 } })
-glue_step("super-glue", "iv-chemical-reactor-recipes", 55, {
+F.fluid("cyanoacrylate-polymer", "nearly-white-fluid", { 0.80, 0.85, 0.75 })
+glue_step("cyanoacrylate-polymer", "iv-chemical-reactor-recipes", 10, {
 	{ type = "fluid", name = "ethyl-cyanoacetate", amount = 10 },
 	{ type = "fluid", name = "formaldehyde", amount = 10 },
 }, {
-	{ type = "fluid", name = "super-glue", amount = 10 },
+	{ type = "fluid", name = "cyanoacrylate-polymer", amount = 10 },
 	{ type = "fluid", name = "water", amount = 100 },
 })
+glue_step("super-glue", "hv-fluid-heater-recipes", 45 * HV_SPEED, {
+	{ type = "fluid", name = "cyanoacrylate-polymer", amount = 10 },
+}, { { type = "fluid", name = "super-glue", amount = 10 } })
 
 --- Component assembly line (GoodGenerator's CoAL, ComponentAssemblyLineMiscRecipes.java). Upstream has its drafts
 --- in 25-uv-age-item.lua (a controller and a structure of 1300 casings, never loaded, removed in issue #249) and 32 recipes in
@@ -453,7 +458,7 @@ local UNLOCKS = {
 	},
 	["super-glue"] = { -- IV
 		"chloroacetic-acid", "cyanoacetic-acid", "ethyl-cyanoacetate", "formaldehyde", "hydrogen-cyanide",
-		"sodium-cyanide", "super-glue",
+		"sodium-cyanide", "cyanoacrylate-polymer", "super-glue",
 	},
 	["naquadah-processing"] = { -- LuV
 		"cpu-wafer-nd", "fluorspar-electrolysis", "graphene-nd", "ilc-wafer-nd", "microchip-cheap", "microprocessor-cheap",

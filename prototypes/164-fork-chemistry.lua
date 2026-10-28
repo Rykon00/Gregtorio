@@ -1812,7 +1812,7 @@ table.insert(data.raw.technology["thorium-based-liquid-fuel"].prerequisites, LFT
 --- fluorinated UF6, the U salt into phosphorous UF6 and the impure molten salt base; the cold trap takes sodium fluoride
 --- and turns the UF6 salts into uranium hexafluoride (the mod's, the same chemical as GT++'s), fluorine, uranium 233
 --- and phosphorus. Sodium fluoride (N 183-221): 3 sodium hydroxide + 1000 HF (or 500 industrial strength HF) -> 2 + 1000
---- water (LV, 60 s); its melt in the fluid extractor (GT: the fluid heater, which the mod does not have; HV, 30 s).
+--- water (LV, 60 s); its melt in the fluid heater (HV, 30 s; since #635, before in the fluid extractor).
 --- RPU I (C 588-594): 2 HV field generators, an IV robot arm, 2 Inconel-625 plates, 2 double Hastelloy-N plates and GT's
 --- IV chemical reactor, which the mod lacks as a single block: its own parts instead (MTERecipeLoader.java:441-447: a
 --- tungstensteel rotor, 2 platinum cables, an IV motor, 2 IV circuits, an IV hull; its 2 huge polyethylene pipes as 12
@@ -2055,7 +2055,7 @@ step(SALT_RECIPES, "sodium-fluoride-dust", "lv-chemical-reactor-recipes", 60, LV
 	{ { "sodium-hydroxide", 3 }, { "hydrofluoric-acid", 100 } }, { { "sodium-fluoride-dust", 2 }, { "water", 100 } })
 step(SALT_RECIPES, "sodium-fluoride-dust-ishf", "lv-chemical-reactor-recipes", 60, LV_SPEED,
 	{ { "sodium-hydroxide", 3 }, { ISHF, 50 } }, { { "sodium-fluoride-dust", 2 }, { "water", 100 } })
-step(SALT_RECIPES, "melt-sodium-fluoride-dust", "hv-fluid-extractor-recipes", 30, HV_SPEED, { { "sodium-fluoride-dust", 1 } },
+step(SALT_RECIPES, "melt-sodium-fluoride-dust", "hv-fluid-heater-recipes", 30, HV_SPEED, { { "sodium-fluoride-dust", 1 } },
 	{ { "sodium-fluoride", 14.4 } })
 
 --- the Sparge Tower and HS188-A

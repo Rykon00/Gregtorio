@@ -1780,6 +1780,72 @@ end
 
 
 --------------------------------------------------------------------------------
+--- 2j'') FLUID HEATER, LV TO EV (issue #635, the maintainer's decision: GT's Fluid Heater)
+---    GT New Horizons' Basic Fluid Heater (LoaderMetaTileEntities.java:3221, recipe map fluidHeaterRecipes,
+---    RecipeMaps.java:627-628 maxIO(1, 1, 1, 1)): one item, one fluid in, one fluid out. Recipes of its tier and below
+---    (categories <tier>-fluid-heater-recipes, time GT's seconds x the tier speed): water and distilled water into steam
+---    here (FluidHeaterRecipes.java:32-45: 6 L -> 960 L in 1.5 s at LV; here 6 water -> 96 steam, one steam unit being
+---    100 GT litres, in 15 s), the heating steps other files had folded into their neighbours in those files (the
+---    ruthenium solution of 146, the diluted acetone of 159, the cyanoacrylate polymer of 142, the sodium fluoride melt
+---    of 164). Machine recipe as GT's "OGO", "PMP", "WCW" (MTERecipeLoader.java:927-934): 2 double heating coils (GT's
+---    4x wire of copper, cupronickel, kanthal and nichrome, GTModHandler.java:793-797; here 4 wires each), the glass, 2
+---    pumps, the hull, 2 wires (the tier's cable) and the circuit. Power 30 EU/t at LV as GT's (it heats), doubled per
+---    tier. Sprites: tools/gen_sprites.py (fluid_heater_lv_mv: the fluid solidifier's frame with GT's heater front,
+---    its active front while it works); IV to MAX through IV_BASIC_MACHINES (GT's heater ends at UMV).
+--------------------------------------------------------------------------------
+
+for _, t in pairs(TIERS) do recipe_category_and_subgroup(t .. "-fluid-heater-recipes") end
+do
+	local TIERS_635 = {
+		--  tier  path  energy   speed  cable             circuit               coil wire
+		{ "lv", "lv", "30kW",  1, "tin-cable",       "electronic-circuit", "copper-wire" },
+		{ "mv", "mv", "60kW",  2, "copper-cable",    "advanced-circuit",   "cupronickel-wire" },
+		{ "hv", "mv", "120kW", 4, "gold-cable",      "processing-unit",    "kanthal-wire" },
+		{ "ev", "mv", "240kW", 8, "aluminium-cable", "ev-circuit",         "nichrome-wire" },
+	}
+	local TECH_OF = { lv = "extractor", mv = "mv-machines", hv = "hv-machines", ev = "ev-machines" }
+	for _, a in ipairs(TIERS_635) do
+		local t, pt, energy, speed, cable, circuit, coil = table.unpack(a)
+		make_electric_machine(t .. "-fluid-heater", t .. "-fluid-heater", pt .. "-fluid-heater",
+			tier_categories("fluid-heater-recipes", t), "fr-fluid-heater", energy, speed, 1, 0.5, 3, 3, {
+				fluid_port(0, -1, "input", defines.direction.north),
+				fluid_port(0, 1, "output", defines.direction.south),
+			})
+		create_item{
+			name = t .. "-fluid-heater",
+			subgroup = t .. "-age-production-machine",
+			ingredients = {
+				{ type = "item", name = coil, amount = 8 },
+				{ type = "item", name = "glass", amount = 1 },
+				{ type = "item", name = t .. "-pump", amount = 2 },
+				{ type = "item", name = t .. "-machine-hull", amount = 1 },
+				{ type = "item", name = cable, amount = 2 },
+				{ type = "item", name = circuit, amount = 1 },
+			},
+			place_result = t .. "-fluid-heater",
+			stack_size = 10,
+		}
+		fork_add_unlock(TECH_OF[t], t .. "-fluid-heater")
+	end
+	data.raw["assembling-machine"]["lv-fluid-heater"].next_upgrade = "mv-fluid-heater"
+	data.raw["assembling-machine"]["mv-fluid-heater"].next_upgrade = "hv-fluid-heater"
+	data.raw["assembling-machine"]["hv-fluid-heater"].next_upgrade = "ev-fluid-heater"
+	--- water into steam (GT's two recipes; steam a hundredth of GT's litres, water a tenth)
+	for _, w in pairs({ "water", "distilled-water" }) do
+		create_recipe{
+			name = w .. "-fluid-heater", category = "lv-fluid-heater-recipes", energy_required = 15 * LV_SPEED,
+			subgroup = "subgroup-lv-fluid-heater-recipes",
+			ingredients = { { type = "fluid", name = w, amount = 6 } },
+			results = { { type = "fluid", name = "steam", amount = 96 } },
+			main_product = "steam",
+		}
+		fork_add_unlock("extractor", w .. "-fluid-heater")   -- (with the LV heater: its pumps come with Extractor)
+	end
+end
+
+
+
+--------------------------------------------------------------------------------
 --- 2k) CAULDRON (issue #427)
 ---    GT New Horizons' early, byproduct-free washing: an impure or pure dust dropped into a filled cauldron becomes the
 ---    dust (MetaGeneratedItem01.getCauldronWashingResult, recipe map cauldronRecipe of GTPostLoad.addCauldronRecipe:
@@ -1970,7 +2036,7 @@ IV_BASIC_MACHINES = {
 	"canning-machine", "mixer", "ore-washer", "laser-engraver", "fluid-solidifier", "chemical-bath",
 	"polarizer", "circuit-assembler", "autoclave", "alloy-smelter", "compressor", "forge-hammer", "arc-furnace", "forming-press", "electric-furnace", "sifting-machine", "thermal-centrifuge", "electromagnetic-separator",
 	"brewery", "fermenter",   -- issue #360
-	"packager",   -- issue #635
+	"packager", "fluid-heater",   -- issue #635
 }
 --- Multiblocks that come as an upgrade of the EV version (graphics of the EV version with energy hatches of the tier)
 IV_UPGRADE_MACHINES = {
