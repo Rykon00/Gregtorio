@@ -5173,3 +5173,10 @@ raw-oilsands
 advanced-boiler-chassis-t1
 advanced-boiler-chassis-t2
 advanced-boiler-chassis-t3
+hammer-usage
+file-usage
+saw-usage
+screwdriver-usage
+wire-cutter-usage
+wrench-usage
+knife-usage

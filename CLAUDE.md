@@ -189,7 +189,10 @@
     crafting table made; the reachable hand-only vanilla recipes (firearm magazine, light armor, rail ramp and support,
     wood processing) moved into `crafting-or-assembling-recipes`; the allow-list `FORK_RECIPES_TABLE_ONLY` of recipes of
     items that only the crafting table, the ME Molecular Assembler or the hand make, each with its reason; devcheck
-    fails for a reachable item whose every recipe is such a recipe and not in it; loads after 144 and before 150)
+    fails for a reachable item whose every recipe is such a recipe and not in it; GT's crafting tools of issue #612:
+    `<tool>-usage` charges (hammer, file, saw, screwdriver, wire cutter, wrench, knife) from iron, bronze or steel, one
+    recipe per material, and the charges added to the `crafting-table-recipes` of the parts by GT's shapes (`FORK_TOOLS`
+    maps a tool to its item); loads after 144 and before 150)
   - 149 early research (issues #127 and #146: the unit counts of the technologies with red and green packs only, 80 and
     more, divided by 6, those of MV to IV by 10, 13, 19 and 16; data-final-fixes.lua calls
     `FORK_EARLY_RESEARCH.rescale()` for the technologies whose units it sets later; the cheap research setting wins)
