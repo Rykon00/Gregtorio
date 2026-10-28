@@ -70,7 +70,8 @@
     unit counts of its technologies; phase 6b hooks are marked `6b hook`)
   - 140 godforge (phase 6b: the godforge, raw star matter, magmatter, the stellar catalyst of the plasma forge, the
     infinite `godforge-upgrades`; issue #249: quark gluon plasma and GT's rhugnor MK5 recipe; issue #355: the godforge between
-    the UIV and UMV energy hatches with GT's recipes, the plasma module technology with celestial tungsten)
+    the UIV and UMV energy hatches with GT's recipes (issue #624: at UIV science, the DTPF at UEV, the space elevator at UV with
+    the new technology Cosmic Neutronium), the plasma module technology with celestial tungsten)
   - 141 MAX tier (phase 6b: magmatter parts, the Planck line and MAX circuit, MAX components, hatches, machines and
     turbine; needs 140's magmatter and adds its turbine to 136's mod data; issue #249: the MAX recipes of the plasma
     forge and the QFT with substitutes); 140 and 141 load after 139 and **before** 138
@@ -179,7 +180,7 @@
     water to superheated steam), the large combustion engine and the large gas turbine (EV burner generators on the fuel
     cells); issue #295: GT++'s EV, IV and LuV rocket engines on the H8N4C2O4 rocket fuel cell (fuel category
     `rocket-engine-fuel`; the fuel's GTNH recipe and the Chemical Plant's move to Rocket Fuel are in 159); issue #444: GTNH's LV to HV
-    batteries and the battery buffers (accumulators of a fixed size, the batteries in the recipe; technology Large Batteries); issue #614: the EV and IV buffers (section 8b) with GTNH's tier batteries, the lapotron crystal (its chain moved from the ZPM Assembly Line to Lapotron Crystals, EV) and the lapotronic energy orb (moved to Lapotronic Energy Orb, IV); their technologies are named in 142's `UNLOCKS`, so it loads after 138 and **before** 142, and
+    batteries and the battery buffers (accumulators of a fixed size, the batteries in the recipe; technology Large Batteries); issue #637: the EV and IV gas turbines and semifluid generators (section 9) and GT++'s advanced boilers (section 9b); issue #614: the EV and IV buffers (section 8b) with GTNH's tier batteries, the lapotron crystal (its chain moved from the ZPM Assembly Line to Lapotron Crystals, EV) and the lapotronic energy orb (moved to Lapotronic Energy Orb, IV); their technologies are named in 142's `UNLOCKS`, so it loads after 138 and **before** 142, and
     before 196 for its fluids; it takes 136's generator from the global `FORK_POWER` and adds to its mod data
     `fork-power`)
   - 144 dead fluids (issue #91: GT's uses and producers of fluids nothing made or used; the blast furnace gas variants
@@ -349,7 +350,12 @@
   - 157 recycling (issue #190: GTNH's material recycling into dusts, ingots and melts for the items of crafting table
     recipes and the hulls, recipes `recycling-<machine>-<item>` in `FORK_RECYCLING.recipes`, unlocked late by
     `FORK_RECYCLING.unlock()` in data-final-fixes.lua because that file replaces and disables vanilla technologies;
-    devcheck checks the recipe shape and the blacklist)
+    devcheck checks the recipe shape and the blacklist; issue #670: every material block (`block-of-<material>` or
+    `<material>-block` whose recipe takes 9 of one item; melt from its solidifier recipe, mass and voltage from
+    `gt-parts-data.lua`) gets GT's recycling with 9 units and ProcessingBlock.java's recipes, `cut-<block>` (cutting
+    machine -> 9 plates, water, below IV; GT++ without fluid) and `hammer-<block>` (forge hammer -> 9 gems), the latter
+    two in `FORK_RECYCLING.blocks`, which 199's auto-unlock ignores; devcheck fails for a reachable material block that no
+    recipe takes unless it is in the allow-list `FORK_BLOCKS_DEAD_END` with its reason (section `BLOCKDEADOK`))
   - 150 molds (mold slot instead of mold ingredient; issue #316: the laser engravers' lens slot the same way, every
     `<material>-lens` item a module of the category `lens`; must load after every file that creates machines)
   - 190 manual-labor burner usage (fist icon in the fuel slot)
@@ -439,6 +445,12 @@
 - Spoiling (issue #602): GT New Horizons has no spoiling; `data-final-fixes.lua` takes Space Age's spoiling off the Space
   Age items Gregtorio makes (the UV science pack is the agricultural science pack), and `devcheck.py check` fails for an
   item that spoils and that a reachable recipe makes, unless it is in the allow-list `FORK_SPOILING_KEPT` with its reason.
+- Space Age's recycling (issue #670): Factorio 2.1's built-in mod `recycler` generates a hidden recycling recipe of every
+  recipe and item (data-updates) for its Recycler, which Gregtorio cannot build; `data-final-fixes.lua` adds every recipe
+  of a category only the recycler runs to `VANILLA_RECIPES_REMOVED` (`FORK-REMOVED`, technology effects and tips with
+  them) and deletes the recycler's item and entity (`FORK-RECYCLER` in the log). Nothing else in 2.1 reads those
+  recipes (the item tooltips and Factoriopedia show them through `factoriopedia_recycling_recipe_categories`).
+  `devcheck.py check` fails for a recipe of the recycler's categories that is left.
 - Cheap research: the startup setting `gregtorio-continued-one-pack-research` (default off) makes every technology with
   science packs cost one research unit with one pack of each kind (`prototypes/fork-one-pack-research.lua`, required last
   in `data-final-fixes.lua`, after everything that sets unit counts). `devcheck.py all` loads the mod a second time with

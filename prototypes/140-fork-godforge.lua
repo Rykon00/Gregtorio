@@ -125,8 +125,8 @@ create_item{
 }
 create_item{
 	name = GODFORGE,
-	category = "umv-assembling-machine-recipes",
-	energy_required = 300 * UMV_SPEED,
+	category = "uiv-assembling-machine-recipes",   -- (issue #624: GTNH's tier, UIV)
+	energy_required = 300 * UIV_SPEED,
 	subgroup = SUBGROUP,
 	stack_size = 10,
 	place_result = GODFORGE,
@@ -414,7 +414,11 @@ end
 F.tech{
 	--- (the UMV machines come after the UIV energy hatch and the plasma forge; the Mk-III precise assembler makes
 	--- the Hi-Computation Station Mk-V of the quantum anomaly)
-	name = GODFORGE, prerequisites = { "precise-electronic-unit-mk3", "umv-machines" }, packs = 13, count = 1,
+	--- (issue #624, the maintainer's decision: GTNH's tier, UIV science: GT's controller is a research assembly line
+	--- recipe at UMV voltage from UIV parts, built with UIV hatches; after the UIV energy hatches, the MK5 plasmas
+	--- (thorium plasma) and the plasma forge (its dimensional bridges))
+	name = GODFORGE, prerequisites = { "precise-electronic-unit-mk3", "uiv-energy-hatches", "fusion-plasmas-mk5",
+		"dimensionally-transcendent-plasma-forge" }, packs = 12, count = 1,
 	recipes = { "stellar-energy-siphon-casing", "singularity-reinforced-stellar-shielding-casing",
 		"remote-graviton-flow-modulator", GODFORGE .. "-controller", GODFORGE },
 }

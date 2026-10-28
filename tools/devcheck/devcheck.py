@@ -1485,6 +1485,8 @@ def check_pgm_dusts(m):
     return out
 # Issue #190: what a recycling recipe may give (prototypes/157-fork-recycling.lua)
 RECYCLE_PGM = {"metallic-platinum-powder", "metallic-palladium-powder", "iridium-metal-residue", "rarest-metal-mixture"}
+# issue #670: the dusts of prototypes/gt-parts-data.lua whose item name has no -dust (Gregtorio's antimony dust is antimony)
+RECYCLE_DUSTS = set(re.findall(r'dust = "([^"]+)"', (ROOT / "prototypes" / "gt-parts-data.lua").read_text(encoding="utf-8")))
 def check_recycling(m, sec):
     """Issue #190 (prototypes/157-fork-recycling.lua): GTNH recycles an item into its materials, never into its parts. Every
     recipe recycling-<machine>-<item> takes the one item (and oxygen in the arc furnace) and gives whole dusts, ingots, a
@@ -1504,7 +1506,8 @@ def check_recycling(m, sec):
         if item not in r["ing"] or extra:
             out.append(f"{name}: takes {', '.join(r['ing'])}, not {item}" + (" and oxygen" if kind == "arc-furnace" else ""))
         for x in r["res"]:
-            ok = (x.endswith("-dust") or x.endswith("-ingot") or x.startswith("molten-") or x in RECYCLE_PGM)
+            ok = (x.endswith("-dust") or x.endswith("-ingot") or x.startswith("molten-") or x in RECYCLE_PGM
+                  or x in RECYCLE_DUSTS)
             if not ok:
                 out.append(f"{name}: gives {x}, not a material (GTNH recycles into materials, not parts)")
     for item, why, exists in sec.get("RECYCLEBLACK", []):
@@ -1515,6 +1518,38 @@ def check_recycling(m, sec):
     info = (f"{sum(kinds.values())} recipes: {kinds['macerator']} macerator, {kinds['arc-furnace']} arc furnace, "
             f"{kinds['fluid-extractor']} fluid extractor; blacklist {len(sec.get('RECYCLEBLACK', []))}")
     return info, out
+# Issue #670: the categories of Factorio 2.1's recycler (Space Age's recycling, deleted in data-final-fixes.lua)
+RECYCLER_CATEGORIES = {"recycling", "recycling-or-hand-crafting"}
+def check_blocks(m, sec):
+    """Issue #670 (prototypes/157-fork-recycling.lua): a material block (block-of-<material> or <material>-block that a
+    recipe of one ingredient makes: 9 ingots, gems or dusts, or the melt of 9 ingots) that a reachable recipe makes and no
+    reachable recipe takes (recycling counts) fails, unless it is in the allow-list FORK_BLOCKS_DEAD_END with its reason
+    (section BLOCKDEADOK); an entry that is no such block fails too. A recipe of a category of the recycler that is left
+    fails (data-final-fixes.lua deletes Space Age's recycling). Returns (info line, problems)."""
+    allow = {r[0]: (r[1] if len(r) > 1 else "") for r in sec.get("BLOCKDEADOK", [])}
+    material, reach, taken = set(), set(), set()
+    for r, v in m.R.items():
+        if v["hidden"]:
+            continue
+        for x in v["res"]:
+            if (x.startswith("block-of-") or x.endswith("-block")) and \
+                    len([i for i in v["ing"] if i != m.tools.get(r)]) == 1:
+                material.add(x)
+                if r in m.unlocked:
+                    reach.add(x)
+        if r in m.unlocked:
+            taken.update(v["ing"])
+    dead = sorted(b for b in material & reach if b not in taken)
+    problems = [f"{b}: no recipe takes it (give it GT's recipes in 157, or add it to FORK_BLOCKS_DEAD_END with its "
+                "reason)" for b in dead if b not in allow]
+    problems += [f"FORK_BLOCKS_DEAD_END: {b} has no reason" for b, why in sorted(allow.items()) if not why]
+    problems += [f"FORK_BLOCKS_DEAD_END: {b} is not a reachable material block that no recipe takes (remove the entry)"
+                 for b in sorted(allow) if b not in dead]
+    left = sorted(r for r, v in m.R.items() if v["cats"] & RECYCLER_CATEGORIES)
+    problems += [f"{r}: a recipe of the recycler's categories ({', '.join(sorted(m.R[r]['cats']))}) is left (Gregtorio "
+                 "has no recycler; data-final-fixes.lua deletes them)" for r in left]
+    return f"{len(material)} material blocks, {len(reach)} reachable, {len(dead)} that no recipe takes, {len(allow)} of " \
+           f"them on purpose (FORK_BLOCKS_DEAD_END); {len(left)} recycler recipes left", problems
 def check_extractor_split(m):
     """Issue #152 (prototypes/151-fork-fluid-extractor.lua): as in GTNH, the Extractor makes items and the Fluid Extractor
     fluids. A recipe of an extractor category with a fluid result, or of a fluid extractor category without one, is in
@@ -2622,6 +2657,10 @@ def check(a):
     report("platinum group dusts made outside the platinum line (issue #199)", pgm_dusts)
     print(f"\nrecycling (issue #190): {recycle_info}")
     report("recycling recipes that differ from GTNH's rule (prototypes/157-fork-recycling.lua)", recycling)
+    blocks_info, blocks = check_blocks(m, sec)
+    print(f"\nmaterial blocks and Space Age's recycling (issue #670): {blocks_info}")
+    report("material blocks that no recipe takes, and recipes of the recycler (prototypes/157-fork-recycling.lua, "
+           "data-final-fixes.lua)", blocks)
     extractor_split = check_extractor_split(m)
     report("extractor recipes in the wrong machine (issue #152: items in the Extractor, fluids in the Fluid Extractor)",
            extractor_split)
@@ -2667,7 +2706,7 @@ def check(a):
     ok = not (files or [s for s in sprites if not s.startswith("(")] or uncraft or menu or required or unresearchable
               or new_drafts or fluid_problems or locked or one_pack or fluid_steps or table_only or me_recipes or me_tab
               or extractor_split or ore_mixes or ore_chain or ore_baths or ore_o34 or ore_hammer
-              or circuit_icons or pgm_dusts or recycling or names or gaps or tree or vanilla or lenses or mine_twins
+              or circuit_icons or pgm_dusts or recycling or blocks or names or gaps or tree or vanilla or lenses or mine_twins
               or unplaceable or stale_unlocks or removed_keys or trigger_only or spoiling or classic_veins or early
               or furnace or research_counts or nyi_icons or overclock
               or steam or nugget or steam_rates or boiler_output or vein_doc or renames)
