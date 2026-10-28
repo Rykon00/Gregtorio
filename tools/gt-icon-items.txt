@@ -5170,3 +5170,10 @@ purified-molybdenum
 purified-quartzite
 raw-molybdenum
 raw-oilsands
+hammer-usage
+file-usage
+saw-usage
+screwdriver-usage
+wire-cutter-usage
+wrench-usage
+knife-usage
