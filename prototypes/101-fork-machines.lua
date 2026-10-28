@@ -570,6 +570,92 @@ end
 
 
 
+
+--------------------------------------------------------------------------------
+--- 2g') CHEMICAL REACTOR EV AND IV, DISTILLERY HV TO IV (issue #637): GT New Horizons has both single blocks up to IV
+---    (LoaderMetaTileEntities.java:2513-2576 chemical reactors, 4085-4148 distilleries); here the large chemical reactor
+---    and the short distillation tower ran their categories above HV and MV. Recipes as the tier below's here, after GT's
+---    (MTERecipeLoader.java:407-445 "GRG", "WEW", "CMC": 2 pipes, a rotor, 2 cables, a motor, 2 circuits, the hull; the
+---    pipes as polyethylene sheets as the HV reactor's, 6 for 2 medium, 12 for 2 large, 24 for 2 huge pipes; :597-635:
+---    the distillery with glass, a pump, 2 circuits, 2 cables, the hull, as the MV one). Power EU16 and EU8 as the tiers
+---    below; the sprites are the HV reactor's and the MV distillery's, the icons tinted (tools/gen_sprites.py
+---    generator_tiers). GT's LuV to UV single blocks (NewHorizonsCoreMod) stay with the large chemical reactor and the
+---    tall distillation tower.
+--------------------------------------------------------------------------------
+do
+	local function cats(kind, tiers)
+		local out = {}
+		for _, t in ipairs(tiers) do out[#out + 1] = t .. "-" .. kind .. "-recipes" end
+		return out
+	end
+	local PORTS = function()
+		return {
+			fluid_port(-1, -1, "input", defines.direction.north),
+			fluid_port( 1, -1, "input", defines.direction.north),
+			fluid_port(-1,  1, "output", defines.direction.south),
+			fluid_port( 1,  1, "output", defines.direction.south),
+		}
+	end
+	local REACTORS = {
+		--  tier  energy   speed  sheets rotor                  cable             circuit       tech           categories up to
+		{ "ev", EU16_EV, 8,  12, "titanium-rotor",      "aluminium-cable", "ev-circuit", "ev-machines", { "lv", "mv", "hv", "ev" } },
+		{ "iv", EU16_IV, 16, 24, "tungstensteel-rotor", "tungsten-cable",  "iv-circuit", "iv-machines", { "lv", "mv", "hv", "ev", "iv" } },
+	}
+	for _, r in ipairs(REACTORS) do
+		local t = r[1]
+		local name = t .. "-chemical-reactor"
+		make_electric_machine(name, name, "mv-chemical-reactor", cats("chemical-reactor", r[9]), "fr-chemical-reactor", r[2],
+			r[3], 6, 0.5, 3, 3, PORTS())
+		create_item{
+			name = name,
+			subgroup = t .. "-age-production-machine",
+			ingredients = {
+				{ type = "item", name = "polyethylene-sheet", amount = r[4] },
+				{ type = "item", name = r[5], amount = 1 },
+				{ type = "item", name = r[6], amount = 2 },
+				{ type = "item", name = r[7], amount = 2 },
+				{ type = "item", name = t .. "-machine-hull", amount = 1 },
+				{ type = "item", name = t .. "-motor", amount = 1 },
+			},
+			place_result = name,
+			stack_size = 10,
+		}
+		fork_add_unlock(r[8], name)
+	end
+	local DISTILLERIES = {
+		--  tier  energy   speed  cable              circuit            tech           categories up to
+		{ "hv", EU8_HV, 4,  "gold-cable",      "processing-unit", "hv-machines", { "lv", "mv", "hv" } },
+		{ "ev", EU8_EV, 8,  "aluminium-cable", "ev-circuit",      "ev-machines", { "lv", "mv", "hv", "ev" } },
+		{ "iv", EU8_IV, 16, "tungsten-cable",  "iv-circuit",      "iv-machines", { "lv", "mv", "hv", "ev", "iv" } },
+	}
+	for _, d in ipairs(DISTILLERIES) do
+		local t = d[1]
+		local name = t .. "-distillery"
+		make_electric_machine(name, name, "mv-distillery", cats("distillation", d[7]), "fr-distillery", d[2], d[3], 1, 0.5, 3, 3,
+			PORTS())
+		create_item{
+			name = name,
+			subgroup = t .. "-age-production-machine",
+			ingredients = {
+				{ type = "item", name = "glass", amount = 3 },
+				{ type = "item", name = d[5], amount = 2 },
+				{ type = "item", name = t .. "-machine-hull", amount = 1 },
+				{ type = "item", name = t .. "-pump", amount = 1 },
+				{ type = "item", name = d[4], amount = 2 },
+			},
+			place_result = name,
+			stack_size = 10,
+		}
+		fork_add_unlock(d[6], name)
+	end
+	local A = data.raw["assembling-machine"]
+	A["hv-chemical-reactor"].next_upgrade, A["ev-chemical-reactor"].next_upgrade = "ev-chemical-reactor", "iv-chemical-reactor"
+	A["mv-distillery"].next_upgrade, A["hv-distillery"].next_upgrade = "hv-distillery", "ev-distillery"
+	A["ev-distillery"].next_upgrade = "iv-distillery"
+end
+
+
+
 --------------------------------------------------------------------------------
 --- 2h) ELECTROMAGNETIC SEPARATOR, LV TO EV (issue #187, ore chain phase O3)
 ---    GT New Horizons' Electromagnetic Separator ("Basic Electromagnetic Separator", LoaderMetaTileEntities.java:4626,
