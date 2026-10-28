@@ -1134,6 +1134,8 @@ def icon_table(c):
     # multi-amp wires (upstream: 16x = a block of the metal)
     T["luv-superconductor-wire-16x"] = lambda: bar(c.m.colour("itbtc-alloy"), 2, n=4)
     T["tungsten-wire-16x"] = lambda: bar(c.m.colour("tungsten"), 2, n=4)   # (issue #614)
+    for i in (1, 2, 3):   # issue #637: GT++'s boiler chassis
+        T[f"advanced-boiler-chassis-t{i}"] = lambda i=i: c.gt(f"gt:miscutils/textures/items/itemBoilerChassis{i}")
     # issue #355: GoodGenerator's HiCs, unit casings and High Energy Mixture, NewHorizonsCoreMod's engraved chips, GT's
     # crystal chips, the precise assembler controller (its casing with GT's quantum chest front, MTEPreciseAssembler.java)
     for i in range(1, 6):
