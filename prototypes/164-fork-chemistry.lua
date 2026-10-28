@@ -5625,6 +5625,11 @@ do
 	for _, r in pairs(R) do fork_add_unlock("large-extractor", r) end
 	--- (the EV solenoid's permalloy, a LV mixer recipe, came only with the beamline, section 30)
 	fork_add_unlock("large-extractor", "permalloy-dust")
+end
+
+
+
+--------------------------------------------------------------------------------
 --- 50) THE DYSON SWARM (issue #623, the maintainer's decision of 2026-10-28: as GTNH with named stand-ins).
 ---   gtnhintergalactic's Dyson Swarm Ground Unit (gtnhintergalactic/tile/multi/TileEntityDysonSwarm.java, TDS below):
 ---   each run pulls Dyson Swarm Modules into its swarm (at most 10 000, :267-279), which gives 10 000 000 EU/t per module
