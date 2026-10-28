@@ -95,6 +95,9 @@ put("molten-elements", { "mercury", "molten-glass", "molten-borosilicate-glass",
 	"molten-gold", "molten-lead", "molten-nickel", "molten-zinc", "molten-iridium", "molten-osmium", "molten-palladium",
 	"molten-platinum", "molten-samarium" })
 put("molten-alloys", { "soldering-alloy" })
+--- issue #635: the fluid heater's steps
+put("organic", { "diluted-acetone", "cyanoacrylate-polymer" })
+put("ore-solutions", { "hot-ruthenium-tetroxide-solution" })
 put("molten-superalloys", { "molten-hastelloy-c276", "molten-hastelloy-w", "molten-hastelloy-x", "molten-incoloy-020",
 	"molten-incoloy-903", "molten-incoloy-ds", "molten-incoloy-ma956", "molten-inconel-625", "molten-inconel-690",
 	"molten-inconel-792", "molten-maraging-steel-250", "molten-maraging-steel-300", "molten-stellite", "molten-talonite",

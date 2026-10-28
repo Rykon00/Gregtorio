@@ -42,7 +42,7 @@ BASIC_MACHINES = [
     "alloy-smelter", "compressor", "forge-hammer", "arc-furnace", "forming-press",
     "electric-furnace", "sifting-machine", "thermal-centrifuge", "electromagnetic-separator",
     "brewery", "fermenter",  # issue #360
-    "packager",  # issue #635
+    "packager", "fluid-heater",  # issue #635
 ]
 # issue #152: the Fluid Extractors are copies of the Extractor (151); from IV up they are drawn like the other basic
 # machines from their LV and MV sprites (fluid_extractor_lv_ev), with the Extractor's frame count
@@ -53,7 +53,7 @@ EV_FRAMES_OF = {FLUID_EXTRACTOR: "extractor"}
 # (forge_hammer_lv_mv)
 EV_FRAMES = {"forge-hammer": 5, "arc-furnace": 1, "forming-press": 1, "electric-furnace": 1,
              "sifting-machine": 4, "thermal-centrifuge": 1, "electromagnetic-separator": 4,
-             "brewery": 1, "fermenter": 1, "packager": 1}
+             "brewery": 1, "fermenter": 1, "packager": 1, "fluid-heater": 1}
 # issue #171: the Arc Furnace has no upstream picture either: its LV and MV ones are the compressor's frame with GT's arc
 # furnace overlay in the window (arc_furnace_lv_mv), one frame
 ARC_OVERLAY = "gregtech:basicmachines/arc_furnace/OVERLAY_FRONT"
@@ -79,6 +79,7 @@ EMS_WINDOW = (21, 16, 64, 44)  # the upper window of the LV and MV polarizer, be
 BREWERY_OVERLAY = "gregtech:basicmachines/potionbrewer/OVERLAY_FRONT_POTIONBREWER"
 FERMENTER_OVERLAY = "gregtech:basicmachines/fermenter/OVERLAY_FRONT"
 PACKAGER_OVERLAY = "gregtech:basicmachines/boxinator/OVERLAY_FRONT_BOXINATOR"   # issue #635: GT's Packager (boxinator)
+FLUID_HEATER_OVERLAY = "gregtech:basicmachines/fluid_heater/OVERLAY_FRONT"     # issue #635: GT's Fluid Heater
 # issue #152: the fluid extractor's icons carry a molten fluid in the bottom right corner, so they differ from the
 # extractor's in the inventory; its LV to EV sprites are the extractor's with the liquid in the tubes molten
 FLUID_BADGE_MACHINES = {"fluid-extractor"}
@@ -916,6 +917,12 @@ def packager_lv_mv(gt):
     framed_overlay_lv_mv(gt, "packager", "assembling-machine", FURNACE_WINDOW, PACKAGER_OVERLAY, crop=True)
 
 
+def fluid_heater_lv_mv(gt):
+    """Issue #635: upstream has no fluid heater: the LV and MV fluid solidifier's frame with GT's heater front (its active
+    front while it works; GT has no glow layer for it)"""
+    framed_overlay_lv_mv(gt, "fluid-heater", "fluid-solidifier", THERMAL_WINDOW, FLUID_HEATER_OVERLAY, crop=True)
+
+
 def fermenter_lv_mv(gt):
     """Issue #360: upstream has no fermenter: the LV and MV fluid solidifier's frame with GT's fermenter front (it glows
     while it works)"""
@@ -1347,6 +1354,7 @@ def main():
     brewery_lv_mv(a.gt)          # issue #360: the LV and MV brewery and fermenter of their tiers
     fermenter_lv_mv(a.gt)
     packager_lv_mv(a.gt)         # issue #635
+    fluid_heater_lv_mv(a.gt)
     lv_from_mv("autoclave")      # before the autoclave's tiers (it reads the MV autoclave)
     steam_age(a.gt)              # issue #446
     battery_buffers(a.gt)        # issue #444

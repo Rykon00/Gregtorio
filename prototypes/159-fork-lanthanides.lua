@@ -286,9 +286,9 @@ table.insert(data.raw.technology["luv-components"].prerequisites, TECH)
 ---   centrifuge: cerium-oxidised -> bastnasite rarer earth oxides, cerium dioxide 90 % (HV, 30 s)
 ---   mixer: rarer earth oxides + 40 nitric acid -> 100 nitrogenated bastnasite rarer earth oxides (HV, 15 s)
 ---   chemical reactor: 100 nitrogenated + 100 acetone -> 100 bastnasite rarer earth oxide suspension (HV, 35 s)
----   centrifuge: 100 suspension -> neodymium rare earth concentrate 80 %, 45 acetone (HV, 45 s; GT gives 75 diluted
----     acetone, which its fluid heater turns into acetone at 30 of 50; Gregtorio has no fluid heater, so the centrifuge
----     gives the acetone)
+---   centrifuge: 100 suspension -> neodymium rare earth concentrate 80 %, 75 diluted acetone (HV, 45 s); the fluid
+---     heater turns 50 diluted acetone into 30 acetone (MV, 1.2 s; gtnhlanth RecipeLoader.java:3290-3295; issue #635:
+---     before, the centrifuge gave 45 acetone, Gregtorio had no fluid heater)
 ---   chemical reactor: 2 neodymium rare earth concentrate + 200 hydrochloric acid -> lanthanum chloride, neodymium oxide
 ---     (HV, 45 s)
 ---   electrolyzer (bartworks' generated recipes, Werkstoff electrolysis): 4 lanthanum chloride -> lanthanum dust + 300
@@ -367,7 +367,9 @@ step("bastnasite-rarer-earth-oxide-suspension", CR, 35, HV_SPEED,
 	{ { "bastnasite-rarer-earth-oxide-suspension", 100 } })
 step("neodymium-rare-earth-concentrate", "hv-centrifuge-recipes", 45, HV_SPEED,
 	{ { "bastnasite-rarer-earth-oxide-suspension", 100 } },
-	{ { "neodymium-rare-earth-concentrate", 1, 0.8 }, { "samaric-rare-earth-concentrate", 1, 0.5 }, { "acetone", 45 } })
+	{ { "neodymium-rare-earth-concentrate", 1, 0.8 }, { "samaric-rare-earth-concentrate", 1, 0.5 }, { "diluted-acetone", 75 } })
+F.fluid("diluted-acetone", "nearly-white-fluid", { 0.85, 0.85, 0.80 })
+step("acetone-from-diluted-acetone", "mv-fluid-heater-recipes", 1.2, MV_SPEED, { { "diluted-acetone", 50 } }, { { "acetone", 30 } })
 step("neodymium-rare-earth-concentrate-reaction", CR, 45, HV_SPEED,
 	{ { "neodymium-rare-earth-concentrate", 2 }, { "hydrochloric-acid", 200 } },
 	{ { "lanthanum-chloride", 1 }, { "neodymium-oxide", 1 } })
