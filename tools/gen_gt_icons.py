@@ -1105,6 +1105,15 @@ def icon_table(c):
     for m in ("steel", "titanium", "tungstensteel", "iridium", "trinium", "naquadah", "naquadah-alloy", "naquadria",
               "neutronium", "cosmic-neutronium", "infinity", "transcendent-metal", "spacetime", "eternity"):
         T[m + "-drill-head"] = (lambda m=m: lambda: c.part(m, "toolHeadDrill"))()
+    # issue #612: the charges of GT's crafting tools, an iron tool as GT draws it (gregtech/common/tools/Tool*.java
+    # getIcon: the head of the material over the wooden handle, the wire cutter, wrench and knife in one texture)
+    T["hammer-usage"] = lambda: over(c.part("wood", "stick"), c.part("iron", "toolHeadHammer"))
+    T["file-usage"] = lambda: over(c.part("wood", "handleFile"), c.part("iron", "toolHeadFile"))
+    T["saw-usage"] = lambda: over(c.part("wood", "handleSaw"), c.part("iron", "toolHeadSaw"))
+    T["screwdriver-usage"] = lambda: over(c.part("wood", "handleScrewdriver"), c.part("iron", "toolHeadScrewdriver"))
+    T["wire-cutter-usage"] = lambda: c.part("iron", "toolWireCutter")
+    T["wrench-usage"] = lambda: c.part("iron", "toolWrench")
+    T["knife-usage"] = lambda: c.part("iron", "toolKnife")
     # issue #96: the dusts of the platinum line, which the fork names without "-dust"
     for m in ("platinum-salt", "refined-platinum-salt", "reprecipitated-platinum", "platinum-residue", "palladium-salt",
               "reprecipitated-palladium", "potassium-disulfate", "rhodium-filter-cake", "reprecipitated-rhodium",
@@ -1134,6 +1143,8 @@ def icon_table(c):
     # multi-amp wires (upstream: 16x = a block of the metal)
     T["luv-superconductor-wire-16x"] = lambda: bar(c.m.colour("itbtc-alloy"), 2, n=4)
     T["tungsten-wire-16x"] = lambda: bar(c.m.colour("tungsten"), 2, n=4)   # (issue #614)
+    for i in (1, 2, 3):   # issue #637: GT++'s boiler chassis
+        T[f"advanced-boiler-chassis-t{i}"] = lambda i=i: c.gt(f"gt:miscutils/textures/items/itemBoilerChassis{i}")
     # issue #355: GoodGenerator's HiCs, unit casings and High Energy Mixture, NewHorizonsCoreMod's engraved chips, GT's
     # crystal chips, the precise assembler controller (its casing with GT's quantum chest front, MTEPreciseAssembler.java)
     for i in range(1, 6):

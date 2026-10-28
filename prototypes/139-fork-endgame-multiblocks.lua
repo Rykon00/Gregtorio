@@ -418,8 +418,10 @@ for _, r in pairs(dtpf_recipes.crude) do
 	list[#list + 1] = r
 end
 F.tech{
+	--- (issue #624, the maintainer's decision: GTNH's tier, UEV science: GT's controller is a research assembly line
+	--- recipe at UIV voltage from UEV parts, which GT's assembly line runs with UEV hatches, MTEAssemblyLine.java:325)
 	name = DTPF, prerequisites = { "uev-energy-hatches", "femto-power-ics", "optical-processor-mainframes",
-		"uev-materials", "naquadah-alloy", "fusion-plasmas-mk4" }, packs = 12, count = 1,
+		"uev-materials", "naquadah-alloy", "fusion-plasmas-mk4" }, packs = 11, count = 1,
 	recipes = F.join({ "dimensionally-transcendent-casing", "dimensional-bridge", DTPF .. "-controller", DTPF, CRUDE },
 		crude_now),
 }

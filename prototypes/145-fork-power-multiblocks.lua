@@ -898,3 +898,103 @@ do
 		end
 	end
 end
+
+
+
+--------------------------------------------------------------------------------
+--- 9) GAS TURBINES AND SEMIFLUID GENERATORS EV AND IV (issue #637): after HV's comes only the large gas turbine
+--- (section 6); GT has single-block gas turbines up to IV (gregtech/loaders/preload/LoaderMetaTileEntities.java:9082-9096:
+--- efficiency EV 60 %, IV 50 %, one amp of the tier; recipes MTERecipeLoader.java:3499-3509: the tier's hull, 2 motors,
+--- 3 rotors (titanium, tungstensteel), 2 circuits, a cable (aluminium, tungsten)) and GT++ semifluid generators EV and IV
+--- (gtPlusPlus/xmod/gregtech/registration/gregtech/GregtechSemiFluidgenerators.java:35-46, MTESemiFluidGenerator.java:59-61:
+--- 100 - 5 x tier %, EV 80, IV 75; recipes gtPlusPlus/core/recipe/RecipesMachinesTiered.java:1130-1173: hull, 2 motors,
+--- 2 pistons, a circuit, a cable and 2 gears of Incoloy-DS and Nitinol-60, whose parts come late here, so large titanium
+--- and tungstensteel gears stand in). Burner generators on the cells of HV's, at the tier's amp (EU32); the sprites are
+--- HV's in the tier's colour (tools/gen_sprites.py generator_tiers).
+--------------------------------------------------------------------------------
+do
+	local GENERATORS = {
+		--  name                    fuel                         efficiency power    technology  ingredients
+		{ "ev-gas-turbine", "gas-turbine-fuel", 0.60, EU32_EV, "ev-machines", {
+			{ "titanium-rotor", 3 }, { "ev-motor", 2 }, { "ev-circuit", 2 }, { "ev-machine-hull", 1 }, { "aluminium-cable", 1 } } },
+		{ "iv-gas-turbine", "gas-turbine-fuel", 0.50, EU32_IV, "iv-machines", {
+			{ "tungstensteel-rotor", 3 }, { "iv-motor", 2 }, { "iv-circuit", 2 }, { "iv-machine-hull", 1 }, { "tungsten-cable", 1 } } },
+		{ "ev-semifluid-generator", "semifluid-generator-fuel", 0.80, EU32_EV, "ev-machines", {
+			{ "ev-piston", 2 }, { "ev-motor", 2 }, { "ev-circuit", 1 }, { "ev-machine-hull", 1 }, { "aluminium-cable", 1 },
+			{ "large-titanium-gear", 2 } } },
+		{ "iv-semifluid-generator", "semifluid-generator-fuel", 0.75, EU32_IV, "iv-machines", {
+			{ "iv-piston", 2 }, { "iv-motor", 2 }, { "iv-circuit", 1 }, { "iv-machine-hull", 1 }, { "tungsten-cable", 1 },
+			{ "large-tungstensteel-gear", 2 } } },
+	}
+	for _, g in ipairs(GENERATORS) do
+		create_burner_generator{ name = g[1], efficiency = g[3], fuel_categories = { g[2] }, max_power = g[4] }
+		local ingredients = {}
+		for _, i in ipairs(g[6]) do ingredients[#ingredients + 1] = { type = "item", name = i[1], amount = i[2] } end
+		create_item{ name = g[1], ingredients = ingredients, place_result = g[1], stack_size = 10 }
+		local hv = data.raw.item["hv-" .. g[1]:match("^%a+%-(.*)$")]
+		if hv then data.raw.item[g[1]].subgroup, data.raw.item[g[1]].order = hv.subgroup, (hv.order or "") .. "-" .. g[1] end
+		fork_add_unlock(g[5], g[1])
+	end
+end
+
+
+
+--------------------------------------------------------------------------------
+--- 9b) GT++'S ADVANCED BOILERS LV TO HV (issue #637; gtPlusPlus/xmod/gregtech/registration/gregtech/
+--- GregtechAdvancedBoilers.java:28-97, MTEAdvancedBoilerBase.java): 750 L of steam a second per tier from any fuel,
+--- here 7.5, 15 and 22.5 steam a second (a steam unit is 100 GT litres and 30 kJ, as 101's coal boilers: 225, 450 and
+--- 675 kW), copies of the Large Coal Boiler (GT++'s recipe takes GT's steel boiler, Gregtorio's Large Coal Boiler).
+--- Recipe "EXE", "CMC", "PBP": 2 electric pumps, a circuit, 2 boiler chassis, the tier's machine casing, 2 huge pipes
+--- and the boiler; a chassis: 4 double plates (lead, stainless steel, titanium), 4 medium pipes and an IronTanks tank.
+--- The mod has no GT pipes or IronTanks: its pipe for GT's pipes (as 101's steam machines) and its storage tank for the
+--- tank. LV and MV with the new technology Advanced Boilers, HV with HV Advanced Boiler (titanium).
+--------------------------------------------------------------------------------
+do
+	local BOILERS = {
+		--  tier  kW    plate                          circuit               technology
+		{ "lv", 225, "double-lead-plate",            "electronic-circuit", "advanced-boilers" },
+		{ "mv", 450, "double-stainless-steel-plate", "advanced-circuit",   "advanced-boilers" },
+		{ "hv", 675, "double-titanium-plate",        "processing-unit",    "hv-advanced-boiler" },
+	}
+	F.tech{ name = "advanced-boilers", prerequisites = { "mv-machines", "stainless-steel", "high-pressure-steam",
+		"fluid-handling" }, packs = 3, count = 200, recipes = {} }
+	F.tech{ name = "hv-advanced-boiler", prerequisites = { "advanced-boilers", "titanium", "hv-components" }, packs = 5,
+		count = 300, recipes = {} }
+	for i, b in ipairs(BOILERS) do
+		local t = b[1]
+		local chassis = "advanced-boiler-chassis-t" .. i
+		create_item{
+			name = chassis,
+			subgroup = "energy",
+			ingredients = {
+				{ type = "item", name = b[3], amount = 4 },
+				{ type = "item", name = "pipe", amount = 4 },
+				{ type = "item", name = "storage-tank", amount = 1 },
+			},
+		}
+		local name = t .. "-advanced-boiler"
+		local boiler = table.deepcopy(data.raw.boiler["large-coal-boiler"])
+		boiler.name = name
+		boiler.icon = "__gregtorio-continued__/graphics/icons/" .. name .. ".png"
+		boiler.minable = { mining_time = 0.3, result = name }
+		boiler.energy_consumption = b[2] .. "kW"
+		boiler.next_upgrade = nil
+		data:extend({ boiler })
+		create_item{
+			name = name,
+			subgroup = "energy",
+			place_result = name,
+			stack_size = 10,
+			ingredients = {
+				{ type = "item", name = t .. "-pump", amount = 2 },
+				{ type = "item", name = b[4], amount = 1 },
+				{ type = "item", name = chassis, amount = 2 },
+				{ type = "item", name = t .. "-machine-casing", amount = 1 },
+				{ type = "item", name = "pipe", amount = 2 },
+				{ type = "item", name = "large-coal-boiler", amount = 1 },
+			},
+		}
+		fork_add_unlock(b[5], chassis)
+		fork_add_unlock(b[5], name)
+	end
+end

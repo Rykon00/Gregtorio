@@ -140,6 +140,41 @@ local VANILLA_RECIPES_UNUSED = {
 for _, group in pairs(VANILLA_RECIPES_UNUSED) do
 	for _, name in pairs(group[2]) do VANILLA_RECIPES_REMOVED[name] = group[1] end
 end
+--- Issue #670: Space Age's recycling. Factorio 2.1's built-in mod recycler (a dependency of space-age and quality) makes a
+--- hidden recycling recipe of every recipe and item in its data-updates and unlocks them with hidden effects of its
+--- technology Recycling. Gregtorio has no recycler (its recipe is in the vanilla machines above, the technology is
+--- disabled below and Fulgora is gone since #529), yet every item's tooltip and Factoriopedia showed the recycling result
+--- (utility-constants' factoriopedia_recycling_recipe_categories). GT New Horizons recycles in the macerator, the arc
+--- furnace and the fluid extractor (157). Every recipe of a category of the recycler is deleted with the vanilla recipes
+--- (their technology effects and tips go too) unless another machine runs that category; then the recycler itself. Nothing
+--- else of Factorio 2.1 reads them (quality, spoiling and the upgrade planner do not; the recycler's furnace and its
+--- technology are their only users). devcheck fails for a recipe of the recycler's categories that is left.
+do
+	local recycler = data.raw.furnace["recycler"]
+	local only_recycler = {}
+	for _, c in pairs(recycler and recycler.crafting_categories or { "recycling" }) do only_recycler[c] = true end
+	only_recycler["recycling-or-hand-crafting"] = true   -- Space Age 2.0's scrap recycling (2.1: recycling, hand-crafting)
+	for _, t in pairs({ "assembling-machine", "furnace", "character" }) do
+		for name, e in pairs(data.raw[t] or {}) do
+			if name ~= "recycler" then
+				for _, c in pairs(e.crafting_categories or {}) do only_recycler[c] = nil end
+			end
+		end
+	end
+	local n = 0
+	for name, r in pairs(data.raw.recipe) do
+		for _, c in pairs(r.categories or { r.category }) do
+			if only_recycler[c] then
+				VANILLA_RECIPES_REMOVED[name] = "Space Age's recycling: Gregtorio has no recycler (issue #670)"
+				n = n + 1
+				break
+			end
+		end
+	end
+	data.raw.item["recycler"] = nil
+	data.raw.furnace["recycler"] = nil
+	log("FORK-RECYCLER: " .. n .. " recipes of the recycler's categories and the recycler removed (issue #670)")
+end
 --- Issue #318: devcheck fails for a recipe of this class (a vanilla recipe without a technology, every product of which
 --- Gregtorio makes another way, not hidden) that is neither deleted here nor kept in this allow-list with its reason
 FORK_VANILLA_RECIPES_KEPT = {}
