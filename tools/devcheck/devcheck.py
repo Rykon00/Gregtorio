@@ -13,6 +13,7 @@
     python tools/devcheck/devcheck.py menusim --sim gregtorio_steam_age --rebuild
                                                 # issue #588: save a Gregtorio menu scene again, shrunk, with today's mods
     python tools/devcheck/devcheck.py handover  # issue #83: prototype of the ME state hand-over to me-network
+    python tools/devcheck/devcheck.py gtnh-diff # issue #679: report of Gregtorio's recipes against GTNH's (not in `all`)
 
 Everything is kept in .devcheck/ in the repository root (git-ignored).
 
@@ -3497,6 +3498,33 @@ def menusim_rebuild(a):
     return 1 if failed else 0
 
 
+def gtnh_diff(a):
+    """Issue #679 (a report, not part of `all`): Gregtorio's recipes against the GT New Horizons recipe dump
+    (tools/gtnh_dump/gtnh-recipes.json.gz) through tools/gtnh_map.py; per GT recipe map the recipes Gregtorio has, has
+    with other numbers or lacks, written to .devcheck/gtnh-diff.md and .json. Loads the mod like `check` unless
+    `--log` names the log of an earlier `check` run."""
+    sys.path.insert(0, str(ROOT / "tools"))
+    import gtnh_map
+    if a.log:
+        log = Path(a.log).read_text(encoding="utf-8", errors="replace")
+    else:
+        prepare_mods()
+        log = factorio("--create", str(WORK / "check-map.zip"))
+        if load_errors(log):
+            print("load: FAILED\n" + load_errors(log))
+            return 1
+    sec = sections(log)
+    if "BALANCE" not in sec or "DUMP" not in sec:
+        sys.exit("the log has no DUMP/BALANCE section (a `check` run's .devcheck/last-run.log is needed)")
+    dump = gtnh_map.load_dump(a.dump)
+    per_map, tot, groups = gtnh_map.run(dump, sec, a.out, a.json)
+    print(gtnh_map.summary(tot, a.out))
+    print("\nlargest gaps (map, material or form, missing recipes):")
+    for (mname, grp), n in groups.most_common(10):
+        print(f"  {mname}: {grp}: {n}")
+    return 0
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     sub = ap.add_subparsers(dest="cmd", required=True)
@@ -3557,6 +3585,11 @@ def main():
     sub.add_parser("handover", help="issue #83: prototype of the ME state hand-over to me-network")
     sw = sub.add_parser("switch", help="issue #563: a save switches its ore mode, both ways")
     sw.add_argument("--seed", default=str(DEFAULT_SEED), help=f"map seed or `random` (default {DEFAULT_SEED})")
+    gd = sub.add_parser("gtnh-diff", help="issue #679: report of Gregtorio's recipes against GT New Horizons' recipe dump")
+    gd.add_argument("--dump", default=str(ROOT / "tools/gtnh_dump/gtnh-recipes.json.gz"))
+    gd.add_argument("--log", help="use the log of an earlier `check` run instead of loading the mod")
+    gd.add_argument("--out", default=str(WORK / "gtnh-diff.md"))
+    gd.add_argument("--json", default=str(WORK / "gtnh-diff.json"))
     al = sub.add_parser("all")
     al.add_argument("--ticks", type=int, default=1500)
     al.add_argument("--locale-out")
@@ -3577,6 +3610,8 @@ def main():
         return handover(a)
     if a.cmd == "switch":
         return switch(a)
+    if a.cmd == "gtnh-diff":
+        return gtnh_diff(a)
     return check(a) or one_pack(a) or runtime(a) or classic(a) or boilers(a) or overclocking(a) or menusim_own(a)
 
 

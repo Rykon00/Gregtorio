@@ -120,6 +120,8 @@ The repository root is the mod itself (`info.json`, `data.lua`, `prototypes/`, `
 | `tools/gen_ui_icons.py` | GUI icons derived from item icons (empty manual-labor slot, red "no manual labor" alert) |
 | `tools/gen_locale.py` | adds missing English names to `locale/en/fork.cfg` |
 | `tools/gen_ore_mixes.py` | issue #496: writes `prototypes/data/ore-mixes.lua` from GT5-Unofficial's `OreMixes.java`, `DimensionDef.java` and `DimensionHelper.java` (`--gt <checkout> [--ref f2814df]`); GT's material names that are not Gregtorio's kebab case are in its `NAMES` |
+| `tools/gtnh_dump/` | issue #679: `gtnh-recipes.json.gz`, every recipe of GT New Horizons' recipe maps (GT5-Unofficial with NewHorizonsCoreMod), its crafting table and furnace recipes, made in GT's dev environment by the dev mod `src/gtnhdump/`; the README says how to make a new one on Windows |
+| `tools/gtnh_map.py` | issue #679: maps the dump onto Gregtorio's names (GT's unification prefix and material, explicit tables, English names), recipe maps onto Gregtorio's machines, EU/t onto tiers; `devcheck.py gtnh-diff` uses it for its report of the recipes Gregtorio lacks or has with other numbers |
 
 ## Status
 
