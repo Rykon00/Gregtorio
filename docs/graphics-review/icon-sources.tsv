@@ -5250,3 +5250,8 @@ hafnium-carbide-dust	colour of hafnium-carbide #bebec8 + gt:gregtech/textures/it
 tantalum-hafnium-carbide-dust	colour of tantalum-hafnium-carbide #8c8278 + gt:gregtech/textures/items/materialicons/METALLIC/dust
 tantalum-hafnium-carbide-mixture	colour of tantalum-hafnium-carbide-mixture #a0968c + gt:gregtech/textures/items/materialicons/NONE/dust
 tantalum-hafnium-carbide-ingot	colour of tantalum-hafnium-carbide #8c8278 + gt:gregtech/textures/items/materialicons/METALLIC/ingot
+wetware-circuit-board	gt:gregtech/textures/items/gt.metaitem.03/6
+bioware-circuit-board	gt:gregtech/textures/items/gt.metaitem.03/8
+petri-dish	gt:gregtech/textures/items/gt.metaitem.03/22
+basic-photolithographic-casing	gt:gregtech/textures/blocks/iconsets/MACHINE_CASING_PCB_TIER_1
+pcb-factory-controller	gt:gregtech/textures/blocks/iconsets/MACHINE_CASING_PCB_TIER_1 + gt:gregtech/textures/blocks/iconsets/OVERLAY_FRONT_ASSEMBLY_LINE
