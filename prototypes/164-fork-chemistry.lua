@@ -5165,6 +5165,202 @@ end
 
 
 --------------------------------------------------------------------------------
+--- 47) GT++'S MILLING AND FLOTATION (issue #630, the maintainer's decision of 2026-10-28: the full scope as GTNH). Paths
+---   under gtPlusPlus/ unless named otherwise.
+---   IsaMill (core/item/base/ore/BaseItemMilledOre.java:49-118; tiers core/item/ModItems.java:300-312): 16 crushed ore
+---   + alumina milling ball -> 32 milled ore (60 s) or + soapstone ball -> 16 (75 s); 16 raw ore -> 64 / 48 (120 / 150 s);
+---   netherrack: 256 -> 32 / 16 (60 s, IV; Gregtorio's netherrack is its dust). The ball is not used up but wears, one
+---   point a run (xmod/gregtech/common/tileentities/machines/multi/processing/MTEIsaMill.java:486-495): an alumina ball
+---   lasts 100 runs, a soapstone ball 50 (core/item/chemistry/general/ItemGenericChemBase.java:243-249); here the ball
+---   comes back at 99 % and 98 %.
+---   Flotation Cell (core/item/chemistry/RecipeLoaderMilling.java:235-401): 32 xanthate + 256 milled ore + pine oil ->
+---   1000 L froth, 480 s; netherrack: 256 milled + 8000 L nefarious oil -> 8000 L froth (LuV, 120 s).
+---   Froth in the vacuum furnace (the Utupu-Tanuri; RecipeLoaderMilling.java:41-233): 4000 L froth -> dusts + 2000 L red
+---   mud + 2000 L water (120 s; netherrack: 3000 L -> dusts + 16000 L poor nether waste, 60 s). The froths' coil heats
+---   (3500 to 7500 K) are not modelled; the Utupu-Tanuri has naquadah coils (7200 K), the monazite froth runs anyway.
+---   GTNH turns platinum and osmium dust out of the platinum line into PT metallic powder (twice the amount) and the
+---   iridium-osmium leach residue (bartworks/system/material/gtenhancement/PlatinumSludgeOutputs.java:45-56; Gregtorio:
+---   metallic platinum powder and rarest metal mixture): the pentlandite and spessartine froths give those.
+---   Red mud: centrifuge 1000 L -> small piles of iron, copper, tin, sulfur (30/30/20/20 %), tiny piles of nickel and lead
+---   (10 %, here small piles at 2.5 %) + 500 L water (core/item/chemistry/RecipeLoaderAgriculturalChem.java:215-231).
+---   Pine oil (RecipeLoaderMilling.java:404-500, chemical plant): wood (Gregtorio's one log; GT++ takes pine logs) -> 64
+---   crushed pine materials (MV, 10 s); 64 + 5000 steam -> 500 L (MV, 60 s) or + 5000 superheated steam -> 1500 L (MV, 45 s).
+---   Xanthates and their parts (core/item/chemistry/RecipeLoaderGenericChem.java:73-148, chemical plant, MV): sodium
+---   ethoxide, potassium hydroxide (with calcium carbonate), the two ethyl xanthates, carbon disulfide (EBF 1500 K from coke
+---   and sulfur, or from coal gas and sulfur; GT++'s brown metal catalyst left out by the rule of this file).
+---   Milling balls (:180-204, HV assembler): 64 alumina + 4000 L aniline -> 8; 32 soapstone + 2500 L liquid resin -> 8;
+---   liquid resin from urea and formaldehyde (plugin/agrichem/BioRecipes.java:623-641, chemical plant, LV).
+---   Nefarious oil (gregtech/loaders/postload/chains/NetheriteRecipes.java:247-283): nether air in the vacuum freezer ->
+---   nether semi-fluid; its distillation -> heavy hellish mud, nefarious gas, coal gas, anthracene, sulfur oxides,
+---   nitrogen dioxide and neon (IV); cracking nefarious gas with grade 1 or 2 purified water -> nefarious oil (IV).
+---   The machines (core/recipe/RecipesMachinesCustom.java:769-883): the IsaMill and the Flotation Cell are LuV assembly
+---   line controllers with their casings; GT parts the mod lacks are left out (named at their recipes). Gregtorio's
+---   aniline and calcium hydroxide come with Kevlar (UV) and its vacuum furnace with Prismatic Naquadah (UV), so the line
+---   is unlocked at UV (GTNH: LuV).
+--------------------------------------------------------------------------------
+do
+	local R, RF = {}, {}
+	local function item(name, amount) return { type = "item", name = name, amount = amount } end
+	local function fl(name, icon, rgb) F.fluid(name, icon, { rgb[1] / 255, rgb[2] / 255, rgb[3] / 255 }) end
+	--- the chemistry (colours: GTPPFluids.java and GT's Materials)
+	fl("pine-oil", "olive-fluid", { 220, 220, 0 })
+	fl("carbon-disulfide", "nearly-white-fluid", { 32, 32, 32 })
+	fl("coal-gas", "black-fluid", { 50, 50, 70 })
+	fl("urea", "nearly-white-fluid", { 38, 118, 38 })
+	fl("liquid-resin", "olive-fluid", { 59, 58, 56 })
+	fl("red-mud", "medium-red-fluid", { 180, 60, 40 })
+	fl("nether-semi-fluid", "medium-red-fluid", { 0x55, 0x10, 0x10 })
+	fl("nefarious-gas", "medium-red-fluid", { 0x8c, 0x22, 0x22 })
+	fl("nefarious-oil", "black-fluid", { 0x45, 0x05, 0x05 })
+	fl("poor-nether-waste", "medium-red-fluid", { 0x6a, 0x33, 0x23 })
+	items(SUB_DUST, { "sodium-ethoxide", "potassium-hydroxide", "sodium-ethyl-xanthate", "potassium-ethyl-xanthate",
+		"calcium-carbonate-dust", "crushed-pine-materials" })
+	items(SUB_PART, { "alumina-milling-ball", "soapstone-milling-ball", "heavy-hellish-mud" })
+	step(R, "crushed-pine-materials", CP, 10, MV_SPEED, { { "wood", 1 } }, { { "crushed-pine-materials", 64 } })
+	step(R, "pine-oil", CP, 60, MV_SPEED, { { "crushed-pine-materials", 64 }, { "steam", 500 } },
+		{ { "pine-oil", 50 }, { "ash-dust", 1, 0.25 }, { "dark-ash-dust", 1, 0.1 } })
+	step(R, "pine-oil-from-superheated-steam", CP, 45, MV_SPEED, { { "crushed-pine-materials", 64 }, { "superheated-steam", 500 } },
+		{ { "pine-oil", 150 } })
+	step(R, "sodium-ethoxide", CP, 20, MV_SPEED, { { "sodium", 1 }, { "ethanol", 100 } },
+		{ { "sodium-ethoxide", 9 }, { "hydrogen", 100 } })
+	step(R, "potassium-hydroxide", CP, 30, MV_SPEED,
+		{ { "potash-dust", 3 }, { "calcium-hydroxide-dust", 5 }, { "carbon-dioxide", 100 } },
+		{ { "potassium-hydroxide", 6 }, { "calcium-carbonate-dust", 5 } })
+	step(R, "carbon-disulfide", "mv-electric-blast-furnace-recipes", 600, MV_SPEED, { { "coke", 8 }, { "sulfur", 16 } },
+		{ { "carbon-disulfide", 400 }, { "dark-ash-dust", 1 } })
+	step(R, "carbon-disulfide-from-coal-gas", CP, 300, LV_SPEED, { { "sulfur", 4 }, { "coal-gas", 100 } },
+		{ { "carbon-disulfide", 200 } })
+	step(R, "potassium-ethyl-xanthate", CP, 60, MV_SPEED,
+		{ { "potassium-hydroxide", 3 }, { "ethanol", 100 }, { "carbon-disulfide", 100 } },
+		{ { "potassium-ethyl-xanthate", 12 }, { "water", 100 } })
+	step(R, "sodium-ethyl-xanthate", CP, 60, MV_SPEED, { { "sodium-ethoxide", 9 }, { "carbon-disulfide", 100 } },
+		{ { "sodium-ethyl-xanthate", 12 } })
+	step(R, "urea", CP, 5, LV_SPEED, { { "ammonia", 60 }, { "carbon-dioxide", 30 } }, { { "urea", 30 }, { "distilled-water", 30 } })
+	step(R, "liquid-resin", CP, 5, LV_SPEED, { { "urea", 20 }, { "formaldehyde", 20 } }, { { "liquid-resin", 20 } })
+	step(R, "alumina-milling-ball", "hv-assembling-machine-recipes", 180, HV_SPEED, { { "alumina", 64 }, { "aniline", 400 } },
+		{ { "alumina-milling-ball", 8 } })
+	step(R, "soapstone-milling-ball", "hv-assembling-machine-recipes", 120, HV_SPEED,
+		{ { "soapstone-dust", 32 }, { "liquid-resin", 250 } }, { { "soapstone-milling-ball", 8 } })
+	--- nefarious oil from nether air
+	step(R, "nether-semi-fluid", "mv-vacuum-freezer-recipes", 10, MV_SPEED, { { "nether-air", 100 } }, { { "nether-semi-fluid", 10 } })
+	step(R, "nefarious-gas", "iv-tall-distillation-recipes", 24, IV_SPEED, { { "nether-semi-fluid", 10000 } },
+		{ { "heavy-hellish-mud", 8 }, { "nefarious-gas", 800 }, { "coal-gas", 1600 }, { "anthracene", 6600 },
+			{ "sulfur-trioxide", 21000 }, { "sulfur-dioxide", 38000 }, { "nitrogen-dioxide", 14000 }, { "neon", 3600 } },
+		"nefarious-gas")
+	step(R, "nefarious-oil", "iv-cracker-recipes", 26, IV_SPEED, { { "grade-1-water", 400 }, { "nefarious-gas", 1600 } },
+		{ { "nefarious-oil", 1200 } })
+	step(R, "nefarious-oil-from-grade-2-water", "iv-cracker-recipes", 6, IV_SPEED,
+		{ { "grade-2-water", 100 }, { "nefarious-gas", 1600 } }, { { "nefarious-oil", 1800 } })
+	--- the ores: IsaMill and flotation tier, xanthate, pine oil (a tenth of GT's litres), the froth's dusts, the vacuum
+	--- furnace's tier and seconds
+	local ORES = {
+		{ "sphalerite", LUV_SPEED, "sodium", 1400, { { "zinc-dust", 180 }, { "iron-dust", 120 }, { "indium", 64 } }, LUV_SPEED, 120 },
+		{ "chalcopyrite", IV_SPEED, "sodium", 1200, { { "copper-dust", 180 }, { "iron-dust", 120 }, { "cadmium", 50 }, { "indium", 10 } }, IV_SPEED, 120 },
+		{ "nickel", IV_SPEED, "potassium", 2500, { { "nickel-dust", 150 }, { "cobalt-dust", 120 }, { "rhodium-dust", 32 }, { "ruthenium-dust", 16 } }, IV_SPEED, 120 },
+		{ "platinum", LUV_SPEED, "potassium", 3500, { { "metallic-platinum-powder", 128 }, { "rhodium-dust", 60 }, { "tellurium-dust", 10 } }, LUV_SPEED, 120 },
+		{ "pentlandite", LUV_SPEED, "sodium", 1400, { { "iron-dust", 150 }, { "nickel-dust", 100 }, { "metallic-platinum-powder", 40 }, { "hafnium-dust", 10 } }, LUV_SPEED, 120 },
+		{ "redstone", IV_SPEED, "sodium", 1300, { { "redstone-dust", 300 }, { "chromium-dust", 60 }, { "firestone-dust", 45 }, { "dysprosium-dust", 16 } }, IV_SPEED, 120 },
+		{ "spessartine", LUV_SPEED, "potassium", 3500, { { "manganese-dust", 150 }, { "aluminium-dust", 90 }, { "rarest-metal-mixture", 30 }, { "strontium-dust", 20 } }, LUV_SPEED, 120 },
+		{ "grossular", LUV_SPEED, "potassium", 2800, { { "calcium", 180 }, { "aluminium-dust", 110 }, { "tungsten-dust", 60 }, { "thallium-dust", 15 } }, LUV_SPEED, 120 },
+		{ "almandine", IV_SPEED, "sodium", 1800, { { "aluminium-dust", 150 }, { "magnesium", 75 }, { "yttrium-dust", 25 }, { "ytterbium-dust", 15 } }, IV_SPEED, 120 },
+		{ "pyrope", EV_SPEED, "sodium", 800, { { "magnesium", 110 }, { "manganese-dust", 70 }, { "borax", 60 }, { "rhenium-dust", 20 } }, EV_SPEED, 120 },
+		{ "monazite", ZPM_SPEED, "potassium", 3000, { { "erbium-dust", 64 }, { "lanthanum-dust", 32 }, { "lutetium-dust", 16 }, { "europium-dust", 8 } }, UV_SPEED, 60 },
+	}
+	FORK_MILLING = { ores = ORES, recipes = R }
+	local function milled_recipes(input, n, milled, tier, s_alumina, s_soap, out_alumina, out_soap)
+		step(R, milled .. "-from-" .. input .. "-alumina", "isamill-recipes", s_alumina, tier,
+			{ { input, n }, { "alumina-milling-ball", 1 } }, { { milled, out_alumina }, { "alumina-milling-ball", 1, 0.99 } }, milled)
+		step(R, milled .. "-from-" .. input .. "-soapstone", "isamill-recipes", s_soap, tier,
+			{ { input, n }, { "soapstone-milling-ball", 1 } }, { { milled, out_soap }, { "soapstone-milling-ball", 1, 0.98 } }, milled)
+	end
+	F.category("isamill-recipes")
+	F.category("flotation-cell-recipes")
+	for _, o in ipairs(ORES) do
+		local ore, milled, froth = o[1], "milled-" .. o[1], o[1] .. "-flotation-froth"
+		items(SUB_DUST, { milled })
+		fl(froth, "olive-fluid", { 0x80, 0x80, 0x60 })
+		milled_recipes("crushed-" .. ore, 16, milled, o[2], 60, 75, 32, 16)
+		if data.raw.item["raw-" .. ore] then milled_recipes("raw-" .. ore, 16, milled, o[2], 120, 150, 64, 48) end
+		step(R, froth, "flotation-cell-recipes", 480, o[2],
+			{ { o[3] .. "-ethyl-xanthate", 32 }, { milled, 256 }, { "pine-oil", o[4] } }, { { froth, 100 } })
+		local out = {}
+		for _, d in pairs(o[5]) do out[#out + 1] = d end
+		out[#out + 1] = { "red-mud", 200 }
+		out[#out + 1] = { "water", 200 }
+		step(RF, ore .. "-froth-processing", "vacuum-furnace-recipes", o[7], o[6], { { froth, 400 } }, out, o[5][1][1])
+	end
+	--- netherrack (Poor Nether Waste for the netherite chain, #617)
+	items(SUB_DUST, { "milled-netherrack" })
+	fl("netherrack-flotation-froth", "medium-red-fluid", { 0x70, 0x20, 0x20 })
+	milled_recipes("netherrack-dust", 256, "milled-netherrack", IV_SPEED, 60, 60, 32, 16)
+	step(R, "netherrack-flotation-froth", "flotation-cell-recipes", 120, LUV_SPEED,
+		{ { "milled-netherrack", 256 }, { "nefarious-oil", 800 } }, { { "netherrack-flotation-froth", 800 } })
+	step(RF, "netherrack-froth-processing", "vacuum-furnace-recipes", 60, LUV_SPEED, { { "netherrack-flotation-froth", 300 } },
+		{ { "sulfur", 256 }, { "antimony", 55 }, { "certus-quartz-dust", 40 }, { "nether-quartz-dust", 40 },
+			{ "ardite-dust", 32 }, { "cobalt-dust", 32 }, { "poor-nether-waste", 1600 } }, "poor-nether-waste")
+	--- red mud
+	local piles = {}
+	for _, p in pairs({ { "iron-dust", 0.3 }, { "copper-dust", 0.3 }, { "tin-dust", 0.2 }, { "sulfur", 0.2 },
+		{ "nickel-dust", 0.025 }, { "lead-dust", 0.025 } }) do
+		local name, from = pile(p[1], "small")
+		piles[#piles + 1] = { name, 1, p[2] }
+		RF[#RF + 1] = from
+	end
+	piles[#piles + 1] = { "water", 50 }
+	step(RF, "red-mud-centrifuging", "lv-centrifuge-recipes", 30, LV_SPEED, { { "red-mud", 100 } }, piles, piles[1][1])
+	--- the machines (RecipesMachinesCustom.java:769-883; left out, the mod lacks them: the IsaMill's 16 tungsten grinders,
+	--- 32 Lafium and 32 Trinium Naquadah Carbonite, the exterior casing's maceration stack casing, the piping's quantium
+	--- item pipe casing, the flotation cell's 2 advanced distillation towers, its extruder casings and Aquatic Steel)
+	local AL, LA = "luv-assembly-line-recipes", "luv-assembling-machine-recipes"
+	items("subgroup-luv-age-multiblocks", { "isamill-exterior-casing", "isamill-gearbox", "isamill-piping",
+		"flotation-cell-casing", "isamill-controller", "flotation-cell-controller" })
+	step(R, "isamill-gearbox", LA, 120, LUV_SPEED, { { "titanium-gear-box-casing", 2 }, { "large-inconel-625-gear", 4 },
+		{ "tungstensteel-plate", 16 }, { "molten-tungstensteel", 115.2 } }, { { "isamill-gearbox", 1 } })
+	step(R, "isamill-exterior-casing", LA, 120, LUV_SPEED, { { "double-zeron-100-plate", 2 }, { "zeron-100-rod", 4 },
+		{ "zeron-100-screw", 8 }, { "molten-titanium", 57.6 } }, { { "isamill-exterior-casing", 1 } })
+	step(R, "isamill-piping", "ev-assembling-machine-recipes", 480, EV_SPEED, { { "isamill-exterior-casing", 1 },
+		{ "hsse-ring", 8 }, { "hsse-plate", 8 }, { "hsse-screw", 8 }, { "molten-aluminium", 115.2 } }, { { "isamill-piping", 1 } })
+	step(R, "isamill-controller", AL, 600, LUV_SPEED, { { "isamill-exterior-casing", 4 }, { "isamill-gearbox", 4 },
+		{ "luv-circuit", 16 }, { "large-inconel-625-gear", 8 }, { "inconel-625-plate", 32 }, { "double-zeron-100-plate", 16 },
+		{ "zeron-100-screw", 64 }, { "molten-zeron-100", 230.4 } }, { { "isamill-controller", 1 } })
+	step(R, "flotation-cell-casing", LA, 120, LUV_SPEED, { { "double-hssg-plate", 4 }, { "stainless-steel-rotor", 4 },
+		{ "molten-stainless-steel", 115.2 } }, { { "flotation-cell-casing", 1 } })
+	step(R, "flotation-cell-controller", AL, 60, LUV_SPEED, { { "flotation-cell-casing", 4 }, { "luv-pump", 4 },
+		{ "large-stellite-gear", 8 }, { "stellite-plate", 32 }, { "double-hastelloy-n-plate", 16 }, { "inconel-625-screw", 64 },
+		{ "molten-inconel-792", 230.4 }, { "molten-hastelloy-n", 460.8 } }, { { "flotation-cell-controller", 1 } })
+	local LUV_MAC = data.raw["assembling-machine"]["luv-macerator"]
+	local LUV_POWER = LUV_MAC and LUV_MAC.energy_usage or EU16_LUV
+	machine{
+		name = "isamill", category = "isamill-recipes", speed = LUV_SPEED, energy = LUV_POWER,
+		subgroup = "subgroup-luv-age-multiblocks", ports = {}, list = R,
+		recipe = { "crafting-or-assembling-recipes", 1, { item("isamill-controller", 1), item("isamill-exterior-casing", 40),
+			item("isamill-piping", 8), item("isamill-gearbox", 5), item("luv-energy-hatch", 1) } },
+	}
+	machine{
+		name = "flotation-cell", category = "flotation-cell-recipes", speed = LUV_SPEED, energy = LUV_POWER,
+		subgroup = "subgroup-luv-age-multiblocks",
+		ports = { port("input", N, { -1, -1 }), port("input", N, { 1, -1 }), port("output", S, { 0, 1 }) },
+		list = R,
+		recipe = { "crafting-or-assembling-recipes", 1, { item("flotation-cell-controller", 1), item("flotation-cell-casing", 31),
+			item("inconel-625-frame", 20), item("inconel-792-frame", 8), item("luv-energy-hatch", 1) } },
+	}
+	F.tech{
+		--- (the producers of its parts and chemicals; aniline and calcium hydroxide come with Kevlar, so the line is UV here)
+		name = "milling-and-flotation", packs = 9, count = 300, time = 60, recipes = R,
+		prerequisites = { "kevlar", "luv-machines", "luv-energy-hatches", "luv-components", "hsse", "hssg", "fluid-shaper",
+			"industrial-centrifuge", "industrial-electrolyzer", "liquid-fluoride-thorium-reactor", "super-glue" },
+	}
+	--- the froths need the vacuum furnace, which Gregtorio's Utupu-Tanuri brings with Prismatic Naquadah (UV)
+	F.tech{
+		name = "froth-processing", prerequisites = { "milling-and-flotation", "prismatic-naquadah" }, packs = 9, count = 300,
+		time = 60, recipes = RF,
+	}
+	FORK_MILLING.froth_recipes = RF
+end
+
+
+
+--------------------------------------------------------------------------------
 --- 38) GT'S PARTS OF THE METALS OF THIS FILE (issue #467). 158 makes GT New Horizons' parts of every metal of
 ---   prototypes/gt-parts-data.lua (issue #227) whose ingot exists; most metals of this file come after 158, so its
 ---   FORK_GT_PARTS.run() runs once more here (it skips what exists), then 143's casts for the new forms.

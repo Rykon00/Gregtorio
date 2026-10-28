@@ -3025,3 +3025,15 @@ UHV amps; Gregtorio's chemical plant has no casing tiers). It replaces Indalloy 
 with it (circuits from the bioware supercomputer on, UEV+ components and hatches, DTPF, godforge, QFT, the space elevator's
 late modules, the stargate by the tier rule); the amounts stay Gregtorio's. Left for later (#671): the solder amounts that
 differ from GT's tenth, and 162's GT-litre fluid amounts.
+
+## Milling and flotation (issue #630)
+
+GT++'s IsaMill and GT's Froth Flotation Cell with GTNH's 11 milled ores and the netherrack froth (164 section 47, the
+maintainer's decision of 2026-10-28: the full scope). Stand-ins and deviations: Gregtorio's wood for GT++'s pine logs, its
+netherrack dust for the netherrack block; the milling ball's wear as a 99 % (alumina) or 98 % (soapstone) chance to
+return; the froth coils' heat is not modelled (the monazite froth needs 7500 K, the Utupu-Tanuri has 7200 K); GT++'s
+brown metal catalyst left out; the controllers leave out tungsten grinders, Lafium, Trinium Naquadah Carbonite, the
+maceration stack and quantium pipe casings, the advanced distillation towers, extruder casings and Aquatic Steel. Platinum
+and osmium dust of the froths are bartworks' replacements (metallic platinum powder, rarest metal mixture). The line is UV
+here (aniline and calcium hydroxide come with Kevlar, the vacuum furnace with Prismatic Naquadah), LuV in GTNH.
+Still to come in #630: germanium and selenium (their froth outputs and other GTNH sources) and their left-out places.

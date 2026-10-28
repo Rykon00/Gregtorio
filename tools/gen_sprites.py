@@ -303,6 +303,13 @@ MULTIBLOCKS = {
     "algae-farm": ((3, 3), "gregtech:iconsets/ALGAE_CASING", None,
                    ("miscutils:iconsets/controllerFaces/algaePondBase", "miscutils:iconsets/controllerFaces/algaePondBaseActive"),
                    None),
+    # issue #630: GT++'s IsaMill (its grinding mill casing and grinder front, MTEIsaMill.java:76-84, casing index 66 of
+    # GregtechMetaCasingBlocks5.java:67) and GT's Froth Flotation Cell (the flotation casing, its controller face)
+    "isamill": ((3, 3), "miscutils:TileEntities/MACHINE_CASING_GRINDING_FACTORY", None,
+                ("miscutils:iconsets/Grinder/GRINDER5", "miscutils:iconsets/Grinder/GRINDER_ACTIVE5"), None),
+    "flotation-cell": ((3, 3), "miscutils:TileEntities/MACHINE_CASING_FLOTATION", None,
+                       ("miscutils:iconsets/controllerFaces/frothFlotationCell",
+                        "miscutils:iconsets/controllerFaces/frothFlotationCellActive"), None),
     "industrial-dehydrator": ((3, 3), "gregtech:iconsets/VACUUM_CASING_SIDE", None,
                               ("miscutils:iconsets/controllerFaces/industrialDehydrator",
                                "miscutils:iconsets/controllerFaces/industrialDehydratorActive"), None),
@@ -401,7 +408,7 @@ WHOLE_ICONS = {"large-titanium-boiler", "large-combustion-engine", "digester", "
                "ev-rocket-engine", "iv-rocket-engine", "luv-rocket-engine", "large-rocket-engine",
                "universal-chemical-fuel-engine", "reactor-fuel-processing-plant", "liquid-fluoride-thorium-reactor",
                "sparge-tower", "cold-trap-i", "reactor-processing-unit-i", "nuclear-salt-processing-plant", "cold-trap-ii", "reactor-processing-unit-ii",
-               "algae-farm", "industrial-dehydrator", "naquadah-fuel-refinery", "naquadah-fuel-refinery-t2",
+               "algae-farm", "industrial-dehydrator", "isamill", "flotation-cell", "naquadah-fuel-refinery", "naquadah-fuel-refinery-t2",
                "naquadah-fuel-refinery-t3", "naquadah-fuel-refinery-t4", "source-chamber", "beam-crafter",
                "luv-mass-fabricator", "nano-forge", "nano-forge-t2", "nano-forge-t3", *(f"draconic-evolution-fusion-crafter-t{k}" for k in range(1, 5)), "large-hadron-collider", "large-hadron-collider-weak", "large-hadron-collider-lhcb",
                *(f"precise-assembler-mk{i}" for i in range(1, 4)),
