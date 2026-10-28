@@ -5623,6 +5623,8 @@ do
 		R[#R + 1] = name
 	end
 	for _, r in pairs(R) do fork_add_unlock("large-extractor", r) end
+	--- (the EV solenoid's permalloy, a LV mixer recipe, came only with the beamline, section 30)
+	fork_add_unlock("large-extractor", "permalloy-dust")
 end
 
 
