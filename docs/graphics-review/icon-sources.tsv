@@ -5209,3 +5209,27 @@ infused-gold-plate	colour of InfusedGold #ffc83c + gt:gregtech/textures/items/ma
 infused-gold-foil	colour of InfusedGold #ffc83c + gt:gregtech/textures/items/materialicons/NONE/foil
 thaumium-dust	colour of Thaumium #9664c8 + gt:gregtech/textures/items/materialicons/METALLIC/dust
 netherite-foil	colour of netherite #4a4040 + gt:gregtech/textures/items/materialicons/NONE/foil
+dyson-swarm-module	gt:gtnhintergalactic/textures/items/dysonSwarmModule
+solar-sail	gt:gtnhintergalactic/textures/items/solarSail
+drone-case	gt:gtnhintergalactic/textures/items/droneCase
+femtocontroller	gt:gtnhintergalactic/textures/items/femtocontroller
+fuel-pellet	gt:gtnhintergalactic/textures/items/fuelPellet
+uht-resistant-mesh	gt:gtnhintergalactic/textures/items/UHTResistantMesh
+tantalum-hafnium-carbide-nanofibers	gt:gtnhintergalactic/textures/items/TaHfCNanofibers
+neutronium-nanofibers	gt:gtnhintergalactic/textures/items/NtNanofibers
+tantalum-hafnium-nanoparticles	gt:gtnhintergalactic/textures/items/TaHfNanoparticles
+neutronium-nanoparticles	gt:gtnhintergalactic/textures/items/NtNanoparticles
+dyson-swarm-controller	gt:gtnhintergalactic/textures/blocks/dysonSwarm/ReceiverCasing_Side + gt:gregtech/textures/blocks/iconsets/OVERLAY_FRONT_DYSONSPHERE
+dyson-swarm-receiver-casing	gt:gtnhintergalactic/textures/blocks/dysonSwarm/ReceiverCasing_Side
+dyson-swarm-receiver-dish	gt:gtnhintergalactic/textures/blocks/dysonSwarm/ReceiverDish_Side
+dyson-swarm-deployment-unit-casing	gt:gtnhintergalactic/textures/blocks/dysonSwarm/DeploymentUnitCasing_Side
+dyson-swarm-deployment-unit-core	gt:gtnhintergalactic/textures/blocks/dysonSwarm/DeploymentUnitCore_Side
+dyson-swarm-deployment-unit-magnet	gt:gtnhintergalactic/textures/blocks/dysonSwarm/DeploymentUnitMagnet_Side
+dyson-swarm-control-casing	gt:gtnhintergalactic/textures/blocks/dysonSwarm/ControlCasing_Side
+dyson-swarm-control-primary-windings	gt:gtnhintergalactic/textures/blocks/dysonSwarm/ControlPrimary_Side
+dyson-swarm-control-secondary-windings	gt:gtnhintergalactic/textures/blocks/dysonSwarm/ControlSecondary_Side
+dyson-swarm-control-toroid	gt:gtnhintergalactic/textures/blocks/dysonSwarm/ControlToroid_Side
+hafnium-carbide-dust	colour of hafnium-carbide #bebec8 + gt:gregtech/textures/items/materialicons/NONE/dust
+tantalum-hafnium-carbide-dust	colour of tantalum-hafnium-carbide #8c8278 + gt:gregtech/textures/items/materialicons/METALLIC/dust
+tantalum-hafnium-carbide-mixture	colour of tantalum-hafnium-carbide-mixture #a0968c + gt:gregtech/textures/items/materialicons/NONE/dust
+tantalum-hafnium-carbide-ingot	colour of tantalum-hafnium-carbide #8c8278 + gt:gregtech/textures/items/materialicons/METALLIC/ingot

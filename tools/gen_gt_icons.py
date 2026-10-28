@@ -250,6 +250,9 @@ MATERIALS = {
     "calcium-carbonate": ("DULL", (255, 255, 255)), "netherrack": "Netherrack",
     # GT++'s germanium and selenium (MaterialsElements.java:55-78, their colours)
     "germanium": ("DULL", (200, 200, 200)), "selenium": ("DULL", (190, 190, 190)),
+    # issue #623: ScriptGalaxySpace's hafnium carbide and tantalum hafnium carbide (no GT material: own grey tones)
+    "hafnium-carbide": ("DULL", (190, 190, 200)), "tantalum-hafnium-carbide": ("METALLIC", (140, 130, 120)),
+    "tantalum-hafnium-carbide-mixture": ("DULL", (160, 150, 140)),
     # issue #617: GT's infused gold and thaumium; netherite (GT's SET_NETHERITE textures are not in GT5-Unofficial: a dark
     # metallic foil) and Et Futurum's ancient debris (a rough brown ore)
     "infused-gold": "InfusedGold", "thaumium": "Thaumium", "netherite": ("METALLIC", (0x4a, 0x40, 0x40)),
@@ -1229,6 +1232,24 @@ def icon_table(c):
     T["heavy-hellish-mud"] = lambda: c.gt("gt:gregtech/textures/items/gt.metaitem.03/242")
     T["calcium-carbonate-dust"] = lambda: c.part("calcium-carbonate", "dust")
     T["small-pile-of-sulfur"] = lambda: c.part("sulfur", "dustSmall")   # (the red mud's piles)
+    # issue #623: gtnhintergalactic's Dyson Swarm parts (items/) and casings (blocks/dysonSwarm/)
+    IGI, IGB = "gt:gtnhintergalactic/textures/items/", "gt:gtnhintergalactic/textures/blocks/dysonSwarm/"
+    for k, f in (("dyson-swarm-module", "dysonSwarmModule"), ("solar-sail", "solarSail"), ("drone-case", "droneCase"),
+                 ("femtocontroller", "femtocontroller"), ("fuel-pellet", "fuelPellet"), ("uht-resistant-mesh", "UHTResistantMesh"),
+                 ("tantalum-hafnium-carbide-nanofibers", "TaHfCNanofibers"), ("neutronium-nanofibers", "NtNanofibers"),
+                 ("tantalum-hafnium-nanoparticles", "TaHfNanoparticles"), ("neutronium-nanoparticles", "NtNanoparticles")):
+        T[k] = (lambda f=f: lambda: c.gt(IGI + f))()
+    for k, f in (("receiver-casing", "ReceiverCasing"), ("receiver-dish", "ReceiverDish"),
+                 ("deployment-unit-casing", "DeploymentUnitCasing"), ("deployment-unit-core", "DeploymentUnitCore"),
+                 ("deployment-unit-magnet", "DeploymentUnitMagnet"), ("control-casing", "ControlCasing"),
+                 ("control-primary-windings", "ControlPrimary"), ("control-secondary-windings", "ControlSecondary"),
+                 ("control-toroid", "ControlToroid")):
+        T["dyson-swarm-" + k] = (lambda f=f: lambda: c.gt(IGB + f + "_Side"))()
+    T["dyson-swarm-controller"] = lambda: over(c.gt(IGB + "ReceiverCasing_Side"), c.gt(f"{BLK}OVERLAY_FRONT_DYSONSPHERE"))
+    T["hafnium-carbide-dust"] = lambda: c.part("hafnium-carbide", "dust")
+    T["tantalum-hafnium-carbide-dust"] = lambda: c.part("tantalum-hafnium-carbide", "dust")
+    T["tantalum-hafnium-carbide-mixture"] = lambda: c.part("tantalum-hafnium-carbide-mixture", "dust")
+    T["tantalum-hafnium-carbide-ingot"] = lambda: c.part("tantalum-hafnium-carbide", "ingot")
     # issue #617: GT's netherite items (gt.metaitem.03/243-251), the scrap as the hot scrap cooled, the debris an ore
     M03 = "gt:gregtech/textures/items/gt.metaitem.03/"
     for k, n in (("netherite-scrap-seed", 243), ("brittle-netherite-scrap", 244), ("netherite-nanoparticles", 245),

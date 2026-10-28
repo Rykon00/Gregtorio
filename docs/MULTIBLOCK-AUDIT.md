@@ -157,7 +157,7 @@ combustion promoter came with issue #357. The single-block generators of the sam
 | Deep Earth Heating Pump (IV, bartworks `MTEDeepEarthHeatingPump.java`) | no map | superheated steam for 480 EU/t | the heat exchanger and #254 | **leave** (power from almost nothing breaks the fuel balance) |
 | Solid-Oxide Fuel Cell Mk I/II (HV/LuV, kekztech `MTESOFuelCellMK1/2.java`) | `gasTurbineFuels` + oxygen | gas power with steam on the side | gas turbines LV to HV, EV in #256 | **leave** |
 | Compact Fusion Computer MK-I to MK-V (goodgenerator `MTELargeFusionComputer1-5.java`) | GT's `fusionRecipes`, 64 parallels | the fusion reactor in bulk | fusion MK1 to MK5 | **leave** (parallel version, not a generator) |
-| Dyson Swarm (UIV, gtnhintergalactic `TileEntityDysonSwarm.java`) | no map | power from space modules | no dimensions or space elevator | **n/a** at the audit; the space elevator exists since #301 (`162-fork-space-elevator.lua`), so the Dyson Swarm is open again as #623 |
+| Dyson Swarm (UIV, gtnhintergalactic `TileEntityDysonSwarm.java`) | no map | power from space modules | no dimensions or space elevator | **built** (issue #623, `prototypes/164-fork-chemistry.lua` section 50: the ground unit, its modules and casings with named stand-ins; the power in `scripts/fork-power.lua`) |
 
 ### Parallel versions
 
