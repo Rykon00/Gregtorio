@@ -81,6 +81,7 @@ FUSION = {
 # elsewhere (bartworks Werkstoffe, GT++ materials) or does not have. Superconductor bases the fork names
 # itself take GT's base of the same tier.
 MATERIALS = {
+    "pvc": "PolyvinylChloride", "polydimethylsiloxane": "Polydimethylsiloxane",   # issue #690: the insulation pulps
     "americium": "Americium", "bedrockium": "Bedrockium", "cosmic-neutronium": "CosmicNeutronium",
     "draconium": "Draconium", "enderium": "Enderium", "eternity": "Eternity", "europium": "Europium",
     "fluxed-electrum": "ElectrumFlux", "hsss": "HSSS", "infinity": "Infinity", "magnetic-samarium": "SamariumMagnetic",
