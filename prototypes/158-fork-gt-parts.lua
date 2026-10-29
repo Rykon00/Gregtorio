@@ -49,6 +49,8 @@ local OC = FORK_ORE_CHAIN
 local DATA = require("prototypes.gt-parts-data")
 --- issue #687: GT's other part routes (section 3)
 local ROUTES = require("prototypes.data.gtnh-part-routes")
+--- issue #688: GT's crafting table recipes of the parts (section 4)
+local CRAFTING = require("prototypes.data.gtnh-part-crafting")
 local P = "__gregtorio-continued__/graphics/icons/"
 
 local TIERS = { "lv", "mv", "hv", "ev", "iv", "luv", "zpm", "uv", "uhv", "uev", "uiv", "umv", "uxv", "max" }
@@ -138,7 +140,7 @@ end
 local made = 0
 --- (recipes: every recipe of this file; 199's auto-unlock does not count them as producers, like 143's casts: a form
 --- of a material made from another form of it would stand in for the recipe that really makes it)
-FORK_GT_PARTS = { recipes = {}, routes_skipped = {} }
+FORK_GT_PARTS = { recipes = {}, routes_skipped = {}, imported = {} }
 --- a recipe of a machine at a tier (GT ticks or seconds); unlocked after its machine and every item it takes (the mold
 --- aside); without a machine: the crafting table
 local function recipe(def)
@@ -229,7 +231,7 @@ end
 --- GTNH gap work (#355, #356, #386, ...) get their ingot in 164, after this file. A second run makes only what is
 --- missing (an existing item or recipe is skipped) and reads the technologies anew.
 --------------------------------------------------------------------------------
-local new_parts, nuggets, routes = 0, 0, 0
+local new_parts, nuggets, routes, crafted = 0, 0, 0, 0
 --- issue #687: a route's row is its machine's of the tier, else of LV (199 would make a row without a name)
 local function subgroup_of(category)
 	local sg = "subgroup-" .. category
@@ -487,11 +489,47 @@ function FORK_GT_PARTS.run()
 			if OC.unlock_after(e[1], groups) then
 				OC.made(e[1])
 				FORK_GT_PARTS.recipes[e[1]] = true
+				FORK_GT_PARTS.imported[e[1]] = true
 				FORK_GT_PARTS.routes_skipped[e[1]] = nil
 				routes = routes + 1
 			else
 				data.raw.recipe[e[1]] = nil
 				FORK_GT_PARTS.routes_skipped[e[1]] = "no technology after its machine, items and fluids"
+			end
+		end
+	end
+
+	--------------------------------------------------------------------------------
+	--- 4) GT'S CRAFTING TABLE RECIPES OF THE PARTS (issue #688): GT New Horizons makes most parts by hand too, with its
+	---    tools (the hammer for plates, the file for rods, the saw for bolts, the wire cutter for wires, the wrench for
+	---    gears, ...). prototypes/data/gtnh-part-crafting.lua holds the recipes Gregtorio lacks, as GT New Horizons'
+	---    recipe dump has them, GT's tools as #612's charges (148's FORK_TOOLS: a craft uses one charge of each tool;
+	---    GT's mortar, soft mallet and the other tools Gregtorio does not have leave their recipes out), written by
+	---    `devcheck.py check --gtnh-crafting`. Category crafting-table-recipes, as 148's, made when all their items exist
+	---    and unlocked like the routes above.
+	--------------------------------------------------------------------------------
+	for _, e in pairs(CRAFTING) do
+		local ok = not data.raw.recipe[e[1]] and data.raw.item[e.p] ~= nil
+		for _, x in pairs(e.i) do ok = ok and data.raw.item[x[1]] ~= nil end
+		if not ok then
+			FORK_GT_PARTS.routes_skipped[e[1]] = FORK_GT_PARTS.routes_skipped[e[1]] or "an item is missing at 158's runs"
+		else
+			local ing = {}
+			for _, x in pairs(e.i) do ing[#ing + 1] = item(x[1], x[2]) end
+			data:extend({ { type = "recipe", name = e[1], categories = { "crafting-table-recipes" }, enabled = false,
+				energy_required = 1, ingredients = ing, results = { item(e.p, e.n) }, main_product = e.p,
+				subgroup = sub_of(e.p, nil) } })
+			local groups = {}
+			for _, i in pairs(ing) do groups[#groups + 1] = item_techs(i.name) end
+			if OC.unlock_after(e[1], groups) then
+				OC.made(e[1])
+				FORK_GT_PARTS.recipes[e[1]] = true
+				FORK_GT_PARTS.imported[e[1]] = true
+				FORK_GT_PARTS.routes_skipped[e[1]] = nil
+				crafted = crafted + 1
+			else
+				data.raw.recipe[e[1]] = nil
+				FORK_GT_PARTS.routes_skipped[e[1]] = "no technology after its items"
 			end
 		end
 	end
@@ -514,7 +552,7 @@ if CAST_IRON and data.raw.item["cast-iron-plate"] then
 end
 
 FORK_CASTING.run()
---- issue #687: called by data-final-fixes.lua after it disabled the vanilla technologies: a route of section 3 that
+--- issue #687: called by data-final-fixes.lua after it disabled the vanilla technologies: a recipe of sections 3 and 4 that
 --- only a disabled technology unlocked goes (155's unlock_after may have taken one, the vanilla Lubricant)
 function FORK_GT_PARTS.drop_locked_routes()
 	local unlocked = {}
@@ -526,19 +564,20 @@ function FORK_GT_PARTS.drop_locked_routes()
 		end
 	end
 	local n = 0
-	for name in pairs(FORK_GT_PARTS.recipes) do
+	for name in pairs(FORK_GT_PARTS.imported) do
 		local r = data.raw.recipe[name]
-		if r and name:match("^gt%-%a+%-") and r.enabled == false and not unlocked[name] then
+		if r and r.enabled == false and not unlocked[name] then
 			data.raw.recipe[name] = nil
 			FORK_GT_PARTS.recipes[name] = nil
+			FORK_GT_PARTS.imported[name] = nil
 			FORK_GT_PARTS.routes_skipped[name] = "only a disabled vanilla technology unlocked it"
 			n = n + 1
 		end
 	end
-	log("FORK-GT-PARTS: " .. n .. " of GT's other part routes dropped, their technology was disabled")
+	log("FORK-GT-PARTS: " .. n .. " of GT's part routes and crafting table recipes dropped, their technology was disabled")
 end
 function FORK_GT_PARTS.log(when)
 	log("FORK-GT-PARTS (" .. when .. "): " .. new_parts .. " new parts and nuggets (issues #222, #227), GT's nugget recipes of "
-		.. nuggets .. " metals (issue #223), " .. routes .. " of GT's other part routes (issue #687), " .. made .. " recipes; casting: " .. FORK_CASTING.casts .. " casts")
+		.. nuggets .. " metals (issue #223), " .. routes .. " of GT's other part routes (issue #687), " .. crafted .. " of GT's crafting table recipes of parts (issue #688), " .. made .. " recipes; casting: " .. FORK_CASTING.casts .. " casts")
 end
 FORK_GT_PARTS.log("158")
