@@ -40,13 +40,20 @@ A GT recipe is
   * `variant` when a Gregtorio recipe of the families takes the GT recipe's first ingredient and makes its first
     product (other byproducts, another cutting fluid, ...),
   * `missing` else: a gap.
+
+Issue #714: a merged dump (tools/gtnh_dump/nei_to_dump.py) has a `source` on every recipe; the report then counts the
+statuses per source (gt5u, nei, both) and the NEI-only recipes of each gap.
 """
 import argparse, ast, gzip, json, re, sys
 from collections import Counter, defaultdict
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
-DUMP = ROOT / "tools/gtnh_dump/gtnh-recipes.json.gz"
+#: issue #714: the GT5-Unofficial dump merged with the full-pack NEI dump (tools/gtnh_dump/nei_to_dump.py) when it
+#: exists, else the GT5-Unofficial dump alone; each recipe of the merged dump has its `source` (gt5u, nei, both)
+DUMP = next((p for p in (ROOT / "tools/gtnh_dump/gtnh-merged.json.gz", ROOT / "tools/gtnh_dump/gtnh-recipes.json.gz")
+             if p.exists()), ROOT / "tools/gtnh_dump/gtnh-recipes.json.gz")
+SOURCES = ["gt5u", "nei", "both"]
 TIERS = ["lv", "mv", "hv", "ev", "iv", "luv", "zpm", "uv", "uhv", "uev", "uiv", "umv", "uxv", "max"]
 #: GT's voltages V[0] ULV .. V[14] MAX
 GT_V = [8 * 4 ** i for i in range(15)]
@@ -429,10 +436,11 @@ def gt_recipes(dump):
             yield (f"{name} [{cat.group(1)}]" if cat else name), r
     for f in dump.get("furnace", []):
         part = PARTS.match(dump["items"].get(f["in"]["id"], {}).get("prefix") or "")
-        yield ("furnace [recycling]" if part else "furnace"), {"in": [f["in"]], "out": [f["out"]], "fin": [], "fout": [], "eut": 0, "duration": 0}
+        yield ("furnace [recycling]" if part else "furnace"), {"in": [f["in"]], "out": [f["out"]], "fin": [], "fout": [], "eut": 0, "duration": 0,
+                                                               "source": f.get("source", "gt5u")}
     for c in dump.get("crafting", []):
         if TOOL.match(c["out"]["id"]):
-            yield "crafting:tool", None
+            yield "crafting:tool", {"tool": True, "source": c.get("source", "gt5u")}
             continue
         ins = []
         for s in c.get("in", []):
@@ -440,7 +448,8 @@ def gt_recipes(dump):
                 s = s["any"][0]     # (a list of items without an ore dictionary name: its first)
             if isinstance(s, dict) and ("id" in s or "ore" in s):
                 ins.append({**s, "n": s.get("n", 1)})
-        yield "crafting", {"in": ins, "out": [c["out"]], "fin": [], "fout": [], "eut": 0, "duration": 0}
+        yield "crafting", {"in": ins, "out": [c["out"]], "fin": [], "fout": [], "eut": 0, "duration": 0,
+                           "source": c.get("source", "gt5u")}
 
 
 def map_recipe(mp, r):
@@ -536,30 +545,38 @@ def run(dump, sec, out_md, out_json=None, limit=50):
     seen = set()
     missing, differs, ratios, variants = defaultdict(list), defaultdict(list), defaultdict(Counter), defaultdict(list)
     pending = []
+    # issue #714: the statuses per source of the merged dump (gt5u, nei, both)
+    per_src = defaultdict(Counter)
     for mname, r in gt_recipes(dump):
-        if r is None:
+        src = r.get("source", "gt5u")
+        if r.get("tool"):
             # (a GT tool made in the crafting grid: Gregtorio has no GT tools)
-            per_map[mname.split(":")[0]]["gt"] += 1
-            per_map[mname.split(":")[0]]["not compared"] += 1
+            for c in (per_map[mname.split(":")[0]], per_src[src]):
+                c["gt"] += 1
+                c["not compared"] += 1
             continue
         st = per_map[mname]
-        st["gt"] += 1
+
+        def count(k):
+            st[k] += 1
+            per_src[src][k] += 1
+        count("gt")
         fams = MAPS.get(mname.split(" [")[0])
         if fams is None:
-            st["not compared" if NOT_RECIPES.search(mname) else "no machine"] += 1
+            count("not compared" if NOT_RECIPES.search(mname) else "no machine")
             continue
         if not any(f in g.families for f in fams):
-            st["no machine"] += 1
+            count("no machine")
             continue
         if (mname.endswith("[recycling]") or mname == "gt.recipe.canner") and any(
                 dump["items"].get(x.get("id"), {}).get("prefix") in CELL for x in r["in"] + r["out"]):
             # (GT recycles its fluid cells with the fluid still in them: the container's metal, not the fluid; the
             # canner fills and empties cells, which Gregtorio does not have)
-            st["not compared"] += 1
+            count("not compared")
             continue
         mapped, bad = map_recipe(mp, r)
         if bad:
-            st["unmapped"] += 1
+            count("unmapped")
             for b in set(bad):
                 blockers[b] += 1
                 blocker_maps[b][mname] += 1
@@ -567,30 +584,30 @@ def run(dump, sec, out_md, out_json=None, limit=50):
         ins = frozenset(list(mapped["ins"]) + list(mapped["fin"]))
         outs = frozenset(list(mapped["outs"]) + list(mapped["fout"]))
         if not outs or not ins:
-            st["unmapped"] += 1
+            count("unmapped")
             continue
         key = (fams[0], ins, outs)
         if key in seen:
-            st["duplicate"] += 1
+            count("duplicate")
             continue
         seen.add(key)
-        st["mapped"] += 1
+        count("mapped")
         cands = [x for x in g.by_key.get((ins, outs), []) if x["family"] in fams]
         if cands:
-            st["matched"] += 1
+            count("matched")
             pending.append((mname, mapped, r, cands))
             continue
         if g.by_key.get((ins, outs)):
-            st["elsewhere"] += 1
+            count("elsewhere")
             continue
         main_in = next(iter(mapped["ins"]), None) or next(iter(mapped["fin"]), None)
         main_out = next(iter(mapped["outs"]), None) or next(iter(mapped["fout"]), None)
         var = next((x for f in fams for x in g.by_main.get((f, main_in, main_out), [])), None)
         if var:
-            st["variant"] += 1
+            count("variant")
             variants[mname].append((describe(mapped, r), var["name"], describe_greg(var)))
             continue
-        st["missing"] += 1
+        count("missing")
         missing[mname].append((r, mapped))
     # fluid scale per map from the matched recipes, then the comparison of their numbers
     for mname, mapped, r, cands in pending:
@@ -605,10 +622,12 @@ def run(dump, sec, out_md, out_json=None, limit=50):
         best = min((compare(mapped, c, r, g, scale.get(mname)), c["name"]) for c in cands)
         if best[0]:
             per_map[mname]["differs"] += 1
+            per_src[r.get("source", "gt5u")]["differs"] += 1
             differs[mname].append((best[1], best[0]))
 
     # gaps grouped by map and material family of the main product
     groups = Counter()
+    group_nei = Counter()
     examples = defaultdict(list)
     for mname, rows in missing.items():
         for r, mapped in rows:
@@ -620,6 +639,8 @@ def run(dump, sec, out_md, out_json=None, limit=50):
             elif mname == "crafting" and info.get("prefix"):
                 grp = "every " + info["prefix"]
             groups[(mname, grp)] += 1
+            if r.get("source") == "nei":
+                group_nei[(mname, grp)] += 1
             if len(examples[(mname, grp)]) < 3 and (grp != "(every material)" or len(examples[(mname, grp)]) < 3):
                     examples[(mname, grp)].append(describe(mapped, r))
 
@@ -630,7 +651,9 @@ def run(dump, sec, out_md, out_json=None, limit=50):
              f"Dump: GT5-Unofficial {dump.get('git_describe') or dump.get('gt_version')} "
              f"(commit {dump.get('git_commit', '?')[:10]})"
              + (f", NewHorizonsCoreMod {dump['mods']['dreamcraft']}" if "dreamcraft" in dump.get("mods", {}) else "")
-             + f", {dump.get('created', '')}.", "",
+             + f", {dump.get('created', '')}."
+             + (f" Merged with the NEI dump of {nei['pack']} ({nei['fork']}, issue #714)."
+                if (nei := dump.get("sources", {}).get("nei")) else ""), "",
              "Columns: GT recipes; not compared (fuels, scanners, GT tools, cells, ...); no machine (Gregtorio has no "
              "recipe of that machine, or no such machine); unmapped (an item or fluid "
              "without a Gregtorio name); duplicate (the same items again, e.g. a GT++ multiblock's copy); mapped; "
@@ -646,10 +669,18 @@ def run(dump, sec, out_md, out_json=None, limit=50):
         sc_s = ", ".join(f"{k:g} ({v})" for k, v in sc.most_common(3)) if sc else ""
         lines.append(f"| {mname} | " + " | ".join(str(st[c]) for c in cols) + f" | {sc_s} |")
     lines.append("| **all** | " + " | ".join(f"**{tot[c]}**" for c in cols) + " | |")
+    if "sources" in dump:
+        lines += ["", "## Per source (issue #714)", "",
+                  "gt5u: only in the GT5-Unofficial dump; nei: only in the NEI dump (what it adds); both: in both (the "
+                  "GT5-Unofficial dump's line).", "",
+                  "| source | " + " | ".join(cols) + " |", "|" + "---|" * (len(cols) + 1)]
+        for s in SOURCES:
+            c = per_src.get(s, Counter())
+            lines.append(f"| {s} | " + " | ".join(str(c[k]) for k in cols) + " |")
     lines += ["", f"## The {limit} largest gaps (missing recipes by map and material of the main product)", "",
-              "| map | material / product | missing | examples |", "|---|---|---|---|"]
+              "| map | material / product | missing | of them NEI only | examples |", "|---|---|---|---|---|"]
     for (mname, grp), n in groups.most_common(limit):
-        lines.append(f"| {mname} | {grp} | {n} | " + "<br>".join(examples[(mname, grp)]) + " |")
+        lines.append(f"| {mname} | {grp} | {n} | {group_nei[(mname, grp)]} | " + "<br>".join(examples[(mname, grp)]) + " |")
     lines += ["", f"## The {limit} GT items and fluids that block the most recipes (no Gregtorio name)", "",
               "| GT item | name | prefix / material | recipes | maps |", "|---|---|---|---|---|"]
     for b, n in blockers.most_common(limit):
@@ -669,8 +700,9 @@ def run(dump, sec, out_md, out_json=None, limit=50):
     if out_json:
         Path(out_json).write_text(json.dumps({
             "dump": {k: dump.get(k) for k in ("gt_version", "git_commit", "git_describe", "created")},
+            "sources": dump.get("sources"), "per_source": per_src,
             "maps": per_map, "scale": {m: dict(c) for m, c in ratios.items()},
-            "gaps": [{"map": m, "group": grp, "missing": n, "examples": examples[(m, grp)]}
+            "gaps": [{"map": m, "group": grp, "missing": n, "nei_only": group_nei[(m, grp)], "examples": examples[(m, grp)]}
                      for (m, grp), n in groups.most_common()],
             "missing": {m: [describe(mapped, r) for r, mapped in rows] for m, rows in missing.items()},
             "differs": {m: [{"recipe": n, "diff": d} for n, d in rows] for m, rows in differs.items()},

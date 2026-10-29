@@ -1,0 +1,20 @@
+{
+  "format": [
+    {
+      "field": "mRecipe",
+      "type": "gregtech.api.util.GTRecipe"
+    },
+    {
+      "field": "calculator",
+      "type": "gregtech.api.util.OverclockCalculator"
+    },
+    {
+      "field": "mOutputs",
+      "type": "java.util.List<codechicken.nei.PositionedStack>"
+    },
+    {
+      "field": "mInputs",
+      "type": "java.util.List<codechicken.nei.PositionedStack>"
+    }
+  ]
+}
