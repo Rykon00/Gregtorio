@@ -1,0 +1,2 @@
+{"handler":"codechicken.nei.recipe.FurnaceRecipeHandler","ingred":{"Count":1,"Damage":11351,"Name":"Mu-metal Wrench Tip","strId":"bartworks:gt.bwMetaGeneratedtoolHeadWrench"},"result":{"Count":4,"Damage":11351,"Name":"Mu-metal Ingot","strId":"bartworks:gt.bwMetaGeneratedingot"}}
+{"handler":"codechicken.nei.recipe.FurnaceRecipeHandler","ingred":{"Count":1,"Damage":0,"Name":"Cobblestone","strId":"minecraft:cobblestone"},"result":{"Count":1,"Damage":0,"Name":"Stone","strId":"minecraft:stone"}}

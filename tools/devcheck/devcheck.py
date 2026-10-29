@@ -3519,9 +3519,10 @@ def menusim_rebuild(a):
 
 def gtnh_diff(a):
     """Issue #679 (a report, not part of `all`): Gregtorio's recipes against the GT New Horizons recipe dump
-    (tools/gtnh_dump/gtnh-recipes.json.gz) through tools/gtnh_map.py; per GT recipe map the recipes Gregtorio has, has
-    with other numbers or lacks, written to .devcheck/gtnh-diff.md and .json. Loads the mod like `check` unless
-    `--log` names the log of an earlier `check` run."""
+    (tools/gtnh_dump/gtnh-recipes.json.gz; issue #714: gtnh-merged.json.gz, merged with the full-pack NEI dump, when it
+    exists) through tools/gtnh_map.py; per GT recipe map the recipes Gregtorio has, has with other numbers or lacks,
+    written to .devcheck/gtnh-diff.md and .json. Loads the mod like `check` unless `--log` names the log of an earlier
+    `check` run."""
     sys.path.insert(0, str(ROOT / "tools"))
     import gtnh_map
     if a.log:
@@ -3535,7 +3536,7 @@ def gtnh_diff(a):
     sec = sections(log)
     if "BALANCE" not in sec or "DUMP" not in sec:
         sys.exit("the log has no DUMP/BALANCE section (a `check` run's .devcheck/last-run.log is needed)")
-    dump = gtnh_map.load_dump(a.dump)
+    dump = gtnh_map.load_dump(a.dump or gtnh_map.DUMP)
     per_map, tot, groups = gtnh_map.run(dump, sec, a.out, a.json)
     print(gtnh_map.summary(tot, a.out))
     print("\nlargest gaps (map, material or form, missing recipes):")
@@ -3605,7 +3606,8 @@ def main():
     sw = sub.add_parser("switch", help="issue #563: a save switches its ore mode, both ways")
     sw.add_argument("--seed", default=str(DEFAULT_SEED), help=f"map seed or `random` (default {DEFAULT_SEED})")
     gd = sub.add_parser("gtnh-diff", help="issue #679: report of Gregtorio's recipes against GT New Horizons' recipe dump")
-    gd.add_argument("--dump", default=str(ROOT / "tools/gtnh_dump/gtnh-recipes.json.gz"))
+    gd.add_argument("--dump", help="default: tools/gtnh_dump/gtnh-merged.json.gz (issue #714) if it exists, else "
+                                   "tools/gtnh_dump/gtnh-recipes.json.gz")
     gd.add_argument("--log", help="use the log of an earlier `check` run instead of loading the mod")
     gd.add_argument("--out", default=str(WORK / "gtnh-diff.md"))
     gd.add_argument("--json", default=str(WORK / "gtnh-diff.json"))
