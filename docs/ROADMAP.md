@@ -68,7 +68,7 @@ How Gregtorio turns GT New Horizons into Factorio, where the code only implies i
 | #622 | wireless energy between surfaces at UHV, as GTNH's wireless EU |
 | #624 | the space elevator at UV, the DTPF at UEV, the godforge at UIV (built: the DTPF's technology 11 packs, the godforge's 12 packs with the UIV assembler, the elevator's 9 packs with cosmic neutronium from the new technology Cosmic Neutronium after the Void Miner III) |
 | #626 | YAFC mode is removed (YAFC sees the map veins and the classic vein recipes) |
-| #638 | GT's single-block naquadah reactors Mk I-V and plasma generators come back on GTNH's tiers (#644) |
+| #638 | GT's single-block naquadah reactors Mk I-V and plasma generators come back on GTNH's tiers (built: #644, 169-fork-single-generators.lua) |
 | #629 | cinobite A243 and octiron built (164 section 52, thaumium for Thaumcraft's crystal powders); attuned tengam and proto-halkonite steel built after #636 (164 section 53, tairitsu as tritanium, the freezer's superfluid as super coolant); white and black dwarf matter and phonon medium moved to #699 |
 | #636 | Phobos's and Deimos's veins as mines with Reach Mars (draconium, oriharukon and the heavy pentele vein at EV, as in GTNH); Seth, Maahes and every other void-minable dimension of T3 to T8 as Void Miner pools; the Deep Dark (T10) as a Void Miner III recipe with every raw ore, technology The Deep Dark at UHV |
 | #631 | in three parts: iodine and GT's hafnium route first (164 section 54: seaweed from the greenhouse, the two centrifuge steps with two fluids in the chemical reactor), then the samarium ore concentrate (section 55: GT's samarium ore in the Void Miner pools of Seth, Barnard C and Centauri Bb, florencite's concentrate, gtnhlanth's chain; the ZPM distillation left out) and the rare earth ion extraction (section 56: GT's ore for every lanthanide with a resin, lanthanum and cerium in the RareEarth vein's pools, the rest in the Deep Dark; technology Rare Earth Ion Extraction at 13 packs, after the Nano Forge's carbon nanites); promethium moved to #632 |
@@ -1232,8 +1232,10 @@ and its hatch holds the cooled fluid for the plasma burnt (helium, nitrogen, mol
   fuels (removed for good in issue #39 with the atomic separation catalyst; issue #610 built both, 164 section 44, with
   the catalyst of #356), antimony trioxide, tiberium, high density uranium
   and ~~plutonium~~ (high density plutonium is built since issue #39) and the naquadah fuel refinery.
-* GT's single-block naquadah reactors (naquadah rods) and single-block plasma generators are not built (the maintainer's
-  decision on #638, 2026-10-27: they come back on GTNH's tiers, #644).
+* GT's single-block naquadah reactors Mk I-V (EV to UV, on enriched naquadah and naquadria bolts and rods) and plasma
+  generators (EV to UV) are built since #644 (the decision on #638), in 169-fork-single-generators.lua. Stand-ins there:
+  uranium 235 and plutonium 239 dust for GT's uranium 235 and plutonium 241 rods, the vanadium-gallium cable for GT's HSS-G cable; GT's 4x to
+  12x cables and wires are counted as single ones (#729).
 
 ### Existing saves
 

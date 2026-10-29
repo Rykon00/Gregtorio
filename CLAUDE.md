@@ -376,6 +376,11 @@
     of their GTNH item as recipe icon; devcheck fails for a tier circuit recipe without its own icon; issue #450: the ULV
     tier item `ulv-circuit`, which the vacuum tube and NAND chip recipes give and every former user of the two takes, and
     the nanoprocessor in the HV circuit assembler with its parts at HV)
+  - 169 single-block generators (issue #644, the decision on #638: GT's naquadah reactors Mark I-V as burner generators
+    on their one GT fuel each, with its own fuel category and the depleted part as burnt result, and the plasma
+    generators EV to UV as 136's fluid generators on the plasmas (mod data `fork-power`, no cooled fluid); one amp of
+    the tier (EU32), GT's efficiencies; unlocked after every input and the fuel (155's `unlock_after`, with 158's
+    fallback for items 155 does not know); loads after 156 and before 157)
   - 157 recycling (issue #190: GTNH's material recycling into dusts, ingots and melts for the items of crafting table
     recipes and the hulls, recipes `recycling-<machine>-<item>` in `FORK_RECYCLING.recipes`, unlocked late by
     `FORK_RECYCLING.unlock()` in data-final-fixes.lua because that file replaces and disables vanilla technologies;

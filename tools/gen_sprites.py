@@ -1136,6 +1136,41 @@ def battery_buffers(gt):
 # of the EV and IV chemical reactors and the HV to IV distilleries
 GENERATOR_TINT = {"ev": (225, 215, 245), "iv": (170, 180, 215)}
 
+# issue #644: GT's single-block naquadah reactors Mk I-V and plasma generators EV to UV, 3x3 like Gregtorio's other
+# generators: the tier's GT hull in the tier's colour, the middle tile with GT's face (MTENaquadahReactor: the
+# NAQUADAH_REACTOR_SOLID front, active while it runs; MTEPlasmaGenerator: the fusion glass, yellow while it runs, with the
+# tier's energy output overlay)
+SINGLE_GENERATORS = {
+    "naquadah-reactor": (["NAQUADAH_REACTOR_SOLID_FRONT"],
+                         ["NAQUADAH_REACTOR_SOLID_FRONT_ACTIVE", "NAQUADAH_REACTOR_SOLID_FRONT_ACTIVE_GLOW"]),
+    "plasma-generator": (["MACHINE_CASING_FUSION_GLASS", "OVERLAY_ENERGY_OUT_{t}"],
+                         ["MACHINE_CASING_FUSION_GLASS_YELLOW", "MACHINE_CASING_FUSION_GLASS_YELLOW_GLOW",
+                          "OVERLAY_ENERGY_OUT_{t}"]),
+}
+
+
+def single_generators(gt):
+    for tier in ("EV", "IV", "LuV", "ZPM", "UV"):
+        hull = scaled(tint(load(gt_path(gt, f"gregtech:iconsets/MACHINE_{tier}_SIDE")), TIER_TINT[tier]), TILE)
+        for base, faces in SINGLE_GENERATORS.items():
+            name = f"{tier.lower()}-{base}"
+
+            def build(layers):
+                face = hull.copy()
+                for layer in layers:
+                    p = gt_path(gt, "gregtech:iconsets/" + layer.format(t=tier))
+                    if p.exists():
+                        face.alpha_composite(scaled(frames_of(load(p))[0], TILE))
+                img = Image.new("RGBA", (3 * TILE, 3 * TILE))
+                for y in range(3):
+                    for x in range(3):
+                        img.paste(face if (x, y) == (1, 1) else hull, (x * TILE, y * TILE))
+                return img, face
+            idle, icon = build(faces[0])
+            save(idle, OUT_ENTITY / f"{name}-idle.png")
+            save(build(faces[1])[0], OUT_ENTITY / f"{name}-working.png")
+            save(icon, OUT_ICON / f"{name}.png")
+
 
 def generator_tiers():
     for base in ("gas-turbine", "semifluid-generator"):
@@ -1406,6 +1441,7 @@ def main():
     steam_age(a.gt)              # issue #446
     battery_buffers(a.gt)        # issue #444
     generator_tiers()            # issue #637
+    single_generators(a.gt)      # issue #644
     lv_from_mv("extruder", icon=False)          # issue #449 (the LV extruder icon is upstream's)
     lv_from_mv("laser-engraver", icon_palette=True)
     lv_from_mv("combustion-generator", icon=False)   # (the LV icon is upstream's)
