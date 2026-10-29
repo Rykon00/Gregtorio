@@ -713,6 +713,8 @@ local GTPP = {
 	{ "gadolinite-ce", "gadolinite-y", "agardite-la", "agardite-cd" },
 	{ "runite", "runite", "runite", "runite" },
 }
+--- issue #632: GT's radium, barite (Ra)'s byproduct and electrolysis product (155)
+create_item{ skip_recipe = true, name = "radium-dust", subgroup = "subgroup-macerator-dust" }
 local everglades = {}
 for i, ores in ipairs(GTPP) do everglades[#everglades + 1] = vein("mining-everglades-gtpp" .. (i - 1) .. "-vein", ores) end
 for _, x in pairs({ "agardite-cd", "agardite-la", "agardite-nd", "agardite-y", "alburnite", "barite-ra", "cerite", "crocoite", "cryolite-f", "demicheleite-br", "florencite", "fluorcaphite", "gadolinite-ce", "gadolinite-y", "geikielite", "hibonite", "honeaite", "irarsite", "kashinite", "lafossaite", "lanthanite-ce", "lanthanite-la", "lautarite", "lepersonnite", "miessiite", "nichromite", "perroudite", "polycrase", "samarskite-y", "samarskite-yb", "titanite", "xenotime", "yttrialite", "yttrocerite", "zimbabweite", "zircon", "zirconolite", "zirkelite", "fluorite-f", "runite" }) do everglades[#everglades + 1] = "crushed-" .. x end
