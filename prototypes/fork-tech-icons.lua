@@ -104,6 +104,7 @@ FORK_TECH_ICONS = {
 	["high-pressure-steam"] = true,
 	["high-pressure-steam"] = true,
 	["high-pressure-steam-turbine"] = true,
+	["high-temperature-gas-cooled-reactor"] = true,
 	["hsse"] = true,
 	["hssg"] = true,
 	["hsss"] = true,

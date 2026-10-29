@@ -853,6 +853,9 @@ local RT = {
 	{ "zpm-electrolyzer", "filled-lanthanum-extracting-nano-resin-electrolysis" },
 	-- issue #632 (section 57): curium in the fusion reactor MK3
 	{ "fusion-reactor-mk3", "molten-curium" },
+	-- issue #633 (section 58): the HTGR burns TRISO fuel with its whole cooling, the centrifuge gives the promethium
+	{ "high-temperature-gas-cooled-reactor", "triso-fuel-praseodymium-burning" },
+	{ "ev-centrifuge", "burned-triso-fuel-praseodymium-centrifuging" },
 	-- issue #636 (160, 161): the Phobos and Deimos mines, Seth's Void Miner III pool and the Deep Dark (every raw ore)
 	{ "dimension-mine", "mining-heavy-pentele-vein" },
 	{ "void-miner-iii", "void-mining-seth" },

@@ -6482,6 +6482,155 @@ end
 
 
 --------------------------------------------------------------------------------
+--- 58) KUBATECH'S HIGH TEMPERATURE GAS-COOLED REACTOR (issue #633, the maintainer's decisions of 2026-10-29: fixed
+---   recipes, the values of a full reactor with full cooling; promethium from #632). GTNH loads it unconditionally
+---   (kubatech/CommonProxy.java:80; the dump's kubatech.htgrrecipes, 9 recipes).
+---   * the fuels (kubatech/loaders/HTGRLoader.java:167-361): a material, fuel dusts (part of them come back) and a fuel
+---     modifier (base, multiplier, exponent); the mixer makes the TRISO fuel mixture (EV, 5 s), the forming press its
+---     three shells, carbon, silicon and graphite (EV, 2.5 s each), the centrifuge the burned fuel into the products,
+---     the returned fuel dusts and the shells at 95 % (EV, 15 s)
+---   * the reactor (kubatech/tileentity/gregtech/multiblock/MTEHighTempGasCooledReactor.java): with its 10000 balls
+---     (full) and full helium it burns 10000 x 0.0014159 = 14.16 balls a cycle (here 14) in 20000 / exponent^2 ticks,
+---     shortened by full IC2 coolant (7 % of the cycle a second, 5000 L a tick x energy multiplier, into hot coolant)
+---     and full distilled water (3 %, 1000 L a tick x the multiplier, into 160 times the steam): about 9.9 s; energy
+---     multiplier = base x multiplier^exponent; 512000 L helium lose 0.05 % a cycle (256 L); 1536 EU/t (IV / 5, :175).
+---     Fluids a tenth, as everywhere; its fluid boxes hold a cycle.
+---   * the structure (MTE:105-165, its blocks counted; the recipes HTGRLoader.java:363-434): graphite moderator,
+---     insulated fluid pipe and beryllium integrated reactor casings, the refined graphite block, the beryllium shielding
+---     plate and the alumina support ring as GT; the controller as kubatech's crafting recipe (RecipeLoader.java:204-207:
+---     4 IV casings, 4 IV circuits, IC2's nuclear reactor, here the mod's nuclear reactor primary chamber)
+---   * promethium (#632): the praseodymium fuel's product; its melt from the alloy blast smelter (MV, 157.8 s), the
+---     fusions neodymium + promethium -> europium (150M EU start: MK1, 8 ticks) and lutetium + promethium -> americium
+---     (200M: MK2, 24 ticks) (the dump's fusionreactor map)
+---   Named stand-ins: GT's medium titanium pipe as 3 titanium plates (as #634), its mica insulator foil as mica dust, its
+---   PTFE frame of the pressure containment casing as the PTFE pipe casing, its tungstensteel pipe casings as titanium
+---   pipe casings, its cable casings as 16 copper cables each, its processor, pump and motor casings as an IV circuit,
+---   pump and motor. Unlocked with the new technology High Temperature Gas-Cooled Reactor (IV).
+--------------------------------------------------------------------------------
+do
+	local R, RF = {}, {}
+	local HTGR = "high-temperature-gas-cooled-reactor"
+	local function item(name, amount) return { type = "item", name = name, amount = amount } end
+	--- material, its dust, the reactor input, the fuel dusts { dust, in, back }, the products { dust, n, chance },
+	--- the fuel modifier { base, multiplier, exponent }
+	local FUELS = {
+		{ "silver", "silver-dust", 2, { { "uranium-235-dust", 2, 1 }, { "plutonium-241-dust", 3, 2 } },
+			{ { "silver-dust", 1 }, { "indium", 1 } }, { 0.1, 0.8, 1.1 } },
+		{ "uranium-235", "uranium-235-dust", 1, { { "uranium-238-dust", 5, 3 } },
+			{ { "plutonium-239-dust", 1 }, { "uranium-235-dust", 1 }, { "uranium-235-dust", 1, 0.2 }, { "lead-dust", 1 } },
+			{ 1.1, 1.1, 1.1 } },
+		{ "plutonium", "plutonium-239-dust", 2, { { "uranium-238-dust", 5, 2 } },
+			{ { "plutonium-241-dust", 1 }, { "lead-dust", 4 } }, { 2, 1.2, 0.9 } },
+		{ "thorium", "thorium-dust", 5, { { "uranium-235-dust", 1, 0 } },
+			{ { "lutetium-dust", 4 }, { "thorium-dust", 1 }, { "lead-dust", 1 } }, { 0.25, 0.8, 1.1 } },
+		{ "tungsten", "tungsten-dust", 5, { { "plutonium-241-dust", 3, 0 } },
+			{ { "osmium-dust", 1 }, { "tungsten-dust", 4 }, { "plutonium-239-dust", 1 }, { "lead-dust", 2 } }, { 0.05, 0.8, 0.5 } },
+		{ "praseodymium", "praseodymium-dust", 2, { { "plutonium-241-dust", 3, 0 } },
+			{ { "promethium-dust", 2 }, { "lead-dust", 3 } }, { 0.75, 1.2, 0.7 } },
+		{ "lanthanum", "lanthanum-dust", 3, { { "uranium-235-dust", 3, 0 } },
+			{ { "praseodymium-dust", 2 }, { "cerium-dust", 1 }, { "lead-dust", 3 } }, { 0.5, 0.8, 0.9 } },
+		{ "caesium", "caesium-dust", 3, { { "uranium-235-dust", 3, 0 } },
+			{ { "lanthanum-dust", 2 }, { "caesium-dust", 1 }, { "lead-dust", 3 } }, { 0.5, 0.9, 0.9 } },
+		{ "glowstone", "glowstone-dust", 5, { { "uranium-235-dust", 3, 1 }, { "uranium-238-dust", 3, 2 } },
+			{ { "sunnarium-dust", 1 }, { "glowstone-dust", 4 }, { "lead-dust", 3 } }, { 0.65, 1.2, 1.1 } },
+	}
+	items(SUB_DUST, { "promethium-dust" })
+	F.fluid("molten-promethium", "molten-promethium", { 36 / 255, 181 / 255, 53 / 255 })   -- (GT's colour, gen_gt_icons --molten)
+	items(SUB_PART, { "beryllium-shielding-plate", "raw-alumina-support-ring", "alumina-support-ring",
+		"refined-graphite-block", "graphite-moderator-casing", "insulated-fluid-pipe-casing",
+		"beryllium-integrated-reactor-casing", "pressure-containment-casing", HTGR .. "-controller" })
+	local STAGES = { "triso-fuel-mixture", "incomplete-biso-fuel", "incomplete-triso-fuel", "triso-fuel", "burned-triso-fuel" }
+	local SHELLS = { "carbon", "raw-silicon", "graphite" }
+	for _, f in pairs(FUELS) do
+		local m, dust, n, fuels, out, mod = table.unpack(f)
+		local names = {}
+		for i, s in pairs(STAGES) do
+			names[i] = s .. "-" .. m
+			--- (kubatech's texture of the stage with the material's dust in its corner)
+			create_item{ skip_recipe = true, name = names[i], subgroup = SUB_PART }
+			local it = data.raw.item[names[i]]
+			it.icon = nil
+			it.icons = { { icon = "__gregtorio-continued__/graphics/icons/htgr-" .. s .. ".png", icon_size = 32 },
+				{ icon = "__gregtorio-continued__/graphics/icons/" .. dust .. ".png", icon_size = 32, scale = 0.25,
+					shift = { 4, 4 } } }
+		end
+		local mix = { { dust, n } }
+		for _, x in pairs(fuels) do mix[#mix + 1] = { x[1], x[2] } end
+		step(RF, names[1], "ev-mixer-recipes", 5, EV_SPEED, mix, { { names[1], 1 } })
+		for i = 1, 3 do
+			step(RF, names[i + 1], "lv-forming-press-recipes", 2.5, EV_SPEED, { { names[i], 1 }, { SHELLS[i], 1 } },
+				{ { names[i + 1], 1 } })
+		end
+		local back = {}
+		for _, o in pairs(out) do back[#back + 1] = o end
+		for _, x in pairs(fuels) do if x[3] > 0 then back[#back + 1] = { x[1], x[3] } end end
+		for _, s in pairs(SHELLS) do back[#back + 1] = { s, 1, 0.95 } end
+		step(RF, names[5] .. "-centrifuging", "ev-centrifuge-recipes", 15, EV_SPEED, { { names[5], 1 } }, back, out[1][1])
+		--- the reactor's cycle at full fill, helium and cooling
+		local base, mult, exp = table.unpack(mod)
+		local energy = base * mult ^ exp
+		local cycle = 20000 / exp ^ 2
+		local ticks = cycle / (1 + 0.005 * cycle)
+		local coolant = math.floor(5000 * energy) * ticks / 10
+		local water = math.floor(1000 * energy) * ticks / 10
+		step(R, names[4] .. "-burning", "htgr-recipes", ticks / 20, 1,
+			{ { names[4], 14 }, { "helium", 25.6 }, { "coolant", coolant }, { "distilled-water", water } },
+			{ { names[5], 14 }, { "hot-coolant", coolant }, { "steam", water * 160 } }, names[5])
+	end
+	--- the structure
+	step(RF, "beryllium-shielding-plate", "ev-assembling-machine-recipes", 30, EV_SPEED,
+		{ { "dense-beryllium-plate", 1 }, { "stainless-steel-screw", 4 }, { "molten-beryllium", 14.4 } },
+		{ { "beryllium-shielding-plate", 1 } })
+	step(RF, "refined-graphite-block", "mv-compressor-recipes", 30, MV_SPEED, { { "graphite", 18 } },
+		{ { "refined-graphite-block", 1 } })
+	step(RF, "graphite-moderator-casing", "ev-assembling-machine-recipes", 15, EV_SPEED,
+		{ { "beryllium-shielding-plate", 2 }, { "refined-graphite-block", 1 }, { "stainless-steel-rod", 6 },
+			{ "stainless-steel-screw", 12 } }, { { "graphite-moderator-casing", 1 } })
+	step(RF, "raw-alumina-support-ring", "lv-forming-press-recipes", 25, IV_SPEED, { { "alumina", 4 } },
+		{ { "raw-alumina-support-ring", 1 } })
+	step(RF, "alumina-support-ring", "ev-electric-blast-furnace-recipes", 60, EV_SPEED, { { "raw-alumina-support-ring", 1 } },
+		{ { "alumina-support-ring", 1 } })
+	step(RF, "insulated-fluid-pipe-casing", "ev-assembling-machine-recipes", 20, EV_SPEED,
+		{ { "large-titanium-fluid-pipe", 1 }, { "titanium-plate", 3 }, { "mica-dust", 16 }, { "stainless-steel-plate", 4 },
+			{ "alumina-support-ring", 2 } }, { { "insulated-fluid-pipe-casing", 1 } })
+	step(RF, "beryllium-integrated-reactor-casing", "ev-assembling-machine-recipes", 30, EV_SPEED,
+		{ { "beryllium-shielding-plate", 1 }, { "tungstensteel-plate", 6 }, { "tungstensteel-screw", 8 },
+			{ "tungstensteel-frame", 1 }, { "molten-lead", 115.2 } }, { { "beryllium-integrated-reactor-casing", 1 } })
+	step(RF, "pressure-containment-casing", "iv-assembling-machine-recipes", 20, IV_SPEED,
+		{ { "ptfe-pipe-casing", 1 }, { "molten-stainless-steel", 115.2 } }, { { "pressure-containment-casing", 1 } })
+	step(RF, HTGR .. "-controller", "crafting-or-assembling-recipes", 5, 1,
+		{ { "iv-machine-casing", 4 }, { "iv-circuit", 4 }, { "nuclear-reactor-primary-chamber", 1 } },
+		{ { HTGR .. "-controller", 1 } })
+	machine{
+		name = HTGR, category = "htgr-recipes", speed = 1, energy = "60kW", list = R,
+		ports = { port("input", N, { -1, -1 }), port("input", N, { 0, -1 }, 240000), port("input", N, { 1, -1 }, 50000),
+			port("output", S, { -1, 1 }, 240000), port("output", S, { 1, 1 }, 8000000) },
+		recipe = { "crafting-or-assembling-recipes", 1, { item(HTGR .. "-controller", 1), item("iv-machine-casing", 23),
+			item("pressure-containment-casing", 272), item("graphite-moderator-casing", 162),
+			item("insulated-fluid-pipe-casing", 41), item("beryllium-integrated-reactor-casing", 273),
+			item("refined-graphite-block", 20), item("tungsten-frame", 164), item("steel-pipe-casing", 17),
+			item("titanium-pipe-casing", 75), item("copper-cable", 384), item("iv-circuit", 1), item("iv-pump", 3),
+			item("iv-motor", 2), item("iv-energy-hatch", 1) } },
+	}
+	--- promethium
+	step(RF, "molten-promethium", "mv-alloy-blast-smelter-recipes", 157.8, MV_SPEED, { { "promethium-dust", 1 } },
+		{ { "molten-promethium", 14.4 } })
+	local RP = {}
+	step(RP, "molten-europium-from-promethium", "mk1-fusion-reactor-recipes", 0.4, LUV_SPEED,
+		{ { "molten-neodymium", 3.2 }, { "molten-promethium", 1.6 } }, { { "molten-europium", 3.2 } })
+	step(RP, "molten-americium-from-promethium", "mk2-fusion-reactor-recipes", 1.2, ZPM_SPEED,
+		{ { "molten-lutetium", 3.2 }, { "molten-promethium", 1.6 } }, { { "molten-americium", 3.2 } })
+	--- (the large titanium fluid pipe of its insulated pipe casings came with the LFTR, a later technology: here first)
+	RF[#RF + 1] = "large-titanium-fluid-pipe"
+	FORK5B.tech{ name = HTGR, packs = 6, count = 600, time = 45, recipes = F.join(R, RF),
+		prerequisites = { "iv-machines", "nuclear-fuel-rods", "alloy-blast-smelter", "iv-energy-hatches", "large-steel-boiler" } }
+	for _, r in pairs(RP) do fork_add_unlock("fusion-plasmas-mk2", r) end
+	table.insert(data.raw.technology["fusion-plasmas-mk2"].prerequisites, HTGR)
+end
+
+
+
+--------------------------------------------------------------------------------
 --- 38) GT'S PARTS OF THE METALS OF THIS FILE (issue #467). 158 makes GT New Horizons' parts of every metal of
 ---   prototypes/gt-parts-data.lua (issue #227) whose ingot exists; most metals of this file come after 158, so its
 ---   FORK_GT_PARTS.run() runs once more here (it skips what exists), then 143's casts for the new forms.
