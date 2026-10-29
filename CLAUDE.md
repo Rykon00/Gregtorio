@@ -244,7 +244,11 @@
     dimensionally shifted superfluid), bender, extruder, wiremill, forge hammer, fluid solidifier and lathe that Gregtorio
     lacks, `gt-<verb>-<product>-from-<input>` from `prototypes/data/gtnh-part-routes.lua`, which `devcheck.py check
     --gtnh-routes` writes from the dump through `tools/gtnh_map.py` (`route_imports`); `check` fails when it is out of
-    date; a route Gregtorio has with other numbers is #689's table's, not a second recipe)
+    date; a route Gregtorio has with other numbers is #689's table's, not a second recipe; issue #688: section 4, GT's
+    crafting table recipes of the parts and dust piles that Gregtorio lacks, GT's tools as #612's charges, from
+    `prototypes/data/gtnh-part-crafting.lua` (`devcheck.py check --gtnh-crafting`, `crafting_imports`); a recipe of
+    sections 3 and 4 is made only with a technology after its inputs, and `FORK_GT_PARTS.drop_locked_routes()` in
+    data-final-fixes.lua drops one that only a disabled vanilla technology unlocked)
   - 159 lanthanides (issue #262: gtnhlanth's monazite rare earth line with the Digester and the Dissolution Tank, from
     crushed monazite to samarium and gadolinium dust; the samarium dust placeholder of 19 is removed, the sifting
     machines get a fluid input and output, technology `monazite-rare-earth-processing` before LuV Components; issue

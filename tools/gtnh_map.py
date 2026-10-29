@@ -409,9 +409,11 @@ class Mapper:
         return None, None
 
     def ore(self, ore):
-        """an ore dictionary entry of a crafting recipe -> like item()"""
+        """an ore dictionary entry of a crafting recipe -> like item(); issue #688: GT's tools are #612's charges where
+        Gregtorio has the tool, else nothing (the recipe is unmapped)"""
         if ore.startswith("craftingTool"):
-            return "drop", None
+            charge = TOOL_CHARGES.get(ore)
+            return ("item", charge) if charge in self.g.items else (None, None)
         if ore in ORES and ORES[ore] in self.g.items:
             return "item", ORES[ore]
         p, mat = self.split_ore(ore)
@@ -1175,6 +1177,81 @@ def routes_lua(entries):
         if e["fo"]:
             parts.append("fo = { " + pairs(e["fo"]) + " }")
         lines.append(tab + "{ " + ", ".join(parts) + " },")
+    lines.append("}")
+    return "\n".join(lines) + "\n"
+
+
+#: issue #688: GT's crafting tools in a recipe (its ore dictionary craftingTool*) -> Gregtorio's tool charges of #612
+#: (148's FORK_TOOLS); GT's other tools (mortar, soft mallet, crowbar, ...) Gregtorio does not have
+TOOL_CHARGES = {"craftingToolHardHammer": "hammer-usage", "craftingToolFile": "file-usage", "craftingToolSaw": "saw-usage",
+                "craftingToolWrench": "wrench-usage", "craftingToolScrewdriver": "screwdriver-usage",
+                "craftingToolWireCutter": "wire-cutter-usage", "craftingToolKnife": "knife-usage"}
+CRAFTING_FILE = ROOT / "prototypes" / "data" / "gtnh-part-crafting.lua"
+#: the products of the crafting import: material parts, ingots (GT's mixed metal ingot), small and tiny piles of dust
+CRAFT_PRODUCT = re.compile(r"^(?:small|tiny)-pile-of-.+-dust$")
+#: products left out: 155 moves the lazurite and sodalite dust to Ore Crushing after 158 has run, so the piles would
+#: come before their dust
+CRAFT_SKIP = {f"{size}-pile-of-{m}-dust" for size in ("small", "tiny") for m in ("lazurite", "sodalite")}
+
+
+def crafting_imports(dump, g):
+    """Issue #688: GT New Horizons' crafting table recipes of the material parts (and of the small and tiny piles of a
+    dust) whose items map onto Gregtorio's names, its tools onto #612's charges, that no Gregtorio recipe of the hand or
+    the crafting table has with the same items; named <product>-crafting-table (-from-<input> when that name is taken).
+    Returns ([entry] sorted by name, Counter of the recipes left out by reason)"""
+    mp = Mapper(dump, g)
+    hand = {"crafting", "crafting-table", "crafting-or-assembling", "manual-only"}
+    own = {r["name"] for r in g.recipes if r["name"].endswith("-crafting-table") or "-crafting-table-from-" in r["name"]}
+    taken_names = {r["name"] for r in g.recipes} - own
+    out, seen, left = {}, set(), Counter()
+    for mname, r in gt_recipes(dump):
+        if mname != "crafting" or r.get("tool"):
+            continue
+        mapped, bad = map_recipe(mp, r)
+        if bad or mapped.get("oreblock") or len(mapped["outs"]) != 1 or not mapped["ins"] or mapped["fin"]:
+            continue
+        product = next(iter(mapped["outs"]))
+        if not (GREG_PART.match(product) or CRAFT_PRODUCT.match(product)) or product in mapped["ins"] or product in CRAFT_SKIP:
+            continue
+        # (crushing a raw ore by hand is 155's ore chain, #202)
+        if any(i.startswith("raw-") for i in mapped["ins"]):
+            left["raw ore (155's ore chain)"] += 1
+            continue
+        ins = frozenset(mapped["ins"])
+        if (ins, product) in seen:
+            continue
+        seen.add((ins, product))
+        if any(x["family"] in hand and x["name"] not in own for x in g.by_key.get((ins, frozenset([product])), [])):
+            continue
+        # (a hand route Gregtorio has with other amounts is the same recipe)
+        if any(x["family"] in hand and x["name"] not in own and
+               {s["name"] for s in x["ingredients"] if s["type"] == "item"} - set(TOOL_CHARGES.values()) == set(ins) - set(TOOL_CHARGES.values())
+               for x in g.by_main.get(("crafting-table", next(iter(mapped["ins"])), product), []) +
+               g.by_main.get(("crafting-or-assembling", next(iter(mapped["ins"])), product), [])):
+            left["hand route Gregtorio has (with or without tools)"] += 1
+            continue
+        name = f"{product}-crafting-table"
+        if name in taken_names or name in out:
+            src = next((i for i in mapped["ins"] if i not in TOOL_CHARGES.values()), next(iter(mapped["ins"])))
+            name = f"{product}-crafting-table-from-{src}"
+        if name in taken_names or name in out:
+            left["same name"] += 1
+            continue
+        out[name] = {"name": name, "p": product, "i": dict(mapped["ins"]), "n": mapped["outs"][product]}
+    return [out[n] for n in sorted(out)], left
+
+
+def crafting_lua(entries):
+    """prototypes/data/gtnh-part-crafting.lua"""
+    tab = chr(9)
+    lines = ["--- Generated by `tools/devcheck/devcheck.py check --gtnh-crafting` (issue #688) from the GT New Horizons recipe dump",
+             "--- (tools/gtnh_dump/) through tools/gtnh_map.py; do not edit, run it again. GT's crafting table recipes of the",
+             "--- material parts and of the small and tiny piles of dust that Gregtorio lacks, GT's tools as #612's charges:",
+             "--- { name, p = the product, i = { { item, amount } }, n = the amount made }. Section 4 of prototypes/158-fork-gt-parts.lua makes them.",
+             "return {"]
+    for e in entries:
+        ins = ", ".join(f'{{ "{k}", {v} }}' for k, v in sorted(e["i"].items()))
+        lines.append(tab + f'{{ "{e["name"]}", p = "{e["p"]}", i = {{ {ins} }}, n = {e["n"]} }},')
     lines.append("}")
     return "\n".join(lines) + "\n"
 
