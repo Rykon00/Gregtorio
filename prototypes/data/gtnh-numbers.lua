@@ -974,7 +974,6 @@ return {
 	["raw-lazurite-smelter"] = { i = { ["raw-lazurite"] = 1 }, o = { { "lazurite-gem", 3 } } },
 	["raw-monazite-multismelter"] = { i = { ["raw-monazite"] = 64 }, o = { { "monazite-gem", 256 } } },
 	["raw-monazite-smelter"] = { i = { ["raw-monazite"] = 1 }, o = { { "monazite-gem", 4 } } },
-	["raw-radox"] = { e = 23040, i = { ["wood"] = 1 }, o = { { "ash-dust", 8 } } },
 	["raw-sodalite-multismelter"] = { i = { ["raw-sodalite"] = 64 }, o = { { "sodalite-gem", 192 } } },
 	["raw-sodalite-smelter"] = { i = { ["raw-sodalite"] = 1 }, o = { { "sodalite-gem", 3 } } },
 	["red-alloy-plate"] = { t = "lv", e = 20.15, i = { ["red-alloy-ingot"] = 1 }, o = { { "red-alloy-plate", 1 } } },

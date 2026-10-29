@@ -1164,6 +1164,31 @@ def check_gtnh_recycling(sec, write=False):
     return info + f"; the table is up to date ({len(gone)} deleted with their item)", []
 
 
+def check_gtnh_routes(sec, write=False):
+    """Issue #687 (prototypes/158-fork-gt-parts.lua, section 3): prototypes/data/gtnh-part-routes.lua holds GT New
+    Horizons' recipes of the cutting machine, bender, extruder, wiremill, forge hammer, fluid solidifier and lathe that
+    Gregtorio lacks (tools/gtnh_map.py `route_imports` on the dump), `check --gtnh-routes` writes it; `check` fails when
+    it is not what that writes. Returns (info line, problems)."""
+    from collections import Counter
+    sys.path.insert(0, str(ROOT / "tools"))
+    import gtnh_map
+    entries, left = gtnh_map.route_imports(gtnh_map.load_dump(gtnh_map.DUMP), gtnh_map.Gregtorio(sec))
+    text = gtnh_map.routes_lua(entries)
+    path = gtnh_map.ROUTES_FILE
+    have = path.read_text(encoding="utf-8").replace("\r\n", "\n") if path.exists() else None
+    verbs = Counter(e["name"].split("-")[1] for e in entries)
+    recipes = {r[1] for r in sec.get("DUMP", []) if r[0] == "R"}
+    gone = [e["name"] for e in entries if e["name"] not in recipes]
+    info = (f"{len(entries)} GT part routes (" + ", ".join(f"{k} {v}" for k, v in sorted(verbs.items())) + "); left out: "
+            + (", ".join(f"{k} {v}" for k, v in sorted(left.items())) or "none"))
+    if have != text:
+        if write:
+            path.write_bytes(text.encode("utf-8"))
+            return info + "; the table written (run `check` again to load it)", []
+        return info, [f"{path.name} is not what `devcheck.py check --gtnh-routes` writes (run it)"]
+    return info + f"; the table is up to date ({len(gone)} not made: an item of theirs is missing at 158's runs)", []
+
+
 def check_classic_veins(m, sec):
     """Issue #563 (prototypes/166-fork-classic-veins.lua): every vein the map places (GT's mixes on a planet with map
     veins, read by checkmod from FORK_ORE_MIXES) has its classic vein recipe and both twins, and the recipe gives the
@@ -2788,6 +2813,10 @@ def check(a):
     parts_rec_info, parts_recycling = check_gtnh_recycling(sec, getattr(a, "gtnh_recycling", False))
     print(f"\nGT's recycling of the material parts (issue #686, prototypes/data/gtnh-recycling.lua): {parts_rec_info}")
     report("GT's part recycling (prototypes/157-fork-recycling.lua)", parts_recycling)
+    routes_info, part_routes = check_gtnh_routes(sec, getattr(a, "gtnh_routes", False))
+    print("\nGT's part routes of the cutting machine, bender, extruder, wiremill, forge hammer, solidifier and lathe "
+          f"(issue #687, prototypes/data/gtnh-part-routes.lua): {routes_info}")
+    report("GT's part routes (prototypes/158-fork-gt-parts.lua)", part_routes)
     if getattr(a, "fluids_out", None):
         Path(a.fluids_out).write_text("\n".join("\t".join(r) for r in sec.get("FLUIDS", [])) + "\n", encoding="utf-8")
         print(f"\nfluid list written to {a.fluids_out} (input for tools/gen_review_sheet.py fluids)")
@@ -2804,7 +2833,7 @@ def check(a):
               or circuit_icons or pgm_dusts or recycling or blocks or names or gaps or tree or vanilla or lenses or mine_twins
               or unplaceable or stale_unlocks or removed_keys or trigger_only or spoiling or classic_veins or early
               or furnace or research_counts or nyi_icons or overclock
-              or steam or nugget or steam_rates or boiler_output or vein_doc or renames or gtnh_numbers or parts_recycling)
+              or steam or nugget or steam_rates or boiler_output or vein_doc or renames or gtnh_numbers or parts_recycling or part_routes)
     print("\nRESULT:", "OK" if ok else "PROBLEMS FOUND")
     return 0 if ok else 1
 
@@ -3636,6 +3665,8 @@ def main():
                    help="issue #574: write the vein table of docs/ORE-VEINS.md from the mod's placed veins")
     c.add_argument("--item-renames", action="store_true",
                    help="issue #580: write prototypes/data/item-renames.lua from the item renames of the JSON migrations")
+    c.add_argument("--gtnh-routes", action="store_true",
+                   help="issue #687: write prototypes/data/gtnh-part-routes.lua, GT New Horizons' part routes Gregtorio lacks")
     c.add_argument("--gtnh-recycling", action="store_true",
                    help="issue #686: write prototypes/data/gtnh-recycling.lua, GT New Horizons' recycling of the material parts")
     c.add_argument("--gtnh-numbers", action="store_true",

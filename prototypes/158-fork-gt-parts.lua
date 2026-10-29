@@ -34,6 +34,7 @@
 --- wire wiremill 1 ingot -> 8, mass, 8 x 15 (x60 from a melting point of 2800); block extruder 9 ingots, 9 x mass,
 --- 120 (480 from 2800). Their dense plate, springs and frame come from GT's processing of the Werkstoff's bridge
 --- material (OP/ProcessingIngot, ProcessingStick*, ProcessingFrame), so they take GT's numbers.
+--- Issue #687: section 3 adds GT's recipes of the other part machines that Gregtorio lacks, from the recipe dump.
 --- Not made: GT's tool heads and turbine blades (the TOOL bit: GT's tools and per-material turbine rotors, which
 --- Gregtorio does not have) and GT's cells. Machines above UXV take the UXV category; the forge hammer has the LV one.
 --- Issue #223, B5: GT's nugget recipes (ProcessingNugget.java) for every metal with a nugget: ingot -> 9 nuggets in the
@@ -46,6 +47,8 @@
 
 local OC = FORK_ORE_CHAIN
 local DATA = require("prototypes.gt-parts-data")
+--- issue #687: GT's other part routes (section 3)
+local ROUTES = require("prototypes.data.gtnh-part-routes")
 local P = "__gregtorio-continued__/graphics/icons/"
 
 local TIERS = { "lv", "mv", "hv", "ev", "iv", "luv", "zpm", "uv", "uhv", "uev", "uiv", "umv", "uxv", "max" }
@@ -143,7 +146,10 @@ local function recipe(def)
 	if data.raw.recipe[name] then name = name .. "-gt" end
 	if data.raw.recipe[name] then error("158-fork-gt-parts: recipe " .. name .. " exists already") end
 	local category, time = "crafting", def.seconds or 0.5
-	if def.machine then
+	if def.category then
+		--- (issue #687: a recipe of the dump, already in Gregtorio's category and units)
+		category, time = def.category, def.energy
+	elseif def.machine then
 		local t = def.tier or "lv"
 		local top = TOP[def.machine] or "uxv"
 		if TIER_INDEX[t] > TIER_INDEX[top] then t = top end
@@ -161,7 +167,8 @@ local function recipe(def)
 	local groups = { category ~= "crafting" and OC.machine_techs(category) or nil }
 	--- the mold too (issue #320): it stays in the machine's mold slot (150), but the recipe needs it there
 	for _, i in pairs(def.ingredients) do
-		if i.type == "item" then groups[#groups + 1] = item_techs(i.name) end
+		--- (issue #687: a route of the dump also after its melt or cutting fluid)
+		if i.type == "item" or def.category then groups[#groups + 1] = item_techs(i.name) end
 	end
 	if not OC.unlock_after(name, groups) then
 		--- the machine and the input on branches without a common later technology: the latest of them
@@ -222,7 +229,7 @@ end
 --- GTNH gap work (#355, #356, #386, ...) get their ingot in 164, after this file. A second run makes only what is
 --- missing (an existing item or recipe is skipped) and reads the technologies anew.
 --------------------------------------------------------------------------------
-local new_parts, nuggets = 0, 0
+local new_parts, nuggets, routes = 0, 0, 0
 function FORK_GT_PARTS.run()
 	tech_effects, ancestor_memo = nil, {}
 	--------------------------------------------------------------------------------
@@ -434,6 +441,39 @@ function FORK_GT_PARTS.run()
 		end
 	end
 
+	--------------------------------------------------------------------------------
+	--- 3) GT'S OTHER PART ROUTES (issue #687): GT New Horizons makes most parts in several machines (the cutting machine
+	---    with water, distilled water, lubricant or dimensionally shifted superfluid, the bender's foils and plates, the
+	---    extruder's bolts, rods and rotors, the wiremill's wires from rods, the forge hammer, the fluid solidifier and the
+	---    lathe). prototypes/data/gtnh-part-routes.lua holds the recipes of these machines that Gregtorio lacks, as GT New
+	---    Horizons' recipe dump has them (tools/gtnh_dump/), mapped onto Gregtorio's names and units by tools/gtnh_map.py
+	---    (`route_imports`: the tier from GT's EU/t, at most the machine's highest category, GT's time x the tier's speed,
+	---    a tenth of GT's litres); `devcheck.py check --gtnh-routes` writes it. Named gt-<verb>-<product>-from-<input>
+	---    (-with-<fluid>), made when all their items exist (the second run makes the ones of 164's metals), unlocked like
+	---    the parts above. The extruder's and solidifier's shapes are 150's mold, which their machines hold.
+	--------------------------------------------------------------------------------
+	for _, e in pairs(ROUTES) do
+		local ok = not data.raw.recipe[e[1]]
+		for n, _ in pairs(e.i or {}) do ok = ok and data.raw.item[n] ~= nil end
+		for _, o in pairs(e.o) do ok = ok and data.raw.item[o[1]] ~= nil end
+		for _, f in pairs(e.f or {}) do ok = ok and data.raw.fluid[f[1]] ~= nil end
+		for _, f in pairs(e.fo or {}) do ok = ok and data.raw.fluid[f[1]] ~= nil end
+		--- (no pile of a platinum group dust, as above)
+		for _, o in pairs(e.o) do
+			local m = o[1]:match("^%a+%-pile%-of%-(%a+)%-dust$")
+			if m and PGM[m] then ok = false end
+		end
+		if ok then
+			local ing, res = {}, {}
+			for n, a in pairs(e.i or {}) do ing[#ing + 1] = item(n, a) end
+			table.sort(ing, function(x, y) return x.name < y.name end)
+			for _, f in pairs(e.f or {}) do ing[#ing + 1] = fluid(f[1], f[2]) end
+			for _, o in pairs(e.o) do res[#res + 1] = item(o[1], o[2], o[3]) end
+			for _, f in pairs(e.fo or {}) do res[#res + 1] = fluid(f[1], f[2]) end
+			recipe{ name = e[1], category = e.cat, energy = e.e, ingredients = ing, results = res }
+			routes = routes + 1
+		end
+	end
 end
 FORK_GT_PARTS.run()
 
@@ -455,6 +495,6 @@ end
 FORK_CASTING.run()
 function FORK_GT_PARTS.log(when)
 	log("FORK-GT-PARTS (" .. when .. "): " .. new_parts .. " new parts and nuggets (issues #222, #227), GT's nugget recipes of "
-		.. nuggets .. " metals (issue #223), " .. made .. " recipes; casting: " .. FORK_CASTING.casts .. " casts")
+		.. nuggets .. " metals (issue #223), " .. routes .. " of GT's other part routes (issue #687), " .. made .. " recipes; casting: " .. FORK_CASTING.casts .. " casts")
 end
 FORK_GT_PARTS.log("158")

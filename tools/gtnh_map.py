@@ -132,6 +132,8 @@ ITEMS = {
     # the implosion compressor's explosives: Gregtorio has one, GT four variants of each recipe
     "minecraft:tnt:0": "explosives", "IC2:blockITNT:0": "explosives", "IC2:itemDynamite:0": "explosives",
     "gregtech:gt.blockreinforced:5": "explosives",
+    # issue #687: GT's wood dust is Gregtorio's wood pulp (the material Wood would map it onto the log)
+    "gregtech:gt.metaitem.01:2809": "wood-pulp",
 }
 #: items whose amounts are not compared: several GT items with their own amounts map onto them
 NO_AMOUNT = {"explosives"}
@@ -276,6 +278,9 @@ class Gregtorio:
                 for c in L(o.get("categories")):
                     speeds[c].append(o.get("speed") or 1)
         self.speed = {c: min(v) for c, v in speeds.items()}
+        # (issue #687: the machine families whose machines are furnaces, which pick one recipe per input)
+        self.furnace_families = {family(c) for r in sec["DUMP"] if r[0] == "C" and len(r) > 3 and r[2] == "furnace"
+                                 for c in r[3].split(",") if c}
         self.by_key, self.by_main = defaultdict(list), defaultdict(list)
         self.families = Counter()
         for r in self.recipes:
@@ -367,6 +372,9 @@ class Mapper:
         if TOOL.match(key):
             return "drop", None
         info = self.items.get(key, {})
+        # (issue #687: the dump's placeholder of an item of a mod the dev environment lacks)
+        if (info.get("name") or "").startswith("§cMissing Item"):
+            return None, None
         # (issue #689: Gregtorio's raw ores are GT's raw ore items, rawOre; GT's ore blocks of every stone (ore,
         # oreNetherrack, oreEndstone, ...) give more crushed ore and other byproducts)
         if info.get("prefix") == "ore" or ORE_BLOCK.match(info.get("prefix") or ""):
@@ -1064,6 +1072,106 @@ def recycling_lua(entries, items):
             parts.append("mold = true")
         lines.append(tab * 2 + "{ " + ", ".join(parts) + " },")
     lines += [tab + "},", tab + "items = {"] + [tab * 2 + f'"{n}",' for n in items] + [tab + "},", "}"]
+    return "\n".join(lines) + "\n"
+
+
+#: issue #687: GT's part routes of its other machines, imported from the dump (`route_imports`,
+#: prototypes/data/gtnh-part-routes.lua, made by section 3 of prototypes/158-fork-gt-parts.lua): GT map -> (Gregtorio
+#: family, the verb of the recipe's name gt-<verb>-<product>-from-<input>)
+ROUTE_IMPORT = {"gt.recipe.cuttingsaw": ("cutting-machine", "cut"), "gt.recipe.metalbender": ("bending-machine", "bend"),
+                "gt.recipe.extruder": ("extruder", "extrude"), "gt.recipe.wiremill": ("wiremill", "draw"),
+                "gt.recipe.hammer": ("forge-hammer", "hammer"), "gt.recipe.fluidsolidifier": ("fluid-solidifier", "solidify"),
+                "gt.recipe.lathe": ("lathe", "turn")}
+ROUTES_FILE = ROOT / "prototypes" / "data" / "gtnh-part-routes.lua"
+
+
+def route_imports(dump, g):
+    """Issue #687: every GT recipe of the ROUTE_IMPORT maps whose items and fluids map onto Gregtorio's names and that no
+    Gregtorio recipe of the machine has with the same items and fluids (another cutting fluid, another input), in
+    Gregtorio's units; not a recipe that gives its own input back, nor one whose input a furnace machine of the family
+    takes already. Returns ([entry] sorted by name, Counter of the recipes left out by reason)"""
+    mp = Mapper(dump, g)
+    verbs = tuple(f"gt-{v}-" for _, v in ROUTE_IMPORT.values())
+    own = {r["name"] for r in g.recipes if r["name"].startswith(verbs)}
+    taken = defaultdict(set)
+    for r in g.recipes:
+        items = [s["name"] for s in r["ingredients"] if s["type"] == "item"]
+        if not r.get("hidden") and len(items) == 1 and r["name"] not in own:
+            taken[r["family"]].add(items[0])
+    out, seen, left = {}, set(), Counter()
+    for mname, r in gt_recipes(dump):
+        if mname not in ROUTE_IMPORT:
+            continue
+        fam, verb = ROUTE_IMPORT[mname]
+        mapped, bad = map_recipe(mp, r)
+        if bad or mapped.get("oreblock") or not mapped["outs"] or not (mapped["ins"] or mapped["fin"]):
+            continue
+        ins = frozenset(list(mapped["ins"]) + list(mapped["fin"]))
+        outs = frozenset(list(mapped["outs"]) + list(mapped["fout"]))
+        if (fam, ins, outs) in seen:
+            continue
+        seen.add((fam, ins, outs))
+        if ins & outs:
+            left["gives its input back"] += 1
+            continue
+        if any(x["family"] == fam and x["name"] not in own for x in g.by_key.get((ins, outs), [])):
+            continue
+        first = next(iter(mapped["ins"]), None)
+        product = next(iter(mapped["outs"]))
+        # (a route Gregtorio has with other numbers is #689's; only another cutting fluid is a new recipe)
+        same = [x for x in g.by_main.get((fam, first or next(iter(mapped["fin"])), product), []) if x["name"] not in own]
+        gfl = set(mapped["fin"])
+        if same and (not gfl or any(gfl == {s["name"] for s in x["ingredients"] if s["type"] == "fluid"} for x in same)):
+            left["route Gregtorio has (other numbers: #689)"] += 1
+            continue
+        if first and fam in g.furnace_families and len(mapped["ins"]) == 1 and first in taken[fam]:
+            left["input taken (furnace machine)"] += 1
+            continue
+        cat, t = category_for(fam, TIERS[gt_tier(r.get("eut") or 1)], g)
+        if not cat:
+            left["no category"] += 1
+            continue
+        src = first or next(iter(mapped["fin"]))
+        name = f"gt-{verb}-{product}-from-{src}"
+        fluid = next((f for f in mapped["fin"] if f != src), None)
+        if fluid:
+            name += f"-with-{fluid}"
+        if name in out:
+            left["same name"] += 1
+            continue
+        o = []
+        for n, st in mapped["stacks"].items():
+            for ch, a in sorted(by_chance(st).items(), key=lambda kv: -kv[0]):
+                o.append([n, a, ch])
+        out[name] = {"name": name, "cat": cat, "e": round(r["duration"] / 20 * 2 ** TIERS.index(t), 6),
+                     "i": dict(mapped["ins"]), "f": {n: l / FLUID_SCALE for n, l in mapped["fin"].items()},
+                     "o": o, "fo": {n: l / FLUID_SCALE for n, l in mapped["fout"].items()}}
+    return [out[n] for n in sorted(out)], left
+
+
+def routes_lua(entries):
+    """prototypes/data/gtnh-part-routes.lua"""
+    num = lambda x: f"{x:.10g}"
+    tab = chr(9)
+    pairs = lambda d: ", ".join(f'{{ "{n}", {num(a)} }}' for n, a in sorted(d.items()))
+    lines = ["--- Generated by `tools/devcheck/devcheck.py check --gtnh-routes` (issue #687) from the GT New Horizons recipe dump",
+             "--- (tools/gtnh_dump/) through tools/gtnh_map.py; do not edit, run it again. GT's recipes of the cutting machine,",
+             "--- bender, extruder, wiremill, forge hammer, fluid solidifier and lathe that Gregtorio lacks, in Gregtorio's units:",
+             "--- { name, cat = category, e = energy_required, i = item ingredients, f = fluid ingredients, o = item results",
+             "--- { item, amount, chance }, fo = fluid results }. Section 3 of prototypes/158-fork-gt-parts.lua makes them.",
+             "return {"]
+    for e in entries:
+        parts = [f'"{e["name"]}"', f'cat = "{e["cat"]}"', f"e = {num(e['e'])}"]
+        if e["i"]:
+            parts.append("i = { " + pairs(e["i"]) + " }")
+        if e["f"]:
+            parts.append("f = { " + pairs(e["f"]) + " }")
+        parts.append("o = { " + ", ".join(f'{{ "{n}", {num(a)}' + (f", {num(c)}" if c < 1 else "") + " }"
+                                        for n, a, c in e["o"]) + " }")
+        if e["fo"]:
+            parts.append("fo = { " + pairs(e["fo"]) + " }")
+        lines.append(tab + "{ " + ", ".join(parts) + " },")
+    lines.append("}")
     return "\n".join(lines) + "\n"
 
 
