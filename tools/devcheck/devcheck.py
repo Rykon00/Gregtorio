@@ -400,7 +400,7 @@ class Model:
                 # (issue #535: a recipe has a list of categories since Factorio 2.1; `cat` is the first, a Gregtorio recipe's one)
                 cats = [c for c in p[2].split(",") if c] or ["crafting"]
                 self.R[p[1]] = dict(cat=cats[0], cats=set(cats), en=p[3] == "true", ing=split(p[4]), ingk=kinds(p[4]),
-                                    res=split(p[5]),
+                                    res=split(p[5]), resk=kinds(p[5]),
                                     fin=kinds(p[4]).count("fluid"), fout=kinds(p[5]).count("fluid"),
                                     hidden=p[6] == "true", hide_craft=p[7] == "true", sg=p[8], group=p[9],
                                     icon=p[10] if len(p) > 10 else "")
@@ -1138,6 +1138,32 @@ def check_gtnh_numbers(sec, write=False):
     return info + "; the table is up to date", problems
 
 
+def check_gtnh_recycling(sec, write=False):
+    """Issue #686 (prototypes/157-fork-recycling.lua): prototypes/data/gtnh-recycling.lua holds GT New Horizons'
+    recycling of every material part that maps onto Gregtorio's names (tools/gtnh_map.py `recycling_imports` on the
+    dump), `check --gtnh-recycling` writes it; `check` fails when it is not what that writes and for an entry whose
+    recipe the load lacks. Returns (info line, problems)."""
+    sys.path.insert(0, str(ROOT / "tools"))
+    import gtnh_map
+    entries, items, skipped = gtnh_map.recycling_imports(gtnh_map.load_dump(gtnh_map.DUMP), gtnh_map.Gregtorio(sec))
+    text = gtnh_map.recycling_lua(entries, items)
+    path = gtnh_map.RECYCLING_FILE
+    have = path.read_text(encoding="utf-8").replace("\r\n", "\n") if path.exists() else None
+    from collections import Counter
+    kinds = Counter(e["kind"] for e in entries)
+    info = (f"{len(entries)} part recycling recipes of GT (" + ", ".join(f"{k} {v}" for k, v in sorted(kinds.items()))
+            + f"), {len(items)} other items GT recycles (157's rule), parts whose machine takes them already: " + (", ".join(f"{k} {v}" for k, v in sorted(skipped.items())) or "0"))
+    if have != text:
+        if write:
+            path.write_bytes(text.encode("utf-8"))
+            return info + "; the table written (run `check` again to load it)", []
+        return info, [f"{path.name} is not what `devcheck.py check --gtnh-recycling` writes (run it)"]
+    # (a recipe of an item that data-final-fixes.lua deletes, a vanilla or Space Age item, goes with it)
+    recipes = {r[1] for r in sec.get("DUMP", []) if r[0] == "R"}
+    gone = [e for e in entries if f"recycling-{e['kind']}-{e['item']}" not in recipes]
+    return info + f"; the table is up to date ({len(gone)} deleted with their item)", []
+
+
 def check_classic_veins(m, sec):
     """Issue #563 (prototypes/166-fork-classic-veins.lua): every vein the map places (GT's mixes on a planet with map
     veins, read by checkmod from FORK_ORE_MIXES) has its classic vein recipe and both twins, and the recipe gives the
@@ -1529,27 +1555,32 @@ def check_pgm_dusts(m):
 RECYCLE_PGM = {"metallic-platinum-powder", "metallic-palladium-powder", "iridium-metal-residue", "rarest-metal-mixture"}
 # issue #670: the dusts of prototypes/gt-parts-data.lua whose item name has no -dust (Gregtorio's antimony dust is antimony)
 RECYCLE_DUSTS = set(re.findall(r'dust = "([^"]+)"', (ROOT / "prototypes" / "gt-parts-data.lua").read_text(encoding="utf-8")))
+# issue #686: the material dusts and ingots named after their bare material (calcium, carbon, gallium dust; purified
+# tengam, the arc smelting material of attuned tengam)
+RECYCLE_BARE = {"calcium", "carbon", "gallium", "purified-tengam"}
 def check_recycling(m, sec):
     """Issue #190 (prototypes/157-fork-recycling.lua): GTNH recycles an item into its materials, never into its parts. Every
-    recipe recycling-<machine>-<item> takes the one item (and oxygen in the arc furnace) and gives whole dusts, ingots, a
-    melt or the platinum line's powders; every entry of FORK_RECYCLING_BLACKLIST names an item and says why. Returns
+    recipe recycling-<machine>-<item> takes the one item (and oxygen in the arc furnace, the mold in the alloy smelter,
+    issue #686) and gives dusts, ingots, nuggets, a melt or the platinum line's powders; every entry of FORK_RECYCLING_BLACKLIST names an item and says why. Returns
     (info line, problems)."""
-    out, kinds = [], {"macerator": 0, "arc-furnace": 0, "fluid-extractor": 0}
+    out, kinds = [], {"macerator": 0, "arc-furnace": 0, "fluid-extractor": 0, "alloy-smelter": 0, "furnace": 0}
     for name, r in sorted(m.R.items()):
         if not name.startswith("recycling-"):
             continue
-        kind = next((k for k in ("macerator", "arc-furnace", "fluid-extractor") if name.startswith(f"recycling-{k}-")), None)
+        kind = next((k for k in kinds if name.startswith(f"recycling-{k}-")), None)
         if kind is None:
-            out.append(f"{name}: not a macerator, arc furnace or fluid extractor recycling recipe")
+            out.append(f"{name}: not a macerator, arc furnace, fluid extractor, alloy smelter or furnace recycling recipe")
             continue
         kinds[kind] += 1
         item = name[len(f"recycling-{kind}-"):]
-        extra = [i for i in r["ing"] if i != item and not (kind == "arc-furnace" and i == "oxygen")]
+        extra = [i for i in r["ing"] if i != item and not (kind == "arc-furnace" and i == "oxygen")
+                 and not (kind == "alloy-smelter" and i == "mold")]
         if item not in r["ing"] or extra:
             out.append(f"{name}: takes {', '.join(r['ing'])}, not {item}" + (" and oxygen" if kind == "arc-furnace" else ""))
-        for x in r["res"]:
-            ok = (x.endswith("-dust") or x.endswith("-ingot") or x.startswith("molten-") or x in RECYCLE_PGM
-                  or x in RECYCLE_DUSTS)
+        for x, xk in zip(r["res"], r["resk"]):
+            # (issue #686: GT gives a part's material back as nuggets too, a plastic's melt has no molten- in its name)
+            ok = (x.endswith("-dust") or x.endswith("-ingot") or x.endswith("-nugget") or x.startswith("molten-")
+                  or x in RECYCLE_PGM or x in RECYCLE_DUSTS or x in RECYCLE_BARE or xk == "fluid" or x == "mold")
             if not ok:
                 out.append(f"{name}: gives {x}, not a material (GTNH recycles into materials, not parts)")
     for item, why, exists in sec.get("RECYCLEBLACK", []):
@@ -1558,7 +1589,8 @@ def check_recycling(m, sec):
         if exists != "true":
             out.append(f"FORK_RECYCLING_BLACKLIST[{item}]: no such item")
     info = (f"{sum(kinds.values())} recipes: {kinds['macerator']} macerator, {kinds['arc-furnace']} arc furnace, "
-            f"{kinds['fluid-extractor']} fluid extractor; blacklist {len(sec.get('RECYCLEBLACK', []))}")
+            f"{kinds['fluid-extractor']} fluid extractor, {kinds['alloy-smelter']} alloy smelter, {kinds['furnace']} furnace; "
+            f"blacklist {len(sec.get('RECYCLEBLACK', []))}")
     return info, out
 # Issue #670: the categories of Factorio 2.1's recycler (Space Age's recycling, deleted in data-final-fixes.lua)
 RECYCLER_CATEGORIES = {"recycling", "recycling-or-hand-crafting"}
@@ -2753,6 +2785,9 @@ def check(a):
     gtnh_info, gtnh_numbers = check_gtnh_numbers(sec, getattr(a, "gtnh_numbers", False))
     print(f"\nGT New Horizons' numbers (issue #689, prototypes/data/gtnh-numbers.lua): {gtnh_info}")
     report("recipes with other numbers than GT New Horizons' (prototypes/168-fork-gtnh-numbers.lua)", gtnh_numbers)
+    parts_rec_info, parts_recycling = check_gtnh_recycling(sec, getattr(a, "gtnh_recycling", False))
+    print(f"\nGT's recycling of the material parts (issue #686, prototypes/data/gtnh-recycling.lua): {parts_rec_info}")
+    report("GT's part recycling (prototypes/157-fork-recycling.lua)", parts_recycling)
     if getattr(a, "fluids_out", None):
         Path(a.fluids_out).write_text("\n".join("\t".join(r) for r in sec.get("FLUIDS", [])) + "\n", encoding="utf-8")
         print(f"\nfluid list written to {a.fluids_out} (input for tools/gen_review_sheet.py fluids)")
@@ -2769,7 +2804,7 @@ def check(a):
               or circuit_icons or pgm_dusts or recycling or blocks or names or gaps or tree or vanilla or lenses or mine_twins
               or unplaceable or stale_unlocks or removed_keys or trigger_only or spoiling or classic_veins or early
               or furnace or research_counts or nyi_icons or overclock
-              or steam or nugget or steam_rates or boiler_output or vein_doc or renames or gtnh_numbers)
+              or steam or nugget or steam_rates or boiler_output or vein_doc or renames or gtnh_numbers or parts_recycling)
     print("\nRESULT:", "OK" if ok else "PROBLEMS FOUND")
     return 0 if ok else 1
 
@@ -3601,6 +3636,8 @@ def main():
                    help="issue #574: write the vein table of docs/ORE-VEINS.md from the mod's placed veins")
     c.add_argument("--item-renames", action="store_true",
                    help="issue #580: write prototypes/data/item-renames.lua from the item renames of the JSON migrations")
+    c.add_argument("--gtnh-recycling", action="store_true",
+                   help="issue #686: write prototypes/data/gtnh-recycling.lua, GT New Horizons' recycling of the material parts")
     c.add_argument("--gtnh-numbers", action="store_true",
                    help="issue #689: write prototypes/data/gtnh-numbers.lua, GT New Horizons' numbers of the matched recipes")
     c.add_argument("--set", action="append", metavar="SETTING=VALUE",
