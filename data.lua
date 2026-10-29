@@ -1,8 +1,6 @@
 
 ICON_PATH = "__gregtorio-continued__/graphics/icons/"
 
-YAFC_MODE = false
-
 --- Fork: the ore mode (issue #563, startup setting): "map-veins" (plan #494, 165) or "vein-recipes" (the classic vein
 --- recipes of 166, no veins on the map)
 FORK_ORE_MODE = settings.startup["gregtorio-continued-ore-mode"].value
@@ -35,7 +33,6 @@ require("prototypes.21-luv-age-item")
 require("prototypes.50-ae2-module")
 require("prototypes.98-technology")
 
-if YAFC_MODE then require("prototypes.99-yafc-module") end
 
 
 
