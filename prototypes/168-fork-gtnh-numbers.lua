@@ -7,7 +7,7 @@
 --- through tools/gtnh_map.py; this file sets them, in Gregtorio's units:
 ---   t   the tier from GT's EU/t (ULV counts as LV), only downward: the recipe moves into the category of that tier of its
 ---       machine, which every higher machine of the kind runs as well; a higher tier needs a later machine and moves the
----       recipe's unlock (#689 part 2), and the blast furnace's tier is its coil heat (#620)
+---       recipe's unlock (#724), and the blast furnace's tier is its coil heat (#620)
 ---   e   energy_required: GT's seconds x the speed of the tier (Gregtorio's rule, so a machine of the recipe's tier takes
 ---       GT's time), x the batch when the recipe is several GT recipes at once (16 rods -> 64 bolts)
 ---   i   the item ingredients, o the item results per chance (GT gives an item once sure and once by chance as two

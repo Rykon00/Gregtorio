@@ -795,7 +795,7 @@ def run(dump, sec, out_md, out_json=None, limit=50, state=None):
 #:   * not 157's recycling (recycling-*): its amounts and times are GT's formulas on Gregtorio's own recipes (the
 #:     maintainer's decision on #190);
 #:   * not the fluid amounts (#671), and no item amounts of a recipe whose fluids differ too (they would no longer fit);
-#:   * a tier only downward: a higher tier needs a later machine, which moves the recipe's unlock (#689 part 2);
+#:   * a tier only downward: a higher tier needs a later machine, which moves the recipe's unlock (#724);
 #:   * not the blast furnace's tier, which is its coil heat in Gregtorio (#620);
 #:   * not the fusion reactor (its times and inputs are the plasma balance of #32), no time of a hand recipe.
 NUMBERS_SKIP_MAPS = {"crafting"}
@@ -886,7 +886,7 @@ def numbers(state, kept=(), old=()):
             for x in d:
                 if x not in scoped:
                     k = diff_kind(x)
-                    left["fluid (#671)" if k == "fluid" else "tier up (#689 part 2)" if k == "tier" else
+                    left["fluid (#671)" if k == "fluid" else "tier up (#724)" if k == "tier" else
                          "hand recipe time (#688)" if k == "time" else f"{k} beside a fluid (#671)"] += 1
             if name in kept:
                 continue
