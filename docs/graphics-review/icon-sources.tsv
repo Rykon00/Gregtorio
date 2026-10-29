@@ -5390,3 +5390,4 @@ purified-lutetium	colour of Lutetium #bc3ec7 + gt:gregtech/textures/items/materi
 centrifuged-lutetium	colour of Lutetium #bc3ec7 + gt:gregtech/textures/items/materialicons/NONE/crushedCentrifuged
 impure-lutetium-dust	colour of Lutetium #bc3ec7 + gt:gregtech/textures/items/materialicons/SHINY/dustImpure + gt:gregtech/textures/items/materialicons/SHINY/dustImpure_OVERLAY
 pure-lutetium-dust	colour of Lutetium #bc3ec7 + gt:gregtech/textures/items/materialicons/SHINY/dustPure + gt:gregtech/textures/items/materialicons/SHINY/dustPure_OVERLAY
+radium-dust	colour of radium #a5a5a5 + gt:gregtech/textures/items/materialicons/NUCLEAR/dust + gt:gregtech/textures/items/materialicons/NUCLEAR/dust_OVERLAY

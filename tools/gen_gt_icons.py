@@ -336,6 +336,8 @@ MATERIALS = {
     "samarium-oxalate": ("DULL", (248, 248, 180)), "dephosphated-samarium-concentrate": ("DULL", (255, 170, 220)),
     "samarium-chloride": ("DULL", (248, 248, 120)), "samarium-chloride-sodium-chloride-blend": ("DULL", (255, 200, 230)),
     "rarest-earth-residue": ("DULL", (224, 211, 211)),
+    # issue #632: GT++'s curium and radium (MaterialsElements.java:292-296, 331-335, SET_NUCLEAR, their colours)
+    "curium": ("NUCLEAR", (175, 85, 110)), "radium": ("NUCLEAR", (165, 165, 165)),
     "zirconium": ("METALLIC", (175, 175, 175)),
     "red-zircon": ("GEM_VERTICAL", (195, 19, 19)),
     "dilithium": "Dilithium", "vinteum": "Vinteum", "mysterious-crystal": "MysteriousCrystal",   # issue #373: Neper

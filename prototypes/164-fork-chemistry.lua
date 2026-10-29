@@ -6323,7 +6323,39 @@ end
 
 
 --------------------------------------------------------------------------------
---- 57) GTNH'S CIRCUIT BOARDS (issue #712): the board chain from the coated board to the multilayered fiber-reinforced
+--- 57) GT'S MISSING ELEMENTS (issue #632, the maintainer's decisions of 2026-10-29), from the GTNH recipe dump:
+---   * bromine (GT++'s, since section 54): the electrolysis of demicheleite (Br) and lafossaite gives its cell (1000 L,
+---     a tenth here) as in GTNH (155's decompositions, as perroudite's in section 54)
+---   * radium (GT's): barite (Ra)'s byproduct and 1 per 64 in its electrolysis (155, 160 makes the dust); GTNH has no
+---     use for it either (the radioactive hatch, which the mod lacks)
+---   * curium: fusion of 144 L molten plutonium 241 + 1000 L helium -> 144 L molten curium (96 ticks, GT's 500M EU start:
+---     the MK3); GT's second californium route, 144 L curium + 144 L helium plasma -> 144 L californium (32 ticks, 750M:
+---     the MK4), beside 164's plutonium + beryllium one; GT's curium + americium plasma -> xenon plasma is left out (the
+---     mod has no xenon plasma)
+---   Promethium comes with the HTGR (#633, its only GTNH source). Dropped (no GTNH source and no use: scandium,
+---   actinium, francium, astatine, berkelium, einsteinium; no use in the mod: technetium, only GoodGenerator's shijima,
+---   neptunium as an element, only the isotope decay to plutonium 238). The dust-only elements get no ingot or melt
+---   while nothing takes them.
+---   Unlocked with Fusion Plasmas MK4 (curium's first use, the californium route).
+--------------------------------------------------------------------------------
+do
+	local R = {}
+	F.fluid("molten-curium", "molten-curium", { 175 / 255, 85 / 255, 110 / 255 })   -- (GT++'s colour, gen_gt_icons --molten)
+	for recipe, amount in pairs({ ["demicheleite-br-dust-decomposition"] = 100, ["lafossaite-dust-decomposition"] = 100 }) do
+		local r = data.raw.recipe[recipe].results
+		r[#r + 1] = { type = "fluid", name = "bromine", amount = amount }
+	end
+	step(R, "molten-curium", "mk3-fusion-reactor-recipes", 4.8, UV_SPEED,
+		{ { "molten-plutonium-241", 14.4 }, { "helium", 100 } }, { { "molten-curium", 14.4 } })
+	step(R, "molten-californium-from-curium", "mk4-fusion-reactor-recipes", 1.6, UHV_SPEED,
+		{ { "molten-curium", 14.4 }, { "helium-plasma", 14.4 } }, { { "molten-californium", 14.4 } })
+	for _, r in pairs(R) do fork_add_unlock("fusion-plasmas-mk4", r) end
+end
+
+
+
+--------------------------------------------------------------------------------
+--- 58) GTNH'S CIRCUIT BOARDS (issue #712): the board chain from the coated board to the multilayered fiber-reinforced
 ---   printed board as NewHorizonsCoreMod makes it (gthandler/recipes/ChemicalBathRecipes.java:63-85,
 ---   AssemblerRecipes.java:3850-3915, ChemicalReactorRecipes.java:69-205, the crafting table recipes of the GTNH recipe
 ---   dump, tools/gtnh_dump). The item names stay; recipes of the same name are changed in place.

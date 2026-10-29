@@ -5415,3 +5415,5 @@ purified-lutetium
 centrifuged-lutetium
 impure-lutetium-dust
 pure-lutetium-dust
+# issue #632: radium
+radium-dust

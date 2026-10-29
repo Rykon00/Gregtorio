@@ -155,6 +155,7 @@ put("gases", { "iodine" })
 put("molten-elements", { "bromine" })
 put("ore-solutions", { "seaweed-concentrate", "seaweed-byproducts" })
 put("ore-solutions", { "samarium-rare-earth-mud" })   -- issue #631 part 2
+put("nuclear", { "molten-curium" })   -- issue #632
 --- issue #631 part 3: the ion extraction's chloride concentrates, resins and chlorinated solutions; the new melts
 do
 	local list, melts = { "chlorinated-rare-earth-concentrate", "chlorinated-rare-earth-enriched-solution",
