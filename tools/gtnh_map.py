@@ -931,6 +931,142 @@ def numbers_names(path=NUMBERS_FILE):
     return set(re.findall(r'^\t\["([^"]+)"\] = ', Path(path).read_text(encoding="utf-8"), re.M))
 
 
+#: issue #686: GT's recycling of the material parts, imported from the dump (`recycling_imports`,
+#: prototypes/data/gtnh-recycling.lua, made by the section "Issue #686" of prototypes/157-fork-recycling.lua): the GT maps
+#: and the kind in the recipe's name recycling-<kind>-<part>
+RECYCLING_IMPORT = {"gt.recipe.macerator [recycling]": "macerator", "gt.recipe.arcfurnace [recycling]": "arc-furnace",
+                    "gt.recipe.fluidextractor [recycling]": "fluid-extractor",
+                    "gt.recipe.alloysmelter [recycling]": "alloy-smelter", "furnace [recycling]": "furnace"}
+#: the GT prefixes of the material parts (a part of one material; blocks are #670's, cells GT's containers, gems the ore
+#: chain's, dusts are no part)
+PART_PREFIX = re.compile(r"^(plate\w*|foil|stick\w*|bolt|screw|round|ring|wireFine|spring\w*|itemCasing|frameGt|gearGt\w*|"
+                         r"rotor|wireGt\d+|cableGt\d+|turbineBlade|pipe\w+|nugget)$")
+#: a part by its Gregtorio name (GT++'s alloy parts have no GT prefix in the dump)
+GREG_PART = re.compile(r"^(?:(?:double|triple|quadruple|quintuple|dense|superdense)-.+-plate|long-.+-rod|fine-.+-wire|"
+                       r"small-.+-spring|large-.+-gear|.+-(?:plate|foil|rod|bolt|screw|round|ring|frame|gear|rotor|"
+                       r"item-casing|nugget|ingot|spring|wire|cable|fluid-pipe)(?:-\d+x)?)$")
+#: parts whose GT item maps onto another Gregtorio item (GT's paper is a plate of Paper and its dust maps onto paper, the
+#: wood plate onto the plank and wood dust onto wood, plateAnyRubber onto the rubber sheet with silicone rubber's melt)
+RECYCLING_SKIP = {"paper", "plank", "rubber-sheet"}
+RECYCLING_FILE = ROOT / "prototypes" / "data" / "gtnh-recycling.lua"
+#: GT's furnace recipes have no time: a smelting recipe of Gregtorio takes 10 s
+SMELT_TIME = 10
+FLUID_SCALE = 10
+
+
+def category_for(family, tier, g):
+    """the category of `family` at GT's tier, else the highest tier below it that a machine runs; (category, tier)"""
+    for i in range(TIERS.index(tier), -1, -1):
+        cat = f"{TIERS[i]}-{family}-recipes"
+        if cat in g.speed:
+            return cat, TIERS[i]
+    return None, None
+
+
+def import_entry(kind, mapped, r, g, dump):
+    """a Gregtorio recipe in Gregtorio's units from a GT recycling recipe: {kind, item, cat, e, i, f, o, fo, mold}"""
+    item = next(iter(mapped["ins"]))
+    if kind == "furnace":
+        cat, e = "smelting", SMELT_TIME
+    else:
+        fam = MAPS[[m for m, k in RECYCLING_IMPORT.items() if k == kind][0].split(" [")[0]][0]
+        cat, t = category_for(fam, TIERS[gt_tier(r.get("eut") or 1)], g)
+        if not cat:
+            return None
+        e = round(r["duration"] / 20 * 2 ** TIERS.index(t), 6)
+    o = []
+    for name, st in mapped["stacks"].items():
+        for ch, a in sorted(by_chance(st).items(), key=lambda kv: -kv[0]):
+            o.append([name, a, ch])
+    return {"kind": kind, "item": item, "cat": cat, "e": e,
+            "f": {n: l / FLUID_SCALE for n, l in mapped["fin"].items()},
+            "o": o, "fo": {n: l / FLUID_SCALE for n, l in mapped["fout"].items()},
+            "mold": any(s.get("nc") or not s.get("n", 1) for s in r["in"] if s.get("circuit") is None)}
+
+
+#: the Gregtorio family of each kind (whose machines run one recipe per input when they are furnaces)
+KIND_FAMILY = {"macerator": "macerator", "arc-furnace": "arc-furnace", "fluid-extractor": "fluid-extractor",
+               "alloy-smelter": "alloy-smelter", "furnace": "smelting"}
+
+
+def recycling_imports(dump, g):
+    """Issue #686: GT's recycling recipes of the material parts in Gregtorio's units, [entry] sorted by kind and part;
+    a part that a Gregtorio recipe of the machine (not this import) takes already is left out, as is a second GT
+    recipe of the same part and machine. Also the other items GT recycles (components, casings, machines), which 157
+    recycles by its own rule (their composition from Gregtorio's recipes, the decision on #190). Returns (entries,
+    items, Counter of the parts left out by kind)"""
+    mp = Mapper(dump, g)
+    taken = defaultdict(set)
+    for r in g.recipes:
+        items = [s["name"] for s in r["ingredients"] if s["type"] == "item"]
+        if r.get("hidden") or len(items) != 1:
+            continue
+        kind = next((k for k, f in KIND_FAMILY.items() if f == r["family"]), None)
+        if kind and r["name"] == f"recycling-{kind}-{items[0]}":
+            continue
+        taken[r["family"]].add(items[0])
+    out, seen, skipped, others = [], set(), Counter(), set()
+    for mname, r in gt_recipes(dump):
+        kind = RECYCLING_IMPORT.get(mname)
+        if not kind:
+            continue
+        items = [s for s in r["in"] if not (s.get("nc") or s.get("circuit") is not None or not s.get("n", 1))]
+        if len(items) != 1:
+            continue
+        prefix = dump["items"].get(items[0].get("id"), {}).get("prefix") or ""
+        if prefix and not PART_PREFIX.match(prefix):
+            continue
+        mapped, bad = map_recipe(mp, r)
+        if bad or mapped.get("oreblock") or len(mapped["ins"]) != 1 or not (mapped["outs"] or mapped["fout"]):
+            continue
+        item = next(iter(mapped["ins"]))
+        if item in RECYCLING_SKIP:
+            continue
+        # (GT++'s alloy parts have no GT prefix: a part by its Gregtorio name; the rest is a component)
+        if not prefix and not GREG_PART.match(item):
+            if kind != "furnace" and item not in taken["macerator"]:
+                others.add(item)
+            continue
+        if (kind, item) in seen:
+            continue
+        seen.add((kind, item))
+        if item in taken[KIND_FAMILY[kind]]:
+            skipped[kind] += 1
+            continue
+        e = import_entry(kind, mapped, r, g, dump)
+        if e:
+            out.append(e)
+    out.sort(key=lambda e: (e["kind"], e["item"]))
+    return out, sorted(others), skipped
+
+
+def recycling_lua(entries, items):
+    """prototypes/data/gtnh-recycling.lua"""
+    num = lambda x: f"{x:.10g}"
+    tab = chr(9)
+    lines = ["--- Generated by `tools/devcheck/devcheck.py check --gtnh-recycling` (issue #686) from the GT New Horizons recipe dump",
+             "--- (tools/gtnh_dump/) through tools/gtnh_map.py; do not edit, run it again. `parts`: GT's recycling of the material",
+             "--- parts in Gregtorio's units, { kind, part, cat = category, e = energy_required, f = fluid ingredients, o = item",
+             "--- results { item, amount, chance }, fo = fluid results, mold = the alloy smelter's mold }, which",
+             "--- prototypes/157-fork-recycling.lua makes (recycling-<kind>-<part>); `items`: the other items GT recycles, which 157",
+             "--- recycles by its own rule.",
+             "return {", tab + "parts = {"]
+    for e in entries:
+        parts = [f'"{e["kind"]}"', f'"{e["item"]}"', f'cat = "{e["cat"]}"', f"e = {num(e['e'])}"]
+        if e["f"]:
+            parts.append("f = { " + ", ".join(f'{{ "{n}", {num(a)} }}' for n, a in sorted(e["f"].items())) + " }")
+        if e["o"]:
+            parts.append("o = { " + ", ".join(f'{{ "{n}", {num(a)}' + (f", {num(c)}" if c < 1 else "") + " }"
+                                            for n, a, c in e["o"]) + " }")
+        if e["fo"]:
+            parts.append("fo = { " + ", ".join(f'{{ "{n}", {num(a)} }}' for n, a in sorted(e["fo"].items())) + " }")
+        if e["mold"]:
+            parts.append("mold = true")
+        lines.append(tab * 2 + "{ " + ", ".join(parts) + " },")
+    lines += [tab + "},", tab + "items = {"] + [tab * 2 + f'"{n}",' for n in items] + [tab + "},", "}"]
+    return "\n".join(lines) + "\n"
+
+
 def diff_kind(x):
     return ("time" if x.startswith("time ") else "tier" if x.startswith("tier ") else "chance" if " chance " in x
             else "fluid" if " L" in x else "amount")

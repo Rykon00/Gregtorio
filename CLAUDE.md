@@ -364,7 +364,11 @@
     `gt-parts-data.lua`) gets GT's recycling with 9 units and ProcessingBlock.java's recipes, `cut-<block>` (cutting
     machine -> 9 plates, water, below IV; GT++ without fluid) and `hammer-<block>` (forge hammer -> 9 gems), the latter
     two in `FORK_RECYCLING.blocks`, which 199's auto-unlock ignores; devcheck fails for a reachable material block that no
-    recipe takes unless it is in the allow-list `FORK_BLOCKS_DEAD_END` with its reason (section `BLOCKDEADOK`))
+    recipe takes unless it is in the allow-list `FORK_BLOCKS_DEAD_END` with its reason (section `BLOCKDEADOK`); issue #686:
+    GT's recycling of every material part (macerator, arc furnace, fluid extractor, alloy smelter with the mold, furnace)
+    from `prototypes/data/gtnh-recycling.lua`, which `devcheck.py check --gtnh-recycling` writes from the dump of
+    `tools/gtnh_dump/` through `tools/gtnh_map.py` (`recycling_imports`: GT's numbers in Gregtorio's units, a part that its
+    machine takes already left out); `check` fails when the table is out of date)
   - 168 GTNH numbers (issue #689: GT New Horizons' tier, time, item amounts and chances for every recipe that has a GT
     recipe with the same items and fluids in and out, from `prototypes/data/gtnh-numbers.lua`, which `devcheck.py check
     --gtnh-numbers` writes from the dump of `tools/gtnh_dump/` through `tools/gtnh_map.py` (`numbers`; run it after a new

@@ -20,7 +20,7 @@
 --- their ingredients down to the material parts (ingot, plate, rod ... in ingots: 143's melt per part, GT's for wires and
 --- foils), circuits and things without materials counting nothing. Against loops: per material the least any recipe of
 --- the item needs (an item with two recipes gives back only what both have), and the material parts themselves (ingots,
---- plates ...) are not recycled here (143 melts and casts them). GT's output is dusts plus small and tiny dusts; here whole
+--- plates ...) are not recycled by this rule (143 melts and casts them; issue #686 gives them GT's own recycling below). GT's output is dusts plus small and tiny dusts; here whole
 --- dusts and ingots, the rest is lost (decision on #190: never more than the item is worth). No Recycler: GTNH's turns
 --- items into scrap, which has no use in Gregtorio (decision on #190).
 --- The masses (FORK_RECYCLING_MASS) are GT's Materials.getMass (MaterialsInit.java: the element's protons and neutrons,
@@ -60,7 +60,8 @@ FORK_RECYCLING_BLACKLIST = FORK_RECYCLING_BLACKLIST or {}
 FORK_RECYCLING_BLACKLIST["blaze-rod"] = "GT: registerMaterialRecycling skips the blaze rod (GTRecipeRegistrator.java 185)"
 FORK_RECYCLING_BLACKLIST["obsidian"] = "GT: registerMaterialRecycling skips obsidian (GTRecipeRegistrator.java 188)"
 
-FORK_RECYCLING = { recipes = {}, pending = {}, items = 0, by_kind = { macerator = 0, ["arc-furnace"] = 0, ["fluid-extractor"] = 0 } }
+FORK_RECYCLING = { recipes = {}, pending = {}, items = 0, by_kind = { macerator = 0, ["arc-furnace"] = 0, ["fluid-extractor"] = 0,
+	["alloy-smelter"] = 0, furnace = 0 } }
 
 local P = "__gregtorio-continued__/graphics/icons/"
 local CRAFTING = { ["crafting"] = true, ["crafting-or-assembling-recipes"] = true, ["crafting-table-recipes"] = true }
@@ -232,6 +233,19 @@ for name, r in pairs(data.raw.recipe) do
 		end
 	end
 end
+--- issue #686: and the other items GT New Horizons recycles (components, casings, machines; prototypes/data/gtnh-recycling.lua,
+--- from GT's recipe dump), whatever their own recipe is
+local GTNH_RECYCLING = require("prototypes.data.gtnh-recycling")
+do
+	local listed = {}
+	for _, n in pairs(names) do listed[n] = true end
+	for _, n in pairs(GTNH_RECYCLING.items or {}) do
+		if not listed[n] and item_exists(n) and not parse(n) and not is_circuit(n) and not FORK_RECYCLING_BLACKLIST[n] then
+			names[#names + 1] = n
+			listed[n] = true
+		end
+	end
+end
 table.sort(names)
 
 for _, item in pairs(names) do
@@ -282,6 +296,52 @@ for _, item in pairs(names) do
 				res[2] = { type = "item", name = list[2][1] .. "-ingot", amount = math.floor(list[2][2]) }
 			end
 			recipe("fluid-extractor", "lv-fluid-extractor-recipes", item, math.max(1, 24 * list[1][2]) / 20 * LV_SPEED, input, res)
+		end
+	end
+end
+--------------------------------------------------------------------------------
+--- Issue #686: GT New Horizons recycles every material part (plates, foils, rods, bolts, screws, rounds, rings, springs,
+--- fine wire, wires, cables, item casings, frames, gears, rotors, pipes, nuggets): the macerator into dusts, the arc
+--- furnace into ingots or nuggets with oxygen, the fluid extractor into the melt, the alloy smelter (with the mold) and
+--- the furnace into ingots or nuggets (GTRecipeRegistrator.registerMaterialRecycling and GT's furnace and alloy smelter
+--- part recipes, from the material amount of each prefix). prototypes/data/gtnh-recycling.lua holds them as GT New
+--- Horizons' recipe dump has them (tools/gtnh_dump/), mapped onto Gregtorio's names and units by tools/gtnh_map.py
+--- (`recycling_imports`: the tier from GT's EU/t, its time x the tier's speed, a tenth of GT's litres; a furnace recipe
+--- 10 s as Gregtorio's smelting); `devcheck.py check --gtnh-recycling` writes it and `check` fails when it is out of
+--- date. A part whose machine takes it already (a furnace machine runs one recipe per input) keeps that recipe. Named
+--- recycling-<kind>-<part>, in FORK_RECYCLING.recipes and unlocked by FORK_RECYCLING.unlock() like the rest. The same
+--- file's `items` (the components, casings and machines GT recycles) join the items of the rule above.
+--------------------------------------------------------------------------------
+do
+	local PARTS = GTNH_RECYCLING.parts
+	for _, k in pairs({ { "alloy-smelter", "lv-alloy-smelter-recipes" }, { "furnace", "smelting" } }) do
+		local base = data.raw["item-subgroup"]["subgroup-" .. k[2]]
+		data:extend({ { type = "item-subgroup", name = "fork-recycling-" .. k[1], group = base and base.group or "processing-machine-recipes",
+			order = (base and base.order or "z") .. "-recycling" } })
+	end
+	FORK_RECYCLING.parts = 0
+	for _, p in pairs(PARTS) do
+		local kind, item = p[1], p[2]
+		if item_exists(item) and not data.raw.recipe["recycling-" .. kind .. "-" .. item] then
+			local ing = { { type = "item", name = item, amount = 1 } }
+			for _, f in pairs(p.f or {}) do ing[#ing + 1] = { type = "fluid", name = f[1], amount = grid(f[2]) } end
+			local res = {}
+			for _, o in pairs(p.o or {}) do
+				-- (a platinum group dust is two of the platinum line's powder or residue, as above)
+				local m = o[1]:match("^(%a+)%-dust$")
+				if PGM_DUST[m] and item_exists(PGM_DUST[m]) then
+					res[#res + 1] = { type = "item", name = PGM_DUST[m], amount = 2 * o[2], independent_probability = o[3] }
+				else
+					res[#res + 1] = { type = "item", name = o[1], amount = o[2], independent_probability = o[3] }
+				end
+			end
+			for _, f in pairs(p.fo or {}) do res[#res + 1] = { type = "fluid", name = f[1], amount = grid(f[2]) } end
+			if p.mold then
+				ing[#ing + 1] = { type = "item", name = "mold", amount = 1 }
+				res[#res + 1] = { type = "item", name = "mold", amount = 1 }
+			end
+			recipe(kind, p.cat, item, p.e, ing, res)
+			FORK_RECYCLING.parts = FORK_RECYCLING.parts + 1
 		end
 	end
 end
