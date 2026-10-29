@@ -123,11 +123,14 @@ local function main_item(name, r)
 	return only or nil
 end
 
---- the producers of every item (not the casts and melts of 143, not recycling)
+--- the producers of every item (not the casts and melts of 143, not recycling; issue #687: not the component assembly
+--- line's bulk recipes, which make 16 of a component from 16x wires and long rods for less: GT takes an item's materials
+--- from its crafting recipe, and with the 16x wires known their smaller share took every material below one ingot)
 local casting = FORK_CASTING and FORK_CASTING.recipes or {}
 local producers = {}
 for name, r in pairs(data.raw.recipe) do
-	if not casting[name] and not name:find("recycling", 1, true) and not name:find("^void%-") and r.results then
+	if not casting[name] and not name:find("recycling", 1, true) and not name:find("^void%-") and r.results
+		and not fork_category(r):find("%-coal%-recipes$") then
 		local item = main_item(name, r)
 		if item then
 			producers[item] = producers[item] or {}

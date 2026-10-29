@@ -240,7 +240,11 @@
     #467: its sections 1 and 2 are `FORK_GT_PARTS.run()`, run again at the end of 164 (section 38) for the metals whose
     ingot comes later; #223
     also aligned 155's raw ore smelting with GT's rule, keeping raw redstone, gypsum and calcite -> dust for the early
-    game)
+    game; issue #687: section 3 of the run, GT's recipes of the cutting machine (water, distilled water, lubricant,
+    dimensionally shifted superfluid), bender, extruder, wiremill, forge hammer, fluid solidifier and lathe that Gregtorio
+    lacks, `gt-<verb>-<product>-from-<input>` from `prototypes/data/gtnh-part-routes.lua`, which `devcheck.py check
+    --gtnh-routes` writes from the dump through `tools/gtnh_map.py` (`route_imports`); `check` fails when it is out of
+    date; a route Gregtorio has with other numbers is #689's table's, not a second recipe)
   - 159 lanthanides (issue #262: gtnhlanth's monazite rare earth line with the Digester and the Dissolution Tank, from
     crushed monazite to samarium and gadolinium dust; the samarium dust placeholder of 19 is removed, the sifting
     machines get a fluid input and output, technology `monazite-rare-earth-processing` before LuV Components; issue

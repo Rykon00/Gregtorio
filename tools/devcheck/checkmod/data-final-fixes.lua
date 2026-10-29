@@ -416,6 +416,10 @@ section("BLOCKDEADOK", bd)
 local gk = {}
 for recipe, why in pairs(FORK_GTNH_NUMBERS_KEPT or {}) do gk[#gk + 1] = recipe .. "\t" .. tostring(why or "") end
 section("GTNHKEPT", gk)
+--- Issue #687 (prototypes/158-fork-gt-parts.lua): GT's part routes 158 left out (no technology after their inputs)
+local rs = {}
+for recipe, why in pairs((FORK_GT_PARTS or {}).routes_skipped or {}) do rs[#rs + 1] = recipe .. "\t" .. tostring(why) end
+section("GTROUTESKIP", rs)
 
 --- Every __gregtorio-continued__/ file referenced anywhere, with its owner prototype
 local paths, seen = {}, {}

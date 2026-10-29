@@ -891,6 +891,8 @@ do
 		end
 	end
 end
+--- Fork (issue #687): GT's part routes of 158 that a vanilla technology disabled above unlocked go (158's section 3)
+FORK_GT_PARTS.drop_locked_routes()
 --- Fork: the steam macerator runs copies of the LV macerator recipes without their byproducts, as GT's bronze machines
 --- (prototypes/101-fork-machines.lua, issue #447); after every unlock above; the copies of the ore forms come in the steam
 --- age, with the smelting of what they make (issue #571)
