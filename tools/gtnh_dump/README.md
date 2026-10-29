@@ -3,7 +3,9 @@
 `gtnh-recipes.json.gz` holds every recipe of every GregTech `RecipeMap` as GT New Horizons registers it, plus the
 crafting table and furnace recipes, made from GT5-Unofficial's own dev environment with the small dev mod in
 `src/gtnhdump/GTNHRecipeDump.java`. `python tools/devcheck/devcheck.py gtnh-diff` compares Gregtorio's recipes with
-it through `tools/gtnh_map.py` (a report in `.devcheck/gtnh-diff.md`, not part of `devcheck.py all`).
+it through `tools/gtnh_map.py` (a report in `.devcheck/gtnh-diff.md`, not part of `devcheck.py all`). Issue #689:
+`devcheck.py check --gtnh-numbers` writes GT's numbers of the recipes Gregtorio has into `prototypes/data/gtnh-numbers.lua`
+(run it after a new dump); `check` fails when that table is out of date.
 
 The dump in this folder: GT5-Unofficial `5.09.54.244-3-gec1f1d2` (commit `ec1f1d2669d8fc32e51157f634be7e8499417ef6`,
 2026-10-24) with NewHorizonsCoreMod 2.9.97 (the newest core mod built against a GT version up to that commit; it adds

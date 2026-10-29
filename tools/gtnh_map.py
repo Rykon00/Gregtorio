@@ -71,7 +71,7 @@ PREFIX = {
     "stick": ["%s-rod"], "stickLong": ["long-%s-rod"], "bolt": ["%s-bolt"], "screw": ["%s-screw"],
     "round": ["%s-round"], "ring": ["%s-ring"], "wireFine": ["fine-%s-wire"], "springSmall": ["small-%s-spring"],
     "spring": ["%s-spring"], "itemCasing": ["%s-item-casing"], "frameGt": ["%s-frame"],
-    "block": ["block-of-%s", "%s-block", "%s"], "gearGtSmall": ["%s-gear"], "gearGt": ["large-%s-gear"],
+    "block": ["block-of-%s", "%s-block"], "gearGtSmall": ["%s-gear"], "gearGt": ["large-%s-gear"],
     "rotor": ["%s-rotor"], "turbineBlade": ["%s-turbine-blade"], "lens": ["%s-lens"],
     "gem": ["%s-gem", "%s"], "gemChipped": ["chipped-%s"], "gemFlawed": ["flawed-%s"],
     "gemFlawless": ["flawless-%s"], "gemExquisite": ["exquisite-%s"],
@@ -367,6 +367,10 @@ class Mapper:
         if TOOL.match(key):
             return "drop", None
         info = self.items.get(key, {})
+        # (issue #689: Gregtorio's raw ores are GT's raw ore items, rawOre; GT's ore blocks of every stone (ore,
+        # oreNetherrack, oreEndstone, ...) give more crushed ore and other byproducts)
+        if info.get("prefix") == "ore" or ORE_BLOCK.match(info.get("prefix") or ""):
+            return "oreblock", None
         for ore in info.get("ore", []):
             if ore in ORES and ORES[ore] in self.g.items:
                 return "item", ORES[ore]
@@ -453,8 +457,12 @@ def gt_recipes(dump):
 
 
 def map_recipe(mp, r):
-    """GT recipe -> (ins, outs, unmapped): ins/outs {name: amount}, outs with chances; fluids in GT litres"""
+    """GT recipe -> (ins, outs, unmapped): ins/outs {name: amount}, outs with chances; fluids in GT litres; `stacks`:
+    the output stacks per item, [(amount, chance)] (issue #689: GT gives an item twice, once sure and once by chance)"""
     ins, outs, chances, fl_in, fl_out, bad = Counter(), Counter(), {}, Counter(), Counter(), []
+    stacks = defaultdict(list)
+    # (several GT items that map onto one Gregtorio item: their amounts are not compared)
+    ids = defaultdict(set)
     for s in r["in"]:
         if s.get("nc") or s.get("circuit") is not None or not s.get("n", 1):
             continue
@@ -465,8 +473,11 @@ def map_recipe(mp, r):
             kind, name = mp.item(s["id"])
             key = s["id"]
         n = s.get("n", 1)
+        if kind == "oreblock":
+            return dict(oreblock=True), []
         if kind == "item":
             ins[name] += n
+            ids[("in", name)].add(key)
         elif kind == "fluid":
             fl_in[name] += 1000 * n
         elif kind is None:
@@ -475,8 +486,11 @@ def map_recipe(mp, r):
         kind, name = mp.item(s["id"])
         if kind == "item":
             outs[name] += s["n"]
-            if s.get("chance"):
-                chances[name] = s["chance"] / 10000
+            chance = min(s["chance"] / 10000, 1) if s.get("chance") else 1
+            if chance < 1:
+                chances[name] = chance
+            stacks[name].append((s["n"], chance))
+            ids[("out", name)].add(s["id"])
         elif kind == "fluid":
             fl_out[name] += 1000 * s["n"]
         elif kind is None:
@@ -488,45 +502,99 @@ def map_recipe(mp, r):
                 dest[name] += f["l"]
             else:
                 bad.append("fluid:" + f["fluid"])
-    return dict(ins=ins, outs=outs, chances=chances, fin=fl_in, fout=fl_out), bad
+    merged = {k for k, v in ids.items() if len(v) > 1}
+    return dict(ins=ins, outs=outs, chances=chances, stacks=dict(stacks), fin=fl_in, fout=fl_out, merged=merged), bad
+
+
+def batch_of(mapped, gr):
+    """how many GT recipes one Gregtorio recipe is: a multismelter recipe is a batch of its furnace recipe (its first
+    ingredient's amount per GT's); issue #689: a recipe whose every item amount is the same multiple of GT's (16 rods
+    -> 64 bolts) is that many GT recipes at once"""
+    if gr["family"] == "multismelter" and gr["ingredients"] and mapped["ins"]:
+        first = gr["ingredients"][0]
+        return (first.get("amount") or 1) / (mapped["ins"].get(first["name"]) or 1)
+    have = Counter()
+    for io, key in (("in", "ingredients"), ("out", "results")):
+        for s in gr[key]:
+            if s["type"] == "item":
+                have[(io, s["name"])] += s.get("amount") or s.get("amount_max") or 0
+    ratios = set()
+    for io, d in (("in", mapped["ins"]), ("out", mapped["outs"])):
+        for name, n in d.items():
+            if name in NO_AMOUNT or (io, name) in mapped["merged"] or not n or not have.get((io, name)):
+                continue
+            ratios.add(round(have[(io, name)] / n, 6))
+    return ratios.pop() if len(ratios) == 1 else 1
+
+
+def greg_stacks(gr, batch=1):
+    """a Gregtorio recipe's item results per item, [(amount, chance)] (per batch)"""
+    st = defaultdict(list)
+    for s in gr["results"]:
+        if s["type"] == "item":
+            p = s.get("probability")
+            st[s["name"]].append(((s.get("amount") or s.get("amount_max") or 0) / batch, 1 if p is None else p))
+    return st
+
+
+def by_chance(stacks):
+    """[(amount, chance)] -> {chance (4 places): the amount at that chance}"""
+    out = Counter()
+    for a, c in stacks:
+        out[round(c, 4)] += a
+    return {c: round(a, 9) for c, a in out.items()}
+
+
+def tier_speed(gr, gtr, g):
+    """the speed a Gregtorio recipe's time is written for: its category's tier (Gregtorio's rule: GT seconds x the
+    speed of the recipe's tier), for a category without a tier GT's tier from EU/t (as 164's steps write a
+    multiblock's recipe), without EU/t the slowest machine of the category"""
+    t = cat_tier(gr["category"])
+    if t:
+        return 2 ** TIERS.index(t)
+    if gtr.get("eut"):
+        return 2 ** gt_tier(gtr["eut"])
+    return g.speed.get(gr["category"], 1) or 1
 
 
 def compare(mapped, gr, gtr, g, scale):
     """differences between a GT recipe (mapped) and a Gregtorio recipe gr: list of strings"""
     out = []
-    # (a multismelter recipe is a batch of its furnace recipe: compare per item of the first ingredient)
-    batch = 1
-    if gr["family"] == "multismelter" and gr["ingredients"] and mapped["ins"]:
-        first = gr["ingredients"][0]
-        batch = (first.get("amount") or 1) / (mapped["ins"].get(first["name"]) or 1)
-    amounts = {(s["type"], s["name"], "in"): s.get("amount") or 0 for s in gr["ingredients"]}
-    amounts.update({(s["type"], s["name"], "out"): s.get("amount") or s.get("amount_max") or 0 for s in gr["results"]})
-    probs = {s["name"]: s.get("probability") for s in gr["results"]}
-    for kind, d, io in (("item", mapped["ins"], "in"), ("item", mapped["outs"], "out")):
-        for name, n in d.items():
-            if name in NO_AMOUNT:
-                continue
-            got = amounts.get((kind, name, io))
-            if got is not None:
-                got = got / batch
-            if got is not None and abs(got - n) > 1e-9:
-                out.append(f"{name} {io} {got} (GT {n})")
+    batch = batch_of(mapped, gr)
+    amounts = Counter()
+    for s in gr["ingredients"]:
+        amounts[(s["type"], s["name"], "in")] += s.get("amount") or 0
+    for s in gr["results"]:
+        amounts[(s["type"], s["name"], "out")] += s.get("amount") or s.get("amount_max") or 0
+    for name, n in mapped["ins"].items():
+        if name in NO_AMOUNT or ("in", name) in mapped["merged"]:
+            continue
+        got = amounts.get(("item", name, "in"))
+        if got is not None and abs(got / batch - n) > 1e-9:
+            out.append(f"{name} in {got / batch} (GT {n})")
+    # (issue #689: the output stacks of an item, its sure and its chanced amounts, compared as the amount per chance;
+    # GT splits more than 64 into stacks of 64)
+    have = greg_stacks(gr, batch)
+    for name, want in mapped["stacks"].items():
+        if name in NO_AMOUNT or name not in have or ("out", name) in mapped["merged"]:
+            continue
+        got, exp = by_chance(have[name]), by_chance(want)
+        if got == exp:
+            continue
+        gs, ws = sum(got.values()), sum(exp.values())
+        if abs(gs - ws) > 1e-9:
+            out.append(f"{name} out {gs:g} (GT {ws:g})")
+        if sorted(got) != sorted(exp) or abs(gs - ws) <= 1e-9:
+            show = lambda d: "/".join(f"{c:g}" for c in sorted(d) if c < 1) or "1"
+            out.append(f"{name} chance {show(got)} (GT {show(exp)})")
     for d, io in ((mapped["fin"], "in"), (mapped["fout"], "out")):
         for name, l in d.items():
             got = amounts.get(("fluid", name, io))
-            if got and scale and abs(l / got - scale) > 1e-6 * scale:
-                out.append(f"{name} {io} {got:g} (GT {l} L, map scale {scale:g})")
-    for name, c in mapped["chances"].items():
-        p = probs.get(name)
-        if p is None or abs(p - c) > 1e-4:
-            out.append(f"{name} chance {p if p is not None else 1} (GT {c:g})")
-    for name, p in probs.items():
-        if p is not None and p < 1 and name in mapped["outs"] and name not in mapped["chances"]:
-            out.append(f"{name} chance {p:g} (GT 1)")
+            if got and scale and abs(l / (got / batch) - scale) > 1e-6 * scale:
+                out.append(f"{name} {io} {got / batch:g} (GT {l} L, map scale {scale:g})")
     if gtr.get("duration"):
-        t = cat_tier(gr["category"])
-        speed = 2 ** TIERS.index(t) if t else (g.speed.get(gr["category"], 1) or 1)
-        secs = (gr.get("time") or 0.5) / speed
+        speed = tier_speed(gr, gtr, g)
+        secs = (gr.get("time") or 0.5) / speed / batch
         gt_secs = gtr["duration"] / 20
         if abs(secs - gt_secs) > 0.02 * gt_secs + 1e-9:
             out.append(f"time {secs:g} s (GT {gt_secs:g} s)")
@@ -536,7 +604,8 @@ def compare(mapped, gr, gtr, g, scale):
     return out
 
 
-def run(dump, sec, out_md, out_json=None, limit=50):
+def run(dump, sec, out_md, out_json=None, limit=50, state=None):
+    """the report (out_md None: none); `state` (a dict) gets the mapping, the matched recipes and the fluid scales"""
     g = Gregtorio(sec)
     mp = Mapper(dump, g)
     per_map = defaultdict(Counter)
@@ -575,6 +644,10 @@ def run(dump, sec, out_md, out_json=None, limit=50):
             count("not compared")
             continue
         mapped, bad = map_recipe(mp, r)
+        if mapped.get("oreblock"):
+            # (a GT ore block, not the raw ore item: see Mapper._item)
+            count("not compared")
+            continue
         if bad:
             count("unmapped")
             for b in set(bad):
@@ -619,11 +692,13 @@ def run(dump, sec, out_md, out_json=None, limit=50):
                     ratios[mname][round(l / got, 3)] += 1
     scale = {m: c.most_common(1)[0][0] for m, c in ratios.items() if c}
     for mname, mapped, r, cands in pending:
-        best = min((compare(mapped, c, r, g, scale.get(mname)), c["name"]) for c in cands)
+        best = min(((compare(mapped, c, r, g, scale.get(mname)), c["name"]) for c in cands), key=lambda x: (len(x[0]), x[1]))
         if best[0]:
             per_map[mname]["differs"] += 1
             per_src[r.get("source", "gt5u")]["differs"] += 1
             differs[mname].append((best[1], best[0]))
+    if state is not None:
+        state.update(g=g, pending=pending, scale=scale)
 
     # gaps grouped by map and material family of the main product
     groups = Counter()
@@ -695,8 +770,9 @@ def run(dump, sec, out_md, out_json=None, limit=50):
         kinds = Counter(k for _, d in rows for k in {diff_kind(x) for x in d})
         lines.append(f"- **{mname}** ({len(rows)}; " + ", ".join(f"{k} {v}" for k, v in kinds.most_common()) + "): "
                      + "; ".join(f"`{n}` " + ", ".join(d[:3]) for n, d in rows[:10]))
-    Path(out_md).parent.mkdir(parents=True, exist_ok=True)
-    Path(out_md).write_text("\n".join(lines) + "\n", encoding="utf-8", newline="\n")
+    if out_md:
+        Path(out_md).parent.mkdir(parents=True, exist_ok=True)
+        Path(out_md).write_text("\n".join(lines) + "\n", encoding="utf-8", newline="\n")
     if out_json:
         Path(out_json).write_text(json.dumps({
             "dump": {k: dump.get(k) for k in ("gt_version", "git_commit", "git_describe", "created")},
@@ -711,6 +787,148 @@ def run(dump, sec, out_md, out_json=None, limit=50):
                           "maps": dict(blocker_maps[b])} for b, n in blockers.most_common()],
         }, indent=1), encoding="utf-8", newline="\n")
     return per_map, tot, groups
+
+
+#: issue #689: GT's numbers for Gregtorio's matched recipes (`numbers`, prototypes/data/gtnh-numbers.lua, applied by
+#: prototypes/168-fork-gtnh-numbers.lua): times, item amounts, chances and tiers, but
+#:   * not the crafting table's recipes: GT's tools are left out of them, so recipes with and without a tool merge (#688);
+#:   * not 157's recycling (recycling-*): its amounts and times are GT's formulas on Gregtorio's own recipes (the
+#:     maintainer's decision on #190);
+#:   * not the fluid amounts (#671), and no item amounts of a recipe whose fluids differ too (they would no longer fit);
+#:   * a tier only downward: a higher tier needs a later machine, which moves the recipe's unlock (#689 part 2);
+#:   * not the blast furnace's tier, which is its coil heat in Gregtorio (#620);
+#:   * not the fusion reactor (its times and inputs are the plasma balance of #32), no time of a hand recipe.
+NUMBERS_SKIP_MAPS = {"crafting"}
+NO_TIER_FAMILIES = {"electric-blast-furnace"}
+#: (the fusion reactor's times are the plasma balance of #32; a recipe of crafting-or-assembling is a hand recipe too,
+#: GT's assembler time would be the hand's)
+NO_TIME_FAMILIES = {"crafting-or-assembling"}
+NUMBERS_SKIP_FAMILIES = {"fusion-reactor"}
+NUMBERS_FILE = ROOT / "prototypes" / "data" / "gtnh-numbers.lua"
+
+
+def tier_down(c, r, g, equal=False):
+    """GT's tier of the recipe when it is below the Gregtorio recipe's (or the same, `equal`) and a Gregtorio machine
+    runs that tier's category, else None"""
+    cur = cat_tier(c["category"])
+    if not cur or not r.get("eut") or c["family"] in NO_TIER_FAMILIES:
+        return None
+    t = TIERS[gt_tier(r["eut"])]
+    cat = t + c["category"][len(cur):]
+    below = TIERS.index(t) < TIERS.index(cur) or (equal and t == cur)
+    return t if below and cat in g.speed else None
+
+
+def in_scope(diffs, c, r, g):
+    """the differences `numbers` sets right: time, item amounts and chances (none of them when a fluid differs too)
+    and a tier downward"""
+    fluid = any(diff_kind(x) == "fluid" for x in diffs)
+    out = []
+    for x in diffs:
+        k = diff_kind(x)
+        if (k == "time" and c["family"] not in NO_TIME_FAMILIES) or (k in ("amount", "chance") and not fluid) or (
+                k == "tier" and tier_down(c, r, g)):
+            out.append(x)
+    return out
+
+
+def gt_numbers(mapped, c, r, g, amounts):
+    """GT's numbers in Gregtorio's units for the Gregtorio recipe c: t (tier, downward only), e (energy_required: GT
+    seconds x the tier's speed, x the batch), i ({item: amount}) and o ([item, amount, chance] per chance) when
+    `amounts`"""
+    out = {}
+    batch = batch_of(mapped, c)
+    if amounts:
+        ok = lambda x: abs(x * batch - round(x * batch)) < 1e-9
+        if not all(ok(n) for n in mapped["ins"].values()) or not all(
+                ok(a) for st in mapped["stacks"].values() for a in by_chance(st).values()):
+            batch = 1
+    # (the tier also when it is GT's already, so the table stays the same once it is applied)
+    t = tier_down(c, r, g, equal=True)
+    if t:
+        out["t"] = t
+    if r.get("duration") and c["family"] not in NO_TIME_FAMILIES:
+        speed = 2 ** TIERS.index(t) if t else tier_speed(c, r, g)
+        out["e"] = round(r["duration"] / 20 * speed * batch, 6)
+    if amounts:
+        out["i"] = {n: round(a * batch) for n, a in mapped["ins"].items()
+                    if n not in NO_AMOUNT and ("in", n) not in mapped["merged"]}
+        order = [x["name"] for x in c["results"] if x["type"] == "item"]
+        o = []
+        for name in sorted(mapped["stacks"], key=lambda n: order.index(n) if n in order else len(order)):
+            if name in NO_AMOUNT or ("out", name) in mapped["merged"]:
+                continue
+            for ch, a in sorted(by_chance(mapped["stacks"][name]).items(), key=lambda kv: -kv[0]):
+                o.append([name, round(a * batch), ch])
+        out["o"] = o
+    return out
+
+
+def numbers(state, kept=(), old=()):
+    """Issue #689: GT's numbers for every matched Gregtorio recipe whose numbers differ from GT's in scope (see
+    NUMBERS_SKIP_MAPS) or that the table `old` already has: ({recipe: gt_numbers}, {recipe: the differences in scope},
+    Counter of the differences left out by kind)"""
+    g, scale = state["g"], state["scale"]
+    table, diffs, left = {}, {}, Counter()
+    for mname, mapped, r, cands in state["pending"]:
+        base = mname.split(" [")[0]
+        for c in cands:
+            name = c["name"]
+            if name in table or name in diffs:
+                continue
+            d = compare(mapped, c, r, g, scale.get(mname))
+            if base in NUMBERS_SKIP_MAPS or name.startswith("recycling-") or c["family"] in NUMBERS_SKIP_FAMILIES:
+                if d:
+                    left["crafting table (#688)" if base in NUMBERS_SKIP_MAPS else "recycling (#190)"
+                         if name.startswith("recycling-") else "fusion (#32)"] += 1
+                continue
+            scoped = in_scope(d, c, r, g)
+            for x in d:
+                if x not in scoped:
+                    k = diff_kind(x)
+                    left["fluid (#671)" if k == "fluid" else "tier up (#689 part 2)" if k == "tier" else
+                         "hand recipe time (#688)" if k == "time" else f"{k} beside a fluid (#671)"] += 1
+            if name in kept:
+                continue
+            if scoped or name in old:
+                table[name] = gt_numbers(mapped, c, r, g, not any(diff_kind(x) == "fluid" for x in d))
+                if scoped:
+                    diffs[name] = scoped
+    return table, diffs, left
+
+
+def numbers_lua(table):
+    """prototypes/data/gtnh-numbers.lua"""
+    num = lambda x: f"{x:.10g}"
+    out = ["--- Generated by `tools/devcheck/devcheck.py check --gtnh-numbers` (issue #689) from the GT New Horizons recipe dump",
+           "--- (tools/gtnh_dump/) through tools/gtnh_map.py; do not edit, run it again. GT's numbers of the Gregtorio recipes that",
+           "--- have a GT recipe with the same items and fluids in and out: t the tier (only downward), e energy_required (GT's",
+           "--- seconds x the tier's speed), i the item ingredients, o the item results { item, amount, chance }.",
+           "--- prototypes/168-fork-gtnh-numbers.lua applies them; FORK_GTNH_NUMBERS_KEPT there keeps a recipe's own numbers.",
+           "return {"]
+    for name in sorted(table):
+        e = table[name]
+        parts = []
+        if "t" in e:
+            parts.append(f't = "{e["t"]}"')
+        if "e" in e:
+            parts.append(f"e = {num(e['e'])}")
+        if "i" in e:
+            parts.append("i = { " + ", ".join(f'["{k}"] = {num(v)}' for k, v in sorted(e["i"].items())) + " }"
+                         if e["i"] else "i = {}")
+        if "o" in e:
+            parts.append("o = { " + ", ".join(f'{{ "{n}", {num(a)}' + (f", {num(c)}" if c < 1 else "") + " }"
+                                            for n, a, c in e["o"]) + " }")
+        out.append(f'\t["{name}"] = {{ ' + ", ".join(parts) + " },")
+    out.append("}")
+    return "\n".join(out) + "\n"
+
+
+def numbers_names(path=NUMBERS_FILE):
+    """the recipes of the table so far (empty: no file)"""
+    if not Path(path).exists():
+        return set()
+    return set(re.findall(r'^\t\["([^"]+)"\] = ', Path(path).read_text(encoding="utf-8"), re.M))
 
 
 def diff_kind(x):

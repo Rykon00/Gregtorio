@@ -162,6 +162,9 @@ require("prototypes.167-fork-tips")
 require("prototypes.156-fork-circuit-icons")
 --- issue #190: GTNH's material recycling (macerator, arc furnace, fluid extractor), after every file that makes recipes
 require("prototypes.157-fork-recycling")
+--- issue #689: GT New Horizons' tiers, times, item amounts and chances from the recipe dump (after every file that makes
+--- recipes, before the molds, the fluid steps and the finalize)
+require("prototypes.168-fork-gtnh-numbers")
 require("prototypes.150-fork-molds")
 require("prototypes.190-fork-manual-labor")
 --- issue #137: fire animations of the stone furnace, the iron furnace and the small coal boiler (after their entities)

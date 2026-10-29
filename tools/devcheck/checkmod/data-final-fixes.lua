@@ -412,6 +412,10 @@ section("RECYCLEBLACK", rb)
 local bd = {}
 for item, why in pairs(FORK_BLOCKS_DEAD_END or {}) do bd[#bd + 1] = item .. "\t" .. tostring(why or "") end
 section("BLOCKDEADOK", bd)
+--- Issue #689 (prototypes/168-fork-gtnh-numbers.lua): the recipes that keep their own numbers against GT's, with their reasons
+local gk = {}
+for recipe, why in pairs(FORK_GTNH_NUMBERS_KEPT or {}) do gk[#gk + 1] = recipe .. "\t" .. tostring(why or "") end
+section("GTNHKEPT", gk)
 
 --- Every __gregtorio-continued__/ file referenced anywhere, with its owner prototype
 local paths, seen = {}, {}
