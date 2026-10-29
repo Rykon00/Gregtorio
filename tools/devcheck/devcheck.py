@@ -1477,6 +1477,8 @@ def check_circuit_icons(m):
 PGM_DUST_SOURCES = {"platinum-dust": {"reprecipitated-platinum-processing"},
                     "palladium-dust": {"reprecipitated-palladium-processing"},
                     "iridium-dust": {"iridium-dust"}, "osmium-dust": {"osmium-dust"}}
+# issue #633: the HTGR's tungsten fuel gives osmium dust in GTNH's centrifuge as it is (the GTNH dump)
+PGM_DUST_SOURCES["osmium-dust"].add("burned-triso-fuel-tungsten-centrifuging")
 def check_pgm_dusts(m):
     """Issue #199: no recipe but the platinum line's and the quantum force transformer's (`-qft-`) makes a dust of the
     platinum group; recycling does not count."""

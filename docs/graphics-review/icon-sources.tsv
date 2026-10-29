@@ -5391,3 +5391,18 @@ centrifuged-lutetium	colour of Lutetium #bc3ec7 + gt:gregtech/textures/items/mat
 impure-lutetium-dust	colour of Lutetium #bc3ec7 + gt:gregtech/textures/items/materialicons/SHINY/dustImpure + gt:gregtech/textures/items/materialicons/SHINY/dustImpure_OVERLAY
 pure-lutetium-dust	colour of Lutetium #bc3ec7 + gt:gregtech/textures/items/materialicons/SHINY/dustPure + gt:gregtech/textures/items/materialicons/SHINY/dustPure_OVERLAY
 radium-dust	colour of radium #a5a5a5 + gt:gregtech/textures/items/materialicons/NUCLEAR/dust + gt:gregtech/textures/items/materialicons/NUCLEAR/dust_OVERLAY
+htgr-triso-fuel-mixture	gt:kubatech/textures/items/htgr/TRISOMixture
+htgr-incomplete-biso-fuel	gt:kubatech/textures/items/htgr/IncompleteBISOFuel
+htgr-incomplete-triso-fuel	gt:kubatech/textures/items/htgr/IncompleteTRISOFuel
+htgr-triso-fuel	gt:kubatech/textures/items/htgr/TRISOFuel
+htgr-burned-triso-fuel	gt:kubatech/textures/items/htgr/BurnedTRISOFuel
+graphite-moderator-casing	gt:gregtech/textures/blocks/iconsets/MACHINE_CASING_GRAPHITE_MODERATOR
+insulated-fluid-pipe-casing	gt:gregtech/textures/blocks/iconsets/MACHINE_CASING_INSULATED_FLUID_PIPE
+beryllium-integrated-reactor-casing	gt:gregtech/textures/blocks/iconsets/MACHINE_CASING_BERYLLIUM_INTEGRATED_REACTOR
+refined-graphite-block	gt:gregtech/textures/blocks/iconsets/MACHINE_CASING_REFINED_GRAPHITE
+pressure-containment-casing	gt:gregtech/textures/blocks/iconsets/MACHINE_CASING_AUTOCLAVE
+alumina-support-ring	gt:gregtech/textures/items/gt.metaitem.03/253
+raw-alumina-support-ring	gt:gregtech/textures/items/gt.metaitem.03/254
+beryllium-shielding-plate	gt:gregtech/textures/items/gt.metaitem.03/255
+high-temperature-gas-cooled-reactor-controller	gt:gregtech/textures/blocks/iconsets/MACHINE_IV_SIDE + gt:gregtech/textures/blocks/iconsets/OVERLAY_FRONT_HEAT_EXCHANGER
+promethium-dust	colour of Promethium #24b535 + gt:gregtech/textures/items/materialicons/SHINY/dust + gt:gregtech/textures/items/materialicons/SHINY/dust_OVERLAY

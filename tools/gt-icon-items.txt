@@ -5417,3 +5417,19 @@ impure-lutetium-dust
 pure-lutetium-dust
 # issue #632: radium
 radium-dust
+# issue #633: kubatech's HTGR
+htgr-triso-fuel-mixture
+htgr-incomplete-biso-fuel
+htgr-incomplete-triso-fuel
+htgr-triso-fuel
+htgr-burned-triso-fuel
+graphite-moderator-casing
+insulated-fluid-pipe-casing
+beryllium-integrated-reactor-casing
+refined-graphite-block
+pressure-containment-casing
+alumina-support-ring
+raw-alumina-support-ring
+beryllium-shielding-plate
+high-temperature-gas-cooled-reactor-controller
+promethium-dust
