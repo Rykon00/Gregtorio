@@ -1103,6 +1103,41 @@ def check_item_renames(m, write=False):
     return info, problems
 
 
+def check_gtnh_numbers(sec, write=False):
+    """Issue #689 (prototypes/168-fork-gtnh-numbers.lua): every Gregtorio recipe with a GT recipe of the same items and
+    fluids (tools/gtnh_map.py on the GT New Horizons dump) has GT's time, item amounts, chances and (downward) tier, by
+    prototypes/data/gtnh-numbers.lua, which `check --gtnh-numbers` writes; `check` fails for a table that is not what it
+    writes, for a recipe of the table whose numbers still differ (made or changed after 168), and for an entry of
+    FORK_GTNH_NUMBERS_KEPT without a reason or without a GT recipe of other numbers. Returns (info line, problems)."""
+    sys.path.insert(0, str(ROOT / "tools"))
+    import gtnh_map
+    kept = {r[0]: (r[1] if len(r) > 1 else "") for r in sec.get("GTNHKEPT", [])}
+    state = {}
+    gtnh_map.run(gtnh_map.load_dump(gtnh_map.DUMP), sec, None, state=state)
+    old = gtnh_map.numbers_names()
+    table, diffs, left = gtnh_map.numbers(state, set(kept), old)
+    _, kept_diffs, _ = gtnh_map.numbers(state, (), ())
+    text = gtnh_map.numbers_lua(table)
+    path = gtnh_map.NUMBERS_FILE
+    have = path.read_text(encoding="utf-8").replace("\r\n", "\n") if path.exists() else None
+    info = (f"{len(state['pending'])} GT recipes matched, {len(table)} Gregtorio recipes with GT's numbers from "
+            f"{path.name}, {len(kept)} kept (FORK_GTNH_NUMBERS_KEPT); left to other issues: "
+            + ", ".join(f"{k} {v}" for k, v in sorted(left.items())))
+    problems = [f"FORK_GTNH_NUMBERS_KEPT: {n} has no reason" for n, why in sorted(kept.items()) if not why]
+    problems += [f"FORK_GTNH_NUMBERS_KEPT: {n} has no GT recipe of other numbers (remove the entry)"
+                 for n in sorted(kept) if n not in kept_diffs]
+    if have != text:
+        if write:
+            path.write_bytes(text.encode("utf-8"))
+            return info + "; the table written (run `check` again to see it applied)", problems
+        return info, problems + [f"{path.name} is not what `devcheck.py check --gtnh-numbers` writes ({len(diffs)} "
+                                 f"recipes with other numbers than GT's: run it, or keep a recipe in FORK_GTNH_NUMBERS_KEPT "
+                                 f"of prototypes/168-fork-gtnh-numbers.lua with its reason)"]
+    problems += [f"{n}: {', '.join(d)} (the table has GT's numbers, a file after 168-fork-gtnh-numbers.lua changes them: "
+                 f"set GT's numbers there or keep the recipe in FORK_GTNH_NUMBERS_KEPT)" for n, d in sorted(diffs.items())]
+    return info + "; the table is up to date", problems
+
+
 def check_classic_veins(m, sec):
     """Issue #563 (prototypes/166-fork-classic-veins.lua): every vein the map places (GT's mixes on a planet with map
     veins, read by checkmod from FORK_ORE_MIXES) has its classic vein recipe and both twins, and the recipe gives the
@@ -2715,6 +2750,9 @@ def check(a):
     renames_info, renames = check_item_renames(m, getattr(a, "item_renames", False))
     print(f"\nitem renames for the ME network (issue #580, prototypes/data/item-renames.lua): {renames_info}")
     report("the item renames of prototypes/data/item-renames.lua", renames)
+    gtnh_info, gtnh_numbers = check_gtnh_numbers(sec, getattr(a, "gtnh_numbers", False))
+    print(f"\nGT New Horizons' numbers (issue #689, prototypes/data/gtnh-numbers.lua): {gtnh_info}")
+    report("recipes with other numbers than GT New Horizons' (prototypes/168-fork-gtnh-numbers.lua)", gtnh_numbers)
     if getattr(a, "fluids_out", None):
         Path(a.fluids_out).write_text("\n".join("\t".join(r) for r in sec.get("FLUIDS", [])) + "\n", encoding="utf-8")
         print(f"\nfluid list written to {a.fluids_out} (input for tools/gen_review_sheet.py fluids)")
@@ -2731,7 +2769,7 @@ def check(a):
               or circuit_icons or pgm_dusts or recycling or blocks or names or gaps or tree or vanilla or lenses or mine_twins
               or unplaceable or stale_unlocks or removed_keys or trigger_only or spoiling or classic_veins or early
               or furnace or research_counts or nyi_icons or overclock
-              or steam or nugget or steam_rates or boiler_output or vein_doc or renames)
+              or steam or nugget or steam_rates or boiler_output or vein_doc or renames or gtnh_numbers)
     print("\nRESULT:", "OK" if ok else "PROBLEMS FOUND")
     return 0 if ok else 1
 
@@ -3563,6 +3601,8 @@ def main():
                    help="issue #574: write the vein table of docs/ORE-VEINS.md from the mod's placed veins")
     c.add_argument("--item-renames", action="store_true",
                    help="issue #580: write prototypes/data/item-renames.lua from the item renames of the JSON migrations")
+    c.add_argument("--gtnh-numbers", action="store_true",
+                   help="issue #689: write prototypes/data/gtnh-numbers.lua, GT New Horizons' numbers of the matched recipes")
     c.add_argument("--set", action="append", metavar="SETTING=VALUE",
                    help="force a startup setting for this run (bool, number or string), e.g. "
                    "gregtorio-continued-one-pack-research=true or gregtorio-continued-boiler-output=4")
