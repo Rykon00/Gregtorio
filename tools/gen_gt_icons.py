@@ -338,6 +338,7 @@ MATERIALS = {
     "rarest-earth-residue": ("DULL", (224, 211, 211)),
     # issue #632: GT++'s curium and radium (MaterialsElements.java:292-296, 331-335, SET_NUCLEAR, their colours)
     "curium": ("NUCLEAR", (175, 85, 110)), "radium": ("NUCLEAR", (165, 165, 165)),
+    "promethium": "Promethium",   # issue #633: the HTGR's promethium
     "zirconium": ("METALLIC", (175, 175, 175)),
     "red-zircon": ("GEM_VERTICAL", (195, 19, 19)),
     "dilithium": "Dilithium", "vinteum": "Vinteum", "mysterious-crystal": "MysteriousCrystal",   # issue #373: Neper
@@ -1286,6 +1287,22 @@ def icon_table(c):
         T[k] = (lambda n=n: lambda: c.gt(f"gt:gregtech/textures/items/gt.metaitem.03/{n}"))()
     T["basic-photolithographic-casing"] = lambda: c.gt(f"{BLK}MACHINE_CASING_PCB_TIER_1")
     T["pcb-factory-controller"] = lambda: over(c.gt(f"{BLK}MACHINE_CASING_PCB_TIER_1"), c.gt(f"{BLK}OVERLAY_FRONT_ASSEMBLY_LINE"))
+    # issue #633: kubatech's HTGR: its TRISO stages (kubatech/textures/items/htgr, one texture for every material), GT's
+    # structure casings and parts (gt.metaitem.03/253-255) and the controller (IV casing, heat exchanger front)
+    for s, tex in (("triso-fuel-mixture", "TRISOMixture"), ("incomplete-biso-fuel", "IncompleteBISOFuel"),
+                   ("incomplete-triso-fuel", "IncompleteTRISOFuel"), ("triso-fuel", "TRISOFuel"),
+                   ("burned-triso-fuel", "BurnedTRISOFuel")):
+        T["htgr-" + s] = lambda tex=tex: c.gt(f"gt:kubatech/textures/items/htgr/{tex}")
+    T["graphite-moderator-casing"] = lambda: c.gt(f"{BLK}MACHINE_CASING_GRAPHITE_MODERATOR")
+    T["insulated-fluid-pipe-casing"] = lambda: c.gt(f"{BLK}MACHINE_CASING_INSULATED_FLUID_PIPE")
+    T["beryllium-integrated-reactor-casing"] = lambda: c.gt(f"{BLK}MACHINE_CASING_BERYLLIUM_INTEGRATED_REACTOR")
+    T["refined-graphite-block"] = lambda: c.gt(f"{BLK}MACHINE_CASING_REFINED_GRAPHITE")
+    T["pressure-containment-casing"] = lambda: c.gt(f"{BLK}MACHINE_CASING_AUTOCLAVE")   # (BlockCasings10.java:51)
+    T["alumina-support-ring"] = lambda: c.gt(f"{M3}253")
+    T["raw-alumina-support-ring"] = lambda: c.gt(f"{M3}254")
+    T["beryllium-shielding-plate"] = lambda: c.gt(f"{M3}255")
+    T["high-temperature-gas-cooled-reactor-controller"] = lambda: over(c.gt(f"{BLK}MACHINE_IV_SIDE"),
+                                                                       c.gt(f"{BLK}OVERLAY_FRONT_HEAT_EXCHANGER"))
     # issue #617: GT's netherite items (gt.metaitem.03/243-251), the scrap as the hot scrap cooled, the debris an ore
     M03 = "gt:gregtech/textures/items/gt.metaitem.03/"
     for k, n in (("netherite-scrap-seed", 243), ("brittle-netherite-scrap", 244), ("netherite-nanoparticles", 245),
