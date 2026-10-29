@@ -6323,6 +6323,133 @@ end
 
 
 --------------------------------------------------------------------------------
+--- 57) GTNH'S CIRCUIT BOARDS (issue #712): the board chain from the coated board to the multilayered fiber-reinforced
+---   printed board as NewHorizonsCoreMod makes it (gthandler/recipes/ChemicalBathRecipes.java:63-85,
+---   AssemblerRecipes.java:3850-3915, ChemicalReactorRecipes.java:69-205, the crafting table recipes of the GTNH recipe
+---   dump, tools/gtnh_dump). The item names stay; recipes of the same name are changed in place.
+---   * coated board (resin-circuit-board): chemical bath, plank + 72 L glue -> 1, 5 s at LV (before: the LV assembler,
+---     100 L glue, 4 s); with 36 L polyethylene -> 2, 18 L PTFE -> 2, 18 L epoxy -> 3, 9 L polybenzimidazole -> 4
+---   * circuit board (resin-printed-circuit-board): assembler, 8 planks + 32 copper foil + 576 L glue -> 8, 80 s at LV
+---     (before: 1 plank, 4 foil, 100 L glue -> 1 in 5 s); with 288 L polyethylene -> 16, 144 L PTFE -> 16, 144 L epoxy
+---     -> 24, 72 L polybenzimidazole -> 32; by hand from the coated board and 8 copper wire (before: fine copper wire)
+---   * phenolic board: assembler, 8 wood pulp + 288 L glue -> 8, 120 s at LV (before: the chemical reactor, a coated
+---     board + 100 L phenol); with 144 L bisphenol A -> 16, 144 L epoxy -> 24
+---   * good board (phenolic-printed-circuit-board): chemical reactor, phenolic board + 4 gold foil + 100 L iron III
+---     chloride, or 200 L sodium persulfate, 30 s at LV (before: 4 silver foil, 15 s); by hand from the phenolic board
+---     and 8 gold wire
+---   * plastic boards: 500 L sulfuric acid (before 250 L); epoxy printed board 60 s (before 45); fiber-reinforced board
+---     12 aluminium foil (before 8 annealed copper foil), 500 L sulfuric acid (250 L), 25 s (30); its printed board 90 s
+---     (60); the multilayered board 16 palladium foil (8) at HV, 30 s (100 s at LV); its printed board at MV, 120 s (150 s
+---     at LV); the epoxy, fiber-reinforced and multilayered printed boards also with sodium persulfate (twice the iron
+---     III chloride), as the plastic board (147) and the wetware and bio boards (section 51) have it
+---   * gone: upstream's boards from wood pulp, silver or copper foil and advanced glue (GT has none). GT's other glue
+---     (the slime glue of 1152 L, 576 L and 144 L) is not in the mod; GT's cleanroom (fiber-reinforced printed and
+---     multilayered boards) neither. The PCB Factory's recipes of these boards stay out (section 51: only the optical
+---     board, the maintainer's decision of #628).
+---   Unlocks (#252, #237): each new recipe with the first technology that has its machine and its inputs; the gold foil
+---   comes with the good board (Primitive Electronic Circuit Assemblies, MV), the silver foil with its first user (the
+---   Ender IO capacitor), the annealed copper foil, which has no user any more, with the other annealed copper parts.
+--------------------------------------------------------------------------------
+do
+	local function ings(list)
+		local out = {}
+		for _, i in pairs(list) do
+			out[#out + 1] = { type = data.raw.fluid[i[1]] and "fluid" or "item", name = i[1], amount = i[2] }
+		end
+		return out
+	end
+	--- change a recipe in place (its subgroup, order and technologies stay)
+	local function redo(name, category, seconds, speed, ingredients, results)
+		F.redo(name, { categories = { category }, energy_required = seconds * speed, ingredients = ings(ingredients),
+			results = ings(results), main_product = results[1][1] })
+	end
+	--- a twin of a recipe with another fluid, unlocked with the first technology after the recipe's and the fluid's
+	local function twin(name, of, fluid_recipe, category, seconds, speed, ingredients, results)
+		local R = {}
+		step(R, name, category, seconds, speed, ingredients, results)
+		data.raw.recipe[name].subgroup = data.raw.recipe[of].subgroup
+		fork_add_unlock(after_both(techs_of(of)[1], techs_of(fluid_recipe)[1]), name)
+	end
+	local CB, AS, CR = "lv-chemical-bath-recipes", "lv-assembling-machine-recipes", "lv-chemical-reactor-recipes"
+	local POLYMERS = { { "polyethylene", "ethylene-to-polyethylene" }, { "ptfe", "ptfe" }, { "epoxy", "epoxy" },
+		{ "polybenzimidazole", "polybenzimidazole" } }
+
+	--- coated board
+	redo("resin-circuit-board", CB, 5, LV_SPEED, { { "plank", 1 }, { "glue", 7.2 } }, { { "resin-circuit-board", 1 } })
+	move_unlock("resin-circuit-board", after_both("improved-electronic-parts", techs_of("lv-chemical-bath")[1]))
+	local COATED = { polyethylene = { 3.6, 2 }, ptfe = { 1.8, 2 }, epoxy = { 1.8, 3 }, polybenzimidazole = { 0.9, 4 } }
+	for _, p in pairs(POLYMERS) do
+		local c = COATED[p[1]]
+		twin("resin-circuit-board-" .. p[1], "resin-circuit-board", p[2], CB, 5, LV_SPEED,
+			{ { "plank", 1 }, { p[1], c[1] } }, { { "resin-circuit-board", c[2] } })
+	end
+	--- circuit board
+	redo("resin-printed-circuit-board", AS, 80, LV_SPEED, { { "plank", 8 }, { "copper-foil", 32 }, { "glue", 57.6 } },
+		{ { "resin-printed-circuit-board", 8 } })
+	local PRINTED = { polyethylene = { 28.8, 16 }, ptfe = { 14.4, 16 }, epoxy = { 14.4, 24 }, polybenzimidazole = { 7.2, 32 } }
+	for _, p in pairs(POLYMERS) do
+		local c = PRINTED[p[1]]
+		twin("resin-printed-circuit-board-" .. p[1], "resin-printed-circuit-board", p[2], AS, 80, LV_SPEED,
+			{ { "plank", 8 }, { "copper-foil", 32 }, { p[1], c[1] } }, { { "resin-printed-circuit-board", c[2] } })
+	end
+	F.replace_ingredient("resin-printed-circuit-board-crafting-table", "fine-copper-wire", "copper-wire", 8)
+	--- phenolic board
+	redo("phenolic-circuit-board", AS, 120, LV_SPEED, { { "wood-pulp", 8 }, { "glue", 28.8 } },
+		{ { "phenolic-circuit-board", 8 } })
+	twin("phenolic-circuit-board-bisphenol-a", "phenolic-circuit-board", "bisphenol-a", AS, 120, LV_SPEED,
+		{ { "wood-pulp", 8 }, { "bisphenol-a", 14.4 } }, { { "phenolic-circuit-board", 16 } })
+	twin("phenolic-circuit-board-epoxy", "phenolic-circuit-board", "epoxy", AS, 120, LV_SPEED,
+		{ { "wood-pulp", 8 }, { "epoxy", 14.4 } }, { { "phenolic-circuit-board", 24 } })
+	--- good board
+	redo("phenolic-printed-circuit-board", CR, 30, LV_SPEED,
+		{ { "phenolic-circuit-board", 1 }, { "gold-foil", 4 }, { "iron-iii-chloride", 10 } },
+		{ { "phenolic-printed-circuit-board", 1 } })
+	twin("phenolic-printed-circuit-board-sodium-persulfate", "phenolic-printed-circuit-board", "sodium-persulfate", CR,
+		30, LV_SPEED, { { "phenolic-circuit-board", 1 }, { "gold-foil", 4 }, { "sodium-persulfate", 20 } },
+		{ { "phenolic-printed-circuit-board", 1 } })
+	create_recipe{
+		name = "phenolic-printed-circuit-board-crafting-table",
+		category = "crafting-table-recipes",
+		subgroup = data.raw.recipe["resin-printed-circuit-board-crafting-table"].subgroup,
+		ingredients = ings({ { "phenolic-circuit-board", 1 }, { "gold-wire", 8 } }),
+		results = ings({ { "phenolic-printed-circuit-board", 1 } }),
+	}
+	fork_add_unlock(techs_of("phenolic-printed-circuit-board")[1], "phenolic-printed-circuit-board-crafting-table")
+	move_unlock("gold-foil", techs_of("phenolic-printed-circuit-board")[1])
+	move_unlock("silver-foil", techs_of("enderio-capacitor")[1])
+	for _, r in pairs({ "resin-printed-circuit-board-advanced", "phenolic-printed-circuit-board-advanced" }) do
+		data.raw.recipe[r] = nil
+		log("FORK-REMOVED: recipe " .. r)
+	end
+	--- plastic, epoxy and fiber-reinforced boards
+	for _, r in pairs({ "plastic-circuit-board-pe", "plastic-circuit-board-pvc", "plastic-circuit-board-ptfe",
+		"plastic-circuit-board-pbi" }) do
+		F.replace_ingredient(r, "sulfuric-acid", "sulfuric-acid", 50)
+	end
+	data.raw.recipe["epoxy-printed-circuit-board"].energy_required = 60 * LV_SPEED
+	redo("fiber-reinforced-circuit-board", CR, 25, LV_SPEED,
+		{ { "fiber-reinforced-epoxy-sheet", 1 }, { "aluminium-foil", 12 }, { "sulfuric-acid", 50 } },
+		{ { "fiber-reinforced-circuit-board", 1 } })
+	move_unlock("annealed-copper-foil", techs_of("annealed-copper-plate")[1])
+	data.raw.recipe["fiber-reinforced-printed-circuit-board"].energy_required = 90 * LV_SPEED
+	redo("multilayered-fiber-reinforced-circuit-board", "hv-chemical-reactor-recipes", 30, HV_SPEED,
+		{ { "fiber-reinforced-circuit-board", 2 }, { "palladium-foil", 16 }, { "sulfuric-acid", 50 } },
+		{ { "multilayered-fiber-reinforced-circuit-board", 1 } })
+	redo("multilayered-fiber-reinforced-printed-circuit-board", "mv-chemical-reactor-recipes", 120, MV_SPEED,
+		{ { "multilayered-fiber-reinforced-circuit-board", 1 }, { "platinum-foil", 8 }, { "iron-iii-chloride", 200 } },
+		{ { "multilayered-fiber-reinforced-printed-circuit-board", 1 } })
+	for _, b in pairs({ { "epoxy", "electrum", 8, 100, 60, "lv", LV_SPEED },
+		{ "fiber-reinforced", "energetic-alloy", 12, 200, 90, "lv", LV_SPEED },
+		{ "multilayered-fiber-reinforced", "platinum", 8, 400, 120, "mv", MV_SPEED } }) do
+		local board, printed = b[1] .. "-circuit-board", b[1] .. "-printed-circuit-board"
+		twin(printed .. "-sodium-persulfate", printed, "sodium-persulfate", b[6] .. "-chemical-reactor-recipes", b[5], b[7],
+			{ { board, 1 }, { b[2] .. "-foil", b[3] }, { "sodium-persulfate", b[4] } }, { { printed, 1 } })
+	end
+end
+
+
+
+--------------------------------------------------------------------------------
 --- 38) GT'S PARTS OF THE METALS OF THIS FILE (issue #467). 158 makes GT New Horizons' parts of every metal of
 ---   prototypes/gt-parts-data.lua (issue #227) whose ingot exists; most metals of this file come after 158, so its
 ---   FORK_GT_PARTS.run() runs once more here (it skips what exists), then 143's casts for the new forms.
