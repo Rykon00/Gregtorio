@@ -1178,7 +1178,7 @@ def check_gtnh_routes(sec, write=False):
     have = path.read_text(encoding="utf-8").replace("\r\n", "\n") if path.exists() else None
     verbs = Counter(e["name"].split("-")[1] for e in entries)
     recipes = {r[1] for r in sec.get("DUMP", []) if r[0] == "R"}
-    gone = [e["name"] for e in entries if e["name"] not in recipes]
+    gone = {e["name"] for e in entries if e["name"] not in recipes}
     info = (f"{len(entries)} GT part routes (" + ", ".join(f"{k} {v}" for k, v in sorted(verbs.items())) + "); left out: "
             + (", ".join(f"{k} {v}" for k, v in sorted(left.items())) or "none"))
     if have != text:
@@ -1186,7 +1186,16 @@ def check_gtnh_routes(sec, write=False):
             path.write_bytes(text.encode("utf-8"))
             return info + "; the table written (run `check` again to load it)", []
         return info, [f"{path.name} is not what `devcheck.py check --gtnh-routes` writes (run it)"]
-    return info + f"; the table is up to date ({len(gone)} not made: an item of theirs is missing at 158's runs)", []
+    # (a route whose items and fluids all exist in the load must have been made)
+    have_items = {r[1] for r in sec.get("DUMP", []) if r[0] in ("I", "F")}
+    names = lambda e: list(e["i"]) + list(e["f"]) + [o[0] for o in e["o"]] + list(e["fo"])
+    skipped = {r[0]: (r[1] if len(r) > 1 else "") for r in sec.get("GTROUTESKIP", [])}
+    why = Counter(skipped[n] for n in gone if n in skipped)
+    problems = [f"{n}: in {path.name}, but 158 neither made it nor says why (FORK_GT_PARTS.routes_skipped)"
+                for n in sorted(gone) if n not in skipped and all(x in have_items for x in names(next(
+                    e for e in entries if e["name"] == n)))]
+    return info + f"; the table is up to date ({len(gone)} not made: " + ", ".join(
+        f"{k} {v}" for k, v in sorted(why.items())) + ")", problems
 
 
 def check_classic_veins(m, sec):
@@ -1582,7 +1591,7 @@ RECYCLE_PGM = {"metallic-platinum-powder", "metallic-palladium-powder", "iridium
 RECYCLE_DUSTS = set(re.findall(r'dust = "([^"]+)"', (ROOT / "prototypes" / "gt-parts-data.lua").read_text(encoding="utf-8")))
 # issue #686: the material dusts and ingots named after their bare material (calcium, carbon, gallium dust; purified
 # tengam, the arc smelting material of attuned tengam)
-RECYCLE_BARE = {"calcium", "carbon", "gallium", "purified-tengam"}
+RECYCLE_BARE = {"calcium", "carbon", "gallium", "lithium", "purified-tengam"}
 def check_recycling(m, sec):
     """Issue #190 (prototypes/157-fork-recycling.lua): GTNH recycles an item into its materials, never into its parts. Every
     recipe recycling-<machine>-<item> takes the one item (and oxygen in the arc furnace, the mold in the alloy smelter,

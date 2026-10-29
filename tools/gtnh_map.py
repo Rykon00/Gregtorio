@@ -1118,6 +1118,10 @@ def route_imports(dump, g):
             continue
         first = next(iter(mapped["ins"]), None)
         product = next(iter(mapped["outs"]))
+        # (crushing a raw ore is 155's ore chain, #202; GT++ hammers its ore block, not the raw ore, #373)
+        if first and first.startswith("raw-"):
+            left["raw ore (155's ore chain)"] += 1
+            continue
         # (a route Gregtorio has with other numbers is #689's; only another cutting fluid is a new recipe)
         same = [x for x in g.by_main.get((fam, first or next(iter(mapped["fin"])), product), []) if x["name"] not in own]
         gfl = set(mapped["fin"])
