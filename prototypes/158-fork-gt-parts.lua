@@ -213,8 +213,9 @@ end
 ---    (b22dc69: Materials.WroughtIron = Materials.CastIron, "Cast Iron"); the name is GTNH's of today. GT's routes: an
 ---    iron nugget smelts into a cast iron nugget in the furnace (SmelterRecipes.java:60-62), 3 iron ingots or dusts and a
 ---    carbon dust give 3 ingots in the arc furnace (ArcFurnaceRecipes.java:522-530: 9 s, LV; Gregtorio's carbon dust is
----    the coal dust). Its parts come from the data like every metal's (1 and 2); GT casts none (ProcessingIngot.java:60
----    and the others leave CastIron out of the fluid solidifier). Iron arc-smelts into iron in GT now (157's ARC_INTO).
+---    the coal dust). Its parts come from the data like every metal's (1 and 2); GT casts none of them (ProcessingIngot.java:60
+---    and the others leave CastIron out of the fluid solidifier; issue #674: it melts them, 143's melt, and casts the melt into
+---    iron ingots, nuggets and blocks and the anvil, section 3). Iron arc-smelts into iron in GT now (157's ARC_INTO).
 --------------------------------------------------------------------------------
 local CAST_IRON = "cast-iron-ingot"
 if CAST_IRON then
@@ -239,7 +240,10 @@ end
 --- GTNH gap work (#355, #356, #386, ...) get their ingot in 164, after this file. A second run makes only what is
 --- missing (an existing item or recipe is skipped) and reads the technologies anew.
 --------------------------------------------------------------------------------
-local new_parts, nuggets, routes, crafted = 0, 0, 0, 0
+local new_parts, nuggets, routes, crafted, new_dusts = 0, 0, 0, 0, 0
+--- issue #674: each metal's dust as the data names it
+local DUST_NAME = {}
+for m, d in pairs(DATA) do DUST_NAME[m] = d.dust end
 --- issue #687: a route's row is its machine's of the tier, else of LV (199 would make a row without a name)
 local function subgroup_of(category)
 	local sg = "subgroup-" .. category
@@ -261,6 +265,17 @@ function FORK_GT_PARTS.run()
 		if not DATA[m] then metals[#metals + 1] = m end
 	end
 	table.sort(metals)
+	--- issue #674: GT's dust of a metal Gregtorio lacked it for (the data names it; GT, GT++ and bartworks make one for
+	--- every metal). Its recipes come with GT's: the macerator of its parts from 157's recycling, the mixer, the blast
+	--- furnace and the alloy blast smelter from section 3
+	--- (the data's name: the first run sets d.dust to nil for a metal whose ingot comes later, in 164)
+	for _, m in pairs(metals) do
+		local d, dust = DATA[m], DUST_NAME[m]
+		if dust and data.raw.item[m .. "-ingot"] then
+			if add_item(dust, sub_of("iron-dust", "subgroup-macerator-dust"), "z-" .. dust) then new_dusts = new_dusts + 1 end
+			d.dust = dust
+		end
+	end
 	for _, m in pairs(metals) do
 		local d = DATA[m] or { source = "gt", mass = FALLBACK_MASS[m], dust = (m == "antimony") and "antimony" or (m .. "-dust") }
 		if d.dust and not data.raw.item[d.dust] then d.dust = nil end
@@ -666,7 +681,8 @@ function FORK_GT_PARTS.drop_locked_routes()
 	log("FORK-GT-PARTS: " .. n .. " of GT's imported recipes dropped: only a disabled vanilla technology unlocked them, or an input comes later")
 end
 function FORK_GT_PARTS.log(when)
-	log("FORK-GT-PARTS (" .. when .. "): " .. new_parts .. " new parts and nuggets (issues #222, #227), GT's nugget recipes of "
+	log("FORK-GT-PARTS (" .. when .. "): " .. new_parts .. " new parts and nuggets (issues #222, #227), " .. new_dusts
+		.. " new dusts (issue #674), GT's nugget recipes of "
 		.. nuggets .. " metals (issue #223), " .. routes .. " of GT's other part routes (issue #687), " .. crafted .. " of GT's crafting table recipes of parts (issue #688), " .. made .. " recipes; casting: " .. FORK_CASTING.casts .. " casts")
 end
 FORK_GT_PARTS.log("158")
