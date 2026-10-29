@@ -34,8 +34,10 @@ local FORK_ICON = "__gregtorio-continued__/graphics/icons/fork/"
 local SPRITE_PATH = "__gregtorio-continued__/graphics/entity/fork/"
 local function item(name, amount) return { type = "item", name = name, amount = amount } end
 local function fluid(name, amount) return { type = "fluid", name = name, amount = amount } end
+--- issue #671: the amounts below that come from GT's recipes are GT's litres; Gregtorio's rule is a tenth of them
+local function gtl(name, litres) return fluid(name, litres / 10) end
 local AL = "zpm-assembly-line-recipes"
-local INDALLOY = fluid("molten-indalloy-140", 5760)   -- GT: 40 ingots
+local INDALLOY = gtl("molten-indalloy-140", 5760)   -- GT: 40 ingots (576 here)
 local SUBGROUP = "subgroup-uhv-age-multiblocks"
 
 local function part(name, category, seconds, ingredients, amount, subgroup)
@@ -58,27 +60,27 @@ end
 local parts = {
 	part("space-elevator-base-casing", AL, 60 * UV_SPEED, {
 		item("neutronium-frame", 8), item("palladium-screw", 32), item("osmiridium-plate", 64), item("uhv-circuit", 4),
-		item("uv-piston", 2), item("cosmic-neutronium-ring", 8), INDALLOY, fluid("molten-iridium", 1152),
+		item("uv-piston", 2), item("cosmic-neutronium-ring", 8), INDALLOY, gtl("molten-iridium", 1152),
 	}, 8),
 	part("space-elevator-support-structure", AL, 60 * UV_SPEED, {
 		item("neutronium-frame", 8), item("naquadria-bolt", 16), item("long-neutronium-rod", 8),
-		item("double-osmiridium-plate", 8), INDALLOY, fluid("molten-iridium", 1440),
+		item("double-osmiridium-plate", 8), INDALLOY, gtl("molten-iridium", 1440),
 	}, 8),
 	part("space-elevator-internal-structure", AL, 60 * UV_SPEED, {
 		item("uv-machine-casing", 8), item("palladium-bolt", 16), item("double-neutronium-plate", 8), item("concrete", 10),
 		INDALLOY,
 	}, 8),
 	part("nanotube-spool", "zpm-assembling-machine-recipes", 60 * ZPM_SPEED, {
-		item("graphene-wire", 256), fluid("advanced-glue", 720),
+		item("graphene-wire", 256), gtl("advanced-glue", 720),
 	}),
 	part("space-elevator-cable", "uv-assembling-machine-recipes", 120 * UV_SPEED, {   -- (issue #624: UV, GTNH's tier)
-		item("nanotube-spool", 64), item("uhv-circuit", 4), fluid("super-glue", 8000),
+		item("nanotube-spool", 64), item("uhv-circuit", 4), gtl("super-glue", 8000),
 	}),
 	part("space-elevator-controller", AL, 300 * UHV_SPEED, {
 		item("neutronium-frame", 64), item("uv-field-generator", 16), item("uhv-circuit", 16),
 		item("dense-neutronium-plate", 32), item("ppic-wafer", 64), item("cosmic-neutronium-screw", 64),
-		item("uv-motor", 32), item("space-elevator-base-casing", 8), INDALLOY, fluid("lubricant", 32000),
-		fluid("molten-neutronium", 1440),
+		item("uv-motor", 32), item("space-elevator-base-casing", 8), INDALLOY, gtl("lubricant", 32000),
+		gtl("molten-neutronium", 1440),
 	}),
 }
 
@@ -93,8 +95,8 @@ local MOTORS = {
 local motors = {}
 for t, m in ipairs(MOTORS) do
 	local fluids = t <= 2
-		and { INDALLOY, fluid("molten-naquadria", 1440), fluid("lubricant", 16000) }
-		or { fluid("molten-indalloy-140", 2880), fluid("molten-naquadria", 1440), fluid("super-coolant", 24000) }
+		and { INDALLOY, gtl("molten-naquadria", 1440), gtl("lubricant", 16000) }
+		or { gtl("molten-indalloy-140", 2880), gtl("molten-naquadria", 1440), gtl("super-coolant", 24000) }
 	local ingredients = { item("space-elevator-base-casing", 1), item(m[1], 4), item(m[2] .. "-ring", 8),
 		item(m[2] .. "-rod", 4), item(m[3], 1), item(m[4] .. "-screw", 16), item("osmiridium-plate", 16) }
 	for _, f in pairs(fluids) do ingredients[#ingredients + 1] = f end
@@ -237,29 +239,29 @@ local CONSUMABLE = { "steel", "steel", "titanium", "titanium", "tungstensteel", 
 local PLATING = { "steel", "steel", "titanium", "tungstensteel", "iridium", "osmiridium", "naquadah-alloy", "neutronium",
 	"cosmic-neutronium", "infinity", "infinity", "infinity", "infinity" }
 local DRONES = {
-	{ "titanium", 16, 2, "processing-unit", { fluid("soldering-alloy", 720) } },   -- (Gregtorio's HV circuit)
-	{ "tungstensteel", 32, 4, "ev-circuit", { fluid("soldering-alloy", 1440) } },
-	{ "iridium", 32, 4, "iv-circuit", { fluid("soldering-alloy", 1440) } },
+	{ "titanium", 16, 2, "processing-unit", { gtl("soldering-alloy", 720) } },   -- (Gregtorio's HV circuit)
+	{ "tungstensteel", 32, 4, "ev-circuit", { gtl("soldering-alloy", 1440) } },
+	{ "iridium", 32, 4, "iv-circuit", { gtl("soldering-alloy", 1440) } },
 	{ "trinium", 32, 4, "luv-circuit",
-		{ fluid("molten-indalloy-140", 720), fluid("molten-iridium", 720), fluid("lubricant", 16000) } },
+		{ gtl("molten-indalloy-140", 720), gtl("molten-iridium", 720), gtl("lubricant", 16000) } },
 	{ "naquadah-alloy", 32, 4, "zpm-circuit",
-		{ fluid("molten-indalloy-140", 1440), fluid("molten-iridium", 1440), fluid("lubricant", 32000) } },
+		{ gtl("molten-indalloy-140", 1440), gtl("molten-iridium", 1440), gtl("lubricant", 32000) } },
 	{ "naquadria", 32, 4, "zpm-circuit",
-		{ fluid("molten-indalloy-140", 2880), fluid("molten-osmiridium", 1440), fluid("lubricant", 64000) } },
+		{ gtl("molten-indalloy-140", 2880), gtl("molten-osmiridium", 1440), gtl("lubricant", 64000) } },
 	{ "neutronium", 32, 4, "uv-circuit",
-		{ fluid("molten-indalloy-140", 2880), fluid("molten-osmiridium", 1440), fluid("lubricant", 128000) } },
+		{ gtl("molten-indalloy-140", 2880), gtl("molten-osmiridium", 1440), gtl("lubricant", 128000) } },
 	{ "cosmic-neutronium", 32, 4, "uhv-circuit",
-		{ fluid("molten-indalloy-140", 2880), fluid("molten-naquadria", 1440), fluid("lubricant", 256000) } },
+		{ gtl("molten-indalloy-140", 2880), gtl("molten-naquadria", 1440), gtl("lubricant", 256000) } },
 	{ "infinity", 32, 4, "uev-circuit",
-		{ fluid("molten-indalloy-140", 2880), fluid("molten-neutronium", 1440), fluid("lubricant", 512000) } },
+		{ gtl("molten-indalloy-140", 2880), gtl("molten-neutronium", 1440), gtl("lubricant", 512000) } },
 	{ "cosmic-neutronium", 32, 8, "uiv-circuit",
-		{ fluid("molten-indalloy-140", 2880), fluid("molten-quantium", 1440), fluid("lubricant", 512000) } },
+		{ gtl("molten-indalloy-140", 2880), gtl("molten-quantium", 1440), gtl("lubricant", 512000) } },
 	{ "cosmic-neutronium", 64, 16, "umv-circuit",
-		{ fluid("molten-indalloy-140", 5760), fluid("molten-quantium", 2880), fluid("lubricant", 512000) } },
+		{ gtl("molten-indalloy-140", 5760), gtl("molten-quantium", 2880), gtl("lubricant", 512000) } },
 	{ "spacetime", 128, 32, "uxv-circuit",
-		{ fluid("molten-spacetime", 576), fluid("molten-infinity", 576), fluid("lubricant", 512000) } },
+		{ gtl("molten-spacetime", 576), gtl("molten-infinity", 576), gtl("lubricant", 512000) } },
 	{ "eternity", 256, 64, "max-circuit",
-		{ fluid("molten-spacetime", 576), fluid("molten-universium", 576), fluid("lubricant", 512000) } },
+		{ gtl("molten-spacetime", 576), gtl("molten-universium", 576), gtl("lubricant", 512000) } },
 }
 local SPEED = { LV_SPEED, MV_SPEED, HV_SPEED, EV_SPEED, IV_SPEED, LUV_SPEED, ZPM_SPEED, UV_SPEED, UHV_SPEED, UEV_SPEED,
 	UIV_SPEED, UIV_SPEED, UIV_SPEED }
@@ -277,12 +279,12 @@ end
 --- the modules: speed = parallels, energy at the module's voltage, its recipe (the module before it or the drilling rig)
 local MODULES = {
 	{ "space-elevator-mining-module-mk1", 2, EU16_UHV, "iv-drilling-rig", "uv", "naquamiridium", "neutronium",
-		{ fluid("molten-indalloy-140", 2880), fluid("molten-naquadria", 1440), fluid("lubricant", 8000) }, UHV_SPEED },
+		{ gtl("molten-indalloy-140", 2880), gtl("molten-naquadria", 1440), gtl("lubricant", 8000) }, UHV_SPEED },
 	{ "space-elevator-mining-module-mk2", 4, EU16_UEV, "space-elevator-mining-module-mk1", "uhv", "triamerotronium",
 		"cosmic-neutronium",
-		{ fluid("molten-indalloy-140", 2880), fluid("molten-naquadria", 2880), fluid("lubricant", 16000) }, UEV_SPEED },
+		{ gtl("molten-indalloy-140", 2880), gtl("molten-naquadria", 2880), gtl("lubricant", 16000) }, UEV_SPEED },
 	{ "space-elevator-mining-module-mk3", 8, EU16_UIV, "space-elevator-mining-module-mk2", "uev", "dracofinium", "infinity",
-		{ fluid("molten-indalloy-140", 2880), fluid("molten-transcendent-metal", 1440) }, UIV_SPEED },
+		{ gtl("molten-indalloy-140", 2880), gtl("molten-transcendent-metal", 1440) }, UIV_SPEED },
 }
 local modules = {}
 for k, m in ipairs(MODULES) do
@@ -597,15 +599,15 @@ local PUMPS = {
 	{ "space-elevator-pump-module-mk1", 4, EU16_UHV, 2, UEV_SPEED, {
 		item("iv-drilling-rig", 1), item("planetary-gas-siphon", 1), item("eye-of-ender", 2),
 		item("infinity-frame", 4), item("uev-circuit", 4), item("uev-pump", 2), item("infinity-gear", 4),
-		item("cosmic-neutronium-screw", 32), fluid("molten-indalloy-140", 1296), fluid("molten-infinity", 576) } },
+		item("cosmic-neutronium-screw", 32), gtl("molten-indalloy-140", 1296), gtl("molten-infinity", 576) } },
 	{ "space-elevator-pump-module-mk2", 16, EU16_UEV, 3, UIV_SPEED, {
 		item("iv-drilling-rig", 4), item("planetary-gas-siphon", 4), item("eye-of-ender", 8),
 		item("spacetime-frame", 4), item("uiv-circuit", 16), item("uiv-pump", 8), item("spacetime-gear", 4),
-		item("spacetime-screw", 64), fluid("molten-indalloy-140", 4608), fluid("molten-osmiridium", 2304) } },
+		item("spacetime-screw", 64), gtl("molten-indalloy-140", 4608), gtl("molten-osmiridium", 2304) } },
 	{ "space-elevator-pump-module-mk3", 256, EU16_UXV, 4, UMV_SPEED, {
 		item("iv-drilling-rig", 16), item("planetary-gas-siphon", 16), item("eye-of-ender", 32),
 		item("universium-frame", 4), item("umv-circuit", 16), item("umv-pump", 8), item("universium-gear", 4),
-		item("universium-screw", 64), fluid("molten-indalloy-140", 9216), fluid("molten-eternity", 2304) } },
+		item("universium-screw", 64), gtl("molten-indalloy-140", 9216), gtl("molten-eternity", 2304) } },
 }
 local pumps = {}
 for k, m in ipairs(PUMPS) do

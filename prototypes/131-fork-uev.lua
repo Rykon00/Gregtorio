@@ -383,7 +383,7 @@ create_recipe{
 		{ type = "item", name = "advanced-smd-capacitor-wrap", amount = 8 },
 		{ type = "item", name = "advanced-smd-transistor-wrap", amount = 8 },
 		{ type = "item", name = "niobium-titanium-wire-4x", amount = 8 },
-		{ type = "fluid", name = "molten-indalloy-140", amount = 14.4 },
+		{ type = "fluid", name = "molten-indalloy-140", amount = 7.2 },   -- (issue #671: GT's circuit assembly line, a tenth)
 	},
 	results = { { type = "item", name = "bio-processor", amount = 16 } },
 }
@@ -399,7 +399,7 @@ create_recipe{
 		{ type = "item", name = "advanced-smd-diode", amount = 8 },
 		{ type = "item", name = "advanced-smd-resistor", amount = 8 },
 		{ type = "item", name = "niobium-titanium-wire-4x", amount = 16 },
-		{ type = "fluid", name = "molten-indalloy-140", amount = 28.8 },
+		{ type = "fluid", name = "molten-indalloy-140", amount = 14.4 },   -- (issue #671: GT's circuit assembly line, a tenth)
 	},
 	results = { { type = "item", name = "bio-processor-assembly", amount = 16 } },
 }
@@ -695,8 +695,8 @@ create_item{
 		{ type = "item", name = "uev-circuit", amount = 2 },
 		{ type = "item", name = "extremely-ultimate-voltage-coil", amount = 2 },
 		{ type = "item", name = "uev-pump", amount = 1 },
-		{ type = "fluid", name = "cryogenic-helium", amount = 1000 },
-		{ type = "fluid", name = "molten-indalloy-140", amount = 576 },
+		{ type = "fluid", name = "cryogenic-helium", amount = 3200 },   -- (issue #671: a tenth of GT's litres)
+		{ type = "fluid", name = "molten-indalloy-140", amount = 288 },
 	},
 }
 

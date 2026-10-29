@@ -266,8 +266,9 @@ create_item{
 		item("uiv-pump", 4),
 		item("uiv-field-generator", 4),
 		item("uiv-robot-arm", 2),
-		fluid("molten-indalloy-140", 576),
-		fluid("molten-transcendent-metal", 576),
+		--- (issue #671: GT's 1440 L mutated solder (164's swap: indalloy) and 4608 L pikyonium, a tenth)
+		fluid("molten-indalloy-140", 144),
+		fluid("molten-pikyonium-64b", 460.8),
 	},
 }
 create_item{
@@ -432,6 +433,7 @@ F.tech{
 	recipes = F.join({ RESPLENDENT }, dtpf_recipes.resplendent),
 }
 F.tech{
-	name = QFT, prerequisites = { "umv-multiblocks" }, packs = 13, count = 1,
+	--- (issue #671: 164's nuclear-salt-processing-ii melts the controller's pikyonium)
+	name = QFT, prerequisites = { "umv-multiblocks", "nuclear-salt-processing-ii" }, packs = 13, count = 1,
 	recipes = F.join({ QFT .. "-coil-casing", QFT .. "-controller", QFT, FOCUS_PLASMA }, qft_recipes),
 }

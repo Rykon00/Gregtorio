@@ -474,8 +474,8 @@ create_item{
 		{ type = "item", name = "uiv-circuit", amount = 2 },
 		{ type = "item", name = "insanely-ultimate-voltage-coil", amount = 2 },
 		{ type = "item", name = "uiv-pump", amount = 1 },
-		{ type = "fluid", name = "cryogenic-helium", amount = 1000 },
-		{ type = "fluid", name = "molten-indalloy-140", amount = 576 },
+		{ type = "fluid", name = "cryogenic-helium", amount = 1600 },   -- (issue #671: a tenth of GT's litres)
+		{ type = "fluid", name = "molten-indalloy-140", amount = 288 },
 	},
 }
 

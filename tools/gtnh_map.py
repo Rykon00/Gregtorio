@@ -608,7 +608,8 @@ def compare(mapped, gr, gtr, g, scale):
     for d, io in ((mapped["fin"], "in"), (mapped["fout"], "out")):
         for name, l in d.items():
             got = amounts.get(("fluid", name, io))
-            if got and scale and abs(l / (got / batch) - scale) > 1e-6 * scale:
+            # (197 puts an amount on the engine's grid: up, and a result nine steps of 2^-24 more)
+            if got and scale and abs(got / batch - l / scale) > max(1e-5, 1e-6 * l / scale):
                 out.append(f"{name} {io} {got / batch:g} (GT {l} L, map scale {scale:g})")
     if gtr.get("duration"):
         speed = tier_speed(gr, gtr, g)
@@ -812,7 +813,7 @@ def run(dump, sec, out_md, out_json=None, limit=50, state=None):
 #:   * not the crafting table's recipes: GT's tools are left out of them, so recipes with and without a tool merge (#688);
 #:   * not 157's recycling (recycling-*): its amounts and times are GT's formulas on Gregtorio's own recipes (the
 #:     maintainer's decision on #190);
-#:   * not the fluid amounts (#671), and no item amounts of a recipe whose fluids differ too (they would no longer fit);
+#:   * (issue #671) fluid amounts too: a tenth of GT's litres, Gregtorio's rule;
 #:   * a tier only downward: a higher tier needs a later machine, which moves the recipe's unlock (#724);
 #:   * not the blast furnace's tier, which is its coil heat in Gregtorio (#620);
 #:   * not the fusion reactor (its times and inputs are the plasma balance of #32), no time of a hand recipe.
@@ -838,22 +839,21 @@ def tier_down(c, r, g, equal=False):
 
 
 def in_scope(diffs, c, r, g):
-    """the differences `numbers` sets right: time, item amounts and chances (none of them when a fluid differs too)
-    and a tier downward"""
-    fluid = any(diff_kind(x) == "fluid" for x in diffs)
+    """the differences `numbers` sets right: time, item amounts, chances, fluid amounts (issue #671: a tenth of GT's
+    litres) and a tier downward"""
     out = []
     for x in diffs:
         k = diff_kind(x)
-        if (k == "time" and c["family"] not in NO_TIME_FAMILIES) or (k in ("amount", "chance") and not fluid) or (
+        if (k == "time" and c["family"] not in NO_TIME_FAMILIES) or k in ("amount", "chance", "fluid") or (
                 k == "tier" and tier_down(c, r, g)):
             out.append(x)
     return out
 
 
-def gt_numbers(mapped, c, r, g, amounts):
+def gt_numbers(mapped, c, r, g, amounts=True):
     """GT's numbers in Gregtorio's units for the Gregtorio recipe c: t (tier, downward only), e (energy_required: GT
-    seconds x the tier's speed, x the batch), i ({item: amount}) and o ([item, amount, chance] per chance) when
-    `amounts`"""
+    seconds x the tier's speed, x the batch), i ({item: amount}), o ([item, amount, chance] per chance) and (issue #671)
+    fi and fo ({fluid: a tenth of GT's litres}, x the batch)"""
     out = {}
     batch = batch_of(mapped, c)
     if amounts:
@@ -879,6 +879,8 @@ def gt_numbers(mapped, c, r, g, amounts):
             for ch, a in sorted(by_chance(mapped["stacks"][name]).items(), key=lambda kv: -kv[0]):
                 o.append([name, round(a * batch), ch])
         out["o"] = o
+        out["fi"] = {n: round(l / FLUID_SCALE * batch, 6) for n, l in mapped["fin"].items()}
+        out["fo"] = {n: round(l / FLUID_SCALE * batch, 6) for n, l in mapped["fout"].items()}
     return out
 
 
@@ -886,7 +888,8 @@ def numbers(state, kept=(), old=()):
     """Issue #689: GT's numbers for every matched Gregtorio recipe whose numbers differ from GT's in scope (see
     NUMBERS_SKIP_MAPS) or that the table `old` already has: ({recipe: gt_numbers}, {recipe: the differences in scope},
     Counter of the differences left out by kind)"""
-    g, scale = state["g"], state["scale"]
+    # (issue #671: a fluid amount is compared with Gregtorio's rule, a tenth of GT's litres, not the map's usual scale)
+    g = state["g"]
     table, diffs, left = {}, {}, Counter()
     for mname, mapped, r, cands in state["pending"]:
         base = mname.split(" [")[0]
@@ -894,7 +897,7 @@ def numbers(state, kept=(), old=()):
             name = c["name"]
             if name in table or name in diffs:
                 continue
-            d = compare(mapped, c, r, g, scale.get(mname))
+            d = compare(mapped, c, r, g, FLUID_SCALE)
             if base in NUMBERS_SKIP_MAPS or name.startswith("recycling-") or c["family"] in NUMBERS_SKIP_FAMILIES:
                 if d:
                     left["crafting table (#688)" if base in NUMBERS_SKIP_MAPS else "recycling (#190)"
@@ -904,12 +907,11 @@ def numbers(state, kept=(), old=()):
             for x in d:
                 if x not in scoped:
                     k = diff_kind(x)
-                    left["fluid (#671)" if k == "fluid" else "tier up (#724)" if k == "tier" else
-                         "hand recipe time (#688)" if k == "time" else f"{k} beside a fluid (#671)"] += 1
+                    left["tier up (#724)" if k == "tier" else "hand recipe time (#688)"] += 1
             if name in kept:
                 continue
             if scoped or name in old:
-                table[name] = gt_numbers(mapped, c, r, g, not any(diff_kind(x) == "fluid" for x in d))
+                table[name] = gt_numbers(mapped, c, r, g)
                 if scoped:
                     diffs[name] = scoped
     return table, diffs, left
@@ -921,7 +923,8 @@ def numbers_lua(table):
     out = ["--- Generated by `tools/devcheck/devcheck.py check --gtnh-numbers` (issue #689) from the GT New Horizons recipe dump",
            "--- (tools/gtnh_dump/) through tools/gtnh_map.py; do not edit, run it again. GT's numbers of the Gregtorio recipes that",
            "--- have a GT recipe with the same items and fluids in and out: t the tier (only downward), e energy_required (GT's",
-           "--- seconds x the tier's speed), i the item ingredients, o the item results { item, amount, chance }.",
+           "--- seconds x the tier's speed), i the item ingredients, o the item results { item, amount, chance }, fi and fo",
+           "--- the fluid ingredients and results (a tenth of GT's litres, issue #671).",
            "--- prototypes/168-fork-gtnh-numbers.lua applies them; FORK_GTNH_NUMBERS_KEPT there keeps a recipe's own numbers.",
            "return {"]
     for name in sorted(table):
@@ -937,6 +940,9 @@ def numbers_lua(table):
         if "o" in e:
             parts.append("o = { " + ", ".join(f'{{ "{n}", {num(a)}' + (f", {num(c)}" if c < 1 else "") + " }"
                                             for n, a, c in e["o"]) + " }")
+        for k in ("fi", "fo"):
+            if e.get(k):
+                parts.append(f"{k} = {{ " + ", ".join(f'["{n}"] = {num(v)}' for n, v in sorted(e[k].items())) + " }")
         out.append(f'\t["{name}"] = {{ ' + ", ".join(parts) + " },")
     out.append("}")
     return "\n".join(out) + "\n"
