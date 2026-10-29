@@ -30,8 +30,8 @@ end
 
 --------------------------------------------------------------------------------
 --- 1) PLASTIC CIRCUIT BOARDS (NH gthandler/recipes/ChemicalReactorRecipes.java:84-127)
---- The plastic boards: polyethylene 1, PVC 2, PTFE 4, polybenzimidazole 8 (:85-111), all as GT has them in
---- 13-mv-age-item.lua. The upstream PECA board (16 boards, its sheet commented out) has no GT counterpart.
+--- The plastic boards: polyethylene 1, PVC 2, PTFE 4, polybenzimidazole 8 (:85-111), as GT has them in
+--- 13-mv-age-item.lua but for the sulfuric acid (GT's 500 L since issue #712, 164 section 58). The upstream PECA board (16 boards, its sheet commented out) has no GT counterpart.
 --------------------------------------------------------------------------------
 
 remove("recipe", "plastic-circuit-board-peca")
