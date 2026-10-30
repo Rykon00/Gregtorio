@@ -160,6 +160,8 @@ require("prototypes.166-fork-classic-veins")
 require("prototypes.167-fork-tips")
 --- issue #164: the circuit variant recipes show the icon of their GTNH item (156)
 require("prototypes.156-fork-circuit-icons")
+--- issue #644: GT's single-block naquadah reactors and plasma generators (after the parts and plasmas, before 157)
+require("prototypes.169-fork-single-generators")
 --- issue #190: GTNH's material recycling (macerator, arc furnace, fluid extractor), after every file that makes recipes
 require("prototypes.157-fork-recycling")
 --- issue #689: GT New Horizons' tiers, times, item amounts and chances from the recipe dump (after every file that makes
