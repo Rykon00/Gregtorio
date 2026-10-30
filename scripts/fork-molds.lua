@@ -3,13 +3,14 @@
 --- Machines with a mold slot are tracked in storage.fork_molds.machines. Every CHECK_TICKS
 --- each of them is checked (issue #642: in shares, scripts/fork-batch.lua): if its recipe needs a mold that is not in the mold slot, the
 --- machine is stopped (disabled_by_script) with the status "Missing mold"; as soon as the
---- mold is there (or the recipe changes) it runs again. Only machines stopped by this
---- script are switched back on.
+--- mold is there (or the recipe changes) it runs again, once no other script stops it
+--- (issue #618: scripts/fork-stop.lua).
 --- Issue #316: the laser engravers' lens slot works the same way, with the status "Missing <lens>".
 --------------------------------------------------------------------------------
 
 local M = {}
 local batch = require("scripts.fork-batch")
+local stop_reason = require("scripts.fork-stop")
 
 local CHECK_TICKS = 30
 --- issue #642: the machines are checked in shares every STEP_TICKS, each one once per CHECK_TICKS (scripts/fork-batch.lua)
@@ -69,16 +70,14 @@ end
 --- stop: the missing mold or lens, or nil; st.stopped[id] keeps the item the status names (true in older saves)
 local function set_stopped(st, entity, stop)
 	local id = entity.unit_number
-	if stop and st.stopped[id] ~= stop then
-		entity.disabled_by_script = true
-		entity.custom_status = {
+	if stop and (st.stopped[id] ~= stop or not stop_reason.stopped(entity, "molds")) then
+		stop_reason.set(entity, "molds", {
 			diode = defines.entity_status_diode.red,
 			label = missing_label(stop),
-		}
+		})
 		st.stopped[id] = stop
 	elseif not stop and st.stopped[id] then
-		entity.disabled_by_script = false
-		entity.custom_status = nil
+		stop_reason.set(entity, "molds", nil)
 		st.stopped[id] = nil
 	end
 end
@@ -142,6 +141,7 @@ script.on_nth_tick(STEP_TICKS, function()
 		else
 			st.machines[id] = nil
 			st.stopped[id] = nil
+			stop_reason.forget(id)
 		end
 	end)
 end)

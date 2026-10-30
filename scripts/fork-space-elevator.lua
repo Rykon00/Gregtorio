@@ -11,6 +11,7 @@
 --- (on_object_destroyed of a registration made at build) and after a mod change. State: storage.fork_space_elevator.
 --------------------------------------------------------------------------------
 
+local fork_stop = require("scripts.fork-stop")
 local M = {}
 local REACH = 2
 
@@ -45,9 +46,9 @@ local function near(a, b)
 		and ab.left_top.y - REACH < bb.right_bottom.y and bb.left_top.y - REACH < ab.right_bottom.y
 end
 
+--- (issue #618: scripts/fork-stop.lua, so the maintenance of a module does not undo this stop, nor this its stop)
 local function stop(module, key)
-	module.disabled_by_script = true
-	module.custom_status = { diode = defines.entity_status_diode.red, label = { "entity-status." .. key } }
+	fork_stop.set(module, "space-elevator", { diode = defines.entity_status_diode.red, label = { "entity-status." .. key } })
 end
 
 --- the assignment of one surface
@@ -74,8 +75,7 @@ local function assign(surface)
 		end
 		if best then
 			free[best.unit_number] = free[best.unit_number] - 1
-			m.disabled_by_script = false
-			m.custom_status = nil
+			fork_stop.set(m, "space-elevator", nil)
 		elseif not any_near then
 			stop(m, "fork-space-elevator-missing")
 		elseif not strong then

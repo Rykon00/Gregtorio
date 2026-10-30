@@ -210,15 +210,13 @@ if FORK_GT_OVERCLOCKING then
 end
 section("OVERCLOCK", oc)
 
---- Issue #618: every crafting machine with whether its item is a multiblock (a `*multiblocks` subgroup), whether it allows
+--- Issue #618: every crafting machine with whether it is a crafting multiblock (FORK_MAINTENANCE.multiblocks), whether it allows
 --- the module category maintenance and whether prototypes/fork-maintenance.lua listed it; the first row: the setting
 local mt = {}
 if FORK_MAINTENANCE then
 	mt[1] = "setting	" .. tostring(FORK_MAINTENANCE.on)
-	local multi = {}
-	for _, it in pairs(data.raw.item) do
-		if it.place_result and (it.subgroup or ""):match("multiblocks$") then multi[it.place_result] = true end
-	end
+	--- (the rule once more after every file: a machine made after fork-maintenance.lua would be missing)
+	local multi = FORK_MAINTENANCE.multiblocks and FORK_MAINTENANCE.multiblocks() or {}
 	for _, t in pairs({ "assembling-machine", "furnace" }) do
 		for name, e in pairs(data.raw[t] or {}) do
 			local allows = false

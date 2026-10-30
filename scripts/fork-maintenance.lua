@@ -4,12 +4,13 @@
 --- (ticks) until its next kit: a new machine starts with one kit's time (GT: a new multiblock is fully maintained).
 --- Every CHECK_TICKS (in shares, scripts/fork-batch.lua) a machine that is working loses CHECK_TICKS; at 0 it takes one
 --- kit (a Maintenance Kit or Duct Tape) out of its slot for another kit's time, or stops (disabled_by_script, status
---- "Needs maintenance") until a kit is in the slot. Only machines stopped by this script are switched back on.
+--- "Needs maintenance") until a kit is in the slot (scripts/fork-stop.lua: it runs again once no other script stops it).
 --- State: storage.fork_maintenance.machines (unit number -> { entity, left }). Nothing runs with the setting off.
 --------------------------------------------------------------------------------
 
 local M = {}
 local batch = require("scripts.fork-batch")
+local stop = require("scripts.fork-stop")
 local CHECK_TICKS = 300
 local STEP_TICKS = 30
 
@@ -53,8 +54,7 @@ local function update(rec, elapsed)
 	if rec.stopped then
 		if take_kit(e) then
 			rec.left, rec.stopped = md().kit_ticks, nil
-			e.disabled_by_script = false
-			e.custom_status = nil
+			stop.set(e, "maintenance", nil)
 		end
 		return
 	end
@@ -64,8 +64,7 @@ local function update(rec, elapsed)
 			rec.left = rec.left + md().kit_ticks
 		else
 			rec.stopped = true
-			e.disabled_by_script = true
-			e.custom_status = STATUS
+			stop.set(e, "maintenance", STATUS)
 		end
 	end
 end
@@ -106,7 +105,7 @@ script.on_nth_tick(STEP_TICKS, function()
 	if not storage.fork_maintenance then return end
 	local st = state()
 	batch.visit(st, "machines", CHECK_TICKS, STEP_TICKS, function(k, rec)
-		if rec.entity.valid then update(rec, CHECK_TICKS) else st.machines[k] = nil end
+		if rec.entity.valid then update(rec, CHECK_TICKS) else st.machines[k] = nil; stop.forget(k) end
 	end)
 end)
 
