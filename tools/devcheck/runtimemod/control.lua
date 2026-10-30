@@ -192,6 +192,7 @@ local function tests_running()
 	check(storage.coal_boiler and storage.coal_boiler.done, "coal boiler")
 	check(storage.torch and storage.torch.done, "torch")
 	check(storage.maint and storage.maint.done, "maintenance")
+	check(storage.ebf_heat and storage.ebf_heat.done, "ebf heat")
 	check(storage.battery and storage.battery.done, "battery buffers")
 	return running
 end
@@ -1488,6 +1489,86 @@ function torch_test()
 	for _, p in pairs(problems) do log("DEVCHECK-RUNTIME-FAIL torch test: " .. p) end
 	log("DEVCHECK-RUNTIME-TORCH " .. (#problems == 0 and "ok" or "failed") .. " (torch " .. name(t.valid and t.status)
 		.. ", electric lamp " .. name(l.valid and l.status) .. " at midnight without power)")
+end
+
+--- Blast furnace heat (issue #620, scripts/fork-ebf-heat.lua): a blast furnace with the coil it is built with and a
+--- recipe that needs more heat stops ("Heat too low"); with the hottest coil in its slot it runs, with the bonus module
+--- in a hidden beacon in its middle; removed, its beacon goes too
+local EH_WAIT = 150
+function setup_ebf_heat_test(_)
+	local md = prototypes.mod_data["fork-ebf-heat"]
+	if not md then return { "ebf heat test: no mod data fork-ebf-heat" } end
+	local d = md.data
+	local hottest, coil = 0, nil
+	for c, h in pairs(d.coils) do if h > hottest then hottest, coil = h, c end end
+	local names = {}
+	for n in pairs(d.machines) do names[#names + 1] = n end
+	table.sort(names, function(a, b) return d.machines[a].tier < d.machines[b].tier end)
+	local pick, recipe
+	for _, n in pairs(names) do
+		local m = d.machines[n]
+		local base = m.coil + d.heat_per_tier * (m.tier - 2)
+		local cands = {}
+		for r, h in pairs(d.recipes) do
+			if d.recipe_tier[r] <= m.tier and h > base and h <= hottest + d.heat_per_tier * (m.tier - 2) and prototypes.recipe[r] then
+				cands[#cands + 1] = r
+			end
+		end
+		table.sort(cands)
+		if cands[1] then pick, recipe = n, cands[1] break end
+	end
+	if not pick then return { "ebf heat test: no blast furnace recipe needs more heat than its furnace's own coil" } end
+	local es = game.create_surface("devcheck-ebf-heat")
+	es.request_to_generate_chunks({ 0, 0 }, 2)
+	es.force_generate_chunk_requests()
+	local tiles = {}
+	for x = -12, 12 do for y = -12, 12 do tiles[#tiles + 1] = { name = "landfill", position = { x, y } } end end
+	es.set_tiles(tiles)
+	for _, e in pairs(es.find_entities{ { -12, -12 }, { 12, 12 } }) do e.destroy() end
+	local e = es.create_entity{ name = pick, position = { 0.5, 0 }, force = "player", raise_built = true }
+	if not e then return { "ebf heat test: could not place " .. pick } end
+	game.forces.player.recipes[recipe].enabled = true
+	e.set_recipe(recipe)
+	storage.ebf_heat = { e = e, surface = es, at = game.tick, phase = 1, coil = coil, recipe = recipe, problems = {},
+		beacon = d.beacon }
+	return {}
+end
+
+function ebf_heat_test()
+	local st = storage.ebf_heat
+	if not st or st.done or game.tick < st.at + EH_WAIT then return end
+	local e, problems = st.e, st.problems
+	local beacons = st.surface.count_entities_filtered{ name = st.beacon }
+	if st.phase == 1 then
+		local rs = remote.call("fork-ebf-heat", "state", e)
+		if not (rs and rs.stopped and e.disabled_by_script and e.custom_status) then
+			problems[#problems + 1] = st.recipe .. " runs with too little heat (state " .. serpent.line(rs) .. ")"
+		end
+		st.heat_before = rs and rs.heat
+		e.get_module_inventory().insert{ name = st.coil, count = 1 }
+		st.phase, st.at = 2, game.tick
+	elseif st.phase == 2 then
+		local rs = remote.call("fork-ebf-heat", "state", e)
+		if not rs or rs.stopped or e.disabled_by_script then
+			problems[#problems + 1] = "with " .. st.coil .. " in its slot it stays stopped (state " .. serpent.line(rs) .. ")"
+		elseif not rs.bonus or beacons ~= 1 then
+			problems[#problems + 1] = "no bonus with " .. rs.heat .. " K (bonus " .. tostring(rs.bonus) .. ", " .. beacons .. " beacons)"
+		else
+			local ok, eff = pcall(function() return e.effects end)
+			if ok and eff and not (eff.consumption and eff.consumption < 0) then
+				problems[#problems + 1] = "the bonus " .. rs.bonus .. " does not lower its power (effects " .. serpent.line(eff) .. ")"
+			end
+		end
+		st.heat_after = rs and rs.heat
+		e.destroy{ raise_destroy = true }
+		st.phase, st.at = 3, game.tick
+	else
+		if beacons ~= 0 then problems[#problems + 1] = "its beacon stays after the furnace is gone" end
+		st.done = true
+		for _, p in pairs(problems) do log("DEVCHECK-RUNTIME-FAIL ebf heat test: " .. p) end
+		log("DEVCHECK-RUNTIME-EBFHEAT " .. (#problems == 0 and "ok" or "failed") .. " (" .. st.recipe .. ": stopped at "
+			.. tostring(st.heat_before) .. " K, ran at " .. tostring(st.heat_after) .. " K with " .. st.coil .. ")")
+	end
 end
 
 --- Maintenance (issue #618, scripts/fork-maintenance.lua): with the setting off no machine has a maintenance slot; with it on
@@ -3362,6 +3443,7 @@ script.on_nth_tick(10, function()
 	coal_boiler_test()
 	torch_test()
 	maintenance_test()
+	ebf_heat_test()
 	battery_test()
 	veins_test()
 	classic_test()
@@ -3447,6 +3529,7 @@ script.on_init(function()
 	for _, f in pairs(setup_coal_boiler_test(s)) do fails[#fails + 1] = f end
 	for _, f in pairs(setup_torch_test(s)) do fails[#fails + 1] = f end
 	for _, f in pairs(setup_maintenance_test(s)) do fails[#fails + 1] = f end
+	for _, f in pairs(setup_ebf_heat_test(s)) do fails[#fails + 1] = f end
 	for _, f in pairs(setup_battery_test(s)) do fails[#fails + 1] = f end
 	for _, f in pairs(setup_veins_test()) do fails[#fails + 1] = f end
 	for _, f in pairs(setup_classic_test(s)) do fails[#fails + 1] = f end

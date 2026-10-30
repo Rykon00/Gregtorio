@@ -32,7 +32,8 @@ function M.set(entity, reason, status)
 	local last = rec and rec.order[#rec.order]
 	if last then
 		entity.custom_status = rec.reasons[last]
-	else
+	elseif rec or entity.disabled_by_script then
+		--- (no write for a machine that runs; one stopped before this file, by a script that uses it now, is released)
 		if rec then storage.fork_stops[id] = nil end
 		entity.disabled_by_script = false
 		entity.custom_status = nil

@@ -228,6 +228,30 @@ if FORK_MAINTENANCE then
 end
 section("MAINT", mt)
 
+--- Issue #620: the heating coils with their heat, the blast furnaces with their tier, their coil and their categories, the
+--- blast furnace recipes with their heat and whether it is GT's (prototypes/fork-ebf-heat.lua; absent in older versions)
+local eh = {}
+if FORK_EBF_HEAT then
+	for name, heat in pairs(FORK_EBF_HEAT.coils) do eh[#eh + 1] = "coil\t" .. name .. "\t" .. heat end
+	for name, m in pairs(FORK_EBF_HEAT.machines) do
+		local e = data.raw["assembling-machine"][name]
+		local slot = false
+		for _, c in pairs(e.allowed_module_categories or {}) do slot = slot or c == "heating-coil" end
+		eh[#eh + 1] = "machine\t" .. name .. "\t" .. m.tier .. "\t" .. m.coil .. "\t" .. table.concat(e.crafting_categories, ",")
+			.. "\t" .. tostring(slot or e.allowed_module_categories == nil) .. "\t" .. (e.module_slots or 0)
+	end
+	for name, r in pairs(data.raw.recipe) do
+		if fork_category(r):match("electric%-blast%-furnace%-recipes$") then
+			eh[#eh + 1] = "recipe\t" .. name .. "\t" .. fork_category(r) .. "\t" .. tostring(FORK_EBF_HEAT.recipes[name] or "")
+				.. "\t" .. tostring(FORK_EBF_HEAT.from_gt[name] or false)
+		end
+	end
+end
+section("EBFHEAT", eh)
+local ehl = {}
+for name, why in pairs(FORK_EBF_HEAT_LATE or {}) do ehl[#ehl + 1] = name .. "	" .. why end
+section("EBFHEATLATE", ehl)
+
 --- Issue #602: the items that spoil on purpose (FORK_SPOILING_KEPT in data-final-fixes.lua; absent in older versions)
 local sk = {}
 for name, reason in pairs(FORK_SPOILING_KEPT or {}) do sk[#sk + 1] = name .. "\t" .. reason end
