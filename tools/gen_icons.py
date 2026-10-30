@@ -447,6 +447,45 @@ def draw_ender_tank():
     return outline(img, (6, 8, 10, 255))
 
 
+def draw_ender_tank_sprite():
+    """96 x 96 RGBA (a 3 x 3 storage tank at 32 pixels a tile): issue #654, the Ender Tank seen from above at an angle: a
+    dark round tank with green bands, the window where the game draws the fluid (the storage tank's window box), and the
+    three-colour code on its lid"""
+    size = 96
+    img = Image.new("RGBA", (size, size), (0, 0, 0, 0))
+    px = img.load()
+    cx, top, bottom, rx = 48, 14, 88, 40
+    for y in range(size):
+        for x in range(size):
+            X, Y = x + 0.5, y + 0.5
+            body = abs(X - cx) <= rx and top <= Y <= bottom
+            lid = in_ellipse(X, Y, cx, top, rx, 10)
+            base = in_ellipse(X, Y, cx, bottom, rx, 6)
+            if not (body or lid or base):
+                continue
+            shade = 0.72 - 0.5 * (X - (cx - rx)) / (2 * rx)
+            if lid:
+                px[x, y] = tone(ENDER_BODY, 0.75 - 0.25 * (X - (cx - rx)) / (2 * rx))
+                if not in_ellipse(X, Y, cx, top, rx - 3, 7):
+                    px[x, y] = tone(ENDER_TRIM, 0.7)
+            else:
+                px[x, y] = tone(ENDER_BODY, shade)
+                if int(Y) in (34, 35, 70, 71) or abs(X - cx) > rx - 2:
+                    px[x, y] = tone(ENDER_TRIM, 0.35 + 0.4 * shade)
+    for y in range(40, 66):   # the window frame around the fluid box
+        for x in range(36, 61):
+            if x in (36, 60) or y in (40, 65):
+                px[x, y] = tone(ENDER_TRIM, 0.85)
+            else:
+                px[x, y] = tone(ENDER_TRIM, 0.08)
+    for i, c in enumerate(ENDER_CODE):   # the code on the lid
+        for y in range(10, 17):
+            for x in range(28 + 15 * i, 38 + 15 * i):
+                if in_ellipse(x + 0.5, y + 0.5, 33 + 15 * i, 13.5, 5.5, 4):
+                    px[x, y] = c + (255,)
+    return outline(img, (6, 8, 10, 255))
+
+
 # --- issue #555: the torch, drawn from scratch (GTNH's is Minecraft's own, whose texture is not used): a wooden stick with
 # a coal head and its flame, standing upright; the entity sprite is the icon scaled 2x (nearest), drawn at scale 0.5
 WOOD = [(66, 42, 20), (96, 64, 32), (128, 88, 46), (158, 114, 64)]
@@ -553,6 +592,33 @@ def draw_seaweed():
     return out
 
 
+STAR = [(255, 120, 30), (255, 170, 60), (255, 215, 110), (255, 240, 180), (255, 255, 240)]
+
+
+def draw_star(size=192):
+    """size x size RGBA: issue #654, the godforge's star (GT renders a star over the forge while it runs): a white-hot
+    core, a yellow-orange disc and a soft corona with eight faint rays, fading out to the edge"""
+    img = Image.new("RGBA", (size, size), (0, 0, 0, 0))
+    px = img.load()
+    c = size / 2
+    core, disc = size * 0.11, size * 0.2
+    for y in range(size):
+        for x in range(size):
+            dx, dy = x + 0.5 - c, y + 0.5 - c
+            r = math.hypot(dx, dy)
+            if r <= disc:
+                t = 1 - r / disc
+                px[x, y] = tone(STAR, 0.55 + 0.45 * t) if r > core else STAR[-1] + (255,)
+                continue
+            ang = math.atan2(dy, dx)
+            ray = max(0.0, math.cos(4 * ang)) ** 12
+            fall = max(0.0, 1 - (r - disc) / (c - disc))
+            a = int(255 * min(1.0, fall ** 2.2 * (0.55 + 0.6 * ray)))
+            if a > 0:
+                px[x, y] = tone(STAR, 0.25 + 0.5 * fall)[:3] + (a,)
+    return img
+
+
 def save_if_changed(img, path):
     if path.exists():
         old = Image.open(path).convert("RGBA")
@@ -585,12 +651,17 @@ def drawn():
     #  issue #504: the Ender Chest and the Ender Tank
     save_if_changed(draw_ender_chest(), ICONS / "ender-chest.png")
     save_if_changed(draw_ender_tank(), ICONS / "ender-tank.png")
+    #  issue #654: their entity sprites (the chest's icon at 2x, the tank drawn for its 3 x 3 at 2x)
+    save_if_changed(draw_ender_chest().resize((64, 64), Image.NEAREST), ENTITY / "ender-chest.png")
+    save_if_changed(draw_ender_tank_sprite().resize((192, 192), Image.NEAREST), ENTITY / "ender-tank.png")
     #  issue #555: the torch (icon and sprite)
     save_if_changed(draw_torch(), ICONS / "gt-torch.png")
     save_if_changed(draw_torch().resize((64, 64), Image.NEAREST), ENTITY / "gt-torch.png")
     #  issue #574: the planet icons of the Nether, the Twilight Forest and The End
     for planet, kind in (("gt-nether", "nether"), ("gt-twilight", "twilight"), ("gt-end", "end")):
         save_if_changed(draw_planet(kind), ICONS / (planet + ".png"))
+    #  issue #654: the godforge's star (its working visualisation)
+    save_if_changed(draw_star(), ENTITY / "godforge-star.png")
     #  issue #631: the greenhouse's seaweed
     save_if_changed(draw_seaweed(), ICONS / "seaweed.png")
 

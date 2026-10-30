@@ -165,6 +165,13 @@ do
 		fb.pipe_picture = assembler2pipepictures()
 	end
 	m.fluid_boxes_off_when_no_fluid_recipe = true
+	--- issue #654: GT's star over the forge while it runs (tools/gen_icons.py --drawn), still, with its light
+	m.graphics_set.working_visualisations = { {
+		fadeout = true,
+		animation = { filename = "__gregtorio-continued__/graphics/entity/fork/godforge-star.png", size = 192, scale = 1,
+			shift = { 0, -0.5 }, draw_as_glow = true, frame_count = 1 },
+		light = { intensity = 0.9, size = 40, shift = { 0, -0.5 }, color = { r = 1, g = 0.85, b = 0.6 } },
+	} }
 end
 
 

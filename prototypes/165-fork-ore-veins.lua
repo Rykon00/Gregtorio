@@ -385,6 +385,9 @@ for _, c in pairs(data.raw.character) do
 end
 
 local STONE = data.raw.resource["stone"]
+--- issue #654: GT's ore texture of the material's icon set in its colour (tools/gen_vein_ore_sheets.py) over the base
+--- game's stone lumps in GT's stone grey
+local ORE_SETS = require("prototypes.data.vein-ore-sets")
 for _, x in ipairs(ores) do
 	local info = FORK_ORE_MIXES.materials[x]
 	local c = info and info.color or { 128, 128, 128 }
@@ -402,7 +405,10 @@ for _, x in ipairs(ores) do
 	r.autoplace = { control = GRID, order = "g-" .. x, probability_expression = table.concat(terms, " + "),
 		richness_expression = "gt_ore_richness" }
 	r.stage_counts = { 1000, 750, 500, 300, 150, 75, 30, 1 }
-	r.stages.sheet.tint = color
+	r.stages.sheet.tint = { 0.72, 0.72, 0.74 }
+	r.stages_effect = { sheet = { filename = "__gregtorio-continued__/graphics/entity/fork/gt-ore-" .. (ORE_SETS[x] or "dull") .. ".png",
+		priority = "extra-high", size = 64, frame_count = 8, variation_count = 8, scale = 1, tint = color, blend_mode = "normal" } }
+	r.effect_animation_period, r.min_effect_alpha, r.max_effect_alpha, r.effect_darkness_multiplier = 1, 1, 1, 0
 	r.map_color = color
 	r.mining_visualisation_tint = color
 	r.factoriopedia_simulation = nil
