@@ -89,6 +89,7 @@ MATERIALS = {
     "neutronium": "Neutronium", "niobium-titanium": "NiobiumTitanium", "osmiridium": "Osmiridium",
     "quantium": "Quantium", "samarium": "Samarium", "spacetime": "SpaceTime", "transcendent-metal": "TranscendentMetal",
     "trinium": "Trinium", "tritanium": "Tritanium", "universium": "Universium", "vanadium-gallium": "VanadiumGallium",
+    "white-dwarf-matter": "WhiteDwarfMatter", "black-dwarf-matter": "BlackDwarfMatter",   # issue #699
     "manganese": "Manganese", "uranium": "Uranium", "vanadium": "Vanadium", "indium": "Indium", "arsenic": "Arsenic",   # issue #375: the melts of the transmutations
     "calcium-carbide": "CacliumCarbide", "calcium-hydroxide": ("DULL", (255, 255, 255)),   # issue #378
     "cobalt-ii-nitrate": ("POWDER", (170, 0, 0)), "cobalt-ii-hydroxide": "CobaltIIHydroxide",
@@ -1222,6 +1223,12 @@ def icon_table(c):
                                                            "gt:miscutils/textures/blocks/iconsets/controllerFaces/industrialDehydrator")
     T["integral-encasement-i"] = lambda: c.gt(f"{BLK}INTEGRAL_FRAMEWORK_ULV")
     # issue #356 part 3: the netherite chain's items (gt.metaitem.03 248-250, MetaGeneratedItem03.java:1809-1824)
+    # issue #699: the phonon chain (IDMetaItem03 759-761), the conduit's and the godforge module's casing textures
+    T["thermal-superconductor"] = lambda: c.gt(M3 + "759")
+    T["relativistic-heat-capacitor"] = lambda: c.gt(M3 + "760")
+    T["phononic-seed-crystal"] = lambda: c.gt(M3 + "761")
+    T["harmonic-phonon-transmission-conduit"] = lambda: c.gt(BLK + "PHONON_CONDUIT")
+    T["heliofusion-exoticizer"] = lambda: c.gt(BLK + "GODFORGE_MODULE_ACTIVE")
     T["prismarine-precipitate"] = lambda: c.gt(M3 + "248")
     T["prismatic-crystal"] = lambda: c.gt(M3 + "249")
     T["radiation-proof-prismatic-naquadah-composite-sheet"] = lambda: c.gt(M3 + "250")

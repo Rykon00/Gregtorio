@@ -6674,6 +6674,100 @@ do
 end
 
 --------------------------------------------------------------------------------
+--- 60) PHONON MEDIUM, THE HARMONIC PHONON TRANSMISSION CONDUIT AND THE EXOTIC MODULE (issue #699, the maintainer's
+---   decisions of 2026-10-30): GT's chain from the recipe dump, the conduit's consumer GT's Exotic Module controller
+---   (tectech/loader/recipe/ResearchStationAssemblyLine.java: Heliofusion Exoticizer), an item here (140's godforge has
+---   no module entities). GT's chain needs transcendent metal nanites, which come after the exotic module here, so
+---   the exoticizer is no trigger of godforge-exotic-module (the maintainer's choice): crafting it researches the
+---   Harmonic Phonon Upgrade, a one-time godforge upgrade (GT's conduits are extra costs of its FDIM and QGPIU upgrades)
+---   that gives the exotic module's godforge recipes +25 % productivity. New technology Harmonic Phonon Transmission
+---   (after the transcendent metal nanites and the exotic module) for the chain:
+---     phononic seed crystal (UMV autoclave: transcendent metal nanites, 32 mellion dust, grade 8 water -> 8)
+---     six-phased copper nanites (nano forge T3, as the transcendent metal nanites; the T3 forge gets GT's two more
+---       fluid inputs)
+---     saturated phononic crystal solution (UIV blast furnace: seed, nanites, dilithium, mellion melt)
+---     lossless phonon transfer medium (UIV alloy blast smelter: magneto resonatic, metastable oganesson,
+---       praseodymium, the UIV superconductor base = chromnorox, crystal solution)
+---     thermal superconductor and relativistic heat capacitor (UIV assembler), the conduit and the exoticizer
+---     (assembly line, as the other UIV+ assembly line recipes in the ZPM category)
+---   Stand-ins for parts Gregtorio lacks (one ingot's worth each where GT asks for a form of the metal): long six-phased
+---   copper rods for GT's six-phased copper blocks, bolts, rotors and superdense plates; long creon rods for superdense
+---   creon plates; a long metastable oganesson rod for its dust; netherite foil (4 per plate) for netherite plates;
+---   12 transcendent metal plates for the huge transcendent metal fluid pipe (GT's pipe recipe); the energised
+---   tesseract for the TFFT storage field IX; the DTPF controller for the transcendent plasma mixer; the fusion
+---   reactor Mk V for the compact fusion computer Mk V; the lapotronic energy orb cluster (GT's ZPM4) as it is; the
+---   stellar catalyst for the excited DTEC (Gregtorio has no exotic catalyst); single UIV superconductor wires
+---   counted as GT's 16x ones (#729).
+--------------------------------------------------------------------------------
+do
+	local P = {}
+	local PHONON_TECH = "harmonic-phonon-transmission"
+	items(SUB_PART, { "phononic-seed-crystal", "six-phased-copper-nanites", "thermal-superconductor",
+		"relativistic-heat-capacitor", "harmonic-phonon-transmission-conduit" })
+	create_item{ skip_recipe = true, name = "heliofusion-exoticizer", subgroup = "subgroup-uhv-age-multiblocks", stack_size = 1 }
+	F.fluid("phonon-crystal-solution", "phonon-crystal-solution", { 0.55, 0.85, 0.95 })
+	F.fluid("phonon-medium", "phonon-medium", { 0.75, 0.95, 1.0 })
+	--- the nano forge T3 takes GT's three fluids (uu matter, residue, creon)
+	local nf = data.raw["assembling-machine"]["nano-forge-t3"]
+	nf.fluid_boxes[#nf.fluid_boxes + 1] = port("input", W, { -1, 0 })
+	nf.fluid_boxes[#nf.fluid_boxes + 1] = port("input", E, { 1, 0 })
+
+	step(P, "phononic-seed-crystal", "umv-autoclave-recipes", 15, UMV_SPEED,
+		{ { "transcendent-metal-nanites", 1 }, { "mellion-dust", 32 }, { "grade-8-water", 3200 } }, { { "phononic-seed-crystal", 8 } })
+	step(P, "six-phased-copper-nanites", "nano-forge-t3-recipes", 100, MAX_SPEED,
+		{ { "energised-tesseract", 1 }, { "long-six-phased-copper-rod", 144 }, { "advanced-system-on-chip", 192 },
+			{ "uu-matter", 50000 }, { "dimensionally-transcendent-residue", 5000 }, { "molten-creon", 7372.8 } },
+		{ { "six-phased-copper-nanites", 1 }, { "energised-tesseract", 1 } }, "six-phased-copper-nanites")
+	step(P, "phonon-crystal-solution", "uiv-electric-blast-furnace-recipes", 300, UIV_SPEED,
+		{ { "phononic-seed-crystal", 1 }, { "six-phased-copper-nanites", 1 }, { "dilithium-dust", 16 }, { "molten-mellion", 691.2 } },
+		{ { "phonon-crystal-solution", 100 } })
+	step(P, "phonon-medium", "uiv-alloy-blast-smelter-recipes", 120, UIV_SPEED,
+		{ { "magneto-resonatic-dust", 5 }, { "long-metastable-oganesson-rod", 1 }, { "praseodymium-dust", 15 },
+			{ "chromnorox-dust", 6 }, { "phonon-crystal-solution", 400 } }, { { "phonon-medium", 100 } })
+	step(P, "thermal-superconductor", "uiv-assembling-machine-recipes", 2, UIV_SPEED,
+		{ { "transcendent-metal-plate", 12 }, { "chromnorox-foil", 64 }, { "netherite-foil", 128 }, { "uiv-pump", 1 },
+			{ "phonon-medium", 10 } }, { { "thermal-superconductor", 1 } })
+	step(P, "relativistic-heat-capacitor", "uiv-assembling-machine-recipes", 5, UIV_SPEED,
+		{ { "thermal-superconductor", 2 }, { "naquarite-universal-insulator-foil", 16 }, { "chromnorox-plate", 8 },
+			{ "long-six-phased-copper-rod", 12 }, { "uev-field-generator", 1 }, { "phonon-medium", 50 } },
+		{ { "relativistic-heat-capacitor", 1 } })
+	step(P, "harmonic-phonon-transmission-conduit", "zpm-assembly-line-recipes", 10, ZPM_SPEED,
+		{ { "transcendent-metal-frame", 1 }, { "long-creon-rod", 12 }, { "energised-tesseract", 1 }, { "raw-tesseract", 8 },
+			{ "relativistic-heat-capacitor", 4 }, { "thermal-superconductor", 6 }, { "uev-field-generator", 4 },
+			{ "long-six-phased-copper-rod", 3 }, { "mutated-living-solder", 921.6 }, { "phonon-medium", 100 },
+			{ "plutonium-241-plasma", 230.4 } }, { { "harmonic-phonon-transmission-conduit", 1 } })
+	step(P, "heliofusion-exoticizer", "zpm-assembly-line-recipes", 300, ZPM_SPEED,
+		{ { "singularity-reinforced-stellar-shielding-casing", 4 }, { "dimensionally-transcendent-plasma-forge-controller", 4 },
+			{ "fusion-reactor-mk5", 1 }, { "lapotronic-energy-orb-cluster", 4 }, { "chromnorox-superconductive-wire", 1024 },
+			{ "uiv-robot-arm", 16 }, { "uiv-conveyor-module", 32 }, { "uiv-pump", 64 },
+			{ "harmonic-phonon-transmission-conduit", 8 }, { "long-six-phased-copper-rod", 256 }, { "long-creon-rod", 128 },
+			{ "superdense-mellion-plate", 2 }, { "uiv-circuit", 64 }, { "mutated-living-solder", 14745.6 },
+			{ "excited-dimensionally-transcendent-stellar-catalyst", 204800 }, { "phonon-medium", 6400 },
+			{ "molten-transcendent-metal", 14745.6 } }, { { "heliofusion-exoticizer", 1 } })
+	F.tech{ name = PHONON_TECH, prerequisites = { "transcendent-metal-nanites", "godforge-exotic-module" }, packs = 15,
+		count = 55, time = 60, recipes = P }   -- (as the transcendent metal nanites)
+	--- the upgrade: +25 % productivity for the exotic module's godforge recipes (those godforge-upgrades raises too)
+	local effects = {}
+	for _, e in pairs(data.raw.technology["godforge-exotic-module"].effects) do
+		local r = e.type == "unlock-recipe" and data.raw.recipe[e.recipe]
+		if r and r.allow_productivity and r.name ~= "spacetime-time-space-separation" then
+			effects[#effects + 1] = { type = "change-recipe-productivity", recipe = r.name, change = 0.25 }
+		end
+	end
+	data:extend({ {
+		type = "technology", name = "harmonic-phonon-upgrade",
+		icon = "__gregtorio-continued__/graphics/technology/nyi.png", icon_size = 256,
+		effects = effects, prerequisites = { PHONON_TECH },
+		research_trigger = { type = "craft-item", item = "heliofusion-exoticizer" },
+	} })
+	FORK_TRIGGER_ONLY_ITEMS["heliofusion-exoticizer"] = "GT's Exotic Module controller (issue #699): the godforge has no "
+		.. "module entities; crafting it researches the Harmonic Phonon Upgrade"
+	--- white and black dwarf matter (140 section 3b): 143 casts them, 158 makes their parts
+	FORK_CASTING.materials["white-dwarf-matter"] = { "umv", "godforge-molten-module" }
+	FORK_CASTING.materials["black-dwarf-matter"] = { "umv", "godforge-molten-module" }
+end
+
+--------------------------------------------------------------------------------
 --- 38) GT'S PARTS OF THE METALS OF THIS FILE (issue #467). 158 makes GT New Horizons' parts of every metal of
 ---   prototypes/gt-parts-data.lua (issue #227) whose ingot exists; most metals of this file come after 158, so its
 ---   FORK_GT_PARTS.run() runs once more here (it skips what exists), then 143's casts for the new forms.

@@ -511,6 +511,7 @@ return {
 	{ "gt-blast-pentacadmium-magnesium-hexaoxid-ingot-from-pentacadmium-magnesium-hexaoxid-dust-with-oganesson", cat = "hv-electric-blast-furnace-recipes", e = 120, i = { { "pentacadmium-magnesium-hexaoxid-dust", 1 } }, f = { { "oganesson", 10 } }, o = { { "pentacadmium-magnesium-hexaoxid-ingot", 1 } } },
 	{ "gt-blast-pentacadmium-magnesium-hexaoxid-ingot-from-pentacadmium-magnesium-hexaoxid-dust-with-radon", cat = "hv-electric-blast-furnace-recipes", e = 280, i = { { "pentacadmium-magnesium-hexaoxid-dust", 1 } }, f = { { "radon", 70 } }, o = { { "pentacadmium-magnesium-hexaoxid-ingot", 1 } } },
 	{ "gt-blast-pentacadmium-magnesium-hexaoxid-ingot-from-pentacadmium-magnesium-hexaoxid-dust-with-xenon", cat = "hv-electric-blast-furnace-recipes", e = 160, i = { { "pentacadmium-magnesium-hexaoxid-dust", 1 } }, f = { { "xenon", 25 } }, o = { { "pentacadmium-magnesium-hexaoxid-ingot", 1 } } },
+	{ "gt-blast-phonon-crystal-solution-from-phononic-seed-crystal-with-phonon-medium", cat = "uxv-electric-blast-furnace-recipes", e = 819200, i = { { "eternity-dust", 8 }, { "phononic-seed-crystal", 2 }, { "shirabon-dust", 8 } }, f = { { "phonon-medium", 1 } }, o = {  }, fo = { { "phonon-crystal-solution", 300 } } },
 	{ "gt-blast-pulsating-iron-ingot-from-pulsating-iron-dust", cat = "mv-electric-blast-furnace-recipes", e = 320, i = { { "pulsating-iron-dust", 1 } }, o = { { "pulsating-iron-ingot", 1 } } },
 	{ "gt-blast-pulsating-iron-ingot-from-pulsating-iron-dust-with-oxygen", cat = "mv-electric-blast-furnace-recipes", e = 160, i = { { "pulsating-iron-dust", 1 } }, f = { { "oxygen", 100 } }, o = { { "pulsating-iron-ingot", 1 } } },
 	{ "gt-blast-quicklime-from-gypsum", cat = "hv-electric-blast-furnace-recipes", e = 40, i = { { "gypsum", 8 } }, o = { { "quicklime", 1 } }, fo = { { "diluted-sulfuric-acid", 150 } } },
@@ -570,6 +571,7 @@ return {
 	{ "gt-smelt-atomic-separation-catalyst-ingot-from-atomic-separation-catalyst-dust", cat = "smelting", e = 10, i = { { "atomic-separation-catalyst-dust", 1 } }, o = { { "atomic-separation-catalyst-ingot", 1 } } },
 	{ "gt-smelt-atomic-separation-catalyst-nugget-from-tiny-pile-of-atomic-separation-catalyst-dust", cat = "smelting", e = 10, i = { { "tiny-pile-of-atomic-separation-catalyst-dust", 1 } }, o = { { "atomic-separation-catalyst-nugget", 1 } } },
 	{ "gt-smelt-battery-alloy-ingot-from-battery-alloy-dust", cat = "smelting", e = 10, i = { { "battery-alloy-dust", 1 } }, o = { { "battery-alloy-ingot", 1 } } },
+	{ "gt-smelt-black-dwarf-matter-ingot-from-black-dwarf-matter-dust", cat = "smelting", e = 10, i = { { "black-dwarf-matter-dust", 1 } }, o = { { "black-dwarf-matter-ingot", 1 } } },
 	{ "gt-smelt-cast-iron-ingot-from-cast-iron-dust", cat = "smelting", e = 10, i = { { "cast-iron-dust", 1 } }, o = { { "cast-iron-ingot", 1 } } },
 	{ "gt-smelt-cupronickel-ingot-from-cupronickel-dust", cat = "smelting", e = 10, i = { { "cupronickel-dust", 1 } }, o = { { "cupronickel-ingot", 1 } } },
 	{ "gt-smelt-dalisenite-nugget-from-tiny-pile-of-dalisenite-dust", cat = "smelting", e = 10, i = { { "tiny-pile-of-dalisenite-dust", 1 } }, o = { { "dalisenite-nugget", 1 } } },
@@ -588,4 +590,5 @@ return {
 	{ "gt-smelt-universium-ingot-from-universium-dust", cat = "smelting", e = 10, i = { { "universium-dust", 1 } }, o = { { "universium-ingot", 1 } } },
 	{ "gt-smelt-uranium-235-from-uranium-235-dust", cat = "smelting", e = 10, i = { { "uranium-235-dust", 1 } }, o = { { "uranium-235", 1 } } },
 	{ "gt-smelt-uranium-238-ingot-from-uranium-238-dust", cat = "smelting", e = 10, i = { { "uranium-238-dust", 1 } }, o = { { "uranium-238-ingot", 1 } } },
+	{ "gt-smelt-white-dwarf-matter-ingot-from-white-dwarf-matter-dust", cat = "smelting", e = 10, i = { { "white-dwarf-matter-dust", 1 } }, o = { { "white-dwarf-matter-ingot", 1 } } },
 }

@@ -515,8 +515,7 @@ for _, r in pairs({ "crushed-thulium", "crushed-tellurium", "crushed-firestone" 
 --- and Galacticraft's unknown water. The closest analogue where the mod lacks a part: the Infinite Fluid Drilling Rig ->
 --- the IV drilling rig (the mod's fluid drilling rigs); the Ender Fluid Link Cover -> an eye of ender; the medium tungstensteel pipe -> 3 tungstensteel
 --- plates (GT's pipe recipe); mutated living solder (164 section 46, issue #627; indalloy 140 before); metastable oganesson screws -> spacetime screws,
---- proto-halkonite -> osmiridium (as the motors of #301), black and white dwarf matter -> universium (the materials come a
---- tier later here).
+--- proto-halkonite -> osmiridium (as the motors of #301); black and white dwarf matter come from the godforge since #699.
 --------------------------------------------------------------------------------
 
 local PUMP_SCALE, SIPHON_SCALE = 1000, 10
@@ -606,8 +605,10 @@ local PUMPS = {
 		item("spacetime-screw", 64), gtl("molten-indalloy-140", 4608), gtl("molten-osmiridium", 2304) } },
 	{ "space-elevator-pump-module-mk3", 256, EU16_UXV, 4, UMV_SPEED, {
 		item("iv-drilling-rig", 16), item("planetary-gas-siphon", 16), item("eye-of-ender", 32),
-		item("universium-frame", 4), item("umv-circuit", 16), item("umv-pump", 8), item("universium-gear", 4),
-		item("universium-screw", 64), gtl("molten-indalloy-140", 9216), gtl("molten-eternity", 2304) } },
+		--- (issue #699: GTNH-Intergalactic's MachineRecipes.java: black dwarf matter frames and gears, white dwarf
+		--- matter screws, which stood in as universium before)
+		item("black-dwarf-matter-frame", 4), item("umv-circuit", 16), item("umv-pump", 8), item("black-dwarf-matter-gear", 4),
+		item("white-dwarf-matter-screw", 64), gtl("molten-indalloy-140", 9216), gtl("molten-eternity", 2304) } },
 }
 local pumps = {}
 for k, m in ipairs(PUMPS) do
@@ -701,8 +702,11 @@ F.tech{ name = "planetary-gas-siphon", prerequisites = { "reach-the-jovian-moons
 local PPRE = { { "space-elevator-motor-mk2", "planetary-gas-siphon", "uev-components" },
 	{ "space-elevator-motor-mk3", "uiv-components", "exotic-processor-mainframes" },
 	{ "space-elevator-motor-mk4", "umv-components", "temporal-processor-mainframes", "uxv-materials",
-		"uxv-energy-hatches" } }   -- (molten eternity, as the UXV drone of #302)
-local PPACKS = { 10, 11, 13 }
+		"uxv-energy-hatches",   -- (molten eternity, as the UXV drone of #302)
+		--- issue #699: GTNH's dwarf matter parts, from the godforge's molten module (MAX science) and the UXV assembler
+		--- of the MAX machines (their frames)
+		"godforge-molten-module", "max-machines" } }
+local PPACKS = { 10, 11, 15 }
 for k, name in ipairs(pumps) do
 	local pre = {}
 	if k > 1 then pre[1] = pumps[k - 1] end

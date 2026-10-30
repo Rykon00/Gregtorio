@@ -23,7 +23,9 @@
 ---     recipe per input metal (GT draws the metal at random), the plasma GT returns is the metal's melt
 ---   * no wireless EU: power through the energy hatches in the recipe, like the plasma forge
 ---   * no eye of harmony: its products (ore dusts per dimension, white and black dwarf matter for nanites)
----     have no consumer in the mod; raw star matter and universium come from the godforge instead
+---     have no consumer in the mod; raw star matter and universium come from the godforge instead, and since
+---     issue #699 white and black dwarf matter too (section 3b); GT's exotic module controller (Heliofusion Exoticizer,
+---     164 section 60) is an item whose crafting researches a one-time upgrade of the exotic recipes
 --------------------------------------------------------------------------------
 
 local F = FORK5B
@@ -272,6 +274,30 @@ do
 		results = { fluid("molten-universium", batch) },
 		main_product = "molten-universium",
 	})
+
+	--------------------------------------------------------------------------------
+	--- 3b) WHITE AND BLACK DWARF MATTER (issue #699, the maintainer's decision: from the godforge, no eye of harmony)
+	--- GT makes them only in the eye of harmony (the dump's gt.recipe.eyeofharmony): besides raw star matter its tiers
+	--- give white dwarf matter (100 000 to 300 000 L of star matter: 1 152, 4 608, 18 432 L), black dwarf matter
+	--- (400 000 to 600 000 L) or universium (700 000 to 900 000 L). Here the molten module turns raw star matter into
+	--- them at the best of those ratios (18 432 L per 300 000 L and per 600 000 L), in the universium recipe's time per
+	--- unit scaled by GT's run times for 18 432 L (white 13.7 h, black 37.6 h, universium 103.3 h). 143 casts them, 158
+	--- makes their parts (GT's WhiteDwarfMatter and BlackDwarfMatter); the space elevator's pump module Mk-III takes them.
+	--------------------------------------------------------------------------------
+	local DWARF_BATCH = 144
+	for _, d in pairs({ { "white", { 210, 210, 210 }, 300000, 13.72 }, { "black", { 115, 115, 115 }, 600000, 37.65 } }) do
+		local melt = "molten-" .. d[1] .. "-dwarf-matter"
+		F.fluid(melt, melt, { d[2][1] / 255, d[2][2] / 255, d[2][3] / 255 })
+		create_item{ skip_recipe = true, name = d[1] .. "-dwarf-matter-ingot",
+			subgroup = data.raw.item["universium-ingot"] and data.raw.item["universium-ingot"].subgroup or "subgroup-smelting" }
+		local time = mk5_seconds / 6 * (DWARF_BATCH / batch) * (d[4] / 103.3)
+		--- (the star matter it turns into the melt and the forge's fuel in one ingredient)
+		godforge_recipe("molten", {
+			name = melt, time = time, fuel = false,
+			ingredients = { fluid(STAR, DWARF_BATCH * d[3] / 18432 + time * STAR_FUEL) },
+			results = { fluid(melt, DWARF_BATCH) },
+		})
+	end
 end
 
 
