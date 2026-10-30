@@ -916,6 +916,8 @@ require("prototypes.fork-boiler-output")
 --- Fork: GT New Horizons' overclocking (issue #616, startup setting, default off): the machines' power grows 4 times per
 --- tier; after every file that makes or changes a machine
 require("prototypes.fork-gt-overclocking")
+--- issue #618: maintenance of the multiblocks (startup setting, default off), after every file that makes a machine
+require("prototypes.fork-maintenance")
 --- Fork: steam per second in the descriptions of the boilers and the steam machines (issue #564), after every file that
 --- makes or changes them
 require("prototypes.fork-steam-rates")

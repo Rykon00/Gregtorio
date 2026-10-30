@@ -191,6 +191,7 @@ local function tests_running()
 	check(storage.solar and storage.solar.done, "solar boilers")
 	check(storage.coal_boiler and storage.coal_boiler.done, "coal boiler")
 	check(storage.torch and storage.torch.done, "torch")
+	check(storage.maint and storage.maint.done, "maintenance")
 	check(storage.battery and storage.battery.done, "battery buffers")
 	return running
 end
@@ -1487,6 +1488,76 @@ function torch_test()
 	for _, p in pairs(problems) do log("DEVCHECK-RUNTIME-FAIL torch test: " .. p) end
 	log("DEVCHECK-RUNTIME-TORCH " .. (#problems == 0 and "ok" or "failed") .. " (torch " .. name(t.valid and t.status)
 		.. ", electric lamp " .. name(l.valid and l.status) .. " at midnight without power)")
+end
+
+--- Maintenance (issue #618, scripts/fork-maintenance.lua): with the setting off no machine has a maintenance slot; with it on
+--- the first crafting multiblock of the mod data stands on a surface of its own, its time is set to 0 through the remote:
+--- with its slot empty it stops ("Needs maintenance"), with a Maintenance Kit put in it runs again, the kit used up and a
+--- kit's time left
+local MT_WAIT = 400
+function setup_maintenance_test(_)
+	if not settings.startup["gregtorio-continued-maintenance"].value then
+		local bad
+		for _, t in pairs({ "assembling-machine", "furnace" }) do
+			for name, pr in pairs(prototypes.get_entity_filtered{ { filter = "type", type = t } }) do
+				if pr.allowed_module_categories and pr.allowed_module_categories["maintenance"] then bad = name end
+			end
+		end
+		storage.maint = { off = true, bad = bad }
+		return {}
+	end
+	local md = prototypes.mod_data["fork-maintenance"]
+	local name = md and md.data.machines[1]
+	if not name then return { "maintenance test: no machine in the mod data fork-maintenance" } end
+	local ms = game.create_surface("devcheck-maintenance")
+	ms.request_to_generate_chunks({ 0, 0 }, 2)
+	ms.force_generate_chunk_requests()
+	local tiles = {}
+	for x = -12, 12 do for y = -12, 12 do tiles[#tiles + 1] = { name = "landfill", position = { x, y } } end end
+	ms.set_tiles(tiles)
+	for _, e in pairs(ms.find_entities{ { -12, -12 }, { 12, 12 } }) do e.destroy() end
+	local e = ms.create_entity{ name = name, position = { 0.5, 0.5 }, force = "player", raise_built = true }
+	if not e then return { "maintenance test: could not place " .. name } end
+	remote.call("fork-maintenance", "set_left", e, 0)
+	storage.maint = { e = e, at = game.tick, phase = 1, kit_ticks = md.data.kit_ticks }
+	return {}
+end
+
+function maintenance_test()
+	local st = storage.maint
+	if not st or st.done then return end
+	if st.off then
+		st.done = true
+		if st.bad then log("DEVCHECK-RUNTIME-FAIL maintenance test: " .. st.bad .. " has a maintenance slot with the setting off") end
+		log("DEVCHECK-RUNTIME-MAINT " .. (st.bad and "failed" or "ok") .. " (setting off: no maintenance slot)")
+		return
+	end
+	if game.tick < st.at + MT_WAIT then return end
+	local e, problems = st.e, st.problems or {}
+	st.problems = problems
+	if not e.valid then
+		problems[#problems + 1] = "the machine is gone"
+		st.done = true
+	elseif st.phase == 1 then
+		local rs = remote.call("fork-maintenance", "state", e)
+		if not (rs and rs.stopped and e.disabled_by_script and e.custom_status) then
+			problems[#problems + 1] = "with its time at 0 and no kit it does not stop (state " .. serpent.line(rs) .. ")"
+		end
+		e.get_module_inventory().insert{ name = "maintenance-kit", count = 1 }
+		st.phase, st.at = 2, game.tick
+		return
+	else
+		local rs = remote.call("fork-maintenance", "state", e)
+		if not rs or rs.stopped or e.disabled_by_script then problems[#problems + 1] = "with a kit in its slot it stays stopped" end
+		if e.get_module_inventory().get_item_count("maintenance-kit") ~= 0 then problems[#problems + 1] = "the kit was not used up" end
+		if rs and rs.left < st.kit_ticks - 2 * MT_WAIT then
+			problems[#problems + 1] = "only " .. rs.left .. " ticks left after a kit (" .. st.kit_ticks .. " expected)"
+		end
+		st.done = true
+	end
+	if not st.done then return end
+	for _, p in pairs(problems) do log("DEVCHECK-RUNTIME-FAIL maintenance test: " .. p) end
+	log("DEVCHECK-RUNTIME-MAINT " .. (#problems == 0 and "ok" or "failed") .. " (" .. e.name .. ": stopped without a kit, ran on with one)")
 end
 
 --- Battery buffers (issue #444, prototypes/145-fork-power-multiblocks.lua section 8): an LV Battery Buffer (1 battery)
@@ -3290,6 +3361,7 @@ script.on_nth_tick(10, function()
 	solar_test()
 	coal_boiler_test()
 	torch_test()
+	maintenance_test()
 	battery_test()
 	veins_test()
 	classic_test()
@@ -3374,6 +3446,7 @@ script.on_init(function()
 	for _, f in pairs(setup_solar_test(s)) do fails[#fails + 1] = f end
 	for _, f in pairs(setup_coal_boiler_test(s)) do fails[#fails + 1] = f end
 	for _, f in pairs(setup_torch_test(s)) do fails[#fails + 1] = f end
+	for _, f in pairs(setup_maintenance_test(s)) do fails[#fails + 1] = f end
 	for _, f in pairs(setup_battery_test(s)) do fails[#fails + 1] = f end
 	for _, f in pairs(setup_veins_test()) do fails[#fails + 1] = f end
 	for _, f in pairs(setup_classic_test(s)) do fails[#fails + 1] = f end

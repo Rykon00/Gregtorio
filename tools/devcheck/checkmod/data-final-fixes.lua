@@ -210,6 +210,24 @@ if FORK_GT_OVERCLOCKING then
 end
 section("OVERCLOCK", oc)
 
+--- Issue #618: every crafting machine with whether it is a crafting multiblock (FORK_MAINTENANCE.multiblocks), whether it allows
+--- the module category maintenance and whether prototypes/fork-maintenance.lua listed it; the first row: the setting
+local mt = {}
+if FORK_MAINTENANCE then
+	mt[1] = "setting	" .. tostring(FORK_MAINTENANCE.on)
+	--- (the rule once more after every file: a machine made after fork-maintenance.lua would be missing)
+	local multi = FORK_MAINTENANCE.multiblocks and FORK_MAINTENANCE.multiblocks() or {}
+	for _, t in pairs({ "assembling-machine", "furnace" }) do
+		for name, e in pairs(data.raw[t] or {}) do
+			local allows = false
+			for _, c in pairs(e.allowed_module_categories or {}) do allows = allows or c == "maintenance" end
+			mt[#mt + 1] = name .. "	" .. tostring(multi[name] or false) .. "	" .. tostring(allows) .. "	"
+				.. tostring(FORK_MAINTENANCE.machines[name] or false)
+		end
+	end
+end
+section("MAINT", mt)
+
 --- Issue #602: the items that spoil on purpose (FORK_SPOILING_KEPT in data-final-fixes.lua; absent in older versions)
 local sk = {}
 for name, reason in pairs(FORK_SPOILING_KEPT or {}) do sk[#sk + 1] = name .. "\t" .. reason end

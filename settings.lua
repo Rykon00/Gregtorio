@@ -43,5 +43,14 @@ data:extend({
 		setting_type = "startup",
 		default_value = false,
 		order = "e"
+	},
+	--- Fork: maintenance of the multiblocks (issue #618, prototypes/fork-maintenance.lua): a kit in a slot per 2 hours of
+	--- running; default off
+	{
+		type = "bool-setting",
+		name = "gregtorio-continued-maintenance",
+		setting_type = "startup",
+		default_value = false,
+		order = "f"
 	}
 })

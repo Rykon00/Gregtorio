@@ -1223,6 +1223,9 @@ def icon_table(c):
                                                            "gt:miscutils/textures/blocks/iconsets/controllerFaces/industrialDehydrator")
     T["integral-encasement-i"] = lambda: c.gt(f"{BLK}INTEGRAL_FRAMEWORK_ULV")
     # issue #356 part 3: the netherite chain's items (gt.metaitem.03 248-250, MetaGeneratedItem03.java:1809-1824)
+    # issue #618: GT's Duct Tape (IDMetaItem01 764) and the Maintenance Kit (GT's maintenance hatch overlay)
+    T["duct-tape"] = lambda: c.gt(M1 + "764")
+    T["maintenance-kit"] = lambda: c.gt(BLK + "OVERLAY_MAINTENANCE")
     # issue #613: GT's coke oven controller (the casing with its inactive front) and hatch (the casing with the pipe)
     def coke(overlay):
         img = c.gt(BLK + "COKE_OVEN_CASING").copy()
