@@ -614,6 +614,17 @@
   is first loaded once with Gregtorio v0.5.2 and me-network v0.5.0, because me-network 0.5.1 refuses it, issue #209). See
   `tools/devcheck/README.md`. Runtime maps use a fixed seed and a cleared test area, so a red run is
   reproducible (`--seed <printed seed>`) and never bad luck; `--seed random` checks other terrain.
+- Desync (issue #651): `devcheck.py desync` (part of `all`; `all --no-desync` leaves it out, as the CI of a pull request
+  does) runs the runtime map on a headless server with nobody connected (`auto_pause` off) in Factorio's heavy mode
+  (`/toggle-heavy-mode` over RCON: each tick the game is saved, loaded and run on both copies; a difference logs
+  `Heavy mode check <point> failed` and writes `dumps/` in the write data) for `--desync-ticks` (600, ~0.5 s a tick).
+  Probed: a script state outside `storage` that changes the world (a local counter that builds) fails at once; one that
+  only writes `storage` does not. A headless Factorio cannot join a game as a client, so there is no two-process run.
+  The scripts' player paths take a player object: `scripts/fork-stand-in.lua` makes a stand-in player (index, character,
+  teleport, `gui.relative` with stand-in elements) and the remotes `fork-portals.stand_in_step`,
+  `fork-ender.stand_in_panel` and `fork-electric-mine.stand_in_pre_build` drive them (runtime PLAYER test). A new player
+  path keeps its LuaPlayer use to what the stand-in has, or extends it. The first Lua command over RCON only warns
+  (achievements): send it twice.
 - Every referenced `__gregtorio-continued__/...` file must exist (headless Factorio does not check
   graphics, the real game crashes on missing files).
 - The mod is `gregtorio-continued` (Gregtorio Continued) since 0.3.0, in the repo and on the mod

@@ -18,6 +18,7 @@
 --------------------------------------------------------------------------------
 
 local M = {}
+local stand_in = require("scripts.fork-stand-in")   -- issue #651
 local CHEST, TANK = "ender-chest", "ender-tank"
 local LEVEL_TICKS = 20   -- (free: the molds take 30, the ore drills 60, the solar boilers 120, fork-power on_tick)
 local PANEL = "fork-ender-panel"
@@ -134,7 +135,11 @@ end)
 function M.on_gui_opened(event)
 	local e = event.entity
 	if not (e and e.valid and (e.name == CHEST or e.name == TANK)) then return end
-	local player = game.get_player(event.player_index)
+	M.open_panel(game.get_player(event.player_index), e)
+end
+
+--- the panel for `player` (or issue #651's stand-in) and the chest or tank `e`; returns the panel
+function M.open_panel(player, e)
 	if player.gui.relative[PANEL] then player.gui.relative[PANEL].destroy() end
 	local frame = player.gui.relative.add{ type = "frame", name = PANEL, direction = "vertical",
 		caption = { "fork-ender.code" }, anchor = { position = defines.relative_gui_position.right,
@@ -148,6 +153,7 @@ function M.on_gui_opened(event)
 			tags = { unit = e.unit_number } }
 	end
 	state().open[player.index] = e
+	return frame
 end
 
 function M.on_gui_closed(event)
@@ -157,9 +163,13 @@ function M.on_gui_closed(event)
 end
 
 function M.on_gui_selection_state_changed(event)
-	local el = event.element
+	M.colour_chosen(event.player_index, event.element)
+end
+
+--- a drop-down of the panel changed (a real one or issue #651's stand-in)
+function M.colour_chosen(player_index, el)
 	if not (el and el.valid and el.name:match("^fork%-ender%-colour%-%d$")) then return end
-	local e = storage.fork_ender and storage.fork_ender.open[event.player_index]
+	local e = storage.fork_ender and storage.fork_ender.open[player_index]
 	if not (e and e.valid) then return end
 	local p = el.parent
 	local shown = {}
@@ -206,6 +216,21 @@ function M.on_player_setup_blueprint(event)
 end
 
 remote.add_interface("fork-ender", {
+	--- issue #651: a stand-in player of index `index` opens `entity`'s panel, picks the shown colours `shown` (three
+	--- indexes, or nil) and closes it: the drop-downs' indexes before the pick and the code after
+	stand_in_panel = function(entity, index, shown)
+		local player = stand_in.player(index, nil)
+		local frame = M.open_panel(player, entity)
+		local before = {}
+		for i = 1, 3 do before[i] = frame["fork-ender-colour-" .. i].selected_index end
+		if shown then
+			for i = 1, 3 do frame["fork-ender-colour-" .. i].selected_index = shown[i] end
+			M.colour_chosen(index, frame["fork-ender-colour-1"])
+		end
+		frame.destroy()
+		state().open[index] = nil
+		return { before = before, code = M.get_code(entity) }
+	end,
 	set_code = function(entity, code) M.set_code(entity, code) end,
 	get_code = function(entity) return M.get_code(entity) end,
 	shown_of = function(code) return M.shown_of(code) end,

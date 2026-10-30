@@ -195,6 +195,7 @@ local function tests_running()
 	check(storage.ebf_heat and storage.ebf_heat.done, "ebf heat")
 	check(storage.radiation and storage.radiation.done, "radiation")
 	check(storage.wireless and storage.wireless.done, "wireless")
+	check(storage.player_paths and storage.player_paths.done, "player paths")
 	check(storage.battery and storage.battery.done, "battery buffers")
 	return running
 end
@@ -1491,6 +1492,57 @@ function torch_test()
 	for _, p in pairs(problems) do log("DEVCHECK-RUNTIME-FAIL torch test: " .. p) end
 	log("DEVCHECK-RUNTIME-TORCH " .. (#problems == 0 and "ok" or "failed") .. " (torch " .. name(t.valid and t.status)
 		.. ", electric lamp " .. name(l.valid and l.status) .. " at midnight without power)")
+end
+
+--- Player paths (issue #651, scripts/fork-stand-in.lua): the scripts' paths that need a player, driven by a stand-in
+--- player (a headless game has none): a player steps onto a Nether Portal (and not again within its cooldown), opens
+--- an Ender Chest's panel and picks three colours, fast-replaces a Manual Mine by an LV Miner (the vein is kept)
+local PP_X, PP_Y = 440.5, -105.5
+function setup_player_test(s)
+	local st = { problems = {} }
+	storage.player_paths = st
+	local function expect(ok, what) if not ok then st.problems[#st.problems + 1] = what end end
+	local ok, err = pcall(function()
+		--- the portal
+		local portal = s.create_entity{ name = "nether-portal", position = { PP_X, PP_Y }, force = "player", raise_built = true }
+		local c = s.create_entity{ name = "character", position = portal.position, force = "player" }
+		expect(remote.call("fork-portals", "stand_in_step", c, 1001), "stepping onto the portal: no travel")
+		expect(c.valid and c.surface.name == "gt-nether", "stepping onto the portal: the character is on " .. c.surface.name)
+		local out = c.surface.find_entities_filtered{ name = "nether-portal", position = c.position, radius = 8 }[1]
+		if out then
+			c.teleport(out.position)
+			expect(not remote.call("fork-portals", "stand_in_step", c, 1001), "stepping back at once: no cooldown")
+		end
+		--- the Ender panel
+		local chest = s.create_entity{ name = "ender-chest", position = { PP_X, PP_Y + 10 }, force = "player", raise_built = true }
+		local code = remote.call("fork-ender", "get_code", chest)
+		local r = remote.call("fork-ender", "stand_in_panel", chest, 1002, { 2, 3, 4 })
+		local shown = remote.call("fork-ender", "shown_of", code)
+		expect(r.before[1] == shown[1] and r.before[2] == shown[2] and r.before[3] == shown[3],
+			"the panel showed " .. serpent.line(r.before) .. ", not the chest's code " .. serpent.line(shown))
+		expect(r.code == remote.call("fork-ender", "code_of", { 2, 3, 4 }), "picking colours 2, 3, 4 set the code " .. tostring(r.code))
+		--- the fast replace
+		local mine = s.create_entity{ name = "dimension-mine", position = { PP_X, PP_Y + 20 }, force = "player", raise_built = true }
+		mine.set_recipe("mining-copper-tin-vein")
+		local pos = mine.position
+		local builder = s.create_entity{ name = "character", position = { PP_X + 5, PP_Y + 20 }, force = "player" }
+		remote.call("fork-electric-mine", "stand_in_pre_build", builder, 1003, pos)
+		local miner = s.create_entity{ name = "lv-dimension-miner", position = pos, force = "player", fast_replace = true,
+			spill = true, raise_built = true }
+		local recipe = miner and miner.valid and miner.get_recipe()
+		expect(recipe and recipe.name == "miner-copper-tin-vein", "the fast replace lost the vein (" .. tostring(recipe and recipe.name) .. ")")
+	end)
+	if not ok then st.problems[#st.problems + 1] = "error: " .. tostring(err) end
+	return {}
+end
+
+function player_test()
+	local st = storage.player_paths
+	if not st or st.done then return end
+	st.done = true
+	for _, p in pairs(st.problems) do log("DEVCHECK-RUNTIME-FAIL player path test: " .. p) end
+	log("DEVCHECK-RUNTIME-PLAYER " .. (#st.problems == 0 and "ok" or "failed")
+		.. " (a stand-in player: the Nether Portal and its cooldown, the Ender panel, a Manual Mine's fast replace)")
 end
 
 --- Wireless energy (issue #622, scripts/fork-wireless.lua): the energy a UHV Wireless Dynamo Hatch drew on one surface
@@ -3541,6 +3593,7 @@ script.on_nth_tick(10, function()
 	ebf_heat_test()
 	radiation_test()
 	wireless_test()
+	player_test()
 	battery_test()
 	veins_test()
 	classic_test()
@@ -3629,6 +3682,7 @@ script.on_init(function()
 	for _, f in pairs(setup_ebf_heat_test(s)) do fails[#fails + 1] = f end
 	for _, f in pairs(setup_radiation_test(s)) do fails[#fails + 1] = f end
 	for _, f in pairs(setup_wireless_test(s)) do fails[#fails + 1] = f end
+	for _, f in pairs(setup_player_test(s)) do fails[#fails + 1] = f end
 	for _, f in pairs(setup_battery_test(s)) do fails[#fails + 1] = f end
 	for _, f in pairs(setup_veins_test()) do fails[#fails + 1] = f end
 	for _, f in pairs(setup_classic_test(s)) do fails[#fails + 1] = f end
