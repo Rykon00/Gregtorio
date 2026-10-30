@@ -252,6 +252,16 @@ local ehl = {}
 for name, why in pairs(FORK_EBF_HEAT_LATE or {}) do ehl[#ehl + 1] = name .. "	" .. why end
 section("EBFHEATLATE", ehl)
 
+--- Issue #621: the radiation setting, the radioactive items of the mod data with their level, the protecting armors
+--- (prototypes/fork-radiation.lua; absent in older versions)
+local rad = {}
+if FORK_RADIATION then
+	rad[1] = "setting\t" .. tostring(FORK_RADIATION.on)
+	for name, level in pairs(FORK_RADIATION.items or {}) do rad[#rad + 1] = "item\t" .. name .. "\t" .. level end
+	for _, name in pairs(FORK_RADIATION.protect or {}) do rad[#rad + 1] = "armor\t" .. name end
+end
+section("RADIATION", rad)
+
 --- Issue #602: the items that spoil on purpose (FORK_SPOILING_KEPT in data-final-fixes.lua; absent in older versions)
 local sk = {}
 for name, reason in pairs(FORK_SPOILING_KEPT or {}) do sk[#sk + 1] = name .. "\t" .. reason end

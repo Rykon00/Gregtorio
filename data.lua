@@ -163,6 +163,8 @@ require("prototypes.169-fork-single-generators")
 require("prototypes.170-fork-smeltery")
 --- issue #618: the maintenance kits and duct tape (setting gregtorio-continued-maintenance; their slots: data-final-fixes)
 require("prototypes.171-fork-maintenance")
+--- issue #621: the Hazmat Suit (setting gregtorio-continued-radiation; the radioactive items: data-final-fixes)
+require("prototypes.172-fork-radiation")
 --- issue #190: GTNH's material recycling (macerator, arc furnace, fluid extractor), after every file that makes recipes
 require("prototypes.157-fork-recycling")
 --- issue #689: GT New Horizons' tiers, times, item amounts and chances from the recipe dump (after every file that makes

@@ -193,6 +193,7 @@ local function tests_running()
 	check(storage.torch and storage.torch.done, "torch")
 	check(storage.maint and storage.maint.done, "maintenance")
 	check(storage.ebf_heat and storage.ebf_heat.done, "ebf heat")
+	check(storage.radiation and storage.radiation.done, "radiation")
 	check(storage.battery and storage.battery.done, "battery buffers")
 	return running
 end
@@ -1489,6 +1490,58 @@ function torch_test()
 	for _, p in pairs(problems) do log("DEVCHECK-RUNTIME-FAIL torch test: " .. p) end
 	log("DEVCHECK-RUNTIME-TORCH " .. (#problems == 0 and "ok" or "failed") .. " (torch " .. name(t.valid and t.status)
 		.. ", electric lamp " .. name(l.valid and l.status) .. " at midnight without power)")
+end
+
+--- Radiation (issue #621, scripts/fork-radiation.lua): with the setting off nothing is radioactive; with it on a
+--- character with a stack of the most radioactive item takes level x (stack / 64) damage a check, and none in a
+--- Hazmat Suit
+function setup_radiation_test(_)
+	local md = prototypes.mod_data["fork-radiation"]
+	if not settings.startup["gregtorio-continued-radiation"].value then
+		storage.radiation = { off = true, bad = md ~= nil }
+		return {}
+	end
+	if not md then return { "radiation test: no mod data fork-radiation" } end
+	local item, level = nil, 0
+	for name, lv in pairs(md.data.items) do
+		if prototypes.item[name] and (lv > level or (lv == level and name < item)) then item, level = name, lv end
+	end
+	if not item then return { "radiation test: no radioactive item" } end
+	local rs = game.create_surface("devcheck-radiation")
+	rs.request_to_generate_chunks({ 0, 0 }, 1)
+	rs.force_generate_chunk_requests()
+	local c = rs.create_entity{ name = "character", position = { 0, 0 }, force = "player" }
+	if not c then return { "radiation test: no character" } end
+	local stack = prototypes.item[item].stack_size
+	c.get_inventory(defines.inventory.character_main).insert{ name = item, count = stack }
+	storage.radiation = { c = c, item = item, level = level, stack = stack }
+	return {}
+end
+
+function radiation_test()
+	local st = storage.radiation
+	if not st or st.done then return end
+	st.done = true
+	if st.off then
+		log("DEVCHECK-RUNTIME-RADIATION " .. (st.bad and "failed" or "ok") .. " (setting off: no mod data fork-radiation)")
+		if st.bad then log("DEVCHECK-RUNTIME-FAIL radiation test: the mod data fork-radiation exists with the setting off") end
+		return
+	end
+	local problems, c = {}, st.c
+	local hp = c.health
+	local dose = remote.call("fork-radiation", "check", c)
+	local want = st.level * math.max(st.stack / 64, 1)
+	if math.abs(dose - want) > 1e-6 or hp - c.health < want * 0.5 then
+		problems[#problems + 1] = st.stack .. " " .. st.item .. " (level " .. st.level .. ") gave " .. dose .. " damage ("
+			.. (hp - c.health) .. " taken), expected " .. want
+	end
+	c.get_inventory(defines.inventory.character_armor).insert{ name = "hazmat-suit", count = 1 }
+	hp = c.health
+	dose = remote.call("fork-radiation", "check", c)
+	if dose ~= 0 or c.health < hp then problems[#problems + 1] = "the Hazmat Suit does not protect (" .. dose .. " damage)" end
+	for _, p in pairs(problems) do log("DEVCHECK-RUNTIME-FAIL radiation test: " .. p) end
+	log("DEVCHECK-RUNTIME-RADIATION " .. (#problems == 0 and "ok" or "failed") .. " (" .. st.stack .. " " .. st.item
+		.. ": " .. want .. " damage a check, none in the Hazmat Suit)")
 end
 
 --- Blast furnace heat (issue #620, scripts/fork-ebf-heat.lua): a blast furnace with the coil it is built with and a
@@ -3444,6 +3497,7 @@ script.on_nth_tick(10, function()
 	torch_test()
 	maintenance_test()
 	ebf_heat_test()
+	radiation_test()
 	battery_test()
 	veins_test()
 	classic_test()
@@ -3530,6 +3584,7 @@ script.on_init(function()
 	for _, f in pairs(setup_torch_test(s)) do fails[#fails + 1] = f end
 	for _, f in pairs(setup_maintenance_test(s)) do fails[#fails + 1] = f end
 	for _, f in pairs(setup_ebf_heat_test(s)) do fails[#fails + 1] = f end
+	for _, f in pairs(setup_radiation_test(s)) do fails[#fails + 1] = f end
 	for _, f in pairs(setup_battery_test(s)) do fails[#fails + 1] = f end
 	for _, f in pairs(setup_veins_test()) do fails[#fails + 1] = f end
 	for _, f in pairs(setup_classic_test(s)) do fails[#fails + 1] = f end

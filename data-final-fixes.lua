@@ -920,6 +920,8 @@ require("prototypes.fork-gt-overclocking")
 require("prototypes.fork-ebf-heat")
 --- issue #618: maintenance of the multiblocks (startup setting, default off), after every file that makes a machine
 require("prototypes.fork-maintenance")
+--- issue #621: the radioactive items and the protecting armors (startup setting, default off)
+require("prototypes.fork-radiation")
 --- Fork: steam per second in the descriptions of the boilers and the steam machines (issue #564), after every file that
 --- makes or changes them
 require("prototypes.fork-steam-rates")

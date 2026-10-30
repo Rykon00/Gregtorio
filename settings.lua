@@ -52,5 +52,13 @@ data:extend({
 		setting_type = "startup",
 		default_value = false,
 		order = "f"
+	},
+	--- Fork: GT New Horizons' radiation (issue #621): radioactive items hurt a character without a Hazmat Suit; default off
+	{
+		type = "bool-setting",
+		name = "gregtorio-continued-radiation",
+		setting_type = "startup",
+		default_value = false,
+		order = "g"
 	}
 })

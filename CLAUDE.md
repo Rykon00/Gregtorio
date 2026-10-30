@@ -555,6 +555,14 @@
   (the reach check: some furnace with a coil made at the recipe's technology has its heat; FORK_EBF_HEAT_LATE), runtime
   EBFHEAT test. Recipe categories in 2.1 data are `categories` (`fork_category(r)`); the script keeps each recipe's
   tier in its mod data instead of reading a runtime category.
+- Radiation (issue #621): the startup setting `gregtorio-continued-radiation` (default off). `tools/gt_radioactivity.py`
+  parses GT5-Unofficial's source (GT materials with the radioactivity enchantment, bartworks' `setRadioactive`, GT++'s
+  radiation levels with its alloy average) into the committed `tools/gtnh_dump/gt-radioactivity.json`;
+  `devcheck.py check --radioactive` maps it through the dump's items (tools/gtnh_map.py `radioactive`, plus the fuel
+  rods by name) onto `prototypes/data/radioactive.lua`. 172 makes the Hazmat Suit (armor needs `infinite = true` or a
+  durability in 2.1), `prototypes/fork-radiation.lua` (data-final-fixes) the mod data, `scripts/fork-radiation.lua`
+  damages each connected player's character every 60 ticks (remote `fork-radiation.check` for the runtime test).
+  Section RADIATION; `devcheck.py all`'s overclocking stage loads it on too.
 - Maintenance (issue #618): the startup setting `gregtorio-continued-maintenance` (default off). 171 makes the kits
   (`maintenance-kit`, `duct-tape`: modules of the category `maintenance` with no effect) and their recipes in the data
   stage; `prototypes/fork-maintenance.lua` (from `data-final-fixes.lua`) defines the category only then (150 gives the
