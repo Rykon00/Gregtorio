@@ -165,6 +165,8 @@ require("prototypes.170-fork-smeltery")
 require("prototypes.171-fork-maintenance")
 --- issue #621: the Hazmat Suit (setting gregtorio-continued-radiation; the radioactive items: data-final-fixes)
 require("prototypes.172-fork-radiation")
+--- issue #622: the wireless energy and dynamo hatches (GT New Horizons' wireless EU, UHV to UXV)
+require("prototypes.173-fork-wireless")
 --- issue #190: GTNH's material recycling (macerator, arc furnace, fluid extractor), after every file that makes recipes
 require("prototypes.157-fork-recycling")
 --- issue #689: GT New Horizons' tiers, times, item amounts and chances from the recipe dump (after every file that makes

@@ -402,6 +402,7 @@ FORK_TECH_ICONS = {
 	["water-purification"] = true,
 	["wetware-processor-mainframes"] = true,
 	["wetware-processors"] = true,
+	["wireless-energy"] = true,
 	["wyvern-cores"] = true,
 	["wyvern-cores"] = true,
 	["yocto-power-ics"] = true,

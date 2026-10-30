@@ -16,6 +16,7 @@ local fork_steam_boilers = require("scripts.fork-steam-boilers")
 local fork_maintenance = require("scripts.fork-maintenance")   -- issue #618
 local fork_ebf_heat = require("scripts.fork-ebf-heat")   -- issue #620
 require("scripts.fork-radiation")   -- issue #621
+local fork_wireless = require("scripts.fork-wireless")   -- issue #622
 --- Fork: the map veins get a chart tag with their name (issue #497, see prototypes/165-fork-ore-veins.lua)
 local fork_ore_veins = require("scripts.fork-ore-veins")
 --- Fork: the Ore Drilling Plants drink Drilling Fluid per ore mined (issue #499, see prototypes/163-fork-electric-mine.lua)
@@ -39,6 +40,7 @@ local function on_built(event)
   fork_steam_boilers.on_built(entity)
   fork_maintenance.on_built(entity)
   fork_ebf_heat.on_built(entity)
+  fork_wireless.on_built(entity)
   fork_ore_drills.on_built(entity)
   fork_ender.on_built(entity, event.tags)   -- issue #546: the code of a blueprint
 end
@@ -63,6 +65,7 @@ script.on_event({ defines.events.script_raised_built, defines.events.script_rais
   fork_steam_boilers.on_built(event.entity)
   fork_maintenance.on_built(event.entity)
   fork_ebf_heat.on_built(event.entity)
+  fork_wireless.on_built(event.entity)
   fork_ore_drills.on_built(event.entity)
   fork_ender.on_built(event.entity, event.tags)
 end)
@@ -74,6 +77,7 @@ script.on_event(defines.events.on_entity_cloned, function(event)
   fork_steam_boilers.on_built(event.destination)
   fork_maintenance.on_built(event.destination)
   fork_ebf_heat.on_built(event.destination)
+  fork_wireless.on_built(event.destination)
   fork_ore_drills.on_built(event.destination)
   fork_ender.on_built(event.destination)
 end)
@@ -172,6 +176,7 @@ script.on_configuration_changed(function(data)
 	fork_steam_boilers.on_configuration_changed()
 	fork_maintenance.on_configuration_changed()
 	fork_ebf_heat.on_configuration_changed()
+	fork_wireless.on_configuration_changed()
 	fork_ore_drills.on_configuration_changed()
 	fork_ore_veins.on_configuration_changed()   -- issue #563: a save whose ore mode changed
 end)
