@@ -1020,7 +1020,8 @@ def recycling_imports(dump, g):
     """Issue #686: GT's recycling recipes of the material parts in Gregtorio's units, [entry] sorted by kind and part;
     a part that a Gregtorio recipe of the machine (not this import) takes already is left out, as is a second GT
     recipe of the same part and machine. Also the other items GT recycles (components, casings, machines), which 157
-    recycles by its own rule (their composition from Gregtorio's recipes, the decision on #190). Returns (entries,
+    recycles by its own rule (their composition from Gregtorio's recipes, the decision on #190). Issue #674: also GT's
+    ingot -> dust of the macerator's own map, for a Gregtorio ingot whose maceration is missing. Returns (entries,
     items, Counter of the parts left out by kind)"""
     mp = Mapper(dump, g)
     taken = defaultdict(set)
@@ -1035,19 +1036,25 @@ def recycling_imports(dump, g):
     out, seen, skipped, others = [], set(), Counter(), set()
     for mname, r in gt_recipes(dump):
         kind = RECYCLING_IMPORT.get(mname)
-        if not kind:
+        # (issue #674: GT's ingot -> dust too, where Gregtorio's macerator lacks it, as for the metals whose dust is new;
+        # GT registers it in the macerator's own map, not in its recycling category)
+        if not kind and mname != "gt.recipe.macerator":
             continue
         items = [s for s in r["in"] if not (s.get("nc") or s.get("circuit") is not None or not s.get("n", 1))]
         if len(items) != 1:
             continue
         prefix = dump["items"].get(items[0].get("id"), {}).get("prefix") or ""
-        if prefix and not PART_PREFIX.match(prefix):
+        if not kind:
+            if prefix != "ingot":
+                continue
+            kind = "macerator"
+        elif prefix and not PART_PREFIX.match(prefix):
             continue
         mapped, bad = map_recipe(mp, r)
         if bad or mapped.get("oreblock") or len(mapped["ins"]) != 1 or not (mapped["outs"] or mapped["fout"]):
             continue
         item = next(iter(mapped["ins"]))
-        if item in RECYCLING_SKIP:
+        if item in RECYCLING_SKIP or (prefix == "ingot" and not item.endswith("-ingot")):
             continue
         # (GT++'s alloy parts have no GT prefix: a part by its Gregtorio name; the rest is a component)
         if not prefix and not GREG_PART.match(item):

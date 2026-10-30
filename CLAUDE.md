@@ -174,7 +174,8 @@
   - 143 casting (issue #91: solidifier casts of every form and extractor melts of every ingot from its table `MATERIALS`
     (tier, technology, the colour of a new melt); 199's auto-unlock ignores these recipes (`FORK_CASTING.recipes`), else
     an ingot would count as its own producer; must load before 150, whose molds it needs, and before 196, 198 and 199;
-    `FORK_CASTING.run` runs once more at the end of 155 for the ingots and nuggets 155 makes, issue #207)
+    `FORK_CASTING.run` runs once more at the end of 155 for the ingots and nuggets 155 makes, issue #207; issue #674:
+    `casts = false` makes the melt only, where GT casts the melt into other items, as cast iron)
   - 145 power multiblocks (issue #97: the large steam turbine and the high pressure steam turbine as generators of 136
     with superheated steam, the fluid nuclear reactor (burner recipe machine for the fuel rods) and the large heat
     exchanger with coolant and hot coolant, the lapotronic supercapacitor as an accumulator per capacitor tier (IV, LuV
@@ -235,7 +236,9 @@
     after 154 and before 150)
   - 158 GT parts (issues #222, #223, #227 and #228: GT's parts of every metal from `prototypes/gt-parts-data.lua`
     (regenerate it with `tools/gen_gt_parts.py` after a `devcheck.py check` when a metal is added; sources: GT
-    materials, GT++ alloys and elements, bartworks and goodgenerator Werkstoffe with their own recipe numbers) and GT's
+    materials, GT++ alloys and elements, bartworks and goodgenerator Werkstoffe with their own recipe numbers; issue
+    #674: the data names GT's dust of every metal, the run makes a missing one before section 1; `DUST_NAME` keeps
+    the names, since section 1 of the first run sets `d.dust` to nil for a metal whose ingot comes in 164) and GT's
     nugget recipes, unlocked with 155's `unlock_after` through `FORK_ORE_CHAIN`; loads after 155 and before 150; issue
     #467: its sections 1 and 2 are `FORK_GT_PARTS.run()`, run again at the end of 164 (section 38) for the metals whose
     ingot comes later; #223
