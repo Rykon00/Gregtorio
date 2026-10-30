@@ -192,6 +192,7 @@ local function tests_running()
 	check(storage.coal_boiler and storage.coal_boiler.done, "coal boiler")
 	check(storage.torch and storage.torch.done, "torch")
 	check(storage.maint and storage.maint.done, "maintenance")
+	check(storage.water_pump and storage.water_pump.done, "water pump")
 	check(storage.ebf_heat and storage.ebf_heat.done, "ebf heat")
 	check(storage.radiation and storage.radiation.done, "radiation")
 	check(storage.wireless and storage.wireless.done, "wireless")
@@ -1061,6 +1062,14 @@ function setup_recipe_test(s)
 			-- a recipe that needs a mold (prototypes/150-fork-molds.lua) gets one in the mold slot
 			local molds = prototypes.mod_data["fork-mold-recipes"]
 			if molds and molds.data[def[2]] then e.get_module_inventory().insert{ name = molds.data[def[2]] } end
+			-- issue #620: a blast furnace gets the hottest coil (a recipe's heat is reached with the coils of its
+			-- technology; the furnace's own coil can be too cold, then scripts/fork-ebf-heat.lua stops it)
+			local heat = prototypes.mod_data["fork-ebf-heat"]
+			if heat and heat.data.machines[e.name] then
+				local hottest, coil = 0, nil
+				for c, h in pairs(heat.data.coils) do if h > hottest then hottest, coil = h, c end end
+				e.get_module_inventory().insert{ name = coil }
+			end
 			-- (fluids first: a furnace takes the item of an item and fluid recipe only with the fluid in it, issue #560)
 			for _, kind in pairs({ "fluid", "item" }) do
 				for _, ing in pairs(prototypes.recipe[def[2]].ingredients) do
@@ -1716,6 +1725,31 @@ function ebf_heat_test()
 		log("DEVCHECK-RUNTIME-EBFHEAT " .. (#problems == 0 and "ok" or "failed") .. " (" .. st.recipe .. ": stopped at "
 			.. tostring(st.heat_before) .. " K, ran at " .. tostring(st.heat_after) .. " K with " .. st.coil .. ")")
 	end
+end
+
+--- Steam Water Pumps (issue #613, scripts/fork-steam-boilers.lua): a pump built gets the locked water recipe of its
+--- spot's moisture (the mod data's keys are strings at runtime: the first build after #613 got none)
+function setup_water_pump_test(s)
+	local fails = {}
+	local ok, err = pcall(function()
+		storage.water_pump = { e = s.create_entity{ name = "steam-water-pump", position = { 370.5, 370.5 }, force = "player",
+			raise_built = true } }
+	end)
+	if not ok then fails[#fails + 1] = "water pump test: " .. tostring(err) end
+	return fails
+end
+
+function water_pump_test()
+	local st = storage.water_pump
+	if not st or st.done then return end
+	st.done = true
+	local e = st.e
+	local r = e.valid and e.get_recipe()
+	local name = r and r.name or "none"
+	local good = name:match("^steam%-water%-pump%-water%-%d+$") and e.recipe_locked
+	if not good then log("DEVCHECK-RUNTIME-FAIL water pump test: a Steam Water Pump built has the recipe " .. name
+		.. " (locked " .. tostring(e.valid and e.recipe_locked) .. ")") end
+	log("DEVCHECK-RUNTIME-WATERPUMP " .. (good and "ok" or "failed") .. " (" .. name .. ", locked)")
 end
 
 --- Maintenance (issue #618, scripts/fork-maintenance.lua): with the setting off no machine has a maintenance slot; with it on
@@ -3590,6 +3624,7 @@ script.on_nth_tick(10, function()
 	coal_boiler_test()
 	torch_test()
 	maintenance_test()
+	water_pump_test()
 	ebf_heat_test()
 	radiation_test()
 	wireless_test()
@@ -3679,6 +3714,7 @@ script.on_init(function()
 	for _, f in pairs(setup_coal_boiler_test(s)) do fails[#fails + 1] = f end
 	for _, f in pairs(setup_torch_test(s)) do fails[#fails + 1] = f end
 	for _, f in pairs(setup_maintenance_test(s)) do fails[#fails + 1] = f end
+	for _, f in pairs(setup_water_pump_test(s)) do fails[#fails + 1] = f end
 	for _, f in pairs(setup_ebf_heat_test(s)) do fails[#fails + 1] = f end
 	for _, f in pairs(setup_radiation_test(s)) do fails[#fails + 1] = f end
 	for _, f in pairs(setup_wireless_test(s)) do fails[#fails + 1] = f end

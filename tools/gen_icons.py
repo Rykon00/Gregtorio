@@ -472,12 +472,12 @@ def draw_ender_tank_sprite():
                 px[x, y] = tone(ENDER_BODY, shade)
                 if int(Y) in (34, 35, 70, 71) or abs(X - cx) > rx - 2:
                     px[x, y] = tone(ENDER_TRIM, 0.35 + 0.4 * shade)
-    for y in range(40, 66):   # the window frame around the fluid box
+    for y in range(40, 66):   # the window frame around the fluid box; open inside: the game draws the fluid below
         for x in range(36, 61):
             if x in (36, 60) or y in (40, 65):
                 px[x, y] = tone(ENDER_TRIM, 0.85)
             else:
-                px[x, y] = tone(ENDER_TRIM, 0.08)
+                px[x, y] = (0, 0, 0, 0)
     for i, c in enumerate(ENDER_CODE):   # the code on the lid
         for y in range(10, 17):
             for x in range(28 + 15 * i, 38 + 15 * i):
