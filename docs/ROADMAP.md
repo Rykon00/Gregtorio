@@ -69,7 +69,7 @@ How Gregtorio turns GT New Horizons into Factorio, where the code only implies i
 | #624 | the space elevator at UV, the DTPF at UEV, the godforge at UIV (built: the DTPF's technology 11 packs, the godforge's 12 packs with the UIV assembler, the elevator's 9 packs with cosmic neutronium from the new technology Cosmic Neutronium after the Void Miner III) |
 | #626 | YAFC mode is removed (YAFC sees the map veins and the classic vein recipes; done, #626) |
 | #638 | GT's single-block naquadah reactors Mk I-V and plasma generators come back on GTNH's tiers (built: #644, 169-fork-single-generators.lua) |
-| #629 | cinobite A243 and octiron built (164 section 52, thaumium for Thaumcraft's crystal powders); attuned tengam and proto-halkonite steel built after #636 (164 section 53, tairitsu as tritanium, the freezer's superfluid as super coolant); white and black dwarf matter and phonon medium moved to #699 |
+| #629 | cinobite A243 and octiron built (164 section 52, thaumium for Thaumcraft's crystal powders); attuned tengam and proto-halkonite steel built after #636 (164 section 53, tairitsu as tritanium, the freezer's superfluid as super coolant); white and black dwarf matter and phonon medium moved to #699 (built: the godforge makes them, the conduit's consumer is the Harmonic Phonon Upgrade) |
 | #636 | Phobos's and Deimos's veins as mines with Reach Mars (draconium, oriharukon and the heavy pentele vein at EV, as in GTNH); Seth, Maahes and every other void-minable dimension of T3 to T8 as Void Miner pools; the Deep Dark (T10) as a Void Miner III recipe with every raw ore, technology The Deep Dark at UHV |
 | #631 | in three parts: iodine and GT's hafnium route first (164 section 54: seaweed from the greenhouse, the two centrifuge steps with two fluids in the chemical reactor), then the samarium ore concentrate (section 55: GT's samarium ore in the Void Miner pools of Seth, Barnard C and Centauri Bb, florencite's concentrate, gtnhlanth's chain; the ZPM distillation left out) and the rare earth ion extraction (section 56: GT's ore for every lanthanide with a resin, lanthanum and cerium in the RareEarth vein's pools, the rest in the Deep Dark; technology Rare Earth Ion Extraction at 13 packs, after the Nano Forge's carbon nanites); promethium moved to #632 |
 | #632 | bromine back into demicheleite and lafossaite, radium as barite (Ra)'s byproduct, curium by fusion with GT's second californium route (164 section 57); promethium with the HTGR (#633); dropped: scandium, actinium, francium, astatine, berkelium, einsteinium (no GTNH source or use), technetium and elemental neptunium (no use in the mod); no ingots or melts for the dust-only elements while nothing takes them |
@@ -2072,8 +2072,13 @@ and the godforge, the 36 MAX machines and the MAX turbine.
   the godforge, so they are the faster pre-victory route (6a hook 1: the godforge takes over after victory, nothing is removed).
 - **No eye of harmony** (6a hook 4 stays open). GT's eye is a mining multiblock: per dimension it turns hydrogen and helium into the
   ore dusts of that dimension, plasmas, raw star matter and white or black dwarf matter (the "dark matter" of the drafts; GT has no dark
-  matter), which feed nanites and MHDCSM. None of these has a consumer in the mod, and its two jobs here (raw star matter, universium) are
-  done by the godforge. Its controller would take four godforges and four plasma forges; the item is ready if it comes later.
+  matter), which feed nanites and MHDCSM. Its jobs here (raw star matter, universium and, since #699, white and black dwarf matter
+  for the space elevator's pump module Mk-III) are done by the godforge (the maintainer's decision on #699). Its controller would take
+  four godforges and four plasma forges; the item is ready if it comes later.
+- **Phonon medium** (#699): GT's chain (seed crystal, crystal solution, the medium, thermal superconductor, relativistic heat
+  capacitor) feeds the Harmonic Phonon Transmission Conduit and GT's Exotic Module controller (Heliofusion Exoticizer). GT's chain needs
+  transcendent metal nanites, which come after the exotic module here, so crafting the exoticizer researches a one-time Harmonic Phonon
+  Upgrade (+25 % productivity of the exotic godforge recipes) instead of the exotic module (164 section 60, its stand-ins there).
 - **MAX tier.** GT has the MAX circuit (Planck-scale circuit, from the nanochip assembly complex) and the MAX component items, but no
   recipe for the components, no MAX energy, dynamo or laser hatch, no MAX superconductor and no MAX machines; its UXV parts already use
   magmatter and its generators stop at UXV. The fork builds the MAX tier by its UMV -> UXV pattern: magmatter as the metal, the eternity

@@ -233,6 +233,8 @@ FLUID_SUBGROUP["excited-dimensionally-transcendent-stellar-catalyst"] = { "endga
 put("endgame", { "raw-star-matter", "spatially-enlarged-fluid", "tachyon-rich-temporal-fluid", "quark-gluon-plasma" })
 --- issue #355: the plasma forge's residue and superfluid, grade 8 water's baryonic matter, oganesson
 put("endgame", { "dimensionally-transcendent-residue", "stable-baryonic-matter", "dimensionally-shifted-superfluid" })
+--- issue #699: the phonon chain of the godforge's conduit
+put("endgame", { "phonon-crystal-solution", "phonon-medium" })
 put("gases", { "oganesson" })
 --- issue #355 step 4: the beamline's particles and UU matter
 put("particles", { "electron", "proton", "tau", "omega", "upsilon", "graviton" })
