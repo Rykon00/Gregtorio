@@ -5697,3 +5697,6 @@ clay-screwdriver-tip-cast
 clay-wrench-head-cast
 clay-ingot-cast
 clay-plate-cast
+# issue #618: maintenance
+duct-tape
+maintenance-kit

@@ -840,6 +840,7 @@ def check_nyi_icons(sec):
 
 
 OVERCLOCK = "gregtorio-continued-gt-overclocking"
+MAINTENANCE = "gregtorio-continued-maintenance"   # issue #618
 
 
 def check_overclocking(sec):
@@ -859,6 +860,23 @@ def check_overclocking(sec):
             problems.append(f"{name}: crafting speed {speed:g}, power factor {factor:g}, expected {want:g}")
     return f"setting {'on' if on else 'off'}: {changed} of {len(rows) - 1} electric crafting machines draw more power", problems
 
+
+def check_maintenance(sec):
+    """Issue #618 (prototypes/fork-maintenance.lua, section MAINT): with the setting on, every crafting multiblock allows the
+    module category maintenance and is in the script's list, and nothing else is; with it off, no machine allows it.
+    Returns (info line, problems)."""
+    rows = sec.get("MAINT", [])
+    if not rows:
+        return "no section MAINT (older version)", []
+    on = rows[0][1] == "true"
+    problems, slots = [], 0
+    for name, multi, allows, listed in rows[1:]:
+        want = on and multi == "true"
+        slots += allows == "true"
+        if (allows == "true") != want or (listed == "true") != want:
+            problems.append(f"{name}: multiblock {multi}, maintenance slot {allows}, in the script's list {listed}"
+                            f" (setting {'on' if on else 'off'})")
+    return f"setting {'on' if on else 'off'}: {slots} of {len(rows) - 1} crafting machines have a maintenance slot", problems
 
 VANILLA_MODS = {"base", "space-age", "quality", "elevated-rails"}
 
@@ -2800,6 +2818,9 @@ def check(a):
     oc_info, overclock = check_overclocking(sec)
     print(f"\nGT overclocking (issue #616): {oc_info}")
     report("machines whose power does not follow the GT overclocking setting (prototypes/fork-gt-overclocking.lua)", overclock)
+    maint_info, maint = check_maintenance(sec)
+    print(f"\nmaintenance (issue #618): {maint_info}")
+    report("machines whose maintenance slot does not follow the maintenance setting (prototypes/fork-maintenance.lua)", maint)
     spoil_info, spoiling = check_spoiling(m, sec)
     print(f"\nspoiling items (issue #602): {spoil_info}")
     report("items that spoil and that a reachable recipe makes (data-final-fixes.lua)", spoiling)
@@ -2940,7 +2961,7 @@ def check(a):
               or extractor_split or ore_mixes or ore_chain or ore_baths or ore_o34 or ore_hammer
               or circuit_icons or pgm_dusts or recycling or blocks or names or gaps or tree or vanilla or lenses or mine_twins
               or unplaceable or stale_unlocks or removed_keys or trigger_only or spoiling or classic_veins or early
-              or furnace or research_counts or nyi_icons or overclock
+              or furnace or research_counts or nyi_icons or overclock or maint
               or steam or nugget or steam_rates or boiler_output or vein_doc or renames or gtnh_numbers or parts_recycling or part_routes or part_crafting or chemistry or metallurgy)
     print("\nRESULT:", "OK" if ok else "PROBLEMS FOUND")
     return 0 if ok else 1
@@ -2989,13 +3010,13 @@ def boilers(a):
 
 def overclocking(a):
     """Part of `all` (issue #616): check and runtime once more with GT overclocking on (every machine from MV up draws 4x
-    power per tier)."""
+    power per tier), and with maintenance on (issue #618: every crafting multiblock has a maintenance slot)."""
     c = argparse.Namespace(**vars(a))
-    c.set, c.balance_out, c.fluids_out, c.locale_out, c.techs = [f"{OVERCLOCK}=true"], None, None, None, None
-    print(f"\n=== GT overclocking ({OVERCLOCK}=true): check ===")
+    c.set, c.balance_out, c.fluids_out, c.locale_out, c.techs = [f"{OVERCLOCK}=true", f"{MAINTENANCE}=true"], None, None, None, None
+    print(f"\n=== GT overclocking ({OVERCLOCK}=true) and maintenance ({MAINTENANCE}=true): check ===")
     if check(c):
         return 1
-    print(f"\n=== GT overclocking ({OVERCLOCK}=true): runtime ===")
+    print(f"\n=== GT overclocking ({OVERCLOCK}=true) and maintenance ({MAINTENANCE}=true): runtime ===")
     return runtime(c)
 
 
@@ -3049,7 +3070,7 @@ def runtime(a):
     print(f"benchmark: {ran.group(0) if ran else 'did not run'}")
     # the ME network's runtime tests are in me-network since issue #83 (its tools/devcheck)
     tests = (("MOLD", "mold test"), ("LENS", "lens test"), ("MOLDCLONE", "cloned mold machine test"), ("POWER", "power test"), ("FUEL", "fuel check test"), ("COOLED", "cooled fluid test"),
-             ("TIERS", "turbine tier test"), ("RECIPES", "recipe test"), ("CRUSH", "raw ore crushing test"), ("OREFURNACE", "ore furnace line test"), ("STEAM", "steam turbine test"), ("CHAIN", "nuclear chain test"), ("LFTR", "LFTR test"), ("DYSON", "Dyson Swarm test"), ("LSC", "supercapacitor test"), ("LSUP", "supercapacitor upgrade test"), ("ELEVATOR", "space elevator test"), ("MELT", "melt and cast test"), ("OFFER", "offered recipes test"), ("EMINE", "electric mine test"), ("SOLAR", "solar boiler test"), ("COALBOILER", "coal boiler test"),("TORCH", "torch test"), ("BATTERY", "battery buffer test"), ("VEINS", "map vein test"), ("CLASSIC", "classic vein test"), ("DRILLS", "mining drill test"), ("PORTAL", "portal test"), ("ENDER", "ender storage test"), ("VICTORY", "victory test"),
+             ("TIERS", "turbine tier test"), ("RECIPES", "recipe test"), ("CRUSH", "raw ore crushing test"), ("OREFURNACE", "ore furnace line test"), ("STEAM", "steam turbine test"), ("CHAIN", "nuclear chain test"), ("LFTR", "LFTR test"), ("DYSON", "Dyson Swarm test"), ("LSC", "supercapacitor test"), ("LSUP", "supercapacitor upgrade test"), ("ELEVATOR", "space elevator test"), ("MELT", "melt and cast test"), ("OFFER", "offered recipes test"), ("EMINE", "electric mine test"), ("SOLAR", "solar boiler test"), ("COALBOILER", "coal boiler test"),("TORCH", "torch test"), ("MAINT", "maintenance test"), ("BATTERY", "battery buffer test"), ("VEINS", "map vein test"), ("CLASSIC", "classic vein test"), ("DRILLS", "mining drill test"), ("PORTAL", "portal test"), ("ENDER", "ender storage test"), ("VICTORY", "victory test"),
              ("POSTVICTORY", "post-victory test"))
     for key, label in tests:
         m = re.search(rf"DEVCHECK-RUNTIME-{key} (.*)", log)

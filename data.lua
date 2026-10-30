@@ -161,6 +161,8 @@ require("prototypes.156-fork-circuit-icons")
 require("prototypes.169-fork-single-generators")
 --- issue #613: the Tinkers-like smeltery, casting table and tool station (after the parts, before 157)
 require("prototypes.170-fork-smeltery")
+--- issue #618: the maintenance kits and duct tape (setting gregtorio-continued-maintenance; their slots: data-final-fixes)
+require("prototypes.171-fork-maintenance")
 --- issue #190: GTNH's material recycling (macerator, arc furnace, fluid extractor), after every file that makes recipes
 require("prototypes.157-fork-recycling")
 --- issue #689: GT New Horizons' tiers, times, item amounts and chances from the recipe dump (after every file that makes

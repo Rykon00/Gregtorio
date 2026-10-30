@@ -544,6 +544,15 @@
   so the power quadruples per tier (GT's overclock: a recipe costs twice its energy per tier above its own) instead of
   doubling (`prototypes/fork-gt-overclocking.lua`, required from `data-final-fixes.lua` after the machines; section
   OVERCLOCK). `devcheck.py all` loads `check` and `runtime` once more with it on.
+- Maintenance (issue #618): the startup setting `gregtorio-continued-maintenance` (default off). 171 makes the kits
+  (`maintenance-kit`, `duct-tape`: modules of the category `maintenance` with no effect) and their recipes in the data
+  stage; `prototypes/fork-maintenance.lua` (from `data-final-fixes.lua`) defines the category only then (150 gives the
+  machines that take every module every category by name) and gives every assembling machine and furnace whose item is
+  in a `*multiblocks` subgroup one more module slot of it (a machine without slots gets `allowed_effects = {"consumption"}`
+  and no beacon effects: the engine rejects slots without any allowed effect); section MAINT. `scripts/fork-maintenance.lua`
+  counts each machine's running time in shares (fork-batch) and takes a kit per 2 hours, or stops it
+  (`disabled_by_script`, custom status) until one is in the slot; remote `fork-maintenance` (`state`, `set_left`) for the
+  runtime's maintenance test. `devcheck.py all`'s overclocking stage loads it on too.
 - Generators (`generator` prototypes that burn fluids by fuel value, 136) are demand driven; an
   input-output fluid box keeps part of its fluid in the pipeline segment (`get_fluid_count` reports
   only the entity's part; since Factorio 2.1 `get_fluid_segment_fluid` is the whole segment with that part, where 2.0's
