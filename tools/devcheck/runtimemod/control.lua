@@ -194,6 +194,7 @@ local function tests_running()
 	check(storage.maint and storage.maint.done, "maintenance")
 	check(storage.ebf_heat and storage.ebf_heat.done, "ebf heat")
 	check(storage.radiation and storage.radiation.done, "radiation")
+	check(storage.wireless and storage.wireless.done, "wireless")
 	check(storage.battery and storage.battery.done, "battery buffers")
 	return running
 end
@@ -1490,6 +1491,47 @@ function torch_test()
 	for _, p in pairs(problems) do log("DEVCHECK-RUNTIME-FAIL torch test: " .. p) end
 	log("DEVCHECK-RUNTIME-TORCH " .. (#problems == 0 and "ok" or "failed") .. " (torch " .. name(t.valid and t.status)
 		.. ", electric lamp " .. name(l.valid and l.status) .. " at midnight without power)")
+end
+
+--- Wireless energy (issue #622, scripts/fork-wireless.lua): the energy a UHV Wireless Dynamo Hatch drew on one surface
+--- reaches a UHV Wireless Energy Hatch on another through the force's account
+local WL_WAIT = 130
+function setup_wireless_test(_)
+	if not (prototypes.entity["uhv-wireless-dynamo-hatch"] and prototypes.entity["uhv-wireless-energy-hatch"]) then
+		return { "wireless test: no UHV wireless hatches" }
+	end
+	local out = {}
+	for i, name in pairs({ "uhv-wireless-dynamo-hatch", "uhv-wireless-energy-hatch" }) do
+		local ws = game.create_surface("devcheck-wireless-" .. i)
+		ws.request_to_generate_chunks({ 0, 0 }, 1)
+		ws.force_generate_chunk_requests()
+		ws.set_tiles({ { name = "landfill", position = { 0, 0 } } })
+		out[i] = ws.create_entity{ name = name, position = { 0.5, 0.5 }, force = "player", raise_built = true }
+		if not out[i] then return { "wireless test: could not place " .. name } end
+	end
+	local amount = out[1].electric_buffer_size
+	out[1].energy = amount
+	storage.wireless = { dynamo = out[1], hatch = out[2], amount = amount, at = game.tick,
+		before = remote.call("fork-wireless", "account", "player") }
+	return {}
+end
+
+function wireless_test()
+	local st = storage.wireless
+	if not st or st.done or game.tick < st.at + WL_WAIT then return end
+	st.done = true
+	local problems = {}
+	local account = remote.call("fork-wireless", "account", "player")
+	local got = st.hatch.energy
+	if got <= 0 then problems[#problems + 1] = "the energy hatch on the other surface got nothing" end
+	if st.dynamo.energy > 1 then problems[#problems + 1] = "the dynamo hatch kept " .. st.dynamo.energy .. " J" end
+	if math.abs(got + account - st.before - st.amount) > st.amount * 1e-6 then
+		problems[#problems + 1] = "energy lost or made: " .. st.amount .. " J in, " .. got .. " J out, account " .. account
+	end
+	for _, p in pairs(problems) do log("DEVCHECK-RUNTIME-FAIL wireless test: " .. p) end
+	log("DEVCHECK-RUNTIME-WIRELESS " .. (#problems == 0 and "ok" or "failed") .. " (" .. string.format("%.4g", st.amount)
+		.. " J from one surface, " .. string.format("%.4g", got) .. " J on the other, " .. string.format("%.4g", account)
+		.. " J left in the account)")
 end
 
 --- Radiation (issue #621, scripts/fork-radiation.lua): with the setting off nothing is radioactive; with it on a
@@ -3498,6 +3540,7 @@ script.on_nth_tick(10, function()
 	maintenance_test()
 	ebf_heat_test()
 	radiation_test()
+	wireless_test()
 	battery_test()
 	veins_test()
 	classic_test()
@@ -3585,6 +3628,7 @@ script.on_init(function()
 	for _, f in pairs(setup_maintenance_test(s)) do fails[#fails + 1] = f end
 	for _, f in pairs(setup_ebf_heat_test(s)) do fails[#fails + 1] = f end
 	for _, f in pairs(setup_radiation_test(s)) do fails[#fails + 1] = f end
+	for _, f in pairs(setup_wireless_test(s)) do fails[#fails + 1] = f end
 	for _, f in pairs(setup_battery_test(s)) do fails[#fails + 1] = f end
 	for _, f in pairs(setup_veins_test()) do fails[#fails + 1] = f end
 	for _, f in pairs(setup_classic_test(s)) do fails[#fails + 1] = f end

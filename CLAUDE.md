@@ -555,6 +555,12 @@
   (the reach check: some furnace with a coil made at the recipe's technology has its heat; FORK_EBF_HEAT_LATE), runtime
   EBFHEAT test. Recipe categories in 2.1 data are `categories` (`fork_category(r)`); the script keeps each recipe's
   tier in its mod data instead of reading a runtime category.
+- Wireless energy (issue #622, `prototypes/173-fork-wireless.lua`, `scripts/fork-wireless.lua`): per tier UHV to UXV a
+  `<tier>-wireless-dynamo-hatch` (EEI, secondary-input) and `<tier>-wireless-energy-hatch` (EEI, tertiary output), at
+  136's four-amp cap; every 60 ticks the script moves the dynamos' buffers into `storage.fork_wireless.accounts[force]`
+  and fills the energy hatches from it (remote `fork-wireless.account`). GT's UMV assembly line recipe runs in the ZPM
+  assembly line (Gregtorio's last); the technology `wireless-energy` takes the first technology of every input as a
+  prerequisite (155's unlock_after found none after all of them). Runtime WIRELESS test (two surfaces).
 - Radiation (issue #621): the startup setting `gregtorio-continued-radiation` (default off). `tools/gt_radioactivity.py`
   parses GT5-Unofficial's source (GT materials with the radioactivity enchantment, bartworks' `setRadioactive`, GT++'s
   radiation levels with its alloy average) into the committed `tools/gtnh_dump/gt-radioactivity.json`;
