@@ -544,6 +544,17 @@
   so the power quadruples per tier (GT's overclock: a recipe costs twice its energy per tier above its own) instead of
   doubling (`prototypes/fork-gt-overclocking.lua`, required from `data-final-fixes.lua` after the machines; section
   OVERCLOCK). `devcheck.py all` loads `check` and `runtime` once more with it on.
+- Blast furnace heat (issue #620, `prototypes/fork-ebf-heat.lua` in data-final-fixes before fork-maintenance,
+  `scripts/fork-ebf-heat.lua`): the 12 heating coil blocks become `module`s (category `heating-coil`, same names) and
+  every `<tier>-electric-blast-furnace` a coil slot; heat = slot coil (empty: the coil of its item recipe) + 100 K per
+  tier above MV. Recipe heat: `prototypes/data/gtnh-ebf-heat.lua` (written by `devcheck.py check --gtnh-heat`: `heat`
+  GT's special value of the matched recipes, `cap` the heat reached at the recipe's unlock where GT's is higher, #742),
+  else the tier's coil. The bonus is a hidden beacon (`fork-ebf-heat-beacon`, supply distance 0, at the furnace's centre)
+  with one of the hidden `fork-ebf-heat-bonus-<k>-<n>` modules; a beacon's module acts only on a machine whose
+  `allowed_module_categories` has its category (probed), so the furnaces allow the bonus category. Section EBFHEAT
+  (the reach check: some furnace with a coil made at the recipe's technology has its heat; FORK_EBF_HEAT_LATE), runtime
+  EBFHEAT test. Recipe categories in 2.1 data are `categories` (`fork_category(r)`); the script keeps each recipe's
+  tier in its mod data instead of reading a runtime category.
 - Maintenance (issue #618): the startup setting `gregtorio-continued-maintenance` (default off). 171 makes the kits
   (`maintenance-kit`, `duct-tape`: modules of the category `maintenance` with no effect) and their recipes in the data
   stage; `prototypes/fork-maintenance.lua` (from `data-final-fixes.lua`) defines the category only then (150 gives the

@@ -1121,17 +1121,29 @@ def check_item_renames(m, write=False):
     return info, problems
 
 
+_GTNH_STATE = {}
+
+
+def gtnh_state(sec):
+    """tools/gtnh_map.py's mapping of the dump onto this check's recipes, made once per check"""
+    sys.path.insert(0, str(ROOT / "tools"))
+    import gtnh_map
+    if _GTNH_STATE.get("sec") is not sec:
+        state = {}
+        gtnh_map.run(gtnh_map.load_dump(gtnh_map.DUMP), sec, None, state=state)
+        _GTNH_STATE.clear()
+        _GTNH_STATE.update(sec=sec, state=state)
+    return gtnh_map, _GTNH_STATE["state"]
+
+
 def check_gtnh_numbers(sec, write=False):
     """Issue #689 (prototypes/168-fork-gtnh-numbers.lua): every Gregtorio recipe with a GT recipe of the same items and
     fluids (tools/gtnh_map.py on the GT New Horizons dump) has GT's time, item amounts, chances and (downward) tier, by
     prototypes/data/gtnh-numbers.lua, which `check --gtnh-numbers` writes; `check` fails for a table that is not what it
     writes, for a recipe of the table whose numbers still differ (made or changed after 168), and for an entry of
     FORK_GTNH_NUMBERS_KEPT without a reason or without a GT recipe of other numbers. Returns (info line, problems)."""
-    sys.path.insert(0, str(ROOT / "tools"))
-    import gtnh_map
     kept = {r[0]: (r[1] if len(r) > 1 else "") for r in sec.get("GTNHKEPT", [])}
-    state = {}
-    gtnh_map.run(gtnh_map.load_dump(gtnh_map.DUMP), sec, None, state=state)
+    gtnh_map, state = gtnh_state(sec)
     old = gtnh_map.numbers_names()
     table, diffs, left = gtnh_map.numbers(state, set(kept), old)
     _, kept_diffs, _ = gtnh_map.numbers(state, (), ())
@@ -1154,6 +1166,104 @@ def check_gtnh_numbers(sec, write=False):
     problems += [f"{n}: {', '.join(d)} (the table has GT's numbers, a file after 168-fork-gtnh-numbers.lua changes them: "
                  f"set GT's numbers there or keep the recipe in FORK_GTNH_NUMBERS_KEPT)" for n, d in sorted(diffs.items())]
     return info + "; the table is up to date", problems
+
+
+def check_ebf_heat(m, sec, write=False):
+    """Issue #620 (prototypes/fork-ebf-heat.lua, section EBFHEAT): every electric blast furnace has a coil slot and a
+    coil it is built with, every blast furnace recipe a heat, and every recipe's heat can be reached where it is
+    unlocked: at the recipe's technology (or the start) some blast furnace that runs its category, with a coil made
+    there (or the furnace's own), plus 100 K per tier above MV, has the heat. prototypes/data/gtnh-ebf-heat.lua is what
+    `check --gtnh-heat` writes: GT's heat of the matched recipes, and for those whose GT heat is out of reach there the
+    reachable heat as `cap` (left to issue #742: their unlocks move to their GT heat). Allow-list FORK_EBF_HEAT_LATE of
+    prototypes/fork-ebf-heat.lua (section EBFHEATLATE). Returns (info line, problems)."""
+    rows = sec.get("EBFHEAT", [])
+    if not rows:
+        return "no section EBFHEAT (older version)", []
+    coils = {r[1]: int(r[2]) for r in rows if r[0] == "coil"}
+    machines = {r[1]: {"tier": int(r[2]), "coil": int(r[3]), "cats": set(r[4].split(",")), "slot": r[5] == "true"}
+                for r in rows if r[0] == "machine"}
+    recipes = {r[1]: {"cat": r[2], "heat": int(float(r[3])) if r[3] else None, "gt": r[4] == "true"}
+               for r in rows if r[0] == "recipe"}
+    late = {r[0]: r[1] if len(r) > 1 else "" for r in sec.get("EBFHEATLATE", [])}
+    problems = [f"{n}: no coil slot" for n, v in sorted(machines.items()) if not v["slot"]]
+    problems += [f"{n}: no heat ({v['cat']})" for n, v in sorted(recipes.items()) if v["heat"] is None]
+    # the reach: per technology the recipes of its closure, the coils and furnaces they make
+    T, R = m.T, m.R
+    memo = {}
+
+    def closure(t):
+        if t not in memo:
+            rs = set(T[t]["eff"])
+            memo[t] = rs
+            for p in T[t]["pre"]:
+                if p in T:
+                    rs |= closure(p)
+        return memo[t]
+    start = {r for r, v in R.items() if v["en"] and not v["hidden"]}
+    makers = {}
+    for r, v in R.items():
+        if not v["hidden"] and "recycling" not in r:
+            for x in set(v["res"]):
+                makers.setdefault(x, set()).add(r)
+    item_of = {}
+    for it, pr in m.I.items():
+        item_of.setdefault(pr, set()).add(it)
+    unl = {}
+    for t, v in T.items():
+        for r in v["eff"]:
+            unl.setdefault(r, []).append(t)
+
+    def best(rs, cat):
+        out = None
+        made = lambda x: bool(makers.get(x, set()) & rs)
+        coil = max([h for c, h in coils.items() if made(c)], default=0)
+        for name, v in machines.items():
+            if cat in v["cats"] and any(made(i) for i in item_of.get(name, ())):
+                h = max(coil, v["coil"]) + 100 * (v["tier"] - 2)
+                out = h if out is None else max(out, h)
+        return out
+
+    def reach(name, cat):
+        """the heat reached where the recipe is unlocked (the lowest of its technologies), None: no furnace there"""
+        out = None
+        for t in ([None] if R[name]["en"] else unl.get(name, [])):
+            h = best(start | (closure(t) if t else set()), cat)
+            if h is not None:
+                out = h if out is None else min(out, h)
+        return out
+    gtnh_map, state = gtnh_state(sec)
+    table = gtnh_map.ebf_heat(state)
+    cap = {}
+    for name, h in table.items():
+        if name in recipes and name in R and not R[name]["hidden"] and name not in late:
+            r = reach(name, recipes[name]["cat"])
+            if r is not None and r < h:
+                cap[name] = r
+    text = gtnh_map.heat_lua(table, cap)
+    path = gtnh_map.HEAT_FILE
+    have = path.read_text(encoding="utf-8").replace("\r\n", "\n") if path.exists() else None
+    if have != text:
+        if write:
+            path.write_bytes(text.encode("utf-8"))
+        else:
+            problems.append(f"{path.name} is not what `devcheck.py check --gtnh-heat` writes ({len(table)} recipes with "
+                            f"GT's heat, {len(cap)} of them out of reach where they are unlocked)")
+    raised = 0
+    for name, v in sorted(recipes.items()):
+        if v["heat"] is None or name not in R or R[name]["hidden"]:
+            continue
+        raised += v["gt"]
+        r = reach(name, v["cat"])
+        if r is not None and r < v["heat"] and name not in late:
+            problems.append(f"{name}: needs {v['heat']} K, where it is unlocked the hottest blast furnace for {v['cat']} "
+                            f"has {r} K (unlock it later, or add it to FORK_EBF_HEAT_LATE of prototypes/fork-ebf-heat.lua "
+                            f"with its reason)")
+    problems += [f"FORK_EBF_HEAT_LATE: {n} has no reason" for n, why in sorted(late.items()) if not why]
+    problems += [f"FORK_EBF_HEAT_LATE: {n} is no blast furnace recipe" for n in sorted(late) if n not in recipes]
+    info = (f"{len(coils)} heating coils, {len(machines)} blast furnaces, {len(recipes)} blast furnace recipes, "
+            f"{raised} with GT's heat ({len(table)} in {path.name}, {len(cap)} of them at the heat reached where they "
+            f"are unlocked: #742), {len(late)} reached later on purpose (FORK_EBF_HEAT_LATE)")
+    return info, problems
 
 
 def check_gtnh_recycling(sec, write=False):
@@ -2818,6 +2928,9 @@ def check(a):
     oc_info, overclock = check_overclocking(sec)
     print(f"\nGT overclocking (issue #616): {oc_info}")
     report("machines whose power does not follow the GT overclocking setting (prototypes/fork-gt-overclocking.lua)", overclock)
+    heat_info, ebf_heat = check_ebf_heat(m, sec, getattr(a, "gtnh_heat", False))
+    print(f"\nblast furnace heat (issue #620): {heat_info}")
+    report("blast furnaces and recipes whose heat is missing or out of reach (prototypes/fork-ebf-heat.lua)", ebf_heat)
     maint_info, maint = check_maintenance(sec)
     print(f"\nmaintenance (issue #618): {maint_info}")
     report("machines whose maintenance slot does not follow the maintenance setting (prototypes/fork-maintenance.lua)", maint)
@@ -2961,7 +3074,7 @@ def check(a):
               or extractor_split or ore_mixes or ore_chain or ore_baths or ore_o34 or ore_hammer
               or circuit_icons or pgm_dusts or recycling or blocks or names or gaps or tree or vanilla or lenses or mine_twins
               or unplaceable or stale_unlocks or removed_keys or trigger_only or spoiling or classic_veins or early
-              or furnace or research_counts or nyi_icons or overclock or maint
+              or furnace or research_counts or nyi_icons or overclock or maint or ebf_heat
               or steam or nugget or steam_rates or boiler_output or vein_doc or renames or gtnh_numbers or parts_recycling or part_routes or part_crafting or chemistry or metallurgy)
     print("\nRESULT:", "OK" if ok else "PROBLEMS FOUND")
     return 0 if ok else 1
@@ -3070,7 +3183,7 @@ def runtime(a):
     print(f"benchmark: {ran.group(0) if ran else 'did not run'}")
     # the ME network's runtime tests are in me-network since issue #83 (its tools/devcheck)
     tests = (("MOLD", "mold test"), ("LENS", "lens test"), ("MOLDCLONE", "cloned mold machine test"), ("POWER", "power test"), ("FUEL", "fuel check test"), ("COOLED", "cooled fluid test"),
-             ("TIERS", "turbine tier test"), ("RECIPES", "recipe test"), ("CRUSH", "raw ore crushing test"), ("OREFURNACE", "ore furnace line test"), ("STEAM", "steam turbine test"), ("CHAIN", "nuclear chain test"), ("LFTR", "LFTR test"), ("DYSON", "Dyson Swarm test"), ("LSC", "supercapacitor test"), ("LSUP", "supercapacitor upgrade test"), ("ELEVATOR", "space elevator test"), ("MELT", "melt and cast test"), ("OFFER", "offered recipes test"), ("EMINE", "electric mine test"), ("SOLAR", "solar boiler test"), ("COALBOILER", "coal boiler test"),("TORCH", "torch test"), ("MAINT", "maintenance test"), ("BATTERY", "battery buffer test"), ("VEINS", "map vein test"), ("CLASSIC", "classic vein test"), ("DRILLS", "mining drill test"), ("PORTAL", "portal test"), ("ENDER", "ender storage test"), ("VICTORY", "victory test"),
+             ("TIERS", "turbine tier test"), ("RECIPES", "recipe test"), ("CRUSH", "raw ore crushing test"), ("OREFURNACE", "ore furnace line test"), ("STEAM", "steam turbine test"), ("CHAIN", "nuclear chain test"), ("LFTR", "LFTR test"), ("DYSON", "Dyson Swarm test"), ("LSC", "supercapacitor test"), ("LSUP", "supercapacitor upgrade test"), ("ELEVATOR", "space elevator test"), ("MELT", "melt and cast test"), ("OFFER", "offered recipes test"), ("EMINE", "electric mine test"), ("SOLAR", "solar boiler test"), ("COALBOILER", "coal boiler test"),("TORCH", "torch test"), ("MAINT", "maintenance test"), ("EBFHEAT", "blast furnace heat test"), ("BATTERY", "battery buffer test"), ("VEINS", "map vein test"), ("CLASSIC", "classic vein test"), ("DRILLS", "mining drill test"), ("PORTAL", "portal test"), ("ENDER", "ender storage test"), ("VICTORY", "victory test"),
              ("POSTVICTORY", "post-victory test"))
     for key, label in tests:
         m = re.search(rf"DEVCHECK-RUNTIME-{key} (.*)", log)
@@ -3804,6 +3917,8 @@ def main():
                    help="issue #687: write prototypes/data/gtnh-part-routes.lua, GT New Horizons' part routes Gregtorio lacks")
     c.add_argument("--gtnh-recycling", action="store_true",
                    help="issue #686: write prototypes/data/gtnh-recycling.lua, GT New Horizons' recycling of the material parts")
+    c.add_argument("--gtnh-heat", action="store_true",
+                   help="issue #620: write prototypes/data/gtnh-ebf-heat.lua, GT New Horizons' blast furnace heat of the matched recipes")
     c.add_argument("--gtnh-numbers", action="store_true",
                    help="issue #689: write prototypes/data/gtnh-numbers.lua, GT New Horizons' numbers of the matched recipes")
     c.add_argument("--set", action="append", metavar="SETTING=VALUE",
