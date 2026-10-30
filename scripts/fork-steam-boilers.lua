@@ -60,7 +60,8 @@ local function set_water_recipe(entity)
 	local ok, props = pcall(entity.surface.calculate_tile_properties, { "moisture" }, { entity.position })
 	if ok and props and props.moisture then moisture = props.moisture[1] or 0 end
 	local q = math.max(25, math.min(100, math.floor(moisture * 4 + 0.5) * 25))
-	entity.set_recipe(water_pumps().recipes[q])
+	--- (the mod data's number keys arrive as strings at runtime: "25", ...)
+	entity.set_recipe(water_pumps().recipes[tostring(q)] or water_pumps().recipes[q])
 	entity.recipe_locked = true
 end
 
