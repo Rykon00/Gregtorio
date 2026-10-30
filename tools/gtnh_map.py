@@ -1083,7 +1083,9 @@ def recycling_lua(entries, items):
 ROUTE_IMPORT = {"gt.recipe.cuttingsaw": ("cutting-machine", "cut"), "gt.recipe.metalbender": ("bending-machine", "bend"),
                 "gt.recipe.extruder": ("extruder", "extrude"), "gt.recipe.wiremill": ("wiremill", "draw"),
                 "gt.recipe.hammer": ("forge-hammer", "hammer"), "gt.recipe.fluidsolidifier": ("fluid-solidifier", "solidify"),
-                "gt.recipe.lathe": ("lathe", "turn")}
+                "gt.recipe.lathe": ("lathe", "turn"),
+                # issue #690: the cable map, the assembler's wire insulation
+                "gt.recipe.cable": ("assembling-machine", "insulate")}
 ROUTES_FILE = ROOT / "prototypes" / "data" / "gtnh-part-routes.lua"
 
 
@@ -1142,6 +1144,10 @@ def route_imports(dump, g):
         fluid = next((f for f in mapped["fin"] if f != src), None)
         if fluid:
             name += f"-with-{fluid}"
+        # (issue #690: GT insulates with a fluid alone or with a fluid and a pulp: the other items in the name)
+        others = sorted(i for i in mapped["ins"] if i != src)
+        if name in out and others:
+            name += "-and-" + "-".join(others)
         if name in out:
             left["same name"] += 1
             continue

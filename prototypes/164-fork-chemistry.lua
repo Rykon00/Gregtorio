@@ -6631,6 +6631,49 @@ end
 
 
 --------------------------------------------------------------------------------
+--- 59) GT'S INSULATION PULPS (issue #690 part 1): GT New Horizons insulates a wire in the assembler's cable map with
+--- molten rubber, or with silicone rubber or styrene-butadiene rubber and a polyvinyl chloride pulp or small piles of
+--- polydimethylsiloxane pulp. The mod had neither pulp's pile nor the PVC pulp: GT's PVC pulp is the polymer's dust,
+--- macerated from its sheet (a thin sheet gives a small pile; 0.8 s, 4 EU/t: MaceratorRecipes of the plastics),
+--- the piles split and pack as every dust's (164's pile(); #688's crafting table recipes, the packager twins). They
+--- come with the sheets' and the PDMS's technologies; 158's routes (section 3, `gt.recipe.cable`) give the cables
+--- GT's insulation recipes. Before section 38, so 158's second run sees them.
+--------------------------------------------------------------------------------
+do
+	pile("pvc-dust", "small")
+	pile("pvc-dust", "tiny")
+	--- (the PDMS item is the pulp; its piles take 158's names small-pile-of-<material>-dust)
+	for _, k in pairs({ { "small", 4 }, { "tiny", 9 } }) do
+		local p = k[1] .. "-pile-of-polydimethylsiloxane-dust"
+		create_item{ skip_recipe = true, name = p, subgroup = data.raw.item["polydimethylsiloxane"].subgroup }
+		create_recipe{
+			name = "polydimethylsiloxane-from-" .. k[1] .. "-piles", category = "crafting", energy_required = 0.5,
+			subgroup = DUSTS, ingredients = { { type = "item", name = p, amount = k[2] } },
+			results = { { type = "item", name = "polydimethylsiloxane", amount = 1 } },
+		}
+	end
+	local R = {}
+	step(R, "pvc-dust-maceration", "lv-macerator-recipes", 0.8, LV_SPEED, { { "pvc-sheet", 1 } }, { { "pvc-dust", 1 } })
+	step(R, "thin-pvc-sheet-maceration", "lv-macerator-recipes", 0.8, LV_SPEED, { { "thin-pvc-sheet", 1 } },
+		{ { "small-pile-of-pvc-dust", 1 } })
+	local pvc = techs_of("pvc-sheet")[1]
+	for _, r in pairs(R) do fork_add_unlock(pvc, r) end
+	for _, r in pairs({ "pvc-dust-from-small-piles", "pvc-dust-from-tiny-piles" }) do fork_add_unlock(pvc, r) end
+	local pdms = techs_of("polydimethylsiloxane")[1]
+	for _, r in pairs({ "polydimethylsiloxane-from-small-piles", "polydimethylsiloxane-from-tiny-piles" }) do
+		fork_add_unlock(pdms, r)
+	end
+	--- GT's packager splits a dust into its piles too (Schematic (Small Dusts) / (Tiny Dusts), 1 s at LV)
+	for _, d in pairs({ { "pvc-dust", "small-pile-of-pvc-dust", "tiny-pile-of-pvc-dust", pvc },
+			{ "polydimethylsiloxane", "small-pile-of-polydimethylsiloxane-dust", "tiny-pile-of-polydimethylsiloxane-dust", pdms } }) do
+		local P = {}
+		step(P, "packager-" .. d[2], "lv-packager-recipes", 1, LV_SPEED, { { d[1], 1 } }, { { d[2], 4 } })
+		step(P, "packager-" .. d[3], "lv-packager-recipes", 1, LV_SPEED, { { d[1], 1 } }, { { d[3], 9 } })
+		for _, r in pairs(P) do fork_add_unlock(d[4], r) end
+	end
+end
+
+--------------------------------------------------------------------------------
 --- 38) GT'S PARTS OF THE METALS OF THIS FILE (issue #467). 158 makes GT New Horizons' parts of every metal of
 ---   prototypes/gt-parts-data.lua (issue #227) whose ingot exists; most metals of this file come after 158, so its
 ---   FORK_GT_PARTS.run() runs once more here (it skips what exists), then 143's casts for the new forms.

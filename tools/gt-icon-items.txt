@@ -5433,3 +5433,8 @@ raw-alumina-support-ring
 beryllium-shielding-plate
 high-temperature-gas-cooled-reactor-controller
 promethium-dust
+pvc-dust
+small-pile-of-pvc-dust
+tiny-pile-of-pvc-dust
+small-pile-of-polydimethylsiloxane-dust
+tiny-pile-of-polydimethylsiloxane-dust
