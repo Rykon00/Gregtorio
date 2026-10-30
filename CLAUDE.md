@@ -249,7 +249,12 @@
     crafting table recipes of the parts and dust piles that Gregtorio lacks, GT's tools as #612's charges, from
     `prototypes/data/gtnh-part-crafting.lua` (`devcheck.py check --gtnh-crafting`, `crafting_imports`); a recipe of
     sections 3 and 4 is made only with a technology after its inputs, and `FORK_GT_PARTS.drop_locked_routes()` in
-    data-final-fixes.lua drops one that only a disabled vanilla technology unlocked)
+    data-final-fixes.lua drops one that only a disabled vanilla technology unlocked; issue #691: section 3 takes GT's
+    chemistry and separation recipes too (distillery, electrolyzer, autoclave, centrifuge, chemical reactors, mixer,
+    chemical bath; `prototypes/data/gtnh-chemistry.lua`, `devcheck.py check --gtnh-chemistry`, `route_imports` with
+    `CHEM_IMPORT`: no ore chain forms, no GT cells, only categories with the machines' fluid boxes), turns a platinum
+    group dust into the platinum line's powder as 157, and `drop_locked_routes()` also drops an imported recipe whose
+    input nothing makes at its technology or before once 161 has moved the dimensions' chains)
   - 159 lanthanides (issue #262: gtnhlanth's monazite rare earth line with the Digester and the Dissolution Tank, from
     crushed monazite to samarium and gadolinium dust; the samarium dust placeholder of 19 is removed, the sifting
     machines get a fluid input and output, technology `monazite-rare-earth-processing` before LuV Components; issue

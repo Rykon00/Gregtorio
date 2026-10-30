@@ -49,6 +49,8 @@ local OC = FORK_ORE_CHAIN
 local DATA = require("prototypes.gt-parts-data")
 --- issue #687: GT's other part routes (section 3)
 local ROUTES = require("prototypes.data.gtnh-part-routes")
+--- issue #691: GT's chemistry and separation recipes (section 3, the same way)
+local CHEMISTRY = require("prototypes.data.gtnh-chemistry")
 --- issue #688: GT's crafting table recipes of the parts (section 4)
 local CRAFTING = require("prototypes.data.gtnh-part-crafting")
 local P = "__gregtorio-continued__/graphics/icons/"
@@ -193,6 +195,10 @@ end
 --- the platinum group: GTNH turns their dusts from ore and part processing into the platinum line's powders and residues
 --- (issue #199); no piles of their dust here (they would make the dust outside the platinum line)
 local PGM = { platinum = true, palladium = true, iridium = true, osmium = true, rhodium = true, ruthenium = true }
+--- issue #691: the platinum line's powder or residue of a platinum group dust (157's PGM_DUST, bartworks'
+--- PlatinumSludgeOutputs.convert)
+local PGM_DUST = { ["platinum"] = "metallic-platinum-powder", ["palladium"] = "metallic-palladium-powder",
+	["iridium"] = "iridium-metal-residue", ["osmium"] = "rarest-metal-mixture" }
 --- the small and tiny piles of a material's dust (nil: Gregtorio has no dust of it, or a platinum group metal)
 local function piles(d, m)
 	if not d.dust or PGM[m] then return nil end
@@ -453,7 +459,8 @@ function FORK_GT_PARTS.run()
 	--- 3) GT'S OTHER PART ROUTES (issue #687): GT New Horizons makes most parts in several machines (the cutting machine
 	---    with water, distilled water, lubricant or dimensionally shifted superfluid, the bender's foils and plates, the
 	---    extruder's bolts, rods and rotors, the wiremill's wires from rods, the forge hammer, the fluid solidifier and the
-	---    lathe). prototypes/data/gtnh-part-routes.lua holds the recipes of these machines that Gregtorio lacks, as GT New
+	---    lathe; issue #691: prototypes/data/gtnh-chemistry.lua the same for the distillery, electrolyzer, autoclave,
+	---    centrifuge, chemical reactors, mixer and chemical bath). prototypes/data/gtnh-part-routes.lua holds the recipes of these machines that Gregtorio lacks, as GT New
 	---    Horizons' recipe dump has them (tools/gtnh_dump/), mapped onto Gregtorio's names and units by tools/gtnh_map.py
 	---    (`route_imports`: the tier from GT's EU/t, at most the machine's highest category, GT's time x the tier's speed,
 	---    a tenth of GT's litres); `devcheck.py check --gtnh-routes` writes it. Named gt-<verb>-<product>-from-<input>
@@ -461,7 +468,8 @@ function FORK_GT_PARTS.run()
 	---    items and fluids (the second run makes the ones of 164's metals; the rest is FORK_GT_PARTS.routes_skipped,
 	---    devcheck's section GTROUTESKIP). The extruder's and solidifier's shapes are 150's mold, which their machines hold.
 	--------------------------------------------------------------------------------
-	for _, e in pairs(ROUTES) do
+	for _, list in pairs({ ROUTES, CHEMISTRY }) do
+	for _, e in pairs(list) do
 		local ok = not data.raw.recipe[e[1]]
 		for _, x in pairs(e.i or {}) do ok = ok and data.raw.item[x[1]] ~= nil end
 		for _, o in pairs(e.o) do ok = ok and data.raw.item[o[1]] ~= nil end
@@ -478,7 +486,16 @@ function FORK_GT_PARTS.run()
 			local ing, res = {}, {}
 			for _, x in pairs(e.i or {}) do ing[#ing + 1] = item(x[1], x[2]) end
 			for _, f in pairs(e.f or {}) do ing[#ing + 1] = fluid(f[1], f[2]) end
-			for _, o in pairs(e.o) do res[#res + 1] = item(o[1], o[2], o[3]) end
+			for _, o in pairs(e.o) do
+				--- (issue #691: GT New Horizons turns a platinum group dust into the platinum line's powder or residue,
+				--- two of it, as 157 does)
+				local m = o[1]:match("^(%a+)%-dust$")
+				if PGM_DUST[m] and data.raw.item[PGM_DUST[m]] then
+					res[#res + 1] = item(PGM_DUST[m], 2 * o[2], o[3])
+				else
+					res[#res + 1] = item(o[1], o[2], o[3])
+				end
+			end
 			for _, f in pairs(e.fo or {}) do res[#res + 1] = fluid(f[1], f[2]) end
 			--- (only with a technology after its machine, items and fluids: no fallback to the latest of them; a route
 			--- whose inputs come later is tried again by the second run)
@@ -497,6 +514,7 @@ function FORK_GT_PARTS.run()
 				FORK_GT_PARTS.routes_skipped[e[1]] = "no technology after its machine, items and fluids"
 			end
 		end
+	end
 	end
 
 	--------------------------------------------------------------------------------
@@ -574,7 +592,70 @@ function FORK_GT_PARTS.drop_locked_routes()
 			n = n + 1
 		end
 	end
-	log("FORK-GT-PARTS: " .. n .. " of GT's part routes and crafting table recipes dropped, their technology was disabled")
+	--- issue #691: 161 moves the chains of the dimensions' ores after 158 has unlocked (bauxite dust to Reach the Moon):
+	--- an imported recipe whose ingredient nothing makes at its technology or before goes too
+	local tech_of, makers, memo = {}, {}, {}
+	for tname, t in pairs(data.raw.technology) do
+		if t.enabled ~= false and not t.hidden then
+			for _, e in pairs(t.effects or {}) do
+				if e.type == "unlock-recipe" then
+					tech_of[e.recipe] = tech_of[e.recipe] or {}
+					table.insert(tech_of[e.recipe], tname)
+				end
+			end
+		end
+	end
+	for rname, r in pairs(data.raw.recipe) do
+		if not r.hidden and (r.enabled ~= false or tech_of[rname]) then
+			for _, res in pairs(r.results or {}) do
+				makers[res.name] = makers[res.name] or {}
+				table.insert(makers[res.name], rname)
+			end
+		end
+	end
+	local function closure(t)
+		if memo[t] then return memo[t] end
+		local seen, stack = { [t] = true }, { t }
+		while #stack > 0 do
+			for _, pre in pairs((data.raw.technology[table.remove(stack)] or {}).prerequisites or {}) do
+				if not seen[pre] then seen[pre] = true; stack[#stack + 1] = pre end
+			end
+		end
+		memo[t] = seen
+		return seen
+	end
+	local late = 0
+	for name in pairs(FORK_GT_PARTS.imported) do
+		local r = data.raw.recipe[name]
+		local t = r and r.enabled == false and (tech_of[name] or {})[1]
+		if t then
+			local before = closure(t)
+			for _, i in pairs(r.ingredients or {}) do
+				local ok = makers[i.name] == nil   -- (nothing makes it: mined or from the start)
+				for _, m in pairs(makers[i.name] or {}) do
+					if m ~= name and (data.raw.recipe[m].enabled ~= false) then ok = true end
+					for _, mt in pairs(m ~= name and tech_of[m] or {}) do ok = ok or before[mt] == true end
+					if ok then break end
+				end
+				if not ok then
+					for _, tn in pairs(tech_of[name]) do
+						local effects = data.raw.technology[tn].effects
+						for k = #effects, 1, -1 do
+							if effects[k].type == "unlock-recipe" and effects[k].recipe == name then table.remove(effects, k) end
+						end
+					end
+					data.raw.recipe[name] = nil
+					FORK_GT_PARTS.recipes[name] = nil
+					FORK_GT_PARTS.imported[name] = nil
+					FORK_GT_PARTS.routes_skipped[name] = "an input comes later than its technology (161's moves)"
+					late = late + 1
+					break
+				end
+			end
+		end
+	end
+	n = n + late
+	log("FORK-GT-PARTS: " .. n .. " of GT's imported recipes dropped: only a disabled vanilla technology unlocked them, or an input comes later")
 end
 function FORK_GT_PARTS.log(when)
 	log("FORK-GT-PARTS (" .. when .. "): " .. new_parts .. " new parts and nuggets (issues #222, #227), GT's nugget recipes of "

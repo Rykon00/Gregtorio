@@ -281,6 +281,14 @@ class Gregtorio:
         # (issue #687: the machine families whose machines are furnaces, which pick one recipe per input)
         self.furnace_families = {family(c) for r in sec["DUMP"] if r[0] == "C" and len(r) > 3 and r[2] == "furnace"
                                  for c in r[3].split(",") if c}
+        # (issue #691: per category the most fluid boxes in and out any of its machines has)
+        self.fluid_cap = {}
+        for r in sec["DUMP"]:
+            if r[0] == "C" and len(r) > 5:
+                for c in r[3].split(","):
+                    if c:
+                        fi, fo = self.fluid_cap.get(c, (0, 0))
+                        self.fluid_cap[c] = (max(fi, int(r[4] or 0)), max(fo, int(r[5] or 0)))
         self.by_key, self.by_main = defaultdict(list), defaultdict(list)
         self.families = Counter()
         for r in self.recipes:
@@ -1089,13 +1097,29 @@ ROUTE_IMPORT = {"gt.recipe.cuttingsaw": ("cutting-machine", "cut"), "gt.recipe.m
 ROUTES_FILE = ROOT / "prototypes" / "data" / "gtnh-part-routes.lua"
 
 
-def route_imports(dump, g):
-    """Issue #687: every GT recipe of the ROUTE_IMPORT maps whose items and fluids map onto Gregtorio's names and that no
-    Gregtorio recipe of the machine has with the same items and fluids (another cutting fluid, another input), in
-    Gregtorio's units; not a recipe that gives its own input back, nor one whose input a furnace machine of the family
-    takes already. Returns ([entry] sorted by name, Counter of the recipes left out by reason)"""
+#: issue #691: GT's chemistry and separation recipes, imported like the routes (prototypes/data/gtnh-chemistry.lua,
+#: section 3 of prototypes/158-fork-gt-parts.lua): GT map -> (Gregtorio family, verb)
+CHEM_IMPORT = {"gt.recipe.distillery": ("distillation", "distill"), "gt.recipe.electrolyzer": ("electrolyzer", "electrolyze"),
+               "gt.recipe.multielectro": ("electrolyzer", "electrolyze"), "gt.recipe.autoclave": ("autoclave", "autoclave"),
+               "gt.recipe.centrifuge": ("centrifuge", "centrifuge"), "gt.recipe.multicentrifuge": ("centrifuge", "centrifuge"),
+               "gt.recipe.chemicalreactor": ("chemical-reactor", "react"),
+               "gt.recipe.largechemicalreactor": ("chemical-reactor", "react"), "gt.recipe.mixer": ("mixer", "mix"),
+               "gt.recipe.chemicalbath": ("chemical-bath", "bathe")}
+CHEMISTRY_FILE = ROOT / "prototypes" / "data" / "gtnh-chemistry.lua"
+#: the ore chain's forms (155's chain and 146's platinum line decide their recipes)
+ORE_FORM = re.compile(r"^(raw|crushed|purified|centrifuged|impure|pure)-")
+
+
+def route_imports(dump, g, table=None, chemistry=False):
+    """Issue #687: every GT recipe of the ROUTE_IMPORT maps (issue #691: `table`) whose items and fluids map onto
+    Gregtorio's names and that no Gregtorio recipe of the machine has with the same items and fluids (another cutting
+    fluid, another input), in Gregtorio's units; not a recipe that gives its own input back, nor one whose input a
+    furnace machine of the family takes already. `chemistry` (#691): a product may be a fluid; no ore chain forms (155,
+    146), no GT cells (Gregtorio's cells are fuel cells of other amounts), only categories whose machines have the fluid
+    boxes, nothing a furnace machine cannot run. Returns ([entry] sorted by name, Counter of the recipes left out by reason)"""
+    table = table or ROUTE_IMPORT
     mp = Mapper(dump, g)
-    verbs = tuple(f"gt-{v}-" for _, v in ROUTE_IMPORT.values())
+    verbs = tuple(f"gt-{v}-" for _, v in list(ROUTE_IMPORT.values()) + list(CHEM_IMPORT.values()))
     own = {r["name"] for r in g.recipes if r["name"].startswith(verbs)}
     taken = defaultdict(set)
     for r in g.recipes:
@@ -1104,11 +1128,12 @@ def route_imports(dump, g):
             taken[r["family"]].add(items[0])
     out, seen, left = {}, set(), Counter()
     for mname, r in gt_recipes(dump):
-        if mname not in ROUTE_IMPORT:
+        if mname not in table:
             continue
-        fam, verb = ROUTE_IMPORT[mname]
+        fam, verb = table[mname]
         mapped, bad = map_recipe(mp, r)
-        if bad or mapped.get("oreblock") or not mapped["outs"] or not (mapped["ins"] or mapped["fin"]):
+        if bad or mapped.get("oreblock") or not (mapped["outs"] or (chemistry and mapped["fout"])) or not (
+                mapped["ins"] or mapped["fin"]):
             continue
         ins = frozenset(list(mapped["ins"]) + list(mapped["fin"]))
         outs = frozenset(list(mapped["outs"]) + list(mapped["fout"]))
@@ -1121,7 +1146,17 @@ def route_imports(dump, g):
         if any(x["family"] == fam and x["name"] not in own for x in g.by_key.get((ins, outs), [])):
             continue
         first = next(iter(mapped["ins"]), None)
-        product = next(iter(mapped["outs"]))
+        product = next(iter(mapped["outs"]), None) or next(iter(mapped["fout"]))
+        if chemistry:
+            if any(ORE_FORM.match(i) for i in mapped["ins"]):
+                left["ore chain form (155, 146)"] += 1
+                continue
+            if any(i.endswith("-cell") for i in list(mapped["ins"]) + list(mapped["outs"])):
+                left["a GT cell"] += 1
+                continue
+            if fam in g.furnace_families and (len(mapped["ins"]) != 1 or len(mapped["fin"]) > 1):
+                left["furnace machine: not one item and one fluid input at most"] += 1
+                continue
         # (crushing a raw ore is 155's ore chain, #202; GT++ hammers its ore block, not the raw ore, #373)
         if first and first.startswith("raw-"):
             left["raw ore (155's ore chain)"] += 1
@@ -1139,6 +1174,11 @@ def route_imports(dump, g):
         if not cat:
             left["no category"] += 1
             continue
+        if chemistry:
+            fi, fo = g.fluid_cap.get(cat, (0, 0))
+            if len(mapped["fin"]) > fi or len(mapped["fout"]) > fo:
+                left["more fluids than the machines have"] += 1
+                continue
         src = first or next(iter(mapped["fin"]))
         name = f"gt-{verb}-{product}-from-{src}"
         fluid = next((f for f in mapped["fin"] if f != src), None)
@@ -1148,6 +1188,14 @@ def route_imports(dump, g):
         others = sorted(i for i in mapped["ins"] if i != src)
         if name in out and others:
             name += "-and-" + "-".join(others)
+        # (issue #691: and the other fluids, when the name is taken still)
+        more = sorted(f for f in mapped["fin"] if f not in (src, fluid))
+        if chemistry and name in out and more:
+            name += "-plus-" + "-".join(more)
+        # (the distillery's variants of one input differ in their other product)
+        products = sorted(x for x in list(mapped["outs"]) + list(mapped["fout"]) if x != product)
+        if chemistry and name in out and products:
+            name += "-to-" + "-".join(products)
         if name in out:
             left["same name"] += 1
             continue
@@ -1161,14 +1209,18 @@ def route_imports(dump, g):
     return [out[n] for n in sorted(out)], left
 
 
-def routes_lua(entries):
-    """prototypes/data/gtnh-part-routes.lua"""
+def routes_lua(entries, chemistry=False):
+    """prototypes/data/gtnh-part-routes.lua (issue #691: prototypes/data/gtnh-chemistry.lua)"""
     num = lambda x: f"{x:.10g}"
     tab = chr(9)
     pairs = lambda d: ", ".join(f'{{ "{n}", {num(a)} }}' for n, a in sorted(d.items()))
-    lines = ["--- Generated by `tools/devcheck/devcheck.py check --gtnh-routes` (issue #687) from the GT New Horizons recipe dump",
-             "--- (tools/gtnh_dump/) through tools/gtnh_map.py; do not edit, run it again. GT's recipes of the cutting machine,",
-             "--- bender, extruder, wiremill, forge hammer, fluid solidifier and lathe that Gregtorio lacks, in Gregtorio's units:",
+    lines = (["--- Generated by `tools/devcheck/devcheck.py check --gtnh-chemistry` (issue #691) from the GT New Horizons recipe",
+              "--- dump (tools/gtnh_dump/) through tools/gtnh_map.py; do not edit, run it again. GT's recipes of the distillery,",
+              "--- electrolyzer, autoclave, centrifuge, chemical reactors, mixer and chemical bath that Gregtorio lacks, in Gregtorio's units:"]
+             if chemistry else
+             ["--- Generated by `tools/devcheck/devcheck.py check --gtnh-routes` (issue #687) from the GT New Horizons recipe dump",
+              "--- (tools/gtnh_dump/) through tools/gtnh_map.py; do not edit, run it again. GT's recipes of the cutting machine,",
+              "--- bender, extruder, wiremill, forge hammer, fluid solidifier and lathe that Gregtorio lacks, in Gregtorio's units:"]) + [
              "--- { name, cat = category, e = energy_required, i = item ingredients, f = fluid ingredients, o = item results",
              "--- { item, amount, chance }, fo = fluid results }. Section 3 of prototypes/158-fork-gt-parts.lua makes them.",
              "return {"]
