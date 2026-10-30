@@ -223,12 +223,6 @@ data:extend({ {
 --------------------------------------------------------------------------------
 
 do
-	local function tint_layers(t, c)
-		if type(t) ~= "table" then return end
-		if t.filename or t.filenames then t.tint = c end
-		for k, v in pairs(t) do if k ~= "tint" and type(v) == "table" then tint_layers(v, c) end end
-	end
-	local TINT = { 0.45, 0.75, 0.65 }
 	local subgroup = data.raw.item["iron-chest"] and data.raw.item["iron-chest"].subgroup or "storage"
 	local chest = table.deepcopy(data.raw["linked-container"]["linked-chest"])
 	chest.name = "ender-chest"
@@ -238,7 +232,8 @@ do
 	chest.gui_mode = "none"   -- the code is set in scripts/fork-ender.lua's panel
 	chest.minable = { mining_time = 0.5, result = "ender-chest" }
 	chest.fast_replaceable_group = nil
-	tint_layers(chest.picture, TINT)
+	--- issue #654: drawn sprites (tools/gen_icons.py --drawn) instead of the tinted vanilla chest and tank
+	chest.picture = { layers = { { filename = "__gregtorio-continued__/graphics/entity/fork/ender-chest.png", size = 64, scale = 0.5 } } }
 	chest.localised_description = { "entity-description.ender-chest" }
 	local tank = table.deepcopy(data.raw["storage-tank"]["storage-tank"])
 	tank.name = "ender-tank"
@@ -247,7 +242,9 @@ do
 	tank.minable = { mining_time = 0.5, result = "ender-tank" }
 	tank.fast_replaceable_group = nil
 	tank.next_upgrade = nil
-	tint_layers(tank.pictures, TINT)
+	local tank_sprite = { filename = "__gregtorio-continued__/graphics/entity/fork/ender-tank.png", size = 192, scale = 0.5 }
+	tank.pictures.picture = { north = tank_sprite, east = tank_sprite, south = tank_sprite, west = tank_sprite }
+	tank.window_bounding_box = { { -0.35, -0.22 }, { 0.35, 0.5 } }   -- (the window the sprite draws)
 	tank.localised_description = { "entity-description.ender-tank" }
 	data:extend({ chest, tank })
 	for _, n in pairs({ "ender-chest", "ender-tank" }) do

@@ -309,6 +309,14 @@ if data.raw.fluid["steam"] then
 	f.icon, f.icons, f.icon_size = P .. "graphics/fluids/steam.png", nil, 32
 end
 
+--- Issue #654: GT's own fluid textures (tools/gen_fluid_icons.py: graphics/fluids/<fluid>.png, listed in
+--- prototypes/data/fluid-icons.lua; tools/fluid-textures.tsv says why the others keep a colour icon); the pipes keep
+--- their colours
+for name in pairs(require("prototypes.data.fluid-icons")) do
+	local f = data.raw.fluid[name]
+	if f then f.icon, f.icons, f.icon_size = P .. "graphics/fluids/" .. name .. ".png", nil, 32 end
+end
+
 --- vanilla and Space Age fluids that no recipe a player can reach makes or uses but their void recipe: hidden
 --- with it (hidden fluids are gone from the choosers and the Fluids tab). What still refers to them is Space Age
 --- content nobody can obtain (fusion reactor and generator, thruster, the Aquilo and oil ocean tiles, the lithium brine

@@ -614,6 +614,15 @@
   is first loaded once with Gregtorio v0.5.2 and me-network v0.5.0, because me-network 0.5.1 refuses it, issue #209). See
   `tools/devcheck/README.md`. Runtime maps use a fixed seed and a cleared test area, so a red run is
   reproducible (`--seed <printed seed>`) and never bad luck; `--seed random` checks other terrain.
+- Graphics of issue #654: `tools/gen_fluid_icons.py --gt <GT5-Unofficial>` (after a `devcheck.py check`) matches the
+  shown fluids with GT's, GT++'s and GoodGenerator's fluid textures (by name, molten/plasma prefixes, ALIASES, SKIP for
+  the black oil textures), writes graphics/fluids/<fluid>.png through `gen_gt_icons.py --fluid`, lists them in
+  `prototypes/data/fluid-icons.lua` (196 applies it) and every fluid's texture or reason in `tools/fluid-textures.tsv`;
+  run it again after adding fluids. `tools/gen_vein_ore_sheets.py` writes one effect sheet per GT icon set of the vein
+  ores (`graphics/entity/fork/gt-ore-<set>.png`, sets with the same texture share one; the GT ore texture on the stone
+  sheet's alpha, grey) and `prototypes/data/vein-ore-sets.lua`; 165 draws it as the resource's `stages_effect`, tinted in
+  the material's colour, over the stone lumps in grey. The Ender sprites and the godforge's star (a working
+  visualisation with a light) are `gen_icons.py --drawn`.
 - Desync (issue #651): `devcheck.py desync` (part of `all`; `all --no-desync` leaves it out, as the CI of a pull request
   does) runs the runtime map on a headless server with nobody connected (`auto_pause` off) in Factorio's heavy mode
   (`/toggle-heavy-mode` over RCON: each tick the game is saved, loaded and run on both copies; a difference logs
