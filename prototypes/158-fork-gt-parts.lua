@@ -51,6 +51,8 @@ local DATA = require("prototypes.gt-parts-data")
 local ROUTES = require("prototypes.data.gtnh-part-routes")
 --- issue #691: GT's chemistry and separation recipes (section 3, the same way)
 local CHEMISTRY = require("prototypes.data.gtnh-chemistry")
+--- issue #692: GT's metallurgy recipes (section 3, the same way)
+local METALLURGY = require("prototypes.data.gtnh-metallurgy")
 --- issue #688: GT's crafting table recipes of the parts (section 4)
 local CRAFTING = require("prototypes.data.gtnh-part-crafting")
 local P = "__gregtorio-continued__/graphics/icons/"
@@ -460,7 +462,8 @@ function FORK_GT_PARTS.run()
 	---    with water, distilled water, lubricant or dimensionally shifted superfluid, the bender's foils and plates, the
 	---    extruder's bolts, rods and rotors, the wiremill's wires from rods, the forge hammer, the fluid solidifier and the
 	---    lathe; issue #691: prototypes/data/gtnh-chemistry.lua the same for the distillery, electrolyzer, autoclave,
-	---    centrifuge, chemical reactors, mixer and chemical bath). prototypes/data/gtnh-part-routes.lua holds the recipes of these machines that Gregtorio lacks, as GT New
+	---    centrifuge, chemical reactors, mixer and chemical bath; issue #692: prototypes/data/gtnh-metallurgy.lua for the
+	---    alloy blast smelter, blast furnace, alloy smelter, furnace, arc furnace and compressor). prototypes/data/gtnh-part-routes.lua holds the recipes of these machines that Gregtorio lacks, as GT New
 	---    Horizons' recipe dump has them (tools/gtnh_dump/), mapped onto Gregtorio's names and units by tools/gtnh_map.py
 	---    (`route_imports`: the tier from GT's EU/t, at most the machine's highest category, GT's time x the tier's speed,
 	---    a tenth of GT's litres); `devcheck.py check --gtnh-routes` writes it. Named gt-<verb>-<product>-from-<input>
@@ -468,7 +471,7 @@ function FORK_GT_PARTS.run()
 	---    items and fluids (the second run makes the ones of 164's metals; the rest is FORK_GT_PARTS.routes_skipped,
 	---    devcheck's section GTROUTESKIP). The extruder's and solidifier's shapes are 150's mold, which their machines hold.
 	--------------------------------------------------------------------------------
-	for _, list in pairs({ ROUTES, CHEMISTRY }) do
+	for _, list in pairs({ ROUTES, CHEMISTRY, METALLURGY }) do
 	for _, e in pairs(list) do
 		local ok = not data.raw.recipe[e[1]]
 		for _, x in pairs(e.i or {}) do ok = ok and data.raw.item[x[1]] ~= nil end
@@ -497,6 +500,11 @@ function FORK_GT_PARTS.run()
 				end
 			end
 			for _, f in pairs(e.fo or {}) do res[#res + 1] = fluid(f[1], f[2]) end
+			--- (issue #692: the alloy smelter's mold, which 150 moves into its slot)
+			if e.mold then
+				ing[#ing + 1] = item("mold")
+				res[#res + 1] = item("mold")
+			end
 			--- (only with a technology after its machine, items and fluids: no fallback to the latest of them; a route
 			--- whose inputs come later is tried again by the second run)
 			data:extend({ { type = "recipe", name = e[1], categories = { e.cat }, enabled = false, energy_required = e.e,

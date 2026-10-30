@@ -254,7 +254,10 @@
     chemical bath; `prototypes/data/gtnh-chemistry.lua`, `devcheck.py check --gtnh-chemistry`, `route_imports` with
     `CHEM_IMPORT`: no ore chain forms, no GT cells, only categories with the machines' fluid boxes), turns a platinum
     group dust into the platinum line's powder as 157, and `drop_locked_routes()` also drops an imported recipe whose
-    input nothing makes at its technology or before once 161 has moved the dimensions' chains)
+    input nothing makes at its technology or before once 161 has moved the dimensions' chains; issue #692: and GT's
+    metallurgy recipes (alloy blast smelter, blast furnace, alloy smelter with its mold, the furnace's dust smelting, arc
+    furnace, compressor; `prototypes/data/gtnh-metallurgy.lua`, `devcheck.py check --gtnh-metallurgy`, `METAL_IMPORT`;
+    the blast furnace's tier is GT's EU tier, its coil heat is #620's)
   - 159 lanthanides (issue #262: gtnhlanth's monazite rare earth line with the Digester and the Dissolution Tank, from
     crushed monazite to samarium and gadolinium dust; the samarium dust placeholder of 19 is removed, the sifting
     machines get a fluid input and output, technology `monazite-rare-earth-processing` before LuV Components; issue

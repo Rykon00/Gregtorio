@@ -1257,6 +1257,37 @@ def check_gtnh_chemistry(sec, write=False):
         f"{k} {v}" for k, v in sorted(why.items())) + ")", problems
 
 
+def check_gtnh_metallurgy(sec, write=False):
+    """Issue #692 (prototypes/158-fork-gt-parts.lua, section 3): prototypes/data/gtnh-metallurgy.lua holds GT New
+    Horizons' recipes of the alloy blast smelter, blast furnace, alloy smelter, furnace, arc furnace and compressor
+    that Gregtorio lacks (tools/gtnh_map.py `route_imports` with METAL_IMPORT), `check --gtnh-metallurgy` writes it; `check`
+    fails when it is not what that writes and for a recipe of it that 158 neither made nor says why. Returns (info line,
+    problems)."""
+    from collections import Counter
+    sys.path.insert(0, str(ROOT / "tools"))
+    import gtnh_map
+    entries, left = gtnh_map.route_imports(gtnh_map.load_dump(gtnh_map.DUMP), gtnh_map.Gregtorio(sec),
+                                           gtnh_map.METAL_IMPORT, chemistry=True)
+    text = gtnh_map.routes_lua(entries, header=gtnh_map.METALLURGY_HEADER)
+    path = gtnh_map.METALLURGY_FILE
+    have = path.read_text(encoding="utf-8").replace(chr(13) + chr(10), chr(10)) if path.exists() else None
+    verbs = Counter(e["name"].split("-")[1] for e in entries)
+    info = (f"{len(entries)} GT metallurgy recipes (" + ", ".join(f"{k} {v}" for k, v in sorted(verbs.items()))
+            + "); left out: " + (", ".join(f"{k} {v}" for k, v in sorted(left.items())) or "none"))
+    if have != text:
+        if write:
+            path.write_bytes(text.encode("utf-8"))
+            return info + "; the table written (run `check` again to load it)", []
+        return info, [f"{path.name} is not what `devcheck.py check --gtnh-metallurgy` writes (run it)"]
+    recipes = {r[1] for r in sec.get("DUMP", []) if r[0] == "R"}
+    skipped = {r[0]: (r[1] if len(r) > 1 else "") for r in sec.get("GTROUTESKIP", [])}
+    gone = [e["name"] for e in entries if e["name"] not in recipes]
+    why = Counter(skipped.get(n, "?") for n in gone)
+    problems = [f"{n}: in {path.name}, but 158 neither made it nor says why" for n in gone if n not in skipped]
+    return info + f"; the table is up to date ({len(gone)} not made: " + ", ".join(
+        f"{k} {v}" for k, v in sorted(why.items())) + ")", problems
+
+
 def check_classic_veins(m, sec):
     """Issue #563 (prototypes/166-fork-classic-veins.lua): every vein the map places (GT's mixes on a planet with map
     veins, read by checkmod from FORK_ORE_MIXES) has its classic vein recipe and both twins, and the recipe gives the
@@ -2891,6 +2922,9 @@ def check(a):
     chem_info, chemistry = check_gtnh_chemistry(sec, getattr(a, "gtnh_chemistry", False))
     print(chr(10) + "GT's chemistry and separation recipes (issue #691, prototypes/data/gtnh-chemistry.lua): " + chem_info)
     report("GT's chemistry and separation recipes (prototypes/158-fork-gt-parts.lua)", chemistry)
+    metal_info, metallurgy = check_gtnh_metallurgy(sec, getattr(a, "gtnh_metallurgy", False))
+    print(chr(10) + "GT's metallurgy recipes (issue #692, prototypes/data/gtnh-metallurgy.lua): " + metal_info)
+    report("GT's metallurgy recipes (prototypes/158-fork-gt-parts.lua)", metallurgy)
     if getattr(a, "fluids_out", None):
         Path(a.fluids_out).write_text("\n".join("\t".join(r) for r in sec.get("FLUIDS", [])) + "\n", encoding="utf-8")
         print(f"\nfluid list written to {a.fluids_out} (input for tools/gen_review_sheet.py fluids)")
@@ -2907,7 +2941,7 @@ def check(a):
               or circuit_icons or pgm_dusts or recycling or blocks or names or gaps or tree or vanilla or lenses or mine_twins
               or unplaceable or stale_unlocks or removed_keys or trigger_only or spoiling or classic_veins or early
               or furnace or research_counts or nyi_icons or overclock
-              or steam or nugget or steam_rates or boiler_output or vein_doc or renames or gtnh_numbers or parts_recycling or part_routes or part_crafting or chemistry)
+              or steam or nugget or steam_rates or boiler_output or vein_doc or renames or gtnh_numbers or parts_recycling or part_routes or part_crafting or chemistry or metallurgy)
     print("\nRESULT:", "OK" if ok else "PROBLEMS FOUND")
     return 0 if ok else 1
 
@@ -3739,6 +3773,8 @@ def main():
                    help="issue #574: write the vein table of docs/ORE-VEINS.md from the mod's placed veins")
     c.add_argument("--item-renames", action="store_true",
                    help="issue #580: write prototypes/data/item-renames.lua from the item renames of the JSON migrations")
+    c.add_argument("--gtnh-metallurgy", action="store_true",
+                   help="issue #692: write prototypes/data/gtnh-metallurgy.lua, GT's metallurgy recipes Gregtorio lacks")
     c.add_argument("--gtnh-chemistry", action="store_true",
                    help="issue #691: write prototypes/data/gtnh-chemistry.lua, GT's chemistry recipes Gregtorio lacks")
     c.add_argument("--gtnh-crafting", action="store_true",
