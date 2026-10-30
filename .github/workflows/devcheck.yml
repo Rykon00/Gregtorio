@@ -1,7 +1,8 @@
 name: devcheck
 
 # Issue #641: the headless test harness tools/devcheck/devcheck.py (`all`: check, the cheap research load, runtime,
-# the classic ore mode, switch, the boiler output setting and the main menu scenes) on every pull request into main,
+# the classic ore mode, switch, the boiler output setting, the main menu scenes and, not for a pull request, the heavy
+# mode desync run of issue #651) on every pull request into main,
 # every night on main and by hand. It downloads the headless Factorio 2.1 from factorio.com and takes me-network from
 # its repository (the branch main, or the input `me_network_ref` of a run by hand), which devcheck finds as the sibling
 # checkout ../me-network. The dependency configurable-valves comes from the mod portal, which needs a Factorio account:
@@ -73,7 +74,8 @@ jobs:
       - name: devcheck all
         if: steps.account.outputs.run == 'true'
         working-directory: Gregtorio
-        run: python tools/devcheck/devcheck.py all
+        # (issue #651: the heavy mode desync run only in the nightly run and by hand, not for a pull request)
+        run: python tools/devcheck/devcheck.py all ${{ github.event_name == 'pull_request' && '--no-desync' || '' }}
 
       - uses: actions/upload-artifact@v4
         if: failure() && steps.account.outputs.run == 'true'

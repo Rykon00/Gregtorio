@@ -3219,7 +3219,7 @@ def runtime(a):
     print(f"benchmark: {ran.group(0) if ran else 'did not run'}")
     # the ME network's runtime tests are in me-network since issue #83 (its tools/devcheck)
     tests = (("MOLD", "mold test"), ("LENS", "lens test"), ("MOLDCLONE", "cloned mold machine test"), ("POWER", "power test"), ("FUEL", "fuel check test"), ("COOLED", "cooled fluid test"),
-             ("TIERS", "turbine tier test"), ("RECIPES", "recipe test"), ("CRUSH", "raw ore crushing test"), ("OREFURNACE", "ore furnace line test"), ("STEAM", "steam turbine test"), ("CHAIN", "nuclear chain test"), ("LFTR", "LFTR test"), ("DYSON", "Dyson Swarm test"), ("LSC", "supercapacitor test"), ("LSUP", "supercapacitor upgrade test"), ("ELEVATOR", "space elevator test"), ("MELT", "melt and cast test"), ("OFFER", "offered recipes test"), ("EMINE", "electric mine test"), ("SOLAR", "solar boiler test"), ("COALBOILER", "coal boiler test"),("TORCH", "torch test"), ("MAINT", "maintenance test"), ("EBFHEAT", "blast furnace heat test"), ("RADIATION", "radiation test"), ("WIRELESS", "wireless energy test"), ("BATTERY", "battery buffer test"), ("VEINS", "map vein test"), ("CLASSIC", "classic vein test"), ("DRILLS", "mining drill test"), ("PORTAL", "portal test"), ("ENDER", "ender storage test"), ("VICTORY", "victory test"),
+             ("TIERS", "turbine tier test"), ("RECIPES", "recipe test"), ("CRUSH", "raw ore crushing test"), ("OREFURNACE", "ore furnace line test"), ("STEAM", "steam turbine test"), ("CHAIN", "nuclear chain test"), ("LFTR", "LFTR test"), ("DYSON", "Dyson Swarm test"), ("LSC", "supercapacitor test"), ("LSUP", "supercapacitor upgrade test"), ("ELEVATOR", "space elevator test"), ("MELT", "melt and cast test"), ("OFFER", "offered recipes test"), ("EMINE", "electric mine test"), ("SOLAR", "solar boiler test"), ("COALBOILER", "coal boiler test"),("TORCH", "torch test"), ("MAINT", "maintenance test"), ("EBFHEAT", "blast furnace heat test"), ("RADIATION", "radiation test"), ("WIRELESS", "wireless energy test"), ("PLAYER", "player path test"), ("BATTERY", "battery buffer test"), ("VEINS", "map vein test"), ("CLASSIC", "classic vein test"), ("DRILLS", "mining drill test"), ("PORTAL", "portal test"), ("ENDER", "ender storage test"), ("VICTORY", "victory test"),
              ("POSTVICTORY", "post-victory test"))
     for key, label in tests:
         m = re.search(rf"DEVCHECK-RUNTIME-{key} (.*)", log)
@@ -3235,6 +3235,68 @@ def runtime(a):
         return 1
     print("\nRESULT: OK")
     return 0
+
+
+def desync(a):
+    """Issue #651 (the maintainer's decision of 2026-10-30): the runtime map on a headless server that runs with nobody
+    connected, in Factorio's heavy mode (`/toggle-heavy-mode` over RCON: every tick the game is saved, loaded and run
+    on both copies, and any difference is a failed heavy mode check with a dump in the write data's `dumps/`), for
+    `--desync-ticks` ticks: a script whose state is not in `storage` (a local that a load resets) shows up as a desync.
+    A headless Factorio cannot join a game as a client, so this is the multiplayer check devcheck can run."""
+    import time
+    prepare_mods(with_runtime=True, settings=parse_settings(getattr(a, "set", None)))
+    mapfile = WORK / "desync-map.zip"
+    log = factorio("--create", str(mapfile), *seed_args(a))
+    if load_errors(log):
+        print(load_errors(log))
+        return 1
+    dumps = FACTORIO / "dumps"
+    if dumps.exists():
+        shutil.rmtree(dumps, ignore_errors=True)
+    ticks = getattr(a, "desync_ticks", None) or 600
+    state = {}
+
+    def session(sock):
+        tick = lambda: rcon(sock, 2, "/silent-command rcon.print(game.tick)", 90).strip()
+        tick()     # (the first Lua command only warns that it disables achievements)
+        start = int(tick() or 0)
+        rcon(sock, 2, "/toggle-heavy-mode", 91)
+        t0, now = time.time(), start
+        while now < start + ticks and time.time() < t0 + 60 * 60:
+            time.sleep(5)
+            try:
+                now = int(tick() or now)
+            except ValueError:
+                pass
+        rcon(sock, 2, "/toggle-heavy-mode", 92)
+        state.update(start=start, end=now, seconds=round(time.time() - t0))
+        return []
+    log_path = WORK / "desync-server.log"
+    log, reason, _ = server_session(mapfile, log_path, "devcheck desync: the runtime map in heavy mode",
+                                    auto_pause=False, session=session)
+    failed = re.findall(r"Heavy mode (?:heuristic )?check (\S+) failed", log)
+    checked = len(re.findall(r"Heavy mode - tick \d+ finished", log))
+    n_dumps = len(list(dumps.iterdir())) if dumps.exists() else 0
+    print(f"heavy mode: ticks {state.get('start')} to {state.get('end')} ({checked} checked in {state.get('seconds')} s), "
+          f"{len(failed)} failed checks, {n_dumps} dumps in {dumps}")
+    problems = []
+    if reason and not re.search(r"did not save the map", reason):
+        problems.append(reason)
+    if checked < ticks * 0.9:
+        problems.append(f"only {checked} ticks checked in heavy mode (of {ticks})")
+    problems += [f"desync: the heavy mode check {c} failed (dump in {dumps})" for c in sorted(set(failed))]
+    report("desync problems (a script's state outside `storage`, or a difference between the game and its loaded copy)",
+           problems)
+    print("\nRESULT:", "PROBLEMS FOUND" if problems else "OK")
+    return 1 if problems else 0
+
+
+def desync_all(a):
+    """Part of `all` (issue #651): the heavy mode run"""
+    c = argparse.Namespace(**vars(a))
+    c.set = None
+    print("\n=== desync: the runtime map in heavy mode ===")
+    return desync(c)
 
 
 def zip_from_ref(ref):
@@ -3343,7 +3405,7 @@ def load_and_save(mapfile, log_path):
     return log, reason
 
 
-def server_session(step, log_path, description, commands=()):
+def server_session(step, log_path, description, commands=(), auto_pause=True, session=None):
     """Loads the save `step` in a headless server with nobody connected and `auto_pause`, sends `commands` through RCON
     (each Lua command runs one tick), quits through RCON: the server saves the map back into `step` when it quits.
     Returns the server log, None or a reason, and the RCON answers of the commands. The ports are free ones (another
@@ -3358,7 +3420,7 @@ def server_session(step, log_path, description, commands=()):
     binary = FACTORIO / ("bin/x64/factorio.exe" if os.name == "nt" else "bin/x64/factorio")
     settings = WORK / "server-settings.json"
     settings.write_text(json.dumps({"name": "devcheck", "description": description,
-                                    "visibility": {"public": False, "lan": False}, "auto_pause": True,
+                                    "visibility": {"public": False, "lan": False}, "auto_pause": auto_pause,
                                     "require_user_verification": False, "max_players": 1}), encoding="utf-8")
     reason, answers = None, []
     with open(log_path, "w", encoding="utf-8") as out:
@@ -3382,6 +3444,8 @@ def server_session(step, log_path, description, commands=()):
             else:
                 for i, command in enumerate(commands):
                     answers.append(rcon(sock, 2, command, 10 + i))
+                if session:
+                    answers += session(sock)
                 try:
                     rcon(sock, 2, "/quit", 2)
                 except OSError:
@@ -4009,8 +4073,14 @@ def main():
     gd.add_argument("--log", help="use the log of an earlier `check` run instead of loading the mod")
     gd.add_argument("--out", default=str(WORK / "gtnh-diff.md"))
     gd.add_argument("--json", default=str(WORK / "gtnh-diff.json"))
+    ds = sub.add_parser("desync", help="issue #651: the runtime map in Factorio's heavy mode on a headless server")
+    ds.add_argument("--desync-ticks", type=int, default=600, help="ticks run in heavy mode (default 600)")
+    ds.add_argument("--set", action="append", help="startup setting name=value (as `check`)")
+    ds.add_argument("--seed", default=str(DEFAULT_SEED), help=f"map seed or `random` (default {DEFAULT_SEED})")
     al = sub.add_parser("all")
     al.add_argument("--ticks", type=int, default=1500)
+    al.add_argument("--desync-ticks", type=int, default=600)
+    al.add_argument("--no-desync", action="store_true", help="issue #651: leave out the heavy mode run (the CI of a pull request)")
     al.add_argument("--locale-out")
     al.add_argument("--techs")
     al.add_argument("--seed", default=str(DEFAULT_SEED), help=f"map seed of the runtime map or `random` (default {DEFAULT_SEED})")
@@ -4031,7 +4101,10 @@ def main():
         return switch(a)
     if a.cmd == "gtnh-diff":
         return gtnh_diff(a)
-    return check(a) or one_pack(a) or runtime(a) or classic(a) or boilers(a) or overclocking(a) or menusim_own(a)
+    if a.cmd == "desync":
+        return desync(a)
+    return (check(a) or one_pack(a) or runtime(a) or classic(a) or boilers(a) or overclocking(a) or menusim_own(a)
+            or (0 if a.no_desync else desync_all(a)))
 
 
 if __name__ == "__main__":
