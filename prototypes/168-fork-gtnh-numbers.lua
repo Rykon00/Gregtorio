@@ -11,10 +11,12 @@
 ---   e   energy_required: GT's seconds x the speed of the tier (Gregtorio's rule, so a machine of the recipe's tier takes
 ---       GT's time), x the batch when the recipe is several GT recipes at once (16 rods -> 64 bolts)
 ---   i   the item ingredients, o the item results per chance (GT gives an item once sure and once by chance as two
----       results); not for a recipe whose fluids differ from GT's tenth too (#671: they would no longer fit)
+---       results)
+---   fi, fo  the fluid ingredients and results, a tenth of GT's litres (issue #671; also where a map of Gregtorio's
+---       used GT's litres, the naquadah cracking and its distillation, or a gas variant of 144 its own amount)
 --- Left out (tools/gtnh_map.py, NUMBERS_SKIP_MAPS): the crafting table's recipes (GT's tools merge recipes with and
---- without a tool, #688), 157's recycling (GT's formulas on Gregtorio's own recipes, the decision on #190) and every
---- fluid amount (#671). devcheck's `check` fails for a recipe with a GT recipe whose numbers in this scope differ from
+--- without a tool, #688), 157's recycling (GT's formulas on Gregtorio's own recipes, the decision on #190) and the
+--- fusion reactor (#32's plasma balance). devcheck's `check` fails for a recipe with a GT recipe whose numbers in this scope differ from
 --- GT's and that neither the table nor FORK_GTNH_NUMBERS_KEPT names, and for a table that is not what `--gtnh-numbers`
 --- writes. Loads after every file that makes recipes (after 157) and before 150, 196, 197, 198 and 199.
 --------------------------------------------------------------------------------
@@ -67,6 +69,13 @@ for name, n in pairs(DATA) do
 			for _, x in pairs(r.ingredients or {}) do
 				if is_item(x) and n.i[x.name] then x.amount = n.i[x.name] end
 			end
+		end
+		--- (issue #671: the fluids, a tenth of GT's litres)
+		for _, x in pairs(n.fi and r.ingredients or {}) do
+			if x.type == "fluid" and n.fi[x.name] then x.amount = n.fi[x.name] end
+		end
+		for _, x in pairs(n.fo and r.results or {}) do
+			if x.type == "fluid" and n.fo[x.name] then x.amount, x.amount_min, x.amount_max = n.fo[x.name], nil, nil end
 		end
 		if n.o then
 			-- (an item's results are GT's stacks in its place: a sure one and one per chance)

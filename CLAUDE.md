@@ -390,8 +390,9 @@
     recipe with the same items and fluids in and out, from `prototypes/data/gtnh-numbers.lua`, which `devcheck.py check
     --gtnh-numbers` writes from the dump of `tools/gtnh_dump/` through `tools/gtnh_map.py` (`numbers`; run it after a new
     dump, a new recipe or a changed one, `check` says when the table is out of date); a tier only downward (a higher one
-    needs a later machine and moves the unlock, #724), not the blast furnace's tier (its coil heat, #620), no fluid
-    amounts and no item amounts of a recipe whose fluids differ (#671), not the crafting table (GT's tools merge recipes,
+    needs a later machine and moves the unlock, #724), not the blast furnace's tier (its coil heat, #620), the fluid
+    amounts too (issue #671: `fi`/`fo`, a tenth of GT's litres, Gregtorio's rule; hand-built assembly line recipes the
+    dump does not match, 162's space elevator, the energy hatches, take a tenth of GT's litres by hand), not the crafting table (GT's tools merge recipes,
     #688), not 157's recycling (GT's formulas on Gregtorio's recipes, #190), not the fusion reactor (#32), no time of a
     hand recipe; devcheck fails for a matched recipe whose numbers in that scope differ from GT's unless it is in the
     allow-list `FORK_GTNH_NUMBERS_KEPT` with its reason (section `GTNHKEPT`), and for one a later file changes again;

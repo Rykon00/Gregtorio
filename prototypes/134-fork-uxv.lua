@@ -90,6 +90,8 @@ F.circuit_line{
 --- The UMV recipes with universium and universium cable; spacetime plates in the pump, UXV, UMV and UIV
 --- circuits in the robot arm.
 ---   * field generator: 8 UXV circuits (GT: MAX circuits, not built)
+---   * the melts stay the UMV ones' (issue #671: GT's UXV parts take no solder but 8000 L of superfluid and the
+---     starmatter, spacetime and universium melts, a different recipe, not a tenth of this one)
 --------------------------------------------------------------------------------
 
 F.components{
@@ -142,8 +144,8 @@ create_item{
 		{ type = "item", name = "uxv-circuit", amount = 2 },
 		{ type = "item", name = "extended-mega-ultimate-voltage-coil", amount = 2 },
 		{ type = "item", name = "uxv-pump", amount = 1 },
-		{ type = "fluid", name = "cryogenic-helium", amount = 1000 },
-		{ type = "fluid", name = "molten-indalloy-140", amount = 576 },
+		{ type = "fluid", name = "cryogenic-helium", amount = 6400 },   -- (issue #671: a tenth of GT's litres)
+		{ type = "fluid", name = "molten-indalloy-140", amount = 1152 },
 	},
 }
 

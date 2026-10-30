@@ -706,8 +706,10 @@ create_item{
 		{ type = "item", name = "zpm-pump", amount = 4 },
 		{ type = "item", name = "naquadah-plate", amount = 8 },
 		{ type = "item", name = "osmium-plate", amount = 8 },
+		--- (issue #671: GT's 576 L trinium and 4608 L indalloy, a tenth; GT's 8000 L lubricant is left out, the UV
+		--- assembly line has two fluid inputs)
 		{ type = "fluid", name = "molten-trinium", amount = 57.6 },
-		{ type = "fluid", name = "molten-indalloy-140", amount = 288 },
+		{ type = "fluid", name = "molten-indalloy-140", amount = 460.8 },
 	},
 }
 create_item{
