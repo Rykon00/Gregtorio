@@ -682,13 +682,18 @@ create_item{
  
   
 ---COKE OVEN
+--- issue #613 (the maintainer's decision): GT's coke oven is a 3x3x3 multiblock of coke oven bricks with its controller
+--- and coke oven hatches (MTECokeOven: up to 26 casings, any hatches); here the controller, three hatches (GT's hatch has
+--- one mode each: items in, items out, fluids out, the three things this machine does) and 23 brick blocks
 create_item{
 	name = "coke-oven",
     subgroup = "steam-age-production-machine",
     place_result = "coke-oven",
 	stack_size = 10,
 	ingredients = {
-		{type = "item", name = "coke-oven-block", amount = 27},
+		{type = "item", name = "coke-oven-controller", amount = 1},
+		{type = "item", name = "coke-oven-hatch", amount = 3},
+		{type = "item", name = "coke-oven-block", amount = 23},
     }
 }
 data:extend({
