@@ -1624,6 +1624,102 @@ end
 
 
 --------------------------------------------------------------------------------
+--- 2m') GT NEW HORIZONS' STEAM WATER PUMP (issue #613, the maintainer's decision: water shortage in the steam age)
+---    MTESteamWaterPump: 1 500 L of water a second x the biome's humidity x its frame tier (bronze 1, steel 2), for 1 500 L
+---    of steam a second at either tier. Here the Steam Water Pump (bronze) and the High Pressure Steam Water Pump (steel):
+---    150 and 300 water a second x the surface's moisture at their spot (read when built, scripts/fork-steam-boilers.lua;
+---    at least 25 %, in quarter steps: four locked recipes; GT gives at least 250 L in a dimension with water), for 15
+---    steam a second (1.5 MW). Recipes: GT's structure (10 frames of the tier and 11 primitive wooden casings around the
+---    controller) with GT's controller "Water Pump" (5 bronze frames, a bronze gear, 3 primitive wooden casings) and GT's
+---    primitive wooden casing (6 wooden frames, 2 wooden screws, a wooden gear: 9 logs here, Gregtorio has no wooden
+---    parts). The offshore pump comes with the LV pump now (142) and takes power: GT's pump pays 64 EU per 1 000 L, for the
+---    offshore pump's 1 200 water a second (12 000 L) 768 kW; GT's Basic Pump recipe (4 LV pumps, the LV hull, 2 LV
+---    circuits, 2 large bronze pipes as 6 bronze plates). The start's water: bartworks' Simple Stirling Water Pump (the
+---    maintainer's choice; below). Sprites: tools/gen_sprites.py (steam_water_pumps).
+--------------------------------------------------------------------------------
+do
+	recipe_category_and_subgroup("steam-water-pump-recipes")
+	local WATER = {}
+	for _, m in pairs({ 25, 50, 75, 100 }) do
+		local name = "steam-water-pump-water-" .. m
+		create_recipe{
+			recipe_name = name, category = "steam-water-pump-recipes", energy_required = 1, ingredients = {},
+			results = { { type = "fluid", name = "water", amount = 150 * m / 100 } }, main_product = "water",
+		}
+		WATER[#WATER + 1] = name
+	end
+	create_item{ name = "primitive-wooden-casing", subgroup = "steam-age-production-machine",
+		ingredients = { { type = "item", name = "wood", amount = 9 } } }
+	create_item{ name = "water-pump-controller", subgroup = "steam-age-production-machine",
+		ingredients = { { type = "item", name = "bronze-frame", amount = 5 }, { type = "item", name = "large-bronze-gear", amount = 1 },
+			{ type = "item", name = "primitive-wooden-casing", amount = 3 } } }
+	for tier, p in pairs({ [1] = { "steam-water-pump", "bronze-frame" }, [2] = { "hp-steam-water-pump", "steel-frame" } }) do
+		local name = p[1]
+		make_steam_machine(name, name, "steam-water-pump-recipes", "fr-steam-water-pump", "1.5MW", 1, 0.5)
+		local e = data.raw["assembling-machine"][name]
+		e.crafting_speed = tier
+		e.fluid_boxes = { fluid_port(0, -1, "output", defines.direction.north) }
+		e.fluid_boxes_off_when_no_fluid_recipe = false
+		create_item{ name = name, subgroup = "steam-age-production-machine", place_result = name, stack_size = 10,
+			ingredients = { { type = "item", name = "water-pump-controller", amount = 1 }, { type = "item", name = p[2], amount = 10 },
+				{ type = "item", name = "primitive-wooden-casing", amount = 11 } } }
+	end
+	data.raw["assembling-machine"]["steam-water-pump"].next_upgrade = "hp-steam-water-pump"
+	--- (with the bronze frames: Large Bronze Boiler; the steel one after the steel frames, 170-fork-smeltery.lua)
+	for _, r in pairs({ "primitive-wooden-casing", "water-pump-controller", "steam-water-pump" }) do fork_add_unlock("large-bronze-boiler", r) end
+	for _, r in pairs(WATER) do fork_add_unlock("large-bronze-boiler", r) end
+
+	--- bartworks' Simple Stirling Water Pump (the maintainer's decision: the start's water, as in GTNH;
+	--- TileEntityHeatedWaterPump: 150 L of water a second while it burns a furnace fuel, a coal lasting 1 600 ticks): 15
+	--- water a second from the start, burning any chemical fuel at a coal's worth per 80 s. GT's recipes with stand-ins, as
+	--- Gregtorio has no steel, pistons or glass tubes at the start: the Simple Stirling Motor (GT: a small steel gear, 2 long
+	--- steel rods, a steel screw, 2 pistons, an elongated glass tube) as an iron gear, 2 iron sticks, 2 iron plates and a
+	--- pipe; the pump's 3 large wooden fluid pipes as 5 logs and GT's blast furnace as the stone furnace.
+	local coal = data.raw.item.coal.fuel_value
+	local coal_j = tonumber(coal:match("^[%d.]+")) * ({ kJ = 1e3, MJ = 1e6 })[coal:match("%a+$")]
+	create_item{ name = "simple-stirling-motor", subgroup = "steam-age-production-machine",
+		ingredients = { { type = "item", name = "iron-gear-wheel", amount = 1 }, { type = "item", name = "iron-stick", amount = 2 },
+			{ type = "item", name = "iron-plate", amount = 2 }, { type = "item", name = "pipe", amount = 1 } } }
+	local STIRLING = "simple-stirling-water-pump"
+	make_steam_machine(STIRLING, STIRLING, "steam-water-pump-recipes", "fr-simple-stirling-water-pump",
+		string.format("%gkW", coal_j / 80 / 1e3), 1, 0.5)
+	local e = data.raw["assembling-machine"][STIRLING]
+	e.crafting_speed = 1
+	e.energy_source = { type = "burner", fuel_categories = { "chemical" }, effectivity = 1, fuel_inventory_size = 1,
+		emissions_per_minute = { pollution = 2 } }
+	e.fluid_boxes = { fluid_port(0, -1, "output", defines.direction.north) }
+	e.fixed_recipe = STIRLING .. "-water"
+	create_recipe{ recipe_name = STIRLING .. "-water", category = "steam-water-pump-recipes", energy_required = 1,
+		ingredients = {}, results = { { type = "fluid", name = "water", amount = 15 } }, main_product = "water" }
+	create_item{ name = STIRLING, subgroup = "steam-age-production-machine", place_result = STIRLING, stack_size = 10,
+		ingredients = { { type = "item", name = "iron-plate", amount = 4 }, { type = "item", name = "wood", amount = 5 },
+			{ type = "item", name = "simple-stirling-motor", amount = 1 }, { type = "item", name = "stone-furnace", amount = 1 } } }
+	for _, r in pairs({ "simple-stirling-motor", STIRLING, STIRLING .. "-water" }) do fork_add_unlock("small-coal-boiler", r) end
+	FORK_STEAM_WATER_PUMPS = { "steam-water-pump", "hp-steam-water-pump" }
+	data:extend({ { type = "mod-data", name = "fork-steam-water-pumps",
+		data = { names = FORK_STEAM_WATER_PUMPS, recipes = { [25] = WATER[1], [50] = WATER[2], [75] = WATER[3], [100] = WATER[4] } } } })
+
+	--- the offshore pump: GT's Basic Pump, on LV power. A save's placed pumps become `legacy-offshore-pump` (the old
+	--- prototype without power; migrations/2026-10-30-issue-613-offshore-pumps.lua), mined they give the new pump
+	local o = data.raw["offshore-pump"]["offshore-pump"]
+	local legacy = table.deepcopy(o)
+	legacy.name = "legacy-offshore-pump"
+	legacy.hidden = true
+	legacy.minable = { mining_time = (o.minable and o.minable.mining_time) or 0.1, result = "offshore-pump" }
+	legacy.placeable_by = { item = "offshore-pump", count = 1 }
+	legacy.fast_replaceable_group = "offshore-pump"
+	o.fast_replaceable_group = "offshore-pump"
+	data:extend({ legacy })
+	o.energy_source = { type = "electric", usage_priority = "secondary-input" }
+	o.energy_usage = "768kW"
+	local r = data.raw.recipe["offshore-pump"]
+	r.ingredients = { { type = "item", name = "lv-pump", amount = 4 }, { type = "item", name = "lv-machine-hull", amount = 1 },
+		{ type = "item", name = "electronic-circuit", amount = 2 }, { type = "item", name = "bronze-plate", amount = 6 } }
+end
+
+
+
+--------------------------------------------------------------------------------
 --- 2j) BREWERY AND FERMENTER, LV TO EV (issue #360, the revisit of #155's "leave for now")
 ---    GT New Horizons' Basic Brewery (LoaderMetaTileEntities.java:1910, recipe map brewingRecipes) and Basic Fermenter
 ---    (:2748, fermentingRecipes), one item and one fluid slot in and a fluid out; 164-fork-chemistry.lua makes their

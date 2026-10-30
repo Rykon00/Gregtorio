@@ -638,6 +638,14 @@ local function add_prerequisite(tech, pre)
 	t.prerequisites = t.prerequisites or {}
 	table.insert(t.prerequisites, pre)
 end
+--- issue #613: the offshore pump is GT's Basic Pump on LV power now (101 section 2m'), with the LV pump; the steam age
+--- pumps water with the Steam Water Pump
+move_unlock("offshore-pump", "small-coal-boiler", "extractor")
+do   -- (vanilla's Steam Power unlocks it too)
+	local t, keep = data.raw.technology["steam-power"], {}
+	for _, e in pairs(t and t.effects or {}) do if e.recipe ~= "offshore-pump" then keep[#keep + 1] = e end end
+	if t then t.effects = keep end
+end
 --- the logistic chests are HV assembler recipes: they come with HV Machines (Logistic System and the ME network stay MV)
 for _, r in pairs({ "requester-chest", "active-provider-chest", "passive-provider-chest", "storage-chest", "buffer-chest" }) do
 	move_unlock(r, "logistic-system", "hv-machines")

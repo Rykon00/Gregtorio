@@ -59,7 +59,7 @@ How Gregtorio turns GT New Horizons into Factorio, where the code only implies i
 
 | Issue | Decision |
 |---|---|
-| #613 | build all three: the coke oven hatch, water shortage in the steam age, a Tinkers-like smeltery path |
+| #613 | build all three: the coke oven hatch, water shortage in the steam age, a Tinkers-like smeltery path (built: GT's coke oven controller and hatches; the Steam Water Pumps by moisture, bartworks' Stirling pump at the start, the offshore pump at LV; 170's smeltery, casting table and tool station) |
 | #615 | every Reach technology from the Moon on is a craft trigger of its tier's rocket after GTNH |
 | #618 | maintenance for multiblocks as a startup setting, default off |
 | #619 | no voltage tiers, transformers or cable loss (rule above) |

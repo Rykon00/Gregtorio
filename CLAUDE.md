@@ -12,7 +12,8 @@
     the LV assembler recipe `small-lamp-lv-assembler` (Automation 2), placed lamps of old saves become torches
     (`migrations/2026-10-24-issue-555-torch.json`); graphics from `tools/gen_icons.py --drawn`)
   - 101 machines (issue #446: the steam age of GTNH, the high pressure machines, the steam furnace, the lava and solar
-    boilers; issue #447: the steam macerator's copies of the LV macerator recipes without byproducts,
+    boilers; issue #613: section 2m' the Steam Water Pumps (moisture-dependent recipe set by scripts/fork-steam-boilers.lua),
+    bartworks' Simple Stirling Water Pump at the start, the offshore pump as GT's Basic Pump on LV power; issue #447: the steam macerator's copies of the LV macerator recipes without byproducts,
     `fork_steam_categories()` at the end of data-final-fixes.lua; issue #571: its `steam_ore_unlocks()` unlocks the copies of
     the ore forms with the later of Steam Macerator and the first technology that makes their input (only into the
     prerequisites of the original's technology, only when something takes each product there) and moves the furnace
@@ -384,6 +385,9 @@
     generators EV to UV as 136's fluid generators on the plasmas (mod data `fork-power`, no cooled fluid); one amp of
     the tier (EU32), GT's efficiencies; unlocked after every input and the fuel (155's `unlock_after`, with 158's
     fallback for items 155 does not know); loads after 156 and before 157)
+  - 170 smeltery (issue #613 part 3: the Tinkers-like smeltery, casting table with single-use clay casts and tool station
+    that gives #612's charges from a cast tool head; unlocked with 155's `unlock_after` over its own scan of the recipes,
+    each machine with its first recipe's inputs; loads after 169 and before 157)
   - 157 recycling (issue #190: GTNH's material recycling into dusts, ingots and melts for the items of crafting table
     recipes and the hulls, recipes `recycling-<machine>-<item>` in `FORK_RECYCLING.recipes`, unlocked late by
     `FORK_RECYCLING.unlock()` in data-final-fixes.lua because that file replaces and disables vanilla technologies;

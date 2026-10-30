@@ -159,6 +159,8 @@ require("prototypes.167-fork-tips")
 require("prototypes.156-fork-circuit-icons")
 --- issue #644: GT's single-block naquadah reactors and plasma generators (after the parts and plasmas, before 157)
 require("prototypes.169-fork-single-generators")
+--- issue #613: the Tinkers-like smeltery, casting table and tool station (after the parts, before 157)
+require("prototypes.170-fork-smeltery")
 --- issue #190: GTNH's material recycling (macerator, arc furnace, fluid extractor), after every file that makes recipes
 require("prototypes.157-fork-recycling")
 --- issue #689: GT New Horizons' tiers, times, item amounts and chances from the recipe dump (after every file that makes

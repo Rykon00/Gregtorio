@@ -193,6 +193,8 @@ local TT_STEAM_FORCE, TT_STEAM_TECHS = "devcheck-steam-age", { "steam-macerator"
 local TT_STEAM_MOVED = {
 	["dimension-mine"] = true,   -- issue #556: with Primitive Electronic Circuit Assemblies (before: Craft Wooden Tools)
 	["gravel"] = true,           -- issue #560: the forge hammer's, with Steam Forge Hammer (before: Steam Macerator)
+	["offshore-pump"] = true,    -- issue #613: GT's Basic Pump with the LV pump (before: Small Coal Boiler)
+	["recycling-macerator-offshore-pump"] = true,   -- (its recycling follows it)
 }
 
 local function setup_techs()

@@ -1374,6 +1374,29 @@ create_item{
 		{type = "item", name = "coke-oven-brick", amount = 4}
     }
 }
+
+--- issue #613 (the maintainer's decision: GT's coke oven as a multiblock): GT's Coke Oven controller and Coke Oven Hatch
+--- (the dump's crafting recipes: 8 bricks around a furnace; 6 bricks with a hopper, a chest and a medium bronze pipe).
+--- Gregtorio has no hopper and no medium bronze pipe: GT's hopper recipe (5 iron + a chest) as 5 iron plates and an iron
+--- chest, the pipe as 3 bronze plates (GT's pipe recipe), GT's chest as an iron chest.
+create_item{
+	name = "coke-oven-controller",
+	subgroup = "steam-age-production-machine",
+	ingredients = {
+		{type = "item", name = "coke-oven-brick", amount = 8},
+		{type = "item", name = "stone-furnace", amount = 1}
+    }
+}
+create_item{
+	name = "coke-oven-hatch",
+	subgroup = "steam-age-production-machine",
+	ingredients = {
+		{type = "item", name = "coke-oven-brick", amount = 6},
+		{type = "item", name = "iron-plate", amount = 5},
+		{type = "item", name = "iron-chest", amount = 2},
+		{type = "item", name = "bronze-plate", amount = 3}
+    }
+}
   
   
   

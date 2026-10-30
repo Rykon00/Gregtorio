@@ -5669,3 +5669,31 @@ white-dwarf-matter-rotor
 white-dwarf-matter-round
 white-dwarf-matter-screw
 white-dwarf-matter-spring
+# issue #613: GT's coke oven controller and hatch
+coke-oven-controller
+coke-oven-hatch
+# issue #613: GT's primitive wooden casing, water pump controller and the steam water pumps
+primitive-wooden-casing
+water-pump-controller
+steam-water-pump
+hp-steam-water-pump
+simple-stirling-water-pump
+simple-stirling-motor
+# issue #613: the smeltery's tool heads and clay casts
+iron-hammer-head
+iron-file-head
+iron-saw-blade
+iron-screwdriver-tip
+iron-wrench-head
+bronze-hammer-head
+bronze-file-head
+bronze-saw-blade
+bronze-screwdriver-tip
+bronze-wrench-head
+clay-hammer-head-cast
+clay-file-head-cast
+clay-saw-blade-cast
+clay-screwdriver-tip-cast
+clay-wrench-head-cast
+clay-ingot-cast
+clay-plate-cast

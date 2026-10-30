@@ -1223,6 +1223,36 @@ def icon_table(c):
                                                            "gt:miscutils/textures/blocks/iconsets/controllerFaces/industrialDehydrator")
     T["integral-encasement-i"] = lambda: c.gt(f"{BLK}INTEGRAL_FRAMEWORK_ULV")
     # issue #356 part 3: the netherite chain's items (gt.metaitem.03 248-250, MetaGeneratedItem03.java:1809-1824)
+    # issue #613: GT's coke oven controller (the casing with its inactive front) and hatch (the casing with the pipe)
+    def coke(overlay):
+        img = c.gt(BLK + "COKE_OVEN_CASING").copy()
+        img.alpha_composite(c.gt(BLK + overlay))
+        return img
+    T["coke-oven-controller"] = lambda: coke("COKE_OVEN_OVERLAY_INACTIVE")
+    T["coke-oven-hatch"] = lambda: coke("OVERLAY_PIPE_IN")
+    # issue #613: GT's primitive wooden casing, its Water Pump controller (the casing with the pump's front) and the two
+    # steam water pumps (the controller; the high pressure one in steel's grey)
+    def water_pump():
+        img = c.gt(BLK + "PRIMITIVE_WOODEN_CASING_SIDE").copy()
+        img.alpha_composite(c.gt(BLK + "OVERLAY_FRONT_WATER_PUMP"))
+        return img
+    T["primitive-wooden-casing"] = lambda: c.gt(BLK + "PRIMITIVE_WOODEN_CASING_SIDE")
+    T["water-pump-controller"] = water_pump
+    T["steam-water-pump"] = water_pump
+    T["hp-steam-water-pump"] = lambda: tint(water_pump(), (190, 190, 200))
+    # bartworks' Simple Stirling Water Pump (its side); the Simple Stirling Motor has no texture in the checkouts: the pump's top
+    T["simple-stirling-water-pump"] = lambda: fit(c.t.load("gt:bartworks/textures/blocks/heatedWaterPumpSide"))
+    T["simple-stirling-motor"] = lambda: fit(c.t.load("gt:bartworks/textures/blocks/heatedWaterPumpTop"))
+    # issue #613: the casting table's tool heads (GT's tool head textures of iron and bronze) and its clay casts (GT's
+    # ingot, plate and tool head shapes in clay's colour)
+    HEADS = {"hammer-head": "toolHeadHammer", "file-head": "toolHeadFile", "saw-blade": "toolHeadSaw",
+             "screwdriver-tip": "toolHeadScrewdriver", "wrench-head": "toolHeadWrench"}
+    for shape, prefix in HEADS.items():
+        for m in ("iron", "bronze"):
+            T[f"{m}-{shape}"] = lambda m=m, prefix=prefix: c.part(m, prefix)
+    for shape, prefix in list(HEADS.items()) + [("ingot", "ingot"), ("plate", "plate")]:
+        T[f"clay-{shape}-cast"] = lambda prefix=prefix: tint(
+            fit(c.t.load("gt:gregtech/textures/items/materialicons/NONE/" + prefix)), (180, 140, 115))
     # issue #699: the phonon chain (IDMetaItem03 759-761), the conduit's and the godforge module's casing textures
     T["thermal-superconductor"] = lambda: c.gt(M3 + "759")
     T["relativistic-heat-capacitor"] = lambda: c.gt(M3 + "760")

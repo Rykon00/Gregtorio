@@ -1172,6 +1172,61 @@ def single_generators(gt):
             save(icon, OUT_ICON / f"{name}.png")
 
 
+# issue #613: GT's steam water pump, 3x3: GT's primitive wooden casing, the middle tile with the controller's front
+# (OVERLAY_FRONT_WATER_PUMP, active while it runs); the high pressure pump in steel's grey
+def steam_water_pumps(gt):
+    casing = scaled(load(gt_path(gt, "gregtech:iconsets/PRIMITIVE_WOODEN_CASING_SIDE")), TILE)
+    for name, rgb in (("steam-water-pump", None), ("hp-steam-water-pump", (190, 190, 200))):
+        d = ROOT / "graphics/entity" / name
+        d.mkdir(parents=True, exist_ok=True)
+        for kind, face in (("idle", "OVERLAY_FRONT_WATER_PUMP"), ("working", "OVERLAY_FRONT_WATER_PUMP_ACTIVE")):
+            mid = casing.copy()
+            mid.alpha_composite(scaled(frames_of(load(gt_path(gt, "gregtech:iconsets/" + face)))[0], TILE))
+            img = Image.new("RGBA", (3 * TILE, 3 * TILE))
+            for y in range(3):
+                for x in range(3):
+                    img.paste(mid if (x, y) == (1, 1) else casing, (x * TILE, y * TILE))
+            if rgb:
+                img = tint(img, rgb)
+            save(img, d / f"{name}-{kind}.png")
+    # bartworks' Simple Stirling Water Pump: its side texture on every tile
+    side = scaled(load(gt / "src/main/resources/assets/bartworks/textures/blocks/heatedWaterPumpSide.png"), TILE)
+    d = ROOT / "graphics/entity/simple-stirling-water-pump"
+    d.mkdir(parents=True, exist_ok=True)
+    img = Image.new("RGBA", (3 * TILE, 3 * TILE))
+    for y in range(3):
+        for x in range(3):
+            img.paste(side, (x * TILE, y * TILE))
+    for kind in ("idle", "working"):
+        save(img, d / f"simple-stirling-water-pump-{kind}.png")
+
+
+# issue #613: the Tinkers-like smeltery (GT's coke oven bricks in seared grey, its front in the middle, burning while it
+# works), casting table (the bricks with a pipe) and tool station (GT's primitive wooden casing)
+SEARED = (150, 150, 155)
+
+
+def smeltery(gt):
+    brick = tint(scaled(load(gt_path(gt, "gregtech:iconsets/COKE_OVEN_CASING")), TILE), SEARED)
+    wood = scaled(load(gt_path(gt, "gregtech:iconsets/PRIMITIVE_WOODEN_CASING_SIDE")), TILE)
+    for name, tile, faces in (("smeltery", brick, ("COKE_OVEN_OVERLAY_INACTIVE", "COKE_OVEN_OVERLAY_ACTIVE")),
+                              ("casting-table", brick, ("OVERLAY_PIPE_IN", "OVERLAY_PIPE_IN")),
+                              ("tool-station", wood, (None, None))):
+        d = ROOT / "graphics/entity" / name
+        d.mkdir(parents=True, exist_ok=True)
+        for kind, face in zip(("idle", "working"), faces):
+            mid = tile.copy()
+            if face:
+                mid.alpha_composite(scaled(frames_of(load(gt_path(gt, "gregtech:iconsets/" + face)))[0], TILE))
+            img = Image.new("RGBA", (3 * TILE, 3 * TILE))
+            for y in range(3):
+                for x in range(3):
+                    img.paste(mid if (x, y) == (1, 1) else tile, (x * TILE, y * TILE))
+            save(img, d / f"{name}-{kind}.png")
+            if kind == "idle":
+                save(mid, ICONS / f"{name}.png")
+
+
 def generator_tiers():
     for base in ("gas-turbine", "semifluid-generator"):
         src = ROOT / "graphics/entity" / f"hv-{base}"
@@ -1442,6 +1497,8 @@ def main():
     battery_buffers(a.gt)        # issue #444
     generator_tiers()            # issue #637
     single_generators(a.gt)      # issue #644
+    steam_water_pumps(a.gt)      # issue #613
+    smeltery(a.gt)               # issue #613
     lv_from_mv("extruder", icon=False)          # issue #449 (the LV extruder icon is upstream's)
     lv_from_mv("laser-engraver", icon_palette=True)
     lv_from_mv("combustion-generator", icon=False)   # (the LV icon is upstream's)

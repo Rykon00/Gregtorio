@@ -44,10 +44,33 @@ local function update(entity)
 		label = { "entity-status.fork-no-sunlight" } } or nil
 end
 
+--- issue #613: the steam water pumps (prototypes/101-fork-machines.lua, section 2m') pump water by the surface's
+--- moisture at their spot, read once when built: the recipe of the nearest quarter (at least 25 %), locked
+local pumps
+local function water_pumps()
+	if not pumps then
+		local d = prototypes.mod_data["fork-steam-water-pumps"]
+		pumps = { names = {}, recipes = d and d.data.recipes or {} }
+		for _, n in pairs(d and d.data.names or {}) do pumps.names[n] = true end
+	end
+	return pumps
+end
+local function set_water_recipe(entity)
+	local moisture = 0
+	local ok, props = pcall(entity.surface.calculate_tile_properties, { "moisture" }, { entity.position })
+	if ok and props and props.moisture then moisture = props.moisture[1] or 0 end
+	local q = math.max(25, math.min(100, math.floor(moisture * 4 + 0.5) * 25))
+	entity.set_recipe(water_pumps().recipes[q])
+	entity.recipe_locked = true
+end
+
 function M.on_built(entity)
-	if entity and entity.valid and boiler_names()[entity.name] then
+	if not (entity and entity.valid) then return end
+	if boiler_names()[entity.name] then
 		state().boilers[entity.unit_number] = entity
 		update(entity)
+	elseif water_pumps().names[entity.name] and not entity.get_recipe() then
+		set_water_recipe(entity)
 	end
 end
 
