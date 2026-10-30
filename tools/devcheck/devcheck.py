@@ -841,6 +841,7 @@ def check_nyi_icons(sec):
 
 OVERCLOCK = "gregtorio-continued-gt-overclocking"
 MAINTENANCE = "gregtorio-continued-maintenance"   # issue #618
+RADIATION = "gregtorio-continued-radiation"   # issue #621
 
 
 def check_overclocking(sec):
@@ -1264,6 +1265,38 @@ def check_ebf_heat(m, sec, write=False):
             f"{raised} with GT's heat ({len(table)} in {path.name}, {len(cap)} of them at the heat reached where they "
             f"are unlocked: #742), {len(late)} reached later on purpose (FORK_EBF_HEAT_LATE)")
     return info, problems
+
+
+def check_radioactive(sec, write=False):
+    """Issue #621 (prototypes/fork-radiation.lua, section RADIATION): prototypes/data/radioactive.lua is what `check
+    --radioactive` writes (GT's radioactive materials on Gregtorio's items); with the radiation setting on, every item
+    of the table is in the mod data and the Hazmat Suit protects. Returns (info line, problems)."""
+    gtnh_map, state = gtnh_state(sec)
+    table = gtnh_map.radioactive(state)
+    text = gtnh_map.radioactive_lua(table)
+    path = gtnh_map.RADIOACTIVE_FILE
+    have = path.read_text(encoding="utf-8").replace("\r\n", "\n") if path.exists() else None
+    problems = []
+    if have != text:
+        if write:
+            path.write_bytes(text.encode("utf-8"))
+        else:
+            problems.append(f"{path.name} is not what `devcheck.py check --radioactive` writes ({len(table)} items)")
+    rows = sec.get("RADIATION", [])
+    on = any(r[0] == "setting" and r[1] == "true" for r in rows)
+    items = {r[1]: int(r[2]) for r in rows if r[0] == "item"}
+    armors = [r[1] for r in rows if r[0] == "armor"]
+    if on:
+        problems += [f"{n}: radioactive in {path.name} (level {lv}), not in the mod data fork-radiation"
+                     for n, lv in sorted(table.items()) if n not in items]
+        if "hazmat-suit" not in armors:
+            problems.append("the Hazmat Suit does not protect (mod data fork-radiation)")
+    elif items:
+        problems.append(f"the radiation setting is off, but the mod data has {len(items)} radioactive items")
+    from collections import Counter
+    levels = Counter(table.values())
+    return (f"setting {'on' if on else 'off'}: {len(table)} radioactive items (levels "
+            + ", ".join(f"{k}: {v}" for k, v in sorted(levels.items())) + f"), {len(armors)} protecting armors"), problems
 
 
 def check_gtnh_recycling(sec, write=False):
@@ -2931,6 +2964,9 @@ def check(a):
     heat_info, ebf_heat = check_ebf_heat(m, sec, getattr(a, "gtnh_heat", False))
     print(f"\nblast furnace heat (issue #620): {heat_info}")
     report("blast furnaces and recipes whose heat is missing or out of reach (prototypes/fork-ebf-heat.lua)", ebf_heat)
+    rad_info, radiation = check_radioactive(sec, getattr(a, "radioactive", False))
+    print(f"\nradiation (issue #621): {rad_info}")
+    report("radioactive items or armors that do not follow the radiation setting (prototypes/fork-radiation.lua)", radiation)
     maint_info, maint = check_maintenance(sec)
     print(f"\nmaintenance (issue #618): {maint_info}")
     report("machines whose maintenance slot does not follow the maintenance setting (prototypes/fork-maintenance.lua)", maint)
@@ -3074,7 +3110,7 @@ def check(a):
               or extractor_split or ore_mixes or ore_chain or ore_baths or ore_o34 or ore_hammer
               or circuit_icons or pgm_dusts or recycling or blocks or names or gaps or tree or vanilla or lenses or mine_twins
               or unplaceable or stale_unlocks or removed_keys or trigger_only or spoiling or classic_veins or early
-              or furnace or research_counts or nyi_icons or overclock or maint or ebf_heat
+              or furnace or research_counts or nyi_icons or overclock or maint or ebf_heat or radiation
               or steam or nugget or steam_rates or boiler_output or vein_doc or renames or gtnh_numbers or parts_recycling or part_routes or part_crafting or chemistry or metallurgy)
     print("\nRESULT:", "OK" if ok else "PROBLEMS FOUND")
     return 0 if ok else 1
@@ -3123,13 +3159,13 @@ def boilers(a):
 
 def overclocking(a):
     """Part of `all` (issue #616): check and runtime once more with GT overclocking on (every machine from MV up draws 4x
-    power per tier), and with maintenance on (issue #618: every crafting multiblock has a maintenance slot)."""
+    power per tier), and with maintenance (issue #618: every crafting multiblock has a maintenance slot) and radiation (issue #621) on."""
     c = argparse.Namespace(**vars(a))
-    c.set, c.balance_out, c.fluids_out, c.locale_out, c.techs = [f"{OVERCLOCK}=true", f"{MAINTENANCE}=true"], None, None, None, None
-    print(f"\n=== GT overclocking ({OVERCLOCK}=true) and maintenance ({MAINTENANCE}=true): check ===")
+    c.set, c.balance_out, c.fluids_out, c.locale_out, c.techs = [f"{OVERCLOCK}=true", f"{MAINTENANCE}=true", f"{RADIATION}=true"], None, None, None, None
+    print(f"\n=== GT overclocking ({OVERCLOCK}=true) and the optional hazards ({MAINTENANCE}, {RADIATION}=true): check ===")
     if check(c):
         return 1
-    print(f"\n=== GT overclocking ({OVERCLOCK}=true) and maintenance ({MAINTENANCE}=true): runtime ===")
+    print(f"\n=== GT overclocking ({OVERCLOCK}=true) and the optional hazards ({MAINTENANCE}, {RADIATION}=true): runtime ===")
     return runtime(c)
 
 
@@ -3183,7 +3219,7 @@ def runtime(a):
     print(f"benchmark: {ran.group(0) if ran else 'did not run'}")
     # the ME network's runtime tests are in me-network since issue #83 (its tools/devcheck)
     tests = (("MOLD", "mold test"), ("LENS", "lens test"), ("MOLDCLONE", "cloned mold machine test"), ("POWER", "power test"), ("FUEL", "fuel check test"), ("COOLED", "cooled fluid test"),
-             ("TIERS", "turbine tier test"), ("RECIPES", "recipe test"), ("CRUSH", "raw ore crushing test"), ("OREFURNACE", "ore furnace line test"), ("STEAM", "steam turbine test"), ("CHAIN", "nuclear chain test"), ("LFTR", "LFTR test"), ("DYSON", "Dyson Swarm test"), ("LSC", "supercapacitor test"), ("LSUP", "supercapacitor upgrade test"), ("ELEVATOR", "space elevator test"), ("MELT", "melt and cast test"), ("OFFER", "offered recipes test"), ("EMINE", "electric mine test"), ("SOLAR", "solar boiler test"), ("COALBOILER", "coal boiler test"),("TORCH", "torch test"), ("MAINT", "maintenance test"), ("EBFHEAT", "blast furnace heat test"), ("BATTERY", "battery buffer test"), ("VEINS", "map vein test"), ("CLASSIC", "classic vein test"), ("DRILLS", "mining drill test"), ("PORTAL", "portal test"), ("ENDER", "ender storage test"), ("VICTORY", "victory test"),
+             ("TIERS", "turbine tier test"), ("RECIPES", "recipe test"), ("CRUSH", "raw ore crushing test"), ("OREFURNACE", "ore furnace line test"), ("STEAM", "steam turbine test"), ("CHAIN", "nuclear chain test"), ("LFTR", "LFTR test"), ("DYSON", "Dyson Swarm test"), ("LSC", "supercapacitor test"), ("LSUP", "supercapacitor upgrade test"), ("ELEVATOR", "space elevator test"), ("MELT", "melt and cast test"), ("OFFER", "offered recipes test"), ("EMINE", "electric mine test"), ("SOLAR", "solar boiler test"), ("COALBOILER", "coal boiler test"),("TORCH", "torch test"), ("MAINT", "maintenance test"), ("EBFHEAT", "blast furnace heat test"), ("RADIATION", "radiation test"), ("BATTERY", "battery buffer test"), ("VEINS", "map vein test"), ("CLASSIC", "classic vein test"), ("DRILLS", "mining drill test"), ("PORTAL", "portal test"), ("ENDER", "ender storage test"), ("VICTORY", "victory test"),
              ("POSTVICTORY", "post-victory test"))
     for key, label in tests:
         m = re.search(rf"DEVCHECK-RUNTIME-{key} (.*)", log)
@@ -3917,6 +3953,8 @@ def main():
                    help="issue #687: write prototypes/data/gtnh-part-routes.lua, GT New Horizons' part routes Gregtorio lacks")
     c.add_argument("--gtnh-recycling", action="store_true",
                    help="issue #686: write prototypes/data/gtnh-recycling.lua, GT New Horizons' recycling of the material parts")
+    c.add_argument("--radioactive", action="store_true",
+                   help="issue #621: write prototypes/data/radioactive.lua, GT's radiation levels of Gregtorio's items")
     c.add_argument("--gtnh-heat", action="store_true",
                    help="issue #620: write prototypes/data/gtnh-ebf-heat.lua, GT New Horizons' blast furnace heat of the matched recipes")
     c.add_argument("--gtnh-numbers", action="store_true",

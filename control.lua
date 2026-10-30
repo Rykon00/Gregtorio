@@ -15,6 +15,7 @@ local fork_electric_mine = require("scripts.fork-electric-mine")
 local fork_steam_boilers = require("scripts.fork-steam-boilers")
 local fork_maintenance = require("scripts.fork-maintenance")   -- issue #618
 local fork_ebf_heat = require("scripts.fork-ebf-heat")   -- issue #620
+require("scripts.fork-radiation")   -- issue #621
 --- Fork: the map veins get a chart tag with their name (issue #497, see prototypes/165-fork-ore-veins.lua)
 local fork_ore_veins = require("scripts.fork-ore-veins")
 --- Fork: the Ore Drilling Plants drink Drilling Fluid per ore mined (issue #499, see prototypes/163-fork-electric-mine.lua)

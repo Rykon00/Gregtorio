@@ -64,7 +64,7 @@ How Gregtorio turns GT New Horizons into Factorio, where the code only implies i
 | #618 | maintenance for multiblocks as a startup setting, default off (built: a Maintenance Kit from #612's tool charges or GT's Duct Tape per 2 hours of running, every crafting multiblock) |
 | #619 | no voltage tiers, transformers or cable loss (rule above) |
 | #620 | the blast furnace's heat in Kelvin with coil modules, as GT has it (heat check and overclock bonus) (built: 12 coils as modules, GT's heat of 509 recipes, the bonus by a hidden beacon; #742 moves the unlocks of ~100 recipes to their GT heat) |
-| #621 | radioactivity and the hazmat suit as a startup setting, default off |
+| #621 | radioactivity and the hazmat suit as a startup setting, default off (built: GT's radioactive materials from its source, level x stacks poison damage, the Hazmat Suit and the late armors protect) |
 | #622 | wireless energy between surfaces at UHV, as GTNH's wireless EU |
 | #624 | the space elevator at UV, the DTPF at UEV, the godforge at UIV (built: the DTPF's technology 11 packs, the godforge's 12 packs with the UIV assembler, the elevator's 9 packs with cosmic neutronium from the new technology Cosmic Neutronium after the Void Miner III) |
 | #626 | YAFC mode is removed (YAFC sees the map veins and the classic vein recipes; done, #626) |
