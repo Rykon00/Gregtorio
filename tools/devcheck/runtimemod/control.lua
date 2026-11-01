@@ -876,7 +876,7 @@ local RT = {
 	{ "lv-chemical-bath", "paper-chemical-bath" },
 	-- issue #185 (prototypes/155-fork-ore-chain.lua): GTNH's ore chain for iron, the thermal centrifuge, a new byproduct dust
 	{ "lv-ore-washer", "purified-iron" },
-	{ "lv-thermal-centrifuge", "centrifuged-iron" },
+	{ "mv-thermal-centrifuge", "centrifuged-iron" },   -- (issue #724: GT runs it at MV)
 	{ "iv-thermal-centrifuge", "centrifuged-copper-from-crushed" },
 	{ "lv-macerator", "impure-iron-dust" },
 	{ "lv-macerator", "centrifuged-iron-maceration" },
@@ -1255,7 +1255,7 @@ local OL = {
 	--  machine                  recipe it must pick              input (from station)  the product it passes on
 	{ "lv-macerator",          "crushed-iron",                  { "raw-iron", 2 },     "crushed-iron" },
 	{ "lv-ore-washer",         "purified-iron",                 { from = 1, take = 1 }, "purified-iron", water = true },
-	{ "lv-thermal-centrifuge", "centrifuged-iron",              { from = 2, take = 1 }, "centrifuged-iron" },
+	{ "mv-thermal-centrifuge", "centrifuged-iron",              { from = 2, take = 1 }, "centrifuged-iron" },   -- (#724: MV)
 	{ "lv-macerator",          "centrifuged-iron-maceration",   { from = 3, take = 1 }, "iron-dust" },
 	{ "lv-macerator",          "impure-iron-dust",              { from = 1, take = 1 }, "impure-iron-dust" },
 	{ "lv-centrifuge",         "centrifuging-impure-iron-dust", { from = 5, take = 1 }, "iron-dust" },
