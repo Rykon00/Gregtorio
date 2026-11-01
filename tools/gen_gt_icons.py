@@ -40,7 +40,7 @@ GT_TIER = {"lv": "LV", "mv": "MV", "hv": "HV", "ev": "EV", "iv": "IV", "luv": "L
 # tier colour of the fork's machine casings (same as TIER_TINT in gen_sprites.py)
 TIER_TINT = {"iv": (100, 100, 160), "luv": (255, 205, 225), "zpm": (140, 225, 245), "uv": (130, 215, 140),
              "uhv": (235, 120, 120), "uev": (240, 200, 90), "uiv": (120, 150, 255), "umv": (190, 120, 235),
-             "uxv": (245, 245, 250), "max": (255, 255, 255)}
+             "uxv": (245, 245, 250), "max": (125, 125, 140)}
 
 M1 = "gt:gregtech/textures/items/gt.metaitem.01/"
 M3 = "gt:gregtech/textures/items/gt.metaitem.03/"
