@@ -5487,6 +5487,8 @@ do
 		prerequisites = { "froth-processing", "prismatic-naquadah", "precise-electronic-unit-mk3", "uhv-machines" },
 	}
 	fork_add_unlock(NT, "mining-ancient-debris")
+	--- issue #758: and its Ore Drilling Plant and Miner twins (163 gave them the Mk I's and the LV Miner's technology)
+	FORK_ELECTRIC_MINE.move_twins("mining-ancient-debris", NT)
 	--- (blaze powder, for the hellish metal, came only with Naquadah Based Fuel MK5 (section 34); GT macerates it at LV)
 	fork_add_unlock(NT, "blaze-powder")
 	--- the users
@@ -6765,6 +6767,186 @@ do
 	--- white and black dwarf matter (140 section 3b): 143 casts them, 158 makes their parts
 	FORK_CASTING.materials["white-dwarf-matter"] = { "umv", "godforge-molten-module" }
 	FORK_CASTING.materials["black-dwarf-matter"] = { "umv", "godforge-molten-module" }
+end
+
+--------------------------------------------------------------------------------
+--- Issues #783 to #785: GT New Horizons' recipes that only the full-pack NEI dump (#714, pack GTNH daily 2026-10-28+804)
+--- shows and that Gregtorio lacked although it has the machine and the items (`devcheck.py gtnh-diff`, NEI only, status
+--- missing), with the dump's numbers (GT seconds x the speed of the tier of GT's EU/t, a tenth of GT's litres, GT's
+--- chances). Each is unlocked after its machine and every input (as 169's machines: 155's technologies of an item, else
+--- those of every recipe that makes it now), so an alternative comes with the first technology that can run it.
+--------------------------------------------------------------------------------
+local nei_tech_effects
+--- the technologies that give an item or fluid (nil: there from the start)
+local function nei_item_techs(name)
+	local t = FORK_ORE_CHAIN.item_techs(name)
+	if t == nil or #t > 0 then return t end
+	if not nei_tech_effects then
+		nei_tech_effects = {}
+		for tn, tech in pairs(data.raw.technology) do
+			for _, e in pairs(tech.effects or {}) do
+				if e.type == "unlock-recipe" then
+					nei_tech_effects[e.recipe] = nei_tech_effects[e.recipe] or {}
+					table.insert(nei_tech_effects[e.recipe], tn)
+				end
+			end
+		end
+	end
+	local out = {}
+	for rname, r in pairs(data.raw.recipe) do
+		if not r.hidden and not rname:match("recycling") then
+			for _, res in pairs(r.results or {}) do
+				if res.name == name then
+					if r.enabled ~= false then return nil end
+					for _, tn in pairs(nei_tech_effects[rname] or {}) do out[#out + 1] = tn end
+				end
+			end
+		end
+	end
+	return out
+end
+--- unlock each recipe after its machine and its inputs; on branches without a common later technology: of each group
+--- its earliest technology (fewest ancestors), of those the latest (the tree check reports what its prerequisites miss)
+local function nei_unlock(names)
+	local function ancestors(tn)
+		local n, seen = 0, {}
+		local function walk(t)
+			for _, pre in pairs(data.raw.technology[t] and data.raw.technology[t].prerequisites or {}) do
+				if not seen[pre] then seen[pre] = true; n = n + 1; walk(pre) end
+			end
+		end
+		walk(tn)
+		return n
+	end
+	for _, name in pairs(names) do
+		local r = data.raw.recipe[name]
+		local category = r.categories[1]
+		local groups = { category ~= "crafting-or-assembling-recipes" and FORK_ORE_CHAIN.machine_techs(category) or nil }
+		for _, i in pairs(r.ingredients) do groups[#groups + 1] = nei_item_techs(i.name) end
+		if not FORK_ORE_CHAIN.unlock_after(name, groups) then
+			local best, best_n
+			for _, g in pairs(groups) do
+				local first, first_n
+				for _, tn in pairs(g or {}) do
+					local n = ancestors(tn)
+					if not first or n < first_n then first, first_n = tn, n end
+				end
+				if first and (not best or first_n > best_n) then best, best_n = first, first_n end
+			end
+			if best then fork_add_unlock(best, name) else log("FORK-NEI-ONLY: no technology for " .. name) end
+		end
+	end
+end
+local function nei_step(list, name, ...)
+	if data.raw.recipe[name] then error("164-fork-chemistry: recipe " .. name .. " exists already") end
+	step(list, name, ...)
+end
+
+--------------------------------------------------------------------------------
+--- 61) EARLY AND MID GAME (issue #783). Left out on purpose (named in the pull request): the torch from resin and
+---   string and bone meal (Gregtorio has no string and no bone), netherrack into cobblestone (the stone is plentiful,
+---   the netherrack goes into the netherite chain), the ores of other mods (Forestry's copper ore, Galacticraft's iron
+---   asteroid, the uranium ore: they map onto the vanilla ore items, which Gregtorio does not mine; its ores are 155's
+---   raw ores) and Galacticraft's raw silicon (it maps onto Gregtorio's raw silicon, GT's silicon dust, which only the
+---   blast furnace smelts), the coke oven brick block, calcite and obsidian blocks and dusts (block and dust are one
+---   item here: the recipes would make an item from itself), GT's steel chest (Iron Chests' silver chest; Gregtorio's
+---   steel chest is the gold chest) and the et futurum barrel (it maps onto the vanilla fluid barrel), the creosote cell
+---   (Gregtorio's holds 800 creosote, GT's 1000 L), the firestone ore in the macerator (155's crushed firestone) and the
+---   recipes that give back the item they take (NBT resets: wheat, quicklime, mining pipe, ingots, wires, transistor,
+---   solar panel). The brick from clay balls is #793's alloy smelter row, whose clay ball tools/gtnh_map.py mapped onto
+---   an item Gregtorio does not have.
+--------------------------------------------------------------------------------
+do
+	local R = {}
+	nei_step(R, "gt-torch-from-lignite", "crafting-or-assembling-recipes", 0.5, 1,
+		{ { "lignite-gem", 1 }, { "stick", 1 } }, { { "gt-torch", 1 } })
+	nei_step(R, "flint-and-steel-from-steel-gear", "crafting-or-assembling-recipes", 0.5, 1,
+		{ { "steel-gear", 1 }, { "flint", 1 }, { "small-steel-spring", 1 } }, { { "flint-and-steel", 1 } })
+	nei_step(R, "wheat-seeds-from-wheat", "crafting-or-assembling-recipes", 0.5, 1, { { "wheat", 1 } }, { { "wheat-seeds", 1 } })
+	--- Iron Chests in GT's assembler: the gold chest (Gregtorio's steel chest) and the diamond chest from a wooden chest
+	nei_step(R, "steel-chest-from-wooden-chest", "mv-assembling-machine-recipes", 12.5, MV_SPEED,
+		{ { "wooden-chest", 1 }, { "double-gold-plate", 3 } }, { { "steel-chest", 1 } })
+	nei_step(R, "diamond-chest-from-wooden-chest", "mv-assembling-machine-recipes", 15, MV_SPEED,
+		{ { "wooden-chest", 1 }, { "diamond-plate", 4 } }, { { "diamond-chest", 1 } })
+	--- Railcraft's firestone: the autoclave from impure and purified dust (circuit 2 with distilled water, 1 with
+	--- water), the sifter from purified crushed ore, and tiberium from it in the chemical bath
+	nei_step(R, "raw-firestone-from-impure-firestone-dust-with-distilled-water", "lv-autoclave-recipes", 75, LV_SPEED,
+		{ { "impure-firestone-dust", 1 }, { "distilled-water", 10 } }, { { "raw-firestone", 1, 0.95 } })
+	nei_step(R, "raw-firestone-from-pure-firestone-dust-with-distilled-water", "lv-autoclave-recipes", 75, LV_SPEED,
+		{ { "pure-firestone-dust", 1 }, { "distilled-water", 10 } }, { { "raw-firestone", 1 } })
+	nei_step(R, "raw-firestone-from-impure-firestone-dust-with-water", "lv-autoclave-recipes", 100, LV_SPEED,
+		{ { "impure-firestone-dust", 1 }, { "water", 20 } }, { { "raw-firestone", 1, 0.9 } })
+	nei_step(R, "raw-firestone-from-pure-firestone-dust-with-water", "lv-autoclave-recipes", 100, LV_SPEED,
+		{ { "pure-firestone-dust", 1 }, { "water", 20 } }, { { "raw-firestone", 1, 0.95 } })
+	nei_step(R, "raw-firestone-sifting", "lv-sifter-recipes", 40, LV_SPEED, { { "purified-firestone", 1 } },
+		{ { "raw-firestone", 1, 0.4 }, { "raw-firestone", 1, 0.2 }, { "raw-firestone", 1, 0.15 },
+			{ "raw-firestone", 1, 0.04 }, { "raw-firestone", 1, 0.01 }, { "firestone-dust", 1, 0.5 } })
+	nei_step(R, "tiberium-gem-from-raw-firestone", "ev-chemical-bath-recipes", 20, EV_SPEED,
+		{ { "raw-firestone", 1 }, { "light-naquadah-fuel", 14.4 } }, { { "tiberium-gem", 1 } })
+	--- GT's glass from sand in the fluid extractor (MV)
+	nei_step(R, "molten-glass-from-sand", "mv-fluid-extractor-recipes", 10, MV_SPEED, { { "sand", 1 } },
+		{ { "molten-glass", 14.4 } })
+	nei_unlock(R)
+end
+
+--------------------------------------------------------------------------------
+--- 62) BIO LINES, ENDGAME BLOCKS AND RECYCLING (issue #784). Left out on purpose (named in the pull request): bartworks'
+---   bacterial vat rows of mysterious crystal and infinity catalyst (the dump has them without their culture and at the
+---   vat's per-glass-tier base amounts, 8 L of water into 2 L of sludge; Gregtorio's vat recipe stands for the line),
+---   the recycling of Galacticraft's raw silicon (it maps onto Gregtorio's raw silicon, see #783) and of the et futurum
+---   barrel (it maps onto the vanilla fluid barrel), and the recycling of GT++'s advanced boiler chassis T1 and T2 into
+---   GT's materials (#686: a component recycles into what Gregtorio's own recipe puts into it).
+--------------------------------------------------------------------------------
+do
+	local R = {}
+	--- the brewery's biomass from wheat, seaweed and Forestry's compost, and enriched bacterial sludge (GT's brewer)
+	nei_step(R, "biomass-from-wheat", "lv-brewery-recipes", 8, LV_SPEED, { { "wheat", 1 }, { "water", 2 } }, { { "biomass", 2 } })
+	nei_step(R, "biomass-from-seaweed", "lv-brewery-recipes", 8, LV_SPEED, { { "seaweed", 1 }, { "water", 2 } }, { { "biomass", 2 } })
+	nei_step(R, "biomass-from-compost", "lv-brewery-recipes", 6.4, LV_SPEED, { { "compost", 4 }, { "water", 75 } },
+		{ { "biomass", 75 } })
+	nei_step(R, "enriched-bacterial-sludge-from-uranium-235", "lv-brewery-recipes", 6.4, LV_SPEED,
+		{ { "tiny-pile-of-uranium-235-dust", 1 }, { "bacterial-sludge", 75 } }, { { "enriched-bacterial-sludge", 75 } })
+	--- the pyrolyse oven's biomass from compost (circuit 1; the oven's own speed, as its biomass from bio chaff)
+	nei_step(R, "biomass-from-compost-pyrolyse", "pyrolyse-oven-recipes",
+		data.raw.recipe["biomass"].energy_required, 1, { { "compost", 4 }, { "water", 400 } }, { { "biomass", 500 } })
+	--- the vacuum freezer cools IC2's hot coolant back without making steam
+	nei_step(R, "coolant-from-hot-coolant", "mv-vacuum-freezer-recipes", 10, MV_SPEED, { { "hot-coolant", 100 } },
+		{ { "coolant", 100 } })
+	--- the macerator: the lapotron crystal back into its 30 lapotron dust, sunnarium and the mysterious crystal
+	nei_step(R, "lapotron-dust-from-lapotron-crystal", "lv-macerator-recipes", 15, LV_SPEED, { { "lapotron-crystal", 1 } },
+		{ { "lapotron-dust", 30 } })
+	nei_step(R, "sunnarium-dust-from-sunnarium", "lv-macerator-recipes", 15, LV_SPEED, { { "sunnarium", 1 } },
+		{ { "sunnarium-dust", 1 } })
+	nei_step(R, "mysterious-crystal-dust-from-gem", "lv-macerator-recipes", 15, LV_SPEED, { { "mysterious-crystal-gem", 1 } },
+		{ { "mysterious-crystal-dust", 9 } })
+	--- GT's bedrockium ingot from its dust in the ZPM assembler (circuit 1)
+	nei_step(R, "bedrockium-ingot-from-dust", "zpm-assembling-machine-recipes", 0.05, ZPM_SPEED,
+		{ { "bedrockium-dust", 9 } }, { { "bedrockium-ingot", 1 } })
+	nei_unlock(R)
+end
+
+--------------------------------------------------------------------------------
+--- 63) APPLIED ENERGISTICS 2 AS GT NEW HORIZONS MAKES IT (issue #785; compared with 120's FORK_ME_RECIPES of #214).
+---   Left out on purpose (named in the pull request): the ME Controller and the ME Import and Export Bus with GTNH's
+---   titanium plate (120 takes aluminium there on purpose, the tier of Gregtorio's ME Network technology), the ME Toggle
+---   Bus back from the inverted one (120 leaves it out: a recipe loop, as in me-network) and the recipes that give back
+---   the item they take (ME Interface, ME Storage Bus, item filter).
+--------------------------------------------------------------------------------
+do
+	local R = {}
+	--- GTNH's crafting table recipes of the cores (besides the MV assembler's of 13): 4 quartz rods, 4 logic
+	--- processors and a pure fluix crystal make 2
+	nei_step(R, "formation-core-crafting", "crafting-or-assembling-recipes", 0.5, 1,
+		{ { "certus-quartz-rod", 4 }, { "logic-processor", 4 }, { "pure-fluix-crystal", 1 } }, { { "formation-core", 2 } })
+	nei_step(R, "annihilation-core-crafting", "crafting-or-assembling-recipes", 0.5, 1,
+		{ { "nether-quartz-rod", 4 }, { "logic-processor", 4 }, { "pure-fluix-crystal", 1 } }, { { "annihilation-core", 2 } })
+	--- EnderIO's vibrant crystal from an emerald and 8 vibrant alloy nuggets in the MV assembler (besides the HV autoclave's)
+	nei_step(R, "vibrant-crystal-from-nuggets", "mv-assembling-machine-recipes", 30, MV_SPEED,
+		{ { "emerald", 1 }, { "vibrant-alloy-nugget", 8 } }, { { "vibrant-crystal", 1 } })
+	--- the macerator: a fluix block into 4 fluix dust
+	nei_step(R, "fluix-dust-from-fluix-block", "lv-macerator-recipes", 15, LV_SPEED, { { "fluix-block", 1 } },
+		{ { "fluix-dust", 4 } })
+	nei_unlock(R)
 end
 
 --------------------------------------------------------------------------------

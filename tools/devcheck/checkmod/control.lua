@@ -84,6 +84,10 @@ local function names_rows()
 		for _, sg in pairs(g.subgroups) do if in_subgroup[sg.name] then shown = "has a shown prototype" end end
 		row("item-group", g, shown)
 	end
+	--- issue #769: a fuel category is named in the tooltips and Factoriopedia of its fuels and burners ("Consumes ...")
+	for _, p in pairs(prototypes.fuel_category) do
+		row("fuel-category", p, not get(p, "hidden") and "named by its fuels and burners" or nil)
+	end
 	log("DEVCHECK-NAMES-BEGIN\n" .. table.concat(rows, "\n") .. "\nDEVCHECK-NAMES-END")
 end
 
