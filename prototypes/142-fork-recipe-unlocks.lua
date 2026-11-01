@@ -833,6 +833,9 @@ FORK_UNLOCK_TREE = { prerequisites = {
 	["steam-macerator"] = { "steam-forge-hammer" },   -- crushed-copper-smelter and the other crushed ore smelting
 	["super-glue"] = { "iv-energy-hatches" },   -- machine iv-chemical-reactor
 	["tungstate-processing"] = { "ev-machines" },   -- machine ev-autoclave
+	-- issue #742 (the maintainer's decision: the coils come before the metals that need their heat, as in GT New Horizons):
+	-- the hot tungstensteel ingot needs 4000 K, an EV furnace with the RTM alloy coil of the same science (4701 K)
+	["tungstensteel"] = { "rtm-alloy-coils" },   -- rtm-alloy-coil-block
 	["tungsten"] = { "ev-energy-hatches" },   -- machine ev-chemical-reactor
 	["utility-science-pack"] = { "ev-machines" },   -- machine ev-assembling-machine
 	["zpm-assembly-line"] = { "me-storage-256k" },   -- fiber-reinforced-circuit-board
@@ -892,6 +895,30 @@ FORK_UNLOCK_TREE.heat = {
 	["hot-itbtc-alloy-ingot-krypton"] = "fusion-reactor-mk2",   -- 6000 K (was crystal-processor-mainframes)
 	["hot-itbtc-alloy-ingot-neon"] = "fusion-reactor-mk2",   -- 6000 K (was crystal-processor-mainframes)
 	["hot-itbtc-alloy-ingot-xenon"] = "fusion-reactor-mk2",   -- 6000 K (was crystal-processor-mainframes)
+	-- the maintainer's decision for the rest: the coil comes a tier earlier, as in GT New Horizons, the metals stay. Each coil
+	-- (and what it is made of, where that came with it) goes to the technology before the metals that need its heat:
+	-- naquadah coil (7201 K) for the hot trinium ingot (7200 K) of Enriched Naquadah, with its osmium foil
+	["naquadah-coil-block"] = "enriched-naquadah",   -- (was zpm-energy-hatches)
+	["osmium-ingot"] = "enriched-naquadah",          -- the vacuum freezer's (was zpm-energy-hatches)
+	["osmium-foil"] = "enriched-naquadah",           -- (was zpm-energy-hatches)
+	-- trinium coil (9001 K + 500 in a ZPM furnace) for hot naquadria (9000/9100 K) and fluxed electrum (9000 K)
+	["trinium-coil-block"] = "zpm-multiblocks",      -- (was uv-energy-hatches)
+	-- tritanium coil (9901 K) for hot bedrockium, naquamiridium and cosmic neutronium (9900 K), with its tritanium parts
+	["tritanium-coil-block"] = "uv-machines",        -- (was uhv-energy-hatches)
+	["tritanium-ingot"] = "uv-machines",             -- the fluid solidifier's (was uhv-materials)
+	["tritanium-plate"] = "uv-machines",             -- (was uhv-materials)
+	["tritanium-foil"] = "uv-machines",              -- (was uhv-materials)
+	["tritanium-wire"] = "uv-machines",              -- (was uhv-materials)
+	-- infinity coil (11701 K) for hot dracofinium (11800 K)
+	["infinity-coil-block"] = "uev-energy-hatches",  -- (was uiv-energy-hatches)
+	-- Left in `cap` of prototypes/data/gtnh-ebf-heat.lua (the heat stays what a furnace has there):
+	-- * hot palladium-naqindium (8100 K, ZPM Superconductors, LuV science): GT's naquadah alloy coil (8100 K) has no
+	--   Gregtorio coil; the next one, trinium, would come two tiers early;
+	-- * hot chromnorox (12700 K, UIV Energy Hatches): the spacetime coil is made from MK5 fusion's spacetime (UMV); a UIV
+	--   furnace with the infinity coil has 12601 K;
+	-- * phonon crystal solution (17000 K, UIV) and the infinite wafer (22000 K, UXV): no blast furnace of GT reaches them
+	--   either (13501 K + 100 K per tier); GT New Horizons runs them in the godforge's smelting module (MTESmeltingModule,
+	--   blastFurnaceRecipes), which 140's godforge does not have.
 }
 function FORK_UNLOCK_TREE.apply(final)
 	for tech, pres in pairs(FORK_UNLOCK_TREE.prerequisites) do
