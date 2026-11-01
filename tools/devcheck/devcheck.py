@@ -2046,6 +2046,17 @@ def defining_files():
     return out
 
 
+def check_tool_intermediates(sec):
+    """Issue #764: the crafting menu chains a missing ingredient through one hand recipe of it that allows intermediates
+    (section INTERMEDIATE of checkmod/control.lua: items with more than one such recipe); for a GT tool charge
+    (`*-usage`, prototypes/148-fork-gtnh-table-items.lua) it took the steel tool once Primitive Electronics unlocked it and
+    then crafted nothing without steel. A charge must have one such recipe, its iron tool's. Returns (info line, problems)."""
+    rows = sec.get("INTERMEDIATE", [])
+    problems = [f"{r[0]}: {r[1] if len(r) > 1 else ''} (only the iron tool may be an intermediate: allow_as_intermediate = false)"
+                for r in rows if r[0].endswith("-usage")]
+    return f"{len(rows)} items with more than one hand recipe the crafting menu may chain", sorted(problems)
+
+
 def check_placeable(sec):
     """Issue #336: a player-built entity of this mod that gives items when mined must be placeable again by one of them
     (section PLACEABLE of checkmod/control.lua: the runtime prototypes, the mined items and items_to_place_this); the T1
@@ -3065,6 +3076,10 @@ def check(a):
     place_info, unplaceable = check_placeable(sec)
     print(f"\nplaceable entities (issue #336): {place_info}")
     report("entities whose mined item does not place them again (place_result missing or wrong)", unplaceable)
+    tool_info, tool_chain = check_tool_intermediates(sec)
+    print(f"\nGT tool charges in the crafting menu (issue #764): {tool_info}")
+    report("tool charges with more than one hand recipe the crafting menu may chain (prototypes/148-fork-gtnh-table-items.lua)",
+           tool_chain)
     vanilla_info, vanilla = check_vanilla_recipes(m, sec)
     print(f"\nvanilla recipes of Gregtorio's items (issues #317, #318): {vanilla_info}")
     report("vanilla recipes without a technology whose products Gregtorio makes another way (delete them in "
@@ -3188,7 +3203,7 @@ def check(a):
               or new_drafts or fluid_problems or locked or one_pack or fluid_steps or table_only or me_recipes or me_tab
               or extractor_split or ore_mixes or ore_chain or ore_baths or ore_o34 or ore_hammer
               or circuit_icons or pgm_dusts or qft_focus or recycling or blocks or names or gaps or tree or vanilla or lenses or mine_twins
-              or unplaceable or stale_unlocks or removed_keys or trigger_only or spoiling or classic_veins or early
+              or unplaceable or tool_chain or stale_unlocks or removed_keys or trigger_only or spoiling or classic_veins or early
               or furnace or research_counts or nyi_icons or overclock or maint or ebf_heat or radiation
               or steam or nugget or steam_rates or boiler_output or vein_doc or renames or gtnh_numbers or parts_recycling or part_routes or part_crafting or chemistry or metallurgy
               or tick_clashes)
