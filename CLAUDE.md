@@ -404,8 +404,11 @@
   - 168 GTNH numbers (issue #689: GT New Horizons' tier, time, item amounts and chances for every recipe that has a GT
     recipe with the same items and fluids in and out, from `prototypes/data/gtnh-numbers.lua`, which `devcheck.py check
     --gtnh-numbers` writes from the dump of `tools/gtnh_dump/` through `tools/gtnh_map.py` (`numbers`; run it after a new
-    dump, a new recipe or a changed one, `check` says when the table is out of date); a tier only downward (a higher one
-    needs a later machine and moves the unlock, #724), not the blast furnace's tier (its coil heat, #620), the fluid
+    dump, a new recipe or a changed one, `check` says when the table is out of date); the tier both ways where a machine
+    runs GT's tier's category (issue #724: a raised recipe's unlock moves behind that machine; `FORK_GTNH_TIER_KEPT` keeps
+    a lower tier with its reason, section `GTNHTIERKEPT`, where Gregtorio needs the product before that machine;
+    `migrations/2026-11-01-issue-724-tier-raises.lua` reports the machines of an old save that lost such a recipe), not
+    the blast furnace's tier (its coil heat, #620), the fluid
     amounts too (issue #671: `fi`/`fo`, a tenth of GT's litres, Gregtorio's rule; hand-built assembly line recipes the
     dump does not match, 162's space elevator, the energy hatches, take a tenth of GT's litres by hand), not the crafting table (GT's tools merge recipes,
     #688), not 157's recycling (GT's formulas on Gregtorio's recipes, #190), not the fusion reactor (#32), no time of a

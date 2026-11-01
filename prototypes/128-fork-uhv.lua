@@ -561,12 +561,15 @@ do
 	if r then fork_set_category(r, "uv-assembling-machine-recipes") end
 end
 
---- Fusion reactor: 9x9, two fluid inputs (north) and one output (south) like the MK1 and MK2
+--- Fusion reactor: 9x9, two fluid inputs (north) and one output (south) like the MK1 and MK2.
+--- Issue #774: UHV speed, the tier of its research (UHV science), like the MK1, MK2, MK4 and MK5; the power doubles
+--- with the speed as from MK1 to MK3 (1.28 MW per speed, the same energy per craft), so one MK3 on helium feeds 12.5 UHV
+--- turbines (8.2 GW). Its recipes keep GT's time at UV speed (GT's MK3 is the UV tier), so they run twice as fast in it.
 clone_multiblock{
 	name = "fusion-reactor-mk3", source = "fusion-reactor-mk1", size = { 9, 9 },
 	categories = { "mk1-fusion-reactor-recipes", "mk2-fusion-reactor-recipes", "mk3-fusion-reactor-recipes",
 		"luv-fusion-reactor-recipes", "zpm-fusion-reactor-recipes", "uv-fusion-reactor-recipes" },
-	speed = UV_SPEED, energy = "163.84MW",
+	speed = UHV_SPEED, energy = "327.68MW",
 	icon = data.raw.item["fusion-reactor-mk3"].icon,
 	subgroup = "subgroup-uv-age-multiblocks",
 }

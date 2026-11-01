@@ -398,7 +398,8 @@ end
 for _, def in pairs(QFT_RECIPES) do
 	for _, name in pairs(qft_add(def)) do qft_recipes[#qft_recipes + 1] = name end
 end
-FORK_QFT = { add = qft_add, technology = QFT }
+--- issue #760: `focus` is the focus plasma, for QFT recipes written outside qft_add (141's temporal harmony)
+FORK_QFT = { add = qft_add, technology = QFT, focus = FOCUS_PLASMA }
 
 
 

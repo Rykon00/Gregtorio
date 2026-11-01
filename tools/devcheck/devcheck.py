@@ -905,7 +905,7 @@ def check_electric_mine(m, sec):
     ingredients, category electric-mine-recipes) and (issue #337) one for the Miners (category miner-recipes, the same
     results, mining pipes as the ingredient), unless it is in the allow-list FORK_ELECTRIC_MINE_EXCLUDED with its reason (section
     ELECTRICMINE); an entry that is no such recipe or has a twin fails too. Returns (info line, problems)."""
-    rows = [r + [""] * (5 - len(r)) for r in sec.get("ELECTRICMINE", [])]
+    rows = [r + [""] * (6 - len(r)) for r in sec.get("ELECTRICMINE", [])]
     manual = [r for r in rows if r[1] == "manual"]
     problems = [f"{r[0]}: a Manual Mine or Dig Site recipe without an electric twin (163 makes one for a mining-<vein> "
                 "recipe it sees, or add it to FORK_ELECTRIC_MINE_EXCLUDED with its reason)"
@@ -914,6 +914,29 @@ def check_electric_mine(m, sec):
                  if r[2] != "-" and r[4] in ("", "-")]
     problems += [f"FORK_ELECTRIC_MINE_EXCLUDED: {r[0]} " + ("is not a Manual Mine or Dig Site recipe" if r[1] != "manual"
                  else f"has the twin {r[2]}") + " (remove the entry)" for r in rows if r[3] and (r[1] != "manual" or r[2] != "-")]
+    # issue #758: a twin runs where its recipe runs (the same surface conditions) and comes with its recipe's technology
+    # or a later one (one that has it among its prerequisites)
+    problems += [f"{r[0]}: its twins' surface conditions differ (recipe / Ore Drilling Plant twin / Miner twin: {r[5]})"
+                 for r in manual if r[5]]
+    unlocked = {}
+    for t, v in m.T.items():
+        for e in v["eff"]:
+            unlocked.setdefault(e, []).append(t)
+    closure = {}
+    def before(t):
+        if t not in closure:
+            closure[t] = {t}
+            for p in m.T.get(t, {}).get("pre", []):
+                closure[t] |= before(p)
+        return closure[t]
+    for r in manual:
+        own = unlocked.get(r[0], [])
+        if not own:
+            continue
+        for twin in (r[2], r[4]):
+            for t in unlocked.get(twin, []):
+                if not any(o in before(t) for o in own):
+                    problems.append(f"{twin}: unlocked by {t}, before the technology of {r[0]} ({', '.join(sorted(own))})")
     for r in manual:
         if r[0] not in m.R:
             continue
@@ -1144,9 +1167,11 @@ def check_gtnh_numbers(sec, write=False):
     writes, for a recipe of the table whose numbers still differ (made or changed after 168), and for an entry of
     FORK_GTNH_NUMBERS_KEPT without a reason or without a GT recipe of other numbers. Returns (info line, problems)."""
     kept = {r[0]: (r[1] if len(r) > 1 else "") for r in sec.get("GTNHKEPT", [])}
+    # (issue #724: recipes that keep their tier below GT's, FORK_GTNH_TIER_KEPT)
+    hold = {r[0]: (r[1] if len(r) > 1 else "") for r in sec.get("GTNHTIERKEPT", [])}
     gtnh_map, state = gtnh_state(sec)
     old = gtnh_map.numbers_names()
-    table, diffs, left = gtnh_map.numbers(state, set(kept), old)
+    table, diffs, left = gtnh_map.numbers(state, set(kept), old, set(hold))
     _, kept_diffs, _ = gtnh_map.numbers(state, (), ())
     text = gtnh_map.numbers_lua(table)
     path = gtnh_map.NUMBERS_FILE
@@ -1157,6 +1182,9 @@ def check_gtnh_numbers(sec, write=False):
     problems = [f"FORK_GTNH_NUMBERS_KEPT: {n} has no reason" for n, why in sorted(kept.items()) if not why]
     problems += [f"FORK_GTNH_NUMBERS_KEPT: {n} has no GT recipe of other numbers (remove the entry)"
                  for n in sorted(kept) if n not in kept_diffs]
+    problems += [f"FORK_GTNH_TIER_KEPT: {n} has no reason" for n, why in sorted(hold.items()) if not why]
+    problems += [f"FORK_GTNH_TIER_KEPT: {n} is not a recipe GT runs in a higher tier (remove the entry)"
+                 for n in sorted(hold) if not any(x.startswith("tier ") for x in kept_diffs.get(n, []))]
     if have != text:
         if write:
             path.write_bytes(text.encode("utf-8"))
@@ -1704,7 +1732,7 @@ def check_ore_o3_o4(m):
             continue
         x = name[len("purified-"):]
         for src in (f"crushed-{x}", f"purified-{x}", f"centrifuged-{x}"):
-            if live(f"hammering-{src}") and m.R[f"hammering-{src}"]["cat"] == "lv-forge-hammer-recipes":
+            if live(f"hammering-{src}") and m.R[f"hammering-{src}"]["cat"].endswith("-forge-hammer-recipes"):   # (#724: any tier)
                 hammers += 1
             else:
                 out.append(f"{x}: the forge hammer does not crush {src}")
@@ -1757,7 +1785,7 @@ def check_ore_hammer(sec):
         crushes = any(r["name"].startswith("crushed-") for r in res)
         if o["category"] == MACERATOR_CAT and crushes:
             mac.setdefault(ing[0]["name"], []).append((o["name"], res))
-        elif o["category"] == HAMMER_CAT:
+        elif o["category"] == HAMMER_CAT or o["category"].endswith("-forge-hammer-recipes"):   # (issue #724: a higher tier)
             ham.setdefault(ing[0]["name"], []).append((o["name"], res))
         elif crushes:
             other.setdefault(ing[0]["name"], []).append((o["name"], res))
@@ -1836,6 +1864,13 @@ def check_pgm_dusts(m):
             if name not in PGM_DUST_SOURCES[dust]:
                 out.append(f"{name} ({r['cat']}): makes {dust} outside the platinum line (GTNH: its powder or residue)")
     return out
+# Issue #760: every recipe of the quantum force transformer takes the focus plasma of #657 (139's FORK_QFT.focus)
+QFT_CATEGORY, QFT_FOCUS = "quantum-force-transformer-recipes", "neptunium-plasma"
+def check_qft_focus(m):
+    """Issue #760: every recipe of the QFT's category takes its focus plasma (139's qft_add adds it; a recipe written
+    elsewhere takes FORK_QFT.focus); returns (number of QFT recipes, problems)."""
+    names = sorted(n for n, r in m.R.items() if QFT_CATEGORY in r["cats"] and not r["hidden"])
+    return len(names), [f"{n}: no {QFT_FOCUS} (use FORK_QFT.focus)" for n in names if QFT_FOCUS not in m.R[n]["ing"]]
 # Issue #190: what a recycling recipe may give (prototypes/157-fork-recycling.lua)
 RECYCLE_PGM = {"metallic-platinum-powder", "metallic-palladium-powder", "iridium-metal-residue", "rarest-metal-mixture"}
 # issue #670: the dusts of prototypes/gt-parts-data.lua whose item name has no -dust (Gregtorio's antimony dust is antimony)
@@ -3049,6 +3084,7 @@ def check(a):
     o34_info, ore_o34 = check_ore_o3_o4(m)
     circuit_n, circuit_icons = check_circuit_icons(m)
     pgm_dusts = check_pgm_dusts(m)
+    qft_n, qft_focus = check_qft_focus(m)
     recycle_info, recycling = check_recycling(m, sec)
     print(f"\nseparator, gems and forge hammer of the ore chain (issues #187, #188): {o34_info}")
     report("separator, gem and forge hammer steps that differ from GTNH (prototypes/155-fork-ore-chain.lua)", ore_o34)
@@ -3059,6 +3095,9 @@ def check(a):
     print(f"\ncircuit variant recipes up to UV (issue #164): {circuit_n}")
     report("circuit recipes without their own icon (issue #164)", circuit_icons)
     report("platinum group dusts made outside the platinum line (issue #199)", pgm_dusts)
+    print(f"\nquantum force transformer recipes with the focus plasma (issue #760): {qft_n - len(qft_focus)} of {qft_n}")
+    report("QFT recipes without the focus plasma (issue #760: FORK_QFT.focus of prototypes/139-fork-endgame-multiblocks.lua)",
+           qft_focus)
     print(f"\nrecycling (issue #190): {recycle_info}")
     report("recycling recipes that differ from GTNH's rule (prototypes/157-fork-recycling.lua)", recycling)
     blocks_info, blocks = check_blocks(m, sec)
@@ -3130,7 +3169,7 @@ def check(a):
     ok = not (files or [s for s in sprites if not s.startswith("(")] or uncraft or menu or required or unresearchable
               or new_drafts or fluid_problems or locked or one_pack or fluid_steps or table_only or me_recipes or me_tab
               or extractor_split or ore_mixes or ore_chain or ore_baths or ore_o34 or ore_hammer
-              or circuit_icons or pgm_dusts or recycling or blocks or names or gaps or tree or vanilla or lenses or mine_twins
+              or circuit_icons or pgm_dusts or qft_focus or recycling or blocks or names or gaps or tree or vanilla or lenses or mine_twins
               or unplaceable or stale_unlocks or removed_keys or trigger_only or spoiling or classic_veins or early
               or furnace or research_counts or nyi_icons or overclock or maint or ebf_heat or radiation
               or steam or nugget or steam_rates or boiler_output or vein_doc or renames or gtnh_numbers or parts_recycling or part_routes or part_crafting or chemistry or metallurgy
