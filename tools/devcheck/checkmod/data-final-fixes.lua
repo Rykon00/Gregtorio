@@ -596,6 +596,8 @@ for n, r in pairs(data.raw.recipe) do
 		-- have it; `categories` all of them)
 		kind = "recipe", name = n, category = (r.categories or { "crafting" })[1], categories = r.categories or { "crafting" },
 		time = r.energy_required or 0.5,
+		-- (issue #759: the time before 168 set GT's, when it did)
+		own_time = FORK_GTNH_NUMBERS and FORK_GTNH_NUMBERS.own_time and FORK_GTNH_NUMBERS.own_time[n],
 		enabled = r.enabled ~= false, hidden = r.hidden == true,
 		ingredients = stacks(r.ingredients), results = stacks(r.results),
 	})
