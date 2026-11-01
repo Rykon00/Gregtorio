@@ -6924,6 +6924,30 @@ do
 end
 
 --------------------------------------------------------------------------------
+--- 63) APPLIED ENERGISTICS 2 AS GT NEW HORIZONS MAKES IT (issue #785; compared with 120's FORK_ME_RECIPES of #214).
+---   Left out on purpose (named in the pull request): the ME Controller and the ME Import and Export Bus with GTNH's
+---   titanium plate (120 takes aluminium there on purpose, the tier of Gregtorio's ME Network technology), the ME Toggle
+---   Bus back from the inverted one (120 leaves it out: a recipe loop, as in me-network) and the recipes that give back
+---   the item they take (ME Interface, ME Storage Bus, item filter).
+--------------------------------------------------------------------------------
+do
+	local R = {}
+	--- GTNH's crafting table recipes of the cores (besides the MV assembler's of 13): 4 quartz rods, 4 logic
+	--- processors and a pure fluix crystal make 2
+	nei_step(R, "formation-core-crafting", "crafting-or-assembling-recipes", 0.5, 1,
+		{ { "certus-quartz-rod", 4 }, { "logic-processor", 4 }, { "pure-fluix-crystal", 1 } }, { { "formation-core", 2 } })
+	nei_step(R, "annihilation-core-crafting", "crafting-or-assembling-recipes", 0.5, 1,
+		{ { "nether-quartz-rod", 4 }, { "logic-processor", 4 }, { "pure-fluix-crystal", 1 } }, { { "annihilation-core", 2 } })
+	--- EnderIO's vibrant crystal from an emerald and 8 vibrant alloy nuggets in the MV assembler (besides the HV autoclave's)
+	nei_step(R, "vibrant-crystal-from-nuggets", "mv-assembling-machine-recipes", 30, MV_SPEED,
+		{ { "emerald", 1 }, { "vibrant-alloy-nugget", 8 } }, { { "vibrant-crystal", 1 } })
+	--- the macerator: a fluix block into 4 fluix dust
+	nei_step(R, "fluix-dust-from-fluix-block", "lv-macerator-recipes", 15, LV_SPEED, { { "fluix-block", 1 } },
+		{ { "fluix-dust", 4 } })
+	nei_unlock(R)
+end
+
+--------------------------------------------------------------------------------
 --- 38) GT'S PARTS OF THE METALS OF THIS FILE (issue #467). 158 makes GT New Horizons' parts of every metal of
 ---   prototypes/gt-parts-data.lua (issue #227) whose ingot exists; most metals of this file come after 158, so its
 ---   FORK_GT_PARTS.run() runs once more here (it skips what exists), then 143's casts for the new forms.
