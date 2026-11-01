@@ -6770,6 +6770,126 @@ do
 end
 
 --------------------------------------------------------------------------------
+--- Issues #783 to #785: GT New Horizons' recipes that only the full-pack NEI dump (#714, pack GTNH daily 2026-10-28+804)
+--- shows and that Gregtorio lacked although it has the machine and the items (`devcheck.py gtnh-diff`, NEI only, status
+--- missing), with the dump's numbers (GT seconds x the speed of the tier of GT's EU/t, a tenth of GT's litres, GT's
+--- chances). Each is unlocked after its machine and every input (as 169's machines: 155's technologies of an item, else
+--- those of every recipe that makes it now), so an alternative comes with the first technology that can run it.
+--------------------------------------------------------------------------------
+local nei_tech_effects
+--- the technologies that give an item or fluid (nil: there from the start)
+local function nei_item_techs(name)
+	local t = FORK_ORE_CHAIN.item_techs(name)
+	if t == nil or #t > 0 then return t end
+	if not nei_tech_effects then
+		nei_tech_effects = {}
+		for tn, tech in pairs(data.raw.technology) do
+			for _, e in pairs(tech.effects or {}) do
+				if e.type == "unlock-recipe" then
+					nei_tech_effects[e.recipe] = nei_tech_effects[e.recipe] or {}
+					table.insert(nei_tech_effects[e.recipe], tn)
+				end
+			end
+		end
+	end
+	local out = {}
+	for rname, r in pairs(data.raw.recipe) do
+		if not r.hidden and not rname:match("recycling") then
+			for _, res in pairs(r.results or {}) do
+				if res.name == name then
+					if r.enabled ~= false then return nil end
+					for _, tn in pairs(nei_tech_effects[rname] or {}) do out[#out + 1] = tn end
+				end
+			end
+		end
+	end
+	return out
+end
+--- unlock each recipe after its machine and its inputs; on branches without a common later technology: of each group
+--- its earliest technology (fewest ancestors), of those the latest (the tree check reports what its prerequisites miss)
+local function nei_unlock(names)
+	local function ancestors(tn)
+		local n, seen = 0, {}
+		local function walk(t)
+			for _, pre in pairs(data.raw.technology[t] and data.raw.technology[t].prerequisites or {}) do
+				if not seen[pre] then seen[pre] = true; n = n + 1; walk(pre) end
+			end
+		end
+		walk(tn)
+		return n
+	end
+	for _, name in pairs(names) do
+		local r = data.raw.recipe[name]
+		local category = r.categories[1]
+		local groups = { category ~= "crafting-or-assembling-recipes" and FORK_ORE_CHAIN.machine_techs(category) or nil }
+		for _, i in pairs(r.ingredients) do groups[#groups + 1] = nei_item_techs(i.name) end
+		if not FORK_ORE_CHAIN.unlock_after(name, groups) then
+			local best, best_n
+			for _, g in pairs(groups) do
+				local first, first_n
+				for _, tn in pairs(g or {}) do
+					local n = ancestors(tn)
+					if not first or n < first_n then first, first_n = tn, n end
+				end
+				if first and (not best or first_n > best_n) then best, best_n = first, first_n end
+			end
+			if best then fork_add_unlock(best, name) else log("FORK-NEI-ONLY: no technology for " .. name) end
+		end
+	end
+end
+local function nei_step(list, name, ...)
+	if data.raw.recipe[name] then error("164-fork-chemistry: recipe " .. name .. " exists already") end
+	step(list, name, ...)
+end
+
+--------------------------------------------------------------------------------
+--- 61) EARLY AND MID GAME (issue #783). Left out on purpose (named in the pull request): the torch from resin and
+---   string and bone meal (Gregtorio has no string and no bone), netherrack into cobblestone (the stone is plentiful,
+---   the netherrack goes into the netherite chain), the ores of other mods (Forestry's copper ore, Galacticraft's iron
+---   asteroid, the uranium ore: they map onto the vanilla ore items, which Gregtorio does not mine; its ores are 155's
+---   raw ores) and Galacticraft's raw silicon (it maps onto Gregtorio's raw silicon, GT's silicon dust, which only the
+---   blast furnace smelts), the coke oven brick block, calcite and obsidian blocks and dusts (block and dust are one
+---   item here: the recipes would make an item from itself), GT's steel chest (Iron Chests' silver chest; Gregtorio's
+---   steel chest is the gold chest) and the et futurum barrel (it maps onto the vanilla fluid barrel), the creosote cell
+---   (Gregtorio's holds 800 creosote, GT's 1000 L), the firestone ore in the macerator (155's crushed firestone) and the
+---   recipes that give back the item they take (NBT resets: wheat, quicklime, mining pipe, ingots, wires, transistor,
+---   solar panel). The brick from clay balls is #793's alloy smelter row, whose clay ball tools/gtnh_map.py mapped onto
+---   an item Gregtorio does not have.
+--------------------------------------------------------------------------------
+do
+	local R = {}
+	nei_step(R, "gt-torch-from-lignite", "crafting-or-assembling-recipes", 0.5, 1,
+		{ { "lignite-gem", 1 }, { "stick", 1 } }, { { "gt-torch", 1 } })
+	nei_step(R, "flint-and-steel-from-steel-gear", "crafting-or-assembling-recipes", 0.5, 1,
+		{ { "steel-gear", 1 }, { "flint", 1 }, { "small-steel-spring", 1 } }, { { "flint-and-steel", 1 } })
+	nei_step(R, "wheat-seeds-from-wheat", "crafting-or-assembling-recipes", 0.5, 1, { { "wheat", 1 } }, { { "wheat-seeds", 1 } })
+	--- Iron Chests in GT's assembler: the gold chest (Gregtorio's steel chest) and the diamond chest from a wooden chest
+	nei_step(R, "steel-chest-from-wooden-chest", "mv-assembling-machine-recipes", 12.5, MV_SPEED,
+		{ { "wooden-chest", 1 }, { "double-gold-plate", 3 } }, { { "steel-chest", 1 } })
+	nei_step(R, "diamond-chest-from-wooden-chest", "mv-assembling-machine-recipes", 15, MV_SPEED,
+		{ { "wooden-chest", 1 }, { "diamond-plate", 4 } }, { { "diamond-chest", 1 } })
+	--- Railcraft's firestone: the autoclave from impure and purified dust (circuit 2 with distilled water, 1 with
+	--- water), the sifter from purified crushed ore, and tiberium from it in the chemical bath
+	nei_step(R, "raw-firestone-from-impure-firestone-dust-with-distilled-water", "lv-autoclave-recipes", 75, LV_SPEED,
+		{ { "impure-firestone-dust", 1 }, { "distilled-water", 10 } }, { { "raw-firestone", 1, 0.95 } })
+	nei_step(R, "raw-firestone-from-pure-firestone-dust-with-distilled-water", "lv-autoclave-recipes", 75, LV_SPEED,
+		{ { "pure-firestone-dust", 1 }, { "distilled-water", 10 } }, { { "raw-firestone", 1 } })
+	nei_step(R, "raw-firestone-from-impure-firestone-dust-with-water", "lv-autoclave-recipes", 100, LV_SPEED,
+		{ { "impure-firestone-dust", 1 }, { "water", 20 } }, { { "raw-firestone", 1, 0.9 } })
+	nei_step(R, "raw-firestone-from-pure-firestone-dust-with-water", "lv-autoclave-recipes", 100, LV_SPEED,
+		{ { "pure-firestone-dust", 1 }, { "water", 20 } }, { { "raw-firestone", 1, 0.95 } })
+	nei_step(R, "raw-firestone-sifting", "lv-sifter-recipes", 40, LV_SPEED, { { "purified-firestone", 1 } },
+		{ { "raw-firestone", 1, 0.4 }, { "raw-firestone", 1, 0.2 }, { "raw-firestone", 1, 0.15 },
+			{ "raw-firestone", 1, 0.04 }, { "raw-firestone", 1, 0.01 }, { "firestone-dust", 1, 0.5 } })
+	nei_step(R, "tiberium-gem-from-raw-firestone", "ev-chemical-bath-recipes", 20, EV_SPEED,
+		{ { "raw-firestone", 1 }, { "light-naquadah-fuel", 14.4 } }, { { "tiberium-gem", 1 } })
+	--- GT's glass from sand in the fluid extractor (MV)
+	nei_step(R, "molten-glass-from-sand", "mv-fluid-extractor-recipes", 10, MV_SPEED, { { "sand", 1 } },
+		{ { "molten-glass", 14.4 } })
+	nei_unlock(R)
+end
+
+--------------------------------------------------------------------------------
 --- 38) GT'S PARTS OF THE METALS OF THIS FILE (issue #467). 158 makes GT New Horizons' parts of every metal of
 ---   prototypes/gt-parts-data.lua (issue #227) whose ingot exists; most metals of this file come after 158, so its
 ---   FORK_GT_PARTS.run() runs once more here (it skips what exists), then 143's casts for the new forms.

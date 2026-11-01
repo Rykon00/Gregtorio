@@ -385,6 +385,7 @@ return {
 	["coal-dust"] = { t = "lv", e = 1.2, i = { ["coal"] = 1 }, o = { { "coal-dust", 1 } } },
 	["cobalt-brass-plate"] = { t = "lv", e = 3.4, i = { ["cobalt-brass-ingot"] = 1 }, o = { { "cobalt-brass-plate", 1 } } },
 	["cobalt-ii-naphthenate-dust"] = { t = "hv", e = 20, i = { ["cobalt-ii-hydroxide-dust"] = 5 }, o = { { "cobalt-ii-naphthenate-dust", 41 } }, fi = { ["naphthenic-acid"] = 100 } },
+	["coke-oven-brick"] = { t = "lv", e = 10, i = { ["clay-ball"] = 1, ["sand"] = 1 }, o = { { "coke-oven-brick", 2 } } },
 	["coolant"] = { t = "mv", e = 25.6, i = { ["lapis-dust"] = 1 }, o = {  }, fi = { ["distilled-water"] = 100 }, fo = { ["coolant"] = 100 } },
 	["copper-foil"] = { t = "lv", e = 6.3, i = { ["copper-ingot"] = 1 }, o = { { "copper-foil", 4 } } },
 	["copper-wire"] = { t = "lv", e = 5, i = { ["copper-ingot"] = 1 }, o = { { "copper-wire", 2 } } },
