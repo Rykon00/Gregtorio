@@ -1294,6 +1294,12 @@ def route_imports(dump, g, table=None, chemistry=False):
             continue
         fam, verb = table[mname]
         mapped, bad = map_recipe(mp, r)
+        if mname == "gt.recipe.cable" and (bad or not mapped["outs"]):
+            # (issue #729, the maintainer's decision: only the 1x cables of the wires Gregtorio has)
+            pre = {dump["items"].get(o["id"], {}).get("prefix") for o in r["out"]}
+            left["issue #729: GT's 2x to 16x cables stay out" if pre - {"cableGt01"}
+                 else "issue #729: a 1x cable of a metal without a Gregtorio wire"] += 1
+            continue
         if bad or mapped.get("oreblock") or not (mapped["outs"] or (chemistry and mapped["fout"])) or not (
                 mapped["ins"] or mapped["fin"]):
             continue

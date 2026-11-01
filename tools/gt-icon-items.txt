@@ -11,6 +11,7 @@ advanced-smd-inductor-wrap
 advanced-smd-transistor-wrap
 americium-ingot
 americium-plate
+annealed-copper-cable
 antimony-ingot
 apic-wafer
 atto-power-ic
@@ -50,6 +51,7 @@ cosmic-neutronium-foil
 cosmic-neutronium-ingot
 cosmic-neutronium-plate
 crystal-cpu
+cupronickel-cable
 cyanoacetic-acid
 dense-fluxed-electrum-plate
 dense-naquadah-alloy-plate
@@ -65,8 +67,11 @@ dracofinium-wire
 draconium-cable
 draconium-ingot
 draconium-wire
+electrum-cable
+end-steel-cable
 enderium-ingot
 enderium-plate
+energetic-alloy-cable
 energy-module
 engraved-crystal-chip
 eternal-coil-block
@@ -126,6 +131,9 @@ godforge-controller
 high-density-plutonium
 high-density-plutonium-nugget
 high-octane-gasoline-cell
+hssg-cable
+kanthal-cable
+nichrome-cable
 rocket-fuel-cell
 highly-ultimate-voltage-coil
 hot-bedrockium-ingot
@@ -212,6 +220,7 @@ luv-pump
 luv-robot-arm
 luv-sensor
 luv-superconductor-wire-16x
+trinium-cable
 tungsten-wire-16x
 magmatter-cable
 magmatter-foil
@@ -499,6 +508,7 @@ uxv-machine-hull
 uxv-wireless-dynamo-hatch
 uxv-wireless-energy-hatch
 vanadium-gallium-cable
+vibrant-alloy-cable
 wetware-printed-circuit-board
 wetware-processor
 wetware-processor-assembly
