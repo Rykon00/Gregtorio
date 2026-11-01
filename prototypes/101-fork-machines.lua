@@ -496,7 +496,7 @@ end
 ---    GT New Horizons has the Sifting Machine from LV up ("Basic Sifting Machine", LoaderMetaTileEntities.java:6841, recipe
 ---    map sifterRecipes, otherwise only its Industrial Sifter multiblock); Gregtorio's sifter recipes (coal, diamond and
 ---    three steps of the bartworks platinum line, which GTNH runs in the sifter too) ran only in the HV Large Sifter. The
----    sifting machines run the same category lv-sifter-recipes; the Large Sifter stays. Machine recipe as GT's
+---    sifting machines run lv-sifter-recipes and (issue #724) the sifter categories up to their tier; the Large Sifter stays. Machine recipe as GT's
 ---    (MTERecipeLoader.java registerSifter, "WFW", "PMP", "CFC": 2 cables, 2 item filters, 2 pistons, the hull, 2
 ---    circuits). LV with Basic Air Centrifuging (the item filter), which every technology of a sifter recipe leads
 ---    through; MV to EV with the machines of their tier. Sprites: tools/gen_sprites.py (sifting_machine_lv_mv); IV to
@@ -514,7 +514,9 @@ do
 	for _, a in ipairs(SIFTERS) do
 		local t, path, energy, speed, cable, circuit, tech = table.unpack(a)
 		local name = t .. "-sifting-machine"
-		make_electric_machine(name, name, path, { "lv-sifter-recipes" }, "fr-sifting-machine", energy, speed, 4, 0.5, 3, 3)
+		--- (issue #724: the categories of its tier and below, as the IV to MAX copies; GT's sifter recipes of a higher tier
+		--- move there, prototypes/168-fork-gtnh-numbers.lua)
+		make_electric_machine(name, name, path, tier_categories("sifter-recipes", t), "fr-sifting-machine", energy, speed, 4, 0.5, 3, 3)
 		create_item{
 			name = name,
 			subgroup = t .. "-age-production-machine",

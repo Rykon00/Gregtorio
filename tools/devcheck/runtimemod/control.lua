@@ -962,10 +962,10 @@ local RT = {
 	{ "lv-fluid-solidifier", "solidify-steel-gear" },
 	{ "lv-fluid-solidifier", "solidify-large-steel-gear" },
 	{ "lv-fluid-solidifier", "solidify-steel-rotor" },
-	{ "lv-fluid-solidifier", "solidify-steel-rod" },
-	{ "lv-fluid-solidifier", "solidify-long-steel-rod" },
+	{ "mv-fluid-solidifier", "solidify-steel-rod" },   -- (issue #724: GT runs the rods and rings at MV)
+	{ "mv-fluid-solidifier", "solidify-long-steel-rod" },
 	{ "lv-fluid-solidifier", "solidify-steel-bolt" },
-	{ "lv-fluid-solidifier", "solidify-tin-ring" },
+	{ "mv-fluid-solidifier", "solidify-tin-ring" },
 	{ "lv-fluid-solidifier", "solidify-steel-screw" },
 	{ "ev-fluid-solidifier", "solidify-soularium-round" },
 	{ "lv-fluid-extractor", "melt-steel-ingot" },
@@ -1012,7 +1012,7 @@ local RT = {
 	{ "hv-large-chemical-reactor", "reprecipitated-palladium-processing" },
 	{ "lv-ore-washer", "crushed-platinum-washing" },
 	-- the residue branches (rhodium, ruthenium, osmium, iridium)
-	{ "lv-chemical-reactor", "potassium-disulfate" },
+	{ "mv-chemical-reactor", "potassium-disulfate" },   -- (issue #724: MV in GT)
 	{ "mv-electric-blast-furnace", "platinum-group-residue-processing" },
 	{ "hv-large-chemical-reactor", "rhodium-sulfate-processing" },
 	{ "hv-large-sifter", "rhodium-filter-cake" },
@@ -3115,7 +3115,7 @@ function setup_melt_test(s)
 			if molds and molds.data[recipe] then e.get_module_inventory().insert{ name = molds.data[recipe] } end
 			return e
 		end
-		st.extractor = machine("lv-fluid-extractor", CT_X + 6, "melt-iron-ingot")
+		st.extractor = machine("mv-fluid-extractor", CT_X + 6, "melt-iron-ingot")   -- (issue #724: GT melts iron at MV)
 		st.block = machine("lv-fluid-solidifier", CT_X + 12, "solidify-block-of-iron")
 		st.ingot = machine("lv-fluid-solidifier", CT_X + 18, "solidify-iron-ingot")
 		st.extractor.insert{ name = "iron-ingot", count = 10 }
