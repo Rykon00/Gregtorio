@@ -473,6 +473,10 @@ section("BLOCKDEADOK", bd)
 local gk = {}
 for recipe, why in pairs(FORK_GTNH_NUMBERS_KEPT or {}) do gk[#gk + 1] = recipe .. "\t" .. tostring(why or "") end
 section("GTNHKEPT", gk)
+--- Issue #724: the recipes that keep their tier below GT's, with their reasons
+local gtk = {}
+for recipe, why in pairs(FORK_GTNH_TIER_KEPT or {}) do gtk[#gtk + 1] = recipe .. "\t" .. tostring(why or "") end
+section("GTNHTIERKEPT", gtk)
 --- Issue #687 (prototypes/158-fork-gt-parts.lua): GT's part routes 158 left out (no technology after their inputs)
 local rs = {}
 for recipe, why in pairs((FORK_GT_PARTS or {}).routes_skipped or {}) do rs[#rs + 1] = recipe .. "\t" .. tostring(why) end

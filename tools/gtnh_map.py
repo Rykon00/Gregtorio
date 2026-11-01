@@ -592,7 +592,8 @@ def tier_speed(gr, gtr, g):
 def time_speeds(gr, gtr, g):
     """the speeds a Gregtorio recipe's time may be written for: tier_speed, and (issue #759) for a recipe of a higher GT
     tier in a lower tier's category also GT's tier's (164's steps write GT seconds x the speed of the recipe's own tier,
-    so that a machine of that tier takes GT's time; others keep GT seconds at their category's speed until #724)"""
+    so that a machine of that tier takes GT's time; others keep GT seconds at their category's speed; issue #724 moves a recipe into GT's tier's category where a
+    machine runs it, so this is left for the ones without)"""
     speed = tier_speed(gr, gtr, g)
     t = cat_tier(gr["category"])
     if t and gtr.get("eut") and gr.get("family") not in NO_TIER_FAMILIES and gt_tier(gtr["eut"]) > TIERS.index(t):
@@ -838,7 +839,8 @@ def run(dump, sec, out_md, out_json=None, limit=50, state=None):
 #:   * not 157's recycling (recycling-*): its amounts and times are GT's formulas on Gregtorio's own recipes (the
 #:     maintainer's decision on #190);
 #:   * (issue #671) fluid amounts too: a tenth of GT's litres, Gregtorio's rule;
-#:   * a tier only downward: a higher tier needs a later machine, which moves the recipe's unlock (#724);
+#:   * the tier both ways where a machine runs GT's tier's category (issue #724, the maintainer's decision: a higher tier
+#:     moves the recipe to that category, at GT's tier's speed, and 168 moves its unlock behind that machine);
 #:   * not the blast furnace's tier, which is its coil heat in Gregtorio (#620);
 #:   * not the fusion reactor (its times and inputs are the plasma balance of #32), no time of a hand recipe.
 NUMBERS_SKIP_MAPS = {"crafting"}
@@ -850,32 +852,33 @@ NUMBERS_SKIP_FAMILIES = {"fusion-reactor"}
 NUMBERS_FILE = ROOT / "prototypes" / "data" / "gtnh-numbers.lua"
 
 
-def tier_down(c, r, g, equal=False):
-    """GT's tier of the recipe when it is below the Gregtorio recipe's (or the same, `equal`) and a Gregtorio machine
-    runs that tier's category, else None"""
+def gt_tier_of(c, r, g, equal=False, hold=()):
+    """GT's tier of the recipe when it is not the Gregtorio recipe's (or the same, `equal`) and a Gregtorio machine
+    runs that tier's category, else None (issue #724: also upward, unless the recipe is in `hold`, FORK_GTNH_TIER_KEPT)"""
     cur = cat_tier(c["category"])
     if not cur or not r.get("eut") or c["family"] in NO_TIER_FAMILIES:
         return None
     t = TIERS[gt_tier(r["eut"])]
     cat = t + c["category"][len(cur):]
-    below = TIERS.index(t) < TIERS.index(cur) or (equal and t == cur)
-    return t if below and cat in g.speed else None
+    if c["name"] in hold and TIERS.index(t) > TIERS.index(cur):
+        return None
+    return t if (t != cur or equal) and cat in g.speed else None
 
 
-def in_scope(diffs, c, r, g):
+def in_scope(diffs, c, r, g, hold=()):
     """the differences `numbers` sets right: time, item amounts, chances, fluid amounts (issue #671: a tenth of GT's
-    litres) and a tier downward"""
+    litres) and the tier (issue #724: both ways, where a machine runs GT's tier's category)"""
     out = []
     for x in diffs:
         k = diff_kind(x)
         if (k == "time" and c["family"] not in NO_TIME_FAMILIES) or k in ("amount", "chance", "fluid") or (
-                k == "tier" and tier_down(c, r, g)):
+                k == "tier" and gt_tier_of(c, r, g, hold=hold)):
             out.append(x)
     return out
 
 
-def gt_numbers(mapped, c, r, g, amounts=True):
-    """GT's numbers in Gregtorio's units for the Gregtorio recipe c: t (tier, downward only), e (energy_required: GT
+def gt_numbers(mapped, c, r, g, amounts=True, hold=()):
+    """GT's numbers in Gregtorio's units for the Gregtorio recipe c: t (tier, both ways, #724), e (energy_required: GT
     seconds x the tier's speed, x the batch), i ({item: amount}), o ([item, amount, chance] per chance) and (issue #671)
     fi and fo ({fluid: a tenth of GT's litres}, x the batch)"""
     out = {}
@@ -886,7 +889,7 @@ def gt_numbers(mapped, c, r, g, amounts=True):
                 ok(a) for st in mapped["stacks"].values() for a in by_chance(st).values()):
             batch = 1
     # (the tier also when it is GT's already, so the table stays the same once it is applied)
-    t = tier_down(c, r, g, equal=True)
+    t = gt_tier_of(c, r, g, equal=True, hold=hold)
     if t:
         out["t"] = t
     if r.get("duration") and c["family"] not in NO_TIME_FAMILIES:
@@ -918,7 +921,7 @@ def gt_numbers(mapped, c, r, g, amounts=True):
     return out
 
 
-def numbers(state, kept=(), old=()):
+def numbers(state, kept=(), old=(), hold=()):
     """Issue #689: GT's numbers for every matched Gregtorio recipe whose numbers differ from GT's in scope (see
     NUMBERS_SKIP_MAPS) or that the table `old` already has: ({recipe: gt_numbers}, {recipe: the differences in scope},
     Counter of the differences left out by kind)"""
@@ -937,15 +940,15 @@ def numbers(state, kept=(), old=()):
                     left["crafting table (#688)" if base in NUMBERS_SKIP_MAPS else "recycling (#190)"
                          if name.startswith("recycling-") else "fusion (#32)"] += 1
                 continue
-            scoped = in_scope(d, c, r, g)
+            scoped = in_scope(d, c, r, g, hold)
             for x in d:
                 if x not in scoped:
                     k = diff_kind(x)
-                    left["tier up (#724)" if k == "tier" else "hand recipe time (#688)"] += 1
+                    left[("tier kept (FORK_GTNH_TIER_KEPT)" if name in hold else "tier without its category") if k == "tier" else "hand recipe time (#688)"] += 1
             if name in kept:
                 continue
             if scoped or name in old:
-                table[name] = gt_numbers(mapped, c, r, g)
+                table[name] = gt_numbers(mapped, c, r, g, hold=hold)
                 if scoped:
                     diffs[name] = scoped
     return table, diffs, left

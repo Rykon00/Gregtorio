@@ -1167,9 +1167,11 @@ def check_gtnh_numbers(sec, write=False):
     writes, for a recipe of the table whose numbers still differ (made or changed after 168), and for an entry of
     FORK_GTNH_NUMBERS_KEPT without a reason or without a GT recipe of other numbers. Returns (info line, problems)."""
     kept = {r[0]: (r[1] if len(r) > 1 else "") for r in sec.get("GTNHKEPT", [])}
+    # (issue #724: recipes that keep their tier below GT's, FORK_GTNH_TIER_KEPT)
+    hold = {r[0]: (r[1] if len(r) > 1 else "") for r in sec.get("GTNHTIERKEPT", [])}
     gtnh_map, state = gtnh_state(sec)
     old = gtnh_map.numbers_names()
-    table, diffs, left = gtnh_map.numbers(state, set(kept), old)
+    table, diffs, left = gtnh_map.numbers(state, set(kept), old, set(hold))
     _, kept_diffs, _ = gtnh_map.numbers(state, (), ())
     text = gtnh_map.numbers_lua(table)
     path = gtnh_map.NUMBERS_FILE
@@ -1180,6 +1182,9 @@ def check_gtnh_numbers(sec, write=False):
     problems = [f"FORK_GTNH_NUMBERS_KEPT: {n} has no reason" for n, why in sorted(kept.items()) if not why]
     problems += [f"FORK_GTNH_NUMBERS_KEPT: {n} has no GT recipe of other numbers (remove the entry)"
                  for n in sorted(kept) if n not in kept_diffs]
+    problems += [f"FORK_GTNH_TIER_KEPT: {n} has no reason" for n, why in sorted(hold.items()) if not why]
+    problems += [f"FORK_GTNH_TIER_KEPT: {n} is not a recipe GT runs in a higher tier (remove the entry)"
+                 for n in sorted(hold) if not any(x.startswith("tier ") for x in kept_diffs.get(n, []))]
     if have != text:
         if write:
             path.write_bytes(text.encode("utf-8"))
