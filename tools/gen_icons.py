@@ -23,7 +23,7 @@ not rewritten):
 import argparse, colorsys, hashlib, math, warnings
 warnings.filterwarnings("ignore", category=DeprecationWarning)
 from pathlib import Path
-from PIL import Image
+from PIL import Image, ImageDraw
 
 ROOT = Path(__file__).resolve().parent.parent
 ICONS = ROOT / "graphics/icons"
@@ -64,6 +64,21 @@ DONORS = {
     "callisto-ice-dust": ("naquadah-dust", 195), "fluxed-electrum-dust": ("naquadah-dust", 50),
     "wheat-seeds": ("wheat", 75),   # issue #360: the greenhouse wheat's seeds
     "mox-fuel": ("uranium-235-dust", 30),   # issue #359: IC2's MOX fuel (no IC2 texture here)
+    # issue #615: the rocket parts (Galacticraft's and GalaxySpace's textures are not GT's); the rockets are drawn
+    **{f"heavy-duty-alloy-ingot-t{i}": ("copper-ingot", h) for i, h in ((1, 30), (2, 200), (3, 140), (4, 270), (5, 330))},
+    **{f"heavy-duty-plate-t{i}": ("dense-steel-plate", h) for i, h in ((1, 30), (2, 200), (3, 140), (4, 270), (5, 330))},
+    "compressed-ice-plate": ("triple-ledox-plate", 190), "compressed-sdhc-120-alloy": ("dense-stainless-steel-plate", 40),
+    "empty-fuel-canister": ("empty-cell", 0), "small-fuel-canister": ("cn3h7o3-rocket-fuel-cell", 20),
+    "medium-fuel-canister": ("cn3h7o3-rocket-fuel-cell", 140), "large-fuel-canister": ("cn3h7o3-rocket-fuel-cell", 260),
+    "oxygen-vent": ("component-heat-vent", 180), "parachute": ("polyethylene-sheet", 0),
+    "flight-computer-case-t1": ("computer-monitor", 60), "flight-computer-case-t2": ("computer-monitor", 180),
+    **{f"rocket-control-computer-t{i}": ("hv-machine-hull", h) for i, h in ((1, 30), (2, 200), (3, 140), (4, 270), (5, 330))},
+    "tier-1-rocket-engine": ("conductive-iron-thruster", 0), "heavy-rocket-engine": ("conductive-iron-thruster", 140),
+    "heavy-duty-rocket-engine-t3": ("conductive-iron-thruster", 330), "tier-1-booster": ("conductive-iron-thruster", 60),
+    "tier-2-booster": ("conductive-iron-thruster", 200), "nose-cone": ("mining-pipe", 0), "heavy-nose-cone": ("mining-pipe", 140),
+    "heavy-duty-nose-cone-t3": ("mining-pipe", 330), "rocket-fins": ("steel-rotor", 0), "heavy-rocket-fins": ("steel-rotor", 140),
+    "heavy-duty-rocket-fins-t3": ("steel-rotor", 330),
+    **{f"lander-t{i}": ("lv-sensor", h) for i, h in ((1, 30), (2, 200), (3, 140))},
 }
 
 
@@ -619,6 +634,21 @@ def draw_star(size=192):
     return img
 
 
+def draw_rocket(body, band):
+    """issue #615: a tier's rocket: a white hull with the tier's colour band, a red nose, fins and a flame"""
+    img = Image.new("RGBA", (32, 32), (0, 0, 0, 0))
+    d = ImageDraw.Draw(img)
+    d.polygon([(16, 1), (12, 9), (20, 9)], fill=(200, 40, 40, 255), outline=(90, 20, 20, 255))
+    d.rectangle([12, 9, 20, 24], fill=body, outline=(60, 60, 70, 255))
+    d.rectangle([12, 15, 20, 18], fill=band)
+    d.ellipse([14, 10, 18, 14], fill=(120, 190, 230, 255), outline=(40, 60, 80, 255))
+    d.polygon([(12, 18), (7, 26), (12, 24)], fill=band, outline=(60, 60, 70, 255))
+    d.polygon([(20, 18), (25, 26), (20, 24)], fill=band, outline=(60, 60, 70, 255))
+    d.polygon([(13, 25), (19, 25), (16, 31)], fill=(255, 170, 40, 255))
+    d.polygon([(15, 25), (17, 25), (16, 29)], fill=(255, 240, 150, 255))
+    return img
+
+
 def save_if_changed(img, path):
     if path.exists():
         old = Image.open(path).convert("RGBA")
@@ -664,6 +694,9 @@ def drawn():
     save_if_changed(draw_star(), ENTITY / "godforge-star.png")
     #  issue #631: the greenhouse's seaweed
     save_if_changed(draw_seaweed(), ICONS / "seaweed.png")
+    #  issue #615: the rockets T1 to T5 (the hull grey to white, the band in the tier colour of HV, EV, IV, LuV, ZPM)
+    for i, band in enumerate(((235, 140, 40), (150, 150, 160), (60, 110, 200), (200, 60, 200), (220, 220, 60)), 1):
+        save_if_changed(draw_rocket((225, 225, 230, 255), band + (255,)), ICONS / f"tier-{i}-rocket.png")
 
 
 def main():
