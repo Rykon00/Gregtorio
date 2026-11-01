@@ -1259,7 +1259,9 @@ turbine returns 2.0000 helium for 2.0000 plasma after the update.
   11x to 17x over the full chain for the cheap plasmas), the naquadah chain's yields, the recipe times of the turbine and
   reactor parts.
 * The naquadah fuel line (UV) is more than 100x its processing energy and feeds 2.08 GW per EV blast furnace, stronger per
-  unit of energy than any plasma; it is limited by enriched naquadah. Not changed in issue #32.
+  unit of energy than any plasma; it is limited by enriched naquadah. Not changed in issue #32. Kept for good (the maintainer's
+  decision in issue #775): GoodGenerator's fuel values, as in GT New Horizons; the line is limited by enriched naquadah, not by
+  energy.
 * ~~The MK4 and MK5 run the MK1 to MK3 plasma recipes 16 and 32 times as fast as the MK1 (one MK4 on helium: 16.4 GW for
   327.68 MW); there are no turbines above UV yet.~~ Issue #34: UHV to UXV turbines; the MK4 and MK5 speed stays (see
   "Turbines above UV").
@@ -1525,7 +1527,7 @@ One "unit" of a tier's power is 12.5 large plasma turbines of the tier on helium
 | UEV | 1 MK4 (16.4 GW) | 2 MK4 + 2 MK3 | 4 | 4 | 16 | 4 | 6 % |
 | UIV | 1 MK5 (32.8 GW) | 2 MK5 + 2 MK4 | 4 | 4 | 16 | 4 | 6 % |
 | UMV | 2 MK5 (65.5 GW) | 4 MK5 + 2 MK4 | 8 | 8 | 32 | 8 | 5 % |
-| UXV | 4 MK5 (131 GW) | 8 MK5 + 2 MK4 | 8 | 8 | 32 | 8 | 4.5 % |
+| UXV | 4 MK5 (131 GW) | 8 MK5 + 2 MK4 | 8 | 8 | 96 (32 before issue #772) | 8 | 4.5 % |
 
 Metal reactors: twice the power reactors of the newest MK plus two of the MK before. The rest of the unit runs the machines of the
 tier (one of each at full load: UV 1.72 GW ... UXV 55 GW, see "Turbines above UV"); assembly lines, vats and plants draw 5 to 10 MW
@@ -1595,6 +1597,39 @@ fusion values of #32 and the turbines of #34 are unchanged, no prototype is rena
   vanilla technologies that cannot be researched (`UNRESEARCHABLE_OK`), and the unit times (with the new counts the labs are never the
   limit; the stargate technology takes 13.5 minutes of labs). Level 1 of `victory` now costs the stargate (its 1000 MAX packs; the
   first six levels take 945 of them) plus 4 hours for 15 units of the other packs: 14.5 hours, 1.4 stargates, instead of 288 hours.
+
+### Checked again in issue #606 (issues #772, #773, #774)
+
+The check of #606 (2026-10-31, main cf0da6b6, the model with the route fix of #762) found two drifts since this pass; the
+maintainer decided both (2026-11-01):
+
+* **Stargate (#772).** Its fusion part was still 10.6 hours (224 200 GJ), but GT New Horizons' radox polymer (issue #378 (c),
+  80 plates per UXV conveyor module, about 4.1 vat-hours per plate) made the 32 bacterial vats of the UXV factory the limit:
+  30.4 hours. Decision: keep GT New Horizons' radox and count 96 vats in the UXV factory (192 in the MAX one, the UXV one
+  doubled); vats are cheap LuV machines. Stargate 30.4 -> **10.6 hours** (fusion again), UXV conveyor module 10.3 -> 3.4 hours,
+  stargate controller 20.7 -> 6.9 hours, power unit 7.8 -> 2.6 hours, MAX science pack 1.8 -> 0.6 minutes. Still limited
+  by the vats, below the stargate's 10.6 hours: the conveyor module, the controller, the power unit, the UXV pump and energy hatch.
+* **Research (#773).** The parts and recipes added since the pass moved the median technology of UV to UMV away from
+  8 hours; from UV to UIV every technology is limited by the assembly lines now. Decision: scale the counts of these tiers so the median is 8 hours again (138, with the technologies of other
+  files that sit at their tier's cost: the ME storages, netherite, the Dyson swarm, wireless energy, hypogen, the nano forge, ...):
+
+| Tier (highest pack) | Techs | Median before | Median after | Largest after | Sum after | Counts |
+|---|---|---|---|---|---|---|
+| UV | 23 | 5.5 h | **8.0 h** | 19.1 h (uhv-components) | 185.1 h | x1.417 (/3.2 of upstream, before /4.5) |
+| UHV | 30 | 7.2 h | **7.9 h** | 12.9 h | 225.0 h | x1.098 (/12.7, before /13.9) |
+| UEV | 21 | 10.3 h | **7.9 h** | 12.0 h | 139.0 h | x0.756 (/18.4, before /13.9) |
+| UIV | 18 | 12.2 h | **8.1 h** | 9.1 h | 132.3 h | x0.646 (/39.2, before /25.3) |
+| UMV | 23 | 10.1 h | **8.0 h** | 9.1 h | 173.1 h | x0.764 (/42.1, before /32.2) |
+| UXV | 12 | 8.0 h | 8.0 h | 8.0 h | 91.1 h | unchanged |
+| MAX | 24 | 8.4 h | 8.4 h | 8.4 h | 199.7 h | unchanged |
+
+  (Technologies at the floor of 50 units, the reach and space elevator ones, keep it; the infinite `research-productivity`
+  keeps its formula.)
+* **Fusion MK3 (#774).** It runs at UHV speed now (see "Side quest: endgame power"); the UHV unit is one MK3 and its metal
+  reactors 2 MK3 + 2 MK2, so the UHV factory keeps its capacity; the UEV factory's two MK3 are twice as fast (UEV motor
+  1.3 -> 1.1 minutes, UHV field generator 10.4 -> 8.6 minutes).
+
+The tables below are the ones of the pass (before -> after it); the numbers above are the current ones.
 
 ### Before and after
 
@@ -2106,7 +2141,7 @@ and the godforge, the 36 MAX machines and the MAX turbine.
 
 `python tools/balance_model.py dump.json` (and `--max` for magmatter per metal and universium). The **MAX reference factory** is the
 UXV one doubled: 8 MK5 of power (12.5 MAX turbines on helium plasma), 16 MK5 and 2 MK4 metal reactors, 16 ZPM and circuit assembly
-lines, 64 bacterial vats, 16 purification plants, and 4 godforges (10.5 GW, 4 %). The technologies with MAX packs are counted in it,
+lines, 192 bacterial vats (64 before issue #772), 16 purification plants, and 4 godforges (10.5 GW, 4 %). The technologies with MAX packs are counted in it,
 except `victory` (researched with the UXV factory and stargate packs, as before); the MAX pack from MAX parts, magmatter from the
 neutronium recipe (the fastest). Times of one item:
 

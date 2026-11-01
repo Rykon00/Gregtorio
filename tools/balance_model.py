@@ -278,9 +278,11 @@ FACTORY = {
     "uev": fac({4: 1}, {4: 2, 3: 2}, 4, 16, 4),
     "uiv": fac({5: 1}, {5: 2, 4: 2}, 4, 16, 4),
     "umv": fac({5: 2}, {5: 4, 4: 2}, 8, 32, 8),
-    "uxv": fac({5: 4}, {5: 8, 4: 2}, 8, 32, 8),
+    # issue #772: 96 bacterial vats at UXV (32 before): GTNH's radox polymer of the UXV conveyor modules is about 975
+    # vat-hours per stargate; with 32 vats they, not fusion, set the stargate's time (30.4 h instead of 10.6)
+    "uxv": fac({5: 4}, {5: 8, 4: 2}, 8, 96, 8),
     # phase 6b: the UXV unit doubled (8 MK5 of power: 12.5 MAX turbines) with 4 godforges (2.62 GW each, 4 %)
-    "max": fac({5: 8}, {5: 16, 4: 2}, 16, 64, 16, godforge=4),
+    "max": fac({5: 8}, {5: 16, 4: 2}, 16, 192, 16, godforge=4),
 }
 
 
