@@ -313,6 +313,16 @@ def fits(b, c):
     return True
 
 
+def identity(r):
+    """a recipe that gives back what it takes, one item and nothing else (NEI shows the NBT-resetting crafts of AE2's
+    blocks, a wire in a wiremill, ...): no recipe to compare, so it is not added"""
+    ins, outs = r.get("in") or [], r.get("out")
+    outs = [outs] if isinstance(outs, dict) else outs or []
+    if r.get("fin") or r.get("fout") or len(ins) != 1 or len(outs) != 1:
+        return False
+    return ins[0].get("id") == outs[0].get("id") and ins[0].get("n", 1) == outs[0].get("n", 1)
+
+
 def merge(base, nei, pack):
     """the GT5-Unofficial dump base with the NEI dump merged in, and the merge counts"""
     out = copy.deepcopy(base)
@@ -340,6 +350,8 @@ def merge(base, nei, pack):
                 st["both"] += 1
                 if gt_numbers(b) != gt_numbers(r):
                     st["both, other numbers"] += 1
+            elif identity(r):
+                st["identity, not added"] += 1
             else:
                 r["source"] = "nei"
                 m["recipes"].append(r)
@@ -360,6 +372,8 @@ def merge(base, nei, pack):
         if hit:
             hit["source"] = "both"
             st["both"] += 1
+        elif identity(c):
+            st["identity, not added"] += 1
         else:
             c["source"] = "nei"
             out["crafting"].append(c)
@@ -422,6 +436,9 @@ def report(nei, stats, pack, path):
                      f"{st['gt5u only']} |")
     lines.append(f"| **all** | **{tot['nei']}** | **{tot['both']}** | **{tot['both, other numbers']}** | "
                  f"**{tot['nei only']}** | **{tot['gt5u only']}** |")
+    if tot["identity, not added"]:
+        lines += ["", f"Not added: {tot['identity, not added']} NEI recipes that give back the one item they take "
+                  "(AE2's NBT-resetting crafts, a wire in a wiremill, ...)."]
     other = Counter()
     for cls, st in nei.handlers.items():
         if st["mode:other"]:
