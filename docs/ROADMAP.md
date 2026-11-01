@@ -32,7 +32,7 @@ UEV = cryogenic, UIV = promethium, then UMV / UXV / max (the stargate; since pha
 | side | Graphics: item and technology icons from GT textures instead of placeholders, own sprites for fusion MK4/MK5, a tier look for the UHV to UXV machines, plasma turbines and naquadah reactors (issues #40, #41) | **done** (`tools/gen_gt_icons.py`, `tools/gen_sprites.py`, review sheets and inventory in `docs/graphics-review/`) |
 | 6a | Quantum force transformer and dimensionally transcendent plasma forge (issue #37, part 1) | **done** (`prototypes/139-fork-endgame-multiblocks.lua`, see "Phase 6a: QFT and DTPF") |
 | 6b | MAX tier and the godforge (issue #37, part 2) | **done** (`prototypes/140-fork-godforge.lua`, `141-fork-max.lua`, see "Phase 6b: MAX tier and godforge") |
-| side | Balance of the tiers from UHV up in the real game, and a look at the new graphics there | open (in-game check #606, the successor of #247 and #248; question #249 decided in PR #280) |
+| side | Balance of the tiers from UHV up in the real game, and a look at the new graphics there | checked in #606 (balance model and a real client, 2026-10-31; the successor of #247 and #248; question #249 decided in PR #280) |
 | side | Ore processing as GT New Horizons has it (issue #176): purified, centrifuged, impure and pure forms, thermal centrifuge, chemical bath washing, electromagnetic separator, gem sifting | **done** (`prototypes/155-fork-ore-chain.lua`, `docs/ORE-CHAIN.md`, phases O1 to O4: #185 to #188) |
 | side | Early game (Stone, Steam, LV, MV) as GT New Horizons has it: the gaps of the early game analysis of 2026-10-18 | **done** (every gap of "Early game: Stone age to MV" below; the stone and steam age depth of the 2026-10-27 analysis is #612 and #613) |
 
@@ -123,7 +123,6 @@ New technologies (all LuV science):
 - **Kept on purpose:** fusion has no start-up energy buffer per recipe, it is a machine with a high power draw (40.96 MW
   for the MK1); the assembly line runs at IV speed (16) and the circuit assembly line at 2x LuV speed (64), so assembly
   line recipes take GT's time.
-- **Open:** the graphics and the balance in the real game (#248, #247).
 
 Outside the phases: some vanilla technologies (armor equipment, inserter capacity bonus, `bulk-inserter`, `explosives`,
 ...) were not researchable in `devcheck` before phase 1. They are listed and sorted in the final pass of phase 5b: the
@@ -181,7 +180,6 @@ first.
   - Item icons come from GT textures (issue #40).
 - **Kept on purpose:** the ZPM energy hatch is cooled with cryogenic helium (GT: IC2 coolant cells, see phase 4); upgrade
   multiblocks return the replaced parts.
-- **Open:** the graphics and the balance in the real game (#248, #247).
 
 ### Suggested next step (done in phase 3)
 
@@ -279,7 +277,6 @@ Existing saves that already researched `zpm-components` lose the ZPM field gener
     purpose.
   - The drafts of `25-uv-age-item.lua` were triaged in issue #39.
   - Icons come from GT textures (issue #40).
-- **Open:** the graphics and the balance in the real game (#248, #247).
 
 ### Suggested next step (done in phase 4)
 
@@ -408,7 +405,6 @@ in game.
   - `docs/MULTIBLOCK-AUDIT.md` gives the integrated ore factory and the neutronium compressor leave and n/a.
   - Icons and machine hulls come from GT textures (issues #40, #41).
 - **Kept on purpose:** the UV and UHV energy hatches are cooled with cryogenic helium (GT uses IC2 coolant).
-- **Open:** the graphics and the balance in the real game (#248, #247).
 
 ### Suggested next step (done in phase 5a)
 
@@ -538,7 +534,6 @@ The cosmic neutronium of a UEV part includes the 18 ingots of melt in its fluids
   - The QFT and the plasma forge came in phase 6a, the godforge in phase 6b.
   - The MK4 reactor has its own art, and the icons come from GT textures (issues #40, #41).
 - **Not built:** UU matter (decided in issue #36, "Drafts and endgame materials") and attuned tengam.
-- **Open:** the graphics and the balance in the real game (#248, #247).
 
 ### Suggested next step (done in phase 5b)
 
@@ -730,9 +725,7 @@ The inserter capacity bonuses start at MV instead of LV: level 1 only raises the
   - The godforge, magmatter and the MAX tier (phase 6b).
   - Every draft of 29 and 21 made real or removed (issues #39, #36).
 - **Open:**
-  - The balance in the real game (#247).
   - The eye of harmony, dark matter, mellion, shirabon and six-phased copper (the open points of phase 6b, question #249).
-  - The graphics in the real game (#248).
 
 ### Suggested next step
 
@@ -1797,6 +1790,8 @@ finishes sooner; researched technologies stay researched. The nine recipes chang
   them); the circuit assembly lines (the UXV circuits are 40 % of the stargate).
 * Duranium (32 s per 16 L, GT 3.2 s) and rhugnor (4.3x the other MK4 metals): the largest levers left in the metal chains.
 * The infinite `research-productivity` (75 hours per level at UEV) keeps its formula.
+* Checked again in #606 (2026-10-31): see "Checked again in issue #606" above (#772, #773, #774, #775 decided and built);
+  the graphics from UHV up were seen in the game (#763: UXV and MAX looked the same, fixed).
 * The model counts no transport, no machine build cost and no start-up; the byproducts of the naquadah line are charged to its main
   product.
 
