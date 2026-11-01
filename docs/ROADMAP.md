@@ -345,7 +345,7 @@ Choices and deviations from GT:
   neutronium melt, cryogenic helium). It is used by the UHV energy hatch; the UHV hull uses the UV superconductor wire
   like the draft. This also activates the alternative `superconducting-coil-block-uhv`.
 - **Neutronium: MK3, with a bootstrap.** GT's neutronium (americium + naquadria) is a MK3 recipe; the MK3 recipe is
-  the one of GT here (1:1, 3 s per ingot in the reactor MK3). The MK3 is built from UV energy hatches and the UV pump
+  the one of GT here (1:1, 3 s per ingot in the reactor MK3 at UV speed; 1.5 s since issue #774 made it UHV speed). The MK3 is built from UV energy hatches and the UV pump
   needs neutronium, so a MK3-only recipe would be a dead end. The MK2 keeps `molten-neutronium-bootstrap`: 2 melt of
   americium and naquadria for 1 of neutronium, 12 s (before: 1:1, 12 s). Saves that researched `uv-materials` get the
   bootstrap recipe from it, and `molten-neutronium` (now the MK3 recipe) moves to `fusion-plasmas-mk3`.
@@ -975,8 +975,8 @@ energy of the plasma turbines every tick; every 10th tick the fuel check and the
 
 ### Balance
 
-Energy per craft of a fusion recipe is the same in the MK1, MK2 and MK3 (each doubles speed and power: `energy_required` x
-1.28 MJ); the MK4 and MK5 halve it (0.64 MJ). "Gain" is plasma energy out / reactor energy in per craft; "full chain" also
+Energy per craft of a fusion recipe is the same in the MK1, MK2 and MK3 (power goes with speed, 1.28 MW per speed: `energy_required` x
+1.28 MJ; the MK3 runs at UHV speed with 327.68 MW since issue #774); the MK4 and MK5 halve it (0.64 MJ). "Gain" is plasma energy out / reactor energy in per craft; "full chain" also
 counts the machine energy of every input (see "Full-chain analysis" below). Issue #32 changed the values marked "before";
 the new ones are in the table of `prototypes/136-fork-power.lua` (section 1b, plasma balance).
 
@@ -1004,6 +1004,10 @@ the new ones are in the table of `prototypes/136-fork-power.lua` (section 1b, pl
 | americium (#386) | 501.76 MJ | 144 plutonium 241 melt + 2000 hydrogen -> 144 in 17.5 s (MK3; GT 3.2 s) | 2867 MJ | 72 253 MJ | 25.2x | - | 8.2 | 4.13 GW |
 | thorium (#375) | 471.04 MJ | 576 osmium + 576 silicon melt -> 576 in 16.5 s (MK5; GT 0.2 s) | 10 813 MJ | 271 319 MJ | 25.1x | - | 34.9 | 16.4 GW |
 | lead (#397) | 423.94 MJ | 576 tellurium + 576 zinc melt -> 576 in 15 s (MK5; GT 0.2 s) | 9830 MJ | 244 187 MJ | 24.8x | - | 38.4 | 16.3 GW |
+
+Issue #774: the MK3 runs at UHV speed (327.68 MW) now, so the MK3 rows above (iron, nickel, silver, bismuth, radon,
+americium) give twice the units per second and plasma power in it (iron 36 per second, 7.44 GW); energy per craft and gain
+are unchanged.
 
 Issue #375's plasmas (part B, the maintainer's decision: GT's fuel values, a place in this table): GT's inputs and outputs
 in GT litres like the plasmas above, the reactor by GT's threshold (MK3, the 6G ones MK5); GT's times would give 160x
@@ -1080,19 +1084,19 @@ the chain and their power. Per GW of plasma power with the new values:
 | sulfur | 0.65 MK2 | 53 MW | 6 MW | 2.9 molten lithium + 2.9 molten aluminium/s |
 | niobium | 0.52 MK2 | 42 MW | 22 MW | 3.7 molten cobalt + 3.7 molten silicon/s |
 | tin | 0.56 MK2 | 46 MW | 18 MW | 3.3 molten silver/s, 8.7 helium-3/s |
-| iron | 0.27 MK3 | 44 MW | 14 MW | 2.4 molten silicon + 2.4 molten magnesium/s |
+| iron | 0.13 MK3 (0.27 before issue #774) | 44 MW | 14 MW | 2.4 molten silicon + 2.4 molten magnesium/s |
 
 A base to compare with, one of every machine of a tier at full load (the machines `iv-*` to `uv-*`, multiblocks included):
 IV 0.39 GW (53 machines), LuV 0.45 GW (38), ZPM 0.87 GW (37), UV 1.72 GW (36); one of each from IV to UV draws 3.4 GW.
 Before, one MK1 on D + He-3 (5.12 GW) ran more than all of them together. Now one MK1 (1.02 GW) runs one of each IV and LuV
-machine (0.84 GW); a ZPM base needs a second MK1 or an MK2 (2.05 GW on helium), a UV base an MK3 (4.1 GW on helium, 3.72 GW
-on iron) or two MK2. The other power of these tiers: below fusion there is only steam (vanilla nuclear reactor and steam
+machine (0.84 GW); a ZPM base needs a second MK1 or an MK2 (2.05 GW on helium), a UV base an MK3 (UHV research; 8.2 GW on helium, 7.44 GW
+on iron since issue #774) or two MK2. The other power of these tiers: below fusion there is only steam (vanilla nuclear reactor and steam
 turbines, 5.82 MW per turbine), so fusion stays by far the strongest option of LuV and ZPM. At UV the naquadah fuel line
 arrives: naquadah based fuel MK1 is more than 100x its processing energy (the enriched naquadah left out), and one EV blast
 furnace on acid naquadah emulsion feeds 2.08 GW; it is limited by the naquadah, not by energy (see "Open points").
 
 The band: the cheap plasmas (helium, sulfur, nitrogen, niobium, tin, iron) are 11.5x to 17.2x over the full chain and 18.7x
-to 25x at the reactor, so one reactor makes about 25 times its draw: 1 GW per MK1, 2 GW per MK2, 4 GW per MK3. Zinc (6x, it
+to 25x at the reactor, so one reactor makes about 25 times its draw: 1 GW per MK1, 2 GW per MK2, 8 GW per MK3 (UHV speed since issue #774). Zinc (6x, it
 needs tritium) and D + T helium (6.2x) stay below the band; boron, calcium, neon, titanium, oxygen and krypton (1.2x to
 4.2x) are ingredients first and stay as they were. Order of the levers: the input cost first (helium-3 at the price of
 deuterium; half an ingot of each metal for sulfur and iron, whose nugget inputs cost nothing), then the recipe time for the
@@ -1148,10 +1152,10 @@ bold, "before" is before issue #32):
 | MK2 (81.92 MW) | helium (MK1 recipe) | 2.05 GW | 25 | **12.5** | 6.25 | 3.1 | 1.6 | 0.8 | 0.4 | 0.2 | 10.24 GW: 125 / 62.5 / 31 |
 | MK2 | nitrogen | 2.02 GW | 24.6 | **12.3** | 6.2 | 3.1 | 1.5 | 0.8 | 0.4 | 0.2 | 4.03 GW: 49 / 24.6 / 12.3 |
 | MK2 | tin | 1.8 GW | 22 | **11** | 5.5 | 2.7 | 1.4 | 0.7 | 0.3 | 0.2 | 5.4 GW: 66 / 33 / 16.5 |
-| MK3 (163.84 MW) | helium (MK1 recipe) | 4.1 GW | 50 | 25 | **12.5** | 6.25 | 3.1 | 1.6 | 0.8 | 0.4 | 20.5 GW: 250 / 125 / 62.5 |
-| MK3 | nitrogen | 4.03 GW | 49 | 24.6 | **12.3** | 6.2 | 3.1 | 1.5 | 0.8 | 0.4 | 8.06 GW: 98 / 49 / 24.6 |
-| MK3 | tin | 3.6 GW | 44 | 22 | **11** | 5.5 | 2.7 | 1.4 | 0.7 | 0.3 | 10.8 GW: 132 / 66 / 33 |
-| MK3 | iron | 3.72 GW | 45 | 22.7 | **11.3** | 5.7 | 2.8 | 1.4 | 0.7 | 0.4 | 14.9 GW: 181 / 91 / 45 |
+| MK3 (327.68 MW, UHV speed since #774) | helium (MK1 recipe) | 8.2 GW | 100 | 50 | 25 | **12.5** | 6.25 | 3.1 | 1.6 | 0.8 | 20.5 GW: 250 / 125 / 62.5 |
+| MK3 | nitrogen | 8.06 GW | 98 | 49 | 24.6 | **12.3** | 6.2 | 3.1 | 1.5 | 0.8 | 8.06 GW: 98 / 49 / 24.6 |
+| MK3 | tin | 7.2 GW | 88 | 44 | 22 | **11** | 5.5 | 2.7 | 1.4 | 0.7 | 10.8 GW: 132 / 66 / 33 |
+| MK3 | iron | 7.44 GW | 91 | 45 | 22.7 | **11.3** | 5.7 | 2.8 | 1.4 | 0.7 | 14.9 GW: 181 / 91 / 45 |
 | MK4 (327.68 MW) | helium | 16.4 GW | 200 | 100 | 50 | 25 | **12.5** | 6.25 | 3.1 | 1.6 | 82 GW: 1000 / 500 / 250 |
 | MK4 | nitrogen | 16.1 GW | 197 | 98 | 49 | 24.6 | **12.3** | 6.2 | 3.1 | 1.5 | 32 GW: 394 / 197 / 98 |
 | MK4 | tin | 14.4 GW | 176 | 88 | 44 | 22 | **11** | 5.5 | 2.7 | 1.4 | 43 GW: 527 / 264 / 132 |
@@ -1209,9 +1213,8 @@ tick) instead of 50 UV turbines.
 they run at the speed of their tier (UEV_SPEED 512 and UIV_SPEED 1024, like every machine), and every reactor from MK1 to
 MK5 feeds 12.5 turbines of its own machine tier on helium (11 to 12.3 on nitrogen, tin and iron; table in "Net gain in
 practice"). Measured against one of every machine of the tier that researches it (IV 0.39, LuV 0.45, ZPM 0.87, UV 1.72,
-UHV 3.44, UEV 6.88, UIV 13.76, UMV 27.5, UXV 55 GW), one reactor on helium runs 2.3 LuV bases (MK1), 2.4 ZPM (MK2), 2.4 UEV
-(MK4) and 2.4 UIV bases (MK5). A change of the MK4 and MK5 would break this line; the one that is off is the MK3 (UV speed,
-UHV research: 1.2 UHV bases, see "Open points"). What the MK4 and MK5 do change: half the energy per craft (0.64 MJ per
+UHV 3.44, UEV 6.88, UIV 13.76, UMV 27.5, UXV 55 GW), one reactor on helium runs 2.3 LuV bases (MK1), 2.4 ZPM (MK2), 2.4 UHV (MK3, since issue #774;
+1.2 at UV speed before), 2.4 UEV (MK4) and 2.4 UIV bases (MK5). A change of the MK4 and MK5 would break this line. What the MK4 and MK5 do change: half the energy per craft (0.64 MJ per
 recipe second), so a reactor makes 44x to 50x its draw instead of 22x to 25x and the full chain rises from 11.5x to 14.9x
 (helium), 11.7x to 15.3x (nitrogen), 15.7x to 24.5x (tin) and 17.2x to 27.7x (iron). Kept, and listed as an open point.
 
@@ -1260,10 +1263,11 @@ turbine returns 2.0000 helium for 2.0000 plasma after the update.
 * ~~The MK4 and MK5 run the MK1 to MK3 plasma recipes 16 and 32 times as fast as the MK1 (one MK4 on helium: 16.4 GW for
   327.68 MW); there are no turbines above UV yet.~~ Issue #34: UHV to UXV turbines; the MK4 and MK5 speed stays (see
   "Turbines above UV").
-* The MK3 runs at UV speed but is researched with UHV science (the MK1, MK2, MK4 and MK5 run at the speed of their
+* ~~The MK3 runs at UV speed but is researched with UHV science (the MK1, MK2, MK4 and MK5 run at the speed of their
   research tier): at UHV one MK3 (4.1 GW on helium) runs 1.2 UHV bases instead of the 2.4 of the others, and the MK3 to
   MK4 step is 4x instead of 2x. UHV speed (8.2 GW, 12.5 UHV turbines) would fit the line; not changed in issue #34 (it
-  changes the MK3 numbers of issue #32).
+  changes the MK3 numbers of issue #32).~~ Done in issue #774 (the maintainer's decision): the MK3 runs at UHV speed with
+  327.68 MW, 8.2 GW on helium for 12.5 UHV turbines; its recipes keep GT's time at UV speed, so they run twice as fast in it.
 * The MK4 and MK5 need half the energy per craft (0.64 MJ per recipe second), so their plasmas are 44x to 50x their
   reactor draw and 15x (helium, nitrogen) to 28x (iron) over the full chain, above the 11x to 17x band of the MK1 to MK3.
   Kept: at UEV the reactor draw is a small part of the base (one of each UEV machine: 6.9 GW).
@@ -1492,7 +1496,7 @@ For every item the model sums the machine time of its whole chain, from the raw 
 (machine-seconds per machine class; recipe time / machine speed). The time of an item in a reference factory is the largest
 work / capacity over the machines that limit the endgame, all of them busy with that one item:
 
-* **fusion reactors**, nested: an MK*k* recipe runs in any reactor from MK*k* up (speed MK1 32, MK2 64, MK3 128, MK4 512, MK5 1024);
+* **fusion reactors**, nested: an MK*k* recipe runs in any reactor from MK*k* up (speed MK1 32, MK2 64, MK3 256 since issue #774 (before 128), MK4 512, MK5 1024);
 * **ZPM assembly lines** (speed 32: every component from UV to UXV and the stargate parts; the LuV assembly line, 16, at LuV);
 * **circuit assembly lines** (64: every circuit line), **bacterial vats** (1) and **water purification plants** (1).
 
@@ -1510,14 +1514,14 @@ reactor-seconds (at speed 1) over its chain, 17 times its own MK5 recipe. The st
 ### Reference factory
 
 One "unit" of a tier's power is 12.5 large plasma turbines of the tier on helium plasma (issue #34): LuV 1 MK1, ZPM 1 MK2, UV 2 MK2
-(the MK3 is UHV research), UHV 2 MK3, UEV 1 MK4, UIV 1 MK5, UMV 2 MK5, UXV 4 MK5. The unit doubles with every tier, and it runs:
+(the MK3 is UHV research), UHV 1 MK3 (2 before issue #774 doubled its speed), UEV 1 MK4, UIV 1 MK5, UMV 2 MK5, UXV 4 MK5. The unit doubles with every tier, and it runs:
 
 | Tier | Power | Metal reactors | ZPM assembly lines | Circuit assembly lines | Bacterial vats | Purification plants | Metal reactors' share of the unit |
 |---|---|---|---|---|---|---|---|
 | LuV | 1 MK1 (1.02 GW) | 2 MK1 | 1 (LuV line) | 1 | 4 | 1 | 8 % |
 | ZPM | 1 MK2 (2.05 GW) | 2 MK2 + 2 MK1 | 2 | 2 | 4 | 1 | 12 % |
 | UV | 2 MK2 (4.1 GW) | 4 MK2 + 2 MK1 | 2 | 2 | 8 | 2 | 10 % |
-| UHV | 2 MK3 (8.2 GW) | 4 MK3 + 2 MK2 | 2 | 2 | 8 | 2 | 10 % |
+| UHV | 1 MK3 (8.2 GW) | 2 MK3 + 2 MK2 | 2 | 2 | 8 | 2 | 10 % |
 | UEV | 1 MK4 (16.4 GW) | 2 MK4 + 2 MK3 | 4 | 4 | 16 | 4 | 6 % |
 | UIV | 1 MK5 (32.8 GW) | 2 MK5 + 2 MK4 | 4 | 4 | 16 | 4 | 6 % |
 | UMV | 2 MK5 (65.5 GW) | 4 MK5 + 2 MK4 | 8 | 8 | 32 | 8 | 5 % |
