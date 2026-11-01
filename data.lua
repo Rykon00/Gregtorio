@@ -167,6 +167,8 @@ require("prototypes.171-fork-maintenance")
 require("prototypes.172-fork-radiation")
 --- issue #622: the wireless energy and dynamo hatches (GT New Horizons' wireless EU, UHV to UXV)
 require("prototypes.173-fork-wireless")
+--- issue #615: the rockets T1 to T5 and the Reach technologies as their craft-item triggers (after the parts and 161)
+require("prototypes.174-fork-rockets")
 --- issue #190: GTNH's material recycling (macerator, arc furnace, fluid extractor), after every file that makes recipes
 require("prototypes.157-fork-recycling")
 --- issue #689: GT New Horizons' tiers, times, item amounts and chances from the recipe dump (after every file that makes

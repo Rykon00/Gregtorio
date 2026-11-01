@@ -858,6 +858,8 @@ disable_tech("discharge-defense-equipment")
 disable_tech("explosive-rocketry")
 disable_tech("tank")
 disable_tech("tesla-weapons")
+--- Fork: the prerequisites of Tier 1 to Tier 5 Rocketry from the final unlocks (prototypes/174-fork-rockets.lua, issue #615)
+FORK_ROCKETS.prerequisites()
 --- Fork: the technologies whose units were set above are divided like the others (prototypes/149-fork-early-research.lua,
 --- issue #146)
 FORK_EARLY_RESEARCH.rescale()
