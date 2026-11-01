@@ -261,6 +261,8 @@ local PW = {
 	turbine = { "luv-large-plasma-turbine", 1.5, PW_Y + 1.5, "helium-plasma", 100, 81.92e6 },
 	hatch = { "turbine-output-hatch", 3.5, PW_Y + 1.5 },
 	reactor = { "uv-large-naquadah-reactor", 42.5, PW_Y + 2.5, "naquadah-based-fuel-mk1", 10, 327.68e6 },
+	--- issue #768: the single-block plasma generator is drawn idle and gets its working picture while it gives power
+	plasma = { "ev-plasma-generator", 22.5, PW_Y + 1.5, "helium-plasma", 100, 5.12e6 },
 }
 
 function setup_power_test(s)
@@ -272,7 +274,7 @@ function setup_power_test(s)
 		if not (ok and e) then fails[#fails + 1] = "power test " .. def[1] .. ": " .. tostring(e) return nil end
 		return e
 	end
-	for _, key in pairs({ "turbine", "reactor" }) do
+	for _, key in pairs({ "turbine", "reactor", "plasma" }) do
 		local def = PW[key]
 		local g = place(def)
 		if g then
@@ -321,6 +323,14 @@ script.on_nth_tick(PW_TICK, function(event)
 		local fuel_burnt = PW.reactor[5] - fuel_left
 		expect(reactor.energy_generated_last_tick > 0, "naquadah reactor generates nothing")
 		expect(fuel_burnt > 0.003 * seconds and fuel_burnt < 0.007 * seconds, "naquadah reactor burnt " .. fuel_burnt .. " fuel in " .. seconds .. " s")
+		--- issue #768: the running plasma generator shows its working picture (a render object of fork-power)
+		local plasma = find(PW.plasma)
+		expect(plasma and plasma.energy_generated_last_tick > 0, "EV plasma generator generates nothing")
+		local shown = false
+		for _, o in pairs(rendering.get_all_objects("gregtorio-continued")) do
+			if o.valid and o.target and o.target.entity == plasma and o.visible then shown = true end
+		end
+		expect(shown, "the running EV plasma generator shows no working picture (#768)")
 		summary = string.format(" (turbine %.2f plasma -> %.2f helium, %.1f MW; reactor %.4f fuel, %.1f MW)",
 			burnt, helium, turbine.energy_generated_last_tick * 60 / 1e6, fuel_burnt, reactor.energy_generated_last_tick * 60 / 1e6)
 	end
