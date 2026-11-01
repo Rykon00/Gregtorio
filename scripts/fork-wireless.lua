@@ -74,7 +74,11 @@ function M.transfer()
 	end
 end
 
-script.on_nth_tick(60, M.transfer)
+local radiation = require("scripts.fork-radiation")
+script.on_nth_tick(60, function()
+	M.transfer()
+	radiation.tick()
+end)
 
 --- the account of a force (joules); for devcheck's runtime test and the console
 remote.add_interface("fork-wireless", {
