@@ -2116,6 +2116,26 @@ def check_files(sec):
     return sorted(set(missing))
 
 
+def check_tick_handlers():
+    """Issue #765: Factorio keeps one handler per `script.on_nth_tick` interval (and one `script.on_tick`) for the whole
+    mod, so a second registration replaces the first silently (fork-wireless's 60 ticks switched the radiation off).
+    Reads control.lua and scripts/*.lua: every interval (a number, or a local constant of the file) may be registered
+    once. Returns the clashes."""
+    regs, ticks = {}, []
+    for f in [ROOT / "control.lua"] + sorted((ROOT / "scripts").glob("*.lua")):
+        src = re.sub(r"--[^\n]*", "", f.read_text(encoding="utf-8"))
+        consts = dict(re.findall(r"local\s+(\w+)\s*=\s*(\d+)\b", src))
+        for arg in re.findall(r"script\.on_nth_tick\(\s*([^,)]+)\s*,", src):
+            arg = arg.strip()
+            n = arg if arg.isdigit() else consts.get(arg, arg)
+            regs.setdefault(n, []).append(f.name)
+        ticks += [f.name] * len(re.findall(r"script\.on_tick\(", src))
+    bad = [f"on_nth_tick({n}) registered by {', '.join(files)}" for n, files in sorted(regs.items()) if len(files) > 1]
+    if len(ticks) > 1:
+        bad.append(f"on_tick registered by {', '.join(ticks)}")
+    return bad
+
+
 def check_sprites(sec):
     try:
         from PIL import Image
@@ -2898,6 +2918,8 @@ def check(a):
                 rows.append(f"{t}: {state} [{sci}] unlocks {len(v['eff'])} recipes")
         report(f"technologies matching /{a.techs}/", rows, limit=400)
     report("missing graphics files", files)
+    tick_clashes = check_tick_handlers()
+    report("periodic handlers that replace each other (one handler per on_nth_tick interval, issue #765)", tick_clashes)
     report("sprite sheets too small", sprites)
     report("unlocked but uncraftable recipes", [f"{r}: {why}" for r, why in uncraft])
     required = check_required(m)
@@ -3111,7 +3133,8 @@ def check(a):
               or circuit_icons or pgm_dusts or recycling or blocks or names or gaps or tree or vanilla or lenses or mine_twins
               or unplaceable or stale_unlocks or removed_keys or trigger_only or spoiling or classic_veins or early
               or furnace or research_counts or nyi_icons or overclock or maint or ebf_heat or radiation
-              or steam or nugget or steam_rates or boiler_output or vein_doc or renames or gtnh_numbers or parts_recycling or part_routes or part_crafting or chemistry or metallurgy)
+              or steam or nugget or steam_rates or boiler_output or vein_doc or renames or gtnh_numbers or parts_recycling or part_routes or part_crafting or chemistry or metallurgy
+              or tick_clashes)
     print("\nRESULT:", "OK" if ok else "PROBLEMS FOUND")
     return 0 if ok else 1
 
