@@ -17,6 +17,12 @@ forge and the quantum force transformer (phase 6a) are only used with `dtpf=` (s
 magmatter, and the fusion recipes stay the default route of universium. The MAX reference factory (`max`) is the
 UXV one doubled, with godforges; the technologies with MAX packs (except `victory`) are counted in it, with the
 MAX pack from MAX parts (`max-science-pack-from-magmatter`) and magmatter from its fastest godforge recipe.
+
+Routes (issue #762): GT's recycling recipes (`recycling-*`, in ordinary categories) are no producers. GT's part tables
+(`gt-*`), melt/solidify, pile and nugget round trips, fusion transmutations, QFT and godforge byproducts, depleted rods
+and the crafting table (`detour`) are picked only when no other recipe makes an item; the magmatter routes of `--max`
+leave the round trips out (`routes`). Without this the model routed through recycled machines and cycles (stargate
+756 h, magmatter 0 GJ, `--dtpf` divided by zero).
 """
 import json, re, sys, collections, math
 
@@ -91,6 +97,7 @@ class Model:
         self.usable = {n for n, r in self.R.items()
                        if (r["enabled"] or n in unlocked) and not r["hidden"]
                        and "recycling" not in r["category"] and not n.endswith("-recycling")
+                       and not n.startswith("recycling-")   # GT recycling (#670, #686) in ordinary categories
                        and r["category"] not in ("fluid-voiding-recipes",)
                        and (dtpf or r["category"] not in OPTIONAL_CATS)}
         self.producers = collections.defaultdict(list)
@@ -127,12 +134,31 @@ class Model:
             a = (stack.get("amount_min", 0) + stack.get("amount_max", 0)) / 2
         return a * (stack.get("probability") or 1)
 
+    def detour(self, r):
+        """a recipe of GT's part tables (#688, #691, #692, names `gt-*`), a melt/solidify/pile/nugget round trip, a
+        fusion transmutation, a QFT recipe (its byproducts are ore dusts), a godforge recipe of something the fusion
+        reactors make too (thorium plasma), a depleted fuel rod or the crafting table: taken only when nothing else
+        makes the item (issue #762)"""
+        return (r.startswith(("gt-", "melt-", "solidify-", "depleted-")) or "transmutation" in r
+                or re.search(r"-from-(small|tiny)-piles$|-from-nuggets$", r) is not None
+                or self.R[r]["category"] in ("crafting-table-recipes", "quantum-force-transformer-recipes",
+                                             "godforge-recipes"))
+
+    def routes(self, item):
+        """the recipes that make `item`, without round trips (melt, solidify, piles, nuggets) while another recipe
+        makes it (issue #762: melting a magmatter ingot is no magmatter route)"""
+        cands = self.producers.get(item, [])
+        def trip(r):
+            return r.startswith(("melt-", "solidify-")) or re.search(r"-from-(small|tiny)-piles$|-from-nuggets$", r)
+        return [r for r in cands if not trip(r)] or list(cands)
+
     def pick(self, item, stack):
         if item in self.overrides:
             return self.overrides[item]
         cands = list(self.producers.get(item, []))
         if not cands:
             return None
+        has_other = any(not self.detour(r) for r in cands)
         def score(r):
             rec = self.R[r]
             main = rec["results"][0]["name"] == item
@@ -141,7 +167,7 @@ class Model:
             cyc = bool(ing & set(stack)) or item in ing
             m = re.match("^" + TIER_RE, rec["category"])
             tier = TI[m.group(1)] if m else 0
-            return (cyc, not main, bootstrap, tier, len(rec["ingredients"]), r)
+            return (cyc, has_other and self.detour(r), not main, bootstrap, tier, len(rec["ingredients"]), r)
         return sorted(cands, key=score)[0]
 
     def work(self, item, stack=()):
@@ -345,7 +371,7 @@ def max_overrides(f):
     if not m.producers.get(MAGMATTER):
         return {}  # a dump from before phase 6b
     best = min((part_time(Model(f, "max", {MAGMATTER: r}).work(MAGMATTER), FACTORY["max"])[0], r)
-               for r in m.producers.get(MAGMATTER, []))
+               for r in m.routes(MAGMATTER))
     return {"max-science-pack": "max-science-pack-from-magmatter", MAGMATTER: best[1]}
 
 
@@ -353,7 +379,7 @@ def compare_max(f):
     """phase 6b: magmatter per metal, universium through the fusion reactors and the godforge"""
     out = {"magmatter": {}, "universium": {}}
     base = Model(f, "max")
-    for r in base.producers.get(MAGMATTER, []):
+    for r in base.routes(MAGMATTER):
         w = Model(f, "max", {MAGMATTER: r}).work(MAGMATTER)
         t, b, _ = part_time(w, FACTORY["max"])
         out["magmatter"][r] = {"time_ingot": t * INGOT, "bottleneck": b, "gj_ingot": energy(w) * INGOT}
