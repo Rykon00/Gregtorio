@@ -88,6 +88,20 @@ PREFIX = {
 ORE_BLOCK = re.compile(r"^ore[A-Z]\w*$")
 #: prefixes of items that are fluid containers: the fluid they hold, 1000 L per item
 CELL = {"cell": "", "cellMolten": "molten.", "cellPlasma": "plasma."}
+#: issue #757: GT's litres in one cell: a fluid or plasma cell holds 1000 L, a molten cell one material unit (144 L per
+#: 3628800 of its material_amount, an ingot's worth)
+CELL_LITRES, MOLTEN_UNIT, MATERIAL_UNIT = 1000, 144, 3628800
+
+
+def cell_litres(mp, s):
+    """GT's litres in one cell of the stack `s` (an item id or an ore dictionary name)"""
+    if "id" in s:
+        it = mp.items.get(s["id"], {})
+        if it.get("prefix") == "cellMolten":
+            return MOLTEN_UNIT * (it.get("material_amount") or MATERIAL_UNIT) / MATERIAL_UNIT
+    elif s.get("ore", "").startswith("cellMolten"):
+        return MOLTEN_UNIT
+    return CELL_LITRES
 
 #: GT material (mName) -> Gregtorio material, where the names differ beyond case and hyphens; tools/gen_gt_parts.py's
 #: GT_NAME and tools/gen_gt_icons.py's MATERIALS are added at load time
@@ -121,7 +135,7 @@ ITEMS = {
     "minecraft:glowstone_dust:0": "glowstone-dust", "minecraft:coal:0": "coal", "minecraft:coal:1": "charcoal",
     "minecraft:log:0": "wood", "minecraft:planks:0": "plank", "minecraft:stick:0": "stick",
     "minecraft:paper:0": "paper", "minecraft:string:0": "string", "minecraft:flint:0": "flint",
-    "minecraft:clay_ball:0": "clay", "minecraft:brick:0": "brick", "minecraft:ender_pearl:0": "ender-pearl",
+    "minecraft:clay_ball:0": "clay-ball", "minecraft:brick:0": "brick", "minecraft:ender_pearl:0": "ender-pearl",
     "minecraft:ender_eye:0": "ender-eye", "minecraft:blaze_powder:0": "blaze-powder", "minecraft:blaze_rod:0": "blaze-rod",
     "minecraft:nether_star:0": "nether-star", "minecraft:obsidian:0": "obsidian", "minecraft:netherrack:0": "netherrack",
     "minecraft:end_stone:0": "end-stone", "minecraft:soul_sand:0": "soul-sand", "minecraft:ice:0": "ice",
@@ -497,7 +511,7 @@ def map_recipe(mp, r):
             ins[name] += n
             ids[("in", name)].add(key)
         elif kind == "fluid":
-            fl_in[name] += 1000 * n
+            fl_in[name] += cell_litres(mp, s) * n
         elif kind is None:
             bad.append(key)
     for s in r["out"]:
@@ -510,7 +524,7 @@ def map_recipe(mp, r):
             stacks[name].append((s["n"], chance))
             ids[("out", name)].add(s["id"])
         elif kind == "fluid":
-            fl_out[name] += 1000 * s["n"]
+            fl_out[name] += cell_litres(mp, s) * s["n"]
         elif kind is None:
             bad.append(s["id"])
     for key, dest in (("fin", fl_in), ("fout", fl_out)):
@@ -575,6 +589,18 @@ def tier_speed(gr, gtr, g):
     return g.speed.get(gr["category"], 1) or 1
 
 
+def time_speeds(gr, gtr, g):
+    """the speeds a Gregtorio recipe's time may be written for: tier_speed, and (issue #759) for a recipe of a higher GT
+    tier in a lower tier's category also GT's tier's (164's steps write GT seconds x the speed of the recipe's own tier,
+    so that a machine of that tier takes GT's time; others keep GT seconds at their category's speed; issue #724 moves a recipe into GT's tier's category where a
+    machine runs it, so this is left for the ones without)"""
+    speed = tier_speed(gr, gtr, g)
+    t = cat_tier(gr["category"])
+    if t and gtr.get("eut") and gr.get("family") not in NO_TIER_FAMILIES and gt_tier(gtr["eut"]) > TIERS.index(t):
+        return [speed, 2 ** gt_tier(gtr["eut"])]
+    return [speed]
+
+
 def compare(mapped, gr, gtr, g, scale):
     """differences between a GT recipe (mapped) and a Gregtorio recipe gr: list of strings"""
     out = []
@@ -612,11 +638,10 @@ def compare(mapped, gr, gtr, g, scale):
             if got and scale and abs(got / batch - l / scale) > max(1e-5, 1e-6 * l / scale):
                 out.append(f"{name} {io} {got / batch:g} (GT {l} L, map scale {scale:g})")
     if gtr.get("duration"):
-        speed = tier_speed(gr, gtr, g)
-        secs = (gr.get("time") or 0.5) / speed / batch
         gt_secs = gtr["duration"] / 20
-        if abs(secs - gt_secs) > 0.02 * gt_secs + 1e-9:
-            out.append(f"time {secs:g} s (GT {gt_secs:g} s)")
+        times = [(gr.get("time") or 0.5) / speed / batch for speed in time_speeds(gr, gtr, g)]
+        if all(abs(secs - gt_secs) > 0.02 * gt_secs + 1e-9 for secs in times):
+            out.append(f"time {times[0]:g} s (GT {gt_secs:g} s)")
     t = cat_tier(gr["category"])
     if t and gtr.get("eut") and TIERS.index(t) != gt_tier(gtr["eut"]):
         out.append(f"tier {t} (GT {TIERS[gt_tier(gtr['eut'])]}, {gtr['eut']} EU/t)")
@@ -814,7 +839,8 @@ def run(dump, sec, out_md, out_json=None, limit=50, state=None):
 #:   * not 157's recycling (recycling-*): its amounts and times are GT's formulas on Gregtorio's own recipes (the
 #:     maintainer's decision on #190);
 #:   * (issue #671) fluid amounts too: a tenth of GT's litres, Gregtorio's rule;
-#:   * a tier only downward: a higher tier needs a later machine, which moves the recipe's unlock (#724);
+#:   * the tier both ways where a machine runs GT's tier's category (issue #724, the maintainer's decision: a higher tier
+#:     moves the recipe to that category, at GT's tier's speed, and 168 moves its unlock behind that machine);
 #:   * not the blast furnace's tier, which is its coil heat in Gregtorio (#620);
 #:   * not the fusion reactor (its times and inputs are the plasma balance of #32), no time of a hand recipe.
 NUMBERS_SKIP_MAPS = {"crafting"}
@@ -826,32 +852,33 @@ NUMBERS_SKIP_FAMILIES = {"fusion-reactor"}
 NUMBERS_FILE = ROOT / "prototypes" / "data" / "gtnh-numbers.lua"
 
 
-def tier_down(c, r, g, equal=False):
-    """GT's tier of the recipe when it is below the Gregtorio recipe's (or the same, `equal`) and a Gregtorio machine
-    runs that tier's category, else None"""
+def gt_tier_of(c, r, g, equal=False, hold=()):
+    """GT's tier of the recipe when it is not the Gregtorio recipe's (or the same, `equal`) and a Gregtorio machine
+    runs that tier's category, else None (issue #724: also upward, unless the recipe is in `hold`, FORK_GTNH_TIER_KEPT)"""
     cur = cat_tier(c["category"])
     if not cur or not r.get("eut") or c["family"] in NO_TIER_FAMILIES:
         return None
     t = TIERS[gt_tier(r["eut"])]
     cat = t + c["category"][len(cur):]
-    below = TIERS.index(t) < TIERS.index(cur) or (equal and t == cur)
-    return t if below and cat in g.speed else None
+    if c["name"] in hold and TIERS.index(t) > TIERS.index(cur):
+        return None
+    return t if (t != cur or equal) and cat in g.speed else None
 
 
-def in_scope(diffs, c, r, g):
+def in_scope(diffs, c, r, g, hold=()):
     """the differences `numbers` sets right: time, item amounts, chances, fluid amounts (issue #671: a tenth of GT's
-    litres) and a tier downward"""
+    litres) and the tier (issue #724: both ways, where a machine runs GT's tier's category)"""
     out = []
     for x in diffs:
         k = diff_kind(x)
         if (k == "time" and c["family"] not in NO_TIME_FAMILIES) or k in ("amount", "chance", "fluid") or (
-                k == "tier" and tier_down(c, r, g)):
+                k == "tier" and gt_tier_of(c, r, g, hold=hold)):
             out.append(x)
     return out
 
 
-def gt_numbers(mapped, c, r, g, amounts=True):
-    """GT's numbers in Gregtorio's units for the Gregtorio recipe c: t (tier, downward only), e (energy_required: GT
+def gt_numbers(mapped, c, r, g, amounts=True, hold=()):
+    """GT's numbers in Gregtorio's units for the Gregtorio recipe c: t (tier, both ways, #724), e (energy_required: GT
     seconds x the tier's speed, x the batch), i ({item: amount}), o ([item, amount, chance] per chance) and (issue #671)
     fi and fo ({fluid: a tenth of GT's litres}, x the batch)"""
     out = {}
@@ -862,11 +889,21 @@ def gt_numbers(mapped, c, r, g, amounts=True):
                 ok(a) for st in mapped["stacks"].values() for a in by_chance(st).values()):
             batch = 1
     # (the tier also when it is GT's already, so the table stays the same once it is applied)
-    t = tier_down(c, r, g, equal=True)
+    t = gt_tier_of(c, r, g, equal=True, hold=hold)
     if t:
         out["t"] = t
     if r.get("duration") and c["family"] not in NO_TIME_FAMILIES:
-        speed = 2 ** TIERS.index(t) if t else tier_speed(c, r, g)
+        if t:
+            speed = 2 ** TIERS.index(t)
+        else:
+            # (issue #759: of the speeds the recipe may be written for, the one its own time (before 168 set the table's,
+            # `own_time`) is written for: a recipe of a higher GT tier written for that tier, as 164's TRISO steps, keeps
+            # GT's tier's speed; else the category's speed)
+            speeds = time_speeds(c, r, g)
+            own = c.get("own_time") or c.get("time") or 0.5
+            gt_secs = r["duration"] / 20
+            fit = [s for s in speeds if abs(own / s / batch - gt_secs) <= 0.02 * gt_secs + 1e-9]
+            speed = (fit or speeds)[0]
         out["e"] = round(r["duration"] / 20 * speed * batch, 6)
     if amounts:
         out["i"] = {n: round(a * batch) for n, a in mapped["ins"].items()
@@ -884,7 +921,7 @@ def gt_numbers(mapped, c, r, g, amounts=True):
     return out
 
 
-def numbers(state, kept=(), old=()):
+def numbers(state, kept=(), old=(), hold=()):
     """Issue #689: GT's numbers for every matched Gregtorio recipe whose numbers differ from GT's in scope (see
     NUMBERS_SKIP_MAPS) or that the table `old` already has: ({recipe: gt_numbers}, {recipe: the differences in scope},
     Counter of the differences left out by kind)"""
@@ -903,15 +940,15 @@ def numbers(state, kept=(), old=()):
                     left["crafting table (#688)" if base in NUMBERS_SKIP_MAPS else "recycling (#190)"
                          if name.startswith("recycling-") else "fusion (#32)"] += 1
                 continue
-            scoped = in_scope(d, c, r, g)
+            scoped = in_scope(d, c, r, g, hold)
             for x in d:
                 if x not in scoped:
                     k = diff_kind(x)
-                    left["tier up (#724)" if k == "tier" else "hand recipe time (#688)"] += 1
+                    left[("tier kept (FORK_GTNH_TIER_KEPT)" if name in hold else "tier without its category") if k == "tier" else "hand recipe time (#688)"] += 1
             if name in kept:
                 continue
             if scoped or name in old:
-                table[name] = gt_numbers(mapped, c, r, g)
+                table[name] = gt_numbers(mapped, c, r, g, hold=hold)
                 if scoped:
                     diffs[name] = scoped
     return table, diffs, left
@@ -1257,6 +1294,12 @@ def route_imports(dump, g, table=None, chemistry=False):
             continue
         fam, verb = table[mname]
         mapped, bad = map_recipe(mp, r)
+        if mname == "gt.recipe.cable" and (bad or not mapped["outs"]):
+            # (issue #729, the maintainer's decision: only the 1x cables of the wires Gregtorio has)
+            pre = {dump["items"].get(o["id"], {}).get("prefix") for o in r["out"]}
+            left["issue #729: GT's 2x to 16x cables stay out" if pre - {"cableGt01"}
+                 else "issue #729: a 1x cable of a metal without a Gregtorio wire"] += 1
+            continue
         if bad or mapped.get("oreblock") or not (mapped["outs"] or (chemistry and mapped["fout"])) or not (
                 mapped["ins"] or mapped["fin"]):
             continue

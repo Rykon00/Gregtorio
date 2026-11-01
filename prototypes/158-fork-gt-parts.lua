@@ -145,6 +145,9 @@ local made = 0
 --- (recipes: every recipe of this file; 199's auto-unlock does not count them as producers, like 143's casts: a form
 --- of a material made from another form of it would stand in for the recipe that really makes it)
 FORK_GT_PARTS = { recipes = {}, routes_skipped = {}, imported = {} }
+--- issue #729: the metals that get GT's 1x cable (section 2b)
+FORK_GT_PARTS.cables = { "annealed-copper", "cupronickel", "electrum", "end-steel", "energetic-alloy", "hssg", "kanthal",
+	"nichrome", "trinium", "vibrant-alloy" }
 --- a recipe of a machine at a tier (GT ticks or seconds); unlocked after its machine and every item it takes (the mold
 --- aside); without a machine: the crafting table
 local function recipe(def)
@@ -470,6 +473,18 @@ function FORK_GT_PARTS.run()
 				end
 			end
 		end
+	end
+
+	--------------------------------------------------------------------------------
+	--- 2b) GT'S 1X CABLES OF GREGTORIO'S WIRES (issue #729, the maintainer's decision: only the cables of the 1x wires
+	---    Gregtorio has, no 2x to 16x sizes): GT New Horizons has 1x cables of 52 materials; these are the ones whose
+	---    wire Gregtorio has and whose cable it lacked. Section 3 gives them GT's insulation recipes (the assembler's
+	---    cable map, gt.recipe.cable: the wire with molten rubber, or silicone or styrene-butadiene rubber and a pulp).
+	---    The other sizes and the cables of metals without a Gregtorio wire stay out (tools/gtnh_map.py counts them).
+	--------------------------------------------------------------------------------
+	for _, m in pairs(FORK_GT_PARTS.cables) do
+		local wire = data.raw.item[m .. "-wire"]
+		if wire then add_item(m .. "-cable", wire.subgroup, (wire.order or m) .. "-cable") end
 	end
 
 	--------------------------------------------------------------------------------

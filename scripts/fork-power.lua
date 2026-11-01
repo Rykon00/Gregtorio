@@ -55,10 +55,16 @@
 --- reactor's recipe while the reactor's status is "working", else nothing; what the network does not take is lost, as
 --- GT voids it. Work per step: one status read per reactor, a write only when the power changes.
 ---
+--- Working picture (issue #768). A 2.1 generator prototype has one picture and no working-only layer, so the plasma
+--- generators (mod data `overlays`: entity -> sprite) are drawn idle and get their working picture as a render object
+--- on top, shown while the fuel check finds them running and generating (energy_generated_last_tick > 0). The object is
+--- made the first time a generator runs (`overlay` of its `generators` entry) and goes with the entity. Work: one read
+--- per checked generator, a write only when the state changes.
+---
 --- State (lazy, `storage.fork_power`): `turbines` by unit number with the plasma seen at the last step
 --- (`fluid`, `amount` in the turbine and its segment), `on` (counted this step), the `energy` summed
 --- since the last step and the cooled fluid still `owed` (by fluid name); `generators` by unit number
---- with the reason this script stopped them (nil while running); `cursor` of the round robin; `capacitors` by unit
+--- with the reason this script stopped them (nil while running) and the working `overlay`; `cursor` of the round robin; `capacitors` by unit
 --- number (the entity). Rebuilt
 --- from the map on configuration changes.
 local M = {}
@@ -75,9 +81,14 @@ local function mod_data()
 end
 
 local turbine_names, cooled_of, ratio_of, effectivity_of, hatch_name, fuels_of, loss_of, lftr_power, dynamo_name, dyson
+local overlay_of
 local function init()
 	if turbine_names then return end
 	local d = mod_data()
+	overlay_of = {}
+	for name, sprite in pairs(d.overlays or {}) do
+		if prototypes.entity[name] then overlay_of[name] = sprite end
+	end
 	lftr_power, dynamo_name = {}, d.lftr_dynamo
 	dyson = d.dyson and prototypes.entity[d.dyson.entity] and prototypes.entity[d.dyson.dynamo] and d.dyson or nil
 	for name, recipes in pairs(d.lftr or {}) do
@@ -134,6 +145,21 @@ local function fluid_of(entity, amount)
 	return nil, 0
 end
 
+--- issue #768: the working picture over a generator with an idle one while it gives power
+local function show_working(g)
+	local e = g.entity
+	local sprite = overlay_of[e.name]
+	if not sprite then return end
+	local on = not e.disabled_by_script and e.energy_generated_last_tick > 0   -- a stopped generator keeps its last value
+	local o = g.overlay
+	if not (o and o.valid) then
+		if not on then return end
+		o = rendering.draw_sprite{ sprite = sprite, target = e, surface = e.surface, render_layer = "object" }
+		g.overlay = o
+	end
+	if o.visible ~= on then o.visible = on end
+end
+
 local function check(g)
 	local e = g.entity
 	local allowed = fuels_of[e.name]
@@ -152,7 +178,7 @@ local function check(g)
 			g.stopped = nil
 		end
 	elseif g.stopped ~= reason then
-		if not g.stopped and e.disabled_by_script then return end    -- stopped by someone else
+		if not g.stopped and e.disabled_by_script then return show_working(g) end    -- stopped by someone else
 		e.disabled_by_script = true
 		if reason == NO_FUEL then
 			e.custom_status = { diode = defines.entity_status_diode.yellow, label = { "entity-status.fork-no-fuel" } }
@@ -165,6 +191,7 @@ local function check(g)
 		end
 		g.stopped = reason
 	end
+	show_working(g)
 end
 
 local function register_generator(st, entity)

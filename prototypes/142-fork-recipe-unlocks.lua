@@ -833,6 +833,9 @@ FORK_UNLOCK_TREE = { prerequisites = {
 	["steam-macerator"] = { "steam-forge-hammer" },   -- crushed-copper-smelter and the other crushed ore smelting
 	["super-glue"] = { "iv-energy-hatches" },   -- machine iv-chemical-reactor
 	["tungstate-processing"] = { "ev-machines" },   -- machine ev-autoclave
+	-- issue #742 (the maintainer's decision: the coils come before the metals that need their heat, as in GT New Horizons):
+	-- the hot tungstensteel ingot needs 4000 K, an EV furnace with the RTM alloy coil of the same science (4701 K)
+	["tungstensteel"] = { "rtm-alloy-coils" },   -- rtm-alloy-coil-block
 	["tungsten"] = { "ev-energy-hatches" },   -- machine ev-chemical-reactor
 	["utility-science-pack"] = { "ev-machines" },   -- machine ev-assembling-machine
 	["zpm-assembly-line"] = { "me-storage-256k" },   -- fiber-reinforced-circuit-board
@@ -856,6 +859,67 @@ FORK_UNLOCK_TREE.keep = {
 	["molybdenum-dust-pbf-charcoal"] = "bending-machine",
 	["molybdenum-dust-pbf-coke"] = "bending-machine",
 }
+--- issue #742: the blast furnace recipes whose GT heat (prototypes/data/gtnh-ebf-heat.lua) no blast furnace has where 155/158
+--- unlocked them go to the first technology whose coil (in a furnace of their category, 100 K per tier above MV) reaches it;
+--- their products have other producers there or their consumers follow (devcheck's tree check). The recipe: its technology
+FORK_UNLOCK_TREE.heat = {
+	["gt-blast-dark-steel-ingot-from-dark-steel-dust"] = "kanthal-coils",   -- 2200 K (was mv-machines)
+	["gt-blast-end-steel-ingot-from-end-steel-dust-with-helium"] = "rtm-alloy-coils",   -- 4500 K (was ev-machines)
+	["gt-blast-end-steel-ingot-from-end-steel-dust-with-krypton"] = "rtm-alloy-coils",   -- 4500 K (was ev-machines)
+	["gt-blast-end-steel-ingot-from-end-steel-dust-with-neon"] = "rtm-alloy-coils",   -- 4500 K (was ev-machines)
+	["gt-blast-end-steel-ingot-from-end-steel-dust-with-nitrogen"] = "rtm-alloy-coils",   -- 4500 K (was ev-machines)
+	["gt-blast-end-steel-ingot-from-end-steel-dust-with-radon"] = "rtm-alloy-coils",   -- 4500 K (was ev-machines)
+	["gt-blast-end-steel-ingot-from-end-steel-dust-with-xenon"] = "rtm-alloy-coils",   -- 4500 K (was ev-machines)
+	["gt-blast-energetic-alloy-ingot-from-energetic-alloy-dust"] = "kanthal-coils",   -- 2500 K (was mv-components)
+	["gt-blast-energetic-alloy-ingot-from-energetic-alloy-dust-with-hydrogen"] = "kanthal-coils",   -- 2200 K (was mv-components)
+	-- (its crafting table parts follow it to Energetic Alloy, whose alloy smelter makes the ingot: they were with MV Components
+	-- only because the blast furnace recipe was)
+	["energetic-alloy-nugget-crafting-table"] = "energetic-alloy",
+	["energetic-alloy-plate-crafting-table"] = "energetic-alloy",
+	["energetic-alloy-rod-crafting-table"] = "energetic-alloy",
+	["gt-blast-hot-chromnorox-ingot-from-chromnorox-dust-with-oganesson"] = "large-hadron-collider",   -- 12700 K (was dimensionally-shifted-superfluid)
+	["gt-blast-hot-hypocosmium-ingot-from-hypocosmium-dust-with-helium"] = "umv-multiblocks",   -- 13600 K (was umv-energy-hatches)
+	["gt-blast-hot-hypocosmium-ingot-from-hypocosmium-dust-with-nitrogen"] = "umv-multiblocks",   -- 13600 K (was umv-energy-hatches)
+	["gt-blast-hot-hypocosmium-ingot-from-hypocosmium-dust-with-oganesson"] = "gravitational-lens",   -- 13600 K (was large-hadron-collider)
+	["gt-blast-hot-hypocosmium-ingot-from-hypocosmium-dust-with-radon"] = "umv-multiblocks",   -- 13600 K (was umv-energy-hatches)
+	["gt-blast-hot-itbtc-alloy-ingot-from-itbtc-alloy-dust-with-helium"] = "fusion-reactor-mk2",   -- 6000 K (was crystal-processor-mainframes)
+	["gt-blast-hot-itbtc-alloy-ingot-from-itbtc-alloy-dust-with-nitrogen"] = "fusion-reactor-mk2",   -- 6000 K (was crystal-processor-mainframes)
+	["gt-blast-hot-itbtc-alloy-ingot-from-itbtc-alloy-dust-with-radon"] = "fusion-reactor-mk2",   -- 6000 K (was crystal-processor-mainframes)
+	["gt-blast-quicklime-from-gypsum"] = "nichrome-coils",   -- 3200 K (was kanthal-coils)
+	["hot-enriched-naquadah-ingot"] = "zpm-energy-hatches",   -- 7500 K (was enriched-naquadah)
+	["hot-hypocosmium-ingot"] = "umv-multiblocks",   -- 13600 K (was umv-energy-hatches)
+	["hot-hypocosmium-ingot-krypton"] = "umv-multiblocks",   -- 13600 K (was umv-energy-hatches)
+	["hot-hypocosmium-ingot-neon"] = "umv-multiblocks",   -- 13600 K (was umv-energy-hatches)
+	["hot-hypocosmium-ingot-xenon"] = "umv-multiblocks",   -- 13600 K (was umv-energy-hatches)
+	["hot-itbtc-alloy-ingot"] = "fusion-reactor-mk2",   -- 6000 K (was crystal-processor-mainframes)
+	["hot-itbtc-alloy-ingot-krypton"] = "fusion-reactor-mk2",   -- 6000 K (was crystal-processor-mainframes)
+	["hot-itbtc-alloy-ingot-neon"] = "fusion-reactor-mk2",   -- 6000 K (was crystal-processor-mainframes)
+	["hot-itbtc-alloy-ingot-xenon"] = "fusion-reactor-mk2",   -- 6000 K (was crystal-processor-mainframes)
+	-- the maintainer's decision for the rest: the coil comes a tier earlier, as in GT New Horizons, the metals stay. Each coil
+	-- (and what it is made of, where that came with it) goes to the technology before the metals that need its heat:
+	-- naquadah coil (7201 K) for the hot trinium ingot (7200 K) of Enriched Naquadah, with its osmium foil
+	["naquadah-coil-block"] = "enriched-naquadah",   -- (was zpm-energy-hatches)
+	["osmium-ingot"] = "enriched-naquadah",          -- the vacuum freezer's (was zpm-energy-hatches)
+	["osmium-foil"] = "enriched-naquadah",           -- (was zpm-energy-hatches)
+	-- trinium coil (9001 K + 500 in a ZPM furnace) for hot naquadria (9000/9100 K) and fluxed electrum (9000 K)
+	["trinium-coil-block"] = "zpm-multiblocks",      -- (was uv-energy-hatches)
+	-- tritanium coil (9901 K) for hot bedrockium, naquamiridium and cosmic neutronium (9900 K), with its tritanium parts
+	["tritanium-coil-block"] = "uv-machines",        -- (was uhv-energy-hatches)
+	["tritanium-ingot"] = "uv-machines",             -- the fluid solidifier's (was uhv-materials)
+	["tritanium-plate"] = "uv-machines",             -- (was uhv-materials)
+	["tritanium-foil"] = "uv-machines",              -- (was uhv-materials)
+	["tritanium-wire"] = "uv-machines",              -- (was uhv-materials)
+	-- infinity coil (11701 K) for hot dracofinium (11800 K)
+	["infinity-coil-block"] = "uev-energy-hatches",  -- (was uiv-energy-hatches)
+	-- Left in `cap` of prototypes/data/gtnh-ebf-heat.lua (the heat stays what a furnace has there):
+	-- * hot palladium-naqindium (8100 K, ZPM Superconductors, LuV science): GT's naquadah alloy coil (8100 K) has no
+	--   Gregtorio coil; the next one, trinium, would come two tiers early;
+	-- * hot chromnorox (12700 K, UIV Energy Hatches): the spacetime coil is made from MK5 fusion's spacetime (UMV); a UIV
+	--   furnace with the infinity coil has 12601 K;
+	-- * phonon crystal solution (17000 K, UIV) and the infinite wafer (22000 K, UXV): no blast furnace of GT reaches them
+	--   either (13501 K + 100 K per tier); GT New Horizons runs them in the godforge's smelting module (MTESmeltingModule,
+	--   blastFurnaceRecipes), which 140's godforge does not have.
+}
 function FORK_UNLOCK_TREE.apply(final)
 	for tech, pres in pairs(FORK_UNLOCK_TREE.prerequisites) do
 		for _, p in pairs(pres) do
@@ -867,7 +931,7 @@ function FORK_UNLOCK_TREE.apply(final)
 		end
 	end
 	if not final then return end
-	for recipe, tech in pairs(FORK_UNLOCK_TREE.keep) do
+	for _, list in pairs({ FORK_UNLOCK_TREE.keep, FORK_UNLOCK_TREE.heat }) do for recipe, tech in pairs(list) do
 		for _, t in pairs(data.raw.technology) do
 			local keep = {}
 			for _, e in pairs(t.effects or {}) do
@@ -877,7 +941,7 @@ function FORK_UNLOCK_TREE.apply(final)
 		end
 		if not data.raw.recipe[recipe] then error("142-fork-recipe-unlocks: no recipe " .. recipe) end
 		fork_add_unlock(tech, recipe)
-	end
+	end end
 end
 FORK_UNLOCK_TREE.apply()
 --- issue #337 (163): the miners' twins of the veins, after the moves above and the prerequisites (a vein before the LV
@@ -934,8 +998,9 @@ FORK_MACHINES_BEFORE_RECIPES = {
 		.. "it runs the LV Rock Crusher's recipe, which comes with Rock Crusher (LV)",
 }
 --- (issue #611: from ZPM on the tier's Machines technology has Fermentation behind it, through Naquadah Processing's seed oil)
+--- (issue #784: the brewery's biomass from wheat, seaweed and compost comes before HV, so from HV on it has a recipe there)
 for _, t in pairs({ "mv", "hv", "ev", "iv", "luv" }) do
-	for _, m in pairs({ "brewery", "fermenter" }) do
+	for _, m in pairs(t == "mv" and { "brewery", "fermenter" } or { "fermenter" }) do
 		FORK_MACHINES_BEFORE_RECIPES[t .. "-machines:" .. t .. "-" .. m] = "a tier machine comes with its tier's Machines "
 			.. "technology like the others of the tier; it runs the LV " .. m .. "'s recipes, which come with Fermentation (LV, 164)"
 	end
