@@ -839,6 +839,31 @@ def check_nyi_icons(sec):
            "(FORK_NYI_ICONS)", problems
 
 
+def check_gtnh_icons(sec):
+    """Issue #713: GT New Horizons' rendered icons of tools/import_gtnh_icons.py. Every file of graphics/icons/gtnh/ has
+    a row in graphics/icons/GTNH-ICONS.tsv and every row a file; the rows and FORK_GTNH_ICONS
+    (prototypes/data/gtnh-icons.lua) name the same items; each of them is an item that shows its file (section ICONS).
+    Returns (info line, problems)."""
+    tsv, folder = ROOT / "graphics/icons/GTNH-ICONS.tsv", ROOT / "graphics/icons/gtnh"
+    rows = [l.split("\t") for l in tsv.read_text(encoding="utf-8").splitlines()[1:] if l] if tsv.exists() else []
+    files = {f"gtnh/{f.name}" for f in folder.glob("*.png")} if folder.exists() else set()
+    listed = {r[0]: r[1] for r in rows}
+    lua = ROOT / "prototypes/data/gtnh-icons.lua"
+    table = set(re.findall(r'\["([^"]+)"\] = true', lua.read_text(encoding="utf-8"))) if lua.exists() else set()
+    icons = {r[1]: r[2] for r in sec.get("ICONS", []) if len(r) >= 3 and r[0] == "item"}
+    problems = [f"{f}: no row in graphics/icons/GTNH-ICONS.tsv (run tools/import_gtnh_icons.py)"
+                for f in sorted(files - set(listed))]
+    problems += [f"GTNH-ICONS.tsv: {f} has no file" for f in sorted(set(listed) - files)]
+    problems += [f"FORK_GTNH_ICONS and GTNH-ICONS.tsv differ: {n}" for n in sorted(table ^ set(listed.values()))]
+    for f, item in sorted(listed.items()):
+        want = f"__gregtorio-continued__/graphics/icons/{f}"
+        if item not in icons:
+            problems.append(f"GTNH-ICONS.tsv: {item} is no item")
+        elif icons[item] != want:
+            problems.append(f"item {item} shows {icons[item]}, not {want}")
+    return f"{len(listed)} items with GTNH's rendered icon", problems
+
+
 OVERCLOCK = "gregtorio-continued-gt-overclocking"
 MAINTENANCE = "gregtorio-continued-maintenance"   # issue #618
 RADIATION = "gregtorio-continued-radiation"   # issue #621
@@ -2980,6 +3005,9 @@ def check(a):
     nyi_info, nyi_icons = check_nyi_icons(sec)
     print(f"\nNYI placeholder icons (issue #639): {nyi_info}")
     report("shown prototypes with the NYI placeholder icon (prototypes/199-fork-finalize.lua)", nyi_icons)
+    gtnh_icon_info, gtnh_icons = check_gtnh_icons(sec)
+    print(f"\nGTNH's rendered icons (issue #713): {gtnh_icon_info}")
+    report("GTNH icons without their manifest row, file or item (tools/import_gtnh_icons.py)", gtnh_icons)
     lens_info, lenses = check_engraver_lenses(m, sec)
     print(f"\nlaser engraver lenses (issue #325): {lens_info}")
     report("laser engraver recipes without a lens (prototypes/155-fork-ore-chain.lua)", lenses)
@@ -3110,7 +3138,7 @@ def check(a):
               or extractor_split or ore_mixes or ore_chain or ore_baths or ore_o34 or ore_hammer
               or circuit_icons or pgm_dusts or recycling or blocks or names or gaps or tree or vanilla or lenses or mine_twins
               or unplaceable or stale_unlocks or removed_keys or trigger_only or spoiling or classic_veins or early
-              or furnace or research_counts or nyi_icons or overclock or maint or ebf_heat or radiation
+              or furnace or research_counts or nyi_icons or gtnh_icons or overclock or maint or ebf_heat or radiation
               or steam or nugget or steam_rates or boiler_output or vein_doc or renames or gtnh_numbers or parts_recycling or part_routes or part_crafting or chemistry or metallurgy)
     print("\nRESULT:", "OK" if ok else "PROBLEMS FOUND")
     return 0 if ok else 1

@@ -14,12 +14,13 @@ sprites at up to 192 pixels.
     python tools/gen_review_sheet.py small                  # the 1x1 machines next to each other: icon, idle, a working
                                                             # frame, and the sprites at game size (issue #431)
     python tools/gen_review_sheet.py fluid-icons            # changed fluid icons (graphics/fluids)
+    python tools/gen_review_sheet.py gtnh-icons             # issue #713: GTNH's rendered icons (graphics/icons/gtnh)
     python tools/gen_review_sheet.py fluids --fluids <file> # the Fluids tab, rows per subgroup (no before/after);
                                                             # <file> from `devcheck.py check --fluids-out <file>`
     python tools/gen_review_sheet.py all --ref origin/main --out docs/graphics-review
 
 Output: <out>/icons-<n>-<group>.png, techs.png, sprites-<n>-<group>.png, upgrades-<tier>.png, upgrades-icons.png,
-fluid-icons.png, fluids-tab.png, machine-tiers-block.png (assembling machine and macerator), machine-tiers-all.png,
+fluid-icons.png, gtnh-icons-<n>.png, fluids-tab.png, machine-tiers-block.png (assembling machine and macerator), machine-tiers-all.png,
 small-machines.png
 """
 import argparse, io, re, subprocess, warnings
@@ -157,6 +158,26 @@ def fluid_icons(ref, out):
     if files:
         entries = [(Path(f).stem, at_ref(ref, f), now(f)) for f in files]
         sheet(f"Fluid icons ({len(entries)})", entries, 64, 6, out / "fluid-icons.png")
+
+
+def gtnh_icons(ref, out):
+    """issue #713: the icons of graphics/icons/GTNH-ICONS.tsv (tools/import_gtnh_icons.py) next to the item's icon on
+    the ref (graphics/icons/<item>.png, else graphics/icons/fork/<item>.png), by mod, 60 per sheet"""
+    tsv = ROOT / "graphics/icons/GTNH-ICONS.tsv"
+    if not tsv.exists():
+        return
+    rows = [l.split("	") for l in tsv.read_text(encoding="utf-8").splitlines()[1:] if l]
+    by_mod = {}
+    for r in rows:
+        by_mod.setdefault(r[3], []).append(r)
+    entries = []
+    for mod in sorted(by_mod, key=lambda m: (m != "gregtech", m.lower())):
+        for r in by_mod[mod]:
+            before = at_ref(ref, f"graphics/icons/{r[1]}.png") or at_ref(ref, f"graphics/icons/fork/{r[1]}.png")
+            entries.append((f"{r[1]} ({mod})", before, now(f"graphics/icons/{r[0]}")))
+    for i in range(0, len(entries), 60):
+        sheet(f"GTNH's rendered icons, issue #713 ({len(entries)}, part {i // 60 + 1})", entries[i:i + 60], 64, 6,
+              out / f"gtnh-icons-{i // 60 + 1}.png")
 
 
 def sprites(ref, out):
@@ -401,8 +422,8 @@ def small(ref, out):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("what", choices=["icons", "techs", "sprites", "upgrades", "fluid-icons", "fluids", "tiers", "small",
-                                     "all"])
+    ap.add_argument("what", choices=["icons", "techs", "sprites", "upgrades", "fluid-icons", "gtnh-icons", "fluids",
+                                     "tiers", "small", "all"])
     ap.add_argument("--ref", default="origin/main")
     ap.add_argument("--out", type=Path, default=ROOT / "docs/graphics-review")
     ap.add_argument("--fluids", help="fluids: the list of `devcheck.py check --fluids-out <file>`")
@@ -411,7 +432,7 @@ def main():
     a = ap.parse_args()
     a.out.mkdir(parents=True, exist_ok=True)
     for what, fn in (("icons", icons), ("techs", techs), ("sprites", sprites), ("upgrades", upgrades),
-                     ("fluid-icons", fluid_icons), ("small", small)):
+                     ("fluid-icons", fluid_icons), ("gtnh-icons", gtnh_icons), ("small", small)):
         if a.what in (what, "all"):
             fn(a.ref, a.out)
     if a.what in ("tiers", "all"):

@@ -260,3 +260,28 @@ for name, _ in pairs(FORK_TECH_ICONS) do
 		t.icon_size = 256
 	end
 end
+
+--- Issue #713: GT New Horizons' rendered icons (NEI's item panel dump) for the blocks of GT's own mods: casings, coils,
+--- glass, multiblock controllers (tools/import_gtnh_icons.py: graphics/icons/gtnh/, sources in
+--- graphics/icons/GTNH-ICONS.tsv). The placed entity and the recipes that showed the item's old icon show the new one.
+require("prototypes.data.gtnh-icons")
+do
+	local dir = "__gregtorio-continued__/graphics/icons/gtnh/"
+	local renamed = {}
+	for name, _ in pairs(FORK_GTNH_ICONS) do
+		for item_type, _ in pairs(defines.prototypes.item) do
+			local item = data.raw[item_type] and data.raw[item_type][name]
+			if item then
+				if item.icon then renamed[item.icon] = dir .. name .. ".png" end
+				item.icon, item.icon_size, item.icons = dir .. name .. ".png", 64, nil
+			end
+		end
+	end
+	local function swap(p)
+		if p.icon and renamed[p.icon] and not p.icons then p.icon, p.icon_size = renamed[p.icon], 64 end
+	end
+	for _, recipe in pairs(data.raw.recipe) do swap(recipe) end
+	for entity_type, _ in pairs(defines.prototypes.entity) do
+		for _, entity in pairs(data.raw[entity_type] or {}) do swap(entity) end
+	end
+end
