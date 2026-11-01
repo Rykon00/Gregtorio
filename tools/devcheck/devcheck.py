@@ -1983,7 +1983,7 @@ def check_fluid_steps(sec):
 MACHINE_TYPES = ("assembling-machine", "furnace", "mining-drill", "generator", "burner-generator", "boiler", "reactor",
                  "lab", "rocket-silo", "fusion-reactor", "fusion-generator", "agricultural-tower")
 NAME_CLASSES = ("item", "fluid", "recipe", "technology", "entity", "equipment", "tile", "item-group", "item-subgroup",
-                "autoplace-control")
+                "autoplace-control", "fuel-category")
 
 
 def locale_keys():
@@ -2063,14 +2063,15 @@ def check_placeable(sec):
 
 def check_names(sec):
     """Issue #230: every prototype this mod creates that a player can see (item, fluid, recipe, technology, entity,
-    equipment, tile, item group and subgroup, issue #529: autoplace control; section NAMES of checkmod/control.lua: the runtime prototypes, so the name
+    equipment, tile, item group and subgroup, issue #529: autoplace control, issue #769: fuel category; section NAMES of checkmod/control.lua: the runtime prototypes, so the name
     is the one the engine resolves from the final data stage) must have a name: every key of its localised name must be
     in a locale file. The engine names a recipe after its product only when the recipe has the product's name;
     any other recipe shows `recipe-name.<recipe>`, with a main product or not (prototypes/fork-locale.lua gives
     Gregtorio's recipes their product's name as the fallback). Shown: not hidden (an item or fluid also when a recipe
     that is not hidden takes or makes it), a technology that is enabled, an entity placed by an item, minable or a
     resource, a group or subgroup with a shown prototype. Allow-list FORK_LOCALE_MISSING (section LOCALEOK, "class:name"
-    -> reason). Returns (info lines, problems, missing default keys as "section\\tname" rows for tools/gen_locale.py)."""
+    -> reason). Issue #761: every [technology=...] link in this mod's locale opens a researchable technology.
+    Returns (info lines, problems, missing default keys as "section\\tname" rows for tools/gen_locale.py)."""
     if "NAMES" not in sec:
         return [], ["no DEVCHECK-NAMES section in the log (checkmod/control.lua did not run)"], []
     keys, files = locale_keys(), defining_files()
@@ -2125,7 +2126,24 @@ def check_names(sec):
             problems.append(f"{k}: in FORK_LOCALE_MISSING but no prototype of this mod (remove the entry)")
         elif row and not missing_keys(json.loads(row[7]).get("n"), keys):
             problems.append(f"{k}: in FORK_LOCALE_MISSING but has a name (remove the entry)")
+    # issue #761: a [technology=...] link in this mod's locale (tier tips, descriptions) must open a technology the player
+    # can research: one that exists, is enabled and not hidden (the vanilla technologies data-final-fixes.lua disables
+    # are not)
+    researchable = {r[2] for r in sec["NAMES"] if r[0] == "technology" and r[5]}
+    links = 0
+    for f in sorted((ROOT / "locale/en").glob("*.cfg")):
+        section = None
+        for i, line in enumerate(f.read_text(encoding="utf-8").splitlines(), 1):
+            if line.startswith("[") and line.strip().endswith("]"):
+                section = line.strip()[1:-1]
+                continue
+            for tech in re.findall(r"\[technology=([^\]]+)\]", line):
+                links += 1
+                if tech not in researchable:
+                    problems.append(f"locale/en/{f.name}:{i} ({section}.{line.split('=', 1)[0]}) links "
+                                    f"[technology={tech}], which is hidden, disabled or missing")
     info = [f"{cls}: {counts[cls][0]} shown, {counts[cls][1]} without a name" for cls in NAME_CLASSES if cls in counts]
+    info.append(f"{links} technology links in the locale (issue #761)")
     info.append(f"{len(allowed)} kept without a name (FORK_LOCALE_MISSING)")
     info.append("machines (issue #625): " + ", ".join(f"{t} {m[0]} shown, {m[1]} without a description"
                                                        for t, m in sorted(machines.items())))
