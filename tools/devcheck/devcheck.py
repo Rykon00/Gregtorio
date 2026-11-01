@@ -1732,7 +1732,7 @@ def check_ore_o3_o4(m):
             continue
         x = name[len("purified-"):]
         for src in (f"crushed-{x}", f"purified-{x}", f"centrifuged-{x}"):
-            if live(f"hammering-{src}") and m.R[f"hammering-{src}"]["cat"] == "lv-forge-hammer-recipes":
+            if live(f"hammering-{src}") and m.R[f"hammering-{src}"]["cat"].endswith("-forge-hammer-recipes"):   # (#724: any tier)
                 hammers += 1
             else:
                 out.append(f"{x}: the forge hammer does not crush {src}")
@@ -1785,7 +1785,7 @@ def check_ore_hammer(sec):
         crushes = any(r["name"].startswith("crushed-") for r in res)
         if o["category"] == MACERATOR_CAT and crushes:
             mac.setdefault(ing[0]["name"], []).append((o["name"], res))
-        elif o["category"] == HAMMER_CAT:
+        elif o["category"] == HAMMER_CAT or o["category"].endswith("-forge-hammer-recipes"):   # (issue #724: a higher tier)
             ham.setdefault(ing[0]["name"], []).append((o["name"], res))
         elif crushes:
             other.setdefault(ing[0]["name"], []).append((o["name"], res))
