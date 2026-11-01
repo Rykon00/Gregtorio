@@ -277,6 +277,9 @@ end
 ---    from IV_BASIC_MACHINES below.
 --------------------------------------------------------------------------------
 
+--- issue #724 (the maintainer's decision): the forge hammer's recipes of a higher GT tier move to that tier's category
+--- (prototypes/168-fork-gtnh-numbers.lua); every electric hammer runs the categories up to its tier, the steam hammers LV
+for _, t in pairs({ "mv", "hv", "ev", "iv", "luv", "zpm", "uv", "uhv", "uev", "uiv", "umv", "uxv" }) do recipe_category_and_subgroup(t .. "-forge-hammer-recipes") end
 do
 	local HAMMERS = {
 		--  tier  path                 energy    speed  cable             circuit               tech
@@ -288,7 +291,7 @@ do
 	for _, h in ipairs(HAMMERS) do
 		local t, path, energy, speed, cable, circuit, tech = table.unpack(h)
 		local name = t .. "-forge-hammer"
-		make_electric_machine(name, name, path, { "lv-forge-hammer-recipes" }, "fr-forge-hammer", energy, speed, 5, 0.5, 3, 3)
+		make_electric_machine(name, name, path, tier_categories("forge-hammer-recipes", t), "fr-forge-hammer", energy, speed, 5, 0.5, 3, 3)
 		create_item{
 			name = name,
 			subgroup = t .. "-age-production-machine",
@@ -392,6 +395,8 @@ end
 --------------------------------------------------------------------------------
 
 recipe_category_and_subgroup("lv-forming-press-recipes")
+--- issue #724: the same for the forming press
+for _, t in pairs({ "mv", "hv", "ev", "iv", "luv", "zpm", "uv", "uhv", "uev", "uiv", "umv", "uxv" }) do recipe_category_and_subgroup(t .. "-forming-press-recipes") end
 do
 	local PRINTED = { "printed-silicon", "printed-logic-circuit", "printed-calculation-circuit", "printed-engineering-circuit" }
 	local lv_techs = {}
@@ -412,7 +417,7 @@ do
 	for _, a in ipairs(PRESSES) do
 		local t, path, energy, speed, cable, circuit = table.unpack(a)
 		local name = t .. "-forming-press"
-		make_electric_machine(name, name, path, { "lv-forming-press-recipes" }, "fr-forming-press", energy, speed, 1, 0.5, 3, 3)
+		make_electric_machine(name, name, path, tier_categories("forming-press-recipes", t), "fr-forming-press", energy, speed, 1, 0.5, 3, 3)
 		create_item{
 			name = name,
 			subgroup = t .. "-age-production-machine",
@@ -496,7 +501,7 @@ end
 ---    GT New Horizons has the Sifting Machine from LV up ("Basic Sifting Machine", LoaderMetaTileEntities.java:6841, recipe
 ---    map sifterRecipes, otherwise only its Industrial Sifter multiblock); Gregtorio's sifter recipes (coal, diamond and
 ---    three steps of the bartworks platinum line, which GTNH runs in the sifter too) ran only in the HV Large Sifter. The
----    sifting machines run the same category lv-sifter-recipes; the Large Sifter stays. Machine recipe as GT's
+---    sifting machines run lv-sifter-recipes and (issue #724) the sifter categories up to their tier; the Large Sifter stays. Machine recipe as GT's
 ---    (MTERecipeLoader.java registerSifter, "WFW", "PMP", "CFC": 2 cables, 2 item filters, 2 pistons, the hull, 2
 ---    circuits). LV with Basic Air Centrifuging (the item filter), which every technology of a sifter recipe leads
 ---    through; MV to EV with the machines of their tier. Sprites: tools/gen_sprites.py (sifting_machine_lv_mv); IV to
@@ -514,7 +519,9 @@ do
 	for _, a in ipairs(SIFTERS) do
 		local t, path, energy, speed, cable, circuit, tech = table.unpack(a)
 		local name = t .. "-sifting-machine"
-		make_electric_machine(name, name, path, { "lv-sifter-recipes" }, "fr-sifting-machine", energy, speed, 4, 0.5, 3, 3)
+		--- (issue #724: the categories of its tier and below, as the IV to MAX copies; GT's sifter recipes of a higher tier
+		--- move there, prototypes/168-fork-gtnh-numbers.lua)
+		make_electric_machine(name, name, path, tier_categories("sifter-recipes", t), "fr-sifting-machine", energy, speed, 4, 0.5, 3, 3)
 		create_item{
 			name = name,
 			subgroup = t .. "-age-production-machine",
@@ -549,6 +556,10 @@ end
 --------------------------------------------------------------------------------
 
 recipe_category_and_subgroup("lv-thermal-centrifuge-recipes")
+--- issue #724 (the maintainer's decision): GT New Horizons runs every ore's thermal centrifuge step at 48 EU/t, MV; those
+--- recipes move to this category (prototypes/168-fork-gtnh-numbers.lua), which the MV and higher machines run, so the LV
+--- machine keeps only what GT runs at LV
+recipe_category_and_subgroup("mv-thermal-centrifuge-recipes")
 do
 	local TCS = {
 		--  tier  path                      energy    speed  cable             circuit               coil                tech
@@ -560,7 +571,7 @@ do
 	for _, a in ipairs(TCS) do
 		local t, path, energy, speed, cable, circuit, coil, tech = table.unpack(a)
 		local name = t .. "-thermal-centrifuge"
-		make_electric_machine(name, name, path, { "lv-thermal-centrifuge-recipes" }, "fr-thermal-centrifuge", energy, speed, 1, 0.5, 3, 3)
+		make_electric_machine(name, name, path, tier_categories("thermal-centrifuge-recipes", t), "fr-thermal-centrifuge", energy, speed, 1, 0.5, 3, 3)
 		create_item{
 			name = name,
 			subgroup = t .. "-age-production-machine",
