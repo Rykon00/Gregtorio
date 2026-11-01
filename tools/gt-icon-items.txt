@@ -419,6 +419,8 @@ uev-piston
 uev-pump
 uev-robot-arm
 uev-sensor
+uev-wireless-dynamo-hatch
+uev-wireless-energy-hatch
 uhpic-wafer
 uhv-conveyor-module
 uhv-dynamo-hatch
@@ -432,6 +434,8 @@ uhv-piston
 uhv-pump
 uhv-robot-arm
 uhv-sensor
+uhv-wireless-dynamo-hatch
+uhv-wireless-energy-hatch
 uiv-conveyor-module
 uiv-dynamo-hatch
 uiv-emitter
@@ -444,6 +448,8 @@ uiv-piston
 uiv-pump
 uiv-robot-arm
 uiv-sensor
+uiv-wireless-dynamo-hatch
+uiv-wireless-energy-hatch
 ultimate-voltage-coil
 ultra-high-powered-integrated-circuit
 umv-circuit
@@ -459,6 +465,8 @@ umv-piston
 umv-pump
 umv-robot-arm
 umv-sensor
+umv-wireless-dynamo-hatch
+umv-wireless-energy-hatch
 universium-cable
 universium-foil
 universium-frame
@@ -488,6 +496,8 @@ uxv-dynamo-hatch
 uxv-energy-hatch
 uxv-machine-casing
 uxv-machine-hull
+uxv-wireless-dynamo-hatch
+uxv-wireless-energy-hatch
 vanadium-gallium-cable
 wetware-printed-circuit-board
 wetware-processor

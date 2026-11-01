@@ -817,6 +817,13 @@ def icon_table(c):
         T[f"{tier}-machine-hull"] = lambda t=tier: c.hatch(t, "OVERLAY_ENERGY_OUT_{T}")
         T[f"{tier}-energy-hatch"] = lambda t=tier: c.hatch(t, "OVERLAY_ENERGY_IN_MULTI_2A_{T}")
         T[f"{tier}-dynamo-hatch"] = lambda t=tier: c.hatch(t, "OVERLAY_ENERGY_OUT_MULTI_2A_{T}")
+    # issue #770: the wireless hatches of #622 (173-fork-wireless.lua). The energy hatch is GT's MTEWirelessEnergy (the hull
+    # with OVERLAYS_ENERGY_ON_WIRELESS[tier]); the dynamo hatch is GT's wireless energy cover on the tier's dynamo hatch: the
+    # dynamo hatch with the cover (the hull with OVERLAYS_ENERGY_ON_WIRELESS[0], MetaGeneratedItem01) as a badge
+    for tier in ("uhv", "uev", "uiv", "umv", "uxv"):
+        T[f"{tier}-wireless-energy-hatch"] = lambda t=tier: c.hatch(t, "OVERLAY_ENERGY_ON_WIRELESS_{T}")
+        T[f"{tier}-wireless-dynamo-hatch"] = lambda t=tier: c.badge(c.hatch(t, "OVERLAY_ENERGY_OUT_MULTI_2A_{T}"),
+                                                                    c.hatch(t, "OVERLAY_ENERGY_ON_WIRELESS"))
     # issue #444: GT's battery hulls and batteries (IDMetaItem01: Battery_Hull_LV 500, HV 502, Battery_RE_* 517-539)
     for name, i in {"small-battery-hull": 500, "large-battery-hull": 502,
                     "small-cadmium-battery": 517, "small-lithium-battery": 518, "small-sodium-battery": 519,
