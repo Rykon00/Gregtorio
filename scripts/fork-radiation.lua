@@ -52,12 +52,13 @@ function M.check(character)
 	return dose
 end
 
-script.on_nth_tick(60, function()
+--- every 60 ticks; run by fork-wireless's on_nth_tick(60) (one handler per nth-tick value, #765)
+function M.tick()
 	if not md() then return end
 	for _, player in pairs(game.connected_players) do
 		if player.character and player.character.valid then M.check(player.character) end
 	end
-end)
+end
 
 --- for devcheck's runtime test: one check of a character
 remote.add_interface("fork-radiation", { check = function(character) return M.check(character) end })

@@ -85,9 +85,11 @@ FLUID_HEATER_OVERLAY = "gregtech:basicmachines/fluid_heater/OVERLAY_FRONT"     #
 FLUID_BADGE_MACHINES = {"fluid-extractor"}
 
 # tier color GT uses to tint the (gray) machine casings (EV = titanium, IV = tungstensteel)
+# MAX is a dark steel grey (issue #763): white like UXV it could not be told apart; GT's MAX hull is darker too
+# (MACHINE_MAX_SIDE mean grey 166, MACHINE_UXV_SIDE 197)
 TIER_TINT = {"EV": (220, 160, 240), "IV": (100, 100, 160), "LuV": (255, 205, 225), "ZPM": (140, 225, 245), "UV": (130, 215, 140),
              "UHV": (235, 120, 120), "UEV": (240, 200, 90), "UIV": (120, 150, 255),
-             "UMV": (190, 120, 235), "UXV": (245, 245, 250), "MAX": (255, 255, 255)}
+             "UMV": (190, 120, 235), "UXV": (245, 245, 250), "MAX": (125, 125, 140)}
 
 # casing item -> flat GT texture ("mod:path" under textures/blocks). Without an entry the item icon is used.
 CASING_TEXTURE = {

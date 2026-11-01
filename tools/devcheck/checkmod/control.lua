@@ -84,6 +84,10 @@ local function names_rows()
 		for _, sg in pairs(g.subgroups) do if in_subgroup[sg.name] then shown = "has a shown prototype" end end
 		row("item-group", g, shown)
 	end
+	--- issue #769: a fuel category is named in the tooltips and Factoriopedia of its fuels and burners ("Consumes ...")
+	for _, p in pairs(prototypes.fuel_category) do
+		row("fuel-category", p, not get(p, "hidden") and "named by its fuels and burners" or nil)
+	end
 	log("DEVCHECK-NAMES-BEGIN\n" .. table.concat(rows, "\n") .. "\nDEVCHECK-NAMES-END")
 end
 
@@ -108,8 +112,35 @@ local function placeable_rows()
 	log("DEVCHECK-PLACEABLE-BEGIN\n" .. table.concat(rows, "\n") .. "\nDEVCHECK-PLACEABLE-END")
 end
 
+--- Issue #764: the items with more than one hand recipe (a category of the character) that the crafting menu may chain as an
+--- intermediate (allow_as_intermediate): it takes one of them, so a GT tool charge (`*-usage`) must have only its iron
+--- recipe there, or the menu picks the steel tool and crafts nothing without steel
+--- item, the recipes
+local function intermediate_rows()
+	local hand = prototypes.entity["character"].crafting_categories or {}
+	local by_item = {}
+	for name, r in pairs(prototypes.recipe) do
+		local by_hand = false
+		for k, v in pairs(r.categories or {}) do
+			local c = type(k) == "string" and k or (type(v) == "string" and v or v.name)
+			if hand[c] then by_hand = true end
+		end
+		local mp = r.main_product
+		if by_hand and r.allow_as_intermediate and mp and mp.type == "item" then
+			by_item[mp.name] = by_item[mp.name] or {}
+			table.insert(by_item[mp.name], name)
+		end
+	end
+	local rows = {}
+	for item, list in pairs(by_item) do
+		if #list > 1 then table.sort(list); rows[#rows + 1] = item .. "\t" .. table.concat(list, ",") end
+	end
+	log("DEVCHECK-INTERMEDIATE-BEGIN\n" .. table.concat(rows, "\n") .. "\nDEVCHECK-INTERMEDIATE-END")
+end
+
 script.on_init(function()
 	owners()
 	names_rows()
 	placeable_rows()
+	intermediate_rows()
 end)

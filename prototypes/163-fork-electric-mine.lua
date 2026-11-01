@@ -378,6 +378,8 @@ function FORK_ELECTRIC_MINE.make_twins(name)
 		results = table.deepcopy(r.results),
 		main_product = r.main_product or r.results[1].name,
 	}
+	--- issue #758: a twin runs where its Manual Mine recipe runs (the Nether's ancient debris and glowstone)
+	data.raw.recipe[twin].surface_conditions = table.deepcopy(r.surface_conditions)
 	FORK_ELECTRIC_MINE.twins[name] = twin
 	twin_of[name] = twin
 	--- issue #337: the miners' twin, with its mining pipe (consumed, issue #346; one per vein, issue #393)
@@ -392,8 +394,23 @@ function FORK_ELECTRIC_MINE.make_twins(name)
 		results = results,
 		main_product = r.main_product or r.results[1].name,
 	}
+	data.raw.recipe[miner_twin].surface_conditions = table.deepcopy(r.surface_conditions)
 	FORK_ELECTRIC_MINE.miner_twins[name] = miner_twin
 	return twin, miner_twin
+end
+--- issue #758: a Manual Mine recipe that a later file unlocks (164's ancient debris with Netherite) takes its two twins
+--- along: they leave the technologies 163 and 142 gave them (the Mk I's, the LV Miner's) for `tech`
+function FORK_ELECTRIC_MINE.move_twins(name, tech)
+	local moved = { [FORK_ELECTRIC_MINE.twins[name]] = true, [FORK_ELECTRIC_MINE.miner_twins[name]] = true }
+	for _, t in pairs(data.raw.technology) do
+		for i = #(t.effects or {}), 1, -1 do
+			if t.effects[i].type == "unlock-recipe" and moved[t.effects[i].recipe] then table.remove(t.effects, i) end
+		end
+	end
+	for recipe in pairs(moved) do
+		data.raw.recipe[recipe].enabled = false
+		fork_add_unlock(tech, recipe)
+	end
 end
 for _, name in ipairs(twins) do FORK_ELECTRIC_MINE.make_twins(name) end
 

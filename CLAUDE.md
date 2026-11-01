@@ -404,8 +404,11 @@
   - 168 GTNH numbers (issue #689: GT New Horizons' tier, time, item amounts and chances for every recipe that has a GT
     recipe with the same items and fluids in and out, from `prototypes/data/gtnh-numbers.lua`, which `devcheck.py check
     --gtnh-numbers` writes from the dump of `tools/gtnh_dump/` through `tools/gtnh_map.py` (`numbers`; run it after a new
-    dump, a new recipe or a changed one, `check` says when the table is out of date); a tier only downward (a higher one
-    needs a later machine and moves the unlock, #724), not the blast furnace's tier (its coil heat, #620), the fluid
+    dump, a new recipe or a changed one, `check` says when the table is out of date); the tier both ways where a machine
+    runs GT's tier's category (issue #724: a raised recipe's unlock moves behind that machine; `FORK_GTNH_TIER_KEPT` keeps
+    a lower tier with its reason, section `GTNHTIERKEPT`, where Gregtorio needs the product before that machine;
+    `migrations/2026-11-01-issue-724-tier-raises.lua` reports the machines of an old save that lost such a recipe), not
+    the blast furnace's tier (its coil heat, #620), the fluid
     amounts too (issue #671: `fi`/`fo`, a tenth of GT's litres, Gregtorio's rule; hand-built assembly line recipes the
     dump does not match, 162's space elevator, the energy hatches, take a tenth of GT's litres by hand), not the crafting table (GT's tools merge recipes,
     #688), not 157's recycling (GT's formulas on Gregtorio's recipes, #190), not the fusion reactor (#32), no time of a
@@ -443,7 +446,9 @@
   the compat file when a recipe or a tier changes. Tick intervals in use: `on_nth_tick` 5 (molds), 12 (#499: the Ore Drilling Plants' Drilling Fluid, `fork-ore-drills.lua`, `storage.fork_ore_drills`), 24 (solar boilers), 20 (#504: the Ender Tanks); issue #642: the molds, the plants and the solar boilers are checked in shares through `scripts/fork-batch.lua` (each entity once per 30, 60 and 120 ticks, a cursor beside its table in storage), so a megabase pays about the same every few ticks instead of one spike per period (3000 mold machines: 11 ms spikes -> 4 ms, 15 % more script time on average); a new periodic check over many entities does the same, and reads mod data once (its `data` builds the table on every read); `on_tick`
   (fork-power: turbine energy every tick, fuel check, output hatches and the supercapacitor loss every 10th tick);
   registrations for the same interval (or a second `on_tick`) overwrite each other, so a new periodic task picks a free
-  interval. The scripts keep their state lazy (`storage.fork_molds`, `storage.fork_power`).
+  interval or runs from the handler that has it (issue #765: fork-wireless's 60-tick handler also calls
+  `fork-radiation`'s `M.tick()`); `devcheck.py check` fails for two registrations of one interval
+  (`check_tick_handlers`, which reads `control.lua` and `scripts/*.lua`). The scripts keep their state lazy (`storage.fork_molds`, `storage.fork_power`).
 - `data-final-fixes.lua` disables vanilla techs (`disable_tech`: hidden, no effects); issue #640: a vanilla technology
   behind a disabled one is disabled too (`FORK-UNRESEARCHABLE` in the log), so no technology stands in the tree that can
   never be researched. The main menu simulations that call
