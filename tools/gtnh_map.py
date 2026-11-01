@@ -88,6 +88,20 @@ PREFIX = {
 ORE_BLOCK = re.compile(r"^ore[A-Z]\w*$")
 #: prefixes of items that are fluid containers: the fluid they hold, 1000 L per item
 CELL = {"cell": "", "cellMolten": "molten.", "cellPlasma": "plasma."}
+#: issue #757: GT's litres in one cell: a fluid or plasma cell holds 1000 L, a molten cell one material unit (144 L per
+#: 3628800 of its material_amount, an ingot's worth)
+CELL_LITRES, MOLTEN_UNIT, MATERIAL_UNIT = 1000, 144, 3628800
+
+
+def cell_litres(mp, s):
+    """GT's litres in one cell of the stack `s` (an item id or an ore dictionary name)"""
+    if "id" in s:
+        it = mp.items.get(s["id"], {})
+        if it.get("prefix") == "cellMolten":
+            return MOLTEN_UNIT * (it.get("material_amount") or MATERIAL_UNIT) / MATERIAL_UNIT
+    elif s.get("ore", "").startswith("cellMolten"):
+        return MOLTEN_UNIT
+    return CELL_LITRES
 
 #: GT material (mName) -> Gregtorio material, where the names differ beyond case and hyphens; tools/gen_gt_parts.py's
 #: GT_NAME and tools/gen_gt_icons.py's MATERIALS are added at load time
@@ -497,7 +511,7 @@ def map_recipe(mp, r):
             ins[name] += n
             ids[("in", name)].add(key)
         elif kind == "fluid":
-            fl_in[name] += 1000 * n
+            fl_in[name] += cell_litres(mp, s) * n
         elif kind is None:
             bad.append(key)
     for s in r["out"]:
@@ -510,7 +524,7 @@ def map_recipe(mp, r):
             stacks[name].append((s["n"], chance))
             ids[("out", name)].add(s["id"])
         elif kind == "fluid":
-            fl_out[name] += 1000 * s["n"]
+            fl_out[name] += cell_litres(mp, s) * s["n"]
         elif kind is None:
             bad.append(s["id"])
     for key, dest in (("fin", fl_in), ("fout", fl_out)):
