@@ -146,7 +146,7 @@ local PLASMA_GENERATORS = {
 for _, g in ipairs(PLASMA_GENERATORS) do
 	local name = g[1] .. "-plasma-generator"
 	FORK_POWER.make_generator{ name = name, size = 3, power = POWER[g[1]], volume = 100, min_fuel = min_plasma,
-		effectivity = g[2], icon = ICON .. name .. ".png" }
+		effectivity = g[2], icon = ICON .. name .. ".png", idle = true }   -- idle sprite, working overlay (#768)
 	power_data.fuels[name] = plasmas
 	machine(name, { stack(g[3][1], g[3][2]), stack(g[4], 2), stack(g[5], 2), stack(g[6], 1), stack(g[7][1], g[7][2]) },
 		"helium-plasma")

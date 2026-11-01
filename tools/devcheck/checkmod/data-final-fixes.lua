@@ -314,7 +314,8 @@ section("ENGRAVERNOLENS", nl)
 --- Issue #335: the Manual Mine and Dig Site recipes, their electric twins (FORK_ELECTRIC_MINE.twins in
 --- prototypes/163-fork-electric-mine.lua; issue #337: FORK_ELECTRIC_MINE.miner_twins of the miners) and the ones without
 --- a twin on purpose (FORK_ELECTRIC_MINE_EXCLUDED); one row per name: name, "manual" or "-", the twin or "-", the
---- allow-list reason, the miners' twin or "-" (absent in older versions)
+--- allow-list reason, the miners' twin or "-" (absent in older versions); issue #758: the surface conditions of the
+--- recipe and of its twins when they differ, else ""
 local em, em_seen = {}, {}
 local function em_row(name)
 	if em_seen[name] then return end
@@ -323,8 +324,12 @@ local function em_row(name)
 	local r, twin, miner = data.raw.recipe[name], (fem.twins or {})[name], (fem.miner_twins or {})[name]
 	local cat = r and r.categories and r.categories[1]
 	local manual = cat == "manual-mine-recipes" or cat == "manual-digsite-recipes"
+	local function sc(x) return x and x.surface_conditions and serpent.line(x.surface_conditions) or "-" end
+	local own, t1, t2 = sc(r), sc(twin and data.raw.recipe[twin]), sc(miner and data.raw.recipe[miner])
+	local differ = (twin and t1 ~= own) or (miner and t2 ~= own)
 	em[#em + 1] = table.concat({ name, manual and "manual" or "-", (twin and data.raw.recipe[twin]) and twin or "-",
-		(FORK_ELECTRIC_MINE_EXCLUDED or {})[name] or "", (miner and data.raw.recipe[miner]) and miner or "-" }, "\t")
+		(FORK_ELECTRIC_MINE_EXCLUDED or {})[name] or "", (miner and data.raw.recipe[miner]) and miner or "-",
+		differ and (own .. " / " .. t1 .. " / " .. t2) or "" }, "\t")
 end
 for name, r in pairs(data.raw.recipe) do
 	local cat = r.categories and r.categories[1]
@@ -468,6 +473,10 @@ section("BLOCKDEADOK", bd)
 local gk = {}
 for recipe, why in pairs(FORK_GTNH_NUMBERS_KEPT or {}) do gk[#gk + 1] = recipe .. "\t" .. tostring(why or "") end
 section("GTNHKEPT", gk)
+--- Issue #724: the recipes that keep their tier below GT's, with their reasons
+local gtk = {}
+for recipe, why in pairs(FORK_GTNH_TIER_KEPT or {}) do gtk[#gtk + 1] = recipe .. "\t" .. tostring(why or "") end
+section("GTNHTIERKEPT", gtk)
 --- Issue #687 (prototypes/158-fork-gt-parts.lua): GT's part routes 158 left out (no technology after their inputs)
 local rs = {}
 for recipe, why in pairs((FORK_GT_PARTS or {}).routes_skipped or {}) do rs[#rs + 1] = recipe .. "\t" .. tostring(why) end
@@ -591,6 +600,8 @@ for n, r in pairs(data.raw.recipe) do
 		-- have it; `categories` all of them)
 		kind = "recipe", name = n, category = (r.categories or { "crafting" })[1], categories = r.categories or { "crafting" },
 		time = r.energy_required or 0.5,
+		-- (issue #759: the time before 168 set GT's, when it did)
+		own_time = FORK_GTNH_NUMBERS and FORK_GTNH_NUMBERS.own_time and FORK_GTNH_NUMBERS.own_time[n],
 		enabled = r.enabled ~= false, hidden = r.hidden == true,
 		ingredients = stacks(r.ingredients), results = stacks(r.results),
 	})
