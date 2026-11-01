@@ -1836,6 +1836,13 @@ def check_pgm_dusts(m):
             if name not in PGM_DUST_SOURCES[dust]:
                 out.append(f"{name} ({r['cat']}): makes {dust} outside the platinum line (GTNH: its powder or residue)")
     return out
+# Issue #760: every recipe of the quantum force transformer takes the focus plasma of #657 (139's FORK_QFT.focus)
+QFT_CATEGORY, QFT_FOCUS = "quantum-force-transformer-recipes", "neptunium-plasma"
+def check_qft_focus(m):
+    """Issue #760: every recipe of the QFT's category takes its focus plasma (139's qft_add adds it; a recipe written
+    elsewhere takes FORK_QFT.focus); returns (number of QFT recipes, problems)."""
+    names = sorted(n for n, r in m.R.items() if QFT_CATEGORY in r["cats"] and not r["hidden"])
+    return len(names), [f"{n}: no {QFT_FOCUS} (use FORK_QFT.focus)" for n in names if QFT_FOCUS not in m.R[n]["ing"]]
 # Issue #190: what a recycling recipe may give (prototypes/157-fork-recycling.lua)
 RECYCLE_PGM = {"metallic-platinum-powder", "metallic-palladium-powder", "iridium-metal-residue", "rarest-metal-mixture"}
 # issue #670: the dusts of prototypes/gt-parts-data.lua whose item name has no -dust (Gregtorio's antimony dust is antimony)
@@ -3027,6 +3034,7 @@ def check(a):
     o34_info, ore_o34 = check_ore_o3_o4(m)
     circuit_n, circuit_icons = check_circuit_icons(m)
     pgm_dusts = check_pgm_dusts(m)
+    qft_n, qft_focus = check_qft_focus(m)
     recycle_info, recycling = check_recycling(m, sec)
     print(f"\nseparator, gems and forge hammer of the ore chain (issues #187, #188): {o34_info}")
     report("separator, gem and forge hammer steps that differ from GTNH (prototypes/155-fork-ore-chain.lua)", ore_o34)
@@ -3037,6 +3045,9 @@ def check(a):
     print(f"\ncircuit variant recipes up to UV (issue #164): {circuit_n}")
     report("circuit recipes without their own icon (issue #164)", circuit_icons)
     report("platinum group dusts made outside the platinum line (issue #199)", pgm_dusts)
+    print(f"\nquantum force transformer recipes with the focus plasma (issue #760): {qft_n - len(qft_focus)} of {qft_n}")
+    report("QFT recipes without the focus plasma (issue #760: FORK_QFT.focus of prototypes/139-fork-endgame-multiblocks.lua)",
+           qft_focus)
     print(f"\nrecycling (issue #190): {recycle_info}")
     report("recycling recipes that differ from GTNH's rule (prototypes/157-fork-recycling.lua)", recycling)
     blocks_info, blocks = check_blocks(m, sec)
@@ -3108,7 +3119,7 @@ def check(a):
     ok = not (files or [s for s in sprites if not s.startswith("(")] or uncraft or menu or required or unresearchable
               or new_drafts or fluid_problems or locked or one_pack or fluid_steps or table_only or me_recipes or me_tab
               or extractor_split or ore_mixes or ore_chain or ore_baths or ore_o34 or ore_hammer
-              or circuit_icons or pgm_dusts or recycling or blocks or names or gaps or tree or vanilla or lenses or mine_twins
+              or circuit_icons or pgm_dusts or qft_focus or recycling or blocks or names or gaps or tree or vanilla or lenses or mine_twins
               or unplaceable or stale_unlocks or removed_keys or trigger_only or spoiling or classic_veins or early
               or furnace or research_counts or nyi_icons or overclock or maint or ebf_heat or radiation
               or steam or nugget or steam_rates or boiler_output or vein_doc or renames or gtnh_numbers or parts_recycling or part_routes or part_crafting or chemistry or metallurgy)
