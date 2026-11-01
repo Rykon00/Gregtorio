@@ -121,7 +121,7 @@ ITEMS = {
     "minecraft:glowstone_dust:0": "glowstone-dust", "minecraft:coal:0": "coal", "minecraft:coal:1": "charcoal",
     "minecraft:log:0": "wood", "minecraft:planks:0": "plank", "minecraft:stick:0": "stick",
     "minecraft:paper:0": "paper", "minecraft:string:0": "string", "minecraft:flint:0": "flint",
-    "minecraft:clay_ball:0": "clay", "minecraft:brick:0": "brick", "minecraft:ender_pearl:0": "ender-pearl",
+    "minecraft:clay_ball:0": "clay-ball", "minecraft:brick:0": "brick", "minecraft:ender_pearl:0": "ender-pearl",
     "minecraft:ender_eye:0": "ender-eye", "minecraft:blaze_powder:0": "blaze-powder", "minecraft:blaze_rod:0": "blaze-rod",
     "minecraft:nether_star:0": "nether-star", "minecraft:obsidian:0": "obsidian", "minecraft:netherrack:0": "netherrack",
     "minecraft:end_stone:0": "end-stone", "minecraft:soul_sand:0": "soul-sand", "minecraft:ice:0": "ice",

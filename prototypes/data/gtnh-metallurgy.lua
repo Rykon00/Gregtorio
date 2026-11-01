@@ -175,7 +175,7 @@ return {
 	{ "gt-alloy-brass-ingot-from-copper-dust-and-zinc-dust", cat = "lv-alloy-smelter-recipes", e = 10, i = { { "copper-dust", 3 }, { "zinc-dust", 1 } }, o = { { "brass-ingot", 4 } } },
 	{ "gt-alloy-brass-ingot-from-tetrahedrite-dust", cat = "lv-alloy-smelter-recipes", e = 7.5, i = { { "tetrahedrite-dust", 3 }, { "zinc-ingot", 1 } }, o = { { "brass-ingot", 3 } } },
 	{ "gt-alloy-brass-ingot-from-tetrahedrite-dust-and-zinc-dust", cat = "lv-alloy-smelter-recipes", e = 7.5, i = { { "tetrahedrite-dust", 3 }, { "zinc-dust", 1 } }, o = { { "brass-ingot", 3 } } },
-	{ "gt-alloy-brick-from-clay", cat = "lv-alloy-smelter-recipes", e = 10, i = { { "clay", 1 } }, o = { { "brick", 1 } }, mold = true },
+	{ "gt-alloy-brick-from-clay-ball", cat = "lv-alloy-smelter-recipes", e = 10, i = { { "clay-ball", 1 } }, o = { { "brick", 1 } }, mold = true },
 	{ "gt-alloy-bronze-ingot-from-annealed-copper-dust", cat = "lv-alloy-smelter-recipes", e = 10, i = { { "annealed-copper-dust", 3 }, { "tin-ingot", 1 } }, o = { { "bronze-ingot", 4 } } },
 	{ "gt-alloy-bronze-ingot-from-annealed-copper-dust-and-tin-dust", cat = "lv-alloy-smelter-recipes", e = 10, i = { { "annealed-copper-dust", 3 }, { "tin-dust", 1 } }, o = { { "bronze-ingot", 4 } } },
 	{ "gt-alloy-bronze-ingot-from-annealed-copper-ingot", cat = "lv-alloy-smelter-recipes", e = 10, i = { { "annealed-copper-ingot", 3 }, { "tin-dust", 1 } }, o = { { "bronze-ingot", 4 } } },
