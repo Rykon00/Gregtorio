@@ -40,7 +40,7 @@ GT_TIER = {"lv": "LV", "mv": "MV", "hv": "HV", "ev": "EV", "iv": "IV", "luv": "L
 # tier colour of the fork's machine casings (same as TIER_TINT in gen_sprites.py)
 TIER_TINT = {"iv": (100, 100, 160), "luv": (255, 205, 225), "zpm": (140, 225, 245), "uv": (130, 215, 140),
              "uhv": (235, 120, 120), "uev": (240, 200, 90), "uiv": (120, 150, 255), "umv": (190, 120, 235),
-             "uxv": (245, 245, 250), "max": (255, 255, 255)}
+             "uxv": (245, 245, 250), "max": (125, 125, 140)}
 
 M1 = "gt:gregtech/textures/items/gt.metaitem.01/"
 M3 = "gt:gregtech/textures/items/gt.metaitem.03/"
@@ -817,6 +817,13 @@ def icon_table(c):
         T[f"{tier}-machine-hull"] = lambda t=tier: c.hatch(t, "OVERLAY_ENERGY_OUT_{T}")
         T[f"{tier}-energy-hatch"] = lambda t=tier: c.hatch(t, "OVERLAY_ENERGY_IN_MULTI_2A_{T}")
         T[f"{tier}-dynamo-hatch"] = lambda t=tier: c.hatch(t, "OVERLAY_ENERGY_OUT_MULTI_2A_{T}")
+    # issue #770: the wireless hatches of #622 (173-fork-wireless.lua). The energy hatch is GT's MTEWirelessEnergy (the hull
+    # with OVERLAYS_ENERGY_ON_WIRELESS[tier]); the dynamo hatch is GT's wireless energy cover on the tier's dynamo hatch: the
+    # dynamo hatch with the cover (the hull with OVERLAYS_ENERGY_ON_WIRELESS[0], MetaGeneratedItem01) as a badge
+    for tier in ("uhv", "uev", "uiv", "umv", "uxv"):
+        T[f"{tier}-wireless-energy-hatch"] = lambda t=tier: c.hatch(t, "OVERLAY_ENERGY_ON_WIRELESS_{T}")
+        T[f"{tier}-wireless-dynamo-hatch"] = lambda t=tier: c.badge(c.hatch(t, "OVERLAY_ENERGY_OUT_MULTI_2A_{T}"),
+                                                                    c.hatch(t, "OVERLAY_ENERGY_ON_WIRELESS"))
     # issue #444: GT's battery hulls and batteries (IDMetaItem01: Battery_Hull_LV 500, HV 502, Battery_RE_* 517-539)
     for name, i in {"small-battery-hull": 500, "large-battery-hull": 502,
                     "small-cadmium-battery": 517, "small-lithium-battery": 518, "small-sodium-battery": 519,

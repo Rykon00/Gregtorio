@@ -135,6 +135,11 @@ with Jabel for Java 8 and finds the JDK 17 toolchain of the Zulu install above).
 2. Prism Launcher (`winget install PrismLauncher.PrismLauncher`): add the Microsoft account, Add Instance -> Import ->
    the zip. Instance settings -> Java: the Zulu 21 or 25, maximum memory 8192 MB.
 3. In the instance's `.minecraft/mods/` delete `NotEnoughItems-2.8.169-GTNH.jar` and copy the fork's jar there.
+   The jar built from an untagged commit carries the commit hash as its mod version (`d987255`), which FML reads as
+   lower than CodeChickenCore's `NotEnoughItems@[1.0.5,)`: Forge stops with "requires mod versions
+   [NotEnoughItems@[1.0.5,)]". Build with a version (`VERSION=2.8.170 gradlew.bat build ...`) or replace the 7
+   characters `d987255` by `2.8.170` in `codechicken/nei/NEIModContainer.class` and `mcmod.info` of the jar (same
+   length, so the class file stays valid; done for the dump of 2026-10-31).
 4. If the instance has a `.minecraft/recipeid/` folder from an earlier dump, delete it: the dump appends to its files.
 5. Start the game, create a single player world (creative, flat is enough) and wait until it is loaded. In the chat:
    `/recipeid dump`. The chat says `Start processing recipe handlers!` and, when done, `Finished processing recipe
@@ -145,6 +150,13 @@ with Jabel for Java 8 and finds the JDK 17 toolchain of the Zulu install above).
    name the field types the fork could not write).
 7. `python tools/gtnh_dump/nei_to_dump.py <the zip> --pack "GTNH daily 2026-10-28+804"` writes
    `gtnh-merged.json.gz` and its report `.devcheck/nei-to-dump.md`; then `python tools/devcheck/devcheck.py gtnh-diff`.
+
+The dump of 2026-10-31 (issue #717): 57,006 items in about 83 minutes, `recipeid/` 961 MB (28.7 MB zipped), 668,745
+lines. Merged: 201,792 recipes kept, 130,542 of them also in the GT5-Unofficial dump (74 with other numbers),
+71,244 added (`gtnh-merged.json.gz`, 3.3 MB). Two differences come from the sources, not from the converter: GT's NEI
+page of the cutting saw shows `gt.recipe.fakecuttingsaw` (one line per recipe), so the 6,203 recipes of
+`gt.recipe.cuttingsaw` (one per lubricant) stay GT5-Unofficial only; and recipes whose product the development
+environment does not have (an empty `out` in `gtnh-recipes.json.gz`) are added again from NEI with their product.
 
 ### The NEI format
 

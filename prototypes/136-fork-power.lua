@@ -270,7 +270,10 @@ end
 --- 1.23 GW). It is set so that the weakest accepted fuel still reaches the cap (issue #34): 1 up
 --- to the UHV turbine and for every naquadah reactor, 2 to 9 units for the UEV to UXV turbines.
 ---   def = { name, size, power, volume, icon, min_fuel (J per unit of the weakest accepted fuel),
----           effectivity (default 1; the steam turbines of 145 burn below and above 1) }
+---           effectivity (default 1; the steam turbines of 145 burn below and above 1),
+---           idle (issue #768: the picture is `<name>-idle.png`, and the sprite `fork-<name>-working` of
+---           `<name>-working.png` is drawn over it by scripts/fork-power.lua while the generator gives power, mod data
+---           `overlays`; a generator prototype has no working-only layer in 2.1) }
 --------------------------------------------------------------------------------
 
 --- "81.92MW" -> 81.92e6
@@ -283,9 +286,18 @@ local function make_generator(def)
 	local half = w / 2
 	local function anim()
 		return { layers = { {
-			filename = SPRITE_PATH .. def.name .. "-working.png",
+			filename = SPRITE_PATH .. def.name .. (def.idle and "-idle.png" or "-working.png"),
 			width = w * 32, height = w * 32, frame_count = 1, shift = { 0, 0 },
 		} } }
+	end
+	if def.idle then
+		data:extend({ {
+			type = "sprite", name = "fork-" .. def.name .. "-working",
+			filename = SPRITE_PATH .. def.name .. "-working.png", width = w * 32, height = w * 32,
+		} })
+		local md = data.raw["mod-data"]["fork-power"].data
+		md.overlays = md.overlays or {}
+		md.overlays[def.name] = "fork-" .. def.name .. "-working"
 	end
 	data:extend({ {
 		type = "generator",
