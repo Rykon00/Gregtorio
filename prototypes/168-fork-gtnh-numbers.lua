@@ -41,6 +41,7 @@ FORK_GTNH_TIER_KEPT = FORK_GTNH_TIER_KEPT or {}
 --- (generated from the unlock check of #724: a recipe whose product a recipe needs at that technology, before GT's tier's
 --- machine, with no other maker there; the universium parts make the UXV components the UXV machines need)
 for name, why in pairs({
+	["vibrant-crystal"] = "issues #724/#714: the merged NEI dump gives GT's IV tier, but ender-crystal and the EV Extreme Entity Crusher take it with production science, before the IV machines",
 	["dracofinium-ingot"] = "issue #724: GT runs it at UEV, but UEV Energy Hatches takes it and the UEV vacuum freezer needs that hatch",
 	["chromnorox-ingot"] = "issue #724: GT runs it at UIV, but UIV Energy Hatches takes it and the UIV vacuum freezer needs that hatch",
 	["hypocosmium-ingot"] = "issue #724: GT runs it at UMV, but UMV Energy Hatches takes it and the UMV vacuum freezer needs that hatch",

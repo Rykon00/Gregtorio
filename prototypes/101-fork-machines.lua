@@ -1134,10 +1134,9 @@ local BEFORE_MOLD = "the ingot mold needs steel (Steel Processing), as GTNH cast
 	.. "ingot recipe comes with "
 local function steam_dust(tech) return "; until then the steam macerator's impure dust smelts into an ingot (" .. tech .. ")" end
 FORK_NUGGETS_BEFORE_INGOTS = {
-	["steam-forge-hammer:copper-nugget"] = BEFORE_MOLD .. "Steel Processing" .. steam_dust("Steam Macerator"),
+	--- (copper and tin nuggets: the alloy smelter's bronze from nuggets of GTNH's full-pack dump takes them, #714)
 	["steam-forge-hammer:gold-nugget"] = BEFORE_MOLD .. "Steel Processing" .. steam_dust("Steam Macerator"),
 	["steam-forge-hammer:iron-nugget"] = BEFORE_MOLD .. "Steel Processing" .. steam_dust("Steam Macerator"),
-	["steam-forge-hammer:tin-nugget"] = BEFORE_MOLD .. "Steel Processing" .. steam_dust("Steam Macerator"),
 	--- Steel Processing is not among Reach the Nether's prerequisites; Rubber is the first technology with both
 	["reach-the-nether:beryllium-nugget"] = BEFORE_MOLD .. "Rubber" .. steam_dust("Reach the Nether"),
 	["reach-the-nether:molybdenum-nugget"] = BEFORE_MOLD .. "Rubber" .. steam_dust("Reach the Nether"),
