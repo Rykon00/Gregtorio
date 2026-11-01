@@ -6492,7 +6492,8 @@ end
 ---   * the reactor (kubatech/tileentity/gregtech/multiblock/MTEHighTempGasCooledReactor.java): with its 10000 balls
 ---     (full) and full helium it burns 10000 x 0.0014159 = 14.16 balls a cycle (here 14) in 20000 / exponent^2 ticks,
 ---     shortened by full IC2 coolant (7 % of the cycle a second, 5000 L a tick x energy multiplier, into hot coolant)
----     and full distilled water (3 %, 1000 L a tick x the multiplier, into 160 times the steam): about 9.9 s; energy
+---     and full distilled water (3 %, 1000 L a tick x the multiplier; GT makes 160 times that in steam, dropped here, #767:
+---     2.7M steam a cycle could not leave through a pipe and no GT machine here takes 15 °C steam): about 9.9 s; energy
 ---     multiplier = base x multiplier^exponent; 512000 L helium lose 0.05 % a cycle (256 L); 1536 EU/t (IV / 5, :175).
 ---     Fluids a tenth, as everywhere; its fluid boxes hold a cycle.
 ---   * the structure (MTE:105-165, its blocks counted; the recipes HTGRLoader.java:363-434): graphite moderator,
@@ -6575,7 +6576,7 @@ do
 		local water = math.floor(1000 * energy) * ticks / 10
 		step(R, names[4] .. "-burning", "htgr-recipes", ticks / 20, 1,
 			{ { names[4], 14 }, { "helium", 25.6 }, { "coolant", coolant }, { "distilled-water", water } },
-			{ { names[5], 14 }, { "hot-coolant", coolant }, { "steam", water * 160 } }, names[5])
+			{ { names[5], 14 }, { "hot-coolant", coolant } }, names[5])
 	end
 	--- the structure
 	step(RF, "beryllium-shielding-plate", "ev-assembling-machine-recipes", 30, EV_SPEED,
@@ -6604,7 +6605,7 @@ do
 	machine{
 		name = HTGR, category = "htgr-recipes", speed = 1, energy = "60kW", list = R,
 		ports = { port("input", N, { -1, -1 }), port("input", N, { 0, -1 }, 240000), port("input", N, { 1, -1 }, 50000),
-			port("output", S, { -1, 1 }, 240000), port("output", S, { 1, 1 }, 8000000) },
+			port("output", S, { -1, 1 }, 240000) },
 		recipe = { "crafting-or-assembling-recipes", 1, { item(HTGR .. "-controller", 1), item("iv-machine-casing", 23),
 			item("pressure-containment-casing", 272), item("graphite-moderator-casing", 162),
 			item("insulated-fluid-pipe-casing", 41), item("beryllium-integrated-reactor-casing", 273),
