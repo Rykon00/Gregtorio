@@ -589,6 +589,17 @@ def tier_speed(gr, gtr, g):
     return g.speed.get(gr["category"], 1) or 1
 
 
+def time_speeds(gr, gtr, g):
+    """the speeds a Gregtorio recipe's time may be written for: tier_speed, and (issue #759) for a recipe of a higher GT
+    tier in a lower tier's category also GT's tier's (164's steps write GT seconds x the speed of the recipe's own tier,
+    so that a machine of that tier takes GT's time; others keep GT seconds at their category's speed until #724)"""
+    speed = tier_speed(gr, gtr, g)
+    t = cat_tier(gr["category"])
+    if t and gtr.get("eut") and gr.get("family") not in NO_TIER_FAMILIES and gt_tier(gtr["eut"]) > TIERS.index(t):
+        return [speed, 2 ** gt_tier(gtr["eut"])]
+    return [speed]
+
+
 def compare(mapped, gr, gtr, g, scale):
     """differences between a GT recipe (mapped) and a Gregtorio recipe gr: list of strings"""
     out = []
@@ -626,11 +637,10 @@ def compare(mapped, gr, gtr, g, scale):
             if got and scale and abs(got / batch - l / scale) > max(1e-5, 1e-6 * l / scale):
                 out.append(f"{name} {io} {got / batch:g} (GT {l} L, map scale {scale:g})")
     if gtr.get("duration"):
-        speed = tier_speed(gr, gtr, g)
-        secs = (gr.get("time") or 0.5) / speed / batch
         gt_secs = gtr["duration"] / 20
-        if abs(secs - gt_secs) > 0.02 * gt_secs + 1e-9:
-            out.append(f"time {secs:g} s (GT {gt_secs:g} s)")
+        times = [(gr.get("time") or 0.5) / speed / batch for speed in time_speeds(gr, gtr, g)]
+        if all(abs(secs - gt_secs) > 0.02 * gt_secs + 1e-9 for secs in times):
+            out.append(f"time {times[0]:g} s (GT {gt_secs:g} s)")
     t = cat_tier(gr["category"])
     if t and gtr.get("eut") and TIERS.index(t) != gt_tier(gtr["eut"]):
         out.append(f"tier {t} (GT {TIERS[gt_tier(gtr['eut'])]}, {gtr['eut']} EU/t)")
@@ -880,7 +890,17 @@ def gt_numbers(mapped, c, r, g, amounts=True):
     if t:
         out["t"] = t
     if r.get("duration") and c["family"] not in NO_TIME_FAMILIES:
-        speed = 2 ** TIERS.index(t) if t else tier_speed(c, r, g)
+        if t:
+            speed = 2 ** TIERS.index(t)
+        else:
+            # (issue #759: of the speeds the recipe may be written for, the one its own time (before 168 set the table's,
+            # `own_time`) is written for: a recipe of a higher GT tier written for that tier, as 164's TRISO steps, keeps
+            # GT's tier's speed; else the category's speed)
+            speeds = time_speeds(c, r, g)
+            own = c.get("own_time") or c.get("time") or 0.5
+            gt_secs = r["duration"] / 20
+            fit = [s for s in speeds if abs(own / s / batch - gt_secs) <= 0.02 * gt_secs + 1e-9]
+            speed = (fit or speeds)[0]
         out["e"] = round(r["duration"] / 20 * speed * batch, 6)
     if amounts:
         out["i"] = {n: round(a * batch) for n, a in mapped["ins"].items()

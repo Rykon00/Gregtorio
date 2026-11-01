@@ -33,7 +33,9 @@ for _, cable in pairs({ "niobium-titanium", "vanadium-gallium", "naquadah", "naq
 		.. "or a pulp; Gregtorio's cable recipe takes 4 wires and its foils, the cable map is #690's"
 end
 
-FORK_GTNH_NUMBERS = { recipes = 0, tiers = 0, times = 0, amounts = 0, missing = {} }
+--- (issue #759: own_time, the energy_required a recipe had before this file set the table's, for devcheck's
+--- `--gtnh-numbers`: a recipe of a higher GT tier written for that tier keeps GT's tier's speed)
+FORK_GTNH_NUMBERS = { recipes = 0, tiers = 0, times = 0, amounts = 0, missing = {}, own_time = {} }
 
 local function tier_of(category)
 	for _, t in pairs(TIERS) do
@@ -62,6 +64,7 @@ for name, n in pairs(DATA) do
 			end
 		end
 		if n.e and r.energy_required ~= n.e then
+			FORK_GTNH_NUMBERS.own_time[name] = r.energy_required or 0.5
 			r.energy_required = n.e
 			FORK_GTNH_NUMBERS.times = FORK_GTNH_NUMBERS.times + 1
 		end
