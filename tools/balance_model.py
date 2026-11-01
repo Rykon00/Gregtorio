@@ -17,13 +17,19 @@ forge and the quantum force transformer (phase 6a) are only used with `dtpf=` (s
 magmatter, and the fusion recipes stay the default route of universium. The MAX reference factory (`max`) is the
 UXV one doubled, with godforges; the technologies with MAX packs (except `victory`) are counted in it, with the
 MAX pack from MAX parts (`max-science-pack-from-magmatter`) and magmatter from its fastest godforge recipe.
+
+Routes (issue #762): GT's recycling recipes (`recycling-*`, in ordinary categories) are no producers. GT's part tables
+(`gt-*`), melt/solidify, pile and nugget round trips, fusion transmutations, QFT and godforge byproducts, depleted rods
+and the crafting table (`detour`) are picked only when no other recipe makes an item; the magmatter routes of `--max`
+leave the round trips out (`routes`). Without this the model routed through recycled machines and cycles (stargate
+756 h, magmatter 0 GJ, `--dtpf` divided by zero).
 """
 import json, re, sys, collections, math
 
 TIERS = ["lv", "mv", "hv", "ev", "iv", "luv", "zpm", "uv", "uhv", "uev", "uiv", "umv", "uxv", "max"]
 TIER_RE = "(" + "|".join(TIERS) + ")-"
 TI = {t: i for i, t in enumerate(TIERS)}
-MK_SPEED = {1: 32, 2: 64, 3: 128, 4: 512, 5: 1024}
+MK_SPEED = {1: 32, 2: 64, 3: 256, 4: 512, 5: 1024}  # MK3 at UHV speed since issue #774 (before 128)
 FUSION_CAT = {  # category -> minimum MK
     "mk1-fusion-reactor-recipes": 1, "luv-fusion-reactor-recipes": 1,
     "mk2-fusion-reactor-recipes": 2, "zpm-fusion-reactor-recipes": 2,
@@ -91,6 +97,7 @@ class Model:
         self.usable = {n for n, r in self.R.items()
                        if (r["enabled"] or n in unlocked) and not r["hidden"]
                        and "recycling" not in r["category"] and not n.endswith("-recycling")
+                       and not n.startswith("recycling-")   # GT recycling (#670, #686) in ordinary categories
                        and r["category"] not in ("fluid-voiding-recipes",)
                        and (dtpf or r["category"] not in OPTIONAL_CATS)}
         self.producers = collections.defaultdict(list)
@@ -127,12 +134,31 @@ class Model:
             a = (stack.get("amount_min", 0) + stack.get("amount_max", 0)) / 2
         return a * (stack.get("probability") or 1)
 
+    def detour(self, r):
+        """a recipe of GT's part tables (#688, #691, #692, names `gt-*`), a melt/solidify/pile/nugget round trip, a
+        fusion transmutation, a QFT recipe (its byproducts are ore dusts), a godforge recipe of something the fusion
+        reactors make too (thorium plasma), a depleted fuel rod or the crafting table: taken only when nothing else
+        makes the item (issue #762)"""
+        return (r.startswith(("gt-", "melt-", "solidify-", "depleted-")) or "transmutation" in r
+                or re.search(r"-from-(small|tiny)-piles$|-from-nuggets$", r) is not None
+                or self.R[r]["category"] in ("crafting-table-recipes", "quantum-force-transformer-recipes",
+                                             "godforge-recipes"))
+
+    def routes(self, item):
+        """the recipes that make `item`, without round trips (melt, solidify, piles, nuggets) while another recipe
+        makes it (issue #762: melting a magmatter ingot is no magmatter route)"""
+        cands = self.producers.get(item, [])
+        def trip(r):
+            return r.startswith(("melt-", "solidify-")) or re.search(r"-from-(small|tiny)-piles$|-from-nuggets$", r)
+        return [r for r in cands if not trip(r)] or list(cands)
+
     def pick(self, item, stack):
         if item in self.overrides:
             return self.overrides[item]
         cands = list(self.producers.get(item, []))
         if not cands:
             return None
+        has_other = any(not self.detour(r) for r in cands)
         def score(r):
             rec = self.R[r]
             main = rec["results"][0]["name"] == item
@@ -141,7 +167,7 @@ class Model:
             cyc = bool(ing & set(stack)) or item in ing
             m = re.match("^" + TIER_RE, rec["category"])
             tier = TI[m.group(1)] if m else 0
-            return (cyc, not main, bootstrap, tier, len(rec["ingredients"]), r)
+            return (cyc, has_other and self.detour(r), not main, bootstrap, tier, len(rec["ingredients"]), r)
         return sorted(cands, key=score)[0]
 
     def work(self, item, stack=()):
@@ -236,7 +262,8 @@ def part_time(w, factory):
 
 
 # Reference factory per tier: one power unit = 12.5 large plasma turbines of the tier on helium plasma
-# (LuV 1 MK1, ZPM 1 MK2, UV 2 MK2, UHV 2 MK3, UEV 1 MK4, UIV 1 MK5, UMV 2 MK5, UXV 4 MK5).
+# (LuV 1 MK1, ZPM 1 MK2, UV 2 MK2, UHV 1 MK3, UEV 1 MK4, UIV 1 MK5, UMV 2 MK5, UXV 4 MK5; the UHV unit was 2 MK3
+# before issue #774 made the MK3 twice as fast).
 # Metal reactors: twice the power reactors of the newest MK plus 2 of the MK before.
 def fac(power, fusion, lines, vats, plants, dtpf=0, godforge=0):
     return {"power": power, "fusion": fusion,
@@ -247,13 +274,15 @@ FACTORY = {
     "luv": fac({1: 1}, {1: 2},       1, 4, 1),
     "zpm": fac({2: 1}, {2: 2, 1: 2}, 2, 4, 1),
     "uv":  fac({2: 2}, {2: 4, 1: 2}, 2, 8, 2),
-    "uhv": fac({3: 2}, {3: 4, 2: 2}, 2, 8, 2),
+    "uhv": fac({3: 1}, {3: 2, 2: 2}, 2, 8, 2),
     "uev": fac({4: 1}, {4: 2, 3: 2}, 4, 16, 4),
     "uiv": fac({5: 1}, {5: 2, 4: 2}, 4, 16, 4),
     "umv": fac({5: 2}, {5: 4, 4: 2}, 8, 32, 8),
-    "uxv": fac({5: 4}, {5: 8, 4: 2}, 8, 32, 8),
+    # issue #772: 96 bacterial vats at UXV (32 before): GTNH's radox polymer of the UXV conveyor modules is about 975
+    # vat-hours per stargate; with 32 vats they, not fusion, set the stargate's time (30.4 h instead of 10.6)
+    "uxv": fac({5: 4}, {5: 8, 4: 2}, 8, 96, 8),
     # phase 6b: the UXV unit doubled (8 MK5 of power: 12.5 MAX turbines) with 4 godforges (2.62 GW each, 4 %)
-    "max": fac({5: 8}, {5: 16, 4: 2}, 16, 64, 16, godforge=4),
+    "max": fac({5: 8}, {5: 16, 4: 2}, 16, 192, 16, godforge=4),
 }
 
 
@@ -345,7 +374,7 @@ def max_overrides(f):
     if not m.producers.get(MAGMATTER):
         return {}  # a dump from before phase 6b
     best = min((part_time(Model(f, "max", {MAGMATTER: r}).work(MAGMATTER), FACTORY["max"])[0], r)
-               for r in m.producers.get(MAGMATTER, []))
+               for r in m.routes(MAGMATTER))
     return {"max-science-pack": "max-science-pack-from-magmatter", MAGMATTER: best[1]}
 
 
@@ -353,7 +382,7 @@ def compare_max(f):
     """phase 6b: magmatter per metal, universium through the fusion reactors and the godforge"""
     out = {"magmatter": {}, "universium": {}}
     base = Model(f, "max")
-    for r in base.producers.get(MAGMATTER, []):
+    for r in base.routes(MAGMATTER):
         w = Model(f, "max", {MAGMATTER: r}).work(MAGMATTER)
         t, b, _ = part_time(w, FACTORY["max"])
         out["magmatter"][r] = {"time_ingot": t * INGOT, "bottleneck": b, "gj_ingot": energy(w) * INGOT}
