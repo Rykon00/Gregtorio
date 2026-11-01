@@ -335,7 +335,7 @@ local dtpf_max = {
 }
 local harmony = max_recipe("temporal-harmony", QFT_CAT, 20,
 	{ item("block-of-universium", 1), item("max-field-generator", 1), fluid("raw-star-matter", 115.2),
-	  fluid("nitrogen-plasma", 100) },
+	  fluid(FORK_QFT.focus, 100) },   -- issue #760: the QFT focus of #657, as in every other QFT recipe
 	{ item("timepiece", 1), fluid("molten-eternity", 921.6), fluid(TIME, 1843.2) })
 
 F.tech{
