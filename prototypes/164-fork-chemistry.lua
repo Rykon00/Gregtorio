@@ -6888,6 +6888,42 @@ do
 end
 
 --------------------------------------------------------------------------------
+--- 62) BIO LINES, ENDGAME BLOCKS AND RECYCLING (issue #784). Left out on purpose (named in the pull request): bartworks'
+---   bacterial vat rows of mysterious crystal and infinity catalyst (the dump has them without their culture and at the
+---   vat's per-glass-tier base amounts, 8 L of water into 2 L of sludge; Gregtorio's vat recipe stands for the line),
+---   the recycling of Galacticraft's raw silicon (it maps onto Gregtorio's raw silicon, see #783) and of the et futurum
+---   barrel (it maps onto the vanilla fluid barrel), and the recycling of GT++'s advanced boiler chassis T1 and T2 into
+---   GT's materials (#686: a component recycles into what Gregtorio's own recipe puts into it).
+--------------------------------------------------------------------------------
+do
+	local R = {}
+	--- the brewery's biomass from wheat, seaweed and Forestry's compost, and enriched bacterial sludge (GT's brewer)
+	nei_step(R, "biomass-from-wheat", "lv-brewery-recipes", 8, LV_SPEED, { { "wheat", 1 }, { "water", 2 } }, { { "biomass", 2 } })
+	nei_step(R, "biomass-from-seaweed", "lv-brewery-recipes", 8, LV_SPEED, { { "seaweed", 1 }, { "water", 2 } }, { { "biomass", 2 } })
+	nei_step(R, "biomass-from-compost", "lv-brewery-recipes", 6.4, LV_SPEED, { { "compost", 4 }, { "water", 75 } },
+		{ { "biomass", 75 } })
+	nei_step(R, "enriched-bacterial-sludge-from-uranium-235", "lv-brewery-recipes", 6.4, LV_SPEED,
+		{ { "tiny-pile-of-uranium-235-dust", 1 }, { "bacterial-sludge", 75 } }, { { "enriched-bacterial-sludge", 75 } })
+	--- the pyrolyse oven's biomass from compost (circuit 1; the oven's own speed, as its biomass from bio chaff)
+	nei_step(R, "biomass-from-compost-pyrolyse", "pyrolyse-oven-recipes",
+		data.raw.recipe["biomass"].energy_required, 1, { { "compost", 4 }, { "water", 400 } }, { { "biomass", 500 } })
+	--- the vacuum freezer cools IC2's hot coolant back without making steam
+	nei_step(R, "coolant-from-hot-coolant", "mv-vacuum-freezer-recipes", 10, MV_SPEED, { { "hot-coolant", 100 } },
+		{ { "coolant", 100 } })
+	--- the macerator: the lapotron crystal back into its 30 lapotron dust, sunnarium and the mysterious crystal
+	nei_step(R, "lapotron-dust-from-lapotron-crystal", "lv-macerator-recipes", 15, LV_SPEED, { { "lapotron-crystal", 1 } },
+		{ { "lapotron-dust", 30 } })
+	nei_step(R, "sunnarium-dust-from-sunnarium", "lv-macerator-recipes", 15, LV_SPEED, { { "sunnarium", 1 } },
+		{ { "sunnarium-dust", 1 } })
+	nei_step(R, "mysterious-crystal-dust-from-gem", "lv-macerator-recipes", 15, LV_SPEED, { { "mysterious-crystal-gem", 1 } },
+		{ { "mysterious-crystal-dust", 9 } })
+	--- GT's bedrockium ingot from its dust in the ZPM assembler (circuit 1)
+	nei_step(R, "bedrockium-ingot-from-dust", "zpm-assembling-machine-recipes", 0.05, ZPM_SPEED,
+		{ { "bedrockium-dust", 9 } }, { { "bedrockium-ingot", 1 } })
+	nei_unlock(R)
+end
+
+--------------------------------------------------------------------------------
 --- 38) GT'S PARTS OF THE METALS OF THIS FILE (issue #467). 158 makes GT New Horizons' parts of every metal of
 ---   prototypes/gt-parts-data.lua (issue #227) whose ingot exists; most metals of this file come after 158, so its
 ---   FORK_GT_PARTS.run() runs once more here (it skips what exists), then 143's casts for the new forms.
