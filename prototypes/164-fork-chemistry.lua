@@ -5487,6 +5487,8 @@ do
 		prerequisites = { "froth-processing", "prismatic-naquadah", "precise-electronic-unit-mk3", "uhv-machines" },
 	}
 	fork_add_unlock(NT, "mining-ancient-debris")
+	--- issue #758: and its Ore Drilling Plant and Miner twins (163 gave them the Mk I's and the LV Miner's technology)
+	FORK_ELECTRIC_MINE.move_twins("mining-ancient-debris", NT)
 	--- (blaze powder, for the hellish metal, came only with Naquadah Based Fuel MK5 (section 34); GT macerates it at LV)
 	fork_add_unlock(NT, "blaze-powder")
 	--- the users

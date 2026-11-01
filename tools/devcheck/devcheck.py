@@ -905,7 +905,7 @@ def check_electric_mine(m, sec):
     ingredients, category electric-mine-recipes) and (issue #337) one for the Miners (category miner-recipes, the same
     results, mining pipes as the ingredient), unless it is in the allow-list FORK_ELECTRIC_MINE_EXCLUDED with its reason (section
     ELECTRICMINE); an entry that is no such recipe or has a twin fails too. Returns (info line, problems)."""
-    rows = [r + [""] * (5 - len(r)) for r in sec.get("ELECTRICMINE", [])]
+    rows = [r + [""] * (6 - len(r)) for r in sec.get("ELECTRICMINE", [])]
     manual = [r for r in rows if r[1] == "manual"]
     problems = [f"{r[0]}: a Manual Mine or Dig Site recipe without an electric twin (163 makes one for a mining-<vein> "
                 "recipe it sees, or add it to FORK_ELECTRIC_MINE_EXCLUDED with its reason)"
@@ -914,6 +914,29 @@ def check_electric_mine(m, sec):
                  if r[2] != "-" and r[4] in ("", "-")]
     problems += [f"FORK_ELECTRIC_MINE_EXCLUDED: {r[0]} " + ("is not a Manual Mine or Dig Site recipe" if r[1] != "manual"
                  else f"has the twin {r[2]}") + " (remove the entry)" for r in rows if r[3] and (r[1] != "manual" or r[2] != "-")]
+    # issue #758: a twin runs where its recipe runs (the same surface conditions) and comes with its recipe's technology
+    # or a later one (one that has it among its prerequisites)
+    problems += [f"{r[0]}: its twins' surface conditions differ (recipe / Ore Drilling Plant twin / Miner twin: {r[5]})"
+                 for r in manual if r[5]]
+    unlocked = {}
+    for t, v in m.T.items():
+        for e in v["eff"]:
+            unlocked.setdefault(e, []).append(t)
+    closure = {}
+    def before(t):
+        if t not in closure:
+            closure[t] = {t}
+            for p in m.T.get(t, {}).get("pre", []):
+                closure[t] |= before(p)
+        return closure[t]
+    for r in manual:
+        own = unlocked.get(r[0], [])
+        if not own:
+            continue
+        for twin in (r[2], r[4]):
+            for t in unlocked.get(twin, []):
+                if not any(o in before(t) for o in own):
+                    problems.append(f"{twin}: unlocked by {t}, before the technology of {r[0]} ({', '.join(sorted(own))})")
     for r in manual:
         if r[0] not in m.R:
             continue
