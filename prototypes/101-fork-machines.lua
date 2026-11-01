@@ -551,6 +551,10 @@ end
 --------------------------------------------------------------------------------
 
 recipe_category_and_subgroup("lv-thermal-centrifuge-recipes")
+--- issue #724 (the maintainer's decision): GT New Horizons runs every ore's thermal centrifuge step at 48 EU/t, MV; those
+--- recipes move to this category (prototypes/168-fork-gtnh-numbers.lua), which the MV and higher machines run, so the LV
+--- machine keeps only what GT runs at LV
+recipe_category_and_subgroup("mv-thermal-centrifuge-recipes")
 do
 	local TCS = {
 		--  tier  path                      energy    speed  cable             circuit               coil                tech
@@ -562,7 +566,7 @@ do
 	for _, a in ipairs(TCS) do
 		local t, path, energy, speed, cable, circuit, coil, tech = table.unpack(a)
 		local name = t .. "-thermal-centrifuge"
-		make_electric_machine(name, name, path, { "lv-thermal-centrifuge-recipes" }, "fr-thermal-centrifuge", energy, speed, 1, 0.5, 3, 3)
+		make_electric_machine(name, name, path, tier_categories("thermal-centrifuge-recipes", t), "fr-thermal-centrifuge", energy, speed, 1, 0.5, 3, 3)
 		create_item{
 			name = name,
 			subgroup = t .. "-age-production-machine",
