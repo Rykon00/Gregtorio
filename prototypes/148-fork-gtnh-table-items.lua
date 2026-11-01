@@ -194,6 +194,9 @@ do
 				main_product = usage,
 			}
 			if data.raw.item[usage] then create_recipe(def) else create_item(def) end
+			--- issue #764: the crafting menu chains a missing charge through one recipe of the usage item, the steel one once
+			--- it is unlocked (most charges), and then crafts nothing without steel: only the iron tool is an intermediate
+			if m ~= "iron" then data.raw.recipe[recipe].allow_as_intermediate = false end
 			local tech = TECH[m]
 			if tool[1] == "wire-cutter" and m ~= "iron" then tech = screw_tech(m) or tech end
 			fork_add_unlock(tech, recipe)

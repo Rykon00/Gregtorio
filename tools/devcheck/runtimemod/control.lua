@@ -261,6 +261,8 @@ local PW = {
 	turbine = { "luv-large-plasma-turbine", 1.5, PW_Y + 1.5, "helium-plasma", 100, 81.92e6 },
 	hatch = { "turbine-output-hatch", 3.5, PW_Y + 1.5 },
 	reactor = { "uv-large-naquadah-reactor", 42.5, PW_Y + 2.5, "naquadah-based-fuel-mk1", 10, 327.68e6 },
+	--- issue #768: the single-block plasma generator is drawn idle and gets its working picture while it gives power
+	plasma = { "ev-plasma-generator", 22.5, PW_Y + 1.5, "helium-plasma", 100, 5.12e6 },
 }
 
 function setup_power_test(s)
@@ -272,7 +274,7 @@ function setup_power_test(s)
 		if not (ok and e) then fails[#fails + 1] = "power test " .. def[1] .. ": " .. tostring(e) return nil end
 		return e
 	end
-	for _, key in pairs({ "turbine", "reactor" }) do
+	for _, key in pairs({ "turbine", "reactor", "plasma" }) do
 		local def = PW[key]
 		local g = place(def)
 		if g then
@@ -321,6 +323,14 @@ script.on_nth_tick(PW_TICK, function(event)
 		local fuel_burnt = PW.reactor[5] - fuel_left
 		expect(reactor.energy_generated_last_tick > 0, "naquadah reactor generates nothing")
 		expect(fuel_burnt > 0.003 * seconds and fuel_burnt < 0.007 * seconds, "naquadah reactor burnt " .. fuel_burnt .. " fuel in " .. seconds .. " s")
+		--- issue #768: the running plasma generator shows its working picture (a render object of fork-power)
+		local plasma = find(PW.plasma)
+		expect(plasma and plasma.energy_generated_last_tick > 0, "EV plasma generator generates nothing")
+		local shown = false
+		for _, o in pairs(rendering.get_all_objects("gregtorio-continued")) do
+			if o.valid and o.target and o.target.entity == plasma and o.visible then shown = true end
+		end
+		expect(shown, "the running EV plasma generator shows no working picture (#768)")
 		summary = string.format(" (turbine %.2f plasma -> %.2f helium, %.1f MW; reactor %.4f fuel, %.1f MW)",
 			burnt, helium, turbine.energy_generated_last_tick * 60 / 1e6, fuel_burnt, reactor.energy_generated_last_tick * 60 / 1e6)
 	end
@@ -876,7 +886,7 @@ local RT = {
 	{ "lv-chemical-bath", "paper-chemical-bath" },
 	-- issue #185 (prototypes/155-fork-ore-chain.lua): GTNH's ore chain for iron, the thermal centrifuge, a new byproduct dust
 	{ "lv-ore-washer", "purified-iron" },
-	{ "lv-thermal-centrifuge", "centrifuged-iron" },
+	{ "mv-thermal-centrifuge", "centrifuged-iron" },   -- (issue #724: GT runs it at MV)
 	{ "iv-thermal-centrifuge", "centrifuged-copper-from-crushed" },
 	{ "lv-macerator", "impure-iron-dust" },
 	{ "lv-macerator", "centrifuged-iron-maceration" },
@@ -962,10 +972,10 @@ local RT = {
 	{ "lv-fluid-solidifier", "solidify-steel-gear" },
 	{ "lv-fluid-solidifier", "solidify-large-steel-gear" },
 	{ "lv-fluid-solidifier", "solidify-steel-rotor" },
-	{ "lv-fluid-solidifier", "solidify-steel-rod" },
-	{ "lv-fluid-solidifier", "solidify-long-steel-rod" },
+	{ "mv-fluid-solidifier", "solidify-steel-rod" },   -- (issue #724: GT runs the rods and rings at MV)
+	{ "mv-fluid-solidifier", "solidify-long-steel-rod" },
 	{ "lv-fluid-solidifier", "solidify-steel-bolt" },
-	{ "lv-fluid-solidifier", "solidify-tin-ring" },
+	{ "mv-fluid-solidifier", "solidify-tin-ring" },
 	{ "lv-fluid-solidifier", "solidify-steel-screw" },
 	{ "ev-fluid-solidifier", "solidify-soularium-round" },
 	{ "lv-fluid-extractor", "melt-steel-ingot" },
@@ -1012,7 +1022,7 @@ local RT = {
 	{ "hv-large-chemical-reactor", "reprecipitated-palladium-processing" },
 	{ "lv-ore-washer", "crushed-platinum-washing" },
 	-- the residue branches (rhodium, ruthenium, osmium, iridium)
-	{ "lv-chemical-reactor", "potassium-disulfate" },
+	{ "mv-chemical-reactor", "potassium-disulfate" },   -- (issue #724: MV in GT)
 	{ "mv-electric-blast-furnace", "platinum-group-residue-processing" },
 	{ "hv-large-chemical-reactor", "rhodium-sulfate-processing" },
 	{ "hv-large-sifter", "rhodium-filter-cake" },
@@ -1255,7 +1265,7 @@ local OL = {
 	--  machine                  recipe it must pick              input (from station)  the product it passes on
 	{ "lv-macerator",          "crushed-iron",                  { "raw-iron", 2 },     "crushed-iron" },
 	{ "lv-ore-washer",         "purified-iron",                 { from = 1, take = 1 }, "purified-iron", water = true },
-	{ "lv-thermal-centrifuge", "centrifuged-iron",              { from = 2, take = 1 }, "centrifuged-iron" },
+	{ "mv-thermal-centrifuge", "centrifuged-iron",              { from = 2, take = 1 }, "centrifuged-iron" },   -- (#724: MV)
 	{ "lv-macerator",          "centrifuged-iron-maceration",   { from = 3, take = 1 }, "iron-dust" },
 	{ "lv-macerator",          "impure-iron-dust",              { from = 1, take = 1 }, "impure-iron-dust" },
 	{ "lv-centrifuge",         "centrifuging-impure-iron-dust", { from = 5, take = 1 }, "iron-dust" },
@@ -3115,7 +3125,7 @@ function setup_melt_test(s)
 			if molds and molds.data[recipe] then e.get_module_inventory().insert{ name = molds.data[recipe] } end
 			return e
 		end
-		st.extractor = machine("lv-fluid-extractor", CT_X + 6, "melt-iron-ingot")
+		st.extractor = machine("mv-fluid-extractor", CT_X + 6, "melt-iron-ingot")   -- (issue #724: GT melts iron at MV)
 		st.block = machine("lv-fluid-solidifier", CT_X + 12, "solidify-block-of-iron")
 		st.ingot = machine("lv-fluid-solidifier", CT_X + 18, "solidify-iron-ingot")
 		st.extractor.insert{ name = "iron-ingot", count = 10 }
