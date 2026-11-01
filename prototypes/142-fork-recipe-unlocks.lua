@@ -856,6 +856,43 @@ FORK_UNLOCK_TREE.keep = {
 	["molybdenum-dust-pbf-charcoal"] = "bending-machine",
 	["molybdenum-dust-pbf-coke"] = "bending-machine",
 }
+--- issue #742: the blast furnace recipes whose GT heat (prototypes/data/gtnh-ebf-heat.lua) no blast furnace has where 155/158
+--- unlocked them go to the first technology whose coil (in a furnace of their category, 100 K per tier above MV) reaches it;
+--- their products have other producers there or their consumers follow (devcheck's tree check). The recipe: its technology
+FORK_UNLOCK_TREE.heat = {
+	["gt-blast-dark-steel-ingot-from-dark-steel-dust"] = "kanthal-coils",   -- 2200 K (was mv-machines)
+	["gt-blast-end-steel-ingot-from-end-steel-dust-with-helium"] = "rtm-alloy-coils",   -- 4500 K (was ev-machines)
+	["gt-blast-end-steel-ingot-from-end-steel-dust-with-krypton"] = "rtm-alloy-coils",   -- 4500 K (was ev-machines)
+	["gt-blast-end-steel-ingot-from-end-steel-dust-with-neon"] = "rtm-alloy-coils",   -- 4500 K (was ev-machines)
+	["gt-blast-end-steel-ingot-from-end-steel-dust-with-nitrogen"] = "rtm-alloy-coils",   -- 4500 K (was ev-machines)
+	["gt-blast-end-steel-ingot-from-end-steel-dust-with-radon"] = "rtm-alloy-coils",   -- 4500 K (was ev-machines)
+	["gt-blast-end-steel-ingot-from-end-steel-dust-with-xenon"] = "rtm-alloy-coils",   -- 4500 K (was ev-machines)
+	["gt-blast-energetic-alloy-ingot-from-energetic-alloy-dust"] = "kanthal-coils",   -- 2500 K (was mv-components)
+	["gt-blast-energetic-alloy-ingot-from-energetic-alloy-dust-with-hydrogen"] = "kanthal-coils",   -- 2200 K (was mv-components)
+	-- (its crafting table parts follow it to Energetic Alloy, whose alloy smelter makes the ingot: they were with MV Components
+	-- only because the blast furnace recipe was)
+	["energetic-alloy-nugget-crafting-table"] = "energetic-alloy",
+	["energetic-alloy-plate-crafting-table"] = "energetic-alloy",
+	["energetic-alloy-rod-crafting-table"] = "energetic-alloy",
+	["gt-blast-hot-chromnorox-ingot-from-chromnorox-dust-with-oganesson"] = "large-hadron-collider",   -- 12700 K (was dimensionally-shifted-superfluid)
+	["gt-blast-hot-hypocosmium-ingot-from-hypocosmium-dust-with-helium"] = "umv-multiblocks",   -- 13600 K (was umv-energy-hatches)
+	["gt-blast-hot-hypocosmium-ingot-from-hypocosmium-dust-with-nitrogen"] = "umv-multiblocks",   -- 13600 K (was umv-energy-hatches)
+	["gt-blast-hot-hypocosmium-ingot-from-hypocosmium-dust-with-oganesson"] = "gravitational-lens",   -- 13600 K (was large-hadron-collider)
+	["gt-blast-hot-hypocosmium-ingot-from-hypocosmium-dust-with-radon"] = "umv-multiblocks",   -- 13600 K (was umv-energy-hatches)
+	["gt-blast-hot-itbtc-alloy-ingot-from-itbtc-alloy-dust-with-helium"] = "fusion-reactor-mk2",   -- 6000 K (was crystal-processor-mainframes)
+	["gt-blast-hot-itbtc-alloy-ingot-from-itbtc-alloy-dust-with-nitrogen"] = "fusion-reactor-mk2",   -- 6000 K (was crystal-processor-mainframes)
+	["gt-blast-hot-itbtc-alloy-ingot-from-itbtc-alloy-dust-with-radon"] = "fusion-reactor-mk2",   -- 6000 K (was crystal-processor-mainframes)
+	["gt-blast-quicklime-from-gypsum"] = "nichrome-coils",   -- 3200 K (was kanthal-coils)
+	["hot-enriched-naquadah-ingot"] = "zpm-energy-hatches",   -- 7500 K (was enriched-naquadah)
+	["hot-hypocosmium-ingot"] = "umv-multiblocks",   -- 13600 K (was umv-energy-hatches)
+	["hot-hypocosmium-ingot-krypton"] = "umv-multiblocks",   -- 13600 K (was umv-energy-hatches)
+	["hot-hypocosmium-ingot-neon"] = "umv-multiblocks",   -- 13600 K (was umv-energy-hatches)
+	["hot-hypocosmium-ingot-xenon"] = "umv-multiblocks",   -- 13600 K (was umv-energy-hatches)
+	["hot-itbtc-alloy-ingot"] = "fusion-reactor-mk2",   -- 6000 K (was crystal-processor-mainframes)
+	["hot-itbtc-alloy-ingot-krypton"] = "fusion-reactor-mk2",   -- 6000 K (was crystal-processor-mainframes)
+	["hot-itbtc-alloy-ingot-neon"] = "fusion-reactor-mk2",   -- 6000 K (was crystal-processor-mainframes)
+	["hot-itbtc-alloy-ingot-xenon"] = "fusion-reactor-mk2",   -- 6000 K (was crystal-processor-mainframes)
+}
 function FORK_UNLOCK_TREE.apply(final)
 	for tech, pres in pairs(FORK_UNLOCK_TREE.prerequisites) do
 		for _, p in pairs(pres) do
@@ -867,7 +904,7 @@ function FORK_UNLOCK_TREE.apply(final)
 		end
 	end
 	if not final then return end
-	for recipe, tech in pairs(FORK_UNLOCK_TREE.keep) do
+	for _, list in pairs({ FORK_UNLOCK_TREE.keep, FORK_UNLOCK_TREE.heat }) do for recipe, tech in pairs(list) do
 		for _, t in pairs(data.raw.technology) do
 			local keep = {}
 			for _, e in pairs(t.effects or {}) do
@@ -877,7 +914,7 @@ function FORK_UNLOCK_TREE.apply(final)
 		end
 		if not data.raw.recipe[recipe] then error("142-fork-recipe-unlocks: no recipe " .. recipe) end
 		fork_add_unlock(tech, recipe)
-	end
+	end end
 end
 FORK_UNLOCK_TREE.apply()
 --- issue #337 (163): the miners' twins of the veins, after the moves above and the prerequisites (a vein before the LV
