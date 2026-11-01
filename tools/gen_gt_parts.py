@@ -340,6 +340,8 @@ def main():
              "--- Werkstoff), GT mass, dust item, tier (gt and bw: the processing voltage, nil: each recipe's own; gtpp: the",
              "--- voltage of the melting point), blast furnace temperature (bw: the melting point), the forms GT generates",
              "--- (158 makes those Gregtorio lacks, and since issue #674 the dust) }",
+             # issue #734: devcheck compares the metals (ingots) of a run with the rows and this list
+             "--- no GT, GT++ or Werkstoff source: " + ", ".join(m for m, _ in skipped),
              "return {"]
     for m, source, label, mass, dust, tier, forms, temp, _ in rows:
         fl = ", ".join('"%s"' % f for f in forms)

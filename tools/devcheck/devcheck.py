@@ -1909,6 +1909,27 @@ def check_blocks(m, sec):
                  "has no recycler; data-final-fixes.lua deletes them)" for r in left]
     return f"{len(material)} material blocks, {len(reach)} reachable, {len(dead)} that no recipe takes, {len(allow)} of " \
            f"them on purpose (FORK_BLOCKS_DEAD_END); {len(left)} recycler recipes left", problems
+
+
+def check_parts_data(sec):
+    """Issue #734 (prototypes/gt-parts-data.lua, written by tools/gen_gt_parts.py): every metal of the run (an item
+    <metal>-ingot, not hot-) is a row of the data file or in its line "no GT, GT++ or Werkstoff source", the way the tool
+    picks them; a new metal fails until the tool is run again. Returns (info line, problems)."""
+    text = (ROOT / "prototypes" / "gt-parts-data.lua").read_text(encoding="utf-8")
+    rows = set(re.findall(r'^\t\["([a-z0-9-]+)"\] = ', text, re.M))
+    line = re.search(r"^--- no GT, GT\+\+ or Werkstoff source: (.*)$", text, re.M)
+    skipped = {s.strip() for s in line.group(1).split(",") if s.strip()} if line else set()
+    items = {r[1] for r in sec.get("DUMP", []) if r[0] == "I"}
+    metals = {n[:-len("-ingot")] for n in items if n.endswith("-ingot") and not n.startswith("hot-")}
+    problems = [f"{x}: a metal (an ingot) that gt-parts-data.lua does not list (run `python tools/gen_gt_parts.py "
+                "--gt <GT5-Unofficial>` after a check)" for x in sorted(metals - rows - skipped)]
+    problems += [f"{x}: listed in gt-parts-data.lua but no ingot in this run (run tools/gen_gt_parts.py)"
+                 for x in sorted((rows | skipped) - metals)]
+    if not line:
+        problems.append("gt-parts-data.lua has no line \"no GT, GT++ or Werkstoff source\" (run tools/gen_gt_parts.py)")
+    return f"{len(metals)} metals, {len(rows)} rows, {len(skipped)} without a GT, GT++ or Werkstoff source", problems
+
+
 def check_extractor_split(m):
     """Issue #152 (prototypes/151-fork-fluid-extractor.lua): as in GTNH, the Extractor makes items and the Fluid Extractor
     fluids. A recipe of an extractor category with a fluid result, or of a fluid extractor category without one, is in
@@ -3043,6 +3064,9 @@ def check(a):
     print(f"\nmaterial blocks and Space Age's recycling (issue #670): {blocks_info}")
     report("material blocks that no recipe takes, and recipes of the recycler (prototypes/157-fork-recycling.lua, "
            "data-final-fixes.lua)", blocks)
+    parts_data_info, parts_data = check_parts_data(sec)
+    print(f"\nGT's parts data (issue #734): {parts_data_info}")
+    report("metals that prototypes/gt-parts-data.lua does not match (tools/gen_gt_parts.py)", parts_data)
     extractor_split = check_extractor_split(m)
     report("extractor recipes in the wrong machine (issue #152: items in the Extractor, fluids in the Fluid Extractor)",
            extractor_split)
