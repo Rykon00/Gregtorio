@@ -277,6 +277,9 @@ end
 ---    from IV_BASIC_MACHINES below.
 --------------------------------------------------------------------------------
 
+--- issue #724 (the maintainer's decision): the forge hammer's recipes of a higher GT tier move to that tier's category
+--- (prototypes/168-fork-gtnh-numbers.lua); every electric hammer runs the categories up to its tier, the steam hammers LV
+for _, t in pairs({ "mv", "hv", "ev", "iv", "luv", "zpm", "uv", "uhv", "uev", "uiv", "umv", "uxv" }) do recipe_category_and_subgroup(t .. "-forge-hammer-recipes") end
 do
 	local HAMMERS = {
 		--  tier  path                 energy    speed  cable             circuit               tech
@@ -288,7 +291,7 @@ do
 	for _, h in ipairs(HAMMERS) do
 		local t, path, energy, speed, cable, circuit, tech = table.unpack(h)
 		local name = t .. "-forge-hammer"
-		make_electric_machine(name, name, path, { "lv-forge-hammer-recipes" }, "fr-forge-hammer", energy, speed, 5, 0.5, 3, 3)
+		make_electric_machine(name, name, path, tier_categories("forge-hammer-recipes", t), "fr-forge-hammer", energy, speed, 5, 0.5, 3, 3)
 		create_item{
 			name = name,
 			subgroup = t .. "-age-production-machine",
@@ -392,6 +395,8 @@ end
 --------------------------------------------------------------------------------
 
 recipe_category_and_subgroup("lv-forming-press-recipes")
+--- issue #724: the same for the forming press
+for _, t in pairs({ "mv", "hv", "ev", "iv", "luv", "zpm", "uv", "uhv", "uev", "uiv", "umv", "uxv" }) do recipe_category_and_subgroup(t .. "-forming-press-recipes") end
 do
 	local PRINTED = { "printed-silicon", "printed-logic-circuit", "printed-calculation-circuit", "printed-engineering-circuit" }
 	local lv_techs = {}
@@ -412,7 +417,7 @@ do
 	for _, a in ipairs(PRESSES) do
 		local t, path, energy, speed, cable, circuit = table.unpack(a)
 		local name = t .. "-forming-press"
-		make_electric_machine(name, name, path, { "lv-forming-press-recipes" }, "fr-forming-press", energy, speed, 1, 0.5, 3, 3)
+		make_electric_machine(name, name, path, tier_categories("forming-press-recipes", t), "fr-forming-press", energy, speed, 1, 0.5, 3, 3)
 		create_item{
 			name = name,
 			subgroup = t .. "-age-production-machine",
