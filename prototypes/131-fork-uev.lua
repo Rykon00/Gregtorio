@@ -383,7 +383,7 @@ create_recipe{
 		{ type = "item", name = "advanced-smd-capacitor-wrap", amount = 8 },
 		{ type = "item", name = "advanced-smd-transistor-wrap", amount = 8 },
 		{ type = "item", name = "niobium-titanium-wire-4x", amount = 8 },
-		{ type = "fluid", name = "molten-indalloy-140", amount = 14.4 },
+		{ type = "fluid", name = "molten-indalloy-140", amount = 7.2 },   -- (issue #671: GT's circuit assembly line, a tenth)
 	},
 	results = { { type = "item", name = "bio-processor", amount = 16 } },
 }
@@ -399,7 +399,7 @@ create_recipe{
 		{ type = "item", name = "advanced-smd-diode", amount = 8 },
 		{ type = "item", name = "advanced-smd-resistor", amount = 8 },
 		{ type = "item", name = "niobium-titanium-wire-4x", amount = 16 },
-		{ type = "fluid", name = "molten-indalloy-140", amount = 28.8 },
+		{ type = "fluid", name = "molten-indalloy-140", amount = 14.4 },   -- (issue #671: GT's circuit assembly line, a tenth)
 	},
 	results = { { type = "item", name = "bio-processor-assembly", amount = 16 } },
 }
@@ -446,7 +446,7 @@ create_recipe{
 --- 3) UEV COMPONENTS (zpm-assembly-line-recipes, like the UHV ones)
 --- GT5-Unofficial assembly line recipes; 1 GT ingot of fluid = 14.4, 2000 L lubricant = 200.
 --- Changes against GT:
----   * attuned tengam rods -> magnetic samarium rods (no tengam), bedrockium / nether star plates
+---   * attuned tengam rods -> magnetic samarium rods (since issue #629 attuned tengam, 164 section 53), bedrockium / nether star plates
 ---     -> cosmic neutronium plates, quantium -> cosmic neutronium melt, infinity catalyst foil ->
 ---     infinity foil (137-fork-endgame-materials.lua puts quantium melt in, issue #36)
 ---   * fine wire and foil counts cut (GT: 512 fine cosmic neutronium wires, 256 foils): motor 64
@@ -580,8 +580,8 @@ create_item{
 --- Controller, reactor and casing MK3 are the drafts in 21-luv-age-item.lua. The MK4 is the UEV
 --- tier (16 UEV energy hatches, 32 UEV hulls), UEV circuits in the controller. Drafts fixed here:
 ---   * the reactor needs its controller (the draft called it "computer")
----   * casing MK3: category typo `uvh-...`; UU matter, cinobite, octiron and astral titanium ->
----     tritanium and cosmic neutronium melt, one UHV motor per casing (the draft: 2 motors and a
+---   * casing MK3: category typo `uvh-...`; cinobite and octiron melt (164's section 52, issue #629; UU
+---     matter and astral titanium left out), one UHV motor per casing (the draft: 2 motors and a
 ---     piston, 79 casings would have been 240 motors)
 ---   * the controller uses dracofinium wire (draft: triamerotronium) and FPIC wafers (GT)
 ---   * the reactor takes 16 advanced fusion coils (draft: 32; the MK3 takes 8): each needs a UHV
@@ -695,8 +695,8 @@ create_item{
 		{ type = "item", name = "uev-circuit", amount = 2 },
 		{ type = "item", name = "extremely-ultimate-voltage-coil", amount = 2 },
 		{ type = "item", name = "uev-pump", amount = 1 },
-		{ type = "fluid", name = "cryogenic-helium", amount = 1000 },
-		{ type = "fluid", name = "molten-indalloy-140", amount = 576 },
+		{ type = "fluid", name = "cryogenic-helium", amount = 3200 },   -- (issue #671: a tenth of GT's litres)
+		{ type = "fluid", name = "molten-indalloy-140", amount = 288 },
 	},
 }
 

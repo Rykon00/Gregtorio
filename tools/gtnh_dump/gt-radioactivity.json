@@ -1,0 +1,36 @@
+{
+ "bartworks": {
+  "Thorium 232": 3,
+  "Tiberium": 3
+ },
+ "gt": {
+  "NaquadahEnriched": 4,
+  "Naquadria": 5,
+  "Plutonium": 1,
+  "Plutonium241": 3,
+  "Uranium235": 2
+ },
+ "gtpp": {
+  "Californium": 4,
+  "Curium": 3,
+  "Fermium": 5,
+  "LFTR Fuel 1": 5,
+  "LFTR Fuel 2": 5,
+  "LFTR Fuel 3": 5,
+  "Lithium Tetrafluoroberyllate (LFTB)": 4,
+  "Neptunium": 2,
+  "Neptunium Hexafluoride": 1,
+  "Plutonium-238": 2,
+  "Polonium": 1,
+  "Protactinium": 1,
+  "Radioactive Mineral Mix": 4,
+  "Radium": 1,
+  "Technetium": 2,
+  "Technetium Hexafluoride": 1,
+  "Thorium": 1,
+  "Thorium 232": 1,
+  "Uranium 232": 4,
+  "Uranium 233": 2,
+  "Uranium Tetrafluoride": 1
+ }
+}

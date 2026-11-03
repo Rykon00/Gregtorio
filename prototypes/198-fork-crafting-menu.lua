@@ -23,8 +23,8 @@ FORK_CRAFTING_MENU_HIDDEN = {
 		["steam-macerator-recipes"] = "issue #447: the steam macerators' copies of the LV macerator recipes without byproducts (101, made at the end of data-final-fixes.lua); the menu shows the LV recipe",
 	},
 	subgroups = {
-		["fill-barrel"] = "vanilla barrel filling recipes, hidden in vanilla",
-		-- (issue #323: the vanilla barrel emptying recipes, subgroup empty-barrel, are deleted in data-final-fixes.lua)
+		-- (issue #323: the vanilla barrel emptying recipes, subgroup empty-barrel, are deleted in data-final-fixes.lua; issue
+		-- #670: so are the barrels' recycling recipes, the last of subgroup fill-barrel)
 	},
 	recipes = {
 		-- (issue #323: rocket-part and biter-egg, which vanilla hides from the menu, are deleted in data-final-fixes.lua)

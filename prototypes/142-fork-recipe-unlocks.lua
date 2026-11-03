@@ -85,8 +85,9 @@ create_recipe{
 ---     into a mixture, distills it and mixes the di- and trichloroacetic acid back (EV, 150 s per 1000)
 ---   cyanoacetic acid: sodium carbonate, sodium cyanide, chloroacetic acid and HCl (GT: EV, 20 s)
 ---   ethyl cyanoacetate: cyanoacetic acid + ethanol (GT: IV, 1000 s)
----   super glue: ethyl cyanoacetate + formaldehyde, polymerised and cracked (GT: IV chemical plant 10 s and HV fluid
----     heater 45 s; GT's 1000 water per 100 polymer is kept)
+---   super glue: ethyl cyanoacetate + formaldehyde into the cyanoacrylate polymer (GT: IV chemical plant 10 s; GT's 1000
+---     water per 100 polymer is kept), cracked in the fluid heater (HV 45 s; gtPlusPlus RecipeLoaderGlueLine.java:117-127,
+---     224-231; issue #635: before, one 55 s step)
 F.fluid("formaldehyde", "nearly-white-fluid", { 0.85, 0.88, 0.80 })
 F.fluid("hydrogen-cyanide", "spackled-light-blue-fluid", { 0.70, 0.85, 0.90 })
 F.fluid("chloroacetic-acid", "pale-green-fluid", { 0.75, 0.85, 0.55 })
@@ -138,13 +139,17 @@ glue_step("ethyl-cyanoacetate", "iv-chemical-reactor-recipes", 1000, {
 	{ type = "item", name = "cyanoacetic-acid", amount = 9 },
 	{ type = "fluid", name = "ethanol", amount = 100 },
 }, { { type = "fluid", name = "ethyl-cyanoacetate", amount = 100 } })
-glue_step("super-glue", "iv-chemical-reactor-recipes", 55, {
+F.fluid("cyanoacrylate-polymer", "nearly-white-fluid", { 0.80, 0.85, 0.75 })
+glue_step("cyanoacrylate-polymer", "iv-chemical-reactor-recipes", 10, {
 	{ type = "fluid", name = "ethyl-cyanoacetate", amount = 10 },
 	{ type = "fluid", name = "formaldehyde", amount = 10 },
 }, {
-	{ type = "fluid", name = "super-glue", amount = 10 },
+	{ type = "fluid", name = "cyanoacrylate-polymer", amount = 10 },
 	{ type = "fluid", name = "water", amount = 100 },
 })
+glue_step("super-glue", "hv-fluid-heater-recipes", 45 * HV_SPEED, {
+	{ type = "fluid", name = "cyanoacrylate-polymer", amount = 10 },
+}, { { type = "fluid", name = "super-glue", amount = 10 } })
 
 --- Component assembly line (GoodGenerator's CoAL, ComponentAssemblyLineMiscRecipes.java). Upstream has its drafts
 --- in 25-uv-age-item.lua (a controller and a structure of 1300 casings, never loaded, removed in issue #249) and 32 recipes in
@@ -453,7 +458,7 @@ local UNLOCKS = {
 	},
 	["super-glue"] = { -- IV
 		"chloroacetic-acid", "cyanoacetic-acid", "ethyl-cyanoacetate", "formaldehyde", "hydrogen-cyanide",
-		"sodium-cyanide", "super-glue",
+		"sodium-cyanide", "cyanoacrylate-polymer", "super-glue",
 	},
 	["naquadah-processing"] = { -- LuV
 		"cpu-wafer-nd", "fluorspar-electrolysis", "graphene-nd", "ilc-wafer-nd", "microchip-cheap", "microprocessor-cheap",
@@ -504,8 +509,10 @@ local UNLOCKS = {
 		"crushed-borax", "crushed-neutronium", "neutronium-dust",
 	},
 	["quantium"] = { -- UHV
-		"centrifuging-crushed-cosmic-neutronium", "centrifuging-crushed-infinity-catalyst", "cosmic-neutronium-dust",
-		"crushed-cosmic-neutronium", "crushed-infinity-catalyst", "infinity-catalyst-dust",
+		"centrifuging-crushed-infinity-catalyst", "crushed-infinity-catalyst", "infinity-catalyst-dust",
+	},
+	["cosmic-neutronium"] = { -- UV (issue #624: the space elevator's screws and rings)
+		"centrifuging-crushed-cosmic-neutronium", "cosmic-neutronium-dust", "crushed-cosmic-neutronium",
 	},
 }
 --- Issue #98 (prototypes/147-fork-gt-routes.lua): the second printed board with sodium persulfate where the printed
@@ -525,7 +532,7 @@ local UNLOCKS_98 = {
 		"ppic-wafer-sunnarium",
 	},
 	["bedrockium"] = F.join({ "black-plutonium-ingot" }, FORK_GT_ROUTES.black_plutonium), -- UV
-	["quantium"] = F.join({ "cosmic-neutronium-ingot-from-hot-ingot" }, FORK_GT_ROUTES.cosmic_neutronium), -- UHV
+	["cosmic-neutronium"] = F.join({ "cosmic-neutronium-ingot-from-hot-ingot" }, FORK_GT_ROUTES.cosmic_neutronium), -- UV (#624)
 }
 --- Issue #96 (prototypes/146-fork-platinum-line.lua): GTNH's platinum line on the six technologies of the upstream
 --- line (their names kept): the ore washer and the sludge on platinum ore processing, aqua regia, the sludge centrifuge
@@ -630,6 +637,14 @@ local function add_prerequisite(tech, pre)
 	for _, p in pairs(t.prerequisites or {}) do if p == pre then return end end
 	t.prerequisites = t.prerequisites or {}
 	table.insert(t.prerequisites, pre)
+end
+--- issue #613: the offshore pump is GT's Basic Pump on LV power now (101 section 2m'), with the LV pump; the steam age
+--- pumps water with the Steam Water Pump
+move_unlock("offshore-pump", "small-coal-boiler", "extractor")
+do   -- (vanilla's Steam Power unlocks it too)
+	local t, keep = data.raw.technology["steam-power"], {}
+	for _, e in pairs(t and t.effects or {}) do if e.recipe ~= "offshore-pump" then keep[#keep + 1] = e end end
+	if t then t.effects = keep end
 end
 --- the logistic chests are HV assembler recipes: they come with HV Machines (Logistic System and the ME network stay MV)
 for _, r in pairs({ "requester-chest", "active-provider-chest", "passive-provider-chest", "storage-chest", "buffer-chest" }) do
@@ -737,13 +752,15 @@ end
 --- of a recipe category). Applied here, so the unlocks of 155 and 158 (unlock_after) see them, and once more by
 --- data-final-fixes.lua after it sets the vanilla technologies' prerequisites.
 FORK_UNLOCK_TREE = { prerequisites = {
+	["large-hadron-collider"] = { "cosmic-neutronium" },   -- double-cosmic-neutronium-plate (issue #624)
+	["naquadah-based-fuel-mk4"] = { "cosmic-neutronium" },   -- cosmic-neutronium-frame (issue #624)
 	["advanced-ev-machines"] = { "platinum" },   -- platinum-ingot
 	["advanced-integrated-circuits"] = { "nand-chips", "oil-gathering" },   -- fine-tin-wire; lubricant
 	["alloy-blast-smelter"] = { "nuclear-power" },   -- platinum-cable
 	["aluminium"] = { "cutting-machine" },   -- machine lv-cutting-machine
 	["assembly-line"] = { "industrial-precision-lathe" },   -- grate-machine-casing
 	["black-steel"] = { "electric-blast-furnace", "galena", "rare-earth-processing" },   -- machine mv-electric-blast-furnace; silver-ingot; nether-quartz
-	["bio-processors"] = { "qubit-cpus" },   -- qubit-cpu-chip
+	["bio-processors"] = { "qubit-cpus", "quantium" },   -- qubit-cpu-chip; infinity-catalyst-dust (the mutated living solder, #627)
 	["cetane-boosted-diesel"] = { "implosion-compressor" },   -- nitric-acid
 	["dimensionally-shifted-superfluid"] = { "radox-polymer" },   -- super-heavy-radox (issue #517)
 	["concrete"] = { "automation-2", "extractor" },   -- machine lv-assembling-machine; lv-pump (the LV Fluid Extractor, issue #556)
@@ -816,6 +833,9 @@ FORK_UNLOCK_TREE = { prerequisites = {
 	["steam-macerator"] = { "steam-forge-hammer" },   -- crushed-copper-smelter and the other crushed ore smelting
 	["super-glue"] = { "iv-energy-hatches" },   -- machine iv-chemical-reactor
 	["tungstate-processing"] = { "ev-machines" },   -- machine ev-autoclave
+	-- issue #742 (the maintainer's decision: the coils come before the metals that need their heat, as in GT New Horizons):
+	-- the hot tungstensteel ingot needs 4000 K, an EV furnace with the RTM alloy coil of the same science (4701 K)
+	["tungstensteel"] = { "rtm-alloy-coils" },   -- rtm-alloy-coil-block
 	["tungsten"] = { "ev-energy-hatches" },   -- machine ev-chemical-reactor
 	["utility-science-pack"] = { "ev-machines" },   -- machine ev-assembling-machine
 	["zpm-assembly-line"] = { "me-storage-256k" },   -- fiber-reinforced-circuit-board
@@ -839,6 +859,67 @@ FORK_UNLOCK_TREE.keep = {
 	["molybdenum-dust-pbf-charcoal"] = "bending-machine",
 	["molybdenum-dust-pbf-coke"] = "bending-machine",
 }
+--- issue #742: the blast furnace recipes whose GT heat (prototypes/data/gtnh-ebf-heat.lua) no blast furnace has where 155/158
+--- unlocked them go to the first technology whose coil (in a furnace of their category, 100 K per tier above MV) reaches it;
+--- their products have other producers there or their consumers follow (devcheck's tree check). The recipe: its technology
+FORK_UNLOCK_TREE.heat = {
+	["gt-blast-dark-steel-ingot-from-dark-steel-dust"] = "kanthal-coils",   -- 2200 K (was mv-machines)
+	["gt-blast-end-steel-ingot-from-end-steel-dust-with-helium"] = "rtm-alloy-coils",   -- 4500 K (was ev-machines)
+	["gt-blast-end-steel-ingot-from-end-steel-dust-with-krypton"] = "rtm-alloy-coils",   -- 4500 K (was ev-machines)
+	["gt-blast-end-steel-ingot-from-end-steel-dust-with-neon"] = "rtm-alloy-coils",   -- 4500 K (was ev-machines)
+	["gt-blast-end-steel-ingot-from-end-steel-dust-with-nitrogen"] = "rtm-alloy-coils",   -- 4500 K (was ev-machines)
+	["gt-blast-end-steel-ingot-from-end-steel-dust-with-radon"] = "rtm-alloy-coils",   -- 4500 K (was ev-machines)
+	["gt-blast-end-steel-ingot-from-end-steel-dust-with-xenon"] = "rtm-alloy-coils",   -- 4500 K (was ev-machines)
+	["gt-blast-energetic-alloy-ingot-from-energetic-alloy-dust"] = "kanthal-coils",   -- 2500 K (was mv-components)
+	["gt-blast-energetic-alloy-ingot-from-energetic-alloy-dust-with-hydrogen"] = "kanthal-coils",   -- 2200 K (was mv-components)
+	-- (its crafting table parts follow it to Energetic Alloy, whose alloy smelter makes the ingot: they were with MV Components
+	-- only because the blast furnace recipe was)
+	["energetic-alloy-nugget-crafting-table"] = "energetic-alloy",
+	["energetic-alloy-plate-crafting-table"] = "energetic-alloy",
+	["energetic-alloy-rod-crafting-table"] = "energetic-alloy",
+	["gt-blast-hot-chromnorox-ingot-from-chromnorox-dust-with-oganesson"] = "large-hadron-collider",   -- 12700 K (was dimensionally-shifted-superfluid)
+	["gt-blast-hot-hypocosmium-ingot-from-hypocosmium-dust-with-helium"] = "umv-multiblocks",   -- 13600 K (was umv-energy-hatches)
+	["gt-blast-hot-hypocosmium-ingot-from-hypocosmium-dust-with-nitrogen"] = "umv-multiblocks",   -- 13600 K (was umv-energy-hatches)
+	["gt-blast-hot-hypocosmium-ingot-from-hypocosmium-dust-with-oganesson"] = "gravitational-lens",   -- 13600 K (was large-hadron-collider)
+	["gt-blast-hot-hypocosmium-ingot-from-hypocosmium-dust-with-radon"] = "umv-multiblocks",   -- 13600 K (was umv-energy-hatches)
+	["gt-blast-hot-itbtc-alloy-ingot-from-itbtc-alloy-dust-with-helium"] = "fusion-reactor-mk2",   -- 6000 K (was crystal-processor-mainframes)
+	["gt-blast-hot-itbtc-alloy-ingot-from-itbtc-alloy-dust-with-nitrogen"] = "fusion-reactor-mk2",   -- 6000 K (was crystal-processor-mainframes)
+	["gt-blast-hot-itbtc-alloy-ingot-from-itbtc-alloy-dust-with-radon"] = "fusion-reactor-mk2",   -- 6000 K (was crystal-processor-mainframes)
+	["gt-blast-quicklime-from-gypsum"] = "nichrome-coils",   -- 3200 K (was kanthal-coils)
+	["hot-enriched-naquadah-ingot"] = "zpm-energy-hatches",   -- 7500 K (was enriched-naquadah)
+	["hot-hypocosmium-ingot"] = "umv-multiblocks",   -- 13600 K (was umv-energy-hatches)
+	["hot-hypocosmium-ingot-krypton"] = "umv-multiblocks",   -- 13600 K (was umv-energy-hatches)
+	["hot-hypocosmium-ingot-neon"] = "umv-multiblocks",   -- 13600 K (was umv-energy-hatches)
+	["hot-hypocosmium-ingot-xenon"] = "umv-multiblocks",   -- 13600 K (was umv-energy-hatches)
+	["hot-itbtc-alloy-ingot"] = "fusion-reactor-mk2",   -- 6000 K (was crystal-processor-mainframes)
+	["hot-itbtc-alloy-ingot-krypton"] = "fusion-reactor-mk2",   -- 6000 K (was crystal-processor-mainframes)
+	["hot-itbtc-alloy-ingot-neon"] = "fusion-reactor-mk2",   -- 6000 K (was crystal-processor-mainframes)
+	["hot-itbtc-alloy-ingot-xenon"] = "fusion-reactor-mk2",   -- 6000 K (was crystal-processor-mainframes)
+	-- the maintainer's decision for the rest: the coil comes a tier earlier, as in GT New Horizons, the metals stay. Each coil
+	-- (and what it is made of, where that came with it) goes to the technology before the metals that need its heat:
+	-- naquadah coil (7201 K) for the hot trinium ingot (7200 K) of Enriched Naquadah, with its osmium foil
+	["naquadah-coil-block"] = "enriched-naquadah",   -- (was zpm-energy-hatches)
+	["osmium-ingot"] = "enriched-naquadah",          -- the vacuum freezer's (was zpm-energy-hatches)
+	["osmium-foil"] = "enriched-naquadah",           -- (was zpm-energy-hatches)
+	-- trinium coil (9001 K + 500 in a ZPM furnace) for hot naquadria (9000/9100 K) and fluxed electrum (9000 K)
+	["trinium-coil-block"] = "zpm-multiblocks",      -- (was uv-energy-hatches)
+	-- tritanium coil (9901 K) for hot bedrockium, naquamiridium and cosmic neutronium (9900 K), with its tritanium parts
+	["tritanium-coil-block"] = "uv-machines",        -- (was uhv-energy-hatches)
+	["tritanium-ingot"] = "uv-machines",             -- the fluid solidifier's (was uhv-materials)
+	["tritanium-plate"] = "uv-machines",             -- (was uhv-materials)
+	["tritanium-foil"] = "uv-machines",              -- (was uhv-materials)
+	["tritanium-wire"] = "uv-machines",              -- (was uhv-materials)
+	-- infinity coil (11701 K) for hot dracofinium (11800 K)
+	["infinity-coil-block"] = "uev-energy-hatches",  -- (was uiv-energy-hatches)
+	-- Left in `cap` of prototypes/data/gtnh-ebf-heat.lua (the heat stays what a furnace has there):
+	-- * hot palladium-naqindium (8100 K, ZPM Superconductors, LuV science): GT's naquadah alloy coil (8100 K) has no
+	--   Gregtorio coil; the next one, trinium, would come two tiers early;
+	-- * hot chromnorox (12700 K, UIV Energy Hatches): the spacetime coil is made from MK5 fusion's spacetime (UMV); a UIV
+	--   furnace with the infinity coil has 12601 K;
+	-- * phonon crystal solution (17000 K, UIV) and the infinite wafer (22000 K, UXV): no blast furnace of GT reaches them
+	--   either (13501 K + 100 K per tier); GT New Horizons runs them in the godforge's smelting module (MTESmeltingModule,
+	--   blastFurnaceRecipes), which 140's godforge does not have.
+}
 function FORK_UNLOCK_TREE.apply(final)
 	for tech, pres in pairs(FORK_UNLOCK_TREE.prerequisites) do
 		for _, p in pairs(pres) do
@@ -850,7 +931,7 @@ function FORK_UNLOCK_TREE.apply(final)
 		end
 	end
 	if not final then return end
-	for recipe, tech in pairs(FORK_UNLOCK_TREE.keep) do
+	for _, list in pairs({ FORK_UNLOCK_TREE.keep, FORK_UNLOCK_TREE.heat }) do for recipe, tech in pairs(list) do
 		for _, t in pairs(data.raw.technology) do
 			local keep = {}
 			for _, e in pairs(t.effects or {}) do
@@ -860,7 +941,7 @@ function FORK_UNLOCK_TREE.apply(final)
 		end
 		if not data.raw.recipe[recipe] then error("142-fork-recipe-unlocks: no recipe " .. recipe) end
 		fork_add_unlock(tech, recipe)
-	end
+	end end
 end
 FORK_UNLOCK_TREE.apply()
 --- issue #337 (163): the miners' twins of the veins, after the moves above and the prerequisites (a vein before the LV
@@ -916,8 +997,10 @@ FORK_MACHINES_BEFORE_RECIPES = {
 	["mv-machines:mv-rock-crusher"] = "a tier machine comes with its tier's Machines technology like the others of the tier; "
 		.. "it runs the LV Rock Crusher's recipe, which comes with Rock Crusher (LV)",
 }
-for _, t in pairs({ "mv", "hv", "ev", "iv", "luv", "zpm", "uv", "uhv", "uev", "uiv", "umv", "uxv", "max" }) do
-	for _, m in pairs({ "brewery", "fermenter" }) do
+--- (issue #611: from ZPM on the tier's Machines technology has Fermentation behind it, through Naquadah Processing's seed oil)
+--- (issue #784: the brewery's biomass from wheat, seaweed and compost comes before HV, so from HV on it has a recipe there)
+for _, t in pairs({ "mv", "hv", "ev", "iv", "luv" }) do
+	for _, m in pairs(t == "mv" and { "brewery", "fermenter" } or { "fermenter" }) do
 		FORK_MACHINES_BEFORE_RECIPES[t .. "-machines:" .. t .. "-" .. m] = "a tier machine comes with its tier's Machines "
 			.. "technology like the others of the tier; it runs the LV " .. m .. "'s recipes, which come with Fermentation (LV, 164)"
 	end

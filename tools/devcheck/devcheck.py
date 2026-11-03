@@ -13,6 +13,7 @@
     python tools/devcheck/devcheck.py menusim --sim gregtorio_steam_age --rebuild
                                                 # issue #588: save a Gregtorio menu scene again, shrunk, with today's mods
     python tools/devcheck/devcheck.py handover  # issue #83: prototype of the ME state hand-over to me-network
+    python tools/devcheck/devcheck.py gtnh-diff # issue #679: report of Gregtorio's recipes against GTNH's (not in `all`)
 
 Everything is kept in .devcheck/ in the repository root (git-ignored).
 
@@ -29,13 +30,13 @@ zips into a folder and pass --mods-from DIR.
   * a sprite sheet is smaller than its width/height/frame_count need
   * an unlocked recipe cannot be crafted: no machine for its category, an ingredient that can
     never be obtained, or no reachable machine with enough fluid inputs/outputs
-  * an enabled technology cannot be researched and is not in UNRESEARCHABLE_OK (the vanilla
-    armor/equipment techs), or one of the issue #29 QoL techs is neither researchable nor hidden
+  * an enabled technology cannot be researched and is not in UNRESEARCHABLE_OK (empty since issue #640: the
+    vanilla techs behind a disabled one are disabled), or one of the issue #29 QoL techs is neither researchable nor hidden
   * a fluid that is not hidden (the parameter fluids excepted) is not in the Fluids tab: its subgroup is missing or
     not in the item group "fluids"; fluids in the fallback row gregtorio-fluids-unsorted are a warning
 It also reports how many technologies are researchable and where progression stops.
 """
-import argparse, json, os, re, shutil, subprocess, sys, tarfile, urllib.parse, urllib.request
+import argparse, json, math, os, re, shutil, subprocess, sys, tarfile, urllib.parse, urllib.request
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -389,6 +390,7 @@ class Model:
         self.burnt, self.burners = [], {}   # (fuel item, burnt result, fuel categories); burner entity -> categories
         self.tools = {}                     # recipe -> the mold or lens it needs in the module slot (issue #316)
         self.itype, self.uses = {}, {}      # item -> its prototype type; item -> its uses besides recipes (issue #547)
+        self.spoil = {}                     # item -> its spoil ticks, 0 when it does not spoil (issue #602)
         self.base = {"water", "steam"}
         mined, reach = {}, {}   # issue #501: resource -> its mined items; resource -> technologies of its planets
         gt_ores = set()         # issue #563: the resources of the map veins (category gt-ore)
@@ -398,7 +400,7 @@ class Model:
                 # (issue #535: a recipe has a list of categories since Factorio 2.1; `cat` is the first, a Gregtorio recipe's one)
                 cats = [c for c in p[2].split(",") if c] or ["crafting"]
                 self.R[p[1]] = dict(cat=cats[0], cats=set(cats), en=p[3] == "true", ing=split(p[4]), ingk=kinds(p[4]),
-                                    res=split(p[5]),
+                                    res=split(p[5]), resk=kinds(p[5]),
                                     fin=kinds(p[4]).count("fluid"), fout=kinds(p[5]).count("fluid"),
                                     hidden=p[6] == "true", hide_craft=p[7] == "true", sg=p[8], group=p[9],
                                     icon=p[10] if len(p) > 10 else "")
@@ -410,9 +412,11 @@ class Model:
                 self.I[p[1]] = p[3] if len(p) > 3 else ""
                 self.itype[p[1]] = p[2]
                 self.uses[p[1]] = [x for x in p[4].split(",") if x] if len(p) > 4 else []
+                self.spoil[p[1]] = float(p[5]) if len(p) > 5 and p[5] else 0
             elif k == "T":
                 self.T[p[1]] = dict(pre=[x for x in p[2].split(",") if x], eff=[x for x in p[3].split(",") if x],
-                                    sci=[x for x in p[4].split(",") if x], trig=p[5], en=p[6] == "true")
+                                    sci=[x for x in p[4].split(",") if x], trig=p[5], en=p[6] == "true",
+                                    count=float(p[7]) if len(p) > 7 and p[7] else None)   # (issue #605)
             elif k == "M" and p[4] != "gregtorio-disabled":
                 mined[p[1]] = ([p[2]] if p[2] else []) + [x.split(":", 1)[1] for x in p[3].split(",") if x]
                 if p[4] == "gt-ore":
@@ -745,6 +749,161 @@ def check_trigger_items(m, sec):
            f"purpose (FORK_TRIGGER_ONLY_ITEMS)", problems
 
 
+def check_spoiling(m, sec):
+    """Issue #602: GT New Horizons has no spoiling, so an item that spoils (`spoil_ticks` of the `I` rows) and that a
+    recipe makes that is enabled or unlocked by a researchable technology and not hidden fails, unless it is in the
+    allow-list FORK_SPOILING_KEPT of data-final-fixes.lua with its reason (section SPOILOK); an entry that is no such item
+    fails too. Returns (info line, problems)."""
+    allow = {r[0]: (r[1] if len(r) > 1 else "") for r in sec.get("SPOILOK", [])}
+    made = {}
+    for r in m.unlocked:
+        v = m.R[r]
+        if not v["hidden"]:
+            for x in v["res"]:
+                if m.spoil.get(x):
+                    made.setdefault(x, []).append(r)
+    problems = [f"{i}: spoils after {m.spoil[i] / 60:g} s and {', '.join(sorted(rs)[:3])} makes it (take its spoiling off "
+                "in data-final-fixes.lua, or add it to FORK_SPOILING_KEPT with its reason)"
+                for i, rs in sorted(made.items()) if i not in allow]
+    problems += [f"FORK_SPOILING_KEPT: {i} has no reason" for i, why in sorted(allow.items()) if not why]
+    problems += [f"FORK_SPOILING_KEPT: {i} is not an item that spoils and that a reachable recipe makes (remove the entry)"
+                 for i in sorted(allow) if i not in made]
+    return f"{sum(1 for s in m.spoil.values() if s)} items spoil, {len(made)} of them made by a reachable recipe, " \
+           f"{len(allow)} on purpose (FORK_SPOILING_KEPT)", problems
+RESEARCH_BAND_LOW = 50    # the count of the reach, void miner and space elevator technologies (issue #605)
+
+
+def check_research_counts(m, sec):
+    """Issue #605: prototypes/138-fork-research-balance.lua scales the counts from UV science up (9 packs and more). A
+    researchable technology of 9 or more packs with a count outside the band of its pack count fails: from
+    RESEARCH_BAND_LOW (or the lowest count of 138's table at that pack count, if lower) to the highest count that 138's
+    table (section RESEARCHCOUNTS) gives a technology of that pack count; unless it is in the allow-list FORK_RESEARCH_OUTLIERS of 138 with its reason (section RESEARCHOK). Infinite
+    technologies (a count formula, no count) are left out. An entry that is no such technology fails too. Returns (info
+    line, problems)."""
+    allow = {r[0]: (r[1] if len(r) > 1 else "") for r in sec.get("RESEARCHOK", [])}
+    target = {r[0]: float(r[1]) for r in sec.get("RESEARCHCOUNTS", []) if len(r) > 1}
+    low, high, rows = {}, {}, []
+    for t in sorted(m.researched):
+        v = m.T.get(t)
+        if not v or v.get("count") is None or len(v["sci"]) < 9:
+            continue
+        n = len(v["sci"])
+        rows.append((t, n, v["count"]))
+        if t in target:   # the band comes from the table's counts, not from what the load made of them
+            high[n] = max(high.get(n, 0), target[t])
+            low[n] = min(low.get(n, RESEARCH_BAND_LOW), target[t])
+    outside = {t: (n, c) for t, n, c in rows if n in high and not low[n] <= c <= high[n]}
+    problems = [f"{t}: {c:g} units of {n} packs, outside the band {low[n]:g}-{high[n]:g} of its pack count (scale it in "
+                "prototypes/138-fork-research-balance.lua, or add it to FORK_RESEARCH_OUTLIERS with its reason)"
+                for t, (n, c) in sorted(outside.items()) if t not in allow]
+    problems += [f"FORK_RESEARCH_OUTLIERS: {t} has no reason" for t, why in sorted(allow.items()) if not why]
+    problems += [f"FORK_RESEARCH_OUTLIERS: {t} is not a technology outside its band (remove the entry)"
+                 for t in sorted(allow) if t not in outside]
+    bands = ", ".join(f"{n} packs {low[n]:g}-{h:g}" for n, h in sorted(high.items()))
+    return f"{len(rows)} researchable technologies of 9 or more packs, bands {bands}; {len(allow)} outside on purpose " \
+           "(FORK_RESEARCH_OUTLIERS)", problems
+NYI_ICON = "graphics/technology/nyi.png"
+
+
+def check_nyi_icons(sec):
+    """Issue #639: a shown technology, item, fluid or recipe of the load (the `shown` column of section NAMES) whose own
+    icon (section ICONS: the mod's files of `icon` and `icons`) is the NYI placeholder, graphics/technology/nyi.png or
+    a file of the mod with the same bytes, fails unless it is in the allow-list FORK_NYI_ICONS of
+    prototypes/199-fork-finalize.lua with its reason (section NYIOK); an entry that is no such prototype fails too.
+    Returns (info line, problems)."""
+    allow = {r[0]: (r[1] if len(r) > 1 else "") for r in sec.get("NYIOK", [])}
+    nyi = (ROOT / NYI_ICON).read_bytes()
+    same = {}
+
+    def is_nyi(path):
+        if path not in same:
+            f = ROOT / path.split("__gregtorio-continued__/", 1)[-1]
+            same[path] = f.is_file() and f.stat().st_size == len(nyi) and f.read_bytes() == nyi
+        return same[path]
+    shown = {(r[0], r[2]) for r in sec.get("NAMES", []) if len(r) > 5 and r[5]}
+    found = {}
+    for r in sec.get("ICONS", []):
+        if len(r) < 3:
+            continue
+        hits = [p for p in r[2].split(",") if is_nyi(p)]
+        if hits and (r[0], r[1]) in shown:
+            found[r[1]] = (r[0], hits[0])
+    copies = sorted({p for p, v in same.items() if v})
+    problems = [f"{cls} {name}: shows the NYI placeholder ({path}; give it an icon, e.g. tools/gen_tech_icons.py with "
+                "tools/tech-icons.tsv, or add it to FORK_NYI_ICONS with its reason)"
+                for name, (cls, path) in sorted(found.items()) if name not in allow]
+    problems += [f"FORK_NYI_ICONS: {n} has no reason" for n, why in sorted(allow.items()) if not why]
+    problems += [f"FORK_NYI_ICONS: {n} does not show the NYI placeholder (remove the entry)" for n in sorted(allow)
+                 if n not in found]
+    return f"{len(copies)} placeholder files in use, {len(found)} shown prototypes with one, {len(allow)} on purpose " \
+           "(FORK_NYI_ICONS)", problems
+
+
+def check_gtnh_icons(sec):
+    """Issue #713: GT New Horizons' rendered icons of tools/import_gtnh_icons.py. Every file of graphics/icons/gtnh/ has
+    a row in graphics/icons/GTNH-ICONS.tsv and every row a file; the rows and FORK_GTNH_ICONS
+    (prototypes/data/gtnh-icons.lua) name the same items; each of them is an item that shows its file (section ICONS).
+    Returns (info line, problems)."""
+    tsv, folder = ROOT / "graphics/icons/GTNH-ICONS.tsv", ROOT / "graphics/icons/gtnh"
+    rows = [l.split("\t") for l in tsv.read_text(encoding="utf-8").splitlines()[1:] if l] if tsv.exists() else []
+    files = {f"gtnh/{f.name}" for f in folder.glob("*.png")} if folder.exists() else set()
+    listed = {r[0]: r[1] for r in rows}
+    lua = ROOT / "prototypes/data/gtnh-icons.lua"
+    table = set(re.findall(r'\["([^"]+)"\] = true', lua.read_text(encoding="utf-8"))) if lua.exists() else set()
+    icons = {r[1]: r[2] for r in sec.get("ICONS", []) if len(r) >= 3 and r[0] == "item"}
+    problems = [f"{f}: no row in graphics/icons/GTNH-ICONS.tsv (run tools/import_gtnh_icons.py)"
+                for f in sorted(files - set(listed))]
+    problems += [f"GTNH-ICONS.tsv: {f} has no file" for f in sorted(set(listed) - files)]
+    problems += [f"FORK_GTNH_ICONS and GTNH-ICONS.tsv differ: {n}" for n in sorted(table ^ set(listed.values()))]
+    for f, item in sorted(listed.items()):
+        want = f"__gregtorio-continued__/graphics/icons/{f}"
+        if item not in icons:
+            problems.append(f"GTNH-ICONS.tsv: {item} is no item")
+        elif icons[item] != want:
+            problems.append(f"item {item} shows {icons[item]}, not {want}")
+    return f"{len(listed)} items with GTNH's rendered icon", problems
+
+
+OVERCLOCK = "gregtorio-continued-gt-overclocking"
+MAINTENANCE = "gregtorio-continued-maintenance"   # issue #618
+RADIATION = "gregtorio-continued-radiation"   # issue #621
+
+
+def check_overclocking(sec):
+    """Issue #616 (prototypes/fork-gt-overclocking.lua, section OVERCLOCK): with the setting on, every electric crafting
+    machine with a crafting speed of 2 or more draws its power times 2^floor(log2(speed)) (GT's 4x power per tier) and the
+    others are left; with it off, none is changed. Returns (info line, problems)."""
+    rows = sec.get("OVERCLOCK", [])
+    if not rows:
+        return "no section OVERCLOCK (older version)", []
+    on = rows[0][1] == "true"
+    problems, changed = [], 0
+    for r in rows[1:]:
+        name, speed, factor = r[0], float(r[1]), float(r[2])
+        want = 2 ** math.floor(math.log2(speed) + 1e-9) if on and speed >= 2 else 1
+        changed += factor != 1
+        if abs(factor - want) > 1e-9:
+            problems.append(f"{name}: crafting speed {speed:g}, power factor {factor:g}, expected {want:g}")
+    return f"setting {'on' if on else 'off'}: {changed} of {len(rows) - 1} electric crafting machines draw more power", problems
+
+
+def check_maintenance(sec):
+    """Issue #618 (prototypes/fork-maintenance.lua, section MAINT): with the setting on, every crafting multiblock allows the
+    module category maintenance and is in the script's list, and nothing else is; with it off, no machine allows it.
+    Returns (info line, problems)."""
+    rows = sec.get("MAINT", [])
+    if not rows:
+        return "no section MAINT (older version)", []
+    on = rows[0][1] == "true"
+    problems, slots = [], 0
+    for name, multi, allows, listed in rows[1:]:
+        want = on and multi == "true"
+        slots += allows == "true"
+        if (allows == "true") != want or (listed == "true") != want:
+            problems.append(f"{name}: multiblock {multi}, maintenance slot {allows}, in the script's list {listed}"
+                            f" (setting {'on' if on else 'off'})")
+    return f"setting {'on' if on else 'off'}: {slots} of {len(rows) - 1} crafting machines have a maintenance slot", problems
+
 VANILLA_MODS = {"base", "space-age", "quality", "elevated-rails"}
 
 
@@ -771,7 +930,7 @@ def check_electric_mine(m, sec):
     ingredients, category electric-mine-recipes) and (issue #337) one for the Miners (category miner-recipes, the same
     results, mining pipes as the ingredient), unless it is in the allow-list FORK_ELECTRIC_MINE_EXCLUDED with its reason (section
     ELECTRICMINE); an entry that is no such recipe or has a twin fails too. Returns (info line, problems)."""
-    rows = [r + [""] * (5 - len(r)) for r in sec.get("ELECTRICMINE", [])]
+    rows = [r + [""] * (6 - len(r)) for r in sec.get("ELECTRICMINE", [])]
     manual = [r for r in rows if r[1] == "manual"]
     problems = [f"{r[0]}: a Manual Mine or Dig Site recipe without an electric twin (163 makes one for a mining-<vein> "
                 "recipe it sees, or add it to FORK_ELECTRIC_MINE_EXCLUDED with its reason)"
@@ -780,6 +939,29 @@ def check_electric_mine(m, sec):
                  if r[2] != "-" and r[4] in ("", "-")]
     problems += [f"FORK_ELECTRIC_MINE_EXCLUDED: {r[0]} " + ("is not a Manual Mine or Dig Site recipe" if r[1] != "manual"
                  else f"has the twin {r[2]}") + " (remove the entry)" for r in rows if r[3] and (r[1] != "manual" or r[2] != "-")]
+    # issue #758: a twin runs where its recipe runs (the same surface conditions) and comes with its recipe's technology
+    # or a later one (one that has it among its prerequisites)
+    problems += [f"{r[0]}: its twins' surface conditions differ (recipe / Ore Drilling Plant twin / Miner twin: {r[5]})"
+                 for r in manual if r[5]]
+    unlocked = {}
+    for t, v in m.T.items():
+        for e in v["eff"]:
+            unlocked.setdefault(e, []).append(t)
+    closure = {}
+    def before(t):
+        if t not in closure:
+            closure[t] = {t}
+            for p in m.T.get(t, {}).get("pre", []):
+                closure[t] |= before(p)
+        return closure[t]
+    for r in manual:
+        own = unlocked.get(r[0], [])
+        if not own:
+            continue
+        for twin in (r[2], r[4]):
+            for t in unlocked.get(twin, []):
+                if not any(o in before(t) for o in own):
+                    problems.append(f"{twin}: unlocked by {t}, before the technology of {r[0]} ({', '.join(sorted(own))})")
     for r in manual:
         if r[0] not in m.R:
             continue
@@ -988,6 +1170,338 @@ def check_item_renames(m, write=False):
     return info, problems
 
 
+_GTNH_STATE = {}
+
+
+def gtnh_state(sec):
+    """tools/gtnh_map.py's mapping of the dump onto this check's recipes, made once per check"""
+    sys.path.insert(0, str(ROOT / "tools"))
+    import gtnh_map
+    if _GTNH_STATE.get("sec") is not sec:
+        state = {}
+        gtnh_map.run(gtnh_map.load_dump(gtnh_map.DUMP), sec, None, state=state)
+        _GTNH_STATE.clear()
+        _GTNH_STATE.update(sec=sec, state=state)
+    return gtnh_map, _GTNH_STATE["state"]
+
+
+def check_gtnh_numbers(sec, write=False):
+    """Issue #689 (prototypes/168-fork-gtnh-numbers.lua): every Gregtorio recipe with a GT recipe of the same items and
+    fluids (tools/gtnh_map.py on the GT New Horizons dump) has GT's time, item amounts, chances and (downward) tier, by
+    prototypes/data/gtnh-numbers.lua, which `check --gtnh-numbers` writes; `check` fails for a table that is not what it
+    writes, for a recipe of the table whose numbers still differ (made or changed after 168), and for an entry of
+    FORK_GTNH_NUMBERS_KEPT without a reason or without a GT recipe of other numbers. Returns (info line, problems)."""
+    kept = {r[0]: (r[1] if len(r) > 1 else "") for r in sec.get("GTNHKEPT", [])}
+    # (issue #724: recipes that keep their tier below GT's, FORK_GTNH_TIER_KEPT)
+    hold = {r[0]: (r[1] if len(r) > 1 else "") for r in sec.get("GTNHTIERKEPT", [])}
+    gtnh_map, state = gtnh_state(sec)
+    old = gtnh_map.numbers_names()
+    table, diffs, left = gtnh_map.numbers(state, set(kept), old, set(hold))
+    _, kept_diffs, _ = gtnh_map.numbers(state, (), ())
+    text = gtnh_map.numbers_lua(table)
+    path = gtnh_map.NUMBERS_FILE
+    have = path.read_text(encoding="utf-8").replace("\r\n", "\n") if path.exists() else None
+    info = (f"{len(state['pending'])} GT recipes matched, {len(table)} Gregtorio recipes with GT's numbers from "
+            f"{path.name}, {len(kept)} kept (FORK_GTNH_NUMBERS_KEPT); left to other issues: "
+            + ", ".join(f"{k} {v}" for k, v in sorted(left.items())))
+    problems = [f"FORK_GTNH_NUMBERS_KEPT: {n} has no reason" for n, why in sorted(kept.items()) if not why]
+    problems += [f"FORK_GTNH_NUMBERS_KEPT: {n} has no GT recipe of other numbers (remove the entry)"
+                 for n in sorted(kept) if n not in kept_diffs]
+    problems += [f"FORK_GTNH_TIER_KEPT: {n} has no reason" for n, why in sorted(hold.items()) if not why]
+    problems += [f"FORK_GTNH_TIER_KEPT: {n} is not a recipe GT runs in a higher tier (remove the entry)"
+                 for n in sorted(hold) if not any(x.startswith("tier ") for x in kept_diffs.get(n, []))]
+    if have != text:
+        if write:
+            path.write_bytes(text.encode("utf-8"))
+            return info + "; the table written (run `check` again to see it applied)", problems
+        return info, problems + [f"{path.name} is not what `devcheck.py check --gtnh-numbers` writes ({len(diffs)} "
+                                 f"recipes with other numbers than GT's: run it, or keep a recipe in FORK_GTNH_NUMBERS_KEPT "
+                                 f"of prototypes/168-fork-gtnh-numbers.lua with its reason)"]
+    problems += [f"{n}: {', '.join(d)} (the table has GT's numbers, a file after 168-fork-gtnh-numbers.lua changes them: "
+                 f"set GT's numbers there or keep the recipe in FORK_GTNH_NUMBERS_KEPT)" for n, d in sorted(diffs.items())]
+    return info + "; the table is up to date", problems
+
+
+def check_ebf_heat(m, sec, write=False):
+    """Issue #620 (prototypes/fork-ebf-heat.lua, section EBFHEAT): every electric blast furnace has a coil slot and a
+    coil it is built with, every blast furnace recipe a heat, and every recipe's heat can be reached where it is
+    unlocked: at the recipe's technology (or the start) some blast furnace that runs its category, with a coil made
+    there (or the furnace's own), plus 100 K per tier above MV, has the heat. prototypes/data/gtnh-ebf-heat.lua is what
+    `check --gtnh-heat` writes: GT's heat of the matched recipes, and for those whose GT heat is out of reach there the
+    reachable heat as `cap` (left to issue #742: their unlocks move to their GT heat). Allow-list FORK_EBF_HEAT_LATE of
+    prototypes/fork-ebf-heat.lua (section EBFHEATLATE). Returns (info line, problems)."""
+    rows = sec.get("EBFHEAT", [])
+    if not rows:
+        return "no section EBFHEAT (older version)", []
+    coils = {r[1]: int(r[2]) for r in rows if r[0] == "coil"}
+    machines = {r[1]: {"tier": int(r[2]), "coil": int(r[3]), "cats": set(r[4].split(",")), "slot": r[5] == "true"}
+                for r in rows if r[0] == "machine"}
+    recipes = {r[1]: {"cat": r[2], "heat": int(float(r[3])) if r[3] else None, "gt": r[4] == "true"}
+               for r in rows if r[0] == "recipe"}
+    late = {r[0]: r[1] if len(r) > 1 else "" for r in sec.get("EBFHEATLATE", [])}
+    problems = [f"{n}: no coil slot" for n, v in sorted(machines.items()) if not v["slot"]]
+    problems += [f"{n}: no heat ({v['cat']})" for n, v in sorted(recipes.items()) if v["heat"] is None]
+    # the reach: per technology the recipes of its closure, the coils and furnaces they make
+    T, R = m.T, m.R
+    memo = {}
+
+    def closure(t):
+        if t not in memo:
+            rs = set(T[t]["eff"])
+            memo[t] = rs
+            for p in T[t]["pre"]:
+                if p in T:
+                    rs |= closure(p)
+        return memo[t]
+    start = {r for r, v in R.items() if v["en"] and not v["hidden"]}
+    makers = {}
+    for r, v in R.items():
+        if not v["hidden"] and "recycling" not in r:
+            for x in set(v["res"]):
+                makers.setdefault(x, set()).add(r)
+    item_of = {}
+    for it, pr in m.I.items():
+        item_of.setdefault(pr, set()).add(it)
+    unl = {}
+    for t, v in T.items():
+        for r in v["eff"]:
+            unl.setdefault(r, []).append(t)
+
+    def best(rs, cat):
+        out = None
+        made = lambda x: bool(makers.get(x, set()) & rs)
+        coil = max([h for c, h in coils.items() if made(c)], default=0)
+        for name, v in machines.items():
+            if cat in v["cats"] and any(made(i) for i in item_of.get(name, ())):
+                h = max(coil, v["coil"]) + 100 * (v["tier"] - 2)
+                out = h if out is None else max(out, h)
+        return out
+
+    def reach(name, cat):
+        """the heat reached where the recipe is unlocked (the lowest of its technologies), None: no furnace there"""
+        out = None
+        for t in ([None] if R[name]["en"] else unl.get(name, [])):
+            h = best(start | (closure(t) if t else set()), cat)
+            if h is not None:
+                out = h if out is None else min(out, h)
+        return out
+    gtnh_map, state = gtnh_state(sec)
+    table = gtnh_map.ebf_heat(state)
+    cap = {}
+    for name, h in table.items():
+        if name in recipes and name in R and not R[name]["hidden"] and name not in late:
+            r = reach(name, recipes[name]["cat"])
+            if r is not None and r < h:
+                cap[name] = r
+    text = gtnh_map.heat_lua(table, cap)
+    path = gtnh_map.HEAT_FILE
+    have = path.read_text(encoding="utf-8").replace("\r\n", "\n") if path.exists() else None
+    if have != text:
+        if write:
+            path.write_bytes(text.encode("utf-8"))
+        else:
+            problems.append(f"{path.name} is not what `devcheck.py check --gtnh-heat` writes ({len(table)} recipes with "
+                            f"GT's heat, {len(cap)} of them out of reach where they are unlocked)")
+    raised = 0
+    for name, v in sorted(recipes.items()):
+        if v["heat"] is None or name not in R or R[name]["hidden"]:
+            continue
+        raised += v["gt"]
+        r = reach(name, v["cat"])
+        if r is not None and r < v["heat"] and name not in late:
+            problems.append(f"{name}: needs {v['heat']} K, where it is unlocked the hottest blast furnace for {v['cat']} "
+                            f"has {r} K (unlock it later, or add it to FORK_EBF_HEAT_LATE of prototypes/fork-ebf-heat.lua "
+                            f"with its reason)")
+    problems += [f"FORK_EBF_HEAT_LATE: {n} has no reason" for n, why in sorted(late.items()) if not why]
+    problems += [f"FORK_EBF_HEAT_LATE: {n} is no blast furnace recipe" for n in sorted(late) if n not in recipes]
+    info = (f"{len(coils)} heating coils, {len(machines)} blast furnaces, {len(recipes)} blast furnace recipes, "
+            f"{raised} with GT's heat ({len(table)} in {path.name}, {len(cap)} of them at the heat reached where they "
+            f"are unlocked: #742), {len(late)} reached later on purpose (FORK_EBF_HEAT_LATE)")
+    return info, problems
+
+
+def check_radioactive(sec, write=False):
+    """Issue #621 (prototypes/fork-radiation.lua, section RADIATION): prototypes/data/radioactive.lua is what `check
+    --radioactive` writes (GT's radioactive materials on Gregtorio's items); with the radiation setting on, every item
+    of the table is in the mod data and the Hazmat Suit protects. Returns (info line, problems)."""
+    gtnh_map, state = gtnh_state(sec)
+    table = gtnh_map.radioactive(state)
+    text = gtnh_map.radioactive_lua(table)
+    path = gtnh_map.RADIOACTIVE_FILE
+    have = path.read_text(encoding="utf-8").replace("\r\n", "\n") if path.exists() else None
+    problems = []
+    if have != text:
+        if write:
+            path.write_bytes(text.encode("utf-8"))
+        else:
+            problems.append(f"{path.name} is not what `devcheck.py check --radioactive` writes ({len(table)} items)")
+    rows = sec.get("RADIATION", [])
+    on = any(r[0] == "setting" and r[1] == "true" for r in rows)
+    items = {r[1]: int(r[2]) for r in rows if r[0] == "item"}
+    armors = [r[1] for r in rows if r[0] == "armor"]
+    if on:
+        problems += [f"{n}: radioactive in {path.name} (level {lv}), not in the mod data fork-radiation"
+                     for n, lv in sorted(table.items()) if n not in items]
+        if "hazmat-suit" not in armors:
+            problems.append("the Hazmat Suit does not protect (mod data fork-radiation)")
+    elif items:
+        problems.append(f"the radiation setting is off, but the mod data has {len(items)} radioactive items")
+    from collections import Counter
+    levels = Counter(table.values())
+    return (f"setting {'on' if on else 'off'}: {len(table)} radioactive items (levels "
+            + ", ".join(f"{k}: {v}" for k, v in sorted(levels.items())) + f"), {len(armors)} protecting armors"), problems
+
+
+def check_gtnh_recycling(sec, write=False):
+    """Issue #686 (prototypes/157-fork-recycling.lua): prototypes/data/gtnh-recycling.lua holds GT New Horizons'
+    recycling of every material part that maps onto Gregtorio's names (tools/gtnh_map.py `recycling_imports` on the
+    dump), `check --gtnh-recycling` writes it; `check` fails when it is not what that writes and for an entry whose
+    recipe the load lacks. Returns (info line, problems)."""
+    sys.path.insert(0, str(ROOT / "tools"))
+    import gtnh_map
+    entries, items, skipped = gtnh_map.recycling_imports(gtnh_map.load_dump(gtnh_map.DUMP), gtnh_map.Gregtorio(sec))
+    text = gtnh_map.recycling_lua(entries, items)
+    path = gtnh_map.RECYCLING_FILE
+    have = path.read_text(encoding="utf-8").replace("\r\n", "\n") if path.exists() else None
+    from collections import Counter
+    kinds = Counter(e["kind"] for e in entries)
+    info = (f"{len(entries)} part recycling recipes of GT (" + ", ".join(f"{k} {v}" for k, v in sorted(kinds.items()))
+            + f"), {len(items)} other items GT recycles (157's rule), parts whose machine takes them already: " + (", ".join(f"{k} {v}" for k, v in sorted(skipped.items())) or "0"))
+    if have != text:
+        if write:
+            path.write_bytes(text.encode("utf-8"))
+            return info + "; the table written (run `check` again to load it)", []
+        return info, [f"{path.name} is not what `devcheck.py check --gtnh-recycling` writes (run it)"]
+    # (a recipe of an item that data-final-fixes.lua deletes, a vanilla or Space Age item, goes with it)
+    recipes = {r[1] for r in sec.get("DUMP", []) if r[0] == "R"}
+    gone = [e for e in entries if f"recycling-{e['kind']}-{e['item']}" not in recipes]
+    return info + f"; the table is up to date ({len(gone)} deleted with their item)", []
+
+
+def check_gtnh_routes(sec, write=False):
+    """Issue #687 (prototypes/158-fork-gt-parts.lua, section 3): prototypes/data/gtnh-part-routes.lua holds GT New
+    Horizons' recipes of the cutting machine, bender, extruder, wiremill, forge hammer, fluid solidifier and lathe that
+    Gregtorio lacks (tools/gtnh_map.py `route_imports` on the dump), `check --gtnh-routes` writes it; `check` fails when
+    it is not what that writes. Returns (info line, problems)."""
+    from collections import Counter
+    sys.path.insert(0, str(ROOT / "tools"))
+    import gtnh_map
+    entries, left = gtnh_map.route_imports(gtnh_map.load_dump(gtnh_map.DUMP), gtnh_map.Gregtorio(sec))
+    text = gtnh_map.routes_lua(entries)
+    path = gtnh_map.ROUTES_FILE
+    have = path.read_text(encoding="utf-8").replace("\r\n", "\n") if path.exists() else None
+    verbs = Counter(e["name"].split("-")[1] for e in entries)
+    recipes = {r[1] for r in sec.get("DUMP", []) if r[0] == "R"}
+    gone = {e["name"] for e in entries if e["name"] not in recipes}
+    info = (f"{len(entries)} GT part routes (" + ", ".join(f"{k} {v}" for k, v in sorted(verbs.items())) + "); left out: "
+            + (", ".join(f"{k} {v}" for k, v in sorted(left.items())) or "none"))
+    if have != text:
+        if write:
+            path.write_bytes(text.encode("utf-8"))
+            return info + "; the table written (run `check` again to load it)", []
+        return info, [f"{path.name} is not what `devcheck.py check --gtnh-routes` writes (run it)"]
+    # (a route whose items and fluids all exist in the load must have been made)
+    have_items = {r[1] for r in sec.get("DUMP", []) if r[0] in ("I", "F")}
+    names = lambda e: list(e["i"]) + list(e["f"]) + [o[0] for o in e["o"]] + list(e["fo"])
+    skipped = {r[0]: (r[1] if len(r) > 1 else "") for r in sec.get("GTROUTESKIP", [])}
+    why = Counter(skipped[n] for n in gone if n in skipped)
+    problems = [f"{n}: in {path.name}, but 158 neither made it nor says why (FORK_GT_PARTS.routes_skipped)"
+                for n in sorted(gone) if n not in skipped and all(x in have_items for x in names(next(
+                    e for e in entries if e["name"] == n)))]
+    return info + f"; the table is up to date ({len(gone)} not made: " + ", ".join(
+        f"{k} {v}" for k, v in sorted(why.items())) + ")", problems
+
+
+def check_gtnh_crafting(sec, write=False):
+    """Issue #688 (prototypes/158-fork-gt-parts.lua, section 4): prototypes/data/gtnh-part-crafting.lua holds GT New
+    Horizons' crafting table recipes of the material parts and dust piles that Gregtorio lacks, GT's tools as #612's
+    charges (tools/gtnh_map.py `crafting_imports`), `check --gtnh-crafting` writes it; `check` fails when it is not what
+    that writes and for a recipe of it that 158 neither made nor says why. Returns (info line, problems)."""
+    from collections import Counter
+    sys.path.insert(0, str(ROOT / "tools"))
+    import gtnh_map
+    entries, left = gtnh_map.crafting_imports(gtnh_map.load_dump(gtnh_map.DUMP), gtnh_map.Gregtorio(sec))
+    text = gtnh_map.crafting_lua(entries)
+    path = gtnh_map.CRAFTING_FILE
+    have = path.read_text(encoding="utf-8").replace("\r\n", "\n") if path.exists() else None
+    info = (f"{len(entries)} crafting table recipes of GT's parts; left out: "
+            + (", ".join(f"{k} {v}" for k, v in sorted(left.items())) or "none"))
+    if have != text:
+        if write:
+            path.write_bytes(text.encode("utf-8"))
+            return info + "; the table written (run `check` again to load it)", []
+        return info, [f"{path.name} is not what `devcheck.py check --gtnh-crafting` writes (run it)"]
+    recipes = {r[1] for r in sec.get("DUMP", []) if r[0] == "R"}
+    skipped = {r[0]: (r[1] if len(r) > 1 else "") for r in sec.get("GTROUTESKIP", [])}
+    gone = [e["name"] for e in entries if e["name"] not in recipes]
+    why = Counter(skipped.get(n, "?") for n in gone)
+    problems = [f"{n}: in {path.name}, but 158 neither made it nor says why" for n in gone if n not in skipped]
+    return info + f"; the table is up to date ({len(gone)} not made: " + ", ".join(
+        f"{k} {v}" for k, v in sorted(why.items())) + ")", problems
+
+
+def check_gtnh_chemistry(sec, write=False):
+    """Issue #691 (prototypes/158-fork-gt-parts.lua, section 3): prototypes/data/gtnh-chemistry.lua holds GT New
+    Horizons' recipes of the distillery, electrolyzer, autoclave, centrifuge, chemical reactors, mixer and chemical bath
+    that Gregtorio lacks (tools/gtnh_map.py `route_imports` with CHEM_IMPORT), `check --gtnh-chemistry` writes it; `check`
+    fails when it is not what that writes and for a recipe of it that 158 neither made nor says why. Returns (info line,
+    problems)."""
+    from collections import Counter
+    sys.path.insert(0, str(ROOT / "tools"))
+    import gtnh_map
+    entries, left = gtnh_map.route_imports(gtnh_map.load_dump(gtnh_map.DUMP), gtnh_map.Gregtorio(sec),
+                                           gtnh_map.CHEM_IMPORT, chemistry=True)
+    text = gtnh_map.routes_lua(entries, chemistry=True)
+    path = gtnh_map.CHEMISTRY_FILE
+    have = path.read_text(encoding="utf-8").replace(chr(13) + chr(10), chr(10)) if path.exists() else None
+    verbs = Counter(e["name"].split("-")[1] for e in entries)
+    info = (f"{len(entries)} GT chemistry recipes (" + ", ".join(f"{k} {v}" for k, v in sorted(verbs.items()))
+            + "); left out: " + (", ".join(f"{k} {v}" for k, v in sorted(left.items())) or "none"))
+    if have != text:
+        if write:
+            path.write_bytes(text.encode("utf-8"))
+            return info + "; the table written (run `check` again to load it)", []
+        return info, [f"{path.name} is not what `devcheck.py check --gtnh-chemistry` writes (run it)"]
+    recipes = {r[1] for r in sec.get("DUMP", []) if r[0] == "R"}
+    skipped = {r[0]: (r[1] if len(r) > 1 else "") for r in sec.get("GTROUTESKIP", [])}
+    gone = [e["name"] for e in entries if e["name"] not in recipes]
+    why = Counter(skipped.get(n, "?") for n in gone)
+    problems = [f"{n}: in {path.name}, but 158 neither made it nor says why" for n in gone if n not in skipped]
+    return info + f"; the table is up to date ({len(gone)} not made: " + ", ".join(
+        f"{k} {v}" for k, v in sorted(why.items())) + ")", problems
+
+
+def check_gtnh_metallurgy(sec, write=False):
+    """Issue #692 (prototypes/158-fork-gt-parts.lua, section 3): prototypes/data/gtnh-metallurgy.lua holds GT New
+    Horizons' recipes of the alloy blast smelter, blast furnace, alloy smelter, furnace, arc furnace and compressor
+    that Gregtorio lacks (tools/gtnh_map.py `route_imports` with METAL_IMPORT), `check --gtnh-metallurgy` writes it; `check`
+    fails when it is not what that writes and for a recipe of it that 158 neither made nor says why. Returns (info line,
+    problems)."""
+    from collections import Counter
+    sys.path.insert(0, str(ROOT / "tools"))
+    import gtnh_map
+    entries, left = gtnh_map.route_imports(gtnh_map.load_dump(gtnh_map.DUMP), gtnh_map.Gregtorio(sec),
+                                           gtnh_map.METAL_IMPORT, chemistry=True)
+    text = gtnh_map.routes_lua(entries, header=gtnh_map.METALLURGY_HEADER)
+    path = gtnh_map.METALLURGY_FILE
+    have = path.read_text(encoding="utf-8").replace(chr(13) + chr(10), chr(10)) if path.exists() else None
+    verbs = Counter(e["name"].split("-")[1] for e in entries)
+    info = (f"{len(entries)} GT metallurgy recipes (" + ", ".join(f"{k} {v}" for k, v in sorted(verbs.items()))
+            + "); left out: " + (", ".join(f"{k} {v}" for k, v in sorted(left.items())) or "none"))
+    if have != text:
+        if write:
+            path.write_bytes(text.encode("utf-8"))
+            return info + "; the table written (run `check` again to load it)", []
+        return info, [f"{path.name} is not what `devcheck.py check --gtnh-metallurgy` writes (run it)"]
+    recipes = {r[1] for r in sec.get("DUMP", []) if r[0] == "R"}
+    skipped = {r[0]: (r[1] if len(r) > 1 else "") for r in sec.get("GTROUTESKIP", [])}
+    gone = [e["name"] for e in entries if e["name"] not in recipes]
+    why = Counter(skipped.get(n, "?") for n in gone)
+    problems = [f"{n}: in {path.name}, but 158 neither made it nor says why" for n in gone if n not in skipped]
+    return info + f"; the table is up to date ({len(gone)} not made: " + ", ".join(
+        f"{k} {v}" for k, v in sorted(why.items())) + ")", problems
+
+
 def check_classic_veins(m, sec):
     """Issue #563 (prototypes/166-fork-classic-veins.lua): every vein the map places (GT's mixes on a planet with map
     veins, read by checkmod from FORK_ORE_MIXES) has its classic vein recipe and both twins, and the recipe gives the
@@ -1106,6 +1620,8 @@ ORE_BATHS = {
 ORE_BATHS["mercury"].update({"magnetite": "gold-dust", "chalcopyrite": "gold-dust"})
 ORE_BATHS["sodium-persulfate"].update({"yellow-limonite": "nickel-dust", "malachite": "copper-dust",
                                        "chalcopyrite": "cobalt-dust", "garnierite": "nickel-dust"})
+# issue #636: Mars's and Phobos's antimony (its byproduct zinc, GT's chemical bath in the GTNH recipe dump)
+ORE_BATHS["sodium-persulfate"]["antimony"] = "zinc-dust"
 def check_ore_baths(m):
     """Issue #186 (prototypes/155-fork-ore-chain.lua, phase O2): the chemical bath washes exactly the ores of ORE_BATHS
     with mercury or sodium persulfate into purified ore and the tagged material's dust, as in GTNH. Returns (number of
@@ -1140,6 +1656,8 @@ ORE_SEPARATOR = {"vanadium-magnetite": "gold", "tin": "iron", "ilmenite": "iron"
                  "granitic-mineral-sand": "gold", "glauconite-sand": "iron", "yellow-garnet": "iron"}
 # Issue #262: the other separator recipes of GTNH (gtnhlanth's monazite line, prototypes/159-fork-lanthanides.lua)
 SEPARATOR_OTHER = {"monazite-rarer-earth-sediment"}
+# issue #629: raw tengam dust into purified tengam dust (the GTNH recipe dump; prototypes/164-fork-chemistry.lua section 53)
+SEPARATOR_OTHER.add("purified-tengam-dust")
 # Issue #188: the gem ores of GTNH's sifter (table, crystallisable for the autoclave) and their gem items
 ORE_GEMS = {"ruby": ("ruby", False), "emerald": ("emerald", False), "diamond": ("diamond", False),
             "nether-quartz": ("nether-quartz", True), "certus-quartz": ("certus-quartz", True),
@@ -1239,7 +1757,7 @@ def check_ore_o3_o4(m):
             continue
         x = name[len("purified-"):]
         for src in (f"crushed-{x}", f"purified-{x}", f"centrifuged-{x}"):
-            if live(f"hammering-{src}") and m.R[f"hammering-{src}"]["cat"] == "lv-forge-hammer-recipes":
+            if live(f"hammering-{src}") and m.R[f"hammering-{src}"]["cat"].endswith("-forge-hammer-recipes"):   # (#724: any tier)
                 hammers += 1
             else:
                 out.append(f"{x}: the forge hammer does not crush {src}")
@@ -1292,7 +1810,7 @@ def check_ore_hammer(sec):
         crushes = any(r["name"].startswith("crushed-") for r in res)
         if o["category"] == MACERATOR_CAT and crushes:
             mac.setdefault(ing[0]["name"], []).append((o["name"], res))
-        elif o["category"] == HAMMER_CAT:
+        elif o["category"] == HAMMER_CAT or o["category"].endswith("-forge-hammer-recipes"):   # (issue #724: a higher tier)
             ham.setdefault(ing[0]["name"], []).append((o["name"], res))
         elif crushes:
             other.setdefault(ing[0]["name"], []).append((o["name"], res))
@@ -1358,6 +1876,8 @@ def check_circuit_icons(m):
 PGM_DUST_SOURCES = {"platinum-dust": {"reprecipitated-platinum-processing"},
                     "palladium-dust": {"reprecipitated-palladium-processing"},
                     "iridium-dust": {"iridium-dust"}, "osmium-dust": {"osmium-dust"}}
+# issue #633: the HTGR's tungsten fuel gives osmium dust in GTNH's centrifuge as it is (the GTNH dump)
+PGM_DUST_SOURCES["osmium-dust"].add("burned-triso-fuel-tungsten-centrifuging")
 def check_pgm_dusts(m):
     """Issue #199: no recipe but the platinum line's and the quantum force transformer's (`-qft-`) makes a dust of the
     platinum group; recycling does not count."""
@@ -1369,28 +1889,43 @@ def check_pgm_dusts(m):
             if name not in PGM_DUST_SOURCES[dust]:
                 out.append(f"{name} ({r['cat']}): makes {dust} outside the platinum line (GTNH: its powder or residue)")
     return out
+# Issue #760: every recipe of the quantum force transformer takes the focus plasma of #657 (139's FORK_QFT.focus)
+QFT_CATEGORY, QFT_FOCUS = "quantum-force-transformer-recipes", "neptunium-plasma"
+def check_qft_focus(m):
+    """Issue #760: every recipe of the QFT's category takes its focus plasma (139's qft_add adds it; a recipe written
+    elsewhere takes FORK_QFT.focus); returns (number of QFT recipes, problems)."""
+    names = sorted(n for n, r in m.R.items() if QFT_CATEGORY in r["cats"] and not r["hidden"])
+    return len(names), [f"{n}: no {QFT_FOCUS} (use FORK_QFT.focus)" for n in names if QFT_FOCUS not in m.R[n]["ing"]]
 # Issue #190: what a recycling recipe may give (prototypes/157-fork-recycling.lua)
 RECYCLE_PGM = {"metallic-platinum-powder", "metallic-palladium-powder", "iridium-metal-residue", "rarest-metal-mixture"}
+# issue #670: the dusts of prototypes/gt-parts-data.lua whose item name has no -dust (Gregtorio's antimony dust is antimony)
+RECYCLE_DUSTS = set(re.findall(r'dust = "([^"]+)"', (ROOT / "prototypes" / "gt-parts-data.lua").read_text(encoding="utf-8")))
+# issue #686: the material dusts and ingots named after their bare material (calcium, carbon, gallium dust; purified
+# tengam, the arc smelting material of attuned tengam)
+RECYCLE_BARE = {"calcium", "carbon", "gallium", "lithium", "purified-tengam"}
 def check_recycling(m, sec):
     """Issue #190 (prototypes/157-fork-recycling.lua): GTNH recycles an item into its materials, never into its parts. Every
-    recipe recycling-<machine>-<item> takes the one item (and oxygen in the arc furnace) and gives whole dusts, ingots, a
-    melt or the platinum line's powders; every entry of FORK_RECYCLING_BLACKLIST names an item and says why. Returns
+    recipe recycling-<machine>-<item> takes the one item (and oxygen in the arc furnace, the mold in the alloy smelter,
+    issue #686) and gives dusts, ingots, nuggets, a melt or the platinum line's powders; every entry of FORK_RECYCLING_BLACKLIST names an item and says why. Returns
     (info line, problems)."""
-    out, kinds = [], {"macerator": 0, "arc-furnace": 0, "fluid-extractor": 0}
+    out, kinds = [], {"macerator": 0, "arc-furnace": 0, "fluid-extractor": 0, "alloy-smelter": 0, "furnace": 0}
     for name, r in sorted(m.R.items()):
         if not name.startswith("recycling-"):
             continue
-        kind = next((k for k in ("macerator", "arc-furnace", "fluid-extractor") if name.startswith(f"recycling-{k}-")), None)
+        kind = next((k for k in kinds if name.startswith(f"recycling-{k}-")), None)
         if kind is None:
-            out.append(f"{name}: not a macerator, arc furnace or fluid extractor recycling recipe")
+            out.append(f"{name}: not a macerator, arc furnace, fluid extractor, alloy smelter or furnace recycling recipe")
             continue
         kinds[kind] += 1
         item = name[len(f"recycling-{kind}-"):]
-        extra = [i for i in r["ing"] if i != item and not (kind == "arc-furnace" and i == "oxygen")]
+        extra = [i for i in r["ing"] if i != item and not (kind == "arc-furnace" and i == "oxygen")
+                 and not (kind == "alloy-smelter" and i == "mold")]
         if item not in r["ing"] or extra:
             out.append(f"{name}: takes {', '.join(r['ing'])}, not {item}" + (" and oxygen" if kind == "arc-furnace" else ""))
-        for x in r["res"]:
-            ok = (x.endswith("-dust") or x.endswith("-ingot") or x.startswith("molten-") or x in RECYCLE_PGM)
+        for x, xk in zip(r["res"], r["resk"]):
+            # (issue #686: GT gives a part's material back as nuggets too, a plastic's melt has no molten- in its name)
+            ok = (x.endswith("-dust") or x.endswith("-ingot") or x.endswith("-nugget") or x.startswith("molten-")
+                  or x in RECYCLE_PGM or x in RECYCLE_DUSTS or x in RECYCLE_BARE or xk == "fluid" or x == "mold")
             if not ok:
                 out.append(f"{name}: gives {x}, not a material (GTNH recycles into materials, not parts)")
     for item, why, exists in sec.get("RECYCLEBLACK", []):
@@ -1399,8 +1934,62 @@ def check_recycling(m, sec):
         if exists != "true":
             out.append(f"FORK_RECYCLING_BLACKLIST[{item}]: no such item")
     info = (f"{sum(kinds.values())} recipes: {kinds['macerator']} macerator, {kinds['arc-furnace']} arc furnace, "
-            f"{kinds['fluid-extractor']} fluid extractor; blacklist {len(sec.get('RECYCLEBLACK', []))}")
+            f"{kinds['fluid-extractor']} fluid extractor, {kinds['alloy-smelter']} alloy smelter, {kinds['furnace']} furnace; "
+            f"blacklist {len(sec.get('RECYCLEBLACK', []))}")
     return info, out
+# Issue #670: the categories of Factorio 2.1's recycler (Space Age's recycling, deleted in data-final-fixes.lua)
+RECYCLER_CATEGORIES = {"recycling", "recycling-or-hand-crafting"}
+def check_blocks(m, sec):
+    """Issue #670 (prototypes/157-fork-recycling.lua): a material block (block-of-<material> or <material>-block that a
+    recipe of one ingredient makes: 9 ingots, gems or dusts, or the melt of 9 ingots) that a reachable recipe makes and no
+    reachable recipe takes (recycling counts) fails, unless it is in the allow-list FORK_BLOCKS_DEAD_END with its reason
+    (section BLOCKDEADOK); an entry that is no such block fails too. A recipe of a category of the recycler that is left
+    fails (data-final-fixes.lua deletes Space Age's recycling). Returns (info line, problems)."""
+    allow = {r[0]: (r[1] if len(r) > 1 else "") for r in sec.get("BLOCKDEADOK", [])}
+    material, reach, taken = set(), set(), set()
+    for r, v in m.R.items():
+        if v["hidden"]:
+            continue
+        for x in v["res"]:
+            if (x.startswith("block-of-") or x.endswith("-block")) and \
+                    len([i for i in v["ing"] if i != m.tools.get(r)]) == 1:
+                material.add(x)
+                if r in m.unlocked:
+                    reach.add(x)
+        if r in m.unlocked:
+            taken.update(v["ing"])
+    dead = sorted(b for b in material & reach if b not in taken)
+    problems = [f"{b}: no recipe takes it (give it GT's recipes in 157, or add it to FORK_BLOCKS_DEAD_END with its "
+                "reason)" for b in dead if b not in allow]
+    problems += [f"FORK_BLOCKS_DEAD_END: {b} has no reason" for b, why in sorted(allow.items()) if not why]
+    problems += [f"FORK_BLOCKS_DEAD_END: {b} is not a reachable material block that no recipe takes (remove the entry)"
+                 for b in sorted(allow) if b not in dead]
+    left = sorted(r for r, v in m.R.items() if v["cats"] & RECYCLER_CATEGORIES)
+    problems += [f"{r}: a recipe of the recycler's categories ({', '.join(sorted(m.R[r]['cats']))}) is left (Gregtorio "
+                 "has no recycler; data-final-fixes.lua deletes them)" for r in left]
+    return f"{len(material)} material blocks, {len(reach)} reachable, {len(dead)} that no recipe takes, {len(allow)} of " \
+           f"them on purpose (FORK_BLOCKS_DEAD_END); {len(left)} recycler recipes left", problems
+
+
+def check_parts_data(sec):
+    """Issue #734 (prototypes/gt-parts-data.lua, written by tools/gen_gt_parts.py): every metal of the run (an item
+    <metal>-ingot, not hot-) is a row of the data file or in its line "no GT, GT++ or Werkstoff source", the way the tool
+    picks them; a new metal fails until the tool is run again. Returns (info line, problems)."""
+    text = (ROOT / "prototypes" / "gt-parts-data.lua").read_text(encoding="utf-8")
+    rows = set(re.findall(r'^\t\["([a-z0-9-]+)"\] = ', text, re.M))
+    line = re.search(r"^--- no GT, GT\+\+ or Werkstoff source: (.*)$", text, re.M)
+    skipped = {s.strip() for s in line.group(1).split(",") if s.strip()} if line else set()
+    items = {r[1] for r in sec.get("DUMP", []) if r[0] == "I"}
+    metals = {n[:-len("-ingot")] for n in items if n.endswith("-ingot") and not n.startswith("hot-")}
+    problems = [f"{x}: a metal (an ingot) that gt-parts-data.lua does not list (run `python tools/gen_gt_parts.py "
+                "--gt <GT5-Unofficial>` after a check)" for x in sorted(metals - rows - skipped)]
+    problems += [f"{x}: listed in gt-parts-data.lua but no ingot in this run (run tools/gen_gt_parts.py)"
+                 for x in sorted((rows | skipped) - metals)]
+    if not line:
+        problems.append("gt-parts-data.lua has no line \"no GT, GT++ or Werkstoff source\" (run tools/gen_gt_parts.py)")
+    return f"{len(metals)} metals, {len(rows)} rows, {len(skipped)} without a GT, GT++ or Werkstoff source", problems
+
+
 def check_extractor_split(m):
     """Issue #152 (prototypes/151-fork-fluid-extractor.lua): as in GTNH, the Extractor makes items and the Fluid Extractor
     fluids. A recipe of an extractor category with a fluid result, or of a fluid extractor category without one, is in
@@ -1436,8 +2025,11 @@ def check_fluid_steps(sec):
     return [f"{r} ({kind}) {fluid}: {amount}" for r, kind, fluid, amount in sec.get("FLUIDSTEPS", [])]
 
 
+# issue #625: the entity types of the machines, which must have a description
+MACHINE_TYPES = ("assembling-machine", "furnace", "mining-drill", "generator", "burner-generator", "boiler", "reactor",
+                 "lab", "rocket-silo", "fusion-reactor", "fusion-generator", "agricultural-tower")
 NAME_CLASSES = ("item", "fluid", "recipe", "technology", "entity", "equipment", "tile", "item-group", "item-subgroup",
-                "autoplace-control")
+                "autoplace-control", "fuel-category")
 
 
 def locale_keys():
@@ -1500,6 +2092,17 @@ def defining_files():
     return out
 
 
+def check_tool_intermediates(sec):
+    """Issue #764: the crafting menu chains a missing ingredient through one hand recipe of it that allows intermediates
+    (section INTERMEDIATE of checkmod/control.lua: items with more than one such recipe); for a GT tool charge
+    (`*-usage`, prototypes/148-fork-gtnh-table-items.lua) it took the steel tool once Primitive Electronics unlocked it and
+    then crafted nothing without steel. A charge must have one such recipe, its iron tool's. Returns (info line, problems)."""
+    rows = sec.get("INTERMEDIATE", [])
+    problems = [f"{r[0]}: {r[1] if len(r) > 1 else ''} (only the iron tool may be an intermediate: allow_as_intermediate = false)"
+                for r in rows if r[0].endswith("-usage")]
+    return f"{len(rows)} items with more than one hand recipe the crafting menu may chain", sorted(problems)
+
+
 def check_placeable(sec):
     """Issue #336: a player-built entity of this mod that gives items when mined must be placeable again by one of them
     (section PLACEABLE of checkmod/control.lua: the runtime prototypes, the mined items and items_to_place_this); the T1
@@ -1517,19 +2120,20 @@ def check_placeable(sec):
 
 def check_names(sec):
     """Issue #230: every prototype this mod creates that a player can see (item, fluid, recipe, technology, entity,
-    equipment, tile, item group and subgroup, issue #529: autoplace control; section NAMES of checkmod/control.lua: the runtime prototypes, so the name
+    equipment, tile, item group and subgroup, issue #529: autoplace control, issue #769: fuel category; section NAMES of checkmod/control.lua: the runtime prototypes, so the name
     is the one the engine resolves from the final data stage) must have a name: every key of its localised name must be
     in a locale file. The engine names a recipe after its product only when the recipe has the product's name;
     any other recipe shows `recipe-name.<recipe>`, with a main product or not (prototypes/fork-locale.lua gives
     Gregtorio's recipes their product's name as the fallback). Shown: not hidden (an item or fluid also when a recipe
     that is not hidden takes or makes it), a technology that is enabled, an entity placed by an item, minable or a
     resource, a group or subgroup with a shown prototype. Allow-list FORK_LOCALE_MISSING (section LOCALEOK, "class:name"
-    -> reason). Returns (info lines, problems, missing default keys as "section\\tname" rows for tools/gen_locale.py)."""
+    -> reason). Issue #761: every [technology=...] link in this mod's locale opens a researchable technology.
+    Returns (info lines, problems, missing default keys as "section\\tname" rows for tools/gen_locale.py)."""
     if "NAMES" not in sec:
         return [], ["no DEVCHECK-NAMES section in the log (checkmod/control.lua did not run)"], []
     keys, files = locale_keys(), defining_files()
     allowed = {r[0]: r[1] if len(r) > 1 else "" for r in sec.get("LOCALEOK", [])}
-    seen, counts, problems, gen = set(), {}, [], []
+    seen, counts, problems, gen, machines = set(), {}, [], [], {}
     for r in sec["NAMES"]:
         cls, typ, name, created, shown = r[0], r[1], r[2], r[3], r[5]
         ls = json.loads(r[7]).get("n")
@@ -1547,6 +2151,15 @@ def check_names(sec):
             if not desc or missing_keys(desc, keys):
                 problems.append(f"{cls} {name}: no description of its ores"
                                 + (f" (unknown key {', '.join(missing_keys(desc, keys))})" if desc else ""))
+        if cls == "entity" and typ in MACHINE_TYPES:
+            # issue #625: a machine the player builds says what it does (prototypes/167-fork-tips.lua)
+            desc = json.loads(extra).get("d") if extra.startswith("{") else None
+            m = machines.setdefault(typ, [0, 0])
+            m[0] += 1
+            if not desc or missing_keys(desc, keys):
+                m[1] += 1
+                problems.append(f"{cls} {name} ({typ}, {files.get(name, 'built in a loop, no literal name')}): no "
+                                f"description (unknown key {', '.join(missing_keys(desc, keys)) if desc else '-'})")
         miss = missing_keys(ls, keys)
         if not miss or f"{cls}:{name}" in allowed:
             continue
@@ -1570,8 +2183,27 @@ def check_names(sec):
             problems.append(f"{k}: in FORK_LOCALE_MISSING but no prototype of this mod (remove the entry)")
         elif row and not missing_keys(json.loads(row[7]).get("n"), keys):
             problems.append(f"{k}: in FORK_LOCALE_MISSING but has a name (remove the entry)")
+    # issue #761: a [technology=...] link in this mod's locale (tier tips, descriptions) must open a technology the player
+    # can research: one that exists, is enabled and not hidden (the vanilla technologies data-final-fixes.lua disables
+    # are not)
+    researchable = {r[2] for r in sec["NAMES"] if r[0] == "technology" and r[5]}
+    links = 0
+    for f in sorted((ROOT / "locale/en").glob("*.cfg")):
+        section = None
+        for i, line in enumerate(f.read_text(encoding="utf-8").splitlines(), 1):
+            if line.startswith("[") and line.strip().endswith("]"):
+                section = line.strip()[1:-1]
+                continue
+            for tech in re.findall(r"\[technology=([^\]]+)\]", line):
+                links += 1
+                if tech not in researchable:
+                    problems.append(f"locale/en/{f.name}:{i} ({section}.{line.split('=', 1)[0]}) links "
+                                    f"[technology={tech}], which is hidden, disabled or missing")
     info = [f"{cls}: {counts[cls][0]} shown, {counts[cls][1]} without a name" for cls in NAME_CLASSES if cls in counts]
+    info.append(f"{links} technology links in the locale (issue #761)")
     info.append(f"{len(allowed)} kept without a name (FORK_LOCALE_MISSING)")
+    info.append("machines (issue #625): " + ", ".join(f"{t} {m[0]} shown, {m[1]} without a description"
+                                                       for t, m in sorted(machines.items())))
     return info, sorted(problems), sorted(set(gen))
 
 
@@ -1592,6 +2224,26 @@ def check_files(sec):
         if not (ROOT / path[len("__gregtorio-continued__/"):]).exists():
             missing.append(f"{path} ({owner})")
     return sorted(set(missing))
+
+
+def check_tick_handlers():
+    """Issue #765: Factorio keeps one handler per `script.on_nth_tick` interval (and one `script.on_tick`) for the whole
+    mod, so a second registration replaces the first silently (fork-wireless's 60 ticks switched the radiation off).
+    Reads control.lua and scripts/*.lua: every interval (a number, or a local constant of the file) may be registered
+    once. Returns the clashes."""
+    regs, ticks = {}, []
+    for f in [ROOT / "control.lua"] + sorted((ROOT / "scripts").glob("*.lua")):
+        src = re.sub(r"--[^\n]*", "", f.read_text(encoding="utf-8"))
+        consts = dict(re.findall(r"local\s+(\w+)\s*=\s*(\d+)\b", src))
+        for arg in re.findall(r"script\.on_nth_tick\(\s*([^,)]+)\s*,", src):
+            arg = arg.strip()
+            n = arg if arg.isdigit() else consts.get(arg, arg)
+            regs.setdefault(n, []).append(f.name)
+        ticks += [f.name] * len(re.findall(r"script\.on_tick\(", src))
+    bad = [f"on_nth_tick({n}) registered by {', '.join(files)}" for n, files in sorted(regs.items()) if len(files) > 1]
+    if len(ticks) > 1:
+        bad.append(f"on_tick registered by {', '.join(ticks)}")
+    return bad
 
 
 def check_sprites(sec):
@@ -1667,13 +2319,9 @@ REMOVED_KEYS_OTHER_MODS = {
     "storage-tank/configurable-valve-guage-output": "configurable-valves 2.0.2, as above",
 }
 
-UNRESEARCHABLE_OK = [
-    "battery-equipment", "battery-mk2-equipment", "battery-mk3-equipment", "belt-immunity-equipment",
-    "energy-shield-equipment", "energy-shield-mk2-equipment", "exoskeleton-equipment", "explosives",
-    "fission-reactor-equipment", "fusion-reactor", "fusion-reactor-equipment", "mech-armor", "modular-armor",
-    "night-vision-equipment", "personal-roboport-equipment", "personal-roboport-mk2-equipment", "power-armor",
-    "power-armor-mk2", "spidertron",
-]
+# Issue #640: empty since data-final-fixes.lua disables every vanilla technology behind a disabled one (the 19 armor,
+# equipment, explosives, fusion reactor and spidertron technologies that stood in the tree for good before)
+UNRESEARCHABLE_OK = []
 # Issue #29: the quality-of-life techs whose vanilla gate is disabled; each must be researchable or hidden
 # (prototypes/103-fork-qol-techs.lua re-gates them onto Gregtorio techs)
 QOL_TECHS = (["bulk-inserter", "stack-inserter", "logistics-3", "turbo-transport-belt",
@@ -2380,6 +3028,8 @@ def check(a):
                 rows.append(f"{t}: {state} [{sci}] unlocks {len(v['eff'])} recipes")
         report(f"technologies matching /{a.techs}/", rows, limit=400)
     report("missing graphics files", files)
+    tick_clashes = check_tick_handlers()
+    report("periodic handlers that replace each other (one handler per on_nth_tick interval, issue #765)", tick_clashes)
     report("sprite sheets too small", sprites)
     report("unlocked but uncraftable recipes", [f"{r}: {why}" for r, why in uncraft])
     required = check_required(m)
@@ -2440,6 +3090,31 @@ def check(a):
     trigger_info, trigger_only = check_trigger_items(m, sec)
     print(f"\nitems of craft triggers (issue #547): {trigger_info}")
     report("items whose only use is a technology's craft trigger (prototypes/100-fork-fixes.lua)", trigger_only)
+    oc_info, overclock = check_overclocking(sec)
+    print(f"\nGT overclocking (issue #616): {oc_info}")
+    report("machines whose power does not follow the GT overclocking setting (prototypes/fork-gt-overclocking.lua)", overclock)
+    heat_info, ebf_heat = check_ebf_heat(m, sec, getattr(a, "gtnh_heat", False))
+    print(f"\nblast furnace heat (issue #620): {heat_info}")
+    report("blast furnaces and recipes whose heat is missing or out of reach (prototypes/fork-ebf-heat.lua)", ebf_heat)
+    rad_info, radiation = check_radioactive(sec, getattr(a, "radioactive", False))
+    print(f"\nradiation (issue #621): {rad_info}")
+    report("radioactive items or armors that do not follow the radiation setting (prototypes/fork-radiation.lua)", radiation)
+    maint_info, maint = check_maintenance(sec)
+    print(f"\nmaintenance (issue #618): {maint_info}")
+    report("machines whose maintenance slot does not follow the maintenance setting (prototypes/fork-maintenance.lua)", maint)
+    spoil_info, spoiling = check_spoiling(m, sec)
+    print(f"\nspoiling items (issue #602): {spoil_info}")
+    report("items that spoil and that a reachable recipe makes (data-final-fixes.lua)", spoiling)
+    research_info, research_counts = check_research_counts(m, sec)
+    print(f"\nresearch counts from UV up (issue #605): {research_info}")
+    report("technologies whose count lies outside the band of their pack count (prototypes/138-fork-research-balance.lua)",
+           research_counts)
+    nyi_info, nyi_icons = check_nyi_icons(sec)
+    print(f"\nNYI placeholder icons (issue #639): {nyi_info}")
+    report("shown prototypes with the NYI placeholder icon (prototypes/199-fork-finalize.lua)", nyi_icons)
+    gtnh_icon_info, gtnh_icons = check_gtnh_icons(sec)
+    print(f"\nGTNH's rendered icons (issue #713): {gtnh_icon_info}")
+    report("GTNH icons without their manifest row, file or item (tools/import_gtnh_icons.py)", gtnh_icons)
     lens_info, lenses = check_engraver_lenses(m, sec)
     print(f"\nlaser engraver lenses (issue #325): {lens_info}")
     report("laser engraver recipes without a lens (prototypes/155-fork-ore-chain.lua)", lenses)
@@ -2450,6 +3125,10 @@ def check(a):
     place_info, unplaceable = check_placeable(sec)
     print(f"\nplaceable entities (issue #336): {place_info}")
     report("entities whose mined item does not place them again (place_result missing or wrong)", unplaceable)
+    tool_info, tool_chain = check_tool_intermediates(sec)
+    print(f"\nGT tool charges in the crafting menu (issue #764): {tool_info}")
+    report("tool charges with more than one hand recipe the crafting menu may chain (prototypes/148-fork-gtnh-table-items.lua)",
+           tool_chain)
     vanilla_info, vanilla = check_vanilla_recipes(m, sec)
     print(f"\nvanilla recipes of Gregtorio's items (issues #317, #318): {vanilla_info}")
     report("vanilla recipes without a technology whose products Gregtorio makes another way (delete them in "
@@ -2487,6 +3166,7 @@ def check(a):
     o34_info, ore_o34 = check_ore_o3_o4(m)
     circuit_n, circuit_icons = check_circuit_icons(m)
     pgm_dusts = check_pgm_dusts(m)
+    qft_n, qft_focus = check_qft_focus(m)
     recycle_info, recycling = check_recycling(m, sec)
     print(f"\nseparator, gems and forge hammer of the ore chain (issues #187, #188): {o34_info}")
     report("separator, gem and forge hammer steps that differ from GTNH (prototypes/155-fork-ore-chain.lua)", ore_o34)
@@ -2497,8 +3177,18 @@ def check(a):
     print(f"\ncircuit variant recipes up to UV (issue #164): {circuit_n}")
     report("circuit recipes without their own icon (issue #164)", circuit_icons)
     report("platinum group dusts made outside the platinum line (issue #199)", pgm_dusts)
+    print(f"\nquantum force transformer recipes with the focus plasma (issue #760): {qft_n - len(qft_focus)} of {qft_n}")
+    report("QFT recipes without the focus plasma (issue #760: FORK_QFT.focus of prototypes/139-fork-endgame-multiblocks.lua)",
+           qft_focus)
     print(f"\nrecycling (issue #190): {recycle_info}")
     report("recycling recipes that differ from GTNH's rule (prototypes/157-fork-recycling.lua)", recycling)
+    blocks_info, blocks = check_blocks(m, sec)
+    print(f"\nmaterial blocks and Space Age's recycling (issue #670): {blocks_info}")
+    report("material blocks that no recipe takes, and recipes of the recycler (prototypes/157-fork-recycling.lua, "
+           "data-final-fixes.lua)", blocks)
+    parts_data_info, parts_data = check_parts_data(sec)
+    print(f"\nGT's parts data (issue #734): {parts_data_info}")
+    report("metals that prototypes/gt-parts-data.lua does not match (tools/gen_gt_parts.py)", parts_data)
     extractor_split = check_extractor_split(m)
     report("extractor recipes in the wrong machine (issue #152: items in the Extractor, fluids in the Fluid Extractor)",
            extractor_split)
@@ -2524,13 +3214,33 @@ def check(a):
     for line in names_info:
         print("  " + line)
     report("prototypes without a name (\"Unknown key\" in the game; add the locale entry, a main product or the "
-           "allow-list FORK_LOCALE_MISSING of prototypes/fork-locale.lua)", names, limit=60)
+           "allow-list FORK_LOCALE_MISSING of prototypes/fork-locale.lua) and machines without a description (issue #625: "
+           "an entity-description or a kind of [fork-machine] in prototypes/167-fork-tips.lua)", names, limit=60)
     table_info, vein_doc = check_vein_table(sec, getattr(a, "vein_table", False))
     print(f"\nvein table of docs/ORE-VEINS.md (issue #574): {table_info}")
     report("the vein table of docs/ORE-VEINS.md", vein_doc)
     renames_info, renames = check_item_renames(m, getattr(a, "item_renames", False))
     print(f"\nitem renames for the ME network (issue #580, prototypes/data/item-renames.lua): {renames_info}")
     report("the item renames of prototypes/data/item-renames.lua", renames)
+    gtnh_info, gtnh_numbers = check_gtnh_numbers(sec, getattr(a, "gtnh_numbers", False))
+    print(f"\nGT New Horizons' numbers (issue #689, prototypes/data/gtnh-numbers.lua): {gtnh_info}")
+    report("recipes with other numbers than GT New Horizons' (prototypes/168-fork-gtnh-numbers.lua)", gtnh_numbers)
+    parts_rec_info, parts_recycling = check_gtnh_recycling(sec, getattr(a, "gtnh_recycling", False))
+    print(f"\nGT's recycling of the material parts (issue #686, prototypes/data/gtnh-recycling.lua): {parts_rec_info}")
+    report("GT's part recycling (prototypes/157-fork-recycling.lua)", parts_recycling)
+    routes_info, part_routes = check_gtnh_routes(sec, getattr(a, "gtnh_routes", False))
+    print("\nGT's part routes of the cutting machine, bender, extruder, wiremill, forge hammer, solidifier and lathe "
+          f"(issue #687, prototypes/data/gtnh-part-routes.lua): {routes_info}")
+    report("GT's part routes (prototypes/158-fork-gt-parts.lua)", part_routes)
+    craft_info, part_crafting = check_gtnh_crafting(sec, getattr(a, "gtnh_crafting", False))
+    print("\nGT's crafting table recipes of the parts (issue #688, prototypes/data/gtnh-part-crafting.lua): " + craft_info)
+    report("GT's crafting table recipes of the parts (prototypes/158-fork-gt-parts.lua)", part_crafting)
+    chem_info, chemistry = check_gtnh_chemistry(sec, getattr(a, "gtnh_chemistry", False))
+    print(chr(10) + "GT's chemistry and separation recipes (issue #691, prototypes/data/gtnh-chemistry.lua): " + chem_info)
+    report("GT's chemistry and separation recipes (prototypes/158-fork-gt-parts.lua)", chemistry)
+    metal_info, metallurgy = check_gtnh_metallurgy(sec, getattr(a, "gtnh_metallurgy", False))
+    print(chr(10) + "GT's metallurgy recipes (issue #692, prototypes/data/gtnh-metallurgy.lua): " + metal_info)
+    report("GT's metallurgy recipes (prototypes/158-fork-gt-parts.lua)", metallurgy)
     if getattr(a, "fluids_out", None):
         Path(a.fluids_out).write_text("\n".join("\t".join(r) for r in sec.get("FLUIDS", [])) + "\n", encoding="utf-8")
         print(f"\nfluid list written to {a.fluids_out} (input for tools/gen_review_sheet.py fluids)")
@@ -2544,9 +3254,11 @@ def check(a):
     ok = not (files or [s for s in sprites if not s.startswith("(")] or uncraft or menu or required or unresearchable
               or new_drafts or fluid_problems or locked or one_pack or fluid_steps or table_only or me_recipes or me_tab
               or extractor_split or ore_mixes or ore_chain or ore_baths or ore_o34 or ore_hammer
-              or circuit_icons or pgm_dusts or recycling or names or gaps or tree or vanilla or lenses or mine_twins
-              or unplaceable or stale_unlocks or removed_keys or trigger_only or classic_veins or early or furnace
-              or steam or nugget or steam_rates or boiler_output or vein_doc or renames)
+              or circuit_icons or pgm_dusts or qft_focus or recycling or blocks or names or gaps or tree or vanilla or lenses or mine_twins
+              or unplaceable or tool_chain or stale_unlocks or removed_keys or trigger_only or spoiling or classic_veins or early
+              or furnace or research_counts or nyi_icons or gtnh_icons or overclock or maint or ebf_heat or radiation
+              or steam or nugget or steam_rates or boiler_output or vein_doc or renames or gtnh_numbers or parts_recycling or part_routes or part_crafting or chemistry or metallurgy
+              or tick_clashes)
     print("\nRESULT:", "OK" if ok else "PROBLEMS FOUND")
     return 0 if ok else 1
 
@@ -2589,6 +3301,18 @@ def boilers(a):
     if check(c):
         return 1
     print(f"\n=== boiler output ({BOILER_OUTPUT}={BOILERS_SET}): runtime ===")
+    return runtime(c)
+
+
+def overclocking(a):
+    """Part of `all` (issue #616): check and runtime once more with GT overclocking on (every machine from MV up draws 4x
+    power per tier), and with maintenance (issue #618: every crafting multiblock has a maintenance slot) and radiation (issue #621) on."""
+    c = argparse.Namespace(**vars(a))
+    c.set, c.balance_out, c.fluids_out, c.locale_out, c.techs = [f"{OVERCLOCK}=true", f"{MAINTENANCE}=true", f"{RADIATION}=true"], None, None, None, None
+    print(f"\n=== GT overclocking ({OVERCLOCK}=true) and the optional hazards ({MAINTENANCE}, {RADIATION}=true): check ===")
+    if check(c):
+        return 1
+    print(f"\n=== GT overclocking ({OVERCLOCK}=true) and the optional hazards ({MAINTENANCE}, {RADIATION}=true): runtime ===")
     return runtime(c)
 
 
@@ -2641,8 +3365,8 @@ def runtime(a):
     fails += re.findall(r"DEVCHECK-RUNTIME-FAIL (.*)", log)
     print(f"benchmark: {ran.group(0) if ran else 'did not run'}")
     # the ME network's runtime tests are in me-network since issue #83 (its tools/devcheck)
-    tests = (("MOLD", "mold test"), ("LENS", "lens test"), ("POWER", "power test"), ("FUEL", "fuel check test"), ("COOLED", "cooled fluid test"),
-             ("TIERS", "turbine tier test"), ("RECIPES", "recipe test"), ("CRUSH", "raw ore crushing test"), ("OREFURNACE", "ore furnace line test"), ("STEAM", "steam turbine test"), ("CHAIN", "nuclear chain test"), ("LFTR", "LFTR test"), ("LSC", "supercapacitor test"), ("LSUP", "supercapacitor upgrade test"), ("ELEVATOR", "space elevator test"), ("MELT", "melt and cast test"), ("OFFER", "offered recipes test"), ("EMINE", "electric mine test"), ("SOLAR", "solar boiler test"), ("COALBOILER", "coal boiler test"),("TORCH", "torch test"), ("BATTERY", "battery buffer test"), ("VEINS", "map vein test"), ("CLASSIC", "classic vein test"), ("DRILLS", "mining drill test"), ("PORTAL", "portal test"), ("ENDER", "ender storage test"), ("VICTORY", "victory test"),
+    tests = (("MOLD", "mold test"), ("LENS", "lens test"), ("MOLDCLONE", "cloned mold machine test"), ("POWER", "power test"), ("FUEL", "fuel check test"), ("COOLED", "cooled fluid test"),
+             ("TIERS", "turbine tier test"), ("RECIPES", "recipe test"), ("CRUSH", "raw ore crushing test"), ("OREFURNACE", "ore furnace line test"), ("STEAM", "steam turbine test"), ("CHAIN", "nuclear chain test"), ("LFTR", "LFTR test"), ("DYSON", "Dyson Swarm test"), ("LSC", "supercapacitor test"), ("LSUP", "supercapacitor upgrade test"), ("ELEVATOR", "space elevator test"), ("MELT", "melt and cast test"), ("OFFER", "offered recipes test"), ("EMINE", "electric mine test"), ("SOLAR", "solar boiler test"), ("COALBOILER", "coal boiler test"),("TORCH", "torch test"), ("MAINT", "maintenance test"), ("WATERPUMP", "steam water pump test"), ("EBFHEAT", "blast furnace heat test"), ("RADIATION", "radiation test"), ("WIRELESS", "wireless energy test"), ("PLAYER", "player path test"), ("BATTERY", "battery buffer test"), ("VEINS", "map vein test"), ("CLASSIC", "classic vein test"), ("DRILLS", "mining drill test"), ("PORTAL", "portal test"), ("ENDER", "ender storage test"), ("VICTORY", "victory test"),
              ("POSTVICTORY", "post-victory test"))
     for key, label in tests:
         m = re.search(rf"DEVCHECK-RUNTIME-{key} (.*)", log)
@@ -2658,6 +3382,68 @@ def runtime(a):
         return 1
     print("\nRESULT: OK")
     return 0
+
+
+def desync(a):
+    """Issue #651 (the maintainer's decision of 2026-10-30): the runtime map on a headless server that runs with nobody
+    connected, in Factorio's heavy mode (`/toggle-heavy-mode` over RCON: every tick the game is saved, loaded and run
+    on both copies, and any difference is a failed heavy mode check with a dump in the write data's `dumps/`), for
+    `--desync-ticks` ticks: a script whose state is not in `storage` (a local that a load resets) shows up as a desync.
+    A headless Factorio cannot join a game as a client, so this is the multiplayer check devcheck can run."""
+    import time
+    prepare_mods(with_runtime=True, settings=parse_settings(getattr(a, "set", None)))
+    mapfile = WORK / "desync-map.zip"
+    log = factorio("--create", str(mapfile), *seed_args(a))
+    if load_errors(log):
+        print(load_errors(log))
+        return 1
+    dumps = FACTORIO / "dumps"
+    if dumps.exists():
+        shutil.rmtree(dumps, ignore_errors=True)
+    ticks = getattr(a, "desync_ticks", None) or 600
+    state = {}
+
+    def session(sock):
+        tick = lambda: rcon(sock, 2, "/silent-command rcon.print(game.tick)", 90).strip()
+        tick()     # (the first Lua command only warns that it disables achievements)
+        start = int(tick() or 0)
+        rcon(sock, 2, "/toggle-heavy-mode", 91)
+        t0, now = time.time(), start
+        while now < start + ticks and time.time() < t0 + 60 * 60:
+            time.sleep(5)
+            try:
+                now = int(tick() or now)
+            except ValueError:
+                pass
+        rcon(sock, 2, "/toggle-heavy-mode", 92)
+        state.update(start=start, end=now, seconds=round(time.time() - t0))
+        return []
+    log_path = WORK / "desync-server.log"
+    log, reason, _ = server_session(mapfile, log_path, "devcheck desync: the runtime map in heavy mode",
+                                    auto_pause=False, session=session)
+    failed = re.findall(r"Heavy mode (?:heuristic )?check (\S+) failed", log)
+    checked = len(re.findall(r"Heavy mode - tick \d+ finished", log))
+    n_dumps = len(list(dumps.iterdir())) if dumps.exists() else 0
+    print(f"heavy mode: ticks {state.get('start')} to {state.get('end')} ({checked} checked in {state.get('seconds')} s), "
+          f"{len(failed)} failed checks, {n_dumps} dumps in {dumps}")
+    problems = []
+    if reason and not re.search(r"did not save the map", reason):
+        problems.append(reason)
+    if checked < ticks * 0.9:
+        problems.append(f"only {checked} ticks checked in heavy mode (of {ticks})")
+    problems += [f"desync: the heavy mode check {c} failed (dump in {dumps})" for c in sorted(set(failed))]
+    report("desync problems (a script's state outside `storage`, or a difference between the game and its loaded copy)",
+           problems)
+    print("\nRESULT:", "PROBLEMS FOUND" if problems else "OK")
+    return 1 if problems else 0
+
+
+def desync_all(a):
+    """Part of `all` (issue #651): the heavy mode run"""
+    c = argparse.Namespace(**vars(a))
+    c.set = None
+    print("\n=== desync: the runtime map in heavy mode ===")
+    return desync(c)
 
 
 def zip_from_ref(ref):
@@ -2766,7 +3552,7 @@ def load_and_save(mapfile, log_path):
     return log, reason
 
 
-def server_session(step, log_path, description, commands=()):
+def server_session(step, log_path, description, commands=(), auto_pause=True, session=None):
     """Loads the save `step` in a headless server with nobody connected and `auto_pause`, sends `commands` through RCON
     (each Lua command runs one tick), quits through RCON: the server saves the map back into `step` when it quits.
     Returns the server log, None or a reason, and the RCON answers of the commands. The ports are free ones (another
@@ -2781,7 +3567,7 @@ def server_session(step, log_path, description, commands=()):
     binary = FACTORIO / ("bin/x64/factorio.exe" if os.name == "nt" else "bin/x64/factorio")
     settings = WORK / "server-settings.json"
     settings.write_text(json.dumps({"name": "devcheck", "description": description,
-                                    "visibility": {"public": False, "lan": False}, "auto_pause": True,
+                                    "visibility": {"public": False, "lan": False}, "auto_pause": auto_pause,
                                     "require_user_verification": False, "max_players": 1}), encoding="utf-8")
     reason, answers = None, []
     with open(log_path, "w", encoding="utf-8") as out:
@@ -2805,6 +3591,8 @@ def server_session(step, log_path, description, commands=()):
             else:
                 for i, command in enumerate(commands):
                     answers.append(rcon(sock, 2, command, 10 + i))
+                if session:
+                    answers += session(sock)
                 try:
                     rcon(sock, 2, "/quit", 2)
                 except OSError:
@@ -3322,6 +4110,34 @@ def menusim_rebuild(a):
     return 1 if failed else 0
 
 
+def gtnh_diff(a):
+    """Issue #679 (a report, not part of `all`): Gregtorio's recipes against the GT New Horizons recipe dump
+    (tools/gtnh_dump/gtnh-recipes.json.gz; issue #714: gtnh-merged.json.gz, merged with the full-pack NEI dump, when it
+    exists) through tools/gtnh_map.py; per GT recipe map the recipes Gregtorio has, has with other numbers or lacks,
+    written to .devcheck/gtnh-diff.md and .json. Loads the mod like `check` unless `--log` names the log of an earlier
+    `check` run."""
+    sys.path.insert(0, str(ROOT / "tools"))
+    import gtnh_map
+    if a.log:
+        log = Path(a.log).read_text(encoding="utf-8", errors="replace")
+    else:
+        prepare_mods()
+        log = factorio("--create", str(WORK / "check-map.zip"))
+        if load_errors(log):
+            print("load: FAILED\n" + load_errors(log))
+            return 1
+    sec = sections(log)
+    if "BALANCE" not in sec or "DUMP" not in sec:
+        sys.exit("the log has no DUMP/BALANCE section (a `check` run's .devcheck/last-run.log is needed)")
+    dump = gtnh_map.load_dump(a.dump or gtnh_map.DUMP)
+    per_map, tot, groups = gtnh_map.run(dump, sec, a.out, a.json)
+    print(gtnh_map.summary(tot, a.out))
+    print("\nlargest gaps (map, material or form, missing recipes):")
+    for (mname, grp), n in groups.most_common(10):
+        print(f"  {mname}: {grp}: {n}")
+    return 0
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     sub = ap.add_subparsers(dest="cmd", required=True)
@@ -3338,6 +4154,22 @@ def main():
                    help="issue #574: write the vein table of docs/ORE-VEINS.md from the mod's placed veins")
     c.add_argument("--item-renames", action="store_true",
                    help="issue #580: write prototypes/data/item-renames.lua from the item renames of the JSON migrations")
+    c.add_argument("--gtnh-metallurgy", action="store_true",
+                   help="issue #692: write prototypes/data/gtnh-metallurgy.lua, GT's metallurgy recipes Gregtorio lacks")
+    c.add_argument("--gtnh-chemistry", action="store_true",
+                   help="issue #691: write prototypes/data/gtnh-chemistry.lua, GT's chemistry recipes Gregtorio lacks")
+    c.add_argument("--gtnh-crafting", action="store_true",
+                   help="issue #688: write prototypes/data/gtnh-part-crafting.lua, GT's crafting table recipes of the parts")
+    c.add_argument("--gtnh-routes", action="store_true",
+                   help="issue #687: write prototypes/data/gtnh-part-routes.lua, GT New Horizons' part routes Gregtorio lacks")
+    c.add_argument("--gtnh-recycling", action="store_true",
+                   help="issue #686: write prototypes/data/gtnh-recycling.lua, GT New Horizons' recycling of the material parts")
+    c.add_argument("--radioactive", action="store_true",
+                   help="issue #621: write prototypes/data/radioactive.lua, GT's radiation levels of Gregtorio's items")
+    c.add_argument("--gtnh-heat", action="store_true",
+                   help="issue #620: write prototypes/data/gtnh-ebf-heat.lua, GT New Horizons' blast furnace heat of the matched recipes")
+    c.add_argument("--gtnh-numbers", action="store_true",
+                   help="issue #689: write prototypes/data/gtnh-numbers.lua, GT New Horizons' numbers of the matched recipes")
     c.add_argument("--set", action="append", metavar="SETTING=VALUE",
                    help="force a startup setting for this run (bool, number or string), e.g. "
                    "gregtorio-continued-one-pack-research=true or gregtorio-continued-boiler-output=4")
@@ -3382,8 +4214,20 @@ def main():
     sub.add_parser("handover", help="issue #83: prototype of the ME state hand-over to me-network")
     sw = sub.add_parser("switch", help="issue #563: a save switches its ore mode, both ways")
     sw.add_argument("--seed", default=str(DEFAULT_SEED), help=f"map seed or `random` (default {DEFAULT_SEED})")
+    gd = sub.add_parser("gtnh-diff", help="issue #679: report of Gregtorio's recipes against GT New Horizons' recipe dump")
+    gd.add_argument("--dump", help="default: tools/gtnh_dump/gtnh-merged.json.gz (issue #714) if it exists, else "
+                                   "tools/gtnh_dump/gtnh-recipes.json.gz")
+    gd.add_argument("--log", help="use the log of an earlier `check` run instead of loading the mod")
+    gd.add_argument("--out", default=str(WORK / "gtnh-diff.md"))
+    gd.add_argument("--json", default=str(WORK / "gtnh-diff.json"))
+    ds = sub.add_parser("desync", help="issue #651: the runtime map in Factorio's heavy mode on a headless server")
+    ds.add_argument("--desync-ticks", type=int, default=600, help="ticks run in heavy mode (default 600)")
+    ds.add_argument("--set", action="append", help="startup setting name=value (as `check`)")
+    ds.add_argument("--seed", default=str(DEFAULT_SEED), help=f"map seed or `random` (default {DEFAULT_SEED})")
     al = sub.add_parser("all")
     al.add_argument("--ticks", type=int, default=1500)
+    al.add_argument("--desync-ticks", type=int, default=600)
+    al.add_argument("--no-desync", action="store_true", help="issue #651: leave out the heavy mode run (the CI of a pull request)")
     al.add_argument("--locale-out")
     al.add_argument("--techs")
     al.add_argument("--seed", default=str(DEFAULT_SEED), help=f"map seed of the runtime map or `random` (default {DEFAULT_SEED})")
@@ -3402,7 +4246,12 @@ def main():
         return handover(a)
     if a.cmd == "switch":
         return switch(a)
-    return check(a) or one_pack(a) or runtime(a) or classic(a) or boilers(a) or menusim_own(a)
+    if a.cmd == "gtnh-diff":
+        return gtnh_diff(a)
+    if a.cmd == "desync":
+        return desync(a)
+    return (check(a) or one_pack(a) or runtime(a) or classic(a) or boilers(a) or overclocking(a) or menusim_own(a)
+            or (0 if a.no_desync else desync_all(a)))
 
 
 if __name__ == "__main__":

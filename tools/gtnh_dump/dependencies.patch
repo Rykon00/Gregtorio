@@ -1,0 +1,15 @@
+diff --git a/dependencies.gradle b/dependencies.gradle
+index 2588a5a..12acae3 100644
+--- a/dependencies.gradle
++++ b/dependencies.gradle
+@@ -140,6 +140,10 @@ dependencies {
+     testImplementation("org.joml:joml:1.10.8")
+     testImplementation("com.github.GTNewHorizons:Chisel:2.17.34-GTNH:dev") { transitive = false }
+ 
++    // gtnhdump (local patch, Gregtorio issue #679): GTNH's own recipes (circuit assembler, ...) from the core mod
++    runtimeOnlyNonPublishable("com.github.GTNewHorizons:NewHorizonsCoreMod:2.9.97:dev") { transitive = false }
++    runtimeOnlyNonPublishable("com.github.GTNewHorizons:Yamcl:0.7.5:dev") { transitive = false }
++    runtimeOnlyNonPublishable("net.glease:tc4recipelib:1.5.37:dev") { transitive = false }
+     runtimeOnlyNonPublishable("com.github.GTNewHorizons:DuraDisplay:1.4.6:dev")
+     runtimeOnlyNonPublishable('com.github.GTNewHorizons:EnderIO:2.10.49:dev')
+     runtimeOnlyNonPublishable('com.github.GTNewHorizons:HoloInventory:2.5.17-GTNH:dev')

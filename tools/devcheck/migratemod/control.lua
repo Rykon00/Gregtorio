@@ -193,6 +193,8 @@ local TT_STEAM_FORCE, TT_STEAM_TECHS = "devcheck-steam-age", { "steam-macerator"
 local TT_STEAM_MOVED = {
 	["dimension-mine"] = true,   -- issue #556: with Primitive Electronic Circuit Assemblies (before: Craft Wooden Tools)
 	["gravel"] = true,           -- issue #560: the forge hammer's, with Steam Forge Hammer (before: Steam Macerator)
+	["offshore-pump"] = true,    -- issue #613: GT's Basic Pump with the LV pump (before: Small Coal Boiler)
+	["recycling-macerator-offshore-pump"] = true,   -- (its recycling follows it)
 }
 
 local function setup_techs()
@@ -726,7 +728,7 @@ local function setup_patterns(place)
 	--- crafting CPUs are multiblocks since me-network 0.3.0 (issue #6): a lone ME Crafting CPU is no CPU there, no job
 	--- (a version without the legacy CPU has the multiblock one built above: a job that does not start there fails)
 	local no_cpu = not id and why == "no-free-cpu" and prototypes.entity["me-crafting-unit"] and prototypes.entity["me-crafting-cpu"]
-	storage.job = { id = id, provider = p, skipped = no_cpu and true or nil,
+	storage.job = { id = id, provider = p, drive = drive, skipped = no_cpu and true or nil,
 		multiblock = not prototypes.entity["me-crafting-cpu"] or nil }
 	log("DEVCHECK-MIGRATE-SETUP-JOB " .. (id and "ok" or no_cpu and "skipped (crafting CPUs are multiblocks since me-network 0.3.0)"
 		or ("failed (" .. tostring(why) .. ")")))
@@ -2089,6 +2091,15 @@ script.on_nth_tick(30, function(event)
 	if storage.job and not storage.job_recipe then
 		storage.job_recipe = true
 		game.forces.player.recipes[PT_RECIPE].enabled = true
+		--- issue #612: the hand recipe takes GT's tool charges now; the job of the old save goes on once the network has them
+		local d = storage.job.drive
+		if d and d.valid then
+			for _, ing in pairs(prototypes.recipe[PT_RECIPE].ingredients) do
+				if ing.type == "item" and not IT_JOB[ing.name] then
+					if R1() then remote.call(NET, "store_in_drive", d, ing.name, 50) else d.insert{ name = ing.name, count = 50 } end
+				end
+			end
+		end
 	end
 	if not storage.techs_checked and event.tick >= TT_CHECK_TICK then
 		storage.techs_checked = true

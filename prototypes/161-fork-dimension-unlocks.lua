@@ -164,7 +164,7 @@ end
 --- 155 puts the forge hammer steps of the raw and crushed ores with their source, the Void Miners; they stay with the rest
 --- of their chain (#286: Bedrockium and Quantium; black plutonium's with the Void Miner II, above)
 for ore, tech in pairs({ ["black-plutonium"] = VM_TECHS[2], neutronium = "bedrockium", adamantium = "bedrockium",
-	borax = "bedrockium", bedrockium = "bedrockium", ["cosmic-neutronium"] = "quantium", ["infinity-catalyst"] = "quantium" }) do
+	borax = "bedrockium", bedrockium = "bedrockium", ["cosmic-neutronium"] = "cosmic-neutronium", ["infinity-catalyst"] = "quantium" }) do
 	move_unlocks({ "hammering-raw-" .. ore, "hammering-crushed-" .. ore }, tech)
 end
 ore_dimension(VM_TECHS[1], { "black-plutonium", "neutronium", "adamantium" })
@@ -183,3 +183,72 @@ ore_dimension(ROSS, { "bornite" })
 
 --- issue #373: 155's recipes of the chemical dehydrators, which 159 makes (the Everglades ores' decompositions)
 FORK_ORE_CHAIN.unlock_after_159()
+
+
+
+--------------------------------------------------------------------------------
+--- THE DEEP DARK (issue #636, the maintainer's decision of 2026-10-28): GTNH's T10 dimension (gtneioreplugin/util/
+--- DimensionHelper.java:177, "Underdark"), where the Void Miner mines every ore of GT, bartworks and GT++ at weight 1
+--- unless configured (bwcrossmod/galacticgreg/VoidMinerLoader.java:29-90). Here a Void Miner III recipe with every raw
+--- ore of the mod (a raw-<ore> with its crushed-<ore>) in equal shares, at the Void Miners' rate (160: 20 ores per 10 s
+--- at tier I, neon, krypton and xenon x4, x8, x16), with a technology of its own at UHV. Built here, after every file
+--- that makes raw ores (160, 162).
+--------------------------------------------------------------------------------
+
+do
+	local ores = {}
+	for name in pairs(data.raw.item) do
+		local x = name:match("^raw%-(.+)$")
+		if x and data.raw.item["crushed-" .. x] then ores[#ores + 1] = name end
+	end
+	table.sort(ores)
+	local function expected(name, e)   -- (as 160's)
+		if e < 1 then return { type = "item", name = name, amount = 1, independent_probability = e } end
+		local n = math.floor(e)
+		local r = { type = "item", name = name, amount = n }
+		if e - n > 0.001 then r.extra_count_fraction = e - n end
+		return r
+	end
+	local recipes = {}
+	for _, g in pairs({ { nil, 1 }, { "neon", 4 }, { "krypton", 8 }, { "xenon", 16 } }) do
+		local name = "void-mining-deep-dark" .. (g[1] and ("-" .. g[1]) or "")
+		local results = {}
+		for _, o in pairs(ores) do results[#results + 1] = expected(o, 20 * g[2] / #ores) end
+		create_recipe{
+			name = name,
+			category = "void-miner-3-recipes",
+			energy_required = 10,
+			subgroup = "subgroup-void-miner-3-recipes",
+			ingredients = g[1] and { { type = "fluid", name = g[1], amount = 2 } } or {},
+			results = results,
+			main_product = results[1].name,
+			icon = "__gregtorio-continued__/graphics/icons/fork/void-miner-iii.png",
+		}
+		recipes[#recipes + 1] = name
+	end
+	FORK5B.tech{ name = "the-deep-dark", prerequisites = { VM_TECHS[3], "uhv-machines" }, packs = 10, count = 50, time = 60,
+		recipes = recipes }
+	--- issue #631 part 3: the lanthanides only the Deep Dark mines (no GTNH vein holds them): their ore chains (155, which
+	--- found no source for them) come with it; Rare Earth Ion Extraction (164 section 56) comes after it
+	local unlocked = {}
+	for _, t in pairs(data.raw.technology) do
+		for _, e in pairs(t.effects or {}) do if e.type == "unlock-recipe" then unlocked[e.recipe] = true end end
+	end
+	local chain = {}
+	for _, x in pairs({ "praseodymium", "europium", "gadolinium", "terbium", "dysprosium", "holmium", "erbium", "ytterbium",
+		"lutetium" }) do
+		local forms = {}
+		for _, f in pairs({ "raw-%s", "crushed-%s", "purified-%s", "centrifuged-%s", "impure-%s-dust", "pure-%s-dust" }) do
+			forms[f:format(x)] = true
+		end
+		for name, r in pairs(data.raw.recipe) do
+			if not unlocked[name] and r.enabled == false and not name:find("recycling", 1, true) then
+				for _, i in pairs(r.ingredients or {}) do
+					if forms[i.name] then chain[#chain + 1] = name; break end
+				end
+			end
+		end
+	end
+	for _, n in pairs(chain) do fork_add_unlock("the-deep-dark", n) end
+	table.insert(data.raw.technology["rare-earth-ion-extraction"].prerequisites, "the-deep-dark")
+end

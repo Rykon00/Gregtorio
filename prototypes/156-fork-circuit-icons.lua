@@ -110,8 +110,9 @@ do
 	local nano = data.raw.recipe["nanoprocessor"]
 	fork_set_category(nano, "hv-circuit-assembler-recipes")
 	nano.energy_required = 10 * HV_SPEED
+	--- (the gold foil comes earlier, with the good circuit board: issue #712, 164 section 58)
 	local MOVE = {
-		["epoxy-processing"] = { "epoxy-sheet", "gold-foil", "electrum-foil", "epoxy-circuit-board", "epoxy-printed-circuit-board",
+		["epoxy-processing"] = { "epoxy-sheet", "electrum-foil", "epoxy-circuit-board", "epoxy-printed-circuit-board",
 			"raw-carbon-fibers-epoxy", "molten-glowstone" },
 		["ptfe"] = { "raw-carbon-fibers-ptfe" },
 	}

@@ -42,6 +42,7 @@ BASIC_MACHINES = [
     "alloy-smelter", "compressor", "forge-hammer", "arc-furnace", "forming-press",
     "electric-furnace", "sifting-machine", "thermal-centrifuge", "electromagnetic-separator",
     "brewery", "fermenter",  # issue #360
+    "packager", "fluid-heater",  # issue #635
 ]
 # issue #152: the Fluid Extractors are copies of the Extractor (151); from IV up they are drawn like the other basic
 # machines from their LV and MV sprites (fluid_extractor_lv_ev), with the Extractor's frame count
@@ -52,7 +53,7 @@ EV_FRAMES_OF = {FLUID_EXTRACTOR: "extractor"}
 # (forge_hammer_lv_mv)
 EV_FRAMES = {"forge-hammer": 5, "arc-furnace": 1, "forming-press": 1, "electric-furnace": 1,
              "sifting-machine": 4, "thermal-centrifuge": 1, "electromagnetic-separator": 4,
-             "brewery": 1, "fermenter": 1}
+             "brewery": 1, "fermenter": 1, "packager": 1, "fluid-heater": 1}
 # issue #171: the Arc Furnace has no upstream picture either: its LV and MV ones are the compressor's frame with GT's arc
 # furnace overlay in the window (arc_furnace_lv_mv), one frame
 ARC_OVERLAY = "gregtech:basicmachines/arc_furnace/OVERLAY_FRONT"
@@ -77,14 +78,18 @@ EMS_WINDOW = (21, 16, 64, 44)  # the upper window of the LV and MV polarizer, be
 # solidifier's frame with GT's fermenter front, which glows while it works)
 BREWERY_OVERLAY = "gregtech:basicmachines/potionbrewer/OVERLAY_FRONT_POTIONBREWER"
 FERMENTER_OVERLAY = "gregtech:basicmachines/fermenter/OVERLAY_FRONT"
+PACKAGER_OVERLAY = "gregtech:basicmachines/boxinator/OVERLAY_FRONT_BOXINATOR"   # issue #635: GT's Packager (boxinator)
+FLUID_HEATER_OVERLAY = "gregtech:basicmachines/fluid_heater/OVERLAY_FRONT"     # issue #635: GT's Fluid Heater
 # issue #152: the fluid extractor's icons carry a molten fluid in the bottom right corner, so they differ from the
 # extractor's in the inventory; its LV to EV sprites are the extractor's with the liquid in the tubes molten
 FLUID_BADGE_MACHINES = {"fluid-extractor"}
 
 # tier color GT uses to tint the (gray) machine casings (EV = titanium, IV = tungstensteel)
+# MAX is a dark steel grey (issue #763): white like UXV it could not be told apart; GT's MAX hull is darker too
+# (MACHINE_MAX_SIDE mean grey 166, MACHINE_UXV_SIDE 197)
 TIER_TINT = {"EV": (220, 160, 240), "IV": (100, 100, 160), "LuV": (255, 205, 225), "ZPM": (140, 225, 245), "UV": (130, 215, 140),
              "UHV": (235, 120, 120), "UEV": (240, 200, 90), "UIV": (120, 150, 255),
-             "UMV": (190, 120, 235), "UXV": (245, 245, 250), "MAX": (255, 255, 255)}
+             "UMV": (190, 120, 235), "UXV": (245, 245, 250), "MAX": (125, 125, 140)}
 
 # casing item -> flat GT texture ("mod:path" under textures/blocks). Without an entry the item icon is used.
 CASING_TEXTURE = {
@@ -303,6 +308,26 @@ MULTIBLOCKS = {
     "algae-farm": ((3, 3), "gregtech:iconsets/ALGAE_CASING", None,
                    ("miscutils:iconsets/controllerFaces/algaePondBase", "miscutils:iconsets/controllerFaces/algaePondBaseActive"),
                    None),
+    # issue #630: GT++'s IsaMill (its grinding mill casing and grinder front, MTEIsaMill.java:76-84, casing index 66 of
+    # GregtechMetaCasingBlocks5.java:67) and GT's Froth Flotation Cell (the flotation casing, its controller face)
+    "isamill": ((3, 3), "miscutils:TileEntities/MACHINE_CASING_GRINDING_FACTORY", None,
+                ("miscutils:iconsets/Grinder/GRINDER5", "miscutils:iconsets/Grinder/GRINDER_ACTIVE5"), None),
+    "flotation-cell": ((3, 3), "miscutils:TileEntities/MACHINE_CASING_FLOTATION", None,
+                       ("miscutils:iconsets/controllerFaces/frothFlotationCell",
+                        "miscutils:iconsets/controllerFaces/frothFlotationCellActive"), None),
+    # issue #623: gtnhintergalactic's Dyson Swarm Ground Unit (its receiver casing, GT's dyson sphere front, the control
+    # casing in the middle row)
+    "dyson-swarm-ground-unit": ((3, 3), "gtnhintergalactic:dysonSwarm/ReceiverCasing_Side", None,
+                                ("gregtech:iconsets/OVERLAY_FRONT_DYSONSPHERE", "gregtech:iconsets/OVERLAY_FRONT_DYSONSPHERE_ACTIVE"),
+                                "gtnhintergalactic:dysonSwarm/ControlCasing_Side"),
+    # issue #633: kubatech's HTGR (its IV casing and heat exchanger front, MTEHighTempGasCooledReactor.java:835-851)
+    "high-temperature-gas-cooled-reactor": ((3, 3), "gregtech:iconsets/MACHINE_IV_SIDE", None,
+                                            ("gregtech:iconsets/OVERLAY_FRONT_HEAT_EXCHANGER",
+                                             "gregtech:iconsets/OVERLAY_FRONT_HEAT_EXCHANGER_ACTIVE"),
+                                            "gregtech:iconsets/MACHINE_CASING_GRAPHITE_MODERATOR"),
+    # issue #628: GT's PCB Factory (its T1 photolithographic casing, the assembly line front MTEPCBFactory.java:296 shows)
+    "pcb-factory": ((3, 3), "gregtech:iconsets/MACHINE_CASING_PCB_TIER_1", None,
+                    ("gregtech:iconsets/OVERLAY_FRONT_ASSEMBLY_LINE", "gregtech:iconsets/OVERLAY_FRONT_ASSEMBLY_LINE_ACTIVE"), None),
     "industrial-dehydrator": ((3, 3), "gregtech:iconsets/VACUUM_CASING_SIDE", None,
                               ("miscutils:iconsets/controllerFaces/industrialDehydrator",
                                "miscutils:iconsets/controllerFaces/industrialDehydratorActive"), None),
@@ -401,7 +426,8 @@ WHOLE_ICONS = {"large-titanium-boiler", "large-combustion-engine", "digester", "
                "ev-rocket-engine", "iv-rocket-engine", "luv-rocket-engine", "large-rocket-engine",
                "universal-chemical-fuel-engine", "reactor-fuel-processing-plant", "liquid-fluoride-thorium-reactor",
                "sparge-tower", "cold-trap-i", "reactor-processing-unit-i", "nuclear-salt-processing-plant", "cold-trap-ii", "reactor-processing-unit-ii",
-               "algae-farm", "industrial-dehydrator", "naquadah-fuel-refinery", "naquadah-fuel-refinery-t2",
+               "algae-farm", "industrial-dehydrator", "dyson-swarm-ground-unit", "isamill", "flotation-cell", "naquadah-fuel-refinery", "naquadah-fuel-refinery-t2",
+               "algae-farm", "industrial-dehydrator", "pcb-factory", "high-temperature-gas-cooled-reactor", "isamill", "flotation-cell", "naquadah-fuel-refinery", "naquadah-fuel-refinery-t2",
                "naquadah-fuel-refinery-t3", "naquadah-fuel-refinery-t4", "source-chamber", "beam-crafter",
                "luv-mass-fabricator", "nano-forge", "nano-forge-t2", "nano-forge-t3", *(f"draconic-evolution-fusion-crafter-t{k}" for k in range(1, 5)), "large-hadron-collider", "large-hadron-collider-weak", "large-hadron-collider-lhcb",
                *(f"precise-assembler-mk{i}" for i in range(1, 4)),
@@ -909,6 +935,17 @@ def brewery_lv_mv(gt):
     framed_overlay_lv_mv(gt, "brewery", "assembling-machine", FURNACE_WINDOW, BREWERY_OVERLAY, crop=True)
 
 
+def packager_lv_mv(gt):
+    """Issue #635: upstream has no packager: the LV and MV assembling machine's frame with GT's packager front"""
+    framed_overlay_lv_mv(gt, "packager", "assembling-machine", FURNACE_WINDOW, PACKAGER_OVERLAY, crop=True)
+
+
+def fluid_heater_lv_mv(gt):
+    """Issue #635: upstream has no fluid heater: the LV and MV fluid solidifier's frame with GT's heater front (its active
+    front while it works; GT has no glow layer for it)"""
+    framed_overlay_lv_mv(gt, "fluid-heater", "fluid-solidifier", THERMAL_WINDOW, FLUID_HEATER_OVERLAY, crop=True)
+
+
 def fermenter_lv_mv(gt):
     """Issue #360: upstream has no fermenter: the LV and MV fluid solidifier's frame with GT's fermenter front (it glows
     while it works)"""
@@ -1063,15 +1100,17 @@ def steam_age(gt):
         save(badged_icon(look(icon), solar), ICONS / f"{name}.png")
 
 
-# issue #444: the battery buffers LV to HV, 1 to 16 batteries (prototypes/145-fork-power-multiblocks.lua, section 8)
-BUFFER_TINT = {"LV": (150, 144, 136), "MV": (175, 225, 250), "HV": (220, 220, 236)}
+# issue #444: the battery buffers LV to HV, 1 to 16 batteries (prototypes/145-fork-power-multiblocks.lua, section 8);
+# issue #614: EV and IV (section 8b)
+BUFFER_TINT = {"LV": (150, 144, 136), "MV": (175, 225, 250), "HV": (220, 220, 236), "EV": (235, 235, 245),
+               "IV": (205, 205, 225)}
 
 
 def battery_buffers(gt):
     """GT's battery buffer: the tier's hull (MACHINE_<tier>_SIDE in the colour of Gregtorio's hull of the tier) with GT's
     energy output overlay on top and the battery slots below, n x n dark slots with a lit battery each (2 x 2 tiles,
     and the icon the same at half the size)"""
-    for tier in ("LV", "MV", "HV"):
+    for tier in BUFFER_TINT:
         side = tint(load(gt_path(gt, f"gregtech:iconsets/MACHINE_{tier}_SIDE")), BUFFER_TINT[tier])
         face = side.copy()
         face.alpha_composite(frames_of(load(gt_path(gt, "gregtech:iconsets/OVERLAY_ENERGY_OUT")))[0])
@@ -1093,6 +1132,122 @@ def battery_buffers(gt):
                                 edge = x in (x0, x0 + cw - 1) or y in (y0, y0 + ch - 1)
                                 px[x, y] = (30, 30, 34, 255) if edge else (90, 200, 120, 255)
                 save(img, path)
+
+
+# issue #637: the EV and IV gas turbines and semifluid generators: HV's sprites and icon in the tier's colour; the icons
+# of the EV and IV chemical reactors and the HV to IV distilleries
+GENERATOR_TINT = {"ev": (225, 215, 245), "iv": (170, 180, 215)}
+
+# issue #644: GT's single-block naquadah reactors Mk I-V and plasma generators EV to UV, 3x3 like Gregtorio's other
+# generators: the tier's GT hull in the tier's colour, the middle tile with GT's face (MTENaquadahReactor: the
+# NAQUADAH_REACTOR_SOLID front, active while it runs; MTEPlasmaGenerator: the fusion glass, yellow while it runs, with the
+# tier's energy output overlay)
+SINGLE_GENERATORS = {
+    "naquadah-reactor": (["NAQUADAH_REACTOR_SOLID_FRONT"],
+                         ["NAQUADAH_REACTOR_SOLID_FRONT_ACTIVE", "NAQUADAH_REACTOR_SOLID_FRONT_ACTIVE_GLOW"]),
+    "plasma-generator": (["MACHINE_CASING_FUSION_GLASS", "OVERLAY_ENERGY_OUT_{t}"],
+                         ["MACHINE_CASING_FUSION_GLASS_YELLOW", "MACHINE_CASING_FUSION_GLASS_YELLOW_GLOW",
+                          "OVERLAY_ENERGY_OUT_{t}"]),
+}
+
+
+def single_generators(gt):
+    for tier in ("EV", "IV", "LuV", "ZPM", "UV"):
+        hull = scaled(tint(load(gt_path(gt, f"gregtech:iconsets/MACHINE_{tier}_SIDE")), TIER_TINT[tier]), TILE)
+        for base, faces in SINGLE_GENERATORS.items():
+            name = f"{tier.lower()}-{base}"
+
+            def build(layers):
+                face = hull.copy()
+                for layer in layers:
+                    p = gt_path(gt, "gregtech:iconsets/" + layer.format(t=tier))
+                    if p.exists():
+                        face.alpha_composite(scaled(frames_of(load(p))[0], TILE))
+                img = Image.new("RGBA", (3 * TILE, 3 * TILE))
+                for y in range(3):
+                    for x in range(3):
+                        img.paste(face if (x, y) == (1, 1) else hull, (x * TILE, y * TILE))
+                return img, face
+            idle, icon = build(faces[0])
+            save(idle, OUT_ENTITY / f"{name}-idle.png")
+            save(build(faces[1])[0], OUT_ENTITY / f"{name}-working.png")
+            save(icon, OUT_ICON / f"{name}.png")
+
+
+# issue #613: GT's steam water pump, 3x3: GT's primitive wooden casing, the middle tile with the controller's front
+# (OVERLAY_FRONT_WATER_PUMP, active while it runs); the high pressure pump in steel's grey
+def steam_water_pumps(gt):
+    casing = scaled(load(gt_path(gt, "gregtech:iconsets/PRIMITIVE_WOODEN_CASING_SIDE")), TILE)
+    for name, rgb in (("steam-water-pump", None), ("hp-steam-water-pump", (190, 190, 200))):
+        d = ROOT / "graphics/entity" / name
+        d.mkdir(parents=True, exist_ok=True)
+        for kind, face in (("idle", "OVERLAY_FRONT_WATER_PUMP"), ("working", "OVERLAY_FRONT_WATER_PUMP_ACTIVE")):
+            mid = casing.copy()
+            mid.alpha_composite(scaled(frames_of(load(gt_path(gt, "gregtech:iconsets/" + face)))[0], TILE))
+            img = Image.new("RGBA", (3 * TILE, 3 * TILE))
+            for y in range(3):
+                for x in range(3):
+                    img.paste(mid if (x, y) == (1, 1) else casing, (x * TILE, y * TILE))
+            if rgb:
+                img = tint(img, rgb)
+            save(img, d / f"{name}-{kind}.png")
+    # bartworks' Simple Stirling Water Pump: its side texture on every tile
+    side = scaled(load(gt / "src/main/resources/assets/bartworks/textures/blocks/heatedWaterPumpSide.png"), TILE)
+    d = ROOT / "graphics/entity/simple-stirling-water-pump"
+    d.mkdir(parents=True, exist_ok=True)
+    img = Image.new("RGBA", (3 * TILE, 3 * TILE))
+    for y in range(3):
+        for x in range(3):
+            img.paste(side, (x * TILE, y * TILE))
+    for kind in ("idle", "working"):
+        save(img, d / f"simple-stirling-water-pump-{kind}.png")
+
+
+# issue #613: the Tinkers-like smeltery (GT's coke oven bricks in seared grey, its front in the middle, burning while it
+# works), casting table (the bricks with a pipe) and tool station (GT's primitive wooden casing)
+SEARED = (150, 150, 155)
+
+
+def smeltery(gt):
+    brick = tint(scaled(load(gt_path(gt, "gregtech:iconsets/COKE_OVEN_CASING")), TILE), SEARED)
+    wood = scaled(load(gt_path(gt, "gregtech:iconsets/PRIMITIVE_WOODEN_CASING_SIDE")), TILE)
+    for name, tile, faces in (("smeltery", brick, ("COKE_OVEN_OVERLAY_INACTIVE", "COKE_OVEN_OVERLAY_ACTIVE")),
+                              ("casting-table", brick, ("OVERLAY_PIPE_IN", "OVERLAY_PIPE_IN")),
+                              ("tool-station", wood, (None, None))):
+        d = ROOT / "graphics/entity" / name
+        d.mkdir(parents=True, exist_ok=True)
+        for kind, face in zip(("idle", "working"), faces):
+            mid = tile.copy()
+            if face:
+                mid.alpha_composite(scaled(frames_of(load(gt_path(gt, "gregtech:iconsets/" + face)))[0], TILE))
+            img = Image.new("RGBA", (3 * TILE, 3 * TILE))
+            for y in range(3):
+                for x in range(3):
+                    img.paste(mid if (x, y) == (1, 1) else tile, (x * TILE, y * TILE))
+            save(img, d / f"{name}-{kind}.png")
+            if kind == "idle":
+                save(mid, ICONS / f"{name}.png")
+
+
+def generator_tiers():
+    for base in ("gas-turbine", "semifluid-generator"):
+        src = ROOT / "graphics/entity" / f"hv-{base}"
+        for tier, rgb in GENERATOR_TINT.items():
+            name = f"{tier}-{base}"
+            d = ROOT / "graphics/entity" / name
+            d.mkdir(parents=True, exist_ok=True)
+            for kind in ("idle", "working"):
+                save(tint(load(src / f"hv-{base}-{kind}.png"), rgb), d / f"{name}-{kind}.png")
+            save(tint(load(ICONS / f"hv-{base}.png"), rgb), ICONS / f"{name}.png")
+    # the EV and IV chemical reactors and the HV to IV distilleries use the HV reactor's and the MV distillery's sprites;
+    # their icons are those in the tier's colour
+    tints = GENERATOR_TINT   # (the HV distillery has an upstream icon)
+    for base, src, tiers in (("chemical-reactor", "hv", ("ev", "iv")), ("distillery", "mv", ("ev", "iv"))):
+        for tier in tiers:
+            save(tint(load(ICONS / f"{src}-{base}.png"), tints[tier]), ICONS / f"{tier}-{base}.png")
+    # GT++'s advanced boilers: the Large Coal Boiler's icon in the tier's colour (the chassis: gen_gt_icons.py)
+    for tier, rgb in (("lv", (200, 200, 200)), ("mv", (220, 200, 160)), ("hv", (225, 215, 245))):
+        save(tint(load(ICONS / "large-coal-boiler.png"), rgb), ICONS / f"{tier}-advanced-boiler.png")
 
 
 def fluid_extractor_lv_ev():
@@ -1337,9 +1492,15 @@ def main():
     electromagnetic_separator_lv_mv(a.gt)  # and the LV and MV separator of the separator's
     brewery_lv_mv(a.gt)          # issue #360: the LV and MV brewery and fermenter of their tiers
     fermenter_lv_mv(a.gt)
+    packager_lv_mv(a.gt)         # issue #635
+    fluid_heater_lv_mv(a.gt)
     lv_from_mv("autoclave")      # before the autoclave's tiers (it reads the MV autoclave)
     steam_age(a.gt)              # issue #446
     battery_buffers(a.gt)        # issue #444
+    generator_tiers()            # issue #637
+    single_generators(a.gt)      # issue #644
+    steam_water_pumps(a.gt)      # issue #613
+    smeltery(a.gt)               # issue #613
     lv_from_mv("extruder", icon=False)          # issue #449 (the LV extruder icon is upstream's)
     lv_from_mv("laser-engraver", icon_palette=True)
     lv_from_mv("combustion-generator", icon=False)   # (the LV icon is upstream's)

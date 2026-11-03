@@ -1,0 +1,192 @@
+file	item	display name	mod id	registry name	meta	dumped	pack
+gtnh/active-transformer.png	active-transformer	Active Transformer	gregtech	gt.blockmachines	15300	2026-11-01	GTNH daily 2026-10-28+804
+gtnh/advanced-compact-fusion-coil.png	advanced-compact-fusion-coil	Advanced Compact Fusion Coil	GoodGenerator	compactFusionCoil	2	2026-11-01	GTNH daily 2026-10-28+804
+gtnh/advanced-field-restriction-coil.png	advanced-field-restriction-coil	Advanced Field Restriction Coil	GoodGenerator	FRF_Coil_2	0	2026-11-01	GTNH daily 2026-10-28+804
+gtnh/advanced-fusion-coil.png	advanced-fusion-coil	Advanced Fusion Coil	miscutils	gtplusplus.blockcasings.3	13	2026-11-01	GTNH daily 2026-10-28+804
+gtnh/advanced-fusion-coil-ii.png	advanced-fusion-coil-ii	Advanced Fusion Coil II	miscutils	gtplusplus.blockcasings.6	1	2026-11-01	GTNH daily 2026-10-28+804
+gtnh/advanced-solar-boiler.png	advanced-solar-boiler	Advanced Solar Boiler	gregtech	gt.blockmachines	114	2026-11-01	GTNH daily 2026-10-28+804
+gtnh/assembler-machine-casing.png	assembler-machine-casing	Assembler Machine Casing	gregtech	gt.blockcasings2	9	2026-11-01	GTNH daily 2026-10-28+804
+gtnh/assembly-line-casing.png	assembly-line-casing	Assembly Line Casing	gregtech	gt.blockcasings2	5	2026-11-01	GTNH daily 2026-10-28+804
+gtnh/atlas-casing.png	atlas-casing	Advanced Total Lepton Assimilation Snare Casing	gregtech	gt.blockcasings13	12	2026-11-01	GTNH daily 2026-10-28+804
+gtnh/awakened-draconium-coil-block.png	awakened-draconium-coil-block	Awakened Draconium Coil Block	gregtech	gt.blockcasings5	8	2026-11-01	GTNH daily 2026-10-28+804
+gtnh/awakened-draconium-fusion-casing.png	awakened-draconium-fusion-casing	Awakened Draconium Fusion Casing	kubatech	defc.casing	11	2026-11-01	GTNH daily 2026-10-28+804
+gtnh/bacterial-vat.png	bacterial-vat	Bacterial Vat	gregtech	gt.blockmachines	12712	2026-11-01	GTNH daily 2026-10-28+804
+gtnh/basic-photolithographic-casing.png	basic-photolithographic-casing	Basic Photolithographic Framework Casing	gregtech	gt.blockcasings8	11	2026-11-01	GTNH daily 2026-10-28+804
+gtnh/beam-crafter.png	beam-crafter	Beam Crafter	gregtech	gt.blockmachines	3015	2026-11-01	GTNH daily 2026-10-28+804
+gtnh/beam-pipe.png	beam-pipe	Beam Pipe	gregtech	gt.blockmachines	10502	2026-11-01	GTNH daily 2026-10-28+804
+gtnh/beryllium-integrated-reactor-casing.png	beryllium-integrated-reactor-casing	Beryllium Integrated Reactor Casing	gregtech	gt.blockcasings13	3	2026-11-01	GTNH daily 2026-10-28+804
+gtnh/bloody-ichorium-fusion-casing.png	bloody-ichorium-fusion-casing	Bloody Ichorium Fusion Casing	kubatech	defc.casing	8	2026-11-01	GTNH daily 2026-10-28+804
+gtnh/borosilicate-glass-block.png	borosilicate-glass-block	Borosilicate Glass Block	bartworks	BW_TieredGlass	0	2026-11-01	GTNH daily 2026-10-28+804
+gtnh/bronze-firebox-casing.png	bronze-firebox-casing	Bronze Firebox Casing	gregtech	gt.blockcasings3	13	2026-11-01	GTNH daily 2026-10-28+804
+gtnh/bronze-pipe-casing.png	bronze-pipe-casing	Bronze Pipe Casing	gregtech	gt.blockcasings2	12	2026-11-01	GTNH daily 2026-10-28+804
+gtnh/centrifuge-casing.png	centrifuge-casing	Centrifuge Casing	miscutils	miscutils.blockcasings	0	2026-11-01	GTNH daily 2026-10-28+804
+gtnh/cms-casing.png	cms-casing	Charged Matter Sensor Casing	gregtech	gt.blockcasings13	11	2026-11-01	GTNH daily 2026-10-28+804
+gtnh/coke-oven.png	coke-oven	Coke Oven	gregtech	gt.blockmachines	236	2026-11-01	GTNH daily 2026-10-28+804
+gtnh/coke-oven-controller.png	coke-oven-controller	Coke Oven	gregtech	gt.blockmachines	236	2026-11-01	GTNH daily 2026-10-28+804
+gtnh/cold-trap-i.png	cold-trap-i	Cold Trap I	gregtech	gt.blockmachines	31033	2026-11-01	GTNH daily 2026-10-28+804
+gtnh/cold-trap-ii.png	cold-trap-ii	Cold Trap II	gregtech	gt.blockmachines	31034	2026-11-01	GTNH daily 2026-10-28+804
+gtnh/collider-casing.png	collider-casing	Collider Casing	gregtech	gt.blockcasings13	10	2026-11-01	GTNH daily 2026-10-28+804
+gtnh/compact-fusion-coil.png	compact-fusion-coil	Compact Fusion Coil	GoodGenerator	compactFusionCoil	1	2026-11-01	GTNH daily 2026-10-28+804
+gtnh/component-assembly-line.png	component-assembly-line	Component Assembly Line	gregtech	gt.blockmachines	32026	2026-11-01	GTNH daily 2026-10-28+804
+gtnh/compressed-glowstone.png	compressed-glowstone	Compressed Glowstone (9)	miscutils	blockCompressedObsidian	6	2026-11-01	GTNH daily 2026-10-28+804
+gtnh/compression-pipe-casing.png	compression-pipe-casing	Compression Pipe Casing	gregtech	gt.blockcasings10	5	2026-11-01	GTNH daily 2026-10-28+804
+gtnh/cupronickel-coil-block.png	cupronickel-coil-block	Cupronickel Coil Block	gregtech	gt.blockcasings5	0	2026-11-01	GTNH daily 2026-10-28+804
+gtnh/cutting-factory-frame.png	cutting-factory-frame	Cutting Factory Frame	miscutils	gtplusplus.blockcasings.2	13	2026-11-01	GTNH daily 2026-10-28+804
+gtnh/digester.png	digester	Digester	gregtech	gt.blockmachines	10500	2026-11-01	GTNH daily 2026-10-28+804
+gtnh/dimensional-bridge.png	dimensional-bridge	Dimensional Bridge	gregtech	gt.blockcasings	14	2026-11-01	GTNH daily 2026-10-28+804
+gtnh/dimensionally-transcendent-casing.png	dimensionally-transcendent-casing	Dimensionally Transcendent Casing	gregtech	gt.blockcasings	12	2026-11-01	GTNH daily 2026-10-28+804
+gtnh/dimensionally-transcendent-plasma-forge.png	dimensionally-transcendent-plasma-forge	Dimensionally Transcendent Plasma Forge	gregtech	gt.blockmachines	1004	2026-11-01	GTNH daily 2026-10-28+804
+gtnh/dissolution-tank.png	dissolution-tank	Dissolution Tank	gregtech	gt.blockmachines	10501	2026-11-01	GTNH daily 2026-10-28+804
+gtnh/double-compressed-glowstone.png	double-compressed-glowstone	Double Compressed Glowstone (81)	miscutils	blockCompressedObsidian	7	2026-11-01	GTNH daily 2026-10-28+804
+gtnh/draconium-fusion-casing.png	draconium-fusion-casing	Draconium Fusion Casing	kubatech	defc.casing	9	2026-11-01	GTNH daily 2026-10-28+804
+gtnh/dyson-swarm-ground-unit.png	dyson-swarm-ground-unit	Dyson Swarm Ground Unit	gregtech	gt.blockmachines	14001	2026-11-01	GTNH daily 2026-10-28+804
+gtnh/electric-compressor-casing.png	electric-compressor-casing	Electric Compressor Casing	gregtech	gt.blockcasings10	4	2026-11-01	GTNH daily 2026-10-28+804
+gtnh/electrode-casing.png	electrode-casing	Electrode Casing	gtnhlanth	casing.electrode	0	2026-11-01	GTNH daily 2026-10-28+804
+gtnh/electrolyzer-casing.png	electrolyzer-casing	Electrolyzer Casing	miscutils	miscutils.blockcasings	5	2026-11-01	GTNH daily 2026-10-28+804
+gtnh/electromagnet-housing.png	electromagnet-housing	Electromagnet Housing	gregtech	gt.blockmachines	359	2026-11-01	GTNH daily 2026-10-28+804
+gtnh/engine-intake-casing.png	engine-intake-casing	Engine Intake Casing	gregtech	gt.blockcasings4	13	2026-11-01	GTNH daily 2026-10-28+804
+gtnh/eternal-coil-block.png	eternal-coil-block	Eternal Coil Block	gregtech	gt.blockcasings5	13	2026-11-01	GTNH daily 2026-10-28+804
+gtnh/europium-reinforced-radiation-proof-machine-casing.png	europium-reinforced-radiation-proof-machine-casing	Europium Reinforced Radiation Proof Machine Casing	gregtech	gt.blockcasings8	5	2026-11-01	GTNH daily 2026-10-28+804
+gtnh/ev-solenoid-superconductor-coil.png	ev-solenoid-superconductor-coil	EV Solenoid Superconductor Coil	gregtech	gt.blockcasings.cyclotron_coils	2	2026-11-01	GTNH daily 2026-10-28+804
+gtnh/exxonmobil-chemical-plant.png	exxonmobil-chemical-plant	ExxonMobil Chemical Plant	gregtech	gt.blockmachines	998	2026-11-01	GTNH daily 2026-10-28+804
+gtnh/field-restriction-coil.png	field-restriction-coil	Field Restriction Coil	GoodGenerator	FRF_Coil_1	0	2026-11-01	GTNH daily 2026-10-28+804
+gtnh/field-restriction-glass.png	field-restriction-glass	Field Restriction Glass	GoodGenerator	fieldRestrictingGlass	0	2026-11-01	GTNH daily 2026-10-28+804
+gtnh/fusion-coil-block.png	fusion-coil-block	Fusion Coil Block	gregtech	gt.blockcasings4	7	2026-11-01	GTNH daily 2026-10-28+804
+gtnh/fusion-machine-casing.png	fusion-machine-casing	Fusion Machine Casing	gregtech	gt.blockcasings4	6	2026-11-01	GTNH daily 2026-10-28+804
+gtnh/godforge.png	godforge	Forge of the Gods	gregtech	gt.blockmachines	15411	2026-11-01	GTNH daily 2026-10-28+804
+gtnh/graphite-moderator-casing.png	graphite-moderator-casing	Graphite Moderator Casing	gregtech	gt.blockcasings13	1	2026-11-01	GTNH daily 2026-10-28+804
+gtnh/grate-machine-casing.png	grate-machine-casing	Grate Machine Casing	gregtech	gt.blockcasings3	10	2026-11-01	GTNH daily 2026-10-28+804
+gtnh/harmonic-phonon-transmission-conduit.png	harmonic-phonon-transmission-conduit	Harmonic Phonon Transmission Conduit	tectech	gt.godforgecasing	8	2026-11-01	GTNH daily 2026-10-28+804
+gtnh/hastelloy-n-reactor-casing.png	hastelloy-n-reactor-casing	Hastelloy-N Reactor Casing	miscutils	miscutils.blockcasings	12	2026-11-01	GTNH daily 2026-10-28+804
+gtnh/hastelloy-n-sealant-block.png	hastelloy-n-sealant-block	Hastelloy-N Sealant Block	miscutils	gtplusplus.blockcasings.2	1	2026-11-01	GTNH daily 2026-10-28+804
+gtnh/hastelloy-x-structural-block.png	hastelloy-x-structural-block	Hastelloy-X Structural Block	miscutils	gtplusplus.blockcasings.2	2	2026-11-01	GTNH daily 2026-10-28+804
+gtnh/heliofusion-exoticizer.png	heliofusion-exoticizer	Heliofusion Exoticizer	gregtech	gt.blockmachines	15415	2026-11-01	GTNH daily 2026-10-28+804
+gtnh/hermetic-casing-v.png	hermetic-casing-v	Hermetic Casing V	gregtech	gt.blockcasings6	5	2026-11-01	GTNH daily 2026-10-28+804
+gtnh/high-power-casing.png	high-power-casing	High Power Casing	tectech	gt.blockcasingsTT	0	2026-11-01	GTNH daily 2026-10-28+804
+gtnh/hp-steam-alloy-smelter.png	hp-steam-alloy-smelter	High Pressure Steam Alloy Smelter	gregtech	gt.blockmachines	119	2026-11-01	GTNH daily 2026-10-28+804
+gtnh/hp-steam-compressor.png	hp-steam-compressor	High Pressure Steam Compressor	gregtech	gt.blockmachines	116	2026-11-01	GTNH daily 2026-10-28+804
+gtnh/hp-steam-extractor.png	hp-steam-extractor	High Pressure Steam Extractor	gregtech	gt.blockmachines	110	2026-11-01	GTNH daily 2026-10-28+804
+gtnh/hp-steam-forge-hammer.png	hp-steam-forge-hammer	High Pressure Steam Forge Hammer	gregtech	gt.blockmachines	113	2026-11-01	GTNH daily 2026-10-28+804
+gtnh/hp-steam-furnace.png	hp-steam-furnace	High Pressure Steam Furnace	gregtech	gt.blockmachines	104	2026-11-01	GTNH daily 2026-10-28+804
+gtnh/hp-steam-macerator.png	hp-steam-macerator	High Pressure Steam Macerator	gregtech	gt.blockmachines	107	2026-11-01	GTNH daily 2026-10-28+804
+gtnh/hssg-coil-block.png	hssg-coil-block	HSS-G Coil Block	gregtech	gt.blockcasings5	4	2026-11-01	GTNH daily 2026-10-28+804
+gtnh/hv-solenoid-superconductor-coil.png	hv-solenoid-superconductor-coil	HV Solenoid Superconductor Coil	gregtech	gt.blockcasings.cyclotron_coils	1	2026-11-01	GTNH daily 2026-10-28+804
+gtnh/incoloy-ds-fluid-containment-block.png	incoloy-ds-fluid-containment-block	Incoloy-DS Fluid Containment Block	miscutils	gtplusplus.blockcasings.2	3	2026-11-01	GTNH daily 2026-10-28+804
+gtnh/inconel-reinforced-casing.png	inconel-reinforced-casing	Inconel Reinforced Casing	miscutils	gtplusplus.blockcasings.3	1	2026-11-01	GTNH daily 2026-10-28+804
+gtnh/industrial-dehydrator.png	industrial-dehydrator	Utupu-Tanuri	gregtech	gt.blockmachines	995	2026-11-01	GTNH daily 2026-10-28+804
+gtnh/industrial-sieve-casing.png	industrial-sieve-casing	Industrial Sieve Casing	miscutils	gtplusplus.blockcasings.2	5	2026-11-01	GTNH daily 2026-10-28+804
+gtnh/infinity-coil-block.png	infinity-coil-block	Infinity Coil Block	gregtech	gt.blockcasings5	11	2026-11-01	GTNH daily 2026-10-28+804
+gtnh/insulated-fluid-pipe-casing.png	insulated-fluid-pipe-casing	Insulated Fluid Pipe Casing	gregtech	gt.blockcasings13	2	2026-11-01	GTNH daily 2026-10-28+804
+gtnh/integral-encasement-i.png	integral-encasement-i	Integral Encasement I	miscutils	gtplusplus.blocktieredcasings.1	0	2026-11-01	GTNH daily 2026-10-28+804
+gtnh/integral-encasement-iv.png	integral-encasement-iv	Integral Encasement IV	miscutils	gtplusplus.blocktieredcasings.1	3	2026-11-01	GTNH daily 2026-10-28+804
+gtnh/integral-encasement-v.png	integral-encasement-v	Integral Encasement V	miscutils	gtplusplus.blocktieredcasings.1	4	2026-11-01	GTNH daily 2026-10-28+804
+gtnh/isamill.png	isamill	IsaMill Grinding Machine	gregtech	gt.blockmachines	31027	2026-11-01	GTNH daily 2026-10-28+804
+gtnh/isamill-exterior-casing.png	isamill-exterior-casing	IsaMill Exterior Casing	miscutils	gtplusplus.blockcasings.5	0	2026-11-01	GTNH daily 2026-10-28+804
+gtnh/isamill-gearbox.png	isamill-gearbox	IsaMill Gearbox	miscutils	gtplusplus.blockcasings.5	2	2026-11-01	GTNH daily 2026-10-28+804
+gtnh/isamill-piping.png	isamill-piping	IsaMill Piping	miscutils	gtplusplus.blockcasings.5	1	2026-11-01	GTNH daily 2026-10-28+804
+gtnh/iv-solenoid-superconductor-coil.png	iv-solenoid-superconductor-coil	IV Solenoid Superconductor Coil	gregtech	gt.blockcasings.cyclotron_coils	3	2026-11-01	GTNH daily 2026-10-28+804
+gtnh/kanthal-coil-block.png	kanthal-coil-block	Kanthal Coil Block	gregtech	gt.blockcasings5	1	2026-11-01	GTNH daily 2026-10-28+804
+gtnh/lapotronic-capacitor-iv.png	lapotronic-capacitor-iv	Lapotronic Capacitor (IV)	kekztech	kekztech_lapotronicenergyunit_block	1	2026-11-01	GTNH daily 2026-10-28+804
+gtnh/lapotronic-capacitor-luv.png	lapotronic-capacitor-luv	Lapotronic Capacitor (LuV)	kekztech	kekztech_lapotronicenergyunit_block	2	2026-11-01	GTNH daily 2026-10-28+804
+gtnh/lapotronic-capacitor-zpm.png	lapotronic-capacitor-zpm	Lapotronic Capacitor (ZPM)	kekztech	kekztech_lapotronicenergyunit_block	3	2026-11-01	GTNH daily 2026-10-28+804
+gtnh/lapotronic-supercapacitor.png	lapotronic-supercapacitor	Lapotronic Supercapacitor	gregtech	gt.blockmachines	13106	2026-11-01	GTNH daily 2026-10-28+804
+gtnh/large-coal-boiler.png	large-coal-boiler	Large Coal Boiler	gregtech	gt.blockmachines	101	2026-11-01	GTNH daily 2026-10-28+804
+gtnh/large-heat-exchanger.png	large-heat-exchanger	Large Heat Exchanger	gregtech	gt.blockmachines	1154	2026-11-01	GTNH daily 2026-10-28+804
+gtnh/large-molecular-assembler.png	large-molecular-assembler	Large Molecular Assembler	gregtech	gt.blockmachines	14101	2026-11-01	GTNH daily 2026-10-28+804
+gtnh/large-sieve-grate.png	large-sieve-grate	Large Sieve Grate	miscutils	gtplusplus.blockcasings.2	6	2026-11-01	GTNH daily 2026-10-28+804
+gtnh/laser-containment-casing.png	laser-containment-casing	Laser Containment Casing	gregtech	gt.blockcasings10	1	2026-11-01	GTNH daily 2026-10-28+804
+gtnh/laser-resistant-plate.png	laser-resistant-plate	Laser Resistant Plate	gregtech	gt.laserplate	0	2026-11-01	GTNH daily 2026-10-28+804
+gtnh/lhcb-casing.png	lhcb-casing	Localized Horizon Curvature Binder Casing	gregtech	gt.blockcasings13	14	2026-11-01	GTNH daily 2026-10-28+804
+gtnh/liquid-fluoride-thorium-reactor.png	liquid-fluoride-thorium-reactor	Liquid Fluoride Thorium Reactor	gregtech	gt.blockmachines	751	2026-11-01	GTNH daily 2026-10-28+804
+gtnh/molecular-casing.png	molecular-casing	Molecular Casing	tectech	gt.blockcasingsTT	4	2026-11-01	GTNH daily 2026-10-28+804
+gtnh/multi-use-casing.png	multi-use-casing	Multi-Use Casing	miscutils	gtplusplus.blockcasings.3	2	2026-11-01	GTNH daily 2026-10-28+804
+gtnh/mv-solenoid-superconductor-coil.png	mv-solenoid-superconductor-coil	MV Solenoid Superconductor Coil	gregtech	gt.blockcasings.cyclotron_coils	0	2026-11-01	GTNH daily 2026-10-28+804
+gtnh/nano-forge.png	nano-forge	Nano Forge	gregtech	gt.blockmachines	357	2026-11-01	GTNH daily 2026-10-28+804
+gtnh/naquadah-alloy-fusion-casing.png	naquadah-alloy-fusion-casing	Naquadah Alloy Fusion Casing	kubatech	defc.casing	7	2026-11-01	GTNH daily 2026-10-28+804
+gtnh/naquadah-coil-block.png	naquadah-coil-block	Naquadah Coil Block	gregtech	gt.blockcasings5	5	2026-11-01	GTNH daily 2026-10-28+804
+gtnh/naquadah-fuel-refinery-casing.png	naquadah-fuel-refinery-casing	Naquadah Fuel Refinery Casing	GoodGenerator	FRF_Casings	0	2026-11-01	GTNH daily 2026-10-28+804
+gtnh/naquadah-reactor-casing.png	naquadah-reactor-casing	Naquadah Reactor Casing	gregtech	gt.blockcasings13	15	2026-11-01	GTNH daily 2026-10-28+804
+gtnh/neutron-activator.png	neutron-activator	Neutron Activator	gregtech	gt.blockmachines	32013	2026-11-01	GTNH daily 2026-10-28+804
+gtnh/nichrome-coil-block.png	nichrome-coil-block	Nichrome Coil Block	gregtech	gt.blockcasings5	2	2026-11-01	GTNH daily 2026-10-28+804
+gtnh/nuclear-salt-processing-plant.png	nuclear-salt-processing-plant	Nuclear Salt Processing Plant	gregtech	gt.blockmachines	749	2026-11-01	GTNH daily 2026-10-28+804
+gtnh/pcb-factory.png	pcb-factory	PCB Factory	gregtech	gt.blockmachines	356	2026-11-01	GTNH daily 2026-10-28+804
+gtnh/platinum-item-pipe-casing.png	platinum-item-pipe-casing	Platinum Item Pipe Casing	gregtech	gt.blockcasings11	3	2026-11-01	GTNH daily 2026-10-28+804
+gtnh/precise-electronic-unit-casing-mk1.png	precise-electronic-unit-casing-mk1	Precise Electronic Unit Casing Mk-I	GoodGenerator	preciseUnitCasing	0	2026-11-01	GTNH daily 2026-10-28+804
+gtnh/precise-electronic-unit-casing-mk2.png	precise-electronic-unit-casing-mk2	Precise Electronic Unit Casing Mk-II	GoodGenerator	preciseUnitCasing	1	2026-11-01	GTNH daily 2026-10-28+804
+gtnh/precise-electronic-unit-casing-mk3.png	precise-electronic-unit-casing-mk3	Precise Electronic Unit Casing Mk-III	GoodGenerator	preciseUnitCasing	2	2026-11-01	GTNH daily 2026-10-28+804
+gtnh/pressure-containment-casing.png	pressure-containment-casing	Pressure Containment Casing	gregtech	gt.blockcasings10	3	2026-11-01	GTNH daily 2026-10-28+804
+gtnh/primitive-blast-furnace.png	primitive-blast-furnace	Bricked Blast Furnace	gregtech	gt.blockmachines	140	2026-11-01	GTNH daily 2026-10-28+804
+gtnh/primitive-wooden-casing.png	primitive-wooden-casing	Primitive Wooden Casing	gregtech	gt.blockcasings9	2	2026-11-01	GTNH daily 2026-10-28+804
+gtnh/ptfe-pipe-casing.png	ptfe-pipe-casing	PTFE Pipe Casing	gregtech	gt.blockcasings8	1	2026-11-01	GTNH daily 2026-10-28+804
+gtnh/quantum-force-transformer.png	quantum-force-transformer	Quantum Force Transformer	gregtech	gt.blockmachines	31151	2026-11-01	GTNH daily 2026-10-28+804
+gtnh/quantum-glass.png	quantum-glass	Quantum Glass	tectech	tile.quantumGlass	0	2026-11-01	GTNH daily 2026-10-28+804
+gtnh/radiant-naquadah-alloy-casing.png	radiant-naquadah-alloy-casing	Radiant Naquadah Alloy Casing	gregtech	gt.blockcasings8	10	2026-11-01	GTNH daily 2026-10-28+804
+gtnh/radiation-proof-machine-casing.png	radiation-proof-machine-casing	Radiation Proof Machine Casing	gregtech	gt.blockcasings3	12	2026-11-01	GTNH daily 2026-10-28+804
+gtnh/radiation-proof-steel-frame-box.png	radiation-proof-steel-frame-box	Radiation Proof Steel Frame Box	GoodGenerator	radiationProtectionSteelFrame	0	2026-11-01	GTNH daily 2026-10-28+804
+gtnh/reactor-fuel-processing-plant.png	reactor-fuel-processing-plant	Reactor Fuel Processing Plant	gregtech	gt.blockmachines	835	2026-11-01	GTNH daily 2026-10-28+804
+gtnh/reactor-processing-unit-i.png	reactor-processing-unit-i	Reactor Processing Unit I	gregtech	gt.blockmachines	31031	2026-11-01	GTNH daily 2026-10-28+804
+gtnh/reactor-processing-unit-ii.png	reactor-processing-unit-ii	Reactor Processing Unit II	gregtech	gt.blockmachines	31032	2026-11-01	GTNH daily 2026-10-28+804
+gtnh/reactor-shield-casing.png	reactor-shield-casing	Reactor Shield Casing	miscutils	miscutils.blockcasings	13	2026-11-01	GTNH daily 2026-10-28+804
+gtnh/refined-graphite-block.png	refined-graphite-block	Refined Graphite Block	gregtech	gt.blockcasings13	4	2026-11-01	GTNH daily 2026-10-28+804
+gtnh/reinforced-glass.png	reinforced-glass	Reinforced Glass	gregtech	gt.blockglass1	10	2026-11-01	GTNH daily 2026-10-28+804
+gtnh/reinforced-lava-boiler.png	reinforced-lava-boiler	Reinforced Lava Boiler	gregtech	gt.blockmachines	102	2026-11-01	GTNH daily 2026-10-28+804
+gtnh/remote-graviton-flow-modulator.png	remote-graviton-flow-modulator	Remote Graviton Flow Modulator	tectech	gt.godforgecasing	5	2026-11-01	GTNH daily 2026-10-28+804
+gtnh/robust-tungstensteel-machine-casing.png	robust-tungstensteel-machine-casing	Robust Tungstensteel Machine Casing	gregtech	gt.blockcasings4	0	2026-11-01	GTNH daily 2026-10-28+804
+gtnh/shielded-accelerator-casing.png	shielded-accelerator-casing	Shielded Accelerator Casing	gtnhlanth	casing.shielded_accelerator	0	2026-11-01	GTNH daily 2026-10-28+804
+gtnh/shielded-accelerator-glass.png	shielded-accelerator-glass	Shielded Accelerator Glass	gtnhlanth	tile.casing.shielded_accelerator_glass	0	2026-11-01	GTNH daily 2026-10-28+804
+gtnh/simple-solar-boiler.png	simple-solar-boiler	Simple Solar Boiler	gregtech	gt.blockmachines	105	2026-11-01	GTNH daily 2026-10-28+804
+gtnh/simple-stirling-water-pump.png	simple-stirling-water-pump	Simple Stirling Water Pump	bartworks	BWHeatedWaterPumpBlock	0	2026-11-01	GTNH daily 2026-10-28+804
+gtnh/singularity-reinforced-stellar-shielding-casing.png	singularity-reinforced-stellar-shielding-casing	Singularity Reinforced Stellar Shielding Casing	tectech	gt.godforgecasing	0	2026-11-01	GTNH daily 2026-10-28+804
+gtnh/small-coal-boiler.png	small-coal-boiler	Small Coal Boiler	gregtech	gt.blockmachines	100	2026-11-01	GTNH daily 2026-10-28+804
+gtnh/solid-steel-machine-casing.png	solid-steel-machine-casing	Solid Steel Machine Casing	gregtech	gt.blockcasings2	0	2026-11-01	GTNH daily 2026-10-28+804
+gtnh/solidifier-casing.png	solidifier-casing	Solidifier Casing	gregtech	gt.blockcasings10	13	2026-11-01	GTNH daily 2026-10-28+804
+gtnh/solidifier-radiator.png	solidifier-radiator	Solidifier Radiator	gregtech	gt.blockcasings10	14	2026-11-01	GTNH daily 2026-10-28+804
+gtnh/source-chamber.png	source-chamber	Source Chamber	gregtech	gt.blockmachines	10506	2026-11-01	GTNH daily 2026-10-28+804
+gtnh/space-elevator-base-casing.png	space-elevator-base-casing	Space Elevator Base Casing	gtnhintergalactic	gt.blockcasingsSE	0	2026-11-01	GTNH daily 2026-10-28+804
+gtnh/space-elevator-cable.png	space-elevator-cable	Space Elevator Cable	gtnhintergalactic	spaceelevatorcable	0	2026-11-01	GTNH daily 2026-10-28+804
+gtnh/space-elevator-internal-structure.png	space-elevator-internal-structure	Space Elevator Internal Structure	gtnhintergalactic	gt.blockcasingsSE	2	2026-11-01	GTNH daily 2026-10-28+804
+gtnh/space-elevator-motor-mk1.png	space-elevator-motor-mk1	Space Elevator Motor Mk-I	gtnhintergalactic	gt.blockcasingsSEMotor	0	2026-11-01	GTNH daily 2026-10-28+804
+gtnh/space-elevator-motor-mk2.png	space-elevator-motor-mk2	Space Elevator Motor Mk-II	gtnhintergalactic	gt.blockcasingsSEMotor	1	2026-11-01	GTNH daily 2026-10-28+804
+gtnh/space-elevator-motor-mk3.png	space-elevator-motor-mk3	Space Elevator Motor Mk-III	gtnhintergalactic	gt.blockcasingsSEMotor	2	2026-11-01	GTNH daily 2026-10-28+804
+gtnh/space-elevator-motor-mk4.png	space-elevator-motor-mk4	Space Elevator Motor Mk-IV	gtnhintergalactic	gt.blockcasingsSEMotor	3	2026-11-01	GTNH daily 2026-10-28+804
+gtnh/space-elevator-motor-mk5.png	space-elevator-motor-mk5	Space Elevator Motor Mk-V	gtnhintergalactic	gt.blockcasingsSEMotor	4	2026-11-01	GTNH daily 2026-10-28+804
+gtnh/space-elevator-support-structure.png	space-elevator-support-structure	Space Elevator Support Structure	gtnhintergalactic	gt.blockcasingsSE	1	2026-11-01	GTNH daily 2026-10-28+804
+gtnh/sparge-tower-exterior-casing.png	sparge-tower-exterior-casing	Sparge Tower Exterior Casing	miscutils	gtplusplus.blockcasings.5	4	2026-11-01	GTNH daily 2026-10-28+804
+gtnh/spatially-transcendent-gravitational-lens-block.png	spatially-transcendent-gravitational-lens-block	Spatially Transcendent Gravitational Lens Block	tectech	tile.spatiallyTranscendentGravitationalLens	0	2026-11-01	GTNH daily 2026-10-28+804
+gtnh/stable-titanium-machine-casing.png	stable-titanium-machine-casing	Stable Titanium Machine Casing	gregtech	gt.blockcasings4	2	2026-11-01	GTNH daily 2026-10-28+804
+gtnh/stainless-steel-turbine-casing.png	stainless-steel-turbine-casing	Stainless Steel Turbine Casing	gregtech	gt.blockcasings4	10	2026-11-01	GTNH daily 2026-10-28+804
+gtnh/steam-alloy-smelter.png	steam-alloy-smelter	Steam Alloy Smelter	gregtech	gt.blockmachines	118	2026-11-01	GTNH daily 2026-10-28+804
+gtnh/steam-compressor.png	steam-compressor	Steam Compressor	gregtech	gt.blockmachines	115	2026-11-01	GTNH daily 2026-10-28+804
+gtnh/steam-extractor.png	steam-extractor	Steam Extractor	gregtech	gt.blockmachines	109	2026-11-01	GTNH daily 2026-10-28+804
+gtnh/steam-forge-hammer.png	steam-forge-hammer	Steam Forge Hammer	gregtech	gt.blockmachines	112	2026-11-01	GTNH daily 2026-10-28+804
+gtnh/steam-furnace.png	steam-furnace	Steam Furnace	gregtech	gt.blockmachines	103	2026-11-01	GTNH daily 2026-10-28+804
+gtnh/steam-macerator.png	steam-macerator	Steam Macerator	gregtech	gt.blockmachines	106	2026-11-01	GTNH daily 2026-10-28+804
+gtnh/steel-firebox-casing.png	steel-firebox-casing	Steel Firebox Casing	gregtech	gt.blockcasings3	14	2026-11-01	GTNH daily 2026-10-28+804
+gtnh/steel-pipe-casing.png	steel-pipe-casing	Steel Pipe Casing	gregtech	gt.blockcasings2	13	2026-11-01	GTNH daily 2026-10-28+804
+gtnh/stellar-energy-siphon-casing.png	stellar-energy-siphon-casing	Stellar Energy Siphon Casing	tectech	gt.godforgecasing	4	2026-11-01	GTNH daily 2026-10-28+804
+gtnh/superconducting-coil-block.png	superconducting-coil-block	Superconducting Coil Block	gregtech	gt.blockcasings	15	2026-11-01	GTNH daily 2026-10-28+804
+gtnh/target-chamber-controller.png	target-chamber-controller	Target Chamber	gregtech	gt.blockmachines	10508	2026-11-01	GTNH daily 2026-10-28+804
+gtnh/temporal-field-restriction-coil.png	temporal-field-restriction-coil	Temporal Field Restriction Coil	GoodGenerator	FRF_Coil_4	0	2026-11-01	GTNH daily 2026-10-28+804
+gtnh/thermally-insulated-casing.png	thermally-insulated-casing	Thermally Insulated Casing	miscutils	gtplusplus.blockspecialcasings.1	8	2026-11-01	GTNH daily 2026-10-28+804
+gtnh/thorium-yttrium-glass-block.png	thorium-yttrium-glass-block	Thorium Yttrium Glass Block	bartworks	BW_ExtraGlass	0	2026-11-01	GTNH daily 2026-10-28+804
+gtnh/titanium-firebox-casing.png	titanium-firebox-casing	Titanium Firebox Casing	gregtech	gt.blockcasings4	3	2026-11-01	GTNH daily 2026-10-28+804
+gtnh/titanium-gear-box-casing.png	titanium-gear-box-casing	Titanium Gear Box Casing	gregtech	gt.blockcasings2	4	2026-11-01	GTNH daily 2026-10-28+804
+gtnh/titanium-pipe-casing.png	titanium-pipe-casing	Titanium Pipe Casing	gregtech	gt.blockcasings2	14	2026-11-01	GTNH daily 2026-10-28+804
+gtnh/titanium-reinforced-borosilicate-glass-block.png	titanium-reinforced-borosilicate-glass-block	Titanium Reinforced Borosilicate Glass Block	bartworks	BW_TieredGlass	1	2026-11-01	GTNH daily 2026-10-28+804
+gtnh/titanium-turbine-casing.png	titanium-turbine-casing	Titanium Turbine Casing	gregtech	gt.blockcasings4	11	2026-11-01	GTNH daily 2026-10-28+804
+gtnh/trinium-coil-block.png	trinium-coil-block	Trinium Coil Block	gregtech	gt.blockcasings5	10	2026-11-01	GTNH daily 2026-10-28+804
+gtnh/tungstensteel-reinforced-borosilicate-glass-block.png	tungstensteel-reinforced-borosilicate-glass-block	Tungstensteel Reinforced Borosilicate Glass Block	bartworks	BW_TieredGlass	2	2026-11-01	GTNH daily 2026-10-28+804
+gtnh/tungstensteel-turbine-casing.png	tungstensteel-turbine-casing	Tungstensteel Turbine Casing	gregtech	gt.blockcasings4	12	2026-11-01	GTNH daily 2026-10-28+804
+gtnh/turbodyne-casing.png	turbodyne-casing	Turbodyne Casing	miscutils	gtplusplus.blockcasings.4	11	2026-11-01	GTNH daily 2026-10-28+804
+gtnh/uhv-solenoid-superconductor-coil.png	uhv-solenoid-superconductor-coil	UHV Solenoid Superconductor Coil	gregtech	gt.blockcasings.cyclotron_coils	7	2026-11-01	GTNH daily 2026-10-28+804
+gtnh/uiv-solenoid-superconductor-coil.png	uiv-solenoid-superconductor-coil	UIV Solenoid Superconductor Coil	gregtech	gt.blockcasings.cyclotron_coils	9	2026-11-01	GTNH daily 2026-10-28+804
+gtnh/ultimate-field-restriction-coil.png	ultimate-field-restriction-coil	Ultimate Field Restriction Coil	GoodGenerator	FRF_Coil_3	0	2026-11-01	GTNH daily 2026-10-28+804
+gtnh/uv-solenoid-superconductor-coil.png	uv-solenoid-superconductor-coil	UV Solenoid Superconductor Coil	gregtech	gt.blockcasings.cyclotron_coils	6	2026-11-01	GTNH daily 2026-10-28+804
+gtnh/vacuum-furnace-casing.png	vacuum-furnace-casing	Vacuum Casing	miscutils	gtplusplus.blockcasings.4	10	2026-11-01	GTNH daily 2026-10-28+804
+gtnh/void-miner-i.png	void-miner-i	Void Miner I	gregtech	gt.blockmachines	12741	2026-11-01	GTNH daily 2026-10-28+804
+gtnh/void-miner-ii.png	void-miner-ii	Void Miner II	gregtech	gt.blockmachines	12740	2026-11-01	GTNH daily 2026-10-28+804
+gtnh/void-miner-iii.png	void-miner-iii	Void Miner III	gregtech	gt.blockmachines	12739	2026-11-01	GTNH daily 2026-10-28+804
+gtnh/water-pump-controller.png	water-pump-controller	Water Pump	gregtech	gt.blockmachines	31085	2026-11-01	GTNH daily 2026-10-28+804
+gtnh/water-purification-plant.png	water-purification-plant	Water Purification Plant	gregtech	gt.blockmachines	9402	2026-11-01	GTNH daily 2026-10-28+804
+gtnh/wire-factory-casing.png	wire-factory-casing	Wire Factory Casing	miscutils	miscutils.blockcasings	6	2026-11-01	GTNH daily 2026-10-28+804
+gtnh/wyvern-fusion-casing.png	wyvern-fusion-casing	Wyvern Fusion Casing	kubatech	defc.casing	10	2026-11-01	GTNH daily 2026-10-28+804

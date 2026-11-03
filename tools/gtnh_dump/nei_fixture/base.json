@@ -1,0 +1,23 @@
+{"format": 1, "gt_version": "fixture", "git_commit": "0000000000", "git_describe": "fixture", "created": "2026-10-29",
+ "mods": {"gregtech": "fixture", "bartworks": "fixture", "IC2": "fixture", "dreamcraft": "fixture"},
+ "recipe_maps": {
+  "gt.recipe.macerator": {"amperage": 1, "count": 2, "recipes": [
+   {"eut": 2, "duration": 400, "category": "gt.recipe.macerator", "in": [{"id": "gregtech:gt.metaitem.02:32576", "n": 1}], "out": [{"id": "gregtech:gt.metaitem.01:1894", "n": 1}], "fin": [], "fout": []},
+   {"eut": 4, "duration": 16, "category": "gt.recipe.category.macerator_recycling", "in": [{"id": "gregtech:gt.metaitem.01:26407", "n": 1}], "out": [{"id": "gregtech:gt.metaitem.01:407", "n": 1}], "fin": [], "fout": []}]},
+  "gt.recipe.circuitassembler": {"amperage": 1, "count": 1, "recipes": [
+   {"eut": 9600, "duration": 200, "special": -200, "category": "gt.recipe.circuitassembler", "in": [{"id": "gregtech:gt.metaitem.03:32102", "n": 6}, {"id": "gregtech:gt.metaitem.03:32049", "n": 6}, {"id": "gregtech:gt.metaitem.02:19303", "n": 48}, {"id": "gregtech:gt.metaitem.01:26085", "n": 48}], "out": [{"id": "gregtech:gt.metaitem.03:32082", "n": 1}], "fin": [{"fluid": "molten.indalloy140", "l": 288}], "fout": [], "meta": {"cleanroom": true}}]},
+  "gt.recipe.centrifuge": {"amperage": 1, "count": 1, "recipes": [
+   {"eut": 120, "duration": 900, "category": "gt.recipe.centrifuge", "in": [{"id": "bartworks:gt.bwMetaGenerateddust:10035", "n": 4}], "out": [{"id": "gregtech:gt.metaitem.01:2026", "n": 2}, {"id": "gregtech:gt.metaitem.01:2026", "n": 1, "chance": 9500}, {"id": "gregtech:gt.metaitem.01:2324", "n": 1, "chance": 8000}, {"id": "gregtech:gt.metaitem.01:2098", "n": 1, "chance": 2500}, {"id": "gregtech:gt.metaitem.01:2100", "n": 1, "chance": 2000}, {"id": "bartworks:gt.bwMetaGenerateddust:89", "n": 1, "chance": 2000}], "fin": [], "fout": [{"fluid": "radon", "l": 20}]}]}},
+ "assembly_line_research": [],
+ "crafting": [
+  {"class": "gregtech.api.util.GTShapedRecipe", "out": {"id": "gregtech:gt.metaitem.02:18032", "n": 1}, "width": 3, "height": 1, "in": [{"ore": "craftingToolHardHammer"}, null, {"ore": "plateIron"}]}],
+ "furnace": [
+  {"in": {"id": "bartworks:gt.bwMetaGeneratedtoolHeadWrench:11351", "n": 1}, "out": {"id": "bartworks:gt.bwMetaGeneratedingot:11351", "n": 4}}],
+ "items": {
+  "IC2:itemPlates:4": {"name": "Iron Plate", "ore": ["plateIron", "plateAnyIron"], "prefix": "plate", "material": "Iron"},
+  "gregtech:gt.metaitem.01:17032": {"name": "Iron Plate", "ore": ["plateIron", "plateAnyIron"], "prefix": "plate", "material": "Iron"},
+  "gregtech:gt.metatool.01:12": {"name": "Hammer", "ore": ["craftingToolHardHammer"]},
+  "gregtech:gt.metaitem.02:18032": {"name": "Iron Casing", "ore": ["itemCasingIron", "itemCasingAnyIron"], "prefix": "itemCasing", "material": "Iron"},
+  "gregtech:gt.metaitem.02:32576": {"name": "Cheese Slice"},
+  "gregtech:gt.metaitem.01:1894": {"name": "Small Pile of Cheese Powder", "ore": ["dustSmallCheese"], "prefix": "dustSmall", "material": "Cheese"},
+  "gregtech:gt.metaitem.03:32102": {"name": "Advanced Circuit Board"}}}

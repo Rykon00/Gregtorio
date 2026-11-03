@@ -130,10 +130,12 @@ end
 --- for itself, and the auto-unlock would no longer pull in the recipe that really makes it (issue #91). The same for
 --- the blast furnace variants with another gas of 144-fork-dead-fluids.lua, which stand in for their base recipe, and
 --- the recycling recipes of 157-fork-recycling.lua (issue #190) and the parts of 158-fork-gt-parts.lua (issue #227: the
---- forms of a material, nuggets and piles of its dust, each made from another form of it).
+--- forms of a material, nuggets and piles of its dust, each made from another form of it), and 157's cutting and forge
+--- hammer recipes of the material blocks (issue #670: a block would stand in for its own plates and gems).
 local casting = {}
 for _, list in pairs({ FORK_CASTING and FORK_CASTING.recipes or {}, FORK_GAS_VARIANTS or {},
 	FORK_RECYCLING and FORK_RECYCLING.recipes or {},   -- issue #190: recycling gives back what an item is made of
+	FORK_RECYCLING and FORK_RECYCLING.blocks or {},    -- issue #670: block -> 9 plates or gems
 	FORK_GT_PARTS and FORK_GT_PARTS.recipes or {} }) do
 	for name, _ in pairs(list) do casting[name] = true end
 end
@@ -248,10 +250,38 @@ log("FORK-AUTOUNLOCK: " .. added .. " additional recipes unlocked")
 --------------------------------------------------------------------------------
 
 require("prototypes.fork-tech-icons")
+--- Issue #639: devcheck fails for a shown technology, item, fluid or recipe whose icon is the NYI placeholder
+--- (graphics/technology/nyi.png or a file with the same bytes) unless it is in this allow-list with its reason
+FORK_NYI_ICONS = {}
 for name, _ in pairs(FORK_TECH_ICONS) do
 	local t = data.raw.technology[name]
 	if t and t.icon and t.icon:sub(1, 24) == "__gregtorio-continued__/" then
 		t.icon = "__gregtorio-continued__/graphics/technology/fork/" .. name .. ".png"
 		t.icon_size = 256
+	end
+end
+
+--- Issue #713: GT New Horizons' rendered icons (NEI's item panel dump) for the blocks of GT's own mods: casings, coils,
+--- glass, multiblock controllers (tools/import_gtnh_icons.py: graphics/icons/gtnh/, sources in
+--- graphics/icons/GTNH-ICONS.tsv). The placed entity and the recipes that showed the item's old icon show the new one.
+require("prototypes.data.gtnh-icons")
+do
+	local dir = "__gregtorio-continued__/graphics/icons/gtnh/"
+	local renamed = {}
+	for name, _ in pairs(FORK_GTNH_ICONS) do
+		for item_type, _ in pairs(defines.prototypes.item) do
+			local item = data.raw[item_type] and data.raw[item_type][name]
+			if item then
+				if item.icon then renamed[item.icon] = dir .. name .. ".png" end
+				item.icon, item.icon_size, item.icons = dir .. name .. ".png", 64, nil
+			end
+		end
+	end
+	local function swap(p)
+		if p.icon and renamed[p.icon] and not p.icons then p.icon, p.icon_size = renamed[p.icon], 64 end
+	end
+	for _, recipe in pairs(data.raw.recipe) do swap(recipe) end
+	for entity_type, _ in pairs(defines.prototypes.entity) do
+		for _, entity in pairs(data.raw[entity_type] or {}) do swap(entity) end
 	end
 end

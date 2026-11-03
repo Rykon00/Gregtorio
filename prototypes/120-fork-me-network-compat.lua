@@ -43,6 +43,21 @@ FORK_ME_TAB_ITEMS = { "advanced-storage-housing" }
 FORK_ME_TAB_OUTSIDE = {
 }
 
+--- me-network stacks its items to 50, Factorio's usual size (since me-network 0.5.11; before, some stacked to Minecraft's
+--- 64). In Gregtorio the ME parts stack to 64 as GregTech's items do: the ME Fluix Cable, the storage housing, the storage
+--- components, blank patterns, every upgrade card and the ME Wireless Booster. Blocks keep me-network's 50 or 10, cells,
+--- patterns and terminals 1
+local ME_STACK_64 = { ["fluix-cable"] = true, ["basic-storage-housing"] = true, ["me-blank-pattern"] = true,
+	["me-wireless-booster"] = true }
+for _, name in ipairs(ME.items or {}) do
+	if ME_STACK_64[name] or name:find("^me%-.+%-storage%-component$") or name:find("^me%-.+%-card$") then
+		for t in pairs(defines.prototypes.item) do      -- (the Acceleration Card is a module)
+			local item = data.raw[t] and data.raw[t][name]
+			if item then item.stack_size = 64 end
+		end
+	end
+end
+
 --- issue #519: the row of an ME item in me-network's tab "ME Network" (its subgroup and order), whatever its type
 local function item_row(name)
 	for t in pairs(defines.prototypes.item) do
@@ -351,6 +366,20 @@ if data.raw["item-with-tags"]["me-singularity-storage-cell"] then
 	}
 	data.raw.recipe["me-singularity-storage-cell"].auto_recycle = false
 end
+--- issue #720 (me-network 0.5.11, its issue #562): the ME Singularity Fluid Storage Cell. GTNH has no fluid Singularity cell
+--- (AE2FC's "singularity" cell is its void cell); Gregtorio's fluid cells are the item cell's recipe and the pump of the
+--- tier (below), so: the item Singularity cell's base recipe above and a UHV pump (162 replaces only the item cell's)
+if data.raw["item-with-tags"]["me-singularity-fluid-storage-cell"] then
+	recipe_of{
+		name = "me-singularity-fluid-storage-cell",
+		category = "uhv-assembling-machine-recipes",
+		item_row = true,
+		energy_required = 10 * UHV_SPEED,
+		ingredients = I{ "me-16384k-storage-component", 12, "dense-infinity-plate", 4, "infinity-catalyst-dust", 4,
+			"dense-cosmic-neutronium-plate", 12, "uhv-pump", 1 },
+	}
+	data.raw.recipe["me-singularity-fluid-storage-cell"].auto_recycle = false
+end
 
 --- GTNH (SAE2:2239-2256): a titanium plate, 2 certus quartz screws, an annihilation (import) or formation core (export),
 --- 2 nether quartz plates, an LV piston, MV, 10 s; here an aluminium plate
@@ -391,6 +420,29 @@ recipe_of{
 	ingredients = I{ "wooden-chest", 1, "certus-quartz-screw", 2, "me-interface", 1, "nether-quartz-plate", 2,
 		"lv-piston", 1 },
 }
+
+--- issue #603 (me-network issues #506 and #531, me-network 0.5.11): the ME Logistic Storage Bus and the ME Logistic
+--- Interface connect the network to Factorio's logistic robots, which neither AE2 nor GTNH has, so there is no GTNH recipe:
+--- Gregtorio keeps me-network's parts (the storage bus or the interface, the logistic chests, 2 MV circuits) in the HV
+--- assembler, where the logistic chests are made (13-mv-age-item.lua), 10 s as the other bus recipes. Both come with HV
+--- Machines, the technology of the logistic chests (142), which comes after Logistic Robotics and ME Network (see the
+--- technologies below)
+local LOGISTIC_BLOCKS = {
+	{ "me-logistic-storage-bus", I{ "me-storage-bus", 1, "storage-chest", 1, "advanced-circuit", 2 } },
+	{ "me-logistic-interface", I{ "me-interface", 1, "storage-chest", 1, "passive-provider-chest", 1, "advanced-circuit", 2 } },
+}
+for _, b in ipairs(LOGISTIC_BLOCKS) do
+	if data.raw.item[b[1]] then
+		recipe_of{
+			name = b[1],
+			category = "hv-assembling-machine-recipes",
+			item_row = true,
+			energy_required = 10 * HV_SPEED,
+			ingredients = b[2],
+		}
+		fork_add_unlock("hv-machines", b[1])
+	end
+end
 
 
 
@@ -815,6 +867,13 @@ if HAS_CARDS then
 		recipe_of{ name = "me-view-cell", item_row = true,
 			ingredients = I{ "basic-storage-housing", 1, "certus-quartz", 1 } }
 	end
+	--- issue #720 (me-network 0.5.11, its issue #561): GTNH's Memory Card (NewHorizonsCoreMod
+	--- scripts/ScriptAppliedEnergistics2.java, "memory card", shaped crafting table): a calculation processor, a data circuit
+	--- (EV), a titanium plate, 2 gold plates, a red alloy plate; a selection tool, so not through card()
+	if data.raw["selection-tool"]["me-memory-card"] then
+		recipe_of{ name = "me-memory-card", item_row = true,
+			ingredients = I{ "calculation-processor", 1, "ev-circuit", 1, "titanium-plate", 1, "gold-plate", 2, "red-alloy-plate", 1 } }
+	end
 
 	--- GTNH: computer screen cover, two titanium screws (stainless steel here: Gregtorio has no titanium screw),
 	--- crafting table, two titanium plates, calculation processor
@@ -992,8 +1051,9 @@ if HAS_CARDS then
 		"me-equal-distribution-card", "me-cell-workbench", "me-group-filter-card", "me-void-storage-cell",
 		"me-void-fluid-storage-cell", "me-super-speed-card", "me-superluminal-speed-card",
 	}
-	--- issues #453 and #458: the Crafting Card and the View Cell (me-network 0.5.5)
-	for _, name in ipairs({ "me-crafting-card", "me-view-cell" }) do
+	--- issues #453 and #458: the Crafting Card and the View Cell (me-network 0.5.5); issue #720: the Memory Card (me-network
+	--- 0.5.11 unlocks it with ME Network; here with the cards, where its titanium and calculation processor come)
+	for _, name in ipairs({ "me-crafting-card", "me-view-cell", "me-memory-card" }) do
 		if data.raw.recipe[name] then cards[#cards + 1] = name end
 	end
 	tech("me-upgrade-cards", { "me-storage-256k", "circuit-network", "turbo-transport-belt" }, 6, 1000, cards)
@@ -1055,7 +1115,8 @@ if HAS_BIG_CELLS then
 		crafting_before = "me-crafting-storage-" .. s.size
 	end
 	tech_n("me-storage-singularity", { "me-storage-16384k", "me-quantum-bridge", "quantium", "uev-materials", "uhv-machines" },
-		10, 225, { "me-singularity-storage-cell" })
+		10, 225, data.raw.recipe["me-singularity-fluid-storage-cell"]              -- (issue #720)
+			and { "me-singularity-storage-cell", "me-singularity-fluid-storage-cell" } or { "me-singularity-storage-cell" })
 	tech_n("me-crafting-storage-singularity", { "me-crafting-storage-16384k", "me-storage-singularity", "exotic-processor-mainframes",
 		"umv-materials", "uiv-components", "uiv-machines" }, 12, 120, with_blocks({}, { "me-singularity-crafting-storage" }))
 	--- the accelerators of 4 to 64 cores (IV to ZPM circuits, up to the LuV assembler) and of 256 to 4096 cores (UV to UEV

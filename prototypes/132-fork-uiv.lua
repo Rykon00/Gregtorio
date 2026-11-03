@@ -306,8 +306,8 @@ create_recipe{
 --- GT5-Unofficial assembly line recipes; 1 GT ingot of fluid = 14.4, 2000 L lubricant = 200.
 --- Changes against GT:
 ---   * transcendent metal instead of the raw tesseract chain, magnetic samarium rods instead of
----     attuned tengam rods, fine cosmic neutronium wire instead of fine proto-halkonite steel wire,
----     infinity plates instead of nether star plates (the pump)
+---     attuned tengam rods, fine cosmic neutronium wire instead of fine proto-halkonite steel wire (since issue #629
+---     both GT's, 164 section 53, the field generator's too), infinity plates instead of nether star plates (the pump)
 ---   * fine wire and foil counts cut like the UEV ones: motor 64 fine wires, emitter and sensor 32
 ---     foils, field generator 64 fine wires
 ---   * field generator: UIV circuits instead of UMV circuits (none before phase 5b)
@@ -474,8 +474,8 @@ create_item{
 		{ type = "item", name = "uiv-circuit", amount = 2 },
 		{ type = "item", name = "insanely-ultimate-voltage-coil", amount = 2 },
 		{ type = "item", name = "uiv-pump", amount = 1 },
-		{ type = "fluid", name = "cryogenic-helium", amount = 1000 },
-		{ type = "fluid", name = "molten-indalloy-140", amount = 576 },
+		{ type = "fluid", name = "cryogenic-helium", amount = 1600 },   -- (issue #671: a tenth of GT's litres)
+		{ type = "fluid", name = "molten-indalloy-140", amount = 288 },
 	},
 }
 

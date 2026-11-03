@@ -1,8 +1,6 @@
 
 ICON_PATH = "__gregtorio-continued__/graphics/icons/"
 
-YAFC_MODE = false
-
 --- Fork: the ore mode (issue #563, startup setting): "map-veins" (plan #494, 165) or "vein-recipes" (the classic vein
 --- recipes of 166, no veins on the map)
 FORK_ORE_MODE = settings.startup["gregtorio-continued-ore-mode"].value
@@ -35,14 +33,8 @@ require("prototypes.21-luv-age-item")
 require("prototypes.50-ae2-module")
 require("prototypes.98-technology")
 
-if YAFC_MODE then require("prototypes.99-yafc-module") end
 
 
-
--- Log all defined fluids
-for name, fluid in pairs(data.raw["fluid"]) do
-	log("DEBUG: Fluid found in data.lua: " .. name)
-end
 
 -- Check for bad fluid entries in recipes
 for name, recipe in pairs(data.raw.recipe) do
@@ -161,10 +153,27 @@ require("prototypes.161-fork-dimension-unlocks")
 require("prototypes.165-fork-ore-veins")
 --- issue #563: the classic vein recipes, generated from 165's veins, unlocked by the ore chains of 155 and 161 (after 165)
 require("prototypes.166-fork-classic-veins")
+--- issue #625: the tier goals as tips (their technologies exist by now)
+require("prototypes.167-fork-tips")
 --- issue #164: the circuit variant recipes show the icon of their GTNH item (156)
 require("prototypes.156-fork-circuit-icons")
+--- issue #644: GT's single-block naquadah reactors and plasma generators (after the parts and plasmas, before 157)
+require("prototypes.169-fork-single-generators")
+--- issue #613: the Tinkers-like smeltery, casting table and tool station (after the parts, before 157)
+require("prototypes.170-fork-smeltery")
+--- issue #618: the maintenance kits and duct tape (setting gregtorio-continued-maintenance; their slots: data-final-fixes)
+require("prototypes.171-fork-maintenance")
+--- issue #621: the Hazmat Suit (setting gregtorio-continued-radiation; the radioactive items: data-final-fixes)
+require("prototypes.172-fork-radiation")
+--- issue #622: the wireless energy and dynamo hatches (GT New Horizons' wireless EU, UHV to UXV)
+require("prototypes.173-fork-wireless")
+--- issue #615: the rockets T1 to T5 and the Reach technologies as their craft-item triggers (after the parts and 161)
+require("prototypes.174-fork-rockets")
 --- issue #190: GTNH's material recycling (macerator, arc furnace, fluid extractor), after every file that makes recipes
 require("prototypes.157-fork-recycling")
+--- issue #689: GT New Horizons' tiers, times, item amounts and chances from the recipe dump (after every file that makes
+--- recipes, before the molds, the fluid steps and the finalize)
+require("prototypes.168-fork-gtnh-numbers")
 require("prototypes.150-fork-molds")
 require("prototypes.190-fork-manual-labor")
 --- issue #137: fire animations of the stone furnace, the iron furnace and the small coal boiler (after their entities)

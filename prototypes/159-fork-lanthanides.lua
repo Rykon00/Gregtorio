@@ -286,9 +286,9 @@ table.insert(data.raw.technology["luv-components"].prerequisites, TECH)
 ---   centrifuge: cerium-oxidised -> bastnasite rarer earth oxides, cerium dioxide 90 % (HV, 30 s)
 ---   mixer: rarer earth oxides + 40 nitric acid -> 100 nitrogenated bastnasite rarer earth oxides (HV, 15 s)
 ---   chemical reactor: 100 nitrogenated + 100 acetone -> 100 bastnasite rarer earth oxide suspension (HV, 35 s)
----   centrifuge: 100 suspension -> neodymium rare earth concentrate 80 %, 45 acetone (HV, 45 s; GT gives 75 diluted
----     acetone, which its fluid heater turns into acetone at 30 of 50; Gregtorio has no fluid heater, so the centrifuge
----     gives the acetone)
+---   centrifuge: 100 suspension -> neodymium rare earth concentrate 80 %, 75 diluted acetone (HV, 45 s); the fluid
+---     heater turns 50 diluted acetone into 30 acetone (MV, 1.2 s; gtnhlanth RecipeLoader.java:3290-3295; issue #635:
+---     before, the centrifuge gave 45 acetone, Gregtorio had no fluid heater)
 ---   chemical reactor: 2 neodymium rare earth concentrate + 200 hydrochloric acid -> lanthanum chloride, neodymium oxide
 ---     (HV, 45 s)
 ---   electrolyzer (bartworks' generated recipes, Werkstoff electrolysis): 4 lanthanum chloride -> lanthanum dust + 300
@@ -365,9 +365,11 @@ step("nitrogenated-bastnasite-rarer-earth-oxides", MIX, 15, HV_SPEED,
 step("bastnasite-rarer-earth-oxide-suspension", CR, 35, HV_SPEED,
 	{ { "nitrogenated-bastnasite-rarer-earth-oxides", 100 }, { "acetone", 100 } },
 	{ { "bastnasite-rarer-earth-oxide-suspension", 100 } })
+F.fluid("diluted-acetone", "nearly-white-fluid", { 0.85, 0.85, 0.80 })   -- (before its recipe: step types it by data.raw)
 step("neodymium-rare-earth-concentrate", "hv-centrifuge-recipes", 45, HV_SPEED,
 	{ { "bastnasite-rarer-earth-oxide-suspension", 100 } },
-	{ { "neodymium-rare-earth-concentrate", 1, 0.8 }, { "samaric-rare-earth-concentrate", 1, 0.5 }, { "acetone", 45 } })
+	{ { "neodymium-rare-earth-concentrate", 1, 0.8 }, { "samaric-rare-earth-concentrate", 1, 0.5 }, { "diluted-acetone", 75 } })
+step("acetone-from-diluted-acetone", "mv-fluid-heater-recipes", 1.2, MV_SPEED, { { "diluted-acetone", 50 } }, { { "acetone", 30 } })
 step("neodymium-rare-earth-concentrate-reaction", CR, 45, HV_SPEED,
 	{ { "neodymium-rare-earth-concentrate", 2 }, { "hydrochloric-acid", 200 } },
 	{ { "lanthanum-chloride", 1 }, { "neodymium-oxide", 1 } })
@@ -416,7 +418,7 @@ F.tech{
 --- Zirconium (RL 866-900, 993-1002; bartworks Electrolyzer.java and its generated Zirconium recipes):
 ---   the monazite dissolution tank gives 4/9 hafnia-zirconia blend (GT's 4 tiny piles), the monazite sifter 5 % and the
 ---   bastnasite sifter 10 % red zircon dust;
----   centrifuge: hafnia-zirconia blend -> 3 zirconia (EV, 30 s; GT's 3 hafnia are left out, see below)
+---   centrifuge: hafnia-zirconia blend -> 3 zirconia (EV, 30 s; GT's 3 hafnia since issue #631, 164 section 54)
 ---   chemical reactor: 3 zirconia + 400 hydrochloric acid -> 5 zirconium tetrachloride, 200 water (LV, 15 s);
 ---     5 zirconium tetrachloride + 100 water -> 100 zirconium tetrachloride solution (LV, 10 s)
 ---   blast furnace: 2 magnesium + 100 solution -> hot zirconium ingot, 6 magnesium chloride (EV, 30 s); zirconium dust
@@ -449,8 +451,8 @@ F.tech{
 --- 4 large polyethylene pipes are 24 polyethylene sheets and the 4 black metal frames black steel frames, Gregtorio has
 --- neither) and the MV and HV Dehydrators (GregtechDehydrator.java 171-185: hull, robot arm, circuit, fine wire, 2x 4x
 --- cables, gears; 3x3 copies of the chemical bath of their tier). Section 7 adds the EV to ZPM Dehydrators and
---- hafnium from GT++'s ilmenite sifter (issue #274); GT's hafnia route needs iodine, which Gregtorio has no source
---- for, and GTNH's samarium chain samarium ore (#154).
+--- hafnium from GT++'s ilmenite sifter (issue #274); GT's hafnia route with iodine is 164's section 54 (issue #631),
+--- GTNH's samarium chain needs samarium ore (#154).
 --------------------------------------------------------------------------------
 
 local EUROPIUM, ZIRCONIUM, HEXABORIDE, SAMARIC = "europium-processing", "zirconium-processing", "lanthanum-hexaboride",
@@ -513,7 +515,9 @@ for _, d in pairs(DEHYDRATORS) do
 	local src = data.raw["assembling-machine"][d[2]]
 	machine{
 		name = d[1] .. "-dehydrator", source = d[2], category = d[3][1], speed = d[4], energy = src.energy_usage,
-		subgroup = d[5], ports = { port("input", N, { 0, -1 }), port("output", S, { 0, 1 }) },
+		--- (issue #635: GT's dehydrator gives water and gases as cells in its nine item slots, gregtech/api/recipe/
+		--- RecipeMaps.java:2017-2019 maxIO(2, 9, 1, 1); without cells a second fluid output)
+		subgroup = d[5], ports = { port("input", N, { 0, -1 }), port("output", S, { 0, 1 }), port("output", S, { 1, 1 }) },
 		recipe = { "crafting-or-assembling-recipes", 1, d[6] },
 	}
 	local m = data.raw["assembling-machine"][d[1] .. "-dehydrator"]
@@ -643,7 +647,7 @@ F.tech{
 --- RecipeLoaderNuclear.java 551-565): iron 50 %, zirconium 2 x 10 %, hafnium 2 x 3 % (HV, 30 s; GT's cast iron dust,
 --- 2.78 %, is left out: Gregtorio has no cast iron). Hafnium is bartworks' Werkstoff without a blast furnace: its dust
 --- smelts into the ingot in the furnace, the macerator grinds the ingot (5 s). GT's hafnia route (hafnium tetrachloride,
---- low-purity hafnium, hafnium iodide) waits for an iodine source.
+--- low-purity hafnium, hafnium iodide) is 164's section 54 since issue #631 (iodine from seaweed).
 ---
 --- The Chemical Dehydrators I to IV (EV to ZPM, GT++'s GregtechDehydrator.java 68-209): hull, robot arm, circuit, a
 --- dehydrator coil, 2x 4x cables (8 cables) and 2 gears of the tier, like the MV and HV ones of section 6. The coil

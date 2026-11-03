@@ -381,6 +381,8 @@ data:extend({
       { type = "unlock-recipe", recipe = "sand-manual-digsite" },
       { type = "unlock-recipe", recipe = "coke-oven-brick" },
       { type = "unlock-recipe", recipe = "coke-oven-block" },
+      { type = "unlock-recipe", recipe = "coke-oven-controller" },   -- issue #613
+      { type = "unlock-recipe", recipe = "coke-oven-hatch" },
       { type = "unlock-recipe", recipe = "coke-oven" },
       { type = "unlock-recipe", recipe = "coke-coke-oven" }
     },

@@ -16,7 +16,9 @@ locale entries, commit messages, pull requests, issues, README and other docs.
    link its clone too (`python tools/dev_link.py` there), or install it from the mod portal. ME changes go into that
    repository; here only `prototypes/120-fork-me-network-compat.lua` (the GT recipes and tiers of the ME items).
 4. Before committing: `python tools/check_syntax.py --loaded`, and on Linux the headless
-   harness `python tools/devcheck/devcheck.py all` (see `tools/devcheck/README.md`).
+   harness `python tools/devcheck/devcheck.py all` (see `tools/devcheck/README.md`). CI runs the same `all` on every pull
+   request into main and every night (`.github/workflows/devcheck.yml`, issue #641; it needs the repository secrets
+   `FACTORIO_USERNAME` and `FACTORIO_TOKEN` for the mod portal and only warns without them).
 5. Changelog: the topmost section of `changelog.txt` is always the **next** version
    (`Version: X.Y.Z` without a `Date:` line). Every pull request into `main` that changes the
    game (prototypes, scripts, locale, graphics) adds its player-facing lines there, in the

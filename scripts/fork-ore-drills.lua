@@ -12,7 +12,12 @@
 --------------------------------------------------------------------------------
 
 local M = {}
-local CHECK_TICKS = 60   -- (free: the molds take 30, the solar boilers 120, fork-power on_tick)
+local batch = require("scripts.fork-batch")
+local CHECK_TICKS = 60
+--- issue #642: the plants are checked in shares every STEP_TICKS, each one once per CHECK_TICKS (scripts/fork-batch.lua);
+--- a check charges the ticks since the plant's last one (rec.tick). Free intervals: the molds take 5, the solar boilers 24,
+--- the Ender Tanks 20, fork-power on_tick
+local STEP_TICKS = 12
 
 local config
 local function drill_data()
@@ -72,8 +77,10 @@ local function check(rec)
 		t = e.surface.create_entity{ name = d.tank, position = e.position, force = e.force }
 		rec.tank = t
 	end
+	local ticks = rec.tick and math.max(game.tick - rec.tick, 0) or CHECK_TICKS
+	rec.tick = game.tick
 	local per_check = e.prototype.mining_speed / d.ore_time * CHECK_TICKS / 60 * d.per_ore
-	if e.status == defines.entity_status.working then rec.debt = rec.debt + per_check end
+	if e.status == defines.entity_status.working then rec.debt = rec.debt + per_check * ticks / CHECK_TICKS end
 	local have = t.get_fluid_count(d.fluid)
 	--- a running plant pays what it owes; a stopped one starts again once it can pay that and the next check's ore
 	local need = rec.debt + (e.disabled_by_script and per_check or 0)
@@ -89,12 +96,12 @@ local function check(rec)
 		label = { "entity-status.fork-no-drilling-fluid" } } or nil
 end
 
-script.on_nth_tick(CHECK_TICKS, function()
+script.on_nth_tick(STEP_TICKS, function()
 	local st = storage.fork_ore_drills
 	if not st then return end
-	for k, rec in pairs(st.plants) do
+	batch.visit(st, "plants", CHECK_TICKS, STEP_TICKS, function(k, rec)
 		if rec.entity.valid then check(rec) else st.plants[k] = nil end
-	end
+	end)
 end)
 
 return M

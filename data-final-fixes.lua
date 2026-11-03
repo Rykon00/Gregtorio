@@ -140,6 +140,41 @@ local VANILLA_RECIPES_UNUSED = {
 for _, group in pairs(VANILLA_RECIPES_UNUSED) do
 	for _, name in pairs(group[2]) do VANILLA_RECIPES_REMOVED[name] = group[1] end
 end
+--- Issue #670: Space Age's recycling. Factorio 2.1's built-in mod recycler (a dependency of space-age and quality) makes a
+--- hidden recycling recipe of every recipe and item in its data-updates and unlocks them with hidden effects of its
+--- technology Recycling. Gregtorio has no recycler (its recipe is in the vanilla machines above, the technology is
+--- disabled below and Fulgora is gone since #529), yet every item's tooltip and Factoriopedia showed the recycling result
+--- (utility-constants' factoriopedia_recycling_recipe_categories). GT New Horizons recycles in the macerator, the arc
+--- furnace and the fluid extractor (157). Every recipe of a category of the recycler is deleted with the vanilla recipes
+--- (their technology effects and tips go too) unless another machine runs that category; then the recycler itself. Nothing
+--- else of Factorio 2.1 reads them (quality, spoiling and the upgrade planner do not; the recycler's furnace and its
+--- technology are their only users). devcheck fails for a recipe of the recycler's categories that is left.
+do
+	local recycler = data.raw.furnace["recycler"]
+	local only_recycler = {}
+	for _, c in pairs(recycler and recycler.crafting_categories or { "recycling" }) do only_recycler[c] = true end
+	only_recycler["recycling-or-hand-crafting"] = true   -- Space Age 2.0's scrap recycling (2.1: recycling, hand-crafting)
+	for _, t in pairs({ "assembling-machine", "furnace", "character" }) do
+		for name, e in pairs(data.raw[t] or {}) do
+			if name ~= "recycler" then
+				for _, c in pairs(e.crafting_categories or {}) do only_recycler[c] = nil end
+			end
+		end
+	end
+	local n = 0
+	for name, r in pairs(data.raw.recipe) do
+		for _, c in pairs(r.categories or { r.category }) do
+			if only_recycler[c] then
+				VANILLA_RECIPES_REMOVED[name] = "Space Age's recycling: Gregtorio has no recycler (issue #670)"
+				n = n + 1
+				break
+			end
+		end
+	end
+	data.raw.item["recycler"] = nil
+	data.raw.furnace["recycler"] = nil
+	log("FORK-RECYCLER: " .. n .. " recipes of the recycler's categories and the recycler removed (issue #670)")
+end
 --- Issue #318: devcheck fails for a recipe of this class (a vanilla recipe without a technology, every product of which
 --- Gregtorio makes another way, not hidden) that is neither deleted here nor kept in this allow-list with its reason
 FORK_VANILLA_RECIPES_KEPT = {}
@@ -190,6 +225,20 @@ end
 for _, t in pairs({ "assembling-machine", "furnace", "rocket-silo" }) do
 	for _, e in pairs(data.raw[t] or {}) do
 		if e.fixed_recipe and VANILLA_RECIPES_REMOVED[e.fixed_recipe] then e.fixed_recipe = nil end
+	end
+end
+
+--- Issue #602: GT New Horizons has no spoiling. The Space Age items Gregtorio makes keep Space Age's spoiling unless it is
+--- taken off here: the UV science pack is Space Age's agricultural science pack (127), which turned into spoilage after an
+--- hour in chests, on belts and in labs, and me-network does not store items that spoil. devcheck fails for an item that
+--- spoils and that a reachable recipe makes, unless it is in the allow-list FORK_SPOILING_KEPT with its reason.
+FORK_SPOILING_KEPT = {}
+for _, name in pairs({ "agricultural-science-pack" }) do
+	for t, _ in pairs(defines.prototypes.item) do
+		local it = data.raw[t] and data.raw[t][name]
+		if it then
+			it.spoil_ticks, it.spoil_result, it.spoil_to_trigger_result, it.spoil_level = nil, nil, nil, nil
+		end
 	end
 end
 
@@ -809,14 +858,43 @@ disable_tech("discharge-defense-equipment")
 disable_tech("explosive-rocketry")
 disable_tech("tank")
 disable_tech("tesla-weapons")
+--- Fork: the prerequisites of Tier 1 to Tier 5 Rocketry from the final unlocks (prototypes/174-fork-rockets.lua, issue #615)
+FORK_ROCKETS.prerequisites()
 --- Fork: the technologies whose units were set above are divided like the others (prototypes/149-fork-early-research.lua,
 --- issue #146)
 FORK_EARLY_RESEARCH.rescale()
+--- Fork: the research counts from UV up once more, for the technologies of the files after 138
+--- (prototypes/138-fork-research-balance.lua, issue #605)
+FORK_RESEARCH_BALANCE.apply(true)
 --- Fork: the prerequisites of issue #252 (prototypes/142-fork-recipe-unlocks.lua), after the vanilla ones are set above
 FORK_UNLOCK_TREE.apply(true)
 --- Fork: the recycling recipes get their technologies now that the vanilla ones are set and disabled
 --- (prototypes/157-fork-recycling.lua, issue #190)
 FORK_RECYCLING.unlock()
+--- Fork (issue #640): a vanilla technology behind a disabled one can never be researched (the armor and equipment
+--- technologies, explosives, the fusion reactor, the spidertron), so it is disabled too instead of standing in the tree
+--- for good; repeated until no such technology is left. Their effects go to the main menu simulations like the others
+do
+	local changed = true
+	while changed do
+		changed = false
+		for name, tech in pairs(data.raw.technology) do
+			if tech.enabled ~= false and not tech.hidden and not is_gregtorio_tech(tech) then
+				for _, pre in pairs(tech.prerequisites or {}) do
+					local p = data.raw.technology[pre]
+					if not p or p.hidden then
+						log("FORK-UNRESEARCHABLE: " .. name .. " (behind " .. pre .. ") disabled")
+						disable_tech(name)
+						changed = true
+						break
+					end
+				end
+			end
+		end
+	end
+end
+--- Fork (issue #687): GT's part routes of 158 that a vanilla technology disabled above unlocked go (158's section 3)
+FORK_GT_PARTS.drop_locked_routes()
 --- Fork: the steam macerator runs copies of the LV macerator recipes without their byproducts, as GT's bronze machines
 --- (prototypes/101-fork-machines.lua, issue #447); after every unlock above; the copies of the ore forms come in the steam
 --- age, with the smelting of what they make (issue #571)
@@ -824,14 +902,28 @@ fork_steam_categories()
 --- Fork: the ore machines are furnaces that pick their recipe from the input (prototypes/101-fork-machines.lua, issue
 --- #560); after the steam macerators' categories above
 fork_furnace_machines()
+--- Fork: the packager twins of the pile recipes (prototypes/101-fork-machines.lua, issue #635); after every file that
+--- makes piles and after the unlocks above
+FORK_PACKAGER.twin_piles()
 --- Fork: every Gregtorio recipe named after its product unless it has its own name (prototypes/fork-locale.lua, issue #230)
 FORK_LOCALE.name_recipes()
+--- Fork: every tiered machine says what it does (prototypes/167-fork-tips.lua, issue #625); after every machine
+FORK_TIPS.describe_machines()
 require("prototypes.fork-menu-simulations")
 --- Fork: cheap research (startup setting, default off); after every change to the technologies above
 require("prototypes.fork-one-pack-research")
 --- Fork: the boiler output setting (issue #593): every steam boiler makes its steam and burns its fuel that many times
 --- faster; after every file that makes or changes a boiler and before the steam per second of the descriptions below
 require("prototypes.fork-boiler-output")
+--- Fork: GT New Horizons' overclocking (issue #616, startup setting, default off): the machines' power grows 4 times per
+--- tier; after every file that makes or changes a machine
+require("prototypes.fork-gt-overclocking")
+--- issue #620: the blast furnaces' heat, coils as modules (before the maintenance, which appends to the coil slot)
+require("prototypes.fork-ebf-heat")
+--- issue #618: maintenance of the multiblocks (startup setting, default off), after every file that makes a machine
+require("prototypes.fork-maintenance")
+--- issue #621: the radioactive items and the protecting armors (startup setting, default off)
+require("prototypes.fork-radiation")
 --- Fork: steam per second in the descriptions of the boilers and the steam machines (issue #564), after every file that
 --- makes or changes them
 require("prototypes.fork-steam-rates")

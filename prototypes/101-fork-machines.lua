@@ -157,6 +157,19 @@ for name, m in pairs(data.raw["assembling-machine"]) do
 	end
 end
 
+--- Issue #635: GT's electrolyzer gives its gases and water as cells in six item slots (gregtech/api/recipe/RecipeMaps.java:
+--- 820-821, maxIO(2, 6, 1, 1)); without cells the decompositions need a third fluid output (trona and vermiculite: hydrogen,
+--- oxygen and water): the 3x3 electrolyzers get one between their two (south)
+for _, m in pairs(data.raw["assembling-machine"]) do
+	local electrolyzer = false
+	for _, c in pairs(m.crafting_categories or {}) do
+		if c:match("^%a+%-electrolyzer%-recipes$") then electrolyzer = true end
+	end
+	if electrolyzer and m.selection_box and m.selection_box[2][2] == 1.5 and m.fluid_boxes and #m.fluid_boxes == 4 then
+		m.fluid_boxes[5] = fluid_port(0, 1, "output", defines.direction.south)
+	end
+end
+
 --- Issue #356: GT's chemical bath and laser engraver maps take 2 fluids in and give 2 out (gregtech/api/recipe/
 --- RecipeMaps.java: chemicalBathRecipes maxIO(2, 6, 2, 2), laserEngraverRecipes maxIO(4, 4, 2, 2); the netherite chain's
 --- extraction and crystallization use them): the 3x3 baths get a second input (north) and output (south), the 3x3
@@ -264,6 +277,9 @@ end
 ---    from IV_BASIC_MACHINES below.
 --------------------------------------------------------------------------------
 
+--- issue #724 (the maintainer's decision): the forge hammer's recipes of a higher GT tier move to that tier's category
+--- (prototypes/168-fork-gtnh-numbers.lua); every electric hammer runs the categories up to its tier, the steam hammers LV
+for _, t in pairs({ "mv", "hv", "ev", "iv", "luv", "zpm", "uv", "uhv", "uev", "uiv", "umv", "uxv" }) do recipe_category_and_subgroup(t .. "-forge-hammer-recipes") end
 do
 	local HAMMERS = {
 		--  tier  path                 energy    speed  cable             circuit               tech
@@ -275,7 +291,7 @@ do
 	for _, h in ipairs(HAMMERS) do
 		local t, path, energy, speed, cable, circuit, tech = table.unpack(h)
 		local name = t .. "-forge-hammer"
-		make_electric_machine(name, name, path, { "lv-forge-hammer-recipes" }, "fr-forge-hammer", energy, speed, 5, 0.5, 3, 3)
+		make_electric_machine(name, name, path, tier_categories("forge-hammer-recipes", t), "fr-forge-hammer", energy, speed, 5, 0.5, 3, 3)
 		create_item{
 			name = name,
 			subgroup = t .. "-age-production-machine",
@@ -379,6 +395,8 @@ end
 --------------------------------------------------------------------------------
 
 recipe_category_and_subgroup("lv-forming-press-recipes")
+--- issue #724: the same for the forming press
+for _, t in pairs({ "mv", "hv", "ev", "iv", "luv", "zpm", "uv", "uhv", "uev", "uiv", "umv", "uxv" }) do recipe_category_and_subgroup(t .. "-forming-press-recipes") end
 do
 	local PRINTED = { "printed-silicon", "printed-logic-circuit", "printed-calculation-circuit", "printed-engineering-circuit" }
 	local lv_techs = {}
@@ -399,7 +417,7 @@ do
 	for _, a in ipairs(PRESSES) do
 		local t, path, energy, speed, cable, circuit = table.unpack(a)
 		local name = t .. "-forming-press"
-		make_electric_machine(name, name, path, { "lv-forming-press-recipes" }, "fr-forming-press", energy, speed, 1, 0.5, 3, 3)
+		make_electric_machine(name, name, path, tier_categories("forming-press-recipes", t), "fr-forming-press", energy, speed, 1, 0.5, 3, 3)
 		create_item{
 			name = name,
 			subgroup = t .. "-age-production-machine",
@@ -483,7 +501,7 @@ end
 ---    GT New Horizons has the Sifting Machine from LV up ("Basic Sifting Machine", LoaderMetaTileEntities.java:6841, recipe
 ---    map sifterRecipes, otherwise only its Industrial Sifter multiblock); Gregtorio's sifter recipes (coal, diamond and
 ---    three steps of the bartworks platinum line, which GTNH runs in the sifter too) ran only in the HV Large Sifter. The
----    sifting machines run the same category lv-sifter-recipes; the Large Sifter stays. Machine recipe as GT's
+---    sifting machines run lv-sifter-recipes and (issue #724) the sifter categories up to their tier; the Large Sifter stays. Machine recipe as GT's
 ---    (MTERecipeLoader.java registerSifter, "WFW", "PMP", "CFC": 2 cables, 2 item filters, 2 pistons, the hull, 2
 ---    circuits). LV with Basic Air Centrifuging (the item filter), which every technology of a sifter recipe leads
 ---    through; MV to EV with the machines of their tier. Sprites: tools/gen_sprites.py (sifting_machine_lv_mv); IV to
@@ -501,7 +519,9 @@ do
 	for _, a in ipairs(SIFTERS) do
 		local t, path, energy, speed, cable, circuit, tech = table.unpack(a)
 		local name = t .. "-sifting-machine"
-		make_electric_machine(name, name, path, { "lv-sifter-recipes" }, "fr-sifting-machine", energy, speed, 4, 0.5, 3, 3)
+		--- (issue #724: the categories of its tier and below, as the IV to MAX copies; GT's sifter recipes of a higher tier
+		--- move there, prototypes/168-fork-gtnh-numbers.lua)
+		make_electric_machine(name, name, path, tier_categories("sifter-recipes", t), "fr-sifting-machine", energy, speed, 4, 0.5, 3, 3)
 		create_item{
 			name = name,
 			subgroup = t .. "-age-production-machine",
@@ -536,6 +556,10 @@ end
 --------------------------------------------------------------------------------
 
 recipe_category_and_subgroup("lv-thermal-centrifuge-recipes")
+--- issue #724 (the maintainer's decision): GT New Horizons runs every ore's thermal centrifuge step at 48 EU/t, MV; those
+--- recipes move to this category (prototypes/168-fork-gtnh-numbers.lua), which the MV and higher machines run, so the LV
+--- machine keeps only what GT runs at LV
+recipe_category_and_subgroup("mv-thermal-centrifuge-recipes")
 do
 	local TCS = {
 		--  tier  path                      energy    speed  cable             circuit               coil                tech
@@ -547,7 +571,7 @@ do
 	for _, a in ipairs(TCS) do
 		local t, path, energy, speed, cable, circuit, coil, tech = table.unpack(a)
 		local name = t .. "-thermal-centrifuge"
-		make_electric_machine(name, name, path, { "lv-thermal-centrifuge-recipes" }, "fr-thermal-centrifuge", energy, speed, 1, 0.5, 3, 3)
+		make_electric_machine(name, name, path, tier_categories("thermal-centrifuge-recipes", t), "fr-thermal-centrifuge", energy, speed, 1, 0.5, 3, 3)
 		create_item{
 			name = name,
 			subgroup = t .. "-age-production-machine",
@@ -566,6 +590,92 @@ do
 	data.raw["assembling-machine"]["lv-thermal-centrifuge"].next_upgrade = "mv-thermal-centrifuge"
 	data.raw["assembling-machine"]["mv-thermal-centrifuge"].next_upgrade = "hv-thermal-centrifuge"
 	data.raw["assembling-machine"]["hv-thermal-centrifuge"].next_upgrade = "ev-thermal-centrifuge"
+end
+
+
+
+
+--------------------------------------------------------------------------------
+--- 2g') CHEMICAL REACTOR EV AND IV, DISTILLERY HV TO IV (issue #637): GT New Horizons has both single blocks up to IV
+---    (LoaderMetaTileEntities.java:2513-2576 chemical reactors, 4085-4148 distilleries); here the large chemical reactor
+---    and the short distillation tower ran their categories above HV and MV. Recipes as the tier below's here, after GT's
+---    (MTERecipeLoader.java:407-445 "GRG", "WEW", "CMC": 2 pipes, a rotor, 2 cables, a motor, 2 circuits, the hull; the
+---    pipes as polyethylene sheets as the HV reactor's, 6 for 2 medium, 12 for 2 large, 24 for 2 huge pipes; :597-635:
+---    the distillery with glass, a pump, 2 circuits, 2 cables, the hull, as the MV one). Power EU16 and EU8 as the tiers
+---    below; the sprites are the HV reactor's and the MV distillery's, the icons tinted (tools/gen_sprites.py
+---    generator_tiers). GT's LuV to UV single blocks (NewHorizonsCoreMod) stay with the large chemical reactor and the
+---    tall distillation tower.
+--------------------------------------------------------------------------------
+do
+	local function cats(kind, tiers)
+		local out = {}
+		for _, t in ipairs(tiers) do out[#out + 1] = t .. "-" .. kind .. "-recipes" end
+		return out
+	end
+	local PORTS = function()
+		return {
+			fluid_port(-1, -1, "input", defines.direction.north),
+			fluid_port( 1, -1, "input", defines.direction.north),
+			fluid_port(-1,  1, "output", defines.direction.south),
+			fluid_port( 1,  1, "output", defines.direction.south),
+		}
+	end
+	local REACTORS = {
+		--  tier  energy   speed  sheets rotor                  cable             circuit       tech           categories up to
+		{ "ev", EU16_EV, 8,  12, "titanium-rotor",      "aluminium-cable", "ev-circuit", "ev-machines", { "lv", "mv", "hv", "ev" } },
+		{ "iv", EU16_IV, 16, 24, "tungstensteel-rotor", "tungsten-cable",  "iv-circuit", "iv-machines", { "lv", "mv", "hv", "ev", "iv" } },
+	}
+	for _, r in ipairs(REACTORS) do
+		local t = r[1]
+		local name = t .. "-chemical-reactor"
+		make_electric_machine(name, name, "mv-chemical-reactor", cats("chemical-reactor", r[9]), "fr-chemical-reactor", r[2],
+			r[3], 6, 0.5, 3, 3, PORTS())
+		create_item{
+			name = name,
+			subgroup = t .. "-age-production-machine",
+			ingredients = {
+				{ type = "item", name = "polyethylene-sheet", amount = r[4] },
+				{ type = "item", name = r[5], amount = 1 },
+				{ type = "item", name = r[6], amount = 2 },
+				{ type = "item", name = r[7], amount = 2 },
+				{ type = "item", name = t .. "-machine-hull", amount = 1 },
+				{ type = "item", name = t .. "-motor", amount = 1 },
+			},
+			place_result = name,
+			stack_size = 10,
+		}
+		fork_add_unlock(r[8], name)
+	end
+	local DISTILLERIES = {
+		--  tier  energy   speed  cable              circuit            tech           categories up to
+		{ "hv", EU8_HV, 4,  "gold-cable",      "processing-unit", "hv-machines", { "lv", "mv", "hv" } },
+		{ "ev", EU8_EV, 8,  "aluminium-cable", "ev-circuit",      "ev-machines", { "lv", "mv", "hv", "ev" } },
+		{ "iv", EU8_IV, 16, "tungsten-cable",  "iv-circuit",      "iv-machines", { "lv", "mv", "hv", "ev", "iv" } },
+	}
+	for _, d in ipairs(DISTILLERIES) do
+		local t = d[1]
+		local name = t .. "-distillery"
+		make_electric_machine(name, name, "mv-distillery", cats("distillation", d[7]), "fr-distillery", d[2], d[3], 1, 0.5, 3, 3,
+			PORTS())
+		create_item{
+			name = name,
+			subgroup = t .. "-age-production-machine",
+			ingredients = {
+				{ type = "item", name = "glass", amount = 3 },
+				{ type = "item", name = d[5], amount = 2 },
+				{ type = "item", name = t .. "-machine-hull", amount = 1 },
+				{ type = "item", name = t .. "-pump", amount = 1 },
+				{ type = "item", name = d[4], amount = 2 },
+			},
+			place_result = name,
+			stack_size = 10,
+		}
+		fork_add_unlock(d[6], name)
+	end
+	local A = data.raw["assembling-machine"]
+	A["hv-chemical-reactor"].next_upgrade, A["ev-chemical-reactor"].next_upgrade = "ev-chemical-reactor", "iv-chemical-reactor"
+	A["mv-distillery"].next_upgrade, A["hv-distillery"].next_upgrade = "hv-distillery", "ev-distillery"
+	A["ev-distillery"].next_upgrade = "iv-distillery"
 end
 
 
@@ -1024,10 +1134,9 @@ local BEFORE_MOLD = "the ingot mold needs steel (Steel Processing), as GTNH cast
 	.. "ingot recipe comes with "
 local function steam_dust(tech) return "; until then the steam macerator's impure dust smelts into an ingot (" .. tech .. ")" end
 FORK_NUGGETS_BEFORE_INGOTS = {
-	["steam-forge-hammer:copper-nugget"] = BEFORE_MOLD .. "Steel Processing" .. steam_dust("Steam Macerator"),
+	--- (copper and tin nuggets: the alloy smelter's bronze from nuggets of GTNH's full-pack dump takes them, #714)
 	["steam-forge-hammer:gold-nugget"] = BEFORE_MOLD .. "Steel Processing" .. steam_dust("Steam Macerator"),
 	["steam-forge-hammer:iron-nugget"] = BEFORE_MOLD .. "Steel Processing" .. steam_dust("Steam Macerator"),
-	["steam-forge-hammer:tin-nugget"] = BEFORE_MOLD .. "Steel Processing" .. steam_dust("Steam Macerator"),
 	--- Steel Processing is not among Reach the Nether's prerequisites; Rubber is the first technology with both
 	["reach-the-nether:beryllium-nugget"] = BEFORE_MOLD .. "Rubber" .. steam_dust("Reach the Nether"),
 	["reach-the-nether:molybdenum-nugget"] = BEFORE_MOLD .. "Rubber" .. steam_dust("Reach the Nether"),
@@ -1525,6 +1634,102 @@ end
 
 
 --------------------------------------------------------------------------------
+--- 2m') GT NEW HORIZONS' STEAM WATER PUMP (issue #613, the maintainer's decision: water shortage in the steam age)
+---    MTESteamWaterPump: 1 500 L of water a second x the biome's humidity x its frame tier (bronze 1, steel 2), for 1 500 L
+---    of steam a second at either tier. Here the Steam Water Pump (bronze) and the High Pressure Steam Water Pump (steel):
+---    150 and 300 water a second x the surface's moisture at their spot (read when built, scripts/fork-steam-boilers.lua;
+---    at least 25 %, in quarter steps: four locked recipes; GT gives at least 250 L in a dimension with water), for 15
+---    steam a second (1.5 MW). Recipes: GT's structure (10 frames of the tier and 11 primitive wooden casings around the
+---    controller) with GT's controller "Water Pump" (5 bronze frames, a bronze gear, 3 primitive wooden casings) and GT's
+---    primitive wooden casing (6 wooden frames, 2 wooden screws, a wooden gear: 9 logs here, Gregtorio has no wooden
+---    parts). The offshore pump comes with the LV pump now (142) and takes power: GT's pump pays 64 EU per 1 000 L, for the
+---    offshore pump's 1 200 water a second (12 000 L) 768 kW; GT's Basic Pump recipe (4 LV pumps, the LV hull, 2 LV
+---    circuits, 2 large bronze pipes as 6 bronze plates). The start's water: bartworks' Simple Stirling Water Pump (the
+---    maintainer's choice; below). Sprites: tools/gen_sprites.py (steam_water_pumps).
+--------------------------------------------------------------------------------
+do
+	recipe_category_and_subgroup("steam-water-pump-recipes")
+	local WATER = {}
+	for _, m in pairs({ 25, 50, 75, 100 }) do
+		local name = "steam-water-pump-water-" .. m
+		create_recipe{
+			recipe_name = name, category = "steam-water-pump-recipes", energy_required = 1, ingredients = {},
+			results = { { type = "fluid", name = "water", amount = 150 * m / 100 } }, main_product = "water",
+		}
+		WATER[#WATER + 1] = name
+	end
+	create_item{ name = "primitive-wooden-casing", subgroup = "steam-age-production-machine",
+		ingredients = { { type = "item", name = "wood", amount = 9 } } }
+	create_item{ name = "water-pump-controller", subgroup = "steam-age-production-machine",
+		ingredients = { { type = "item", name = "bronze-frame", amount = 5 }, { type = "item", name = "large-bronze-gear", amount = 1 },
+			{ type = "item", name = "primitive-wooden-casing", amount = 3 } } }
+	for tier, p in pairs({ [1] = { "steam-water-pump", "bronze-frame" }, [2] = { "hp-steam-water-pump", "steel-frame" } }) do
+		local name = p[1]
+		make_steam_machine(name, name, "steam-water-pump-recipes", "fr-steam-water-pump", "1.5MW", 1, 0.5)
+		local e = data.raw["assembling-machine"][name]
+		e.crafting_speed = tier
+		e.fluid_boxes = { fluid_port(0, -1, "output", defines.direction.north) }
+		e.fluid_boxes_off_when_no_fluid_recipe = false
+		create_item{ name = name, subgroup = "steam-age-production-machine", place_result = name, stack_size = 10,
+			ingredients = { { type = "item", name = "water-pump-controller", amount = 1 }, { type = "item", name = p[2], amount = 10 },
+				{ type = "item", name = "primitive-wooden-casing", amount = 11 } } }
+	end
+	data.raw["assembling-machine"]["steam-water-pump"].next_upgrade = "hp-steam-water-pump"
+	--- (with the bronze frames: Large Bronze Boiler; the steel one after the steel frames, 170-fork-smeltery.lua)
+	for _, r in pairs({ "primitive-wooden-casing", "water-pump-controller", "steam-water-pump" }) do fork_add_unlock("large-bronze-boiler", r) end
+	for _, r in pairs(WATER) do fork_add_unlock("large-bronze-boiler", r) end
+
+	--- bartworks' Simple Stirling Water Pump (the maintainer's decision: the start's water, as in GTNH;
+	--- TileEntityHeatedWaterPump: 150 L of water a second while it burns a furnace fuel, a coal lasting 1 600 ticks): 15
+	--- water a second from the start, burning any chemical fuel at a coal's worth per 80 s. GT's recipes with stand-ins, as
+	--- Gregtorio has no steel, pistons or glass tubes at the start: the Simple Stirling Motor (GT: a small steel gear, 2 long
+	--- steel rods, a steel screw, 2 pistons, an elongated glass tube) as an iron gear, 2 iron sticks, 2 iron plates and a
+	--- pipe; the pump's 3 large wooden fluid pipes as 5 logs and GT's blast furnace as the stone furnace.
+	local coal = data.raw.item.coal.fuel_value
+	local coal_j = tonumber(coal:match("^[%d.]+")) * ({ kJ = 1e3, MJ = 1e6 })[coal:match("%a+$")]
+	create_item{ name = "simple-stirling-motor", subgroup = "steam-age-production-machine",
+		ingredients = { { type = "item", name = "iron-gear-wheel", amount = 1 }, { type = "item", name = "iron-stick", amount = 2 },
+			{ type = "item", name = "iron-plate", amount = 2 }, { type = "item", name = "pipe", amount = 1 } } }
+	local STIRLING = "simple-stirling-water-pump"
+	make_steam_machine(STIRLING, STIRLING, "steam-water-pump-recipes", "fr-simple-stirling-water-pump",
+		string.format("%gkW", coal_j / 80 / 1e3), 1, 0.5)
+	local e = data.raw["assembling-machine"][STIRLING]
+	e.crafting_speed = 1
+	e.energy_source = { type = "burner", fuel_categories = { "chemical" }, effectivity = 1, fuel_inventory_size = 1,
+		emissions_per_minute = { pollution = 2 } }
+	e.fluid_boxes = { fluid_port(0, -1, "output", defines.direction.north) }
+	e.fixed_recipe = STIRLING .. "-water"
+	create_recipe{ recipe_name = STIRLING .. "-water", category = "steam-water-pump-recipes", energy_required = 1,
+		ingredients = {}, results = { { type = "fluid", name = "water", amount = 15 } }, main_product = "water" }
+	create_item{ name = STIRLING, subgroup = "steam-age-production-machine", place_result = STIRLING, stack_size = 10,
+		ingredients = { { type = "item", name = "iron-plate", amount = 4 }, { type = "item", name = "wood", amount = 5 },
+			{ type = "item", name = "simple-stirling-motor", amount = 1 }, { type = "item", name = "stone-furnace", amount = 1 } } }
+	for _, r in pairs({ "simple-stirling-motor", STIRLING, STIRLING .. "-water" }) do fork_add_unlock("small-coal-boiler", r) end
+	FORK_STEAM_WATER_PUMPS = { "steam-water-pump", "hp-steam-water-pump" }
+	data:extend({ { type = "mod-data", name = "fork-steam-water-pumps",
+		data = { names = FORK_STEAM_WATER_PUMPS, recipes = { [25] = WATER[1], [50] = WATER[2], [75] = WATER[3], [100] = WATER[4] } } } })
+
+	--- the offshore pump: GT's Basic Pump, on LV power. A save's placed pumps become `legacy-offshore-pump` (the old
+	--- prototype without power; migrations/2026-10-30-issue-613-offshore-pumps.lua), mined they give the new pump
+	local o = data.raw["offshore-pump"]["offshore-pump"]
+	local legacy = table.deepcopy(o)
+	legacy.name = "legacy-offshore-pump"
+	legacy.hidden = true
+	legacy.minable = { mining_time = (o.minable and o.minable.mining_time) or 0.1, result = "offshore-pump" }
+	legacy.placeable_by = { item = "offshore-pump", count = 1 }
+	legacy.fast_replaceable_group = "offshore-pump"
+	o.fast_replaceable_group = "offshore-pump"
+	data:extend({ legacy })
+	o.energy_source = { type = "electric", usage_priority = "secondary-input" }
+	o.energy_usage = "768kW"
+	local r = data.raw.recipe["offshore-pump"]
+	r.ingredients = { { type = "item", name = "lv-pump", amount = 4 }, { type = "item", name = "lv-machine-hull", amount = 1 },
+		{ type = "item", name = "electronic-circuit", amount = 2 }, { type = "item", name = "bronze-plate", amount = 6 } }
+end
+
+
+
+--------------------------------------------------------------------------------
 --- 2j) BREWERY AND FERMENTER, LV TO EV (issue #360, the revisit of #155's "leave for now")
 ---    GT New Horizons' Basic Brewery (LoaderMetaTileEntities.java:1910, recipe map brewingRecipes) and Basic Fermenter
 ---    (:2748, fermentingRecipes), one item and one fluid slot in and a fluid out; 164-fork-chemistry.lua makes their
@@ -1593,6 +1798,154 @@ do
 		data.raw["assembling-machine"]["lv-" .. m].next_upgrade = "mv-" .. m
 		data.raw["assembling-machine"]["mv-" .. m].next_upgrade = "hv-" .. m
 		data.raw["assembling-machine"]["hv-" .. m].next_upgrade = "ev-" .. m
+	end
+end
+
+
+
+--------------------------------------------------------------------------------
+--- 2j') PACKAGER, LV TO EV (issue #635, the maintainer's decision: GT's Packager instead of the crafting table only)
+---    GT New Horizons' Basic Packager (the boxinator, LoaderMetaTileEntities.java, recipe map packagerRecipes,
+---    RecipeMaps.java:748-749 maxIO(2, 1, 0, 0)): 4 small or 9 tiny piles of a dust -> the dust, 1 s at 4 EU/t
+---    (gregtech/loaders/oreprocessing/ProcessingDust.java:572-578). Here every crafting table recipe <dust>-from-small-piles
+---    and -tiny-piles gets a twin in lv-packager-recipes (FORK_PACKAGER.twin_piles(), data-final-fixes.lua, after every
+---    file that makes piles); the crafting table recipe stays. Machine recipe as GT's "BCB", "RMV", "WCW"
+---    (MTERecipeLoader.java:3222-3228: 2 chests, 2 circuits, the robot arm, the hull, the conveyor, 2 cables). Power 4 EU/t
+---    at LV, doubled per tier; LV with Ore Centrifuging (the LV centrifuge, whose small piles it packs), MV to EV with the machines of their tier. Sprites:
+---    tools/gen_sprites.py (packager_lv_mv: the assembling machine's frame with GT's packager front); IV to MAX through
+---    IV_BASIC_MACHINES (GT's packager ends at UV).
+--------------------------------------------------------------------------------
+
+recipe_category_and_subgroup("lv-packager-recipes")
+FORK_PACKAGER = {}
+do
+	local TIERS_635 = {
+		--  tier  path  energy   speed  cable             circuit
+		{ "lv", "lv", "40kW",  1, "tin-cable",       "electronic-circuit" },
+		{ "mv", "mv", "80kW",  2, "copper-cable",    "advanced-circuit" },
+		{ "hv", "mv", "160kW", 4, "gold-cable",      "processing-unit" },
+		{ "ev", "mv", "320kW", 8, "aluminium-cable", "ev-circuit" },
+	}
+	local TECH_OF = { lv = "ore-centrifuging", mv = "mv-machines", hv = "hv-machines", ev = "ev-machines" }
+	for _, a in ipairs(TIERS_635) do
+		local t, pt, energy, speed, cable, circuit = table.unpack(a)
+		make_electric_machine(t .. "-packager", t .. "-packager", pt .. "-packager", { "lv-packager-recipes" }, "fr-packager",
+			energy, speed, 1, 0.5, 3, 3)
+		create_item{
+			name = t .. "-packager",
+			subgroup = t .. "-age-production-machine",
+			ingredients = {
+				{ type = "item", name = "wooden-chest", amount = 2 },   -- (GT: craftingChest, any chest)
+				{ type = "item", name = circuit, amount = 2 },
+				{ type = "item", name = t .. "-robot-arm", amount = 1 },
+				{ type = "item", name = t .. "-machine-hull", amount = 1 },
+				{ type = "item", name = t .. "-conveyor-module", amount = 1 },
+				{ type = "item", name = cable, amount = 2 },
+			},
+			place_result = t .. "-packager",
+			stack_size = 10,
+		}
+		FORK_PACKAGER[t] = t .. "-packager"
+		fork_add_unlock(TECH_OF[t], t .. "-packager")
+	end
+	data.raw["assembling-machine"]["lv-packager"].next_upgrade = "mv-packager"
+	data.raw["assembling-machine"]["mv-packager"].next_upgrade = "hv-packager"
+	data.raw["assembling-machine"]["hv-packager"].next_upgrade = "ev-packager"
+	FORK_PACKAGER.tech_of = TECH_OF
+end
+--- every pile -> dust recipe of the crafting table gets its packager twin (GT: 1 s at LV), unlocked with the original
+function FORK_PACKAGER.twin_piles()
+	local unl = {}
+	for tname, tech in pairs(data.raw.technology) do
+		for _, e in pairs(tech.effects or {}) do
+			if e.type == "unlock-recipe" then unl[e.recipe] = unl[e.recipe] or tname end
+		end
+	end
+	local twins = {}
+	for name, r in pairs(data.raw.recipe) do
+		if (name:match("%-from%-small%-piles$") or name:match("%-from%-tiny%-piles$")) and not name:match("^packager%-") then
+			twins[#twins + 1] = { name, r }
+		end
+	end
+	table.sort(twins, function(x, y) return x[1] < y[1] end)
+	for _, t in pairs(twins) do
+		local twin = table.deepcopy(t[2])
+		twin.name = "packager-" .. t[1]
+		twin.category, twin.categories = nil, { "lv-packager-recipes" }
+		twin.energy_required = 1
+		twin.subgroup = "subgroup-lv-packager-recipes"
+		twin.hide_from_player_crafting = nil
+		twin.enabled = t[2].enabled
+		twin.localised_name = twin.localised_name or { "?", { "item-name." .. t[2].results[1].name } }
+		data:extend({ twin })
+		if unl[t[1]] then fork_add_unlock(unl[t[1]], twin.name) end
+	end
+	log("FORK-PACKAGER: " .. #twins .. " pile recipes twinned")
+end
+
+
+
+--------------------------------------------------------------------------------
+--- 2j'') FLUID HEATER, LV TO EV (issue #635, the maintainer's decision: GT's Fluid Heater)
+---    GT New Horizons' Basic Fluid Heater (LoaderMetaTileEntities.java:3221, recipe map fluidHeaterRecipes,
+---    RecipeMaps.java:627-628 maxIO(1, 1, 1, 1)): one item, one fluid in, one fluid out. Recipes of its tier and below
+---    (categories <tier>-fluid-heater-recipes, time GT's seconds x the tier speed): water and distilled water into steam
+---    here (FluidHeaterRecipes.java:32-45: 6 L -> 960 L in 1.5 s at LV; here 6 water -> 96 steam, one steam unit being
+---    100 GT litres, in 15 s), the heating steps other files had folded into their neighbours in those files (the
+---    ruthenium solution of 146, the diluted acetone of 159, the cyanoacrylate polymer of 142, the sodium fluoride melt
+---    of 164). Machine recipe as GT's "OGO", "PMP", "WCW" (MTERecipeLoader.java:927-934): 2 double heating coils (GT's
+---    4x wire of copper, cupronickel, kanthal and nichrome, GTModHandler.java:793-797; here 4 wires each), the glass, 2
+---    pumps, the hull, 2 wires (the tier's cable) and the circuit. Power 30 EU/t at LV as GT's (it heats), doubled per
+---    tier. Sprites: tools/gen_sprites.py (fluid_heater_lv_mv: the fluid solidifier's frame with GT's heater front,
+---    its active front while it works); IV to MAX through IV_BASIC_MACHINES (GT's heater ends at UMV).
+--------------------------------------------------------------------------------
+
+for _, t in pairs(TIERS) do recipe_category_and_subgroup(t .. "-fluid-heater-recipes") end
+do
+	local TIERS_635 = {
+		--  tier  path  energy   speed  cable             circuit               coil wire
+		{ "lv", "lv", "30kW",  1, "tin-cable",       "electronic-circuit", "copper-wire" },
+		{ "mv", "mv", "60kW",  2, "copper-cable",    "advanced-circuit",   "cupronickel-wire" },
+		{ "hv", "mv", "120kW", 4, "gold-cable",      "processing-unit",    "kanthal-wire" },
+		{ "ev", "mv", "240kW", 8, "aluminium-cable", "ev-circuit",         "nichrome-wire" },
+	}
+	local TECH_OF = { lv = "extractor", mv = "mv-machines", hv = "hv-machines", ev = "ev-machines" }
+	for _, a in ipairs(TIERS_635) do
+		local t, pt, energy, speed, cable, circuit, coil = table.unpack(a)
+		make_electric_machine(t .. "-fluid-heater", t .. "-fluid-heater", pt .. "-fluid-heater",
+			tier_categories("fluid-heater-recipes", t), "fr-fluid-heater", energy, speed, 1, 0.5, 3, 3, {
+				fluid_port(0, -1, "input", defines.direction.north),
+				fluid_port(0, 1, "output", defines.direction.south),
+			})
+		create_item{
+			name = t .. "-fluid-heater",
+			subgroup = t .. "-age-production-machine",
+			ingredients = {
+				{ type = "item", name = coil, amount = 8 },
+				{ type = "item", name = "glass", amount = 1 },
+				{ type = "item", name = t .. "-pump", amount = 2 },
+				{ type = "item", name = t .. "-machine-hull", amount = 1 },
+				{ type = "item", name = cable, amount = 2 },
+				{ type = "item", name = circuit, amount = 1 },
+			},
+			place_result = t .. "-fluid-heater",
+			stack_size = 10,
+		}
+		fork_add_unlock(TECH_OF[t], t .. "-fluid-heater")
+	end
+	data.raw["assembling-machine"]["lv-fluid-heater"].next_upgrade = "mv-fluid-heater"
+	data.raw["assembling-machine"]["mv-fluid-heater"].next_upgrade = "hv-fluid-heater"
+	data.raw["assembling-machine"]["hv-fluid-heater"].next_upgrade = "ev-fluid-heater"
+	--- water into steam (GT's two recipes; steam a hundredth of GT's litres, water a tenth)
+	for _, w in pairs({ "water", "distilled-water" }) do
+		create_recipe{
+			name = w .. "-fluid-heater", category = "lv-fluid-heater-recipes", energy_required = 15 * LV_SPEED,
+			subgroup = "subgroup-lv-fluid-heater-recipes",
+			ingredients = { { type = "fluid", name = w, amount = 6 } },
+			results = { { type = "fluid", name = "steam", amount = 96 } },
+			main_product = "steam",
+		}
+		fork_add_unlock("extractor", w .. "-fluid-heater")   -- (with the LV heater: its pumps come with Extractor)
 	end
 end
 
@@ -1789,6 +2142,7 @@ IV_BASIC_MACHINES = {
 	"canning-machine", "mixer", "ore-washer", "laser-engraver", "fluid-solidifier", "chemical-bath",
 	"polarizer", "circuit-assembler", "autoclave", "alloy-smelter", "compressor", "forge-hammer", "arc-furnace", "forming-press", "electric-furnace", "sifting-machine", "thermal-centrifuge", "electromagnetic-separator",
 	"brewery", "fermenter",   -- issue #360
+	"packager", "fluid-heater",   -- issue #635
 }
 --- Multiblocks that come as an upgrade of the EV version (graphics of the EV version with energy hatches of the tier)
 IV_UPGRADE_MACHINES = {

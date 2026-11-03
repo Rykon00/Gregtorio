@@ -4,7 +4,7 @@
 --- The ME network's runtime tests are in the mod me-network since issue #83 (its tools/devcheck).
 --- Molds (prototypes/150-fork-molds.lua): an LV alloy smelter with a mold recipe must stop
 --- without a mold, run with a mold in its mold slot and keep the mold there; issue #316: the same for an EV laser
---- engraver with a gem step and its lens ("Missing lens").
+--- engraver with a gem step and its lens ("Missing lens"); issue #642: a machine cloned onto its spot (on_entity_cloned).
 --- Endgame power (prototypes/136-fork-power.lua): a plasma turbine and a naquadah reactor under load
 --- must burn their fuel and make power; the turbine's output hatch gets the cooled fluid.
 --- Fuel check (issue #25): steam and the other generator's fuel stop a generator; the right fuel runs it.
@@ -97,6 +97,65 @@ function lftr_test()
 	log("DEVCHECK-RUNTIME-LFTR " .. (#problems == 0 and "ok" or "failed") .. (lf.summary or ""))
 end
 
+--- Dyson Swarm (issue #623): the ground unit deploys modules into its swarm, its dynamo gives 195.3125 MW per module
+--- while it runs, a forced hourly cycle takes GT's share (10 000 modules -> 9178), the dynamo goes with the unit
+local DY_X, DY_Y = -330.5, 270.5
+local DY_TICK, DY_GONE = 150, 30   -- (its fluid box takes 400 cryotheum: 4 s of work)
+local DY_W = 10000000 * 655360000 / 33554432
+
+function setup_dyson_test(s)
+	local fails = {}
+	local dy = {}
+	storage.dyson = dy
+	local ok, err = pcall(function()
+		dy.unit = s.create_entity{ name = "dyson-swarm-ground-unit", position = { DY_X, DY_Y }, force = "player", raise_built = true }
+		game.forces.player.recipes["dyson-swarm-operation"].enabled = true
+		dy.unit.insert{ name = "dyson-swarm-module", count = 20 }
+		local got = dy.unit.insert_fluid{ name = "gelid-cryotheum", amount = 400 }
+		if got < 400 - 1e-6 then fails[#fails + 1] = "Dyson Swarm test: the unit took only " .. got .. " cryotheum" end
+	end)
+	if not ok then fails[#fails + 1] = "Dyson Swarm test: " .. tostring(err) end
+	return fails
+end
+
+function dyson_test()
+	local dy = storage.dyson
+	if not dy or dy.done or game.tick < DY_TICK then return end
+	local s = game.surfaces[1]
+	local problems = {}
+	local function expect(ok, what) if not ok then problems[#problems + 1] = what end end
+	if not dy.cycled then
+		expect(dy.unit and dy.unit.valid, "the unit is missing")
+		if #problems == 0 then
+			local u = dy.unit
+			local count, power = remote.call("gregtorio-power", "dyson", u)
+			expect(u.status == defines.entity_status.working, "the unit does not work (status " .. tostring(u.status) .. ")")
+			expect(count >= 2, "only " .. count .. " modules deployed by tick " .. game.tick)
+			expect(math.abs(power - count * DY_W) < 1, "the dynamo gives " .. power .. " W for " .. count .. " modules")
+			dy.summary = string.format(" (%d modules by tick %d, %.1f MW", count, game.tick, power / 1e6)
+			remote.call("gregtorio-power", "dyson_set", u, 10000, game.tick)
+			dy.cycled = game.tick
+		end
+		if #problems > 0 then dy.done = true end
+	elseif not dy.destroyed_at then
+		if game.tick < dy.cycled + 20 then return end
+		local count = remote.call("gregtorio-power", "dyson", dy.unit)
+		expect(count == 9178, "after a forced cycle 10000 modules became " .. count .. ", not 9178")
+		dy.summary = (dy.summary or "") .. string.format("; a cycle: 10000 -> %d)", count)
+		dy.position = dy.unit.position
+		dy.unit.destroy{ raise_destroy = true }
+		dy.destroyed_at = game.tick
+	elseif game.tick >= dy.destroyed_at + DY_GONE then
+		expect(s.find_entity("dyson-swarm-dynamo", dy.position) == nil, "the dynamo stayed after the unit was destroyed")
+		dy.done = true
+	else
+		return
+	end
+	if not dy.done then return end
+	for _, p in pairs(problems) do log("DEVCHECK-RUNTIME-FAIL Dyson Swarm test: " .. p) end
+	log("DEVCHECK-RUNTIME-DYSON " .. (#problems == 0 and "ok" or "failed") .. (dy.summary or ""))
+end
+
 --- Lapotronic supercapacitor (issue #97): charges and discharges at two amps of its tier, holds its capacity by tier
 --- and loses GT's 1 % per day.
 --- Offered recipes (issue #126): the machine recipes that were hidden from the crafting menu are offered by the machines.
@@ -132,6 +191,12 @@ local function tests_running()
 	check(storage.solar and storage.solar.done, "solar boilers")
 	check(storage.coal_boiler and storage.coal_boiler.done, "coal boiler")
 	check(storage.torch and storage.torch.done, "torch")
+	check(storage.maint and storage.maint.done, "maintenance")
+	check(storage.water_pump and storage.water_pump.done, "water pump")
+	check(storage.ebf_heat and storage.ebf_heat.done, "ebf heat")
+	check(storage.radiation and storage.radiation.done, "radiation")
+	check(storage.wireless and storage.wireless.done, "wireless")
+	check(storage.player_paths and storage.player_paths.done, "player paths")
 	check(storage.battery and storage.battery.done, "battery buffers")
 	return running
 end
@@ -196,6 +261,8 @@ local PW = {
 	turbine = { "luv-large-plasma-turbine", 1.5, PW_Y + 1.5, "helium-plasma", 100, 81.92e6 },
 	hatch = { "turbine-output-hatch", 3.5, PW_Y + 1.5 },
 	reactor = { "uv-large-naquadah-reactor", 42.5, PW_Y + 2.5, "naquadah-based-fuel-mk1", 10, 327.68e6 },
+	--- issue #768: the single-block plasma generator is drawn idle and gets its working picture while it gives power
+	plasma = { "ev-plasma-generator", 22.5, PW_Y + 1.5, "helium-plasma", 100, 5.12e6 },
 }
 
 function setup_power_test(s)
@@ -207,7 +274,7 @@ function setup_power_test(s)
 		if not (ok and e) then fails[#fails + 1] = "power test " .. def[1] .. ": " .. tostring(e) return nil end
 		return e
 	end
-	for _, key in pairs({ "turbine", "reactor" }) do
+	for _, key in pairs({ "turbine", "reactor", "plasma" }) do
 		local def = PW[key]
 		local g = place(def)
 		if g then
@@ -256,6 +323,14 @@ script.on_nth_tick(PW_TICK, function(event)
 		local fuel_burnt = PW.reactor[5] - fuel_left
 		expect(reactor.energy_generated_last_tick > 0, "naquadah reactor generates nothing")
 		expect(fuel_burnt > 0.003 * seconds and fuel_burnt < 0.007 * seconds, "naquadah reactor burnt " .. fuel_burnt .. " fuel in " .. seconds .. " s")
+		--- issue #768: the running plasma generator shows its working picture (a render object of fork-power)
+		local plasma = find(PW.plasma)
+		expect(plasma and plasma.energy_generated_last_tick > 0, "EV plasma generator generates nothing")
+		local shown = false
+		for _, o in pairs(rendering.get_all_objects("gregtorio-continued")) do
+			if o.valid and o.target and o.target.entity == plasma and o.visible then shown = true end
+		end
+		expect(shown, "the running EV plasma generator shows no working picture (#768)")
 		summary = string.format(" (turbine %.2f plasma -> %.2f helium, %.1f MW; reactor %.4f fuel, %.1f MW)",
 			burnt, helium, turbine.energy_generated_last_tick * 60 / 1e6, fuel_burnt, reactor.energy_generated_last_tick * 60 / 1e6)
 	end
@@ -767,7 +842,42 @@ local RT = {
 	{ "ev-electric-blast-furnace", "naquadah-doped-monocrystaline-silicon-boule" },
 	{ "mv-pyrolyse-oven", "charcoal-byproducts" },
 	{ "ev-large-chemical-reactor", "cyanoacetic-acid" },
-	{ "iv-large-chemical-reactor", "super-glue" },
+	{ "iv-large-chemical-reactor", "cyanoacrylate-polymer" },   -- (issue #635: super glue takes two steps)
+	-- issue #635 (prototypes/101-fork-machines.lua): the fluid heater (water into steam, the glue line's polymer) and the
+	-- packager (a pile twin)
+	{ "hv-fluid-heater", "super-glue" },
+	-- issue #628 (prototypes/164-fork-chemistry.lua section 51): GTNH's wetware printed board and the PCB Factory's optical one
+	{ "hv-chemical-reactor", "wetware-printed-circuit-board" },
+	{ "pcb-factory", "optical-printed-circuit-board" },
+	-- issue #629 (section 52): GT++'s cinobite A243 and octiron for the fusion reactor Mk-IV's parts
+	{ "zpm-alloy-blast-smelter", "molten-cinobite-a243" },
+	{ "uhv-alloy-blast-smelter", "molten-octiron" },
+	-- issue #629 part 2 (section 53): attuned tengam (polarizer) and proto-halkonite steel (alloy blast smelter, freezer)
+	{ "uhv-polarizer", "long-attuned-tengam-rod" },
+	{ "uev-alloy-blast-smelter", "molten-proto-halkonite-steel-base" },
+	{ "uev-vacuum-freezer", "fine-proto-halkonite-steel-wire" },
+	-- issue #631 part 1 (section 54): seaweed, iodine from its concentrate, GT's hafnium iodide in the blast furnace
+	{ "lv-greenhouse", "growing-seaweed" },
+	{ "hv-chemical-reactor", "iodine-dust" },
+	{ "hv-electric-blast-furnace", "hot-hafnium-ingot" },
+	-- issue #631 part 2 (section 55): the samarium ore concentrate's digester and the blend's electrolysis
+	{ "digester", "muddy-samarium-rare-earth-solution" },
+	{ "iv-electrolyzer", "samarium-chloride-sodium-chloride-blend-electrolysis" },
+	-- issue #631 part 3 (section 56): the ion extraction's digester, reactor and electrolyzer steps
+	{ "digester", "lanthanum-chloride-concentrate" },
+	{ "uv-large-chemical-reactor", "lanthanum-ion-extraction" },
+	{ "zpm-electrolyzer", "filled-lanthanum-extracting-nano-resin-electrolysis" },
+	-- issue #632 (section 57): curium in the fusion reactor MK3
+	{ "fusion-reactor-mk3", "molten-curium" },
+	-- issue #633 (section 58): the HTGR burns TRISO fuel with its whole cooling, the centrifuge gives the promethium
+	{ "high-temperature-gas-cooled-reactor", "triso-fuel-praseodymium-burning" },
+	{ "ev-centrifuge", "burned-triso-fuel-praseodymium-centrifuging" },
+	-- issue #636 (160, 161): the Phobos and Deimos mines, Seth's Void Miner III pool and the Deep Dark (every raw ore)
+	{ "dimension-mine", "mining-heavy-pentele-vein" },
+	{ "void-miner-iii", "void-mining-seth" },
+	{ "void-miner-iii", "void-mining-deep-dark" },
+	{ "lv-fluid-heater", "water-fluid-heater" },
+	{ "lv-packager", "packager-iron-dust-from-small-piles" },
 	{ "component-assembly-line", "lv-motor-coal" },
 	-- issue #126 (prototypes/148-fork-gtnh-table-items.lua): GTNH's machine recipes of the items the crafting table made
 	{ "lv-fluid-solidifier", "anvil-fluid-solidifier" },
@@ -776,7 +886,7 @@ local RT = {
 	{ "lv-chemical-bath", "paper-chemical-bath" },
 	-- issue #185 (prototypes/155-fork-ore-chain.lua): GTNH's ore chain for iron, the thermal centrifuge, a new byproduct dust
 	{ "lv-ore-washer", "purified-iron" },
-	{ "lv-thermal-centrifuge", "centrifuged-iron" },
+	{ "mv-thermal-centrifuge", "centrifuged-iron" },   -- (issue #724: GT runs it at MV)
 	{ "iv-thermal-centrifuge", "centrifuged-copper-from-crushed" },
 	{ "lv-macerator", "impure-iron-dust" },
 	{ "lv-macerator", "centrifuged-iron-maceration" },
@@ -862,10 +972,10 @@ local RT = {
 	{ "lv-fluid-solidifier", "solidify-steel-gear" },
 	{ "lv-fluid-solidifier", "solidify-large-steel-gear" },
 	{ "lv-fluid-solidifier", "solidify-steel-rotor" },
-	{ "lv-fluid-solidifier", "solidify-steel-rod" },
-	{ "lv-fluid-solidifier", "solidify-long-steel-rod" },
+	{ "mv-fluid-solidifier", "solidify-steel-rod" },   -- (issue #724: GT runs the rods and rings at MV)
+	{ "mv-fluid-solidifier", "solidify-long-steel-rod" },
 	{ "lv-fluid-solidifier", "solidify-steel-bolt" },
-	{ "lv-fluid-solidifier", "solidify-tin-ring" },
+	{ "mv-fluid-solidifier", "solidify-tin-ring" },
 	{ "lv-fluid-solidifier", "solidify-steel-screw" },
 	{ "ev-fluid-solidifier", "solidify-soularium-round" },
 	{ "lv-fluid-extractor", "melt-steel-ingot" },
@@ -912,7 +1022,7 @@ local RT = {
 	{ "hv-large-chemical-reactor", "reprecipitated-palladium-processing" },
 	{ "lv-ore-washer", "crushed-platinum-washing" },
 	-- the residue branches (rhodium, ruthenium, osmium, iridium)
-	{ "lv-chemical-reactor", "potassium-disulfate" },
+	{ "mv-chemical-reactor", "potassium-disulfate" },   -- (issue #724: MV in GT)
 	{ "mv-electric-blast-furnace", "platinum-group-residue-processing" },
 	{ "hv-large-chemical-reactor", "rhodium-sulfate-processing" },
 	{ "hv-large-sifter", "rhodium-filter-cake" },
@@ -962,6 +1072,14 @@ function setup_recipe_test(s)
 			-- a recipe that needs a mold (prototypes/150-fork-molds.lua) gets one in the mold slot
 			local molds = prototypes.mod_data["fork-mold-recipes"]
 			if molds and molds.data[def[2]] then e.get_module_inventory().insert{ name = molds.data[def[2]] } end
+			-- issue #620: a blast furnace gets the hottest coil (a recipe's heat is reached with the coils of its
+			-- technology; the furnace's own coil can be too cold, then scripts/fork-ebf-heat.lua stops it)
+			local heat = prototypes.mod_data["fork-ebf-heat"]
+			if heat and heat.data.machines[e.name] then
+				local hottest, coil = 0, nil
+				for c, h in pairs(heat.data.coils) do if h > hottest then hottest, coil = h, c end end
+				e.get_module_inventory().insert{ name = coil }
+			end
 			-- (fluids first: a furnace takes the item of an item and fluid recipe only with the fluid in it, issue #560)
 			for _, kind in pairs({ "fluid", "item" }) do
 				for _, ing in pairs(prototypes.recipe[def[2]].ingredients) do
@@ -1147,7 +1265,7 @@ local OL = {
 	--  machine                  recipe it must pick              input (from station)  the product it passes on
 	{ "lv-macerator",          "crushed-iron",                  { "raw-iron", 2 },     "crushed-iron" },
 	{ "lv-ore-washer",         "purified-iron",                 { from = 1, take = 1 }, "purified-iron", water = true },
-	{ "lv-thermal-centrifuge", "centrifuged-iron",              { from = 2, take = 1 }, "centrifuged-iron" },
+	{ "mv-thermal-centrifuge", "centrifuged-iron",              { from = 2, take = 1 }, "centrifuged-iron" },   -- (#724: MV)
 	{ "lv-macerator",          "centrifuged-iron-maceration",   { from = 3, take = 1 }, "iron-dust" },
 	{ "lv-macerator",          "impure-iron-dust",              { from = 1, take = 1 }, "impure-iron-dust" },
 	{ "lv-centrifuge",         "centrifuging-impure-iron-dust", { from = 5, take = 1 }, "iron-dust" },
@@ -1393,6 +1511,325 @@ function torch_test()
 	for _, p in pairs(problems) do log("DEVCHECK-RUNTIME-FAIL torch test: " .. p) end
 	log("DEVCHECK-RUNTIME-TORCH " .. (#problems == 0 and "ok" or "failed") .. " (torch " .. name(t.valid and t.status)
 		.. ", electric lamp " .. name(l.valid and l.status) .. " at midnight without power)")
+end
+
+--- Player paths (issue #651, scripts/fork-stand-in.lua): the scripts' paths that need a player, driven by a stand-in
+--- player (a headless game has none): a player steps onto a Nether Portal (and not again within its cooldown), opens
+--- an Ender Chest's panel and picks three colours, fast-replaces a Manual Mine by an LV Miner (the vein is kept)
+local PP_X, PP_Y = 440.5, -105.5
+function setup_player_test(s)
+	local st = { problems = {} }
+	storage.player_paths = st
+	local function expect(ok, what) if not ok then st.problems[#st.problems + 1] = what end end
+	local ok, err = pcall(function()
+		--- the portal
+		local portal = s.create_entity{ name = "nether-portal", position = { PP_X, PP_Y }, force = "player", raise_built = true }
+		local c = s.create_entity{ name = "character", position = portal.position, force = "player" }
+		expect(remote.call("fork-portals", "stand_in_step", c, 1001), "stepping onto the portal: no travel")
+		expect(c.valid and c.surface.name == "gt-nether", "stepping onto the portal: the character is on " .. c.surface.name)
+		local out = c.surface.find_entities_filtered{ name = "nether-portal", position = c.position, radius = 8 }[1]
+		if out then
+			c.teleport(out.position)
+			expect(not remote.call("fork-portals", "stand_in_step", c, 1001), "stepping back at once: no cooldown")
+		end
+		--- the Ender panel
+		local chest = s.create_entity{ name = "ender-chest", position = { PP_X, PP_Y + 10 }, force = "player", raise_built = true }
+		local code = remote.call("fork-ender", "get_code", chest)
+		local r = remote.call("fork-ender", "stand_in_panel", chest, 1002, { 2, 3, 4 })
+		local shown = remote.call("fork-ender", "shown_of", code)
+		expect(r.before[1] == shown[1] and r.before[2] == shown[2] and r.before[3] == shown[3],
+			"the panel showed " .. serpent.line(r.before) .. ", not the chest's code " .. serpent.line(shown))
+		expect(r.code == remote.call("fork-ender", "code_of", { 2, 3, 4 }), "picking colours 2, 3, 4 set the code " .. tostring(r.code))
+		--- the fast replace
+		local mine = s.create_entity{ name = "dimension-mine", position = { PP_X, PP_Y + 20 }, force = "player", raise_built = true }
+		mine.set_recipe("mining-copper-tin-vein")
+		local pos = mine.position
+		local builder = s.create_entity{ name = "character", position = { PP_X + 5, PP_Y + 20 }, force = "player" }
+		remote.call("fork-electric-mine", "stand_in_pre_build", builder, 1003, pos)
+		local miner = s.create_entity{ name = "lv-dimension-miner", position = pos, force = "player", fast_replace = true,
+			spill = true, raise_built = true }
+		local recipe = miner and miner.valid and miner.get_recipe()
+		expect(recipe and recipe.name == "miner-copper-tin-vein", "the fast replace lost the vein (" .. tostring(recipe and recipe.name) .. ")")
+	end)
+	if not ok then st.problems[#st.problems + 1] = "error: " .. tostring(err) end
+	return {}
+end
+
+function player_test()
+	local st = storage.player_paths
+	if not st or st.done then return end
+	st.done = true
+	for _, p in pairs(st.problems) do log("DEVCHECK-RUNTIME-FAIL player path test: " .. p) end
+	log("DEVCHECK-RUNTIME-PLAYER " .. (#st.problems == 0 and "ok" or "failed")
+		.. " (a stand-in player: the Nether Portal and its cooldown, the Ender panel, a Manual Mine's fast replace)")
+end
+
+--- Wireless energy (issue #622, scripts/fork-wireless.lua): the energy a UHV Wireless Dynamo Hatch drew on one surface
+--- reaches a UHV Wireless Energy Hatch on another through the force's account
+local WL_WAIT = 130
+function setup_wireless_test(_)
+	if not (prototypes.entity["uhv-wireless-dynamo-hatch"] and prototypes.entity["uhv-wireless-energy-hatch"]) then
+		return { "wireless test: no UHV wireless hatches" }
+	end
+	local out = {}
+	for i, name in pairs({ "uhv-wireless-dynamo-hatch", "uhv-wireless-energy-hatch" }) do
+		local ws = game.create_surface("devcheck-wireless-" .. i)
+		ws.request_to_generate_chunks({ 0, 0 }, 1)
+		ws.force_generate_chunk_requests()
+		ws.set_tiles({ { name = "landfill", position = { 0, 0 } } })
+		out[i] = ws.create_entity{ name = name, position = { 0.5, 0.5 }, force = "player", raise_built = true }
+		if not out[i] then return { "wireless test: could not place " .. name } end
+	end
+	local amount = out[1].electric_buffer_size
+	out[1].energy = amount
+	storage.wireless = { dynamo = out[1], hatch = out[2], amount = amount, at = game.tick,
+		before = remote.call("fork-wireless", "account", "player") }
+	return {}
+end
+
+function wireless_test()
+	local st = storage.wireless
+	if not st or st.done or game.tick < st.at + WL_WAIT then return end
+	st.done = true
+	local problems = {}
+	local account = remote.call("fork-wireless", "account", "player")
+	local got = st.hatch.energy
+	if got <= 0 then problems[#problems + 1] = "the energy hatch on the other surface got nothing" end
+	if st.dynamo.energy > 1 then problems[#problems + 1] = "the dynamo hatch kept " .. st.dynamo.energy .. " J" end
+	if math.abs(got + account - st.before - st.amount) > st.amount * 1e-6 then
+		problems[#problems + 1] = "energy lost or made: " .. st.amount .. " J in, " .. got .. " J out, account " .. account
+	end
+	for _, p in pairs(problems) do log("DEVCHECK-RUNTIME-FAIL wireless test: " .. p) end
+	log("DEVCHECK-RUNTIME-WIRELESS " .. (#problems == 0 and "ok" or "failed") .. " (" .. string.format("%.4g", st.amount)
+		.. " J from one surface, " .. string.format("%.4g", got) .. " J on the other, " .. string.format("%.4g", account)
+		.. " J left in the account)")
+end
+
+--- Radiation (issue #621, scripts/fork-radiation.lua): with the setting off nothing is radioactive; with it on a
+--- character with a stack of the most radioactive item takes level x (stack / 64) damage a check, and none in a
+--- Hazmat Suit
+function setup_radiation_test(_)
+	local md = prototypes.mod_data["fork-radiation"]
+	if not settings.startup["gregtorio-continued-radiation"].value then
+		storage.radiation = { off = true, bad = md ~= nil }
+		return {}
+	end
+	if not md then return { "radiation test: no mod data fork-radiation" } end
+	local item, level = nil, 0
+	for name, lv in pairs(md.data.items) do
+		if prototypes.item[name] and (lv > level or (lv == level and name < item)) then item, level = name, lv end
+	end
+	if not item then return { "radiation test: no radioactive item" } end
+	local rs = game.create_surface("devcheck-radiation")
+	rs.request_to_generate_chunks({ 0, 0 }, 1)
+	rs.force_generate_chunk_requests()
+	local c = rs.create_entity{ name = "character", position = { 0, 0 }, force = "player" }
+	if not c then return { "radiation test: no character" } end
+	local stack = prototypes.item[item].stack_size
+	c.get_inventory(defines.inventory.character_main).insert{ name = item, count = stack }
+	storage.radiation = { c = c, item = item, level = level, stack = stack }
+	return {}
+end
+
+function radiation_test()
+	local st = storage.radiation
+	if not st or st.done then return end
+	st.done = true
+	if st.off then
+		log("DEVCHECK-RUNTIME-RADIATION " .. (st.bad and "failed" or "ok") .. " (setting off: no mod data fork-radiation)")
+		if st.bad then log("DEVCHECK-RUNTIME-FAIL radiation test: the mod data fork-radiation exists with the setting off") end
+		return
+	end
+	local problems, c = {}, st.c
+	local hp = c.health
+	local dose = remote.call("fork-radiation", "check", c)
+	local want = st.level * math.max(st.stack / 64, 1)
+	if math.abs(dose - want) > 1e-6 or hp - c.health < want * 0.5 then
+		problems[#problems + 1] = st.stack .. " " .. st.item .. " (level " .. st.level .. ") gave " .. dose .. " damage ("
+			.. (hp - c.health) .. " taken), expected " .. want
+	end
+	c.get_inventory(defines.inventory.character_armor).insert{ name = "hazmat-suit", count = 1 }
+	hp = c.health
+	dose = remote.call("fork-radiation", "check", c)
+	if dose ~= 0 or c.health < hp then problems[#problems + 1] = "the Hazmat Suit does not protect (" .. dose .. " damage)" end
+	for _, p in pairs(problems) do log("DEVCHECK-RUNTIME-FAIL radiation test: " .. p) end
+	log("DEVCHECK-RUNTIME-RADIATION " .. (#problems == 0 and "ok" or "failed") .. " (" .. st.stack .. " " .. st.item
+		.. ": " .. want .. " damage a check, none in the Hazmat Suit)")
+end
+
+--- Blast furnace heat (issue #620, scripts/fork-ebf-heat.lua): a blast furnace with the coil it is built with and a
+--- recipe that needs more heat stops ("Heat too low"); with the hottest coil in its slot it runs, with the bonus module
+--- in a hidden beacon in its middle; removed, its beacon goes too
+local EH_WAIT = 150
+function setup_ebf_heat_test(_)
+	local md = prototypes.mod_data["fork-ebf-heat"]
+	if not md then return { "ebf heat test: no mod data fork-ebf-heat" } end
+	local d = md.data
+	local hottest, coil = 0, nil
+	for c, h in pairs(d.coils) do if h > hottest then hottest, coil = h, c end end
+	local names = {}
+	for n in pairs(d.machines) do names[#names + 1] = n end
+	table.sort(names, function(a, b) return d.machines[a].tier < d.machines[b].tier end)
+	local pick, recipe
+	for _, n in pairs(names) do
+		local m = d.machines[n]
+		local base = m.coil + d.heat_per_tier * (m.tier - 2)
+		local cands = {}
+		for r, h in pairs(d.recipes) do
+			if d.recipe_tier[r] <= m.tier and h > base and h <= hottest + d.heat_per_tier * (m.tier - 2) and prototypes.recipe[r] then
+				cands[#cands + 1] = r
+			end
+		end
+		table.sort(cands)
+		if cands[1] then pick, recipe = n, cands[1] break end
+	end
+	if not pick then return { "ebf heat test: no blast furnace recipe needs more heat than its furnace's own coil" } end
+	local es = game.create_surface("devcheck-ebf-heat")
+	es.request_to_generate_chunks({ 0, 0 }, 2)
+	es.force_generate_chunk_requests()
+	local tiles = {}
+	for x = -12, 12 do for y = -12, 12 do tiles[#tiles + 1] = { name = "landfill", position = { x, y } } end end
+	es.set_tiles(tiles)
+	for _, e in pairs(es.find_entities{ { -12, -12 }, { 12, 12 } }) do e.destroy() end
+	local e = es.create_entity{ name = pick, position = { 0.5, 0 }, force = "player", raise_built = true }
+	if not e then return { "ebf heat test: could not place " .. pick } end
+	game.forces.player.recipes[recipe].enabled = true
+	e.set_recipe(recipe)
+	storage.ebf_heat = { e = e, surface = es, at = game.tick, phase = 1, coil = coil, recipe = recipe, problems = {},
+		beacon = d.beacon }
+	return {}
+end
+
+function ebf_heat_test()
+	local st = storage.ebf_heat
+	if not st or st.done or game.tick < st.at + EH_WAIT then return end
+	local e, problems = st.e, st.problems
+	local beacons = st.surface.count_entities_filtered{ name = st.beacon }
+	if st.phase == 1 then
+		local rs = remote.call("fork-ebf-heat", "state", e)
+		if not (rs and rs.stopped and e.disabled_by_script and e.custom_status) then
+			problems[#problems + 1] = st.recipe .. " runs with too little heat (state " .. serpent.line(rs) .. ")"
+		end
+		st.heat_before = rs and rs.heat
+		e.get_module_inventory().insert{ name = st.coil, count = 1 }
+		st.phase, st.at = 2, game.tick
+	elseif st.phase == 2 then
+		local rs = remote.call("fork-ebf-heat", "state", e)
+		if not rs or rs.stopped or e.disabled_by_script then
+			problems[#problems + 1] = "with " .. st.coil .. " in its slot it stays stopped (state " .. serpent.line(rs) .. ")"
+		elseif not rs.bonus or beacons ~= 1 then
+			problems[#problems + 1] = "no bonus with " .. rs.heat .. " K (bonus " .. tostring(rs.bonus) .. ", " .. beacons .. " beacons)"
+		else
+			local ok, eff = pcall(function() return e.effects end)
+			if ok and eff and not (eff.consumption and eff.consumption < 0) then
+				problems[#problems + 1] = "the bonus " .. rs.bonus .. " does not lower its power (effects " .. serpent.line(eff) .. ")"
+			end
+		end
+		st.heat_after = rs and rs.heat
+		e.destroy{ raise_destroy = true }
+		st.phase, st.at = 3, game.tick
+	else
+		if beacons ~= 0 then problems[#problems + 1] = "its beacon stays after the furnace is gone" end
+		st.done = true
+		for _, p in pairs(problems) do log("DEVCHECK-RUNTIME-FAIL ebf heat test: " .. p) end
+		log("DEVCHECK-RUNTIME-EBFHEAT " .. (#problems == 0 and "ok" or "failed") .. " (" .. st.recipe .. ": stopped at "
+			.. tostring(st.heat_before) .. " K, ran at " .. tostring(st.heat_after) .. " K with " .. st.coil .. ")")
+	end
+end
+
+--- Steam Water Pumps (issue #613, scripts/fork-steam-boilers.lua): a pump built gets the locked water recipe of its
+--- spot's moisture (the mod data's keys are strings at runtime: the first build after #613 got none)
+function setup_water_pump_test(s)
+	local fails = {}
+	local ok, err = pcall(function()
+		storage.water_pump = { e = s.create_entity{ name = "steam-water-pump", position = { 370.5, 370.5 }, force = "player",
+			raise_built = true } }
+	end)
+	if not ok then fails[#fails + 1] = "water pump test: " .. tostring(err) end
+	return fails
+end
+
+function water_pump_test()
+	local st = storage.water_pump
+	if not st or st.done then return end
+	st.done = true
+	local e = st.e
+	local r = e.valid and e.get_recipe()
+	local name = r and r.name or "none"
+	local good = name:match("^steam%-water%-pump%-water%-%d+$") and e.recipe_locked
+	if not good then log("DEVCHECK-RUNTIME-FAIL water pump test: a Steam Water Pump built has the recipe " .. name
+		.. " (locked " .. tostring(e.valid and e.recipe_locked) .. ")") end
+	log("DEVCHECK-RUNTIME-WATERPUMP " .. (good and "ok" or "failed") .. " (" .. name .. ", locked)")
+end
+
+--- Maintenance (issue #618, scripts/fork-maintenance.lua): with the setting off no machine has a maintenance slot; with it on
+--- the first crafting multiblock of the mod data stands on a surface of its own, its time is set to 0 through the remote:
+--- with its slot empty it stops ("Needs maintenance"), with a Maintenance Kit put in it runs again, the kit used up and a
+--- kit's time left
+local MT_WAIT = 400
+function setup_maintenance_test(_)
+	if not settings.startup["gregtorio-continued-maintenance"].value then
+		local bad
+		for _, t in pairs({ "assembling-machine", "furnace" }) do
+			for name, pr in pairs(prototypes.get_entity_filtered{ { filter = "type", type = t } }) do
+				if pr.allowed_module_categories and pr.allowed_module_categories["maintenance"] then bad = name end
+			end
+		end
+		storage.maint = { off = true, bad = bad }
+		return {}
+	end
+	local md = prototypes.mod_data["fork-maintenance"]
+	local name = md and md.data.machines[1]
+	if not name then return { "maintenance test: no machine in the mod data fork-maintenance" } end
+	local ms = game.create_surface("devcheck-maintenance")
+	ms.request_to_generate_chunks({ 0, 0 }, 2)
+	ms.force_generate_chunk_requests()
+	local tiles = {}
+	for x = -12, 12 do for y = -12, 12 do tiles[#tiles + 1] = { name = "landfill", position = { x, y } } end end
+	ms.set_tiles(tiles)
+	for _, e in pairs(ms.find_entities{ { -12, -12 }, { 12, 12 } }) do e.destroy() end
+	local e = ms.create_entity{ name = name, position = { 0.5, 0.5 }, force = "player", raise_built = true }
+	if not e then return { "maintenance test: could not place " .. name } end
+	remote.call("fork-maintenance", "set_left", e, 0)
+	storage.maint = { e = e, at = game.tick, phase = 1, kit_ticks = md.data.kit_ticks }
+	return {}
+end
+
+function maintenance_test()
+	local st = storage.maint
+	if not st or st.done then return end
+	if st.off then
+		st.done = true
+		if st.bad then log("DEVCHECK-RUNTIME-FAIL maintenance test: " .. st.bad .. " has a maintenance slot with the setting off") end
+		log("DEVCHECK-RUNTIME-MAINT " .. (st.bad and "failed" or "ok") .. " (setting off: no maintenance slot)")
+		return
+	end
+	if game.tick < st.at + MT_WAIT then return end
+	local e, problems = st.e, st.problems or {}
+	st.problems = problems
+	if not e.valid then
+		problems[#problems + 1] = "the machine is gone"
+		st.done = true
+	elseif st.phase == 1 then
+		local rs = remote.call("fork-maintenance", "state", e)
+		if not (rs and rs.stopped and e.disabled_by_script and e.custom_status) then
+			problems[#problems + 1] = "with its time at 0 and no kit it does not stop (state " .. serpent.line(rs) .. ")"
+		end
+		e.get_module_inventory().insert{ name = "maintenance-kit", count = 1 }
+		st.phase, st.at = 2, game.tick
+		return
+	else
+		local rs = remote.call("fork-maintenance", "state", e)
+		if not rs or rs.stopped or e.disabled_by_script then problems[#problems + 1] = "with a kit in its slot it stays stopped" end
+		if e.get_module_inventory().get_item_count("maintenance-kit") ~= 0 then problems[#problems + 1] = "the kit was not used up" end
+		if rs and rs.left < st.kit_ticks - 2 * MT_WAIT then
+			problems[#problems + 1] = "only " .. rs.left .. " ticks left after a kit (" .. st.kit_ticks .. " expected)"
+		end
+		st.done = true
+	end
+	if not st.done then return end
+	for _, p in pairs(problems) do log("DEVCHECK-RUNTIME-FAIL maintenance test: " .. p) end
+	log("DEVCHECK-RUNTIME-MAINT " .. (#problems == 0 and "ok" or "failed") .. " (" .. e.name .. ": stopped without a kit, ran on with one)")
 end
 
 --- Battery buffers (issue #444, prototypes/145-fork-power-multiblocks.lua section 8): an LV Battery Buffer (1 battery)
@@ -2138,6 +2575,10 @@ local TOOL_TESTS = {
 		tool = "mold", product = "glass", status = "entity-status.fork-missing-mold" },
 	{ key = "LENS", x = 20, machine = "ev-laser-engraver", recipe = "engraving-chipped-ruby-to-flawed",
 		input = { "chipped-ruby", 12 }, tool = "ruby-lens", product = "flawed-ruby", status = "entity-status.fork-missing-lens" },
+	--- issue #642: a cloned machine (on_entity_cloned) is checked too: built away from the spot without telling the mod,
+	--- cloned onto it, the original removed
+	{ key = "MOLDCLONE", x = 34, machine = "lv-alloy-smelter", recipe = "glass-alloy-smelter", input = { "glass-dust", 20 },
+		tool = "mold", product = "glass", status = "entity-status.fork-missing-mold", clone = true },
 }
 
 function setup_mold_test(s)
@@ -2149,10 +2590,16 @@ function setup_mold_test(s)
 			eei.power_production = 1e8
 			eei.electric_buffer_size = 1e9
 			s.create_entity{ name = "substation", position = { t.x - 3, MOLD_Y }, force = "player" }
-			local m = s.create_entity{ name = t.machine, position = { t.x, MOLD_Y }, force = "player", raise_built = true }
+			local m = s.create_entity{ name = t.machine, position = { t.x, MOLD_Y + (t.clone and 6 or 0) }, force = "player",
+				raise_built = not t.clone }
 			m.force.recipes[t.recipe].enabled = true
 			m.set_recipe(t.recipe)
 			m.insert{ name = t.input[1], count = t.input[2] }
+			if t.clone then
+				local original = m
+				m = original.clone{ position = { t.x, MOLD_Y }, surface = s }
+				original.destroy()
+			end
 			storage.mold_tests[i] = { machine = m }
 		end)
 		if not ok then
@@ -2482,7 +2929,10 @@ function setup_lsc_test(s)
 			raise_built = true }
 		local got = ls.turbine.insert_fluid{ name = "helium-plasma", amount = 100 }
 		if got < 100 then fails[#fails + 1] = "supercapacitor test: the turbine took only " .. got .. " plasma" end
-		ls.load = s.create_entity{ name = "uiv-compressor", position = { LS_X + 6, LS_Y + 5 }, force = "player" }
+		--- (issue #616: with GT overclocking a machine's power grows 4x per tier, so the LuV compressor is the old UIV load)
+		local oc = settings.startup["gregtorio-continued-gt-overclocking"]
+		ls.load = s.create_entity{ name = oc and oc.value and "luv-compressor" or "uiv-compressor", position = { LS_X + 6, LS_Y + 5 },
+			force = "player" }
 		for name, r in pairs(prototypes.recipe) do
 			if r.categories[1] == "lv-compressor-recipes" and #r.ingredients == 0 then ls.recipe = name break end
 		end
@@ -2675,7 +3125,7 @@ function setup_melt_test(s)
 			if molds and molds.data[recipe] then e.get_module_inventory().insert{ name = molds.data[recipe] } end
 			return e
 		end
-		st.extractor = machine("lv-fluid-extractor", CT_X + 6, "melt-iron-ingot")
+		st.extractor = machine("mv-fluid-extractor", CT_X + 6, "melt-iron-ingot")   -- (issue #724: GT melts iron at MV)
 		st.block = machine("lv-fluid-solidifier", CT_X + 12, "solidify-block-of-iron")
 		st.ingot = machine("lv-fluid-solidifier", CT_X + 18, "solidify-iron-ingot")
 		st.extractor.insert{ name = "iron-ingot", count = 10 }
@@ -3173,6 +3623,7 @@ script.on_nth_tick(10, function()
 	steam_test()
 	chain_test()
 	lftr_test()
+	dyson_test()
 	lsc_test()
 	lsup_test()
 	elevator_test()
@@ -3182,6 +3633,12 @@ script.on_nth_tick(10, function()
 	solar_test()
 	coal_boiler_test()
 	torch_test()
+	maintenance_test()
+	water_pump_test()
+	ebf_heat_test()
+	radiation_test()
+	wireless_test()
+	player_test()
 	battery_test()
 	veins_test()
 	classic_test()
@@ -3256,6 +3713,7 @@ script.on_init(function()
 	for _, f in pairs(setup_steam_test(s)) do fails[#fails + 1] = f end
 	for _, f in pairs(setup_chain_test(s)) do fails[#fails + 1] = f end
 	for _, f in pairs(setup_lftr_test(s)) do fails[#fails + 1] = f end
+	for _, f in pairs(setup_dyson_test(s)) do fails[#fails + 1] = f end
 	for _, f in pairs(setup_lsc_test(s)) do fails[#fails + 1] = f end
 	for _, f in pairs(setup_lsup_test(s)) do fails[#fails + 1] = f end
 	for _, f in pairs(setup_elevator_test(s)) do fails[#fails + 1] = f end
@@ -3265,6 +3723,12 @@ script.on_init(function()
 	for _, f in pairs(setup_solar_test(s)) do fails[#fails + 1] = f end
 	for _, f in pairs(setup_coal_boiler_test(s)) do fails[#fails + 1] = f end
 	for _, f in pairs(setup_torch_test(s)) do fails[#fails + 1] = f end
+	for _, f in pairs(setup_maintenance_test(s)) do fails[#fails + 1] = f end
+	for _, f in pairs(setup_water_pump_test(s)) do fails[#fails + 1] = f end
+	for _, f in pairs(setup_ebf_heat_test(s)) do fails[#fails + 1] = f end
+	for _, f in pairs(setup_radiation_test(s)) do fails[#fails + 1] = f end
+	for _, f in pairs(setup_wireless_test(s)) do fails[#fails + 1] = f end
+	for _, f in pairs(setup_player_test(s)) do fails[#fails + 1] = f end
 	for _, f in pairs(setup_battery_test(s)) do fails[#fails + 1] = f end
 	for _, f in pairs(setup_veins_test()) do fails[#fails + 1] = f end
 	for _, f in pairs(setup_classic_test(s)) do fails[#fails + 1] = f end

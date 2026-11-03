@@ -19,6 +19,7 @@
 --------------------------------------------------------------------------------
 
 local M = {}
+local stand_in = require("scripts.fork-stand-in")   -- issue #651
 local HOME, COOLDOWN = "nauvis", 120
 --- portal -> the planet on its other side, the scale (or a fixed arrival), the search radius there and at home, a
 --- frozen daytime there
@@ -100,8 +101,8 @@ local function travel(entity, portal, player)
 	return out
 end
 
-function M.on_player_changed_position(event)
-	local player = game.get_player(event.player_index)
+--- a player (or issue #651's stand-in, scripts/fork-stand-in.lua) where it moved to: the exit portal, if it went through
+function M.stepped(player)
 	if not (player and player.character and player.surface) then return end
 	local st = state()
 	if (st.cooldown[player.index] or 0) > game.tick then return end
@@ -110,11 +111,19 @@ function M.on_player_changed_position(event)
 		area = { { p.x - 0.1, p.y - 0.1 }, { p.x + 0.1, p.y + 0.1 } }, limit = 1 }[1]
 	if not portal then return end
 	st.cooldown[player.index] = game.tick + COOLDOWN
-	travel(player.character, portal, player)
+	return travel(player.character, portal, player)
+end
+
+function M.on_player_changed_position(event)
+	M.stepped(game.get_player(event.player_index))
 end
 
 remote.add_interface("fork-portals", {
 	travel = function(entity, portal) return travel(entity, portal) end,
+	--- issue #651: a stand-in player of index `index` with `character` steps where the character stands
+	stand_in_step = function(character, index)
+		return M.stepped(stand_in.player(index, character)) ~= nil
+	end,
 })
 
 return M

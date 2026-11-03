@@ -24,6 +24,7 @@
 --- the melt yet; the melt recipe: every ingot whose melt has no extractor recipe yet, or (melt = true) only one
 --- whose technology comes tiers later (the melts of the fusion inputs, made in the IV extractor from LuV/ZPM on). Upstream casts stay as they
 --- are (some use other amounts: the endgame large gears 576.2, the rounds and bolts 1.8).
+--- `casts = false` (issue #674): the melt only, GT casts the material into other items.
 --- Not materials (no melt): the mixed metal ingot, the wrapped plutonium ingot and the iridium alloy ingot (items).
 --- Chromium's melt is the upstream molten chrome.
 --- Loaded after 142 (the technologies) and before 150 (the molds), 196 (the Fluids tab), 198 and 199.
@@ -81,6 +82,12 @@ local MATERIALS = {
 	["beryllium"] = { "mv", "advanced-mv-machines", melt = true },
 	["black-steel"] = { "mv", "mv-machines" },
 	["conductive-iron"] = { "mv", "mv-machines", color = { 255, 191, 195 } },
+	--- issue #674: GT melts cast iron but casts the melt into iron ingots, nuggets and blocks and the anvil (158 imports
+	--- them from the dump), not into its parts: casts = false
+	["cast-iron"] = { "mv", "mv-machines", color = { 200, 180, 180 }, casts = false },
+	--- issue #674: GT melts these (GT's extractor at MV); the tier of their ingot recipe, the technology that unlocks it
+	["niobium"] = { "mv", "large-hadron-collider", color = { 190, 180, 200 } },
+	["rose-gold"] = { "mv", "prismatic-naquadah", color = { 222, 161, 147 } },
 	["eglin-steel"] = { "mv", "mv-machines", color = { 191, 95, 26 } },
 	["electrum"] = { "mv", "advanced-integrated-circuits", color = { 255, 255, 100 } },
 	["energetic-alloy"] = { "mv", "energetic-alloy", color = { 255, 140, 25 } },
@@ -101,6 +108,8 @@ local MATERIALS = {
 	["vanadium-steel"] = { "mv", "oil-gathering" },
 	["watertight-steel"] = { "mv", "fluid-shaper" },
 	["zeron-100"] = { "mv", "alloy-blast-smelter" },
+	["desh"] = { "hv", "reach-mars", color = { 137, 137, 137 } },   -- issue #674, as niobium
+	["nickel-aluminide"] = { "hv", "kevlar", color = { 230, 230, 230 } },   -- issue #674, as niobium
 	["blue-steel"] = { "hv", "hv-energy-hatches" },
 	["chromium"] = { "hv", "advanced-hv-machines", melt = true },
 	["gallium"] = { "hv", "smd-components" },
@@ -219,7 +228,7 @@ function FORK_CASTING.run()
 			made_fluid[melt] = true
 			FORK_CASTING.fluids = FORK_CASTING.fluids + 1
 		end
-		for _, f in pairs(FORMS) do
+		for _, f in pairs(def.casts == false and {} or FORMS) do
 			local item = string.format(f[2], mat)
 			if item_exists(item) and not cast[melt .. "|" .. item] then
 				local name = "solidify-" .. item

@@ -23,7 +23,7 @@ not rewritten):
 import argparse, colorsys, hashlib, math, warnings
 warnings.filterwarnings("ignore", category=DeprecationWarning)
 from pathlib import Path
-from PIL import Image
+from PIL import Image, ImageDraw
 
 ROOT = Path(__file__).resolve().parent.parent
 ICONS = ROOT / "graphics/icons"
@@ -64,6 +64,21 @@ DONORS = {
     "callisto-ice-dust": ("naquadah-dust", 195), "fluxed-electrum-dust": ("naquadah-dust", 50),
     "wheat-seeds": ("wheat", 75),   # issue #360: the greenhouse wheat's seeds
     "mox-fuel": ("uranium-235-dust", 30),   # issue #359: IC2's MOX fuel (no IC2 texture here)
+    # issue #615: the rocket parts (Galacticraft's and GalaxySpace's textures are not GT's); the rockets are drawn
+    **{f"heavy-duty-alloy-ingot-t{i}": ("copper-ingot", h) for i, h in ((1, 30), (2, 200), (3, 140), (4, 270), (5, 330))},
+    **{f"heavy-duty-plate-t{i}": ("dense-steel-plate", h) for i, h in ((1, 30), (2, 200), (3, 140), (4, 270), (5, 330))},
+    "compressed-ice-plate": ("triple-ledox-plate", 190), "compressed-sdhc-120-alloy": ("dense-stainless-steel-plate", 40),
+    "empty-fuel-canister": ("empty-cell", 0), "small-fuel-canister": ("cn3h7o3-rocket-fuel-cell", 20),
+    "medium-fuel-canister": ("cn3h7o3-rocket-fuel-cell", 140), "large-fuel-canister": ("cn3h7o3-rocket-fuel-cell", 260),
+    "oxygen-vent": ("component-heat-vent", 180), "parachute": ("polyethylene-sheet", 0),
+    "flight-computer-case-t1": ("computer-monitor", 60), "flight-computer-case-t2": ("computer-monitor", 180),
+    **{f"rocket-control-computer-t{i}": ("hv-machine-hull", h) for i, h in ((1, 30), (2, 200), (3, 140), (4, 270), (5, 330))},
+    "tier-1-rocket-engine": ("conductive-iron-thruster", 0), "heavy-rocket-engine": ("conductive-iron-thruster", 140),
+    "heavy-duty-rocket-engine-t3": ("conductive-iron-thruster", 330), "tier-1-booster": ("conductive-iron-thruster", 60),
+    "tier-2-booster": ("conductive-iron-thruster", 200), "nose-cone": ("mining-pipe", 0), "heavy-nose-cone": ("mining-pipe", 140),
+    "heavy-duty-nose-cone-t3": ("mining-pipe", 330), "rocket-fins": ("steel-rotor", 0), "heavy-rocket-fins": ("steel-rotor", 140),
+    "heavy-duty-rocket-fins-t3": ("steel-rotor", 330),
+    **{f"lander-t{i}": ("lv-sensor", h) for i, h in ((1, 30), (2, 200), (3, 140))},
 }
 
 
@@ -447,6 +462,45 @@ def draw_ender_tank():
     return outline(img, (6, 8, 10, 255))
 
 
+def draw_ender_tank_sprite():
+    """96 x 96 RGBA (a 3 x 3 storage tank at 32 pixels a tile): issue #654, the Ender Tank seen from above at an angle: a
+    dark round tank with green bands, the window where the game draws the fluid (the storage tank's window box), and the
+    three-colour code on its lid"""
+    size = 96
+    img = Image.new("RGBA", (size, size), (0, 0, 0, 0))
+    px = img.load()
+    cx, top, bottom, rx = 48, 14, 88, 40
+    for y in range(size):
+        for x in range(size):
+            X, Y = x + 0.5, y + 0.5
+            body = abs(X - cx) <= rx and top <= Y <= bottom
+            lid = in_ellipse(X, Y, cx, top, rx, 10)
+            base = in_ellipse(X, Y, cx, bottom, rx, 6)
+            if not (body or lid or base):
+                continue
+            shade = 0.72 - 0.5 * (X - (cx - rx)) / (2 * rx)
+            if lid:
+                px[x, y] = tone(ENDER_BODY, 0.75 - 0.25 * (X - (cx - rx)) / (2 * rx))
+                if not in_ellipse(X, Y, cx, top, rx - 3, 7):
+                    px[x, y] = tone(ENDER_TRIM, 0.7)
+            else:
+                px[x, y] = tone(ENDER_BODY, shade)
+                if int(Y) in (34, 35, 70, 71) or abs(X - cx) > rx - 2:
+                    px[x, y] = tone(ENDER_TRIM, 0.35 + 0.4 * shade)
+    for y in range(40, 66):   # the window frame around the fluid box; open inside: the game draws the fluid below
+        for x in range(36, 61):
+            if x in (36, 60) or y in (40, 65):
+                px[x, y] = tone(ENDER_TRIM, 0.85)
+            else:
+                px[x, y] = (0, 0, 0, 0)
+    for i, c in enumerate(ENDER_CODE):   # the code on the lid
+        for y in range(10, 17):
+            for x in range(28 + 15 * i, 38 + 15 * i):
+                if in_ellipse(x + 0.5, y + 0.5, 33 + 15 * i, 13.5, 5.5, 4):
+                    px[x, y] = c + (255,)
+    return outline(img, (6, 8, 10, 255))
+
+
 # --- issue #555: the torch, drawn from scratch (GTNH's is Minecraft's own, whose texture is not used): a wooden stick with
 # a coal head and its flame, standing upright; the entity sprite is the icon scaled 2x (nearest), drawn at scale 0.5
 WOOD = [(66, 42, 20), (96, 64, 32), (128, 88, 46), (158, 114, 64)]
@@ -526,6 +580,75 @@ def draw_planet(kind):
     return out
 
 
+SEAWEED = [(18, 52, 26), (30, 84, 40), (52, 120, 58), (90, 160, 84), (140, 196, 120)]
+
+
+def draw_seaweed():
+    """32 x 32 RGBA: issue #631, Pam's HarvestCraft seaweed (no texture in the checkouts): three wavy green fronds
+    rising from a common base, lit from the left, with a dark outline"""
+    img = Image.new("RGBA", (32, 32), (0, 0, 0, 0))
+    px = img.load()
+    for i, (x0, phase, top) in enumerate(((11, 0.0, 4), (16, 1.6, 2), (21, 3.1, 6))):
+        for y in range(top, 29):
+            t = (29 - y) / (29 - top)
+            cx = x0 + 3.0 * math.sin(phase + y * 0.45) * t + (i - 1) * 4 * t
+            w = 2.6 - 1.4 * t
+            for x in range(32):
+                d = (x + 0.5 - cx) / w
+                if abs(d) <= 1:
+                    px[x, y] = tone(SEAWEED, 0.75 - 0.35 * (d + 1) / 2 + 0.15 * math.sin(y * 0.9 + i))
+    out = img.copy()
+    o = out.load()
+    for y in range(32):
+        for x in range(32):
+            if px[x, y][3] and any(not (0 <= x + dx < 32 and 0 <= y + dy < 32) or px[x + dx, y + dy][3] == 0
+                                   for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1))):
+                o[x, y] = (8, 24, 12, 255)
+    return out
+
+
+STAR = [(255, 120, 30), (255, 170, 60), (255, 215, 110), (255, 240, 180), (255, 255, 240)]
+
+
+def draw_star(size=192):
+    """size x size RGBA: issue #654, the godforge's star (GT renders a star over the forge while it runs): a white-hot
+    core, a yellow-orange disc and a soft corona with eight faint rays, fading out to the edge"""
+    img = Image.new("RGBA", (size, size), (0, 0, 0, 0))
+    px = img.load()
+    c = size / 2
+    core, disc = size * 0.11, size * 0.2
+    for y in range(size):
+        for x in range(size):
+            dx, dy = x + 0.5 - c, y + 0.5 - c
+            r = math.hypot(dx, dy)
+            if r <= disc:
+                t = 1 - r / disc
+                px[x, y] = tone(STAR, 0.55 + 0.45 * t) if r > core else STAR[-1] + (255,)
+                continue
+            ang = math.atan2(dy, dx)
+            ray = max(0.0, math.cos(4 * ang)) ** 12
+            fall = max(0.0, 1 - (r - disc) / (c - disc))
+            a = int(255 * min(1.0, fall ** 2.2 * (0.55 + 0.6 * ray)))
+            if a > 0:
+                px[x, y] = tone(STAR, 0.25 + 0.5 * fall)[:3] + (a,)
+    return img
+
+
+def draw_rocket(body, band):
+    """issue #615: a tier's rocket: a white hull with the tier's colour band, a red nose, fins and a flame"""
+    img = Image.new("RGBA", (32, 32), (0, 0, 0, 0))
+    d = ImageDraw.Draw(img)
+    d.polygon([(16, 1), (12, 9), (20, 9)], fill=(200, 40, 40, 255), outline=(90, 20, 20, 255))
+    d.rectangle([12, 9, 20, 24], fill=body, outline=(60, 60, 70, 255))
+    d.rectangle([12, 15, 20, 18], fill=band)
+    d.ellipse([14, 10, 18, 14], fill=(120, 190, 230, 255), outline=(40, 60, 80, 255))
+    d.polygon([(12, 18), (7, 26), (12, 24)], fill=band, outline=(60, 60, 70, 255))
+    d.polygon([(20, 18), (25, 26), (20, 24)], fill=band, outline=(60, 60, 70, 255))
+    d.polygon([(13, 25), (19, 25), (16, 31)], fill=(255, 170, 40, 255))
+    d.polygon([(15, 25), (17, 25), (16, 29)], fill=(255, 240, 150, 255))
+    return img
+
+
 def save_if_changed(img, path):
     if path.exists():
         old = Image.open(path).convert("RGBA")
@@ -558,12 +681,22 @@ def drawn():
     #  issue #504: the Ender Chest and the Ender Tank
     save_if_changed(draw_ender_chest(), ICONS / "ender-chest.png")
     save_if_changed(draw_ender_tank(), ICONS / "ender-tank.png")
+    #  issue #654: their entity sprites (the chest's icon at 2x, the tank drawn for its 3 x 3 at 2x)
+    save_if_changed(draw_ender_chest().resize((64, 64), Image.NEAREST), ENTITY / "ender-chest.png")
+    save_if_changed(draw_ender_tank_sprite().resize((192, 192), Image.NEAREST), ENTITY / "ender-tank.png")
     #  issue #555: the torch (icon and sprite)
     save_if_changed(draw_torch(), ICONS / "gt-torch.png")
     save_if_changed(draw_torch().resize((64, 64), Image.NEAREST), ENTITY / "gt-torch.png")
     #  issue #574: the planet icons of the Nether, the Twilight Forest and The End
     for planet, kind in (("gt-nether", "nether"), ("gt-twilight", "twilight"), ("gt-end", "end")):
         save_if_changed(draw_planet(kind), ICONS / (planet + ".png"))
+    #  issue #654: the godforge's star (its working visualisation)
+    save_if_changed(draw_star(), ENTITY / "godforge-star.png")
+    #  issue #631: the greenhouse's seaweed
+    save_if_changed(draw_seaweed(), ICONS / "seaweed.png")
+    #  issue #615: the rockets T1 to T5 (the hull grey to white, the band in the tier colour of HV, EV, IV, LuV, ZPM)
+    for i, band in enumerate(((235, 140, 40), (150, 150, 160), (60, 110, 200), (200, 60, 200), (220, 220, 60)), 1):
+        save_if_changed(draw_rocket((225, 225, 230, 255), band + (255,)), ICONS / f"tier-{i}-rocket.png")
 
 
 def main():

@@ -83,10 +83,10 @@ put("organic", { "acetic-acid", "formic-acid", "phthalic-acid", "acetone", "benz
 	"chlorobenzene", "dichlorobenzene", "nitrochlorobenzene", "dichlorobenzidine", "diaminobenzidine",
 	"chloroform", "chloroacetic-acid", "ethyl-cyanoacetate", "formaldehyde", "dimethylhydrazine", "diphenyl-isophthalate", "epichlorohydrin", "ethanol", "methanol", "ether",
 	"methyl-acetate", "vinyl-acetate", "vinyl-chloride", "tetrafluoroethylene", "tetranitromethane", "sodium-formate",
-	"p507", "biomass", "bacterial-sludge", "enriched-bacterial-sludge", "growth-medium", "mutagen" })
+	"p507", "2-ethyl-1-hexanol", "biomass", "bacterial-sludge", "enriched-bacterial-sludge", "growth-medium", "mutagen" })
 put("polymers", { "glue", "advanced-glue", "super-glue", "epoxy", "liquid-rubber", "silicone-rubber", "ptfe" })
 put("coolants", { "cryogenic-helium", "lapis-coolant", "super-coolant", "sodium-potassium", "liquid-air",
-	"liquid-nether-air", "liquid-ender-air", "coolant", "hot-coolant" })
+	"liquid-nether-air", "liquid-ender-air", "coolant", "hot-coolant", "gelid-cryotheum" })
 put("molten-elements", { "mercury", "molten-glass", "molten-borosilicate-glass", "molten-aluminium", "molten-americium",
 	"molten-beryllium", "molten-chrome", "molten-cobalt", "molten-europium", "molten-flerovium", "molten-gallium",
 	"molten-lithium", "molten-lutetium", "molten-magnesium", "molten-neodymium", "molten-silicon", "molten-silver",
@@ -94,7 +94,22 @@ put("molten-elements", { "mercury", "molten-glass", "molten-borosilicate-glass",
 	-- issue #91: the melts of the elements that had none
 	"molten-gold", "molten-lead", "molten-nickel", "molten-zinc", "molten-iridium", "molten-osmium", "molten-palladium",
 	"molten-platinum", "molten-samarium" })
+put("molten-alloys", { "soldering-alloy", "mutated-living-solder" })
+--- issue #630: GT++'s milling and flotation (164 section 47)
+put("organic", { "pine-oil", "carbon-disulfide", "urea", "liquid-resin" })
+put("gases", { "coal-gas", "nefarious-gas" })
+put("ore-solutions", { "red-mud", "nether-semi-fluid", "nefarious-oil", "poor-nether-waste", "netherrack-flotation-froth" })
+for _, o in pairs(FORK_MILLING and FORK_MILLING.ores or {}) do put("ore-solutions", { o[1] .. "-flotation-froth" }) end
+--- issue #617: the netherite chain (164 section 48)
+put("ore-solutions", { "rich-nether-waste" })
+put("molten-alloys", { "molten-thaumium", "molten-hellish-metal", "molten-manyullyn" })
+put("molten-elements", { "molten-boron" })
+put("molten-alloys", { "molten-tantalum-hafnium-carbide" })   -- issue #623
+   -- (issue #627: GT++'s UEV+ solder)
 put("molten-alloys", { "soldering-alloy" })
+--- issue #635: the fluid heater's steps
+put("organic", { "diluted-acetone", "cyanoacrylate-polymer" })
+put("ore-solutions", { "hot-ruthenium-tetroxide-solution" })
 put("molten-superalloys", { "molten-hastelloy-c276", "molten-hastelloy-w", "molten-hastelloy-x", "molten-incoloy-020",
 	"molten-incoloy-903", "molten-incoloy-ds", "molten-incoloy-ma956", "molten-inconel-625", "molten-inconel-690",
 	"molten-inconel-792", "molten-maraging-steel-250", "molten-maraging-steel-300", "molten-stellite", "molten-talonite",
@@ -135,6 +150,28 @@ put("ore-solutions", { "zirconium-tetrachloride-solution", "hydrated-ammonium-ni
 put("acids", { "boric-acid" })
 put("gases", { "phosgene", "boron-trichloride", "chloromethane" })
 put("molten-elements", { "calcium-fluoride" })
+--- issue #631: iodine (GT's gas) and GT++'s bromine (a liquid element, next to mercury); the seaweed line's solutions
+put("gases", { "iodine" })
+put("molten-elements", { "bromine" })
+put("ore-solutions", { "seaweed-concentrate", "seaweed-byproducts" })
+put("ore-solutions", { "samarium-rare-earth-mud" })   -- issue #631 part 2
+put("nuclear", { "molten-curium", "molten-promethium" })   -- issues #632, #633
+--- issue #631 part 3: the ion extraction's chloride concentrates, resins and chlorinated solutions; the new melts
+do
+	local list, melts = { "chlorinated-rare-earth-concentrate", "chlorinated-rare-earth-enriched-solution",
+		"chlorinated-rare-earth-diluted-solution" }, {}
+	for _, x in pairs({ "lanthanum", "praseodymium", "cerium", "neodymium", "samarium", "europium", "gadolinium", "terbium",
+		"dysprosium", "holmium", "erbium", "thulium", "ytterbium", "lutetium" }) do
+		for _, f in pairs({ "%s-chloride-concentrate", "%s-extracting-nano-resin", "filled-%s-extracting-nano-resin" }) do
+			list[#list + 1] = f:format(x)
+		end
+	end
+	for _, x in pairs({ "lanthanum", "cerium", "gadolinium", "terbium", "dysprosium", "holmium", "erbium", "ytterbium" }) do
+		melts[#melts + 1] = "molten-" .. x   -- (the melts new here)
+	end
+	put("ore-solutions", list)
+	put("molten-elements", melts)
+end
 --- issue #335: the Drilling Fluid of the Ore Drilling Plants (163), water with stone dust and lubricant
 put("basic", { "drilling-fluid" })
 --- issue #362: GT++'s rocket fuels and the chains behind them (164)
@@ -196,6 +233,8 @@ FLUID_SUBGROUP["excited-dimensionally-transcendent-stellar-catalyst"] = { "endga
 put("endgame", { "raw-star-matter", "spatially-enlarged-fluid", "tachyon-rich-temporal-fluid", "quark-gluon-plasma" })
 --- issue #355: the plasma forge's residue and superfluid, grade 8 water's baryonic matter, oganesson
 put("endgame", { "dimensionally-transcendent-residue", "stable-baryonic-matter", "dimensionally-shifted-superfluid" })
+--- issue #699: the phonon chain of the godforge's conduit
+put("endgame", { "phonon-crystal-solution", "phonon-medium" })
 put("gases", { "oganesson" })
 --- issue #355 step 4: the beamline's particles and UU matter
 put("particles", { "electron", "proton", "tau", "omega", "upsilon", "graviton" })
@@ -268,6 +307,14 @@ end
 if data.raw.fluid["steam"] then
 	local f = data.raw.fluid["steam"]
 	f.icon, f.icons, f.icon_size = P .. "graphics/fluids/steam.png", nil, 32
+end
+
+--- Issue #654: GT's own fluid textures (tools/gen_fluid_icons.py: graphics/fluids/<fluid>.png, listed in
+--- prototypes/data/fluid-icons.lua; tools/fluid-textures.tsv says why the others keep a colour icon); the pipes keep
+--- their colours
+for name in pairs(require("prototypes.data.fluid-icons")) do
+	local f = data.raw.fluid[name]
+	if f then f.icon, f.icons, f.icon_size = P .. "graphics/fluids/" .. name .. ".png", nil, 32 end
 end
 
 --- vanilla and Space Age fluids that no recipe a player can reach makes or uses but their void recipe: hidden

@@ -55,10 +55,16 @@
 --- reactor's recipe while the reactor's status is "working", else nothing; what the network does not take is lost, as
 --- GT voids it. Work per step: one status read per reactor, a write only when the power changes.
 ---
+--- Working picture (issue #768). A 2.1 generator prototype has one picture and no working-only layer, so the plasma
+--- generators (mod data `overlays`: entity -> sprite) are drawn idle and get their working picture as a render object
+--- on top, shown while the fuel check finds them running and generating (energy_generated_last_tick > 0). The object is
+--- made the first time a generator runs (`overlay` of its `generators` entry) and goes with the entity. Work: one read
+--- per checked generator, a write only when the state changes.
+---
 --- State (lazy, `storage.fork_power`): `turbines` by unit number with the plasma seen at the last step
 --- (`fluid`, `amount` in the turbine and its segment), `on` (counted this step), the `energy` summed
 --- since the last step and the cooled fluid still `owed` (by fluid name); `generators` by unit number
---- with the reason this script stopped them (nil while running); `cursor` of the round robin; `capacitors` by unit
+--- with the reason this script stopped them (nil while running) and the working `overlay`; `cursor` of the round robin; `capacitors` by unit
 --- number (the entity). Rebuilt
 --- from the map on configuration changes.
 local M = {}
@@ -74,11 +80,17 @@ local function mod_data()
 	return md and md.data or { turbines = {}, cooled = {}, hatch = "turbine-output-hatch", fuels = {} }
 end
 
-local turbine_names, cooled_of, ratio_of, effectivity_of, hatch_name, fuels_of, loss_of, lftr_power, dynamo_name
+local turbine_names, cooled_of, ratio_of, effectivity_of, hatch_name, fuels_of, loss_of, lftr_power, dynamo_name, dyson
+local overlay_of
 local function init()
 	if turbine_names then return end
 	local d = mod_data()
+	overlay_of = {}
+	for name, sprite in pairs(d.overlays or {}) do
+		if prototypes.entity[name] then overlay_of[name] = sprite end
+	end
 	lftr_power, dynamo_name = {}, d.lftr_dynamo
+	dyson = d.dyson and prototypes.entity[d.dyson.entity] and prototypes.entity[d.dyson.dynamo] and d.dyson or nil
 	for name, recipes in pairs(d.lftr or {}) do
 		if prototypes.entity[name] then lftr_power[name] = recipes end
 	end
@@ -111,6 +123,7 @@ local function state()
 	st.generators = st.generators or {}         -- saves from before the fuel check
 	st.capacitors = st.capacitors or {}         -- saves from before issue #97
 	st.lftrs = st.lftrs or {}                   -- issue #386
+	st.dysons = st.dysons or {}                 -- issue #623
 	return st
 end
 
@@ -132,6 +145,21 @@ local function fluid_of(entity, amount)
 	return nil, 0
 end
 
+--- issue #768: the working picture over a generator with an idle one while it gives power
+local function show_working(g)
+	local e = g.entity
+	local sprite = overlay_of[e.name]
+	if not sprite then return end
+	local on = not e.disabled_by_script and e.energy_generated_last_tick > 0   -- a stopped generator keeps its last value
+	local o = g.overlay
+	if not (o and o.valid) then
+		if not on then return end
+		o = rendering.draw_sprite{ sprite = sprite, target = e, surface = e.surface, render_layer = "object" }
+		g.overlay = o
+	end
+	if o.visible ~= on then o.visible = on end
+end
+
 local function check(g)
 	local e = g.entity
 	local allowed = fuels_of[e.name]
@@ -150,7 +178,7 @@ local function check(g)
 			g.stopped = nil
 		end
 	elseif g.stopped ~= reason then
-		if not g.stopped and e.disabled_by_script then return end    -- stopped by someone else
+		if not g.stopped and e.disabled_by_script then return show_working(g) end    -- stopped by someone else
 		e.disabled_by_script = true
 		if reason == NO_FUEL then
 			e.custom_status = { diode = defines.entity_status_diode.yellow, label = { "entity-status.fork-no-fuel" } }
@@ -163,6 +191,7 @@ local function check(g)
 		end
 		g.stopped = reason
 	end
+	show_working(g)
 end
 
 local function register_generator(st, entity)
@@ -262,11 +291,65 @@ local function lftr_step(st)
 	end
 end
 
+--------------------------------------------------------------------------------
+--- Dyson Swarm ground units (issue #623, prototypes/164-fork-chemistry.lua section 50): each unit's swarm counts the
+--- modules its finished runs deployed (at most `max_modules`), loses GT's share once a cycle (IGConfig.java:33-63
+--- without computation: m x 2 x chance / (exp(-a (m - 1)) + 1)) and gives `module_watts` per module through its hidden
+--- dynamo while the unit runs
+--------------------------------------------------------------------------------
+
+local function register_dyson(st, entity)
+	local u = st.dysons[entity.unit_number]
+	if u and u.dynamo and u.dynamo.valid then return end
+	local surface, position = entity.surface, entity.position
+	local dynamo = surface.find_entities_filtered{ name = dyson.dynamo, position = position, limit = 1 }[1]
+		or surface.create_entity{ name = dyson.dynamo, position = position, force = entity.force }
+	if dynamo then dynamo.power_production = 0 end
+	st.dysons[entity.unit_number] = { entity = entity, dynamo = dynamo, power = 0, count = u and u.count or 0,
+		finished = entity.products_finished, next_loss = u and u.next_loss or game.tick + dyson.cycle_ticks }
+end
+
+local function dyson_step(st)
+	for id, u in pairs(st.dysons) do
+		local e, d = u.entity, u.dynamo
+		if not (e and e.valid) then
+			if d and d.valid then d.destroy() end
+			st.dysons[id] = nil
+		elseif not (d and d.valid) then
+			u.dynamo = nil
+			register_dyson(st, e)
+		else
+			local done = e.products_finished - (u.finished or 0)
+			if done > 0 then u.count = math.min(dyson.max_modules, u.count + done) end
+			u.finished = e.products_finished
+			if game.tick >= u.next_loss then
+				local m = u.count
+				if m > 0 then
+					local lost = m * 2 * dyson.chance / (math.exp(-dyson.a * (m - 1)) + 1)
+					u.count = math.max(0, m - math.floor(lost + 0.5))
+				end
+				u.next_loss = u.next_loss + dyson.cycle_ticks
+			end
+			local power = 0
+			if e.status == defines.entity_status.working then power = u.count * dyson.module_watts / 60 end
+			if u.power ~= power then
+				d.power_production = power
+				u.power = power
+			end
+		end
+	end
+end
+
 function M.on_built(entity)
 	init()
 	if not (entity and entity.valid) then return end
+	if dyson and entity.name == dyson.entity then register_dyson(state(), entity) end
 	if lftr_power[entity.name] then register_lftr(state(), entity) end
 	if turbine_names[entity.name] then register_turbine(state(), entity) end
+	if entity.name == hatch_name then   -- (issue #642: the turbines search their hatches again)
+		local st = state()
+		st.hatch_gen = (st.hatch_gen or 0) + 1
+	end
 	if fuels_of[entity.name] then register_generator(state(), entity) end
 	if loss_of[entity.name] then
 		local st = state()
@@ -297,7 +380,23 @@ function M.on_configuration_changed()
 	for n, _ in pairs(lftr_power) do
 		if not seen[n] then names[#names + 1] = n; seen[n] = true end
 	end
+	if dyson and not seen[dyson.entity] then names[#names + 1] = dyson.entity; seen[dyson.entity] = true end
 	local st = state()
+	--- Dyson Swarm dynamos: drop the gone units' and any interface without its unit
+	for id, u in pairs(st.dysons) do
+		if not (dyson and u.entity and u.entity.valid) then
+			if u.dynamo and u.dynamo.valid then u.dynamo.destroy() end
+			st.dysons[id] = nil
+		end
+	end
+	if dyson then
+		for _, surface in pairs(game.surfaces) do
+			for _, d in pairs(surface.find_entities_filtered{ name = dyson.dynamo }) do
+				local owner = surface.find_entities_filtered{ name = dyson.entity, position = d.position, limit = 1 }[1]
+				if not owner then d.destroy() end
+			end
+		end
+	end
 	--- LFTR dynamos: drop the gone reactors' and any interface without its reactor
 	for id, l in pairs(st.lftrs) do
 		if not (l.entity and l.entity.valid and lftr_power[l.entity.name]) then
@@ -337,6 +436,7 @@ function M.on_configuration_changed()
 			if fuels_of[e.name] then register_generator(st, e) end
 			if loss_of[e.name] then st.capacitors[e.unit_number] = e end
 			if lftr_power[e.name] then register_lftr(st, e) end
+			if dyson and e.name == dyson.entity then register_dyson(st, e) end
 		end
 	end
 end
@@ -370,12 +470,25 @@ end
 --------------------------------------------------------------------------------
 
 --- Output hatches touching the turbine's footprint
-local function hatches_of(entity)
+local function find_hatches(entity)
 	local box = entity.selection_box
 	return entity.surface.find_entities_filtered{
 		name = hatch_name,
 		area = { { box.left_top.x - 0.5, box.left_top.y - 0.5 }, { box.right_bottom.x + 0.5, box.right_bottom.y + 0.5 } },
 	}
+end
+--- issue #642: the hatches of turbine record t, searched again only when a hatch was built anywhere since
+--- (st.hatch_gen, raised by on_built) or one of them is gone
+local function hatches_of(st, t)
+	local list = t.hatches
+	if list and t.hatch_gen == (st.hatch_gen or 0) then
+		for _, h in pairs(list) do
+			if not h.valid then list = nil break end
+		end
+		if list then return list end
+	end
+	t.hatches, t.hatch_gen = find_hatches(t.entity), st.hatch_gen or 0
+	return t.hatches
 end
 
 --- Owe the cooled fluid for `energy` J burnt on `fluid`, at most `max` units of plasma; returns the
@@ -415,7 +528,7 @@ local function step(st)
 			t.amount = amount
 			t.on = t.fluid ~= nil and not e.disabled_by_script
 			if next(t.owed) then
-				local hatches = hatches_of(e)
+				local hatches = hatches_of(st, t)
 				if #hatches == 0 then
 					t.owed = {}                      -- no hatch: lost, as in GT
 				else
@@ -454,12 +567,23 @@ script.on_event(defines.events.on_tick, function(event)
 	check_step(st)
 	step(st)
 	if st.lftrs then lftr_step(st) end
+	if dyson and st.dysons then dyson_step(st) end
 	if st.capacitors then capacitor_step(st) end
 end)
 
 --- For tests: the cooled fluid still owed by a turbine (of one fluid, or all of them), and the energy
 --- counted since the last step
 remote.add_interface("gregtorio-power", {
+	--- issue #623: a Dyson Swarm ground unit's swarm (modules, power in W)
+	dyson = function(entity)
+		local u = entity and entity.valid and storage.fork_power and storage.fork_power.dysons
+			and storage.fork_power.dysons[entity.unit_number]
+		return u and u.count or 0, u and u.power * 60 or 0
+	end,
+	dyson_set = function(entity, count, next_loss)
+		local u = storage.fork_power.dysons[entity.unit_number]
+		if u then u.count, u.next_loss = count or u.count, next_loss or u.next_loss end
+	end,
 	debt = function(entity, fluid)
 		local t = storage.fork_power and storage.fork_power.turbines[entity.unit_number]
 		if not t then return 0 end

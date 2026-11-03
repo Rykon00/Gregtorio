@@ -12,7 +12,8 @@
     the LV assembler recipe `small-lamp-lv-assembler` (Automation 2), placed lamps of old saves become torches
     (`migrations/2026-10-24-issue-555-torch.json`); graphics from `tools/gen_icons.py --drawn`)
   - 101 machines (issue #446: the steam age of GTNH, the high pressure machines, the steam furnace, the lava and solar
-    boilers; issue #447: the steam macerator's copies of the LV macerator recipes without byproducts,
+    boilers; issue #613: section 2m' the Steam Water Pumps (moisture-dependent recipe set by scripts/fork-steam-boilers.lua),
+    bartworks' Simple Stirling Water Pump at the start, the offshore pump as GT's Basic Pump on LV power; issue #447: the steam macerator's copies of the LV macerator recipes without byproducts,
     `fork_steam_categories()` at the end of data-final-fixes.lua; issue #571: its `steam_ore_unlocks()` unlocks the copies of
     the ore forms with the later of Steam Macerator and the first technology that makes their input (only into the
     prerequisites of the original's technology, only when something takes each product there) and moves the furnace
@@ -70,12 +71,20 @@
     unit counts of its technologies; phase 6b hooks are marked `6b hook`)
   - 140 godforge (phase 6b: the godforge, raw star matter, magmatter, the stellar catalyst of the plasma forge, the
     infinite `godforge-upgrades`; issue #249: quark gluon plasma and GT's rhugnor MK5 recipe; issue #355: the godforge between
-    the UIV and UMV energy hatches with GT's recipes, the plasma module technology with celestial tungsten)
+    the UIV and UMV energy hatches with GT's recipes (issue #624: at UIV science, the DTPF at UEV, the space elevator at UV with
+    the new technology Cosmic Neutronium), the plasma module technology with celestial tungsten; issue #699: section 3b,
+    white and black dwarf matter from raw star matter in the molten module, cast by 143, parts by 158 (gt-parts-data)
+    for the space elevator's pump module Mk-III; 164 section 60 the phonon chain, the conduit and the Heliofusion
+    Exoticizer item, whose crafting researches the one-time Harmonic Phonon Upgrade)
   - 141 MAX tier (phase 6b: magmatter parts, the Planck line and MAX circuit, MAX components, hatches, machines and
     turbine; needs 140's magmatter and adds its turbine to 136's mod data; issue #249: the MAX recipes of the plasma
     forge and the QFT with substitutes); 140 and 141 load after 139 and **before** 138
   - 138 research balance (issue #30: explicit unit counts of the technologies from UV to `victory`; loads after every
-    file that defines technologies; balance passes use `tools/balance_model.py` on `devcheck.py check --balance-out`)
+    file that defines technologies up to 141; issue #605: the table also names the UV+ technologies of 145 to 166, and
+    `FORK_RESEARCH_BALANCE.apply()` runs once more at the end of data-final-fixes.lua; devcheck fails for a researchable
+    technology of 9 or more packs whose count lies outside the band of its pack count (from 50, or the table's lowest at
+    that pack count, to the table's highest) unless it is in `FORK_RESEARCH_OUTLIERS`: a new UV+ technology gets its
+    scaled count in the table; balance passes use `tools/balance_model.py` on `devcheck.py check --balance-out`)
   - 147 GT routes (issue #98: the PECA board deleted, sodium persulfate, black plutonium and cosmic neutronium through
     the blast furnace and vacuum freezer, the high octane line, GT's deuterium and PPIC wafer; loads after 138 and
     **before** 142, whose block `UNLOCKS_98` unlocks its recipes, and 143, which casts the black plutonium ingot)
@@ -101,7 +110,9 @@
     every vein of Ross128b (Reach Ross128) and Ross128ba (Reach Ross128ba, ZPM) with bartworks' ores (155's `NEW_ORES`);
     the Toxic Everglades' veins GTPP0-19 (Reach the Toxic Everglades, LuV) with GT++'s ores, whose dehydrator
     decompositions 161 unlocks through `FORK_ORE_CHAIN.unlock_after_159` (159 makes the dehydrators after 155); Neper's
-    pool for the Void Miner III (dilithium, mysterious crystal, vinteum); issue #563: the veins of Nauvis, the Nether and
+    pool for the Void Miner III (dilithium, mysterious crystal, vinteum); issue #636: Phobos's and Deimos's mines (draconium,
+    oriharukon, heavy pentele) with Reach Mars, a Void Miner pool for every other void-minable dimension of T3 to T9 (Seth's raw
+    tengam and tartarite, Maahes's naquadria), the Deep Dark's Void Miner III recipe with every raw ore in 161; issue #563: the veins of Nauvis, the Nether and
     the Twilight Forest that #505 deleted here are 166's generated classic recipes, not 160's; loads after 146 and
     **before** 142 (issue #287: the unlock table of 142 and the ore chains of 155 see the mines; the rules are in 161))
   - 162 space elevator (issue #301, part 1 of #292's decision: gtnhintergalactic's Space Elevator in GTNH's full scope:
@@ -167,7 +178,8 @@
   - 143 casting (issue #91: solidifier casts of every form and extractor melts of every ingot from its table `MATERIALS`
     (tier, technology, the colour of a new melt); 199's auto-unlock ignores these recipes (`FORK_CASTING.recipes`), else
     an ingot would count as its own producer; must load before 150, whose molds it needs, and before 196, 198 and 199;
-    `FORK_CASTING.run` runs once more at the end of 155 for the ingots and nuggets 155 makes, issue #207)
+    `FORK_CASTING.run` runs once more at the end of 155 for the ingots and nuggets 155 makes, issue #207; issue #674:
+    `casts = false` makes the melt only, where GT casts the melt into other items, as cast iron)
   - 145 power multiblocks (issue #97: the large steam turbine and the high pressure steam turbine as generators of 136
     with superheated steam, the fluid nuclear reactor (burner recipe machine for the fuel rods) and the large heat
     exchanger with coolant and hot coolant, the lapotronic supercapacitor as an accumulator per capacitor tier (IV, LuV
@@ -175,7 +187,7 @@
     water to superheated steam), the large combustion engine and the large gas turbine (EV burner generators on the fuel
     cells); issue #295: GT++'s EV, IV and LuV rocket engines on the H8N4C2O4 rocket fuel cell (fuel category
     `rocket-engine-fuel`; the fuel's GTNH recipe and the Chemical Plant's move to Rocket Fuel are in 159); issue #444: GTNH's LV to HV
-    batteries and the battery buffers (accumulators of a fixed size, the batteries in the recipe; technology Large Batteries); their technologies are named in 142's `UNLOCKS`, so it loads after 138 and **before** 142, and
+    batteries and the battery buffers (accumulators of a fixed size, the batteries in the recipe; technology Large Batteries); issue #637: the EV and IV gas turbines and semifluid generators (section 9) and GT++'s advanced boilers (section 9b); issue #614: the EV and IV buffers (section 8b) with GTNH's tier batteries, the lapotron crystal (its chain moved from the ZPM Assembly Line to Lapotron Crystals, EV) and the lapotronic energy orb (moved to Lapotronic Energy Orb, IV); their technologies are named in 142's `UNLOCKS`, so it loads after 138 and **before** 142, and
     before 196 for its fluids; it takes 136's generator from the global `FORK_POWER` and adds to its mod data
     `fork-power`)
   - 144 dead fluids (issue #91: GT's uses and producers of fluids nothing made or used; the blast furnace gas variants
@@ -184,7 +196,10 @@
     crafting table made; the reachable hand-only vanilla recipes (firearm magazine, light armor, rail ramp and support,
     wood processing) moved into `crafting-or-assembling-recipes`; the allow-list `FORK_RECIPES_TABLE_ONLY` of recipes of
     items that only the crafting table, the ME Molecular Assembler or the hand make, each with its reason; devcheck
-    fails for a reachable item whose every recipe is such a recipe and not in it; loads after 144 and before 150)
+    fails for a reachable item whose every recipe is such a recipe and not in it; GT's crafting tools of issue #612:
+    `<tool>-usage` charges (hammer, file, saw, screwdriver, wire cutter, wrench, knife) from iron, bronze or steel, one
+    recipe per material, and the charges added to the `crafting-table-recipes` of the parts by GT's shapes (`FORK_TOOLS`
+    maps a tool to its item); loads after 144 and before 150)
   - 149 early research (issues #127 and #146: the unit counts of the technologies with red and green packs only, 80 and
     more, divided by 6, those of MV to IV by 10, 13, 19 and 16; data-final-fixes.lua calls
     `FORK_EARLY_RESEARCH.rescale()` for the technologies whose units it sets later; the cheap research setting wins)
@@ -225,12 +240,31 @@
     after 154 and before 150)
   - 158 GT parts (issues #222, #223, #227 and #228: GT's parts of every metal from `prototypes/gt-parts-data.lua`
     (regenerate it with `tools/gen_gt_parts.py` after a `devcheck.py check` when a metal is added; sources: GT
-    materials, GT++ alloys and elements, bartworks and goodgenerator Werkstoffe with their own recipe numbers) and GT's
+    materials, GT++ alloys and elements, bartworks and goodgenerator Werkstoffe with their own recipe numbers; issue
+    #674: the data names GT's dust of every metal, the run makes a missing one before section 1; `DUST_NAME` keeps
+    the names, since section 1 of the first run sets `d.dust` to nil for a metal whose ingot comes in 164) and GT's
     nugget recipes, unlocked with 155's `unlock_after` through `FORK_ORE_CHAIN`; loads after 155 and before 150; issue
     #467: its sections 1 and 2 are `FORK_GT_PARTS.run()`, run again at the end of 164 (section 38) for the metals whose
     ingot comes later; #223
     also aligned 155's raw ore smelting with GT's rule, keeping raw redstone, gypsum and calcite -> dust for the early
-    game)
+    game; issue #687: section 3 of the run, GT's recipes of the cutting machine (water, distilled water, lubricant,
+    dimensionally shifted superfluid), bender, extruder, wiremill, forge hammer, fluid solidifier and lathe that Gregtorio
+    lacks, `gt-<verb>-<product>-from-<input>` from `prototypes/data/gtnh-part-routes.lua`, which `devcheck.py check
+    --gtnh-routes` writes from the dump through `tools/gtnh_map.py` (`route_imports`); `check` fails when it is out of
+    date; a route Gregtorio has with other numbers is #689's table's, not a second recipe; issue #690: the cable map's
+    insulation, `gt-insulate-<cable>-from-<wire>-with-<fluid>(-and-<pulp>)`; issue #688: section 4, GT's
+    crafting table recipes of the parts and dust piles that Gregtorio lacks, GT's tools as #612's charges, from
+    `prototypes/data/gtnh-part-crafting.lua` (`devcheck.py check --gtnh-crafting`, `crafting_imports`); a recipe of
+    sections 3 and 4 is made only with a technology after its inputs, and `FORK_GT_PARTS.drop_locked_routes()` in
+    data-final-fixes.lua drops one that only a disabled vanilla technology unlocked; issue #691: section 3 takes GT's
+    chemistry and separation recipes too (distillery, electrolyzer, autoclave, centrifuge, chemical reactors, mixer,
+    chemical bath; `prototypes/data/gtnh-chemistry.lua`, `devcheck.py check --gtnh-chemistry`, `route_imports` with
+    `CHEM_IMPORT`: no ore chain forms, no GT cells, only categories with the machines' fluid boxes), turns a platinum
+    group dust into the platinum line's powder as 157, and `drop_locked_routes()` also drops an imported recipe whose
+    input nothing makes at its technology or before once 161 has moved the dimensions' chains; issue #692: and GT's
+    metallurgy recipes (alloy blast smelter, blast furnace, alloy smelter with its mold, the furnace's dust smelting, arc
+    furnace, compressor; `prototypes/data/gtnh-metallurgy.lua`, `devcheck.py check --gtnh-metallurgy`, `METAL_IMPORT`;
+    the blast furnace's tier is GT's EU tier, its coil heat is #620's)
   - 159 lanthanides (issue #262: gtnhlanth's monazite rare earth line with the Digester and the Dissolution Tank, from
     crushed monazite to samarium and gadolinium dust; the samarium dust placeholder of 19 is removed, the sifting
     machines get a fluid input and output, technology `monazite-rare-earth-processing` before LuV Components; issue
@@ -260,7 +294,9 @@
     (section 13, technology Naquadah Fuel Rods), the isotopes, the LFTR fuels, Hastelloy-N and the Reactor Fuel
     Processing Plant (section 14, technology Liquid Fluoride Thorium Reactor), the LFTR, the Reactor Processing Unit I,
     the Cold Trap I and the Sparge Tower (section 15; the LFTR's power comes from scripts/fork-power.lua) and the LFTR
-    loop (section 16); issue #406: the Nuclear Salt Processing Plant (section 17); issue #355: the Precise Assembler and the HiCs (section 18), the quantum anomaly and chromatic glass (section 19), the plasma forge's residue and Dimensionally Shifted Superfluid with the oganessons (section 20); issue #406: the Cold Trap II and RPU II with Pikyonium 64B (section 21); issue #356: the Mehen Belt's draconium (section 22), the depleted thorium fuel and praseodymium (section 23), the netherite chain's materials (section 24), GT++'s Algae Farm and Industrial Dehydrator (section 25), the netherite chain to the prismatic naquadah sheet (section 26), the Naquadah Fuel Refinery with MK III and MK IV (section 27), MK V and MK VI with coils T3 and T4 (section 28); issue #355 step 2: creon and mellion with fiery steel, fermium plasma and MK V's alternative (section 29); issue #355 step 4: the beamline with mu-metal, the Source Chamber, the Beam Crafter and UU matter (section 30), the Large Hadron Collider with its particles (section 31), the gravitational lens (section 32), the ZPIC with a second UMV hatch recipe (section 33); loads after 159 and
+    loop (section 16); issue #406: the Nuclear Salt Processing Plant (section 17); issue #355: the Precise Assembler and the HiCs (section 18), the quantum anomaly and chromatic glass (section 19), the plasma forge's residue and Dimensionally Shifted Superfluid with the oganessons (section 20); issue #406: the Cold Trap II and RPU II with Pikyonium 64B (section 21); issue #356: the Mehen Belt's draconium (section 22), the depleted thorium fuel and praseodymium (section 23), the netherite chain's materials (section 24), GT++'s Algae Farm and Industrial Dehydrator (section 25), the netherite chain to the prismatic naquadah sheet (section 26), the Naquadah Fuel Refinery with MK III and MK IV (section 27), MK V and MK VI with coils T3 and T4 (section 28); issue #355 step 2: creon and mellion with fiery steel, fermium plasma and MK V's alternative (section 29); issue #355 step 4: the beamline with mu-metal, the Source Chamber, the Beam Crafter and UU matter (section 30), the Large Hadron Collider with its particles (section 31), the gravitational lens (section 32), the ZPIC with a second UMV hatch recipe (section 33); issue #627: gelid cryotheum and the mutated living solder, which replaces indalloy 140 in GTNH's places (`MUTATED_SOLDER_RECIPES`, section 46, inserted before 38 like 42-45); issue #630: GT++'s milling and flotation (section 47: IsaMill, Flotation Cell, the milled ores and froths of `FORK_MILLING.ores`, the netherrack froth's Poor Nether Waste, pine oil and xanthates, nefarious oil; technologies Milling and Flotation and Froth Processing); issue #617: GT's netherite chain from ancient debris (160's Nether Manual Mine) to the Naquarite foil, its users where the tier fits, the forming press and arc furnace fluid ports (section 48, technology Netherite); issue #634: the MV to EV superconductors, their solenoids and the Large Fluid Extractor's solenoid builds (section 49); loads after 159 and
+    loop (section 16); issue #406: the Nuclear Salt Processing Plant (section 17); issue #355: the Precise Assembler and the HiCs (section 18), the quantum anomaly and chromatic glass (section 19), the plasma forge's residue and Dimensionally Shifted Superfluid with the oganessons (section 20); issue #406: the Cold Trap II and RPU II with Pikyonium 64B (section 21); issue #356: the Mehen Belt's draconium (section 22), the depleted thorium fuel and praseodymium (section 23), the netherite chain's materials (section 24), GT++'s Algae Farm and Industrial Dehydrator (section 25), the netherite chain to the prismatic naquadah sheet (section 26), the Naquadah Fuel Refinery with MK III and MK IV (section 27), MK V and MK VI with coils T3 and T4 (section 28); issue #355 step 2: creon and mellion with fiery steel, fermium plasma and MK V's alternative (section 29); issue #355 step 4: the beamline with mu-metal, the Source Chamber, the Beam Crafter and UU matter (section 30), the Large Hadron Collider with its particles (section 31), the gravitational lens (section 32), the ZPIC with a second UMV hatch recipe (section 33); issue #627: gelid cryotheum and the mutated living solder, which replaces indalloy 140 in GTNH's places (`MUTATED_SOLDER_RECIPES`, section 46, inserted before 38 like 42-45); issue #630: GT++'s milling and flotation (section 47: IsaMill, Flotation Cell, the milled ores and froths of `FORK_MILLING.ores`, the netherrack froth's Poor Nether Waste, pine oil and xanthates, nefarious oil; technologies Milling and Flotation and Froth Processing); issue #617: GT's netherite chain from ancient debris (160's Nether Manual Mine) to the Naquarite foil, its users where the tier fits, the forming press and arc furnace fluid ports (section 48, technology Netherite); issue #623: the Dyson Swarm (section 50: modules, casings, the ground unit; its power and hourly loss in scripts/fork-power.lua, mod data `dyson`); loads after 159 and
+    loop (section 16); issue #406: the Nuclear Salt Processing Plant (section 17); issue #355: the Precise Assembler and the HiCs (section 18), the quantum anomaly and chromatic glass (section 19), the plasma forge's residue and Dimensionally Shifted Superfluid with the oganessons (section 20); issue #406: the Cold Trap II and RPU II with Pikyonium 64B (section 21); issue #356: the Mehen Belt's draconium (section 22), the depleted thorium fuel and praseodymium (section 23), the netherite chain's materials (section 24), GT++'s Algae Farm and Industrial Dehydrator (section 25), the netherite chain to the prismatic naquadah sheet (section 26), the Naquadah Fuel Refinery with MK III and MK IV (section 27), MK V and MK VI with coils T3 and T4 (section 28); issue #355 step 2: creon and mellion with fiery steel, fermium plasma and MK V's alternative (section 29); issue #355 step 4: the beamline with mu-metal, the Source Chamber, the Beam Crafter and UU matter (section 30), the Large Hadron Collider with its particles (section 31), the gravitational lens (section 32), the ZPIC with a second UMV hatch recipe (section 33); issue #627: gelid cryotheum and the mutated living solder, which replaces indalloy 140 in GTNH's places (`MUTATED_SOLDER_RECIPES`, section 46, inserted before 38 like 42-45); issue #630: GT++'s milling and flotation (section 47: IsaMill, Flotation Cell, the milled ores and froths of `FORK_MILLING.ores`, the netherrack froth's Poor Nether Waste, pine oil and xanthates, nefarious oil; technologies Milling and Flotation and Froth Processing); issue #617: GT's netherite chain from ancient debris (160's Nether Manual Mine) to the Naquarite foil, its users where the tier fits, the forming press and arc furnace fluid ports (section 48, technology Netherite); issue #628: GTNH's wetware, bio and optical boards (section 51: the chemical reactor routes, the PCB Factory at T1); issue #629: GT++'s cinobite A243 and octiron for the fusion reactor Mk-IV's coil, casing and controller (section 52; arcanite and titansteel with thaumium for Thaumcraft's crystal powders); issue #629 part 2: GT's attuned tengam (from Seth's raw tengam) for the UEV-UMV motors and voltage coils and proto-halkonite steel for the UIV motor, field generator and the space elevator's Mk-IV motor (section 53); issue #631 part 1: gtnhlanth's iodine (seaweed from the greenhouse, the Everglades' lautarite and perroudite) and GT's hafnium iodide route (section 54); issue #631 part 2: gtnhlanth's samarium ore concentrate chain (section 55); issue #631 part 3: gtnhlanth's rare earth ion extraction with 14 nano resins (section 56; the Deep-Dark-only ores' chains unlock in 161); issue #632: bromine, radium and curium (section 57); issue #633: kubatech's HTGR with its TRISO fuels and promethium (section 58); issue #712: NewHorizonsCoreMod's circuit boards from the coated to the multilayered printed board (section 58: GTNH's recipes and fluid twins, the gold foil with the good board at MV); issue #690: GT's insulation pulps, the PVC pulp from its sheets, the piles of PVC and PDMS pulp with the packager's split (section 59, before 38; 158's routes take GT's cable map); loads after 159 and
     before 161)
   - 161 dimension unlocks (issue #287: the unlock rules of 160, `ore_dimension` moves or gates the ore chains of the
     dimensions' ores, the ender air with Radon, black plutonium with the Void Miner II, the bornite chain with
@@ -335,14 +371,50 @@
     technology, the twins with the first plant's and the LV Miner's technology unless every vein technology is later, then
     163's `unlock_dimension_mines()`; devcheck fails for a placed vein of `FORK_ORE_MIXES` without its recipe and twins or
     with other ores (section CLASSICVEINS); `docs/ORE-VEINS.md`; loads after 165)
+  - 167 tips (issue #625: the Tips and tricks category `gregtorio`, a title tip and one tip per tier from steam to MAX
+    with the tier's goals after GTNH's quest lines, unlocked by the technology of the tier's science pack; the texts in
+    `locale/en/fork.cfg` link the technologies with rich text tags; `FORK_TIPS.describe_machines()` in data-final-fixes gives
+    every tiered machine `<tier>-<kind>` the description of its kind (locale [fork-machine]) unless it has its own
+    `entity-description`; devcheck fails for a shown machine without a description (`MACHINE_TYPES`); loads after 166)
   - 156 circuit icons (issue #164: the circuit variant recipes up to UV keep the shared tier item and show GT's texture
     of their GTNH item as recipe icon; devcheck fails for a tier circuit recipe without its own icon; issue #450: the ULV
     tier item `ulv-circuit`, which the vacuum tube and NAND chip recipes give and every former user of the two takes, and
     the nanoprocessor in the HV circuit assembler with its parts at HV)
+  - 169 single-block generators (issue #644, the decision on #638: GT's naquadah reactors Mark I-V as burner generators
+    on their one GT fuel each, with its own fuel category and the depleted part as burnt result, and the plasma
+    generators EV to UV as 136's fluid generators on the plasmas (mod data `fork-power`, no cooled fluid); one amp of
+    the tier (EU32), GT's efficiencies; unlocked after every input and the fuel (155's `unlock_after`, with 158's
+    fallback for items 155 does not know); loads after 156 and before 157)
+  - 170 smeltery (issue #613 part 3: the Tinkers-like smeltery, casting table with single-use clay casts and tool station
+    that gives #612's charges from a cast tool head; unlocked with 155's `unlock_after` over its own scan of the recipes,
+    each machine with its first recipe's inputs; loads after 169 and before 157)
   - 157 recycling (issue #190: GTNH's material recycling into dusts, ingots and melts for the items of crafting table
     recipes and the hulls, recipes `recycling-<machine>-<item>` in `FORK_RECYCLING.recipes`, unlocked late by
     `FORK_RECYCLING.unlock()` in data-final-fixes.lua because that file replaces and disables vanilla technologies;
-    devcheck checks the recipe shape and the blacklist)
+    devcheck checks the recipe shape and the blacklist; issue #670: every material block (`block-of-<material>` or
+    `<material>-block` whose recipe takes 9 of one item; melt from its solidifier recipe, mass and voltage from
+    `gt-parts-data.lua`) gets GT's recycling with 9 units and ProcessingBlock.java's recipes, `cut-<block>` (cutting
+    machine -> 9 plates, water, below IV; GT++ without fluid) and `hammer-<block>` (forge hammer -> 9 gems), the latter
+    two in `FORK_RECYCLING.blocks`, which 199's auto-unlock ignores; devcheck fails for a reachable material block that no
+    recipe takes unless it is in the allow-list `FORK_BLOCKS_DEAD_END` with its reason (section `BLOCKDEADOK`); issue #686:
+    GT's recycling of every material part (macerator, arc furnace, fluid extractor, alloy smelter with the mold, furnace)
+    from `prototypes/data/gtnh-recycling.lua`, which `devcheck.py check --gtnh-recycling` writes from the dump of
+    `tools/gtnh_dump/` through `tools/gtnh_map.py` (`recycling_imports`: GT's numbers in Gregtorio's units, a part that its
+    machine takes already left out); `check` fails when the table is out of date)
+  - 168 GTNH numbers (issue #689: GT New Horizons' tier, time, item amounts and chances for every recipe that has a GT
+    recipe with the same items and fluids in and out, from `prototypes/data/gtnh-numbers.lua`, which `devcheck.py check
+    --gtnh-numbers` writes from the dump of `tools/gtnh_dump/` through `tools/gtnh_map.py` (`numbers`; run it after a new
+    dump, a new recipe or a changed one, `check` says when the table is out of date); the tier both ways where a machine
+    runs GT's tier's category (issue #724: a raised recipe's unlock moves behind that machine; `FORK_GTNH_TIER_KEPT` keeps
+    a lower tier with its reason, section `GTNHTIERKEPT`, where Gregtorio needs the product before that machine;
+    `migrations/2026-11-01-issue-724-tier-raises.lua` reports the machines of an old save that lost such a recipe), not
+    the blast furnace's tier (its coil heat, #620), the fluid
+    amounts too (issue #671: `fi`/`fo`, a tenth of GT's litres, Gregtorio's rule; hand-built assembly line recipes the
+    dump does not match, 162's space elevator, the energy hatches, take a tenth of GT's litres by hand), not the crafting table (GT's tools merge recipes,
+    #688), not 157's recycling (GT's formulas on Gregtorio's recipes, #190), not the fusion reactor (#32), no time of a
+    hand recipe; devcheck fails for a matched recipe whose numbers in that scope differ from GT's unless it is in the
+    allow-list `FORK_GTNH_NUMBERS_KEPT` with its reason (section `GTNHKEPT`), and for one a later file changes again;
+    loads after 157 and before 150)
   - 150 molds (mold slot instead of mold ingredient; issue #316: the laser engravers' lens slot the same way, every
     `<material>-lens` item a module of the category `lens`; must load after every file that creates machines)
   - 190 manual-labor burner usage (fist icon in the fuel slot)
@@ -371,11 +443,15 @@
   me-network calls in its `on_init`; keep its table list and fingerprint function equal to me-network's
   `scripts/fork-me-handover.lua`). Everything else of the ME network (runtime, graphics, locale, its tests,
   `docs/AE2.md`, `docs/ME-REWORK.md`) is in the me-network repository; an ME change goes there, Gregtorio only changes
-  the compat file when a recipe or a tier changes. Tick intervals in use: `on_nth_tick` 30 (molds), 60 (#499: the Ore Drilling Plants' Drilling Fluid, `fork-ore-drills.lua`, `storage.fork_ore_drills`), 120 (solar boilers); `on_tick`
+  the compat file when a recipe or a tier changes. Tick intervals in use: `on_nth_tick` 5 (molds), 12 (#499: the Ore Drilling Plants' Drilling Fluid, `fork-ore-drills.lua`, `storage.fork_ore_drills`), 24 (solar boilers), 20 (#504: the Ender Tanks); issue #642: the molds, the plants and the solar boilers are checked in shares through `scripts/fork-batch.lua` (each entity once per 30, 60 and 120 ticks, a cursor beside its table in storage), so a megabase pays about the same every few ticks instead of one spike per period (3000 mold machines: 11 ms spikes -> 4 ms, 15 % more script time on average); a new periodic check over many entities does the same, and reads mod data once (its `data` builds the table on every read); `on_tick`
   (fork-power: turbine energy every tick, fuel check, output hatches and the supercapacitor loss every 10th tick);
   registrations for the same interval (or a second `on_tick`) overwrite each other, so a new periodic task picks a free
-  interval. The scripts keep their state lazy (`storage.fork_molds`, `storage.fork_power`).
-- `data-final-fixes.lua` disables vanilla techs (`disable_tech`: hidden, no effects). The main menu simulations that call
+  interval or runs from the handler that has it (issue #765: fork-wireless's 60-tick handler also calls
+  `fork-radiation`'s `M.tick()`); `devcheck.py check` fails for two registrations of one interval
+  (`check_tick_handlers`, which reads `control.lua` and `scripts/*.lua`). The scripts keep their state lazy (`storage.fork_molds`, `storage.fork_power`).
+- `data-final-fixes.lua` disables vanilla techs (`disable_tech`: hidden, no effects); issue #640: a vanilla technology
+  behind a disabled one is disabled too (`FORK-UNRESEARCHABLE` in the log), so no technology stands in the tree that can
+  never be researched. The main menu simulations that call
   `research_all_technologies()` get the bonuses of those techs from `prototypes/fork-menu-simulations.lua` (PR #65: the
   laser defense simulation's character died without them and its script stopped the menu); after changing the disabled
   techs or the character, run `python tools/devcheck/devcheck.py menusim --sim all --compare`. Issue #588: Gregtorio's
@@ -427,6 +503,15 @@
   `main_product` or a `[recipe-name]` entry, a new subgroup an `[item-subgroup-name]` entry. `devcheck.py check` fails for
   every shown prototype of this mod without a name (runtime names of `checkmod/control.lua`, keys of every loaded
   `locale/en`), except the allow-list `FORK_LOCALE_MISSING`; `--locale-out` writes the missing keys for `tools/gen_locale.py`.
+- Spoiling (issue #602): GT New Horizons has no spoiling; `data-final-fixes.lua` takes Space Age's spoiling off the Space
+  Age items Gregtorio makes (the UV science pack is the agricultural science pack), and `devcheck.py check` fails for an
+  item that spoils and that a reachable recipe makes, unless it is in the allow-list `FORK_SPOILING_KEPT` with its reason.
+- Space Age's recycling (issue #670): Factorio 2.1's built-in mod `recycler` generates a hidden recycling recipe of every
+  recipe and item (data-updates) for its Recycler, which Gregtorio cannot build; `data-final-fixes.lua` adds every recipe
+  of a category only the recycler runs to `VANILLA_RECIPES_REMOVED` (`FORK-REMOVED`, technology effects and tips with
+  them) and deletes the recycler's item and entity (`FORK-RECYCLER` in the log). Nothing else in 2.1 reads those
+  recipes (the item tooltips and Factoriopedia show them through `factoriopedia_recycling_recipe_categories`).
+  `devcheck.py check` fails for a recipe of the recycler's categories that is left.
 - Cheap research: the startup setting `gregtorio-continued-one-pack-research` (default off) makes every technology with
   science packs cost one research unit with one pack of each kind (`prototypes/fork-one-pack-research.lua`, required last
   in `data-final-fixes.lua`, after everything that sets unit counts). `devcheck.py all` loads the mod a second time with
@@ -459,6 +544,50 @@
   watts follow the setting; `devcheck.py all` loads `check` and `runtime` once more with `--set
   gregtorio-continued-boiler-output=4` (`--set` takes numbers for double and int settings); the runtime's coal boiler and
   solar boiler tests measure steam per second against the setting. At 16 every fluid box carries the flow (probed).
+- GT overclocking (issue #616): the startup setting `gregtorio-continued-gt-overclocking` (default off) makes every
+  electric assembling machine and furnace with a crafting speed of 2 or more draw its power times 2^floor(log2(speed)),
+  so the power quadruples per tier (GT's overclock: a recipe costs twice its energy per tier above its own) instead of
+  doubling (`prototypes/fork-gt-overclocking.lua`, required from `data-final-fixes.lua` after the machines; section
+  OVERCLOCK). `devcheck.py all` loads `check` and `runtime` once more with it on.
+- Blast furnace heat (issue #620, `prototypes/fork-ebf-heat.lua` in data-final-fixes before fork-maintenance,
+  `scripts/fork-ebf-heat.lua`): the 12 heating coil blocks become `module`s (category `heating-coil`, same names) and
+  every `<tier>-electric-blast-furnace` a coil slot; heat = slot coil (empty: the coil of its item recipe) + 100 K per
+  tier above MV. Recipe heat: `prototypes/data/gtnh-ebf-heat.lua` (written by `devcheck.py check --gtnh-heat`: `heat`
+  GT's special value of the matched recipes, `cap` the heat reached at the recipe's unlock where GT's is higher, #742),
+  else the tier's coil. The bonus is a hidden beacon (`fork-ebf-heat-beacon`, supply distance 0, at the furnace's centre)
+  with one of the hidden `fork-ebf-heat-bonus-<k>-<n>` modules; a beacon's module acts only on a machine whose
+  `allowed_module_categories` has its category (probed), so the furnaces allow the bonus category. Section EBFHEAT
+  (the reach check: some furnace with a coil made at the recipe's technology has its heat; FORK_EBF_HEAT_LATE), runtime
+  EBFHEAT test. Recipe categories in 2.1 data are `categories` (`fork_category(r)`); the script keeps each recipe's
+  tier in its mod data instead of reading a runtime category.
+- Wireless energy (issue #622, `prototypes/173-fork-wireless.lua`, `scripts/fork-wireless.lua`): per tier UHV to UXV a
+  `<tier>-wireless-dynamo-hatch` (EEI, secondary-input) and `<tier>-wireless-energy-hatch` (EEI, tertiary output), at
+  136's four-amp cap; every 60 ticks the script moves the dynamos' buffers into `storage.fork_wireless.accounts[force]`
+  and fills the energy hatches from it (remote `fork-wireless.account`). GT's UMV assembly line recipe runs in the ZPM
+  assembly line (Gregtorio's last); the technology `wireless-energy` takes the first technology of every input as a
+  prerequisite (155's unlock_after found none after all of them). Runtime WIRELESS test (two surfaces).
+- Radiation (issue #621): the startup setting `gregtorio-continued-radiation` (default off). `tools/gt_radioactivity.py`
+  parses GT5-Unofficial's source (GT materials with the radioactivity enchantment, bartworks' `setRadioactive`, GT++'s
+  radiation levels with its alloy average) into the committed `tools/gtnh_dump/gt-radioactivity.json`;
+  `devcheck.py check --radioactive` maps it through the dump's items (tools/gtnh_map.py `radioactive`, plus the fuel
+  rods by name) onto `prototypes/data/radioactive.lua`. 172 makes the Hazmat Suit (armor needs `infinite = true` or a
+  durability in 2.1), `prototypes/fork-radiation.lua` (data-final-fixes) the mod data, `scripts/fork-radiation.lua`
+  damages each connected player's character every 60 ticks (remote `fork-radiation.check` for the runtime test).
+  Section RADIATION; `devcheck.py all`'s overclocking stage loads it on too.
+- Maintenance (issue #618): the startup setting `gregtorio-continued-maintenance` (default off). 171 makes the kits
+  (`maintenance-kit`, `duct-tape`: modules of the category `maintenance` with no effect) and their recipes in the data
+  stage; `prototypes/fork-maintenance.lua` (from `data-final-fixes.lua`) defines the category only then (150 gives the
+  machines that take every module every category by name) and gives every crafting multiblock one more module slot
+  of it (`FORK_MAINTENANCE.multiblocks()`: electric assembling machines and furnaces whose item is in a `*multiblocks`
+  subgroup or whose item recipe takes a `*-controller`, an energy hatch or another multiblock: the blast furnaces'
+  items are in the crafting menu's subgroups) (a machine without slots gets `allowed_effects = {"consumption"}`
+  and no beacon effects: the engine rejects slots without any allowed effect); section MAINT. `scripts/fork-maintenance.lua`
+  counts each machine's running time in shares (fork-batch) and takes a kit per 2 hours, or stops it
+  (`disabled_by_script`, custom status) until one is in the slot; remote `fork-maintenance` (`state`, `set_left`) for the
+  runtime's maintenance test. `devcheck.py all`'s overclocking stage loads it on too.
+- Stopping a machine from a script: `scripts/fork-stop.lua` (`set(entity, reason, status)`, status nil takes the reason
+  back): the machine runs again only when no reason is left. The molds, the maintenance and the space elevator use it;
+  a new script that sets `disabled_by_script` on assembling machines should too.
 - Generators (`generator` prototypes that burn fluids by fuel value, 136) are demand driven; an
   input-output fluid box keeps part of its fluid in the pipeline segment (`get_fluid_count` reports
   only the entity's part; since Factorio 2.1 `get_fluid_segment_fluid` is the whole segment with that part, where 2.0's
@@ -470,7 +599,8 @@
   missing item icons from `tools/gen_icons.py` (a placeholder; the real icon from GT textures with
   `tools/gen_gt_icons.py` after adding the item to `tools/gt-icon-items.txt`; `tools/gen_icons.py --drawn` writes the graphics
   drawn as code where GT has no texture, issue #431: the cauldron), technology icons from
-  `tools/gen_tech_icons.py` (`tools/tech-icons.tsv`), missing names from `tools/gen_locale.py`.
+  `tools/gen_tech_icons.py` (`tools/tech-icons.tsv`; issue #639: devcheck fails for a shown prototype with the NYI
+  placeholder icon unless it is in `FORK_NYI_ICONS` of 199), missing names from `tools/gen_locale.py`.
   Check graphics changes with the contact sheets of `tools/gen_review_sheet.py`.
 - **Machine names are GTNH's** (issue #156): a new machine, multiblock or controller takes the name GT New Horizons
   gives it, from the `en_US.lang` files of GT5-Unofficial (`src/main/resources/assets/*/lang/en_US.lang`, or the name
@@ -489,6 +619,26 @@
   is first loaded once with Gregtorio v0.5.2 and me-network v0.5.0, because me-network 0.5.1 refuses it, issue #209). See
   `tools/devcheck/README.md`. Runtime maps use a fixed seed and a cleared test area, so a red run is
   reproducible (`--seed <printed seed>`) and never bad luck; `--seed random` checks other terrain.
+- Graphics of issue #654: `tools/gen_fluid_icons.py --gt <GT5-Unofficial>` (after a `devcheck.py check`) matches the
+  shown fluids with GT's, GT++'s and GoodGenerator's fluid textures (by name, molten/plasma prefixes, ALIASES, SKIP for
+  the black oil textures), writes graphics/fluids/<fluid>.png through `gen_gt_icons.py --fluid`, lists them in
+  `prototypes/data/fluid-icons.lua` (196 applies it) and every fluid's texture or reason in `tools/fluid-textures.tsv`;
+  run it again after adding fluids. `tools/gen_vein_ore_sheets.py` writes one effect sheet per GT icon set of the vein
+  ores (`graphics/entity/fork/gt-ore-<set>.png`, sets with the same texture share one; the GT ore texture on the stone
+  sheet's alpha, grey) and `prototypes/data/vein-ore-sets.lua`; 165 draws it as the resource's `stages_effect`, tinted in
+  the material's colour, over the stone lumps in grey. The Ender sprites and the godforge's star (a working
+  visualisation with a light) are `gen_icons.py --drawn`.
+- Desync (issue #651): `devcheck.py desync` (part of `all`; `all --no-desync` leaves it out, as the CI of a pull request
+  does) runs the runtime map on a headless server with nobody connected (`auto_pause` off) in Factorio's heavy mode
+  (`/toggle-heavy-mode` over RCON: each tick the game is saved, loaded and run on both copies; a difference logs
+  `Heavy mode check <point> failed` and writes `dumps/` in the write data) for `--desync-ticks` (600, ~0.5 s a tick).
+  Probed: a script state outside `storage` that changes the world (a local counter that builds) fails at once; one that
+  only writes `storage` does not. A headless Factorio cannot join a game as a client, so there is no two-process run.
+  The scripts' player paths take a player object: `scripts/fork-stand-in.lua` makes a stand-in player (index, character,
+  teleport, `gui.relative` with stand-in elements) and the remotes `fork-portals.stand_in_step`,
+  `fork-ender.stand_in_panel` and `fork-electric-mine.stand_in_pre_build` drive them (runtime PLAYER test). A new player
+  path keeps its LuaPlayer use to what the stand-in has, or extends it. The first Lua command over RCON only warns
+  (achievements): send it twice.
 - Every referenced `__gregtorio-continued__/...` file must exist (headless Factorio does not check
   graphics, the real game crashes on missing files).
 - The mod is `gregtorio-continued` (Gregtorio Continued) since 0.3.0, in the repo and on the mod

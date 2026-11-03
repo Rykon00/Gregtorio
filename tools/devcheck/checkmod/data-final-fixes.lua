@@ -13,8 +13,9 @@ end
 
 --- R recipe category enabled ingredients results hidden hide_from_player_crafting subgroup group
 --- C crafter type categories fluid_in fluid_out
---- I item type place_result uses | F fluid | T tech prereqs unlocks science trigger enabled
----   (uses, issue #547: what an item does besides being an ingredient: fuel, tile, equipment, plant)
+--- I item type place_result uses spoil_ticks | F fluid | T tech prereqs unlocks science trigger enabled count
+---   (uses, issue #547: what an item does besides being an ingredient: fuel, tile, equipment, plant; spoil_ticks, issue
+---   #602: 0 for an item that does not spoil)
 --- M resource result results category | O offshore-pump fluid
 local dump = {}
 local function D(...) dump[#dump + 1] = table.concat({ ... }, "\t") end
@@ -56,7 +57,7 @@ for t, _ in pairs(defines.prototypes.item) do
 		if it.place_as_tile then uses[#uses + 1] = "tile" end
 		if it.place_as_equipment_result then uses[#uses + 1] = "equipment" end
 		if it.plant_result then uses[#uses + 1] = "plant" end
-		D("I", n, t, it.place_result or "", table.concat(uses, ","))
+		D("I", n, t, it.place_result or "", table.concat(uses, ","), tostring(it.spoil_ticks or 0))
 	end
 end
 for n, _ in pairs(data.raw.fluid) do D("F", n) end
@@ -66,7 +67,7 @@ for n, tech in pairs(data.raw.technology) do
 	if tech.unit then for _, i in pairs(tech.unit.ingredients or {}) do ing[#ing + 1] = i[1] or i.name end end
 	local trig = tech.research_trigger and serpent.line(tech.research_trigger) or ""
 	D("T", n, table.concat(tech.prerequisites or {}, ","), table.concat(eff, ","), table.concat(ing, ","), trig,
-		tostring(tech.enabled ~= false and not tech.hidden))
+		tostring(tech.enabled ~= false and not tech.hidden), tostring(tech.unit and tech.unit.count or ""))
 end
 for n, e in pairs(data.raw.resource) do
 	local m = e.minable or {}
@@ -194,6 +195,110 @@ local to = {}
 for name, reason in pairs(FORK_TRIGGER_ONLY_ITEMS or {}) do to[#to + 1] = name .. "\t" .. reason end
 section("TRIGGERONLYOK", to)
 
+--- Issue #616: the machines GT overclocking changed (prototypes/fork-gt-overclocking.lua) with their factor, and every
+--- electric crafting machine with its crafting speed; the first row says whether the setting is on (absent in older versions)
+local oc = {}
+if FORK_GT_OVERCLOCKING then
+	oc[1] = "setting\t" .. tostring(FORK_GT_OVERCLOCKING.on)
+	for _, t in pairs({ "assembling-machine", "furnace" }) do
+		for name, e in pairs(data.raw[t] or {}) do
+			if e.energy_source and e.energy_source.type == "electric" then
+				oc[#oc + 1] = name .. "\t" .. tostring(e.crafting_speed or 1) .. "\t" .. tostring(FORK_GT_OVERCLOCKING.changed[name] or 1)
+			end
+		end
+	end
+end
+section("OVERCLOCK", oc)
+
+--- Issue #618: every crafting machine with whether it is a crafting multiblock (FORK_MAINTENANCE.multiblocks), whether it allows
+--- the module category maintenance and whether prototypes/fork-maintenance.lua listed it; the first row: the setting
+local mt = {}
+if FORK_MAINTENANCE then
+	mt[1] = "setting	" .. tostring(FORK_MAINTENANCE.on)
+	--- (the rule once more after every file: a machine made after fork-maintenance.lua would be missing)
+	local multi = FORK_MAINTENANCE.multiblocks and FORK_MAINTENANCE.multiblocks() or {}
+	for _, t in pairs({ "assembling-machine", "furnace" }) do
+		for name, e in pairs(data.raw[t] or {}) do
+			local allows = false
+			for _, c in pairs(e.allowed_module_categories or {}) do allows = allows or c == "maintenance" end
+			mt[#mt + 1] = name .. "	" .. tostring(multi[name] or false) .. "	" .. tostring(allows) .. "	"
+				.. tostring(FORK_MAINTENANCE.machines[name] or false)
+		end
+	end
+end
+section("MAINT", mt)
+
+--- Issue #620: the heating coils with their heat, the blast furnaces with their tier, their coil and their categories, the
+--- blast furnace recipes with their heat and whether it is GT's (prototypes/fork-ebf-heat.lua; absent in older versions)
+local eh = {}
+if FORK_EBF_HEAT then
+	for name, heat in pairs(FORK_EBF_HEAT.coils) do eh[#eh + 1] = "coil\t" .. name .. "\t" .. heat end
+	for name, m in pairs(FORK_EBF_HEAT.machines) do
+		local e = data.raw["assembling-machine"][name]
+		local slot = false
+		for _, c in pairs(e.allowed_module_categories or {}) do slot = slot or c == "heating-coil" end
+		eh[#eh + 1] = "machine\t" .. name .. "\t" .. m.tier .. "\t" .. m.coil .. "\t" .. table.concat(e.crafting_categories, ",")
+			.. "\t" .. tostring(slot or e.allowed_module_categories == nil) .. "\t" .. (e.module_slots or 0)
+	end
+	for name, r in pairs(data.raw.recipe) do
+		if fork_category(r):match("electric%-blast%-furnace%-recipes$") then
+			eh[#eh + 1] = "recipe\t" .. name .. "\t" .. fork_category(r) .. "\t" .. tostring(FORK_EBF_HEAT.recipes[name] or "")
+				.. "\t" .. tostring(FORK_EBF_HEAT.from_gt[name] or false)
+		end
+	end
+end
+section("EBFHEAT", eh)
+local ehl = {}
+for name, why in pairs(FORK_EBF_HEAT_LATE or {}) do ehl[#ehl + 1] = name .. "	" .. why end
+section("EBFHEATLATE", ehl)
+
+--- Issue #621: the radiation setting, the radioactive items of the mod data with their level, the protecting armors
+--- (prototypes/fork-radiation.lua; absent in older versions)
+local rad = {}
+if FORK_RADIATION then
+	rad[1] = "setting\t" .. tostring(FORK_RADIATION.on)
+	for name, level in pairs(FORK_RADIATION.items or {}) do rad[#rad + 1] = "item\t" .. name .. "\t" .. level end
+	for _, name in pairs(FORK_RADIATION.protect or {}) do rad[#rad + 1] = "armor\t" .. name end
+end
+section("RADIATION", rad)
+
+--- Issue #602: the items that spoil on purpose (FORK_SPOILING_KEPT in data-final-fixes.lua; absent in older versions)
+local sk = {}
+for name, reason in pairs(FORK_SPOILING_KEPT or {}) do sk[#sk + 1] = name .. "\t" .. reason end
+section("SPOILOK", sk)
+--- Issue #605: the technologies whose counts prototypes/138-fork-research-balance.lua sets (the bands of the research count
+--- rule) and the ones outside their band on purpose (FORK_RESEARCH_OUTLIERS; both absent in older versions)
+local rc, ro = {}, {}
+for name, count in pairs(FORK_RESEARCH_BALANCE and FORK_RESEARCH_BALANCE.counts or {}) do rc[#rc + 1] = name .. "\t" .. count end
+for name, reason in pairs(FORK_RESEARCH_OUTLIERS or {}) do ro[#ro + 1] = name .. "\t" .. reason end
+section("RESEARCHCOUNTS", rc)
+section("RESEARCHOK", ro)
+--- Issue #639: the icon files of Gregtorio's own graphics on technologies, items, fluids and recipes (class, name, files),
+--- for devcheck's rule against the NYI placeholder; and the ones that keep it on purpose (FORK_NYI_ICONS of
+--- prototypes/199-fork-finalize.lua, absent in older versions)
+local ic, nk = {}, {}
+local function icon_files(p)
+	local files = {}
+	if p.icon then files[#files + 1] = p.icon end
+	for _, layer in pairs(p.icons or {}) do files[#files + 1] = layer.icon end
+	local own = {}
+	for _, f in pairs(files) do if f:find("__gregtorio-continued__/", 1, true) == 1 then own[#own + 1] = f end end
+	return own
+end
+local function icon_rows(class, list)
+	for name, p in pairs(list or {}) do
+		local own = icon_files(p)
+		if #own > 0 then ic[#ic + 1] = class .. "\t" .. name .. "\t" .. table.concat(own, ",") end
+	end
+end
+icon_rows("technology", data.raw.technology)
+icon_rows("fluid", data.raw.fluid)
+icon_rows("recipe", data.raw.recipe)
+for t, _ in pairs(defines.prototypes.item) do icon_rows("item", data.raw[t]) end
+for name, reason in pairs(FORK_NYI_ICONS or {}) do nk[#nk + 1] = name .. "\t" .. reason end
+section("ICONS", ic)
+section("NYIOK", nk)
+
 --- Issue #318: the vanilla recipes without a technology, of items Gregtorio makes, that stay on purpose
 --- (FORK_VANILLA_RECIPES_KEPT in data-final-fixes.lua; absent in older versions)
 local vk = {}
@@ -209,7 +314,8 @@ section("ENGRAVERNOLENS", nl)
 --- Issue #335: the Manual Mine and Dig Site recipes, their electric twins (FORK_ELECTRIC_MINE.twins in
 --- prototypes/163-fork-electric-mine.lua; issue #337: FORK_ELECTRIC_MINE.miner_twins of the miners) and the ones without
 --- a twin on purpose (FORK_ELECTRIC_MINE_EXCLUDED); one row per name: name, "manual" or "-", the twin or "-", the
---- allow-list reason, the miners' twin or "-" (absent in older versions)
+--- allow-list reason, the miners' twin or "-" (absent in older versions); issue #758: the surface conditions of the
+--- recipe and of its twins when they differ, else ""
 local em, em_seen = {}, {}
 local function em_row(name)
 	if em_seen[name] then return end
@@ -218,8 +324,12 @@ local function em_row(name)
 	local r, twin, miner = data.raw.recipe[name], (fem.twins or {})[name], (fem.miner_twins or {})[name]
 	local cat = r and r.categories and r.categories[1]
 	local manual = cat == "manual-mine-recipes" or cat == "manual-digsite-recipes"
+	local function sc(x) return x and x.surface_conditions and serpent.line(x.surface_conditions) or "-" end
+	local own, t1, t2 = sc(r), sc(twin and data.raw.recipe[twin]), sc(miner and data.raw.recipe[miner])
+	local differ = (twin and t1 ~= own) or (miner and t2 ~= own)
 	em[#em + 1] = table.concat({ name, manual and "manual" or "-", (twin and data.raw.recipe[twin]) and twin or "-",
-		(FORK_ELECTRIC_MINE_EXCLUDED or {})[name] or "", (miner and data.raw.recipe[miner]) and miner or "-" }, "\t")
+		(FORK_ELECTRIC_MINE_EXCLUDED or {})[name] or "", (miner and data.raw.recipe[miner]) and miner or "-",
+		differ and (own .. " / " .. t1 .. " / " .. t2) or "" }, "\t")
 end
 for name, r in pairs(data.raw.recipe) do
 	local cat = r.categories and r.categories[1]
@@ -355,6 +465,22 @@ for item, why in pairs(FORK_RECYCLING_BLACKLIST or {}) do
 	rb[#rb + 1] = item .. "\t" .. tostring(why or "") .. "\t" .. tostring(data.raw.item[item] ~= nil or data.raw.tool[item] ~= nil)
 end
 section("RECYCLEBLACK", rb)
+--- Issue #670 (prototypes/157-fork-recycling.lua): the material blocks that stay a dead end on purpose, with their reasons
+local bd = {}
+for item, why in pairs(FORK_BLOCKS_DEAD_END or {}) do bd[#bd + 1] = item .. "\t" .. tostring(why or "") end
+section("BLOCKDEADOK", bd)
+--- Issue #689 (prototypes/168-fork-gtnh-numbers.lua): the recipes that keep their own numbers against GT's, with their reasons
+local gk = {}
+for recipe, why in pairs(FORK_GTNH_NUMBERS_KEPT or {}) do gk[#gk + 1] = recipe .. "\t" .. tostring(why or "") end
+section("GTNHKEPT", gk)
+--- Issue #724: the recipes that keep their tier below GT's, with their reasons
+local gtk = {}
+for recipe, why in pairs(FORK_GTNH_TIER_KEPT or {}) do gtk[#gtk + 1] = recipe .. "\t" .. tostring(why or "") end
+section("GTNHTIERKEPT", gtk)
+--- Issue #687 (prototypes/158-fork-gt-parts.lua): GT's part routes 158 left out (no technology after their inputs)
+local rs = {}
+for recipe, why in pairs((FORK_GT_PARTS or {}).routes_skipped or {}) do rs[#rs + 1] = recipe .. "\t" .. tostring(why) end
+section("GTROUTESKIP", rs)
 
 --- Every __gregtorio-continued__/ file referenced anywhere, with its owner prototype
 local paths, seen = {}, {}
@@ -474,6 +600,8 @@ for n, r in pairs(data.raw.recipe) do
 		-- have it; `categories` all of them)
 		kind = "recipe", name = n, category = (r.categories or { "crafting" })[1], categories = r.categories or { "crafting" },
 		time = r.energy_required or 0.5,
+		-- (issue #759: the time before 168 set GT's, when it did)
+		own_time = FORK_GTNH_NUMBERS and FORK_GTNH_NUMBERS.own_time and FORK_GTNH_NUMBERS.own_time[n],
 		enabled = r.enabled ~= false, hidden = r.hidden == true,
 		ingredients = stacks(r.ingredients), results = stacks(r.results),
 	})

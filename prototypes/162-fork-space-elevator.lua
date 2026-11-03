@@ -23,9 +23,9 @@
 ---     wafers (Gregtorio's chips); OpenBlocks' elevator (the research item and an ingredient) has no counterpart;
 ---   * the nanotube spool's 4 x 64 16x graphene wires -> 256 graphene wires (the mod has no 16x wire); its cleanroom is
 ---     not built;
----   * mutated living solder (motors Mk-III to Mk-V) -> molten indalloy 140, as everywhere in the mod; dimensionally
+---   * mutated living solder (motors Mk-III to Mk-V): GT's since issue #627 (164 section 46; indalloy 140 before); dimensionally
 ---     shifted superfluid -> super coolant; the Mk-IV motor's proto-halkonite plate -> osmiridium, the plate of the
----     other motors.
+---     other motors (since issue #629 GT's proto-halkonite steel plate, 164 section 53).
 --- Loads after 160 (data.lua) and before 142, whose tree check sees the technologies.
 --------------------------------------------------------------------------------
 
@@ -34,8 +34,10 @@ local FORK_ICON = "__gregtorio-continued__/graphics/icons/fork/"
 local SPRITE_PATH = "__gregtorio-continued__/graphics/entity/fork/"
 local function item(name, amount) return { type = "item", name = name, amount = amount } end
 local function fluid(name, amount) return { type = "fluid", name = name, amount = amount } end
+--- issue #671: the amounts below that come from GT's recipes are GT's litres; Gregtorio's rule is a tenth of them
+local function gtl(name, litres) return fluid(name, litres / 10) end
 local AL = "zpm-assembly-line-recipes"
-local INDALLOY = fluid("molten-indalloy-140", 5760)   -- GT: 40 ingots
+local INDALLOY = gtl("molten-indalloy-140", 5760)   -- GT: 40 ingots (576 here)
 local SUBGROUP = "subgroup-uhv-age-multiblocks"
 
 local function part(name, category, seconds, ingredients, amount, subgroup)
@@ -58,27 +60,27 @@ end
 local parts = {
 	part("space-elevator-base-casing", AL, 60 * UV_SPEED, {
 		item("neutronium-frame", 8), item("palladium-screw", 32), item("osmiridium-plate", 64), item("uhv-circuit", 4),
-		item("uv-piston", 2), item("cosmic-neutronium-ring", 8), INDALLOY, fluid("molten-iridium", 1152),
+		item("uv-piston", 2), item("cosmic-neutronium-ring", 8), INDALLOY, gtl("molten-iridium", 1152),
 	}, 8),
 	part("space-elevator-support-structure", AL, 60 * UV_SPEED, {
 		item("neutronium-frame", 8), item("naquadria-bolt", 16), item("long-neutronium-rod", 8),
-		item("double-osmiridium-plate", 8), INDALLOY, fluid("molten-iridium", 1440),
+		item("double-osmiridium-plate", 8), INDALLOY, gtl("molten-iridium", 1440),
 	}, 8),
 	part("space-elevator-internal-structure", AL, 60 * UV_SPEED, {
 		item("uv-machine-casing", 8), item("palladium-bolt", 16), item("double-neutronium-plate", 8), item("concrete", 10),
 		INDALLOY,
 	}, 8),
 	part("nanotube-spool", "zpm-assembling-machine-recipes", 60 * ZPM_SPEED, {
-		item("graphene-wire", 256), fluid("advanced-glue", 720),
+		item("graphene-wire", 256), gtl("advanced-glue", 720),
 	}),
-	part("space-elevator-cable", "uhv-assembling-machine-recipes", 120 * UHV_SPEED, {
-		item("nanotube-spool", 64), item("uhv-circuit", 4), fluid("super-glue", 8000),
+	part("space-elevator-cable", "uv-assembling-machine-recipes", 120 * UV_SPEED, {   -- (issue #624: UV, GTNH's tier)
+		item("nanotube-spool", 64), item("uhv-circuit", 4), gtl("super-glue", 8000),
 	}),
 	part("space-elevator-controller", AL, 300 * UHV_SPEED, {
 		item("neutronium-frame", 64), item("uv-field-generator", 16), item("uhv-circuit", 16),
 		item("dense-neutronium-plate", 32), item("ppic-wafer", 64), item("cosmic-neutronium-screw", 64),
-		item("uv-motor", 32), item("space-elevator-base-casing", 8), INDALLOY, fluid("lubricant", 32000),
-		fluid("molten-neutronium", 1440),
+		item("uv-motor", 32), item("space-elevator-base-casing", 8), INDALLOY, gtl("lubricant", 32000),
+		gtl("molten-neutronium", 1440),
 	}),
 }
 
@@ -93,8 +95,8 @@ local MOTORS = {
 local motors = {}
 for t, m in ipairs(MOTORS) do
 	local fluids = t <= 2
-		and { INDALLOY, fluid("molten-naquadria", 1440), fluid("lubricant", 16000) }
-		or { fluid("molten-indalloy-140", 2880), fluid("molten-naquadria", 1440), fluid("super-coolant", 24000) }
+		and { INDALLOY, gtl("molten-naquadria", 1440), gtl("lubricant", 16000) }
+		or { gtl("molten-indalloy-140", 2880), gtl("molten-naquadria", 1440), gtl("super-coolant", 24000) }
 	local ingredients = { item("space-elevator-base-casing", 1), item(m[1], 4), item(m[2] .. "-ring", 8),
 		item(m[2] .. "-rod", 4), item(m[3], 1), item(m[4] .. "-screw", 16), item("osmiridium-plate", 16) }
 	for _, f in pairs(fluids) do ingredients[#ingredients + 1] = f end
@@ -125,8 +127,8 @@ for t = 1, 5 do
 	create_item{
 		name = name,
 		icon = FORK_ICON .. name .. ".png",
-		category = "uhv-assembling-machine-recipes",
-		energy_required = 300 * UHV_SPEED,
+		category = t == 1 and "uv-assembling-machine-recipes" or "uhv-assembling-machine-recipes",   -- (#624: Mk-I at UV)
+		energy_required = 300 * (t == 1 and UV_SPEED or UHV_SPEED),
 		subgroup = SUBGROUP,
 		stack_size = 1,
 		place_result = name,
@@ -158,11 +160,15 @@ data:extend({ { type = "mod-data", name = "fork-space-elevator", data = MODDATA 
 --- TECHNOLOGIES (GT researches the controller from OpenBlocks' elevator and each motor from the one before)
 --------------------------------------------------------------------------------
 
---- GT's parts are a tier later here (cosmic neutronium comes with Quantium at UEV, infinity with the UEV materials,
---- transcendent metal UIV, spacetime UMV, universium UXV): each technology follows the materials it takes (#252's rule,
---- the consumer moves to its producer's technology when the producer's chain is late)
-F.tech{ name = "space-elevator", prerequisites = { "uhv-components", "wetware-processor-mainframes", "uhv-machines",
-	"quantium", "super-glue" }, packs = 10, count = 50, time = 60, recipes = F.join(parts, { motors[1], elevators[1] }) }
+--- GT's parts are a tier later here (infinity with the UEV materials, transcendent metal UIV, spacetime UMV, universium
+--- UXV): each technology follows the materials it takes (#252's rule, the consumer moves to its producer's technology
+--- when the producer's chain is late). Issue #624 (the maintainer's decision): the elevator itself at GTNH's tier, UV:
+--- cosmic neutronium (its screws and rings) comes with the technology Cosmic Neutronium after the Void Miner III, which
+--- mines it (Horus), instead of Quantium (142, 161), and the cable and the Mk-I elevator are UV assembler recipes
+F.tech{ name = "cosmic-neutronium", prerequisites = { "void-miner-iii", "uv-machines" }, packs = 9, count = 50, time = 60,
+	recipes = {} }
+F.tech{ name = "space-elevator", prerequisites = { "uhv-components", "wetware-processor-mainframes", "uv-machines",
+	"cosmic-neutronium", "super-glue" }, packs = 9, count = 50, time = 60, recipes = F.join(parts, { motors[1], elevators[1] }) }
 local PACKS = { 10, 10, 11, 12, 13 }
 local AFTER = { nil, "uev-materials", "uiv-materials", "umv-materials", "uxv-materials" }
 for t = 2, 5 do
@@ -233,29 +239,29 @@ local CONSUMABLE = { "steel", "steel", "titanium", "titanium", "tungstensteel", 
 local PLATING = { "steel", "steel", "titanium", "tungstensteel", "iridium", "osmiridium", "naquadah-alloy", "neutronium",
 	"cosmic-neutronium", "infinity", "infinity", "infinity", "infinity" }
 local DRONES = {
-	{ "titanium", 16, 2, "processing-unit", { fluid("soldering-alloy", 720) } },   -- (Gregtorio's HV circuit)
-	{ "tungstensteel", 32, 4, "ev-circuit", { fluid("soldering-alloy", 1440) } },
-	{ "iridium", 32, 4, "iv-circuit", { fluid("soldering-alloy", 1440) } },
+	{ "titanium", 16, 2, "processing-unit", { gtl("soldering-alloy", 720) } },   -- (Gregtorio's HV circuit)
+	{ "tungstensteel", 32, 4, "ev-circuit", { gtl("soldering-alloy", 1440) } },
+	{ "iridium", 32, 4, "iv-circuit", { gtl("soldering-alloy", 1440) } },
 	{ "trinium", 32, 4, "luv-circuit",
-		{ fluid("molten-indalloy-140", 720), fluid("molten-iridium", 720), fluid("lubricant", 16000) } },
+		{ gtl("molten-indalloy-140", 720), gtl("molten-iridium", 720), gtl("lubricant", 16000) } },
 	{ "naquadah-alloy", 32, 4, "zpm-circuit",
-		{ fluid("molten-indalloy-140", 1440), fluid("molten-iridium", 1440), fluid("lubricant", 32000) } },
+		{ gtl("molten-indalloy-140", 1440), gtl("molten-iridium", 1440), gtl("lubricant", 32000) } },
 	{ "naquadria", 32, 4, "zpm-circuit",
-		{ fluid("molten-indalloy-140", 2880), fluid("molten-osmiridium", 1440), fluid("lubricant", 64000) } },
+		{ gtl("molten-indalloy-140", 2880), gtl("molten-osmiridium", 1440), gtl("lubricant", 64000) } },
 	{ "neutronium", 32, 4, "uv-circuit",
-		{ fluid("molten-indalloy-140", 2880), fluid("molten-osmiridium", 1440), fluid("lubricant", 128000) } },
+		{ gtl("molten-indalloy-140", 2880), gtl("molten-osmiridium", 1440), gtl("lubricant", 128000) } },
 	{ "cosmic-neutronium", 32, 4, "uhv-circuit",
-		{ fluid("molten-indalloy-140", 2880), fluid("molten-naquadria", 1440), fluid("lubricant", 256000) } },
+		{ gtl("molten-indalloy-140", 2880), gtl("molten-naquadria", 1440), gtl("lubricant", 256000) } },
 	{ "infinity", 32, 4, "uev-circuit",
-		{ fluid("molten-indalloy-140", 2880), fluid("molten-neutronium", 1440), fluid("lubricant", 512000) } },
+		{ gtl("molten-indalloy-140", 2880), gtl("molten-neutronium", 1440), gtl("lubricant", 512000) } },
 	{ "cosmic-neutronium", 32, 8, "uiv-circuit",
-		{ fluid("molten-indalloy-140", 2880), fluid("molten-quantium", 1440), fluid("lubricant", 512000) } },
+		{ gtl("molten-indalloy-140", 2880), gtl("molten-quantium", 1440), gtl("lubricant", 512000) } },
 	{ "cosmic-neutronium", 64, 16, "umv-circuit",
-		{ fluid("molten-indalloy-140", 5760), fluid("molten-quantium", 2880), fluid("lubricant", 512000) } },
+		{ gtl("molten-indalloy-140", 5760), gtl("molten-quantium", 2880), gtl("lubricant", 512000) } },
 	{ "spacetime", 128, 32, "uxv-circuit",
-		{ fluid("molten-spacetime", 576), fluid("molten-infinity", 576), fluid("lubricant", 512000) } },
+		{ gtl("molten-spacetime", 576), gtl("molten-infinity", 576), gtl("lubricant", 512000) } },
 	{ "eternity", 256, 64, "max-circuit",
-		{ fluid("molten-spacetime", 576), fluid("molten-universium", 576), fluid("lubricant", 512000) } },
+		{ gtl("molten-spacetime", 576), gtl("molten-universium", 576), gtl("lubricant", 512000) } },
 }
 local SPEED = { LV_SPEED, MV_SPEED, HV_SPEED, EV_SPEED, IV_SPEED, LUV_SPEED, ZPM_SPEED, UV_SPEED, UHV_SPEED, UEV_SPEED,
 	UIV_SPEED, UIV_SPEED, UIV_SPEED }
@@ -273,12 +279,12 @@ end
 --- the modules: speed = parallels, energy at the module's voltage, its recipe (the module before it or the drilling rig)
 local MODULES = {
 	{ "space-elevator-mining-module-mk1", 2, EU16_UHV, "iv-drilling-rig", "uv", "naquamiridium", "neutronium",
-		{ fluid("molten-indalloy-140", 2880), fluid("molten-naquadria", 1440), fluid("lubricant", 8000) }, UHV_SPEED },
+		{ gtl("molten-indalloy-140", 2880), gtl("molten-naquadria", 1440), gtl("lubricant", 8000) }, UHV_SPEED },
 	{ "space-elevator-mining-module-mk2", 4, EU16_UEV, "space-elevator-mining-module-mk1", "uhv", "triamerotronium",
 		"cosmic-neutronium",
-		{ fluid("molten-indalloy-140", 2880), fluid("molten-naquadria", 2880), fluid("lubricant", 16000) }, UEV_SPEED },
+		{ gtl("molten-indalloy-140", 2880), gtl("molten-naquadria", 2880), gtl("lubricant", 16000) }, UEV_SPEED },
 	{ "space-elevator-mining-module-mk3", 8, EU16_UIV, "space-elevator-mining-module-mk2", "uev", "dracofinium", "infinity",
-		{ fluid("molten-indalloy-140", 2880), fluid("molten-transcendent-metal", 1440) }, UIV_SPEED },
+		{ gtl("molten-indalloy-140", 2880), gtl("molten-transcendent-metal", 1440) }, UIV_SPEED },
 }
 local modules = {}
 for k, m in ipairs(MODULES) do
@@ -508,9 +514,8 @@ for _, r in pairs({ "crushed-thulium", "crushed-tellurium", "crushed-firestone" 
 --- Fluids the mod lacks are left out, not replaced: GT's ender goo, extra heavy oil, natural gas, medium oil, liquid oxygen
 --- and Galacticraft's unknown water. The closest analogue where the mod lacks a part: the Infinite Fluid Drilling Rig ->
 --- the IV drilling rig (the mod's fluid drilling rigs); the Ender Fluid Link Cover -> an eye of ender; the medium tungstensteel pipe -> 3 tungstensteel
---- plates (GT's pipe recipe); mutated living solder -> molten indalloy 140; metastable oganesson screws -> spacetime screws,
---- proto-halkonite -> osmiridium (as the motors of #301), black and white dwarf matter -> universium (the materials come a
---- tier later here).
+--- plates (GT's pipe recipe); mutated living solder (164 section 46, issue #627; indalloy 140 before); metastable oganesson screws -> spacetime screws,
+--- proto-halkonite -> osmiridium (as the motors of #301); black and white dwarf matter come from the godforge since #699.
 --------------------------------------------------------------------------------
 
 local PUMP_SCALE, SIPHON_SCALE = 1000, 10
@@ -593,15 +598,17 @@ local PUMPS = {
 	{ "space-elevator-pump-module-mk1", 4, EU16_UHV, 2, UEV_SPEED, {
 		item("iv-drilling-rig", 1), item("planetary-gas-siphon", 1), item("eye-of-ender", 2),
 		item("infinity-frame", 4), item("uev-circuit", 4), item("uev-pump", 2), item("infinity-gear", 4),
-		item("cosmic-neutronium-screw", 32), fluid("molten-indalloy-140", 1296), fluid("molten-infinity", 576) } },
+		item("cosmic-neutronium-screw", 32), gtl("molten-indalloy-140", 1296), gtl("molten-infinity", 576) } },
 	{ "space-elevator-pump-module-mk2", 16, EU16_UEV, 3, UIV_SPEED, {
 		item("iv-drilling-rig", 4), item("planetary-gas-siphon", 4), item("eye-of-ender", 8),
 		item("spacetime-frame", 4), item("uiv-circuit", 16), item("uiv-pump", 8), item("spacetime-gear", 4),
-		item("spacetime-screw", 64), fluid("molten-indalloy-140", 4608), fluid("molten-osmiridium", 2304) } },
+		item("spacetime-screw", 64), gtl("molten-indalloy-140", 4608), gtl("molten-osmiridium", 2304) } },
 	{ "space-elevator-pump-module-mk3", 256, EU16_UXV, 4, UMV_SPEED, {
 		item("iv-drilling-rig", 16), item("planetary-gas-siphon", 16), item("eye-of-ender", 32),
-		item("universium-frame", 4), item("umv-circuit", 16), item("umv-pump", 8), item("universium-gear", 4),
-		item("universium-screw", 64), fluid("molten-indalloy-140", 9216), fluid("molten-eternity", 2304) } },
+		--- (issue #699: GTNH-Intergalactic's MachineRecipes.java: black dwarf matter frames and gears, white dwarf
+		--- matter screws, which stood in as universium before)
+		item("black-dwarf-matter-frame", 4), item("umv-circuit", 16), item("umv-pump", 8), item("black-dwarf-matter-gear", 4),
+		item("white-dwarf-matter-screw", 64), gtl("molten-indalloy-140", 9216), gtl("molten-eternity", 2304) } },
 }
 local pumps = {}
 for k, m in ipairs(PUMPS) do
@@ -695,8 +702,11 @@ F.tech{ name = "planetary-gas-siphon", prerequisites = { "reach-the-jovian-moons
 local PPRE = { { "space-elevator-motor-mk2", "planetary-gas-siphon", "uev-components" },
 	{ "space-elevator-motor-mk3", "uiv-components", "exotic-processor-mainframes" },
 	{ "space-elevator-motor-mk4", "umv-components", "temporal-processor-mainframes", "uxv-materials",
-		"uxv-energy-hatches" } }   -- (molten eternity, as the UXV drone of #302)
-local PPACKS = { 10, 11, 13 }
+		"uxv-energy-hatches",   -- (molten eternity, as the UXV drone of #302)
+		--- issue #699: GTNH's dwarf matter parts, from the godforge's molten module (MAX science) and the UXV assembler
+		--- of the MAX machines (their frames)
+		"godforge-molten-module", "max-machines" } }
+local PPACKS = { 10, 11, 15 }
 for k, name in ipairs(pumps) do
 	local pre = {}
 	if k > 1 then pre[1] = pumps[k - 1] end
@@ -716,7 +726,7 @@ end
 ---     4 parallels (TileEntityModuleAssembler.java:271-292), with Mk-I motors like the mining module Mk-I.
 ---   * The Singularity cell (SpaceAssemblerRecipes.java:422-434, module tier 1, UHV, 10 s): an eternal singularity, 12
 ---     16384k components, 8 Quantum Chests V (GT's Quantum_Chest_IV, its tier 10), 4 infinity blocks, 4 infinity
----     catalysts, 12 cosmic neutronium blocks, 2304 L UEV solder (GTNH's mutated living solder is indalloy 140 here, as in
+---     catalysts, 12 cosmic neutronium blocks, 2304 L UEV solder (GTNH's mutated living solder, 164 section 46 since issue #627, as in
 ---     the module recipes above). It replaces 120's UHV assembler recipe.
 ---   * The Quantum Chest V (NHC AssemblerRecipes.java:2525-2533: 4 UEV circuits, 3 americium plates, a UV field
 ---     generator, the UEV chest buffer; LV, 5 s) and the UEV Chest Buffer (:2545-2553: the UEV conveyor, circuit and hull

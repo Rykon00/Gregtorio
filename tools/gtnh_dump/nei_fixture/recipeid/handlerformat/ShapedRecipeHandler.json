@@ -1,0 +1,12 @@
+{
+  "format": [
+    {
+      "field": "ingredients",
+      "type": "java.util.ArrayList<codechicken.nei.PositionedStack>"
+    },
+    {
+      "field": "result",
+      "type": "codechicken.nei.PositionedStack"
+    }
+  ]
+}

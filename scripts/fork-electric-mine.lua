@@ -13,6 +13,7 @@
 --- without a twin (FORK_ELECTRIC_MINE_EXCLUDED: hunting, the dig site) leaves the new machine without a recipe.
 --- Event driven, no tick handler; the notes are lazy state (`storage.fork_electric_mine`).
 local M = {}
+local stand_in = require("scripts.fork-stand-in")   -- issue #651
 
 local function mine_data()
 	local md = prototypes.mod_data["fork-electric-mine"]
@@ -45,9 +46,13 @@ local function note(entity, target)
 end
 
 function M.on_pre_build(event)
-	local player = game.get_player(event.player_index)
+	M.pre_build(game.get_player(event.player_index), event.position)
+end
+
+--- a player (or issue #651's stand-in) is about to build at `position`
+function M.pre_build(player, position)
 	if not player then return end
-	for _, e in pairs(player.surface.find_entities_filtered{ position = event.position, radius = 0.5,
+	for _, e in pairs(player.surface.find_entities_filtered{ position = position, radius = 0.5,
 		type = "assembling-machine" }) do
 		note(e)
 	end
@@ -89,6 +94,10 @@ end
 remote.add_interface("fork-electric-mine", {
 	--- call before replacing a Manual Mine, Miner or Ore Drilling Plant by script in the same tick
 	note_replace = function(entity) note(entity) end,
+	--- issue #651: a stand-in player of index `index` with `character` is about to build at `position`
+	stand_in_pre_build = function(character, index, position)
+		M.pre_build(stand_in.player(index, character), position)
+	end,
 })
 
 return M
