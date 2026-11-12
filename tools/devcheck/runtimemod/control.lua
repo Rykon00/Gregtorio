@@ -166,6 +166,7 @@ end
 --- plant drills a vein with Drilling Fluid.
 --- LFTR (issue #386): the Liquid Fluoride Thorium Reactor on LFTR Fuel 1 runs without power and its hidden dynamo gives
 --- 40.96 MW into a network with a load; mined, the dynamo goes with it.
+--- Drilling rig output (issue #809): an MV Fluid Drilling Rig fills a storage tank through a pipe on its south edge.
 --- Victory: when the other tests have reported, `victory` is researched by script and must win the game.
 
 local VICTORY_DEADLINE = 1450
@@ -193,6 +194,7 @@ local function tests_running()
 	check(storage.torch and storage.torch.done, "torch")
 	check(storage.maint and storage.maint.done, "maintenance")
 	check(storage.water_pump and storage.water_pump.done, "water pump")
+	check(storage.rig and storage.rig.done, "drilling rig")
 	check(storage.ebf_heat and storage.ebf_heat.done, "ebf heat")
 	check(storage.radiation and storage.radiation.done, "radiation")
 	check(storage.wireless and storage.wireless.done, "wireless")
@@ -1760,6 +1762,61 @@ function water_pump_test()
 	if not good then log("DEVCHECK-RUNTIME-FAIL water pump test: a Steam Water Pump built has the recipe " .. name
 		.. " (locked " .. tostring(e.valid and e.recipe_locked) .. ")") end
 	log("DEVCHECK-RUNTIME-WATERPUMP " .. (good and "ok" or "failed") .. " (" .. name .. ", locked)")
+end
+
+--- Drilling rig output (issue #809): an MV Fluid Drilling Rig on Nauvis running its water recipe, facing north, with a row of
+--- three pipes along its south edge under its two output connections and a storage tank below them, fills the tank (its
+--- outputs lay inside the machine before, so no pipe connected). The rig must cover 3 x 6 tiles and both its outputs
+--- must reach the pipes.
+local RG_X, RG_Y, RG_TICK, RG_WANT = -370.5, 40, 600, 1000
+function setup_rig_test(s)
+	local fails = {}
+	local ok, err = pcall(function()
+		game.forces.player.recipes["water-drilling-rig"].enabled = true
+		local rig = s.create_entity{ name = "mv-drilling-rig", position = { RG_X, RG_Y }, force = "player",
+			direction = defines.direction.north, raise_built = true }
+		rig.set_recipe("water-drilling-rig")
+		for dx = -1, 1 do
+			s.create_entity{ name = "pipe", position = { RG_X + dx, RG_Y + 3.5 }, force = "player" }
+		end
+		local tank = s.create_entity{ name = "storage-tank", position = { RG_X, RG_Y + 5.5 }, force = "player",
+			direction = defines.direction.north }
+		s.create_entity{ name = "electric-energy-interface", position = { RG_X - 4, RG_Y }, force = "player" }
+		s.create_entity{ name = "substation", position = { RG_X - 4, RG_Y + 3 }, force = "player" }
+		storage.rig = { rig = rig, tank = tank }
+	end)
+	if not ok then fails[#fails + 1] = "drilling rig test: " .. tostring(err) end
+	return fails
+end
+
+function rig_test()
+	local st = storage.rig
+	if not st or st.done or game.tick < RG_TICK then return end
+	st.done = true
+	local rig, tank, problems = st.rig, st.tank, {}
+	if not (rig.valid and tank.valid) then
+		problems[#problems + 1] = "the rig or the tank is gone"
+	else
+		local bb = rig.bounding_box
+		local w, h = bb.right_bottom.x - bb.left_top.x, bb.right_bottom.y - bb.left_top.y
+		local tiles = string.format("%d x %d tiles", math.ceil(w), math.ceil(h))
+		if tiles ~= "3 x 6 tiles" then problems[#problems + 1] = "the rig covers " .. tiles .. ", not 3 x 6" end
+		local linked = 0
+		for i = 1, rig.fluids_count do
+			for _, c in pairs(rig.get_fluid_box_pipe_connections(i) or {}) do
+				if c.connection_type == "normal" and c.target and c.target.name == "pipe" then linked = linked + 1 end
+			end
+		end
+		if linked ~= 2 then problems[#problems + 1] = linked .. " of the rig's 2 output connections reach a pipe" end
+		local water = fluid_total(tank, "water")
+		if water < RG_WANT then
+			problems[#problems + 1] = string.format("the tank holds %g water at tick %d, not %d or more", water, game.tick,
+				RG_WANT)
+		end
+		st.info = string.format("%s, %d outputs on pipes, %g water in the tank at tick %d", tiles, linked, water, game.tick)
+	end
+	for _, p in pairs(problems) do log("DEVCHECK-RUNTIME-FAIL drilling rig test: " .. p) end
+	log("DEVCHECK-RUNTIME-RIG " .. (#problems == 0 and "ok" or "failed") .. " (" .. (st.info or "") .. ")")
 end
 
 --- Maintenance (issue #618, scripts/fork-maintenance.lua): with the setting off no machine has a maintenance slot; with it on
@@ -3635,6 +3692,7 @@ script.on_nth_tick(10, function()
 	torch_test()
 	maintenance_test()
 	water_pump_test()
+	rig_test()
 	ebf_heat_test()
 	radiation_test()
 	wireless_test()
@@ -3725,6 +3783,7 @@ script.on_init(function()
 	for _, f in pairs(setup_torch_test(s)) do fails[#fails + 1] = f end
 	for _, f in pairs(setup_maintenance_test(s)) do fails[#fails + 1] = f end
 	for _, f in pairs(setup_water_pump_test(s)) do fails[#fails + 1] = f end
+	for _, f in pairs(setup_rig_test(s)) do fails[#fails + 1] = f end
 	for _, f in pairs(setup_ebf_heat_test(s)) do fails[#fails + 1] = f end
 	for _, f in pairs(setup_radiation_test(s)) do fails[#fails + 1] = f end
 	for _, f in pairs(setup_wireless_test(s)) do fails[#fails + 1] = f end

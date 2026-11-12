@@ -299,6 +299,12 @@ for name, reason in pairs(FORK_NYI_ICONS or {}) do nk[#nk + 1] = name .. "\t" ..
 section("ICONS", ic)
 section("NYIOK", nk)
 
+--- Issue #809: the entities whose pipe connections may lie inside them or face into them (FORK_PIPE_CONNECTIONS_INSIDE in
+--- prototypes/199-fork-finalize.lua; absent in older versions)
+local pc = {}
+for name, reason in pairs(FORK_PIPE_CONNECTIONS_INSIDE or {}) do pc[#pc + 1] = name .. "\t" .. reason end
+section("PIPEINSIDEOK", pc)
+
 --- Issue #318: the vanilla recipes without a technology, of items Gregtorio makes, that stay on purpose
 --- (FORK_VANILLA_RECIPES_KEPT in data-final-fixes.lua; absent in older versions)
 local vk = {}

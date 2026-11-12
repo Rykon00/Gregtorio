@@ -1,4 +1,8 @@
 ---------------------------------------------------------------------------------------------------
+Version: 0.5.11
+  Bugfixes:
+    - Pipes can connect to the Fluid Drilling Rigs (issue #809): their two output connections lay inside the machine, so only the ME network's buses got the fluid out. They sit on the rig's south edge now, left and right of the controller, on every tier from MV to MAX; placed rigs keep working and keep their fluid.
+---------------------------------------------------------------------------------------------------
 Version: 0.5.10
 Date: 2026-11-03
   Features:
