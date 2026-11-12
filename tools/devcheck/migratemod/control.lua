@@ -611,6 +611,19 @@ local CHECK_TICK = 570                                                  -- the j
 local CPU_BLOCKS = { { "me-1k-crafting-storage", 8.5, Y + 8.5 }, { "me-crafting-unit", 9.5, Y + 8.5 },
 	{ "me-crafting-unit", 8.5, Y + 9.5 }, { "me-crafting-unit", 9.5, Y + 9.5 } }
 
+--- the other item ingredients of PT_RECIPE, enough for the job: since Gregtorio 0.5.10 (issue #612) the hand recipe of
+--- the gear also uses up a hammer and a wire cutter (hammer-usage, wire-cutter-usage), without which the old version's
+--- planner refuses the job ("missing")
+function job_extras()
+	local out = {}
+	for _, ing in pairs(prototypes.recipe[PT_RECIPE].ingredients) do
+		if ing.type == "item" and ing.name ~= "iron-plate" and ing.name ~= "iron-stick" then
+			out[ing.name] = ing.amount * JOB_GEARS * 2
+		end
+	end
+	return out
+end
+
 --- the version of the old save has the cable network of issue #68 step R1 (and still the old fluid drives)
 function R1() return prototypes.entity["me-network-controller"] ~= nil end
 --- the version of the old save stores fluids in fluid cells already (issue #68 step R2, 0.4.0 and later: the fluid
@@ -704,6 +717,7 @@ local function setup_patterns(place)
 		inv.destroy()
 		remote.call(NET, "store_in_drive", drive, "iron-plate", 50)
 		remote.call(NET, "store_in_drive", drive, "iron-stick", 50)
+		for name, n in pairs(job_extras()) do remote.call(NET, "store_in_drive", drive, name, n) end
 		--- issue #580 (me-network #503): lenses that issue #370 renamed (apatite -> green sapphire, lapis -> sapphire) in the
 		--- network: its storage keeps them under their old names, which a JSON migration does not reach
 		if prototypes.item["apatite-lens"] and prototypes.item["lapis-lens"] then
@@ -723,6 +737,7 @@ local function setup_patterns(place)
 		drive = place("me-drive-16k", 8.5, Y + 12.5)
 		drive.insert{ name = "iron-plate", count = 50 }
 		drive.insert{ name = "iron-stick", count = 50 }
+		for name, n in pairs(job_extras()) do drive.insert{ name = name, count = n } end
 	end
 	local id, why = remote.call(A, "start", p, "iron-gear-wheel", JOB_GEARS)
 	--- crafting CPUs are multiblocks since me-network 0.3.0 (issue #6): a lone ME Crafting CPU is no CPU there, no job
