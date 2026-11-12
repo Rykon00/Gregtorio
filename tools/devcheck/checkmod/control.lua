@@ -138,9 +138,64 @@ local function intermediate_rows()
 	log("DEVCHECK-INTERMEDIATE-BEGIN\n" .. table.concat(rows, "\n") .. "\nDEVCHECK-INTERMEDIATE-END")
 end
 
+--- Issue #809: every pipe connection of an entity this mod creates or changes must sit on the edge of its collision box
+--- and face out of it (its neighbour position outside the box), in each of the four directions the entity can face (the
+--- runtime prototype's `positions`: north, east, south, west); the drilling rigs' outputs lay inside the machine, so no
+--- pipe could connect. Underground and linked connections do not count. devcheck.py fails for every entity of a row
+--- unless it is in the allow-list FORK_PIPE_CONNECTIONS_INSIDE of prototypes/199-fork-finalize.lua with its reason.
+--- type, name, created by, the bad connections ("box <i> connection <j> facing <dir>: (x, y) -> (x, y) <why>", "; ")
+local DIR_VEC = { [0] = { 0, -1 }, [4] = { 1, 0 }, [8] = { 0, 1 }, [12] = { -1, 0 } }
+local FACING = { [0] = "north", [1] = "east", [2] = "south", [3] = "west" }
+local function pipe_rows()
+	local rows, checked = {}, 0
+	local function inside(b, x, y)
+		return b[1] < x and x < b[3] and b[2] < y and y < b[4]
+	end
+	for name, p in pairs(prototypes.entity) do
+		local h = prototypes.get_history(p.type, name) or {}
+		local ours = h.created == "gregtorio-continued"
+		for _, m in pairs(h.changed or {}) do if m == "gregtorio-continued" then ours = true end end
+		local boxes = ours and get(p, "fluidbox_prototypes") or {}
+		local cb = p.collision_box
+		if #boxes > 0 and cb then
+			checked = checked + 1
+			local bad = {}
+			for i, fb in pairs(boxes) do
+				for j, c in pairs(fb.pipe_connections or {}) do
+					if c.connection_type == "normal" then
+						for k = 0, 3 do
+							--- the box and the connection's direction when the entity faces k (90 degrees clockwise each)
+							local x1, y1, x2, y2 = cb.left_top.x, cb.left_top.y, cb.right_bottom.x, cb.right_bottom.y
+							for _ = 1, k do x1, y1, x2, y2 = -y2, x1, -y1, x2 end
+							local b = { math.min(x1, x2), math.min(y1, y2), math.max(x1, x2), math.max(y1, y2) }
+							local pos = c.positions[k + 1]
+							local d = DIR_VEC[(c.direction + 4 * k) % 16]
+							if pos and d then
+								local tx, ty = pos.x + d[1], pos.y + d[2]
+								local why = not inside(b, pos.x, pos.y) and "outside the collision box"
+									or inside(b, tx, ty) and "faces into the machine" or nil
+								if why then
+									bad[#bad + 1] = string.format("box %d connection %d facing %s: (%g, %g) -> (%g, %g) %s",
+										i, j, FACING[k], pos.x, pos.y, tx, ty, why)
+								end
+							end
+						end
+					end
+				end
+			end
+			if #bad > 0 then
+				rows[#rows + 1] = table.concat({ p.type, name, h.created or "", table.concat(bad, "; ") }, "\t")
+			end
+		end
+	end
+	rows[#rows + 1] = "#checked\t" .. checked
+	log("DEVCHECK-PIPECONN-BEGIN\n" .. table.concat(rows, "\n") .. "\nDEVCHECK-PIPECONN-END")
+end
+
 script.on_init(function()
 	owners()
 	names_rows()
 	placeable_rows()
 	intermediate_rows()
+	pipe_rows()
 end)

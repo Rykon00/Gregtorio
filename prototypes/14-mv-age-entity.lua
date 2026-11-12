@@ -976,9 +976,10 @@ create_item{
 
 
 ---MV PUMPJACK
-make_electric_machine("mv-drilling-rig", "mv-drilling-rig", "mv-drilling-rig", { "drilling-rig-recipes" }, "fr-drilling-rig", EU16_MV, 2, 1, 0.5, 3, 6.25, { 
-    fluid_port(-1,  1, "output", defines.direction.south),
-    fluid_port( 1,  1, "output", defines.direction.south)
+make_electric_machine("mv-drilling-rig", "mv-drilling-rig", "mv-drilling-rig", { "drilling-rig-recipes" }, "fr-drilling-rig", EU16_MV, 2, 1, 0.5, 3, 6.25, {
+    -- issue #809: the south edge row of the 3 x 6 tiles, beside the controller (y = 1 lay inside the machine)
+    fluid_port(-1, 2.5, "output", defines.direction.south),
+    fluid_port( 1, 2.5, "output", defines.direction.south)
 })
 create_item{
 	name = "mv-drilling-rig-controller",

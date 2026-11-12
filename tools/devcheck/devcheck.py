@@ -2103,6 +2103,32 @@ def check_tool_intermediates(sec):
     return f"{len(rows)} items with more than one hand recipe the crafting menu may chain", sorted(problems)
 
 
+def check_pipe_connections(sec):
+    """Issue #809: every pipe connection of an entity this mod creates or changes (section PIPECONN of
+    checkmod/control.lua: the runtime prototypes, each of the four directions the entity can face) must sit on the edge of
+    its collision box and face out of it, so a pipe can connect; underground and linked connections do not count. The
+    drilling rigs' outputs lay inside the machine and only the ME network's buses got the fluid out. An entity in a row
+    fails unless it is in the allow-list FORK_PIPE_CONNECTIONS_INSIDE of prototypes/199-fork-finalize.lua with its reason
+    (section PIPEINSIDEOK); an entry that has no such connection fails too. Returns (info line, problems)."""
+    if "PIPECONN" not in sec:
+        return "", ["no DEVCHECK-PIPECONN section in the log (checkmod/control.lua did not run)"]
+    allow = {r[0]: (r[1] if len(r) > 1 else "") for r in sec.get("PIPEINSIDEOK", [])}
+    checked, bad = 0, {}
+    for r in sec["PIPECONN"]:
+        if r[0] == "#checked":
+            checked = int(r[1])
+        elif len(r) > 3:
+            bad[r[1]] = (r[0], r[3])
+    problems = [f"{typ} {name}: {conns}" for name, (typ, conns) in sorted(bad.items()) if name not in allow]
+    problems += [f"{name}: in FORK_PIPE_CONNECTIONS_INSIDE but every pipe connection is on the edge (remove the entry)"
+                 for name in sorted(allow) if name not in bad]
+    problems += [f"{name}: in FORK_PIPE_CONNECTIONS_INSIDE without a reason" for name, why in sorted(allow.items())
+                 if name in bad and not why.strip()]
+    kept = sorted(n for n in bad if n in allow)
+    return (f"{checked} entities with fluid boxes checked, {len(bad)} with a connection inside or facing in, "
+            f"{len(kept)} kept on purpose" + (f" ({', '.join(kept)})" if kept else "")), problems
+
+
 def check_placeable(sec):
     """Issue #336: a player-built entity of this mod that gives items when mined must be placeable again by one of them
     (section PLACEABLE of checkmod/control.lua: the runtime prototypes, the mined items and items_to_place_this); the T1
@@ -3125,6 +3151,10 @@ def check(a):
     place_info, unplaceable = check_placeable(sec)
     print(f"\nplaceable entities (issue #336): {place_info}")
     report("entities whose mined item does not place them again (place_result missing or wrong)", unplaceable)
+    pipe_info, pipe_inside = check_pipe_connections(sec)
+    print(f"\npipe connections on the edge (issue #809): {pipe_info}")
+    report("pipe connections inside the collision box or facing into it (move them onto the edge, facing out, or add the "
+           "entity to FORK_PIPE_CONNECTIONS_INSIDE of prototypes/199-fork-finalize.lua with its reason)", pipe_inside)
     tool_info, tool_chain = check_tool_intermediates(sec)
     print(f"\nGT tool charges in the crafting menu (issue #764): {tool_info}")
     report("tool charges with more than one hand recipe the crafting menu may chain (prototypes/148-fork-gtnh-table-items.lua)",
@@ -3255,7 +3285,7 @@ def check(a):
               or new_drafts or fluid_problems or locked or one_pack or fluid_steps or table_only or me_recipes or me_tab
               or extractor_split or ore_mixes or ore_chain or ore_baths or ore_o34 or ore_hammer
               or circuit_icons or pgm_dusts or qft_focus or recycling or blocks or names or gaps or tree or vanilla or lenses or mine_twins
-              or unplaceable or tool_chain or stale_unlocks or removed_keys or trigger_only or spoiling or classic_veins or early
+              or unplaceable or pipe_inside or tool_chain or stale_unlocks or removed_keys or trigger_only or spoiling or classic_veins or early
               or furnace or research_counts or nyi_icons or gtnh_icons or overclock or maint or ebf_heat or radiation
               or steam or nugget or steam_rates or boiler_output or vein_doc or renames or gtnh_numbers or parts_recycling or part_routes or part_crafting or chemistry or metallurgy
               or tick_clashes)
@@ -3366,7 +3396,7 @@ def runtime(a):
     print(f"benchmark: {ran.group(0) if ran else 'did not run'}")
     # the ME network's runtime tests are in me-network since issue #83 (its tools/devcheck)
     tests = (("MOLD", "mold test"), ("LENS", "lens test"), ("MOLDCLONE", "cloned mold machine test"), ("POWER", "power test"), ("FUEL", "fuel check test"), ("COOLED", "cooled fluid test"),
-             ("TIERS", "turbine tier test"), ("RECIPES", "recipe test"), ("CRUSH", "raw ore crushing test"), ("OREFURNACE", "ore furnace line test"), ("STEAM", "steam turbine test"), ("CHAIN", "nuclear chain test"), ("LFTR", "LFTR test"), ("DYSON", "Dyson Swarm test"), ("LSC", "supercapacitor test"), ("LSUP", "supercapacitor upgrade test"), ("ELEVATOR", "space elevator test"), ("MELT", "melt and cast test"), ("OFFER", "offered recipes test"), ("EMINE", "electric mine test"), ("SOLAR", "solar boiler test"), ("COALBOILER", "coal boiler test"),("TORCH", "torch test"), ("MAINT", "maintenance test"), ("WATERPUMP", "steam water pump test"), ("EBFHEAT", "blast furnace heat test"), ("RADIATION", "radiation test"), ("WIRELESS", "wireless energy test"), ("PLAYER", "player path test"), ("BATTERY", "battery buffer test"), ("VEINS", "map vein test"), ("CLASSIC", "classic vein test"), ("DRILLS", "mining drill test"), ("PORTAL", "portal test"), ("ENDER", "ender storage test"), ("VICTORY", "victory test"),
+             ("TIERS", "turbine tier test"), ("RECIPES", "recipe test"), ("CRUSH", "raw ore crushing test"), ("OREFURNACE", "ore furnace line test"), ("STEAM", "steam turbine test"), ("CHAIN", "nuclear chain test"), ("LFTR", "LFTR test"), ("DYSON", "Dyson Swarm test"), ("LSC", "supercapacitor test"), ("LSUP", "supercapacitor upgrade test"), ("ELEVATOR", "space elevator test"), ("MELT", "melt and cast test"), ("OFFER", "offered recipes test"), ("EMINE", "electric mine test"), ("SOLAR", "solar boiler test"), ("COALBOILER", "coal boiler test"),("TORCH", "torch test"), ("MAINT", "maintenance test"), ("WATERPUMP", "steam water pump test"), ("RIG", "drilling rig output test"), ("EBFHEAT", "blast furnace heat test"), ("RADIATION", "radiation test"), ("WIRELESS", "wireless energy test"), ("PLAYER", "player path test"), ("BATTERY", "battery buffer test"), ("VEINS", "map vein test"), ("CLASSIC", "classic vein test"), ("DRILLS", "mining drill test"), ("PORTAL", "portal test"), ("ENDER", "ender storage test"), ("VICTORY", "victory test"),
              ("POSTVICTORY", "post-victory test"))
     for key, label in tests:
         m = re.search(rf"DEVCHECK-RUNTIME-{key} (.*)", log)
@@ -3766,6 +3796,8 @@ def migrate(a):
     print(f"reactor on steam in the old save: {power.group(1) if power else 'no result'}")
     turbine = re.search(r"DEVCHECK-MIGRATE-TURBINE (.*)", log)
     print(f"plasma turbine of the old save: {turbine.group(1) if turbine else 'no result'}")
+    rig = re.search(r"DEVCHECK-MIGRATE-RIG (.*)", log)
+    print(f"drilling rig of the old save keeps its water, pipes connect (issue #809): {rig.group(1) if rig else 'no result'}")
     patterns = re.search(r"DEVCHECK-MIGRATE-PATTERNS (.*)", log)
     print(f"pattern providers of the old save: {patterns.group(1) if patterns else 'no result'}")
     job = re.search(r"DEVCHECK-MIGRATE-JOB (.*)", log)
@@ -3810,6 +3842,7 @@ def migrate(a):
         print(load_errors(log) or script_error(log) or "")
     ok = ran and fluids and not fluids.group(1).startswith("failed") and power and not power.group(1).startswith("failed") \
         and turbine and not turbine.group(1).startswith("failed") \
+        and rig and not rig.group(1).startswith("failed") \
         and patterns and not patterns.group(1).startswith("failed") and job and not job.group(1).startswith("failed") \
         and items and not items.group(1).startswith("failed") and handover_ok \
         and techs and not techs.group(1).startswith("failed") \

@@ -285,3 +285,11 @@ do
 		for _, entity in pairs(data.raw[entity_type] or {}) do swap(entity) end
 	end
 end
+
+--------------------------------------------------------------------------------
+--- PIPE CONNECTIONS ON THE EDGE
+--- Issue #809: devcheck fails for an entity this mod creates or changes with a pipe connection that is not on the edge
+--- of its collision box or that faces into it (no pipe can connect; the drilling rigs' outputs lay inside the machine),
+--- underground and linked connections aside, unless the entity is in this allow-list with its reason.
+--------------------------------------------------------------------------------
+FORK_PIPE_CONNECTIONS_INSIDE = {}

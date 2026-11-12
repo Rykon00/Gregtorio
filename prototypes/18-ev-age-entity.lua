@@ -624,9 +624,10 @@ create_item{
 
 
 ---EV PUMPJACK
-make_electric_machine("ev-drilling-rig", "mv-drilling-rig", "mv-drilling-rig", { "drilling-rig-recipes" }, "fr-drilling-rig", EU16_EV, 8, 1, 0.5, 3, 6.25, { 
-    fluid_port(-1,  1, "output", defines.direction.south),
-    fluid_port( 1,  1, "output", defines.direction.south)
+make_electric_machine("ev-drilling-rig", "mv-drilling-rig", "mv-drilling-rig", { "drilling-rig-recipes" }, "fr-drilling-rig", EU16_EV, 8, 1, 0.5, 3, 6.25, {
+    -- issue #809: the south edge row, as the MV rig (the IV and higher rigs of 101 copy it)
+    fluid_port(-1, 2.5, "output", defines.direction.south),
+    fluid_port( 1, 2.5, "output", defines.direction.south)
 })
 create_item{
 	name = "ev-drilling-rig-controller",
