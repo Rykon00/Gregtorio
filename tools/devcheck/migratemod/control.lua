@@ -12,6 +12,8 @@
 --- (DEVCHECK-MIGRATE-TURBINE, issue #28).
 --- Issue #809: an MV Fluid Drilling Rig with water in its output boxes keeps it after the update, and a tank on pipes
 --- along its south edge, built after the update, fills (DEVCHECK-MIGRATE-RIG).
+--- Issue #812: a Bricked Blast Furnace and an MV Electric Blast Furnace facing east stay where they are, facing east
+--- (DEVCHECK-MIGRATE-TURNED).
 --- Pattern providers (issue #27, issue #80): in the same network a Molecular Assembler and a fresh iron furnace
 --- with providers; the furnace's provider has a recipe chosen (versions with the furnace choice). After the update
 --- (issue #80: encoded patterns) the assembler's provider must hold a crafting pattern of the assembler's recipe and
@@ -2087,8 +2089,61 @@ local function check_rig()
 	log("DEVCHECK-MIGRATE-RIG " .. (#problems == 0 and "ok" or "failed") .. (st.info and " (" .. st.info .. ")" or ""))
 end
 
+--- Turned machines (issue #812): the old save has a Bricked Blast Furnace and an MV Electric Blast Furnace facing east
+--- (their one picture stood upright over the lying box). After the update both must still be there, face east and cover
+--- 4 x 3 tiles: the update gives them a picture per direction and leaves the placed machines alone.
+local TN_AT = { RG_AT[1] + 40, RG_AT[2] }
+local function setup_turned()
+	local s = game.surfaces[1]
+	s.request_to_generate_chunks(TN_AT, 1)
+	s.force_generate_chunk_requests()
+	local area = { { TN_AT[1] - 8, TN_AT[2] - 8 }, { TN_AT[1] + 20, TN_AT[2] + 8 } }
+	local land = {}
+	for _, t in pairs(s.find_tiles_filtered{ area = area, collision_mask = "water_tile" }) do
+		land[#land + 1] = { name = "landfill", position = t.position }
+	end
+	s.set_tiles(land)
+	for _, e in pairs(s.find_entities_filtered{ area = area, type = { "tree", "simple-entity", "cliff", "resource" } }) do e.destroy() end
+	local st, placed = {}, 0
+	for i, name in ipairs({ "primitive-blast-furnace", "mv-electric-blast-furnace" }) do
+		if prototypes.entity[name] then
+			local e = s.create_entity{ name = name, position = { TN_AT[1] + (i - 1) * 10, TN_AT[2] }, force = "player",
+				direction = defines.direction.east, raise_built = true }
+			if e and e.direction == defines.direction.east then
+				st[#st + 1] = { name = name, entity = e, position = e.position }
+				placed = placed + 1
+			end
+		end
+	end
+	storage.turned = st
+	log("DEVCHECK-MIGRATE-SETUP-TURNED " .. (placed == 2 and "ok" or "failed") .. " (" .. placed .. " machines facing east)")
+end
+
+local function check_turned()
+	local problems, info = {}, {}
+	for _, row in pairs(storage.turned or {}) do
+		local e = row.entity
+		if not e.valid then
+			problems[#problems + 1] = row.name .. " is gone"
+		else
+			local bb = e.bounding_box
+			local tiles = math.ceil(bb.right_bottom.x - bb.left_top.x) .. " x " .. math.ceil(bb.right_bottom.y - bb.left_top.y)
+			if e.direction ~= defines.direction.east then problems[#problems + 1] = row.name .. " faces " .. e.direction end
+			if tiles ~= "4 x 3" then problems[#problems + 1] = row.name .. " covers " .. tiles .. " tiles, not 4 x 3" end
+			if e.position.x ~= row.position.x or e.position.y ~= row.position.y then
+				problems[#problems + 1] = row.name .. " moved"
+			end
+			info[#info + 1] = row.name .. " east " .. tiles
+		end
+	end
+	if #(storage.turned or {}) == 0 then problems[#problems + 1] = "no turned machine in the old save" end
+	for _, m in pairs(problems) do log("DEVCHECK-MIGRATE-FAIL turned machines: " .. m) end
+	log("DEVCHECK-MIGRATE-TURNED " .. (#problems == 0 and "ok" or "failed") .. " (" .. table.concat(info, ", ") .. ")")
+end
+
 script.on_init(function()
 	setup_rig()
+	setup_turned()
 	setup_furnaces()
 	setup_vein_grid()
 	setup_vein_ores()
@@ -2192,6 +2247,10 @@ script.on_nth_tick(30, function(event)
 		end
 	end
 	--- issue #809: the drilling rig's water, then (once the pipes are built) its tank
+	if not storage.turned_checked and event.tick >= TT_CHECK_TICK then
+		storage.turned_checked = true
+		check_turned()
+	end
 	if not storage.rig_checked and event.tick >= TT_CHECK_TICK then
 		local rg = storage.rig
 		if type(rg) ~= "table" then
