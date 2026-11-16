@@ -1051,12 +1051,25 @@ tech("me-autocrafting", { "me-storage-64k" }, 5, 600, with_blocks(autocrafting,
 --- issue #38: level maintainer and circuit interface (EV); the level emitter and the toggle buses (me-network 0.5.4, its
 --- issue #355), where me-network puts them; issue #111: the 16k and 64k crafting storage and the co-processing unit at IV,
 --- the 256k crafting storage at LuV
+--- Issue #814 (me-network 0.6.0, its issue #679): me-network's technology ME Level Emitter (after ME Network and Circuit
+--- network, before autocrafting) unlocks the level emitter and the circuit interface there. Here it sits on ME Network's
+--- tier (MV, the same packs) and unlocks the level emitter alone, whose decider combinator and calculation processor are
+--- there; the circuit interface stays with ME Automation, where its EV sensor and the HV assembler are. ME Automation
+--- needs it, as in me-network. Without the technology (me-network before 0.6.0) the emitter comes with ME Automation
+local HAS_EMITTER_TECH = HAS_TOGGLE and data.raw.technology["me-level-emitter"] ~= nil
 local automation = { "me-level-maintainer", "me-circuit-interface" }
+local automation_before = { "me-autocrafting", "circuit-network" }
+if HAS_EMITTER_TECH then
+	tech("me-level-emitter", { "me-network", "circuit-network" }, 3, 200, { "me-level-emitter" })
+	automation_before[#automation_before + 1] = "me-level-emitter"
+end
 if HAS_TOGGLE then
-	for _, name in ipairs({ "me-level-emitter", "me-toggle-bus", "me-inverted-toggle-bus" }) do automation[#automation + 1] = name end
+	for _, name in ipairs({ "me-level-emitter", "me-toggle-bus", "me-inverted-toggle-bus" }) do
+		if not (HAS_EMITTER_TECH and name == "me-level-emitter") then automation[#automation + 1] = name end
+	end
 end
 if HAS_ADVANCED_EMITTER then automation[#automation + 1] = "me-advanced-level-emitter" end   -- (issue #457)
-tech("me-automation", { "me-autocrafting", "circuit-network" }, 5, 800, automation, SEVEN)
+tech("me-automation", automation_before, 5, 800, automation, SEVEN)
 tech("me-co-processing", { "me-autocrafting", "me-storage-256k", "iv-components" }, 6, 1200, with_blocks({},
 	{ "me-16k-crafting-storage", "me-64k-crafting-storage", "me-crafting-co-processing-unit" }), SEVEN)
 --- issue #456: the Pattern Terminal Ex with its LuV components (me-network: with the Pattern Terminal); issue #485: its
