@@ -192,10 +192,42 @@ local function pipe_rows()
 	log("DEVCHECK-PIPECONN-BEGIN\n" .. table.concat(rows, "\n") .. "\nDEVCHECK-PIPECONN-END")
 end
 
+--- Issue #812: an entity of this mod whose collision box is not square turns its box when a player rotates it; when its
+--- graphics have one direction only, the picture then no longer covers the tiles it takes (the Bricked Blast Furnace,
+--- 3x4). Every such entity is placed here facing east; devcheck.py fails when it took the direction and the data stage
+--- (section ROTATEGFX of data-final-fixes.lua) found no graphics per direction.
+--- type, name, created by, width, height, not-rotatable flag, supports_direction, direction it took facing east
+local function rotate_rows()
+	local rows = {}
+	local surface = game.surfaces[1]
+	local x = 0
+	for name, p in pairs(prototypes.entity) do
+		local h = prototypes.get_history(p.type, name) or {}
+		local ours = h.created == "gregtorio-continued"
+		for _, m in pairs(h.changed or {}) do if m == "gregtorio-continued" then ours = true end end
+		local cb = p.collision_box
+		local w, ht = cb.right_bottom.x - cb.left_top.x, cb.right_bottom.y - cb.left_top.y
+		if ours and math.abs(w - ht) > 0.05 and w > 0 and ht > 0 then
+			x = x + 40
+			local took = "not placed"
+			local ok, e = pcall(surface.create_entity, { name = name, position = { 100000 + x, 100000 }, force = "player",
+				direction = defines.direction.east, raise_built = false, create_build_effect_smoke = false })
+			if ok and e and e.valid then
+				took = tostring(e.direction)
+				e.destroy()
+			end
+			rows[#rows + 1] = table.concat({ p.type, name, h.created or "", string.format("%g", w), string.format("%g", ht),
+				tostring(p.flags and p.flags["not-rotatable"] == true), tostring(get(p, "supports_direction")), took }, "\t")
+		end
+	end
+	log("DEVCHECK-ROTATE-BEGIN\n" .. table.concat(rows, "\n") .. "\nDEVCHECK-ROTATE-END")
+end
+
 script.on_init(function()
 	owners()
 	names_rows()
 	placeable_rows()
 	intermediate_rows()
 	pipe_rows()
+	rotate_rows()
 end)
