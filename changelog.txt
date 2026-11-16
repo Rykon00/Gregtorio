@@ -1,5 +1,7 @@
 ---------------------------------------------------------------------------------------------------
 Version: 0.5.11
+  Features:
+    - The ME P2P Tunnels for items and fluids of me-network 0.6.0 have GT New Horizons' recipe (issue #808): a titanium plate, 2 certus quartz screws, an engineering processor and 3 fluix crystals in the MV assembler, 18 s (GT New Horizons' P2P Tunnel - ME). They come with ME Autocrafting, beside the pattern provider they serve. Turning an item tunnel into a fluid tunnel and back stays a hand recipe: GT New Horizons does it with a click on the placed tunnel, which Factorio does not have.
   Bugfixes:
     - Pipes can connect to the Fluid Drilling Rigs (issue #809): their two output connections lay inside the machine, so only the ME network's buses got the fluid out. They sit on the rig's south edge now, left and right of the controller, on every tier from MV to MAX; placed rigs keep working and keep their fluid.
 ---------------------------------------------------------------------------------------------------
