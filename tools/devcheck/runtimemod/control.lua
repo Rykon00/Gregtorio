@@ -167,6 +167,8 @@ end
 --- LFTR (issue #386): the Liquid Fluoride Thorium Reactor on LFTR Fuel 1 runs without power and its hidden dynamo gives
 --- 40.96 MW into a network with a load; mined, the dynamo goes with it.
 --- Drilling rig output (issue #809): an MV Fluid Drilling Rig fills a storage tank through a pipe on its south edge.
+--- Turned machines (issue #812): the Bricked Blast Furnace and the MV Electric Blast Furnace facing each direction cover
+--- 3 x 4 or 4 x 3 tiles, inserters at their four sides reach them and the tiles around them are free.
 --- Victory: when the other tests have reported, `victory` is researched by script and must win the game.
 
 local VICTORY_DEADLINE = 1450
@@ -195,6 +197,7 @@ local function tests_running()
 	check(storage.maint and storage.maint.done, "maintenance")
 	check(storage.water_pump and storage.water_pump.done, "water pump")
 	check(storage.rig and storage.rig.done, "drilling rig")
+	check(storage.turn and storage.turn.done, "turned machines")
 	check(storage.ebf_heat and storage.ebf_heat.done, "ebf heat")
 	check(storage.radiation and storage.radiation.done, "radiation")
 	check(storage.wireless and storage.wireless.done, "wireless")
@@ -1817,6 +1820,91 @@ function rig_test()
 	end
 	for _, p in pairs(problems) do log("DEVCHECK-RUNTIME-FAIL drilling rig test: " .. p) end
 	log("DEVCHECK-RUNTIME-RIG " .. (#problems == 0 and "ok" or "failed") .. " (" .. (st.info or "") .. ")")
+end
+
+--- Turned machines (issue #812): the Bricked Blast Furnace (3x4, no pipe connections) and the MV Electric Blast Furnace
+--- (3x4, with them) placed facing north, east, south and west. Each must take the direction and cover 3 x 4 tiles upright
+--- and 4 x 3 lying; an inserter on the tile outside the middle of each of its four sides must reach it, every tile of the
+--- box must refuse an inserter and every tile around the box must take one (the upright picture over a lying box made
+--- the free tiles look taken). The picture per direction itself is checked on the prototypes (`check`, section ROTATE).
+local TN_X, TN_Y, TN_TICK = -470, 40, 120
+local TN_DIRS = { { "north", defines.direction.north }, { "east", defines.direction.east },
+	{ "south", defines.direction.south }, { "west", defines.direction.west } }
+function setup_turn_test(s)
+	local fails = {}
+	local ok, err = pcall(function()
+		local st = { rows = {} }
+		local inserter = prototypes.entity["inserter"] and "inserter" or "burner-inserter"
+		for mi, machine in ipairs({ "primitive-blast-furnace", "mv-electric-blast-furnace" }) do
+			for di, d in ipairs(TN_DIRS) do
+				local e = s.create_entity{ name = machine, position = { TN_X + di * 12, TN_Y + mi * 12 }, force = "player",
+					direction = d[2], raise_built = true }
+				local row = { machine = machine, facing = d[1], want = d[2], entity = e, inserters = {}, problems = {} }
+				local bb = e.bounding_box
+				local x1, y1 = math.floor(bb.left_top.x), math.floor(bb.left_top.y)
+				local x2, y2 = math.ceil(bb.right_bottom.x), math.ceil(bb.right_bottom.y)
+				row.tiles = (x2 - x1) .. " x " .. (y2 - y1)
+				--- every tile of the box is taken, every tile of the ring around it is free
+				local taken, free, ring = 0, 0, 0
+				for x = x1 - 1, x2 do
+					for y = y1 - 1, y2 do
+						local inside = x >= x1 and x < x2 and y >= y1 and y < y2
+						local can = s.can_place_entity{ name = inserter, position = { x + 0.5, y + 0.5 }, force = "player" }
+						if inside then
+							if not can then taken = taken + 1 end
+						else
+							ring = ring + 1
+							if can then free = free + 1 end
+						end
+					end
+				end
+				row.taken, row.free, row.ring, row.area = taken, free, ring, (x2 - x1) * (y2 - y1)
+				--- an inserter outside the middle of each side
+				local cx, cy = math.floor((x1 + x2) / 2) + 0.5, math.floor((y1 + y2) / 2) + 0.5
+				for _, p in pairs({ { cx, y1 - 0.5, defines.direction.north }, { x2 + 0.5, cy, defines.direction.east },
+					{ cx, y2 + 0.5, defines.direction.south }, { x1 - 0.5, cy, defines.direction.west } }) do
+					row.inserters[#row.inserters + 1] = s.create_entity{ name = inserter, position = { p[1], p[2] },
+						force = "player", direction = p[3] }
+				end
+				st.rows[#st.rows + 1] = row
+			end
+		end
+		storage.turn = st
+	end)
+	if not ok then fails[#fails + 1] = "turned machine test: " .. tostring(err) end
+	return fails
+end
+
+function turn_test()
+	local st = storage.turn
+	if not st or st.done or game.tick < TN_TICK then return end
+	st.done = true
+	local problems, info = {}, {}
+	for _, row in pairs(st.rows) do
+		local e, label = row.entity, row.machine .. " facing " .. row.facing
+		if not e.valid then
+			problems[#problems + 1] = label .. ": gone"
+		else
+			if e.direction ~= row.want then problems[#problems + 1] = label .. ": took direction " .. e.direction end
+			local want = (row.facing == "north" or row.facing == "south") and "3 x 4" or "4 x 3"
+			if row.tiles ~= want then problems[#problems + 1] = label .. ": covers " .. row.tiles .. " tiles, not " .. want end
+			if row.taken ~= row.area then
+				problems[#problems + 1] = label .. ": " .. row.taken .. " of its " .. row.area .. " tiles refuse an inserter"
+			end
+			if row.free ~= row.ring then
+				problems[#problems + 1] = label .. ": " .. row.free .. " of the " .. row.ring .. " tiles around it take an inserter"
+			end
+			local reach = 0
+			for _, ins in pairs(row.inserters) do
+				if ins.valid and (ins.drop_target == e or ins.pickup_target == e) then reach = reach + 1 end
+			end
+			if reach ~= 4 then problems[#problems + 1] = label .. ": " .. reach .. " of 4 inserters at its sides reach it" end
+			info[#info + 1] = string.format("%s %s %s, %d/%d tiles around free, %d inserters reach", row.machine, row.facing,
+				row.tiles, row.free, row.ring, reach)
+		end
+	end
+	for _, p in pairs(problems) do log("DEVCHECK-RUNTIME-FAIL turned machine test: " .. p) end
+	log("DEVCHECK-RUNTIME-TURN " .. (#problems == 0 and "ok" or "failed") .. " (" .. table.concat(info, "; ") .. ")")
 end
 
 --- Maintenance (issue #618, scripts/fork-maintenance.lua): with the setting off no machine has a maintenance slot; with it on
@@ -3693,6 +3781,7 @@ script.on_nth_tick(10, function()
 	maintenance_test()
 	water_pump_test()
 	rig_test()
+	turn_test()
 	ebf_heat_test()
 	radiation_test()
 	wireless_test()
@@ -3784,6 +3873,7 @@ script.on_init(function()
 	for _, f in pairs(setup_maintenance_test(s)) do fails[#fails + 1] = f end
 	for _, f in pairs(setup_water_pump_test(s)) do fails[#fails + 1] = f end
 	for _, f in pairs(setup_rig_test(s)) do fails[#fails + 1] = f end
+	for _, f in pairs(setup_turn_test(s)) do fails[#fails + 1] = f end
 	for _, f in pairs(setup_ebf_heat_test(s)) do fails[#fails + 1] = f end
 	for _, f in pairs(setup_radiation_test(s)) do fails[#fails + 1] = f end
 	for _, f in pairs(setup_wireless_test(s)) do fails[#fails + 1] = f end
