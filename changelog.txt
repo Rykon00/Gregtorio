@@ -1,6 +1,7 @@
 ---------------------------------------------------------------------------------------------------
 Version: 0.5.11
   Bugfixes:
+    - me-network's technology ME Level Emitter (me-network 0.6.0) sits on Gregtorio's tiers (issue #814): it kept me-network's own two science packs and unlocked the ME Circuit Interface long before its EV sensor and the HV assembler. It now costs the packs of ME Network (MV), comes after ME Network and Circuit network and unlocks the ME Level Emitter; the ME Circuit Interface stays with ME Automation, which needs the new technology.
     - Pipes can connect to the Fluid Drilling Rigs (issue #809): their two output connections lay inside the machine, so only the ME network's buses got the fluid out. They sit on the rig's south edge now, left and right of the controller, on every tier from MV to MAX; placed rigs keep working and keep their fluid.
 ---------------------------------------------------------------------------------------------------
 Version: 0.5.10
