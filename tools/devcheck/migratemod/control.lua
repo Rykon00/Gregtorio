@@ -10,6 +10,10 @@
 --- update (DEVCHECK-MIGRATE-POWER, issue #25), and a LuV plasma turbine on helium plasma under full load
 --- with a turbine output hatch, which must run after the update and return one helium per plasma
 --- (DEVCHECK-MIGRATE-TURBINE, issue #28).
+--- Issue #809: an MV Fluid Drilling Rig with water in its output boxes keeps it after the update, and a tank on pipes
+--- along its south edge, built after the update, fills (DEVCHECK-MIGRATE-RIG).
+--- Issue #812: a Bricked Blast Furnace and an MV Electric Blast Furnace facing east stay where they are, facing east
+--- (DEVCHECK-MIGRATE-TURNED).
 --- Pattern providers (issue #27, issue #80): in the same network a Molecular Assembler and a fresh iron furnace
 --- with providers; the furnace's provider has a recipe chosen (versions with the furnace choice). After the update
 --- (issue #80: encoded patterns) the assembler's provider must hold a crafting pattern of the assembler's recipe and
@@ -611,6 +615,19 @@ local CHECK_TICK = 570                                                  -- the j
 local CPU_BLOCKS = { { "me-1k-crafting-storage", 8.5, Y + 8.5 }, { "me-crafting-unit", 9.5, Y + 8.5 },
 	{ "me-crafting-unit", 8.5, Y + 9.5 }, { "me-crafting-unit", 9.5, Y + 9.5 } }
 
+--- the other item ingredients of PT_RECIPE, enough for the job: since Gregtorio 0.5.10 (issue #612) the hand recipe of
+--- the gear also uses up a hammer and a wire cutter (hammer-usage, wire-cutter-usage), without which the old version's
+--- planner refuses the job ("missing")
+function job_extras()
+	local out = {}
+	for _, ing in pairs(prototypes.recipe[PT_RECIPE].ingredients) do
+		if ing.type == "item" and ing.name ~= "iron-plate" and ing.name ~= "iron-stick" then
+			out[ing.name] = ing.amount * JOB_GEARS * 2
+		end
+	end
+	return out
+end
+
 --- the version of the old save has the cable network of issue #68 step R1 (and still the old fluid drives)
 function R1() return prototypes.entity["me-network-controller"] ~= nil end
 --- the version of the old save stores fluids in fluid cells already (issue #68 step R2, 0.4.0 and later: the fluid
@@ -704,6 +721,7 @@ local function setup_patterns(place)
 		inv.destroy()
 		remote.call(NET, "store_in_drive", drive, "iron-plate", 50)
 		remote.call(NET, "store_in_drive", drive, "iron-stick", 50)
+		for name, n in pairs(job_extras()) do remote.call(NET, "store_in_drive", drive, name, n) end
 		--- issue #580 (me-network #503): lenses that issue #370 renamed (apatite -> green sapphire, lapis -> sapphire) in the
 		--- network: its storage keeps them under their old names, which a JSON migration does not reach
 		if prototypes.item["apatite-lens"] and prototypes.item["lapis-lens"] then
@@ -723,6 +741,7 @@ local function setup_patterns(place)
 		drive = place("me-drive-16k", 8.5, Y + 12.5)
 		drive.insert{ name = "iron-plate", count = 50 }
 		drive.insert{ name = "iron-stick", count = 50 }
+		for name, n in pairs(job_extras()) do drive.insert{ name = name, count = n } end
 	end
 	local id, why = remote.call(A, "start", p, "iron-gear-wheel", JOB_GEARS)
 	--- crafting CPUs are multiblocks since me-network 0.3.0 (issue #6): a lone ME Crafting CPU is no CPU there, no job
@@ -1978,7 +1997,153 @@ local function check_furnaces()
 		.. " ore machines are furnaces with their contents, " .. back .. " got the ingredients of their craft back)")
 end
 
+--- Drilling rig (issue #809: its output connections moved from inside the machine onto its south edge): the old save has
+--- an MV Fluid Drilling Rig facing north on its water recipe, without power, with water in both output boxes. After the
+--- update it must keep its recipe and its water (checked at TT_CHECK_TICK); then a row of pipes along its
+--- south edge, a storage tank and power are built, and RG_RUN ticks later the tank must hold the old water and at least
+--- one craft more.
+local RG_AT, RG_WATER, RG_RUN, RG_CRAFT = { -100.5, Y + 100 }, { 600, 300 }, 360, 1000
+--- (2.0: LuaFluidBox, 2.1: the fluid methods of LuaEntity)
+local function rig_fluid(e, i)
+	local f
+	if V21 then f = e.get_fluid(i) else f = e.fluidbox[i] end
+	return f and f.name == "water" and f.amount or 0
+end
+--- the rig's fluid boxes and their water in total (2.1 counts only the boxes the recipe uses, one for water)
+local function rig_boxes(e) return V21 and e.fluids_count or #e.fluidbox end
+local function rig_water(e)
+	local w = 0
+	for i = 1, rig_boxes(e) do w = w + rig_fluid(e, i) end
+	return w
+end
+local function setup_rig()
+	if not (prototypes.entity["mv-drilling-rig"] and prototypes.recipe["water-drilling-rig"]) then
+		storage.rig = "skipped"
+		log("DEVCHECK-MIGRATE-SETUP-RIG skipped (no MV drilling rig in this version)")
+		return
+	end
+	local s = game.surfaces[1]
+	s.request_to_generate_chunks(RG_AT, 1)
+	s.force_generate_chunk_requests()
+	local area = { { RG_AT[1] - 8, RG_AT[2] - 8 }, { RG_AT[1] + 8, RG_AT[2] + 12 } }
+	local land = {}
+	for _, t in pairs(s.find_tiles_filtered{ area = area, collision_mask = "water_tile" }) do
+		land[#land + 1] = { name = "landfill", position = t.position }
+	end
+	s.set_tiles(land)
+	for _, e in pairs(s.find_entities_filtered{ area = area, type = { "tree", "simple-entity", "cliff", "resource" } }) do e.destroy() end
+	game.forces.player.recipes["water-drilling-rig"].enabled = true
+	local rig = s.create_entity{ name = "mv-drilling-rig", position = RG_AT, force = "player",
+		direction = defines.direction.north, raise_built = true }
+	rig.set_recipe("water-drilling-rig")
+	local boxes = math.min(#RG_WATER, rig_boxes(rig))
+	for i = 1, boxes do
+		local amount = RG_WATER[i]
+		if V21 then rig.set_fluid(i, { name = "water", amount = amount }) else rig.fluidbox[i] = { name = "water", amount = amount } end
+	end
+	local got, want = rig_water(rig), 0
+	for i = 1, boxes do want = want + RG_WATER[i] end
+	storage.rig = { rig = rig, water = got }
+	log("DEVCHECK-MIGRATE-SETUP-RIG " .. (near(got, want) and got > 0 and "ok" or "failed") .. " (" .. got
+		.. " water in " .. boxes .. " output box(es))")
+end
+
+local function check_rig()
+	local st = storage.rig
+	if st == nil or st == "skipped" then
+		log("DEVCHECK-MIGRATE-RIG skipped")
+		return
+	end
+	local problems = {}
+	local function expect(ok, what) if not ok then problems[#problems + 1] = what end end
+	local rig = st.rig
+	if not rig.valid then
+		expect(false, "the rig is gone")
+	elseif not st.tank then
+		local r = rig.get_recipe()
+		expect(r and r.name == "water-drilling-rig", "the rig's recipe is " .. (r and r.name or "none"))
+		local now = rig_water(rig)
+		expect(near(now, st.water), "the rig holds " .. now .. " water, not " .. st.water)
+		st.kept = now
+		if #problems == 0 then
+			local s = rig.surface
+			for dx = -1, 1 do
+				s.create_entity{ name = "pipe", position = { RG_AT[1] + dx, RG_AT[2] + 3.5 }, force = "player" }
+			end
+			st.tank = s.create_entity{ name = "storage-tank", position = { RG_AT[1], RG_AT[2] + 5.5 }, force = "player",
+				direction = defines.direction.north }
+			s.create_entity{ name = "electric-energy-interface", position = { RG_AT[1] - 4, RG_AT[2] }, force = "player" }
+			s.create_entity{ name = "substation", position = { RG_AT[1] - 4, RG_AT[2] + 3 }, force = "player" }
+			st.until_tick = game.tick + RG_RUN
+			return
+		end
+	else
+		local old = st.water
+		local water = fluid_total(st.tank, "water")
+		expect(water >= old + RG_CRAFT, string.format("the tank holds %g water %d ticks after pipes were built, not the "
+			.. "old %g and a craft of %d", water, RG_RUN, old, RG_CRAFT))
+		st.info = string.format("kept %g water, the tank got %g", st.kept, water)
+	end
+	st.done = true
+	for _, m in pairs(problems) do log("DEVCHECK-MIGRATE-FAIL rig: " .. m) end
+	log("DEVCHECK-MIGRATE-RIG " .. (#problems == 0 and "ok" or "failed") .. (st.info and " (" .. st.info .. ")" or ""))
+end
+
+--- Turned machines (issue #812): the old save has a Bricked Blast Furnace and an MV Electric Blast Furnace facing east
+--- (their one picture stood upright over the lying box). After the update both must still be there, face east and cover
+--- 4 x 3 tiles: the update gives them a picture per direction and leaves the placed machines alone.
+local TN_AT = { RG_AT[1] + 40, RG_AT[2] }
+local function setup_turned()
+	local s = game.surfaces[1]
+	s.request_to_generate_chunks(TN_AT, 1)
+	s.force_generate_chunk_requests()
+	local area = { { TN_AT[1] - 8, TN_AT[2] - 8 }, { TN_AT[1] + 20, TN_AT[2] + 8 } }
+	local land = {}
+	for _, t in pairs(s.find_tiles_filtered{ area = area, collision_mask = "water_tile" }) do
+		land[#land + 1] = { name = "landfill", position = t.position }
+	end
+	s.set_tiles(land)
+	for _, e in pairs(s.find_entities_filtered{ area = area, type = { "tree", "simple-entity", "cliff", "resource" } }) do e.destroy() end
+	local st, placed = {}, 0
+	for i, name in ipairs({ "primitive-blast-furnace", "mv-electric-blast-furnace" }) do
+		if prototypes.entity[name] then
+			local e = s.create_entity{ name = name, position = { TN_AT[1] + (i - 1) * 10, TN_AT[2] }, force = "player",
+				direction = defines.direction.east, raise_built = true }
+			if e and e.direction == defines.direction.east then
+				st[#st + 1] = { name = name, entity = e, position = e.position }
+				placed = placed + 1
+			end
+		end
+	end
+	storage.turned = st
+	log("DEVCHECK-MIGRATE-SETUP-TURNED " .. (placed == 2 and "ok" or "failed") .. " (" .. placed .. " machines facing east)")
+end
+
+local function check_turned()
+	local problems, info = {}, {}
+	for _, row in pairs(storage.turned or {}) do
+		local e = row.entity
+		if not e.valid then
+			problems[#problems + 1] = row.name .. " is gone"
+		else
+			local bb = e.bounding_box
+			local tiles = math.ceil(bb.right_bottom.x - bb.left_top.x) .. " x " .. math.ceil(bb.right_bottom.y - bb.left_top.y)
+			if e.direction ~= defines.direction.east then problems[#problems + 1] = row.name .. " faces " .. e.direction end
+			if tiles ~= "4 x 3" then problems[#problems + 1] = row.name .. " covers " .. tiles .. " tiles, not 4 x 3" end
+			if e.position.x ~= row.position.x or e.position.y ~= row.position.y then
+				problems[#problems + 1] = row.name .. " moved"
+			end
+			info[#info + 1] = row.name .. " east " .. tiles
+		end
+	end
+	if #(storage.turned or {}) == 0 then problems[#problems + 1] = "no turned machine in the old save" end
+	for _, m in pairs(problems) do log("DEVCHECK-MIGRATE-FAIL turned machines: " .. m) end
+	log("DEVCHECK-MIGRATE-TURNED " .. (#problems == 0 and "ok" or "failed") .. " (" .. table.concat(info, ", ") .. ")")
+end
+
 script.on_init(function()
+	setup_rig()
+	setup_turned()
 	setup_furnaces()
 	setup_vein_grid()
 	setup_vein_ores()
@@ -2079,6 +2244,21 @@ script.on_nth_tick(30, function(event)
 		job.after = j and j.status or "gone"
 		for _, b in pairs(CPU_BLOCKS) do
 			game.surfaces[1].create_entity{ name = b[1], position = { b[2], b[3] }, force = "player", raise_built = true }
+		end
+	end
+	--- issue #809: the drilling rig's water, then (once the pipes are built) its tank
+	if not storage.turned_checked and event.tick >= TT_CHECK_TICK then
+		storage.turned_checked = true
+		check_turned()
+	end
+	if not storage.rig_checked and event.tick >= TT_CHECK_TICK then
+		local rg = storage.rig
+		if type(rg) ~= "table" then
+			storage.rig_checked = true
+			check_rig()
+		elseif not rg.until_tick or event.tick >= rg.until_tick then
+			check_rig()
+			storage.rig_checked = rg.done
 		end
 	end
 	--- the turbine has to run first (this handler also fires at tick 0)

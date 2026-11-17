@@ -431,7 +431,9 @@
     every file that makes or changes a recipe; devcheck fails for an amount off the grid)
   - 198 crafting menu (shows machine recipes, which upstream `create_recipe` hides; a recipe that must stay hidden goes
     into its allow-list `FORK_CRAFTING_MENU_HIDDEN`, devcheck fails otherwise; startup setting in `settings.lua`)
-  - 199 finalize
+  - 199 finalize (issue #809: devcheck fails for an entity this mod creates or changes with a pipe connection that is not
+    on the edge of its collision box or faces into it, underground and linked ones aside, unless it is in the allow-list
+    `FORK_PIPE_CONNECTIONS_INSIDE` with its reason)
   - 200 material parts (issues #118 and #145: the item group "Material parts", one row per form, the materials inside a
     row by the tier of the technology that unlocks their ingot (its highest science pack), else of any part; items only,
     the recipes keep their machine rows; devcheck warns for a material with no tier; loads after 199 so the final

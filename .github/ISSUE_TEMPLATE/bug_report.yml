@@ -67,7 +67,13 @@ body:
   - type: textarea
     id: log
     attributes:
-      label: Log, screenshots, save
+      label: Log
       description: |
-        For crashes attach `factorio-current.log` (Windows: `%APPDATA%\Factorio`). Screenshots help for GUI and graphics problems.
+        For crashes paste the text of `factorio-current.log` (Windows: `%APPDATA%\Factorio`) or the error message with its stack trace. It is shown as a code block, so files cannot be attached here; use the next field for those.
       render: shell
+  - type: textarea
+    id: files
+    attributes:
+      label: Screenshots / save file
+      description: |
+        Drag and drop images and your save (the `.zip` from `%APPDATA%\Factorio\saves`) into this field to attach them. Screenshots help for GUI and graphics problems, a save helps for everything that is hard to reproduce.

@@ -2103,6 +2103,107 @@ def check_tool_intermediates(sec):
     return f"{len(rows)} items with more than one hand recipe the crafting menu may chain", sorted(problems)
 
 
+def check_pipe_connections(sec):
+    """Issue #809: every pipe connection of an entity this mod creates or changes (section PIPECONN of
+    checkmod/control.lua: the runtime prototypes, each of the four directions the entity can face) must sit on the edge of
+    its collision box and face out of it, so a pipe can connect; underground and linked connections do not count. The
+    drilling rigs' outputs lay inside the machine and only the ME network's buses got the fluid out. An entity in a row
+    fails unless it is in the allow-list FORK_PIPE_CONNECTIONS_INSIDE of prototypes/199-fork-finalize.lua with its reason
+    (section PIPEINSIDEOK); an entry that has no such connection fails too. Returns (info line, problems)."""
+    if "PIPECONN" not in sec:
+        return "", ["no DEVCHECK-PIPECONN section in the log (checkmod/control.lua did not run)"]
+    allow = {r[0]: (r[1] if len(r) > 1 else "") for r in sec.get("PIPEINSIDEOK", [])}
+    checked, bad = 0, {}
+    for r in sec["PIPECONN"]:
+        if r[0] == "#checked":
+            checked = int(r[1])
+        elif len(r) > 3:
+            bad[r[1]] = (r[0], r[3])
+    problems = [f"{typ} {name}: {conns}" for name, (typ, conns) in sorted(bad.items()) if name not in allow]
+    problems += [f"{name}: in FORK_PIPE_CONNECTIONS_INSIDE but every pipe connection is on the edge (remove the entry)"
+                 for name in sorted(allow) if name not in bad]
+    problems += [f"{name}: in FORK_PIPE_CONNECTIONS_INSIDE without a reason" for name, why in sorted(allow.items())
+                 if name in bad and not why.strip()]
+    kept = sorted(n for n in bad if n in allow)
+    return (f"{checked} entities with fluid boxes checked, {len(bad)} with a connection inside or facing in, "
+            f"{len(kept)} kept on purpose" + (f" ({', '.join(kept)})" if kept else "")), problems
+
+
+def check_rotated_graphics(sec):
+    """Issue #812: an entity this mod creates or changes whose collision box is not square turns its box when it is
+    rotated (section ROTATE of checkmod/control.lua: each is placed facing east and reports the direction it took); when
+    its graphics have one direction only (section ROTATEGFX of checkmod/data-final-fixes.lua: no north/east/south/west key
+    and no direction_count), the picture no longer covers the tiles it takes (the Bricked Blast Furnace, 3x4). Such an
+    entity fails unless it has the flag not-rotatable (then east is refused) or is in the allow-list
+    FORK_ROTATED_GRAPHICS_OK of prototypes/fork-rotated-graphics.lua with its reason (section ROTATEGFXOK); an entry that is
+    no such entity fails too. Returns (info line, problems)."""
+    if "ROTATE" not in sec:
+        return "", ["no DEVCHECK-ROTATE section in the log (checkmod/control.lua did not run)"]
+    per_direction = {r[1]: r[2] == "true" for r in sec.get("ROTATEGFX", []) if len(r) > 2}
+    allow = {r[0]: (r[1] if len(r) > 1 else "") for r in sec.get("ROTATEGFXOK", [])}
+    rows = [r + [""] * (8 - len(r)) for r in sec["ROTATE"]]
+    bad, locked = {}, []
+    for etype, name, _created, w, h, flag, _supports, took in rows:
+        if took in ("0", "not placed"):
+            if flag == "true":
+                locked.append(name)
+            continue
+        if not per_direction.get(name, False):
+            bad[name] = f"{etype} {name}: {w} x {h}, turns (direction {took} when placed facing east) with one picture"
+    problems = [text for name, text in sorted(bad.items()) if name not in allow]
+    problems += [f"{name}: in FORK_ROTATED_GRAPHICS_OK but it does not turn or has graphics per direction (remove the entry)"
+                 for name in sorted(allow) if name not in bad]
+    problems += [f"{name}: in FORK_ROTATED_GRAPHICS_OK without a reason" for name, why in sorted(allow.items())
+                 if name in bad and not why.strip()]
+    kept = sorted(n for n in bad if n in allow)
+    return (f"{len(rows)} entities with a box that is not square, {len(locked)} not rotatable"
+            + (f" ({', '.join(sorted(locked))})" if locked else "") + f", {len(bad)} turn with one picture, "
+            f"{len(kept)} kept on purpose" + (f" ({', '.join(kept)})" if kept else "")), problems
+
+
+ROTATED_TURNS = (("east", "ROTATE_270"), ("south", "ROTATE_180"), ("west", "ROTATE_90"))
+
+
+def rotated_sprites(sec, write=False):
+    """Issue #812: the turned pictures of the machines whose box is not square (prototypes/fork-rotated-graphics.lua,
+    section ROTATEDSPRITES: every sheet it needs turned, with its frames). `<name>-east.png`, `-south.png` and
+    `-west.png` beside the original hold each frame turned clockwise by 90, 180 and 270 degrees, in the frame's place of
+    the sheet. `check --rotated-sprites` writes them; `check` fails for one that is missing or is not the turned original.
+    Returns (info line, problems)."""
+    try:
+        from PIL import Image
+    except ImportError:
+        return "Pillow not installed, turned pictures not checked (pip install pillow)", []
+    rows = [r for r in sec.get("ROTATEDSPRITES", []) if len(r) == 7]
+    problems, written = [], 0
+    for fn, w, h, fc, ll, x, y in rows:
+        src = ROOT / fn[len("__gregtorio-continued__/"):]
+        if not src.exists():
+            problems.append(f"{fn}: the original is missing")
+            continue
+        w, h, fc, ll, x, y = map(int, (w, h, fc, ll, x, y))
+        ll = min(ll or fc, fc)
+        sheet = Image.open(src).convert("RGBA")
+        for direction, turn in ROTATED_TURNS:
+            fw, fh = (w, h) if direction == "south" else (h, w)
+            out = Image.new("RGBA", (ll * fw, -(-fc // ll) * fh), (0, 0, 0, 0))
+            for i in range(fc):
+                col, row = i % ll, i // ll
+                frame = sheet.crop((x + col * w, y + row * h, x + col * w + w, y + row * h + h))
+                out.paste(frame.transpose(getattr(Image.Transpose, turn)), (col * fw, row * fh))
+            dst = src.with_name(f"{src.stem}-{direction}.png")
+            old = Image.open(dst).convert("RGBA") if dst.exists() else None
+            if old is not None and old.size == out.size and old.tobytes() == out.tobytes():
+                continue
+            if write:
+                out.save(dst, optimize=True)
+                written += 1
+            else:
+                problems.append(f"{dst.relative_to(ROOT).as_posix()}: " + ("missing" if old is None else
+                                "not the turned original") + " (devcheck.py check --rotated-sprites writes it)")
+    return (f"{len(rows)} sheets, {3 * len(rows)} turned pictures" + (f", {written} written" if write else "")), sorted(problems)
+
+
 def check_placeable(sec):
     """Issue #336: a player-built entity of this mod that gives items when mined must be placeable again by one of them
     (section PLACEABLE of checkmod/control.lua: the runtime prototypes, the mined items and items_to_place_this); the T1
@@ -3125,6 +3226,18 @@ def check(a):
     place_info, unplaceable = check_placeable(sec)
     print(f"\nplaceable entities (issue #336): {place_info}")
     report("entities whose mined item does not place them again (place_result missing or wrong)", unplaceable)
+    pipe_info, pipe_inside = check_pipe_connections(sec)
+    print(f"\npipe connections on the edge (issue #809): {pipe_info}")
+    report("pipe connections inside the collision box or facing into it (move them onto the edge, facing out, or add the "
+           "entity to FORK_PIPE_CONNECTIONS_INSIDE of prototypes/199-fork-finalize.lua with its reason)", pipe_inside)
+    rot_info, rot_bad = check_rotated_graphics(sec)
+    print(f"\nrotated graphics (issue #812): {rot_info}")
+    report("entities with a collision box that is not square that turn but have one picture (add the flag not-rotatable, "
+           "give them graphics per direction, or add the entity to FORK_ROTATED_GRAPHICS_OK of "
+           "prototypes/fork-rotated-graphics.lua with its reason)", rot_bad)
+    turned_info, turned_bad = rotated_sprites(sec, write=getattr(a, "rotated_sprites", False))
+    print(f"\nturned pictures (issue #812, prototypes/fork-rotated-graphics.lua): {turned_info}")
+    report("turned pictures that are missing or stale", turned_bad)
     tool_info, tool_chain = check_tool_intermediates(sec)
     print(f"\nGT tool charges in the crafting menu (issue #764): {tool_info}")
     report("tool charges with more than one hand recipe the crafting menu may chain (prototypes/148-fork-gtnh-table-items.lua)",
@@ -3255,7 +3368,7 @@ def check(a):
               or new_drafts or fluid_problems or locked or one_pack or fluid_steps or table_only or me_recipes or me_tab
               or extractor_split or ore_mixes or ore_chain or ore_baths or ore_o34 or ore_hammer
               or circuit_icons or pgm_dusts or qft_focus or recycling or blocks or names or gaps or tree or vanilla or lenses or mine_twins
-              or unplaceable or tool_chain or stale_unlocks or removed_keys or trigger_only or spoiling or classic_veins or early
+              or unplaceable or pipe_inside or rot_bad or turned_bad or tool_chain or stale_unlocks or removed_keys or trigger_only or spoiling or classic_veins or early
               or furnace or research_counts or nyi_icons or gtnh_icons or overclock or maint or ebf_heat or radiation
               or steam or nugget or steam_rates or boiler_output or vein_doc or renames or gtnh_numbers or parts_recycling or part_routes or part_crafting or chemistry or metallurgy
               or tick_clashes)
@@ -3366,7 +3479,7 @@ def runtime(a):
     print(f"benchmark: {ran.group(0) if ran else 'did not run'}")
     # the ME network's runtime tests are in me-network since issue #83 (its tools/devcheck)
     tests = (("MOLD", "mold test"), ("LENS", "lens test"), ("MOLDCLONE", "cloned mold machine test"), ("POWER", "power test"), ("FUEL", "fuel check test"), ("COOLED", "cooled fluid test"),
-             ("TIERS", "turbine tier test"), ("RECIPES", "recipe test"), ("CRUSH", "raw ore crushing test"), ("OREFURNACE", "ore furnace line test"), ("STEAM", "steam turbine test"), ("CHAIN", "nuclear chain test"), ("LFTR", "LFTR test"), ("DYSON", "Dyson Swarm test"), ("LSC", "supercapacitor test"), ("LSUP", "supercapacitor upgrade test"), ("ELEVATOR", "space elevator test"), ("MELT", "melt and cast test"), ("OFFER", "offered recipes test"), ("EMINE", "electric mine test"), ("SOLAR", "solar boiler test"), ("COALBOILER", "coal boiler test"),("TORCH", "torch test"), ("MAINT", "maintenance test"), ("WATERPUMP", "steam water pump test"), ("EBFHEAT", "blast furnace heat test"), ("RADIATION", "radiation test"), ("WIRELESS", "wireless energy test"), ("PLAYER", "player path test"), ("BATTERY", "battery buffer test"), ("VEINS", "map vein test"), ("CLASSIC", "classic vein test"), ("DRILLS", "mining drill test"), ("PORTAL", "portal test"), ("ENDER", "ender storage test"), ("VICTORY", "victory test"),
+             ("TIERS", "turbine tier test"), ("RECIPES", "recipe test"), ("CRUSH", "raw ore crushing test"), ("OREFURNACE", "ore furnace line test"), ("STEAM", "steam turbine test"), ("CHAIN", "nuclear chain test"), ("LFTR", "LFTR test"), ("DYSON", "Dyson Swarm test"), ("LSC", "supercapacitor test"), ("LSUP", "supercapacitor upgrade test"), ("ELEVATOR", "space elevator test"), ("MELT", "melt and cast test"), ("OFFER", "offered recipes test"), ("EMINE", "electric mine test"), ("SOLAR", "solar boiler test"), ("COALBOILER", "coal boiler test"),("TORCH", "torch test"), ("MAINT", "maintenance test"), ("WATERPUMP", "steam water pump test"), ("RIG", "drilling rig output test"), ("TURN", "turned machine test"), ("EBFHEAT", "blast furnace heat test"), ("RADIATION", "radiation test"), ("WIRELESS", "wireless energy test"), ("PLAYER", "player path test"), ("BATTERY", "battery buffer test"), ("VEINS", "map vein test"), ("CLASSIC", "classic vein test"), ("DRILLS", "mining drill test"), ("PORTAL", "portal test"), ("ENDER", "ender storage test"), ("VICTORY", "victory test"),
              ("POSTVICTORY", "post-victory test"))
     for key, label in tests:
         m = re.search(rf"DEVCHECK-RUNTIME-{key} (.*)", log)
@@ -3766,6 +3879,10 @@ def migrate(a):
     print(f"reactor on steam in the old save: {power.group(1) if power else 'no result'}")
     turbine = re.search(r"DEVCHECK-MIGRATE-TURBINE (.*)", log)
     print(f"plasma turbine of the old save: {turbine.group(1) if turbine else 'no result'}")
+    rig = re.search(r"DEVCHECK-MIGRATE-RIG (.*)", log)
+    print(f"drilling rig of the old save keeps its water, pipes connect (issue #809): {rig.group(1) if rig else 'no result'}")
+    turned = re.search(r"DEVCHECK-MIGRATE-TURNED (.*)", log)
+    print(f"turned machines of the old save stay as they are (issue #812): {turned.group(1) if turned else 'no result'}")
     patterns = re.search(r"DEVCHECK-MIGRATE-PATTERNS (.*)", log)
     print(f"pattern providers of the old save: {patterns.group(1) if patterns else 'no result'}")
     job = re.search(r"DEVCHECK-MIGRATE-JOB (.*)", log)
@@ -3810,6 +3927,8 @@ def migrate(a):
         print(load_errors(log) or script_error(log) or "")
     ok = ran and fluids and not fluids.group(1).startswith("failed") and power and not power.group(1).startswith("failed") \
         and turbine and not turbine.group(1).startswith("failed") \
+        and rig and not rig.group(1).startswith("failed") \
+        and turned and not turned.group(1).startswith("failed") \
         and patterns and not patterns.group(1).startswith("failed") and job and not job.group(1).startswith("failed") \
         and items and not items.group(1).startswith("failed") and handover_ok \
         and techs and not techs.group(1).startswith("failed") \
@@ -4170,6 +4289,8 @@ def main():
                    help="issue #620: write prototypes/data/gtnh-ebf-heat.lua, GT New Horizons' blast furnace heat of the matched recipes")
     c.add_argument("--gtnh-numbers", action="store_true",
                    help="issue #689: write prototypes/data/gtnh-numbers.lua, GT New Horizons' numbers of the matched recipes")
+    c.add_argument("--rotated-sprites", action="store_true",
+                   help="issue #812: write the turned pictures (-east, -south, -west) of the machines whose box is not square")
     c.add_argument("--set", action="append", metavar="SETTING=VALUE",
                    help="force a startup setting for this run (bool, number or string), e.g. "
                    "gregtorio-continued-one-pack-research=true or gregtorio-continued-boiler-output=4")

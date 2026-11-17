@@ -299,6 +299,54 @@ for name, reason in pairs(FORK_NYI_ICONS or {}) do nk[#nk + 1] = name .. "\t" ..
 section("ICONS", ic)
 section("NYIOK", nk)
 
+--- Issue #809: the entities whose pipe connections may lie inside them or face into them (FORK_PIPE_CONNECTIONS_INSIDE in
+--- prototypes/199-fork-finalize.lua; absent in older versions)
+local pc = {}
+for name, reason in pairs(FORK_PIPE_CONNECTIONS_INSIDE or {}) do pc[#pc + 1] = name .. "\t" .. reason end
+section("PIPEINSIDEOK", pc)
+
+--- Issue #812: the entities with a collision box that is not square, and whether their graphics differ per direction
+--- (a key north/east/south/west, or north_.../east_..., outside the fluid boxes, the energy source and the circuit
+--- connector, or a direction_count above 1); the allow-list FORK_ROTATED_GRAPHICS_OK of
+--- prototypes/fork-rotated-graphics.lua (absent in older versions) and the sheets that file needs turned
+--- (FORK_ROTATED_GRAPHICS.files; section ROTATEDSPRITES: file, frame width, height, frame count, line length, x, y).
+--- type, name, "true" with graphics per direction
+local rg = {}
+local ROT_SKIP = { fluid_boxes = true, fluid_box = true, output_fluid_box = true, input_fluid_box = true,
+	energy_source = true, circuit_connector = true, circuit_wire_connection_points = true }
+local function per_direction(t, depth)
+	if depth > 8 then return false end
+	for k, v in pairs(t) do
+		if type(k) == "string" and not ROT_SKIP[k] then
+			if k == "north" or k == "east" or k == "south" or k == "west" or k:find("^north_") or k:find("^east_") then
+				return true
+			end
+			if k == "direction_count" and type(v) == "number" and v > 1 then return true end
+		end
+		if type(v) == "table" and not ROT_SKIP[k] and per_direction(v, depth + 1) then return true end
+	end
+	return false
+end
+for t, ps in pairs(data.raw) do
+	for n, p in pairs(ps) do
+		local cb = type(p) == "table" and p.collision_box
+		if cb and p.selection_box then
+			local a, b = cb[1] or cb.left_top, cb[2] or cb.right_bottom
+			local w, h = (b[1] or b.x) - (a[1] or a.x), (b[2] or b.y) - (a[2] or a.y)
+			if math.abs(w - h) > 0.05 then rg[#rg + 1] = t .. "\t" .. n .. "\t" .. tostring(per_direction(p, 0)) end
+		end
+	end
+end
+section("ROTATEGFX", rg)
+local rk = {}
+for name, reason in pairs(FORK_ROTATED_GRAPHICS_OK or {}) do rk[#rk + 1] = name .. "\t" .. reason end
+section("ROTATEGFXOK", rk)
+local rsheets = {}
+for file, f in pairs((FORK_ROTATED_GRAPHICS or {}).files or {}) do
+	rsheets[#rsheets + 1] = file .. "\t" .. table.concat(f, "\t")
+end
+section("ROTATEDSPRITES", rsheets)
+
 --- Issue #318: the vanilla recipes without a technology, of items Gregtorio makes, that stay on purpose
 --- (FORK_VANILLA_RECIPES_KEPT in data-final-fixes.lua; absent in older versions)
 local vk = {}
@@ -507,10 +555,18 @@ end
 for n, e in pairs(data.raw["assembling-machine"]) do
 	local gs = e.graphics_set or {}
 	for _, key in pairs({ "animation", "idle_animation" }) do
-		for _, l in pairs(layers_of(gs[key])) do
-			if l.filename then
-				sprites[#sprites + 1] = table.concat({ n, key, l.filename, l.width or 0, l.height or 0,
-					l.frame_count or 1, l.line_length or 0, l.x or 0, l.y or 0 }, "\t")
+		--- issue #812: a picture per direction (prototypes/fork-rotated-graphics.lua) counts in each direction
+		local anims = { [key] = gs[key] }
+		if gs[key] and (gs[key].north or gs[key].east or gs[key].south or gs[key].west) then
+			anims = {}
+			for _, d in pairs({ "north", "east", "south", "west" }) do anims[key .. "." .. d] = gs[key][d] end
+		end
+		for label, anim in pairs(anims) do
+			for _, l in pairs(layers_of(anim)) do
+				if l.filename then
+					sprites[#sprites + 1] = table.concat({ n, label, l.filename, l.width or 0, l.height or 0,
+						l.frame_count or 1, l.line_length or 0, l.x or 0, l.y or 0 }, "\t")
+				end
 			end
 		end
 	end

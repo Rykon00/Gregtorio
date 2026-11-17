@@ -465,6 +465,34 @@ recipe_of{
 	},
 }
 
+--- issue #808 (me-network 0.6.0, its issue #629): the ME P2P Tunnel - Items and - Fluids. GTNH has one P2P Tunnel - ME
+--- (SAE2:2350-2358: a titanium plate, 2 certus quartz screws, an engineering processor and 3 fluix crystals in the MV
+--- assembler, 18 s) and attunes it in the world into the item or the fluid tunnel (a right click with a chest or a
+--- bucket), so both blocks get that recipe. Titanium as in GTNH: the tunnels come with ME Autocrafting (EV here), after
+--- titanium, unlike the buses of ME Network above. GTNH's crafting table recipe of it (SAE2:1478-1489, with a screwdriver
+--- and a hard hammer) stays out: no ME device has a tool recipe here.
+--- The attune recipes (1 item tunnel <-> 1 fluid tunnel by hand, 0.5 s) stay me-network's: Factorio has no click on a
+--- placed block with a chest or a bucket and me-network no attunement in a window, so the recipes are the only way to
+--- change a tunnel's kind (FORK_ME_RECIPES_STANDALONE). me-network before 0.6.0 has no tunnels
+local P2P_TUNNELS = {}
+for _, name in ipairs({ "me-item-p2p-tunnel", "me-fluid-p2p-tunnel" }) do
+	if data.raw.item[name] then
+		recipe_of{
+			name = name,
+			category = "mv-assembling-machine-recipes",
+			item_row = true,
+			energy_required = 18 * MV_SPEED,
+			ingredients = I{ "titanium-plate", 1, "certus-quartz-screw", 2, "engineering-processor", 1, "fluix-crystal", 3 },
+		}
+		P2P_TUNNELS[#P2P_TUNNELS + 1] = name
+		if data.raw.recipe[name .. "-attune"] then
+			FORK_ME_RECIPES_STANDALONE[name .. "-attune"] = "the only way to change a P2P tunnel's kind: GTNH attunes "
+				.. "it in the world with a chest or a bucket, which neither Factorio nor me-network has (issue #808)"
+			P2P_TUNNELS[#P2P_TUNNELS + 1] = name .. "-attune"
+		end
+	end
+end
+
 --- issue #80: a cheap blank pattern (LV assembler); issue #214: GTNH's (SAE2:1272-1282): 2 quartz glass, 3 glowstone
 --- plates, a certus quartz, 3 aluminium plates (Gregtorio has no quartz glass and no glowstone plate: glass and
 --- glowstone dust)
@@ -1014,17 +1042,34 @@ end
 --- the ME Interface Terminal (me-network 0.5.4) with the Pattern Terminal, as me-network unlocks it
 local autocrafting = { "me-pattern-provider", "me-pattern-terminal", "me-blank-pattern", "me-molecular-assembler" }
 if HAS_INTERFACE_TERMINAL then autocrafting[#autocrafting + 1] = "me-interface-terminal" end
+--- issue #808: the P2P tunnels and their attune recipes with the pattern provider they serve (GTNH: MV, as the Pattern
+--- Terminal; me-network: ME Autocrafting too, ME_NETWORK.crafting_block_tech). Named here, so me-network's
+--- data-final-fixes.lua finds them unlocked and does not add them a second time
+for _, name in ipairs(P2P_TUNNELS) do autocrafting[#autocrafting + 1] = name end
 tech("me-autocrafting", { "me-storage-64k" }, 5, 600, with_blocks(autocrafting,
 	{ "me-crafting-unit", "me-1k-crafting-storage", "me-4k-crafting-storage", "me-crafting-monitor" }), SEVEN)
 --- issue #38: level maintainer and circuit interface (EV); the level emitter and the toggle buses (me-network 0.5.4, its
 --- issue #355), where me-network puts them; issue #111: the 16k and 64k crafting storage and the co-processing unit at IV,
 --- the 256k crafting storage at LuV
+--- Issue #814 (me-network 0.6.0, its issue #679): me-network's technology ME Level Emitter (after ME Network and Circuit
+--- network, before autocrafting) unlocks the level emitter and the circuit interface there. Here it sits on ME Network's
+--- tier (MV, the same packs) and unlocks the level emitter alone, whose decider combinator and calculation processor are
+--- there; the circuit interface stays with ME Automation, where its EV sensor and the HV assembler are. ME Automation
+--- needs it, as in me-network. Without the technology (me-network before 0.6.0) the emitter comes with ME Automation
+local HAS_EMITTER_TECH = HAS_TOGGLE and data.raw.technology["me-level-emitter"] ~= nil
 local automation = { "me-level-maintainer", "me-circuit-interface" }
+local automation_before = { "me-autocrafting", "circuit-network" }
+if HAS_EMITTER_TECH then
+	tech("me-level-emitter", { "me-network", "circuit-network" }, 3, 200, { "me-level-emitter" })
+	automation_before[#automation_before + 1] = "me-level-emitter"
+end
 if HAS_TOGGLE then
-	for _, name in ipairs({ "me-level-emitter", "me-toggle-bus", "me-inverted-toggle-bus" }) do automation[#automation + 1] = name end
+	for _, name in ipairs({ "me-level-emitter", "me-toggle-bus", "me-inverted-toggle-bus" }) do
+		if not (HAS_EMITTER_TECH and name == "me-level-emitter") then automation[#automation + 1] = name end
+	end
 end
 if HAS_ADVANCED_EMITTER then automation[#automation + 1] = "me-advanced-level-emitter" end   -- (issue #457)
-tech("me-automation", { "me-autocrafting", "circuit-network" }, 5, 800, automation, SEVEN)
+tech("me-automation", automation_before, 5, 800, automation, SEVEN)
 tech("me-co-processing", { "me-autocrafting", "me-storage-256k", "iv-components" }, 6, 1200, with_blocks({},
 	{ "me-16k-crafting-storage", "me-64k-crafting-storage", "me-crafting-co-processing-unit" }), SEVEN)
 --- issue #456: the Pattern Terminal Ex with its LuV components (me-network: with the Pattern Terminal); issue #485: its
