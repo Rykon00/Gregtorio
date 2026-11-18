@@ -1,4 +1,8 @@
 ---------------------------------------------------------------------------------------------------
+Version: 0.5.12
+  Changes:
+    - The Substation powers a 64x64 area and reaches 64 tiles with its wires (issue #820, suggested by Totue). It kept the vanilla 18x18 area and 18 tiles for its MV recipe, which nine medium electric poles for 18 steel matched. The recipe stays; placed substations get the new area at once.
+---------------------------------------------------------------------------------------------------
 Version: 0.5.11
 Date: 2026-11-17
   Features:
