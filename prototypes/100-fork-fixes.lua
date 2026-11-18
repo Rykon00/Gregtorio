@@ -297,3 +297,18 @@ create_recipe{
 	main_product = "small-lamp",
 }
 fork_add_unlock("automation-2", "small-lamp-lv-assembler")
+
+--------------------------------------------------------------------------------
+--- THE SUBSTATION (issue #820, reported by Totue on Discord): its MV recipe (13-mv-age-item.lua: stainless steel, fine
+--- annealed copper wire, 4 MV emitters and 4 MV circuits) bought vanilla's 18x18 supply area and 18 tiles of wire, which
+--- nine medium electric poles (18 steel) cover as well. The maintainer's decision: it powers a 64x64 area and reaches 64
+--- tiles with its wires, so a grid of substations tiles without gaps; the recipe stays.
+--------------------------------------------------------------------------------
+
+local substation = data.raw["electric-pole"]["substation"]
+if substation then
+	substation.supply_area_distance = 32
+	substation.maximum_wire_distance = 64
+else
+	log("FORK-FIX: missing electric pole: substation")
+end
