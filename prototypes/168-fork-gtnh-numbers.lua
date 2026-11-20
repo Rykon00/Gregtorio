@@ -224,26 +224,49 @@ local function machine_techs(category)
 	machine_techs_of[category] = { list = out, free = free }
 	return out, free
 end
+--- (load time: the number of ancestors, kept with the cached ancestors)
+local count_of = {}
+local function count(tname)
+	local n = count_of[tname]
+	if not n then
+		n = 0
+		for _ in pairs(ancestors(tname)) do n = n + 1 end
+		count_of[tname] = n
+	end
+	return n
+end
+local function by_count(x, y)
+	local nx, ny = count(x), count(y)
+	if nx ~= ny then return nx < ny end
+	return x < y
+end
+--- the technology with the fewest ancestors (then by name) that has one of every group at or before it (load time:
+--- the technologies in that order, so the first one that has them is the one; the order is made on the first call, as
+--- the loop below only moves unlocks: no technology comes, goes, is hidden or disabled there)
+local sorted
 local function after_all(groups)
-	local best, best_n
-	for tname, t in pairs(data.raw.technology) do
-		if not t.hidden and t.enabled ~= false then
-			local a, ok = ancestors(tname), true
-			for _, g in pairs(groups) do
-				local hit = false
-				for _, x in pairs(g) do
-					if x == tname or a[x] then hit = true break end
-				end
-				if not hit then ok = false break end
-			end
-			if ok then
-				local n = 0
-				for _ in pairs(a) do n = n + 1 end
-				if not best or n < best_n or (n == best_n and tname < best) then best, best_n = tname, n end
+	if not sorted then
+		sorted = {}
+		for tname, t in pairs(data.raw.technology) do
+			if not t.hidden and t.enabled ~= false then
+				count(tname)
+				sorted[#sorted + 1] = tname
 			end
 		end
+		table.sort(sorted, by_count)
 	end
-	return best
+	for _, tname in ipairs(sorted) do
+		local a, ok = ancestors(tname), true
+		for _, g in pairs(groups) do
+			local hit = false
+			for _, x in pairs(g) do
+				if x == tname or a[x] then hit = true break end
+			end
+			if not hit then ok = false break end
+		end
+		if ok then return tname end
+	end
+	return nil
 end
 local function remove_unlock(tname, recipe)
 	local t, keep = data.raw.technology[tname], {}

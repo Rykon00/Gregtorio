@@ -551,6 +551,16 @@ function FORK_RECYCLING.unlock()
 		for _ in pairs(set) do n = n + 1 end
 		return n
 	end
+	--- (load time: the number of ancestors, kept with the cached ancestors)
+	local count_cache = {}
+	local function count(tech)
+		local n = count_cache[tech]
+		if not n then
+			n = size(ancestors(tech))
+			count_cache[tech] = n
+		end
+		return n
+	end
 	local function covers(c, groups)
 		local a = ancestors(c)
 		for _, g in pairs(groups) do
@@ -577,15 +587,15 @@ function FORK_RECYCLING.unlock()
 		local found, found_n
 		for _, g in pairs(groups) do
 			for _, c in pairs(g) do
-				if covers(c, groups) and (not found or size(ancestors(c)) < found_n or (size(ancestors(c)) == found_n and c < found)) then
-					found, found_n = c, size(ancestors(c))
+				if covers(c, groups) and (not found or count(c) < found_n or (count(c) == found_n and c < found)) then
+					found, found_n = c, count(c)
 				end
 			end
 		end
 		if not found then
 			for name, tech in pairs(data.raw.technology) do
 				if not tech.hidden and tech.enabled ~= false and covers(name, groups) then
-					local n = size(ancestors(name))
+					local n = count(name)
 					if not found or n < found_n or (n == found_n and name < found) then found, found_n = name, n end
 				end
 			end

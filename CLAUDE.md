@@ -487,6 +487,16 @@
   noise (the Nether's copy of Vulcanus' lava reads the coal, tungsten and geyser controls; without them the load fails
   with "Unknown variable"; a noise expression cannot stand in, prototype names take no colon). The engine deletes a
   surface of a deleted planet when an old save loads (`devcheck.py migrate`: DEVCHECK-MIGRATE-PLANETS).
+- Load time: `prototypes/fork-producers.lua` (required at the top of `data.lua`) indexes the recipes by their results
+  (`FORK_PRODUCERS.recipes(item)`) and the technologies by the recipes they unlock (`FORK_PRODUCERS.unlocked_by(recipe)`),
+  with the answers of a full scan in pairs order. A helper that looks up "every recipe that makes an item now" uses it
+  instead of `for rname, r in pairs(data.raw.recipe)` (a scan of 40 000 recipes per ingredient made the data stage take
+  minutes). Outside a scope every call still scans; a loop of many lookups opens one (`FORK_PRODUCERS.begin()` ...
+  `FORK_PRODUCERS.finish()`) and must not edit the results of an existing recipe or an effect in place inside it (new
+  recipes, `data:extend` over a name, removed recipes and `fork_add_unlock` are followed). A helper mod that sets the
+  global `FORK_PRODUCERS_VERIFY = true` in its data.lua before Gregtorio's compares every lookup with a full scan; the
+  log line `FORK-PRODUCERS (data-final-fixes)` counts the lookups and scans. A search for "the first technology after
+  every group" sorts the technologies by ancestor count once (155's, 168's `after_all`) instead of counting on every call.
 - Factorio 2.1 (issue #535): the mod is for 2.1 (`factorio_version`, devcheck's `FACTORIO_VERSION`). `prototypes/fork-factorio-21.lua`
   (required at the top of `data.lua`) has the helpers of what changed: a recipe has `categories` (a list) instead of
   `category`, read and set with `fork_category(r)`, `fork_set_category(r, c)`, `fork_has_category(r, c)` and
