@@ -10,6 +10,8 @@ FORK_CLASSIC_ORES = FORK_ORE_MODE == "vein-recipes"
 require("prototypes.fork-locale")
 --- Fork: Factorio 2.1 (issue #535): the keys that changed (fork_category, fork_set_category, fork_generator_pictures, ...)
 require("prototypes.fork-factorio-21")
+--- Fork: load time, the index of the recipes by their results (FORK_PRODUCERS.recipes)
+require("prototypes.fork-producers")
 
 require("prototypes.03-helper-functions-module")
 require("prototypes.04-item-groups-module")

@@ -257,6 +257,7 @@ end)() } } })
 --------------------------------------------------------------------------------
 FORK_ROCKETS = { tiers = T, rocketry = rocketry, made = made }
 function FORK_ROCKETS.prerequisites()
+	FORK_PRODUCERS.begin()   -- (load time: one scope of fork-producers.lua; this only sets prerequisites)
 	--- the science rank of a technology: the highest pack of its unit (0: a trigger technology or a red one)
 	local PACKS = { "automation-science-pack", "logistic-science-pack", "military-science-pack", "chemical-science-pack",
 		"production-science-pack", "utility-science-pack", "space-science-pack", "metallurgic-science-pack",
@@ -292,7 +293,9 @@ function FORK_ROCKETS.prerequisites()
 	end
 	local function item_techs(name)
 		local out = {}
-		for rname, r in pairs(data.raw.recipe) do
+		--- (the recipes that make it, from the index of fork-producers.lua: the order of a scan of every recipe)
+		for _, rname in pairs(FORK_PRODUCERS.recipes(name)) do
+			local r = data.raw.recipe[rname]
 			if not r.hidden and not rname:match("recycling") then
 				for _, res in pairs(r.results or {}) do
 					if res.name == name then
@@ -371,4 +374,5 @@ function FORK_ROCKETS.prerequisites()
 		tech.prerequisites = list
 		log("FORK-ROCKETS: " .. rocketry[i] .. " after " .. table.concat(list, ", "))
 	end
+	FORK_PRODUCERS.finish()
 end

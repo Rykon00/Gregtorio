@@ -26,24 +26,30 @@ data:extend({ {
 } })
 
 --- the technologies of every recipe that makes an item (as 170); nil: from the start
-local function item_techs(name)
-	local effects = {}
-	for tn, tech in pairs(data.raw.technology) do
-		for _, e in pairs(tech.effects or {}) do
-			if e.type == "unlock-recipe" then effects[e.recipe] = effects[e.recipe] or {}; table.insert(effects[e.recipe], tn) end
-		end
-	end
+local function item_techs_now(name)
+	--- (the technologies that unlock a recipe now, from the index of fork-producers.lua: the order of a scan of every
+	--- technology)
+	local techs_of = FORK_PRODUCERS.unlocked_by
 	local out = {}
-	for rname, r in pairs(data.raw.recipe) do
+	--- (the recipes that make it, from the index of fork-producers.lua: the order of a scan of every recipe)
+	for _, rname in pairs(FORK_PRODUCERS.recipes(name)) do
+		local r = data.raw.recipe[rname]
 		if not r.hidden and not rname:match("recycling") then
 			for _, res in pairs(r.results or {}) do
 				if res.name == name then
 					if r.enabled ~= false then return nil end
-					for _, tn in pairs(effects[rname] or {}) do out[#out + 1] = tn end
+					for _, tn in pairs(techs_of(rname)) do out[#out + 1] = tn end
 				end
 			end
 		end
 	end
+	return out
+end
+--- (load time: one scope of fork-producers.lua per call, so its lookups are those of one scan)
+local function item_techs(name)
+	FORK_PRODUCERS.begin()
+	local out = item_techs_now(name)
+	FORK_PRODUCERS.finish()
 	return out
 end
 local INGREDIENTS = { { "rubber-sheet", 24 }, { "polyethylene-sheet", 4 }, { "glass", 1 } }

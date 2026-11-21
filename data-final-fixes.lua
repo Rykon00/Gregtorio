@@ -945,3 +945,5 @@ for tname, tech in pairs(data.raw.technology) do
 	end
 	if dropped then tech.effects = kept end
 end
+--- Fork: how often the recipe index of prototypes/fork-producers.lua was used (load time)
+FORK_PRODUCERS.log("data-final-fixes")

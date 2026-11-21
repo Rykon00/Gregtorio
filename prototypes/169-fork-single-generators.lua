@@ -58,7 +58,9 @@ local function item_techs(name)
 		end
 	end
 	local out = {}
-	for rname, r in pairs(data.raw.recipe) do
+	--- (the recipes that make it, from the index of fork-producers.lua: the order of a scan of every recipe)
+	for _, rname in pairs(FORK_PRODUCERS.recipes(name)) do
+		local r = data.raw.recipe[rname]
 		if not r.hidden and not rname:match("recycling") then
 			for _, res in pairs(r.results or {}) do
 				if res.name == name then
