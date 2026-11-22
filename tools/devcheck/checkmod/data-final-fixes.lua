@@ -347,7 +347,7 @@ for file, f in pairs((FORK_ROTATED_GRAPHICS or {}).files or {}) do
 end
 section("ROTATEDSPRITES", rsheets)
 
---- Issue #824: the crafting machines of this mod with fluid boxes that cannot be mirrored (F and G on the machine, a
+--- Issue #824: the crafting machines of this mod with fluid boxes that cannot be mirrored (H and V on the machine, a
 --- flipped blueprint), and the allow-list FORK_NOT_MIRRORED of prototypes/199-fork-finalize.lua. "Of this mod": not in
 --- FORK_FOREIGN_MACHINES, the machines that existed when its data.lua started (absent in older versions)
 local nm, nmk = {}, {}

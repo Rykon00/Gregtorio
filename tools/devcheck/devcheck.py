@@ -2130,7 +2130,7 @@ def check_pipe_connections(sec):
 
 
 def check_mirroring(sec):
-    """Issue #824: Factorio flips a crafting machine (F and G on the placed machine and on the item in the hand, a flipped
+    """Issue #824: Factorio flips a crafting machine (H and V on the placed machine and on the item in the hand, a flipped
     blueprint) only when its prototype sets use_mirroring; prototypes/199-fork-finalize.lua sets it on every assembling
     machine and furnace of this mod that has fluid boxes (section NOTMIRRORED of checkmod/data-final-fixes.lua: the ones
     of the final prototypes that lack it). Such a machine fails unless it is in the allow-list FORK_NOT_MIRRORED of
@@ -3260,7 +3260,7 @@ def check(a):
            "prototypes/fork-rotated-graphics.lua with its reason)", rot_bad)
     mirror_info, not_mirrored = check_mirroring(sec)
     print(f"\nmirroring (issue #824): {mirror_info}")
-    report("crafting machines of this mod with fluid boxes that cannot be mirrored (F and G; drop their use_mirroring = "
+    report("crafting machines of this mod with fluid boxes that cannot be mirrored (H and V; drop their use_mirroring = "
            "false, or add the machine to FORK_NOT_MIRRORED of prototypes/199-fork-finalize.lua with its reason)",
            not_mirrored)
     turned_info, turned_bad = rotated_sprites(sec, write=getattr(a, "rotated_sprites", False))

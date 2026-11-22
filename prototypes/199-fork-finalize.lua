@@ -295,8 +295,8 @@ end
 FORK_PIPE_CONNECTIONS_INSIDE = {}
 
 --------------------------------------------------------------------------------
---- MIRRORING (F and G)
---- Issue #824: Factorio flips a crafting machine (F and G on the placed machine and on the item in the hand, a flipped
+--- MIRRORING (H and V)
+--- Issue #824: Factorio flips a crafting machine (H and V on the placed machine and on the item in the hand, a flipped
 --- blueprint) only when its prototype sets use_mirroring, as the base game's chemical plant and oil refinery do. Without
 --- it the keys do nothing on the machine, and a blueprint that holds one whose pipe connections are not symmetric
 --- cannot be flipped at all. Every assembling machine and furnace this mod makes that has fluid boxes gets it here, after
