@@ -2129,6 +2129,29 @@ def check_pipe_connections(sec):
             f"{len(kept)} kept on purpose" + (f" ({', '.join(kept)})" if kept else "")), problems
 
 
+def check_mirroring(sec):
+    """Issue #824: Factorio flips a crafting machine (F and G on the placed machine and on the item in the hand, a flipped
+    blueprint) only when its prototype sets use_mirroring; prototypes/199-fork-finalize.lua sets it on every assembling
+    machine and furnace of this mod that has fluid boxes (section NOTMIRRORED of checkmod/data-final-fixes.lua: the ones
+    of the final prototypes that lack it). Such a machine fails unless it is in the allow-list FORK_NOT_MIRRORED of
+    prototypes/199-fork-finalize.lua with its reason (section NOTMIRROREDOK); an entry that is no such machine fails too.
+    Returns (info line, problems)."""
+    rows = sec.get("NOTMIRRORED", [])
+    if not any(r[0] == "#checked" for r in rows):
+        return "", ["no #checked row in the DEVCHECK-NOTMIRRORED section (FORK_FOREIGN_MACHINES of data.lua is missing)"]
+    allow = {r[0]: (r[1] if len(r) > 1 else "") for r in sec.get("NOTMIRROREDOK", [])}
+    checked = next(int(r[1]) for r in rows if r[0] == "#checked")
+    bad = {r[1]: r[0] for r in rows if r[0] != "#checked" and len(r) > 1}
+    problems = [f"{typ} {name}" for name, typ in sorted(bad.items()) if name not in allow]
+    problems += [f"{name}: in FORK_NOT_MIRRORED but it can be mirrored or is no machine of this mod with fluid boxes "
+                 "(remove the entry)" for name in sorted(allow) if name not in bad]
+    problems += [f"{name}: in FORK_NOT_MIRRORED without a reason" for name, why in sorted(allow.items())
+                 if name in bad and not why.strip()]
+    kept = sorted(n for n in bad if n in allow)
+    return (f"{checked} crafting machines of this mod with fluid boxes, {checked - len(bad)} can be mirrored, "
+            f"{len(kept)} kept as they are on purpose" + (f" ({', '.join(kept)})" if kept else "")), problems
+
+
 def check_rotated_graphics(sec):
     """Issue #812: an entity this mod creates or changes whose collision box is not square turns its box when it is
     rotated (section ROTATE of checkmod/control.lua: each is placed facing east and reports the direction it took); when
@@ -3235,6 +3258,11 @@ def check(a):
     report("entities with a collision box that is not square that turn but have one picture (add the flag not-rotatable, "
            "give them graphics per direction, or add the entity to FORK_ROTATED_GRAPHICS_OK of "
            "prototypes/fork-rotated-graphics.lua with its reason)", rot_bad)
+    mirror_info, not_mirrored = check_mirroring(sec)
+    print(f"\nmirroring (issue #824): {mirror_info}")
+    report("crafting machines of this mod with fluid boxes that cannot be mirrored (F and G; drop their use_mirroring = "
+           "false, or add the machine to FORK_NOT_MIRRORED of prototypes/199-fork-finalize.lua with its reason)",
+           not_mirrored)
     turned_info, turned_bad = rotated_sprites(sec, write=getattr(a, "rotated_sprites", False))
     print(f"\nturned pictures (issue #812, prototypes/fork-rotated-graphics.lua): {turned_info}")
     report("turned pictures that are missing or stale", turned_bad)
@@ -3368,7 +3396,7 @@ def check(a):
               or new_drafts or fluid_problems or locked or one_pack or fluid_steps or table_only or me_recipes or me_tab
               or extractor_split or ore_mixes or ore_chain or ore_baths or ore_o34 or ore_hammer
               or circuit_icons or pgm_dusts or qft_focus or recycling or blocks or names or gaps or tree or vanilla or lenses or mine_twins
-              or unplaceable or pipe_inside or rot_bad or turned_bad or tool_chain or stale_unlocks or removed_keys or trigger_only or spoiling or classic_veins or early
+              or unplaceable or pipe_inside or rot_bad or not_mirrored or turned_bad or tool_chain or stale_unlocks or removed_keys or trigger_only or spoiling or classic_veins or early
               or furnace or research_counts or nyi_icons or gtnh_icons or overclock or maint or ebf_heat or radiation
               or steam or nugget or steam_rates or boiler_output or vein_doc or renames or gtnh_numbers or parts_recycling or part_routes or part_crafting or chemistry or metallurgy
               or tick_clashes)

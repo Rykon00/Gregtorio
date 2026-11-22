@@ -347,6 +347,26 @@ for file, f in pairs((FORK_ROTATED_GRAPHICS or {}).files or {}) do
 end
 section("ROTATEDSPRITES", rsheets)
 
+--- Issue #824: the crafting machines of this mod with fluid boxes that cannot be mirrored (F and G on the machine, a
+--- flipped blueprint), and the allow-list FORK_NOT_MIRRORED of prototypes/199-fork-finalize.lua. "Of this mod": not in
+--- FORK_FOREIGN_MACHINES, the machines that existed when its data.lua started (absent in older versions)
+local nm, nmk = {}, {}
+if FORK_FOREIGN_MACHINES then
+	local with_boxes = 0
+	for _, t in pairs({ "assembling-machine", "furnace" }) do
+		for n, p in pairs(data.raw[t] or {}) do
+			if not FORK_FOREIGN_MACHINES[t .. "/" .. n] and p.fluid_boxes and next(p.fluid_boxes) then
+				with_boxes = with_boxes + 1
+				if p.use_mirroring ~= true then nm[#nm + 1] = t .. "\t" .. n end
+			end
+		end
+	end
+	nm[#nm + 1] = "#checked\t" .. with_boxes
+end
+for name, reason in pairs(FORK_NOT_MIRRORED or {}) do nmk[#nmk + 1] = name .. "\t" .. reason end
+section("NOTMIRRORED", nm)
+section("NOTMIRROREDOK", nmk)
+
 --- Issue #318: the vanilla recipes without a technology, of items Gregtorio makes, that stay on purpose
 --- (FORK_VANILLA_RECIPES_KEPT in data-final-fixes.lua; absent in older versions)
 local vk = {}
