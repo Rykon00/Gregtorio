@@ -293,3 +293,35 @@ end
 --- underground and linked connections aside, unless the entity is in this allow-list with its reason.
 --------------------------------------------------------------------------------
 FORK_PIPE_CONNECTIONS_INSIDE = {}
+
+--------------------------------------------------------------------------------
+--- MIRRORING (H and V)
+--- Issue #824: Factorio flips a crafting machine (H and V on the placed machine and on the item in the hand, a flipped
+--- blueprint) only when its prototype sets use_mirroring, as the base game's chemical plant and oil refinery do. Without
+--- it the keys do nothing on the machine, and a blueprint that holds one whose pipe connections are not symmetric
+--- cannot be flipped at all. Every assembling machine and furnace this mod makes that has fluid boxes gets it here, after
+--- every file of data.lua that makes a machine, and once more at the end of data-final-fixes.lua (the ore machines that
+--- become furnaces there, 101's fork_furnace_machines, and whatever a later file makes).
+--- "This mod's" is: not in FORK_FOREIGN_MACHINES, the machines that existed when data.lua started (base game, Space
+--- Age, me-network, every mod loaded earlier; a mod loaded later is not in data.raw yet when this runs). A machine one
+--- of them made and Gregtorio only changes keeps what its mod chose; so does a machine of this mod that sets
+--- use_mirroring = false itself (devcheck then asks for its reason in FORK_NOT_MIRRORED).
+--- No flipped pictures: the machine's picture stays as it is (as the chemical plant's); the pipe connections and the
+--- pipe pictures drawn at them move. assembler2pipepictures() has one picture per side a connection faces, and every
+--- box of a machine uses the same set, so the mirrored machine needs no mirrored_pipe_picture.
+--- The steam machines (a fluid energy source and no fluid boxes) are left out: their two steam connections sit in the
+--- middle of the west and the east side, so there is nothing to mirror.
+--- devcheck fails for a crafting machine of this mod with fluid boxes that cannot be mirrored, unless it is in the
+--- allow-list FORK_NOT_MIRRORED with its reason.
+--------------------------------------------------------------------------------
+FORK_NOT_MIRRORED = {}
+function fork_mirror_machines()
+	for _, t in pairs({ "assembling-machine", "furnace" }) do
+		for name, e in pairs(data.raw[t] or {}) do
+			if not FORK_FOREIGN_MACHINES[t .. "/" .. name] and e.fluid_boxes and next(e.fluid_boxes) and e.use_mirroring == nil then
+				e.use_mirroring = true
+			end
+		end
+	end
+end
+fork_mirror_machines()

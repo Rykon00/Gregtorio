@@ -480,6 +480,9 @@ local o1_late = {}   -- issue #203: recipes unlocked after their machine and inp
 --- Centrifuge stays with Ore Centrifuging: the cauldron is the early route without byproducts, the centrifuge the one
 --- with them, as in GTNH (decision of #427, a later issue can revisit both).
 local CAULDRON = { water = 33.3, time = 1, washes = {} }   -- washes: { ore, impure dust, pure dust, dust }
+--- (load time: the macerator lookups of this loop follow its new and removed recipes, fork-producers.lua; it edits no
+--- results of an existing recipe)
+FORK_PRODUCERS.begin()
 for x, ore in pairs(ORE_CHAIN) do
 	local crushed = "crushed-" .. x
 	if data.raw.item[crushed] and data.raw.item[ore.dust] and not FORK_ORE_CHAIN.skip[x] then
@@ -505,7 +508,9 @@ for x, ore in pairs(ORE_CHAIN) do
 		local old_cf = "centrifuging-" .. crushed
 		--- the macerator recipes raw ore -> this crushed ore (issue #202: Raw Tin's is macerating-raw-tin)
 		local t_crush, seen = {}, {}
-		for rname, r in pairs(data.raw.recipe) do
+		--- (the recipes that make it, from the index of fork-producers.lua: the order of a scan of every recipe)
+		for _, rname in pairs(FORK_PRODUCERS.recipes(crushed)) do
+			local r = data.raw.recipe[rname]
 			if fork_has_category(r, "lv-macerator-recipes") and r.results and #r.results == 1 and r.results[1].name == crushed then
 				for _, t in pairs(tech_list(rname)) do
 					if not seen[t] then seen[t] = true; t_crush[#t_crush + 1] = t end
@@ -576,6 +581,7 @@ for x, ore in pairs(ORE_CHAIN) do
 		end
 	end
 end
+FORK_PRODUCERS.finish()
 --- a technology that unlocks a thermal centrifuge recipe without leading to the LV thermal centrifuge (galena,
 --- hydrochloric acid) unlocks the machine too (its parts are there)
 do
@@ -673,6 +679,21 @@ local function size(set)
 	for _ in pairs(set) do n = n + 1 end
 	return n
 end
+--- (load time: the number of ancestors of a technology, kept with its cached ancestors)
+local count_cache = {}
+local function count(tech)
+	local n = count_cache[tech]
+	if not n then
+		n = size(ancestors(tech))
+		count_cache[tech] = n
+	end
+	return n
+end
+local function by_count(x, y)
+	local nx, ny = count(x), count(y)
+	if nx ~= ny then return nx < ny end
+	return x < y
+end
 local function after_all(groups)
 	local cand = {}
 	for _, g in pairs(groups) do
@@ -691,27 +712,34 @@ local function after_all(groups)
 			end
 			if not hit then ok = false break end
 		end
-		if ok and (not found or size(a) < found_n) then found, found_n = c, size(a) end
+		if ok and (not found or count(c) < found_n) then found, found_n = c, count(c) end
 	end
 	if found then return found end
 	--- none of them comes after the others (the chemical bath and the mercury of the centrifuge are on parallel
 	--- branches): the technology with the fewest ancestors that has one of every group before it
-	local best, best_n
+	--- (load time: the technologies by fewest ancestors, then by name, so the first one that has every group before it
+	--- is the one; every technology's ancestors are read first, as the cache holds them from then on)
+	local list = {}
 	for name, tech in pairs(data.raw.technology) do
 		if not tech.hidden and tech.enabled ~= false then
-			local a, ok = ancestors(name), true
-			for _, g in pairs(groups) do
-				local hit = false
-				for _, t in pairs(g) do
-					if a[t] then hit = true break end
-				end
-				if not hit then ok = false break end
+			count(name)
+			list[#list + 1] = name
+		end
+	end
+	table.sort(list, by_count)
+	local best
+	for _, name in ipairs(list) do
+		local a, ok = ancestors(name), true
+		for _, g in pairs(groups) do
+			local hit = false
+			for _, t in pairs(g) do
+				if a[t] then hit = true break end
 			end
-			if ok then
-				local n = 0
-				for _ in pairs(a) do n = n + 1 end
-				if not best or n < best_n or (n == best_n and name < best) then best, best_n = name, n end
-			end
+			if not hit then ok = false break end
+		end
+		if ok then
+			best = name
+			break
 		end
 	end
 	if best then log("FORK-ORE-CHAIN: a recipe after parallel technologies goes to " .. best) end
@@ -2206,6 +2234,7 @@ end
 --- issue #222: the helpers for 158-fork-gt-parts.lua (the parts of the new ingots and GT's nugget recipes)
 --- issue #373: the recipes that wait for 159's dehydrators, called by 161 (the machine cache is filled without them)
 function FORK_ORE_CHAIN.unlock_after_159()
+	FORK_PRODUCERS.begin()   -- (load time: one scope of fork-producers.lua for the machines' lookups below)
 	--- the technologies of the machines of a category (159's items are not in this file's makers)
 	local function machines(category)
 		local out = {}
@@ -2214,7 +2243,9 @@ function FORK_ORE_CHAIN.unlock_after_159()
 				if c == category then
 					for iname, it in pairs(data.raw.item) do
 						if it.place_result == ename then
-							for rname, r in pairs(data.raw.recipe) do
+							--- (the recipes that make it, from the index of fork-producers.lua: the order of a scan of every recipe)
+							for _, rname in pairs(FORK_PRODUCERS.recipes(iname)) do
+								local r = data.raw.recipe[rname]
 								for _, res in pairs(r.results or {}) do
 									if res.name == iname then
 										for _, t in pairs(tech_list(rname)) do out[#out + 1] = t end
@@ -2236,6 +2267,7 @@ function FORK_ORE_CHAIN.unlock_after_159()
 		for _, i in pairs(after_159[name]) do groups[#groups + 1] = item_techs(i) end
 		unlock_after(name, groups)
 	end
+	FORK_PRODUCERS.finish()
 end
 FORK_ORE_CHAIN.unlock_after, FORK_ORE_CHAIN.machine_techs, FORK_ORE_CHAIN.item_techs, FORK_ORE_CHAIN.made =
 	unlock_after, machine_techs, item_techs, made

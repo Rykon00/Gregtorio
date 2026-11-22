@@ -344,9 +344,42 @@ local function leads_to(from, to)
 	end
 	return false
 end
+--- (load time: a technology and everything before it, kept in `memo` with its size; only while no prerequisite changes)
+local function closure_of(name, memo)
+	local c = memo[name]
+	if c then return c end
+	local n, stack = 0, { name }
+	c = {}
+	while #stack > 0 do
+		local x = table.remove(stack)
+		if not c[x] then
+			c[x] = true
+			n = n + 1
+			for _, p in pairs((data.raw.technology[x] or {}).prerequisites or {}) do stack[#stack + 1] = p end
+		end
+	end
+	memo[name], memo[c] = c, n
+	return c
+end
 --- the first technology after both (the one of them that leads to the other, else the technology with the fewest
---- ancestors that has both before it)
-local function after_both(a, b)
+--- ancestors that has both before it); `memo` (a table, optional): the closures of closure_of, for a loop that calls
+--- this many times on the same tree
+local function after_both(a, b, memo)
+	if memo then
+		if closure_of(b, memo)[a] then return b end
+		if closure_of(a, memo)[b] then return a end
+		local best, best_n
+		for name, t in pairs(data.raw.technology) do
+			if not t.hidden and t.enabled ~= false then
+				local c = closure_of(name, memo)
+				if c[a] and c[b] then
+					local n = memo[c]
+					if not best or n < best_n or (n == best_n and name < best) then best, best_n = name, n end
+				end
+			end
+		end
+		return best
+	end
 	if leads_to(a, b) then return b end
 	if leads_to(b, a) then return a end
 	local best, best_n
@@ -426,6 +459,7 @@ F.tech{
 --- with the first technology after both the base recipe's and SBR's
 do
 	local made, skipped = 0, 0
+	local closures = {}   -- (after_both's memo: this loop adds recipes and unlocks, no prerequisites)
 	local names = {}
 	for name in pairs(data.raw.recipe) do names[#names + 1] = name end
 	table.sort(names)
@@ -440,7 +474,7 @@ do
 			end
 			if found then
 				local base = techs_of(name)[1]
-				local tech = base == nil and SBR or after_both(SBR, base)
+				local tech = base == nil and SBR or after_both(SBR, base, closures)
 				if tech then
 					create_recipe{ name = name .. "-sbr", category = fork_category(r), energy_required = r.energy_required,
 						ingredients = ing, results = table.deepcopy(r.results), main_product = out }
@@ -6794,7 +6828,9 @@ local function nei_item_techs(name)
 		end
 	end
 	local out = {}
-	for rname, r in pairs(data.raw.recipe) do
+	--- (the recipes that make it, from the index of fork-producers.lua: the order of a scan of every recipe)
+	for _, rname in pairs(FORK_PRODUCERS.recipes(name)) do
+		local r = data.raw.recipe[rname]
 		if not r.hidden and not rname:match("recycling") then
 			for _, res in pairs(r.results or {}) do
 				if res.name == name then
@@ -6819,6 +6855,7 @@ local function nei_unlock(names)
 		walk(tn)
 		return n
 	end
+	FORK_PRODUCERS.begin()   -- (load time: the lookups follow the unlocks of this loop, fork-producers.lua)
 	for _, name in pairs(names) do
 		local r = data.raw.recipe[name]
 		local category = r.categories[1]
@@ -6837,6 +6874,7 @@ local function nei_unlock(names)
 			if best then fork_add_unlock(best, name) else log("FORK-NEI-ONLY: no technology for " .. name) end
 		end
 	end
+	FORK_PRODUCERS.finish()
 end
 local function nei_step(list, name, ...)
 	if data.raw.recipe[name] then error("164-fork-chemistry: recipe " .. name .. " exists already") end

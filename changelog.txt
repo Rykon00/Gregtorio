@@ -1,4 +1,11 @@
 ---------------------------------------------------------------------------------------------------
+Version: 0.5.13
+Date: 2026-11-22
+  Changes:
+    - Factorio loads Gregtorio about six times faster (the data stage of the headless test load went from about 140 s to 23 s; on the reporter's PC the bar stood at Gregtorio for about 90 s). The helpers that find "the technologies that give an item" for the unlocks of the GT parts, the full-pack recipes, the smeltery, the wireless hatches, maintenance, radiation and the rockets went through all 40 000 recipes and every technology's effects for every ingredient; they read an index now (prototypes/fork-producers.lua). The search for the first technology after parallel branches sorts the technologies once instead of counting every technology's ancestors on every call, and the SBR cable twins, the recycling unlocks and the tier raises of GT's numbers keep what they computed. Nothing in the game changes: every recipe, technology and unlock comes out as before (compared prototype by prototype, also with the classic ore mode, overclocking, maintenance, radiation, boiler output 4 and one-pack research).
+  Bugfixes:
+    - Machines with pipe connections can be flipped with H and V (issue #824, reported by Sunken), as the base game's chemical plant and oil refinery: the placed machine, the machine in the hand, and a blueprint that holds one (422 of them made the game refuse to flip the blueprint). This holds for all 543 assembling machines and furnaces of Gregtorio with fluid boxes, from the LV chemical reactor to the multiblocks. A flipped machine keeps its picture and moves its pipe connections to the other side; every fluid stays with its connection, so a flipped build with its pipes works as the original. Placed machines and existing blueprints stay as they are. The steam machines are unchanged: their two steam connections sit in the middle of two opposite sides, so there is nothing to flip.
+---------------------------------------------------------------------------------------------------
 Version: 0.5.12
 Date: 2026-11-18
   Changes:

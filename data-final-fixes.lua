@@ -902,6 +902,8 @@ fork_steam_categories()
 --- Fork: the ore machines are furnaces that pick their recipe from the input (prototypes/101-fork-machines.lua, issue
 --- #560); after the steam macerators' categories above
 fork_furnace_machines()
+--- Fork: issue #824: the machines made since 199 can be mirrored too (prototypes/199-fork-finalize.lua)
+fork_mirror_machines()
 --- Fork: the packager twins of the pile recipes (prototypes/101-fork-machines.lua, issue #635); after every file that
 --- makes piles and after the unlocks above
 FORK_PACKAGER.twin_piles()
@@ -945,3 +947,5 @@ for tname, tech in pairs(data.raw.technology) do
 	end
 	if dropped then tech.effects = kept end
 end
+--- Fork: how often the recipe index of prototypes/fork-producers.lua was used (load time)
+FORK_PRODUCERS.log("data-final-fixes")

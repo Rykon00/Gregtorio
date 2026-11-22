@@ -110,7 +110,9 @@ local function item_techs(name)
 		end
 	end
 	local out = {}
-	for rname, r in pairs(data.raw.recipe) do
+	--- (the recipes that make it, from the index of fork-producers.lua: the order of a scan of every recipe)
+	for _, rname in pairs(FORK_PRODUCERS.recipes(name)) do
+		local r = data.raw.recipe[rname]
 		if not r.hidden and not rname:match("recycling") then
 			for _, res in pairs(r.results or {}) do
 				if res.name == name then
@@ -254,6 +256,9 @@ local function subgroup_of(category)
 	return "subgroup-" .. category:gsub("^%a+%-", "lv-", 1)
 end
 function FORK_GT_PARTS.run()
+	--- (load time: the lookups of item_techs follow this run's new and removed recipes, fork-producers.lua; no results
+	--- are edited in place here)
+	FORK_PRODUCERS.begin()
 	tech_effects, ancestor_memo = nil, {}
 	--------------------------------------------------------------------------------
 	--- 1) THE NUGGETS (issue #223 B5 for every metal; the new nuggets of #227 first, the round takes one)
@@ -589,6 +594,7 @@ function FORK_GT_PARTS.run()
 			end
 		end
 	end
+	FORK_PRODUCERS.finish()
 end
 FORK_GT_PARTS.run()
 
