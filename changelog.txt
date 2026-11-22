@@ -1,5 +1,6 @@
 ---------------------------------------------------------------------------------------------------
 Version: 0.5.13
+Date: 2026-11-22
   Changes:
     - Factorio loads Gregtorio about six times faster (the data stage of the headless test load went from about 140 s to 23 s; on the reporter's PC the bar stood at Gregtorio for about 90 s). The helpers that find "the technologies that give an item" for the unlocks of the GT parts, the full-pack recipes, the smeltery, the wireless hatches, maintenance, radiation and the rockets went through all 40 000 recipes and every technology's effects for every ingredient; they read an index now (prototypes/fork-producers.lua). The search for the first technology after parallel branches sorts the technologies once instead of counting every technology's ancestors on every call, and the SBR cable twins, the recycling unlocks and the tier raises of GT's numbers keep what they computed. Nothing in the game changes: every recipe, technology and unlock comes out as before (compared prototype by prototype, also with the classic ore mode, overclocking, maintenance, radiation, boiler output 4 and one-pack research).
   Bugfixes:
