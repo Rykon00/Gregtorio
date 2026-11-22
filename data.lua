@@ -13,6 +13,13 @@ require("prototypes.fork-factorio-21")
 --- Fork: load time, the index of the recipes by their results (FORK_PRODUCERS.recipes)
 require("prototypes.fork-producers")
 
+--- Fork: issue #824: the crafting machines that exist before this mod (base game, Space Age, mods loaded earlier);
+--- 199 lets every machine with fluid boxes that is not in this list, so one this mod makes, be mirrored
+FORK_FOREIGN_MACHINES = {}
+for _, t in pairs({ "assembling-machine", "furnace" }) do
+	for name, _ in pairs(data.raw[t] or {}) do FORK_FOREIGN_MACHINES[t .. "/" .. name] = true end
+end
+
 require("prototypes.03-helper-functions-module")
 require("prototypes.04-item-groups-module")
 require("prototypes.05-definitions-module")
