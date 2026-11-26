@@ -1,4 +1,8 @@
 ---------------------------------------------------------------------------------------------------
+Version: 0.5.14
+  Bugfixes:
+    - The circuit assemblers from MV to MAX stand still while they work (reported by Totue): half of the frames of their working animation drew the casing in other colours and with a shadow at the bottom right, one frame had it a few pixels off and one had the monitor a pixel too high, so the machine seemed to jump between two pictures. Every frame now has the casing of the idle picture and only the monitor moves. The LV circuit assembler was not affected.
+---------------------------------------------------------------------------------------------------
 Version: 0.5.13
 Date: 2026-11-22
   Changes:
