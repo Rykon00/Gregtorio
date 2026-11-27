@@ -386,6 +386,7 @@ class Model:
         split = lambda s: [x.split(":", 1)[1] for x in s.split(",") if x]
         kinds = lambda s: [x.split(":", 1)[0] for x in s.split(",") if x]
         self.R, self.C, self.CF, self.I, self.T = {}, {}, {}, {}, {}
+        self.CI = {}                        # crafter -> its ingredient_count: the item ingredients a recipe may have
         self.ctype = {}                     # crafter -> its prototype type (issue #560: furnaces pick their recipe)
         self.burnt, self.burners = [], {}   # (fuel item, burnt result, fuel categories); burner entity -> categories
         self.tools = {}                     # recipe -> the mold or lens it needs in the module slot (issue #316)
@@ -408,6 +409,7 @@ class Model:
                 self.C[p[1]] = p[3].split(",") if p[3] else []
                 self.ctype[p[1]] = p[2]
                 self.CF[p[1]] = (int(p[4]), int(p[5]))
+                self.CI[p[1]] = int(p[6]) if len(p) > 6 else 65535
             elif k == "I":
                 self.I[p[1]] = p[3] if len(p) > 3 else ""
                 self.itype[p[1]] = p[2]
@@ -538,12 +540,19 @@ class Model:
                 continue
             missing = [i for i in v["ing"] if i not in self.avail]
             machines = [m for m in self.crafters if v["cats"] & set(self.C.get(m, []))]
+            # a machine refuses a recipe with more item ingredients than its ingredient_count (fluids do not count;
+            # the Bricked Blast Furnace took two and its chalcopyrite recipes have three)
+            items = v.get("ingk", []).count("item")
+            fits = [m for m in machines if self.CI.get(m, 65535) >= items]
             if not machines:
                 out.append((r, f"no machine for category {v['cat']}"))
+            elif not fits:
+                out.append((r, f"{items} item ingredients, no reachable machine of category {v['cat']} takes that many ("
+                            + ", ".join(f"{m} {self.CI[m]}" for m in sorted(machines)) + ")"))
             elif missing:
                 out.append((r, "ingredients never obtainable: " + ", ".join(missing)))
             elif (v["fin"] or v["fout"]) and not any(
-                    self.CF.get(m, (0, 0))[0] >= v["fin"] and self.CF.get(m, (0, 0))[1] >= v["fout"] for m in machines):
+                    self.CF.get(m, (0, 0))[0] >= v["fin"] and self.CF.get(m, (0, 0))[1] >= v["fout"] for m in fits):
                 out.append((r, f"needs {v['fin']} fluid in / {v['fout']} out, no reachable machine has that"))
         return out
 

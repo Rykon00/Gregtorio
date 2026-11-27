@@ -1,4 +1,9 @@
 ---------------------------------------------------------------------------------------------------
+Version: 0.5.15
+Date: 2026-11-27
+  Bugfixes:
+    - The chalcopyrite dust recipes of the Bricked Blast Furnace can be crafted (reported by Dion): 2 chalcopyrite dust with 2 sand, glass dust, silicon dioxide, nether quartz dust or certus quartz dust and a fuel give 3 copper ingots. The furnace took two kinds of items and these recipes have three, so the game showed "Cannot be crafted in this machine" and listed no machine for them. It has three input slots now, as in GT New Horizons.
+---------------------------------------------------------------------------------------------------
 Version: 0.5.14
 Date: 2026-11-26
   Bugfixes:
