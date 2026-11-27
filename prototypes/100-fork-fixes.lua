@@ -312,3 +312,18 @@ if substation then
 else
 	log("FORK-FIX: missing electric pole: substation")
 end
+
+--------------------------------------------------------------------------------
+--- THE BRICKED BLAST FURNACE (reported by Dion on Discord): 10-steam-age-entity.lua gives it ingredient_count = 2, and
+--- the chalcopyrite dust recipes of issue #373 (155-fork-ore-chain.lua: 2 chalcopyrite dust + 2 sand, glass dust,
+--- silicon dioxide, nether quartz or certus quartz dust + fuel) have three item ingredients, so the only machine of
+--- their category refused them ("Cannot be crafted in this machine", no machine under "Made in"). GT New Horizons'
+--- Bricked Blast Furnace has three input slots (MTEBrickedBlastFurnace.java: INPUT_SLOTS = 3).
+--------------------------------------------------------------------------------
+
+local pbf = data.raw["assembling-machine"]["primitive-blast-furnace"]
+if pbf then
+	pbf.ingredient_count = 3
+else
+	log("FORK-FIX: missing assembling machine: primitive-blast-furnace")
+end

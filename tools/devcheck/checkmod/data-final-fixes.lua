@@ -12,7 +12,7 @@ local function names(list)
 end
 
 --- R recipe category enabled ingredients results hidden hide_from_player_crafting subgroup group
---- C crafter type categories fluid_in fluid_out
+--- C crafter type categories fluid_in fluid_out ingredient_count
 --- I item type place_result uses spoil_ticks | F fluid | T tech prereqs unlocks science trigger enabled count
 ---   (uses, issue #547: what an item does besides being an ingredient: fuel, tile, equipment, plant; spoil_ticks, issue
 ---   #602: 0 for an item that does not spoil)
@@ -47,7 +47,8 @@ for _, t in pairs({ "assembling-machine", "furnace", "rocket-silo", "character" 
 			if fb.production_type == "input" or fb.production_type == "input-output" then fi = fi + 1 end
 			if fb.production_type == "output" then fo = fo + 1 end
 		end
-		D("C", n, t, table.concat(e.crafting_categories or {}, ","), fi, fo)
+		-- the item ingredients a recipe may have here (fluids do not count); the engine's default is 65535
+		D("C", n, t, table.concat(e.crafting_categories or {}, ","), fi, fo, e.ingredient_count or 65535)
 	end
 end
 for t, _ in pairs(defines.prototypes.item) do
