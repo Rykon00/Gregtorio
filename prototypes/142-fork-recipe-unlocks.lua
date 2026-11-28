@@ -706,6 +706,12 @@ for _, m in pairs({
 	{ "silicon-plate", "advanced-integrated-circuits", "overworld-data" },
 	{ "poly-si-dust", "mcsb", "overworld-data" },
 	{ "silicon-tetrachloride", "mcsb", "overworld-data" },
+	-- issue #836: GT's one Raw Silicon Dust. GT's recipes with it that 158 imported as twins while Gregtorio had a second
+	-- silicon dust are these recipes now, so they come where the twins came: silicon dioxide + magnesium with the
+	-- other quartz routes (the electrical steel dust takes the dust at LV), polydimethylsiloxane with MV Machines (the
+	-- cable insulation of Styrene-Butadiene Rubber takes it before Silicone Rubber)
+	{ "raw-silicon", "mcsb", "primitive-electronic-circuit-assemblies" },
+	{ "polydimethylsiloxane", "silicone-rubber", "mv-machines" },
 	{ "platinum-wire", "nuclear-power", "platinum" },                           -- EV Electrolyzer
 	{ "indium-gallium-phosphide", "qubit-cpus", "iv-energy-hatches" },          -- HPIC wafer, advanced SMD diode
 	{ "robust-tungstensteel-machine-casing", "large-extractor", "space-science-pack" },   -- LuV science pack

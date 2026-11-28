@@ -66,10 +66,7 @@ create_ore("raw-gypsum", nil, "crushed-gypsum", "gypsum", "gypsum", "crushed-gyp
 
 --- FULLERS EARTH
 create_ore("raw-fullers-earth", nil, "crushed-fullers-earth", "fullers-earth", "fullers-earth", "crushed-fullers-earth", "fullers-earth", "alumina", 1, true, false )
-create_item{ skip_recipe = true,
-	name = "raw-silicon",
-	subgroup = "subgroup-lv-electrolyzer-recipes"
-}
+--- (issue #836: raw-silicon, GT's Raw Silicon Dust, is defined once, with its recipe in 11-lv-age-item.lua)
 create_item{ skip_recipe = true,
 	name = "magnesium",
 	subgroup = "subgroup-lv-electrolyzer-recipes"

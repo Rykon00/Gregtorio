@@ -55,4 +55,8 @@ return {
 	{ "nand-chip", "ulv-circuit" },
 	-- 2026-10-24-issue-555-torch.json
 	{ "small-lamp", "gt-torch" },
+	-- 2026-11-28-issue-836-raw-silicon.json
+	{ "silicon-dust", "raw-silicon" },
+	{ "small-pile-of-silicon-dust", "small-pile-of-raw-silicon-dust" },
+	{ "tiny-pile-of-silicon-dust", "tiny-pile-of-raw-silicon-dust" },
 }

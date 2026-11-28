@@ -677,8 +677,10 @@ function FORK_GT_PARTS.drop_locked_routes()
 			for _, i in pairs(r.ingredients or {}) do
 				local ok = makers[i.name] == nil   -- (nothing makes it: mined or from the start)
 				for _, m in pairs(makers[i.name] or {}) do
-					if m ~= name and (data.raw.recipe[m].enabled ~= false) then ok = true end
-					for _, mt in pairs(m ~= name and tech_of[m] or {}) do ok = ok or before[mt] == true end
+					--- (issue #836: a maker this loop dropped before is gone and makes nothing)
+					local mr = m ~= name and data.raw.recipe[m]
+					if mr and mr.enabled ~= false then ok = true end
+					for _, mt in pairs(mr and tech_of[m] or {}) do ok = ok or before[mt] == true end
 					if ok then break end
 				end
 				if not ok then

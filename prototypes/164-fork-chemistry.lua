@@ -1261,7 +1261,9 @@ step(RECIPES, "kevlar-plate", "lv-chemical-bath-recipes", 60, LV_SPEED, { { "wov
 	{ { "kevlar-plate", 1 } })
 step(RECIPES, "melt-kevlar-plate", "ev-fluid-extractor-recipes", 1.2, EV_SPEED, { { "kevlar-plate", 1 } },
 	{ { "molten-kevlar", 14.4 } })
-for _, r in pairs(RECIPES) do fork_add_unlock(KEVLAR, r) end
+--- (issue #836: dimethyldichlorosilane comes with MV Machines, where GT's polydimethylsiloxane from it and water
+--- comes; 158 imported GT's recipe a second time there while the mod had a second silicon dust)
+for _, r in pairs(RECIPES) do fork_add_unlock(r == "dimethyldichlorosilane" and "mv-machines" or KEVLAR, r) end
 --- GTNH's Kevlar users the mod has
 local function swap(recipe, old, new, amount)
 	local r = data.raw.recipe[recipe]

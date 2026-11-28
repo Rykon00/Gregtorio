@@ -242,7 +242,10 @@
     (regenerate it with `tools/gen_gt_parts.py` after a `devcheck.py check` when a metal is added; sources: GT
     materials, GT++ alloys and elements, bartworks and goodgenerator Werkstoffe with their own recipe numbers; issue
     #674: the data names GT's dust of every metal, the run makes a missing one before section 1; `DUST_NAME` keeps
-    the names, since section 1 of the first run sets `d.dust` to nil for a metal whose ingot comes in 164) and GT's
+    the names, since section 1 of the first run sets `d.dust` to nil for a metal whose ingot comes in 164; issue #836:
+    a dust that is not `<material>-dust` goes into `DUST` of `tools/gen_gt_parts.py`, which `tools/gtnh_map.py` reads too:
+    GT's one silicon dust, Raw Silicon Dust, is upstream's `raw-silicon` with the piles `small-/tiny-pile-of-raw-silicon-dust`,
+    and no raw ore for the mapper) and GT's
     nugget recipes, unlocked with 155's `unlock_after` through `FORK_ORE_CHAIN`; loads after 155 and before 150; issue
     #467: its sections 1 and 2 are `FORK_GT_PARTS.run()`, run again at the end of 164 (section 38) for the metals whose
     ingot comes later; #223

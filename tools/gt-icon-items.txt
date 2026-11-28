@@ -5491,7 +5491,6 @@ nitinol-60-dust
 pulsating-iron-dust
 rhugnor-dust
 ruridit-dust
-silicon-dust
 soularium-dust
 stellite-dust
 tantalloy-60-dust
@@ -5523,7 +5522,7 @@ small-pile-of-maraging-steel-250-dust
 small-pile-of-maraging-steel-300-dust
 small-pile-of-niobium-titanium-dust
 small-pile-of-pulsating-iron-dust
-small-pile-of-silicon-dust
+small-pile-of-raw-silicon-dust
 small-pile-of-soularium-dust
 small-pile-of-tantalum-carbide-dust
 small-pile-of-ultimet-dust
@@ -5569,7 +5568,7 @@ tiny-pile-of-pulsating-iron-dust
 tiny-pile-of-red-alloy-dust
 tiny-pile-of-rhugnor-dust
 tiny-pile-of-ruridit-dust
-tiny-pile-of-silicon-dust
+tiny-pile-of-raw-silicon-dust
 tiny-pile-of-soularium-dust
 tiny-pile-of-spacetime-dust
 tiny-pile-of-stellite-dust

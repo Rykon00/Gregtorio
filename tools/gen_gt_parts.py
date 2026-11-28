@@ -44,7 +44,9 @@ GTPP_NAME = {"maraging-steel-250": "MARAGING250", "maraging-steel-300": "MARAGIN
              "inconel-792": "INCONEL_792", "incoloy-020": "INCOLOY_020", "incoloy-ds": "INCOLOY_DS",
              "incoloy-ma956": "INCOLOY_MA956", "watertight-steel": "AQUATIC_STEEL", "grisium": "LEAGRISIUM"}
 #: the dust item of a material where it is not <material>-dust
-DUST = {"antimony": "antimony", "chromium": "chromium-dust", "calcium": "calcium", "gallium": "gallium"}
+#: (issue #836: GT's one silicon material, "Raw Silicon", is upstream's raw-silicon)
+DUST = {"antimony": "antimony", "chromium": "chromium-dust", "calcium": "calcium", "gallium": "gallium",
+        "silicon": "raw-silicon"}
 TIERS = ["lv", "mv", "hv", "ev", "iv", "luv", "zpm", "uv", "uhv", "uev", "uiv", "umv", "uxv", "max"]
 GT_TIER = {"LV": "lv", "MV": "mv", "HV": "hv", "EV": "ev", "IV": "iv", "LuV": "luv", "ZPM": "zpm", "UV": "uv",
            "UHV": "uhv", "UEV": "uev", "UIV": "uiv", "UMV": "umv", "UXV": "uxv", "MAX": "max"}
