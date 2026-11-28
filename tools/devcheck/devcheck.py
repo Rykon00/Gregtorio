@@ -2379,6 +2379,31 @@ def check_tick_handlers():
     return bad
 
 
+def check_png_transparency():
+    """Issue #833: Factorio on Linux draws the transparent pixels of a PNG black when the transparency comes from a tRNS
+    chunk (a grayscale or palette image with a transparent colour, no alpha channel); Windows draws them transparent.
+    Every PNG under graphics/ keeps its transparency in an alpha channel: a file with a tRNS chunk fails (fix: save it as
+    8-bit RGBA, Image.open(f).convert("RGBA"))."""
+    import struct
+    bad = []
+    for f in sorted((ROOT / "graphics").rglob("*.png")):
+        with open(f, "rb") as fh:
+            if fh.read(8) != b"\x89PNG\r\n\x1a\n":
+                continue
+            while True:
+                head = fh.read(8)
+                if len(head) < 8:
+                    break
+                n, kind = struct.unpack(">I4s", head)
+                if kind == b"tRNS":
+                    bad.append(f"{f.relative_to(ROOT).as_posix()}: transparency from a tRNS chunk, not an alpha channel")
+                    break
+                if kind in (b"IDAT", b"IEND"):
+                    break
+                fh.seek(n + 4, 1)
+    return bad
+
+
 def check_sprites(sec):
     try:
         from PIL import Image
@@ -3164,6 +3189,8 @@ def check(a):
     tick_clashes = check_tick_handlers()
     report("periodic handlers that replace each other (one handler per on_nth_tick interval, issue #765)", tick_clashes)
     report("sprite sheets too small", sprites)
+    png_trns = check_png_transparency()
+    report("PNGs with transparency from a tRNS chunk, drawn black on Linux (issue #833)", png_trns)
     report("unlocked but uncraftable recipes", [f"{r}: {why}" for r, why in uncraft])
     required = check_required(m)
     print(f"\nrequired recipes (issues #35, #36, #39, phases 6a and 6b): {len(REQUIRED_RECIPES) - len(required)} of {len(REQUIRED_RECIPES)} unlocked and craftable")
@@ -3408,7 +3435,7 @@ def check(a):
               or unplaceable or pipe_inside or rot_bad or not_mirrored or turned_bad or tool_chain or stale_unlocks or removed_keys or trigger_only or spoiling or classic_veins or early
               or furnace or research_counts or nyi_icons or gtnh_icons or overclock or maint or ebf_heat or radiation
               or steam or nugget or steam_rates or boiler_output or vein_doc or renames or gtnh_numbers or parts_recycling or part_routes or part_crafting or chemistry or metallurgy
-              or tick_clashes)
+              or tick_clashes or png_trns)
     print("\nRESULT:", "OK" if ok else "PROBLEMS FOUND")
     return 0 if ok else 1
 

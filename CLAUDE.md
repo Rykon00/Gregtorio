@@ -653,6 +653,9 @@
   (achievements): send it twice.
 - Every referenced `__gregtorio-continued__/...` file must exist (headless Factorio does not check
   graphics, the real game crashes on missing files).
+- PNGs keep their transparency in an alpha channel (issue #833): Factorio on Linux draws the transparent colour of a
+  grayscale or palette PNG with a `tRNS` chunk black. Save new graphics as 8-bit RGBA (`convert("RGBA")`, as the
+  `tools/gen_*.py` scripts do); `devcheck.py check` fails for a PNG under `graphics/` with a `tRNS` chunk.
 - The mod is `gregtorio-continued` (Gregtorio Continued) since 0.3.0, in the repo and on the mod
   portal; paths are `__gregtorio-continued__/...`. Do not rename it again (script state is kept per
   mod name). Portal zip: `tools/build.py --portal`.
