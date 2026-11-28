@@ -1,5 +1,7 @@
 ---------------------------------------------------------------------------------------------------
 Version: 0.5.16
+  Changes:
+    - Needs ME Network 0.7.5 or newer. With it the ME network crafts recipes that take more than a stack of an ingredient (issue #835, me-network issue 815): their patterns were red in the ME Pattern Provider, "More of an item than fits into the machine's input slots". With stacks of 64 that hit 116 recipes here, among them the fusion reactors, the motors, emitters and sensors of the assembly lines from IV up, and Compressed Stone with its 64,000 stone. For 31 of them, the ones that also take more of a fluid than their machine's tank holds without a recipe (the flotation froths, several assembly line recipes), the pattern is accepted only once the recipe has been set in the machine by hand (me-network issue 821).
   Bugfixes:
     - Icons have a transparent background on Linux (issue #833, reported by NeveHanter): cobblestone, crushed iron, iron dust, iron ingot, salt, stone dust and others were drawn on a black square. 256 icons kept their transparency without an alpha channel (grayscale and palette images with one transparent colour), which Factorio on Windows understands and Factorio on Linux does not. They are saved with an alpha channel now and look the same on Windows.
 ---------------------------------------------------------------------------------------------------
