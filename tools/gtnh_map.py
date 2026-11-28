@@ -275,6 +275,22 @@ def tool_tables():
     return out
 
 
+#: issue #836: the prefixes tools/gen_gt_parts.py's DUST names (None: the dust itself; else the pile's pattern over the
+#: dust's name without "-dust", as prototypes/158-fork-gt-parts.lua's piles())
+DUST_PREFIX = {"dust": None, "dustSmall": "small-pile-of-%s-dust", "dustTiny": "tiny-pile-of-%s-dust"}
+
+
+def dust_table():
+    """tools/gen_gt_parts.py's DUST (Gregtorio material -> its dust item where it is not <material>-dust), read as a
+    literal like tool_tables()"""
+    src = (ROOT / "tools/gen_gt_parts.py").read_text(encoding="utf-8")
+    m = re.search(r"^DUST = (\{.*?\})", src, re.M | re.S)
+    try:
+        return ast.literal_eval(m.group(1)) if m else {}
+    except (ValueError, SyntaxError):
+        return {}
+
+
 class Gregtorio:
     """Gregtorio's items, fluids, recipes and machines from a devcheck log (sections DUMP and BALANCE)."""
 
@@ -336,7 +352,8 @@ class Gregtorio:
             idx = {}
             for it in self.items:
                 m = rx.match(it)
-                if m:
+                # (issue #836: raw-silicon is GT's dust of Silicon, not its raw ore)
+                if m and not (p.startswith("raw-") and it in NOT_ORE_FORM):
                     idx.setdefault(nohyphen(m.group(1)), it)
             self.forms[p] = idx
         self.fluid_idx = {}
@@ -350,7 +367,8 @@ class Mapper:
         self.items = dump["items"]
         self.alias = {nohyphen(k): v for k, v in {**tool_tables(), **MATERIALS}.items()}
         self.cache = {}
-        self.prefixes = sorted(PREFIX, key=len, reverse=True) + sorted(CELL, key=len, reverse=True)
+        self.dust = {nohyphen(m): d for m, d in dust_table().items()}
+        self.prefixes =sorted(PREFIX, key=len, reverse=True) + sorted(CELL, key=len, reverse=True)
 
     def material_key(self, mat):
         """GT material name -> the nohyphen key of the Gregtorio material"""
@@ -367,6 +385,12 @@ class Mapper:
         if ORE_BLOCK.match(prefix) and prefix not in PREFIX:
             prefix = "ore"
         key = self.material_key(mat)
+        # (issue #836: a dust that is not <material>-dust, and its piles as 158 names them: GT's Silicon is raw-silicon)
+        dust = self.dust.get(key)
+        if dust and prefix in DUST_PREFIX:
+            it = DUST_PREFIX[prefix] % (dust[:-5] if dust.endswith("-dust") else dust) if DUST_PREFIX[prefix] else dust
+            if it in self.g.items:
+                return "item", it
         for p in PREFIX.get(prefix, []):
             it = self.g.forms.get(p, {}).get(key)
             if it:
@@ -1269,6 +1293,14 @@ METALLURGY_HEADER = [
     "--- blast furnace, alloy smelter (mold = its mold), furnace, arc furnace and compressor that Gregtorio lacks, in Gregtorio's units:"]
 #: the ore chain's forms (155's chain and 146's platinum line decide their recipes)
 ORE_FORM = re.compile(r"^(raw|crushed|purified|centrifuged|impure|pure)-")
+RAW_ORE = re.compile(r"^raw-")
+#: issue #836: dusts with an ore form's name (raw-silicon is GT's Raw Silicon Dust, no raw ore)
+NOT_ORE_FORM = frozenset(dust_table().values())
+
+
+def ore_form(name, forms=ORE_FORM):
+    """whether the item is a form of the ore chain (`forms`: the pattern of the forms meant)"""
+    return bool(name) and name not in NOT_ORE_FORM and bool(forms.match(name))
 
 
 def route_imports(dump, g, table=None, chemistry=False):
@@ -1316,7 +1348,7 @@ def route_imports(dump, g, table=None, chemistry=False):
         first = next(iter(mapped["ins"]), None)
         product = next(iter(mapped["outs"]), None) or next(iter(mapped["fout"]))
         if chemistry:
-            if any(ORE_FORM.match(i) for i in mapped["ins"]):
+            if any(ore_form(i) for i in mapped["ins"]):
                 left["ore chain form (155, 146)"] += 1
                 continue
             if any(i.endswith("-cell") for i in list(mapped["ins"]) + list(mapped["outs"])):
@@ -1329,7 +1361,7 @@ def route_imports(dump, g, table=None, chemistry=False):
                 left["furnace: not a dust (GT's recycling, #686)"] += 1
                 continue
         # (crushing a raw ore is 155's ore chain, #202; GT++ hammers its ore block, not the raw ore, #373)
-        if first and first.startswith("raw-"):
+        if ore_form(first, RAW_ORE):
             left["raw ore (155's ore chain)"] += 1
             continue
         # (a route Gregtorio has with other numbers is #689's; only another cutting fluid is a new recipe)
@@ -1449,7 +1481,7 @@ def crafting_imports(dump, g):
         if not (GREG_PART.match(product) or CRAFT_PRODUCT.match(product)) or product in mapped["ins"] or product in CRAFT_SKIP:
             continue
         # (crushing a raw ore by hand is 155's ore chain, #202)
-        if any(i.startswith("raw-") for i in mapped["ins"]):
+        if any(ore_form(i, RAW_ORE) for i in mapped["ins"]):
             left["raw ore (155's ore chain)"] += 1
             continue
         ins = frozenset(mapped["ins"])

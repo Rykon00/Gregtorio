@@ -328,7 +328,10 @@ local RM_ITEMS = { ["ammonia-hexachloroplatinate"] = "platinum-salt", ["crude-pl
 	["apatite-lens"] = "green-sapphire-lens", ["lapis-lens"] = "sapphire-lens",   -- issue #370
 	["lv-air-collector"] = "lv-compressor", ["ev-air-collector"] = "ev-compressor",   -- issue #153
 	["ev-greenhouse"] = "lv-greenhouse",   -- issue #165
-	["small-lamp"] = "gt-torch" }   -- issue #555 (the item stays: mapped by its migration, RM_MIGRATION)
+	["small-lamp"] = "gt-torch",   -- issue #555 (the item stays: mapped by its migration, RM_MIGRATION)
+	-- issue #836: the second silicon dust is GT's one Raw Silicon Dust (raw-silicon), its piles are named after it
+	["silicon-dust"] = "raw-silicon", ["small-pile-of-silicon-dust"] = "small-pile-of-raw-silicon-dust",
+	["tiny-pile-of-silicon-dust"] = "tiny-pile-of-raw-silicon-dust" }
 --- an item that stays in the game and is mapped only by its JSON migration: skipped when the old version has it (a save of
 --- that version ran it); issue #555 also places a lamp, which must be a torch after the update
 local RM_MIGRATION = { ["small-lamp"] = "2026-10-24-issue-555-torch.json" }
@@ -400,6 +403,12 @@ local RM_MACHINES = {
 	{ "mv-laser-engraver", "ram-wafer-sw", "ram-wafer-sw" },
 	{ "mv-laser-engraver", "engraving-chipped-lapis-to-flawed", "engraving-chipped-lapis-to-flawed" },
 	{ "lv-lathe", "apatite-lens-from-exquisite", nil },
+	-- issue #836: GT's recipes with the second silicon dust keep running: the twin of a Gregtorio recipe as that recipe,
+	-- the others under their name with raw-silicon (JSON migration)
+	{ "lv-chemical-reactor", "gt-react-silicon-dust-from-silicon-dioxide", "raw-silicon" },
+	{ "mv-chemical-reactor", "gt-react-dimethyldichlorosilane-from-silicon-dust-with-chloromethane", "dimethyldichlorosilane" },
+	{ "lv-chemical-reactor", "gt-react-silicon-dust-from-quartzite-dust", "gt-react-raw-silicon-from-quartzite-dust" },
+	{ "lv-mixer", "gt-mix-electrical-steel-dust-from-steel-dust", "gt-mix-electrical-steel-dust-from-steel-dust" },
 }
 --- Issue #317: a character of the old save has a hand craft of a deleted vanilla recipe in its queue; after the update the
 --- save loads, the character is there and its queue is empty. The game drops the craft with its ingredients (they are

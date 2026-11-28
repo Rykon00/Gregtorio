@@ -1,0 +1,33 @@
+{
+  "item": [
+    ["silicon-dust", "raw-silicon"],
+    ["small-pile-of-silicon-dust", "small-pile-of-raw-silicon-dust"],
+    ["tiny-pile-of-silicon-dust", "tiny-pile-of-raw-silicon-dust"]
+  ],
+  "recipe": [
+    ["gt-react-silicon-dust-from-silicon-dioxide", "raw-silicon"],
+    ["gt-react-silicon-dust-from-silicon-dioxide-and-aluminium-dust", "alumina"],
+    ["gt-react-silicon-tetrachloride-from-silicon-dust-with-chlorine", "silicon-tetrachloride"],
+    ["gt-react-hydrogen-from-silicon-dust-with-hydrochloric-acid", "trichlorosilane"],
+    ["gt-react-hydrogen-from-silicon-dust-with-hydrofluoric-acid", "hexafluorosilicic-acid"],
+    ["gt-react-dimethyldichlorosilane-from-silicon-dust-with-chloromethane", "dimethyldichlorosilane"],
+    ["gt-react-polydimethylsiloxane-from-silicon-dust-with-methane", "polydimethylsiloxane"],
+    ["gt-react-polydimethylsiloxane-from-silicon-dust-with-methanol", "gt-react-polydimethylsiloxane-from-raw-silicon-with-methanol"],
+    ["gt-react-silicon-dust-from-certus-quartz-dust", "gt-react-raw-silicon-from-certus-quartz-dust"],
+    ["gt-react-silicon-dust-from-jasper-dust", "gt-react-raw-silicon-from-jasper-dust"],
+    ["gt-react-silicon-dust-from-nether-quartz-dust", "gt-react-raw-silicon-from-nether-quartz-dust"],
+    ["gt-react-silicon-dust-from-opal-dust", "gt-react-raw-silicon-from-opal-dust"],
+    ["gt-react-silicon-dust-from-quartzite-dust", "gt-react-raw-silicon-from-quartzite-dust"],
+    ["gt-electrolyze-silicon-dust-from-hexafluorosilicic-acid", "gt-electrolyze-raw-silicon-from-hexafluorosilicic-acid"],
+    ["gt-alloy-blast-molten-silicon-from-silicon-dust", "gt-alloy-blast-molten-silicon-from-raw-silicon"],
+    ["gt-arc-smelt-silicon-dioxide-from-silicon-dust-with-oxygen", "gt-arc-smelt-silicon-dioxide-from-raw-silicon-with-oxygen"],
+    ["gt-autoclave-silicon-dioxide-from-silicon-dust-with-distilled-water", "gt-autoclave-silicon-dioxide-from-raw-silicon-with-distilled-water"],
+    ["gt-autoclave-silicon-dioxide-from-silicon-dust-with-water", "gt-autoclave-silicon-dioxide-from-raw-silicon-with-water"],
+    ["silicon-dust-from-small-piles", "raw-silicon-from-small-piles"],
+    ["silicon-dust-from-tiny-piles", "raw-silicon-from-tiny-piles"],
+    ["packager-silicon-dust-from-small-piles", "packager-raw-silicon-from-small-piles"],
+    ["packager-silicon-dust-from-tiny-piles", "packager-raw-silicon-from-tiny-piles"],
+    ["small-pile-of-silicon-dust-crafting-table", "small-pile-of-raw-silicon-dust-crafting-table"],
+    ["tiny-pile-of-silicon-dust-crafting-table", "tiny-pile-of-raw-silicon-dust-crafting-table"]
+  ]
+}

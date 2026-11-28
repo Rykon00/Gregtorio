@@ -1311,6 +1311,9 @@ def icon_table(c):
     T["heavy-hellish-mud"] = lambda: c.gt("gt:gregtech/textures/items/gt.metaitem.03/242")
     T["calcium-carbonate-dust"] = lambda: c.part("calcium-carbonate", "dust")
     T["small-pile-of-sulfur"] = lambda: c.part("sulfur", "dustSmall")   # (the red mud's piles)
+    # issue #836: the piles of GT's Raw Silicon Dust (the item raw-silicon, the material silicon)
+    T["small-pile-of-raw-silicon-dust"] = lambda: c.part("silicon", "dustSmall")
+    T["tiny-pile-of-raw-silicon-dust"] = lambda: c.part("silicon", "dustTiny")
     # issue #623: gtnhintergalactic's Dyson Swarm parts (items/) and casings (blocks/dysonSwarm/)
     IGI, IGB = "gt:gtnhintergalactic/textures/items/", "gt:gtnhintergalactic/textures/blocks/dysonSwarm/"
     for k, f in (("dyson-swarm-module", "dysonSwarmModule"), ("solar-sail", "solarSail"), ("drone-case", "droneCase"),

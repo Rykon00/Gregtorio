@@ -77,6 +77,8 @@ for name, why in pairs({
 	["universium-rod"] = "issue #724: GT runs it at UXV, but uxv-piston takes its universium-rod with uxv-components, before the UXV machine",
 	["universium-rotor"] = "issue #724: GT runs it at UXV, but uxv-pump takes its universium-rotor with uxv-components, before the UXV machine",
 	["universium-screw"] = "issue #724: GT runs it at UXV, but uxv-pump takes its universium-screw with uxv-components, before the UXV machine",
+	["lazurite-dust-electrolysis"] = "issue #836: GT runs it at MV, but gt-mix-magnalium-dust-from-magnesium takes its aluminium-dust with ore-centrifuging, before the MV machine",
+	["sodalite-dust-electrolysis"] = "issue #836: GT runs it at MV, but gt-mix-magnalium-dust-from-magnesium takes its aluminium-dust with ore-centrifuging, before the MV machine",
 }) do FORK_GTNH_TIER_KEPT[name] = why end
 
 --- (issue #759: own_time, the energy_required a recipe had before this file set the table's, for devcheck's
